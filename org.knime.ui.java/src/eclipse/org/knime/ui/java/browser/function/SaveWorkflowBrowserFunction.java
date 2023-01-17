@@ -116,18 +116,22 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
             editor.doSave(new NullProgressMonitor());
             unmarkDirtyChildWorkflowEditors(projectWfm);
         } else { // SVG received, workflow editor instance might not be present
-            var canSetWorkflowEditorToClean = saveWorkflowWithoutWorkflowEditorInstance(projectWfm, projectSVG);
-            if (canSetWorkflowEditorToClean) {
-                // If the conditions are met, set the workflow editor to clean
-                EclipseUIStateUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
-                unmarkDirtyChildWorkflowEditors(projectWfm);
-            } else {
+            if (isExecutionInProgress(projectWfm)) {
                 // Show a warning otherwise
                 showWarning("Workflow in execution", "Executing nodes are not saved!");
+            } else {
+                saveWorkflowWithProgressBar(projectWfm, projectSVG);
+                EclipseUIStateUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
+                unmarkDirtyChildWorkflowEditors(projectWfm);
             }
         }
 
         return null;
+    }
+
+    private static boolean isExecutionInProgress(final WorkflowManager wfm) {
+        var state = wfm.getNodeContainerState();
+        return state.isExecutionInProgress() || state.isExecutingRemotely();
     }
 
     /**
@@ -147,18 +151,9 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    /**
-     * @return Whether to set workflow to clean or not
-     */
-    private static boolean saveWorkflowWithoutWorkflowEditorInstance(final WorkflowManager wfm, final String svg) {
-        // Save progress state
-        var state = wfm.getNodeContainerState();
-        var wasInProgress = state.isExecutionInProgress() && !state.isExecutingRemotely();
-
+    private static boolean saveWorkflowWithProgressBar(final WorkflowManager wfm, final String svg) {
         // Create `IRunnableWithProgress` to save the workflow
-        IRunnableWithProgress saveRunnable = wfm.isComponentProjectWFM() //
-            ? (monitor -> saveComponentWorkflow()) // Not supported yet
-            : (monitor -> saveRegularWorkflow(monitor, wfm, svg));
+        IRunnableWithProgress saveRunnable = monitor -> saveWorkflow(monitor, wfm, svg);
 
         // Run the runnable to save the workflow
         try {
@@ -171,8 +166,15 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
             Thread.currentThread().interrupt();
         }
 
-        // Workflow MUST NOT be set to clean if it was IN PROGRESS and NOT A SHARED COMPONENT
-        return !wasInProgress || wfm.isComponentProjectWFM();
+        return true;
+    }
+
+    static void saveWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
+        if (wfm.isComponentProjectWFM()) {
+            throw new UnsupportedOperationException("Saving a component project is not yet implemented");
+        } else {
+            saveRegularWorkflow(monitor, wfm, svg);
+        }
     }
 
     /**
@@ -194,18 +196,17 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
         }
 
         // Save the workflow preview SVG
-        try {
-            Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg, StandardCharsets.UTF_8);
-        } catch (IllegalArgumentException | IOException | UnsupportedOperationException | SecurityException e) {
-            showWarningAndLogError("SVG save attempt", "Saving the SVG didn't work", LOGGER, e);
+        if (svg == null) {
+            showWarning("Failed to save workflow preview",
+                String.format("The workflow preview (svg) couldn't be saved for workflow %s", wfm.getName()));
+        } else {
+            try {
+                Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg,
+                    StandardCharsets.UTF_8);
+            } catch (IllegalArgumentException | IOException | UnsupportedOperationException | SecurityException e) {
+                showWarningAndLogError("SVG save attempt", "Saving the SVG didn't work", LOGGER, e);
+            }
         }
-    }
-
-    /**
-     * TODO: Eventually implement saving component workflows
-     */
-    private static void saveComponentWorkflow() {
-        LOGGER.warn("Saving a component project is not yet implemented");
     }
 
     /**

@@ -31,17 +31,20 @@ export const state = () => ({
     /* Indicates whether node recommendations are available or not */
     hasNodeRecommendationsEnabled: false,
 
-    // Map that keeps track of root workflow snapshots. Only needed when
-    // wanting to generate a workflow preview while being in a nested workflow
+    // Map that keeps track of root workflow snapshots. Used to generate SVGs when saving
     rootWorkflowSnapshots: new Map(),
 
     isLoadingWorkflow: false,
 
+    isBusy: false,
     /* Object containing available updates */
     availableUpdates: null
 });
 
 export const mutations = {
+    setIsBusy(state, value) {
+        state.isBusy = value;
+    },
     setIsLoadingWorkflow(state, value) {
         state.isLoadingWorkflow = value;
     },
@@ -308,6 +311,7 @@ export const actions = {
 
         commit('setSavedCanvasStates', { ...scrollState, project, workflow });
     },
+    
     async restoreCanvasState({ dispatch, getters }) {
         const { workflowCanvasState } = getters;
 
@@ -315,6 +319,7 @@ export const actions = {
             await dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
     },
+    
     removeCanvasState({ rootState, state }, projectId) {
         const { info: { containerId: workflow } } = rootState.workflow.activeWorkflow;
         const rootWorkflowId = getRootWorkflowId(workflow);
@@ -322,36 +327,63 @@ export const actions = {
 
         delete state.savedCanvasStates[stateKey];
     },
+    
     updatePreviewSnapshot({ rootState, state, dispatch }, { isChangingProject, newWorkflow }) {
         const isCurrentlyOnRoot = rootState.workflow?.activeWorkflow?.info.containerId === 'root';
+        const isWorkflowUnsaved = rootState.workflow?.activeWorkflow?.dirty;
 
         const { activeProjectId } = state;
 
         // Going from the root into deeper levels (e.g into a Metanode or Component)
         // without having changed projects
-        if (isCurrentlyOnRoot && newWorkflow && !isChangingProject) {
+        const isEnteringSubWorkflow = isCurrentlyOnRoot && newWorkflow && !isChangingProject;
+
+        if (isEnteringSubWorkflow || (isChangingProject && isWorkflowUnsaved)) {
             const canvasElement = rootState.canvas.getScrollContainerElement().firstChild;
 
             // save a snapshot of the current state of the root workflow
-            dispatch('setRootWorkflowSnapshot', {
+            dispatch('addToRootWorkflowSnapshots', {
                 projectId: activeProjectId,
                 element: canvasElement
             });
 
-            // Going back to the root of a workflow without having changed projects
-        } else if (!isCurrentlyOnRoot && newWorkflow?.workflowId === 'root' && !isChangingProject) {
+            return;
+        }
+        
+        // Going back to the root of a workflow without having changed projects
+        const isGoingBackToRoot = newWorkflow?.workflowId === 'root';
+        if (!isCurrentlyOnRoot && isGoingBackToRoot && !isChangingProject) {
             // Since we're back in the root workflow, we can clear the previously saved snapshot
-            dispatch('removeRootWorkflowSnapshot', { projectId: activeProjectId });
+            dispatch('removeFromRootWorkflowSnapshots', { projectId: activeProjectId });
         }
     },
-    setRootWorkflowSnapshot({ state }, { projectId, element }) {
+    
+    addToRootWorkflowSnapshots({ state }, { projectId, element }) {
         // always use the "root" workflow
         const snapshotKey = encodeString(`${projectId}--root`);
         state.rootWorkflowSnapshots.set(snapshotKey, element.cloneNode(true));
     },
 
-    removeRootWorkflowSnapshot({ state }, { projectId }) {
+    removeFromRootWorkflowSnapshots({ state }, { projectId }) {
         state.rootWorkflowSnapshots.delete(encodeString(`${projectId}--root`));
+    },
+
+    getRootWorkflowSnapshotByProjectId({ state }, { projectId }) {
+        const snapshotKey = encodeString(`${projectId}--root`);
+        return state.rootWorkflowSnapshots.get(snapshotKey);
+    },
+
+    async getActiveWorkflowSnapshot({ rootState, dispatch }) {
+        const { getScrollContainerElement } = rootState.canvas;
+        const { activeWorkflow: { projectId, info: { containerId } } } = rootState.workflow;
+        
+        const isRootWorkflow = containerId === 'root';
+
+        const rootWorkflowSnapshotElement = isRootWorkflow
+            ? getScrollContainerElement().firstChild
+            : await dispatch('getRootWorkflowSnapshotByProjectId', { projectId });
+
+        return rootWorkflowSnapshotElement;
     },
 
     toggleContextMenu({
@@ -427,13 +459,5 @@ export const getters = {
 
             return savedCanvasStates[parentStateKey]?.children[savedStateKey];
         }
-    },
-
-    getWorkflowPreviewSnapshot(state) {
-        return (projectId) => {
-            const snapshotKey = encodeString(`${projectId}--root`);
-
-            return state.rootWorkflowSnapshots.get(snapshotKey);
-        };
     }
 };

@@ -172,7 +172,7 @@ describe('workflow store: AP Interactions', () => {
                     closingProjectId,
                     nextProjectId: null
                 });
-                expect(dispatchSpy).toHaveBeenCalledWith('application/removeRootWorkflowSnapshot', {
+                expect(dispatchSpy).toHaveBeenCalledWith('application/removeFromRootWorkflowSnapshots', {
                     projectId: closingProjectId
                 });
                 expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', closingProjectId);

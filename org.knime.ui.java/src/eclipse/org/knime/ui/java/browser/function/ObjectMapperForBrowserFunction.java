@@ -44,52 +44,23 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 12, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
-import static org.knime.ui.java.browser.function.ObjectMapperForBrowserFunction.MAPPER;
-
-import org.knime.gateway.impl.webui.SpaceProviders;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Returns infos on all available {@link SpaceProviders}. It's a browser function because this functionality is only
- * available in the desktop AP (the desktop AP, e.g., can connect to multiple hubs).
+ * Provides a single static object mapper instance used within multiple browser functions.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class GetSpaceProvidersBrowserFunction extends BrowserFunction {
+final class ObjectMapperForBrowserFunction {
 
-    private final SpaceProviders m_spaceProviders;
-
-    /**
-     * @param browser
-     * @param spaceProviders
-     */
-    public GetSpaceProvidersBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "getSpaceProviders");
-        m_spaceProviders = spaceProviders;
+    private ObjectMapperForBrowserFunction() {
+        // utility
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object function(final Object[] arguments) {
-        var res = MAPPER.createObjectNode();
-        for (var sp : m_spaceProviders.getProvidersMap().values()) {
-            var isLocalSpaceProvider = sp.isLocal();
-            var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
-            res.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
-                .put("name", sp.getName()) //
-                .put("connected", isLocalSpaceProvider || sp.getConnection(false).isPresent()) //
-                .put("connectionMode", connectionMode) //
-                .put("local", isLocalSpaceProvider));
-        }
-        return res.toPrettyString();
-    }
+    static final ObjectMapper MAPPER = new ObjectMapper();
 
 }
