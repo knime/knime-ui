@@ -25,10 +25,10 @@ export default {
         };
     },
     computed: {
-        ...mapState('spaces', ['activeSpaceInfo', 'activeSpace'])
+        ...mapState('spaces', ['activeSpaceInfo'])
     },
     watch: {
-        activeSpace: {
+        activeSpaceInfo: {
             immediate: true,
             handler() {
                 if (this.activeSpaceInfo.local) {

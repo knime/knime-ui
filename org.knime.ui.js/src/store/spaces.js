@@ -66,7 +66,6 @@ export const actions = {
     },
 
     async fetchProviderSpaces({ state, commit }, { id, user = null }) {
-        debugger;
         try {
             const { spaceProviders } = state;
 
