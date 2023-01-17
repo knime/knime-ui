@@ -40,7 +40,7 @@ export const actions = {
     async saveWorkflow({ state, rootState, rootGetters }) {
         const { getScrollContainerElement } = rootState.canvas;
         const { activeWorkflow: { projectId, info: { containerId } } } = state;
-        
+
         const getWorkflowPreviewSnapshot = rootGetters['application/getWorkflowPreviewSnapshot'];
 
         const isRootWorkflow = containerId === 'root';
@@ -65,28 +65,29 @@ export const actions = {
         });
 
         const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
-        
+
         if (didClose) {
             dispatch('application/removeRootWorkflowSnapshot', { projectId: closingProjectId }, { root: true });
             dispatch('application/removeCanvasState', closingProjectId, { root: true });
+            dispatch('spaces/removeLastItemForProject', closingProjectId, { root: true });
         }
     },
-    
+
     /* Some nodes generate views from their data. A Classic UI dialog opens to present this view */
     openView({ state }, nodeId) {
         openView({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    
+
     /* See docs in API */
     openNodeConfiguration({ state }, nodeId) {
         openNodeDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    
+
     /* See docs in API */
     openFlowVariableConfiguration({ state }, nodeId) {
         openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    
+
     /* See docs in API */
     openLayoutEditor({ state, getters }) {
         let { activeWorkflow: { projectId } } = state;

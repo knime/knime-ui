@@ -2,12 +2,28 @@
 import PageHeader from '@/components/common/PageHeader.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import SpaceExplorer from './SpaceExplorer.vue';
+import { mapState } from 'vuex';
 
 export default {
     components: {
         SpaceExplorer,
         ComputerDesktopIcon,
         PageHeader
+    },
+    computed: {
+        ...mapState('spaces', ['spaceBrowser'])
+    },
+    beforeMount() {
+        if (this.spaceBrowser.spaceId) {
+            this.$store.commit('spaces/loadSpaceBrowserState');
+        }
+        // TODO: clear on back: this.$store.commit('spaces/clearSpaceBrowserState');
+    },
+    methods: {
+        onItemChanged(id) {
+            // remember current path
+            this.$store.dispatch('spaces/saveSpaceBrowserState');
+        }
     }
 };
 </script>
@@ -34,7 +50,9 @@ export default {
     <section class="space-explorer-wrapper">
       <div class="grid-container">
         <div class="grid-item-12">
-          <SpaceExplorer />
+          <SpaceExplorer
+            @item-changed="onItemChanged"
+          />
         </div>
       </div>
     </section>

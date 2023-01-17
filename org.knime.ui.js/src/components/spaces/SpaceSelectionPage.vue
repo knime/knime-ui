@@ -24,7 +24,14 @@ export default {
     },
 
     computed: {
-        ...mapState('spaces', ['spaceProviders'])
+        ...mapState('spaces', ['spaceProviders', 'activeSpace', 'activeSpaceProvider', 'spaceBrowser'])
+    },
+
+    beforeMount() {
+        // redirect to browsing page if a space was selected
+        if (this.spaceBrowser.spaceId) {
+            this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+        }
     },
 
     created() {
@@ -35,7 +42,7 @@ export default {
         async fetchSpaceProviders() {
             await this.$store.dispatch('spaces/fetchAllSpaceProviders');
         },
-        
+
         onLogin(spaceProviderId) {
             this.$store.dispatch('spaces/connectProvider', { spaceProviderId });
         },
@@ -47,6 +54,7 @@ export default {
         onSpaceCardClick({ space, spaceProvider }) {
             this.$store.commit('spaces/setActiveSpaceProvider', spaceProvider);
             this.$store.commit('spaces/setActiveSpaceId', space.id);
+            this.$store.dispatch('spaces/saveSpaceBrowserState');
             this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
         },
 
@@ -111,7 +119,7 @@ export default {
           </Button>
         </div>
       </div>
-      
+
       <div class="cards">
         <SpaceCard
           v-for="(space, id) of spaceProvider.spaces"

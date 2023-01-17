@@ -16,9 +16,17 @@ export const state = () => ({
     activeSpaceProvider: { id: 'local' },
     activeSpace: {
         spaceId: 'local',
-        activeWorkflowGroup: null
+        activeWorkflowGroup: null,
+        startItemId: null
     },
-    spaceProviders: null
+    spaceProviders: null,
+    // state of the global space browser (tab with knime icon)
+    spaceBrowser: {
+        spaceId: null,
+        spaceProvider: null,
+        itemId: 'root'
+    },
+    lastItemForProject: {}
 });
 
 export const mutations = {
@@ -26,8 +34,41 @@ export const mutations = {
         state.activeSpaceProvider = value;
     },
 
+    setActiveSpaceProviderById(state, spaceProviderId) {
+        // this assumes the provider has been already loaded
+        state.activeSpaceProvider = spaceProviderId === 'local'
+            ? { id: 'local' }
+            : state.spaceProviders[spaceProviderId];
+    },
+
     setActiveSpaceId(state, value) {
         state.activeSpace.spaceId = value;
+    },
+
+    setStartItemId(state, itemId) {
+        state.activeSpace.startItemId = itemId;
+    },
+
+    clearSpaceBrowserState(state) {
+        state.spaceBrowser = {
+            spaceId: null,
+            spaceProvider: null,
+            itemId: 'root'
+        };
+    },
+
+    loadSpaceBrowserState(state) {
+        state.activeSpaceProvider = state.spaceBrowser.spaceProvider;
+        state.activeSpace.spaceId = state.spaceBrowser.spaceId;
+        state.activeSpace.startItemId = state.spaceBrowser.itemId || 'root';
+    },
+
+    setSpaceBrowserState(state, data) {
+        state.spaceBrowser = data;
+    },
+
+    setLastItemForProject(state, { projectId, itemId }) {
+        state.lastItemForProject[projectId] = itemId;
     },
 
     setActiveWorkflowGroupData(state, data) {
@@ -40,11 +81,30 @@ export const mutations = {
 };
 
 export const actions = {
+    removeLastItemForProject({ commit, getters }, projectId) {
+        commit('setLastItemForProject', { projectId, itemId: null });
+    },
+
+    saveCurrentItemForProject({ commit, getters }, { projectId }) {
+        commit('setLastItemForProject', {
+            projectId,
+            itemId: getters.currentWorkflowGroupId
+        });
+    },
+
+    saveSpaceBrowserState({ commit, getters, state }) {
+        commit('setSpaceBrowserState', {
+            spaceId: state.activeSpace?.spaceId,
+            spaceProvider: state.activeSpaceProvider,
+            itemId: getters.currentWorkflowGroupId
+        });
+    },
+
     async fetchAllSpaceProviders({ commit, dispatch, state }) {
         try {
             const spaceProviders = await fetchAllSpaceProviders();
             commit('setSpaceProviders', spaceProviders);
-            
+
             const connectedProviderIds = Object.values(spaceProviders)
                 .filter(({ connected, connectionMode }) => connected || connectionMode === 'AUTOMATIC')
                 .map(({ id }) => id);
@@ -63,7 +123,7 @@ export const actions = {
             const providerData = await fetchSpaceProvider({ spaceProviderId: id });
 
             const updatedProvider = { ...spaceProviders[id], ...providerData, connected: true, user };
-        
+
             commit('setSpaceProviders', {
                 ...state.spaceProviders,
                 [id]: updatedProvider
@@ -77,7 +137,7 @@ export const actions = {
     connectProvider({ dispatch }, { spaceProviderId }) {
         try {
             const user = connectSpaceProvider({ spaceProviderId });
-            
+
             dispatch('fetchProviderSpaces', { id: spaceProviderId, user });
         } catch (error) {
             consola.error('Error connecting to provider', { error });
@@ -104,13 +164,13 @@ export const actions = {
     async fetchWorkflowGroupContent({ commit, state }, { itemId = 'root' }) {
         try {
             const { activeSpaceProvider, activeSpace } = state;
-            
+
             const data = await fetchWorkflowGroupContent({
                 spaceProviderId: activeSpaceProvider.id,
                 spaceId: activeSpace.spaceId,
                 itemId
             });
-        
+
             commit('setActiveWorkflowGroupData', data);
             return data;
         } catch (error) {
@@ -120,23 +180,17 @@ export const actions = {
     },
 
     changeDirectory({ dispatch, getters, state }, { pathId }) {
-        const { spaceId } = state.activeSpace;
-        const isGoingBack = pathId === '..';
-
-        const nextWorkflowGroupId = isGoingBack
-            ? getters.parentWorkflowGroupId
-            : pathId;
-
-        return dispatch('fetchWorkflowGroupContent', { itemId: nextWorkflowGroupId, spaceId });
+        const itemId = getters.pathToItemId(pathId);
+        return dispatch('fetchWorkflowGroupContent', { itemId });
     },
 
     async createWorkflow({ commit, getters, state }) {
         try {
             const { spaceId, activeWorkflowGroup } = state.activeSpace;
             const itemId = getters.currentWorkflowGroupId;
-        
+
             const newWorkflowItem = await createWorkflow({ spaceId, itemId });
-            
+
             const updatedWorkflowGroupItems = activeWorkflowGroup
                 .items
                 .concat(newWorkflowItem)
@@ -144,20 +198,21 @@ export const actions = {
                     if (item1.type === 'WorflowGroup' && item2.type !== 'WorkflowGroup') {
                         return -1;
                     }
-                    
+
                     if (item1.type !== 'WorflowGroup' && item2.type === 'WorkflowGroup') {
                         return 1;
                     }
 
                     return item1.name < item2.name ? -1 : 1;
                 });
-        
+
             commit('setActiveWorkflowGroupData', {
                 path: activeWorkflowGroup.path,
                 items: updatedWorkflowGroupItems
             });
             openWorkflow({ workflowItemId: newWorkflowItem.id });
-        
+
+
             return newWorkflowItem;
         } catch (error) {
             throw error;
@@ -184,6 +239,15 @@ export const actions = {
 };
 
 export const getters = {
+
+    pathToItemId: (state, getters) => (pathId) => {
+        const isGoingBack = pathId === '..';
+        if (isGoingBack) {
+            return getters.parentWorkflowGroupId;
+        }
+        return pathId;
+    },
+
     parentWorkflowGroupId({ activeSpace }) {
         if (!activeSpace.spaceId || !activeSpace.activeWorkflowGroup) {
             return null;
@@ -217,7 +281,7 @@ export const getters = {
 
         const { spaceId, activeWorkflowGroup } = activeSpace;
         const { openProjects } = application;
-        
+
         const workflowItemIds = activeWorkflowGroup.items
             .filter(item => item.type === 'Workflow')
             .map(item => item.id);

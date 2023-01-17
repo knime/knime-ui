@@ -38,10 +38,11 @@ export default {
 
     computed: {
         ...mapState('spaces', {
+            startItemId: state => state.activeSpace?.startItemId,
             activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
             spaceId: state => state.activeSpace?.spaceId
         }),
-        ...mapGetters('spaces', ['openedWorkflowItems']),
+        ...mapGetters('spaces', ['openedWorkflowItems', 'pathToItemId']),
 
         fileExplorerItems() {
             return this.activeWorkflowGroup.items.map(item => ({
@@ -90,8 +91,16 @@ export default {
         }
     },
 
+    watch: {
+        async startItemId(newStartItemId, oldStartItemId) {
+            if (newStartItemId && newStartItemId !== oldStartItemId) {
+                await this.fetchWorkflowGroupContent(this.startItemId || 'root');
+            }
+        }
+    },
+
     async created() {
-        await this.fetchWorkflowGroupContent('root');
+        await this.fetchWorkflowGroupContent(this.startItemId || 'root');
     },
 
     methods: {
@@ -122,6 +131,8 @@ export default {
             await this.$store.dispatch('spaces/changeDirectory', { pathId });
 
             this.setLoading(false);
+
+            this.$emit('item-changed', this.pathToItemId(pathId));
         },
 
         onCreateWorkflow() {
