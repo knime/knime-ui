@@ -13,8 +13,8 @@ export default {
     computed: {
         ...mapState('spaces', ['spaceBrowser'])
     },
-    async beforeMount() {
-        console.log('beforeMount load browser state', this.spaceBrowser, this.activeProjectId);
+    async created() {
+        console.log('created load browser state', this.spaceBrowser, this.activeProjectId);
         if (this.spaceBrowser.spaceId) {
             await this.$store.dispatch('spaces/loadSpaceBrowserState');
         }

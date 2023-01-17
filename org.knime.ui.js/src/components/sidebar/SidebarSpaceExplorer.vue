@@ -8,7 +8,7 @@ export default {
     },
     computed: {
         ...mapState('application', ['openProjects', 'activeProjectId']),
-        ...mapState('spaces', ['lastItemForProject']),
+        ...mapState('spaces', ['lastItemForProject', 'activeSpace']),
         ...mapGetters('spaces', ['currentWorkflowGroupId']),
 
         activeProjectOrigin() {
@@ -31,10 +31,11 @@ export default {
             if (!this.activeProjectOrigin) {
                 return;
             }
+            // current space is the same as the space of the open project
+            const sameSpace = this.activeProjectOrigin.spaceId === this.activeSpace?.spaceId &&
+                    this.activeProjectOrigin.providerId === this.activeSpaceProvider?.id;
             // load spaces state state
-            if (this.activeProjectOrigin.providerId) {
-                this.$store.commit('spaces/setActiveSpaceProviderById', this.activeProjectOrigin.providerId);
-            }
+            this.$store.commit('spaces/setActiveSpaceProviderById', this.activeProjectOrigin.providerId);
             this.$store.commit('spaces/setActiveSpaceId', this.activeProjectOrigin.spaceId);
 
             const lastItemId = this.lastItemForProject[this.activeProjectId];
@@ -42,8 +43,13 @@ export default {
                 this.$store.commit('spaces/setStartItemId', lastItemId);
             } else {
                 // we need to set something otherwise the old item will stay (and might be of a different space)
-                this.$store.commit('spaces/setStartItemId', this.currentWorkflowGroupId);
+                // same space, so we can use the current itemId
+                let startItemId = sameSpace ? this.currentWorkflowGroupId : 'root';
+
+                this.$store.commit('spaces/setStartItemId', startItemId);
+                this.$store.dispatch('spaces/saveCurrentItemForProject', { itemId: startItemId });
                 // TODO: this needs to be implemented by the backend in https://knime-com.atlassian.net/browse/NXT-1432
+                //       and can then replace the workaround above
                 // this.$store.commit('spaces/setStartItemId', this.activeProjectOrigin.parentItems[1]);
             }
         },
