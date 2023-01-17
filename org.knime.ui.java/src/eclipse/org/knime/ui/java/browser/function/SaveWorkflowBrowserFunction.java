@@ -196,10 +196,16 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
         }
 
         // Save the workflow preview SVG
-        try {
-            Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg, StandardCharsets.UTF_8);
-        } catch (IllegalArgumentException | IOException | UnsupportedOperationException | SecurityException e) {
-            showWarningAndLogError("SVG save attempt", "Saving the SVG didn't work", LOGGER, e);
+        if (svg == null) {
+            showWarning("Failed to save workflow preview",
+                String.format("The workflow preview (svg) couldn't be saved for workflow %s", wfm.getName()));
+        } else {
+            try {
+                Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg,
+                    StandardCharsets.UTF_8);
+            } catch (IllegalArgumentException | IOException | UnsupportedOperationException | SecurityException e) {
+                showWarningAndLogError("SVG save attempt", "Saving the SVG didn't work", LOGGER, e);
+            }
         }
     }
 
