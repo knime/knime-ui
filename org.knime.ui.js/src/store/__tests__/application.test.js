@@ -741,6 +741,7 @@ describe('application store', () => {
         });
     });
 
+    // TODO NXT-1437
     describe('workflow preview snapshot', () => {
         const getSnapshotKeys = (_store) => Array.from(_store.state.application.rootWorkflowSnapshots.keys());
 

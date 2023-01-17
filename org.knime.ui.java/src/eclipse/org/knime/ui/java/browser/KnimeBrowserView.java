@@ -485,6 +485,11 @@ public class KnimeBrowserView implements ISaveablePart2 {
     @Override
     public int promptToSaveOnClose() {
         if (m_saveAndCloseAllWorkflows != null && !PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            // This is being called by the eclipse framework before this view is disposed (usually only on shutdown).
+            // And before it's disposed, we need to ask the user to save (and save) all the workflows (or abort
+            // the shutdown, if the user cancels). And that's what the runnable is doing what we call here.
+            // If the classic perspective is loaded, means that there are open WorkflowEditor(s) which take care
+            // themselves of saving the workflows on shutdown.
             return m_saveAndCloseAllWorkflows.getAsBoolean() ? YES : CANCEL;
         } else {
             return NO;

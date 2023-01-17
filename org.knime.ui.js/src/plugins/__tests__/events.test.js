@@ -147,9 +147,11 @@ describe('Event Plugin', () => {
                 );
             });
 
+            // TODO NXT-1437
             it.todo('should clear the application busy state');
         });
         
+        // TODO NXT-1437
         describe('SaveAndCloseWorkflowsEvent', () => {
             it.todo('should set the application busy state');
 

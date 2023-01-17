@@ -108,13 +108,18 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
     }
 
     /**
-     * {@inheritDoc}
+     * @param projectIdsAndSvgsAndMore array containing the project-ids and svgs of the projects to save. The very first
+     *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
+     *            by n svg-strings. And there is one last string at the very end describing the action to be carried out
+     *            after the workflows have been saved ('PostWorkflowCloseAction').
      */
     @Override
-    public Object function(final Object[] arguments) { // NOSONAR
-        var count = ((Double)arguments[0]).intValue();
+    public Object function(final Object[] projectIdsAndSvgsAndMore) { // NOSONAR
+        var count = ((Double)projectIdsAndSvgsAndMore[0]).intValue();
         var firstFailure = new AtomicReference<String>();
-        saveWorkflowsWithProgressBar(arguments, count, firstFailure);
+        var projectIds = Arrays.copyOfRange(projectIdsAndSvgsAndMore, 1, count + 1, String[].class);
+        var svgs = Arrays.copyOfRange(projectIdsAndSvgsAndMore, count + 1, count * 2 + 1, String[].class);
+        saveWorkflowsWithProgressBar(projectIds, svgs, firstFailure);
 
         if (firstFailure.get() != null) {
             MessageDialog.openWarning(SWTUtilities.getActiveShell(), "Failed to save workflow",
@@ -125,7 +130,7 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
             return null;
         }
 
-        var postWorkflowCloseAction = PostWorkflowCloseAction.valueOf((String)arguments[count * 2 + 1]);
+        var postWorkflowCloseAction = PostWorkflowCloseAction.valueOf((String)projectIdsAndSvgsAndMore[count * 2 + 1]);
         switch (postWorkflowCloseAction) {
             case SWITCH_PERSPECTIVE:
                 SwitchToJavaUIBrowserFunction.switchToJavaUI();
@@ -170,9 +175,9 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
         }
     }
 
-    private void saveWorkflowsWithProgressBar(final Object[] arguments, final int count,
+    private void saveWorkflowsWithProgressBar(final String[] projectIds, final String[] svgs,
         final AtomicReference<String> firstFailure) {
-        IRunnableWithProgress saveRunnable = monitor -> saveWorkflows(arguments, count, firstFailure, monitor);
+        IRunnableWithProgress saveRunnable = monitor -> saveWorkflows(projectIds, svgs, firstFailure, monitor);
         try {
             var ps = PlatformUI.getWorkbench().getProgressService();
             ps.run(true, false, saveRunnable);
@@ -184,12 +189,12 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
         }
     }
 
-    private static void saveWorkflows(final Object[] arguments, final int count,
+    private static void saveWorkflows(final String[] projectIds, final String[] svgs,
         final AtomicReference<String> firstFailure, final IProgressMonitor monitor) {
-        monitor.beginTask("Saving " + count + " workflows", count);
-        for (var i = 1; i <= count; i++) {
-            var projectId = (String)arguments[i];
-            var projectSVG = (String)arguments[count + i];
+        monitor.beginTask("Saving " + projectIds.length + " workflows", projectIds.length);
+        for (var i = 0; i < projectIds.length; i++) {
+            var projectId = projectIds[i];
+            var projectSVG = svgs[i];
             var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
             var success = saveAndCloseWorkflow(monitor, projectId, projectSVG, projectWfm);
             if (!success) {

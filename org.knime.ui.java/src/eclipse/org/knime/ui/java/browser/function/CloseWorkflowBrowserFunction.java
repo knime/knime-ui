@@ -46,6 +46,8 @@
  */
 package org.knime.ui.java.browser.function;
 
+import static org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.saveAndCloseWorkflowsInteractively;
+
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -111,6 +113,7 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
             if (closed) {
                 m_appStateProvider.updateAppState();
             }
+            return closed;
         }
     }
 
