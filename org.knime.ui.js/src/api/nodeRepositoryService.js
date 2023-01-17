@@ -78,6 +78,7 @@ export const searchNodes = async (
  * @param {Number|null} portIdx - The port index of the source node we want recommendations for (optional)
  * @param {Number} nodesLimit - The maximum number of node recommendations to return
  * @param {Boolean} fullTemplateInfo - Whether to return the full template info or just some basic infos
+ * @param {Boolean} includeAll - if true, all nodes/components will be included in the recommendation result.
  * @returns {Object} the recommendation results
  */
 export const getNodeRecommendations = async ({
@@ -86,7 +87,8 @@ export const getNodeRecommendations = async ({
     nodeId,
     portIdx,
     nodesLimit,
-    fullTemplateInfo
+    fullTemplateInfo,
+    includeAll
 }) => {
     try {
         const recommendations = await rpc(
@@ -96,7 +98,8 @@ export const getNodeRecommendations = async ({
             nodeId,
             portIdx,
             nodesLimit,
-            fullTemplateInfo
+            fullTemplateInfo,
+            includeAll
         );
 
         return recommendations;

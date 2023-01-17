@@ -51,7 +51,8 @@ describe('QuickAddNodeMenu.vue', () => {
 
     const doMount = ({
         addNodeMock = jest.fn(),
-        isWriteableMock = jest.fn().mockReturnValue(true)
+        isWriteableMock = jest.fn().mockReturnValue(true),
+        nodeRepoFilterEnabled = false
     } = {}) => {
         let propsData = {
             nodeId: 'node-id',
@@ -82,7 +83,8 @@ describe('QuickAddNodeMenu.vue', () => {
                             color: 'blue'
                         }
                     },
-                    hasNodeRecommendationsEnabled: true
+                    hasNodeRecommendationsEnabled: true,
+                    nodeRepoFilterEnabled
                 }
             },
             workflow: {
@@ -230,6 +232,16 @@ describe('QuickAddNodeMenu.vue', () => {
             await Vue.nextTick();
 
             expect(wrapper.find('.placeholder').exists()).toBe(true);
+        });
+
+        it('get all node recommendations', () => {
+            doMount();
+            expect(getNodeRecommendations).toHaveBeenCalledWith(expect.objectContaining({ includeAll: true }));
+        });
+
+        it('get filtered node recommendations', () => {
+            doMount({ nodeRepoFilterEnabled: true });
+            expect(getNodeRecommendations).toHaveBeenCalledWith(expect.objectContaining({ includeAll: false }));
         });
     });
 });
