@@ -106,6 +106,7 @@ export const actions = {
             commit('setActiveSpaceProviderById', state.spaceBrowser.spaceProviderId);
             commit('setActiveSpaceId', state.spaceBrowser.spaceId);
             commit('setStartItemId', state.spaceBrowser.itemId || 'root');
+            commit('setActiveWorkflowGroupData', null);
         }
     },
 

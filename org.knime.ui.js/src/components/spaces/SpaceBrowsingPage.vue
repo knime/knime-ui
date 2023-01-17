@@ -3,6 +3,8 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import SpaceExplorer from './SpaceExplorer.vue';
 import { mapState } from 'vuex';
+import { APP_ROUTES } from '@/router';
+
 
 export default {
     components: {
@@ -18,15 +20,16 @@ export default {
         if (this.spaceBrowser.spaceId) {
             await this.$store.dispatch('spaces/loadSpaceBrowserState');
         }
-        // clear data
-        this.$store.commit('spaces/setActiveWorkflowGroupData', null);
-        // TODO: clear on back: this.$store.commit('spaces/clearSpaceBrowserState');
     },
     methods: {
         async onItemChanged(itemId) {
             // remember current path
             console.log('SpaceBrowsingPage item changed save state', itemId);
             await this.$store.dispatch('spaces/saveSpaceBrowserState', { itemId });
+        },
+        async onBackButtonClick() {
+            this.$store.commit('spaces/clearSpaceBrowserState');
+            await this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
         }
     }
 };
@@ -37,6 +40,7 @@ export default {
     <PageHeader
       title="Your Local Space"
       subtitle="Local space"
+      @click.native="onBackButtonClick"
     >
       <template #icon>
         <ComputerDesktopIcon />

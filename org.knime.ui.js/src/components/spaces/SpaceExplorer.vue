@@ -92,17 +92,15 @@ export default {
     },
 
     watch: {
-        async startItemId(newStartItemId, oldStartItemId) {
-            console.log('startItemId changed', newStartItemId);
-            if (newStartItemId && newStartItemId !== oldStartItemId) {
-                await this.fetchWorkflowGroupContent(newStartItemId);
-            }
+        activeWorkflowGroup: {
+            async handler(newData, oldData) {
+                console.log('activeWorkflowGroup is null fetch again', this.startItemId);
+                if (newData === null && oldData !== null) {
+                    await this.fetchWorkflowGroupContent(this.startItemId || 'root');
+                }
+            },
+            immediate: true
         }
-    },
-
-    async created() {
-        console.log('SpaceExplorer created', this.startItemId);
-        await this.fetchWorkflowGroupContent(this.startItemId || 'root');
     },
 
     methods: {
