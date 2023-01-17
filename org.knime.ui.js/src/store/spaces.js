@@ -101,15 +101,12 @@ export const actions = {
         });
     },
 
-    loadSpaceBrowserState({ commit, dispatch, state }) {
-        if (!state.spaceBrowser.spaceProviderId && !state.spaceBrowser.spaceId) {
-            return null;
+    loadSpaceBrowserState({ commit, state }) {
+        if (state.spaceBrowser.spaceProviderId && state.spaceBrowser.spaceId) {
+            commit('setActiveSpaceProviderById', state.spaceBrowser.spaceProviderId);
+            commit('setActiveSpaceId', state.spaceBrowser.spaceId);
+            commit('setStartItemId', state.spaceBrowser.itemId || 'root');
         }
-        commit('setActiveSpaceProviderById', state.spaceBrowser.spaceProviderId);
-        commit('setActiveSpaceId', state.spaceBrowser.spaceId);
-        const itemId = state.spaceBrowser.itemId || 'root';
-        commit('setStartItemId', itemId);
-        return dispatch('fetchWorkflowGroupContent', { itemId });
     },
 
     async fetchAllSpaceProviders({ commit, dispatch, state }) {

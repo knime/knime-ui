@@ -31,9 +31,13 @@ export default {
             if (!this.activeProjectOrigin) {
                 return;
             }
+            // clear data
+            this.$store.commit('spaces/setActiveWorkflowGroupData', null);
+
             // current space is the same as the space of the open project
             const sameSpace = this.activeProjectOrigin.spaceId === this.activeSpace?.spaceId &&
                     this.activeProjectOrigin.providerId === this.activeSpaceProvider?.id;
+
             // load spaces state state
             this.$store.commit('spaces/setActiveSpaceProviderById', this.activeProjectOrigin.providerId);
             this.$store.commit('spaces/setActiveSpaceId', this.activeProjectOrigin.spaceId);

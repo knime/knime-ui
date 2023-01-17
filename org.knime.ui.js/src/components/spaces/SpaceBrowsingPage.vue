@@ -18,6 +18,8 @@ export default {
         if (this.spaceBrowser.spaceId) {
             await this.$store.dispatch('spaces/loadSpaceBrowserState');
         }
+        // clear data
+        this.$store.commit('spaces/setActiveWorkflowGroupData', null);
         // TODO: clear on back: this.$store.commit('spaces/clearSpaceBrowserState');
     },
     methods: {
