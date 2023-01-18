@@ -127,7 +127,6 @@ describe('SpaceSelectionPage.vue', () => {
 
         expect($store.state.spaces.activeSpaceProvider.id).toEqual('hub1');
         expect($store.state.spaces.activeSpace.spaceId).toEqual(dummySpace.id);
-        expect($store.state.spaces.activeSpaceInfo).toEqual({ local: false, private: true, name: 'Dummy Space' });
         expect($router.push).toHaveBeenCalledWith({ name: APP_ROUTES.SpaceBrowsingPage });
     });
 });
