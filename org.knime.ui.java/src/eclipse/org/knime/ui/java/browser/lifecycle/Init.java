@@ -52,13 +52,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.BooleanSupplier;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.util.ExtPointUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.InvalidRequestException;
 import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
+import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
@@ -75,6 +78,7 @@ import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.ConnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.DisconnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.EmitUpdateAvailableEventForTestingBrowserFunction;
+import org.knime.ui.java.browser.function.EnsureWorkflowIsLoadedBrowserFunction;
 import org.knime.ui.java.browser.function.GetSpaceProvidersBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.OpenAboutDialogBrowserFunction;
@@ -90,8 +94,9 @@ import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
 import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
+import org.knime.ui.java.util.AppStatePersistor;
+import org.knime.ui.java.util.ClassicEclipseUtil;
 import org.knime.ui.java.util.DefaultServicesUtil;
-import org.knime.ui.java.util.EclipseUIStateUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
 import com.equo.chromium.swt.Browser;
@@ -106,7 +111,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class Init {
+final class Init {
 
     private static final String SPACE_PROVIDERS_EXTENSION_ID = "org.knime.ui.java.SpaceProviders";
 
@@ -114,19 +119,16 @@ public final class Init {
         //
     }
 
-    /**
-     * Runs the phase.
-     *
-     * @param appStateSupplier
-     * @param browser
-     * @return the new state
-     */
-    public static LifeCycleState runPhase(final Supplier<AppState> appStateSupplier, final Browser browser) {
+    static LifeCycleState runPhase(final Supplier<AppState> appStateSupplier, final Browser browser) {
+        if (appStateSupplier == null) {
+            AppStatePersistor.loadAppState();
+        }
 
         // Create and set default service dependencies
         var eventConsumer = createEventConsumer();
-        var appStateProvider = new AppStateProvider(appStateSupplier);
-        var updateStateProvider = new UpdateStateProvider(EclipseUIStateUtil::checkForUpdate);
+        var appStateProvider = new AppStateProvider(
+            appStateSupplier == null ? AppStateDerivedFromWorkflowProjectManager::new : appStateSupplier);
+        var updateStateProvider = new UpdateStateProvider(ClassicEclipseUtil::checkForUpdate);
         var spaceProviders = createSpaceProviders();
         DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer, spaceProviders,
             updateStateProvider);
@@ -144,8 +146,9 @@ public final class Init {
             initBrowserFunctions(browser, appStateProvider, spaceProviders, updateStateProvider, eventConsumer);
 
         return new LifeCycleState() {
+
             @Override
-            public BooleanSupplier saveAndCloseAllWorkflows() {
+            public IntSupplier saveAndCloseAllWorkflows() {
                 return () -> {
                     var projectIds = WorkflowProjectManager.getInstance().getWorkflowProjectsIds();
                     return SaveAndCloseWorkflowsBrowserFunction.saveAndCloseWorkflowsInteractively(projectIds,
@@ -240,12 +243,51 @@ public final class Init {
         functions.add(new ConnectSpaceProviderBrowserFunction(browser, spaceProviders));
         functions.add(new DisconnectSpaceProviderBrowserFunction(browser, spaceProviders));
         functions.add(new SaveAndCloseWorkflowsBrowserFunction(browser, appStateProvider));
+        functions.add(new EnsureWorkflowIsLoadedBrowserFunction(browser));
         if (SharedConstants.isRemoteDebuggingPortSet()) {
             functions.add(new InitAppForTestingBrowserFunction(browser));
             functions.add(new ClearAppForTestingBrowserFunction(browser));
             functions.add(new EmitUpdateAvailableEventForTestingBrowserFunction(browser, updateStateProvider));
         }
         return () -> functions.stream().forEach(fct -> fct.dispose(true));
+    }
+
+    private static class AppStateDerivedFromWorkflowProjectManager implements AppState {
+
+        private final List<OpenedWorkflow> m_openedWorkflows;
+
+        AppStateDerivedFromWorkflowProjectManager() {
+            var wpm = WorkflowProjectManager.getInstance();
+            m_openedWorkflows = wpm.getWorkflowProjectsIds().stream()
+                .map(id -> toOpenedWorkflow(wpm.getWorkflowProject(id).orElseThrow(), wpm.isActiveWorkflowProject(id)))
+                .collect(Collectors.toList());
+        }
+
+        @Override
+        public List<OpenedWorkflow> getOpenedWorkflows() {
+            return m_openedWorkflows;
+        }
+
+        private static AppState.OpenedWorkflow toOpenedWorkflow(final WorkflowProject wp, final boolean isVisible) {
+            return new AppState.OpenedWorkflow() {
+
+                @Override
+                public boolean isVisible() {
+                    return isVisible;
+                }
+
+                @Override
+                public String getWorkflowId() {
+                    return NodeIDEnt.getRootID().toString();
+                }
+
+                @Override
+                public String getProjectId() {
+                    return wp.getID();
+                }
+            };
+        }
+
     }
 
 }

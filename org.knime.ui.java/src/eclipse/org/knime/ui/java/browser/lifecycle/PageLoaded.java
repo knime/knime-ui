@@ -71,19 +71,14 @@ import com.equo.chromium.swt.Browser;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class PageLoaded {
+final class PageLoaded {
 
     private PageLoaded() {
         //
     }
 
-    /**
-     * Runs this phase.
-     *
-     * @param browser
-     */
-    public static void runPhase(final Browser browser) {
-       initializeJSBrowserCommunication(browser);
+    static void runPhase(final Browser browser) {
+        initializeJSBrowserCommunication(browser);
     }
 
     private static void initializeJSBrowserCommunication(final Browser browser) {

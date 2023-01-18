@@ -50,8 +50,6 @@ package org.knime.ui.java.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
@@ -70,7 +68,6 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
-import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
@@ -90,56 +87,27 @@ import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
-import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
-import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 /**
- * Utility methods to deal with the state of the Eclipse UI.
+ * Utility methods around the classic {@link WorkflowEditor}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Kai Franze, KNIME GmbH
  */
 @SuppressWarnings("restriction") // Accessing Eclipse-internal APIs
-public final class EclipseUIStateUtil {
+public final class ClassicWorkflowEditorUtil {
 
     /**
      * The part ID of a workflow editor in the Eclipse UI.
      */
     private static final String WORKFLOW_EDITOR_PART_ID = "org.eclipse.e4.ui.compatibility.editor";
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(EclipseUIStateUtil.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(ClassicWorkflowEditorUtil.class);
 
-    private EclipseUIStateUtil() {
+    private ClassicWorkflowEditorUtil() {
         // utility class
-    }
-
-    /**
-     * Checks for release and bugfix updates for the AP.
-     *
-     * @return The state of the AP in terms of {@link UpdateState}.
-     */
-    public static UpdateState checkForUpdate() {
-        List<UpdateInfo> newReleases = new ArrayList<>();
-        List<String> bugfixes = new ArrayList<>();
-        try {
-            UpdateDetector.checkForNewRelease().forEach(newReleases::add);
-            UpdateDetector.checkForBugfixes().forEach(bugfixes::add);
-        } catch (IOException | URISyntaxException e) {
-            LOGGER.error("Could not check for updates", e);
-        }
-        return new UpdateState() {
-            @Override
-            public List<UpdateInfo> getNewReleases() {
-                return newReleases;
-            }
-
-            @Override
-            public List<String> getBugfixes() {
-                return bugfixes;
-            }
-        };
     }
 
     /**
@@ -165,7 +133,7 @@ public final class EclipseUIStateUtil {
     private static Pair<WorkflowProject, OpenedWorkflow>
         createOpenedWorkflowAndWorkflowProject(final MPart editorPart) {
         var wfm = getWorkflowManager(editorPart);
-        var projectWfm = wfm.flatMap(EclipseUIStateUtil::getProjectManager);
+        var projectWfm = wfm.flatMap(ClassicWorkflowEditorUtil::getProjectManager);
         return zipOptional(wfm, projectWfm) //
             .map(pair -> createOpenedWorkflowAndWorkflowProject(pair.getFirst(), pair.getSecond(), editorPart)) //
             .orElse(null);
@@ -211,7 +179,7 @@ public final class EclipseUIStateUtil {
     private static List<OpenedWorkflow> collectOpenedWorkflows(final EModelService modelService,
         final MApplication app) {
         List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
-        var workflows = editorParts.stream().map(EclipseUIStateUtil::createOpenedWorkflowAndWorkflowProject) //
+        var workflows = editorParts.stream().map(ClassicWorkflowEditorUtil::createOpenedWorkflowAndWorkflowProject) //
             .filter(Objects::nonNull);
 
         var resolved = resolveDuplicates(workflows,

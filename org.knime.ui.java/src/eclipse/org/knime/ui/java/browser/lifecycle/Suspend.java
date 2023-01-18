@@ -56,27 +56,24 @@ import org.knime.ui.java.util.DefaultServicesUtil;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class Suspend {
+final class Suspend {
 
     private Suspend() {
         //
     }
 
-    /**
-     * Runs the phase.
-     *
-     * @param state
-     *
-     * @return the new state
-     */
-    public static LifeCycleState runPhase(final LifeCycleState state) {
+    static LifeCycleState runPhase(final LifeCycleState state) {
         var removeAndDisposeAllBrowserFunctions = state.removeAndDisposeAllBrowserFunctions();
         if (removeAndDisposeAllBrowserFunctions != null) {
             removeAndDisposeAllBrowserFunctions.run();
         }
         DefaultServicesUtil.disposeDefaultServices();
         return new LifeCycleState() {
-            //
+
+            @Override
+            public String serializedAppState() {
+                return state.serializedAppState();
+            }
         };
     }
 

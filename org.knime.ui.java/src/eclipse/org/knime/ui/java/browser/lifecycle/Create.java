@@ -66,7 +66,7 @@ import org.knime.ui.java.browser.KnimeBrowserView;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class Create {
+final class Create {
 
     private static final String BASE_PATH = "dist";
 
@@ -74,10 +74,7 @@ public final class Create {
         //
     }
 
-    /**
-     * Runs the phase.
-     */
-    public static void runPhase() {
+    static void runPhase() {
         PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
 
         // In order for the mechanism to block external requests to work (see CEFPlugin-class)

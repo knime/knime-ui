@@ -43,10 +43,38 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
+ * History
+ *   Jan 17, 2023 (hornm): created
  */
+package org.knime.ui.java.browser.function;
+
+import org.knime.gateway.impl.project.WorkflowProjectManager;
+
+import com.equo.chromium.swt.Browser;
+import com.equo.chromium.swt.BrowserFunction;
+
 /**
- * Lifecycle-phases for the KNIME-UI. Each lifecycle-phase carries out certain task required in that phase. This is the
- * lifecycle phase order: <br>
- * Create -> Init -> PageLoaded -> PreSuspend -> Suspend -> Shutdown
+ * Ensures that a workflow for a given project id is already loaded (in memory). And loads it if not.
+ *
+ * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-package org.knime.ui.java.browser.lifecycle;
+public class EnsureWorkflowIsLoadedBrowserFunction extends BrowserFunction {
+
+    /**
+     * @param browser
+     */
+    public EnsureWorkflowIsLoadedBrowserFunction(final Browser browser) {
+        super(browser, "ensureWorkflowIsLoaded");
+    }
+
+    /**
+     * @param arguments contains the project-id at position 0
+     */
+    @Override
+    public Object function(final Object[] arguments) {
+        var projectId = (String)arguments[0];
+        WorkflowProjectManager.getInstance().openAndCacheWorkflow(projectId);
+        return null;
+    }
+
+}

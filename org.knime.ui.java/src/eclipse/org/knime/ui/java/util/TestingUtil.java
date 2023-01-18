@@ -125,7 +125,7 @@ public final class TestingUtil {
     private static WorkflowManager loadWorkflowForTesting(final AppState.OpenedWorkflow workflow) {
         var file = getProjectFile(workflow);
         try {
-            WorkflowManager wfm = EclipseUIStateUtil.loadTempWorkflow(file);
+            WorkflowManager wfm = ClassicWorkflowEditorUtil.loadTempWorkflow(file);
             if (loadedWorkflowsForTesting == null) {
                 loadedWorkflowsForTesting = new HashSet<>();
             }

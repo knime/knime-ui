@@ -48,6 +48,9 @@
  */
 package org.knime.ui.java.browser.function;
 
+import static org.knime.ui.java.util.ClassicEclipseUtil.showWarning;
+import static org.knime.ui.java.util.ClassicEclipseUtil.showWarningAndLogError;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -60,7 +63,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -71,11 +73,10 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
-import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
-import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
@@ -111,7 +112,7 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
             // For at least as long as new frontend is integrated in "old" knime eclipse workbench,
             // we want a save action triggered from new frontend to be consistent with one triggered
             // from the traditional UI. The best thing we can do is trigger the exact same action.
-            WorkflowEditor editor = EclipseUIStateUtil.getOpenWorkflowEditor(projectWfm)
+            WorkflowEditor editor = ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm)
                 .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
             editor.doSave(new NullProgressMonitor());
             unmarkDirtyChildWorkflowEditors(projectWfm);
@@ -121,7 +122,7 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
                 showWarning("Workflow in execution", "Executing nodes are not saved!");
             } else {
                 saveWorkflowWithProgressBar(projectWfm, projectSVG);
-                EclipseUIStateUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
+                ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
                 unmarkDirtyChildWorkflowEditors(projectWfm);
             }
         }
@@ -218,20 +219,9 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
             return;
         }
         getChildWfms(wfm).stream()//
-            .map(EclipseUIStateUtil::getOpenWorkflowEditor)//
+            .map(ClassicWorkflowEditorUtil::getOpenWorkflowEditor)//
             .flatMap(Optional::stream) // unpack/collapse optionals
             .forEach(WorkflowEditor::unmarkDirty);
-    }
-
-    private static void showWarning(final String title, final String message) {
-        var sh = SWTUtilities.getActiveShell();
-        MessageDialog.openWarning(sh, title, message);
-    }
-
-    static void showWarningAndLogError(final String title, final String message, final NodeLogger logger,
-        final Exception e) {
-        logger.error(title + ": " + message, e);
-        showWarning(title, message);
     }
 
     private static class CheckCancelNodeProgressMonitor extends DefaultNodeProgressMonitor {

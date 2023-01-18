@@ -50,6 +50,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -132,6 +133,7 @@ public final class LocalSpaceUtil {
             // Only support workflows in the local space for the time being.
             return Optional.empty();
         }
+        var path = ctx.getExecutorInfo().getLocalWorkflowPath();
         return Optional.of(new WorkflowProject.Origin() {
             @Override
             public String getProviderId() {
@@ -145,8 +147,12 @@ public final class LocalSpaceUtil {
 
             @Override
             public String getItemId() {
-                var path = ctx.getExecutorInfo().getLocalWorkflowPath();
-                return getLocalWorkspace().getItemIdFunction().apply(path);
+                return getLocalWorkspace().getItemId(path);
+            }
+
+            @Override
+            public Optional<String> getRelativePath() {
+                return Optional.of(path.toString());
             }
         });
     }
@@ -172,8 +178,21 @@ public final class LocalSpaceUtil {
 
             @Override
             public String getItemId() {
-                return getLocalWorkspace().getItemIdFunction().apply(path);
+                return getLocalWorkspace().getItemId(path);
+            }
+
+            @Override
+            public Optional<String> getRelativePath() {
+                return Optional.of(path.toString());
             }
         };
+    }
+
+    /**
+     * @param projectName
+     * @return a globally unique project id combined with the given project name
+     */
+    public static String getUniqueProjectId(final String projectName) {
+        return projectName + "_" + UUID.randomUUID();
     }
 }

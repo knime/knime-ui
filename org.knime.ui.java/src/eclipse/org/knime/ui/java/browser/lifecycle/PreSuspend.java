@@ -48,8 +48,9 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.BooleanSupplier;
+import java.util.function.IntSupplier;
 
+import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
@@ -57,38 +58,41 @@ import org.knime.ui.java.util.PerspectiveUtil;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class PreSuspend {
+final class PreSuspend {
 
     private PreSuspend() {
         //
     }
 
-    /**
-     * Runs the phase.
-     *
-     * @param state
-     *
-     * @return the new state
-     */
-    public static LifeCycleState runPhase(final LifeCycleState state) {
-        var saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
-        assert saveAndCloseAllWorkflows != null;
-        boolean workflowsSuccessfullySaved;
-        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            workflowsSuccessfullySaved = saveAndCloseAllWorkflows.getAsBoolean();
+    static LifeCycleState runPhase(final LifeCycleState state) {
+        IntSupplier saveAndCloseAllWorkflows;
+        boolean workflowsSaved;
+        var serializedAppState = AppStatePersistor.serializeAppState();
+        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            // nothing we need to do here because the (in the classic UI) opened WorkflowEditor(s) take care
+            // of saving the opened workflow projects on shutdown
+            saveAndCloseAllWorkflows = null;
+            workflowsSaved = true;
         } else {
-            workflowsSuccessfullySaved = true;
+            saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
+            workflowsSaved = saveAndCloseAllWorkflows.getAsInt() > 0;
         }
 
         return new LifeCycleState() {
+
             @Override
-            public boolean workflowsSuccessfullySaved() {
-                return workflowsSuccessfullySaved;
+            public boolean workflowsSaved() {
+                return workflowsSaved;
             }
 
             @Override
-            public BooleanSupplier saveAndCloseAllWorkflows() {
-                return workflowsSuccessfullySaved ? null : saveAndCloseAllWorkflows;
+            public IntSupplier saveAndCloseAllWorkflows() {
+                return saveAndCloseAllWorkflows;
+            }
+
+            @Override
+            public String serializedAppState() {
+                return serializedAppState;
             }
         };
     }

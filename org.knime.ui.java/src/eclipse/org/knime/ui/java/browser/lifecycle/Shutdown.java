@@ -48,45 +48,25 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.IntSupplier;
-
-import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
+import org.knime.ui.java.util.AppStatePersistor;
 
 /**
- * A state passed to and returned by lifecycle phases in order to exchange information.
+ * The shutdown lifecycle-phase of the KNIME-UI. The {@link Suspend}-phase must have been run first.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-interface LifeCycleState {
+public final class Shutdown {
 
-    /**
-     * @return whether workflows have been saved successfully. Manipulated in the {@link PreSuspend}-phase.
-     */
-    default boolean workflowsSaved() {
-        return false;
+    private Shutdown() {
+        //
     }
 
     /**
-     * @return the logic which saves and closes all workflows; see
-     *         {@link SaveAndCloseWorkflowsBrowserFunction#saveAndCloseWorkflowsInteractively(java.util.Set, org.knime.gateway.impl.service.util.EventConsumer, org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction)}
-     *         for documentation on the result
+     * Runs the phase.
+     *
+     * @param state
      */
-    default IntSupplier saveAndCloseAllWorkflows() {
-        return null;
+    public static void runPhase(final LifeCycleState state) {
+        AppStatePersistor.saveAppState(state.serializedAppState());
     }
-
-    /**
-     * @return the logic which removes and disposes all browser functions
-     */
-    default Runnable removeAndDisposeAllBrowserFunctions() {
-        return null;
-    }
-
-    /**
-     * @return the app state serialized into a string
-     */
-    default String serializedAppState() {
-        return null;
-    }
-
 }

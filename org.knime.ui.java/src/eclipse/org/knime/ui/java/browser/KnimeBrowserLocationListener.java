@@ -54,7 +54,7 @@ import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.ui.java.browser.lifecycle.PageLoaded;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
 
 import com.equo.chromium.swt.Browser;
 
@@ -89,7 +89,7 @@ public class KnimeBrowserLocationListener implements LocationListener {
     @Override
     public void changed(final LocationEvent event) {
         if (isAppPage(event.location) || isDevPage(event.location)) {
-            PageLoaded.runPhase(m_browser);
+            LifeCycle.get().pageLoaded(m_browser);
         }
     }
 

@@ -2,9 +2,7 @@ package org.knime.ui.java.browser;
 
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
-import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -19,16 +17,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISaveablePart2;
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.ui.java.browser.lifecycle.Create;
-import org.knime.ui.java.browser.lifecycle.Init;
-import org.knime.ui.java.browser.lifecycle.LifeCycleState;
-import org.knime.ui.java.browser.lifecycle.PreSuspend;
-import org.knime.ui.java.browser.lifecycle.Suspend;
-import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.Phase;
 
 import com.equo.chromium.swt.Browser;
 
@@ -64,8 +55,6 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
     private static Browser browser;
 
-    private static LifeCycleState lifeCycleState;
-
     /**
      * Activates the view initializer that will be executed as soon as this view becomes finally visible (again). Once
      * the view initializer has been executed, it will be de-activated (and would need to be activated again).
@@ -89,7 +78,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
     }
 
     private static void initView(final Supplier<AppState> appStateSupplier, final boolean ignoreEmptyPageAsDevUrl) {
-        lifeCycleState = Init.runPhase(appStateSupplier, browser); // NOSONAR
+        LifeCycle.get().init(appStateSupplier, browser); // NOSONAR
         setUrl(ignoreEmptyPageAsDevUrl);
     }
 
@@ -100,11 +89,12 @@ public class KnimeBrowserView implements ISaveablePart2 {
      * {@link #activateViewInitializer(Supplier)} or {@link #initViewForTesting(Supplier)}.
      */
     public static void clearView() {
-        if (browser != null && lifeCycleState != null) {
+        if (browser != null) {
             if (!browser.isDisposed()) {
                 browser.setUrl(EMPTY_PAGE);
             }
-            lifeCycleState = Suspend.runPhase(lifeCycleState);
+            LifeCycle.get().preSuspend();
+            LifeCycle.get().suspend();
             viewInitializer = null;
         }
     }
@@ -118,14 +108,14 @@ public class KnimeBrowserView implements ISaveablePart2 {
                 "Instance can't be created. There's only one instance of the KnimeBrowserView allowed.");
         }
 
-        Create.runPhase();
+        LifeCycle.get().create();
 
         browser = new Browser(parent, SWT.NONE); // NOSONAR
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
         browser.setMenu(new Menu(browser.getShell()));
 
         if (viewInitializer == null) {
-            activateViewInitializer(AppStateDerivedFromWorkflowProjectManager::new);
+            activateViewInitializer(null);
         }
     }
 
@@ -181,44 +171,6 @@ public class KnimeBrowserView implements ISaveablePart2 {
 		}
 	}
 
-	private static class AppStateDerivedFromWorkflowProjectManager implements AppState {
-
-        private final List<OpenedWorkflow> m_openedWorkflows;
-
-        AppStateDerivedFromWorkflowProjectManager() {
-            var wpm = WorkflowProjectManager.getInstance();
-            m_openedWorkflows = wpm.getWorkflowProjectsIds().stream()
-                .map(id -> toOpenedWorkflow(wpm.getWorkflowProject(id).orElseThrow(), wpm.isActiveWorkflowProject(id)))
-                .collect(Collectors.toList());
-        }
-
-        @Override
-        public List<OpenedWorkflow> getOpenedWorkflows() {
-            return m_openedWorkflows;
-        }
-
-        private static AppState.OpenedWorkflow toOpenedWorkflow(final WorkflowProject wp, final boolean isVisible) {
-            return new AppState.OpenedWorkflow() {
-
-                @Override
-                public boolean isVisible() {
-                    return isVisible;
-                }
-
-                @Override
-                public String getWorkflowId() {
-                    return NodeIDEnt.getRootID().toString();
-                }
-
-                @Override
-                public String getProjectId() {
-                    return wp.getID();
-                }
-            };
-        }
-
-	}
-
     @Override
     public void doSave(final IProgressMonitor monitor) {
         //
@@ -231,7 +183,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
     @Override
     public boolean isDirty() {
-        return true;
+        return LifeCycle.get().isBeforePhase(Phase.SUSPEND);
     }
 
     @Override
@@ -249,14 +201,9 @@ public class KnimeBrowserView implements ISaveablePart2 {
         // This is being called by the eclipse framework before this view is disposed (usually only on shutdown).
         // And before it's disposed, we need, e.g., to ask the user to save (and save) all the workflows (or abort
         // the shutdown, if the user cancels).
-        // If the classic perspective is loaded, means that there are open WorkflowEditor(s) which take care
-        // themselves of saving the workflows on shutdown.
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            return NO;
-        } else {
-            lifeCycleState = PreSuspend.runPhase(lifeCycleState); // NOSONAR
-            return lifeCycleState.workflowsSuccessfullySaved() ? YES : CANCEL;
-        }
+        LifeCycle.get().preSuspend();
+        // cancel if we didn't successfully transition to the next phase
+        return LifeCycle.get().isLastPhase(Phase.PRE_SUSPEND) ? YES : CANCEL;
     }
 
 }

@@ -46,15 +46,12 @@
  */
 package org.knime.ui.java.browser.function;
 
-import static org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction.showWarningAndLogError;
 import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.ui.PartInitException;
@@ -64,16 +61,14 @@ import org.eclipse.ui.internal.Workbench;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
-import org.knime.core.node.workflow.contextv2.LocalLocationInfo;
-import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.service.DefaultSpaceService;
+import org.knime.ui.java.util.ClassicEclipseUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
-import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.LocalExplorerFileStore;
@@ -115,13 +110,15 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
             LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID /* TODO NXT-1409 */);
         var localAbsolutePath = space.toLocalAbsolutePath(itemId);
         if (space instanceof LocalWorkspace) {
+            var localWorkspaceRoot = ((LocalWorkspace)space).getLocalWorkspaceRoot();
+            var relativePath = localWorkspaceRoot.relativize(localAbsolutePath);
             if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-                var localWorkspaceRoot = ((LocalWorkspace)space).getLocalWorkspaceRoot();
-                openWorkflowInClassicAndWebUIPerspective(localWorkspaceRoot.relativize(localAbsolutePath),
-                    m_appStateProvider);
+                openWorkflowInClassicAndWebUIPerspective(relativePath, m_appStateProvider);
             } else {
-                var onWorkflowLoaded = getWorkflowLoadedCallback(m_appStateProvider, spaceId, itemId);
-                openWorkflowInWebUIPerspectiveOnly(localAbsolutePath, onWorkflowLoaded);
+                ClassicEclipseUtil.openWorkflowInWebUIPerspectiveOnly(localAbsolutePath).ifPresent(wfm -> {
+                    registerWorkflowProject(wfm, spaceId, itemId, relativePath);
+                    m_appStateProvider.updateAppState();
+                });
             }
         } else {
             throw new UnsupportedOperationException(
@@ -131,47 +128,24 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         return null;
     }
 
-    private static void openWorkflowInWebUIPerspectiveOnly(final Path absoluteLocalPath,
-        final Consumer<WorkflowManager> onWorkflowLoaded) {
-        var workflowContext = WorkflowContextV2.builder()
-            .withAnalyticsPlatformExecutor(builder -> builder.withCurrentUserAsUserId() //
-                .withLocalWorkflowPath(absoluteLocalPath)) //
-            .withLocation(LocalLocationInfo.getInstance(null)) //
-            .build();
-        final var progressService = PlatformUI.getWorkbench().getProgressService();
-        var loadWorkflowRunnable = new LoadWorkflowRunnable(onWorkflowLoaded,
-            absoluteLocalPath.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile(), workflowContext);
-        try {
-            progressService.busyCursorWhile(loadWorkflowRunnable);
-        } catch (InvocationTargetException e) {
-            showWarningAndLogError("Opening workflow failed", e.getMessage(),
-                NodeLogger.getLogger(OpenWorkflowBrowserFunction.class), e);
-        } catch (InterruptedException e) {
-            NodeLogger.getLogger(OpenWorkflowBrowserFunction.class).warn("Opening workflow interrupted");
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    private static Consumer<WorkflowManager> getWorkflowLoadedCallback(final AppStateProvider appStateProvider,
-        final String spaceId, final String itemId) {
-        return wfm -> { // NOSONAR
-            var wpm = WorkflowProjectManager.getInstance();
-            var wfProj = createWorkflowProject(wfm, //
-                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, // TODO: parameterize w/ value provided by frontend; NXT-1409
-                spaceId, //
-                itemId //
-            );
-            var projectId = wfm.getNameWithID();
-            wpm.addWorkflowProject(projectId, wfProj);
-            wpm.openAndCacheWorkflow(projectId);
-            wpm.setWorkflowProjectActive(projectId);
-            appStateProvider.updateAppState();
-        };
+    private static void registerWorkflowProject(final WorkflowManager wfm, final String spaceId, final String itemId,
+        final Path relativePath) {
+        var wpm = WorkflowProjectManager.getInstance();
+        var wfProj = createWorkflowProject(wfm, //
+            LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, // TODO: parameterize w/ value provided by frontend; NXT-1409
+            spaceId, //
+            itemId, //
+            relativePath //
+        );
+        var projectId = wfProj.getID();
+        wpm.addWorkflowProject(projectId, wfProj);
+        wpm.openAndCacheWorkflow(projectId);
+        wpm.setWorkflowProjectActive(projectId);
     }
 
     private static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
-        final String spaceId, final String itemId) {
-        var projectId = wfm.getNameWithID();
+        final String spaceId, final String itemId, final Path relativePath) {
+        var projectId = LocalSpaceUtil.getUniqueProjectId(wfm.getName());
         return new WorkflowProject() { // NOSONAR
             @Override
             public WorkflowManager openProject() {
@@ -204,6 +178,11 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
                     @Override
                     public String getItemId() {
                         return itemId;
+                    }
+
+                    @Override
+                    public Optional<String> getRelativePath() {
+                        return Optional.of(relativePath.toString());
                     }
                 });
             }

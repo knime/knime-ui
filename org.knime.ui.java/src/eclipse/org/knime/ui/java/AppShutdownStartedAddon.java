@@ -46,47 +46,28 @@
  * History
  *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.lifecycle;
+package org.knime.ui.java;
 
-import java.util.function.IntSupplier;
+import javax.inject.Inject;
 
-import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.di.extensions.EventTopic;
+import org.eclipse.e4.ui.workbench.UIEvents;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.osgi.service.event.Event;
 
 /**
- * A state passed to and returned by lifecycle phases in order to exchange information.
+ * Called on shutdown.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-interface LifeCycleState {
+public class AppShutdownStartedAddon {
 
-    /**
-     * @return whether workflows have been saved successfully. Manipulated in the {@link PreSuspend}-phase.
-     */
-    default boolean workflowsSaved() {
-        return false;
-    }
-
-    /**
-     * @return the logic which saves and closes all workflows; see
-     *         {@link SaveAndCloseWorkflowsBrowserFunction#saveAndCloseWorkflowsInteractively(java.util.Set, org.knime.gateway.impl.service.util.EventConsumer, org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction)}
-     *         for documentation on the result
-     */
-    default IntSupplier saveAndCloseAllWorkflows() {
-        return null;
-    }
-
-    /**
-     * @return the logic which removes and disposes all browser functions
-     */
-    default Runnable removeAndDisposeAllBrowserFunctions() {
-        return null;
-    }
-
-    /**
-     * @return the app state serialized into a string
-     */
-    default String serializedAppState() {
-        return null;
+    @SuppressWarnings("javadoc")
+    @Inject
+    @Optional
+    public void applicationShutdownStarted(@EventTopic(UIEvents.UILifeCycle.APP_SHUTDOWN_STARTED) final Event event) {
+        LifeCycle.get().shutdown();
     }
 
 }

@@ -9,6 +9,7 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_N5ZaYOIhEeqv_LafONhFZw" featurename="addons" parentElementId="org.eclipse.e4.legacy.ide.application">
     <elements xsi:type="application:Addon" xmi:id="_PIzMwOIhEeqv_LafONhFZw" elementId="org.knime.ui.java.addon.0" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.PerspectiveSwitchAddon"/>
     <elements xsi:type="application:Addon" xmi:id="_QJa40OK8EeqdIqprVKVB4Q" elementId="org.knime.ui.java.addon.1" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.AppStartupCompleteAddon"/>
+    <elements xsi:type="application:Addon" xmi:id="_X2NokJWrEe2M9fg9x3Dhog" elementId="org.knime.ui.java.addon.2" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.AppShutdownStartedAddon"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_SUt_0OLJEeqdIqprVKVB4Q" featurename="snippets" parentElementId="org.eclipse.e4.legacy.ide.application">
     <elements xsi:type="menu:TrimContribution" xmi:id="_-b2TwOLPEeqdIqprVKVB4Q" elementId="org.knime.ui.java.trimcontribution.0" parentId="org.eclipse.ui.main.toolbar">

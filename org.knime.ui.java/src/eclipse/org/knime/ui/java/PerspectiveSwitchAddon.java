@@ -71,7 +71,7 @@ import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.browser.KnimeBrowserView;
-import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.osgi.service.event.Event;
@@ -156,7 +156,7 @@ public final class PerspectiveSwitchAddon {
         PerspectiveUtil.markClassicPerspectiveAsLoaded();
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
-        Supplier<AppStateProvider.AppState> supplier = () -> EclipseUIStateUtil.createAppState(m_modelService, m_app);
+        Supplier<AppStateProvider.AppState> supplier = () -> ClassicWorkflowEditorUtil.createAppState(m_modelService, m_app);
         KnimeBrowserView.activateViewInitializer(supplier);
         switchToWebUITheme();
         updateChromiumExternalMessagePumpSystemProperty();
@@ -186,7 +186,7 @@ public final class PerspectiveSwitchAddon {
         // -> this is a workaround to compensate for it
         // (couldn't be solved via css styling because the background color differs if the respective workflow
         // is write protected)
-        EclipseUIStateUtil.getOpenWorkflowEditors(m_modelService, m_app)
+        ClassicWorkflowEditorUtil.getOpenWorkflowEditors(m_modelService, m_app)
             .forEach(WorkflowEditor::updateEditorBackgroundColor);
 
         // Keeps Classic UI in sync with the file system
