@@ -16,7 +16,6 @@ export default {
         ...mapState('spaces', ['spaceBrowser'])
     },
     async created() {
-        console.log('created load browser state', this.spaceBrowser, this.activeProjectId);
         if (this.spaceBrowser.spaceId) {
             await this.$store.dispatch('spaces/loadSpaceBrowserState');
         }
@@ -24,7 +23,6 @@ export default {
     methods: {
         async onItemChanged(itemId) {
             // remember current path
-            console.log('SpaceBrowsingPage item changed save state', itemId);
             await this.$store.dispatch('spaces/saveSpaceBrowserState', { itemId });
         },
         async onBackButtonClick() {

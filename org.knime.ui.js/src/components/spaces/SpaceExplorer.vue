@@ -94,7 +94,6 @@ export default {
     watch: {
         activeWorkflowGroup: {
             async handler(newData, oldData) {
-                console.log('activeWorkflowGroup is null fetch again', this.startItemId);
                 if (newData === null && oldData !== null) {
                     await this.fetchWorkflowGroupContent(this.startItemId || 'root');
                 }

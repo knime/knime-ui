@@ -26,6 +26,7 @@ export const state = () => ({
         spaceProviderId: null,
         itemId: 'root'
     },
+    // map of projectId: itemId of last used item by any project
     lastItemForProject: {}
 });
 
@@ -81,16 +82,10 @@ export const mutations = {
 };
 
 export const actions = {
-    removeLastItemForProject({ commit, getters }, projectId) {
-        commit('clearLastItemForProject', { projectId });
-    },
-
-    saveCurrentItemForProject({ commit, getters, rootState }, { itemId } = {}) {
+    saveLastItemForProject({ commit, getters, rootState }, { itemId, projectId } = {}) {
         itemId = itemId || getters.currentWorkflowGroupId;
-        commit('setLastItemForProject', {
-            projectId: rootState.application.activeProjectId,
-            itemId
-        });
+        projectId = projectId || rootState.application.activeProjectId;
+        commit('setLastItemForProject', { projectId, itemId });
     },
 
     saveSpaceBrowserState({ commit, getters, state }, { itemId = 'root' } = {}) {
@@ -106,6 +101,7 @@ export const actions = {
             commit('setActiveSpaceProviderById', state.spaceBrowser.spaceProviderId);
             commit('setActiveSpaceId', state.spaceBrowser.spaceId);
             commit('setStartItemId', state.spaceBrowser.itemId || 'root');
+            // clear data to avoid display of old states
             commit('setActiveWorkflowGroupData', null);
         }
     },

@@ -23,7 +23,7 @@ jest.mock('@api');
 describe('SpaceSelectionPage.vue', () => {
     const doMount = ({ mockProvidersResponse = mockSpaceProviders } = {}) => {
         fetchAllSpaceProviders.mockResolvedValue(mockProvidersResponse);
-        
+
         const $store = mockVuexStore({
             spaces: spacesStore
         });
@@ -46,10 +46,10 @@ describe('SpaceSelectionPage.vue', () => {
 
     it('should fetch space providers on created', () => {
         const { dispatchSpy } = doMount();
-        
+
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/fetchAllSpaceProviders');
     });
-    
+
     it('should render all space providers', async () => {
         const { wrapper } = doMount();
 
@@ -80,7 +80,7 @@ describe('SpaceSelectionPage.vue', () => {
         signInButton.trigger('click');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/connectProvider', { spaceProviderId: 'hub1' });
     });
-    
+
     it('should handle logout for spaces that require authentication', async () => {
         const { wrapper, dispatchSpy } = doMount({
             mockProvidersResponse: {
@@ -127,6 +127,7 @@ describe('SpaceSelectionPage.vue', () => {
 
         expect($store.state.spaces.activeSpaceProvider.id).toEqual('hub1');
         expect($store.state.spaces.activeSpace.spaceId).toEqual(dummySpace.id);
+        await wrapper.vm.$nextTick();
         expect($router.push).toHaveBeenCalledWith({ name: APP_ROUTES.SpaceBrowsingPage });
     });
 });

@@ -35,6 +35,11 @@ describe('workflow store: AP Interactions', () => {
         const store = mockVuexStore({
             workflow: await import('@/store/workflow'),
             application: await import('@/store/application'),
+            spaces: {
+                mutations: {
+                    clearLastItemForProject: jest.fn()
+                }
+            },
             canvas: {
                 state: {
                     getScrollContainerElement: () => mockCanvasWrapperEl
@@ -98,12 +103,12 @@ describe('workflow store: AP Interactions', () => {
                     projectId: 'foo',
                     info: { containerId: 'root' }
                 });
-    
+
                 await store.dispatch('workflow/saveWorkflow');
-    
+
                 expect(saveWorkflow).toHaveBeenCalledWith(expect.objectContaining({ projectId: 'foo' }));
             });
-            
+
             it('sends the correct workflow preview for a root workflow', async () => {
                 const saveWorkflow = jest.fn();
                 const apiMocks = { saveWorkflow };
@@ -116,34 +121,34 @@ describe('workflow store: AP Interactions', () => {
                     projectId: 'foo',
                     info: { containerId: 'root' }
                 });
-    
+
                 await store.dispatch('workflow/saveWorkflow');
-    
+
                 expect(saveWorkflow).toHaveBeenCalledWith(expect.objectContaining({
                     workflowPreviewSvg: 'mock svg preview'
                 }));
             });
-            
+
             it('sends the correct workflow preview for a nested workflow', async () => {
                 const saveWorkflow = jest.fn();
                 const apiMocks = { saveWorkflow };
                 const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
-                
+
                 const projectId = 'project1';
                 // 'root:1' to mimic being inside component/metanode
                 const workflowId = 'root:1';
                 // set the snapshot on the store
                 store.state.application.rootWorkflowSnapshots.set(`${projectId}--root`, 'store-snapshot');
-                
+
                 generateWorkflowPreviewMock.mockImplementation((input) => input);
-                
+
                 store.commit('workflow/setActiveWorkflow', {
                     projectId,
                     info: { containerId: workflowId }
                 });
-    
+
                 await store.dispatch('workflow/saveWorkflow');
-    
+
                 expect(saveWorkflow).toHaveBeenCalledWith(expect.objectContaining({
                     workflowPreviewSvg: 'store-snapshot'
                 }));
@@ -217,12 +222,12 @@ describe('workflow store: AP Interactions', () => {
                 });
                 expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', closingProjectId);
             });
-    
+
             it('does not remove canvasState nor workflowPreviewSnapshot if closeWorkflow is cancelled', async () => {
                 let closeWorkflow = jest.fn(() => false);
                 let apiMocks = { closeWorkflow };
                 const { store, dispatchSpy } = await loadStore({ apiMocks });
-    
+
                 await store.dispatch('workflow/closeWorkflow', 'foo');
 
                 expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeRootWorkflowSnapshot');

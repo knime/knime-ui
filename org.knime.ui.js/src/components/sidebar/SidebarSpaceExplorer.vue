@@ -19,7 +19,6 @@ export default {
         activeProjectId: {
             handler(newId, oldId) {
                 if (newId && oldId !== newId) {
-                    console.log('activeProjectId changed call loadSpaceState', newId);
                     this.loadSpaceState();
                 }
             },
@@ -31,22 +30,18 @@ export default {
             if (!this.activeProjectOrigin) {
                 return;
             }
-            console.log('Sidebar loadSpaceState provider origin:', this.activeProjectOrigin);
 
             // current space is the same as the space of the open project
             const sameSpace = this.activeProjectOrigin.spaceId === this.activeSpace?.spaceId &&
                     this.activeProjectOrigin.providerId === this.activeSpaceProvider?.id;
 
-            // load spaces state state
+            // load spaces state
             if (!sameSpace) {
                 this.$store.commit('spaces/setActiveSpaceProviderById', this.activeProjectOrigin.providerId);
                 this.$store.commit('spaces/setActiveSpaceId', this.activeProjectOrigin.spaceId);
             }
 
-            console.log('activeSpace', this.activeSpace.id, this.activeSpaceProvider);
-
             const lastItemId = this.lastItemForProject[this.activeProjectId];
-            console.log('lastItem', this.lastItemForProject[this.activeProjectId], this.lastItemForProject);
             if (lastItemId) {
                 this.$store.commit('spaces/setStartItemId', lastItemId);
             } else {
@@ -55,17 +50,16 @@ export default {
                 let startItemId = sameSpace ? this.currentWorkflowGroupId : 'root';
 
                 this.$store.commit('spaces/setStartItemId', startItemId);
-                this.$store.dispatch('spaces/saveCurrentItemForProject', { itemId: startItemId });
+                this.$store.dispatch('spaces/saveLastItemForProject', { itemId: startItemId });
                 // TODO: this needs to be implemented by the backend in https://knime-com.atlassian.net/browse/NXT-1432
                 //       and can then replace the workaround above
                 // this.$store.commit('spaces/setStartItemId', this.activeProjectOrigin.parentItems[1]);
             }
-            // clear data which triggers refetch
+            // clear data which triggers refetch (do this after the new space/provider/item id is set)
             this.$store.commit('spaces/setActiveWorkflowGroupData', null);
         },
         async onItemChanged(itemId) {
-            console.log('SidebarSpaceExplorer onItemChanged', itemId);
-            await this.$store.dispatch('spaces/saveCurrentItemForProject', { itemId });
+            await this.$store.dispatch('spaces/saveLastItemForProject', { itemId });
         }
     }
 };

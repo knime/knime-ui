@@ -67,7 +67,7 @@ export const actions = {
         if (didClose) {
             dispatch('application/removeFromRootWorkflowSnapshots', { projectId: closingProjectId }, { root: true });
             dispatch('application/removeCanvasState', closingProjectId, { root: true });
-            dispatch('spaces/removeLastItemForProject', closingProjectId, { root: true });
+            commit('spaces/clearLastItemForProject', { projectId: closingProjectId }, { root: true });
         }
     },
 
