@@ -7,6 +7,7 @@ import { mockVuexStore } from '@/test/test-utils';
 import * as selectionStore from '@/store/selection';
 
 import { APP_ROUTES, router } from '@/router';
+import { ensureWorkflowIsLoadedInBackend } from '@/api';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({
     makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
@@ -32,6 +33,7 @@ describe('application store', () => {
         const addEventListener = jest.fn();
         const removeEventListener = jest.fn();
         const loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
+        const ensureWorkflowIsLoadedInBackend = jest.fn();
 
         jest.resetModules();
         jest.doMock('@api', () => ({
@@ -39,7 +41,8 @@ describe('application store', () => {
             addEventListener,
             removeEventListener,
             fetchApplicationState,
-            loadWorkflow
+            loadWorkflow,
+            ensureWorkflowIsLoadedInBackend
         }), { virtual: true });
 
         const actions = {
@@ -75,7 +78,8 @@ describe('application store', () => {
             fetchApplicationState,
             addEventListener,
             removeEventListener,
-            loadWorkflow
+            loadWorkflow,
+            ensureWorkflowIsLoadedInBackend
         };
     };
 
@@ -277,7 +281,7 @@ describe('application store', () => {
 
     describe('Workflow Lifecycle', () => {
         it('loads root workflow successfully', async () => {
-            const { store, loadWorkflow, addEventListener } = await loadStore();
+            const { store, loadWorkflow, addEventListener, ensureWorkflowIsLoadedInBackend } = await loadStore();
             loadWorkflow.mockResolvedValue({
                 dummy: true,
                 workflow: { info: { containerId: 'root' }, nodes: [] },
@@ -287,6 +291,7 @@ describe('application store', () => {
             await store.dispatch('application/loadWorkflow', { projectId: 'wf1' });
 
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
+            expect(ensureWorkflowIsLoadedInBackend).toHaveBeenCalledWith({ projectId: 'wf1' });
             expect(store.state.workflow.activeWorkflow).toStrictEqual({
                 info: { containerId: 'root' },
                 nodes: [],

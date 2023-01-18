@@ -106,6 +106,20 @@ export const closeWorkflow = ({ closingProjectId, nextProjectId }) => {
 };
 
 /**
+ * Ensures that a workflow is loaded (and loads it, if not).
+ * @param {String} projectId
+ * @returns {void}
+ */
+export const ensureWorkflowIsLoadedInBackend = ({ projectId }) => {
+    try {
+        window.ensureWorkflowIsLoaded(projectId);
+    } catch (error) {
+        consola.error(`Failed to ensure that a workflow is loaded`, { projectId, error });
+        throw error;
+    }
+};
+
+/**
  * Opens the layout editor for a component.
  * @param {String} projectId
  * @param {String} workflowId
