@@ -89,6 +89,7 @@ describe('application store', () => {
             savedCanvasStates: {},
             isLoadingWorkflow: false,
             hasClipboardSupport: false,
+            isBusy: false,
             contextMenu: { isOpen: false, position: null },
             hasNodeRecommendationsEnabled: false,
             rootWorkflowSnapshots: new Map(),
@@ -740,8 +741,15 @@ describe('application store', () => {
         });
     });
 
+    // TODO NXT-1437
     describe('workflow preview snapshot', () => {
         const getSnapshotKeys = (_store) => Array.from(_store.state.application.rootWorkflowSnapshots.keys());
+
+        it.todo('should get the root workflow snapshot');
+
+        it.todo('should get a workflow snapshot by project id');
+
+        it.todo('should save the current project snapshot when changing to a different project if current is unsaved');
 
         it('should update the workflow preview snapshots correctly (single project)', async () => {
             const { store } = await loadStore();
