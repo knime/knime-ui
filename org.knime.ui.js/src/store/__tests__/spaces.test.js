@@ -289,7 +289,7 @@ describe('spaces store', () => {
 
             it('should navigate to already open workflow', () => {
                 const openProjects = [
-                    { projectId: 'dummyProject', origin: { spaceId: 'local', itemId: 'dummy' } }
+                    { projectId: 'dummyProject', origin: { providerId: 'local', spaceId: 'local', itemId: 'dummy' } }
                 ];
                 const { store } = loadStore({ openProjects });
                 
@@ -376,7 +376,7 @@ describe('spaces store', () => {
         describe('openedWorkflowItems', () => {
             it('should return the opened workflow items', () => {
                 const openProjects = [
-                    { origin: { spaceId: 'local', itemId: '4' } }
+                    { origin: { providerId: 'local', spaceId: 'local', itemId: '4' } }
                 ];
     
                 const { store } = loadStore({ openProjects });
