@@ -49,11 +49,8 @@ package org.knime.ui.java.util;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.Space;
@@ -116,39 +113,6 @@ public final class LocalSpaceUtil {
                 return "Local space";
             }
         };
-    }
-
-    /**
-     * Obtain the {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of a workflow on the local file system
-     *
-     * @param wfm The workflow manager to get the origin of.
-     * @return The {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of the workflow, or an empty optional
-     *         if the given workflow is not local.
-     */
-    public static Optional<WorkflowProject.Origin> getLocalOrigin(final WorkflowManager wfm) {
-        var ctx = wfm.getContextV2();
-        var isLocal = ctx.getLocationType() == WorkflowContextV2.LocationType.LOCAL;
-        if (!isLocal) {
-            // Only support workflows in the local space for the time being.
-            return Optional.empty();
-        }
-        return Optional.of(new WorkflowProject.Origin() {
-            @Override
-            public String getProviderId() {
-                return LOCAL_SPACE_PROVIDER_ID;
-            }
-
-            @Override
-            public String getSpaceId() {
-                return LocalWorkspace.LOCAL_WORKSPACE_ID;
-            }
-
-            @Override
-            public String getItemId() {
-                var path = ctx.getExecutorInfo().getLocalWorkflowPath();
-                return getLocalWorkspace().getItemIdFunction().apply(path);
-            }
-        });
     }
 
     /**

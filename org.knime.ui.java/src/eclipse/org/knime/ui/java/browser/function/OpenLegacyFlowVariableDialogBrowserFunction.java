@@ -64,7 +64,8 @@ public class OpenLegacyFlowVariableDialogBrowserFunction extends AbstractNodeBro
 
 	private static final String FUNCTION_NAME = "openLegacyFlowVariableDialog";
 
-	public OpenLegacyFlowVariableDialogBrowserFunction(final Browser browser) {
+	@SuppressWarnings("javadoc")
+    public OpenLegacyFlowVariableDialogBrowserFunction(final Browser browser) {
 		super(browser, FUNCTION_NAME);
 	}
 
@@ -73,5 +74,4 @@ public class OpenLegacyFlowVariableDialogBrowserFunction extends AbstractNodeBro
         NodeContainerEditPart.openDialog(wrap(nc), null);
         return null;
     }
-
 }

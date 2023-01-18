@@ -169,9 +169,12 @@ export const actions = {
 
     openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router }) {
         const { spaceId } = state.activeSpace;
+        const { id: spaceProviderId } = state.activeSpaceProvider;
         const { openProjects } = rootState.application;
         const foundOpenProject = openProjects.find(
-            project => project.origin.spaceId === spaceId && project.origin.itemId === workflowItemId
+            project => project.origin.providerId === spaceProviderId &&
+                           project.origin.spaceId === spaceId &&
+                           project.origin.itemId === workflowItemId
         );
 
         if (foundOpenProject) {
@@ -182,7 +185,7 @@ export const actions = {
             return;
         }
 
-        openWorkflow({ spaceId, workflowItemId });
+        openWorkflow({ spaceId, workflowItemId, spaceProviderId });
     }
 };
 
