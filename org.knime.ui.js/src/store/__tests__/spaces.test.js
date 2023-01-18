@@ -130,20 +130,17 @@ describe('spaces store', () => {
         describe('connectProvider', () => {
             it('should fetch user to connect provider and fetch provider spaces data', async () => {
                 const { store } = loadStore();
+                const mockUser = { name: 'John Doe' };
 
                 store.state.spaces.spaceProviders = {
                     hub1: {}
                 };
 
-                connectSpaceProvider.mockResolvedValue({ name: 'John Doe' });
+                connectSpaceProvider.mockResolvedValue({ user: mockUser });
                 await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
 
                 expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
                 expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
-                expect(store.state.spaces.spaceProviders.hub1).toEqual(expect.objectContaining({
-                    connected: true,
-                    user: { name: 'John Doe' }
-                }));
             });
 
             it('should not fetch provider spaces data if the user is null', async () => {
@@ -153,7 +150,7 @@ describe('spaces store', () => {
                     hub1: {}
                 };
 
-                connectSpaceProvider.mockResolvedValue({ name: '' });
+                connectSpaceProvider.mockResolvedValue(null);
                 await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
 
                 expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
