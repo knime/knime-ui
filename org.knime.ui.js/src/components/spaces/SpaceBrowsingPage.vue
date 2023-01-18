@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapGetters } from 'vuex';
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
@@ -15,43 +15,28 @@ export default {
         ComputerDesktopIcon,
         PageHeader
     },
-    data() {
-        return {
-            spaceInfo: {
-                title: '',
-                subtitle: '',
-                icon: null
-            }
-        };
-    },
     computed: {
-        ...mapState('spaces', ['activeSpaceInfo'])
-    },
-    watch: {
-        activeSpaceInfo: {
-            immediate: true,
-            handler() {
-                if (this.activeSpaceInfo.local) {
-                    this.spaceInfo = {
-                        title: 'Your Local Space',
-                        subtitle: 'Local space',
-                        icon: ComputerDesktopIcon
-                    };
-                    return;
-                }
-
-                this.spaceInfo = this.activeSpaceInfo.private
-                    ? {
-                        title: this.activeSpaceInfo.name,
-                        subtitle: 'Private space',
-                        icon: PrivateSpaceIcon
-                    }
-                    : {
-                        title: this.activeSpaceInfo.name,
-                        subtitle: 'Public space',
-                        icon: CubeIcon
-                    };
+        ...mapGetters('spaces', ['activeSpaceInfo']),
+        spaceInfo() {
+            if (this.activeSpaceInfo.local) {
+                return {
+                    title: 'Your Local Space',
+                    subtitle: 'Local space',
+                    icon: ComputerDesktopIcon
+                };
             }
+
+            return this.activeSpaceInfo.private
+                ? {
+                    title: this.activeSpaceInfo.name,
+                    subtitle: 'Private space',
+                    icon: PrivateSpaceIcon
+                }
+                : {
+                    title: this.activeSpaceInfo.name,
+                    subtitle: 'Public space',
+                    icon: CubeIcon
+                };
         }
     },
     methods: {
@@ -68,10 +53,12 @@ export default {
       :title="spaceInfo.title"
       :subtitle="spaceInfo.subtitle"
     >
-      <ArrowLeftIcon
-        class="back-button"
-        @click="onBackButtonClick"
-      />
+      <template #button>
+        <ArrowLeftIcon
+          class="back-button"
+          @click="onBackButtonClick"
+        />
+      </template>
       <template #icon>
         <Component :is="spaceInfo.icon" />
       </template>

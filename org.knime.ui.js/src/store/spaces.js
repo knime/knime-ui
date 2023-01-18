@@ -240,5 +240,29 @@ export const getters = {
                 return origin.spaceId === spaceId && workflowItemIds.includes(origin.itemId);
             })
             .map(({ origin }) => origin.itemId);
+    },
+
+    activeSpaceInfo({ activeSpace, activeSpaceProvider }) {
+        const activeId = activeSpace.spaceId;
+        const space = activeSpaceProvider.spaces.find(space => space.id === activeId);
+
+        if (activeSpaceProvider.local) {
+            return {
+                local: true,
+                private: false,
+                name: activeSpaceProvider.name
+            };
+        }
+
+        if (space) {
+            return {
+                local: false,
+                private: space.private,
+                name: space.name
+            };
+        }
+        
+
+        return {};
     }
 };

@@ -25,7 +25,7 @@ export default {
         :class="`grid-item-${leftOffset}`"
       />
       <div class="button">
-        <slot />
+        <slot name="button" />
       </div>
       <div
         class="title-wrapper"

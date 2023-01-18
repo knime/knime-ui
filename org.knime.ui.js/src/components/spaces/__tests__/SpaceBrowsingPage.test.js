@@ -18,15 +18,17 @@ describe('SpaceBrowsingPage', () => {
         push: jest.fn()
     };
 
-    const doMount = () => {
+    const doMount = ({
+        activeSpaceInfoMock = jest.fn().mockReturnValue({
+            local: true,
+            private: false,
+            name: 'Local space'
+        })
+    } = {}) => {
         const $store = mockVuexStore({
             spaces: {
-                state: {
-                    activeSpaceInfo: {
-                        local: true,
-                        private: false,
-                        name: ''
-                    }
+                getters: {
+                    activeSpaceInfo: activeSpaceInfoMock
                 },
                 actions: {
                     fetchWorkflowGroupContent: jest.fn()
@@ -58,12 +60,13 @@ describe('SpaceBrowsingPage', () => {
     });
 
     it('renders correct information for private space', async () => {
-        const { wrapper, $store } = doMount();
-        $store.state.spaces.activeSpaceInfo = {
-            local: false,
-            private: true,
-            name: 'My private space'
-        };
+        const { wrapper } = doMount({
+            activeSpaceInfoMock: jest.fn().mockReturnValue({
+                local: false,
+                private: true,
+                name: 'My private space'
+            })
+        });
         await wrapper.vm.$nextTick();
 
         const subtitle = wrapper.find('.subtitle').text();
@@ -73,12 +76,13 @@ describe('SpaceBrowsingPage', () => {
     });
 
     it('renders correct information for public space', async () => {
-        const { wrapper, $store } = doMount();
-        $store.state.spaces.activeSpaceInfo = {
-            local: false,
-            private: false,
-            name: 'My public space'
-        };
+        const { wrapper } = doMount({
+            activeSpaceInfoMock: jest.fn().mockReturnValue({
+                local: false,
+                private: false,
+                name: 'My public space'
+            })
+        });
         await wrapper.vm.$nextTick();
 
         const subtitle = wrapper.find('.subtitle').text();

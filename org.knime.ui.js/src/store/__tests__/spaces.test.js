@@ -402,5 +402,42 @@ describe('spaces store', () => {
                 expect(store.getters['spaces/openedWorkflowItems']).toEqual(['4']);
             });
         });
+
+        describe('activeSpaceInfo', () => {
+            it('should return the information about the local active space', () => {
+                const { store } = loadStore();
+                store.state.spaces.activeSpaceProvider = {
+                    spaceId: 'local',
+                    spaces: [{ id: 'local', name: 'Local space' }],
+                    local: true,
+                    name: 'Local space'
+                };
+                
+                expect(store.getters['spaces/activeSpaceInfo']).toEqual({
+                    local: true,
+                    private: false,
+                    name: 'Local space'
+                });
+            });
+
+            it('should return the information about the private active space', () => {
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'privateSpace'
+                };
+                store.state.spaces.activeSpaceProvider = {
+                    spaceId: 'space1',
+                    spaces: [{ id: 'privateSpace', name: 'Private space', private: true },
+                        { id: 'publicSpace', name: 'Public space', private: false }],
+                    local: false
+                };
+                
+                expect(store.getters['spaces/activeSpaceInfo']).toEqual({
+                    local: false,
+                    private: true,
+                    name: 'Private space'
+                });
+            });
+        });
     });
 });
