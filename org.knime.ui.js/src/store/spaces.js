@@ -18,12 +18,7 @@ export const state = () => ({
         spaceId: 'local',
         activeWorkflowGroup: null
     },
-    spaceProviders: null,
-    activeSpaceInfo: {
-        local: true,
-        private: false,
-        name: ''
-    }
+    spaceProviders: null
 });
 
 export const mutations = {
@@ -41,10 +36,6 @@ export const mutations = {
 
     setSpaceProviders(state, value) {
         state.spaceProviders = value;
-    },
-    
-    setActiveSpaceInfo(state, value) {
-        state.activeSpaceInfo = value;
     }
 };
 
