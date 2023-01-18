@@ -282,7 +282,9 @@ describe('spaces store', () => {
                 };
                 
                 store.dispatch('spaces/openWorkflow', { workflowItemId: 'foobar' });
-                expect(openWorkflow).toHaveBeenCalledWith({ spaceId: 'local', workflowItemId: 'foobar' });
+                expect(openWorkflow).toHaveBeenCalledWith({
+                    spaceId: 'local', spaceProviderId: 'local', workflowItemId: 'foobar'
+                });
             });
 
             it('should navigate to already open workflow', () => {

@@ -70,5 +70,4 @@ public class OpenInstallExtensionsDialogBrowserFunction extends BrowserFunction 
         new InvokeInstallSiteAction().run();
         return null;
     }
-
 }

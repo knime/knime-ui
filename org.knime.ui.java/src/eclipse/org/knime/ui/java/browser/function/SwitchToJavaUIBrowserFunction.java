@@ -75,7 +75,7 @@ public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
 
     private final AppStateProvider m_appStateProvider;
 
-	@SuppressWarnings("javadoc")
+    @SuppressWarnings("javadoc")
     public SwitchToJavaUIBrowserFunction(final Browser browser, final EventConsumer eventConsumer,
         final AppStateProvider appStateProvider) {
         super(browser, FUNCTION_NAME);

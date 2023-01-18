@@ -74,9 +74,6 @@ public class GetSpaceProvidersBrowserFunction extends BrowserFunction {
         m_spaceProviders = spaceProviders;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Object function(final Object[] arguments) {
         var res = MAPPER.createObjectNode();
