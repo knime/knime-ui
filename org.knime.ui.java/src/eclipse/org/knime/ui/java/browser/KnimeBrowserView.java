@@ -127,8 +127,10 @@ public class KnimeBrowserView implements ISaveablePart2 {
         // 	ready for interaction.
         boolean isRendered = part.getObject() instanceof KnimeBrowserView;
         if (isBrowserView && isRendered && viewInitializer != null) {
-            viewInitializer.run();
-            viewInitializer = null; // NOSONAR because this is technically a singleton
+            synchronized (this) {
+                viewInitializer.run();
+                viewInitializer = null; // NOSONAR because this is technically a singleton
+            }
         }
     }
 

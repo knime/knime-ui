@@ -180,14 +180,13 @@ public final class LifeCycle {
         }
 
         checkExpectedLastStateTransition(m_lastStateTransition, nextStateTransition, expectedLastStateTransitions);
-
         runStateTransition.run();
         if (abort != null && abort.test(m_state)) {
             LOGGER.info("Phase '" + nextStateTransition.name() + "' aborted");
             return;
         }
+        logStateTransition(m_lastStateTransition, nextStateTransition);
         m_lastStateTransition = nextStateTransition;
-        LOGGER.info("Phase '" + m_lastStateTransition.name() + "' finished");
     }
 
     private static void checkExpectedLastStateTransition(final StateTransition lastStateTransition,
@@ -198,6 +197,12 @@ public final class LifeCycle {
             "Life cycle state transition '%s' failed; wrong life cycle state transition. Last state transition: '%s'. "
                 + "Expected last state transition(s): %s",
             nextStateTransition, lastStateTransition, Arrays.toString(expectedLastStateTransitions));
+    }
+
+    private static void logStateTransition(final StateTransition lastStateTransition,
+        final StateTransition nextStateTransition) {
+        LOGGER.debugWithFormat("Life cycle state transition: from '%s' to '%s'", lastStateTransition,
+            nextStateTransition);
     }
 
     /**
