@@ -60,9 +60,11 @@ public class KnimeBrowserView implements ISaveablePart2 {
      * the view initializer has been executed, it will be de-activated (and would need to be activated again).
      *
      * @param appStateSupplier supplies the app state for the UI
+     * @param checkForUpdates whether to check for updates on initialization
      */
-    public static void activateViewInitializer(final Supplier<AppState> appStateSupplier) {
-        viewInitializer = () -> initView(appStateSupplier, false);
+    public static void activateViewInitializer(final Supplier<AppState> appStateSupplier,
+        final boolean checkForUpdates) {
+        viewInitializer = () -> initView(appStateSupplier, false, checkForUpdates);
     }
 
     /**
@@ -74,11 +76,12 @@ public class KnimeBrowserView implements ISaveablePart2 {
         if (browser == null) {
             throw new IllegalStateException("No browser view instance available");
         }
-        initView(appStateSupplier, true);
+        initView(appStateSupplier, true, false);
     }
 
-    private static void initView(final Supplier<AppState> appStateSupplier, final boolean ignoreEmptyPageAsDevUrl) {
-        LifeCycle.get().init(appStateSupplier, browser); // NOSONAR
+    private static void initView(final Supplier<AppState> appStateSupplier, final boolean ignoreEmptyPageAsDevUrl,
+        final boolean checkForUpdates) {
+        LifeCycle.get().init(appStateSupplier, browser, checkForUpdates); // NOSONAR
         setUrl(ignoreEmptyPageAsDevUrl);
     }
 
@@ -86,7 +89,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
      * Clears the view. Called when the view is not needed anymore (for some time), e.g. on perspective switch.
      *
      * If the view is activated/used again, it need to be initialized either via
-     * {@link #activateViewInitializer(Supplier)} or {@link #initViewForTesting(Supplier)}.
+     * {@link #activateViewInitializer(Supplier, boolean)} or {@link #initViewForTesting(Supplier)}.
      */
     public static void clearView() {
         if (browser != null) {
@@ -115,7 +118,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
         browser.setMenu(new Menu(browser.getShell()));
 
         if (viewInitializer == null) {
-            activateViewInitializer(null);
+            activateViewInitializer(null, true);
         }
     }
 

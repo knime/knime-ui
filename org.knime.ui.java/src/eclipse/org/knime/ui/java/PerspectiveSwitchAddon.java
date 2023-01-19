@@ -157,7 +157,7 @@ public final class PerspectiveSwitchAddon {
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         Supplier<AppStateProvider.AppState> supplier = () -> ClassicWorkflowEditorUtil.createAppState(m_modelService, m_app);
-        KnimeBrowserView.activateViewInitializer(supplier);
+        KnimeBrowserView.activateViewInitializer(supplier, false);
         switchToWebUITheme();
         updateChromiumExternalMessagePumpSystemProperty();
     }

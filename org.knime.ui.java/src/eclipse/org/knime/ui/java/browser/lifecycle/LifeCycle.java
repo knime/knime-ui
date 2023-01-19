@@ -133,10 +133,11 @@ public final class LifeCycle {
      * @param appStateSupplier can be {@code null} - in that case the app state is loaded from a file (see
      *            {@link AppStatePersistor#loadAppState()}
      * @param browser required to initialize browser functions
+     * @param checkForUpdates whether to check for updates on initialization
      */
-    public void init(final Supplier<AppState> appStateSupplier, final Browser browser) {
-        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(appStateSupplier, browser), null,
-            StateTransition.CREATE, StateTransition.SUSPEND);
+    public void init(final Supplier<AppState> appStateSupplier, final Browser browser, final boolean checkForUpdates) {
+        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(appStateSupplier, browser, checkForUpdates),
+            null, StateTransition.CREATE, StateTransition.SUSPEND);
     }
 
     /**
@@ -212,6 +213,14 @@ public final class LifeCycle {
      */
     public boolean isLastStateTransition(final StateTransition stateTransition) {
         return m_lastStateTransition == stateTransition;
+    }
+
+    /**
+     * @param stateTransition the state transition to check
+     * @return {@code true} if the passed state transition is the next one that will be run
+     */
+    public boolean isNextStateTransition(final StateTransition stateTransition) {
+        return m_lastStateTransition.rank() + 1 == stateTransition.rank();
     }
 
     /**

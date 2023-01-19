@@ -78,7 +78,6 @@ import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.ConnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.DisconnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.EmitUpdateAvailableEventForTestingBrowserFunction;
-import org.knime.ui.java.browser.function.SetProjectActiveAndEnsureItsLoadedBrowserFunction;
 import org.knime.ui.java.browser.function.GetSpaceProvidersBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.OpenAboutDialogBrowserFunction;
@@ -93,6 +92,7 @@ import org.knime.ui.java.browser.function.OpenWorkflowCoachPreferencePageBrowser
 import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
 import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
+import org.knime.ui.java.browser.function.SetProjectActiveAndEnsureItsLoadedBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.DefaultServicesUtil;
@@ -119,7 +119,8 @@ final class Init {
         //
     }
 
-    static LifeCycleState run(final Supplier<AppState> appStateSupplier, final Browser browser) {
+    static LifeCycleState run(final Supplier<AppState> appStateSupplier, final Browser browser,
+        final boolean checkForUpdates) {
         if (appStateSupplier == null) {
             AppStatePersistor.loadAppState();
         }
@@ -128,18 +129,20 @@ final class Init {
         var eventConsumer = createEventConsumer();
         var appStateProvider = new AppStateProvider(
             appStateSupplier == null ? AppStateDerivedFromWorkflowProjectManager::new : appStateSupplier);
-        var updateStateProvider = new UpdateStateProvider(DesktopAPUtil::checkForUpdate);
+        var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var spaceProviders = createSpaceProviders();
         DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer, spaceProviders,
             updateStateProvider);
 
-        // Check for updates and notify UI
-        try {
-            DefaultEventService.getInstance().addEventListener(EntityFactory.UpdateState.buildEventTypeEnt());
-        } catch (InvalidRequestException e) {
-            KnimeBrowserView.LOGGER.error("Could not add update state changed event listener to event service", e);
+        if (updateStateProvider != null) {
+            // Check for updates and notify UI
+            try {
+                DefaultEventService.getInstance().addEventListener(EntityFactory.UpdateState.buildEventTypeEnt());
+            } catch (InvalidRequestException e) {
+                KnimeBrowserView.LOGGER.error("Could not add update state changed event listener to event service", e);
+            }
+            updateStateProvider.checkForUpdates();
         }
-        updateStateProvider.checkForUpdates();
 
         // Initialize browser functions and set CEF browser URL
         var removeAndDisposeAllBrowserFunctions =
