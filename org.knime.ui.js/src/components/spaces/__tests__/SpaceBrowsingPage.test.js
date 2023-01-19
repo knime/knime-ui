@@ -114,7 +114,7 @@ describe('SpaceBrowsingPage', () => {
     });
 
     describe('global spaceBrowser state', () => {
-        it('load the spaceBrowser state on mount', async () => {
+        it('load the spaceBrowser state on mount', () => {
             const loadSpaceBrowserStateMock = jest.fn();
             doMount({
                 loadSpaceBrowserStateMock,
@@ -127,7 +127,7 @@ describe('SpaceBrowsingPage', () => {
             expect(loadSpaceBrowserStateMock).toHaveBeenCalled();
         });
 
-        it('does not load spaceBrowser state if its falsy', async () => {
+        it('does not load spaceBrowser state if its falsy', () => {
             const loadSpaceBrowserStateMock = jest.fn();
             doMount({
                 loadSpaceBrowserStateMock,
@@ -136,7 +136,7 @@ describe('SpaceBrowsingPage', () => {
             expect(loadSpaceBrowserStateMock).toHaveBeenCalledTimes(0);
         });
 
-        it('saves the spaceBrowser state on item change', async () => {
+        it('saves the spaceBrowser state on item change', () => {
             const saveSpaceBrowserStateMock = jest.fn();
             const { wrapper } = doMount({ saveSpaceBrowserStateMock });
 
