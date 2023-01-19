@@ -24,7 +24,7 @@ export default {
     },
 
     computed: {
-        ...mapState('spaces', ['spaceProviders', 'activeSpace', 'activeSpaceProvider', 'spaceBrowser'])
+        ...mapState('spaces', ['spaceProviders', 'spaceBrowser'])
     },
 
     beforeMount() {

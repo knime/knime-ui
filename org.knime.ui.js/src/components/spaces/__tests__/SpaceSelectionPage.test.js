@@ -21,11 +21,11 @@ const mockSpaceProviders = {
 jest.mock('@api');
 
 describe('SpaceSelectionPage.vue', () => {
-    const doMount = ({ mockProvidersResponse = mockSpaceProviders } = {}) => {
+    const doMount = ({ mockProvidersResponse = mockSpaceProviders, spacesStoreOverrides = null } = {}) => {
         fetchAllSpaceProviders.mockResolvedValue(mockProvidersResponse);
 
         const $store = mockVuexStore({
-            spaces: spacesStore
+            spaces: spacesStoreOverrides || spacesStore
         });
 
         const dispatchSpy = jest.spyOn($store, 'dispatch');
@@ -48,6 +48,25 @@ describe('SpaceSelectionPage.vue', () => {
         const { dispatchSpy } = doMount();
 
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/fetchAllSpaceProviders');
+    });
+
+    it('should redirect to browsing page if it was previously open', () => {
+        const { $router } = doMount({
+            spacesStoreOverrides: {
+                state: {
+                    spaceBrowser: {
+                        spaceId: 'local',
+                        spaceProviderId: 'local',
+                        itemId: 'someItem'
+                    }
+                },
+                actions: {
+                    fetchAllSpaceProviders: jest.fn()
+                }
+            }
+        });
+
+        expect($router.push).toHaveBeenCalledWith({ name: APP_ROUTES.SpaceBrowsingPage });
     });
 
     it('should render all space providers', async () => {
@@ -127,6 +146,10 @@ describe('SpaceSelectionPage.vue', () => {
 
         expect($store.state.spaces.activeSpaceProvider.id).toEqual('hub1');
         expect($store.state.spaces.activeSpace.spaceId).toEqual(dummySpace.id);
+
+        // remember current state
+        expect($store.state.spaces.spaceBrowser.spaceId).toEqual(dummySpace.id);
+        expect($store.state.spaces.spaceBrowser.spaceProviderId).toEqual('hub1');
         await wrapper.vm.$nextTick();
         expect($router.push).toHaveBeenCalledWith({ name: APP_ROUTES.SpaceBrowsingPage });
     });
