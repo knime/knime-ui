@@ -1,5 +1,5 @@
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow,
-    ensureWorkflowIsLoadedInBackend } from '@api';
+    setProjectActiveAndEnsureItsLoadedInBackend } from '@api';
 import { encodeString } from '@/util/encodeString';
 import { APP_ROUTES } from '@/router';
 
@@ -253,7 +253,7 @@ export const actions = {
     },
     async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
         // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
-        ensureWorkflowIsLoadedInBackend({ projectId });
+        setProjectActiveAndEnsureItsLoadedInBackend({ projectId });
         const project = await loadWorkflow({ projectId, workflowId });
         if (project) {
             dispatch('setWorkflow', {

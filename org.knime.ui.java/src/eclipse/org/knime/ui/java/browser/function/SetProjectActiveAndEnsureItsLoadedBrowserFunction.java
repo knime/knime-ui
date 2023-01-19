@@ -54,17 +54,18 @@ import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
 
 /**
- * Ensures that a workflow for a given project id is already loaded (in memory). And loads it if not.
+ * Sets that project for the given id to active and ensures that the workflow is already loaded (in memory). And loads
+ * it if not.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class EnsureWorkflowIsLoadedBrowserFunction extends BrowserFunction {
+public class SetProjectActiveAndEnsureItsLoadedBrowserFunction extends BrowserFunction {
 
     /**
      * @param browser
      */
-    public EnsureWorkflowIsLoadedBrowserFunction(final Browser browser) {
-        super(browser, "ensureWorkflowIsLoaded");
+    public SetProjectActiveAndEnsureItsLoadedBrowserFunction(final Browser browser) {
+        super(browser, "setProjectActiveAndEnsureItsLoaded");
     }
 
     /**
@@ -73,7 +74,9 @@ public class EnsureWorkflowIsLoadedBrowserFunction extends BrowserFunction {
     @Override
     public Object function(final Object[] arguments) {
         var projectId = (String)arguments[0];
-        WorkflowProjectManager.getInstance().openAndCacheWorkflow(projectId);
+        var wpm = WorkflowProjectManager.getInstance();
+        wpm.openAndCacheWorkflow(projectId);
+        wpm.setWorkflowProjectActive(projectId);
         return null;
     }
 

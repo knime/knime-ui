@@ -106,15 +106,15 @@ export const closeWorkflow = ({ closingProjectId, nextProjectId }) => {
 };
 
 /**
- * Ensures that a workflow is loaded (and loads it, if not).
+ * Ensures that a project-workflow is loaded (and loads it, if not) and set it to be the active one.
  * @param {String} projectId
  * @returns {void}
  */
-export const ensureWorkflowIsLoadedInBackend = ({ projectId }) => {
+export const setProjectActiveAndEnsureItsLoadedInBackend = ({ projectId }) => {
     try {
-        window.ensureWorkflowIsLoaded(projectId);
+        window.setProjectActiveAndEnsureItsLoaded(projectId);
     } catch (error) {
-        consola.error(`Failed to ensure that a workflow is loaded`, { projectId, error });
+        consola.error(`Failed to set project as active in the backend`, { projectId, error });
         throw error;
     }
 };

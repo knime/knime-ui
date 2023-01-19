@@ -78,7 +78,7 @@ import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.ConnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.DisconnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.EmitUpdateAvailableEventForTestingBrowserFunction;
-import org.knime.ui.java.browser.function.EnsureWorkflowIsLoadedBrowserFunction;
+import org.knime.ui.java.browser.function.SetProjectActiveAndEnsureItsLoadedBrowserFunction;
 import org.knime.ui.java.browser.function.GetSpaceProvidersBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.OpenAboutDialogBrowserFunction;
@@ -243,7 +243,7 @@ final class Init {
         functions.add(new ConnectSpaceProviderBrowserFunction(browser, spaceProviders));
         functions.add(new DisconnectSpaceProviderBrowserFunction(browser, spaceProviders));
         functions.add(new SaveAndCloseWorkflowsBrowserFunction(browser, appStateProvider));
-        functions.add(new EnsureWorkflowIsLoadedBrowserFunction(browser));
+        functions.add(new SetProjectActiveAndEnsureItsLoadedBrowserFunction(browser));
         if (SharedConstants.isRemoteDebuggingPortSet()) {
             functions.add(new InitAppForTestingBrowserFunction(browser));
             functions.add(new ClearAppForTestingBrowserFunction(browser));
