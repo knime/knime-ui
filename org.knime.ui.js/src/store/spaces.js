@@ -140,11 +140,14 @@ export const actions = {
         }
     },
 
-    connectProvider({ dispatch }, { spaceProviderId }) {
+    async connectProvider({ dispatch }, { spaceProviderId }) {
         try {
-            const user = connectSpaceProvider({ spaceProviderId });
+            const user = await connectSpaceProvider({ spaceProviderId });
 
-            dispatch('fetchProviderSpaces', { id: spaceProviderId, user });
+            if (user) {
+                // Only fetch spaces when a valid user was returned
+                dispatch('fetchProviderSpaces', { id: spaceProviderId, user });
+            }
         } catch (error) {
             consola.error('Error connecting to provider', { error });
             throw error;
@@ -227,9 +230,12 @@ export const actions = {
 
     openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router }) {
         const { spaceId } = state.activeSpace;
+        const { id: spaceProviderId } = state.activeSpaceProvider;
         const { openProjects } = rootState.application;
         const foundOpenProject = openProjects.find(
-            project => project.origin.spaceId === spaceId && project.origin.itemId === workflowItemId
+            project => project.origin.providerId === spaceProviderId &&
+                           project.origin.spaceId === spaceId &&
+                           project.origin.itemId === workflowItemId
         );
 
         if (foundOpenProject) {
@@ -240,7 +246,7 @@ export const actions = {
             return;
         }
 
-        openWorkflow({ spaceId, workflowItemId });
+        openWorkflow({ spaceId, workflowItemId, spaceProviderId });
     }
 };
 
@@ -298,5 +304,29 @@ export const getters = {
                 return origin.spaceId === spaceId && workflowItemIds.includes(origin.itemId);
             })
             .map(({ origin }) => origin.itemId);
+    },
+
+    activeSpaceInfo({ activeSpace, activeSpaceProvider }) {
+        const activeId = activeSpace.spaceId;
+
+        if (activeId === 'local') {
+            return {
+                local: true,
+                private: false,
+                name: 'Local space'
+            };
+        }
+
+        const space = activeSpaceProvider.spaces.find(space => space.id === activeId);
+
+        if (space) {
+            return {
+                local: false,
+                private: space.private,
+                name: space.name
+            };
+        }
+
+        return {};
     }
 };

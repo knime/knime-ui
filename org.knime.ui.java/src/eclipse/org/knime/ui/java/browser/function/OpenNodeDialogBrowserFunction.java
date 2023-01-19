@@ -62,16 +62,16 @@ import com.equo.chromium.swt.Browser;
  */
 public class OpenNodeDialogBrowserFunction extends AbstractNodeBrowserFunction {
 
-	private static final String FUNCTION_NAME = "openNodeDialog";
+    private static final String FUNCTION_NAME = "openNodeDialog";
 
-	public OpenNodeDialogBrowserFunction(final Browser browser) {
-		super(browser, FUNCTION_NAME);
-	}
+    @SuppressWarnings("javadoc")
+    public OpenNodeDialogBrowserFunction(final Browser browser) {
+        super(browser, FUNCTION_NAME);
+    }
 
     @Override
     protected String apply(final NodeContainer nc) {
         NodeContainerEditPart.openNodeDialog(wrap(nc));
         return null;
     }
-
 }

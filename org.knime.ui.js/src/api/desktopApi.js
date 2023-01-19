@@ -76,10 +76,10 @@ export const saveWorkflow = ({ projectId, workflowPreviewSvg }) => {
  * @param {String} param.workflowItemId
  * @returns {void}
  */
-export const openWorkflow = ({ spaceId = 'local', workflowItemId }) => {
+export const openWorkflow = ({ spaceId = 'local', workflowItemId, spaceProviderId }) => {
     try {
         // returns falsy on success
-        const error = window.openWorkflow(spaceId, workflowItemId);
+        const error = window.openWorkflow(spaceId, workflowItemId, spaceProviderId);
         if (error) {
             throw new Error(error);
         }
@@ -162,7 +162,8 @@ export const fetchAllSpaceProviders = () => {
 
 export const connectSpaceProvider = ({ spaceProviderId }) => {
     try {
-        window.connectSpaceProvider(spaceProviderId);
+        const user = window.connectSpaceProvider(spaceProviderId);
+        return JSON.parse(user);
     } catch (error) {
         consola.error(`Could not connect to provider`, { spaceProviderId, error });
         throw error;

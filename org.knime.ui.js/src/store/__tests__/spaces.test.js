@@ -219,15 +219,31 @@ describe('spaces store', () => {
         describe('connectProvider', () => {
             it('should fetch user to connect provider and fetch provider spaces data', async () => {
                 const { store } = loadStore();
+                const mockUser = { name: 'John Doe' };
 
                 store.state.spaces.spaceProviders = {
                     hub1: {}
                 };
 
+                connectSpaceProvider.mockResolvedValue({ user: mockUser });
                 await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
 
                 expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
                 expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+            });
+
+            it('should not fetch provider spaces data if the user is null', async () => {
+                const { store } = loadStore();
+
+                store.state.spaces.spaceProviders = {
+                    hub1: {}
+                };
+
+                connectSpaceProvider.mockResolvedValue(null);
+                await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
+
+                expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(fetchSpaceProvider).not.toHaveBeenCalled();
             });
         });
 
@@ -371,12 +387,14 @@ describe('spaces store', () => {
                 };
 
                 store.dispatch('spaces/openWorkflow', { workflowItemId: 'foobar' });
-                expect(openWorkflow).toHaveBeenCalledWith({ spaceId: 'local', workflowItemId: 'foobar' });
+                expect(openWorkflow).toHaveBeenCalledWith({
+                    spaceId: 'local', spaceProviderId: 'local', workflowItemId: 'foobar'
+                });
             });
 
             it('should navigate to already open workflow', () => {
                 const openProjects = [
-                    { projectId: 'dummyProject', origin: { spaceId: 'local', itemId: 'dummy' } }
+                    { projectId: 'dummyProject', origin: { providerId: 'local', spaceId: 'local', itemId: 'dummy' } }
                 ];
                 const { store } = loadStore({ openProjects });
 
@@ -485,7 +503,7 @@ describe('spaces store', () => {
         describe('openedWorkflowItems', () => {
             it('should return the opened workflow items', () => {
                 const openProjects = [
-                    { origin: { spaceId: 'local', itemId: '4' } }
+                    { origin: { providerId: 'local', spaceId: 'local', itemId: '4' } }
                 ];
 
                 const { store } = loadStore({ openProjects });
@@ -495,6 +513,40 @@ describe('spaces store', () => {
                 };
 
                 expect(store.getters['spaces/openedWorkflowItems']).toEqual(['4']);
+            });
+        });
+
+        describe('activeSpaceInfo', () => {
+            it('should return the information about the local active space', () => {
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local'
+                };
+                
+                expect(store.getters['spaces/activeSpaceInfo']).toEqual({
+                    local: true,
+                    private: false,
+                    name: 'Local space'
+                });
+            });
+
+            it('should return the information about the private active space', () => {
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'privateSpace'
+                };
+                store.state.spaces.activeSpaceProvider = {
+                    spaceId: 'space1',
+                    spaces: [{ id: 'privateSpace', name: 'Private space', private: true },
+                        { id: 'publicSpace', name: 'Public space', private: false }],
+                    local: false
+                };
+                
+                expect(store.getters['spaces/activeSpaceInfo']).toEqual({
+                    local: false,
+                    private: true,
+                    name: 'Private space'
+                });
             });
         });
     });

@@ -63,7 +63,6 @@ import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Browser function that allows one to programmatically initialise (and
@@ -74,29 +73,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class InitAppForTestingBrowserFunction extends BrowserFunction {
 
-	private static final String FUNCTION_NAME = "initAppForTesting";
+    private static final String FUNCTION_NAME = "initAppForTesting";
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+    /**
+     * Constructor.
+     *
+     * @param browser the browser to register this function with
+     */
+    public InitAppForTestingBrowserFunction(final Browser browser) {
+        super(browser, FUNCTION_NAME);
+    }
 
-	/**
-	 * Constructor.
-	 *
-	 * @param browser the browser to register this function with
-	 */
-	public InitAppForTestingBrowserFunction(final Browser browser) {
-		super(browser, FUNCTION_NAME);
-	}
-
-	@Override
-	public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
-		if (args == null || args.length != 1 || !(args[0] instanceof String)) {
-			throw new IllegalArgumentException("Wrong argument for browser function '" + getName()
-					+ "'. The arguments are: " + Arrays.toString(args));
-		}
+    @Override
+    public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
+        if (args == null || args.length != 1 || !(args[0] instanceof String)) {
+            throw new IllegalArgumentException("Wrong argument for browser function '" + getName()
+                    + "'. The arguments are: " + Arrays.toString(args));
+        }
 
         JsonNode appStateNode;
         try {
-            appStateNode = MAPPER.readValue((String)args[0], JsonNode.class);
+            appStateNode = ObjectMapperForBrowserFunction.MAPPER.readValue((String)args[0], JsonNode.class);
         } catch (JsonProcessingException ex) {
             NodeLogger.getLogger(this.getClass()).warn("Argument couldn't be parsed to JSON", ex);
             return null;
@@ -116,24 +113,24 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
         return null;
     }
 
-	private static OpenedWorkflow createOpenedWorkflow(final JsonNode json) {
-		return new OpenedWorkflow() {
+    private static OpenedWorkflow createOpenedWorkflow(final JsonNode json) {
+        return new OpenedWorkflow() {
 
-			@Override
-			public boolean isVisible() {
-				return json.get("visible").asBoolean();
-			}
+            @Override
+            public boolean isVisible() {
+                return json.get("visible").asBoolean();
+            }
 
-			@Override
-			public String getWorkflowId() {
-				return json.get("workflowId").asText();
-			}
+            @Override
+            public String getWorkflowId() {
+                return json.get("workflowId").asText();
+            }
 
-			@Override
-			public String getProjectId() {
-				return json.get("projectId").asText();
-			}
-		};
-	}
+            @Override
+            public String getProjectId() {
+                return json.get("projectId").asText();
+            }
+        };
+    }
 
 }

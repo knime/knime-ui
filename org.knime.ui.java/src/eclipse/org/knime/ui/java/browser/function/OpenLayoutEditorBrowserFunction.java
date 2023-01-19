@@ -71,9 +71,6 @@ public class OpenLayoutEditorBrowserFunction extends AbstractNodeBrowserFunction
         super(browser, FUNCTION_NAME);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected String apply(final NodeContainer nc) {
         if (nc instanceof SubNodeContainer) {

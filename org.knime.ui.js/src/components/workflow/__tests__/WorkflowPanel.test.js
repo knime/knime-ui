@@ -65,6 +65,9 @@ describe('WorkflowPanel', () => {
                 },
                 isWritable() {
                     return !(workflow.info.linked || workflow.parents.some(p => p.linked));
+                },
+                isOnHub() {
+                    return workflow.info.onHub || workflow.parents.some(p => p.onHub);
                 }
             }
         };

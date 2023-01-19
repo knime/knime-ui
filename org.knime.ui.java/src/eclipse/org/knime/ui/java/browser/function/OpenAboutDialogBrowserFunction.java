@@ -71,5 +71,4 @@ public class OpenAboutDialogBrowserFunction extends BrowserFunction {
         ActionFactory.ABOUT.create(window).run();
         return null;
     }
-
 }

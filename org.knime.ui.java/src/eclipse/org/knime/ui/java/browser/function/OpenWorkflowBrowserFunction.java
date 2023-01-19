@@ -46,38 +46,44 @@
  */
 package org.knime.ui.java.browser.function;
 
-import static org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction.showWarningAndLogError;
 import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.internal.Workbench;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
-import org.knime.core.node.workflow.contextv2.LocalLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.gateway.impl.webui.LocalWorkspace;
+import org.knime.gateway.impl.webui.Space;
 import org.knime.gateway.impl.webui.service.DefaultSpaceService;
+import org.knime.ui.java.util.BrowserFunctionUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
+import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.workbench.explorer.RemoteWorkflowInput;
+import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.LocalExplorerFileStore;
-import org.knime.workbench.explorer.localworkspace.LocalWorkspaceFileStore;
+import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
+import org.knime.workbench.explorer.view.actions.DownloadAndOpenWorkflowAction;
+import org.knime.workbench.explorer.view.actions.WorkflowDownload;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -89,6 +95,8 @@ import com.equo.chromium.swt.BrowserFunction;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public class OpenWorkflowBrowserFunction extends BrowserFunction {
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenWorkflowBrowserFunction.class);
 
     private final AppStateProvider m_appStateProvider;
 
@@ -103,64 +111,54 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
      * WorkflowEditor is used in that case to open the workflow). Or it opens and loads the workflow exclusively in the
      * Modern UI. Those workflows won't be available in the classic UI when switching to it.
      *
-     * @param arguments space-id (0) and item-id (1); never null
+     * @param arguments space-id (0), item-id (1) and space-provider-id (2, {@code "local"} if absent); never null
      * @return always {@code null}
      */
     @Override
     public Object function(final Object[] arguments) {
         var spaceId = (String)arguments[0];
         var itemId = (String)arguments[1];
+        final var spaceProviderId =
+                arguments.length < 3 ? LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID : (String)arguments[2];
 
-        var space = DefaultSpaceService.getInstance().getSpace(spaceId,
-            LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID /* TODO NXT-1409 */);
-        var localAbsolutePath = space.toLocalAbsolutePath(itemId);
-        if (space instanceof LocalWorkspace) {
-            if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-                var localWorkspaceRoot = ((LocalWorkspace)space).getLocalWorkspaceRoot();
-                openWorkflowInClassicAndWebUIPerspective(localWorkspaceRoot.relativize(localAbsolutePath),
-                    m_appStateProvider);
-            } else {
-                var onWorkflowLoaded = getWorkflowLoadedCallback(m_appStateProvider, spaceId, itemId);
-                openWorkflowInWebUIPerspectiveOnly(localAbsolutePath, onWorkflowLoaded);
-            }
+        final var space = DefaultSpaceService.getInstance().getSpace(spaceId, spaceProviderId);
+
+        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId), m_appStateProvider);
         } else {
-            throw new UnsupportedOperationException(
-                "Opening a workflow from other then the local workspace is not supported, yet");
+            openWorkflowInWebUIPerspectiveOnly(spaceProviderId, spaceId, itemId, space, m_appStateProvider);
         }
 
         return null;
     }
 
-    private static void openWorkflowInWebUIPerspectiveOnly(final Path absoluteLocalPath,
-        final Consumer<WorkflowManager> onWorkflowLoaded) {
-        var workflowContext = WorkflowContextV2.builder()
-            .withAnalyticsPlatformExecutor(builder -> builder.withCurrentUserAsUserId() //
-                .withLocalWorkflowPath(absoluteLocalPath)) //
-            .withLocation(LocalLocationInfo.getInstance(null)) //
-            .build();
-        final var progressService = PlatformUI.getWorkbench().getProgressService();
-        var loadWorkflowRunnable = new LoadWorkflowRunnable(onWorkflowLoaded,
-            absoluteLocalPath.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile(), workflowContext);
-        try {
-            progressService.busyCursorWhile(loadWorkflowRunnable);
-        } catch (InvocationTargetException e) {
-            showWarningAndLogError("Opening workflow failed", e.getMessage(),
-                NodeLogger.getLogger(OpenWorkflowBrowserFunction.class), e);
-        } catch (InterruptedException e) {
-            NodeLogger.getLogger(OpenWorkflowBrowserFunction.class).warn("Opening workflow interrupted");
-            Thread.currentThread().interrupt();
-        }
+    private static void openWorkflowInWebUIPerspectiveOnly(final String spaceProviderId, final String spaceId,
+            final String itemId, final Space space, final AppStateProvider appStateProvider) {
+        BrowserFunctionUtil.runWithProgress("Loading workflow", LOGGER, monitor -> { // NOSONAR better than inline class
+            monitor.beginTask("Loading workflow...", IProgressMonitor.UNKNOWN);
+            final var res = space.toLocalAbsolutePath(itemId);
+            monitor.done();
+
+            final var workflowContext = WorkflowContextV2.builder() //
+                    .withAnalyticsPlatformExecutor(builder -> builder //
+                        .withCurrentUserAsUserId() //
+                        .withLocalWorkflowPath(res.getFirst())) //
+                    .withLocation(res.getSecond()) //
+                    .build();
+
+            final var onWorkflowLoaded =
+                    getWorkflowLoadedCallback(appStateProvider, spaceProviderId, spaceId, itemId);
+            final var wfFile = res.getFirst().resolve(WorkflowPersistor.WORKFLOW_FILE).toFile();
+            new LoadWorkflowRunnable(onWorkflowLoaded, wfFile, workflowContext).run(monitor);
+            return null;
+        });
     }
 
     private static Consumer<WorkflowManager> getWorkflowLoadedCallback(final AppStateProvider appStateProvider,
-        final String spaceId, final String itemId) {
-        return wfm -> { // NOSONAR
+        final String spaceProviderId, final String spaceId, final String itemId) {
+        return wfm -> {
             var wpm = WorkflowProjectManager.getInstance();
-            var wfProj = createWorkflowProject(wfm, //
-                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, // TODO: parameterize w/ value provided by frontend; NXT-1409
-                spaceId, //
-                itemId //
-            );
+            var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId);
             var projectId = wfm.getNameWithID();
             wpm.addWorkflowProject(projectId, wfProj);
             wpm.openAndCacheWorkflow(projectId);
@@ -210,23 +208,14 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         };
     }
 
-    private static void openWorkflowInClassicAndWebUIPerspective(final Path relativePath,
-        final AppStateProvider appStateProvider) {
-        LocalWorkspaceFileStore fileStore;
+    private static void openWorkflowInClassicAndWebUIPerspective(final URI knimeUrl,
+            final AppStateProvider appStateProvider) {
         try {
-            var uri = new URI(ExplorerFileSystem.SCHEME, "LOCAL",
-                "/" + relativePath.toString() + "/" + WorkflowPersistor.WORKFLOW_FILE, null);
-            fileStore = (LocalWorkspaceFileStore)ExplorerFileSystem.INSTANCE.getStore(uri);
-        } catch (URISyntaxException e) {
-            // should never happen
-            throw new IllegalStateException(e);
-        }
-        try {
-            openEditor(fileStore);
+            openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl));
             hideSharedEditorArea();
             appStateProvider.updateAppState();
         } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
-            NodeLogger.getLogger(OpenWorkflowBrowserFunction.class).warn("Could not open editor", e);
+            LOGGER.warn("Could not open editor", e);
         }
     }
 
@@ -234,14 +223,87 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
      * Open an editor for the given file store in the shared editor area.
      *
      * @param fileStore The file store for the editor.
-     * @throws PartInitException If the editor part could not be initialised.
+     * @throws PartInitException If the editor part could not be initialized.
      */
-    private static void openEditor(final LocalExplorerFileStore fileStore) throws PartInitException {
-        var input = new FileStoreEditorInput(fileStore);
+    private static void openEditor(final AbstractExplorerFileStore fileStore) throws PartInitException {
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        final IEditorInput input;
+        if (fileStore instanceof RemoteExplorerFileStore) {
+            final var tempInput = BrowserFunctionUtil.runWithProgress("Download workflow", LOGGER,
+                progress -> downloadWorkflowFromMountpoint(progress, (RemoteExplorerFileStore)fileStore));
+            if (tempInput.isEmpty()) {
+                return;
+            }
+            input = tempInput.get();
+        } else {
+            input = new FileStoreEditorInput(fileStore);
+        }
         page.openEditor(input, WorkflowEditor.ID, false);
     }
 
+    /**
+     * Downloads a remote workflow into a temporary directory. This code is heavily inspired by the
+     * {@link DownloadAndOpenWorkflowAction}.
+     *
+     * @param source source file store
+     * @return
+     */
+    private static final RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
+            final RemoteExplorerFileStore source) {
+        final LocalExplorerFileStore tmpDestDir;
+        try {
+            tmpDestDir = ExplorerMountTable.createExplorerTempDir(source.getName()).getChild(source.getName());
+            tmpDestDir.mkdir(EFS.NONE, progress);
+        } catch (CoreException e1) {
+            throw new IllegalStateException(e1);
+        }
+
+        final String[] content;
+        try {
+            new WorkflowDownload(source, tmpDestDir, false, null, progress).runSync(progress);
+            content = tmpDestDir.childNames(EFS.NONE, progress);
+            if (content == null || content.length == 0) {
+                tmpDestDir.delete(EFS.NONE, progress);
+                throw new IllegalStateException("Error during download: No content available.");
+            }
+        } catch (CoreException e) {
+            throw new IllegalStateException(e);
+
+        }
+
+        // it is weird if the length is not 1 (because we downloaded one item)
+        var workflowDir = content.length == 1 ? tmpDestDir.getChild(content[0]) : tmpDestDir;
+        if (workflowDir.fetchInfo().isDirectory()) {
+            final LocalExplorerFileStore wf = workflowDir.getChild(WorkflowPersistor.WORKFLOW_FILE);
+            if (wf.fetchInfo().exists()) {
+                workflowDir = wf;
+            } else {
+                // directories that are not workflows cannot be opened
+                throw new IllegalStateException("Cannot open downloaded content: Directory doesn't contain a workflow");
+            }
+        }
+
+        final WorkflowContextV2 context;
+        try {
+            final var localWorkflowPath = workflowDir.getParent().toLocalFile().toPath();
+            final var mountpointRoot = workflowDir.getContentProvider().getRootStore().toLocalFile().toPath();
+            final var locationInfo = CheckUtils.checkNotNull(source.locationInfo().orElse(null),
+                "Location info could not be determined for " + source);
+            context = WorkflowContextV2.builder()
+                    .withAnalyticsPlatformExecutor(builder -> builder
+                        .withCurrentUserAsUserId()
+                        .withLocalWorkflowPath(localWorkflowPath)
+                        .withMountpoint(source.getMountID(), mountpointRoot))
+                        .withLocation(locationInfo)
+                        .build();
+        } catch (CoreException e) {
+            throw new IllegalStateException(e);
+        }
+
+        return new RemoteWorkflowInput(workflowDir, context);
+    }
+
+    @SuppressWarnings("restriction")
     private static void hideSharedEditorArea() {
         // Set editor area to non-visible again (WorkbenchPage#openEditor sets it to active).
         // Even though the part has zero size in its container, the renderer will still show a few pixels,
@@ -257,6 +319,4 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         );
         areaPlaceholder.setVisible(false);
     }
-
-
 }
