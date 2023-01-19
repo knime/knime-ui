@@ -64,6 +64,17 @@ import com.equo.chromium.swt.Browser;
  * different phases/states of it. A state-transition is only executed once even if being called multiple times in a row.
  * The state transitions need to be called in a strict order (see {@link StateTransition#rank()}). called.
  *
+ * <pre>
+ * NULL ┌─────┐ SHUTDOWN ┌─────────┐      SUSPEND     ┌─────────┐
+ * ─────►Null ◄──────────┤Suspended◄──────────────────┤Persisted│
+ *      └──┬──┘          └────┬────┘                  └────▲────┘
+ *   CREATE│                  │INIT                        │SAVE_STATE
+ *     ┌───▼───┐   INIT ┌─────▼─────┐ WEB_APP_LOADED ┌─────┴─────┐
+ *     │Created├────────►Initialized├────────────────►Operational│
+ *     └───────┘        └───────────┘                └───────────┘
+ * </pre>
+ * (created with asciiflow)
+ *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class LifeCycle {
