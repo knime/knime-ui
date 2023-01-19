@@ -162,10 +162,10 @@ export default {
         v-if="mode === 'mini'"
         class="buttons"
       >
-        <ToolbarButton>
+        <ToolbarButton title="Import workflow">
           <ImportWorkflowIcon />
         </ToolbarButton>
-        <ToolbarButton>
+        <ToolbarButton title="Add file">
           <AddFileIcon />
         </ToolbarButton>
         <ToolbarButton
@@ -243,6 +243,7 @@ export default {
     -ms-overflow-style: none; /* needed to hide scroll bar in edge */
     scrollbar-width: none; /* for firefox */
     user-select: none;
+    font-size: 14px;
 
     &::-webkit-scrollbar {
       display: none;
@@ -255,7 +256,7 @@ export default {
 }
 
 .mini {
-  padding: 15px;
+  padding: 8px 15px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
