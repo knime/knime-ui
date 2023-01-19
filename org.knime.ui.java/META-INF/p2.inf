@@ -1,0 +1,5 @@
+instructions.install=\
+org.eclipse.equinox.p2.touchpoint.eclipse.addJvmArg(jvmArg:-Dperspective=org.knime.ui.java.perspective);\ 
+
+instructions.uninstall=\
+org.eclipse.equinox.p2.touchpoint.eclipse.removeJvmArg(jvmArg:-Dperspective=org.knime.ui.java.perspective);\ 

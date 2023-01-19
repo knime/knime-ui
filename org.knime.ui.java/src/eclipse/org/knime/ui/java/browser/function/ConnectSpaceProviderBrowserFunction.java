@@ -48,6 +48,8 @@
  */
 package org.knime.ui.java.browser.function;
 
+import java.util.function.Predicate;
+
 import org.knime.gateway.impl.webui.SpaceProvider;
 import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.SpaceProviders;
@@ -77,15 +79,18 @@ public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
     }
 
     /**
-     * {@inheritDoc}
+     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
      */
     @Override
     public Object function(final Object[] arguments) {
         var spaceProviderId = (String)arguments[0];
         var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
         if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            var username = spaceProvider.getConnection(true).map(SpaceProviderConnection::getUsername).orElse(null);
-            return MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString();
+            return spaceProvider.getConnection(true)//
+                .map(SpaceProviderConnection::getUsername)//
+                .filter(Predicate.not(String::isEmpty))//
+                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
+                .orElse(null);
         }
         return null;
     }

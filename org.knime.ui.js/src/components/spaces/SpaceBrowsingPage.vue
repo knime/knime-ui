@@ -1,13 +1,48 @@
 <script>
+import { mapGetters } from 'vuex';
+import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
+import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
+import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
+import { APP_ROUTES } from '@/router';
 import PageHeader from '@/components/common/PageHeader.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import SpaceExplorer from './SpaceExplorer.vue';
 
 export default {
     components: {
+        ArrowLeftIcon,
         SpaceExplorer,
         ComputerDesktopIcon,
         PageHeader
+    },
+    computed: {
+        ...mapGetters('spaces', ['activeSpaceInfo']),
+        spaceInfo() {
+            if (this.activeSpaceInfo.local) {
+                return {
+                    title: 'Your Local Space',
+                    subtitle: 'Local space',
+                    icon: ComputerDesktopIcon
+                };
+            }
+
+            return this.activeSpaceInfo.private
+                ? {
+                    title: this.activeSpaceInfo.name,
+                    subtitle: 'Private space',
+                    icon: PrivateSpaceIcon
+                }
+                : {
+                    title: this.activeSpaceInfo.name,
+                    subtitle: 'Public space',
+                    icon: CubeIcon
+                };
+        }
+    },
+    methods: {
+        onBackButtonClick() {
+            this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
+        }
     }
 };
 </script>
@@ -15,11 +50,17 @@ export default {
 <template>
   <main ref="main">
     <PageHeader
-      title="Your Local Space"
-      subtitle="Local space"
+      :title="spaceInfo.title"
+      :subtitle="spaceInfo.subtitle"
     >
+      <template #button>
+        <ArrowLeftIcon
+          class="back-button"
+          @click="onBackButtonClick"
+        />
+      </template>
       <template #icon>
-        <ComputerDesktopIcon />
+        <Component :is="spaceInfo.icon" />
       </template>
     </PageHeader>
 
@@ -42,6 +83,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 main {
   display: flex;
   flex-direction: column;
@@ -72,4 +115,20 @@ main {
   padding-bottom: 80px;
   flex: 1;
 }
+
+.back-button {
+  @mixin svg-icon-size 30;
+
+  stroke: var(--knime-dove-gray);
+  border-right: 1px solid var(--knime-silver-sand);
+  padding-right: 10px;
+  width: 40px;
+  height: 60px;
+
+  &:hover {
+    cursor: pointer;
+    stroke: var(--knime-masala);
+  }
+}
+
 </style>
