@@ -5,6 +5,8 @@ import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import PlusIcon from '@/assets/plus.svg';
+import AddFileIcon from '@/assets/add-file.svg';
+import ImportWorkflowIcon from '@/assets/import-workflow.svg';
 import ToolbarButton from '@/components/common/ToolbarButton.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
@@ -19,6 +21,8 @@ export default {
         Breadcrumb,
         PlusButton,
         PlusIcon,
+        AddFileIcon,
+        ImportWorkflowIcon,
         ToolbarButton
     },
 

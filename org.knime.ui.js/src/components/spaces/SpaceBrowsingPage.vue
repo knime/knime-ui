@@ -1,13 +1,19 @@
 <script>
+import Button from 'webapps-common/ui/components/Button.vue';
 import PageHeader from '@/components/common/PageHeader.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
+import AddFileIcon from '@/assets/add-file.svg';
+import ImportWorkflowIcon from '@/assets/import-workflow.svg';
 import SpaceExplorer from './SpaceExplorer.vue';
 
 export default {
     components: {
         SpaceExplorer,
         ComputerDesktopIcon,
-        PageHeader
+        AddFileIcon,
+        ImportWorkflowIcon,
+        PageHeader,
+        Button
     }
 };
 </script>
@@ -26,7 +32,24 @@ export default {
     <section class="toolbar-wrapper">
       <div class="grid-container">
         <div class="grid-item-12">
-          <div class="toolbar" />
+          <div class="toolbar">
+            <div class="toolbar-buttons">
+              <Button
+                with-border
+                compact
+              >
+                <ImportWorkflowIcon />
+                Import workflow
+              </Button>
+              <Button
+                with-border
+                compact
+              >
+                <AddFileIcon />
+                Add files
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -42,6 +65,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 main {
   display: flex;
   flex-direction: column;
@@ -63,6 +88,33 @@ main {
   & .toolbar {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
+
+    & .toolbar-buttons {
+      & .button {
+        margin-left: 5px;
+        border-color: var(--knime-silver-sand);
+        color: var(--knime-masala);
+
+        & svg {
+          @mixin svg-icon-size 18;
+
+          stroke: var(--knime-masala);
+          margin-right: 4px;
+        }
+
+        &:hover {
+          cursor: pointer;
+          color: var(--knime-white);
+          background-color: var(--knime-masala);
+          border-color: var(--knime-masala);
+
+          & svg {
+            stroke: var(--knime-white);
+          }
+        }
+      }
+    }
   }
 }
 
