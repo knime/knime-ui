@@ -238,7 +238,6 @@ export const getters = {
 
     activeSpaceInfo({ activeSpace, activeSpaceProvider }) {
         const activeId = activeSpace.spaceId;
-        const space = activeSpaceProvider.spaces?.find(space => space.id === activeId);
 
         if (activeId === 'local') {
             return {
@@ -248,6 +247,8 @@ export const getters = {
             };
         }
 
+        const space = activeSpaceProvider.spaces.find(space => space.id === activeId);
+
         if (space) {
             return {
                 local: false,
@@ -255,7 +256,6 @@ export const getters = {
                 name: space.name
             };
         }
-        
 
         return {};
     }
