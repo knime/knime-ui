@@ -57,7 +57,11 @@ export default {
 
         breadcrumbItems() {
             if (!this.activeWorkflowGroup) {
-                return [];
+                return [{
+                    text: 'Home',
+                    id: 'root',
+                    clickable: false
+                }];
             }
 
             const { path } = this.activeWorkflowGroup;
