@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.browser.function;
 
-import org.knime.gateway.impl.webui.SpaceProvider;
 import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.SpaceProviders;
 
@@ -56,7 +55,7 @@ import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
 
 /**
- * Disconnects a space provider from its remote location. Essentially calls {@link SpaceProvider#disconnect()}.
+ * Disconnects a space provider from its remote location. Essentially calls {@link SpaceProviderConnection#disconnect()}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
@@ -73,9 +72,6 @@ public class DisconnectSpaceProviderBrowserFunction extends BrowserFunction {
         m_spaceProviders = spaceProviders;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Object function(final Object[] arguments) {
         var spaceProviderId = (String)arguments[0];

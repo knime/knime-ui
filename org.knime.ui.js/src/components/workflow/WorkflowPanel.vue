@@ -29,7 +29,8 @@ export default {
             'isInsideLinked',
             'insideLinkedType',
             'isWritable',
-            'isStreaming'
+            'isStreaming',
+            'isOnHub'
         ]),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('selection', ['selectedNodeIds'])
@@ -84,14 +85,17 @@ export default {
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
-      v-if="isLinked || isStreaming || isInsideLinked"
-      :class="['workflow-info', { 'only-streaming': isStreaming && !isLinked }]"
+      v-if="isLinked || isStreaming || isInsideLinked || isOnHub"
+      :class="['workflow-info', { 'only-streaming': isStreaming && !isLinked }, { 'only-on-hub': isOnHub }]"
     >
       <span v-if="isInsideLinked">
         This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
       </span>
       <span v-else-if="isLinked">
         This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
+      </span>
+      <span v-if="isOnHub">
+        This is a temporary preview, save as a local copy if you want to edit it.
       </span>
       <span
         v-if="isStreaming"
@@ -140,6 +144,10 @@ export default {
     background-color: unset;
     justify-content: flex-end;
     margin-right: 0;
+  }
+
+  &.only-on-hub {
+    background-color: rgba(255 216 0 / 20%);
   }
 
   & span {
