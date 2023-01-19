@@ -408,11 +408,8 @@ describe('spaces store', () => {
         describe('activeSpaceInfo', () => {
             it('should return the information about the local active space', () => {
                 const { store } = loadStore();
-                store.state.spaces.activeSpaceProvider = {
-                    spaceId: 'local',
-                    spaces: [{ id: 'local', name: 'Local space' }],
-                    local: true,
-                    name: 'Local space'
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local'
                 };
                 
                 expect(store.getters['spaces/activeSpaceInfo']).toEqual({
