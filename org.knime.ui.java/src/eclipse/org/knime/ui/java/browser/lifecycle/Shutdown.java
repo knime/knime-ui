@@ -51,7 +51,7 @@ package org.knime.ui.java.browser.lifecycle;
 import org.knime.ui.java.util.AppStatePersistor;
 
 /**
- * The shutdown lifecycle-phase of the KNIME-UI. The {@link Suspend}-phase must have been run first.
+ * The shutdown lifecycle state transition of the KNIME-UI. The {@link Suspend}-phase must have been run first.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
@@ -66,7 +66,7 @@ public final class Shutdown {
      *
      * @param state
      */
-    public static void runPhase(final LifeCycleState state) {
+    public static void run(final LifeCycleState state) {
         AppStatePersistor.saveAppState(state.serializedAppState());
     }
 }

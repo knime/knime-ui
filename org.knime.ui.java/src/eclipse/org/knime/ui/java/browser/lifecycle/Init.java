@@ -95,8 +95,8 @@ import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.P
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 import org.knime.ui.java.util.AppStatePersistor;
-import org.knime.ui.java.util.ClassicEclipseUtil;
 import org.knime.ui.java.util.DefaultServicesUtil;
+import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
 import com.equo.chromium.swt.Browser;
@@ -106,8 +106,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * The 'init' lifecycle-phase for the KNIME-UI. Called after {@link Create} and when the view is being re-initializated
- * after a {@link Suspend}.
+ * The 'init' lifecycle state transition for the KNIME-UI. Called after {@link Create} and when the view is being
+ * re-initializated after a {@link Suspend}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
@@ -119,7 +119,7 @@ final class Init {
         //
     }
 
-    static LifeCycleState runPhase(final Supplier<AppState> appStateSupplier, final Browser browser) {
+    static LifeCycleState run(final Supplier<AppState> appStateSupplier, final Browser browser) {
         if (appStateSupplier == null) {
             AppStatePersistor.loadAppState();
         }
@@ -128,7 +128,7 @@ final class Init {
         var eventConsumer = createEventConsumer();
         var appStateProvider = new AppStateProvider(
             appStateSupplier == null ? AppStateDerivedFromWorkflowProjectManager::new : appStateSupplier);
-        var updateStateProvider = new UpdateStateProvider(ClassicEclipseUtil::checkForUpdate);
+        var updateStateProvider = new UpdateStateProvider(DesktopAPUtil::checkForUpdate);
         var spaceProviders = createSpaceProviders();
         DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer, spaceProviders,
             updateStateProvider);

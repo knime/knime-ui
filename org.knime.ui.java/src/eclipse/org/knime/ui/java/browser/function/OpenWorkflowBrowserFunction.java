@@ -66,7 +66,7 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.service.DefaultSpaceService;
-import org.knime.ui.java.util.ClassicEclipseUtil;
+import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -115,7 +115,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
             if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
                 openWorkflowInClassicAndWebUIPerspective(relativePath, m_appStateProvider);
             } else {
-                ClassicEclipseUtil.openWorkflowInWebUIPerspectiveOnly(localAbsolutePath).ifPresent(wfm -> {
+                DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(localAbsolutePath).ifPresent(wfm -> {
                     registerWorkflowProject(wfm, spaceId, itemId, relativePath);
                     m_appStateProvider.updateAppState();
                 });

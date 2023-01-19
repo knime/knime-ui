@@ -77,9 +77,9 @@ import org.knime.workbench.editor2.LoadWorkflowRunnable;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class ClassicEclipseUtil {
+public final class DesktopAPUtil {
 
-    private ClassicEclipseUtil() {
+    private DesktopAPUtil() {
         // utility
     }
 
@@ -102,6 +102,7 @@ public final class ClassicEclipseUtil {
         var wfmRef = new AtomicReference<WorkflowManager>();
         var loadWorkflowRunnable = new LoadWorkflowRunnable(wfmRef::set,
             absoluteLocalPath.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile(), workflowContext);
+        // TODO use leos utilitly method
         try {
             progressService.busyCursorWhile(loadWorkflowRunnable);
             return Optional.ofNullable(wfmRef.get());
@@ -127,7 +128,7 @@ public final class ClassicEclipseUtil {
             UpdateDetector.checkForNewRelease().forEach(newReleases::add);
             UpdateDetector.checkForBugfixes().forEach(bugfixes::add);
         } catch (IOException | URISyntaxException e) {
-            NodeLogger.getLogger(ClassicEclipseUtil.class).error("Could not check for updates", e);
+            NodeLogger.getLogger(DesktopAPUtil.class).error("Could not check for updates", e);
         }
         return new UpdateState() {
             @Override

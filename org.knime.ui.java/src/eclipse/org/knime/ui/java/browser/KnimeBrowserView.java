@@ -19,7 +19,7 @@ import org.eclipse.ui.ISaveablePart2;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
-import org.knime.ui.java.browser.lifecycle.LifeCycle.Phase;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
 import com.equo.chromium.swt.Browser;
 
@@ -93,7 +93,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
             if (!browser.isDisposed()) {
                 browser.setUrl(EMPTY_PAGE);
             }
-            LifeCycle.get().preSuspend();
+            LifeCycle.get().saveState();
             LifeCycle.get().suspend();
             viewInitializer = null;
         }
@@ -183,7 +183,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
     @Override
     public boolean isDirty() {
-        return LifeCycle.get().isBeforePhase(Phase.SUSPEND);
+        return LifeCycle.get().isBeforeStateTransition(StateTransition.SUSPEND);
     }
 
     @Override
@@ -201,9 +201,9 @@ public class KnimeBrowserView implements ISaveablePart2 {
         // This is being called by the eclipse framework before this view is disposed (usually only on shutdown).
         // And before it's disposed, we need, e.g., to ask the user to save (and save) all the workflows (or abort
         // the shutdown, if the user cancels).
-        LifeCycle.get().preSuspend();
+        LifeCycle.get().saveState();
         // cancel if we didn't successfully transition to the next phase
-        return LifeCycle.get().isLastPhase(Phase.PRE_SUSPEND) ? YES : CANCEL;
+        return LifeCycle.get().isLastStateTransition(StateTransition.SAVE_STATE) ? YES : CANCEL;
     }
 
 }

@@ -74,7 +74,7 @@ final class Create {
         //
     }
 
-    static void runPhase() {
+    static void run() {
         PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
 
         // In order for the mechanism to block external requests to work (see CEFPlugin-class)

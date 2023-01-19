@@ -49,7 +49,7 @@
 package org.knime.ui.java.browser.lifecycle;
 
 /**
- * Constants shared accross lifecycle phases.
+ * Constants shared accross lifecycle state transitions.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */

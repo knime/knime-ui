@@ -133,7 +133,9 @@ public final class LocalSpaceUtil {
             // Only support workflows in the local space for the time being.
             return Optional.empty();
         }
-        var path = ctx.getExecutorInfo().getLocalWorkflowPath();
+        var absolutePath = ctx.getExecutorInfo().getLocalWorkflowPath();
+        var localWorkspaceRoot = LocalSpaceUtil.getLocalWorkspace().getLocalWorkspaceRoot();
+        var relativePath = localWorkspaceRoot.relativize(absolutePath);
         return Optional.of(new WorkflowProject.Origin() {
             @Override
             public String getProviderId() {
@@ -147,12 +149,12 @@ public final class LocalSpaceUtil {
 
             @Override
             public String getItemId() {
-                return getLocalWorkspace().getItemId(path);
+                return getLocalWorkspace().getItemId(absolutePath);
             }
 
             @Override
             public Optional<String> getRelativePath() {
-                return Optional.of(path.toString());
+                return Optional.of(relativePath.toString());
             }
         });
     }

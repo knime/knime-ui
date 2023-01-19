@@ -182,8 +182,9 @@ public final class AppStatePersistor {
     }
 
     private static WorkflowProject createWorkflowProject(final JsonNode projectJson) {
-        var path = Path.of(projectJson.get(ORIGIN).get(RELATIVE_PATH).asText());
-        var absolutePath = LocalSpaceUtil.getLocalWorkspace().getLocalWorkspaceRoot().resolve(path);
+        var relativePath = Path.of(projectJson.get(ORIGIN).get(RELATIVE_PATH).asText());
+        assert !relativePath.isAbsolute();
+        var absolutePath = LocalSpaceUtil.getLocalWorkspace().getLocalWorkspaceRoot().resolve(relativePath);
         var name = projectJson.get(NAME).asText();
         var projectId = LocalSpaceUtil.getUniqueProjectId(name);
         return new WorkflowProject() { // NOSONAR
@@ -215,7 +216,7 @@ public final class AppStatePersistor {
 
                     @Override
                     public String getItemId() {
-                        return LocalSpaceUtil.getLocalWorkspace().getItemId(path);
+                        return LocalSpaceUtil.getLocalWorkspace().getItemId(absolutePath);
                     }
 
                     @Override
@@ -228,11 +229,11 @@ public final class AppStatePersistor {
             @Override
             public WorkflowManager openProject() {
                 if (!Files.exists(absolutePath)) {
-                    ClassicEclipseUtil.showWarning("No workflow project found",
+                    DesktopAPUtil.showWarning("No workflow project found",
                         "No workflow project found at " + absolutePath);
                     return null;
                 }
-                return ClassicEclipseUtil.openWorkflowInWebUIPerspectiveOnly(absolutePath).orElseThrow();
+                return DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(absolutePath).orElseThrow();
             }
 
         };

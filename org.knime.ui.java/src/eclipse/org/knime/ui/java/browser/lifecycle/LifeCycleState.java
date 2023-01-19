@@ -53,14 +53,14 @@ import java.util.function.IntSupplier;
 import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
 
 /**
- * A state passed to and returned by lifecycle phases in order to exchange information.
+ * A state passed to and returned by lifecycle state transitions in order to exchange information.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 interface LifeCycleState {
 
     /**
-     * @return whether workflows have been saved successfully. Manipulated in the {@link PreSuspend}-phase.
+     * @return whether workflows have been saved successfully. Manipulated in the {@link SaveState}-phase.
      */
     default boolean workflowsSaved() {
         return false;

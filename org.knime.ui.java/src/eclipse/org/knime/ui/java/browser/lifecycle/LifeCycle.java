@@ -53,27 +53,32 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.ui.java.util.AppStatePersistor;
 
 import com.equo.chromium.swt.Browser;
 
 /**
- * Represents the life cycle of the KNIME UI and allows one to step through the different phases of it. A phase is only
- * executed once even if being called multiple times in a row. The phases need to be called in a strict order (see
- * {@link Phase#rank()}). called.
+ * Represents the life cycle (which is a finite state machine) of the KNIME UI and allows one to step through the
+ * different phases/states of it. A state-transition is only executed once even if being called multiple times in a row.
+ * The state transitions need to be called in a strict order (see {@link StateTransition#rank()}). called.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class LifeCycle {
 
+    /**
+     * All the state transitions to move from one life-cycle state to the other. The state transitions must be executed
+     * in a strict order (see {@link #rank()}. Each enum-value corresponds to a method in this class.
+     */
     @SuppressWarnings("javadoc")
-    public enum Phase {
-            NULL(-1), CREATE(0), INIT(1), PAGE_LOADED(2), PRE_SUSPEND(3), SUSPEND(4), SHUTDOWN(5);
+    public enum StateTransition {
+            NULL(-1), CREATE(0), INIT(1), WEB_APP_LOADED(2), SAVE_STATE(3), SUSPEND(4), SHUTDOWN(5);
 
         private final int m_rank;
 
-        Phase(final int rank) {
+        StateTransition(final int rank) {
             m_rank = rank;
         }
 
@@ -98,7 +103,7 @@ public final class LifeCycle {
 
     private LifeCycleState m_state = null;
 
-    private Phase m_lastPhase = Phase.NULL;
+    private StateTransition m_lastStateTransition = StateTransition.NULL;
 
     private LifeCycle() {
         // singleton
@@ -108,82 +113,98 @@ public final class LifeCycle {
      * Called once at first.
      */
     public void create() {
-        runPhase(Phase.CREATE, Create::runPhase, null, Phase.NULL);
+        doStateTransition(StateTransition.CREATE, Create::run, null, StateTransition.NULL);
     }
 
     /**
-     * Runs the init-phase.
+     * Runs the init-state-transition.
      *
      * @param appStateSupplier can be {@code null} - in that case the app state is loaded from a file (see
      *            {@link AppStatePersistor#loadAppState()}
      * @param browser required to initialize browser functions
      */
     public void init(final Supplier<AppState> appStateSupplier, final Browser browser) {
-        runPhase(Phase.INIT, () -> m_state = Init.runPhase(appStateSupplier, browser), null, Phase.CREATE,
-            Phase.SUSPEND);
+        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(appStateSupplier, browser), null,
+            StateTransition.CREATE, StateTransition.SUSPEND);
     }
 
     /**
-     * Runs the phase required once the (web-)page is loaded.
+     * Runs the state transition required once the web app (web page) is loaded.
      *
      * @param browser
      */
-    public void pageLoaded(final Browser browser) {
-        runPhase(Phase.PAGE_LOADED, () -> PageLoaded.runPhase(browser), null, Phase.INIT);
+    public void webAppLoaded(final Browser browser) {
+        doStateTransition(StateTransition.WEB_APP_LOADED, () -> WebAppLoaded.runPhase(browser), null,
+            StateTransition.INIT);
     }
 
     /**
-     * Runs the preSuspend-phase.
+     * Runs the save-state-state-transition.
      */
-    public void preSuspend() {
-        runPhase(Phase.PRE_SUSPEND, () -> m_state = PreSuspend.runPhase(m_state), s -> !s.workflowsSaved(),
-            Phase.PAGE_LOADED);
+    public void saveState() {
+        doStateTransition(StateTransition.SAVE_STATE, () -> m_state = SaveState.run(m_state), s -> !s.workflowsSaved(),
+            StateTransition.WEB_APP_LOADED);
     }
 
     /**
-     * Runs the suspend-phase.
+     * Runs the suspend-state-transition.
      */
     public void suspend() {
-        runPhase(Phase.SUSPEND, () -> m_state = Suspend.runPhase(m_state), null, Phase.PRE_SUSPEND);
+        doStateTransition(StateTransition.SUSPEND, () -> m_state = Suspend.run(m_state), null,
+            StateTransition.SAVE_STATE);
     }
 
     /**
-     * Runs the shutdown-phase.
+     * Runs the shutdown-state-transition.
      */
     public void shutdown() {
-        runPhase(Phase.SHUTDOWN, () -> Shutdown.runPhase(m_state), null, Phase.SUSPEND);
+        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), null, StateTransition.SUSPEND);
     }
 
-    private void runPhase(final Phase nextPhase, final Runnable runPhase, final Predicate<LifeCycleState> abort,
-        final Phase... expectedLastPhases) {
-        if (nextPhase == m_lastPhase) {
-            // avoid the same phase being called multiple times in a row
+    private void doStateTransition(final StateTransition nextStateTransition, final Runnable runStateTransition,
+        final Predicate<LifeCycleState> abort, final StateTransition... expectedLastStateTransitions) {
+        if (nextStateTransition == m_lastStateTransition) {
+            // avoid the same state transition being called multiple times in a row
             return;
         }
-        assert Arrays.stream(expectedLastPhases).anyMatch(expectedLastPhase -> expectedLastPhase == m_lastPhase);
-        runPhase.run();
+
+        checkExpectedLastStateTransition(m_lastStateTransition, nextStateTransition, expectedLastStateTransitions);
+
+        runStateTransition.run();
         if (abort != null && abort.test(m_state)) {
-            LOGGER.info("Phase '" + nextPhase.name() + "' aborted");
+            LOGGER.info("Phase '" + nextStateTransition.name() + "' aborted");
             return;
         }
-        m_lastPhase = nextPhase;
-        LOGGER.info("Phase '" + m_lastPhase.name() + "' finished");
+        m_lastStateTransition = nextStateTransition;
+        LOGGER.info("Phase '" + m_lastStateTransition.name() + "' finished");
+    }
+
+    private static void checkExpectedLastStateTransition(final StateTransition lastStateTransition,
+        final StateTransition nextStateTransition, final StateTransition... expectedLastStateTransitions) {
+        boolean match = Arrays.stream(expectedLastStateTransitions)
+            .anyMatch(expectedLastPhase -> expectedLastPhase == lastStateTransition);
+        CheckUtils.checkState(match,
+            "Life cycle state transition '%s' failed; wrong life cycle state transition. Last state transition: '%s'. "
+                + "Expected last state transition(s): %s",
+            nextStateTransition, lastStateTransition, Arrays.toString(expectedLastStateTransitions));
     }
 
     /**
-     * @param phase the phase to check
-     * @return {@code true} if the passed phase is the last phase that was run, otherwise {@code false}
+     * @param stateTransition the state transition to check
+     * @return {@code true} if the passed state transition is the last state transition that was run, otherwise
+     *         {@code false}
      */
-    public boolean isLastPhase(final Phase phase) {
-        return m_lastPhase == phase;
+    public boolean isLastStateTransition(final StateTransition stateTransition) {
+        return m_lastStateTransition == stateTransition;
     }
 
     /**
-     * @param phase the phase to check
-     * @return {@code true} if the passed phase is strictly before the last phase that was run, otherwise {@code false}
+     * @param stateTransition the state transition to check
+     * @return {@code true} if the passed state transition is strictly before the last state transition that was run,
+     *         otherwise {@code false}
      */
-    public boolean isBeforePhase(final Phase phase) {
-        return m_lastPhase.rank() < phase.rank();
+    public boolean isBeforeStateTransition(final StateTransition stateTransition) {
+        return m_lastStateTransition.rank() < stateTransition.rank();
     }
 
 }

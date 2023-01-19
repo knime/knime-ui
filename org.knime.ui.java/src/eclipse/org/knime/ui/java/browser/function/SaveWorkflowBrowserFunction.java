@@ -48,8 +48,8 @@
  */
 package org.knime.ui.java.browser.function;
 
-import static org.knime.ui.java.util.ClassicEclipseUtil.showWarning;
-import static org.knime.ui.java.util.ClassicEclipseUtil.showWarningAndLogError;
+import static org.knime.ui.java.util.DesktopAPUtil.showWarning;
+import static org.knime.ui.java.util.DesktopAPUtil.showWarningAndLogError;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

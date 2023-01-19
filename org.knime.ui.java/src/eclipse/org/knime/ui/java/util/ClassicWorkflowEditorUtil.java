@@ -71,7 +71,6 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
@@ -103,8 +102,6 @@ public final class ClassicWorkflowEditorUtil {
      * The part ID of a workflow editor in the Eclipse UI.
      */
     private static final String WORKFLOW_EDITOR_PART_ID = "org.eclipse.e4.ui.compatibility.editor";
-
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(ClassicWorkflowEditorUtil.class);
 
     private ClassicWorkflowEditorUtil() {
         // utility class

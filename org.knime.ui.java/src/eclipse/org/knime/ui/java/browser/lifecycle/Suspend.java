@@ -51,8 +51,8 @@ package org.knime.ui.java.browser.lifecycle;
 import org.knime.ui.java.util.DefaultServicesUtil;
 
 /**
- * The 'suspend' lifecycle-phase for the KNIME-UI. Called when the view is (temporarly) not used anymore (on perspective
- * switch to the classic UI).
+ * The 'suspend' lifecycle state transition for the KNIME-UI. Called when the view is (temporarily) not used anymore (on
+ * perspective switch to the classic UI).
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
@@ -62,7 +62,7 @@ final class Suspend {
         //
     }
 
-    static LifeCycleState runPhase(final LifeCycleState state) {
+    static LifeCycleState run(final LifeCycleState state) {
         var removeAndDisposeAllBrowserFunctions = state.removeAndDisposeAllBrowserFunctions();
         if (removeAndDisposeAllBrowserFunctions != null) {
             removeAndDisposeAllBrowserFunctions.run();

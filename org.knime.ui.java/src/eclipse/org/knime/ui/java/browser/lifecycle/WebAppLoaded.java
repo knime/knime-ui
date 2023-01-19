@@ -48,53 +48,62 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.IntSupplier;
+import static org.knime.ui.java.browser.KnimeBrowserView.DOMAIN_NAME;
+import static org.knime.ui.java.browser.lifecycle.SharedConstants.JSON_RPC_ACTION_ID;
+import static org.knime.ui.java.browser.lifecycle.SharedConstants.JSON_RPC_NOTIFICATION_ACTION_ID;
 
-import org.knime.ui.java.util.AppStatePersistor;
-import org.knime.ui.java.util.PerspectiveUtil;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.knime.ui.java.browser.KnimeBrowserView;
+
+import com.equo.chromium.swt.Browser;
 
 /**
- * The 'pre-suspend' lifecycle-phase for the KNIME-UI. Called before {@link Suspend}.
+ * The 'web-app-loaded' lifecycle state transition of the KNIME-UI. Called after {@link Init} as soon as the (html)-page
+ * has been completely loaded.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class PreSuspend {
+final class WebAppLoaded {
 
-    private PreSuspend() {
+    private WebAppLoaded() {
         //
     }
 
-    static LifeCycleState runPhase(final LifeCycleState state) {
-        IntSupplier saveAndCloseAllWorkflows;
-        boolean workflowsSaved;
-        var serializedAppState = AppStatePersistor.serializeAppState();
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            // nothing we need to do here because the (in the classic UI) opened WorkflowEditor(s) take care
-            // of saving the opened workflow projects on shutdown
-            saveAndCloseAllWorkflows = null;
-            workflowsSaved = true;
-        } else {
-            saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
-            workflowsSaved = saveAndCloseAllWorkflows.getAsInt() > 0;
+    static void runPhase(final Browser browser) {
+        initializeJSBrowserCommunication(browser);
+    }
+
+    private static void initializeJSBrowserCommunication(final Browser browser) {
+        // inject the communication (message transport) logic
+        try {
+            var script = Files.readString(Path.of(getAbsolutePath(DOMAIN_NAME, "files/script-snippet.template")))
+                .replace("##JSON_RPC_NOTIFICATION_ACTION_ID##", JSON_RPC_NOTIFICATION_ACTION_ID)
+                .replace("##JSON_RPC_ACTION_ID##", JSON_RPC_ACTION_ID);
+            if (!browser.execute(script)) {
+                KnimeBrowserView.LOGGER.error("Script to initialize JS browser communication failed to execute");
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read script to initialize JS browser communication", e);
         }
+    }
 
-        return new LifeCycleState() {
-
-            @Override
-            public boolean workflowsSaved() {
-                return workflowsSaved;
-            }
-
-            @Override
-            public IntSupplier saveAndCloseAllWorkflows() {
-                return saveAndCloseAllWorkflows;
-            }
-
-            @Override
-            public String serializedAppState() {
-                return serializedAppState;
-            }
-        };
+    private static String getAbsolutePath(final String bundle, final String relativePath) {
+        var url = Platform.getBundle(bundle).getEntry(relativePath);
+        try {
+            var fileUrl = FileLocator.toFileURL(url);
+            return Paths.get(new URI(fileUrl.getProtocol(), fileUrl.getFile(), null)).toString();
+        } catch (IOException | URISyntaxException e) {
+            // should never happen
+            throw new IllegalStateException(e);
+        }
     }
 
 }
