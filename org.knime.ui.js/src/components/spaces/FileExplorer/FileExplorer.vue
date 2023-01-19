@@ -72,7 +72,7 @@ export default {
 
         multiSelectionState() {
             const normalizedRanges = multiSelectionService.normalizeRanges(this.multiSelectionState);
-            
+
             this.$emit('selection-change', normalizedRanges);
         }
     },
@@ -123,7 +123,7 @@ export default {
                 index
             );
         },
-        
+
         changeDirectory(pathId) {
             this.$emit('change-directory', pathId);
         },
@@ -157,7 +157,7 @@ export default {
             const selectedIndexes = multiSelectionService
                 .getSelectedIndexes(this.multiSelectionState)
                 .filter(selectedIndex => index !== selectedIndex);
-            
+
             // map an index to an object that will be used to generate the ghost
             const toGhostTarget = (_index) => ({
                 targetEl: this.getItemElementByRefIndex(_index),
@@ -198,7 +198,7 @@ export default {
             this.isDragging = false;
             this.removeGhosts?.();
         },
-        
+
         onDrop(index, isGoBackItem = false) {
             const droppedEl = this.getItemElementByRefIndex(index, isGoBackItem);
             droppedEl.classList.remove('dragging-over');
@@ -289,7 +289,7 @@ export default {
           />
           <Component :is="getTypeIcon(item)" />
         </td>
-          
+
         <td
           class="item-content"
           :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup }"
@@ -303,7 +303,7 @@ export default {
         <!-- <MenuOptionsIcon /> -->
         <!-- </td> -->
       </tr>
-        
+
       <tr
         v-if="items.length === 0"
         class="empty"
@@ -360,6 +360,7 @@ tbody.mini {
   transition: box-shadow 0.15s;
   display: block;
   border: 1px solid transparent;
+  margin-bottom: 2px;
 
   &:hover {
     box-shadow: 0 1px 5px 0 var(--knime-gray-dark-semi);
