@@ -32,12 +32,14 @@ describe('workflow store: AP Interactions', () => {
         const mockCanvasEl = document.createElement('div');
         mockCanvasWrapperEl.appendChild(mockCanvasEl);
 
+        const clearLastItemForProjectMock = jest.fn();
+
         const store = mockVuexStore({
             workflow: await import('@/store/workflow'),
             application: await import('@/store/application'),
             spaces: {
                 mutations: {
-                    clearLastItemForProject: jest.fn()
+                    clearLastItemForProject: clearLastItemForProjectMock
                 }
             },
             canvas: {
@@ -48,7 +50,7 @@ describe('workflow store: AP Interactions', () => {
         });
         const dispatchSpy = jest.spyOn(store, 'dispatch');
 
-        return { store, dispatchSpy, mockCanvasEl, generateWorkflowPreviewMock };
+        return { store, dispatchSpy, mockCanvasEl, generateWorkflowPreviewMock, clearLastItemForProjectMock };
     };
 
     describe('actions', () => {
@@ -167,7 +169,7 @@ describe('workflow store: AP Interactions', () => {
                 const { projectId: closingProjectId } = openProjects[0];
 
                 // setup
-                const { store, dispatchSpy } = await loadStore({ apiMocks });
+                const { store, dispatchSpy, clearLastItemForProjectMock } = await loadStore({ apiMocks });
                 store.commit('application/setOpenProjects', openProjects);
                 store.commit('application/setActiveProjectId', activeProjectId);
                 store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
@@ -181,6 +183,9 @@ describe('workflow store: AP Interactions', () => {
                     projectId: closingProjectId
                 });
                 expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', closingProjectId);
+                expect(clearLastItemForProjectMock).toHaveBeenCalledWith(expect.anything(), {
+                    projectId: closingProjectId
+                });
             });
 
             it.each([
