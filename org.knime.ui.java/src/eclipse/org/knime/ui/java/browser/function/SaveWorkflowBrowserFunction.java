@@ -48,9 +48,6 @@
  */
 package org.knime.ui.java.browser.function;
 
-import static org.knime.ui.java.util.DesktopAPUtil.showWarning;
-import static org.knime.ui.java.util.DesktopAPUtil.showWarningAndLogError;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -67,8 +64,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.CanceledExecutionException;
-import org.knime.core.node.DefaultNodeProgressMonitor;
-import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -77,6 +72,7 @@ import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
+import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
@@ -119,7 +115,7 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
         } else { // SVG received, workflow editor instance might not be present
             if (isExecutionInProgress(projectWfm)) {
                 // Show a warning otherwise
-                showWarning("Workflow in execution", "Executing nodes are not saved!");
+                DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
             } else {
                 saveWorkflowWithProgressBar(projectWfm, projectSVG);
                 ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
@@ -188,24 +184,24 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
 
         // Save the workflow itself
         try {
-            var nodeProgressMonitor = new CheckCancelNodeProgressMonitor(monitor);
-            var exec = new ExecutionMonitor(nodeProgressMonitor);
+            var exec = DesktopAPUtil.toExecutionMonitor(monitor);
             wfm.save(workflowPath.toFile(), exec, true);
         } catch (final IOException | CanceledExecutionException | LockFailedException e) {
-            showWarningAndLogError("Workflow save attempt", "Saving the workflow didn't work", LOGGER, e);
+            DesktopAPUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow didn't work",
+                LOGGER, e);
             return; // Abort if saving the workflow fails
         }
 
         // Save the workflow preview SVG
         if (svg == null) {
-            showWarning("Failed to save workflow preview",
+            DesktopAPUtil.showWarning("Failed to save workflow preview",
                 String.format("The workflow preview (svg) couldn't be saved for workflow %s", wfm.getName()));
         } else {
             try {
                 Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg,
                     StandardCharsets.UTF_8);
             } catch (IllegalArgumentException | IOException | UnsupportedOperationException | SecurityException e) {
-                showWarningAndLogError("SVG save attempt", "Saving the SVG didn't work", LOGGER, e);
+                DesktopAPUtil.showWarningAndLogError("SVG save attempt", "Saving the SVG didn't work", LOGGER, e);
             }
         }
     }
@@ -222,25 +218,6 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
             .map(ClassicWorkflowEditorUtil::getOpenWorkflowEditor)//
             .flatMap(Optional::stream) // unpack/collapse optionals
             .forEach(WorkflowEditor::unmarkDirty);
-    }
-
-    private static class CheckCancelNodeProgressMonitor extends DefaultNodeProgressMonitor {
-
-        private final IProgressMonitor m_pm;
-
-        public CheckCancelNodeProgressMonitor(final IProgressMonitor pm) {
-            m_pm = pm;
-        }
-
-        @Override
-        protected boolean isCanceled() {
-            return super.isCanceled() || m_pm.isCanceled();
-        }
-
-        @Override
-        public synchronized void reset() {
-            throw new IllegalStateException("Reset not supported");
-        }
     }
 
 }

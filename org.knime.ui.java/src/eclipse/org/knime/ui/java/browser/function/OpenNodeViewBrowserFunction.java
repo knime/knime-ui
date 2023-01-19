@@ -66,11 +66,12 @@ import com.equo.chromium.swt.Browser;
  */
 public class OpenNodeViewBrowserFunction extends AbstractNodeBrowserFunction {
 
-	private static final String FUNCTION_NAME = "openNodeView";
+    private static final String FUNCTION_NAME = "openNodeView";
 
-	public OpenNodeViewBrowserFunction(final Browser browser) {
-		super(browser, FUNCTION_NAME);
-	}
+    @SuppressWarnings("javadoc")
+    public OpenNodeViewBrowserFunction(final Browser browser) {
+        super(browser, FUNCTION_NAME);
+    }
 
     @Override
     protected String apply(final NodeContainer nc) {

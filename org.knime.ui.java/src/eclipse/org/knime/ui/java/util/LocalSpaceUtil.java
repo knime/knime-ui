@@ -53,8 +53,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.Space;
@@ -120,23 +118,15 @@ public final class LocalSpaceUtil {
     }
 
     /**
-     * Obtain the {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of a workflow on the local file system
+     * Obtain the {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of a workflow project on the local file
+     * system
      *
-     * @param wfm The workflow manager to get the origin of.
-     * @return The {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of the workflow, or an empty optional
-     *         if the given workflow is not local.
+     * @param absolutePath The path of the workflow project
+     * @return The {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of the workflow project.
      */
-    public static Optional<WorkflowProject.Origin> getLocalOrigin(final WorkflowManager wfm) {
-        var ctx = wfm.getContextV2();
-        var isLocal = ctx.getLocationType() == WorkflowContextV2.LocationType.LOCAL;
-        if (!isLocal) {
-            // Only support workflows in the local space for the time being.
-            return Optional.empty();
-        }
-        var absolutePath = ctx.getExecutorInfo().getLocalWorkflowPath();
-        var localWorkspaceRoot = LocalSpaceUtil.getLocalWorkspace().getLocalWorkspaceRoot();
-        var relativePath = localWorkspaceRoot.relativize(absolutePath);
-        return Optional.of(new WorkflowProject.Origin() {
+    public static WorkflowProject.Origin getLocalOrigin(final Path absolutePath) {
+        var relativePath = toRelativePath(absolutePath);
+        return new WorkflowProject.Origin() {
             @Override
             public String getProviderId() {
                 return LOCAL_SPACE_PROVIDER_ID;
@@ -156,38 +146,15 @@ public final class LocalSpaceUtil {
             public Optional<String> getRelativePath() {
                 return Optional.of(relativePath.toString());
             }
-        });
+        };
     }
 
     /**
-     * Obtain the {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of a workflow project on the local file
-     * system
-     *
-     * @param path The path of the workflow project
-     * @return The {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of the workflow project.
+     * @param absolutePath
+     * @return a relative path to the root of the local workspace
      */
-    public static WorkflowProject.Origin getLocalOrigin(final Path path) {
-        return new WorkflowProject.Origin() {
-            @Override
-            public String getProviderId() {
-                return LOCAL_SPACE_PROVIDER_ID;
-            }
-
-            @Override
-            public String getSpaceId() {
-                return LocalWorkspace.LOCAL_WORKSPACE_ID;
-            }
-
-            @Override
-            public String getItemId() {
-                return getLocalWorkspace().getItemId(path);
-            }
-
-            @Override
-            public Optional<String> getRelativePath() {
-                return Optional.of(path.toString());
-            }
-        };
+    public static Path toRelativePath(final Path absolutePath) {
+        return localWorkspace.getLocalWorkspaceRoot().relativize(absolutePath);
     }
 
     /**

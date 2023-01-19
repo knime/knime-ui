@@ -56,28 +56,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
+import org.knime.core.node.DefaultNodeProgressMonitor;
+import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.LocalLocationInfo;
+import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
-import org.knime.core.ui.util.SWTUtilities;
+import org.knime.core.util.Pair;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.product.rcp.intro.UpdateDetector;
-import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 
 /**
  * Summarizes shared utility methods which are only relevant if the Web UI is run within the desktop AP. Those methods,
  * e.g., either depend on some classic AP logic or they use eclipse UI elements (dialogs, progress bars).
  *
+ * @author Leonard Wörteler, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class DesktopAPUtil {
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(DesktopAPUtil.class);
 
     private DesktopAPUtil() {
         // utility
@@ -93,27 +101,40 @@ public final class DesktopAPUtil {
      *         will be shown in that case)
      */
     public static Optional<WorkflowManager> openWorkflowInWebUIPerspectiveOnly(final Path absoluteLocalPath) {
-        var workflowContext = WorkflowContextV2.builder()
-            .withAnalyticsPlatformExecutor(builder -> builder.withCurrentUserAsUserId() //
-                .withLocalWorkflowPath(absoluteLocalPath)) //
-            .withLocation(LocalLocationInfo.getInstance(null)) //
-            .build();
-        final var progressService = PlatformUI.getWorkbench().getProgressService();
-        var wfmRef = new AtomicReference<WorkflowManager>();
-        var loadWorkflowRunnable = new LoadWorkflowRunnable(wfmRef::set,
-            absoluteLocalPath.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile(), workflowContext);
-        // TODO use leos utilitly method
-        try {
-            progressService.busyCursorWhile(loadWorkflowRunnable);
-            return Optional.ofNullable(wfmRef.get());
-        } catch (InvocationTargetException e) {
-            showWarningAndLogError("Opening workflow failed", e.getMessage(),
-                NodeLogger.getLogger(OpenWorkflowBrowserFunction.class), e);
-        } catch (InterruptedException e) {
-            NodeLogger.getLogger(OpenWorkflowBrowserFunction.class).warn("Opening workflow interrupted");
-            Thread.currentThread().interrupt();
-        }
-        return Optional.empty();
+        return openWorkflowInWebUIPerspectiveOnly(
+            () -> Pair.create(absoluteLocalPath, LocalLocationInfo.getInstance(null)));
+    }
+
+    /**
+     * Loads the workflow referenced by the given path using the {@link LoadWorkflowRunnable} and whose a eclipse-based
+     * progress bar.
+     *
+     * @param locationSupplier
+     *
+     * @return the loaded {@link WorkflowManager} or an empty optional if the loading failed (a warning message dialog
+     *         will be shown in that case)
+     */
+    public static Optional<WorkflowManager>
+        openWorkflowInWebUIPerspectiveOnly(final Supplier<Pair<Path, LocationInfo>> locationSupplier) {
+        return runWithProgress("Loading workflow", LOGGER, monitor -> { // NOSONAR better than inline class
+            monitor.beginTask("Loading workflow...", IProgressMonitor.UNKNOWN);
+
+            final var res = locationSupplier.get();
+            monitor.done();
+
+            final var workflowContext = WorkflowContextV2.builder() //
+                .withAnalyticsPlatformExecutor(builder -> builder //
+                    .withCurrentUserAsUserId() //
+                    .withLocalWorkflowPath(res.getFirst())) //
+                .withLocation(res.getSecond()) //
+                .build();
+
+            final var wfFile = res.getFirst().resolve(WorkflowPersistor.WORKFLOW_FILE).toFile();
+            var wfmRef = new AtomicReference<WorkflowManager>();
+            new LoadWorkflowRunnable(wfmRef::set, wfFile, workflowContext).run(monitor);
+            return wfmRef.get();
+        });
+
     }
 
     /**
@@ -144,28 +165,74 @@ public final class DesktopAPUtil {
     }
 
     /**
-     * Shows a warning message dialog.
+     * Shows an SWT warning.
      *
-     * @param title
-     * @param message
+     * @param title warning title
+     * @param message warning message
      */
     public static void showWarning(final String title, final String message) {
-        var sh = SWTUtilities.getActiveShell();
+        @SuppressWarnings("restriction")
+        var sh = org.knime.core.ui.util.SWTUtilities.getActiveShell();
         MessageDialog.openWarning(sh, title, message);
     }
 
     /**
-     * Shows a message warning dialog and logs an error.
+     * Logs a warning in addition to showing a warning using {@link #showWarning(String, String)}.
      *
-     * @param title
-     * @param message
-     * @param logger
-     * @param e
+     * @param title title of warning and log message
+     * @param message warning message
+     * @param logger logger to use
+     * @param e exception to log
      */
     public static void showWarningAndLogError(final String title, final String message, final NodeLogger logger,
         final Exception e) {
         logger.error(title + ": " + message, e);
         showWarning(title, message);
+    }
+
+    /**
+     * Adapts the given {@link IProgressMonitor} to be able to signal cancellation as an {@link ExecutionMonitor}.
+     *
+     * @param monitor progress monitor to adapt
+     * @return execution monitor adapter
+     */
+    public static ExecutionMonitor toExecutionMonitor(final IProgressMonitor monitor) {
+        return new ExecutionMonitor(new DefaultNodeProgressMonitor() {
+
+            @Override
+            protected boolean isCanceled() {
+                return super.isCanceled() || monitor.isCanceled();
+            }
+
+            @Override
+            public synchronized void reset() {
+                throw new IllegalStateException("Reset not supported");
+            }
+        });
+    }
+
+    /**
+     * Runs the given function while showing a modal SWT dialog with progress information.
+     *
+     * @param <T> return type
+     * @param name name of the operation for error messages, e.g. {@code "Opening workflow"}
+     * @param logger logger to use
+     * @param func function to call
+     * @return returned value
+     */
+    public static <T> Optional<T> runWithProgress(final String name, final NodeLogger logger,
+        final Function<IProgressMonitor, T> func) {
+        try {
+            final var ref = new AtomicReference<T>();
+            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> ref.set(func.apply(monitor)));
+            return Optional.ofNullable(ref.get());
+        } catch (InvocationTargetException e) {
+            showWarningAndLogError(name + " failed", e.getMessage(), logger, e);
+        } catch (InterruptedException e) {
+            logger.warn(name + " interrupted");
+            Thread.currentThread().interrupt();
+        }
+        return Optional.empty();
     }
 
 }

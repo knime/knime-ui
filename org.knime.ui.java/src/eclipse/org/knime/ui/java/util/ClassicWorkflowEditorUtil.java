@@ -76,6 +76,8 @@ import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor.WorkflowLoadResult;
+import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LoadVersion;
 import org.knime.core.util.LockFailedException;
@@ -253,7 +255,36 @@ public final class ClassicWorkflowEditorUtil {
 
                 @Override
                 public Optional<Origin> getOrigin() {
-                    return LocalSpaceUtil.getLocalOrigin(wfm);
+                    final var context = wfm.getContextV2();
+                    // we assume that we are on a local AP executor
+                    final var locationInfo = context.getLocationInfo();
+
+                    if (!(locationInfo instanceof HubSpaceLocationInfo)) {
+                        // local workflow is identified by its path
+                        final var path = context.getExecutorInfo().getLocalWorkflowPath();
+                        return Optional.of(LocalSpaceUtil.getLocalOrigin(path));
+                    }
+
+                    final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
+                    final var hubLocation = (HubSpaceLocationInfo)locationInfo;
+                    return Optional.of(new WorkflowProject.Origin() {
+                        @Override
+                        public String getProviderId() {
+                            final var mountpoint = apExecInfo.getMountpoint().orElseThrow(() ->
+                                    new IllegalStateException("Missing Mount ID for Hub workflow '" + wfm + "'"));
+                            return mountpoint.getFirst().getAuthority();
+                        }
+
+                        @Override
+                        public String getSpaceId() {
+                            return hubLocation.getSpaceItemId();
+                        }
+
+                        @Override
+                        public String getItemId() {
+                            return hubLocation.getWorkflowItemId();
+                        }
+                    });
                 }
             };
         }
@@ -325,7 +356,7 @@ public final class ClassicWorkflowEditorUtil {
                 ref.set((WorkflowEditor)editor);
             }
         });
-        return java.util.Optional.ofNullable(ref.get());
+        return Optional.ofNullable(ref.get());
     }
 
     /**
@@ -403,10 +434,6 @@ public final class ClassicWorkflowEditorUtil {
      */
     @SuppressWarnings("java:S3553")
     private static <V> Optional<Pair<V, V>> zipOptional(final Optional<V> left, final Optional<V> right) {
-        if (left.isEmpty() || right.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(Pair.create(left.get(), right.get()));
-        }
+        return left.flatMap(l -> right.map(r -> Pair.create(l,  r)));
     }
 }

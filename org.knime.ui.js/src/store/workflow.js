@@ -75,6 +75,7 @@ export const getters = {
     isLinked({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.linked);
     },
+
     insideLinkedType({ activeWorkflow }) {
         if (!activeWorkflow?.parents) {
             return null;
@@ -92,6 +93,10 @@ export const getters = {
 
         // TODO: document better under which conditions a workflow is not writable
         return !linkage;
+    },
+
+    isOnHub({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.onHub);
     },
 
     /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
