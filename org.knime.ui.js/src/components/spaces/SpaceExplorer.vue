@@ -158,15 +158,26 @@ export default {
         @click-item="onBreadcrumbClick"
       />
 
-      <ToolbarButton
-        v-if="mode === 'mini' && canCreateWorkflow"
-        primary
-        class="create-workflow-mini-btn"
-        :title="createWorkflowButtonTitle"
-        @click.native="onCreateWorkflow"
+      <div
+        v-if="mode === 'mini'"
+        class="buttons"
       >
-        <PlusIcon />
-      </ToolbarButton>
+        <ToolbarButton>
+          <ImportWorkflowIcon />
+        </ToolbarButton>
+        <ToolbarButton>
+          <AddFileIcon />
+        </ToolbarButton>
+        <ToolbarButton
+          v-if="canCreateWorkflow"
+          primary
+          class="create-workflow-mini-btn"
+          :title="createWorkflowButtonTitle"
+          @click.native="onCreateWorkflow"
+        >
+          <PlusIcon />
+        </ToolbarButton>
+      </div>
     </div>
 
     <PlusButton
@@ -212,6 +223,7 @@ export default {
 .breadcrumb-wrapper {
   position: relative;
   display: flex;
+  justify-content: space-between;
   padding-bottom: 5px;
   margin-bottom: 12px;
   width: 100%;
@@ -236,10 +248,14 @@ export default {
       display: none;
     }
   }
+
+  & .buttons {
+    display: flex;
+  }
 }
 
 .mini {
-  padding: 20px 15px;
+  padding: 15px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
