@@ -256,13 +256,14 @@ export const actions = {
     },
 
     /**
-     * Set the includeAll flag to true. This value will stay until the search changes.
+     * Set the includeAll flag to true and dispatch searchNodes.
+     * The includeAll value will stay until the search changes.
      *
      * @param {*} context - Vuex context.
      * @param {boolean} includeAll - if all nodes should be included in the next search
      * @returns {undefined}
      */
-    async setIncludeAll({ commit, dispatch }, includeAll) {
+    async setIncludeAllAndSearchNodes({ commit, dispatch }, includeAll) {
         commit('setIncludeAll', includeAll);
         await dispatch('searchNodes');
     },

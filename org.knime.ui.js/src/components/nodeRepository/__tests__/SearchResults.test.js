@@ -45,7 +45,7 @@ describe('SearchResults', () => {
                     state: storeState,
                     actions: {
                         searchNodesNextPage: searchNodesNextPageMock,
-                        setIncludeAll: setIncludeAllMock
+                        setIncludeAllAndSearchNodes: setIncludeAllMock
                     },
                     mutations: {
                         setSearchScrollPosition: setSearchScrollPositionMock

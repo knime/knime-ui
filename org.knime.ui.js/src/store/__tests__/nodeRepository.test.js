@@ -554,7 +554,7 @@ describe('Node Repository store', () => {
                 const { store, searchNodesMock } = await createStore();
                 store.commit('nodeRepository/setQuery', 'lookup');
 
-                await store.dispatch('nodeRepository/setIncludeAll', true);
+                await store.dispatch('nodeRepository/setIncludeAllAndSearchNodes', true);
                 expect(searchNodesMock).toHaveBeenCalledWith({
                     allTagsMatch: true,
                     fullTemplateInfo: true,

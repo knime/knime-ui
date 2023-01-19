@@ -288,7 +288,7 @@ describe('application store', () => {
             const { store, dispatchSpy, commitSpy } = await loadStore();
 
             await store.dispatch('application/replaceApplicationState', applicationState);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/setIncludeAll', false);
+            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/setIncludeAllAndSearchNodes', false);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodesPerCategories', {
                 groupedNodes: [],
                 append: false

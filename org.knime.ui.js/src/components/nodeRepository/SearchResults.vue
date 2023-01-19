@@ -35,14 +35,14 @@ export default {
         }
     },
     methods: {
-        ...mapActions('nodeRepository', ['searchNodesNextPage', 'setIncludeAll']),
+        ...mapActions('nodeRepository', ['searchNodesNextPage', 'setIncludeAllAndSearchNodes']),
         ...mapMutations('nodeRepository', ['setSearchScrollPosition']),
         // Also currently the NodeRepository isn't destroyed upon closing
         onSaveScrollPosition(position) {
             this.setSearchScrollPosition(position);
         },
         onShowAll() {
-            this.setIncludeAll(true);
+            this.setIncludeAllAndSearchNodes(true);
         },
         async onSearchChanged() {
             let { scroller } = this.$refs;

@@ -183,7 +183,11 @@ export const actions = {
         if (typeof applicationState.nodeRepoFilterEnabled !== 'undefined') {
             commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
             // TODO should we force the update from here or somewhere else?
-            dispatch('nodeRepository/setIncludeAll', !applicationState.nodeRepoFilterEnabled, { root: true });
+            dispatch(
+                'nodeRepository/setIncludeAllAndSearchNodes',
+                !applicationState.nodeRepoFilterEnabled,
+                { root: true }
+            );
             commit('nodeRepository/setNodesPerCategories', { groupedNodes: [], append: false }, { root: true });
         }
     },
