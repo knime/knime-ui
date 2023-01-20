@@ -5,13 +5,11 @@ import Button from 'webapps-common/ui/components/Button.vue';
 
 import { APP_ROUTES } from '@/router';
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
-import Avatar from '@/components/common/Avatar.vue';
 
 import SpaceCard from './SpaceCard.vue';
 
 export default {
     components: {
-        Avatar,
         GridOutbreaker,
         SpaceCard,
         Button
@@ -93,8 +91,7 @@ export default {
           v-if="shouldDisplayAvatar(spaceProvider) && spaceProvider.user"
           class="owner"
         >
-          <Avatar :text="'MS'" />
-          <span class="owner-name">Mine</span>
+          <span class="owner-name">{{ spaceProvider.user.name }}</span>
         </div>
 
         <div class="connection-btn">
@@ -152,7 +149,7 @@ section.space-provider {
       align-items: center;
 
       & .owner-name {
-        margin-left: 3px;
+        margin-left: 8px;
       }
     }
   }
