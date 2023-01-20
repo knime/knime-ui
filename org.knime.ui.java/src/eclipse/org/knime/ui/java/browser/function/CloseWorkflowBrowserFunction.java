@@ -59,7 +59,7 @@ import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.service.util.EventConsumer;
-import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -74,14 +74,14 @@ import com.equo.chromium.swt.BrowserFunction;
  */
 public class CloseWorkflowBrowserFunction extends BrowserFunction {
 
-    private final AppStateProvider m_appStateProvider;
+    private final AppStateUpdater m_appStateUpdater;
     private final EventConsumer m_eventConsumer;
 
     @SuppressWarnings("javadoc")
-    public CloseWorkflowBrowserFunction(final Browser browser, final AppStateProvider appStateProvider,
+    public CloseWorkflowBrowserFunction(final Browser browser, final AppStateUpdater appStateUpdater,
         final EventConsumer eventConsumer) {
         super(browser, "closeWorkflow");
-        m_appStateProvider = appStateProvider;
+        m_appStateUpdater = appStateUpdater;
         m_eventConsumer = eventConsumer;
     }
 
@@ -111,7 +111,7 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
             var success = saveAndCloseWorkflowsInteractively(Collections.singleton(projectIdToClose), m_eventConsumer,
                 PostWorkflowCloseAction.UPDATE_APP_STATE) == 1;
             if (success) {
-                m_appStateProvider.updateAppState();
+                m_appStateUpdater.updateAppState();
             }
             return success;
         }
@@ -132,7 +132,7 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
             }
 
             // triggers sending event
-            m_appStateProvider.updateAppState();
+            m_appStateUpdater.updateAppState();
         }
 
         return wasClosed;

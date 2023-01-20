@@ -17,9 +17,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISaveablePart2;
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
+import org.knime.ui.java.util.AppStatePersistor;
 
 import com.equo.chromium.swt.Browser;
 
@@ -59,29 +59,25 @@ public class KnimeBrowserView implements ISaveablePart2 {
      * Activates the view initializer that will be executed as soon as this view becomes finally visible (again). Once
      * the view initializer has been executed, it will be de-activated (and would need to be activated again).
      *
-     * @param appStateSupplier supplies the app state for the UI
      * @param checkForUpdates whether to check for updates on initialization
      */
-    public static void activateViewInitializer(final Supplier<AppState> appStateSupplier,
-        final boolean checkForUpdates) {
-        viewInitializer = () -> initView(appStateSupplier, false, checkForUpdates);
+    public static void activateViewInitializer(final boolean checkForUpdates) {
+        viewInitializer = () -> initView(false, checkForUpdates);
     }
 
     /**
      * Initializes the view for testing purposes.
-     *
-     * @param appStateSupplier supplies the app state for the UI
      */
-    public static void initViewForTesting(final Supplier<AppState> appStateSupplier) {
+    public static void initViewForTesting() {
         if (browser == null) {
             throw new IllegalStateException("No browser view instance available");
         }
-        initView(appStateSupplier, true, false);
+        initView(true, false);
     }
 
-    private static void initView(final Supplier<AppState> appStateSupplier, final boolean ignoreEmptyPageAsDevUrl,
+    private static void initView(final boolean ignoreEmptyPageAsDevUrl,
         final boolean checkForUpdates) {
-        LifeCycle.get().init(appStateSupplier, browser, checkForUpdates); // NOSONAR
+        LifeCycle.get().init(browser, checkForUpdates); // NOSONAR
         setUrl(ignoreEmptyPageAsDevUrl);
     }
 
@@ -118,7 +114,10 @@ public class KnimeBrowserView implements ISaveablePart2 {
         browser.setMenu(new Menu(browser.getShell()));
 
         if (viewInitializer == null) {
-            activateViewInitializer(null, true);
+            viewInitializer = () -> { // NOSONAR
+                AppStatePersistor.loadAppState();
+                initView(false, true);
+            };
         }
     }
 

@@ -54,7 +54,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
-import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -73,14 +72,10 @@ public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
 
     private final EventConsumer m_eventConsumer;
 
-    private final AppStateProvider m_appStateProvider;
-
     @SuppressWarnings("javadoc")
-    public SwitchToJavaUIBrowserFunction(final Browser browser, final EventConsumer eventConsumer,
-        final AppStateProvider appStateProvider) {
+    public SwitchToJavaUIBrowserFunction(final Browser browser, final EventConsumer eventConsumer) {
         super(browser, FUNCTION_NAME);
         m_eventConsumer = eventConsumer;
-        m_appStateProvider = appStateProvider;
     }
 
     @Override

@@ -81,14 +81,9 @@ import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LoadVersion;
 import org.knime.core.util.LockFailedException;
-import org.knime.core.util.Pair;
 import org.knime.core.util.Version;
-import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
-import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 /**
@@ -115,94 +110,45 @@ public final class ClassicWorkflowEditorUtil {
      *
      * @param modelService
      * @param app
-     *
-     * @return The state of the Eclipse UI in terms of {@link AppState}.
      */
-    public static AppState createAppState(final EModelService modelService, final MApplication app) {
-        // Collect data before instantiating the AppState, so its changes can be tracked
-        var openedWorkflows = collectOpenedWorkflows(modelService, app);
-        var nodeRepoFilterEnabled =
-            !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
-        // Return new AppState instance
-        return new AppState() { // NOSONAR
-            @Override
-            public List<OpenedWorkflow> getOpenedWorkflows() {
-                return openedWorkflows;
-            }
-
-            @Override
-            public boolean isNodeRepoFilterEnabled() {
-                return nodeRepoFilterEnabled;
-            }
-        };
+    public static void updateWorkflowProjectsFromOpenedWorkflowEditors(final EModelService modelService,
+        final MApplication app) {
+        registerWorkflowProjects(modelService, app);
     }
 
-    private static Pair<WorkflowProject, OpenedWorkflow>
-        createOpenedWorkflowAndWorkflowProject(final MPart editorPart) {
+    private static WorkflowProject createWorkflowProject(final MPart editorPart) {
         var wfm = getWorkflowManager(editorPart);
         var projectWfm = wfm.flatMap(ClassicWorkflowEditorUtil::getProjectManager);
-        return zipOptional(wfm, projectWfm) //
-            .map(pair -> createOpenedWorkflowAndWorkflowProject(pair.getFirst(), pair.getSecond(), editorPart)) //
-            .orElse(null);
+        return projectWfm.map(pw -> createWorkflowProject(pw, editorPart)).orElse(null);
     }
 
-    private static Pair<WorkflowProject, OpenedWorkflow> createOpenedWorkflowAndWorkflowProject(
-        final WorkflowManager childWfm, final WorkflowManager projWfm, final MPart editorPart) {
+    private static WorkflowProject createWorkflowProject(final WorkflowManager projWfm,
+        final MPart editorPart) {
         WorkflowProject wp =
             WorkflowProjectManager.getInstance().getWorkflowProject(projWfm.getNameWithID()).orElse(null);
         if (wp == null) {
-            wp = createWorkflowProject(editorPart, projWfm);
-        }
-        if (wp != null) {
-            var ow = createOpenedWorkflow(wp.getID(),
-                new NodeIDEnt(childWfm.getID(), projWfm.getProjectComponent().isPresent()).toString(),
-                isEditorPartSelectedElement(editorPart));
-            return Pair.create(wp, ow);
+            return createWorkflowProject(editorPart, projWfm);
         }
         return null;
     }
 
-    private static OpenedWorkflow createOpenedWorkflow(final String projectId, final String wfId,
-        final boolean isVisible) {
-        return new OpenedWorkflow() {
-
-            @Override
-            public String getWorkflowId() {
-                return wfId;
-            }
-
-            @Override
-            public String getProjectId() {
-                return projectId;
-            }
-
-            @Override
-            public boolean isVisible() {
-                return isVisible;
-            }
-        };
-    }
-
-    private static List<OpenedWorkflow> collectOpenedWorkflows(final EModelService modelService,
-        final MApplication app) {
+    private static void registerWorkflowProjects(final EModelService modelService, final MApplication app) {
         List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
-        var workflows = editorParts.stream().map(ClassicWorkflowEditorUtil::createOpenedWorkflowAndWorkflowProject) //
+        var wpm = WorkflowProjectManager.getInstance();
+        var workflowProjects = editorParts.stream().map(ClassicWorkflowEditorUtil::createWorkflowProject) //
             .filter(Objects::nonNull);
 
-        var resolved = resolveDuplicates(workflows,
+        var resolved = resolveDuplicates(workflowProjects,
             // Determine duplicates by project ID
-            p -> p.getFirst().getID(),
+            WorkflowProject::getID,
             // Among duplicates, prefer picking one that is not visible
             group -> group.stream().min( //
-                (p1, p2) -> Boolean.compare(!p1.getSecond().isVisible(), !p2.getSecond().isVisible()) //
+                (p1, p2) -> Boolean.compare(!wpm.isActiveWorkflowProject(p1.getID()),
+                    !wpm.isActiveWorkflowProject(p2.getID())) //
             ).get() // NOSONAR: group is never empty (result of groupBy)
         );
 
-        return resolved.map(p -> {
-            WorkflowProject wp = p.getFirst();
-            WorkflowProjectManager.getInstance().addWorkflowProject(wp.getID(), wp);
-            return p.getSecond();
-        }).collect(Collectors.toList());
+        resolved.forEach(p -> wpm.addWorkflowProject(p.getID(), p));
     }
 
     /**
@@ -431,17 +377,4 @@ public final class ClassicWorkflowEditorUtil {
         }
     }
 
-    /**
-     * Zip two {@code Optional}s.
-     *
-     * @param left
-     * @param right
-     * @param <V> The value type
-     * @return An {@code Optional} containing the pair of the two values if both are present, or an empty
-     *         {@code Optional} otherwise.
-     */
-    @SuppressWarnings("java:S3553")
-    private static <V> Optional<Pair<V, V>> zipOptional(final Optional<V> left, final Optional<V> right) {
-        return left.flatMap(l -> right.map(r -> Pair.create(l,  r)));
-    }
 }

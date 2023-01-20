@@ -48,8 +48,6 @@ package org.knime.ui.java;
 
 import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
 
-import java.util.function.Supplier;
-
 import javax.inject.Inject;
 
 import org.eclipse.core.runtime.Platform;
@@ -69,7 +67,6 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -156,8 +153,8 @@ public final class PerspectiveSwitchAddon {
         PerspectiveUtil.markClassicPerspectiveAsLoaded();
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
-        Supplier<AppStateProvider.AppState> supplier = () -> ClassicWorkflowEditorUtil.createAppState(m_modelService, m_app);
-        KnimeBrowserView.activateViewInitializer(supplier, false);
+        ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors(m_modelService, m_app);
+        KnimeBrowserView.activateViewInitializer(false);
         switchToWebUITheme();
         updateChromiumExternalMessagePumpSystemProperty();
     }

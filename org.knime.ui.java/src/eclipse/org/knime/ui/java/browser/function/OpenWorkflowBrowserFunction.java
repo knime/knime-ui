@@ -68,7 +68,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.DefaultSpaceService;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -96,12 +96,12 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenWorkflowBrowserFunction.class);
 
-    private final AppStateProvider m_appStateProvider;
+    private final AppStateUpdater m_appStateUpdater;
 
     @SuppressWarnings("javadoc")
-    public OpenWorkflowBrowserFunction(final Browser browser, final AppStateProvider appStateProvider) {
+    public OpenWorkflowBrowserFunction(final Browser browser, final AppStateUpdater appStateUpdater) {
         super(browser, "openWorkflow");
-        m_appStateProvider = appStateProvider;
+        m_appStateUpdater = appStateUpdater;
     }
 
     /**
@@ -122,7 +122,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         final var space = DefaultSpaceService.getInstance().getSpace(spaceId, spaceProviderId);
 
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId), m_appStateProvider);
+            openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId), m_appStateUpdater);
         } else {
             DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(space, itemId).ifPresent(wfm -> {
                 String relativePath = null;
@@ -131,7 +131,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
                         .toRelativePath(wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath()).toString();
                 }
                 registerWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
-                m_appStateProvider.updateAppState();
+                m_appStateUpdater.updateAppState();
             });
         }
 
@@ -195,7 +195,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
     }
 
     private static void openWorkflowInClassicAndWebUIPerspective(final URI knimeUrl,
-            final AppStateProvider appStateProvider) {
+            final AppStateUpdater appStateProvider) {
         try {
             openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl));
             hideSharedEditorArea();
