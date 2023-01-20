@@ -44,39 +44,67 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 13, 2023 (benjamin): created
  */
-package org.knime.ui.java.browser.lifecycle;
+package org.knime.ui.java.prefs;
 
-import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.util.DefaultServicesUtil;
+import java.util.function.BiConsumer;
+
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.knime.ui.java.UIPlugin;
 
 /**
- * The 'suspend' lifecycle state transition for the KNIME-UI. Called when the view is (temporarily) not used anymore (on
- * perspective switch to the classic UI).
+ * The preference of the modern UI.
  *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Benjamin Wilhelm, KNIME GmbH, Berlin, Germany
  */
-final class Suspend {
+public final class KnimeUIPreferences {
 
-    private Suspend() {
-        //
-    }
+    private static BiConsumer<String, String> NODE_REPO_FILTER_CHANGE_LISTENER = null;
 
-    static LifeCycleState run(final LifeCycleState state) {
-        var removeAndDisposeAllBrowserFunctions = state.removeAndDisposeAllBrowserFunctions();
-        if (removeAndDisposeAllBrowserFunctions != null) {
-            removeAndDisposeAllBrowserFunctions.run();
-        }
-        DefaultServicesUtil.disposeDefaultServices();
-        KnimeUIPreferences.setNodeRepoFilterChangeListener(null);
-        return new LifeCycleState() {
+    static final String NODE_REPO_FILTER_PREF_KEY = "nodeRepositoryFilterId";
 
-            @Override
-            public String serializedAppState() {
-                return state.serializedAppState();
+    static final IPreferenceStore PREF_STORE =
+        new ScopedPreferenceStore(InstanceScope.INSTANCE, UIPlugin.getContext().getBundle().getSymbolicName());
+
+    static {
+        PREF_STORE.addPropertyChangeListener(e -> {
+            if (NODE_REPO_FILTER_PREF_KEY.equals(e.getProperty()) && NODE_REPO_FILTER_CHANGE_LISTENER != null) {
+                NODE_REPO_FILTER_CHANGE_LISTENER.accept((String)e.getOldValue(), (String)e.getNewValue());
             }
-        };
+        });
     }
 
+    private KnimeUIPreferences() {
+        // Utility class
+    }
+
+    /** The identifier for a no node repository filter. The node repository will show all nodes. */
+    public static final String NODE_REPO_FILTER_NONE_ID = "none";
+
+    /**
+     * The identifier for the spreadsheet collection node repository filter. The node repository will only show nodes
+     * that are useful for spreadsheet users.
+     */
+    static final String NODE_REPO_FILTER_SPREADSHEET_ID = "spreadsheet";
+
+    /**
+     * @return the identifier of the node repository filter that is active. {@link #NODE_REPO_FILTER_NONE_ID} if no
+     *         filter is active.
+     */
+    public static String getNodeRepoFilter() {
+        return PREF_STORE.getString(NODE_REPO_FILTER_PREF_KEY);
+    }
+
+    /**
+     * Set a listener that is called whenever the node repository filter setting changes. If a listener was set already
+     * it is replaced.
+     *
+     * @param listener the listener that is called with the old value and the new value. <code>null</code> is allowed.
+     */
+    public static void setNodeRepoFilterChangeListener(final BiConsumer<String, String> listener) {
+        NODE_REPO_FILTER_CHANGE_LISTENER = listener;
+    }
 }

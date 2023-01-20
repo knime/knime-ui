@@ -44,39 +44,25 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 17, 2023 (benjamin): created
  */
-package org.knime.ui.java.browser.lifecycle;
+package org.knime.ui.java.prefs;
 
-import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.util.DefaultServicesUtil;
+import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 
 /**
- * The 'suspend' lifecycle state transition for the KNIME-UI. Called when the view is (temporarily) not used anymore (on
- * perspective switch to the classic UI).
+ * Initializer for the preferences of the modern UI.
  *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Benjamin Wilhelm, KNIME GmbH, Berlin, Germany
  */
-final class Suspend {
+public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer {
 
-    private Suspend() {
-        //
+    @Override
+    public void initializeDefaultPreferences() {
+        final var store = KnimeUIPreferences.PREF_STORE;
+
+        // Set the node filter to the spreadsheet edition
+        store.setDefault(KnimeUIPreferences.NODE_REPO_FILTER_PREF_KEY,
+            KnimeUIPreferences.NODE_REPO_FILTER_SPREADSHEET_ID);
     }
-
-    static LifeCycleState run(final LifeCycleState state) {
-        var removeAndDisposeAllBrowserFunctions = state.removeAndDisposeAllBrowserFunctions();
-        if (removeAndDisposeAllBrowserFunctions != null) {
-            removeAndDisposeAllBrowserFunctions.run();
-        }
-        DefaultServicesUtil.disposeDefaultServices();
-        KnimeUIPreferences.setNodeRepoFilterChangeListener(null);
-        return new LifeCycleState() {
-
-            @Override
-            public String serializedAppState() {
-                return state.serializedAppState();
-            }
-        };
-    }
-
 }

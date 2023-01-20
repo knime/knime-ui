@@ -52,6 +52,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -94,6 +95,7 @@ import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.P
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SetProjectActiveAndEnsureItsLoadedBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
@@ -147,6 +149,13 @@ final class Init {
         // Initialize browser functions and set CEF browser URL
         var removeAndDisposeAllBrowserFunctions =
             initBrowserFunctions(browser, appStateProvider, spaceProviders, updateStateProvider, eventConsumer);
+
+        // Update the app state when the node repository filter changes
+        KnimeUIPreferences.setNodeRepoFilterChangeListener((oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                appStateProvider.updateAppState();
+            }
+        });
 
         return new LifeCycleState() {
 
@@ -259,11 +268,15 @@ final class Init {
 
         private final List<OpenedWorkflow> m_openedWorkflows;
 
+        private final boolean m_nodeRepoFilterEnabled;
+
         AppStateDerivedFromWorkflowProjectManager() {
             var wpm = WorkflowProjectManager.getInstance();
             m_openedWorkflows = wpm.getWorkflowProjectsIds().stream()
                 .map(id -> toOpenedWorkflow(wpm.getWorkflowProject(id).orElseThrow(), wpm.isActiveWorkflowProject(id)))
                 .collect(Collectors.toList());
+            m_nodeRepoFilterEnabled =
+                !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
         }
 
         @Override
@@ -291,6 +304,9 @@ final class Init {
             };
         }
 
+        @Override
+        public boolean isNodeRepoFilterEnabled() {
+            return m_nodeRepoFilterEnabled;
+        }
     }
-
 }

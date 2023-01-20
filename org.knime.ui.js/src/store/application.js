@@ -39,7 +39,13 @@ export const state = () => ({
 
     isBusy: false,
     /* Object containing available updates */
-    availableUpdates: null
+    availableUpdates: null,
+
+    /*
+     * If true, the node repository will be filtered to show only the nodes that fit the current filter.
+     * This will have an effect on the node search, on the category groups, and on the node recommendations.
+     */
+    nodeRepoFilterEnabled: false
 });
 
 export const mutations = {
@@ -110,6 +116,9 @@ export const mutations = {
     },
     setAvailableUpdates(state, availableUpdates) {
         state.availableUpdates = availableUpdates;
+    },
+    setNodeRepoFilterEnabled(state, nodeRepoFilterEnabled) {
+        state.nodeRepoFilterEnabled = nodeRepoFilterEnabled;
     }
 };
 
@@ -171,6 +180,15 @@ export const actions = {
         if (applicationState.openProjects) {
             commit('setOpenProjects', applicationState.openProjects);
             await dispatch('setActiveProject', applicationState.openProjects);
+        }
+        if (applicationState.hasOwnProperty('nodeRepoFilterEnabled')) {
+            commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
+            dispatch(
+                'nodeRepository/setIncludeAllAndSearchNodes',
+                !applicationState.nodeRepoFilterEnabled,
+                { root: true }
+            );
+            commit('nodeRepository/setNodesPerCategories', { groupedNodes: [], append: false }, { root: true });
         }
     },
     async setActiveProject({ commit, dispatch, state }, openProjects) {

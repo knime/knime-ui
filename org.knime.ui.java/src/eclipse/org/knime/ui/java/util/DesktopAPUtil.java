@@ -63,6 +63,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
+import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.DefaultNodeProgressMonitor;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
@@ -71,6 +72,7 @@ import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.LocalLocationInfo;
 import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
+import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.product.rcp.intro.UpdateDetector;
@@ -131,7 +133,19 @@ public final class DesktopAPUtil {
 
             final var wfFile = res.getFirst().resolve(WorkflowPersistor.WORKFLOW_FILE).toFile();
             var wfmRef = new AtomicReference<WorkflowManager>();
-            new LoadWorkflowRunnable(wfmRef::set, wfFile, workflowContext).run(monitor);
+            new LoadWorkflowRunnable((wfm, doSave) -> { // NOSONAR
+                wfmRef.set(wfm);
+                if (Boolean.TRUE.equals(doSave)) {
+                    var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+                    try {
+                        var exec = DesktopAPUtil.toExecutionMonitor(monitor);
+                        wfm.save(workflowPath.toFile(), exec, true);
+                    } catch (final IOException | CanceledExecutionException | LockFailedException e) {
+                        // should never happen
+                        LOGGER.error(e);
+                    }
+                }
+            }, wfFile, workflowContext).run(monitor);
             return wfmRef.get();
         });
 

@@ -24,6 +24,7 @@ export const state = () => ({
     query: '',
     nodeSearchPage: 0,
     searchScrollPosition: 0,
+    includeAll: false,
 
     /* node description */
     selectedNode: null,
@@ -94,6 +95,9 @@ export const mutations = {
     },
     setDescriptionPanel(state, value) {
         state.isDescriptionPanelOpen = value;
+    },
+    setIncludeAll(state, value) {
+        state.includeAll = value;
     }
 };
 
@@ -116,7 +120,8 @@ export const actions = {
             numNodesPerTag: 6,
             tagsOffset,
             tagsLimit,
-            fullTemplateInfo: true
+            fullTemplateInfo: true,
+            includeAll: !rootState.application.nodeRepoFilterEnabled
         });
 
         const { availablePortTypes } = rootState.application;
@@ -156,7 +161,8 @@ export const actions = {
             allTagsMatch: true,
             nodeOffset: state.nodeSearchPage * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
-            fullTemplateInfo: true
+            fullTemplateInfo: true,
+            includeAll: state.includeAll
         });
 
         const { availablePortTypes } = rootState.application;
@@ -191,6 +197,8 @@ export const actions = {
      */
     async updateQuery({ commit, dispatch }, value) {
         commit('setQuery', value);
+        // Show a filtered result for the new query by setting includeAll to false
+        await dispatch('resetIncludeAll');
         await dispatch('searchNodes');
     },
 
@@ -200,10 +208,11 @@ export const actions = {
      * @param {*} context - Vuex context.
      * @returns {undefined}
      */
-    clearSearchParams({ commit, dispatch }) {
+    async clearSearchParams({ commit, dispatch }) {
         commit('setSelectedTags', []);
         commit('setQuery', '');
-        dispatch('clearSearchResults');
+        await dispatch('resetIncludeAll');
+        await dispatch('clearSearchResults');
     },
 
     /**
@@ -235,7 +244,35 @@ export const actions = {
      */
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
+        // Set includeAll to false to filter the next search if no tag is selected
+        // We do not want to reset the state of the filtered search if only tags are selected or deselected
+        if (tags.length === 0) {
+            await dispatch('resetIncludeAll');
+        }
         await dispatch('searchNodes');
+    },
+
+    resetIncludeAll({ commit, rootState }) {
+        // If the node repository is not filtered includeAll must always be true
+        // -> We always get all results and never show the "Show more" button
+        if (rootState.application.nodeRepoFilterEnabled) {
+            commit('setIncludeAll', false);
+        }
+    },
+
+    /**
+     * Set the includeAll flag to true and dispatch searchNodes if the search is active.
+     * The includeAll value will stay until the search changes.
+     *
+     * @param {*} context - Vuex context.
+     * @param {boolean} includeAll - if all nodes should be included in the next search
+     * @returns {undefined}
+     */
+    async setIncludeAllAndSearchNodes({ commit, dispatch, getters }, includeAll) {
+        commit('setIncludeAll', includeAll);
+        if (getters.searchIsActive) {
+            await dispatch('searchNodes');
+        }
     },
 
     openDescriptionPanel({ commit }) {

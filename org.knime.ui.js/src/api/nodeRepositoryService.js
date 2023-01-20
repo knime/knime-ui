@@ -7,16 +7,20 @@ import rpc from './json-rpc-adapter';
  * @param {Number} tagsOffset - The number of tags to be skipped (for pagination).
  * @param {Number} tagsLimit - The maximum number of tags to be returned (mainly for pagination).
  * @param {Boolean} fullTemplateInfo - if the results should contain all node info (incl. img data).
+ * @param {Boolean} includeAll - if true, all nodes/components will be included in the groups.
  * @returns {Object} the grouped nodes results.
  */
-export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
+export const getNodesGroupedByTags = async (
+    { numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo, includeAll }
+) => {
     try {
         const groupedNodes = await rpc(
             'NodeRepositoryService.getNodesGroupedByTags',
             numNodesPerTag,
             tagsOffset,
             tagsLimit,
-            fullTemplateInfo
+            fullTemplateInfo,
+            includeAll
         );
         consola.debug('Loaded nodes grouped by tags', groupedNodes);
 
@@ -36,9 +40,13 @@ export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLi
  * @param {Number} nodeOffset - the numeric offset of the search (for pagination).
  * @param {Number} nodeLimit - the number of results which should be returned.
  * @param {Boolean} fullTemplateInfo - if the results should contain all node info (incl. img data).
+ * @param {Boolean} includeAll - if true, all nodes/components will be included in the search result.
+ *        Otherwise, only the nodes/components that are part of the current collection will be included.
  * @returns {Object} the node repository search results.
  */
-export const searchNodes = async ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo }) => {
+export const searchNodes = async (
+    { query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo, includeAll }
+) => {
     try {
         const nodes = await rpc(
             'NodeRepositoryService.searchNodes',
@@ -47,7 +55,8 @@ export const searchNodes = async ({ query, tags, allTagsMatch, nodeOffset, nodeL
             allTagsMatch,
             nodeOffset,
             nodeLimit,
-            fullTemplateInfo
+            fullTemplateInfo,
+            includeAll
         );
         consola.debug('Loaded node search results', nodes);
 
@@ -69,6 +78,7 @@ export const searchNodes = async ({ query, tags, allTagsMatch, nodeOffset, nodeL
  * @param {Number|null} portIdx - The port index of the source node we want recommendations for (optional)
  * @param {Number} nodesLimit - The maximum number of node recommendations to return
  * @param {Boolean} fullTemplateInfo - Whether to return the full template info or just some basic infos
+ * @param {Boolean} includeAll - if true, all nodes/components will be included in the recommendation result.
  * @returns {Object} the recommendation results
  */
 export const getNodeRecommendations = async ({
@@ -77,7 +87,8 @@ export const getNodeRecommendations = async ({
     nodeId,
     portIdx,
     nodesLimit,
-    fullTemplateInfo
+    fullTemplateInfo,
+    includeAll
 }) => {
     try {
         const recommendations = await rpc(
@@ -87,7 +98,8 @@ export const getNodeRecommendations = async ({
             nodeId,
             portIdx,
             nodesLimit,
-            fullTemplateInfo
+            fullTemplateInfo,
+            includeAll
         );
 
         return recommendations;
