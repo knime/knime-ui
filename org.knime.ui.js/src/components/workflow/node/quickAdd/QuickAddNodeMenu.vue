@@ -42,7 +42,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', ['availablePortTypes', 'hasNodeRecommendationsEnabled']),
+        ...mapState('application', ['availablePortTypes', 'hasNodeRecommendationsEnabled', 'nodeRepoFilterEnabled']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('workflow', ['isWritable']),
@@ -86,7 +86,8 @@ export default {
                 nodeId: this.nodeId,
                 portIdx: this.port.index,
                 nodesLimit: MAX_NODES,
-                fullTemplateInfo: true
+                fullTemplateInfo: true,
+                includeAll: !this.nodeRepoFilterEnabled
             });
 
             if (recommendedNodesResult.length > 0) {

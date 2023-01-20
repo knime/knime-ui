@@ -30,10 +30,10 @@ export default ({ store: $store, router: $router }) => {
         async AppStateChangedEvent({ appState }) {
             const { openProjects } = appState;
             const currentProjectId = $store.state.application.activeProjectId;
-            const nextActiveProject = openProjects.find(item => item.activeWorkflow);
+            const nextActiveProject = openProjects?.find(item => item.activeWorkflow);
             
             // Navigate to GetStarted page when no projects are open
-            if (openProjects.length === 0) {
+            if (openProjects && openProjects.length === 0) {
                 await $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
             }
             

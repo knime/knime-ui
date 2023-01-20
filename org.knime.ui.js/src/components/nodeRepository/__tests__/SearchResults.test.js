@@ -4,12 +4,14 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
+import Button from 'webapps-common/ui/components/Button.vue';
 import SearchResults from '../SearchResults.vue';
 import ScrollViewContainer from '../ScrollViewContainer.vue';
 import NodeList from '../NodeList.vue';
 
 describe('SearchResults', () => {
-    let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setSearchScrollPositionMock;
+    let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setSearchScrollPositionMock,
+        setIncludeAllMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -21,6 +23,7 @@ describe('SearchResults', () => {
 
         searchNodesNextPageMock = jest.fn();
         setSearchScrollPositionMock = jest.fn();
+        setIncludeAllMock = jest.fn();
 
         storeState = {
             query: '',
@@ -32,7 +35,8 @@ describe('SearchResults', () => {
                 name: 'Node 2'
             }],
             totalNumNodes: 2,
-            searchScrollPosition: 100
+            searchScrollPosition: 100,
+            includeAll: false
         };
 
         doShallowMount = () => {
@@ -40,7 +44,8 @@ describe('SearchResults', () => {
                 nodeRepository: {
                     state: storeState,
                     actions: {
-                        searchNodesNextPage: searchNodesNextPageMock
+                        searchNodesNextPage: searchNodesNextPageMock,
+                        setIncludeAllAndSearchNodes: setIncludeAllMock
                     },
                     mutations: {
                         setSearchScrollPosition: setSearchScrollPositionMock
@@ -112,6 +117,60 @@ describe('SearchResults', () => {
 
             expect(searchNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), true);
             expect(wrapper.vm.isLoading).toBe(true);
+        });
+    });
+
+    describe('show more button', () => {
+        it('display show more button', () => {
+            doShallowMount();
+
+            const showMoreButton = wrapper.findComponent(ScrollViewContainer).findComponent(Button);
+            expect(showMoreButton.exists()).toBe(true);
+            expect(showMoreButton.text()).toBe('Show more');
+        });
+
+        it('hide show more button', () => {
+            storeState.includeAll = true;
+            doShallowMount();
+
+            const showMoreButton = wrapper.findComponent(ScrollViewContainer).findComponent(Button);
+            expect(showMoreButton.exists()).toBe(false);
+        });
+
+        it('display show more button with empty results', () => {
+            storeState.query = 'xxx';
+            storeState.nodes = [];
+            doShallowMount();
+
+            const showMoreButton = wrapper.findComponent(Button);
+            expect(showMoreButton.exists()).toBe(true);
+            expect(showMoreButton.text()).toBe('Show more');
+        });
+
+        it('hide show more button with empty results', () => {
+            storeState.query = 'xxx';
+            storeState.nodes = [];
+            storeState.includeAll = true;
+            doShallowMount();
+
+            const showMoreButton = wrapper.findComponent(Button);
+            expect(showMoreButton.exists()).toBe(false);
+        });
+
+        it('click show more button', () => {
+            doShallowMount();
+
+            const showMoreButton = wrapper.findComponent(ScrollViewContainer).findComponent(Button);
+            showMoreButton.vm.$emit('click');
+            expect(setIncludeAllMock).toHaveBeenCalled();
+        });
+
+        it('click show more button with empty results', () => {
+            doShallowMount();
+
+            const showMoreButton = wrapper.findComponent(Button);
+            showMoreButton.vm.$emit('click');
+            expect(setIncludeAllMock).toHaveBeenCalled();
         });
     });
 });

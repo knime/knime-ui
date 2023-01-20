@@ -57,6 +57,7 @@ import java.util.stream.StreamSupport;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.TestingUtil;
 
 import com.equo.chromium.swt.Browser;
@@ -103,10 +104,17 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
             Collections.emptyList() : //
             StreamSupport.stream(openedWorkflows.spliterator(), false)
                 .map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList());
+        var nodeRepoFilterEnabled =
+            !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
         var appState = new AppState() { // NOSONAR
             @Override
             public List<OpenedWorkflow> getOpenedWorkflows() {
                 return openedWorkflowsList;
+            }
+
+            @Override
+            public boolean isNodeRepoFilterEnabled() {
+                return nodeRepoFilterEnabled;
             }
         };
         TestingUtil.initAppForTesting(appState);

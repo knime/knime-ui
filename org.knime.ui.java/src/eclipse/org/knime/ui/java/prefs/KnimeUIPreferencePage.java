@@ -44,39 +44,47 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 13, 2023 (benjamin): created
  */
-package org.knime.ui.java.browser.lifecycle;
+package org.knime.ui.java.prefs;
 
-import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.util.DefaultServicesUtil;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
- * The 'suspend' lifecycle state transition for the KNIME-UI. Called when the view is (temporarily) not used anymore (on
- * perspective switch to the classic UI).
+ * The preference page for the modern UI.
  *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Benjamin Wilhelm, KNIME GmbH, Berlin, Germany
  */
-final class Suspend {
+public final class KnimeUIPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
-    private Suspend() {
-        //
+    private static final String NODE_REPO_FILTER_LABEL =
+        "Nodes included in the node repository and node recommendations";
+
+    private static final String NODE_REPO_FILTER_NONE_OPTION = "All nodes";
+
+    private static final String NODE_REPO_FILTER_SPREADSHEET_OPTION = "Nodes for spreadsheet users";
+
+    /** Create a new preference page for the modern UI. */
+    public KnimeUIPreferencePage() {
+        super(GRID);
     }
 
-    static LifeCycleState run(final LifeCycleState state) {
-        var removeAndDisposeAllBrowserFunctions = state.removeAndDisposeAllBrowserFunctions();
-        if (removeAndDisposeAllBrowserFunctions != null) {
-            removeAndDisposeAllBrowserFunctions.run();
-        }
-        DefaultServicesUtil.disposeDefaultServices();
-        KnimeUIPreferences.setNodeRepoFilterChangeListener(null);
-        return new LifeCycleState() {
-
-            @Override
-            public String serializedAppState() {
-                return state.serializedAppState();
-            }
+    @Override
+    protected void createFieldEditors() {
+        final var nodeRepoFilterOptions = new String[][]{ //
+            new String[]{NODE_REPO_FILTER_NONE_OPTION, KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID}, //
+            new String[]{NODE_REPO_FILTER_SPREADSHEET_OPTION, KnimeUIPreferences.NODE_REPO_FILTER_SPREADSHEET_ID} //
         };
+        final var nodeRepoFilterEditor = new RadioGroupFieldEditor(KnimeUIPreferences.NODE_REPO_FILTER_PREF_KEY,
+            NODE_REPO_FILTER_LABEL, 1, nodeRepoFilterOptions, getFieldEditorParent());
+        addField(nodeRepoFilterEditor);
     }
 
+    @Override
+    public void init(final IWorkbench workbench) {
+        setPreferenceStore(KnimeUIPreferences.PREF_STORE);
+    }
 }
