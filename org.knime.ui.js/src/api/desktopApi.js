@@ -76,7 +76,7 @@ export const saveWorkflow = ({ projectId, workflowPreviewSvg }) => {
  * @param {String} param.workflowItemId
  * @returns {void}
  */
-export const openWorkflow = ({ spaceId = 'local', workflowItemId, spaceProviderId }) => {
+export const openWorkflow = ({ spaceId = 'local', workflowItemId, spaceProviderId = 'local' }) => {
     try {
         // returns falsy on success
         const error = window.openWorkflow(spaceId, workflowItemId, spaceProviderId);
