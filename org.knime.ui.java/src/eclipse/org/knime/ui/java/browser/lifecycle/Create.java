@@ -44,65 +44,71 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser;
+package org.knime.ui.java.browser.lifecycle;
 
-import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareResource;
+import java.io.ByteArrayInputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.knime.core.webui.WebUIUtil;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.ui.java.browser.lifecycle.LifeCycle;
-
-import com.equo.chromium.swt.Browser;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.knime.core.node.NodeLogger;
+import org.knime.js.cef.middleware.CEFMiddlewareService;
+import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
+import org.knime.ui.java.PerspectiveSwitchAddon;
+import org.knime.ui.java.browser.KnimeBrowserView;
 
 /**
- * Listens for changes of the URL in the KNIME browser and triggers respective
- * actions (e.g. external URLs are opened in the external browser).
+ * The 'create' lifecycle-phase for the KNIME-UI. Only called exactly once at the beginning.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class KnimeBrowserLocationListener implements LocationListener {
+final class Create {
 
-    private final Browser m_browser;
+    private static final String BASE_PATH = "dist";
 
-    KnimeBrowserLocationListener(final Browser browser) {
-        m_browser = browser;
+    private Create() {
+        //
     }
 
-    @Override
-    public void changing(final LocationEvent event) {
-        if (isCEFMiddlewareResource(event.location)) {
-            // Allow location change to middleware resources, these are handled by resource handlers.
-        } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but de-register any listeners in case the web app is being
-            //   refreshed. Required listeners will be registered on initialisation.
-            DefaultEventService.getInstance().removeAllEventListeners();
-        } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
-            event.doit = false;
+    static void run() {
+        PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
+
+        // In order for the mechanism to block external requests to work (see CEFPlugin-class)
+        // the resource handlers must be registered before the browser initialization
+        initializeResourceHandlers();
+    }
+
+    private static void initializeResourceHandlers() {
+        CEFMiddlewareService.registerCustomResourceHandler(KnimeBrowserView.DOMAIN_NAME, urlString -> { // NOSONAR
+            var path = stringToURL(urlString).getPath();
+            var url = Platform.getBundle("org.knime.ui.js").getEntry(BASE_PATH + path);
+            try {
+                return FileLocator.toFileURL(url).openStream();
+            } catch (Exception e) { // NOSONAR
+                var message = "Problem loading UI resources at '" + urlString + "'. See log for details.";
+                NodeLogger.getLogger(KnimeBrowserView.class).error(message, e);
+                return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+            }
+        });
+
+        CEFMiddlewareService.registerPageAndPageBuilderResourceHandlers( //
+            null, //
+            PageResourceHandler.PORT_VIEW, //
+            PageResourceHandler.NODE_VIEW, //
+            PageResourceHandler.NODE_DIALOG //
+        );
+    }
+
+    private static URL stringToURL(final String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Not a valid URL");
         }
     }
-
-    @Override
-    public void changed(final LocationEvent event) {
-        if (isAppPage(event.location) || isDevPage(event.location)) {
-            LifeCycle.get().webAppLoaded(m_browser);
-        }
-    }
-
-	private static boolean isAppPage(final String url) {
-		return url.startsWith(KnimeBrowserView.BASE_URL);
-	}
-
-	private static boolean isEmptyPage(final String url) {
-		return url.endsWith(KnimeBrowserView.EMPTY_PAGE);
-	}
-
-	private static boolean isDevPage(final String url) {
-		return url.startsWith("http://localhost");
-	}
 
 }

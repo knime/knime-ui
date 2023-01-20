@@ -50,7 +50,6 @@ import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
 import java.net.URI;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.CoreException;
@@ -66,15 +65,14 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.gateway.impl.webui.Space;
 import org.knime.gateway.impl.webui.service.DefaultSpaceService;
-import org.knime.ui.java.util.BrowserFunctionUtil;
+import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
-import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.RemoteWorkflowInput;
@@ -126,50 +124,33 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId), m_appStateProvider);
         } else {
-            openWorkflowInWebUIPerspectiveOnly(spaceProviderId, spaceId, itemId, space, m_appStateProvider);
+            DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(() -> space.toLocalAbsolutePath(itemId)).ifPresent(wfm -> {
+                String relativePath = null;
+                if (wfm.getContextV2().getLocationType() == LocationType.LOCAL) {
+                    relativePath = LocalSpaceUtil
+                        .toRelativePath(wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath()).toString();
+                }
+                registerWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
+                m_appStateProvider.updateAppState();
+            });
         }
 
         return null;
     }
 
-    private static void openWorkflowInWebUIPerspectiveOnly(final String spaceProviderId, final String spaceId,
-            final String itemId, final Space space, final AppStateProvider appStateProvider) {
-        BrowserFunctionUtil.runWithProgress("Loading workflow", LOGGER, monitor -> { // NOSONAR better than inline class
-            monitor.beginTask("Loading workflow...", IProgressMonitor.UNKNOWN);
-            final var res = space.toLocalAbsolutePath(itemId);
-            monitor.done();
-
-            final var workflowContext = WorkflowContextV2.builder() //
-                    .withAnalyticsPlatformExecutor(builder -> builder //
-                        .withCurrentUserAsUserId() //
-                        .withLocalWorkflowPath(res.getFirst())) //
-                    .withLocation(res.getSecond()) //
-                    .build();
-
-            final var onWorkflowLoaded =
-                    getWorkflowLoadedCallback(appStateProvider, spaceProviderId, spaceId, itemId);
-            final var wfFile = res.getFirst().resolve(WorkflowPersistor.WORKFLOW_FILE).toFile();
-            new LoadWorkflowRunnable(onWorkflowLoaded, wfFile, workflowContext).run(monitor);
-            return null;
-        });
-    }
-
-    private static Consumer<WorkflowManager> getWorkflowLoadedCallback(final AppStateProvider appStateProvider,
-        final String spaceProviderId, final String spaceId, final String itemId) {
-        return wfm -> {
-            var wpm = WorkflowProjectManager.getInstance();
-            var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId);
-            var projectId = wfm.getNameWithID();
-            wpm.addWorkflowProject(projectId, wfProj);
-            wpm.openAndCacheWorkflow(projectId);
-            wpm.setWorkflowProjectActive(projectId);
-            appStateProvider.updateAppState();
-        };
+    private static void registerWorkflowProject(final WorkflowManager wfm, final String spaceProviderId,
+        final String spaceId, final String itemId, final String relativePath) {
+        var wpm = WorkflowProjectManager.getInstance();
+        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
+        var projectId = wfProj.getID();
+        wpm.addWorkflowProject(projectId, wfProj);
+        wpm.openAndCacheWorkflow(projectId);
+        wpm.setWorkflowProjectActive(projectId);
     }
 
     private static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
-        final String spaceId, final String itemId) {
-        var projectId = wfm.getNameWithID();
+        final String spaceId, final String itemId, final String relativePath) {
+        var projectId = LocalSpaceUtil.getUniqueProjectId(wfm.getName());
         return new WorkflowProject() { // NOSONAR
             @Override
             public WorkflowManager openProject() {
@@ -203,6 +184,11 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
                     public String getItemId() {
                         return itemId;
                     }
+
+                    @Override
+                    public Optional<String> getRelativePath() {
+                        return Optional.ofNullable(relativePath);
+                    }
                 });
             }
         };
@@ -229,7 +215,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         final IEditorInput input;
         if (fileStore instanceof RemoteExplorerFileStore) {
-            final var tempInput = BrowserFunctionUtil.runWithProgress("Download workflow", LOGGER,
+            final var tempInput = DesktopAPUtil.runWithProgress("Download workflow", LOGGER,
                 progress -> downloadWorkflowFromMountpoint(progress, (RemoteExplorerFileStore)fileStore));
             if (tempInput.isEmpty()) {
                 return;

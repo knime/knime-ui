@@ -61,7 +61,7 @@ import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
-import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
@@ -108,12 +108,12 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
             if (nextProjectId != null) {
                 WorkflowProjectManager.getInstance().setWorkflowProjectActive(nextProjectId);
             }
-            var closed = saveAndCloseWorkflowsInteractively(Collections.singleton(projectIdToClose), m_eventConsumer,
-                PostWorkflowCloseAction.UPDATE_APP_STATE);
-            if (closed) {
+            var success = saveAndCloseWorkflowsInteractively(Collections.singleton(projectIdToClose), m_eventConsumer,
+                PostWorkflowCloseAction.UPDATE_APP_STATE) == 1;
+            if (success) {
                 m_appStateProvider.updateAppState();
             }
-            return closed;
+            return success;
         }
     }
 
@@ -128,7 +128,7 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
 
             // Workaround for keeping the classic and Web UI's editors/tabs in sync
             if (nextProjectId != null) {
-                EclipseUIStateUtil.setEditorPartActive(getEditorPart(nextProjectId));
+                ClassicWorkflowEditorUtil.setEditorPartActive(getEditorPart(nextProjectId));
             }
 
             // triggers sending event
@@ -139,12 +139,12 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
     }
 
     private static WorkflowEditor getEditor(final String projectId) {
-        return EclipseUIStateUtil.getOpenWorkflowEditor(getWorkflowManager(projectId))
+        return ClassicWorkflowEditorUtil.getOpenWorkflowEditor(getWorkflowManager(projectId))
             .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
     }
 
     private static MPart getEditorPart(final String projectId) {
-        return EclipseUIStateUtil.getOpenWorkflowEditorPart(getWorkflowManager(projectId))
+        return ClassicWorkflowEditorUtil.getOpenWorkflowEditorPart(getWorkflowManager(projectId))
             .orElseThrow(() -> new NoSuchElementException("No workflow editor part for project found."));
     }
 
