@@ -22,8 +22,11 @@ export default {
         SearchResults
     },
     computed: {
-        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory', 'isDescriptionPanelOpen']),
-        ...mapGetters('nodeRepository', { showSearchResults: 'searchIsActive' }),
+        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
+        ...mapGetters('nodeRepository', {
+            showSearchResults: 'searchIsActive',
+            selectedNodeIsVisible: 'selectedNodeIsVisible'
+        }),
 
         /* Search and Filter */
         selectedTags: {
@@ -105,7 +108,11 @@ export default {
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
     <portal to="extension-panel">
-      <NodeDescription v-if="isDescriptionPanelOpen" />
+      <NodeDescription
+        v-if="isDescriptionPanelOpen"
+        closeable
+        :selected-node="selectedNodeIsVisible ? selectedNode : null"
+      />
     </portal>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapActions, mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
 
 import CloseIcon from '@/assets/cancel.svg';
 import Description from 'webapps-common/ui/components/Description.vue';
@@ -22,23 +22,41 @@ export default {
             }
         })
     ],
-    computed: {
-        ...mapState('nodeRepository', ['selectedNode', 'nodeDescriptionObject']),
-        ...mapGetters('nodeRepository', ['selectedNodeIsVisible'])
+    props: {
+        closeable: {
+            type: Boolean,
+            default: false
+        },
+        selectedNode: {
+            type: Object,
+            required: true
+        }
+    },
+    data() {
+        return {
+            nodeDescriptionObject: null
+        };
     },
     watch: {
         // update description on change of node (if not null which means unselected)
         selectedNode: {
             immediate: true,
-            handler() {
-                if (this.selectedNode !== null) {
-                    this.getNodeDescription();
+            async handler() {
+                const { selectedNode } = this;
+                if (selectedNode !== null) {
+                    this.nodeDescriptionObject = await this.getNodeDescription({ selectedNode });
                 }
             }
         }
     },
     methods: {
-        ...mapActions('nodeRepository', ['getNodeDescription', 'closeDescriptionPanel'])
+        ...mapActions('nodeRepository', ['getNodeDescription']),
+        closeDescriptionPanel() {
+            if (!this.closeable) {
+                return;
+            }
+            this.$store.dispatch('nodeRepository/closeDescriptionPanel');
+        }
     }
 };
 </script>
@@ -46,8 +64,9 @@ export default {
 <template>
   <div class="node-description">
     <div class="header">
-      <h2>{{ selectedNodeIsVisible ? selectedNode.name : '&nbsp;' }}</h2>
+      <h2>{{ selectedNode ? selectedNode.name : '&nbsp;' }}</h2>
       <button
+        v-if="closeable"
         @click="closeDescriptionPanel"
       >
         <CloseIcon class="icon" />
@@ -60,7 +79,7 @@ export default {
       <div class="node-info">
         <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
              have some data as the selection is not cleared. -->
-        <template v-if="selectedNodeIsVisible">
+        <template v-if="selectedNode">
           <template v-if="nodeDescriptionObject">
             <Description
               v-if="nodeDescriptionObject.description"
