@@ -44,6 +44,14 @@ export default {
             }
 
             return this.space.private ? PrivateSpaceIcon : CubeIcon;
+        },
+        spaceDescription() {
+            // override local description
+            if (this.isLocal) {
+                return 'The local space is the folder on your computer to store and access ' +
+                    'KNIME workflows and data produced by your workflows.';
+            }
+            return this.space.description;
         }
     }
 };
@@ -68,8 +76,8 @@ export default {
       :centered="false"
       class="space-card-content"
     >
-      <h5>{{ space.name }}</h5>
-      <p>{{ space.description }}</p>
+      <h5 v-if="!isLocal">{{ space.name }}</h5>
+      <p>{{ spaceDescription }}</p>
       <!-- TODO: add later when lastUpdate is available -->
       <!-- <span>Last Update {{ space.lastUpdate }}</span> -->
     </CardContent>
