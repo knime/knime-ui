@@ -61,6 +61,10 @@ describe('application store', () => {
         const storeConfig = {
             application: await import('@/store/application'),
             workflow: await import('@/store/workflow'),
+            nodeRepository: {
+                mutations: { setNodesPerCategories: jest.fn() },
+                actions: { setIncludeAllAndSearchNodes: jest.fn() }
+            },
             canvas: {
                 getters: getters.canvas,
                 actions: actions.canvas
