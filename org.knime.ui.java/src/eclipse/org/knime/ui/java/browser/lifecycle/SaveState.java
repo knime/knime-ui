@@ -44,55 +44,57 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.Predicate;
+import java.util.function.IntSupplier;
 
-import org.knime.gateway.impl.webui.SpaceProvider;
-import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.SpaceProviders;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.knime.ui.java.util.AppStatePersistor;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
- * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
+ * The 'save-state' lifecycle-state-transition for the KNIME-UI. Called before {@link Suspend}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
+final class SaveState {
 
-    private final SpaceProviders m_spaceProviders;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    /**
-     * @param browser
-     * @param spaceProviders
-     */
-    public ConnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "connectSpaceProvider");
-        m_spaceProviders = spaceProviders;
+    private SaveState() {
+        //
     }
 
-    /**
-     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
-     */
-    @Override
-    public Object function(final Object[] arguments) {
-        var spaceProviderId = (String)arguments[0];
-        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
-        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return spaceProvider.getConnection(true)//
-                .map(SpaceProviderConnection::getUsername)//
-                .filter(Predicate.not(String::isEmpty))//
-                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
-                .orElse(null);
+    static LifeCycleState run(final LifeCycleState state) {
+        IntSupplier saveAndCloseAllWorkflows;
+        boolean workflowsSaved;
+        var serializedAppState = AppStatePersistor.serializeAppState();
+        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            // nothing we need to do here because the (in the classic UI) opened WorkflowEditor(s) take care
+            // of saving the opened workflow projects on shutdown
+            saveAndCloseAllWorkflows = null;
+            workflowsSaved = true;
+        } else {
+            saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
+            workflowsSaved = saveAndCloseAllWorkflows.getAsInt() > 0;
         }
-        return null;
+
+        return new LifeCycleState() {
+
+            @Override
+            public boolean workflowsSaved() {
+                return workflowsSaved;
+            }
+
+            @Override
+            public IntSupplier saveAndCloseAllWorkflows() {
+                return saveAndCloseAllWorkflows;
+            }
+
+            @Override
+            public String serializedAppState() {
+                return serializedAppState;
+            }
+        };
     }
 
 }

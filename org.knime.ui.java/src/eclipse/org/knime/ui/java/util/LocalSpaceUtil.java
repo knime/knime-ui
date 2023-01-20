@@ -49,6 +49,8 @@ package org.knime.ui.java.util;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.gateway.impl.project.WorkflowProject;
@@ -119,10 +121,11 @@ public final class LocalSpaceUtil {
      * Obtain the {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of a workflow project on the local file
      * system
      *
-     * @param path The path of the workflow project
+     * @param absolutePath The path of the workflow project
      * @return The {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of the workflow project.
      */
-    public static WorkflowProject.Origin getLocalOrigin(final Path path) {
+    public static WorkflowProject.Origin getLocalOrigin(final Path absolutePath) {
+        var relativePath = toRelativePath(absolutePath);
         return new WorkflowProject.Origin() {
             @Override
             public String getProviderId() {
@@ -136,8 +139,29 @@ public final class LocalSpaceUtil {
 
             @Override
             public String getItemId() {
-                return getLocalWorkspace().getItemIdFunction().apply(path);
+                return getLocalWorkspace().getItemId(absolutePath);
+            }
+
+            @Override
+            public Optional<String> getRelativePath() {
+                return Optional.of(relativePath.toString());
             }
         };
+    }
+
+    /**
+     * @param absolutePath
+     * @return a relative path to the root of the local workspace
+     */
+    public static Path toRelativePath(final Path absolutePath) {
+        return localWorkspace.getLocalWorkspaceRoot().relativize(absolutePath);
+    }
+
+    /**
+     * @param projectName
+     * @return a globally unique project id combined with the given project name
+     */
+    public static String getUniqueProjectId(final String projectName) {
+        return projectName + "_" + UUID.randomUUID();
     }
 }

@@ -44,55 +44,71 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.Predicate;
+import java.io.ByteArrayInputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
-import org.knime.gateway.impl.webui.SpaceProvider;
-import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.SpaceProviders;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.knime.core.node.NodeLogger;
+import org.knime.js.cef.middleware.CEFMiddlewareService;
+import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
+import org.knime.ui.java.PerspectiveSwitchAddon;
+import org.knime.ui.java.browser.KnimeBrowserView;
 
 /**
- * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
+ * The 'create' lifecycle-phase for the KNIME-UI. Only called exactly once at the beginning.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
+final class Create {
 
-    private final SpaceProviders m_spaceProviders;
+    private static final String BASE_PATH = "dist";
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    /**
-     * @param browser
-     * @param spaceProviders
-     */
-    public ConnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "connectSpaceProvider");
-        m_spaceProviders = spaceProviders;
+    private Create() {
+        //
     }
 
-    /**
-     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
-     */
-    @Override
-    public Object function(final Object[] arguments) {
-        var spaceProviderId = (String)arguments[0];
-        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
-        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return spaceProvider.getConnection(true)//
-                .map(SpaceProviderConnection::getUsername)//
-                .filter(Predicate.not(String::isEmpty))//
-                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
-                .orElse(null);
+    static void run() {
+        PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
+
+        // In order for the mechanism to block external requests to work (see CEFPlugin-class)
+        // the resource handlers must be registered before the browser initialization
+        initializeResourceHandlers();
+    }
+
+    private static void initializeResourceHandlers() {
+        CEFMiddlewareService.registerCustomResourceHandler(KnimeBrowserView.DOMAIN_NAME, urlString -> { // NOSONAR
+            var path = stringToURL(urlString).getPath();
+            var url = Platform.getBundle("org.knime.ui.js").getEntry(BASE_PATH + path);
+            try {
+                return FileLocator.toFileURL(url).openStream();
+            } catch (Exception e) { // NOSONAR
+                var message = "Problem loading UI resources at '" + urlString + "'. See log for details.";
+                NodeLogger.getLogger(KnimeBrowserView.class).error(message, e);
+                return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+            }
+        });
+
+        CEFMiddlewareService.registerPageAndPageBuilderResourceHandlers( //
+            null, //
+            PageResourceHandler.PORT_VIEW, //
+            PageResourceHandler.NODE_VIEW, //
+            PageResourceHandler.NODE_DIALOG //
+        );
+    }
+
+    private static URL stringToURL(final String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Not a valid URL");
         }
-        return null;
     }
 
 }

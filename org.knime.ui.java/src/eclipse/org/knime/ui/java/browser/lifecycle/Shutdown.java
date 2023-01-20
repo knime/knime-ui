@@ -44,55 +44,29 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.Predicate;
-
-import org.knime.gateway.impl.webui.SpaceProvider;
-import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.SpaceProviders;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.knime.ui.java.util.AppStatePersistor;
 
 /**
- * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
+ * The shutdown lifecycle state transition of the KNIME-UI. The {@link Suspend}-phase must have been run first.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
+public final class Shutdown {
 
-    private final SpaceProviders m_spaceProviders;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    /**
-     * @param browser
-     * @param spaceProviders
-     */
-    public ConnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "connectSpaceProvider");
-        m_spaceProviders = spaceProviders;
+    private Shutdown() {
+        //
     }
 
     /**
-     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
+     * Runs the phase.
+     *
+     * @param state
      */
-    @Override
-    public Object function(final Object[] arguments) {
-        var spaceProviderId = (String)arguments[0];
-        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
-        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return spaceProvider.getConnection(true)//
-                .map(SpaceProviderConnection::getUsername)//
-                .filter(Predicate.not(String::isEmpty))//
-                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
-                .orElse(null);
-        }
-        return null;
+    public static void run(final LifeCycleState state) {
+        AppStatePersistor.saveAppState(state.serializedAppState());
     }
-
 }

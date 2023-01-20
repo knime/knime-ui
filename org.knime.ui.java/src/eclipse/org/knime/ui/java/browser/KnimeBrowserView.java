@@ -2,32 +2,13 @@ package org.knime.ui.java.browser;
 
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.Active;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -36,55 +17,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISaveablePart2;
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.InvalidRequestException;
-import org.knime.gateway.api.webui.util.EntityFactory;
-import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
-import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.service.util.EventConsumer;
-import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.gateway.impl.webui.SpaceProvider;
-import org.knime.gateway.impl.webui.SpaceProviders;
-import org.knime.gateway.impl.webui.UpdateStateProvider;
-import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.gateway.json.util.ObjectMapperUtil;
-import org.knime.js.cef.middleware.CEFMiddlewareService;
-import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
-import org.knime.ui.java.PerspectiveSwitchAddon;
-import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
-import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
-import org.knime.ui.java.browser.function.ConnectSpaceProviderBrowserFunction;
-import org.knime.ui.java.browser.function.DisconnectSpaceProviderBrowserFunction;
-import org.knime.ui.java.browser.function.EmitUpdateAvailableEventForTestingBrowserFunction;
-import org.knime.ui.java.browser.function.GetSpaceProvidersBrowserFunction;
-import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
-import org.knime.ui.java.browser.function.OpenAboutDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenInstallExtensionsDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenLayoutEditorBrowserFunction;
-import org.knime.ui.java.browser.function.OpenLegacyFlowVariableDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
-import org.knime.ui.java.browser.function.OpenUpdateDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
-import org.knime.ui.java.browser.function.OpenWorkflowCoachPreferencePageBrowserFunction;
-import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
-import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
-import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
-import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
-import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.util.DefaultServicesUtil;
-import org.knime.ui.java.util.EclipseUIStateUtil;
-import org.knime.ui.java.util.LocalSpaceUtil;
-import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
 import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-import com.equo.comm.api.CommServiceProvider;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Simple view containing a browser initialized with the knime-ui webapp (or a
@@ -98,13 +35,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class KnimeBrowserView implements ISaveablePart2 {
 
+    @SuppressWarnings("javadoc")
+    public static final NodeLogger LOGGER = NodeLogger.getLogger(KnimeBrowserView.class);
+
+    @SuppressWarnings("javadoc")
+    public static final String DOMAIN_NAME = "org.knime.ui.java";
+
     static final String EMPTY_PAGE = "about:blank";
 
-    private static final String REMOTE_DEBUGGING_PORT_PROP = "chromium.remote_debugging_port";
-
     private static final String DEV_URL_PROP = "org.knime.ui.dev.url";
-
-    private static final String DOMAIN_NAME = "org.knime.ui.java";
 
     private static final String HTTP = "http";
 
@@ -112,34 +51,20 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
     private static final String APP_PAGE = BASE_URL + "/index.html";
 
-    private static final String BASE_PATH = "dist";
+    private static Runnable viewInitializer = null;
 
-    private static final String JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
-
-    private static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
-
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(KnimeBrowserView.class);
-
-    private static KnimeBrowserView instance = null;
-
-    private static Consumer<KnimeBrowserView> viewInitializer = null;
-
-    private BooleanSupplier m_saveAndCloseAllWorkflows;
-
-    private Runnable m_removeAndDisposeAllBrowserFunctions;
-
-    private boolean m_initialized = false;
-
-    private Browser m_browser;
+    private static Browser browser;
 
     /**
      * Activates the view initializer that will be executed as soon as this view becomes finally visible (again). Once
-     * the view initializer has been executed, it will be activated (and would need to be activated again).
+     * the view initializer has been executed, it will be de-activated (and would need to be activated again).
      *
      * @param appStateSupplier supplies the app state for the UI
+     * @param checkForUpdates whether to check for updates on initialization
      */
-    public static void activateViewInitializer(final Supplier<AppState> appStateSupplier) {
-        viewInitializer = v -> v.initView(appStateSupplier, false);
+    public static void activateViewInitializer(final Supplier<AppState> appStateSupplier,
+        final boolean checkForUpdates) {
+        viewInitializer = () -> initView(appStateSupplier, false, checkForUpdates);
     }
 
     /**
@@ -148,76 +73,32 @@ public class KnimeBrowserView implements ISaveablePart2 {
      * @param appStateSupplier supplies the app state for the UI
      */
     public static void initViewForTesting(final Supplier<AppState> appStateSupplier) {
-        if (instance == null) {
+        if (browser == null) {
             throw new IllegalStateException("No browser view instance available");
         }
-        instance.initView(appStateSupplier, true);
+        initView(appStateSupplier, true, false);
     }
 
-    private void initView(final Supplier<AppState> appStateSupplier, final boolean ignoreEmptyPageAsDevUrl) {
-        // Create and set default service dependencies
-        var eventConsumer = createEventConsumer();
-        var appStateProvider = new AppStateProvider(appStateSupplier);
-        var updateStateProvider = new UpdateStateProvider(EclipseUIStateUtil::checkForUpdate);
-        var spaceProviders = createSpaceProviders();
-        DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer, spaceProviders,
-            updateStateProvider);
-
-        // Check for updates and notify UI
-        try {
-            DefaultEventService.getInstance().addEventListener(EntityFactory.UpdateState.buildEventTypeEnt());
-        } catch (InvalidRequestException e) {
-            LOGGER.error("Could not add update state changed event listener to event service", e);
-        }
-        updateStateProvider.checkForUpdates();
-
-        m_saveAndCloseAllWorkflows = () -> { // NOSONAR
-            var projectIds = WorkflowProjectManager.getInstance().getWorkflowProjectsIds();
-            return SaveAndCloseWorkflowsBrowserFunction.saveAndCloseWorkflowsInteractively(projectIds, eventConsumer,
-                PostWorkflowCloseAction.SHUTDOWN);
-        };
-
-        // Initialize browser functions and set CEF browser URL
-        m_removeAndDisposeAllBrowserFunctions =
-            initBrowserFunctions(m_browser, appStateProvider, spaceProviders, updateStateProvider, eventConsumer);
+    private static void initView(final Supplier<AppState> appStateSupplier, final boolean ignoreEmptyPageAsDevUrl,
+        final boolean checkForUpdates) {
+        LifeCycle.get().init(appStateSupplier, browser, checkForUpdates); // NOSONAR
         setUrl(ignoreEmptyPageAsDevUrl);
-
-        m_initialized = true;
-
-        // Update the app state when the node repository filter changes
-        KnimeUIPreferences.addNodeRepoFilterChangeListener((oldValue, newValue) -> {
-            if (!Objects.equals(oldValue, newValue)) {
-                appStateProvider.updateAppState();
-            }
-        });
-    }
-
-    private static SpaceProviders createSpaceProviders() {
-        var localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
-        var spaceProvidersFromExtensionPoint = SpaceProvidersExtension.getSpaceProvidersFromExtensionPoint();
-        var res = new LinkedHashMap<String, SpaceProvider>();
-        res.put(localWorkspaceProvider.getId(), localWorkspaceProvider);
-        spaceProvidersFromExtensionPoint.forEach(sp -> res.putAll(sp.getProvidersMap()));
-        return () -> res;
     }
 
     /**
      * Clears the view. Called when the view is not needed anymore (for some time), e.g. on perspective switch.
      *
      * If the view is activated/used again, it need to be initialized either via
-     * {@link #activateViewInitializer(Supplier)} or {@link #initViewForTesting(Supplier)}.
+     * {@link #activateViewInitializer(Supplier, boolean)} or {@link #initViewForTesting(Supplier)}.
      */
     public static void clearView() {
-        if (instance != null && instance.m_initialized) {
-            if (!instance.m_browser.isDisposed()) {
-                instance.m_browser.setUrl(EMPTY_PAGE);
+        if (browser != null) {
+            if (!browser.isDisposed()) {
+                browser.setUrl(EMPTY_PAGE);
             }
-            instance.m_saveAndCloseAllWorkflows = null;
-            instance.m_removeAndDisposeAllBrowserFunctions.run();
-            instance.m_removeAndDisposeAllBrowserFunctions = null;
-            DefaultServicesUtil.disposeDefaultServices();
+            LifeCycle.get().saveState();
+            LifeCycle.get().suspend();
             viewInitializer = null;
-            instance.m_initialized = false;
         }
     }
 
@@ -225,23 +106,19 @@ public class KnimeBrowserView implements ISaveablePart2 {
     public void createPartControl(final Composite parent) {
         // This is a 'quasi' singleton. Even though it has a public constructor it's only expected to have one single
         // instance and will fail if this method is called on another instance again.
-        if (instance != null) {
+        if (browser != null) {
             throw new IllegalStateException(
                 "Instance can't be created. There's only one instance of the KnimeBrowserView allowed.");
         }
-        instance = this; // NOSONAR it's fine because this class is technically a singleton
 
-        PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
+        LifeCycle.get().create();
 
-        // In order for the mechanism to block external requests to work (see CEFPlugin-class)
-        // the resource handlers must be registered before the browser initialization
-        initializeResourceHandlers();
-        m_browser = new Browser(parent, SWT.NONE);
-        m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
-        m_browser.setMenu(new Menu(m_browser.getShell()));
+        browser = new Browser(parent, SWT.NONE); // NOSONAR
+        browser.addLocationListener(new KnimeBrowserLocationListener(browser));
+        browser.setMenu(new Menu(browser.getShell()));
 
         if (viewInitializer == null) {
-            activateViewInitializer(AppStateDerivedFromWorkflowProjectManager::new);
+            activateViewInitializer(null, true);
         }
     }
 
@@ -253,128 +130,10 @@ public class KnimeBrowserView implements ISaveablePart2 {
         // 	ready for interaction.
         boolean isRendered = part.getObject() instanceof KnimeBrowserView;
         if (isBrowserView && isRendered && viewInitializer != null) {
-            viewInitializer.accept(instance);
-            viewInitializer = null; // NOSONAR because this is technically a singleton
-        }
-    }
-
-    /**
-     * Initializes and registers the {@link BrowserFunction BrowserFunctions} with the browser.
-     *
-     * @param appStateProvider Required to initialize some browser functions
-     * @param spaceProviders Required to initialize some browser functions
-     * @param updateStateProvider Required to initialize {@link EmitUpdateAvailableEventForTestingBrowserFunction}
-     * @param eventConsumer
-     * @return a runnable that removes and disposes all browser functions
-     */
-    private static Runnable initBrowserFunctions(final Browser browser, final AppStateProvider appStateProvider,
-        final SpaceProviders spaceProviders, final UpdateStateProvider updateStateProvider,
-        final EventConsumer eventConsumer) {
-        var functions = new ArrayList<BrowserFunction>();
-        functions.add(new SwitchToJavaUIBrowserFunction(browser, eventConsumer, appStateProvider));
-        functions.add(new OpenNodeViewBrowserFunction(browser));
-        functions.add(new OpenNodeDialogBrowserFunction(browser));
-        functions.add(new OpenLegacyFlowVariableDialogBrowserFunction(browser));
-        functions.add(new SaveWorkflowBrowserFunction(browser));
-        functions.add(new OpenWorkflowBrowserFunction(browser, appStateProvider));
-        functions.add(new CloseWorkflowBrowserFunction(browser, appStateProvider, eventConsumer));
-        functions.add(new OpenLayoutEditorBrowserFunction(browser));
-        functions.add(new OpenWorkflowCoachPreferencePageBrowserFunction(browser, appStateProvider));
-        functions.add(new OpenAboutDialogBrowserFunction(browser));
-        functions.add(new OpenInstallExtensionsDialogBrowserFunction(browser));
-        functions.add(new OpenUpdateDialogBrowserFunction(browser));
-        functions.add(new GetSpaceProvidersBrowserFunction(browser, spaceProviders));
-        functions.add(new ConnectSpaceProviderBrowserFunction(browser, spaceProviders));
-        functions.add(new DisconnectSpaceProviderBrowserFunction(browser, spaceProviders));
-        functions.add(new SaveAndCloseWorkflowsBrowserFunction(browser, appStateProvider));
-        if (isRemoteDebuggingPortSet()) {
-            functions.add(new InitAppForTestingBrowserFunction(browser));
-            functions.add(new ClearAppForTestingBrowserFunction(browser));
-            functions.add(new EmitUpdateAvailableEventForTestingBrowserFunction(browser, updateStateProvider));
-        }
-        return () -> functions.stream().forEach(fct -> fct.dispose(true));
-    }
-
-    private static void initializeResourceHandlers() {
-        CEFMiddlewareService.registerCustomResourceHandler(DOMAIN_NAME, urlString -> { // NOSONAR
-            var path = stringToURL(urlString).getPath();
-            var url = Platform.getBundle("org.knime.ui.js").getEntry(BASE_PATH + path);
-            try {
-                return FileLocator.toFileURL(url).openStream();
-            } catch (Exception e) { // NOSONAR
-                var message = "Problem loading UI resources at '" + urlString + "'. See log for details.";
-                NodeLogger.getLogger(KnimeBrowserView.class).error(message, e);
-                return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+            synchronized (this) {
+                viewInitializer.run();
+                viewInitializer = null; // NOSONAR because this is technically a singleton
             }
-        });
-
-        CEFMiddlewareService.registerPageAndPageBuilderResourceHandlers( //
-            null, //
-            PageResourceHandler.PORT_VIEW,  //
-            PageResourceHandler.NODE_VIEW,  //
-            PageResourceHandler.NODE_DIALOG //
-        );
-    }
-
-    private static EventConsumer initializeJavaBrowserCommunication(final String jsonRpcActionId,
-        final String jsonRpcNotificationActionId) {
-        var commService = CommServiceProvider.getCommService()
-            .orElseThrow(() -> new IllegalStateException("No CEF communication service available!"));
-
-        JsonRpcRequestHandler jsonRpcHandler = new DefaultJsonRpcRequestHandler();
-        commService.on(jsonRpcActionId, message -> { // NOSONAR
-            return new String(jsonRpcHandler.handle(message.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-        });
-
-        final var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
-        return (name, event) -> {
-            var message = createJsonRpcNotification(mapper, name, event);
-            commService.send(jsonRpcNotificationActionId, message);
-        };
-    }
-
-    private static String createJsonRpcNotification(final ObjectMapper mapper, final String name, final Object event) {
-        // wrap event into a jsonrpc notification (method == event-name) and serialize
-        var jsonrpc = mapper.createObjectNode();
-        var params = jsonrpc.arrayNode();
-        params.addPOJO(event);
-        try {
-            return mapper.writeValueAsString(jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params));
-        } catch (JsonProcessingException ex) {
-            throw new IllegalStateException("Problem creating a json-rpc notification in order to send an event", ex);
-        }
-    }
-
-    void initializeJSBrowserCommunication() {
-        try {
-            var script = Files.readString(Path.of(getAbsolutePath(DOMAIN_NAME, "files/script-snippet.template")))
-                .replace("##JSON_RPC_NOTIFICATION_ACTION_ID##", JSON_RPC_NOTIFICATION_ACTION_ID)
-                .replace("##JSON_RPC_ACTION_ID##", JSON_RPC_ACTION_ID);
-            if (!m_browser.execute(script)) {
-                NodeLogger.getLogger(this.getClass())
-                    .error("Script to initialize JS browser communication failed to execute");
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to read script to initialize JS browser communication", e);
-        }
-    }
-
-    private static String getAbsolutePath(final String bundle, final String relativePath) {
-        var url = Platform.getBundle(bundle).getEntry(relativePath);
-        try {
-            var fileUrl = FileLocator.toFileURL(url);
-            return Paths.get(new URI(fileUrl.getProtocol(), fileUrl.getFile(), null)).toString();
-        } catch (IOException | URISyntaxException e) {
-            // should never happen
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private static URL stringToURL(final String url) {
-        try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Not a valid URL");
         }
     }
 
@@ -388,30 +147,23 @@ public class KnimeBrowserView implements ISaveablePart2 {
 	 * is about:blank), the dev URL (i.e. empty page) will be ignored and the
 	 * actual file URL is used
 	 */
-	private void setUrl(final boolean ignoreEmptyPageAsDevUrl) {
-		if (m_browser.getUrl().equals(EMPTY_PAGE)) {
-			if (!setDevURL(m_browser, ignoreEmptyPageAsDevUrl)) { // NOSONAR
-			    m_browser.setUrl(APP_PAGE);
+	private static void setUrl(final boolean ignoreEmptyPageAsDevUrl) {
+		if (browser.getUrl().equals(EMPTY_PAGE)) {
+			if (!setDevURL(browser, ignoreEmptyPageAsDevUrl)) { // NOSONAR
+			    browser.setUrl(APP_PAGE);
 			}
 		}
 	}
 
-	/**
-	 * @return a new event consumer instance forwarding events to java-script
-	 */
-    private static EventConsumer createEventConsumer() {
-        return initializeJavaBrowserCommunication(JSON_RPC_ACTION_ID, JSON_RPC_NOTIFICATION_ACTION_ID);
-    }
-
 	@Focus
 	public void setFocus() {
-		m_browser.setFocus();
+		browser.setFocus();
 	}
 
 	@PreDestroy
 	public void dispose() {
 	    clearView();
-		m_browser.dispose();
+		browser.dispose();
 	}
 
 	private static boolean setDevURL(final Browser browser, final boolean ignoreEmptyPageAsDevUrl) {
@@ -422,56 +174,6 @@ public class KnimeBrowserView implements ISaveablePart2 {
 		} else {
 			return false;
 		}
-	}
-
-	private static boolean isRemoteDebuggingPortSet() {
-		return System.getProperty(KnimeBrowserView.REMOTE_DEBUGGING_PORT_PROP) != null;
-	}
-
-	private static class AppStateDerivedFromWorkflowProjectManager implements AppState {
-
-        private final List<OpenedWorkflow> m_openedWorkflows;
-
-        private final boolean m_nodeRepoFilterEnabled;
-
-        AppStateDerivedFromWorkflowProjectManager() {
-            var wpm = WorkflowProjectManager.getInstance();
-            m_openedWorkflows = wpm.getWorkflowProjectsIds().stream()
-                .map(id -> toOpenedWorkflow(wpm.getWorkflowProject(id).orElseThrow(), wpm.isActiveWorkflowProject(id)))
-                .collect(Collectors.toList());
-            m_nodeRepoFilterEnabled =
-                !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
-        }
-
-        @Override
-        public List<OpenedWorkflow> getOpenedWorkflows() {
-            return m_openedWorkflows;
-        }
-
-        @Override
-        public boolean isNodeRepoFilterEnabled() {
-            return m_nodeRepoFilterEnabled;
-        }
-
-        private static AppState.OpenedWorkflow toOpenedWorkflow(final WorkflowProject wp, final boolean isVisible) {
-            return new AppState.OpenedWorkflow() {
-
-                @Override
-                public boolean isVisible() {
-                    return isVisible;
-                }
-
-                @Override
-                public String getWorkflowId() {
-                    return NodeIDEnt.getRootID().toString();
-                }
-
-                @Override
-                public String getProjectId() {
-                    return wp.getID();
-                }
-            };
-        }
 	}
 
     @Override
@@ -486,7 +188,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
     @Override
     public boolean isDirty() {
-        return true;
+        return LifeCycle.get().isBeforeStateTransition(StateTransition.SUSPEND);
     }
 
     @Override
@@ -501,16 +203,12 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
     @Override
     public int promptToSaveOnClose() {
-        if (m_saveAndCloseAllWorkflows != null && !PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            // This is being called by the eclipse framework before this view is disposed (usually only on shutdown).
-            // And before it's disposed, we need to ask the user to save (and save) all the workflows (or abort
-            // the shutdown, if the user cancels). And that's what the runnable is doing what we call here.
-            // If the classic perspective is loaded, means that there are open WorkflowEditor(s) which take care
-            // themselves of saving the workflows on shutdown.
-            return m_saveAndCloseAllWorkflows.getAsBoolean() ? YES : CANCEL;
-        } else {
-            return NO;
-        }
+        // This is being called by the eclipse framework before this view is disposed (usually only on shutdown).
+        // And before it's disposed, we need, e.g., to ask the user to save (and save) all the workflows (or abort
+        // the shutdown, if the user cancels).
+        LifeCycle.get().saveState();
+        // cancel if we didn't successfully transition to the next phase
+        return LifeCycle.get().isLastStateTransition(StateTransition.SAVE_STATE) ? YES : CANCEL;
     }
 
 }

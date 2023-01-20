@@ -44,55 +44,66 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.Predicate;
+import static org.knime.ui.java.browser.KnimeBrowserView.DOMAIN_NAME;
+import static org.knime.ui.java.browser.lifecycle.SharedConstants.JSON_RPC_ACTION_ID;
+import static org.knime.ui.java.browser.lifecycle.SharedConstants.JSON_RPC_NOTIFICATION_ACTION_ID;
 
-import org.knime.gateway.impl.webui.SpaceProvider;
-import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.SpaceProviders;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.knime.ui.java.browser.KnimeBrowserView;
 
 import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
+ * The 'web-app-loaded' lifecycle state transition of the KNIME-UI. Called after {@link Init} as soon as the (html)-page
+ * has been completely loaded.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
+final class WebAppLoaded {
 
-    private final SpaceProviders m_spaceProviders;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    /**
-     * @param browser
-     * @param spaceProviders
-     */
-    public ConnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "connectSpaceProvider");
-        m_spaceProviders = spaceProviders;
+    private WebAppLoaded() {
+        //
     }
 
-    /**
-     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
-     */
-    @Override
-    public Object function(final Object[] arguments) {
-        var spaceProviderId = (String)arguments[0];
-        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
-        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return spaceProvider.getConnection(true)//
-                .map(SpaceProviderConnection::getUsername)//
-                .filter(Predicate.not(String::isEmpty))//
-                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
-                .orElse(null);
+    static void runPhase(final Browser browser) {
+        initializeJSBrowserCommunication(browser);
+    }
+
+    private static void initializeJSBrowserCommunication(final Browser browser) {
+        // inject the communication (message transport) logic
+        try {
+            var script = Files.readString(Path.of(getAbsolutePath(DOMAIN_NAME, "files/script-snippet.template")))
+                .replace("##JSON_RPC_NOTIFICATION_ACTION_ID##", JSON_RPC_NOTIFICATION_ACTION_ID)
+                .replace("##JSON_RPC_ACTION_ID##", JSON_RPC_ACTION_ID);
+            if (!browser.execute(script)) {
+                KnimeBrowserView.LOGGER.error("Script to initialize JS browser communication failed to execute");
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read script to initialize JS browser communication", e);
         }
-        return null;
+    }
+
+    private static String getAbsolutePath(final String bundle, final String relativePath) {
+        var url = Platform.getBundle(bundle).getEntry(relativePath);
+        try {
+            var fileUrl = FileLocator.toFileURL(url);
+            return Paths.get(new URI(fileUrl.getProtocol(), fileUrl.getFile(), null)).toString();
+        } catch (IOException | URISyntaxException e) {
+            // should never happen
+            throw new IllegalStateException(e);
+        }
     }
 
 }

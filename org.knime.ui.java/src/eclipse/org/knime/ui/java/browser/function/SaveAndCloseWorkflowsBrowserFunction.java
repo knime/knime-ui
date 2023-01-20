@@ -152,26 +152,26 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
      * @param projectIds
      * @param eventConsumer
      * @param action
-     * @return {@code true} if the workflows have been closed; {@code false} if the closing process has been cancelled
-     *         or the workflows require to be saved (in which case, a event is triggered to save and close the
-     *         workflows)
+     * @return {@code 0} if the closing process has been cancelled or failed; {@code 1} if the workflows have been
+     *         closed successfully; {@code 2} if the workflows require to be saved (in which case, a event is triggered
+     *         to save and close the workflows)
      */
-    public static boolean saveAndCloseWorkflowsInteractively(final Set<String> projectIds,
+    public static int saveAndCloseWorkflowsInteractively(final Set<String> projectIds,
         final EventConsumer eventConsumer, final PostWorkflowCloseAction action) {
         var wfms =
             projectIds.stream().map(id -> WorkflowProjectManager.getInstance().getCachedWorkflow(id).orElse(null))
-                .filter(Objects::nonNull).toArray(WorkflowManager[]::new);
+                .toArray(WorkflowManager[]::new);
         var shallSaveWorkflows = promptWhetherToSaveWorkflows(wfms);
         switch (shallSaveWorkflows) {
             case 0: // YES
                 if (shallCancelWorkflowsIfNecessary(wfms)) {
                     sendSaveAndCloseWorkflowEventToFrontend(projectIds, eventConsumer, action);
                 }
-                return false;
+                return 2;
             case 1: // NO
-                return closeWorkflows(projectIds.toArray(String[]::new), wfms);
+                return closeWorkflows(projectIds.toArray(String[]::new), wfms) ? 1 : 0;
             default: // CANCEL button or window 'x'
-                return false;
+                return 0;
         }
     }
 
@@ -225,21 +225,20 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
     }
 
     private static int promptWhetherToSaveWorkflows(final WorkflowManager... wfms) {
-        var dirtyWfms = Arrays.stream(wfms).filter(WorkflowManager::isDirty).toArray(WorkflowManager[]::new);
+        var dirtyWfms = Arrays.stream(wfms).filter(Objects::nonNull).filter(WorkflowManager::isDirty)
+            .toArray(WorkflowManager[]::new);
         String title;
         var message = new StringBuilder();
         if (dirtyWfms.length == 0) {
             return 1;
         } else if (dirtyWfms.length == 1) {
             title = "Save Workflow";
-            message.append("Save '" + wfms[0].getName() + "'?");
+            message.append("Save '" + dirtyWfms[0].getName() + "'?");
         } else {
             title = "Save Workflows";
             message.append("Save workflows?\n");
-            for (var i = 0; i < wfms.length; i++) {
-                if (wfms[i].isDirty()) {
-                    message.append("\n" + wfms[i].getName());
-                }
+            for (var i = 0; i < dirtyWfms.length; i++) {
+                message.append("\n" + dirtyWfms[i].getName());
             }
         }
         var sh = SWTUtilities.getActiveShell();
@@ -251,9 +250,9 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
     }
 
     private static boolean shallCancelWorkflowsIfNecessary(final WorkflowManager... wfms) {
-        var namesOfExecutingWorkflows =
-            Arrays.stream(wfms).filter(wfm -> wfm.getNodeContainerState().isExecutionInProgress())
-                .map(WorkflowManager::getName).toArray(String[]::new);
+        var namesOfExecutingWorkflows = Arrays.stream(wfms).filter(Objects::nonNull)
+            .filter(wfm -> wfm.getNodeContainerState().isExecutionInProgress()).map(WorkflowManager::getName)
+            .toArray(String[]::new);
         if (namesOfExecutingWorkflows.length == 0) {
             return true;
         }
@@ -283,7 +282,9 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
 
     private static boolean closeWorkflow(final String projectId, final WorkflowManager wfm) {
         try {
-            CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
+            if (wfm != null) {
+                CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
+            }
             WorkflowProjectManager.getInstance().removeWorkflowProject(projectId);
             return true;
         } catch (InterruptedException e) { // NOSONAR

@@ -54,6 +54,9 @@ import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
+
+import com.equo.chromium.swt.Browser;
 
 /**
  * Listens for changes of the URL in the KNIME browser and triggers respective
@@ -63,10 +66,10 @@ import org.knime.gateway.impl.webui.service.DefaultEventService;
  */
 public class KnimeBrowserLocationListener implements LocationListener {
 
-    private final KnimeBrowserView m_browserView;
+    private final Browser m_browser;
 
-    KnimeBrowserLocationListener(final KnimeBrowserView browserView) {
-        m_browserView = browserView;
+    KnimeBrowserLocationListener(final Browser browser) {
+        m_browser = browser;
     }
 
     @Override
@@ -86,8 +89,7 @@ public class KnimeBrowserLocationListener implements LocationListener {
     @Override
     public void changed(final LocationEvent event) {
         if (isAppPage(event.location) || isDevPage(event.location)) {
-            // inject the communication (message transport) logic
-            m_browserView.initializeJSBrowserCommunication();
+            LifeCycle.get().webAppLoaded(m_browser);
         }
     }
 

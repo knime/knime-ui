@@ -106,6 +106,20 @@ export const closeWorkflow = ({ closingProjectId, nextProjectId }) => {
 };
 
 /**
+ * Ensures that a project-workflow is loaded (and loads it, if not) and set it to be the active one.
+ * @param {String} projectId
+ * @returns {void}
+ */
+export const setProjectActiveAndEnsureItsLoadedInBackend = ({ projectId }) => {
+    try {
+        window.setProjectActiveAndEnsureItsLoaded(projectId);
+    } catch (error) {
+        consola.error(`Failed to set project as active in the backend`, { projectId, error });
+        throw error;
+    }
+};
+
+/**
  * Opens the layout editor for a component.
  * @param {String} projectId
  * @param {String} workflowId
@@ -162,7 +176,8 @@ export const fetchAllSpaceProviders = () => {
 
 export const connectSpaceProvider = ({ spaceProviderId }) => {
     try {
-        window.connectSpaceProvider(spaceProviderId);
+        const user = window.connectSpaceProvider(spaceProviderId);
+        return JSON.parse(user);
     } catch (error) {
         consola.error(`Could not connect to provider`, { spaceProviderId, error });
         throw error;

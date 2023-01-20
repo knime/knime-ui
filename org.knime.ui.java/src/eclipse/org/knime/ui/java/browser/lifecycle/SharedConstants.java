@@ -44,55 +44,29 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
-
-import java.util.function.Predicate;
-
-import org.knime.gateway.impl.webui.SpaceProvider;
-import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.SpaceProviders;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-import com.fasterxml.jackson.databind.ObjectMapper;
+package org.knime.ui.java.browser.lifecycle;
 
 /**
- * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
+ * Constants shared accross lifecycle state transitions.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
+final class SharedConstants {
 
-    private final SpaceProviders m_spaceProviders;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    /**
-     * @param browser
-     * @param spaceProviders
-     */
-    public ConnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "connectSpaceProvider");
-        m_spaceProviders = spaceProviders;
+    private SharedConstants() {
+        // utility
     }
 
-    /**
-     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
-     */
-    @Override
-    public Object function(final Object[] arguments) {
-        var spaceProviderId = (String)arguments[0];
-        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
-        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return spaceProvider.getConnection(true)//
-                .map(SpaceProviderConnection::getUsername)//
-                .filter(Predicate.not(String::isEmpty))//
-                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
-                .orElse(null);
-        }
-        return null;
+    static final String JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
+
+    static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
+
+    private static final String REMOTE_DEBUGGING_PORT_PROP = "chromium.remote_debugging_port";
+
+    static boolean isRemoteDebuggingPortSet() {
+        return System.getProperty(REMOTE_DEBUGGING_PORT_PROP) != null;
     }
 
 }

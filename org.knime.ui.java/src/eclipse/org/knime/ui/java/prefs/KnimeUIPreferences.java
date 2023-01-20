@@ -48,9 +48,6 @@
  */
 package org.knime.ui.java.prefs;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.function.BiConsumer;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
@@ -65,8 +62,7 @@ import org.knime.ui.java.UIPlugin;
  */
 public final class KnimeUIPreferences {
 
-    private static final List<BiConsumer<String, String>> NODE_REPO_FILTER_CHANGE_LISTENERS =
-        Collections.synchronizedList(new LinkedList<>());
+    private static BiConsumer<String, String> NODE_REPO_FILTER_CHANGE_LISTENER = null;
 
     static final String NODE_REPO_FILTER_PREF_KEY = "nodeRepositoryFilterId";
 
@@ -75,10 +71,8 @@ public final class KnimeUIPreferences {
 
     static {
         PREF_STORE.addPropertyChangeListener(e -> {
-            if (NODE_REPO_FILTER_PREF_KEY.equals(e.getProperty())) {
-                for (var l : NODE_REPO_FILTER_CHANGE_LISTENERS) {
-                    l.accept((String)e.getOldValue(), (String)e.getNewValue());
-                }
+            if (NODE_REPO_FILTER_PREF_KEY.equals(e.getProperty()) && NODE_REPO_FILTER_CHANGE_LISTENER != null) {
+                NODE_REPO_FILTER_CHANGE_LISTENER.accept((String)e.getOldValue(), (String)e.getNewValue());
             }
         });
     }
@@ -105,20 +99,12 @@ public final class KnimeUIPreferences {
     }
 
     /**
-     * Add a listener that is called whenever the node repository filter setting changes.
+     * Set a listener that is called whenever the node repository filter setting changes. If a listener was set already
+     * it is replaced.
      *
-     * @param listener the listener that is called with the old value and the new value.
+     * @param listener the listener that is called with the old value and the new value. <code>null</code> is allowed.
      */
-    public static void addNodeRepoFilterChangeListener(final BiConsumer<String, String> listener) {
-        NODE_REPO_FILTER_CHANGE_LISTENERS.add(listener);
-    }
-
-    /**
-     * Remove a listener that was added with {@link #addNodeRepoFilterChangeListener(BiConsumer)}.
-     *
-     * @param listener the listener
-     */
-    public static void removeNodeRepoFilterChangeListener(final BiConsumer<String, String> listener) {
-        NODE_REPO_FILTER_CHANGE_LISTENERS.remove(listener);
+    public static void setNodeRepoFilterChangeListener(final BiConsumer<String, String> listener) {
+        NODE_REPO_FILTER_CHANGE_LISTENER = listener;
     }
 }

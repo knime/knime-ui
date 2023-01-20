@@ -66,6 +66,8 @@ import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.ui.java.browser.KnimeBrowserView;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
 /**
  * Utility methods for testing.
@@ -81,7 +83,8 @@ public final class TestingUtil {
 
     /**
      * @param newAppState
-     * @see DefaultServicesUtil#setDefaultServiceDependencies(AppStateProvider, EventConsumer)
+     * @see DefaultServicesUtil#setDefaultServiceDependencies(AppStateProvider, EventConsumer,
+     *      org.knime.gateway.impl.webui.SpaceProviders, org.knime.gateway.impl.webui.UpdateStateProvider)
      */
     public static void initAppForTesting(final AppState newAppState) {
         clearAppForTesting();
@@ -93,7 +96,9 @@ public final class TestingUtil {
      * Clears the entire app state.
      */
     public static void clearAppForTesting() {
-        KnimeBrowserView.clearView();
+        if (LifeCycle.get().isNextStateTransition(StateTransition.SAVE_STATE)) {
+            KnimeBrowserView.clearView();
+        }
         disposeLoadedWorkflowsForTesting();
     }
 
@@ -125,7 +130,7 @@ public final class TestingUtil {
     private static WorkflowManager loadWorkflowForTesting(final AppState.OpenedWorkflow workflow) {
         var file = getProjectFile(workflow);
         try {
-            WorkflowManager wfm = EclipseUIStateUtil.loadTempWorkflow(file);
+            WorkflowManager wfm = ClassicWorkflowEditorUtil.loadTempWorkflow(file);
             if (loadedWorkflowsForTesting == null) {
                 loadedWorkflowsForTesting = new HashSet<>();
             }

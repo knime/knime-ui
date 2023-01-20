@@ -44,54 +44,39 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 17, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
-import java.util.function.Predicate;
-
-import org.knime.gateway.impl.webui.SpaceProvider;
-import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.SpaceProviders;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
+ * Sets that project for the given id to active and ensures that the workflow is already loaded (in memory). And loads
+ * it if not.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
-
-    private final SpaceProviders m_spaceProviders;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+public class SetProjectActiveAndEnsureItsLoadedBrowserFunction extends BrowserFunction {
 
     /**
      * @param browser
-     * @param spaceProviders
      */
-    public ConnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "connectSpaceProvider");
-        m_spaceProviders = spaceProviders;
+    public SetProjectActiveAndEnsureItsLoadedBrowserFunction(final Browser browser) {
+        super(browser, "setProjectActiveAndEnsureItsLoaded");
     }
 
     /**
-     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
+     * @param arguments contains the project-id at position 0
      */
     @Override
     public Object function(final Object[] arguments) {
-        var spaceProviderId = (String)arguments[0];
-        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
-        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return spaceProvider.getConnection(true)//
-                .map(SpaceProviderConnection::getUsername)//
-                .filter(Predicate.not(String::isEmpty))//
-                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
-                .orElse(null);
-        }
+        var projectId = (String)arguments[0];
+        var wpm = WorkflowProjectManager.getInstance();
+        wpm.openAndCacheWorkflow(projectId);
+        wpm.setWorkflowProjectActive(projectId);
         return null;
     }
 

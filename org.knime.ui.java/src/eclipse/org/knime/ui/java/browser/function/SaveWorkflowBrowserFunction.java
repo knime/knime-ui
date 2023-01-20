@@ -71,8 +71,8 @@ import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
-import org.knime.ui.java.util.BrowserFunctionUtil;
-import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
+import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
@@ -108,17 +108,17 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
             // For at least as long as new frontend is integrated in "old" knime eclipse workbench,
             // we want a save action triggered from new frontend to be consistent with one triggered
             // from the traditional UI. The best thing we can do is trigger the exact same action.
-            WorkflowEditor editor = EclipseUIStateUtil.getOpenWorkflowEditor(projectWfm)
+            WorkflowEditor editor = ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm)
                 .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
             editor.doSave(new NullProgressMonitor());
             unmarkDirtyChildWorkflowEditors(projectWfm);
         } else { // SVG received, workflow editor instance might not be present
             if (isExecutionInProgress(projectWfm)) {
                 // Show a warning otherwise
-                BrowserFunctionUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
+                DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
             } else {
                 saveWorkflowWithProgressBar(projectWfm, projectSVG);
-                EclipseUIStateUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
+                ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
                 unmarkDirtyChildWorkflowEditors(projectWfm);
             }
         }
@@ -184,24 +184,24 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
 
         // Save the workflow itself
         try {
-            var exec = BrowserFunctionUtil.toExecutionMonitor(monitor);
+            var exec = DesktopAPUtil.toExecutionMonitor(monitor);
             wfm.save(workflowPath.toFile(), exec, true);
         } catch (final IOException | CanceledExecutionException | LockFailedException e) {
-            BrowserFunctionUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow didn't work",
+            DesktopAPUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow didn't work",
                 LOGGER, e);
             return; // Abort if saving the workflow fails
         }
 
         // Save the workflow preview SVG
         if (svg == null) {
-            BrowserFunctionUtil.showWarning("Failed to save workflow preview",
+            DesktopAPUtil.showWarning("Failed to save workflow preview",
                 String.format("The workflow preview (svg) couldn't be saved for workflow %s", wfm.getName()));
         } else {
             try {
                 Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg,
                     StandardCharsets.UTF_8);
             } catch (IllegalArgumentException | IOException | UnsupportedOperationException | SecurityException e) {
-                BrowserFunctionUtil.showWarningAndLogError("SVG save attempt", "Saving the SVG didn't work", LOGGER, e);
+                DesktopAPUtil.showWarningAndLogError("SVG save attempt", "Saving the SVG didn't work", LOGGER, e);
             }
         }
     }
@@ -215,8 +215,9 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
             return;
         }
         getChildWfms(wfm).stream()//
-            .map(EclipseUIStateUtil::getOpenWorkflowEditor)//
+            .map(ClassicWorkflowEditorUtil::getOpenWorkflowEditor)//
             .flatMap(Optional::stream) // unpack/collapse optionals
             .forEach(WorkflowEditor::unmarkDirty);
     }
+
 }

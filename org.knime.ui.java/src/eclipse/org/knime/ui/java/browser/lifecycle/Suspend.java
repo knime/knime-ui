@@ -44,30 +44,39 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Dec 19, 2022 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser;
+package org.knime.ui.java.browser.lifecycle;
 
-import java.util.List;
-
-import org.knime.gateway.api.util.ExtPointUtil;
-import org.knime.gateway.impl.webui.SpaceProviders;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
+import org.knime.ui.java.util.DefaultServicesUtil;
 
 /**
- * Creates {@link SpaceProviders}-instances from the respective extension point.
+ * The 'suspend' lifecycle state transition for the KNIME-UI. Called when the view is (temporarily) not used anymore (on
+ * perspective switch to the classic UI).
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class SpaceProvidersExtension {
+final class Suspend {
 
-    private static final String SPACE_PROVIDERS_EXTENSION_ID = "org.knime.ui.java.SpaceProviders";
-
-    public static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
-        return ExtPointUtil.collectExecutableExtensions(SPACE_PROVIDERS_EXTENSION_ID, "class");
+    private Suspend() {
+        //
     }
 
-    private SpaceProvidersExtension() {
-        //
+    static LifeCycleState run(final LifeCycleState state) {
+        var removeAndDisposeAllBrowserFunctions = state.removeAndDisposeAllBrowserFunctions();
+        if (removeAndDisposeAllBrowserFunctions != null) {
+            removeAndDisposeAllBrowserFunctions.run();
+        }
+        DefaultServicesUtil.disposeDefaultServices();
+        KnimeUIPreferences.setNodeRepoFilterChangeListener(null);
+        return new LifeCycleState() {
+
+            @Override
+            public String serializedAppState() {
+                return state.serializedAppState();
+            }
+        };
     }
 
 }

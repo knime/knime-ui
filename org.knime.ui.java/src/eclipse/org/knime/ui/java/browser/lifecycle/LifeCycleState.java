@@ -44,54 +44,48 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.Predicate;
+import java.util.function.IntSupplier;
 
-import org.knime.gateway.impl.webui.SpaceProvider;
-import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.SpaceProviders;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
 
 /**
- * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
+ * A state passed to and returned by lifecycle state transitions in order to exchange information.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
-
-    private final SpaceProviders m_spaceProviders;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+interface LifeCycleState {
 
     /**
-     * @param browser
-     * @param spaceProviders
+     * @return whether workflows have been saved successfully. Manipulated in the {@link SaveState}-phase.
      */
-    public ConnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "connectSpaceProvider");
-        m_spaceProviders = spaceProviders;
+    default boolean workflowsSaved() {
+        return false;
     }
 
     /**
-     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
+     * @return the logic which saves and closes all workflows; see
+     *         {@link SaveAndCloseWorkflowsBrowserFunction#saveAndCloseWorkflowsInteractively(java.util.Set, org.knime.gateway.impl.service.util.EventConsumer, org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction)}
+     *         for documentation on the result
      */
-    @Override
-    public Object function(final Object[] arguments) {
-        var spaceProviderId = (String)arguments[0];
-        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
-        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return spaceProvider.getConnection(true)//
-                .map(SpaceProviderConnection::getUsername)//
-                .filter(Predicate.not(String::isEmpty))//
-                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
-                .orElse(null);
-        }
+    default IntSupplier saveAndCloseAllWorkflows() {
+        return null;
+    }
+
+    /**
+     * @return the logic which removes and disposes all browser functions
+     */
+    default Runnable removeAndDisposeAllBrowserFunctions() {
+        return null;
+    }
+
+    /**
+     * @return the app state serialized into a string
+     */
+    default String serializedAppState() {
         return null;
     }
 
