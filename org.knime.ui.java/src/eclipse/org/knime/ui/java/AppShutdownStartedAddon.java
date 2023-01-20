@@ -44,65 +44,30 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser;
+package org.knime.ui.java;
 
-import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareResource;
+import javax.inject.Inject;
 
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.knime.core.webui.WebUIUtil;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.di.extensions.EventTopic;
+import org.eclipse.e4.ui.workbench.UIEvents;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
-
-import com.equo.chromium.swt.Browser;
+import org.osgi.service.event.Event;
 
 /**
- * Listens for changes of the URL in the KNIME browser and triggers respective
- * actions (e.g. external URLs are opened in the external browser).
+ * Called on shutdown.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class KnimeBrowserLocationListener implements LocationListener {
+public class AppShutdownStartedAddon {
 
-    private final Browser m_browser;
-
-    KnimeBrowserLocationListener(final Browser browser) {
-        m_browser = browser;
+    @SuppressWarnings("javadoc")
+    @Inject
+    @Optional
+    public void applicationShutdownStarted(@EventTopic(UIEvents.UILifeCycle.APP_SHUTDOWN_STARTED) final Event event) {
+        LifeCycle.get().shutdown();
     }
-
-    @Override
-    public void changing(final LocationEvent event) {
-        if (isCEFMiddlewareResource(event.location)) {
-            // Allow location change to middleware resources, these are handled by resource handlers.
-        } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but de-register any listeners in case the web app is being
-            //   refreshed. Required listeners will be registered on initialisation.
-            DefaultEventService.getInstance().removeAllEventListeners();
-        } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
-            event.doit = false;
-        }
-    }
-
-    @Override
-    public void changed(final LocationEvent event) {
-        if (isAppPage(event.location) || isDevPage(event.location)) {
-            LifeCycle.get().webAppLoaded(m_browser);
-        }
-    }
-
-	private static boolean isAppPage(final String url) {
-		return url.startsWith(KnimeBrowserView.BASE_URL);
-	}
-
-	private static boolean isEmptyPage(final String url) {
-		return url.endsWith(KnimeBrowserView.EMPTY_PAGE);
-	}
-
-	private static boolean isDevPage(final String url) {
-		return url.startsWith("http://localhost");
-	}
 
 }
