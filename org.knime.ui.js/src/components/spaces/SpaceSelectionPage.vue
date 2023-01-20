@@ -5,13 +5,11 @@ import Button from 'webapps-common/ui/components/Button.vue';
 
 import { APP_ROUTES } from '@/router';
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
-import Avatar from '@/components/common/Avatar.vue';
 
 import SpaceCard from './SpaceCard.vue';
 
 export default {
     components: {
-        Avatar,
         GridOutbreaker,
         SpaceCard,
         Button
@@ -24,7 +22,14 @@ export default {
     },
 
     computed: {
-        ...mapState('spaces', ['spaceProviders'])
+        ...mapState('spaces', ['spaceProviders', 'spaceBrowser'])
+    },
+
+    beforeMount() {
+        // redirect to browsing page if a space was selected
+        if (this.spaceBrowser.spaceId) {
+            this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+        }
     },
 
     created() {
@@ -35,7 +40,7 @@ export default {
         async fetchSpaceProviders() {
             await this.$store.dispatch('spaces/fetchAllSpaceProviders');
         },
-        
+
         onLogin(spaceProviderId) {
             this.$store.dispatch('spaces/connectProvider', { spaceProviderId });
         },
@@ -44,9 +49,10 @@ export default {
             this.$store.dispatch('spaces/disconnectProvider', { spaceProviderId });
         },
 
-        onSpaceCardClick({ space, spaceProvider }) {
+        async onSpaceCardClick({ space, spaceProvider }) {
             this.$store.commit('spaces/setActiveSpaceProvider', spaceProvider);
             this.$store.commit('spaces/setActiveSpaceId', space.id);
+            await this.$store.dispatch('spaces/saveSpaceBrowserState');
             this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
         },
 
@@ -85,8 +91,7 @@ export default {
           v-if="shouldDisplayAvatar(spaceProvider) && spaceProvider.user"
           class="owner"
         >
-          <Avatar :text="'MS'" />
-          <span class="owner-name">Mine</span>
+          <span class="owner-name">{{ spaceProvider.user.name }}</span>
         </div>
 
         <div class="connection-btn">
@@ -111,7 +116,7 @@ export default {
           </Button>
         </div>
       </div>
-      
+
       <div class="cards">
         <SpaceCard
           v-for="(space, id) of spaceProvider.spaces"
@@ -144,7 +149,7 @@ section.space-provider {
       align-items: center;
 
       & .owner-name {
-        margin-left: 3px;
+        margin-left: 8px;
       }
     }
   }

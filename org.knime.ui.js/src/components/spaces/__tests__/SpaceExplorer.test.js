@@ -53,7 +53,7 @@ describe('SpaceExplorer.vue', () => {
         }
 
         createWorkflow.mockResolvedValue({ type: 'Workflow' });
-        
+
         const store = mockVuexStore({
             spaces: spacesStore,
             application: {
@@ -94,7 +94,7 @@ describe('SpaceExplorer.vue', () => {
         });
 
         await new Promise(r => setTimeout(r, 0));
-        
+
         return mountResult;
     };
 
@@ -108,6 +108,24 @@ describe('SpaceExplorer.vue', () => {
         expect(wrapper.findComponent(FileExplorer).props('isRootFolder')).toBe(true);
     });
 
+    it('should load startItemId directory when data is reset', async () => {
+        const { store } = await doMountAndLoad();
+
+        // initial fetch of root has happend
+        fetchWorkflowGroupContent.mockReset();
+
+        store.state.spaces.activeSpace.startItemId = 'startItemId';
+        store.commit('spaces/setActiveWorkflowGroupData', null);
+
+        await new Promise(r => setTimeout(r, 0));
+
+        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+            spaceProviderId: 'local',
+            spaceId: 'local',
+            itemId: 'startItemId'
+        });
+    });
+
     it('should load data when navigating to a directory', async () => {
         const { wrapper } = await doMountAndLoad();
 
@@ -119,6 +137,9 @@ describe('SpaceExplorer.vue', () => {
             spaceId: 'local',
             itemId: '1234'
         });
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+        expect(wrapper.emitted('item-changed')[0][0]).toBe('1234');
     });
 
     describe('Navigate back', () => {
@@ -132,7 +153,7 @@ describe('SpaceExplorer.vue', () => {
                     ]
                 }
             });
-    
+
             fetchWorkflowGroupContent.mockReset();
             wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
             expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
@@ -149,7 +170,7 @@ describe('SpaceExplorer.vue', () => {
                     path: [{ id: 'currentDirectoryId', name: 'Current Directory' }]
                 }
             });
-    
+
             fetchWorkflowGroupContent.mockReset();
             wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
             expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
@@ -177,6 +198,7 @@ describe('SpaceExplorer.vue', () => {
             spaceId: 'local',
             itemId: 'parentId'
         });
+        expect(wrapper.emitted('item-changed')[0][0]).toBe('parentId');
     });
 
     it('should set the openIndicator for open workflows', async () => {
@@ -192,7 +214,7 @@ describe('SpaceExplorer.vue', () => {
     it('should open workflows', async () => {
         const { wrapper, dispatchSpy, mockRouter } = await doMountAndLoad();
         wrapper.findComponent(FileExplorer).vm.$emit('open-file', { id: 'dummy' });
-        
+
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/openWorkflow', {
             workflowItemId: 'dummy',
             $router: mockRouter
@@ -217,7 +239,7 @@ describe('SpaceExplorer.vue', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
     });
 
-    it.only('should only allow creating workflows on the local space', async () => {
+    it('should only allow creating workflows on the local space', async () => {
         const { wrapper, store } = doMount();
         store.state.spaces.activeSpace = {
             spaceId: 'somerandomhub',
@@ -269,19 +291,19 @@ describe('SpaceExplorer.vue', () => {
         // initially loading should not be yet visible
         expect(wrapper.find('.loading').exists()).toBe(false);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
-        
+
         // total time now: 200ms
         // after waiting for 200ms it should still not be visible
         await advanceTime(200);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
         expect(wrapper.find('.loading').exists()).toBe(false);
-        
+
         // total time now: 1000ms
         // after waiting for 800ms it should now be displayed since it crossed the threshold
         await advanceTime(800);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
         expect(wrapper.find('.loading').exists()).toBe(true);
-        
+
         // total time now: 1100ms
         // after waiting for 100ms the data should be loaded now, so loading is not visible
         await advanceTime(100);
