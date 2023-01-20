@@ -55,6 +55,7 @@ import java.util.function.Supplier;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
+import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.ui.java.util.AppStatePersistor;
 
 import com.equo.chromium.swt.Browser;
@@ -71,7 +72,9 @@ import com.equo.chromium.swt.Browser;
  *   CREATE│                  │INIT                        │SAVE_STATE
  *     ┌───▼───┐   INIT ┌─────▼─────┐ WEB_APP_LOADED ┌─────┴─────┐
  *     │Created├────────►Initialized├────────────────►Operational│
- *     └───────┘        └───────────┘                └───────────┘
+ *     └───────┘        └───────────┘                └┬─────────▲┘
+ *                                                    │ RELOAD  │
+ *                                                    └─────────┘
  * </pre>
  * (created with asciiflow)
  *
@@ -85,7 +88,7 @@ public final class LifeCycle {
      */
     @SuppressWarnings("javadoc")
     public enum StateTransition {
-            NULL(-1), CREATE(0), INIT(1), WEB_APP_LOADED(2), SAVE_STATE(3), SUSPEND(4), SHUTDOWN(5);
+            NULL(-1), CREATE(0), INIT(1), WEB_APP_LOADED(2), RELOAD(-1), SAVE_STATE(3), SUSPEND(4), SHUTDOWN(5);
 
         private final int m_rank;
 
@@ -147,7 +150,17 @@ public final class LifeCycle {
      */
     public void webAppLoaded(final Browser browser) {
         doStateTransition(StateTransition.WEB_APP_LOADED, () -> WebAppLoaded.runPhase(browser), null,
-            StateTransition.INIT);
+            StateTransition.INIT, StateTransition.RELOAD);
+    }
+
+    /**
+     * Runs the state transition required to reload the web app.
+     */
+    public void reload() {
+        doStateTransition(StateTransition.RELOAD, () -> {
+            // removed event listeners will be re-added again by the web app
+            DefaultEventService.getInstance().removeAllEventListeners();
+        }, null, StateTransition.WEB_APP_LOADED);
     }
 
     /**
