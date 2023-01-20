@@ -181,9 +181,8 @@ export const actions = {
             commit('setOpenProjects', applicationState.openProjects);
             await dispatch('setActiveProject', applicationState.openProjects);
         }
-        if (typeof applicationState.nodeRepoFilterEnabled !== 'undefined') {
+        if (applicationState.hasOwnProperty('nodeRepoFilterEnabled')) {
             commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
-            // TODO should we force the update from here or somewhere else?
             dispatch(
                 'nodeRepository/setIncludeAllAndSearchNodes',
                 !applicationState.nodeRepoFilterEnabled,

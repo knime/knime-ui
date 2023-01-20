@@ -197,7 +197,8 @@ export const actions = {
      */
     async updateQuery({ commit, dispatch }, value) {
         commit('setQuery', value);
-        dispatch('resetIncludeAll');
+        // Show a filtered result for the new query by setting includeAll to false
+        await dispatch('resetIncludeAll');
         await dispatch('searchNodes');
     },
 
@@ -207,11 +208,11 @@ export const actions = {
      * @param {*} context - Vuex context.
      * @returns {undefined}
      */
-    clearSearchParams({ commit, dispatch }) {
+    async clearSearchParams({ commit, dispatch }) {
         commit('setSelectedTags', []);
         commit('setQuery', '');
-        dispatch('resetIncludeAll');
-        dispatch('clearSearchResults');
+        await dispatch('resetIncludeAll');
+        await dispatch('clearSearchResults');
     },
 
     /**
@@ -243,29 +244,35 @@ export const actions = {
      */
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
+        // Set includeAll to false to filter the next search if no tag is selected
+        // We do not want to reset the state of the filtered search if only tags are selected or deselected
         if (tags.length === 0) {
-            dispatch('resetIncludeAll');
+            await dispatch('resetIncludeAll');
         }
         await dispatch('searchNodes');
     },
 
     resetIncludeAll({ commit, rootState }) {
+        // If the node repository is not filtered includeAll must always be true
+        // -> We always get all results and never show the "Show more" button
         if (rootState.application.nodeRepoFilterEnabled) {
             commit('setIncludeAll', false);
         }
     },
 
     /**
-     * Set the includeAll flag to true and dispatch searchNodes.
+     * Set the includeAll flag to true and dispatch searchNodes if the search is active.
      * The includeAll value will stay until the search changes.
      *
      * @param {*} context - Vuex context.
      * @param {boolean} includeAll - if all nodes should be included in the next search
      * @returns {undefined}
      */
-    async setIncludeAllAndSearchNodes({ commit, dispatch }, includeAll) {
+    async setIncludeAllAndSearchNodes({ commit, dispatch, getters }, includeAll) {
         commit('setIncludeAll', includeAll);
-        await dispatch('searchNodes');
+        if (getters.searchIsActive) {
+            await dispatch('searchNodes');
+        }
     },
 
     openDescriptionPanel({ commit }) {

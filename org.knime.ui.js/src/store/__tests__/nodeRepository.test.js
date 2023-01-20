@@ -506,7 +506,12 @@ describe('Node Repository store', () => {
 
             it('set selected tags to empty list', async () => {
                 const { store, dispatchSpy } = await createStore();
-                store.dispatch('nodeRepository/setSelectedTags', []);
+
+                // Make sure that searchIsActive will return true
+                store.commit('nodeRepository/setQuery', 'test');
+                store.commit('nodeRepository/setNodes', ['dummy value']);
+
+                await store.dispatch('nodeRepository/setSelectedTags', []);
                 expect(store.state.nodeRepository.selectedTags).toEqual([]);
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
             });
@@ -553,6 +558,7 @@ describe('Node Repository store', () => {
             it('set includeAll', async () => {
                 const { store, searchNodesMock } = await createStore();
                 store.commit('nodeRepository/setQuery', 'lookup');
+                store.commit('nodeRepository/setNodes', ['dummy value']);
 
                 await store.dispatch('nodeRepository/setIncludeAllAndSearchNodes', true);
                 expect(searchNodesMock).toHaveBeenCalledWith({
@@ -564,6 +570,12 @@ describe('Node Repository store', () => {
                     tags: [],
                     includeAll: true
                 });
+            });
+
+            it('set includeAll do not search if search is inactive', async () => {
+                const { store, searchNodesMock } = await createStore();
+                await store.dispatch('nodeRepository/setIncludeAllAndSearchNodes', true);
+                expect(searchNodesMock).not.toHaveBeenCalled();
             });
         });
 
