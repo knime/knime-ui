@@ -7,7 +7,6 @@ import { mockVuexStore } from '@/test/test-utils';
 import * as selectionStore from '@/store/selection';
 
 import { APP_ROUTES, router } from '@/router';
-import { setProjectActiveAndEnsureItsLoadedInBackend } from '@/api';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({
     makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
