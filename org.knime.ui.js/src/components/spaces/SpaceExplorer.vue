@@ -134,7 +134,6 @@ export default {
             this.loadingIconTimer = setTimeout(() => {
                 this.showLoadingIcon = true;
             }, DISPLAY_LOADING_ICON_DELAY);
-
         },
 
         async fetchWorkflowGroupContent(itemId) {

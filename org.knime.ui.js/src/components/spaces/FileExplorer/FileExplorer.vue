@@ -435,15 +435,15 @@ tbody.mini {
   }
 }
 
-tbody:not(.mini) .empty {
-  background: var(--knime-gray-ultra-light);
-}
-
 .empty {
   display: flex;
   justify-content: center;
   align-items: center;
   color: var(--knime-silver-sand);
   height: 76px;
+}
+
+tbody:not(.mini) .empty {
+  background: var(--knime-gray-ultra-light);
 }
 </style>
