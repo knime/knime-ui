@@ -1,5 +1,5 @@
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import Button from 'webapps-common/ui/components/Button.vue';
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
@@ -10,6 +10,7 @@ import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import AddFileIcon from '@/assets/add-file.svg';
 import ImportWorkflowIcon from '@/assets/import-workflow.svg';
 import SpaceExplorer from './SpaceExplorer.vue';
+
 
 export default {
     components: {
@@ -22,6 +23,7 @@ export default {
         Button
     },
     computed: {
+        ...mapState('spaces', ['spaceBrowser']),
         ...mapGetters('spaces', ['activeSpaceInfo']),
         spaceInfo() {
             if (this.activeSpaceInfo.local) {
@@ -45,8 +47,18 @@ export default {
                 };
         }
     },
+    async created() {
+        if (this.spaceBrowser.spaceId) {
+            await this.$store.dispatch('spaces/loadSpaceBrowserState');
+        }
+    },
     methods: {
+        async onItemChanged(itemId) {
+            // remember current path
+            await this.$store.dispatch('spaces/saveSpaceBrowserState', { itemId });
+        },
         onBackButtonClick() {
+            this.$store.commit('spaces/clearSpaceBrowserState');
             this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
         }
     }
@@ -98,7 +110,9 @@ export default {
     <section class="space-explorer-wrapper">
       <div class="grid-container">
         <div class="grid-item-12">
-          <SpaceExplorer />
+          <SpaceExplorer
+            @item-changed="onItemChanged"
+          />
         </div>
       </div>
     </section>

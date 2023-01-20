@@ -23,15 +23,26 @@ describe('SpaceBrowsingPage', () => {
             local: true,
             private: false,
             name: 'Local space'
-        })
+        }),
+        clearSpaceBrowserStateMock = jest.fn(),
+        spaceBrowser = {},
+        saveSpaceBrowserStateMock = jest.fn(),
+        loadSpaceBrowserStateMock = jest.fn()
     } = {}) => {
         const $store = mockVuexStore({
             spaces: {
+                state: {
+                    spaceBrowser
+                },
+                mutations: {
+                    clearSpaceBrowserState: clearSpaceBrowserStateMock
+                },
                 getters: {
                     activeSpaceInfo: activeSpaceInfoMock
                 },
                 actions: {
-                    fetchWorkflowGroupContent: jest.fn()
+                    saveSpaceBrowserState: saveSpaceBrowserStateMock,
+                    loadSpaceBrowserState: loadSpaceBrowserStateMock
                 }
             }
         });
@@ -91,12 +102,49 @@ describe('SpaceBrowsingPage', () => {
         expect(title).toBe('My public space');
     });
 
-    it('routes back to space selection page when back button is clicked', async () => {
-        const { wrapper } = doMount();
+    it('routes back to space selection page when back button is clicked and clears state', async () => {
+        const clearSpaceBrowserStateMock = jest.fn();
+        const { wrapper } = doMount({ clearSpaceBrowserStateMock });
         await wrapper.findComponent(ArrowLeftIcon).vm.$emit('click');
 
+        expect(clearSpaceBrowserStateMock).toHaveBeenCalled();
         expect($router.push).toHaveBeenCalledWith({
             name: APP_ROUTES.EntryPage.SpaceSelectionPage
+        });
+    });
+
+    describe('global spaceBrowser state', () => {
+        it('load the spaceBrowser state on mount', () => {
+            const loadSpaceBrowserStateMock = jest.fn();
+            doMount({
+                loadSpaceBrowserStateMock,
+                spaceBrowser: {
+                    spaceId: 'spaceId',
+                    spaceProviderId: 'spaceProvId',
+                    itemId: 'someItem'
+                }
+            });
+            expect(loadSpaceBrowserStateMock).toHaveBeenCalled();
+        });
+
+        it('does not load spaceBrowser state if its falsy', () => {
+            const loadSpaceBrowserStateMock = jest.fn();
+            doMount({
+                loadSpaceBrowserStateMock,
+                spaceBrowser: {}
+            });
+            expect(loadSpaceBrowserStateMock).toHaveBeenCalledTimes(0);
+        });
+
+        it('saves the spaceBrowser state on item change', () => {
+            const saveSpaceBrowserStateMock = jest.fn();
+            const { wrapper } = doMount({ saveSpaceBrowserStateMock });
+
+            wrapper.findComponent(SpaceExplorer).vm.$emit('item-changed', 'someNewItemId');
+
+            expect(saveSpaceBrowserStateMock).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+                itemId: 'someNewItemId'
+            }));
         });
     });
 });

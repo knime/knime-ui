@@ -9,14 +9,14 @@ import { TABS } from '@/store/panel';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
-import SpaceExplorer from '@/components/spaces/SpaceExplorer.vue';
+import SidebarSpaceExplorer from '@/components/sidebar/SidebarSpaceExplorer.vue';
 
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 
 export default {
     components: {
         MetainfoIcon,
-        SpaceExplorer,
+        SidebarSpaceExplorer,
         PlusIcon,
         LeftCollapsiblePanel,
         WorkflowMetadata,
@@ -142,11 +142,9 @@ export default {
           v-show="isTabActive(TABS.NODE_DIALOG)"
           key="node-dialog"
         />
-
-        <SpaceExplorer
+        <SidebarSpaceExplorer
           v-show="isTabActive(TABS.SPACE_EXPLORER)"
           key="space-explorer"
-          mode="mini"
         />
       </transition-group>
     </LeftCollapsiblePanel>

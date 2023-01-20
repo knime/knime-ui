@@ -42,10 +42,11 @@ export default {
 
     computed: {
         ...mapState('spaces', {
+            startItemId: state => state.activeSpace?.startItemId,
             activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
             spaceId: state => state.activeSpace?.spaceId
         }),
-        ...mapGetters('spaces', ['openedWorkflowItems']),
+        ...mapGetters('spaces', ['openedWorkflowItems', 'pathToItemId']),
 
         fileExplorerItems() {
             return this.activeWorkflowGroup.items.map(item => ({
@@ -60,7 +61,11 @@ export default {
 
         breadcrumbItems() {
             if (!this.activeWorkflowGroup) {
-                return [];
+                return [{
+                    text: 'Home',
+                    id: 'root',
+                    clickable: false
+                }];
             }
 
             const { path } = this.activeWorkflowGroup;
@@ -94,8 +99,15 @@ export default {
         }
     },
 
-    async created() {
-        await this.fetchWorkflowGroupContent('root');
+    watch: {
+        activeWorkflowGroup: {
+            async handler(newData, oldData) {
+                if (newData === null && oldData !== null) {
+                    await this.fetchWorkflowGroupContent(this.startItemId || 'root');
+                }
+            },
+            immediate: true
+        }
     },
 
     methods: {
@@ -126,6 +138,8 @@ export default {
             await this.$store.dispatch('spaces/changeDirectory', { pathId });
 
             this.setLoading(false);
+
+            this.$emit('item-changed', this.pathToItemId(pathId));
         },
 
         onCreateWorkflow() {
@@ -135,13 +149,14 @@ export default {
         onOpenFile({ id }) {
             this.$store.dispatch('spaces/openWorkflow', {
                 workflowItemId: id,
-                // send in router so it can be used to navigate to an already open workflow
+                // send in router, so it can be used to navigate to an already open workflow
                 $router: this.$router
             });
         },
 
         onBreadcrumbClick({ id }) {
             this.fetchWorkflowGroupContent(id);
+            this.$emit('item-changed', id);
         }
     }
 };

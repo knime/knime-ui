@@ -49,7 +49,7 @@ export const actions = {
         const isCanvasEmpty = rootState.canvas.isEmpty;
 
         const workflowPreviewSvg = await generateWorkflowPreview(workflowSnapshotElement, isCanvasEmpty);
-        
+
         saveWorkflow({ projectId, workflowPreviewSvg });
     },
 
@@ -63,28 +63,29 @@ export const actions = {
         });
 
         const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
-        
+
         if (didClose) {
             dispatch('application/removeFromRootWorkflowSnapshots', { projectId: closingProjectId }, { root: true });
             dispatch('application/removeCanvasState', closingProjectId, { root: true });
+            commit('spaces/clearLastItemForProject', { projectId: closingProjectId }, { root: true });
         }
     },
-    
+
     /* Some nodes generate views from their data. A Classic UI dialog opens to present this view */
     openView({ state }, nodeId) {
         openView({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    
+
     /* See docs in API */
     openNodeConfiguration({ state }, nodeId) {
         openNodeDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    
+
     /* See docs in API */
     openFlowVariableConfiguration({ state }, nodeId) {
         openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    
+
     /* See docs in API */
     openLayoutEditor({ state, getters }) {
         let { activeWorkflow: { projectId } } = state;
