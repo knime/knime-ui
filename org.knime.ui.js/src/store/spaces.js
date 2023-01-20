@@ -106,47 +106,48 @@ export const actions = {
         }
     },
 
-    async fetchAllSpaceProviders({ commit, dispatch, state }) {
+    async fetchAllSpaceProviders({ commit, dispatch }) {
         try {
-            const spaceProviders = await fetchAllSpaceProviders();
-            commit('setSpaceProviders', spaceProviders);
+            let spaceProviders = await fetchAllSpaceProviders();
 
             const connectedProviderIds = Object.values(spaceProviders)
                 .filter(({ connected, connectionMode }) => connected || connectionMode === 'AUTOMATIC')
                 .map(({ id }) => id);
 
-            connectedProviderIds.forEach((id) => dispatch('fetchProviderSpaces', { id }));
+            for (const id of connectedProviderIds) {
+                const spacesData = await dispatch('fetchProviderSpaces', { id });
+                spaceProviders[id] = { ...spaceProviders[id], ...spacesData };
+            }
+
+            commit('setSpaceProviders', spaceProviders);
         } catch (error) {
             consola.error('Error fetching providers', { error });
             throw error;
         }
     },
 
-    async fetchProviderSpaces({ state, commit }, { id, user = null }) {
+    async fetchProviderSpaces({ commit }, { id, user = null }) {
         try {
-            const { spaceProviders } = state;
-
             const providerData = await fetchSpaceProvider({ spaceProviderId: id });
 
-            const updatedProvider = { ...spaceProviders[id], ...providerData, connected: true, user };
-
-            commit('setSpaceProviders', {
-                ...state.spaceProviders,
-                [id]: updatedProvider
-            });
+            return { ...providerData, connected: true, user };
         } catch (error) {
             consola.error('Error fetching provider spaces', { error });
             throw error;
         }
     },
 
-    async connectProvider({ dispatch }, { spaceProviderId }) {
+    async connectProvider({ dispatch, commit, state }, { spaceProviderId }) {
         try {
             const user = await connectSpaceProvider({ spaceProviderId });
 
             if (user) {
                 // Only fetch spaces when a valid user was returned
-                dispatch('fetchProviderSpaces', { id: spaceProviderId, user });
+                const updatedProvider = await dispatch('fetchProviderSpaces', { id: spaceProviderId, user });
+                commit('setSpaceProviders', {
+                    ...state.spaceProviders,
+                    [spaceProviderId]: { ...state.spaceProviders[spaceProviderId], ...updatedProvider }
+                });
             }
         } catch (error) {
             consola.error('Error connecting to provider', { error });
