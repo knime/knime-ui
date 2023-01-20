@@ -278,7 +278,7 @@ describe('SpaceExplorer.vue', () => {
             mockGetSpaceItems: () => new Promise(resolve => {
                 setTimeout(() => {
                     resolve(fetchWorkflowGroupContentResponse);
-                }, 600);
+                }, 300);
             })
         });
 
@@ -292,22 +292,22 @@ describe('SpaceExplorer.vue', () => {
         expect(wrapper.find('.loading').exists()).toBe(false);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
 
-        // total time now: 200ms
-        // after waiting for 200ms it should still not be visible
-        await advanceTime(200);
+        // total time now: 50ms
+        // after waiting for 50ms it should still not be visible
+        await advanceTime(50);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
         expect(wrapper.find('.loading').exists()).toBe(false);
 
-        // total time now: 1000ms
-        // after waiting for 800ms it should now be displayed since it crossed the threshold
-        await advanceTime(800);
+        // total time now: 350ms
+        // after waiting for 300ms it should now be displayed since it crossed the threshold
+        await advanceTime(300);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
         expect(wrapper.find('.loading').exists()).toBe(true);
 
-        // total time now: 1100ms
-        // after waiting for 100ms the data should be loaded now, so loading is not visible
-        await advanceTime(100);
-        expect(wrapper.find('.loading').exists()).toBe(false);
+        // total time now: 550ms
+        // after waiting for 200ms the data should be loaded now, so loading is not visible
+        await advanceTime(200);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
+        expect(wrapper.find('.loading').exists()).toBe(false);
     });
 });
