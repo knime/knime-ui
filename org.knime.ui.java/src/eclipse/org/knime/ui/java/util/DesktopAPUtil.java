@@ -51,13 +51,11 @@ package org.knime.ui.java.util;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -69,11 +67,9 @@ import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
-import org.knime.core.node.workflow.contextv2.LocalLocationInfo;
-import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
-import org.knime.core.util.Pair;
+import org.knime.gateway.impl.webui.Space;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
@@ -96,42 +92,27 @@ public final class DesktopAPUtil {
     /**
      * Loads the workflow referenced by the given path using the {@link LoadWorkflowRunnable} and whose a eclipse-based
      * progress bar.
-     *
-     * @param absoluteLocalPath
-     *
-     * @return the loaded {@link WorkflowManager} or an empty optional if the loading failed (a warning message dialog
-     *         will be shown in that case)
-     */
-    public static Optional<WorkflowManager> openWorkflowInWebUIPerspectiveOnly(final Path absoluteLocalPath) {
-        return openWorkflowInWebUIPerspectiveOnly(
-            () -> Pair.create(absoluteLocalPath, LocalLocationInfo.getInstance(null)));
-    }
-
-    /**
-     * Loads the workflow referenced by the given path using the {@link LoadWorkflowRunnable} and whose a eclipse-based
-     * progress bar.
-     *
-     * @param locationSupplier
+     * @param space
+     * @param itemId
      *
      * @return the loaded {@link WorkflowManager} or an empty optional if the loading failed (a warning message dialog
      *         will be shown in that case)
      */
-    public static Optional<WorkflowManager>
-        openWorkflowInWebUIPerspectiveOnly(final Supplier<Pair<Path, LocationInfo>> locationSupplier) {
+    public static Optional<WorkflowManager> openWorkflowInWebUIPerspectiveOnly(final Space space, final String itemId) {
         return runWithProgress("Loading workflow", LOGGER, monitor -> { // NOSONAR better than inline class
             monitor.beginTask("Loading workflow...", IProgressMonitor.UNKNOWN);
-
-            final var res = locationSupplier.get();
+            final var path = space.toLocalAbsolutePath(toExecutionMonitor(monitor), itemId);
             monitor.done();
 
             final var workflowContext = WorkflowContextV2.builder() //
                 .withAnalyticsPlatformExecutor(builder -> builder //
                     .withCurrentUserAsUserId() //
-                    .withLocalWorkflowPath(res.getFirst())) //
-                .withLocation(res.getSecond()) //
+                    .withLocalWorkflowPath(path) //
+                    .withMountpoint(space.getId(), space.getLocalRootPath())) //
+                .withLocation(space.getLocationInfo(itemId)) //
                 .build();
 
-            final var wfFile = res.getFirst().resolve(WorkflowPersistor.WORKFLOW_FILE).toFile();
+            final var wfFile = path.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile();
             var wfmRef = new AtomicReference<WorkflowManager>();
             new LoadWorkflowRunnable((wfm, doSave) -> { // NOSONAR
                 wfmRef.set(wfm);
