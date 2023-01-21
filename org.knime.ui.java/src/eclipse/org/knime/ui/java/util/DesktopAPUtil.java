@@ -199,7 +199,7 @@ public final class DesktopAPUtil {
      * @param e exception to log
      */
     public static void showWarningAndLogError(final String title, final String message, final NodeLogger logger,
-        final Exception e) {
+            final Throwable e) {
         logger.error(title + ": " + message, e);
         showWarning(title, message);
     }
@@ -241,7 +241,9 @@ public final class DesktopAPUtil {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> ref.set(func.apply(monitor)));
             return Optional.ofNullable(ref.get());
         } catch (InvocationTargetException e) {
-            showWarningAndLogError(name + " failed", e.getMessage(), logger, e);
+            // `InvocationTargetException` doesn't have value itself (and often no message), report its cause instead
+            final var cause = Optional.ofNullable(e.getCause()).orElse(e);
+            showWarningAndLogError(name + " failed", cause.getMessage(), logger, cause);
         } catch (InterruptedException e) {
             logger.warn(name + " interrupted");
             Thread.currentThread().interrupt();
