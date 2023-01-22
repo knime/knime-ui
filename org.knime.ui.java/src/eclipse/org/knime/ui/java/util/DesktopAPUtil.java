@@ -104,11 +104,12 @@ public final class DesktopAPUtil {
             final var path = space.toLocalAbsolutePath(toExecutionMonitor(monitor), itemId);
             monitor.done();
 
+            final var mountId = space.toKnimeUrl(itemId).getAuthority();
             final var workflowContext = WorkflowContextV2.builder() //
                 .withAnalyticsPlatformExecutor(builder -> builder //
                     .withCurrentUserAsUserId() //
                     .withLocalWorkflowPath(path) //
-                    .withMountpoint(space.getId(), space.getLocalRootPath())) //
+                    .withMountpoint(mountId, space.getLocalRootPath())) //
                 .withLocation(space.getLocationInfo(itemId)) //
                 .build();
 
