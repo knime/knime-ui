@@ -124,7 +124,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId), m_appStateProvider);
         } else {
-            DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(() -> space.toLocalAbsolutePath(itemId)).ifPresent(wfm -> {
+            DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(space, itemId).ifPresent(wfm -> {
                 String relativePath = null;
                 if (wfm.getContextV2().getLocationType() == LocationType.LOCAL) {
                     relativePath = LocalSpaceUtil

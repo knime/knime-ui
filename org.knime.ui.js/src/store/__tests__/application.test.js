@@ -7,7 +7,6 @@ import { mockVuexStore } from '@/test/test-utils';
 import * as selectionStore from '@/store/selection';
 
 import { APP_ROUTES, router } from '@/router';
-import { setProjectActiveAndEnsureItsLoadedInBackend } from '@/api';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({
     makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
@@ -61,6 +60,10 @@ describe('application store', () => {
         const storeConfig = {
             application: await import('@/store/application'),
             workflow: await import('@/store/workflow'),
+            nodeRepository: {
+                mutations: { setNodesPerCategories: jest.fn() },
+                actions: { setIncludeAllAndSearchNodes: jest.fn() }
+            },
             canvas: {
                 getters: getters.canvas,
                 actions: actions.canvas
