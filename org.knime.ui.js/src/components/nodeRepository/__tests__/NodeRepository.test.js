@@ -10,7 +10,7 @@ import NodeRepository from '../NodeRepository.vue';
 import CloseableTagList from '../CloseableTagList.vue';
 import CategoryResults from '../CategoryResults.vue';
 import SearchResults from '../SearchResults.vue';
-import NodeDescription from '../NodeDescription.vue';
+import NodeDescription from '../NodeDescriptionOverlay.vue';
 
 Vue.config.ignoredElements = ['portal'];
 

@@ -1,32 +1,19 @@
 <script>
-import { mapActions } from 'vuex';
-
-import CloseIcon from '@/assets/cancel.svg';
 import Description from 'webapps-common/ui/components/Description.vue';
 import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.vue';
-
-import { escapeStack } from '@/mixins/escapeStack';
 import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
 
+/*
+ * Base component for the NodeDescriptionOverlay for the nodeRepo, also used in the ContextAwareMetadata for nodes
+ * of the workflow
+ */
 export default {
     components: {
-        CloseIcon,
         Description,
         NodeFeatureList,
         ExternalResourcesList
     },
-    mixins: [
-        escapeStack({
-            onEscape() {
-                this.closeDescriptionPanel();
-            }
-        })
-    ],
     props: {
-        closeable: {
-            type: Boolean,
-            default: false
-        },
         selectedNode: {
             type: Object,
             required: true
@@ -34,8 +21,16 @@ export default {
     },
     data() {
         return {
-            nodeDescriptionObject: null
+            descriptionData: null
         };
+    },
+    computed: {
+        title() {
+            if (!this.selectedNode) {
+                return '';
+            }
+            return this.selectedNode.name;
+        }
     },
     watch: {
         // update description on change of node (if not null which means unselected)
@@ -43,19 +38,15 @@ export default {
             immediate: true,
             async handler() {
                 const { selectedNode } = this;
-                if (selectedNode !== null) {
-                    this.nodeDescriptionObject = await this.getNodeDescription({ selectedNode });
+                if (selectedNode === null) {
+                    return;
                 }
+
+                this.descriptionData = await this.$store.dispatch(
+                    'nodeRepository/getNodeDescription',
+                    { selectedNode }
+                );
             }
-        }
-    },
-    methods: {
-        ...mapActions('nodeRepository', ['getNodeDescription']),
-        closeDescriptionPanel() {
-            if (!this.closeable) {
-                return;
-            }
-            this.$store.dispatch('nodeRepository/closeDescriptionPanel');
         }
     }
 };
@@ -64,13 +55,8 @@ export default {
 <template>
   <div class="node-description">
     <div class="header">
-      <h2>{{ selectedNode ? selectedNode.name : '&nbsp;' }}</h2>
-      <button
-        v-if="closeable"
-        @click="closeDescriptionPanel"
-      >
-        <CloseIcon class="icon" />
-      </button>
+      <h2>{{ title }}</h2>
+      <slot name="header-action" />
     </div>
 
     <hr>
@@ -80,10 +66,10 @@ export default {
         <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
              have some data as the selection is not cleared. -->
         <template v-if="selectedNode">
-          <template v-if="nodeDescriptionObject">
+          <template v-if="descriptionData">
             <Description
-              v-if="nodeDescriptionObject.description"
-              :text="nodeDescriptionObject.description"
+              v-if="descriptionData.description"
+              :text="descriptionData.description"
               render-as-html
             />
 
@@ -95,17 +81,17 @@ export default {
             </span>
 
             <ExternalResourcesList
-              v-if="nodeDescriptionObject.links"
-              :links="nodeDescriptionObject.links"
+              v-if="descriptionData.links"
+              :links="descriptionData.links"
             />
 
             <NodeFeatureList
-              :in-ports="nodeDescriptionObject.inPorts"
-              :dyn-in-ports="nodeDescriptionObject.dynInPorts"
-              :out-ports="nodeDescriptionObject.outPorts"
-              :dyn-out-ports="nodeDescriptionObject.dynOutPorts"
-              :views="nodeDescriptionObject.views"
-              :options="nodeDescriptionObject.options"
+              :in-ports="descriptionData.inPorts"
+              :dyn-in-ports="descriptionData.dynInPorts"
+              :out-ports="descriptionData.outPorts"
+              :dyn-out-ports="descriptionData.dynOutPorts"
+              :views="descriptionData.views"
+              :options="descriptionData.options"
               class="node-feature-list"
             />
           </template>
@@ -123,16 +109,9 @@ export default {
 
 <style lang="postcss" scoped>
 .node-description {
-  width: 360px;
-  font-family: "Roboto Condensed", sans-serif;
   height: 100%;
-  background-color: var(--knime-gray-ultra-light);
-  padding: 8px 0 172px;
-  position: fixed;
-  left: 400px;
-  z-index: 2;
-  border: solid var(--knime-silver-sand);
-  border-width: 0 1px;
+  padding: 8px 0;
+  font-family: "Roboto Condensed", sans-serif;
 
   & .header {
     display: flex;
@@ -146,29 +125,6 @@ export default {
       font-size: 18px;
       line-height: 36px;
     }
-
-    & button {
-      width: 40px;
-      margin-top: 2px;
-      margin-right: -15px;
-      border: none;
-      display: flex;
-      align-items: center;
-      background-color: transparent;
-
-      & .icon {
-        border: 0;
-        border-radius: 20px;
-        stroke: var(--knime-dove-gray);
-        width: 40px;
-
-        &:hover {
-          cursor: pointer;
-          background-color: var(--knime-silver-sand-semi);
-          stroke: var(--knime-masala);
-        }
-      }
-    }
   }
 
   & hr {
@@ -178,14 +134,13 @@ export default {
   }
 
   & .scroll-container {
-    background-color: var(--knime-gray-ultra-light);
     overflow-x: hidden;
     text-align: left;
     height: 100%;
   }
 
   & .node-info {
-    padding: 10px 20px 0;
+    padding: 10px 20px 172px;
     display: flex;
     min-height: 100%;
     flex-direction: column;
@@ -218,7 +173,6 @@ export default {
     }
 
     /* Style refinement for Feature List; Ports, Options, Views  */
-
     & >>> h5 {
       font-size: 16px;
     }
@@ -233,7 +187,6 @@ export default {
     }
 
     /* Style refinement for Options */
-
     & >>> .options .panel {
       padding-left: 10px;
       padding-right: 10px;

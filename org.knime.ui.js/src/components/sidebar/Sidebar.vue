@@ -6,20 +6,20 @@ import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 import MetainfoIcon from '@/assets/metainfo.svg';
 
 import { TABS } from '@/store/panel';
-import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
 import SidebarSpaceExplorer from '@/components/sidebar/SidebarSpaceExplorer.vue';
 
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
+import ContextAwareMetadata from '@/components/sidebar/ContextAwareMetadata.vue';
 
 export default {
     components: {
+        ContextAwareMetadata,
         MetainfoIcon,
         SidebarSpaceExplorer,
         PlusIcon,
         LeftCollapsiblePanel,
-        WorkflowMetadata,
         NodeRepository,
         NodeDialogWrapper
     },
@@ -132,9 +132,9 @@ export default {
           key="node-repository"
         />
 
-        <WorkflowMetadata
+        <ContextAwareMetadata
           v-show="isTabActive(TABS.WORKFLOW_METADATA)"
-          key="workflow-metadata"
+          key="sidebar-metadata"
         />
 
         <NodeDialogWrapper

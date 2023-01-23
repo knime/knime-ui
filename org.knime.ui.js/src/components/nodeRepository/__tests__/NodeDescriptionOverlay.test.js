@@ -7,7 +7,7 @@ import Description from 'webapps-common/ui/components/Description.vue';
 import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.vue';
 
 import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
-import NodeDescription from '../NodeDescription.vue';
+import NodeDescriptionOverlay from '../NodeDescriptionOverlay.vue';
 
 import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
 jest.mock('@/mixins/escapeStack', () => {
@@ -18,7 +18,7 @@ jest.mock('@/mixins/escapeStack', () => {
     return { escapeStack };
 });
 
-describe('NodeDescription', () => {
+describe('NodeDescriptionOverlay', () => {
     let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanelMock,
         getNodeDescriptionMock, selectedNodeIsVisible;
 
@@ -80,13 +80,13 @@ describe('NodeDescription', () => {
 
         mocks = { $store };
         doMount = () => {
-            wrapper = mount(NodeDescription, { mocks });
+            wrapper = mount(NodeDescriptionOverlay, { mocks });
         };
     });
 
     it('renders all components', () => {
         doMount();
-        expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
+        expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
         expect(wrapper.findComponent(Description).exists()).toBe(true);
         expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(true);
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(true);
@@ -119,7 +119,7 @@ describe('NodeDescription', () => {
             description: 'This is a node.'
         };
         doMount();
-        expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
+        expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
         expect(wrapper.findComponent(Description).exists()).toBe(true);
         expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(false);
     });

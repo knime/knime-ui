@@ -26,11 +26,9 @@ export const state = () => ({
     searchScrollPosition: 0,
     includeAll: false,
 
-    /* node description */
+    /* node interaction */
     selectedNode: null,
-
     isDraggingNode: false,
-
     isDescriptionPanelOpen: false
 });
 

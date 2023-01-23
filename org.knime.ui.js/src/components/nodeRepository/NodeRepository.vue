@@ -7,7 +7,7 @@ import SearchBar from '@/components/common/SearchBar.vue';
 import CloseableTagList from './CloseableTagList.vue';
 import CategoryResults from './CategoryResults.vue';
 import SearchResults from './SearchResults.vue';
-import NodeDescription from './NodeDescription.vue';
+import NodeDescriptionOverlay from './NodeDescriptionOverlay.vue';
 
 const SEARCH_COOLDOWN = 150; // ms
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
@@ -18,7 +18,7 @@ export default {
         ActionBreadcrumb,
         SearchBar,
         CategoryResults,
-        NodeDescription,
+        NodeDescriptionOverlay,
         SearchResults
     },
     computed: {
@@ -108,7 +108,7 @@ export default {
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
     <portal to="extension-panel">
-      <NodeDescription
+      <NodeDescriptionOverlay
         v-if="isDescriptionPanelOpen"
         closeable
         :selected-node="selectedNodeIsVisible ? selectedNode : null"
