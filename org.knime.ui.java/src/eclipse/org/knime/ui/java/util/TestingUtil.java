@@ -126,6 +126,7 @@ public final class TestingUtil {
             }
         }));
         if (activeProjectId != null) {
+            wpm.openAndCacheWorkflow(activeProjectId);
             wpm.setWorkflowProjectActive(activeProjectId);
         }
 

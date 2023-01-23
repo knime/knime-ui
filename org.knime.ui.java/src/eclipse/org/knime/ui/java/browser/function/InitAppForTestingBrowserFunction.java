@@ -103,7 +103,8 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
             Collections.emptyList() : //
             StreamSupport.stream(openedWorkflows.spliterator(), false).map(ow -> {
                 var projectId = ow.get("projectId").asText();
-                if (ow.get("isVisible").asBoolean()) {
+                var visible = ow.get("visible");
+                if (visible != null && visible.asBoolean()) {
                     activeProjectId.set(projectId);
                 }
                 return projectId;

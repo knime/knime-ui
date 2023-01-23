@@ -146,13 +146,12 @@ public class KnimeBrowserView implements ISaveablePart2 {
 	 * is about:blank), the dev URL (i.e. empty page) will be ignored and the
 	 * actual file URL is used
 	 */
-	private static void setUrl(final boolean ignoreEmptyPageAsDevUrl) {
-		if (browser.getUrl().equals(EMPTY_PAGE)) {
-			if (!setDevURL(browser, ignoreEmptyPageAsDevUrl)) { // NOSONAR
-			    browser.setUrl(APP_PAGE);
-			}
-		}
-	}
+    private static void setUrl(final boolean ignoreEmptyPageAsDevUrl) {
+        assert LifeCycle.get().isLastStateTransition(StateTransition.INIT);
+        if (!setDevURL(browser, ignoreEmptyPageAsDevUrl)) { // NOSONAR
+            browser.setUrl(APP_PAGE);
+        }
+    }
 
 	@Focus
 	public void setFocus() {
