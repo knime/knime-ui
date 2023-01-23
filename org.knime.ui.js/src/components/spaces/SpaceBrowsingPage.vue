@@ -22,7 +22,7 @@ export default {
         spaceInfo() {
             if (this.activeSpaceInfo.local) {
                 return {
-                    title: 'Your Local Space',
+                    title: 'Your local space',
                     subtitle: 'Local space',
                     icon: ComputerDesktopIcon
                 };
