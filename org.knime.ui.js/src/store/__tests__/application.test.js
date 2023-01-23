@@ -7,7 +7,6 @@ import { mockVuexStore } from '@/test/test-utils';
 import * as selectionStore from '@/store/selection';
 
 import { APP_ROUTES, router } from '@/router';
-import { setProjectActiveAndEnsureItsLoadedInBackend } from '@/api';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({
     makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
@@ -61,6 +60,10 @@ describe('application store', () => {
         const storeConfig = {
             application: await import('@/store/application'),
             workflow: await import('@/store/workflow'),
+            nodeRepository: {
+                mutations: { setNodesPerCategories: jest.fn() },
+                actions: { setIncludeAllAndSearchNodes: jest.fn() }
+            },
             canvas: {
                 getters: getters.canvas,
                 actions: actions.canvas
@@ -194,7 +197,7 @@ describe('application store', () => {
                 name: APP_ROUTES.WorkflowPage,
                 params: { projectId: 'foo', workflowId: 'bar' }
             });
-            
+
             await router.push({ name: APP_ROUTES.EntryPage });
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', {
@@ -208,7 +211,7 @@ describe('application store', () => {
             const { store, dispatchSpy } = await loadStore();
 
             await store.dispatch('application/initializeApplication', { $router: router });
-            
+
             await router.push({
                 name: APP_ROUTES.WorkflowPage,
                 params: { projectId: 'foo', workflowId: 'bar' }
@@ -221,7 +224,7 @@ describe('application store', () => {
 
             expect(router.currentRoute.name).toBe(APP_ROUTES.WorkflowPage);
         });
-       
+
 
         it('should skip the navigation guards', async () => {
             const { store, dispatchSpy } = await loadStore();
@@ -302,7 +305,12 @@ describe('application store', () => {
 
     describe('Workflow Lifecycle', () => {
         it('loads root workflow successfully', async () => {
-            const { store, loadWorkflow, addEventListener, setProjectActiveAndEnsureItsLoadedInBackend } = await loadStore();
+            const {
+                store,
+                loadWorkflow,
+                addEventListener,
+                setProjectActiveAndEnsureItsLoadedInBackend
+            } = await loadStore();
             loadWorkflow.mockResolvedValue({
                 dummy: true,
                 workflow: { info: { containerId: 'root' }, nodes: [] },
@@ -483,12 +491,12 @@ describe('application store', () => {
                         lastActive: 'root:214'
                     }
                 };
-    
+
                 await store.dispatch('application/switchWorkflow', {
                     newWorkflow: { projectId: '2', workflowId: 'root' }
                 });
                 expect(store.state.application.activeProjectId).toBe('2');
-    
+
                 await store.dispatch('application/switchWorkflow', {
                     newWorkflow: { projectId: '1', workflowId: 'root' }
                 });
@@ -813,7 +821,7 @@ describe('application store', () => {
             await store.dispatch('application/switchWorkflow', {
                 newWorkflow: { projectId, workflowId: 'root' }
             });
-            
+
             // should have cleared the snapshot
             expect(getSnapshotKeys(store).length).toBe(0);
         });
@@ -861,7 +869,7 @@ describe('application store', () => {
             await store.dispatch('application/switchWorkflow', {
                 newWorkflow: { projectId: project2, workflowId: 'root' }
             });
-            
+
             // should have saved 1 snapshot (only from the 1st project)
             expect(getSnapshotKeys(store).length).toBe(1);
 

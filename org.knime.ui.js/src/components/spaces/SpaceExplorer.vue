@@ -12,7 +12,9 @@ import ToolbarButton from '@/components/common/ToolbarButton.vue';
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer/FileExplorer.vue';
 
-const DISPLAY_LOADING_DELAY = 1000;
+const DISPLAY_LOADING_DELAY = 100;
+const DISPLAY_LOADING_ICON_DELAY = 350;
+const DEFAULT_LOADING_INDICATOR_HEIGHT = 76; // px
 
 export default {
     components: {
@@ -36,7 +38,9 @@ export default {
 
     data() {
         return {
-            isLoading: false
+            isLoading: false,
+            showLoadingIcon: false,
+            loadingHeight: DEFAULT_LOADING_INDICATOR_HEIGHT
         };
     },
 
@@ -114,14 +118,26 @@ export default {
         // Only display loader after a set waiting time, to avoid making the operations seem longer
         setLoading(value) {
             if (!value) {
+                this.showLoadingIcon = false;
                 this.isLoading = false;
+                this.loadingHeight = DEFAULT_LOADING_INDICATOR_HEIGHT;
                 clearTimeout(this.loadingTimer);
+                clearTimeout(this.loadingIconTimer);
                 return;
+            }
+
+            // use file explorers size as height for the loader to avoid jumping
+            if (this.$refs.fileExplorer) {
+                this.loadingHeight = this.$refs.fileExplorer.$el.getBoundingClientRect().height;
             }
 
             this.loadingTimer = setTimeout(() => {
                 this.isLoading = true;
             }, DISPLAY_LOADING_DELAY);
+
+            this.loadingIconTimer = setTimeout(() => {
+                this.showLoadingIcon = true;
+            }, DISPLAY_LOADING_ICON_DELAY);
         },
 
         async fetchWorkflowGroupContent(itemId) {
@@ -205,6 +221,7 @@ export default {
 
     <FileExplorer
       v-if="activeWorkflowGroup && !isLoading"
+      ref="fileExplorer"
       :mode="mode"
       :items="fileExplorerItems"
       :is-root-folder="activeWorkflowGroup.path.length === 0"
@@ -216,8 +233,11 @@ export default {
     <div
       v-if="isLoading"
       class="loading"
+      :style="`--loading-height: ${loadingHeight}px`"
     >
-      <LoadingIcon />
+      <LoadingIcon
+        v-show="showLoadingIcon"
+      />
     </div>
   </div>
 </template>
@@ -281,7 +301,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 400px;
+  height: var(--loading-height, 76px); /* two items */
+  background: var(--knime-gray-ultra-light);
 
   & svg {
     @mixin svg-icon-size 30;

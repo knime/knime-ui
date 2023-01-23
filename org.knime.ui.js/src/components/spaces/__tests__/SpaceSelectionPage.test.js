@@ -74,6 +74,8 @@ describe('SpaceSelectionPage.vue', () => {
 
         await wrapper.vm.$nextTick();
         await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
 
         expect(wrapper.findAll('.space-provider').length).toBe(1);
     });
@@ -114,6 +116,8 @@ describe('SpaceSelectionPage.vue', () => {
 
         await wrapper.vm.$nextTick();
         await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
 
         const signInButton = wrapper.find('.logout');
         expect(signInButton.exists()).toBe(true);
@@ -136,11 +140,24 @@ describe('SpaceSelectionPage.vue', () => {
 
         await wrapper.vm.$nextTick();
         await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
 
         const dummySpace = { id: 'dummy-id', name: 'Dummy Space', private: true, description: '' };
 
-        $store.state.spaces.spaceProviders.hub1.spaces = [dummySpace];
+        $store.commit('spaces/setSpaceProviders', {
+            ...$store.state.spaces.spaceProviders,
+            hub1: {
+                ...$store.state.spaces.spaceProviders.hub1,
+                spaces: [dummySpace]
+            }
+        });
         await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findComponent(SpaceCard).exists()).toBe(true);
 
         wrapper.findComponent(SpaceCard).vm.$emit('click', dummySpace);
 

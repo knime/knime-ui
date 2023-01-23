@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import Vuex from 'vuex';
 import { createLocalVue } from '@vue/test-utils';
 
@@ -365,7 +366,7 @@ describe('Node Repository store', () => {
 
                 await store.dispatch('nodeRepository/getAllNodes', { append: true });
                 expect(store.state.nodeRepository.categoryPage).toBe(1);
-                
+
                 expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
                     numNodesPerTag: 6,
                     tagsOffset: 6,
@@ -375,10 +376,10 @@ describe('Node Repository store', () => {
                 });
 
                 const { nodes, tag } = getNodesGroupedByTagsResponse.groups[0];
-                
+
                 // make sure the port information is mapped in to every node
                 const groupedNodesWithPorts = withPorts(nodes, availablePortTypes);
-                
+
                 expect(store.state.nodeRepository.nodesPerCategory).toEqual([{
                     nodes: groupedNodesWithPorts,
                     tag
@@ -387,9 +388,9 @@ describe('Node Repository store', () => {
 
             it('gets all nodes without append and with a bigger tagsLimits', async () => {
                 const { store, getNodesGroupedByTagsMock } = await createStore();
-                
+
                 await store.dispatch('nodeRepository/getAllNodes', { append: false });
-                
+
                 expect(store.state.nodeRepository.categoryPage).toBe(0);
                 expect(store.state.nodeRepository.nodeSearchPage).toBe(0);
                 expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
@@ -433,7 +434,7 @@ describe('Node Repository store', () => {
                 expect(store.state.nodeRepository.nodes).toBeNull();
                 expect(store.state.nodeRepository.tags).toEqual([]);
             });
-    
+
             it('searches for nodes', async () => {
                 const { store, searchNodesMock, availablePortTypes } = await createStore();
                 store.commit('nodeRepository/setQuery', 'lookup');
@@ -455,14 +456,14 @@ describe('Node Repository store', () => {
                 );
                 expect(store.state.nodeRepository.tags).toEqual(searchNodesResponse.tags);
             });
-    
+
             it('searches for nodes with append=true', async () => {
                 const { store, searchNodesMock, availablePortTypes } = await createStore();
                 const dummyNode = { dummy: true };
                 store.commit('nodeRepository/setNodes', [dummyNode]);
                 store.commit('nodeRepository/setQuery', 'lookup');
                 await store.dispatch('nodeRepository/searchNodes', { append: true });
-                
+
                 expect(store.state.nodeRepository.nodeSearchPage).toBe(1);
                 expect(searchNodesMock).toHaveBeenCalledWith({
                     allTagsMatch: true,
@@ -489,18 +490,18 @@ describe('Node Repository store', () => {
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/resetIncludeAll', undefined);
             });
-    
+
             it('searches for nodes next page', async () => {
                 const { store, dispatchSpy } = await createStore();
                 await store.dispatch('nodeRepository/searchNodesNextPage');
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', { append: true });
             });
-    
+
             it('set selected Tags', async () => {
                 const { store, dispatchSpy } = await createStore();
                 store.dispatch('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
                 expect(store.state.nodeRepository.selectedTags).toEqual(['myTag', 'myTag2']);
-                
+
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
             });
 
@@ -515,7 +516,7 @@ describe('Node Repository store', () => {
                 expect(store.state.nodeRepository.selectedTags).toEqual([]);
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
             });
-    
+
             it('clears search params (tags and query)', async () => {
                 const { store, dispatchSpy } = await createStore();
                 store.dispatch('nodeRepository/clearSearchParams');
@@ -526,7 +527,7 @@ describe('Node Repository store', () => {
                 expect(store.state.nodeRepository.tags).toEqual([]);
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/resetIncludeAll', undefined);
             });
-    
+
             it('clears search results', async () => {
                 const { store } = await createStore();
 
@@ -592,9 +593,9 @@ describe('Node Repository store', () => {
 
                 store.commit('nodeRepository/setSelectedNode', node);
                 await store.dispatch('nodeRepository/getNodeDescription');
-                
+
                 expect(getNodeDescriptionMock).toHaveBeenCalled();
-                
+
                 expect(store.state.nodeRepository.nodeDescriptionObject).toEqual(
                     withPorts([getNodeDescriptionResponse], availablePortTypes)[0]
                 );
@@ -602,11 +603,11 @@ describe('Node Repository store', () => {
 
             it('opens description panel', async () => {
                 const { store } = await createStore();
-                
+
                 store.dispatch('nodeRepository/openDescriptionPanel');
                 expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
             });
-        
+
             it('closes description panel', async () => {
                 const { store } = await createStore();
                 await store.dispatch('nodeRepository/openDescriptionPanel');
