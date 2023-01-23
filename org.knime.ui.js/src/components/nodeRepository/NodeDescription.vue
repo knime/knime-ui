@@ -37,6 +37,8 @@ export default {
         selectedNode: {
             immediate: true,
             async handler() {
+                // reset data
+                this.descriptionData = null;
                 const { selectedNode } = this;
                 if (selectedNode === null) {
                     return;
@@ -140,7 +142,7 @@ export default {
   }
 
   & .node-info {
-    padding: 10px 20px 172px;
+    padding: 10px 20px 50px;
     display: flex;
     min-height: 100%;
     flex-direction: column;
