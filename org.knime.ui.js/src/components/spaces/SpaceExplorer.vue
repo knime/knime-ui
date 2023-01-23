@@ -258,7 +258,7 @@ export default {
     -ms-overflow-style: none; /* needed to hide scroll bar in edge */
     scrollbar-width: none; /* for firefox */
     user-select: none;
-    font-size: 14px;
+    font-size: 16px;
 
     &::-webkit-scrollbar {
       display: none;
@@ -271,7 +271,7 @@ export default {
 }
 
 .mini {
-  padding: 8px 15px;
+  padding: 5px 15px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
