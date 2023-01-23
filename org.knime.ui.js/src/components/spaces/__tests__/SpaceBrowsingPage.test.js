@@ -67,7 +67,7 @@ describe('SpaceBrowsingPage', () => {
         const subtitle = wrapper.find('.subtitle').text();
         const title = wrapper.find('.title').text();
         expect(subtitle).toBe('Local space');
-        expect(title).toBe('Your Local Space');
+        expect(title).toBe('Your local space');
     });
 
     it('renders correct information for private space', async () => {

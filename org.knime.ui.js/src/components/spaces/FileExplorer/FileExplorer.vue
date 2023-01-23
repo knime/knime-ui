@@ -439,7 +439,11 @@ tbody.mini {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 50px;
   color: var(--knime-silver-sand);
+  height: 76px;
+}
+
+tbody:not(.mini) .empty {
+  background: var(--knime-gray-ultra-light);
 }
 </style>

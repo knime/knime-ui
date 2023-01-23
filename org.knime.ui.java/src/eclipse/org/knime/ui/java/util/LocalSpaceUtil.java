@@ -154,7 +154,7 @@ public final class LocalSpaceUtil {
      * @return a relative path to the root of the local workspace
      */
     public static Path toRelativePath(final Path absolutePath) {
-        return localWorkspace.getLocalWorkspaceRoot().relativize(absolutePath);
+        return localWorkspace.getLocalRootPath().relativize(absolutePath);
     }
 
     /**

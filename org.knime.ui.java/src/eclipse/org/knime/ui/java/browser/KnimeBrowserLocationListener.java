@@ -53,8 +53,8 @@ import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareRe
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.knime.core.webui.WebUIUtil;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
 import com.equo.chromium.swt.Browser;
 
@@ -77,9 +77,10 @@ public class KnimeBrowserLocationListener implements LocationListener {
         if (isCEFMiddlewareResource(event.location)) {
             // Allow location change to middleware resources, these are handled by resource handlers.
         } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but de-register any listeners in case the web app is being
-            //   refreshed. Required listeners will be registered on initialisation.
-            DefaultEventService.getInstance().removeAllEventListeners();
+            // Allow location change, but run the relaod life-cycle state transition
+            if (LifeCycle.get().isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
+                LifeCycle.get().reload();
+            }
         } else {
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
             event.doit = false;

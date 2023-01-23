@@ -16,7 +16,7 @@
     "audit": "check-audit --omit dev",
     "audit:resolve": "resolve-audit --omit dev",
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
-    "test:unit": "jest",
+    "test:unit": "TZ='Europe/Berlin' jest",
     "coverage": "npm run test:unit -- --coverage --no-cache",
     "coverage:watch": "npm run test:unit -- --coverage --watch",
     "opensourcecredits": "npm run --prefix webapps-common opensourcecredits",

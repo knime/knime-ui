@@ -204,11 +204,11 @@ describe('spaces store', () => {
 
                 fetchSpaceProvider.mockResolvedValue({ spaces: [mockSpace] });
 
-                await store.dispatch('spaces/fetchProviderSpaces', { id: 'hub1', user: mockUser });
+                const data = await store.dispatch('spaces/fetchProviderSpaces', { id: 'hub1', user: mockUser });
 
                 expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
 
-                expect(store.state.spaces.spaceProviders.hub1).toEqual(expect.objectContaining({
+                expect(data).toEqual(expect.objectContaining({
                     connected: true,
                     spaces: [mockSpace],
                     user: mockUser
@@ -522,7 +522,7 @@ describe('spaces store', () => {
                 store.state.spaces.activeSpace = {
                     spaceId: 'local'
                 };
-                
+
                 expect(store.getters['spaces/activeSpaceInfo']).toEqual({
                     local: true,
                     private: false,
@@ -541,7 +541,7 @@ describe('spaces store', () => {
                         { id: 'publicSpace', name: 'Public space', private: false }],
                     local: false
                 };
-                
+
                 expect(store.getters['spaces/activeSpaceInfo']).toEqual({
                     local: false,
                     private: true,

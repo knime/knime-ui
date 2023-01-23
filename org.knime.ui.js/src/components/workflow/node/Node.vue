@@ -267,20 +267,15 @@ export default {
         },
 
         /*
-         * Left-Click         => Select only this node
-         * Left-Click & Shift => Add/Remove this node to/from selection
-         * Left-Click & Ctrl  => do Nothing
+         * Left-Click                      => Select only this node
+         * Left-Click & Shift or Ctrl/Meta => Add/Remove this node to/from selection
          */
         onLeftMouseClick(e) {
             if (this.isDragging) {
                 return;
             }
 
-            if (e.ctrlKey || e.metaKey) {
-                // user tries to open component or metanode
-                return;
-            }
-            if (e.shiftKey) {
+            if (e.shiftKey || e.ctrlKey || e.metaKey) {
                 // Multi select
                 if (this.isNodeSelected(this.id)) {
                     this.deselectNode(this.id);
@@ -294,9 +289,8 @@ export default {
             }
         },
         /*
-         * Right-Click             => Select only this node and show context menu (done in Kanvas.vue)
-         * Right-Click & Shift     => Add/Remove this node to/from selection and show context menu (via Kanvas)
-         * Right-Click & Ctrl/Meta => Do Nothing, also do not open the context menu
+         * Right-Click                      => Select only this node and show context menu (done in Kanvas.vue)
+         * Right-Click & Shift or Ctrl/Meta => Add/Remove this node to/from selection and show context menu (via Kanvas)
          *
          * We use the contextmenu event as click with button = 2 was not reliable.
          */
@@ -305,13 +299,7 @@ export default {
                 return;
             }
 
-            if (event.ctrlKey || event.metaKey) {
-                // user tries to open component or metanode
-                event.stopPropagation();
-                return;
-            }
-
-            if (event.shiftKey) {
+            if (event.shiftKey || event.ctrlKey || event.metaKey) {
                 // Multi select
                 this.selectNode(this.id);
             } else if (!this.isNodeSelected(this.id)) {
