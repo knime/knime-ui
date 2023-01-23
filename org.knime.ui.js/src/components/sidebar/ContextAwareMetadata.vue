@@ -13,20 +13,17 @@ export default {
     },
     computed: {
         ...mapGetters('selection', ['singleSelectedNode']),
-        ...mapGetters('workflow', ['getNodeName']),
+        ...mapGetters('workflow', ['getNodeName', 'getNodeFactory']),
         showNodeDescription() {
             // do not show description for metanodes and components
             return this.singleSelectedNode && this.singleSelectedNode.kind === 'node';
         },
         selectedNode() {
             // transform this into a node repo like node object
+            const { id } = this.singleSelectedNode;
             return {
-                ...this.singleSelectedNode,
-                name: this.getNodeName(this.singleSelectedNode.id),
-                nodeFactory: {
-                    className: this.singleSelectedNode.templateId,
-                    settings: ''
-                }
+                name: this.getNodeName(id),
+                nodeFactory: this.getNodeFactory(id)
             };
         }
     }
