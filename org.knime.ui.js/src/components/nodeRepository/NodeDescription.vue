@@ -40,7 +40,6 @@ export default {
             immediate: true,
             async handler() {
                 // reset data
-                this.descriptionData = null;
                 const { selectedNode } = this;
                 if (selectedNode === null) {
                     return;
