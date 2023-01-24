@@ -110,7 +110,6 @@ export default {
     <portal to="extension-panel">
       <NodeDescriptionOverlay
         v-if="isDescriptionPanelOpen"
-        closeable
         :selected-node="selectedNodeIsVisible ? selectedNode : null"
       />
     </portal>
