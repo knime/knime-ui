@@ -143,7 +143,7 @@ export default {
   }
 
   & .node-info {
-    padding: 10px 20px 10px;
+    padding: 10px 20px;
     display: flex;
     min-height: 100%;
     flex-direction: column;
