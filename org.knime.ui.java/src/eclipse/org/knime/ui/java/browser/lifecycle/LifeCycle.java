@@ -183,7 +183,8 @@ public final class LifeCycle {
      * Runs the shutdown-state-transition.
      */
     public void shutdown() {
-        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), null, StateTransition.SUSPEND);
+        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), null, StateTransition.SUSPEND,
+            StateTransition.NULL);
     }
 
     private void doStateTransition(final StateTransition nextStateTransition, final Runnable runStateTransition,

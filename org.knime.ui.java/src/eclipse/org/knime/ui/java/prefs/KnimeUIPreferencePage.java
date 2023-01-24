@@ -65,7 +65,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
     private static final String NODE_REPO_FILTER_NONE_OPTION = "All nodes";
 
-    private static final String NODE_REPO_FILTER_SPREADSHEET_OPTION = "Nodes for spreadsheet users";
+    private static final String NODE_REPO_FILTER_SPREADSHEET_OPTION = "Nodes of spreadsheet edition";
 
     /** Create a new preference page for the modern UI. */
     public KnimeUIPreferencePage() {
