@@ -69,7 +69,7 @@ describe('Sidebar', () => {
         expect(wrapper.findComponent(Metainfo).exists()).toBe(true);
         expect(wrapper.findComponent(PlusIcon).exists()).toBe(true);
 
-        expect(wrapper.find('[title="Workflow metadata"]').classes('active')).toBe(true);
+        expect(wrapper.find('[title="Description"]').classes('active')).toBe(true);
         expect(wrapper.find('[title="Node repository"]').classes('active')).toBe(false);
         wrapper.findAll('li').wrappers.forEach(wp => {
             expect(wp.classes('expanded')).toBe(true);
@@ -89,7 +89,7 @@ describe('Sidebar', () => {
     });
 
     it('clicking on open tab should close it', async () => {
-        const tabName = 'Workflow metadata';
+        const tabName = 'Description';
         doShallowMount();
         await wrapper.find(`[title="${tabName}"]`).trigger('click');
         expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(false);
@@ -117,8 +117,8 @@ describe('Sidebar', () => {
         // emulate opening the description panel
         await store.dispatch('nodeRepository/openDescriptionPanel');
 
-        // back to workflow metadata
-        await wrapper.find('[title="Workflow metadata"]').trigger('click');
+        // back to Description
+        await wrapper.find('[title="Description"]').trigger('click');
 
         // back to node repository
         await wrapper.find('[title="Node repository"]').trigger('click');

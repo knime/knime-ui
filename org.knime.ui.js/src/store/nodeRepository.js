@@ -171,10 +171,8 @@ export const actions = {
     },
 
     async getNodeDescription({ commit, state, rootState }, { selectedNode }) {
-        const node = await getNodeDescription({
-            className: selectedNode.nodeFactory.className,
-            settings: selectedNode.nodeFactory.settings
-        });
+        const { className, settings } = selectedNode.nodeFactory;
+        const node = await getNodeDescription({ className, settings });
 
         const { availablePortTypes } = rootState.application;
         return toNodeWithFullPorts(availablePortTypes)(node);

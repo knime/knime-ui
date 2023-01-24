@@ -128,10 +128,7 @@ export const getters = {
         let node = activeWorkflow.nodes[nodeId];
         let { templateId } = node;
         if (templateId) {
-            console.log(activeWorkflow.nodeTemplates[templateId]);
-            // TODO: remove fake node factory when backend provides it
-            return activeWorkflow.nodeTemplates[templateId].nodeFactory ||
-                { className: templateId, settings: '' };
+            return activeWorkflow.nodeTemplates[templateId].nodeFactory;
         } else {
             return null;
         }

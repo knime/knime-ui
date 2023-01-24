@@ -44,11 +44,11 @@ describe('panel store', () => {
         const anotherProject = 'anotherProjectId';
         store.state.panel.activeTab = { [projectId]: 'somethingElse' };
         expect(store.state.panel.expanded).toBe(true);
-        expect(store.state.panel.activeTab[projectId]).not.toBe('workflowMetadata');
+        expect(store.state.panel.activeTab[projectId]).not.toBe('description');
 
-        store.commit('panel/setActiveTab', { projectId, activeTab: panelStoreConfig.TABS.WORKFLOW_METADATA });
+        store.commit('panel/setActiveTab', { projectId, activeTab: panelStoreConfig.TABS.CONTEXT_AWARE_DESCRIPTION });
         expect(store.state.panel.expanded).toBe(true);
-        expect(store.state.panel.activeTab[projectId]).toBe('workflowMetadata');
+        expect(store.state.panel.activeTab[projectId]).toBe('description');
 
         store.commit('panel/setActiveTab', { projectId, activeTab: panelStoreConfig.TABS.NODE_REPOSITORY });
         expect(store.state.panel.expanded).toBe(true);

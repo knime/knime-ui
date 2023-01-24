@@ -4,7 +4,7 @@ import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.v
 import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
 
 /*
- * Base component for the NodeDescriptionOverlay for the nodeRepo, also used in the ContextAwareMetadata for nodes
+ * Base component for the NodeDescriptionOverlay for the nodeRepo, also used in the ContextAwareDescription for nodes
  * of the workflow
  */
 export default {
@@ -16,7 +16,8 @@ export default {
     props: {
         selectedNode: {
             type: Object,
-            required: true
+            validator: node => node === null || (typeof node.nodeFactory?.className === 'string' &&
+                typeof node.name === 'string')
         }
     },
     data() {

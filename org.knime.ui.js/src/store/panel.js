@@ -3,7 +3,7 @@
  */
 
 export const TABS = {
-    WORKFLOW_METADATA: 'workflowMetadata',
+    CONTEXT_AWARE_DESCRIPTION: 'description',
     NODE_REPOSITORY: 'nodeRepository',
     NODE_DIALOG: 'nodeDialog',
     SPACE_EXPLORER: 'spaceExplorer'
