@@ -216,7 +216,7 @@ describe('NodeRepository', () => {
             expect(wrapper.findComponent(NodeDescriptionOverlay).props('selectedNode').name).toBe('Test');
         });
 
-       it('hides info if selectedNode is invisible', () => {
+        it('hides info if selectedNode is invisible', () => {
             $store.state.nodeRepository.isDescriptionPanelOpen = true;
             selectedNodeIsVisible = false;
             doShallowMount();
