@@ -58,6 +58,12 @@ export default {
   z-index: 2;
   border: solid var(--knime-silver-sand);
   border-width: 0 1px;
+  height: calc(100% - (var(--app-header-height) + var(--app-toolbar-height)));
+
+  /* fix height of scroll container */
+  & >>> .scroll-container {
+    height: calc(100% - 34px);
+  }
 
   & button.close {
     width: 40px;

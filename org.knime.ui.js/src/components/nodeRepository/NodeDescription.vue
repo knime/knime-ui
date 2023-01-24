@@ -144,7 +144,7 @@ export default {
   }
 
   & .node-info {
-    padding: 10px 20px 50px;
+    padding: 10px 20px 10px;
     display: flex;
     min-height: 100%;
     flex-direction: column;
