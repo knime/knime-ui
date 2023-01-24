@@ -22,7 +22,9 @@ export default {
     props: {
         selectedNode: {
             type: Object,
-            required: true
+            default: null,
+            validator: node => node === null || (typeof node.nodeFactory?.className === 'string' &&
+                typeof node.name === 'string')
         }
     },
     methods: {
