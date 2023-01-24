@@ -6,7 +6,9 @@ import {
     disconnectSpaceProvider,
     fetchWorkflowGroupContent,
     createWorkflow,
-    openWorkflow
+    openWorkflow,
+    importFiles,
+    importWorkflows
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
@@ -252,6 +254,34 @@ export const actions = {
         }
 
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
+    },
+
+    // Will be adapted with NXT-1254
+    async importFiles({ commit, getters, state }) { // TODO: Remove code duplication, also see `createWorkflow(...)`
+        const { activeWorkflowGroup } = state.activeSpace;
+        const itemId = getters.currentWorkflowGroupId;
+        const newSpaceItems = await importFiles({ itemId });
+        const updatedWorkflowGroupItems = activeWorkflowGroup.items.concat(...newSpaceItems);
+        // TODO: Sort the updated workflow group items properly, see `createWorkflow(...)`.
+        commit('setActiveWorkflowGroupData', {
+            path: activeWorkflowGroup.path,
+            items: updatedWorkflowGroupItems
+        });
+        return newSpaceItems;
+    },
+
+    // Will be adapted with NXT-1254
+    async importWorkflows({ commit, getters, state }) { // TODO: Remove code duplication, `createWorkflow(...)`
+        const { activeWorkflowGroup } = state.activeSpace;
+        const itemId = getters.currentWorkflowGroupId;
+        const newSpaceItems = await importWorkflows({ itemId });
+        const updatedWorkflowGroupItems = activeWorkflowGroup.items.concat(...newSpaceItems);
+        // TODO: Sort the updated workflow group items properly, see `createWorkflow(...)`.
+        commit('setActiveWorkflowGroupData', {
+            path: activeWorkflowGroup.path,
+            items: updatedWorkflowGroupItems
+        });
+        return newSpaceItems;
     }
 };
 
