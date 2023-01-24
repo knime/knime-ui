@@ -1,13 +1,9 @@
-import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
-import Description from 'webapps-common/ui/components/Description.vue';
-import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.vue';
-
-import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
 import NodeDescriptionOverlay from '../NodeDescriptionOverlay.vue';
+import NodeDescription from '../NodeDescription.vue';
 
 import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
 jest.mock('@/mixins/escapeStack', () => {
@@ -18,9 +14,8 @@ jest.mock('@/mixins/escapeStack', () => {
     return { escapeStack };
 });
 
-describe('NodeDescriptionOverlay', () => {
-    let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanelMock,
-        getNodeDescriptionMock, selectedNodeIsVisible;
+describe('NodeDescription', () => {
+    let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanelMock, propsData;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -30,48 +25,20 @@ describe('NodeDescriptionOverlay', () => {
     beforeEach(() => {
         wrapper = null;
         closeDescriptionPanelMock = jest.fn();
-        getNodeDescriptionMock = jest.fn();
-        selectedNodeIsVisible = true;
+        const getNodeDescription = () => ({
+            id: 1,
+            description: 'This is a node.',
+            links: [{
+                text: 'link',
+                url: 'www.link.com'
+            }]
+        });
 
         storeConfig = {
             nodeRepository: {
-                state: {
-                    selectedNode: {
-                        id: 1,
-                        name: 'Test'
-                    },
-                    nodeDescriptionObject: {
-                        id: 1,
-                        description: 'This is a node.',
-                        links: [{
-                            text: 'link',
-                            url: 'www.link.com'
-                        }]
-                    },
-                    query: 'Source',
-                    nodesPerCategory: [
-                        {
-                            tag: 'tag:1',
-                            nodes: [{ id: 1 }, { id: 2 }]
-                        },
-                        {
-                            tag: 'tag:2',
-                            nodes: [{ id: 3 }, { id: 4 }, { id: 5 }]
-                        }
-                    ],
-                    nodes: [{
-                        id: 6,
-                        name: 'Node'
-                    }]
-                },
                 actions: {
-                    getNodeDescription: getNodeDescriptionMock,
+                    getNodeDescription,
                     closeDescriptionPanel: closeDescriptionPanelMock
-                },
-                getters: {
-                    selectedNodeIsVisible() {
-                        return selectedNodeIsVisible;
-                    }
                 }
             }
         };
@@ -79,49 +46,26 @@ describe('NodeDescriptionOverlay', () => {
         $store = mockVuexStore(storeConfig);
 
         mocks = { $store };
+        propsData = {
+            selectedNode: {
+                id: 1,
+                name: 'Test',
+                nodeFactory: {
+                    className: 'some.class.name',
+                    settings: ''
+                }
+            }
+        };
         doMount = () => {
-            wrapper = mount(NodeDescriptionOverlay, { mocks });
+            wrapper = mount(NodeDescriptionOverlay, { propsData, mocks });
         };
     });
 
     it('renders all components', () => {
         doMount();
         expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
-        expect(wrapper.findComponent(Description).exists()).toBe(true);
-        expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(true);
-        expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(true);
-    });
-
-    it('renders name of the selected node', () => {
-        doMount();
-        const title = wrapper.find('h2');
-        expect(title.text()).toBe('Test');
-    });
-
-    it('renders description of the selected node', () => {
-        doMount();
-        const description = wrapper.find('.description');
-        expect(description.text()).toBe('This is a node.');
-    });
-
-    it('renders placeholder text if there is no description', () => {
-        storeConfig.nodeRepository.state.nodeDescriptionObject = {
-            id: 1
-        };
-        doMount();
-        const description = wrapper.find('span');
-        expect(description.text()).toBe('There is no description for this node.');
-    });
-
-    it('does not render external links if there are not any', () => {
-        storeConfig.nodeRepository.state.nodeDescriptionObject = {
-            id: 1,
-            description: 'This is a node.'
-        };
-        doMount();
-        expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
-        expect(wrapper.findComponent(Description).exists()).toBe(true);
-        expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(false);
+        expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
+        expect(wrapper.findComponent(NodeDescription).props('selectedNode').id).toBe(1);
     });
 
     it('closes the panel when button is clicked', () => {
@@ -137,27 +81,5 @@ describe('NodeDescriptionOverlay', () => {
         escapeStackMock.onEscape.call(wrapper.vm);
 
         expect(closeDescriptionPanelMock).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls getNodeDescriptionMock when selected node changes', async () => {
-        doMount();
-        expect(getNodeDescriptionMock).toHaveBeenCalled();
-        storeConfig.nodeRepository.state.selectedNode = {
-            id: 2,
-            name: 'Node'
-        };
-        await Vue.nextTick();
-        expect(getNodeDescriptionMock).toHaveBeenCalledTimes(2);
-    });
-
-    it('changes title and description when node is not visible', () => {
-        selectedNodeIsVisible = false;
-        doMount();
-        const title = wrapper.find('h2');
-        expect(title.text()).toBe('');
-        expect(wrapper.findComponent(Description).exists()).toBe(false);
-        expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
-        const placeholder = wrapper.find('.placeholder');
-        expect(placeholder.text()).toBe('Please select a node');
     });
 });
