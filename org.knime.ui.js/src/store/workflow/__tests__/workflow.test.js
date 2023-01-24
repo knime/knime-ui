@@ -234,7 +234,10 @@ describe('workflow store', () => {
                         bla: {
                             icon: 'exampleIcon',
                             name: 'exampleName',
-                            type: 'exampleType'
+                            type: 'exampleType',
+                            nodeFactory: {
+                                className: 'example.class.name'
+                            }
                         }
                     }
                 });
@@ -243,6 +246,13 @@ describe('workflow store', () => {
             it('gets name', () => {
                 expect(store.getters['workflow/getNodeName']('foo')).toBe('exampleName');
                 expect(store.getters['workflow/getNodeName']('ownData')).toBe('ownName');
+            });
+
+            it('gets nodeFactory', () => {
+                expect(store.getters['workflow/getNodeFactory']('foo')).toMatchObject({
+                    className: 'example.class.name'
+                });
+                expect(store.getters['workflow/getNodeFactory']('ownData')).toBe(null);
             });
 
             it('gets icon', () => {
