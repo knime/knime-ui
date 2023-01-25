@@ -7,7 +7,7 @@ import SearchBar from '@/components/common/SearchBar.vue';
 import CloseableTagList from './CloseableTagList.vue';
 import CategoryResults from './CategoryResults.vue';
 import SearchResults from './SearchResults.vue';
-import NodeDescription from './NodeDescription.vue';
+import NodeDescriptionOverlay from './NodeDescriptionOverlay.vue';
 
 const SEARCH_COOLDOWN = 150; // ms
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
@@ -18,12 +18,15 @@ export default {
         ActionBreadcrumb,
         SearchBar,
         CategoryResults,
-        NodeDescription,
+        NodeDescriptionOverlay,
         SearchResults
     },
     computed: {
-        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory', 'isDescriptionPanelOpen']),
-        ...mapGetters('nodeRepository', { showSearchResults: 'searchIsActive' }),
+        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
+        ...mapGetters('nodeRepository', {
+            showSearchResults: 'searchIsActive',
+            selectedNodeIsVisible: 'selectedNodeIsVisible'
+        }),
 
         /* Search and Filter */
         selectedTags: {
@@ -105,7 +108,10 @@ export default {
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
     <portal to="extension-panel">
-      <NodeDescription v-if="isDescriptionPanelOpen" />
+      <NodeDescriptionOverlay
+        v-if="isDescriptionPanelOpen"
+        :selected-node="selectedNodeIsVisible ? selectedNode : null"
+      />
     </portal>
   </div>
 </template>

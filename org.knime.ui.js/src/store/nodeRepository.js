@@ -26,12 +26,9 @@ export const state = () => ({
     searchScrollPosition: 0,
     includeAll: false,
 
-    /* node description */
+    /* node interaction */
     selectedNode: null,
-    nodeDescriptionObject: null,
-
     isDraggingNode: false,
-
     isDescriptionPanelOpen: false
 });
 
@@ -83,9 +80,6 @@ export const mutations = {
     },
     setCategoryScrollPosition(state, value) {
         state.categoryScrollPosition = value;
-    },
-    setNodeDescription(state, nodeDescriptionObject) {
-        state.nodeDescriptionObject = nodeDescriptionObject;
     },
     setSelectedNode(state, node) {
         state.selectedNode = node;
@@ -172,20 +166,16 @@ export const actions = {
 
         const nodesMutation = append ? 'addNodes' : 'setNodes';
         commit(nodesMutation, withMappedPorts);
-        
+
         commit('setTags', tags);
     },
 
-    async getNodeDescription({ commit, state, rootState }) {
-        const node = await getNodeDescription({
-            className: state.selectedNode.nodeFactory.className,
-            settings: state.selectedNode.nodeFactory.settings
-        });
+    async getNodeDescription({ commit, state, rootState }, { selectedNode }) {
+        const { className, settings } = selectedNode.nodeFactory;
+        const node = await getNodeDescription({ className, settings });
 
         const { availablePortTypes } = rootState.application;
-        const withMappedPorts = toNodeWithFullPorts(availablePortTypes)(node);
-
-        commit('setNodeDescription', withMappedPorts);
+        return toNodeWithFullPorts(availablePortTypes)(node);
     },
 
     /**

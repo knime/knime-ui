@@ -6,20 +6,20 @@ import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 import MetainfoIcon from '@/assets/metainfo.svg';
 
 import { TABS } from '@/store/panel';
-import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
 import SidebarSpaceExplorer from '@/components/sidebar/SidebarSpaceExplorer.vue';
 
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
+import ContextAwareDescription from '@/components/sidebar/ContextAwareDescription.vue';
 
 export default {
     components: {
+        ContextAwareDescription,
         MetainfoIcon,
         SidebarSpaceExplorer,
         PlusIcon,
         LeftCollapsiblePanel,
-        WorkflowMetadata,
         NodeRepository,
         NodeDialogWrapper
     },
@@ -46,11 +46,11 @@ export default {
         sidebarSections() {
             return [
                 {
-                    title: 'Workflow metadata',
+                    title: 'Description',
                     icon: MetainfoIcon,
-                    isActive: this.isTabActive(TABS.WORKFLOW_METADATA),
+                    isActive: this.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
                     isExpanded: this.expanded,
-                    onClick: () => this.clickItem(TABS.WORKFLOW_METADATA)
+                    onClick: () => this.clickItem(TABS.CONTEXT_AWARE_DESCRIPTION)
                 },
                 {
                     title: 'Node repository',
@@ -84,7 +84,7 @@ export default {
         ...mapActions('nodeRepository', ['closeDescriptionPanel']),
 
         isTabActive(tabName) {
-            const activeTab = this.activeTab[this.activeProjectId] || TABS.WORKFLOW_METADATA;
+            const activeTab = this.activeTab[this.activeProjectId] || TABS.CONTEXT_AWARE_DESCRIPTION;
             return activeTab === tabName;
         },
 
@@ -132,9 +132,9 @@ export default {
           key="node-repository"
         />
 
-        <WorkflowMetadata
-          v-show="isTabActive(TABS.WORKFLOW_METADATA)"
-          key="workflow-metadata"
+        <ContextAwareDescription
+          v-show="isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
+          key="context-aware-description"
         />
 
         <NodeDialogWrapper

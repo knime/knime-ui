@@ -69,7 +69,7 @@ import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.service.util.EventConsumer;
-import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -96,15 +96,15 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
             SWITCH_PERSPECTIVE, SHUTDOWN, UPDATE_APP_STATE
     }
 
-    private final AppStateProvider m_appStateProvider;
+    private final AppStateUpdater m_appStateUpdater;
 
     /**
      * @param browser
-     * @param appStateProvider
+     * @param appStateUpdater
      */
-    public SaveAndCloseWorkflowsBrowserFunction(final Browser browser, final AppStateProvider appStateProvider) {
+    public SaveAndCloseWorkflowsBrowserFunction(final Browser browser, final AppStateUpdater appStateUpdater) {
         super(browser, "saveAndCloseWorkflows");
-        m_appStateProvider = appStateProvider;
+        m_appStateUpdater = appStateUpdater;
     }
 
     /**
@@ -126,7 +126,7 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
                 "Workflow could not be saved.\nSee log for details.");
             // make the first workflow active which couldn't be saved
             WorkflowProjectManager.getInstance().setWorkflowProjectActive(firstFailure.get());
-            m_appStateProvider.updateAppState();
+            m_appStateUpdater.updateAppState();
             return null;
         }
 
@@ -139,7 +139,7 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
                 PlatformUI.getWorkbench().close();
                 break;
             default:
-                m_appStateProvider.updateAppState();
+                m_appStateUpdater.updateAppState();
                 break;
         }
         return null;

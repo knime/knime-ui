@@ -51,13 +51,11 @@ package org.knime.ui.java.browser.function;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
-import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.TestingUtil;
 
 import com.equo.chromium.swt.Browser;
@@ -100,45 +98,19 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
             return null;
         }
         JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
-        List<OpenedWorkflow> openedWorkflowsList = openedWorkflows == null ? //
+        var activeProjectId = new AtomicReference<String>();
+        List<String> projectIds = openedWorkflows == null ? //
             Collections.emptyList() : //
-            StreamSupport.stream(openedWorkflows.spliterator(), false)
-                .map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList());
-        var nodeRepoFilterEnabled =
-            !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
-        var appState = new AppState() { // NOSONAR
-            @Override
-            public List<OpenedWorkflow> getOpenedWorkflows() {
-                return openedWorkflowsList;
-            }
-
-            @Override
-            public boolean isNodeRepoFilterEnabled() {
-                return nodeRepoFilterEnabled;
-            }
-        };
-        TestingUtil.initAppForTesting(appState);
+            StreamSupport.stream(openedWorkflows.spliterator(), false).map(ow -> {
+                var projectId = ow.get("projectId").asText();
+                var visible = ow.get("visible");
+                if (visible != null && visible.asBoolean()) {
+                    activeProjectId.set(projectId);
+                }
+                return projectId;
+            }).collect(Collectors.toList());
+        TestingUtil.initAppForTesting(projectIds, activeProjectId.get());
         return null;
-    }
-
-    private static OpenedWorkflow createOpenedWorkflow(final JsonNode json) {
-        return new OpenedWorkflow() {
-
-            @Override
-            public boolean isVisible() {
-                return json.get("visible").asBoolean();
-            }
-
-            @Override
-            public String getWorkflowId() {
-                return json.get("workflowId").asText();
-            }
-
-            @Override
-            public String getProjectId() {
-                return json.get("projectId").asText();
-            }
-        };
     }
 
 }

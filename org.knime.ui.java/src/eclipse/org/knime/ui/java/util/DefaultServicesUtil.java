@@ -49,8 +49,9 @@ package org.knime.ui.java.util;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
-import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.SpaceProviders;
+import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
@@ -73,15 +74,17 @@ public final class DefaultServicesUtil {
     /**
      * Set all dependencies required by the default service implementations
      *
-     * @param appStateProvider The application state provider
+     * @param appStateUpdater The application state updater
      * @param eventConsumer The event consumer
      * @param spaceProviders The space providers
      * @param updateStateProvider The update state provider
+     * @param preferencesProvider
      */
-    public static void setDefaultServiceDependencies(final AppStateProvider appStateProvider,
-        final EventConsumer eventConsumer, final SpaceProviders spaceProviders, final UpdateStateProvider updateStateProvider) {
+    public static void setDefaultServiceDependencies(final AppStateUpdater appStateUpdater,
+        final EventConsumer eventConsumer, final SpaceProviders spaceProviders,
+        final UpdateStateProvider updateStateProvider, final PreferencesProvider preferencesProvider) {
         if (!ServiceInstances.areServicesInitialized()) {
-            ServiceDependencies.setServiceDependency(AppStateProvider.class, appStateProvider);
+            ServiceDependencies.setServiceDependency(AppStateUpdater.class, appStateUpdater);
             ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
                 new WorkflowMiddleware(WorkflowProjectManager.getInstance()));
@@ -89,6 +92,7 @@ public final class DefaultServicesUtil {
                 WorkflowProjectManager.getInstance());
             ServiceDependencies.setServiceDependency(SpaceProviders.class, spaceProviders);
             ServiceDependencies.setServiceDependency(UpdateStateProvider.class, updateStateProvider);
+            ServiceDependencies.setServiceDependency(PreferencesProvider.class, preferencesProvider);
         } else {
             throw new IllegalStateException(
                 "Some services are already initialized. Service dependencies can't be set anymore. "

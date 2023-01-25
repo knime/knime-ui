@@ -149,7 +149,6 @@ describe('Node Repository store', () => {
             categoryScrollPosition: 0,
             includeAll: false,
             selectedNode: null,
-            nodeDescriptionObject: null,
             isDraggingNode: false,
             isDescriptionPanelOpen: false
         });
@@ -321,13 +320,6 @@ describe('Node Repository store', () => {
             const node = { id: 'node1' };
             store.commit('nodeRepository/setSelectedNode', { id: 'node1' });
             expect(store.state.nodeRepository.selectedNode).toEqual(node);
-        });
-
-        it('sets node description object', async () => {
-            const { store } = await createStore();
-            const node = { id: 'node1' };
-            store.commit('nodeRepository/setNodeDescription', { id: 'node1' });
-            expect(store.state.nodeRepository.nodeDescriptionObject).toEqual(node);
         });
 
         it('sets isDraggingNode', async () => {
@@ -583,7 +575,7 @@ describe('Node Repository store', () => {
         describe('node description', () => {
             it('fetches node description', async () => {
                 const { store, getNodeDescriptionMock, availablePortTypes } = await createStore();
-                const node = {
+                const selectedNode = {
                     id: 'node1',
                     nodeFactory: {
                         className: 'test',
@@ -591,14 +583,10 @@ describe('Node Repository store', () => {
                     }
                 };
 
-                store.commit('nodeRepository/setSelectedNode', node);
-                await store.dispatch('nodeRepository/getNodeDescription');
+                const result = await store.dispatch('nodeRepository/getNodeDescription', { selectedNode });
 
                 expect(getNodeDescriptionMock).toHaveBeenCalled();
-
-                expect(store.state.nodeRepository.nodeDescriptionObject).toEqual(
-                    withPorts([getNodeDescriptionResponse], availablePortTypes)[0]
-                );
+                expect(result).toEqual(withPorts([getNodeDescriptionResponse], availablePortTypes)[0]);
             });
 
             it('opens description panel', async () => {

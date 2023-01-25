@@ -49,6 +49,7 @@ package org.knime.ui.java.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -63,8 +64,7 @@ import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
-import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
@@ -82,14 +82,13 @@ public final class TestingUtil {
     private static Set<String> loadedWorkflowsForTesting;
 
     /**
-     * @param newAppState
-     * @see DefaultServicesUtil#setDefaultServiceDependencies(AppStateProvider, EventConsumer,
+     * @see DefaultServicesUtil#setDefaultServiceDependencies(AppStateUpdater, EventConsumer,
      *      org.knime.gateway.impl.webui.SpaceProviders, org.knime.gateway.impl.webui.UpdateStateProvider)
      */
-    public static void initAppForTesting(final AppState newAppState) {
+    public static void initAppForTesting(final List<String> projectIds, final String activeProjectId) {
         clearAppForTesting();
-        newAppState.getOpenedWorkflows().forEach(TestingUtil::addToProjectManagerForTesting);
-        KnimeBrowserView.initViewForTesting(() -> newAppState);
+        TestingUtil.addToProjectManagerForTesting(projectIds, activeProjectId);
+        KnimeBrowserView.initViewForTesting();
     }
 
     /**
@@ -102,39 +101,45 @@ public final class TestingUtil {
         disposeLoadedWorkflowsForTesting();
     }
 
-    private static void addToProjectManagerForTesting(final AppState.OpenedWorkflow workflow) {
-        WorkflowProjectManager.getInstance().addWorkflowProject(workflow.getProjectId(), new WorkflowProject() {
+    private static void addToProjectManagerForTesting(final List<String> projectIds, final String activeProjectId) {
+        var wpm = WorkflowProjectManager.getInstance();
+        projectIds.stream().forEach(projectId -> wpm.addWorkflowProject(projectId, new WorkflowProject() { // NOSONAR
 
             @Override
             public WorkflowManager openProject() {
-                return loadWorkflowForTesting(workflow);
+                return loadWorkflowForTesting(projectId);
             }
 
             @Override
             public String getName() {
-                return workflow.getProjectId();
+                return projectId;
             }
 
             @Override
             public String getID() {
-                return workflow.getProjectId();
+                return projectId;
             }
 
             @Override
             public Optional<Origin> getOrigin() {
-                return Optional.of(LocalSpaceUtil.getLocalOrigin(getProjectFile(workflow).toPath()));
+                return Optional.of(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath()));
             }
-        });
+        }));
+        if (activeProjectId != null) {
+            wpm.openAndCacheWorkflow(activeProjectId);
+            wpm.setWorkflowProjectActive(activeProjectId);
+        }
+
     }
 
-    private static WorkflowManager loadWorkflowForTesting(final AppState.OpenedWorkflow workflow) {
-        var file = getProjectFile(workflow);
+    private static WorkflowManager loadWorkflowForTesting(final String projectId) {
+        var file = getProjectFile(projectId);
         try {
             WorkflowManager wfm = ClassicWorkflowEditorUtil.loadTempWorkflow(file);
             if (loadedWorkflowsForTesting == null) {
                 loadedWorkflowsForTesting = new HashSet<>();
             }
-            loadedWorkflowsForTesting.add(workflow.getProjectId());
+            loadedWorkflowsForTesting.add(projectId);
             return wfm;
         } catch (IOException | InvalidSettingsException | CanceledExecutionException
                 | UnsupportedWorkflowVersionException | LockFailedException ex) {
@@ -158,8 +163,8 @@ public final class TestingUtil {
         }
     }
 
-    private static File getProjectFile(final AppState.OpenedWorkflow workflow) {
-        return new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), workflow.getProjectId());
+    private static File getProjectFile(final String projectId) {
+        return new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), projectId);
     }
 
     private TestingUtil() {

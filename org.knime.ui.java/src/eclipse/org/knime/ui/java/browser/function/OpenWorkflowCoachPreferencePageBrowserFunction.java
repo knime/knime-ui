@@ -53,7 +53,7 @@ import java.util.function.Predicate;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.ui.workflowcoach.data.NodeTripleProviderFactory;
-import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -69,17 +69,18 @@ public class OpenWorkflowCoachPreferencePageBrowserFunction extends BrowserFunct
 
     private static final String PREFERENCE_PAGE_ID = "org.knime.workbench.workflowcoach";
 
-    private final AppStateProvider m_appStateProvider;
+    private final AppStateUpdater m_appStateUpdater;
 
     /**
      * Opens the workflow coach preference pages
      *
      * @param browser
-     * @param appStateProvider
+     * @param appStateUpdater
      */
-    public OpenWorkflowCoachPreferencePageBrowserFunction(final Browser browser, final AppStateProvider appStateProvider) {
+    public OpenWorkflowCoachPreferencePageBrowserFunction(final Browser browser,
+        final AppStateUpdater appStateUpdater) {
         super(browser, FUNCTION_NAME);
-        m_appStateProvider = appStateProvider;
+        m_appStateUpdater = appStateUpdater;
     }
 
     @Override
@@ -90,7 +91,7 @@ public class OpenWorkflowCoachPreferencePageBrowserFunction extends BrowserFunct
             .toArray(String[]::new);
         var dialog = PreferencesUtil.createPreferenceDialogOn(null, PREFERENCE_PAGE_ID, displayedIds, null);
         dialog.open();
-        m_appStateProvider.updateAppState(); // Since changing the node recommendation settings changes the application state
+        m_appStateUpdater.updateAppState(); // Since changing the node recommendation settings changes the application state
         return null;
     }
 

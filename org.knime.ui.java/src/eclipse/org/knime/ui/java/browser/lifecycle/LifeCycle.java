@@ -50,13 +50,10 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.ui.java.util.AppStatePersistor;
 
 import com.equo.chromium.swt.Browser;
 
@@ -133,14 +130,12 @@ public final class LifeCycle {
     /**
      * Runs the init-state-transition.
      *
-     * @param appStateSupplier can be {@code null} - in that case the app state is loaded from a file (see
-     *            {@link AppStatePersistor#loadAppState()}
      * @param browser required to initialize browser functions
      * @param checkForUpdates whether to check for updates on initialization
      */
-    public void init(final Supplier<AppState> appStateSupplier, final Browser browser, final boolean checkForUpdates) {
-        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(appStateSupplier, browser, checkForUpdates),
-            null, StateTransition.CREATE, StateTransition.SUSPEND);
+    public void init(final Browser browser, final boolean checkForUpdates) {
+        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(browser, checkForUpdates), null,
+            StateTransition.CREATE, StateTransition.SUSPEND);
     }
 
     /**
@@ -183,7 +178,8 @@ public final class LifeCycle {
      * Runs the shutdown-state-transition.
      */
     public void shutdown() {
-        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), null, StateTransition.SUSPEND);
+        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), null, StateTransition.SUSPEND,
+            StateTransition.NULL);
     }
 
     private void doStateTransition(final StateTransition nextStateTransition, final Runnable runStateTransition,

@@ -54,21 +54,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.IntSupplier;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.gateway.api.util.ExtPointUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.InvalidRequestException;
 import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
-import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
-import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.SpaceProvider;
 import org.knime.gateway.impl.webui.SpaceProviders;
+import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
@@ -96,7 +93,6 @@ import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SetProjectActiveAndEnsureItsLoadedBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -121,20 +117,15 @@ final class Init {
         //
     }
 
-    static LifeCycleState run(final Supplier<AppState> appStateSupplier, final Browser browser,
-        final boolean checkForUpdates) {
-        if (appStateSupplier == null) {
-            AppStatePersistor.loadAppState();
-        }
+    static LifeCycleState run(final Browser browser, final boolean checkForUpdates) {
 
         // Create and set default service dependencies
         var eventConsumer = createEventConsumer();
-        var appStateProvider = new AppStateProvider(
-            appStateSupplier == null ? AppStateDerivedFromWorkflowProjectManager::new : appStateSupplier);
+        var appStateUpdater = new AppStateUpdater();
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var spaceProviders = createSpaceProviders();
-        DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer, spaceProviders,
-            updateStateProvider);
+        DefaultServicesUtil.setDefaultServiceDependencies(appStateUpdater, eventConsumer, spaceProviders,
+            updateStateProvider, createPreferencesProvider());
 
         if (updateStateProvider != null) {
             // Check for updates and notify UI
@@ -148,12 +139,12 @@ final class Init {
 
         // Initialize browser functions and set CEF browser URL
         var removeAndDisposeAllBrowserFunctions =
-            initBrowserFunctions(browser, appStateProvider, spaceProviders, updateStateProvider, eventConsumer);
+            initBrowserFunctions(browser, appStateUpdater, spaceProviders, updateStateProvider, eventConsumer);
 
         // Update the app state when the node repository filter changes
         KnimeUIPreferences.setNodeRepoFilterChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                appStateProvider.updateAppState();
+                appStateUpdater.updateAppState();
             }
         });
 
@@ -193,6 +184,21 @@ final class Init {
         return () -> res;
     }
 
+    private static PreferencesProvider createPreferencesProvider() {
+        return new PreferencesProvider() {
+
+            @Override
+            public boolean isNodeRepoFilterEnabled() {
+                return !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
+            }
+
+            @Override
+            public boolean hasNodeRecommendationsEnabled() {
+                return NodeRecommendationManager.isEnabled();
+            }
+        };
+    }
+
     static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
         return ExtPointUtil.collectExecutableExtensions(SPACE_PROVIDERS_EXTENSION_ID, "class");
     }
@@ -229,32 +235,32 @@ final class Init {
     /**
      * Initializes and registers the {@link BrowserFunction BrowserFunctions} with the browser.
      *
-     * @param appStateProvider Required to initialize some browser functions
+     * @param appStateUpdater Required to initialize some browser functions
      * @param spaceProviders Required to initialize some browser functions
      * @param updateStateProvider Required to initialize {@link EmitUpdateAvailableEventForTestingBrowserFunction}
      * @param eventConsumer
      * @return a runnable that removes and disposes all browser functions
      */
-    private static Runnable initBrowserFunctions(final Browser browser, final AppStateProvider appStateProvider,
+    private static Runnable initBrowserFunctions(final Browser browser, final AppStateUpdater appStateUpdater,
         final SpaceProviders spaceProviders, final UpdateStateProvider updateStateProvider,
         final EventConsumer eventConsumer) {
         var functions = new ArrayList<BrowserFunction>();
-        functions.add(new SwitchToJavaUIBrowserFunction(browser, eventConsumer, appStateProvider));
+        functions.add(new SwitchToJavaUIBrowserFunction(browser, eventConsumer));
         functions.add(new OpenNodeViewBrowserFunction(browser));
         functions.add(new OpenNodeDialogBrowserFunction(browser));
         functions.add(new OpenLegacyFlowVariableDialogBrowserFunction(browser));
         functions.add(new SaveWorkflowBrowserFunction(browser));
-        functions.add(new OpenWorkflowBrowserFunction(browser, appStateProvider));
-        functions.add(new CloseWorkflowBrowserFunction(browser, appStateProvider, eventConsumer));
+        functions.add(new OpenWorkflowBrowserFunction(browser, appStateUpdater));
+        functions.add(new CloseWorkflowBrowserFunction(browser, appStateUpdater, eventConsumer));
         functions.add(new OpenLayoutEditorBrowserFunction(browser));
-        functions.add(new OpenWorkflowCoachPreferencePageBrowserFunction(browser, appStateProvider));
+        functions.add(new OpenWorkflowCoachPreferencePageBrowserFunction(browser, appStateUpdater));
         functions.add(new OpenAboutDialogBrowserFunction(browser));
         functions.add(new OpenInstallExtensionsDialogBrowserFunction(browser));
         functions.add(new OpenUpdateDialogBrowserFunction(browser));
         functions.add(new GetSpaceProvidersBrowserFunction(browser, spaceProviders));
         functions.add(new ConnectSpaceProviderBrowserFunction(browser, spaceProviders));
         functions.add(new DisconnectSpaceProviderBrowserFunction(browser, spaceProviders));
-        functions.add(new SaveAndCloseWorkflowsBrowserFunction(browser, appStateProvider));
+        functions.add(new SaveAndCloseWorkflowsBrowserFunction(browser, appStateUpdater));
         functions.add(new SetProjectActiveAndEnsureItsLoadedBrowserFunction(browser));
         if (SharedConstants.isRemoteDebuggingPortSet()) {
             functions.add(new InitAppForTestingBrowserFunction(browser));
@@ -264,49 +270,4 @@ final class Init {
         return () -> functions.stream().forEach(fct -> fct.dispose(true));
     }
 
-    private static class AppStateDerivedFromWorkflowProjectManager implements AppState {
-
-        private final List<OpenedWorkflow> m_openedWorkflows;
-
-        private final boolean m_nodeRepoFilterEnabled;
-
-        AppStateDerivedFromWorkflowProjectManager() {
-            var wpm = WorkflowProjectManager.getInstance();
-            m_openedWorkflows = wpm.getWorkflowProjectsIds().stream()
-                .map(id -> toOpenedWorkflow(wpm.getWorkflowProject(id).orElseThrow(), wpm.isActiveWorkflowProject(id)))
-                .collect(Collectors.toList());
-            m_nodeRepoFilterEnabled =
-                !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
-        }
-
-        @Override
-        public List<OpenedWorkflow> getOpenedWorkflows() {
-            return m_openedWorkflows;
-        }
-
-        private static AppState.OpenedWorkflow toOpenedWorkflow(final WorkflowProject wp, final boolean isVisible) {
-            return new AppState.OpenedWorkflow() {
-
-                @Override
-                public boolean isVisible() {
-                    return isVisible;
-                }
-
-                @Override
-                public String getWorkflowId() {
-                    return NodeIDEnt.getRootID().toString();
-                }
-
-                @Override
-                public String getProjectId() {
-                    return wp.getID();
-                }
-            };
-        }
-
-        @Override
-        public boolean isNodeRepoFilterEnabled() {
-            return m_nodeRepoFilterEnabled;
-        }
-    }
 }
