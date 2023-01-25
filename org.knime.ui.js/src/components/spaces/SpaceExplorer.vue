@@ -59,7 +59,7 @@ export default {
             }));
         },
 
-        canCreateWorkflow() {
+        isLocal() {
             return this.spaceId === 'local';
         },
 
@@ -190,7 +190,7 @@ export default {
       />
 
       <div
-        v-if="mode === 'mini'"
+        v-if="isLocal && mode === 'mini'"
         class="buttons"
       >
         <ToolbarButton title="Import workflow">
@@ -200,7 +200,6 @@ export default {
           <AddFileIcon />
         </ToolbarButton>
         <ToolbarButton
-          v-if="canCreateWorkflow"
           primary
           class="create-workflow-mini-btn"
           :title="createWorkflowButtonTitle"
@@ -212,7 +211,7 @@ export default {
     </div>
 
     <PlusButton
-      v-if="mode === 'normal' && canCreateWorkflow"
+      v-if="isLocal && mode === 'normal'"
       :title="createWorkflowButtonTitle"
       primary
       class="create-workflow-btn"

@@ -86,7 +86,10 @@ export default {
       <div class="grid-container">
         <div class="grid-item-12">
           <div class="toolbar">
-            <div class="toolbar-buttons">
+            <div
+              v-if="activeSpaceInfo?.local"
+              class="toolbar-buttons"
+            >
               <Button
                 with-border
                 compact
