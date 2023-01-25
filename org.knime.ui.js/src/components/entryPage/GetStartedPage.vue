@@ -8,11 +8,13 @@ import Card from '@/components/common/Card.vue';
 import CardHeader from '@/components/common/CardHeader.vue';
 import CardContent from '@/components/common/CardContent.vue';
 import { mapState } from 'vuex';
+import SpaceSelectionPage from '@/components/spaces/SpaceSelectionPage.vue';
 
 const MAX_NUM_OF_EXAMPLES = 3;
 
 export default {
     components: {
+        SpaceSelectionPage,
         ArrowRightIcon,
         GridOutbreaker,
         Card,
@@ -26,6 +28,7 @@ export default {
     },
     computed: {
         ...mapState('application', ['exampleProjects']),
+
         displayedExampleProjects() {
             return this.exampleProjects.slice(0, MAX_NUM_OF_EXAMPLES);
         }
@@ -84,6 +87,7 @@ export default {
         </a>
       </div>
     </section>
+    <SpaceSelectionPage />
   </GridOutbreaker>
 </template>
 
@@ -96,9 +100,6 @@ section.examples {
 
   & a {
     text-decoration: none;
-  }
-  a:hover {
-    color: var(--knime-masala);
   }
 
   & .cards {
