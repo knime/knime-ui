@@ -229,9 +229,13 @@ export const actions = {
         }
     },
 
-    openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router }) {
-        const { spaceId } = state.activeSpace;
-        const { id: spaceProviderId } = state.activeSpaceProvider;
+    openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router, spaceId = null, spaceProviderId = null }) {
+        if (spaceId === null) {
+            spaceId = state.activeSpace.spaceId;
+        }
+        if (spaceProviderId === null) {
+            spaceProviderId = state.activeSpaceProvider.id;
+        }
         const { openProjects } = rootState.application;
         const foundOpenProject = openProjects.find(
             project => project.origin.providerId === spaceProviderId &&

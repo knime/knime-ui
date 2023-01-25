@@ -3,11 +3,13 @@ import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 
 import ArrowRightIcon from 'webapps-common/ui/assets/img/icons/arrow-right.svg';
 
-import { APP_ROUTES } from '@/router';
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
 import Card from '@/components/common/Card.vue';
 import CardHeader from '@/components/common/CardHeader.vue';
 import CardContent from '@/components/common/CardContent.vue';
+import { mapState } from 'vuex';
+
+const MAX_NUM_OF_EXAMPLES = 3;
 
 export default {
     components: {
@@ -17,17 +19,27 @@ export default {
         CardHeader,
         CardContent
     },
-
     data() {
         return {
             knimeColors
         };
     },
-
-    beforeMount() {
-        // TODO: remove when Get Started page is displayed
-        // as this overules the redirects to the Get Started page and uses the selection page instead
-        this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
+    computed: {
+        ...mapState('application', ['exampleProjects']),
+        displayedExampleProjects() {
+            return this.exampleProjects.slice(0, MAX_NUM_OF_EXAMPLES);
+        }
+    },
+    methods: {
+        onExampleClick({ origin: { spaceId, providerId: spaceProviderId, itemId: workflowItemId } }) {
+            const { $router } = this.$router;
+            this.$store.dispatch('spaces/openWorkflow', {
+                workflowItemId,
+                spaceId,
+                spaceProviderId,
+                $router
+            });
+        }
     }
 };
 </script>
@@ -40,48 +52,25 @@ export default {
           <h2>Examples</h2>
         </div>
       </div>
-              
+
       <div class="grid-container cards">
-        <div class="grid-item-4">
+        <div
+          v-for="(example, index) in displayedExampleProjects"
+          :key="`example-${index}`"
+          class="grid-item-4"
+        >
           <Card
-            link
-            href="/space-browsing"
+            @click="onExampleClick(example)"
           >
-            <CardHeader>Read excel file</CardHeader>
+            <CardHeader>{{ example.name }}</CardHeader>
 
-            <CardContent>
+            <CardContent
+              padded
+            >
               <img
                 class="card-img"
-                src="@/assets/card-img-1.png"
-                alt=""
-              >
-            </CardContent>
-          </Card>
-        </div>
-
-        <div class="grid-item-4">
-          <Card>
-            <CardHeader>How to do v-lookup</CardHeader>
-
-            <CardContent>
-              <img
-                class="card-img"
-                src="@/assets/card-img-2.png"
-                alt=""
-              >
-            </CardContent>
-          </Card>
-        </div>
-
-        <div class="grid-item-4">
-          <Card>
-            <CardHeader>Merge excel files</CardHeader>
-
-            <CardContent>
-              <img
-                class="card-img"
-                src="@/assets/card-img-3.png"
-                alt=""
+                :src="`data:image/svg+xml;base64,${example.svg}`"
+                :alt="`Preview image of ${example.name}`"
               >
             </CardContent>
           </Card>
@@ -90,7 +79,9 @@ export default {
 
       <div class="grid-container more-workflows">
         <ArrowRightIcon />
-        <span>more workflows</span>
+        <a href="https://knime.com/spreadsheet-edition-collection?src=knimeappmodernui">
+          Find more resources for spreadsheet automation on the KNIME Community Hub
+        </a>
       </div>
     </section>
   </GridOutbreaker>
@@ -103,9 +94,22 @@ section.examples {
   background: var(--knime-silver-sand-semi);
   padding-bottom: 20px;
 
+  & a {
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--knime-masala);
+  }
+
   & .cards {
     & [class*="grid-item-"]:not(:first-child, :last-child) {
       margin: 0 15px;
+    }
+
+    & .card-img {
+      width: 100%;
+      max-height: 140px;
+      object-fit: contain;
     }
   }
 

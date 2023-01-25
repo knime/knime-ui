@@ -1,5 +1,5 @@
 <script>
-// import RocketIcon from 'webapps-common/ui/assets/img/icons/rocket.svg';
+import RocketIcon from 'webapps-common/ui/assets/img/icons/rocket.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 
 import { APP_ROUTES, getPathFromRouteName } from '@/router';
@@ -17,12 +17,11 @@ export default {
     data() {
         return {
             sidebarItems: [
-                // TODO: bring back when Get Started page is displayed
-                // {
-                //     route: getPathFromRouteName(APP_ROUTES.EntryPage.GetStartedPage),
-                //     text: 'Get started',
-                //     icon: RocketIcon
-                // },
+                {
+                    route: getPathFromRouteName(APP_ROUTES.EntryPage.GetStartedPage),
+                    text: 'Get started',
+                    icon: RocketIcon
+                },
                 {
                     route: getPathFromRouteName(APP_ROUTES.EntryPage.SpaceSelectionPage),
                     text: 'Spaces',
@@ -51,7 +50,7 @@ export default {
       :left-offset="3"
       :title="pageTitle"
     />
-    
+
     <section class="main-content-wrapper">
       <div class="grid-container">
         <div class="grid-item-2 sidebar">
