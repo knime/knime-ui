@@ -1,11 +1,15 @@
 image: node:18.8
 
+options:
+  max-time: 10
+
 definitions: 
   steps:
     - step: &lint-test-build
         name: Lint, tests and build
         caches:
           - node
+        size: 2x # more memory needed for unit tests
         script:
           - cd org.knime.ui.js
           - git submodule update --init --recursive
@@ -22,9 +26,6 @@ pipelines:
   pull-requests:
     '**':
       - step: *lint-test-build
- 
   branches:
-    master:
-      - step: *lint-test-build
-    vue3:
+    '{master,vue3,releases/*}':
       - step: *lint-test-build
