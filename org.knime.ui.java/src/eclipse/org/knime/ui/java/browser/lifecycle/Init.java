@@ -63,10 +63,12 @@ import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.ExampleProjects;
 import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
+import org.knime.gateway.impl.webui.spaces.LocalWorkspace;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.json.util.ObjectMapperUtil;
@@ -125,7 +127,7 @@ final class Init {
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var spaceProviders = createSpaceProviders();
         DefaultServicesUtil.setDefaultServiceDependencies(appStateUpdater, eventConsumer, spaceProviders,
-            updateStateProvider, createPreferencesProvider());
+            updateStateProvider, createPreferencesProvider(), createExampleProjects());
 
         if (updateStateProvider != null) {
             // Check for updates and notify UI
@@ -198,6 +200,25 @@ final class Init {
             }
         };
     }
+
+    private static ExampleProjects createExampleProjects() {
+       return new ExampleProjects() {
+
+        @Override
+        public LocalWorkspace getLocalWorkspace() {
+            return LocalSpaceUtil.getLocalWorkspace();
+        }
+
+           @Override
+           public List<String> getRelativeExampleProjectPaths() {
+               return List.of( //
+                   "Example Workflows/Basic Examples/Building a Simple Classifier", //
+                   "Example Workflows/Basic Examples/Data Blending", //
+                   "Example Workflows/Basic Examples/Simple Reporting Example" //
+               );
+           }
+       };
+   }
 
     static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
         return ExtPointUtil.collectExecutableExtensions(SPACE_PROVIDERS_EXTENSION_ID, "class");
