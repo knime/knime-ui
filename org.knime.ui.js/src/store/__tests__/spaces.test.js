@@ -13,6 +13,7 @@ import { fetchWorkflowGroupContent,
 
 import * as spacesConfig from '../spaces';
 import { APP_ROUTES } from '@/router';
+import { deleteItems } from '@/api';
 
 jest.mock('@api');
 
@@ -69,7 +70,9 @@ describe('spaces store', () => {
         fetchAllSpaceProviders.mockReturnValue(mockFetchAllProvidersResponse);
         fetchWorkflowGroupContent.mockResolvedValue(mockFetchWorkflowGroupResponse);
 
-        return { store };
+        const dispatchSpy = jest.spyOn(store, 'dispatch');
+
+        return { store, dispatchSpy };
     };
 
     afterEach(() => {
@@ -434,6 +437,31 @@ describe('spaces store', () => {
 
                 store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
                 expect(importWorkflows).toHaveBeenCalledWith({ itemId: 'level2' });
+            });
+        });
+
+        describe('deleteItems', () => {
+            it('should delete items', async () => {
+                const itemIds = ['item0', 'item1'];
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local'
+                };
+
+                await store.dispatch('spaces/deleteItems', { itemIds });
+                expect(deleteItems).toHaveBeenCalledWith({ spaceId: 'local', spaceProviderId: 'local', itemIds });
+            });
+
+            it('should re-fetch workflow group content', async () => {
+                const itemIds = ['item0', 'item1'];
+                const { store, dispatchSpy } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: { path: [{ id: 'foo' }, { id: 'bar' }] }
+                };
+
+                await store.dispatch('spaces/deleteItems', { itemIds });
+                expect(dispatchSpy).toHaveBeenCalledWith('spaces/fetchWorkflowGroupContent', { itemId: 'bar' });
             });
         });
     });

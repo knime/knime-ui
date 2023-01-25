@@ -12,9 +12,18 @@ import ToolbarButton from '@/components/common/ToolbarButton.vue';
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer/FileExplorer.vue';
 
+import ITEM_TYPES from './itemTypes';
+
 const DISPLAY_LOADING_DELAY = 100;
 const DISPLAY_LOADING_ICON_DELAY = 350;
 const DEFAULT_LOADING_INDICATOR_HEIGHT = 76; // px
+const ITEM_TYPES_TEXTS = {
+    [ITEM_TYPES.WorkflowGroup]: 'workflow group',
+    [ITEM_TYPES.Workflow]: 'workflow',
+    [ITEM_TYPES.Component]: 'component',
+    [ITEM_TYPES.Metanode]: 'metanode',
+    [ITEM_TYPES.Data]: 'data file'
+};
 
 export default {
     components: {
@@ -55,7 +64,8 @@ export default {
         fileExplorerItems() {
             return this.activeWorkflowGroup.items.map(item => ({
                 ...item,
-                displayOpenIndicator: this.openedWorkflowItems.includes(item.id)
+                displayOpenIndicator: this.openedWorkflowItems.includes(item.id),
+                canBeDeleted: !this.openedWorkflowItems.includes(item.id)
             }));
         },
 
@@ -174,6 +184,23 @@ export default {
         onBreadcrumbClick({ id }) {
             this.fetchWorkflowGroupContent(id);
             this.$emit('item-changed', id);
+        },
+
+        onDeleteItems({ items }) {
+            let message;
+            if (items.length === 1) {
+                const item = items[0];
+                const type = ITEM_TYPES_TEXTS[item.type];
+                message = `Do you want to delete the ${type} ${item.name}?`;
+            } else {
+                // TODO(NXT-1471) list the file types and names
+                message = `Do you want to delete the selected files?`;
+            }
+            // TODO(NXT-1472) use a modal instead of a native prompt
+            const result = window.prompt(message);
+            if (result !== null) {
+                this.$store.dispatch('spaces/deleteItems', { itemIds: items.map(i => i.id) });
+            }
         }
     }
 };
@@ -234,6 +261,7 @@ export default {
       :full-path="fullPath"
       @change-directory="onChangeDirectory"
       @open-file="onOpenFile"
+      @delete-items="onDeleteItems"
     />
 
     <div

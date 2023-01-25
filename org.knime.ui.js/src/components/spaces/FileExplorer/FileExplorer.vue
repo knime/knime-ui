@@ -1,6 +1,7 @@
 <script>
 import { mixin as clickaway } from 'vue-clickaway2';
 
+import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
 import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
@@ -11,17 +12,11 @@ import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
-
-const ITEM_TYPES = {
-    WorkflowGroup: 'WorkflowGroup',
-    Workflow: 'Workflow',
-    Component: 'Component',
-    Metanode: 'WorkflowTemplate',
-    Data: 'Data'
-};
+import ITEM_TYPES from '../itemTypes';
 
 export default {
     components: {
+        SubMenu,
         MenuOptionsIcon,
         WorkflowGroupIcon,
         WorkflowIcon,
@@ -220,6 +215,22 @@ export default {
                 // except for the "Go back" item, all others are present within a v-for
                 // so the refs are returned in a collection, but we only need the 1st item
                 : this.$refs[`item--${index}`][0];
+        },
+
+        getMenuOptions(item) {
+            return [{
+                id: 'delete',
+                text: 'Delete',
+                ...item.canBeDeleted
+                    ? {}
+                    : { title: 'Open workflows cannot be deleted', disabled: true }
+            }];
+        },
+
+        onMenuClick(option, item) {
+            if (option === 'delete') {
+                this.$emit('delete-items', { items: [item] });
+            }
         }
     }
 };
@@ -298,10 +309,19 @@ export default {
           {{ item.name }}
         </td>
 
-        <!-- <td class="item-option"> -->
-        <!-- TODO: add later -->
-        <!-- <MenuOptionsIcon /> -->
-        <!-- </td> -->
+        <!-- NB: Stop double clicking from propagating to the row -->
+        <td
+          class="item-option"
+          @dblclick.stop=""
+        >
+          <SubMenu
+            button-title="Options"
+            :items="getMenuOptions(item)"
+            @item-click="(e, option) => onMenuClick(option.id, item)"
+          >
+            <MenuOptionsIcon />
+          </SubMenu>
+        </td>
       </tr>
 
       <tr
@@ -432,6 +452,38 @@ tbody.mini {
 
   & .item-option {
     width: 34px;
+    pointer-events: auto;
+    padding: 0;
+
+    & .submenu-toggle.active > svg {
+      stroke: var(--theme-button-function-foreground-color-active);
+    }
+
+    & >>> .submenu-toggle {
+      border-radius: 0;
+    }
+
+    /*
+     * TODO
+     * The .function-button does not fill the .item-option.
+     * Therefore the color of the hover and active state of the button
+     * do not fill all the space which looks wrong.
+     *
+     * The following colors make the problem easier visible
+     */
+    background-color: #f00;
+
+    & >>> .submenu-toggle {
+      background-color: #0f0;
+    }
+
+    & >>> .submenu-toggle:hover {
+      background-color: #ff0;
+    }
+
+    & >>> .submenu-toggle.active {
+      background-color: #00f;
+    }
   }
 }
 

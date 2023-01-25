@@ -103,7 +103,9 @@ describe('SpaceExplorer.vue', () => {
 
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
         expect(wrapper.findComponent(FileExplorer).props('items')).toEqual(
-            fetchWorkflowGroupContentResponse.items.map(item => ({ ...item, displayOpenIndicator: false }))
+            fetchWorkflowGroupContentResponse.items.map(item => ({
+                ...item, displayOpenIndicator: false, canBeDeleted: true
+            }))
         );
         expect(wrapper.findComponent(FileExplorer).props('isRootFolder')).toBe(true);
     });
@@ -219,6 +221,34 @@ describe('SpaceExplorer.vue', () => {
             workflowItemId: 'dummy',
             $router: mockRouter
         });
+    });
+
+    it('should delete item', async () => {
+        const items = [{
+            type: 'Workflow',
+            name: 'WORKFLOW_NAME',
+            id: 'item0'
+        }];
+        jest.spyOn(window, 'prompt').mockImplementation(() => '');
+        const { wrapper, dispatchSpy } = await doMountAndLoad();
+
+        wrapper.findComponent(FileExplorer).vm.$emit('delete-items', { items });
+        expect(window.prompt).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
+    });
+
+    it('should not delete item on negative response', async () => {
+        const items = [{
+            type: 'Workflow',
+            name: 'WORKFLOW_NAME',
+            id: 'item0'
+        }];
+        jest.spyOn(window, 'prompt').mockImplementation(() => null);
+        const { wrapper, dispatchSpy } = await doMountAndLoad();
+
+        wrapper.findComponent(FileExplorer).vm.$emit('delete-items', { items });
+        expect(window.prompt).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
+        expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
 
     it('should handle create workflow for "normal" mode', async () => {
