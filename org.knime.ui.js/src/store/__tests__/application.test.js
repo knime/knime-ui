@@ -97,6 +97,7 @@ describe('application store', () => {
             suggestedPortTypes: [],
             savedCanvasStates: {},
             isLoadingWorkflow: false,
+            exampleProjects: [],
             hasClipboardSupport: false,
             isBusy: false,
             contextMenu: { isOpen: false, position: null },
