@@ -50,13 +50,13 @@ import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.gateway.impl.webui.SpaceProviders;
 import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 
 /**
  * Utility methods to manage Gateway services

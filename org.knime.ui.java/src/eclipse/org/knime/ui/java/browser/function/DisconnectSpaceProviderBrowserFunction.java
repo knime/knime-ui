@@ -48,8 +48,8 @@
  */
 package org.knime.ui.java.browser.function;
 
-import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;

@@ -69,8 +69,8 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
-import org.knime.gateway.impl.webui.Space;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
+import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 

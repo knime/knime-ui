@@ -50,7 +50,7 @@ package org.knime.ui.java.browser.function;
 
 import static org.knime.ui.java.browser.function.ObjectMapperForBrowserFunction.MAPPER;
 
-import org.knime.gateway.impl.webui.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
