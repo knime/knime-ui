@@ -54,9 +54,9 @@ import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.webui.LocalWorkspace;
-import org.knime.gateway.impl.webui.Space;
-import org.knime.gateway.impl.webui.SpaceProvider;
+import org.knime.gateway.impl.webui.spaces.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 
 /**
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany

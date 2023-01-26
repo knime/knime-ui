@@ -50,13 +50,14 @@ import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.gateway.impl.webui.SpaceProviders;
+import org.knime.gateway.impl.webui.ExampleProjects;
 import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 
 /**
  * Utility methods to manage Gateway services
@@ -79,10 +80,12 @@ public final class DefaultServicesUtil {
      * @param spaceProviders The space providers
      * @param updateStateProvider The update state provider
      * @param preferencesProvider
+     * @param exampleProjects
      */
     public static void setDefaultServiceDependencies(final AppStateUpdater appStateUpdater,
         final EventConsumer eventConsumer, final SpaceProviders spaceProviders,
-        final UpdateStateProvider updateStateProvider, final PreferencesProvider preferencesProvider) {
+        final UpdateStateProvider updateStateProvider, final PreferencesProvider preferencesProvider,
+        final ExampleProjects exampleProjects) {
         if (!ServiceInstances.areServicesInitialized()) {
             ServiceDependencies.setServiceDependency(AppStateUpdater.class, appStateUpdater);
             ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
@@ -93,6 +96,7 @@ public final class DefaultServicesUtil {
             ServiceDependencies.setServiceDependency(SpaceProviders.class, spaceProviders);
             ServiceDependencies.setServiceDependency(UpdateStateProvider.class, updateStateProvider);
             ServiceDependencies.setServiceDependency(PreferencesProvider.class, preferencesProvider);
+            ServiceDependencies.setServiceDependency(ExampleProjects.class, exampleProjects);
         } else {
             throw new IllegalStateException(
                 "Some services are already initialized. Service dependencies can't be set anymore. "

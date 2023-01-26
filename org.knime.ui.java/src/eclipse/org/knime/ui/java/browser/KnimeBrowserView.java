@@ -128,8 +128,8 @@ public class KnimeBrowserView implements ISaveablePart2 {
         // `isRendered` is heuristically regarded to be the point in the life cycle at which the browser view is
         // 	ready for interaction.
         boolean isRendered = part.getObject() instanceof KnimeBrowserView;
-        if (isBrowserView && isRendered && viewInitializer != null) {
-            synchronized (this) {
+        synchronized (this) {
+            if (isBrowserView && isRendered && viewInitializer != null) {
                 viewInitializer.run();
                 viewInitializer = null; // NOSONAR because this is technically a singleton
             }

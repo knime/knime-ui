@@ -75,7 +75,7 @@ final class SaveState {
             workflowsSaved = true;
         } else {
             saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
-            workflowsSaved = saveAndCloseAllWorkflows.getAsInt() > 0;
+            workflowsSaved = saveAndCloseAllWorkflows.getAsInt() == 1;
         }
 
         return new LifeCycleState() {
