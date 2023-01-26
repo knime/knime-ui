@@ -204,12 +204,14 @@ export default {
             ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { command: 'copy' }),
         condition:
             ({ $store }) => {
+                const kanvas = $store.state.canvas.getScrollContainerElement();
                 const selectedNodes = Object.keys($store.getters['selection/selectedNodes']);
+                const textSelectionIsEmpty = window?.getSelection().toString() === '';
+                const kanvasIsActiveElement = document.activeElement === kanvas;
                 return (
                     selectedNodes.length !== 0 &&
                     $store.state.application.hasClipboardSupport &&
-                    // no text is selected
-                    window?.getSelection().toString() === ''
+                    (textSelectionIsEmpty || kanvasIsActiveElement)
                 );
             }
     },
