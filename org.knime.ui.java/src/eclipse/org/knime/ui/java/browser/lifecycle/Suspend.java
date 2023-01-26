@@ -63,14 +63,14 @@ final class Suspend {
         //
     }
 
-    static LifeCycleState run(final LifeCycleState state) {
+    static LifeCycleStateInternal run(final LifeCycleStateInternal state) {
         var removeAndDisposeAllBrowserFunctions = state.removeAndDisposeAllBrowserFunctions();
         if (removeAndDisposeAllBrowserFunctions != null) {
             removeAndDisposeAllBrowserFunctions.run();
         }
         DefaultServicesUtil.disposeDefaultServices();
         KnimeUIPreferences.setNodeRepoFilterChangeListener(null);
-        return new LifeCycleState() {
+        return new LifeCycleStateInternal() {
 
             @Override
             public String serializedAppState() {

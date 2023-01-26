@@ -44,22 +44,15 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 26, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.lifecycle;
 
 /**
- * A state passed to and returned by lifecycle state transitions in order to exchange information.
- *
+ * Thrown when a state transition is being aborted.
+ * 
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public interface LifeCycleState {
-
-    /**
-     * @return whether workflows have been saved successfully. Manipulated in the {@link SaveState}-phase.
-     */
-    default boolean workflowsSaved() {
-        return false;
-    }
-
+public class StateTransitionAbortedException extends Exception {
+    //
 }

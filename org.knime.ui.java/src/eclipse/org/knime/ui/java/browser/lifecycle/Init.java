@@ -119,7 +119,7 @@ final class Init {
         //
     }
 
-    static LifeCycleState run(final Browser browser, final boolean checkForUpdates) {
+    static LifeCycleStateInternal run(final Browser browser, final boolean checkForUpdates) {
 
         // Create and set default service dependencies
         var eventConsumer = createEventConsumer();
@@ -150,7 +150,7 @@ final class Init {
             }
         });
 
-        return new LifeCycleState() {
+        return new LifeCycleStateInternal() {
 
             @Override
             public IntSupplier saveAndCloseAllWorkflows() {

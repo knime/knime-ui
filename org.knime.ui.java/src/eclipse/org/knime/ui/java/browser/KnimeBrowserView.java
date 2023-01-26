@@ -186,7 +186,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
     @Override
     public boolean isDirty() {
-        return LifeCycle.get().isBeforeStateTransition(StateTransition.SUSPEND);
+        return LifeCycle.get().isBeforeStateTransition(StateTransition.SAVE_STATE);
     }
 
     @Override
@@ -196,7 +196,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
     @Override
     public boolean isSaveOnCloseNeeded() {
-        return true;
+        return LifeCycle.get().isNextStateTransition(StateTransition.SAVE_STATE);
     }
 
     @Override
@@ -205,8 +205,10 @@ public class KnimeBrowserView implements ISaveablePart2 {
         // And before it's disposed, we need, e.g., to ask the user to save (and save) all the workflows (or abort
         // the shutdown, if the user cancels).
         LifeCycle.get().saveState();
-        // cancel if we didn't successfully transition to the next phase
-        return LifeCycle.get().isLastStateTransition(StateTransition.SAVE_STATE) ? YES : CANCEL;
+        // cancel if the workflows haven't been saved (yet). Either because the saving has been cancelled
+        // or the workflows need to be saved (through a respective event to the FE,
+        // see SaveAndCloseWorkflowsBrowserFunction)
+        return LifeCycle.get().getState().workflowsSaved() ? YES : CANCEL;
     }
 
 }

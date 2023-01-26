@@ -64,12 +64,11 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -136,6 +135,7 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
                 SwitchToJavaUIBrowserFunction.switchToJavaUI();
                 break;
             case SHUTDOWN:
+                LifeCycle.get().suspend();
                 PlatformUI.getWorkbench().close();
                 break;
             default:
@@ -153,7 +153,7 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
      * @param eventConsumer
      * @param action
      * @return {@code 0} if the closing process has been cancelled or failed; {@code 1} if the workflows have been
-     *         closed successfully; {@code 2} if the workflows require to be saved (in which case, a event is triggered
+     *         closed successfully; {@code 2} if the workflows require to be saved (in which case, an event is triggered
      *         to save and close the workflows)
      */
     public static int saveAndCloseWorkflowsInteractively(final Set<String> projectIds,
@@ -195,7 +195,7 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
         for (var i = 0; i < projectIds.length; i++) {
             var projectId = projectIds[i];
             var projectSVG = svgs[i];
-            var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
+            var projectWfm = WorkflowProjectManager.getInstance().getCachedWorkflow(projectId).orElse(null);
             var success = saveAndCloseWorkflow(monitor, projectId, projectSVG, projectWfm);
             if (!success) {
                 firstFailure.compareAndExchange(null, projectId);
@@ -206,7 +206,9 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
     private static boolean saveAndCloseWorkflow(final IProgressMonitor monitor, final String projectId,
         final String projectSVG, final WorkflowManager projectWfm) {
         monitor.subTask("Saving '" + projectId + "'");
-        SaveWorkflowBrowserFunction.saveWorkflow(monitor, projectWfm, projectSVG);
+        if (projectWfm != null) { // workflow not loaded -> nothing to save
+            SaveWorkflowBrowserFunction.saveWorkflow(monitor, projectWfm, projectSVG);
+        }
         var success = closeWorkflow(projectId, projectWfm);
         monitor.worked(1);
         return success;

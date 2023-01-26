@@ -44,22 +44,42 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 26, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.lifecycle;
 
+import java.util.function.IntSupplier;
+
+import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
+
 /**
- * A state passed to and returned by lifecycle state transitions in order to exchange information.
+ * Life-cycle-state only available to the state-transitions (within this package).
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public interface LifeCycleState {
+public interface LifeCycleStateInternal extends LifeCycleState {
 
     /**
-     * @return whether workflows have been saved successfully. Manipulated in the {@link SaveState}-phase.
+     * @return the logic which saves and closes all workflows; see
+     *         {@link SaveAndCloseWorkflowsBrowserFunction#saveAndCloseWorkflowsInteractively(java.util.Set, org.knime.gateway.impl.service.util.EventConsumer, org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction)}
+     *         for documentation on the result
      */
-    default boolean workflowsSaved() {
-        return false;
+    default IntSupplier saveAndCloseAllWorkflows() {
+        return null;
+    }
+
+    /**
+     * @return the logic which removes and disposes all browser functions
+     */
+    default Runnable removeAndDisposeAllBrowserFunctions() {
+        return null;
+    }
+
+    /**
+     * @return the app state serialized into a string
+     */
+    default String serializedAppState() {
+        return null;
     }
 
 }
