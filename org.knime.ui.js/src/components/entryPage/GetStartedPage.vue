@@ -81,9 +81,8 @@ export default {
       </div>
 
       <div class="grid-container more-workflows">
-        <LinkExternal />
         <a href="https://knime.com/spreadsheet-edition-collection?src=knimeappmodernui">
-          Find more resources for spreadsheet automation on the KNIME Community Hub
+          <LinkExternal />Find more resources for spreadsheet automation on the KNIME Community Hub
         </a>
       </div>
     </section>
@@ -100,6 +99,20 @@ section.examples {
 
   & a {
     text-decoration: none;
+    font-size: 16px;
+    color: var(--knime-dove-gray);
+
+    & svg {
+      stroke: var(--knime-dove-gray);;
+    }
+  }
+
+  & a:hover {
+    color: var(--knime-masala);
+
+    & svg {
+      stroke: var(--knime-masala);
+    }
   }
 
   & .cards {
