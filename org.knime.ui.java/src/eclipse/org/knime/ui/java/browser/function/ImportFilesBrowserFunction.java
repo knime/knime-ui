@@ -49,21 +49,22 @@
 package org.knime.ui.java.browser.function;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
-import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.LocalSpaceUtil;
 
 import com.equo.chromium.swt.Browser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Import data files into a workspace and save them to the specified location.
@@ -72,11 +73,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ImportFilesBrowserFunction extends AbstractImportBrowserFunction {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(ImportFilesBrowserFunction.class);
+
     private static final String FUNCTION_NAME = "importFiles";
 
     @SuppressWarnings("javadoc")
-    public ImportFilesBrowserFunction(final Browser browser, final ObjectMapper mapper) {
-        super(browser, FUNCTION_NAME, mapper);
+    public ImportFilesBrowserFunction(final Browser browser) {
+        super(browser, FUNCTION_NAME);
     }
 
     @Override
@@ -85,28 +88,51 @@ public class ImportFilesBrowserFunction extends AbstractImportBrowserFunction {
     }
 
     @Override
+    protected boolean checkForNameCollisionsAndSuggestSolution(final String workflowGroupId,
+        final List<Path> srcPaths) {
+        var nameCollisionChecker =
+            LocalSpaceUtil.getLocalWorkspace().getNameCollisionCheckerForWorkflowGroup(workflowGroupId);
+        var existingFileNames = srcPaths.stream()//
+            .map(Path::getFileName)//
+            .map(Path::toString)//
+            .filter(nameCollisionChecker)//
+            .collect(Collectors.joining("\n"));
+        if (existingFileNames.isEmpty()) {
+            return true;
+        } else {
+            var sh = SWTUtilities.getActiveShell();
+            var msg = String.format(
+                "The following items already exist in \"%s\": %n%n%s %n%n"
+                    + "Continue and automatically solve name collision by appending numbers?",
+                getWorkflowGroupName(workflowGroupId), existingFileNames);
+            return MessageDialog.openQuestion(sh, "Files already exist", msg);
+        }
+    }
+
+    @Override
+    protected List<SpaceItemEnt> functionToRunWithProgress(final IProgressMonitor monitor,
+        final String workflowGroupItemId, final List<Path> srcPaths) {
+        monitor.beginTask(
+            String.format("Importing %d files to \"%s\"", srcPaths.size(), getWorkflowGroupName(workflowGroupItemId)),
+            IProgressMonitor.UNKNOWN);
+        var importedSpaceItems = srcPaths.stream()//
+            .map(srcPath -> { // Import every single file
+                try {
+                    return LocalSpaceUtil.getLocalWorkspace().importFile(srcPath, workflowGroupItemId);
+                } catch (IOException e) {
+                    LOGGER.error(String.format("Could not import <%s>", srcPath), e);
+                    return null;
+                }
+            })//
+            .filter(Objects::nonNull) // Exclude the failed ones from the result
+            .collect(Collectors.toList());
+        monitor.done();
+        return importedSpaceItems;
+    }
+
+    @Override
     protected void showWarningWithTitleAndMessage() {
         DesktopAPUtil.showWarning("File import", "Not all selected files could be imported");
     }
 
-    @Override
-    protected Optional<SpaceItemEnt> importItem(final Path srcPath, final String destItemId) {
-        var localWorkspace = getLocalWorkspace();
-        var parentWorkflowGroupPath = localWorkspace.getAbsolutePath(destItemId);
-        var destPathOptional = generateUniqueSpaceItemPath(parentWorkflowGroupPath, srcPath.getFileName().toString());
-        return destPathOptional.flatMap(destPath -> DesktopAPUtil.runWithProgress("Import file", getLogger(),
-            monitor -> functionToRunWithProgress(monitor, srcPath, destPath, localWorkspace)));
-    }
-
-    private static SpaceItemEnt functionToRunWithProgress(final IProgressMonitor monitor, final Path srcPath,
-        final Path destPath, final LocalWorkspace localWorkspace) {
-        try {
-            monitor.beginTask(String.format("Importing <%s>...", destPath.getFileName()), IProgressMonitor.UNKNOWN);
-            FileUtil.copy(srcPath.toFile(), destPath.toFile());
-            monitor.done();
-            return localWorkspace.getSpaceItemEntFromPath(destPath);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
 }

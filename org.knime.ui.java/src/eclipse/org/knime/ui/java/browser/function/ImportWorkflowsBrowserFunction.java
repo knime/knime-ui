@@ -50,25 +50,26 @@ package org.knime.ui.java.browser.function;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.zip.ZipFile;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.knime.core.node.KNIMEConstants;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
-import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.workbench.ui.workflow.metadata.MetaInfoFile;
 
 import com.equo.chromium.swt.Browser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Import workflows into a workspace and save them to the specified location.
@@ -77,57 +78,85 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ImportWorkflowsBrowserFunction extends AbstractImportBrowserFunction {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(ImportWorkflowsBrowserFunction.class);
+
     private static final String FUNCTION_NAME = "importWorkflows";
 
     @SuppressWarnings("javadoc")
-    public ImportWorkflowsBrowserFunction(final Browser browser, final ObjectMapper mapper) {
-        super(browser, FUNCTION_NAME, mapper);
+    public ImportWorkflowsBrowserFunction(final Browser browser) {
+        super(browser, FUNCTION_NAME);
     }
 
     @Override
     protected FileDialog getFileDialog() {
         var dialog = new FileDialog(SWTUtilities.getActiveShell(), SWT.OPEN);
-        dialog.setFilterExtensions(new String[]{"*.knwf;*.knar"});
+        dialog.setFilterExtensions(new String[]{
+            "*." + KNIMEConstants.KNIME_WORKFLOW_FILE_EXTENSION + ";*." + KNIMEConstants.KNIME_ARCHIVE_FILE_EXTENSION});
         return dialog;
     }
 
     @Override
-    protected void showWarningWithTitleAndMessage() {
-        DesktopAPUtil.showWarning("Workspace import", "Not all selected workflows could be imported");
+    protected boolean checkForNameCollisionsAndSuggestSolution(final String workflowGroupId,
+        final List<Path> srcPaths) {
+        var nameCollisionChecker =
+            LocalSpaceUtil.getLocalWorkspace().getNameCollisionCheckerForWorkflowGroup(workflowGroupId);
+        var archiveFilePath = srcPaths.get(0); // There can only be one
+        try (var zipFile = new ZipFile(archiveFilePath.toFile())) {
+            // Get the name of the parent folder without extracting the *.zip archive
+            var dirName = zipFile.stream()//
+                .map(entry -> new File(entry.toString()))//
+                .map(File::getParentFile)//
+                .map(File::getName)//
+                .findFirst()//
+                .orElseThrow(IOException::new);
+            // Check for name collisions and show prompt if necessary
+            if (nameCollisionChecker.test(dirName)) {
+                var sh = SWTUtilities.getActiveShell();
+                var msg = String.format(
+                    "The following workflow (group) already exist in \"%s\": %n%n%s %n%n"
+                        + "Continue and automatically solve name collision by appending numbers?",
+                    getWorkflowGroupName(workflowGroupId), dirName);
+                return MessageDialog.openQuestion(sh, "Workflow (group) already exist", msg);
+            } else {
+                return true;
+            }
+        } catch (IOException e) {
+            LOGGER.error(String.format("Could not unpack the workflow (group) at <%s>", archiveFilePath), e);
+            return false;
+        }
     }
 
     @Override
-    protected Optional<SpaceItemEnt> importItem(final Path srcPath, final String destItemId) {
-        var localWorkspace = getLocalWorkspace();
-        var parentWorkflowGroupPath = localWorkspace.getAbsolutePath(destItemId);
-        var fileName = srcPath.getFileName().toString();
+    protected List<SpaceItemEnt> functionToRunWithProgress(final IProgressMonitor monitor,
+        final String workflowGroupItemId, final List<Path> srcPaths) {
+        monitor.beginTask(
+            String.format("Importing %d files to \"%s\"", srcPaths.size(), getWorkflowGroupName(workflowGroupItemId)),
+            IProgressMonitor.UNKNOWN);
+        var archiveFilePath = srcPaths.get(0); // There can only be one
+        List<SpaceItemEnt> importedSpaceItems;
         try {
-            var tmpDir = ExplorerMountTable.createExplorerTempDir(fileName).resolveToLocalFile();
-            FileUtil.unzip(srcPath.toFile(), tmpDir);
-            var tmpSrcPath = tmpDir.listFiles()[0].toPath();
-            var destPathOptional = generateUniqueSpaceItemPath(parentWorkflowGroupPath,
-                tmpSrcPath.getFileName().toString());
-            return destPathOptional.flatMap(destPath -> DesktopAPUtil.runWithProgress("Import workflow", getLogger(),
-                monitor -> functionToRunWithProgress(monitor, tmpSrcPath, destPath, localWorkspace)));
-        } catch (CoreException | IOException e) {
-            getLogger().error("Could not create tmp dir", e);
+            // Since this has `knime-workbench` dependencies, we cannot run it in `knime-gateway`.
+            // So we create a consumer here and pass it.
+            Consumer<Path> createMetaInfoFileFor = destPath -> {
+                var metaInfoFile = new File(destPath.toFile(), WorkflowPersistor.METAINFO_FILE);
+                if (!metaInfoFile.exists() || (metaInfoFile.length() == 0)) {
+                    MetaInfoFile.createOrGetMetaInfoFileForDirectory(destPath.toFile(), false);
+                }
+            };
+            var importedItem = LocalSpaceUtil.getLocalWorkspace().importWorkflows(archiveFilePath, workflowGroupItemId,
+                createMetaInfoFileFor);
+            importedSpaceItems = Collections.singletonList(importedItem);
+        } catch (IOException e) {
+            LOGGER.error(String.format("Could not import <%s>", archiveFilePath), e);
+            importedSpaceItems = Collections.emptyList();
         }
-        return Optional.empty();
+        monitor.done();
+        return importedSpaceItems;
     }
 
-    private static SpaceItemEnt functionToRunWithProgress(final IProgressMonitor monitor, final Path srcPath,
-        final Path destPath, final LocalWorkspace localWorkspace) {
-        try {
-            monitor.beginTask(String.format("Importing <%s>...", destPath.getFileName()), IProgressMonitor.UNKNOWN);
-            FileUtil.copyDir(srcPath.toFile(), destPath.toFile());
-            var metaInfoFile = new File(destPath.toFile(), WorkflowPersistor.METAINFO_FILE);
-            if (!metaInfoFile.exists() || (metaInfoFile.length() == 0)) {
-                MetaInfoFile.createOrGetMetaInfoFileForDirectory(destPath.toFile(), false);
-            }
-            monitor.done();
-            return localWorkspace.getSpaceItemEntFromPath(destPath);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    @Override
+    protected void showWarningWithTitleAndMessage() {
+        DesktopAPUtil.showWarning("Workflow import", "Not all selected workflows could be imported");
     }
+
 }

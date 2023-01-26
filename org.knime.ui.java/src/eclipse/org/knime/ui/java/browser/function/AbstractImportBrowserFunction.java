@@ -49,26 +49,21 @@
 package org.knime.ui.java.browser.function;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.SWTException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
-import org.knime.gateway.impl.webui.LocalWorkspace;
+import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Abstract browser function to import files or workflows into a given workspace.
@@ -79,18 +74,13 @@ public abstract class AbstractImportBrowserFunction extends BrowserFunction {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(AbstractImportBrowserFunction.class);
 
-    private final ObjectMapper m_mapper;
-
-    private LocalWorkspace m_localWorkspace;
-
-    AbstractImportBrowserFunction(final Browser browser, final String name, final ObjectMapper mapper) {
+    AbstractImportBrowserFunction(final Browser browser, final String name) {
         super(browser, name);
-        m_mapper = mapper;
     }
 
     /**
      * @param arguments spaceProviderId (0), spaceId (1) and itemId (2)
-     * @return A {@link SpaceItemEnt} if import succeeded, {@code null} otherwise
+     * @return True if at least one import succeeded, false otherwise
      */
     @Override
     public Object function(final Object[] arguments) {
@@ -106,22 +96,27 @@ public abstract class AbstractImportBrowserFunction extends BrowserFunction {
             throw new IllegalArgumentException("Could not parse all of the arguments", e);
         }
         if (!spaceProviderId.equals("local") || !spaceId.equals("local")) {
-            throw new SWTException("Cannot import something to non-local workspaces");
+            throw new IllegalArgumentException("Cannot import something to non-local workspaces");
         }
 
         // Get file paths of files to import
         var dialog = getFileDialog();
         var baseDir = Path.of(new File(dialog.open()).toURI()).getParent();
         var fileNames = dialog.getFileNames();
+        var srcPaths = Arrays.stream(fileNames).map(baseDir::resolve).collect(Collectors.toList());
+
+        // Check for name collisions and solve them
+        var solutionAccepted = checkForNameCollisionsAndSuggestSolution(itemId, srcPaths);
+        if (!solutionAccepted) {
+            // If the user does not accept auto-renaming, we could alternatively import only those item
+            // without name collisions. Currently, we just do not import anything.
+            return false;
+        }
 
         // Attempt to import files
-        m_localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        var importedSpaceItems = Arrays.stream(fileNames)//
-            .map(baseDir::resolve)//
-            .map(srcPath -> importItem(srcPath, itemId))//
-            .filter(Optional::isPresent)//
-            .map(Optional::get)//
-            .collect(Collectors.toList());
+        var importedSpaceItems = DesktopAPUtil
+            .runWithProgress(itemId, LOGGER, monitor -> functionToRunWithProgress(monitor, itemId, srcPaths))
+            .orElse(Collections.emptyList());
 
         // Notify the user if not all files could be imported
         if (importedSpaceItems.size() < fileNames.length) {
@@ -129,13 +124,18 @@ public abstract class AbstractImportBrowserFunction extends BrowserFunction {
         }
 
         // Create response for the FE
-        try {
-            return importedSpaceItems.isEmpty() ? null : createResultObjectFromSpaceItems(importedSpaceItems, m_mapper);
-        } catch (JsonProcessingException e) {
-            var msg = "Failed to create result object, sorry";
-            LOGGER.error(msg, e);
-            throw new SWTException(msg);
-        }
+        return !importedSpaceItems.isEmpty();
+    }
+
+    /**
+     * Gets the name of a workflow group.
+     *
+     * @param workflowGroupItemId The workflow group item ID
+     * @return The name of the workflow group
+     */
+    protected static String getWorkflowGroupName(final String workflowGroupItemId) {
+        return LocalSpaceUtil.getLocalWorkspace().toLocalAbsolutePath(null, workflowGroupItemId).getFileName()
+            .toString();
     }
 
     /**
@@ -144,54 +144,29 @@ public abstract class AbstractImportBrowserFunction extends BrowserFunction {
     protected abstract FileDialog getFileDialog();
 
     /**
-     * @param srcPath The source path.
-     * @param destItemId The item ID of the destination folder
-     * @return An optional space item entity if the import succeeded.
+     * Checks for name collision and prompts the user to accept suggested auto-renaming solution.
+     *
+     * @param workflowGroupItemId The workflow group item ID to check
+     * @param srcPaths The source paths of the items to import
+     * @return {@code true} if auto-renaming was accepted (or no collisions existed), {@code false} otherwise
      */
-    protected abstract Optional<SpaceItemEnt> importItem(final Path srcPath, final String destItemId);
+    protected abstract boolean checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
+        final List<Path> srcPaths);
 
     /**
      * Shows a warning if the import was not complete.
      */
     protected abstract void showWarningWithTitleAndMessage();
 
-    static Optional<Path> generateUniqueSpaceItemPath(final Path workflowGroup, final String name) {
-        if (Files.exists(workflowGroup.resolve(name))) { // Name collision case
-            var sh = SWTUtilities.getActiveShell();
-            var msg = String.format(
-                "The item <%s> already exists in <%s>. Attemting to rename by (recursively) appending \"_copy\"?", name,
-                workflowGroup.getFileName());
-            var doProceed = MessageDialog.openQuestion(sh, "Name collision", msg);
-            if (!doProceed) {
-                return Optional.empty();
-            }
-            var lastIndexOfDot = name.lastIndexOf(".");
-            var fileExtension = lastIndexOfDot > -1 ? name.substring(lastIndexOfDot) : "";
-            var builder = new StringBuilder(lastIndexOfDot > -1 ? name.substring(0, lastIndexOfDot) : name);
-            do {
-                builder.append("_copy");
-            } while (Files.exists(workflowGroup.resolve(builder.toString() + fileExtension)));
-            return Optional.of(workflowGroup.resolve(builder.toString() + fileExtension));
-        } else { // No name collision case
-            return Optional.of(workflowGroup.resolve(name));
-        }
-    }
+    /**
+     * The function to run with progress to import the items
+     *
+     * @param monitor The progress monitor passed in
+     * @param workflowGroupItemId The workfflow group item ID
+     * @param srcPaths The source paths of the items to import
+     * @return A list of space item entities that were imported
+     */
+    protected abstract List<SpaceItemEnt> functionToRunWithProgress(final IProgressMonitor monitor,
+        final String workflowGroupItemId, final List<Path> srcPaths);
 
-    private static String createResultObjectFromSpaceItems(final List<SpaceItemEnt> spaceItems,
-        final ObjectMapper mapper) throws JsonProcessingException {
-        var json = mapper.createObjectNode();
-        var importedSpaceItems = json.arrayNode();
-        for (var spaceItem : spaceItems) {
-            importedSpaceItems.addPOJO(spaceItem);
-        }
-        return mapper.writeValueAsString(json.set("importedSpaceItems", importedSpaceItems));
-    }
-
-    NodeLogger getLogger() {
-        return LOGGER;
-    }
-
-    LocalWorkspace getLocalWorkspace() {
-        return m_localWorkspace;
-    }
 }

@@ -197,8 +197,8 @@ export const disconnectSpaceProvider = ({ spaceProviderId }) => {
 // Will be adapted with NXT-1254
 export const importFiles = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
     try {
-        const response = window.importFiles(spaceProviderId, spaceId, itemId);
-        return JSON.parse(response).importedSpaceItems;
+        // Returns true on success
+        return window.importFiles(spaceProviderId, spaceId, itemId);
     } catch (error) {
         consola.error(`Could not import files`, { spaceProviderId, spaceId, itemId, error });
         throw error;
@@ -208,8 +208,8 @@ export const importFiles = ({ spaceProviderId = 'local', spaceId = 'local', item
 // Will be adapted with NXT-1254
 export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
     try {
-        const response = window.importWorkflows(spaceProviderId, spaceId, itemId);
-        return JSON.parse(response).importedSpaceItems;
+        // Returns true on success
+        return window.importWorkflows(spaceProviderId, spaceId, itemId);
     } catch (error) {
         consola.error(`Could not import workflows`, { spaceProviderId, spaceId, itemId, error });
         throw error;

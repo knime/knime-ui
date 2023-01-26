@@ -285,8 +285,8 @@ final class Init {
         functions.add(new DisconnectSpaceProviderBrowserFunction(browser, spaceProviders));
         functions.add(new SaveAndCloseWorkflowsBrowserFunction(browser, appStateUpdater));
         functions.add(new SetProjectActiveAndEnsureItsLoadedBrowserFunction(browser));
-        functions.add(new ImportFilesBrowserFunction(browser, ObjectMapperUtil.getInstance().getObjectMapper()));
-        functions.add(new ImportWorkflowsBrowserFunction(browser, ObjectMapperUtil.getInstance().getObjectMapper()));
+        functions.add(new ImportFilesBrowserFunction(browser));
+        functions.add(new ImportWorkflowsBrowserFunction(browser));
         if (SharedConstants.isRemoteDebuggingPortSet()) {
             functions.add(new InitAppForTestingBrowserFunction(browser));
             functions.add(new ClearAppForTestingBrowserFunction(browser));

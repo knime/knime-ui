@@ -196,6 +196,7 @@ export const actions = {
         return dispatch('fetchWorkflowGroupContent', { itemId });
     },
 
+    // TODO: Remove manual sorting here, just re-fetch workflow group, see `importToWorkflowGroup`
     async createWorkflow({ commit, getters, state }) {
         try {
             const { spaceId, activeWorkflowGroup } = state.activeSpace;
@@ -257,31 +258,12 @@ export const actions = {
     },
 
     // Will be adapted with NXT-1254
-    async importFiles({ commit, getters, state }) { // TODO: Remove code duplication, also see `createWorkflow(...)`
-        const { activeWorkflowGroup } = state.activeSpace;
+    async importToWorkflowGroup({ dispatch, getters }, { importType }) {
         const itemId = getters.currentWorkflowGroupId;
-        const newSpaceItems = await importFiles({ itemId });
-        const updatedWorkflowGroupItems = activeWorkflowGroup.items.concat(...newSpaceItems);
-        // TODO: Sort the updated workflow group items properly, see `createWorkflow(...)`.
-        commit('setActiveWorkflowGroupData', {
-            path: activeWorkflowGroup.path,
-            items: updatedWorkflowGroupItems
-        });
-        return newSpaceItems;
-    },
-
-    // Will be adapted with NXT-1254
-    async importWorkflows({ commit, getters, state }) { // TODO: Remove code duplication, `createWorkflow(...)`
-        const { activeWorkflowGroup } = state.activeSpace;
-        const itemId = getters.currentWorkflowGroupId;
-        const newSpaceItems = await importWorkflows({ itemId });
-        const updatedWorkflowGroupItems = activeWorkflowGroup.items.concat(...newSpaceItems);
-        // TODO: Sort the updated workflow group items properly, see `createWorkflow(...)`.
-        commit('setActiveWorkflowGroupData', {
-            path: activeWorkflowGroup.path,
-            items: updatedWorkflowGroupItems
-        });
-        return newSpaceItems;
+        const success = importType === 'FILES' ? await importFiles({ itemId }) : importWorkflows({ itemId });
+        if (success) {
+            dispatch('fetchWorkflowGroupContent', { itemId });
+        }
     }
 };
 
