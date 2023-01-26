@@ -131,6 +131,7 @@ export const actions = {
 
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
+        await dispatch('spaces/fetchAllSpaceProviders', {}, { root: true });
         
         $router.beforeEach(async (to, from, next) => {
             if (to.params.skipGuards) {

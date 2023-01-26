@@ -32,15 +32,8 @@ export default {
         }
     },
 
-    created() {
-        this.fetchSpaceProviders();
-    },
 
     methods: {
-        async fetchSpaceProviders() {
-            await this.$store.dispatch('spaces/fetchAllSpaceProviders');
-        },
-
         onLogin(spaceProviderId) {
             this.$store.dispatch('spaces/connectProvider', { spaceProviderId });
         },

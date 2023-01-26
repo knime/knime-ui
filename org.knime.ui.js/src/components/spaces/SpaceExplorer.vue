@@ -190,7 +190,7 @@ export default {
       />
 
       <div
-        v-if="isLocal && mode === 'mini'"
+        v-if="mode === 'mini' && isLocal"
         class="buttons"
       >
         <ToolbarButton title="Import workflow">
@@ -211,7 +211,7 @@ export default {
     </div>
 
     <PlusButton
-      v-if="isLocal && mode === 'normal'"
+      v-if="mode === 'normal' && isLocal"
       :title="createWorkflowButtonTitle"
       primary
       class="create-workflow-btn"

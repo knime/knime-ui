@@ -87,7 +87,7 @@ export default {
         <div class="grid-item-12">
           <div class="toolbar">
             <div
-              v-if="activeSpaceInfo?.local"
+              v-if="activeSpaceInfo.local"
               class="toolbar-buttons"
             >
               <Button
