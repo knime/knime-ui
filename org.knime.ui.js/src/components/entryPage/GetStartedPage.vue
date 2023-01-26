@@ -97,24 +97,6 @@ section.examples {
   background: var(--knime-silver-sand-semi);
   padding-bottom: 20px;
 
-  & a {
-    text-decoration: none;
-    font-size: 16px;
-    color: var(--knime-dove-gray);
-
-    & svg {
-      stroke: var(--knime-dove-gray);;
-    }
-  }
-
-  & a:hover {
-    color: var(--knime-masala);
-
-    & svg {
-      stroke: var(--knime-masala);
-    }
-  }
-
   & .cards {
     & [class*="grid-item-"]:not(:first-child, :last-child) {
       margin: 0 15px;
@@ -124,6 +106,16 @@ section.examples {
       width: 100%;
       max-height: 140px;
       object-fit: contain;
+    }
+  }
+
+  & a {
+    text-decoration: none;
+    font-size: 16px;
+    color: var(--knime-dove-gray);
+
+    & svg {
+      stroke: var(--knime-dove-gray);
     }
   }
 
@@ -141,6 +133,14 @@ section.examples {
       margin-right: 8px;
 
       @mixin svg-icon-size 14;
+    }
+  }
+
+  & a:hover {
+    color: var(--knime-masala);
+
+    & svg {
+      stroke: var(--knime-masala);
     }
   }
 }
