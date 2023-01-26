@@ -107,13 +107,28 @@ public final class ClassicWorkflowEditorUtil {
 
     /**
      * Describe the current application state based on the state of the Eclipse UI.
+     */
+    public static void updateWorkflowProjectsFromOpenedWorkflowEditors() {
+        var workbench = (Workbench)PlatformUI.getWorkbench();
+        updateWorkflowProjectsFromOpenedWorkflowEditors(workbench.getService(EModelService.class),
+            workbench.getApplication());
+    }
+
+    /**
+     * Describe the current application state based on the state of the Eclipse UI.
      *
      * @param modelService
      * @param app
      */
     public static void updateWorkflowProjectsFromOpenedWorkflowEditors(final EModelService modelService,
         final MApplication app) {
+        removeAllWorkflowProjects();
         registerWorkflowProjects(modelService, app);
+    }
+
+    private static void removeAllWorkflowProjects() {
+        var wpm = WorkflowProjectManager.getInstance();
+        wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
     }
 
     private static WorkflowProject createWorkflowProject(final MPart editorPart) {
@@ -135,7 +150,14 @@ public final class ClassicWorkflowEditorUtil {
     private static void registerWorkflowProjects(final EModelService modelService, final MApplication app) {
         List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
         var wpm = WorkflowProjectManager.getInstance();
-        var workflowProjects = editorParts.stream().map(ClassicWorkflowEditorUtil::createWorkflowProject) //
+        var activeProjectId = new AtomicReference<String>();
+        var workflowProjects = editorParts.stream().map(part -> {
+            var wp = ClassicWorkflowEditorUtil.createWorkflowProject(part);
+            if (isEditorPartSelectedElement(part)) {
+                activeProjectId.set(wp.getID());
+            }
+            return wp;
+        }) //
             .filter(Objects::nonNull);
 
         var resolved = resolveDuplicates(workflowProjects,
@@ -149,6 +171,10 @@ public final class ClassicWorkflowEditorUtil {
         );
 
         resolved.forEach(p -> wpm.addWorkflowProject(p.getID(), p));
+        if (activeProjectId.get() != null) {
+            wpm.openAndCacheWorkflow(activeProjectId.get());
+            wpm.setWorkflowProjectActive(activeProjectId.get());
+        }
     }
 
     /**
@@ -265,7 +291,7 @@ public final class ClassicWorkflowEditorUtil {
      *
      * @return list of all opened workflow editors
      */
-    public static List<WorkflowEditor> getOpenWorkflowEditors() {
+    private static List<WorkflowEditor> getOpenWorkflowEditors() {
         var workbench = (Workbench)PlatformUI.getWorkbench();
         return getOpenWorkflowEditors(workbench.getService(EModelService.class), workbench.getApplication());
     }

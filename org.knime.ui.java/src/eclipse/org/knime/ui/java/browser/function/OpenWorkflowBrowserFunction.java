@@ -70,6 +70,7 @@ import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.DefaultSpaceService;
+import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -122,7 +123,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         final var space = DefaultSpaceService.getInstance().getSpace(spaceId, spaceProviderId);
 
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId), m_appStateUpdater);
+            openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId));
         } else {
             DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(space, itemId).ifPresent(wfm -> {
                 String relativePath = null;
@@ -131,9 +132,9 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
                         .toRelativePath(wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath()).toString();
                 }
                 registerWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
-                m_appStateUpdater.updateAppState();
             });
         }
+        m_appStateUpdater.updateAppState();
 
         return null;
     }
@@ -194,12 +195,11 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         };
     }
 
-    private static void openWorkflowInClassicAndWebUIPerspective(final URI knimeUrl,
-            final AppStateUpdater appStateProvider) {
+    private static void openWorkflowInClassicAndWebUIPerspective(final URI knimeUrl) {
         try {
             openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl));
             hideSharedEditorArea();
-            appStateProvider.updateAppState();
+            ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors();
         } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
             LOGGER.warn("Could not open editor", e);
         }
