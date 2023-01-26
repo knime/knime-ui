@@ -1,6 +1,6 @@
 <script>
 import RocketIcon from 'webapps-common/ui/assets/img/icons/rocket.svg';
-//import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
+// import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 import KnimeLogo from 'webapps-common/ui/assets/img/KNIME_Logo_gray.svg';
 
 import { APP_ROUTES, getPathFromRouteName } from '@/router';

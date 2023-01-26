@@ -179,6 +179,23 @@ describe('application store', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('application/replaceApplicationState', applicationState);
         });
 
+        test('calls setExampleProjects', async () => {
+            const { store, commitSpy } = await loadStore();
+
+            const exampleProjects = [{
+                name: 'Example 1',
+                svg: 'svg',
+                origin: {
+                    spaceId: 'local',
+                    providerId: 'local',
+                    itemId: 'item1'
+                }
+            }];
+            await store.dispatch('application/replaceApplicationState', { exampleProjects });
+
+            expect(commitSpy).toHaveBeenCalledWith('application/setExampleProjects', exampleProjects, undefined);
+        });
+
         test('destroy application', async () => {
             const { store, dispatchSpy, removeEventListener } = await loadStore();
             store.dispatch('application/destroyApplication');
