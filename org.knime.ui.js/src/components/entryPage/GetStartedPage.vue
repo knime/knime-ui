@@ -109,38 +109,33 @@ section.examples {
     }
   }
 
-  & a {
-    text-decoration: none;
-    font-size: 16px;
-    color: var(--knime-dove-gray);
-
-    & svg {
-      stroke: var(--knime-dove-gray);
-    }
-  }
 
   & .more-workflows {
     padding: 20px 0;
     align-items: center;
     justify-content: flex-start;
 
-    & span {
+    & a {
+      text-decoration: none;
       font-size: 16px;
       line-height: 20px;
+      color: var(--knime-dove-gray);
     }
 
     & svg {
-      margin-right: 8px;
+      margin-right: 6px;
+      stroke: var(--knime-dove-gray);
+      vertical-align: middle;
 
       @mixin svg-icon-size 14;
     }
-  }
 
-  & a:hover {
-    color: var(--knime-masala);
+    & a:hover {
+      color: var(--knime-masala);
 
-    & svg {
-      stroke: var(--knime-masala);
+      & svg {
+        stroke: var(--knime-masala);
+      }
     }
   }
 }
