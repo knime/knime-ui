@@ -202,23 +202,23 @@ final class Init {
     }
 
     private static ExampleProjects createExampleProjects() {
-       return new ExampleProjects() {
+        return new ExampleProjects() {
 
-        @Override
-        public LocalWorkspace getLocalWorkspace() {
-            return LocalSpaceUtil.getLocalWorkspace();
-        }
+            @Override
+            public LocalWorkspace getLocalWorkspace() {
+                return LocalSpaceUtil.getLocalWorkspace();
+            }
 
-           @Override
-           public List<String> getRelativeExampleProjectPaths() {
-               return List.of( //
-                   "Example Workflows/Basic Examples/Building a Simple Classifier", //
-                   "Example Workflows/Basic Examples/Data Blending", //
-                   "Example Workflows/Basic Examples/Simple Reporting Example" //
-               );
-           }
-       };
-   }
+            @Override
+            public List<String> getRelativeExampleProjectPaths() {
+                return List.of( //
+                    "Example Workflows/Basic Examples/Building a Simple Classifier", //
+                    "Example Workflows/Basic Examples/Data Blending", //
+                    "Example Workflows/Basic Examples/Simple Reporting Example" //
+                );
+            }
+        };
+    }
 
     static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
         return ExtPointUtil.collectExecutableExtensions(SPACE_PROVIDERS_EXTENSION_ID, "class");
