@@ -2,6 +2,7 @@
 import ForumIcon from 'webapps-common/ui/assets/img/icons/forum.svg';
 import ExtensionIcon from 'webapps-common/ui/assets/img/icons/extension.svg';
 import PerspectiveSwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
+import SphereIcon from 'webapps-common/ui/assets/img/icons/sphere.svg';
 import KnimeLogo from 'webapps-common/ui/assets/img/KNIME_Logo_gray.svg';
 import Button from 'webapps-common/ui/components/Button.vue';
 
@@ -14,6 +15,7 @@ export default {
         ForumIcon,
         ExtensionIcon,
         PerspectiveSwitchIcon,
+        SphereIcon,
         KnimeLogo,
         Button,
         Page,
@@ -101,6 +103,28 @@ export default {
             @click="switchToJavaUI"
           >
             <strong>Switch to classic user interface</strong>
+          </Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hub section -->
+    <section>
+      <div class="grid-container">
+        <div class="grid-item-3 category">
+          <SphereIcon />
+          <h3>KNIME Community Hub</h3>
+        </div>
+
+        <div class="grid-item-9 body">
+          <p>
+            Solutions for data science: find workflows, nodes and components, and collaborate in spaces.
+          </p>
+          <Button
+            with-border
+            href="https://hub.knime.com/?src=knimeappmodernui"
+          >
+            <strong>Visit KNIME Community Hub</strong>
           </Button>
         </div>
       </div>
