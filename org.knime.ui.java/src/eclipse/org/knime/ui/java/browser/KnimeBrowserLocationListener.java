@@ -56,6 +56,7 @@ import org.knime.core.webui.WebUIUtil;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
+import com.equo.chromium.ChromiumBrowser;
 import com.equo.chromium.swt.Browser;
 
 /**
@@ -91,6 +92,11 @@ public class KnimeBrowserLocationListener implements LocationListener {
     public void changed(final LocationEvent event) {
         if (isAppPage(event.location) || isDevPage(event.location)) {
             LifeCycle.get().webAppLoaded(m_browser);
+            var zoomFactor = System.getProperty("org.knime.ui.zoomfactor");
+            if (zoomFactor != null) {
+                var chromiumBrowser = (ChromiumBrowser)m_browser.getWebBrowser();
+                chromiumBrowser.zoom(Double.parseDouble(zoomFactor));
+            }
         }
     }
 
