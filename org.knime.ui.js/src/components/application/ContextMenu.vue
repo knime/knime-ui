@@ -8,7 +8,7 @@ const menuGroups = function () {
     let currItems = [];
 
     const onlyVisible = ({ isVisible }) => isVisible;
-                
+
     return {
         append(groupItems) {
             const newItems = groupItems.filter(onlyVisible);
@@ -17,7 +17,7 @@ const menuGroups = function () {
                 // add separator to last item of previous group
                 currItems[currItems.length - 1].separator = true;
             }
-                        
+
             currItems = currItems.concat(newItems);
 
             // eslint-disable-next-line no-invalid-this
@@ -80,6 +80,10 @@ export default {
                 });
             }
         }
+    },
+    beforeMount() {
+        // deselect any selected text to make copy and paste of non text possible
+        window?.getSelection().removeAllRanges();
     },
     methods: {
         onItemClick(event, shortcut) {
