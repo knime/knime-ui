@@ -31,16 +31,18 @@ export default {
 
         displayedExampleProjects() {
             return this.exampleProjects.slice(0, MAX_NUM_OF_EXAMPLES);
+        },
+        hasExamples() {
+            return this.displayedExampleProjects.length > 0;
         }
     },
     methods: {
-        onExampleClick({ origin: { spaceId, providerId: spaceProviderId, itemId: workflowItemId } }) {
-            const { $router } = this.$router;
-            this.$store.dispatch('spaces/openWorkflow', {
+        async onExampleClick({ origin: { spaceId, providerId: spaceProviderId, itemId: workflowItemId } }) {
+            await this.$store.dispatch('spaces/openWorkflow', {
                 workflowItemId,
                 spaceId,
                 spaceProviderId,
-                $router
+                $router: this.$router
             });
         }
     }
@@ -49,7 +51,10 @@ export default {
 
 <template>
   <GridOutbreaker :color="knimeColors.SilverSandSemi">
-    <section class="examples">
+    <section
+      v-if="hasExamples"
+      class="examples"
+    >
       <div class="grid-container">
         <div class="grid-item-12">
           <h2>Examples</h2>
@@ -67,9 +72,7 @@ export default {
           >
             <CardHeader>{{ example.name }}</CardHeader>
 
-            <CardContent
-              padded
-            >
+            <CardContent padded>
               <img
                 class="card-img"
                 :src="`data:image/svg+xml;base64,${example.svg}`"
