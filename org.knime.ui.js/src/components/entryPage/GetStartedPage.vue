@@ -11,6 +11,7 @@ import { mapState } from 'vuex';
 import SpaceSelectionPage from '@/components/spaces/SpaceSelectionPage.vue';
 
 const MAX_NUM_OF_EXAMPLES = 3;
+const MAX_EXAMPLES_PER_ROW = 3;
 
 export default {
     components: {
@@ -34,6 +35,10 @@ export default {
         },
         hasExamples() {
             return this.displayedExampleProjects.length > 0;
+        },
+        gridColumns() {
+            const { length } = this.displayedExampleProjects;
+            return length < MAX_EXAMPLES_PER_ROW ? 2 : MAX_EXAMPLES_PER_ROW;
         }
     },
     methods: {
@@ -55,32 +60,26 @@ export default {
       v-if="hasExamples"
       class="examples"
     >
-      <div class="grid-container">
-        <div class="grid-item-12">
-          <h2>Examples</h2>
-        </div>
-      </div>
-
-      <div class="grid-container cards">
-        <div
+      <h2>Examples</h2>
+      <div
+        class="cards"
+        :style="`--grid-columns: ${gridColumns}`"
+      >
+        <Card
           v-for="(example, index) in displayedExampleProjects"
           :key="`example-${index}`"
-          class="grid-item-4"
+          @click="onExampleClick(example)"
         >
-          <Card
-            @click="onExampleClick(example)"
-          >
-            <CardHeader>{{ example.name }}</CardHeader>
+          <CardHeader>{{ example.name }}</CardHeader>
 
-            <CardContent padded>
-              <img
-                class="card-img"
-                :src="`data:image/svg+xml;base64,${example.svg}`"
-                :alt="`Preview image of ${example.name}`"
-              >
-            </CardContent>
-          </Card>
-        </div>
+          <CardContent padded>
+            <img
+              class="card-img"
+              :src="`data:image/svg+xml;base64,${example.svg}`"
+              :alt="`Preview image of ${example.name}`"
+            >
+          </CardContent>
+        </Card>
       </div>
 
       <div class="grid-container more-workflows">
@@ -98,12 +97,18 @@ export default {
 
 section.examples {
   background: var(--knime-silver-sand-semi);
-  padding-bottom: 20px;
+  padding-top: 30px;
+  padding-bottom: 50px;
+
+  & h2 {
+    margin-top: 20px;
+    margin-bottom: 40px;
+  }
 
   & .cards {
-    & [class*="grid-item-"]:not(:first-child, :last-child) {
-      margin: 0 15px;
-    }
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(var(--grid-columns, 2), 1fr);
 
     & .card-img {
       width: 100%;
