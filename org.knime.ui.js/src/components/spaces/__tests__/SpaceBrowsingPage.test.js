@@ -113,6 +113,27 @@ describe('SpaceBrowsingPage', () => {
         });
     });
 
+    it('renders buttons in toolbar for local space', () => {
+        const { wrapper } = doMount();
+
+        const buttons = wrapper.find('.toolbar-buttons');
+        expect(buttons.exists()).toBe(true);
+    });
+
+    it('does not render buttons in toolbar if the space is not local', async () => {
+        const { wrapper } = doMount({
+            activeSpaceInfoMock: jest.fn().mockReturnValue({
+                local: false,
+                private: false,
+                name: 'My public space'
+            })
+        });
+        await wrapper.vm.$nextTick();
+
+        const buttons = wrapper.find('.toolbar-buttons');
+        expect(buttons.exists()).toBe(false);
+    });
+
     describe('global spaceBrowser state', () => {
         it('load the spaceBrowser state on mount', () => {
             const loadSpaceBrowserStateMock = jest.fn();
