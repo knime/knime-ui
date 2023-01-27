@@ -98,8 +98,7 @@ public class ImportWorkflowsBrowserFunction extends AbstractImportBrowserFunctio
     @Override
     protected boolean checkForNameCollisionsAndSuggestSolution(final String workflowGroupId,
         final List<Path> srcPaths) {
-        var nameCollisionChecker =
-            LocalSpaceUtil.getLocalWorkspace().getNameCollisionCheckerForWorkflowGroup(workflowGroupId);
+        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         var archiveFilePath = srcPaths.get(0); // There can only be one
         try (var zipFile = new ZipFile(archiveFilePath.toFile())) {
             // Get the name of the parent folder without extracting the *.zip archive
@@ -110,7 +109,7 @@ public class ImportWorkflowsBrowserFunction extends AbstractImportBrowserFunctio
                 .findFirst()//
                 .orElseThrow(IOException::new);
             // Check for name collisions and show prompt if necessary
-            if (nameCollisionChecker.test(dirName)) {
+            if (localWorkspace.containsItemWithName(workflowGroupId, dirName)) {
                 var sh = SWTUtilities.getActiveShell();
                 var msg = String.format(
                     "The following workflow (group) already exist in \"%s\": %n%n%s %n%n"

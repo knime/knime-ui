@@ -90,12 +90,11 @@ public class ImportFilesBrowserFunction extends AbstractImportBrowserFunction {
     @Override
     protected boolean checkForNameCollisionsAndSuggestSolution(final String workflowGroupId,
         final List<Path> srcPaths) {
-        var nameCollisionChecker =
-            LocalSpaceUtil.getLocalWorkspace().getNameCollisionCheckerForWorkflowGroup(workflowGroupId);
+        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         var existingFileNames = srcPaths.stream()//
             .map(Path::getFileName)//
             .map(Path::toString)//
-            .filter(nameCollisionChecker)//
+            .filter(name -> localWorkspace.containsItemWithName(workflowGroupId, name))//
             .collect(Collectors.joining("\n"));
         if (existingFileNames.isEmpty()) {
             return true;
