@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import Button from 'webapps-common/ui/components/Button.vue';
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
@@ -53,6 +53,7 @@ export default {
         }
     },
     methods: {
+        ...mapActions('spaces', ['importToWorkflowGroup']),
         async onItemChanged(itemId) {
             // remember current path
             await this.$store.dispatch('spaces/saveSpaceBrowserState', { itemId });
@@ -91,15 +92,19 @@ export default {
               class="toolbar-buttons"
             >
               <Button
+                id="import-workflow"
                 with-border
                 compact
+                @click="importToWorkflowGroup({importType: 'WORKFLOW'})"
               >
                 <ImportWorkflowIcon />
                 Import workflow
               </Button>
               <Button
+                id="import-files"
                 with-border
                 compact
+                @click="importToWorkflowGroup({importType: 'FILES'})"
               >
                 <AddFileIcon />
                 Add files
@@ -161,7 +166,9 @@ main {
           margin-right: 4px;
         }
 
-        &:hover {
+        &:hover,
+        &:active,
+        &:focus {
           cursor: pointer;
           color: var(--knime-white);
           background-color: var(--knime-masala);

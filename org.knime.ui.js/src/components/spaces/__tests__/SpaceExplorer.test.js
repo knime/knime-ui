@@ -312,6 +312,36 @@ describe('SpaceExplorer.vue', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
     });
 
+    it('should handle import workflow for "mini" mode', async () => {
+        const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
+        store.state.spaces.activeSpace = {
+            spaceId: 'local',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+        await wrapper.vm.$nextTick();
+
+        wrapper.find("[title='Import workflow']").trigger('click');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
+    });
+
+    it('should handle import files for "mini" mode', async () => {
+        const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
+        store.state.spaces.activeSpace = {
+            spaceId: 'local',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+        await wrapper.vm.$nextTick();
+
+        wrapper.find("[title='Add file']").trigger('click');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'FILES' });
+    });
+
     it('should display the loader only after a specific timeout', async () => {
         jest.useFakeTimers();
 

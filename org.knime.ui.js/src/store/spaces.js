@@ -196,8 +196,7 @@ export const actions = {
         return dispatch('fetchWorkflowGroupContent', { itemId });
     },
 
-    // TODO: Remove manual sorting here, just re-fetch workflow group, see `importToWorkflowGroup`
-    async createWorkflow({ commit, getters, state }) {
+    async createWorkflow({ commit, getters, state, dispatch }) {
         try {
             const { spaceId, activeWorkflowGroup } = state.activeSpace;
             const itemId = getters.currentWorkflowGroupId;
@@ -206,18 +205,9 @@ export const actions = {
 
             const updatedWorkflowGroupItems = activeWorkflowGroup
                 .items
-                .concat(newWorkflowItem)
-                .sort((item1, item2) => {
-                    if (item1.type === 'WorflowGroup' && item2.type !== 'WorkflowGroup') {
-                        return -1;
-                    }
+                .concat(newWorkflowItem);
 
-                    if (item1.type !== 'WorflowGroup' && item2.type === 'WorkflowGroup') {
-                        return 1;
-                    }
-
-                    return item1.name < item2.name ? -1 : 1;
-                });
+            dispatch('fetchWorkflowGroupContent', { itemId });
 
             commit('setActiveWorkflowGroupData', {
                 path: activeWorkflowGroup.path,
@@ -257,10 +247,9 @@ export const actions = {
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
     },
 
-    // Will be adapted with NXT-1254
     async importToWorkflowGroup({ dispatch, getters }, { importType }) {
         const itemId = getters.currentWorkflowGroupId;
-        const success = importType === 'FILES' ? await importFiles({ itemId }) : importWorkflows({ itemId });
+        const success = importType === 'FILES' ? await importFiles({ itemId }) : await importWorkflows({ itemId });
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
         }

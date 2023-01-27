@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
@@ -115,6 +115,7 @@ export default {
     },
 
     methods: {
+        ...mapActions('spaces', ['importToWorkflowGroup']),
         // Only display loader after a set waiting time, to avoid making the operations seem longer
         setLoading(value) {
             if (!value) {
@@ -193,10 +194,16 @@ export default {
         v-if="mode === 'mini' && isLocal"
         class="buttons"
       >
-        <ToolbarButton title="Import workflow">
+        <ToolbarButton
+          title="Import workflow"
+          @click.native="importToWorkflowGroup({importType: 'WORKFLOW'})"
+        >
           <ImportWorkflowIcon />
         </ToolbarButton>
-        <ToolbarButton title="Add file">
+        <ToolbarButton
+          title="Add file"
+          @click.native="importToWorkflowGroup({importType: 'FILES'})"
+        >
           <AddFileIcon />
         </ToolbarButton>
         <ToolbarButton

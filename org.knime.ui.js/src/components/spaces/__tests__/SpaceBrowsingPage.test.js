@@ -27,7 +27,8 @@ describe('SpaceBrowsingPage', () => {
         clearSpaceBrowserStateMock = jest.fn(),
         spaceBrowser = {},
         saveSpaceBrowserStateMock = jest.fn(),
-        loadSpaceBrowserStateMock = jest.fn()
+        loadSpaceBrowserStateMock = jest.fn(),
+        importToWorkflowGroupMock = jest.fn()
     } = {}) => {
         const $store = mockVuexStore({
             spaces: {
@@ -42,7 +43,8 @@ describe('SpaceBrowsingPage', () => {
                 },
                 actions: {
                     saveSpaceBrowserState: saveSpaceBrowserStateMock,
-                    loadSpaceBrowserState: loadSpaceBrowserStateMock
+                    loadSpaceBrowserState: loadSpaceBrowserStateMock,
+                    importToWorkflowGroup: importToWorkflowGroupMock
                 }
             }
         });
@@ -132,6 +134,24 @@ describe('SpaceBrowsingPage', () => {
 
         const buttons = wrapper.find('.toolbar-buttons');
         expect(buttons.exists()).toBe(false);
+    });
+
+    it('handles import workflow when clicked on a button', () => {
+        const importToWorkflowGroupMock = jest.fn();
+        const { wrapper } = doMount({ importToWorkflowGroupMock });
+
+        const workflowButton = wrapper.find('#import-workflow');
+        workflowButton.trigger('click');
+        expect(importToWorkflowGroupMock).toHaveBeenCalledWith(expect.anything(), { importType: 'WORKFLOW' });
+    });
+
+    it('handles add files when clicked on a button', () => {
+        const importToWorkflowGroupMock = jest.fn();
+        const { wrapper } = doMount({ importToWorkflowGroupMock });
+
+        const workflowButton = wrapper.find('#import-files');
+        workflowButton.trigger('click');
+        expect(importToWorkflowGroupMock).toHaveBeenCalledWith(expect.anything(), { importType: 'FILES' });
     });
 
     describe('global spaceBrowser state', () => {
