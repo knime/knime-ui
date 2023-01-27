@@ -122,17 +122,19 @@ public class KnimeBrowserView implements ISaveablePart2 {
     }
 
     @Inject
-    void partActivated(@Active final MPart part) {
+    synchronized void partActivated(@Active final MPart part) {
+        if (viewInitializer == null) {
+            return;
+        }
+        var vi = viewInitializer;
+        viewInitializer = null;
         boolean isBrowserView = part.getElementId().equals(BROWSER_VIEW_PART_ID);
         // This handler is called multiple times during perspective switch, before and after @PostConstruct.
         // `isRendered` is heuristically regarded to be the point in the life cycle at which the browser view is
         // 	ready for interaction.
         boolean isRendered = part.getObject() instanceof KnimeBrowserView;
-        synchronized (this) {
-            if (isBrowserView && isRendered && viewInitializer != null) {
-                viewInitializer.run();
-                viewInitializer = null; // NOSONAR because this is technically a singleton
-            }
+        if (isBrowserView && isRendered) {
+            vi.run();
         }
     }
 
