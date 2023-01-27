@@ -6,7 +6,9 @@ import {
     disconnectSpaceProvider,
     fetchWorkflowGroupContent,
     createWorkflow,
-    openWorkflow
+    openWorkflow,
+    importFiles,
+    importWorkflows
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
@@ -194,6 +196,7 @@ export const actions = {
         return dispatch('fetchWorkflowGroupContent', { itemId });
     },
 
+    // TODO: Remove manual sorting here, just re-fetch workflow group, see `importToWorkflowGroup`
     async createWorkflow({ commit, getters, state }) {
         try {
             const { spaceId, activeWorkflowGroup } = state.activeSpace;
@@ -229,9 +232,13 @@ export const actions = {
         }
     },
 
-    openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router }) {
-        const { spaceId } = state.activeSpace;
-        const { id: spaceProviderId } = state.activeSpaceProvider;
+    openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router, spaceId = null, spaceProviderId = null }) {
+        if (spaceId === null) {
+            spaceId = state.activeSpace.spaceId;
+        }
+        if (spaceProviderId === null) {
+            spaceProviderId = state.activeSpaceProvider.id;
+        }
         const { openProjects } = rootState.application;
         const foundOpenProject = openProjects.find(
             project => project.origin.providerId === spaceProviderId &&
@@ -248,6 +255,15 @@ export const actions = {
         }
 
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
+    },
+
+    // Will be adapted with NXT-1254
+    async importToWorkflowGroup({ dispatch, getters }, { importType }) {
+        const itemId = getters.currentWorkflowGroupId;
+        const success = importType === 'FILES' ? await importFiles({ itemId }) : importWorkflows({ itemId });
+        if (success) {
+            dispatch('fetchWorkflowGroupContent', { itemId });
+        }
     }
 };
 

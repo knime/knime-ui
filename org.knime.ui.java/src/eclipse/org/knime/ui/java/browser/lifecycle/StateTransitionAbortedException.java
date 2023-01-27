@@ -44,72 +44,15 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 26, 2023 (hornm): created
  */
-package org.knime.ui.java.browser;
-
-import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareResource;
-
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.knime.core.webui.WebUIUtil;
-import org.knime.ui.java.browser.lifecycle.LifeCycle;
-import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
-
-import com.equo.chromium.ChromiumBrowser;
-import com.equo.chromium.swt.Browser;
+package org.knime.ui.java.browser.lifecycle;
 
 /**
- * Listens for changes of the URL in the KNIME browser and triggers respective
- * actions (e.g. external URLs are opened in the external browser).
- *
+ * Thrown when a state transition is being aborted.
+ * 
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class KnimeBrowserLocationListener implements LocationListener {
-
-    private final Browser m_browser;
-
-    KnimeBrowserLocationListener(final Browser browser) {
-        m_browser = browser;
-    }
-
-    @Override
-    public void changing(final LocationEvent event) {
-        if (isCEFMiddlewareResource(event.location)) {
-            // Allow location change to middleware resources, these are handled by resource handlers.
-        } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but run the relaod life-cycle state transition
-            if (LifeCycle.get().isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
-                LifeCycle.get().reload();
-            }
-        } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
-            event.doit = false;
-        }
-    }
-
-    @Override
-    public void changed(final LocationEvent event) {
-        if (isAppPage(event.location) || isDevPage(event.location)) {
-            LifeCycle.get().webAppLoaded(m_browser);
-            var zoomFactor = System.getProperty("org.knime.ui.zoomfactor");
-            if (zoomFactor != null) {
-                var chromiumBrowser = (ChromiumBrowser)m_browser.getWebBrowser();
-                chromiumBrowser.zoom(Double.parseDouble(zoomFactor));
-            }
-        }
-    }
-
-	private static boolean isAppPage(final String url) {
-		return url.startsWith(KnimeBrowserView.BASE_URL);
-	}
-
-	private static boolean isEmptyPage(final String url) {
-		return url.endsWith(KnimeBrowserView.EMPTY_PAGE);
-	}
-
-	private static boolean isDevPage(final String url) {
-		return url.startsWith("http://localhost");
-	}
-
+public class StateTransitionAbortedException extends Exception {
+    //
 }

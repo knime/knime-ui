@@ -49,7 +49,6 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import java.util.Arrays;
-import java.util.function.Predicate;
 
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
@@ -112,7 +111,7 @@ public final class LifeCycle {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(LifeCycle.class);
 
-    private LifeCycleState m_state = null;
+    private LifeCycleStateInternal m_state = null;
 
     private StateTransition m_lastStateTransition = StateTransition.NULL;
 
@@ -124,7 +123,14 @@ public final class LifeCycle {
      * Called once at first.
      */
     public void create() {
-        doStateTransition(StateTransition.CREATE, Create::run, null, StateTransition.NULL);
+        doStateTransition(StateTransition.CREATE, Create::run, StateTransition.NULL);
+    }
+
+    /**
+     * @return the current life cycle state
+     */
+    public LifeCycleState getState() {
+        return m_state;
     }
 
     /**
@@ -134,7 +140,7 @@ public final class LifeCycle {
      * @param checkForUpdates whether to check for updates on initialization
      */
     public void init(final Browser browser, final boolean checkForUpdates) {
-        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(browser, checkForUpdates), null,
+        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(browser, checkForUpdates),
             StateTransition.CREATE, StateTransition.SUSPEND);
     }
 
@@ -144,8 +150,8 @@ public final class LifeCycle {
      * @param browser
      */
     public void webAppLoaded(final Browser browser) {
-        doStateTransition(StateTransition.WEB_APP_LOADED, () -> WebAppLoaded.runPhase(browser), null,
-            StateTransition.INIT, StateTransition.RELOAD);
+        doStateTransition(StateTransition.WEB_APP_LOADED, () -> WebAppLoaded.runPhase(browser), StateTransition.INIT,
+            StateTransition.RELOAD);
     }
 
     /**
@@ -155,14 +161,14 @@ public final class LifeCycle {
         doStateTransition(StateTransition.RELOAD, () -> {
             // removed event listeners will be re-added again by the web app
             DefaultEventService.getInstance().removeAllEventListeners();
-        }, null, StateTransition.WEB_APP_LOADED);
+        }, StateTransition.WEB_APP_LOADED);
     }
 
     /**
      * Runs the save-state-state-transition.
      */
     public void saveState() {
-        doStateTransition(StateTransition.SAVE_STATE, () -> m_state = SaveState.run(m_state), s -> !s.workflowsSaved(),
+        doStateTransition(StateTransition.SAVE_STATE, () -> m_state = SaveState.run(m_state),
             StateTransition.WEB_APP_LOADED);
     }
 
@@ -170,29 +176,29 @@ public final class LifeCycle {
      * Runs the suspend-state-transition.
      */
     public void suspend() {
-        doStateTransition(StateTransition.SUSPEND, () -> m_state = Suspend.run(m_state), null,
-            StateTransition.SAVE_STATE);
+        doStateTransition(StateTransition.SUSPEND, () -> m_state = Suspend.run(m_state), StateTransition.SAVE_STATE);
     }
 
     /**
      * Runs the shutdown-state-transition.
      */
     public void shutdown() {
-        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), null, StateTransition.SUSPEND,
+        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), StateTransition.SUSPEND,
             StateTransition.NULL);
     }
 
-    private void doStateTransition(final StateTransition nextStateTransition, final Runnable runStateTransition,
-        final Predicate<LifeCycleState> abort, final StateTransition... expectedLastStateTransitions) {
+    private void doStateTransition(final StateTransition nextStateTransition,
+        final StateTransitionRunnable runStateTransition, final StateTransition... expectedLastStateTransitions) {
         if (nextStateTransition == m_lastStateTransition) {
             // avoid the same state transition being called multiple times in a row
             return;
         }
 
         checkExpectedLastStateTransition(m_lastStateTransition, nextStateTransition, expectedLastStateTransitions);
-        runStateTransition.run();
-        if (abort != null && abort.test(m_state)) {
-            LOGGER.info("Phase '" + nextStateTransition.name() + "' aborted");
+        try {
+            runStateTransition.run();
+        } catch (StateTransitionAbortedException e) { // NOSONAR
+            LOGGER.info("State transition '" + nextStateTransition.name() + "' aborted");
             return;
         }
         logStateTransition(m_lastStateTransition, nextStateTransition);
@@ -239,6 +245,10 @@ public final class LifeCycle {
      */
     public boolean isBeforeStateTransition(final StateTransition stateTransition) {
         return m_lastStateTransition.rank() < stateTransition.rank();
+    }
+
+    private interface StateTransitionRunnable {
+        void run() throws StateTransitionAbortedException;
     }
 
 }

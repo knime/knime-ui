@@ -64,7 +64,7 @@ final class SaveState {
         //
     }
 
-    static LifeCycleState run(final LifeCycleState state) {
+    static LifeCycleStateInternal run(final LifeCycleStateInternal state) throws StateTransitionAbortedException {
         IntSupplier saveAndCloseAllWorkflows;
         boolean workflowsSaved;
         var serializedAppState = AppStatePersistor.serializeAppState();
@@ -75,10 +75,15 @@ final class SaveState {
             workflowsSaved = true;
         } else {
             saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
-            workflowsSaved = saveAndCloseAllWorkflows.getAsInt() == 1;
+            var saveState = saveAndCloseAllWorkflows.getAsInt();
+            if(saveState == 0) {
+                // saving has been cancelled
+                throw new StateTransitionAbortedException();
+            }
+            workflowsSaved = saveState == 1;
         }
 
-        return new LifeCycleState() {
+        return new LifeCycleStateInternal() {
 
             @Override
             public boolean workflowsSaved() {

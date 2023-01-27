@@ -45,7 +45,12 @@ export const state = () => ({
      * If true, the node repository will be filtered to show only the nodes that fit the current filter.
      * This will have an effect on the node search, on the category groups, and on the node recommendations.
      */
-    nodeRepoFilterEnabled: false
+    nodeRepoFilterEnabled: false,
+
+    /**
+     * example projects with name, svg and origin
+     */
+    exampleProjects: []
 });
 
 export const mutations = {
@@ -60,6 +65,9 @@ export const mutations = {
     },
     setOpenProjects(state, projects) {
         state.openProjects = projects.map(({ activeWorkflow, ...rest }) => rest);
+    },
+    setExampleProjects(state, examples) {
+        state.exampleProjects = examples;
     },
     setAvailablePortTypes(state, availablePortTypes) {
         state.availablePortTypes = availablePortTypes;
@@ -141,7 +149,7 @@ export const actions = {
 
             const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;
             const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
-        
+
             if (isLeavingWorkflow && !isEnteringWorkflow) {
                 await dispatch('switchWorkflow', { newWorkflow: null });
                 next();
@@ -153,7 +161,7 @@ export const actions = {
                 await dispatch('switchWorkflow', { newWorkflow: to.params, navigateToWorkflow: next });
                 return;
             }
-        
+
             next();
         });
     },
@@ -182,6 +190,9 @@ export const actions = {
             commit('setOpenProjects', applicationState.openProjects);
             await dispatch('setActiveProject', applicationState.openProjects);
         }
+        if (applicationState.exampleProjects) {
+            commit('setExampleProjects', applicationState.exampleProjects);
+        }
         if (applicationState.hasOwnProperty('nodeRepoFilterEnabled')) {
             commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
             dispatch(
@@ -198,9 +209,9 @@ export const actions = {
             await dispatch('switchWorkflow', { newWorkflow: null });
             return;
         }
-        
+
         const activeProject = openProjects.find(item => item.activeWorkflow);
-        
+
         if (!activeProject) {
             consola.info('No active workflow provided');
 
@@ -213,7 +224,7 @@ export const actions = {
             });
             return;
         }
-        
+
         const isSameActiveProject = state?.activeProjectId === activeProject.projectId;
         if (isSameActiveProject) {
             // don't set the workflow if already on it. e.g another tab was closed
@@ -252,7 +263,7 @@ export const actions = {
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
             commit('setActiveProjectId', null);
         }
-        
+
         // only continue if the new workflow exists
         if (newWorkflow) {
             let { projectId, workflowId = 'root' } = newWorkflow;
@@ -267,7 +278,7 @@ export const actions = {
                 await dispatch('loadWorkflow', { projectId, workflowId, navigateToWorkflow });
             }
         }
-        
+
         commit('setIsLoadingWorkflow', false);
     },
     async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
@@ -297,7 +308,7 @@ export const actions = {
         // TODO: remove this 'root' fallback after mocks have been adjusted
         const workflowId = workflow.info.containerId || 'root';
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
-        
+
         // Call navigate to workflow function (if provided) before restoring the canvas state
         navigateToWorkflow?.();
 
@@ -333,7 +344,7 @@ export const actions = {
 
         commit('setSavedCanvasStates', { ...scrollState, project, workflow });
     },
-    
+
     async restoreCanvasState({ dispatch, getters }) {
         const { workflowCanvasState } = getters;
 
@@ -341,7 +352,7 @@ export const actions = {
             await dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
     },
-    
+
     removeCanvasState({ rootState, state }, projectId) {
         const { info: { containerId: workflow } } = rootState.workflow.activeWorkflow;
         const rootWorkflowId = getRootWorkflowId(workflow);
@@ -349,7 +360,7 @@ export const actions = {
 
         delete state.savedCanvasStates[stateKey];
     },
-    
+
     updatePreviewSnapshot({ rootState, state, dispatch }, { isChangingProject, newWorkflow }) {
         const isCurrentlyOnRoot = rootState.workflow?.activeWorkflow?.info.containerId === 'root';
         const isWorkflowUnsaved = rootState.workflow?.activeWorkflow?.dirty;
@@ -371,7 +382,7 @@ export const actions = {
 
             return;
         }
-        
+
         // Going back to the root of a workflow without having changed projects
         const isGoingBackToRoot = newWorkflow?.workflowId === 'root';
         if (!isCurrentlyOnRoot && isGoingBackToRoot && !isChangingProject) {
@@ -379,7 +390,7 @@ export const actions = {
             dispatch('removeFromRootWorkflowSnapshots', { projectId: activeProjectId });
         }
     },
-    
+
     addToRootWorkflowSnapshots({ state }, { projectId, element }) {
         // always use the "root" workflow
         const snapshotKey = encodeString(`${projectId}--root`);
@@ -398,7 +409,7 @@ export const actions = {
     async getActiveWorkflowSnapshot({ rootState, dispatch }) {
         const { getScrollContainerElement } = rootState.canvas;
         const { activeWorkflow: { projectId, info: { containerId } } } = rootState.workflow;
-        
+
         const isRootWorkflow = containerId === 'root';
 
         const rootWorkflowSnapshotElement = isRootWorkflow

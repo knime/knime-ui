@@ -392,6 +392,22 @@ describe('spaces store', () => {
                 });
             });
 
+            it('should open workflow from a different space', () => {
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local'
+                };
+
+                store.dispatch('spaces/openWorkflow', {
+                    workflowItemId: 'foobar',
+                    spaceId: 'remote1',
+                    spaceProviderId: 'knime1'
+                });
+                expect(openWorkflow).toHaveBeenCalledWith({
+                    spaceId: 'remote1', spaceProviderId: 'knime1', workflowItemId: 'foobar'
+                });
+            });
+
             it('should navigate to already open workflow', () => {
                 const openProjects = [
                     { projectId: 'dummyProject', origin: { providerId: 'local', spaceId: 'local', itemId: 'dummy' } }

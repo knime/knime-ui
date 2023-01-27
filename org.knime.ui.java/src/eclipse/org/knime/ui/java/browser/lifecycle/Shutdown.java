@@ -66,7 +66,7 @@ public final class Shutdown {
      *
      * @param state
      */
-    public static void run(final LifeCycleState state) {
+    public static void run(final LifeCycleStateInternal state) {
         if (state != null) {
             AppStatePersistor.saveAppState(state.serializedAppState());
         }

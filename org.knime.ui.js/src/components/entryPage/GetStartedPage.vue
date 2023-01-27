@@ -1,33 +1,48 @@
 <script>
 import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 
-import ArrowRightIcon from 'webapps-common/ui/assets/img/icons/arrow-right.svg';
+import LinkExternal from 'webapps-common/ui/assets/img/icons/link-external.svg';
 
-import { APP_ROUTES } from '@/router';
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
 import Card from '@/components/common/Card.vue';
 import CardHeader from '@/components/common/CardHeader.vue';
 import CardContent from '@/components/common/CardContent.vue';
+import { mapState } from 'vuex';
+import SpaceSelectionPage from '@/components/spaces/SpaceSelectionPage.vue';
+
+const MAX_NUM_OF_EXAMPLES = 3;
 
 export default {
     components: {
-        ArrowRightIcon,
+        SpaceSelectionPage,
+        LinkExternal,
         GridOutbreaker,
         Card,
         CardHeader,
         CardContent
     },
-
     data() {
         return {
             knimeColors
         };
     },
+    computed: {
+        ...mapState('application', ['exampleProjects']),
 
-    beforeMount() {
-        // TODO: remove when Get Started page is displayed
-        // as this overules the redirects to the Get Started page and uses the selection page instead
-        this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
+        displayedExampleProjects() {
+            return this.exampleProjects.slice(0, MAX_NUM_OF_EXAMPLES);
+        }
+    },
+    methods: {
+        onExampleClick({ origin: { spaceId, providerId: spaceProviderId, itemId: workflowItemId } }) {
+            const { $router } = this.$router;
+            this.$store.dispatch('spaces/openWorkflow', {
+                workflowItemId,
+                spaceId,
+                spaceProviderId,
+                $router
+            });
+        }
     }
 };
 </script>
@@ -40,48 +55,25 @@ export default {
           <h2>Examples</h2>
         </div>
       </div>
-              
+
       <div class="grid-container cards">
-        <div class="grid-item-4">
+        <div
+          v-for="(example, index) in displayedExampleProjects"
+          :key="`example-${index}`"
+          class="grid-item-4"
+        >
           <Card
-            link
-            href="/space-browsing"
+            @click="onExampleClick(example)"
           >
-            <CardHeader>Read excel file</CardHeader>
+            <CardHeader>{{ example.name }}</CardHeader>
 
-            <CardContent>
+            <CardContent
+              padded
+            >
               <img
                 class="card-img"
-                src="@/assets/card-img-1.png"
-                alt=""
-              >
-            </CardContent>
-          </Card>
-        </div>
-
-        <div class="grid-item-4">
-          <Card>
-            <CardHeader>How to do v-lookup</CardHeader>
-
-            <CardContent>
-              <img
-                class="card-img"
-                src="@/assets/card-img-2.png"
-                alt=""
-              >
-            </CardContent>
-          </Card>
-        </div>
-
-        <div class="grid-item-4">
-          <Card>
-            <CardHeader>Merge excel files</CardHeader>
-
-            <CardContent>
-              <img
-                class="card-img"
-                src="@/assets/card-img-3.png"
-                alt=""
+                :src="`data:image/svg+xml;base64,${example.svg}`"
+                :alt="`Preview image of ${example.name}`"
               >
             </CardContent>
           </Card>
@@ -89,10 +81,12 @@ export default {
       </div>
 
       <div class="grid-container more-workflows">
-        <ArrowRightIcon />
-        <span>more workflows</span>
+        <a href="https://knime.com/spreadsheet-edition-collection?src=knimeappmodernui">
+          <LinkExternal />Find more resources for spreadsheet automation on the KNIME Community Hub
+        </a>
       </div>
     </section>
+    <SpaceSelectionPage />
   </GridOutbreaker>
 </template>
 
@@ -107,22 +101,41 @@ section.examples {
     & [class*="grid-item-"]:not(:first-child, :last-child) {
       margin: 0 15px;
     }
+
+    & .card-img {
+      width: 100%;
+      max-height: 140px;
+      object-fit: contain;
+    }
   }
+
 
   & .more-workflows {
     padding: 20px 0;
     align-items: center;
     justify-content: flex-start;
 
-    & span {
+    & a {
+      text-decoration: none;
       font-size: 16px;
       line-height: 20px;
+      color: var(--knime-dove-gray);
     }
 
     & svg {
-      margin-right: 8px;
+      margin-right: 6px;
+      stroke: var(--knime-dove-gray);
+      vertical-align: middle;
 
       @mixin svg-icon-size 14;
+    }
+
+    & a:hover {
+      color: var(--knime-masala);
+
+      & svg {
+        stroke: var(--knime-masala);
+      }
     }
   }
 }

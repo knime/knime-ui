@@ -44,72 +44,42 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 26, 2023 (hornm): created
  */
-package org.knime.ui.java.browser;
+package org.knime.ui.java.browser.lifecycle;
 
-import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareResource;
+import java.util.function.IntSupplier;
 
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.knime.core.webui.WebUIUtil;
-import org.knime.ui.java.browser.lifecycle.LifeCycle;
-import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
-
-import com.equo.chromium.ChromiumBrowser;
-import com.equo.chromium.swt.Browser;
+import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
 
 /**
- * Listens for changes of the URL in the KNIME browser and triggers respective
- * actions (e.g. external URLs are opened in the external browser).
+ * Life-cycle-state only available to the state-transitions (within this package).
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class KnimeBrowserLocationListener implements LocationListener {
+public interface LifeCycleStateInternal extends LifeCycleState {
 
-    private final Browser m_browser;
-
-    KnimeBrowserLocationListener(final Browser browser) {
-        m_browser = browser;
+    /**
+     * @return the logic which saves and closes all workflows; see
+     *         {@link SaveAndCloseWorkflowsBrowserFunction#saveAndCloseWorkflowsInteractively(java.util.Set, org.knime.gateway.impl.service.util.EventConsumer, org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction)}
+     *         for documentation on the result
+     */
+    default IntSupplier saveAndCloseAllWorkflows() {
+        return null;
     }
 
-    @Override
-    public void changing(final LocationEvent event) {
-        if (isCEFMiddlewareResource(event.location)) {
-            // Allow location change to middleware resources, these are handled by resource handlers.
-        } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but run the relaod life-cycle state transition
-            if (LifeCycle.get().isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
-                LifeCycle.get().reload();
-            }
-        } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
-            event.doit = false;
-        }
+    /**
+     * @return the logic which removes and disposes all browser functions
+     */
+    default Runnable removeAndDisposeAllBrowserFunctions() {
+        return null;
     }
 
-    @Override
-    public void changed(final LocationEvent event) {
-        if (isAppPage(event.location) || isDevPage(event.location)) {
-            LifeCycle.get().webAppLoaded(m_browser);
-            var zoomFactor = System.getProperty("org.knime.ui.zoomfactor");
-            if (zoomFactor != null) {
-                var chromiumBrowser = (ChromiumBrowser)m_browser.getWebBrowser();
-                chromiumBrowser.zoom(Double.parseDouble(zoomFactor));
-            }
-        }
+    /**
+     * @return the app state serialized into a string
+     */
+    default String serializedAppState() {
+        return null;
     }
-
-	private static boolean isAppPage(final String url) {
-		return url.startsWith(KnimeBrowserView.BASE_URL);
-	}
-
-	private static boolean isEmptyPage(final String url) {
-		return url.endsWith(KnimeBrowserView.EMPTY_PAGE);
-	}
-
-	private static boolean isDevPage(final String url) {
-		return url.startsWith("http://localhost");
-	}
 
 }

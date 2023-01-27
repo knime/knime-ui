@@ -85,7 +85,7 @@ public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
             // all the open workflow projects will be closed on perspective switch
             var proceed = SaveAndCloseWorkflowsBrowserFunction.saveAndCloseWorkflowsInteractively(
                 WorkflowProjectManager.getInstance().getWorkflowProjectsIds(), m_eventConsumer,
-                PostWorkflowCloseAction.SWITCH_PERSPECTIVE) != 0;
+                PostWorkflowCloseAction.SWITCH_PERSPECTIVE) == 1;
             if (!proceed) {
                 return null;
             }

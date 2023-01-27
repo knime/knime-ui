@@ -79,6 +79,8 @@ import org.knime.ui.java.browser.function.ConnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.DisconnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.EmitUpdateAvailableEventForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.GetSpaceProvidersBrowserFunction;
+import org.knime.ui.java.browser.function.ImportFilesBrowserFunction;
+import org.knime.ui.java.browser.function.ImportWorkflowsBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.OpenAboutDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenInstallExtensionsDialogBrowserFunction;
@@ -119,7 +121,7 @@ final class Init {
         //
     }
 
-    static LifeCycleState run(final Browser browser, final boolean checkForUpdates) {
+    static LifeCycleStateInternal run(final Browser browser, final boolean checkForUpdates) {
 
         // Create and set default service dependencies
         var eventConsumer = createEventConsumer();
@@ -150,7 +152,7 @@ final class Init {
             }
         });
 
-        return new LifeCycleState() {
+        return new LifeCycleStateInternal() {
 
             @Override
             public IntSupplier saveAndCloseAllWorkflows() {
@@ -283,6 +285,8 @@ final class Init {
         functions.add(new DisconnectSpaceProviderBrowserFunction(browser, spaceProviders));
         functions.add(new SaveAndCloseWorkflowsBrowserFunction(browser, appStateUpdater));
         functions.add(new SetProjectActiveAndEnsureItsLoadedBrowserFunction(browser));
+        functions.add(new ImportFilesBrowserFunction(browser));
+        functions.add(new ImportWorkflowsBrowserFunction(browser));
         if (SharedConstants.isRemoteDebuggingPortSet()) {
             functions.add(new InitAppForTestingBrowserFunction(browser));
             functions.add(new ClearAppForTestingBrowserFunction(browser));

@@ -106,7 +106,9 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
             return closeWorkflowViaClassicUI(projectIdToClose, nextProjectId);
         } else {
             if (nextProjectId != null) {
-                WorkflowProjectManager.getInstance().setWorkflowProjectActive(nextProjectId);
+                var wpm = WorkflowProjectManager.getInstance();
+                wpm.openAndCacheWorkflow(nextProjectId);
+                wpm.setWorkflowProjectActive(nextProjectId);
             }
             var success = saveAndCloseWorkflowsInteractively(Collections.singleton(projectIdToClose), m_eventConsumer,
                 PostWorkflowCloseAction.UPDATE_APP_STATE) == 1;
