@@ -110,7 +110,7 @@ public class ImportFilesBrowserFunction extends AbstractImportBrowserFunction {
     }
 
     @Override
-    protected List<SpaceItemEnt> functionToRunWithProgress(final IProgressMonitor monitor,
+    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor,
         final String workflowGroupItemId, final List<Path> srcPaths) {
         monitor.beginTask(
             String.format("Importing %d files to \"%s\"", srcPaths.size(), getWorkflowGroupName(workflowGroupItemId)),

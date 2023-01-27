@@ -115,7 +115,7 @@ public abstract class AbstractImportBrowserFunction extends BrowserFunction {
 
         // Attempt to import files
         var importedSpaceItems = DesktopAPUtil
-            .runWithProgress(itemId, LOGGER, monitor -> functionToRunWithProgress(monitor, itemId, srcPaths))
+            .runWithProgress(itemId, LOGGER, monitor -> importItems(monitor, itemId, srcPaths))
             .orElse(Collections.emptyList());
 
         // Notify the user if not all files could be imported
@@ -166,7 +166,7 @@ public abstract class AbstractImportBrowserFunction extends BrowserFunction {
      * @param srcPaths The source paths of the items to import
      * @return A list of space item entities that were imported
      */
-    protected abstract List<SpaceItemEnt> functionToRunWithProgress(final IProgressMonitor monitor,
-        final String workflowGroupItemId, final List<Path> srcPaths);
+    protected abstract List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final String workflowGroupItemId,
+        final List<Path> srcPaths);
 
 }
