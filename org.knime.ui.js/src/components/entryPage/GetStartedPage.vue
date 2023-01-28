@@ -68,6 +68,7 @@ export default {
         <Card
           v-for="(example, index) in displayedExampleProjects"
           :key="`example-${index}`"
+          class="example-card"
           @click="onExampleClick(example)"
         >
           <CardHeader>{{ example.name }}</CardHeader>
@@ -109,6 +110,10 @@ section.examples {
     display: grid;
     gap: 24px;
     grid-template-columns: repeat(var(--grid-columns, 2), 1fr);
+
+    & .example-card {
+      min-width: auto;
+    }
 
     & .card-img {
       width: 100%;
