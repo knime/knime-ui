@@ -350,11 +350,10 @@ describe('spaces store', () => {
                 expect(createWorkflow).toHaveBeenCalledWith(
                     expect.objectContaining({ spaceId: 'local', itemId: 'level2' })
                 );
+                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
+                    expect.objectContaining({ itemId: 'level2' })
+                );
                 expect(openWorkflow).toHaveBeenCalledWith({ workflowItemId: 'NewFile' });
-                expect(store.state.spaces.activeSpace.activeWorkflowGroup.items).toEqual([
-                    { id: 'File-1', type: 'Workflow' },
-                    { id: 'NewFile', type: 'Workflow' }
-                ]);
             });
         });
 

@@ -198,23 +198,13 @@ export const actions = {
 
     async createWorkflow({ commit, getters, state, dispatch }) {
         try {
-            const { spaceId, activeWorkflowGroup } = state.activeSpace;
+            const { spaceId } = state.activeSpace;
             const itemId = getters.currentWorkflowGroupId;
 
             const newWorkflowItem = await createWorkflow({ spaceId, itemId });
 
-            const updatedWorkflowGroupItems = activeWorkflowGroup
-                .items
-                .concat(newWorkflowItem);
-
             dispatch('fetchWorkflowGroupContent', { itemId });
-
-            commit('setActiveWorkflowGroupData', {
-                path: activeWorkflowGroup.path,
-                items: updatedWorkflowGroupItems
-            });
             openWorkflow({ workflowItemId: newWorkflowItem.id });
-
 
             return newWorkflowItem;
         } catch (error) {
