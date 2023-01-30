@@ -378,8 +378,9 @@ tbody.mini {
   user-select: none;
   background: var(--knime-gray-ultra-light);
   transition: box-shadow 0.15s;
-  display: block;
-  border: 1px solid transparent;
+  display: flex;
+  flex-flow: row nowrap;
+  width: 100%;
   margin-bottom: 2px;
 
   &:hover {
@@ -403,12 +404,12 @@ tbody.mini {
   & .item-content {
     width: 100%;
     height: 100%;
+    flex: 2 1 auto;
     color: var(--knime-masala);
     padding: var(--item-padding);
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    max-width: 250px;
   }
 
   &:not(.selected, .dragging, .dragging-over) .item-content {
@@ -435,7 +436,6 @@ tbody.mini {
 
   & .item-icon {
     padding: var(--item-padding);
-    width: 60px;
     position: relative;
 
     & .open-indicator {
@@ -443,7 +443,6 @@ tbody.mini {
       width: 10px;
       height: 10px;
       background: var(--knime-dove-gray);
-      border: 1px solid var(--knime-gray-ultra-light);
       border-radius: 50%;
       bottom: 4px;
       right: 4px;
@@ -451,9 +450,10 @@ tbody.mini {
   }
 
   & .item-option {
-    width: 34px;
+    width: 25px;
     pointer-events: auto;
     padding: 0;
+    display: flex;
 
     & .submenu-toggle.active > svg {
       stroke: var(--theme-button-function-foreground-color-active);
@@ -461,28 +461,9 @@ tbody.mini {
 
     & >>> .submenu-toggle {
       border-radius: 0;
-    }
-
-    /*
-     * TODO
-     * The .function-button does not fill the .item-option.
-     * Therefore the color of the hover and active state of the button
-     * do not fill all the space which looks wrong.
-     *
-     * The following colors make the problem easier visible
-     */
-    background-color: #f00;
-
-    & >>> .submenu-toggle {
-      background-color: #0f0;
-    }
-
-    & >>> .submenu-toggle:hover {
-      background-color: #ff0;
-    }
-
-    & >>> .submenu-toggle.active {
-      background-color: #00f;
+      display: flex;
+      height: 100%;
+      padding: var(--item-padding) 3px;
     }
   }
 }
