@@ -253,7 +253,7 @@ describe('SpaceExplorer.vue', () => {
         expect(wrapper.find('.buttons').exists()).toBe(true);
     });
 
-    it('should not show buttons on the local space in the mini mode', async () => {
+    it('should not show buttons in the mini mode in space that is not local', async () => {
         const { wrapper, store } = doMount({ props: { mode: 'mini' } });
         store.state.spaces.activeSpace = {
             spaceId: 'somerandomhub',
