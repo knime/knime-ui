@@ -18,7 +18,7 @@ const DISPLAY_LOADING_DELAY = 100;
 const DISPLAY_LOADING_ICON_DELAY = 350;
 const DEFAULT_LOADING_INDICATOR_HEIGHT = 76; // px
 const ITEM_TYPES_TEXTS = {
-    [ITEM_TYPES.WorkflowGroup]: 'workflow group',
+    [ITEM_TYPES.WorkflowGroup]: 'folder',
     [ITEM_TYPES.Workflow]: 'workflow',
     [ITEM_TYPES.Component]: 'component',
     [ITEM_TYPES.Metanode]: 'metanode',
@@ -187,15 +187,10 @@ export default {
         },
 
         onDeleteItems({ items }) {
-            let message;
-            if (items.length === 1) {
-                const item = items[0];
-                const type = ITEM_TYPES_TEXTS[item.type];
-                message = `Do you want to delete the ${type} ${item.name}?`;
-            } else {
-                // TODO(NXT-1471) list the file types and names
-                message = `Do you want to delete the selected files?`;
-            }
+            const itemNameList = items
+                .map((item) => `${ITEM_TYPES_TEXTS[item.type]} ${item.name}`)
+                .join(', ');
+            const message = `Do you want to delete the ${itemNameList}?`;
             // TODO(NXT-1472) use a modal instead of a native dialog
             const result = window.confirm(message);
             if (result) {

@@ -227,8 +227,8 @@ export default {
             }];
         },
 
-        onMenuClick(option, item) {
-            if (option === 'delete') {
+        onMenuClick(optionId, item) {
+            if (optionId === 'delete') {
                 this.$emit('delete-items', { items: [item] });
             }
         }
@@ -309,10 +309,9 @@ export default {
           {{ item.name }}
         </td>
 
-        <!-- NB: Stop double clicking from propagating to the row -->
         <td
           class="item-option"
-          @dblclick.stop=""
+          @dblclick.stop
         >
           <SubMenu
             button-title="Options"
