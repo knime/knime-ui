@@ -59,6 +59,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
+import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
@@ -134,8 +135,9 @@ public abstract class AbstractImportBrowserFunction extends BrowserFunction {
      * @return The name of the workflow group
      */
     protected static String getWorkflowGroupName(final String workflowGroupItemId) {
-        return LocalSpaceUtil.getLocalWorkspace().toLocalAbsolutePath(null, workflowGroupItemId).getFileName()
-            .toString();
+        // Make sure to not look up the root item ID, because that will fail; return it instead.
+        return Space.ROOT_ITEM_ID.equals(workflowGroupItemId) ? workflowGroupItemId : LocalSpaceUtil.getLocalWorkspace()
+            .toLocalAbsolutePath(null, workflowGroupItemId).getFileName().toString();
     }
 
     /**

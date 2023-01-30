@@ -273,7 +273,7 @@ final class Init {
         functions.add(new OpenNodeDialogBrowserFunction(browser));
         functions.add(new OpenLegacyFlowVariableDialogBrowserFunction(browser));
         functions.add(new SaveWorkflowBrowserFunction(browser));
-        functions.add(new OpenWorkflowBrowserFunction(browser, appStateUpdater));
+        functions.add(new OpenWorkflowBrowserFunction(browser, appStateUpdater, spaceProviders));
         functions.add(new CloseWorkflowBrowserFunction(browser, appStateUpdater, eventConsumer));
         functions.add(new OpenLayoutEditorBrowserFunction(browser));
         functions.add(new OpenWorkflowCoachPreferencePageBrowserFunction(browser, appStateUpdater));

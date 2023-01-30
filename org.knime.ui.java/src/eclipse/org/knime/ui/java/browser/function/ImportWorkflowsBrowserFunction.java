@@ -105,6 +105,7 @@ public class ImportWorkflowsBrowserFunction extends AbstractImportBrowserFunctio
             var dirName = zipFile.stream()//
                 .map(entry -> new File(entry.toString()))//
                 .map(File::getParentFile)//
+                .filter(file -> file.getParentFile() == null) // Make sure it is a top level file
                 .map(File::getName)//
                 .findFirst()//
                 .orElseThrow(IOException::new);
