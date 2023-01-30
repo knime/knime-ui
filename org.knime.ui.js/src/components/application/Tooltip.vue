@@ -169,7 +169,7 @@ export default {
     }
 
     & .issue {
-      font-family: 'Roboto Mono', sans-serif;
+      font-family: "Roboto Mono", sans-serif;
       line-height: 13px;
       font-size: 13px;
       font-weight: 400;
