@@ -69,7 +69,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.gateway.impl.webui.service.DefaultSpaceService;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -99,10 +99,14 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
 
     private final AppStateUpdater m_appStateUpdater;
 
+    private final SpaceProviders m_spaceProviders;
+
     @SuppressWarnings("javadoc")
-    public OpenWorkflowBrowserFunction(final Browser browser, final AppStateUpdater appStateUpdater) {
+    public OpenWorkflowBrowserFunction(final Browser browser, final AppStateUpdater appStateUpdater,
+        final SpaceProviders spaceProviders) {
         super(browser, "openWorkflow");
         m_appStateUpdater = appStateUpdater;
+        m_spaceProviders = spaceProviders;
     }
 
     /**
@@ -120,7 +124,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         final var spaceProviderId =
                 arguments.length < 3 ? LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID : (String)arguments[2];
 
-        final var space = DefaultSpaceService.getInstance().getSpace(spaceId, spaceProviderId);
+        final var space = SpaceProviders.getSpace(m_spaceProviders, spaceId, spaceProviderId);
 
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId));

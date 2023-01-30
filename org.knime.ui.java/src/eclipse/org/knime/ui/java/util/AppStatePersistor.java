@@ -184,10 +184,10 @@ public final class AppStatePersistor {
     private static WorkflowProject createWorkflowProject(final JsonNode projectJson) {
         var relativePath = Path.of(projectJson.get(ORIGIN).get(RELATIVE_PATH).asText());
         assert !relativePath.isAbsolute();
-        var absolutePath = LocalSpaceUtil.getLocalWorkspace().getLocalRootPath().resolve(relativePath);
+        var localSpace = LocalSpaceUtil.getLocalWorkspace();
+        var absolutePath = localSpace.getLocalRootPath().resolve(relativePath);
         var name = projectJson.get(NAME).asText();
         var projectId = LocalSpaceUtil.getUniqueProjectId(name);
-        var localSpace = LocalSpaceUtil.getLocalWorkspace();
         var itemId = localSpace.getItemId(absolutePath);
         return new WorkflowProject() { // NOSONAR
 
@@ -204,7 +204,7 @@ public final class AppStatePersistor {
             @Override
             public Optional<Origin> getOrigin() {
                 var originJson = projectJson.get(ORIGIN);
-                return Optional.of(new Origin() {
+                return Optional.of(new Origin() { // NOSONAR
 
                     @Override
                     public String getSpaceId() {
