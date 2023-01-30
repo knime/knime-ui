@@ -173,6 +173,7 @@ export default {
       line-height: 13px;
       font-size: 13px;
       font-weight: 400;
+      white-space: pre-wrap;
     }
 
     & .resolutions {
