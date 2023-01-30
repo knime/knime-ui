@@ -122,29 +122,23 @@ public final class ClassicWorkflowEditorUtil {
      */
     public static void updateWorkflowProjectsFromOpenedWorkflowEditors(final EModelService modelService,
         final MApplication app) {
-        removeAllWorkflowProjects();
         registerWorkflowProjects(modelService, app);
     }
 
-    private static void removeAllWorkflowProjects() {
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
-    }
-
-    private static WorkflowProject createWorkflowProject(final MPart editorPart) {
+    private static WorkflowProject getOrCreateWorkflowProject(final MPart editorPart) {
         var wfm = getWorkflowManager(editorPart);
         var projectWfm = wfm.flatMap(ClassicWorkflowEditorUtil::getProjectManager);
-        return projectWfm.map(pw -> createWorkflowProject(pw, editorPart)).orElse(null);
+        return projectWfm.map(pw -> getOrCreateWorkflowProject(pw, editorPart)).orElse(null);
     }
 
-    private static WorkflowProject createWorkflowProject(final WorkflowManager projWfm,
+    private static WorkflowProject getOrCreateWorkflowProject(final WorkflowManager projWfm,
         final MPart editorPart) {
         WorkflowProject wp =
             WorkflowProjectManager.getInstance().getWorkflowProject(projWfm.getNameWithID()).orElse(null);
         if (wp == null) {
             return createWorkflowProject(editorPart, projWfm);
         }
-        return null;
+        return wp;
     }
 
     private static void registerWorkflowProjects(final EModelService modelService, final MApplication app) {
@@ -152,8 +146,8 @@ public final class ClassicWorkflowEditorUtil {
         var wpm = WorkflowProjectManager.getInstance();
         var activeProjectId = new AtomicReference<String>();
         var workflowProjects = editorParts.stream().map(part -> {
-            var wp = ClassicWorkflowEditorUtil.createWorkflowProject(part);
-            if (isEditorPartSelectedElement(part)) {
+            var wp = getOrCreateWorkflowProject(part);
+            if (wp != null && isEditorPartSelectedElement(part)) {
                 activeProjectId.set(wp.getID());
             }
             return wp;
@@ -216,7 +210,7 @@ public final class ClassicWorkflowEditorUtil {
         if (editorPart.getObject() instanceof CompatibilityPart) {
             // Editors with no workflow loaded (i.e. opened tabs after
             // the KNIME start which haven't been touched, yet) are ignored atm
-            return new WorkflowProject() {
+            return new WorkflowProject() { // NOSONAR
 
                 @Override
                 public String getName() {
