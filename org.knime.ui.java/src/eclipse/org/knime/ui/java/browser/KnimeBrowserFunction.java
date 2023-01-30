@@ -44,23 +44,40 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 12, 2023 (hornm): created
+ *   Jan 30, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.browser;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.function.Function;
+
+import com.equo.chromium.swt.Browser;
+import com.equo.chromium.swt.BrowserFunction;
 
 /**
- * Provides a single static object mapper instance used within multiple browser functions.
+ * A browser function for the KNIME UI.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class ObjectMapperForBrowserFunction {
+public class KnimeBrowserFunction extends BrowserFunction {
 
-    private ObjectMapperForBrowserFunction() {
-        // utility
+    private final Function<Object[], Object> m_function;
+
+    /**
+     * @param browser
+     * @param name
+     * @param function
+     */
+    public KnimeBrowserFunction(final Browser browser, final String name, final Function<Object[], Object> function) {
+        super(browser, name);
+        m_function = function;
     }
 
-    static final ObjectMapper MAPPER = new ObjectMapper();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object function(final Object[] arguments) {
+        return m_function.apply(arguments);
+    }
 
 }

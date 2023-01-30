@@ -44,42 +44,81 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 30, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
 
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import static org.knime.ui.java.api.DesktopAPI.MAPPER;
+
+import java.util.function.Predicate;
+
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 
 /**
- * Disconnects a space provider from its remote location. Essentially calls {@link SpaceProviderConnection#disconnect()}.
+ * Functions around spaces.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class DisconnectSpaceProviderBrowserFunction extends BrowserFunction {
+final class SpaceAPI {
 
-    private final SpaceProviders m_spaceProviders;
-
-    /**
-     * @param browser
-     * @param spaceProviders
-     */
-    public DisconnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "disconnectSpaceProvider");
-        m_spaceProviders = spaceProviders;
+    private SpaceAPI() {
+       // stateless
     }
 
-    @Override
-    public Object function(final Object[] arguments) {
-        var spaceProviderId = (String)arguments[0];
-        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
+    /**
+     * Returns infos on all available {@link SpaceProviders}. It's a browser function because this functionality is only
+     * available in the desktop AP (the desktop AP, e.g., can connect to multiple hubs).
+     *
+     * @return
+     */
+    @API
+    static String getSpaceProviders() {
+        var res = MAPPER.createObjectNode();
+        for (var sp : DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().values()) {
+            var isLocalSpaceProvider = sp.isLocal();
+            var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
+            res.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
+                .put("name", sp.getName()) //
+                .put("connected", isLocalSpaceProvider || sp.getConnection(false).isPresent()) //
+                .put("connectionMode", connectionMode) //
+                .put("local", isLocalSpaceProvider));
+        }
+        return res.toPrettyString();
+    }
+
+    /**
+     * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
+     *
+     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
+     */
+    @API
+    static String connectSpaceProvider(final String spaceProviderId) {
+        var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
+        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
+            return spaceProvider.getConnection(true)//
+                .map(SpaceProviderConnection::getUsername)//
+                .filter(Predicate.not(String::isEmpty))//
+                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
+                .orElse(null);
+        }
+        return null;
+    }
+
+    /**
+     *
+     * Disconnects a space provider from its remote location. Essentially calls
+     * {@link SpaceProviderConnection#disconnect()}.
+     *
+     * @param spaceProviderId
+     */
+    @API
+    static void disconnectSpaceProvider(final String spaceProviderId) {
+        var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
         if (spaceProvider != null) {
             spaceProvider.getConnection(false).ifPresent(SpaceProviderConnection::disconnect);
         }
-        return null;
     }
 
 }

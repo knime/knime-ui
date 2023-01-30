@@ -44,58 +44,101 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 30, 2020 (hornm): created
+ *   Jan 30, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
+
+import java.util.function.Predicate;
 
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
+import org.eclipse.ui.actions.ActionFactory;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
+import org.knime.core.ui.workflowcoach.data.NodeTripleProviderFactory;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.ui.java.PerspectiveSwitchAddon;
-import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
+import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
 import org.knime.ui.java.util.PerspectiveUtil;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
+import org.knime.workbench.ui.p2.actions.InvokeInstallSiteAction;
+import org.knime.workbench.ui.p2.actions.InvokeUpdateAction;
 
 /**
- * Browser function to allow the js webapp to switch back to the classic KNIME perspective.
+ * Functions opening Eclipse-UI elements.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
+final class EclipseUIAPI {
 
-    private static final String FUNCTION_NAME = "switchToJavaUI";
+    private static final String PREFERENCE_PAGE_ID = "org.knime.workbench.workflowcoach";
 
-    private final EventConsumer m_eventConsumer;
-
-    @SuppressWarnings("javadoc")
-    public SwitchToJavaUIBrowserFunction(final Browser browser, final EventConsumer eventConsumer) {
-        super(browser, FUNCTION_NAME);
-        m_eventConsumer = eventConsumer;
+    private EclipseUIAPI() {
+        // stateless
     }
 
-    @Override
-    public Object function(final Object[] args) { // NOSONAR
+    /**
+     * Open the "About"-Dialog of the Eclipse workbench.
+     */
+    @API
+    static void openAboutDialog() {
+        var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        ActionFactory.ABOUT.create(window).run();
+    }
+
+    /**
+     * Invoke the update wizard of the classic UI.
+     */
+    @API
+    static void openUpdateDialog() {
+        new InvokeUpdateAction().run();
+    }
+
+    /**
+     * Open the "Install Extensions" dialog of the Eclipse workbench.
+     */
+    @API
+    static void openInstallExtensionsDialog() {
+        new InvokeInstallSiteAction().run();
+    }
+
+    /**
+     * Browser function opening the workflow coach preference pages
+     */
+    @API
+    static void openWorkflowCoachPreferencePage() {
+        var displayedIds = NodeRecommendationManager.getNodeTripleProviderFactories().stream()//
+            .map(NodeTripleProviderFactory::getPreferencePageID)//
+            .filter(Predicate.not(String::isBlank))//
+            .toArray(String[]::new);
+        var dialog = PreferencesUtil.createPreferenceDialogOn(null, PREFERENCE_PAGE_ID, displayedIds, null);
+        dialog.open();
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState(); // Since changing the node recommendation settings changes the application state
+    }
+
+    /**
+     * Function to allow the js webapp to switch back to the classic KNIME perspective.
+     */
+    @API
+    static void switchToJavaUI() { // NOSONAR
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             // NOTE: if no classic UI has been loaded, yet,
             // all the open workflow projects will be closed on perspective switch
-            var proceed = SaveAndCloseWorkflowsBrowserFunction.saveAndCloseWorkflowsInteractively(
-                WorkflowProjectManager.getInstance().getWorkflowProjectsIds(), m_eventConsumer,
+            var proceed = SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(
+                WorkflowProjectManager.getInstance().getWorkflowProjectsIds(), DesktopAPI.getDeps(EventConsumer.class),
                 PostWorkflowCloseAction.SWITCH_PERSPECTIVE) == 1;
             if (!proceed) {
-                return null;
+                return;
             }
         }
 
-        switchToJavaUI();
-        return null;
+        doSwitchToJavaUI();
     }
 
-    static void switchToJavaUI() {
+    static void doSwitchToJavaUI() {
         IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
         try {

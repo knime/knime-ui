@@ -46,7 +46,7 @@
  * History
  *   Jan 23, 2023 (kai): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -63,39 +63,19 @@ import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-
 /**
- * Abstract browser function to import files or workflows into a given workspace.
+ * Abstract helper class to import files or workflows into a given workspace.
  *
  * @author Kai Franze, KNIME GmbH
  */
-public abstract class AbstractImportBrowserFunction extends BrowserFunction {
+abstract class AbstractImportItems {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(AbstractImportBrowserFunction.class);
-
-    AbstractImportBrowserFunction(final Browser browser, final String name) {
-        super(browser, name);
-    }
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(AbstractImportItems.class);
 
     /**
-     * @param arguments spaceProviderId (0), spaceId (1) and itemId (2)
      * @return True if at least one import succeeded, false otherwise
      */
-    @Override
-    public Object function(final Object[] arguments) {
-        // Evaluate function arguments
-        String spaceProviderId;
-        String spaceId;
-        String itemId;
-        try {
-            spaceProviderId = (String)arguments[0];
-            spaceId = (String)arguments[1];
-            itemId = (String)arguments[2];
-        } catch (ClassCastException | ArrayIndexOutOfBoundsException e) {
-            throw new IllegalArgumentException("Could not parse all of the arguments", e);
-        }
+    boolean importItems(final String spaceProviderId, final String spaceId, final String itemId) {
         if (!spaceProviderId.equals("local") || !spaceId.equals("local")) {
             throw new IllegalArgumentException("Cannot import something to non-local workspaces");
         }

@@ -77,7 +77,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
     private static void initView(final boolean ignoreEmptyPageAsDevUrl,
         final boolean checkForUpdates) {
-        LifeCycle.get().init(browser, checkForUpdates); // NOSONAR
+        LifeCycle.get().init(checkForUpdates); // NOSONAR
         setUrl(ignoreEmptyPageAsDevUrl);
     }
 
@@ -107,11 +107,12 @@ public class KnimeBrowserView implements ISaveablePart2 {
                 "Instance can't be created. There's only one instance of the KnimeBrowserView allowed.");
         }
 
-        LifeCycle.get().create();
 
         browser = new Browser(parent, SWT.NONE); // NOSONAR
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
         browser.setMenu(new Menu(browser.getShell()));
+
+        LifeCycle.get().create(browser);
 
         if (viewInitializer == null) {
             viewInitializer = () -> { // NOSONAR

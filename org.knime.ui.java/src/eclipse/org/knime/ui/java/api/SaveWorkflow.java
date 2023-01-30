@@ -46,7 +46,7 @@
  * History
  *   Jan 5, 2022 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -75,33 +75,24 @@ import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-
 /**
  * Save the project workflow manager identified by a given project ID.
  *
  * @author Benjamin Moser, KNIME GmbH, Konstanz
  * @author Kai Franze, KNIME GmbH
  */
-public class SaveWorkflowBrowserFunction extends BrowserFunction {
+final class SaveWorkflow {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveWorkflowBrowserFunction.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveWorkflow.class);
 
-    @SuppressWarnings("javadoc")
-    public SaveWorkflowBrowserFunction(final Browser browser) {
-        super(browser, "saveWorkflow");
+    private SaveWorkflow() {
+        // utility
     }
 
     /**
      * Save the project workflow manager identified by a given project ID.
-     * @param arguments Assume arguments[0] is a String containing the project ID (e.g. "simple-workflow 0").
-     * @return always {@code null}
      */
-    @Override
-    public Object function(final Object[] arguments) {
-        var projectId = (String)arguments[0]; // e.g. "simple-workflow 0"
-        var projectSVG = (String)arguments[1];
+    static void saveWorkflow(final String projectId, final String projectSVG) {
         var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
 
         if (projectSVG == null) { // No SVG received, workflow editor instance must be present
@@ -122,8 +113,6 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
                 unmarkDirtyChildWorkflowEditors(projectWfm);
             }
         }
-
-        return null;
     }
 
     private static boolean isExecutionInProgress(final WorkflowManager wfm) {

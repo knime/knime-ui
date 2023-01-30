@@ -44,40 +44,80 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 17, 2023 (hornm): created
+ *   Jan 30, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
 
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-
 /**
- * Sets that project for the given id to active and ensures that the workflow is already loaded (in memory). And loads
- * it if not.
- *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class SetProjectActiveAndEnsureItsLoadedBrowserFunction extends BrowserFunction {
+final class WorkflowAPI {
 
-    /**
-     * @param browser
-     */
-    public SetProjectActiveAndEnsureItsLoadedBrowserFunction(final Browser browser) {
-        super(browser, "setProjectActiveAndEnsureItsLoaded");
+    private WorkflowAPI() {
+        // stateless
     }
 
     /**
-     * @param arguments contains the project-id at position 0
+     * Opens the workflow either in both, the Classic UI and the Modern/Web UI if the classic UI is active (the
+     * WorkflowEditor is used in that case to open the workflow). Or it opens and loads the workflow exclusively in the
+     * Modern UI. Those workflows won't be available in the classic UI when switching to it.
+     *
+     * @param arguments space-id (0), item-id (1) and space-provider-id (2, {@code "local"} if absent); never null
      */
-    @Override
-    public Object function(final Object[] arguments) {
-        var projectId = (String)arguments[0];
+    @API
+    static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
+        OpenWorkflow.openWorkflow(spaceId, itemId, spaceProviderId);
+    }
+
+    /**
+     * Close the Eclipse editor(s) associated with the given project ID.
+     *
+     * @param arguments An array of {@code String}s with contents:
+     *            <ol>
+     *            <li>The ID of the project to be closed</li>
+     *            <li>The ID of the project to make active after the current one has been closed. Can be null or omitted
+     *            if there is no next project ID (e.g. when closing the last tab).</li>
+     *            </ol>
+     * @return A boolean indicating whether an editor has been closed.
+     */
+    @API
+    static boolean closeWorkflow(final String projectIdToClose, final String nextProjectId) {
+        return CloseWorkflow.closeWorkflow(projectIdToClose, nextProjectId);
+    }
+
+
+    /**
+     * Save the project workflow manager identified by a given project ID.
+     */
+    @API
+    static void saveWorkflow(final String projectId, final String projectSVG) {
+        SaveWorkflow.saveWorkflow(projectId, projectSVG);
+    }
+
+    /**
+     * @param projectIdsAndSvgsAndMore array containing the project-ids and svgs of the projects to save. The very first
+     *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
+     *            by n svg-strings. And there is one last string at the very end describing the action to be carried out
+     *            after the workflows have been saved ('PostWorkflowCloseAction').
+     */
+    @API
+    static void saveAndCloseWorkflows(final Object[] projectIdsAndSvgsAndMore) {
+        SaveAndCloseWorkflows.saveAndCloseWorkflows(projectIdsAndSvgsAndMore);
+    }
+
+    /**
+     * Sets that project for the given id to active and ensures that the workflow is already loaded (in memory). And
+     * loads it if not.
+     *
+     * @param projectId
+     */
+    @API
+    static void setProjectActiveAndEnsureItsLoaded(final String projectId) {
         var wpm = WorkflowProjectManager.getInstance();
         wpm.openAndCacheWorkflow(projectId);
         wpm.setWorkflowProjectActive(projectId);
-        return null;
     }
 
 }

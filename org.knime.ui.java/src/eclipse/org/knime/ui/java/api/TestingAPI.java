@@ -46,56 +46,46 @@
  * History
  *   Jan 7, 2021 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
+import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.ui.java.util.TestingUtil;
 
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Browser function that allows one to programmatically initialise (and
- * parameterize) the application state from JS. It, e.g., determines what
- * workflow are opened from the beginning.
+ * Functions or testing only.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class InitAppForTestingBrowserFunction extends BrowserFunction {
+final class TestingAPI {
 
-    private static final String FUNCTION_NAME = "initAppForTesting";
-
-    /**
-     * Constructor.
-     *
-     * @param browser the browser to register this function with
-     */
-    public InitAppForTestingBrowserFunction(final Browser browser) {
-        super(browser, FUNCTION_NAME);
+    private TestingAPI() {
+        // stateless
     }
 
-    @Override
-    public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
-        if (args == null || args.length != 1 || !(args[0] instanceof String)) {
-            throw new IllegalArgumentException("Wrong argument for browser function '" + getName()
-                    + "'. The arguments are: " + Arrays.toString(args));
-        }
-
+    /**
+     * Function that allows one to programmatically initialise (and parameterize) the application state from JS. It,
+     * e.g., determines what workflow are opened from the beginning.
+     */
+    @API
+    static void initAppForTesting(final String appStateString) {
         JsonNode appStateNode;
         try {
-            appStateNode = ObjectMapperForBrowserFunction.MAPPER.readValue((String)args[0], JsonNode.class);
+            appStateNode = DesktopAPI.MAPPER.readValue(appStateString, JsonNode.class);
         } catch (JsonProcessingException ex) {
-            NodeLogger.getLogger(this.getClass()).warn("Argument couldn't be parsed to JSON", ex);
-            return null;
+            NodeLogger.getLogger(TestingAPI.class).warn("Argument couldn't be parsed to JSON", ex);
+            return;
         }
         JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
         var activeProjectId = new AtomicReference<String>();
@@ -110,7 +100,52 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
                 return projectId;
             }).collect(Collectors.toList());
         TestingUtil.initAppForTesting(projectIds, activeProjectId.get());
-        return null;
+    }
+
+    /**
+     * Function that allows one to programmatically clear the App. I.e. clears the app state and sets the url to
+     * 'about:blank'.
+     */
+    @API
+    static void clearAppForTesting() {
+        TestingUtil.clearAppForTesting();
+    }
+
+    /**
+     *
+     * Function used to emit {@link UpdateAvailableEventEnt} for testing.
+     *
+     * @param updateStateString
+     */
+    @API
+    static void emitUpdateAvailableEventForTesting(final String updateStateString) { // NOSONAR: Always returning `null` is fine here.
+        JsonNode updateStateNode;
+        try {
+            updateStateNode = DesktopAPI.MAPPER.readValue(updateStateString, JsonNode.class);
+        } catch (JsonProcessingException ex) {
+            NodeLogger.getLogger(TestingAPI.class).warn("Argument couldn't be parsed to JSON", ex);
+            return;
+        }
+
+        JsonNode newReleases = updateStateNode.get("newReleases");
+        List<UpdateInfo> newReleasesList = newReleases == null ? //
+            Collections.emptyList() : //
+            StreamSupport.stream(newReleases.spliterator(), false)//
+                .map(TestingAPI::createUpdateInfo)//
+                .collect(Collectors.toList());
+        JsonNode bugfixes = updateStateNode.get("bugfixes");
+        List<String> bugfixesList = bugfixes == null ? //
+            Collections.emptyList() : //
+            StreamSupport.stream(bugfixes.spliterator(), false)//
+                .map(JsonNode::textValue)//
+                .collect(Collectors.toList());
+
+        DesktopAPI.getDeps(UpdateStateProvider.class).emitUpdateNotificationsForTesting(newReleasesList, bugfixesList);
+    }
+
+    private static UpdateInfo createUpdateInfo(final JsonNode jsonNode) {
+        return new UpdateInfo(null, jsonNode.get("name").textValue(), jsonNode.get("shortName").textValue(),
+            jsonNode.get("isUpdatePossible").booleanValue());
     }
 
 }
