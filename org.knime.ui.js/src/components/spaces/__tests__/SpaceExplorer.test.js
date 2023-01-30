@@ -229,11 +229,11 @@ describe('SpaceExplorer.vue', () => {
             name: 'WORKFLOW_NAME',
             id: 'item0'
         }];
-        jest.spyOn(window, 'prompt').mockImplementation(() => '');
+        jest.spyOn(window, 'confirm').mockImplementation(() => true);
         const { wrapper, dispatchSpy } = await doMountAndLoad();
 
         wrapper.findComponent(FileExplorer).vm.$emit('delete-items', { items });
-        expect(window.prompt).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
+        expect(window.confirm).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
 
@@ -243,11 +243,11 @@ describe('SpaceExplorer.vue', () => {
             name: 'WORKFLOW_NAME',
             id: 'item0'
         }];
-        jest.spyOn(window, 'prompt').mockImplementation(() => null);
+        jest.spyOn(window, 'confirm').mockImplementation(() => false);
         const { wrapper, dispatchSpy } = await doMountAndLoad();
 
         wrapper.findComponent(FileExplorer).vm.$emit('delete-items', { items });
-        expect(window.prompt).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
+        expect(window.confirm).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
         expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
 

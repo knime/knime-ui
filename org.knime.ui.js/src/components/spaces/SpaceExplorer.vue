@@ -196,9 +196,9 @@ export default {
                 // TODO(NXT-1471) list the file types and names
                 message = `Do you want to delete the selected files?`;
             }
-            // TODO(NXT-1472) use a modal instead of a native prompt
-            const result = window.prompt(message);
-            if (result !== null) {
+            // TODO(NXT-1472) use a modal instead of a native dialog
+            const result = window.confirm(message);
+            if (result) {
                 this.$store.dispatch('spaces/deleteItems', { itemIds: items.map(i => i.id) });
             }
         }
