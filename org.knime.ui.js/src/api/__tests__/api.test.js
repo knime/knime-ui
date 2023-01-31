@@ -489,5 +489,22 @@ describe('API', () => {
                 id: 0
             });
         });
+
+        it('renameItem', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemId = 'item';
+            const newName = 'new name';
+            let result = await api.renameItem({ spaceProviderId, spaceId, itemId, newName });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.renameItem',
+                params: [spaceId, spaceProviderId, itemId, newName],
+                id: 0
+            });
+
+            expect(result).toStrictEqual('dummy');
+        });
     });
 });

@@ -166,6 +166,10 @@ export default {
             });
         },
 
+        onRenameFile({ itemId, newName }) {
+            this.$store.dispatch('spaces/renameItem', { itemId, newName });
+        },
+
         onBreadcrumbClick({ id }) {
             this.fetchWorkflowGroupContent(id);
             this.$emit('item-changed', id);
@@ -213,6 +217,7 @@ export default {
       :full-path="fullPath"
       @change-directory="onChangeDirectory"
       @open-file="onOpenFile"
+      @rename-file="onRenameFile"
     />
 
     <div

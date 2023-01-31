@@ -8,7 +8,8 @@ import {
     createWorkflow,
     openWorkflow,
     importFiles,
-    importWorkflows
+    importWorkflows,
+    renameItem
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
@@ -264,6 +265,14 @@ export const actions = {
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
         }
+    },
+
+    async renameItem({ state, getters, dispatch }, { itemId, newName }) {
+        const { spaceId } = state.activeSpace;
+        const { id: spaceProviderId } = state.activeSpaceProvider;
+        await renameItem({ spaceProviderId, spaceId, itemId, newName });
+        const currentWorkflowGroupId = getters.currentWorkflowGroupId;
+        await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     }
 };
 

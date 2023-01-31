@@ -271,6 +271,23 @@ describe('SpaceExplorer.vue', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
     });
 
+    it('should rename Items', async () => {
+        const { wrapper, store, dispatchSpy } = doMount();
+        store.state.spaces.activeSpace = {
+            spaceId: 'local',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+        await wrapper.vm.$nextTick();
+
+        const itemId = '12345';
+        const newName = 'some name';
+        wrapper.findComponent(FileExplorer).vm.$emit('rename-file', { itemId, newName });
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/renameItem', { itemId, newName });
+    });
+
     it('should display the loader only after a specific timeout', async () => {
         jest.useFakeTimers();
 

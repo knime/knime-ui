@@ -34,3 +34,15 @@ export const createWorkflow = async ({ spaceProviderId = 'local', spaceId, itemI
         throw new Error(`Could not create a new workflow for space ${spaceId}, item ${itemId}. Error: ${e}`);
     }
 };
+
+export const renameItem = async ({ spaceProviderId = 'local', spaceId, itemId, newName }) => {
+    try {
+        return await rpc(
+            'SpaceService.renameItem',
+            spaceId, spaceProviderId, itemId, newName
+        );
+    } catch (e) {
+        consola.error(e);
+        throw new Error(`Could not rename item ${itemId} in space ${spaceId}. Error: ${e}`);
+    }
+};
