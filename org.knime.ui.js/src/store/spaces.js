@@ -6,7 +6,9 @@ import {
     disconnectSpaceProvider,
     fetchWorkflowGroupContent,
     createWorkflow,
-    openWorkflow
+    openWorkflow,
+    importFiles,
+    importWorkflows
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
@@ -194,6 +196,7 @@ export const actions = {
         return dispatch('fetchWorkflowGroupContent', { itemId });
     },
 
+    // TODO: Remove manual sorting here, just re-fetch workflow group, see `importToWorkflowGroup`
     async createWorkflow({ commit, getters, state }) {
         try {
             const { spaceId, activeWorkflowGroup } = state.activeSpace;
@@ -252,6 +255,15 @@ export const actions = {
         }
 
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
+    },
+
+    // Will be adapted with NXT-1254
+    async importToWorkflowGroup({ dispatch, getters }, { importType }) {
+        const itemId = getters.currentWorkflowGroupId;
+        const success = importType === 'FILES' ? await importFiles({ itemId }) : importWorkflows({ itemId });
+        if (success) {
+            dispatch('fetchWorkflowGroupContent', { itemId });
+        }
     }
 };
 

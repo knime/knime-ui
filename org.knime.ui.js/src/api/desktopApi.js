@@ -193,3 +193,25 @@ export const disconnectSpaceProvider = ({ spaceProviderId }) => {
         throw error;
     }
 };
+
+// Will be adapted with NXT-1254
+export const importFiles = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
+    try {
+        // Returns true on success
+        return window.importFiles(spaceProviderId, spaceId, itemId);
+    } catch (error) {
+        consola.error(`Could not import files`, { spaceProviderId, spaceId, itemId, error });
+        throw error;
+    }
+};
+
+// Will be adapted with NXT-1254
+export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
+    try {
+        // Returns true on success
+        return window.importWorkflows(spaceProviderId, spaceId, itemId);
+    } catch (error) {
+        consola.error(`Could not import workflows`, { spaceProviderId, spaceId, itemId, error });
+        throw error;
+    }
+};
