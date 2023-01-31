@@ -96,6 +96,16 @@ describe('SidebarSpaceExplorer.vue', () => {
         expect(commitSpy).toHaveBeenCalledWith('spaces/setActiveWorkflowGroupData', null);
     });
 
+    it('starts with root folder if no ancestor are given', async () => {
+        const { wrapper, commitSpy } = doMount({
+            activeProjectId: 'proj1',
+            lastItemForProjectData: { }
+        });
+        await wrapper.vm.$nextTick();
+        expect(commitSpy).toHaveBeenCalledWith('spaces/setStartItemId', 'root');
+        expect(commitSpy).toHaveBeenCalledWith('spaces/setActiveWorkflowGroupData', null);
+    });
+
     it('restores last used item (folder)', async () => {
         const { wrapper, commitSpy } = doMount({
             activeProjectId: 'proj2',
