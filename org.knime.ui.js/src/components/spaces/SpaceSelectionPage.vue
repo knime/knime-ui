@@ -34,7 +34,9 @@ export default {
             this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
         }
     },
-
+    created() {
+        this.$store.dispatch('spaces/fetchAllSpaceProviders');
+    },
 
     methods: {
         onLogin(spaceProviderId) {
