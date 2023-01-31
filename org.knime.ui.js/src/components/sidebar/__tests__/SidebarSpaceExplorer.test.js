@@ -24,14 +24,19 @@ describe('SidebarSpaceExplorer.vue', () => {
                         origin: {
                             providerId,
                             spaceId,
-                            itemId: 'item1'
+                            itemId: 'item1',
+                            ancestorItemIds: []
                         }
                     }, {
                         projectId: 'proj2',
                         origin: {
                             providerId: 'local',
                             spaceId: 'local',
-                            itemId: 'itemX'
+                            itemId: 'itemX',
+                            ancestorItemIds: [
+                                'parent1',
+                                'parent2'
+                            ]
                         }
                     }]
                 }
@@ -78,6 +83,16 @@ describe('SidebarSpaceExplorer.vue', () => {
         expect(commitSpy).toHaveBeenCalledWith('spaces/setActiveSpaceProviderById', 'someProv1');
         expect(commitSpy).toHaveBeenCalledWith('spaces/setActiveSpaceId', 'someSpace1');
         expect(commitSpy).toHaveBeenCalledWith('spaces/setStartItemId', 'root');
+        expect(commitSpy).toHaveBeenCalledWith('spaces/setActiveWorkflowGroupData', null);
+    });
+
+    it('starts with parent folder if no last used item is set', async () => {
+        const { wrapper, commitSpy } = doMount({
+            activeProjectId: 'proj2',
+            lastItemForProjectData: { }
+        });
+        await wrapper.vm.$nextTick();
+        expect(commitSpy).toHaveBeenCalledWith('spaces/setStartItemId', 'parent1');
         expect(commitSpy).toHaveBeenCalledWith('spaces/setActiveWorkflowGroupData', null);
     });
 
