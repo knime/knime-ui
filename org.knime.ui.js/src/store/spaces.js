@@ -311,6 +311,23 @@ export const getters = {
             .map(({ origin }) => origin.itemId);
     },
 
+    openedFolderItems({ activeSpace }, _, { application }) {
+        if (!activeSpace) {
+            return [];
+        }
+
+        const { spaceId, activeWorkflowGroup } = activeSpace;
+        const { openProjects } = application;
+
+        const openProjectsFolders = openProjects
+            .filter(project => project.origin.spaceId === spaceId)
+            .flatMap(project => project.origin.ancestorItemIds);
+
+        return activeWorkflowGroup.items
+            .filter(item => item.type === 'WorkflowGroup' && openProjectsFolders.includes(item.id))
+            .map(item => item.id);
+    },
+
     activeSpaceInfo({ activeSpace, activeSpaceProvider }) {
         const activeId = activeSpace.spaceId;
 

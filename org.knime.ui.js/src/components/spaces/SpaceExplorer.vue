@@ -59,13 +59,13 @@ export default {
             activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
             spaceId: state => state.activeSpace?.spaceId
         }),
-        ...mapGetters('spaces', ['openedWorkflowItems', 'pathToItemId']),
+        ...mapGetters('spaces', ['openedWorkflowItems', 'openedFolderItems', 'pathToItemId']),
 
         fileExplorerItems() {
             return this.activeWorkflowGroup.items.map(item => ({
                 ...item,
                 displayOpenIndicator: this.openedWorkflowItems.includes(item.id),
-                canBeDeleted: !this.openedWorkflowItems.includes(item.id)
+                canBeDeleted: !this.openedWorkflowItems.includes(item.id) && !this.openedFolderItems.includes(item.id)
             }));
         },
 

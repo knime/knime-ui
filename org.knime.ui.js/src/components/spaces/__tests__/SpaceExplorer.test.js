@@ -213,6 +213,38 @@ describe('SpaceExplorer.vue', () => {
         );
     });
 
+    describe('Can be deleted', () => {
+        it('open workflows should not be deletable', async () => {
+            const openProjects = [
+                { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
+            ];
+            const { wrapper } = await doMountAndLoad({ openProjects });
+            expect(wrapper.findComponent(FileExplorer).props('items')[0]).toEqual(
+                expect.objectContaining({ canBeDeleted: true })
+            );
+            expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
+                expect.objectContaining({ canBeDeleted: false })
+            );
+        });
+
+        it('folders with open workflows should not be deletable', async () => {
+            const openProjects = [{
+                origin: {
+                    spaceId: 'local',
+                    itemId: '8',
+                    ancestorItemIds: ['1', '7']
+                }
+            }];
+            const { wrapper } = await doMountAndLoad({ openProjects });
+            expect(wrapper.findComponent(FileExplorer).props('items')[0]).toEqual(
+                expect.objectContaining({ canBeDeleted: false })
+            );
+            expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
+                expect.objectContaining({ canBeDeleted: true })
+            );
+        });
+    });
+
     it('should open workflows', async () => {
         const { wrapper, dispatchSpy, mockRouter } = await doMountAndLoad();
         wrapper.findComponent(FileExplorer).vm.$emit('open-file', { id: 'dummy' });

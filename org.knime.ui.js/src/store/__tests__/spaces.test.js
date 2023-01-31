@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import Vuex from 'vuex';
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
@@ -565,6 +566,34 @@ describe('spaces store', () => {
                 };
 
                 expect(store.getters['spaces/openedWorkflowItems']).toEqual(['4']);
+            });
+        });
+
+        describe('openedFolderItems', () => {
+            it('should return the opened folder items', () => {
+                const openProjects = [{
+                    origin: {
+                        providerId: 'local',
+                        spaceId: 'local',
+                        itemId: 'workflowItem0',
+                        ancestorItemIds: ['2', 'innerFolderId']
+                    }
+                }, {
+                    origin: {
+                        providerId: 'local',
+                        spaceId: 'local',
+                        itemId: 'workflowItem2',
+                        ancestorItemIds: ['5']
+                    }
+                }];
+
+                const activeWorkflowGroup = JSON.parse(JSON.stringify(fetchWorkflowGroupContentResponse));
+                activeWorkflowGroup.items.push({ id: '5', name: 'Folder 5', type: 'WorkflowGroup' });
+
+                const { store } = loadStore({ openProjects });
+                store.state.spaces.activeSpace = { spaceId: 'local', activeWorkflowGroup };
+
+                expect(store.getters['spaces/openedFolderItems']).toEqual(['2', '5']);
             });
         });
 
