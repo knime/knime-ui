@@ -170,7 +170,7 @@ export default {
     & .issue {
       font-family: "Roboto Mono", sans-serif;
       line-height: 13px;
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 400;
       white-space: pre-wrap;
     }
