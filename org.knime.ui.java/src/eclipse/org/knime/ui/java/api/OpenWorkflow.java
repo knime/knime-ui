@@ -108,7 +108,7 @@ final class OpenWorkflow {
      * @param spaceProviderId
      */
     static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
-        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceId, spaceProviderId);
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
 
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId));
