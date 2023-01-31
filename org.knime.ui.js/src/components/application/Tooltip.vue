@@ -106,9 +106,8 @@ export default {
         <div
           v-if="issue"
           class="issue"
-        >
-          {{ issue }}
-        </div>
+          v-text="issue"
+        />
         <div
           v-if="resolutions.length"
           class="resolutions"
