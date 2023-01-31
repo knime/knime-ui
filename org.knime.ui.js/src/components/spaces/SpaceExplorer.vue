@@ -163,8 +163,8 @@ export default {
             this.$store.dispatch('spaces/createWorkflow');
         },
 
-        onOpenFile({ id }) {
-            this.$store.dispatch('spaces/openWorkflow', {
+        async onOpenFile({ id }) {
+            await this.$store.dispatch('spaces/openWorkflow', {
                 workflowItemId: id,
                 // send in router, so it can be used to navigate to an already open workflow
                 $router: this.$router
