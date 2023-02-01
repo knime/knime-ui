@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex';
 import { mixin as clickaway } from 'vue-clickaway2';
 
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
@@ -63,6 +64,10 @@ export default {
             isDragging: false,
             startDragItemIndex: null
         };
+    },
+
+    computed: {
+        ...mapState('application', ['openProjects'])
     },
 
     watch: {
@@ -200,6 +205,11 @@ export default {
         },
 
         onDrop(index, isGoBackItem = false) {
+            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
+            const droppedItems = selectedIndexes.map(index => this.items[index].id);
+            const openedWorkflows = this.openProjects.filter(workflow => droppedItems.includes(workflow.origin.itemId));
+            const isInsideFolder = this.openProjects.filter((project) => project.origin.ancestorItemIds
+                .some((ancestorId) => droppedItems.includes(ancestorId)));
             const droppedEl = this.getItemElementByRefIndex(index, isGoBackItem);
             droppedEl.classList.remove('dragging-over');
 
@@ -207,9 +217,15 @@ export default {
                 return;
             }
 
-            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
+            if (openedWorkflows.length || isInsideFolder.length) {
+                const openedWorkflowsNames = openedWorkflows.map(workflow => workflow.name);
+                alert(`Following workflows are opened: 
+                 ${openedWorkflowsNames.map(name => `• ${name}`).join('\n')} 
+                To move your selected items, they have to be closed first`);
+            }
+
             this.$emit('move', {
-                sourceItems: selectedIndexes.map(index => this.items[index].id),
+                sourceItems: droppedItems,
                 targetItem: isGoBackItem ? '..' : this.items[index].id
             });
         },
