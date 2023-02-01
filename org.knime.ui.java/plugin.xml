@@ -44,5 +44,11 @@
             class="org.knime.ui.java.prefs.KnimeUIPreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         point="org.knime.product.preShutdown">
+      <preShutdown
+            class="org.knime.ui.java.OnPreShutdown">
+      </preShutdown>
+   </extension>
 
 </plugin>

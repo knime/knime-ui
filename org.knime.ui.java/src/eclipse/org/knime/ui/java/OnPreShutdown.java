@@ -44,30 +44,36 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 31, 2023 (hornm): created
  */
 package org.knime.ui.java;
 
-import javax.inject.Inject;
-
-import org.eclipse.e4.core.di.annotations.Optional;
-import org.eclipse.e4.core.di.extensions.EventTopic;
-import org.eclipse.e4.ui.workbench.UIEvents;
+import org.knime.product.rcp.shutdown.PreShutdown;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
-import org.osgi.service.event.Event;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
 /**
- * Called on shutdown.
- *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class AppShutdownStartedAddon {
+public class OnPreShutdown implements PreShutdown {
 
-    @SuppressWarnings("javadoc")
-    @Inject
-    @Optional
-    public void applicationShutdownStarted(@EventTopic(UIEvents.UILifeCycle.APP_SHUTDOWN_STARTED) final Event event) {
-        LifeCycle.get().shutdown();
+    @Override
+    public boolean onPreShutdown() {
+        var lifeCycle = LifeCycle.get();
+        if (lifeCycle.isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
+            // This is being called by the eclipse framework before any window is being closed.
+            // And before we close the browser, we need, e.g., to ask the user to save (and save) all the workflows
+            // (or abort the shutdown, if the user cancels).
+            lifeCycle.saveState();
+            // cancel if the workflows haven't been saved (yet). Either because the saving has been cancelled
+            // or the workflows need to be saved (through a respective event to the FE, see SaveAndCloseWorkflows)
+            if (!lifeCycle.getState().workflowsSaved()) {
+                return false;
+            }
+            lifeCycle.suspend();
+        }
+        lifeCycle.shutdown();
+        return true;
     }
 
 }

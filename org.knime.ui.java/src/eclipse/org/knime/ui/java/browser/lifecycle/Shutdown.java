@@ -48,14 +48,20 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.Workbench;
+import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.util.AppStatePersistor;
+import org.knime.ui.java.util.PerspectiveUtil;
+import org.osgi.service.prefs.BackingStoreException;
 
 /**
  * The shutdown lifecycle state transition of the KNIME-UI. The {@link Suspend}-phase must have been run first.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class Shutdown {
+final class Shutdown {
 
     private Shutdown() {
         //
@@ -66,9 +72,28 @@ public final class Shutdown {
      *
      * @param state
      */
-    public static void run(final LifeCycleStateInternal state) {
+    static void run(final LifeCycleStateInternal state) {
         if (state != null) {
             AppStatePersistor.saveAppState(state.serializedAppState());
         }
+        var prefs = InstanceScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
+        prefs.putBoolean(SharedConstants.PREFERENCE_KEY, !PerspectiveUtil.isClassicPerspectiveActive());
+        try {
+            prefs.flush();
+        } catch (BackingStoreException e) {
+            NodeLogger.getLogger(Shutdown.class).error(e);
+        }
+
+        if (!PerspectiveUtil.isClassicPerspectiveActive()) {
+            var workbench = (Workbench)PlatformUI.getWorkbench();
+            var window = workbench.getActiveWorkbenchWindow();
+            if (window != null) {
+                var pages = window.getPages();
+                for (var page : pages) {
+                    page.closeAllEditors(true);
+                }
+            }
+        }
+
     }
 }
