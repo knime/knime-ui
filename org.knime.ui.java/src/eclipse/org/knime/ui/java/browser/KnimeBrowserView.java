@@ -20,6 +20,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.AppStatePersistor;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 
@@ -116,7 +117,9 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
         if (viewInitializer == null) {
             viewInitializer = () -> { // NOSONAR
-                AppStatePersistor.loadAppState();
+                if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
+                    AppStatePersistor.loadAppState();
+                }
                 initView(false, true);
             };
         }
