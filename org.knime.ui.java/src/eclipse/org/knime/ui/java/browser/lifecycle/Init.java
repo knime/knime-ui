@@ -49,7 +49,6 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
@@ -72,37 +71,15 @@ import org.knime.gateway.impl.webui.spaces.LocalWorkspace;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.knime.ui.java.api.DesktopAPI;
+import org.knime.ui.java.api.SaveAndCloseWorkflows;
+import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
 import org.knime.ui.java.browser.KnimeBrowserView;
-import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
-import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
-import org.knime.ui.java.browser.function.ConnectSpaceProviderBrowserFunction;
-import org.knime.ui.java.browser.function.DisconnectSpaceProviderBrowserFunction;
-import org.knime.ui.java.browser.function.EmitUpdateAvailableEventForTestingBrowserFunction;
-import org.knime.ui.java.browser.function.GetSpaceProvidersBrowserFunction;
-import org.knime.ui.java.browser.function.ImportFilesBrowserFunction;
-import org.knime.ui.java.browser.function.ImportWorkflowsBrowserFunction;
-import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
-import org.knime.ui.java.browser.function.OpenAboutDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenInstallExtensionsDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenLayoutEditorBrowserFunction;
-import org.knime.ui.java.browser.function.OpenLegacyFlowVariableDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
-import org.knime.ui.java.browser.function.OpenUpdateDialogBrowserFunction;
-import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
-import org.knime.ui.java.browser.function.OpenWorkflowCoachPreferencePageBrowserFunction;
-import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
-import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
-import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
-import org.knime.ui.java.browser.function.SetProjectActiveAndEnsureItsLoadedBrowserFunction;
-import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
 import com.equo.comm.api.CommServiceProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -121,7 +98,7 @@ final class Init {
         //
     }
 
-    static LifeCycleStateInternal run(final Browser browser, final boolean checkForUpdates) {
+    static LifeCycleStateInternal run(final boolean checkForUpdates) {
 
         // Create and set default service dependencies
         var eventConsumer = createEventConsumer();
@@ -141,9 +118,7 @@ final class Init {
             updateStateProvider.checkForUpdates();
         }
 
-        // Initialize browser functions and set CEF browser URL
-        var removeAndDisposeAllBrowserFunctions =
-            initBrowserFunctions(browser, appStateUpdater, spaceProviders, updateStateProvider, eventConsumer);
+        DesktopAPI.injectDependencies(appStateUpdater, spaceProviders, updateStateProvider, eventConsumer);
 
         // Update the app state when the node repository filter changes
         KnimeUIPreferences.setNodeRepoFilterChangeListener((oldValue, newValue) -> {
@@ -158,14 +133,9 @@ final class Init {
             public IntSupplier saveAndCloseAllWorkflows() {
                 return () -> {
                     var projectIds = WorkflowProjectManager.getInstance().getWorkflowProjectsIds();
-                    return SaveAndCloseWorkflowsBrowserFunction.saveAndCloseWorkflowsInteractively(projectIds,
+                    return SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(projectIds,
                         eventConsumer, PostWorkflowCloseAction.SHUTDOWN);
                 };
-            }
-
-            @Override
-            public Runnable removeAndDisposeAllBrowserFunctions() {
-                return removeAndDisposeAllBrowserFunctions;
             }
         };
 
@@ -253,46 +223,6 @@ final class Init {
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Problem creating a json-rpc notification in order to send an event", ex);
         }
-    }
-
-    /**
-     * Initializes and registers the {@link BrowserFunction BrowserFunctions} with the browser.
-     *
-     * @param appStateUpdater Required to initialize some browser functions
-     * @param spaceProviders Required to initialize some browser functions
-     * @param updateStateProvider Required to initialize {@link EmitUpdateAvailableEventForTestingBrowserFunction}
-     * @param eventConsumer
-     * @return a runnable that removes and disposes all browser functions
-     */
-    private static Runnable initBrowserFunctions(final Browser browser, final AppStateUpdater appStateUpdater,
-        final SpaceProviders spaceProviders, final UpdateStateProvider updateStateProvider,
-        final EventConsumer eventConsumer) {
-        var functions = new ArrayList<BrowserFunction>();
-        functions.add(new SwitchToJavaUIBrowserFunction(browser, eventConsumer));
-        functions.add(new OpenNodeViewBrowserFunction(browser));
-        functions.add(new OpenNodeDialogBrowserFunction(browser));
-        functions.add(new OpenLegacyFlowVariableDialogBrowserFunction(browser));
-        functions.add(new SaveWorkflowBrowserFunction(browser));
-        functions.add(new OpenWorkflowBrowserFunction(browser, appStateUpdater));
-        functions.add(new CloseWorkflowBrowserFunction(browser, appStateUpdater, eventConsumer));
-        functions.add(new OpenLayoutEditorBrowserFunction(browser));
-        functions.add(new OpenWorkflowCoachPreferencePageBrowserFunction(browser, appStateUpdater));
-        functions.add(new OpenAboutDialogBrowserFunction(browser));
-        functions.add(new OpenInstallExtensionsDialogBrowserFunction(browser));
-        functions.add(new OpenUpdateDialogBrowserFunction(browser));
-        functions.add(new GetSpaceProvidersBrowserFunction(browser, spaceProviders));
-        functions.add(new ConnectSpaceProviderBrowserFunction(browser, spaceProviders));
-        functions.add(new DisconnectSpaceProviderBrowserFunction(browser, spaceProviders));
-        functions.add(new SaveAndCloseWorkflowsBrowserFunction(browser, appStateUpdater));
-        functions.add(new SetProjectActiveAndEnsureItsLoadedBrowserFunction(browser));
-        functions.add(new ImportFilesBrowserFunction(browser));
-        functions.add(new ImportWorkflowsBrowserFunction(browser));
-        if (SharedConstants.isRemoteDebuggingPortSet()) {
-            functions.add(new InitAppForTestingBrowserFunction(browser));
-            functions.add(new ClearAppForTestingBrowserFunction(browser));
-            functions.add(new EmitUpdateAvailableEventForTestingBrowserFunction(browser, updateStateProvider));
-        }
-        return () -> functions.stream().forEach(fct -> fct.dispose(true));
     }
 
 }

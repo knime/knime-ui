@@ -44,7 +44,7 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
 
 import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
@@ -69,7 +69,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.gateway.impl.webui.service.DefaultSpaceService;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -84,25 +84,18 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 import org.knime.workbench.explorer.view.actions.DownloadAndOpenWorkflowAction;
 import org.knime.workbench.explorer.view.actions.WorkflowDownload;
 
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-
 /**
  * Opens a workflow.
  *
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class OpenWorkflowBrowserFunction extends BrowserFunction {
+final class OpenWorkflow {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenWorkflowBrowserFunction.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenWorkflow.class);
 
-    private final AppStateUpdater m_appStateUpdater;
-
-    @SuppressWarnings("javadoc")
-    public OpenWorkflowBrowserFunction(final Browser browser, final AppStateUpdater appStateUpdater) {
-        super(browser, "openWorkflow");
-        m_appStateUpdater = appStateUpdater;
+    private OpenWorkflow() {
+       // utility
     }
 
     /**
@@ -110,17 +103,12 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
      * WorkflowEditor is used in that case to open the workflow). Or it opens and loads the workflow exclusively in the
      * Modern UI. Those workflows won't be available in the classic UI when switching to it.
      *
-     * @param arguments space-id (0), item-id (1) and space-provider-id (2, {@code "local"} if absent); never null
-     * @return always {@code null}
+     * @param spaceIdd
+     * @param itemId
+     * @param spaceProviderId
      */
-    @Override
-    public Object function(final Object[] arguments) {
-        var spaceId = (String)arguments[0];
-        var itemId = (String)arguments[1];
-        final var spaceProviderId =
-                arguments.length < 3 ? LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID : (String)arguments[2];
-
-        final var space = DefaultSpaceService.getInstance().getSpace(spaceId, spaceProviderId);
+    static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
 
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId));
@@ -134,9 +122,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
                 registerWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
             });
         }
-        m_appStateUpdater.updateAppState();
-
-        return null;
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
     }
 
     private static void registerWorkflowProject(final WorkflowManager wfm, final String spaceProviderId,

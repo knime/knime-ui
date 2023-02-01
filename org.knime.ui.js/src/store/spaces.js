@@ -9,6 +9,7 @@ import {
     openWorkflow,
     importFiles,
     importWorkflows,
+    deleteItems,
     renameItem
 // eslint-disable-next-line object-curly-newline
 } from '@api';
@@ -197,35 +198,15 @@ export const actions = {
         return dispatch('fetchWorkflowGroupContent', { itemId });
     },
 
-    // TODO: Remove manual sorting here, just re-fetch workflow group, see `importToWorkflowGroup`
-    async createWorkflow({ commit, getters, state }) {
+    async createWorkflow({ commit, getters, state, dispatch }) {
         try {
-            const { spaceId, activeWorkflowGroup } = state.activeSpace;
+            const { spaceId } = state.activeSpace;
             const itemId = getters.currentWorkflowGroupId;
 
             const newWorkflowItem = await createWorkflow({ spaceId, itemId });
 
-            const updatedWorkflowGroupItems = activeWorkflowGroup
-                .items
-                .concat(newWorkflowItem)
-                .sort((item1, item2) => {
-                    if (item1.type === 'WorflowGroup' && item2.type !== 'WorkflowGroup') {
-                        return -1;
-                    }
-
-                    if (item1.type !== 'WorflowGroup' && item2.type === 'WorkflowGroup') {
-                        return 1;
-                    }
-
-                    return item1.name < item2.name ? -1 : 1;
-                });
-
-            commit('setActiveWorkflowGroupData', {
-                path: activeWorkflowGroup.path,
-                items: updatedWorkflowGroupItems
-            });
+            dispatch('fetchWorkflowGroupContent', { itemId });
             openWorkflow({ workflowItemId: newWorkflowItem.id });
-
 
             return newWorkflowItem;
         } catch (error) {
@@ -258,10 +239,9 @@ export const actions = {
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
     },
 
-    // Will be adapted with NXT-1254
     async importToWorkflowGroup({ dispatch, getters }, { importType }) {
         const itemId = getters.currentWorkflowGroupId;
-        const success = importType === 'FILES' ? await importFiles({ itemId }) : importWorkflows({ itemId });
+        const success = importType === 'FILES' ? await importFiles({ itemId }) : await importWorkflows({ itemId });
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
         }
@@ -272,6 +252,14 @@ export const actions = {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         await renameItem({ spaceProviderId, spaceId, itemId, newName });
         const currentWorkflowGroupId = getters.currentWorkflowGroupId;
+        await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+    },
+
+    async deleteItems({ state, getters, dispatch }, { itemIds }) {
+        const { spaceId } = state.activeSpace;
+        const { id: spaceProviderId } = state.activeSpaceProvider;
+        const currentWorkflowGroupId = getters.currentWorkflowGroupId;
+        await deleteItems({ spaceProviderId, spaceId, itemIds });
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     }
 };
@@ -330,6 +318,23 @@ export const getters = {
                 return origin.spaceId === spaceId && workflowItemIds.includes(origin.itemId);
             })
             .map(({ origin }) => origin.itemId);
+    },
+
+    openedFolderItems({ activeSpace }, _, { application }) {
+        if (!activeSpace) {
+            return [];
+        }
+
+        const { spaceId, activeWorkflowGroup } = activeSpace;
+        const { openProjects } = application;
+
+        const openProjectsFolders = openProjects
+            .filter(project => project.origin.spaceId === spaceId)
+            .flatMap(project => project.origin.ancestorItemIds);
+
+        return activeWorkflowGroup.items
+            .filter(item => item.type === 'WorkflowGroup' && openProjectsFolders.includes(item.id))
+            .map(item => item.id);
     },
 
     activeSpaceInfo({ activeSpace, activeSpaceProvider }) {

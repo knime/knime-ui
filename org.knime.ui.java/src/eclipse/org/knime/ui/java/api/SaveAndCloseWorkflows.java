@@ -46,9 +46,9 @@
  * History
  *   Jan 12, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
 
-import static org.knime.ui.java.browser.function.ObjectMapperForBrowserFunction.MAPPER;
+import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -70,9 +70,6 @@ import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
-
 /**
  * Called to 'headlessly' (i.e. without any user-interaction) save and close all the workflows specified as parameter.
  * Additionally, a specified {@link PostWorkflowCloseAction} is executed.
@@ -85,7 +82,11 @@ import com.equo.chromium.swt.BrowserFunction;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
+public final class SaveAndCloseWorkflows {
+
+    private SaveAndCloseWorkflows() {
+        // utility
+    }
 
     /**
      * The action to be carried out after the workflows have been successfully saved and closed.
@@ -95,25 +96,13 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
             SWITCH_PERSPECTIVE, SHUTDOWN, UPDATE_APP_STATE
     }
 
-    private final AppStateUpdater m_appStateUpdater;
-
-    /**
-     * @param browser
-     * @param appStateUpdater
-     */
-    public SaveAndCloseWorkflowsBrowserFunction(final Browser browser, final AppStateUpdater appStateUpdater) {
-        super(browser, "saveAndCloseWorkflows");
-        m_appStateUpdater = appStateUpdater;
-    }
-
     /**
      * @param projectIdsAndSvgsAndMore array containing the project-ids and svgs of the projects to save. The very first
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
      *            by n svg-strings. And there is one last string at the very end describing the action to be carried out
      *            after the workflows have been saved ('PostWorkflowCloseAction').
      */
-    @Override
-    public Object function(final Object[] projectIdsAndSvgsAndMore) { // NOSONAR
+    static void saveAndCloseWorkflows(final Object[] projectIdsAndSvgsAndMore) { // NOSONAR
         var count = ((Double)projectIdsAndSvgsAndMore[0]).intValue();
         var firstFailure = new AtomicReference<String>();
         var projectIds = Arrays.copyOfRange(projectIdsAndSvgsAndMore, 1, count + 1, String[].class);
@@ -125,24 +114,22 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
                 "Workflow could not be saved.\nSee log for details.");
             // make the first workflow active which couldn't be saved
             WorkflowProjectManager.getInstance().setWorkflowProjectActive(firstFailure.get());
-            m_appStateUpdater.updateAppState();
-            return null;
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
 
         var postWorkflowCloseAction = PostWorkflowCloseAction.valueOf((String)projectIdsAndSvgsAndMore[count * 2 + 1]);
         switch (postWorkflowCloseAction) {
             case SWITCH_PERSPECTIVE:
-                SwitchToJavaUIBrowserFunction.switchToJavaUI();
+                EclipseUIAPI.doSwitchToJavaUI();
                 break;
             case SHUTDOWN:
                 LifeCycle.get().suspend();
                 PlatformUI.getWorkbench().close();
                 break;
             default:
-                m_appStateUpdater.updateAppState();
+                DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
                 break;
         }
-        return null;
     }
 
     /**
@@ -175,16 +162,16 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
         }
     }
 
-    private void saveWorkflowsWithProgressBar(final String[] projectIds, final String[] svgs,
+    private static void saveWorkflowsWithProgressBar(final String[] projectIds, final String[] svgs,
         final AtomicReference<String> firstFailure) {
         IRunnableWithProgress saveRunnable = monitor -> saveWorkflows(projectIds, svgs, firstFailure, monitor);
         try {
             var ps = PlatformUI.getWorkbench().getProgressService();
             ps.run(true, false, saveRunnable);
         } catch (InvocationTargetException e) {
-            NodeLogger.getLogger(getClass()).error("Saving workflow failed", e);
+            NodeLogger.getLogger(SaveAndCloseWorkflows.class).error("Saving workflow failed", e);
         } catch (InterruptedException e) {
-            NodeLogger.getLogger(getClass()).warn("Saving process was interrupted", e);
+            NodeLogger.getLogger(SaveAndCloseWorkflows.class).warn("Saving process was interrupted", e);
             Thread.currentThread().interrupt();
         }
     }
@@ -207,7 +194,7 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
         final String projectSVG, final WorkflowManager projectWfm) {
         monitor.subTask("Saving '" + projectId + "'");
         if (projectWfm != null) { // workflow not loaded -> nothing to save
-            SaveWorkflowBrowserFunction.saveWorkflow(monitor, projectWfm, projectSVG);
+            SaveWorkflow.saveWorkflow(monitor, projectWfm, projectSVG);
         }
         var success = closeWorkflow(projectId, projectWfm);
         monitor.worked(1);
@@ -290,7 +277,7 @@ public class SaveAndCloseWorkflowsBrowserFunction extends BrowserFunction {
             WorkflowProjectManager.getInstance().removeWorkflowProject(projectId);
             return true;
         } catch (InterruptedException e) { // NOSONAR
-            NodeLogger.getLogger(SaveAndCloseWorkflowsBrowserFunction.class)
+            NodeLogger.getLogger(SaveAndCloseWorkflows.class)
                 .warn("Problem while waiting for the workflow '" + projectId + "' to be cancelled", e);
             return false;
         }

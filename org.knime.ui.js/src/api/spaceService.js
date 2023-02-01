@@ -46,3 +46,15 @@ export const renameItem = async ({ spaceProviderId = 'local', spaceId, itemId, n
         throw new Error(`Could not rename item ${itemId} in space ${spaceId}. Error: ${e}`);
     }
 };
+
+export const deleteItems = async ({ spaceProviderId = 'local', spaceId, itemIds }) => {
+    try {
+        return await rpc(
+            'SpaceService.deleteItems',
+            spaceId, spaceProviderId, itemIds
+        );
+    } catch (e) {
+        consola.error(e);
+        throw new Error(`Could not delete the items ${itemIds} from space ${spaceId}. Error: ${e}`);
+    }
+};

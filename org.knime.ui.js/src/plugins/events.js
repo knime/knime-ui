@@ -66,7 +66,7 @@ export default ({ store: $store, router: $router }) => {
         async SaveAndCloseWorkflowsEvent({ projectIds, params = [] }) {
             $store.commit('application/setIsBusy', true);
 
-            const activeProjectId = $store.state.workflow.activeWorkflow.projectId;
+            const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
             const isCanvasEmpty = $store.state.canvas.isEmpty;
 
             const resolveSVGSnapshots = projectIds

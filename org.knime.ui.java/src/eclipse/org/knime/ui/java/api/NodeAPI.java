@@ -44,55 +44,113 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Nov 9, 2020 (hornm): created
+ *   Jan 30, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
+
+import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.webui.node.view.NodeViewManager;
+import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.workbench.editor2.actions.OpenInteractiveWebViewAction;
 import org.knime.workbench.editor2.actions.OpenNodeViewAction;
 import org.knime.workbench.editor2.actions.OpenSubnodeWebViewAction;
-
-import com.equo.chromium.swt.Browser;
+import org.knime.workbench.editor2.actions.SubnodeLayoutAction;
+import org.knime.workbench.editor2.editparts.NodeContainerEditPart;
 
 /**
- * Opens the node's js-view, if available, in an extra browser window.
+ * Functions around nodes.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class OpenNodeViewBrowserFunction extends AbstractNodeBrowserFunction {
+final class NodeAPI {
 
-    private static final String FUNCTION_NAME = "openNodeView";
-
-    @SuppressWarnings("javadoc")
-    public OpenNodeViewBrowserFunction(final Browser browser) {
-        super(browser, FUNCTION_NAME);
+    private NodeAPI() {
+        // stateless
     }
 
-    @Override
-    protected String apply(final NodeContainer nc) {
+    /**
+     * Opens the swing dialog or CEF-based dialog of a node.
+     *
+     * @param projectId
+     * @param nodeId
+     */
+    @API
+    static void openNodeDialog(final String projectId, final String nodeId) {
+        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        checkIsNotNull(nc, projectId, nodeId);
+        NodeContainerEditPart.openNodeDialog(wrap(nc));
+    }
+
+    /**
+     *
+     * Opens the node's js-view, if available, in an extra browser window.
+     *
+     * @param projectId
+     * @param nodeId
+     */
+    @API
+    static void openNodeView(final String projectId, final String nodeId) {
+        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        checkIsNotNull(nc, projectId, nodeId);
         if (nc instanceof SubNodeContainer) {
             // composite view
             OpenSubnodeWebViewAction.openView((SubNodeContainer)nc);
-            return null;
         } else if (NodeViewManager.hasNodeView(nc)) {
             // 'ui-extension' view
             var nnc = ((NativeNodeContainer)nc);
             var viewName = "Interactive View: " + nnc.getNodeViewName(0);
             OpenNodeViewAction.openNodeView(nnc, OpenNodeViewAction.createNodeView(nnc, false, true), viewName);
-            return null;
         } else if (nc.getInteractiveWebViews().size() > 0 || nc.hasInteractiveView()) {
             // legacy js-view
             OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,
                 nc.getInteractiveWebViews().get(0).getViewName());
-            return null;
         }
-        NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warnWithFormat(
+        NodeLogger.getLogger(NodeAPI.class).warnWithFormat(
             "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
-        return null;
     }
+
+    /**
+     * Opens the swing dialog or CEF-based dialog of a node.
+     */
+    @API
+    static void openLegacyFlowVariableDialog(final String projectId, final String nodeId) {
+        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        checkIsNotNull(nc, projectId, nodeId);
+        NodeContainerEditPart.openDialog(wrap(nc), null);
+    }
+
+    /**
+     *
+     * Opens the layout editor of a component
+     *
+     * @param projectId
+     * @param nodeId
+     * @return
+     */
+    @API
+    static String openLayoutEditor(final String projectId, final String nodeId) {
+        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        checkIsNotNull(nc, projectId, nodeId);
+        if (nc instanceof SubNodeContainer) {
+            var subnode = (SubNodeContainer)nc;
+            SubnodeLayoutAction.openLayoutEditor(subnode);
+            return null;
+        } else {
+            var message = String.format("There is no layout editor for node '%s'", nc);
+            NodeLogger.getLogger(NodeAPI.class).warn(message);
+            return message;
+        }
+    }
+
+    private static void checkIsNotNull(final NodeContainer nc, final String projectId, final String nodeId) {
+        CheckUtils.checkArgument(nc != null, "Node with id '%s' not found in workflow with id '%s'", projectId, nodeId);
+    }
+
 }

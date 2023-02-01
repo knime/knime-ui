@@ -44,13 +44,10 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java.browser.function;
-
-import static org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.saveAndCloseWorkflowsInteractively;
+package org.knime.ui.java.api;
 
 import java.util.Collections;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.ui.PlatformUI;
@@ -60,29 +57,19 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
+import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
 
 /**
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class CloseWorkflowBrowserFunction extends BrowserFunction {
+final class CloseWorkflow {
 
-    private final AppStateUpdater m_appStateUpdater;
-    private final EventConsumer m_eventConsumer;
-
-    @SuppressWarnings("javadoc")
-    public CloseWorkflowBrowserFunction(final Browser browser, final AppStateUpdater appStateUpdater,
-        final EventConsumer eventConsumer) {
-        super(browser, "closeWorkflow");
-        m_appStateUpdater = appStateUpdater;
-        m_eventConsumer = eventConsumer;
+    private CloseWorkflow() {
+        // utility
     }
 
     /**
@@ -96,12 +83,7 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
      *            </ol>
      * @return A boolean indicating whether an editor has been closed.
      */
-    @Override
-    public Object function(final Object[] arguments) {
-        String projectIdToClose = requireAtIndex(arguments, 0, String.class)
-            .orElseThrow(() -> new NoSuchElementException("Project ID to close not given"));
-        var nextProjectId = requireAtIndex(arguments, 1, String.class).orElse(null);
-
+    static boolean closeWorkflow(final String projectIdToClose, final String nextProjectId) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             return closeWorkflowViaClassicUI(projectIdToClose, nextProjectId);
         } else {
@@ -110,16 +92,16 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
                 wpm.openAndCacheWorkflow(nextProjectId);
                 wpm.setWorkflowProjectActive(nextProjectId);
             }
-            var success = saveAndCloseWorkflowsInteractively(Collections.singleton(projectIdToClose), m_eventConsumer,
-                PostWorkflowCloseAction.UPDATE_APP_STATE) == 1;
+            var success = SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(Collections.singleton(projectIdToClose),
+                DesktopAPI.getDeps(EventConsumer.class), PostWorkflowCloseAction.UPDATE_APP_STATE) == 1;
             if (success) {
-                m_appStateUpdater.updateAppState();
+                DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             }
             return success;
         }
     }
 
-    private boolean closeWorkflowViaClassicUI(final String projectIdToClose, final String nextProjectId) {
+    private static boolean closeWorkflowViaClassicUI(final String projectIdToClose, final String nextProjectId) {
         var editorToClose = getEditor(projectIdToClose);
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         // Since we are closing the editor of the root workflow manager, this will also close any editors
@@ -134,7 +116,7 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
             }
 
             // triggers sending event
-            m_appStateUpdater.updateAppState();
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
 
         return wasClosed;
@@ -152,25 +134,6 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
 
     private static WorkflowManager getWorkflowManager(final String projectId) {
         return DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
-    }
-
-    /**
-     * @param arguments The source data
-     * @param index The index of the element to look for
-     * @param targetClass The class the element should be cast to
-     * @param <V> The expected value type of the element.
-     * @return An {code Optional} containing the element at the given {@code index} as cast to {@code targetClass} if it
-     *         is present in the given * {@code arguments}, non-null and can be cast; or an empty {@code Optional}
-     *         otherwise.
-     */
-    private static <V> Optional<V> requireAtIndex(final Object[] arguments, final int index,
-        final Class<V> targetClass) {
-        if (arguments.length - 1 < index //
-            || arguments[index] == null //
-            || !targetClass.isAssignableFrom(arguments[index].getClass())) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(arguments[index]).map(targetClass::cast);
     }
 
 }

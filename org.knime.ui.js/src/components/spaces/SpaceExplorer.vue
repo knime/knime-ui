@@ -1,18 +1,29 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import PlusIcon from '@/assets/plus.svg';
+import AddFileIcon from '@/assets/add-file.svg';
+import ImportWorkflowIcon from '@/assets/import-workflow.svg';
 import ToolbarButton from '@/components/common/ToolbarButton.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer/FileExplorer.vue';
 
+import ITEM_TYPES from './itemTypes';
+
 const DISPLAY_LOADING_DELAY = 100;
 const DISPLAY_LOADING_ICON_DELAY = 350;
 const DEFAULT_LOADING_INDICATOR_HEIGHT = 76; // px
+const ITEM_TYPES_TEXTS = {
+    [ITEM_TYPES.WorkflowGroup]: 'folder',
+    [ITEM_TYPES.Workflow]: 'workflow',
+    [ITEM_TYPES.Component]: 'component',
+    [ITEM_TYPES.Metanode]: 'metanode',
+    [ITEM_TYPES.Data]: 'data file'
+};
 
 export default {
     components: {
@@ -21,6 +32,8 @@ export default {
         Breadcrumb,
         PlusButton,
         PlusIcon,
+        AddFileIcon,
+        ImportWorkflowIcon,
         ToolbarButton
     },
 
@@ -46,16 +59,18 @@ export default {
             activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
             spaceId: state => state.activeSpace?.spaceId
         }),
-        ...mapGetters('spaces', ['openedWorkflowItems', 'pathToItemId']),
+        ...mapGetters('spaces', ['openedWorkflowItems', 'openedFolderItems', 'pathToItemId']),
 
         fileExplorerItems() {
             return this.activeWorkflowGroup.items.map(item => ({
                 ...item,
-                displayOpenIndicator: this.openedWorkflowItems.includes(item.id)
+                displayOpenIndicator:
+                    this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id),
+                canBeDeleted: !this.openedWorkflowItems.includes(item.id) && !this.openedFolderItems.includes(item.id)
             }));
         },
 
-        canCreateWorkflow() {
+        isLocal() {
             return this.spaceId === 'local';
         },
 
@@ -111,6 +126,7 @@ export default {
     },
 
     methods: {
+        ...mapActions('spaces', ['importToWorkflowGroup']),
         // Only display loader after a set waiting time, to avoid making the operations seem longer
         setLoading(value) {
             if (!value) {
@@ -158,8 +174,8 @@ export default {
             this.$store.dispatch('spaces/createWorkflow');
         },
 
-        onOpenFile({ id }) {
-            this.$store.dispatch('spaces/openWorkflow', {
+        async onOpenFile({ id }) {
+            await this.$store.dispatch('spaces/openWorkflow', {
                 workflowItemId: id,
                 // send in router, so it can be used to navigate to an already open workflow
                 $router: this.$router
@@ -173,6 +189,18 @@ export default {
         onBreadcrumbClick({ id }) {
             this.fetchWorkflowGroupContent(id);
             this.$emit('item-changed', id);
+        },
+
+        onDeleteItems({ items }) {
+            const itemNameList = items
+                .map((item) => `${ITEM_TYPES_TEXTS[item.type]} ${item.name}`)
+                .join(', ');
+            const message = `Do you want to delete the ${itemNameList}?`;
+            // TODO(NXT-1472) use a modal instead of a native dialog
+            const result = window.confirm(message);
+            if (result) {
+                this.$store.dispatch('spaces/deleteItems', { itemIds: items.map(i => i.id) });
+            }
         }
     }
 };
@@ -189,19 +217,35 @@ export default {
         @click-item="onBreadcrumbClick"
       />
 
-      <ToolbarButton
-        v-if="mode === 'mini' && canCreateWorkflow"
-        primary
-        class="create-workflow-mini-btn"
-        :title="createWorkflowButtonTitle"
-        @click.native="onCreateWorkflow"
+      <div
+        v-if="mode === 'mini' && isLocal"
+        class="buttons"
       >
-        <PlusIcon />
-      </ToolbarButton>
+        <ToolbarButton
+          title="Import workflow"
+          @click.native="importToWorkflowGroup({importType: 'WORKFLOW'})"
+        >
+          <ImportWorkflowIcon />
+        </ToolbarButton>
+        <ToolbarButton
+          title="Add file"
+          @click.native="importToWorkflowGroup({importType: 'FILES'})"
+        >
+          <AddFileIcon />
+        </ToolbarButton>
+        <ToolbarButton
+          primary
+          class="create-workflow-mini-btn"
+          :title="createWorkflowButtonTitle"
+          @click.native="onCreateWorkflow"
+        >
+          <PlusIcon />
+        </ToolbarButton>
+      </div>
     </div>
 
     <PlusButton
-      v-if="mode === 'normal' && canCreateWorkflow"
+      v-if="mode === 'normal' && isLocal"
       :title="createWorkflowButtonTitle"
       primary
       class="create-workflow-btn"
@@ -218,6 +262,7 @@ export default {
       @change-directory="onChangeDirectory"
       @open-file="onOpenFile"
       @rename-file="onRenameFile"
+      @delete-items="onDeleteItems"
     />
 
     <div
@@ -248,6 +293,7 @@ export default {
 .breadcrumb-wrapper {
   position: relative;
   display: flex;
+  justify-content: space-between;
   padding-bottom: 5px;
   margin-bottom: 12px;
   width: 100%;
@@ -267,15 +313,20 @@ export default {
     -ms-overflow-style: none; /* needed to hide scroll bar in edge */
     scrollbar-width: none; /* for firefox */
     user-select: none;
+    font-size: 16px;
 
     &::-webkit-scrollbar {
       display: none;
     }
   }
+
+  & .buttons {
+    display: flex;
+  }
 }
 
 .mini {
-  padding: 20px 15px;
+  padding: 5px 15px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;

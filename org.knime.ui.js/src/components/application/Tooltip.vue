@@ -18,6 +18,14 @@ export default {
             type: String,
             default: null
         },
+        issue: {
+            type: String,
+            default: null
+        },
+        resolutions: {
+            type: Array,
+            default: () => []
+        },
         /**
          * horizontal position of the arrow tip
          */
@@ -95,6 +103,26 @@ export default {
         <p v-if="text">
           {{ text }}
         </p>
+        <div
+          v-if="issue"
+          class="issue"
+        >
+          {{ issue }}
+        </div>
+        <div
+          v-if="resolutions.length"
+          class="resolutions"
+        >
+          Potential resolutions:
+          <ul>
+            <li
+              v-for="res in resolutions"
+              :key="res"
+            >
+              {{ res }}
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -133,6 +161,31 @@ export default {
     & .title {
       font-weight: 700;
       line-height: 19px;
+    }
+
+    & .issue,
+    & .resolutions {
+      margin-top: 20px;
+    }
+
+    & .issue {
+      font-family: "Roboto Mono", sans-serif;
+      line-height: 13px;
+      font-size: 13px;
+      font-weight: 400;
+      white-space: pre-wrap;
+    }
+
+    & .resolutions {
+      line-height: 18px;
+      font-size: 13px;
+      font-weight: 500;
+
+      & ul {
+        margin: 0;
+        padding-left: 15px;
+        font-weight: 400;
+      }
     }
 
     & p {

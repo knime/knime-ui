@@ -29,6 +29,14 @@ export default {
             type: String,
             default: null
         },
+        issue: {
+            type: String,
+            default: null
+        },
+        resolutions: {
+            type: Array,
+            default: () => []
+        },
         // TODO: NXT-845 validator and/or docs needed
         // TODO: NXT-845 naming state vs status
         loopStatus: {
@@ -72,7 +80,9 @@ export default {
                 },
                 anchorPoint: this.anchorPoint,
                 gap: 10,
-                hoverable: true
+                hoverable: true,
+                issue: this.issue,
+                resolutions: this.resolutions
             };
 
             if (this.error) {

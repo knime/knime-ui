@@ -506,5 +506,19 @@ describe('API', () => {
 
             expect(result).toStrictEqual('dummy');
         });
+
+        it('deleteItems', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemIds = ['item1', 'item2'];
+            await api.deleteItems({ spaceProviderId, spaceId, itemIds });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.deleteItems',
+                params: [spaceId, spaceProviderId, itemIds],
+                id: 0
+            });
+        });
     });
 });

@@ -122,8 +122,8 @@ public final class LifeCycle {
     /**
      * Called once at first.
      */
-    public void create() {
-        doStateTransition(StateTransition.CREATE, Create::run, StateTransition.NULL);
+    public void create(final Browser browser) {
+        doStateTransition(StateTransition.CREATE, () -> Create.run(browser), StateTransition.NULL);
     }
 
     /**
@@ -139,8 +139,8 @@ public final class LifeCycle {
      * @param browser required to initialize browser functions
      * @param checkForUpdates whether to check for updates on initialization
      */
-    public void init(final Browser browser, final boolean checkForUpdates) {
-        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(browser, checkForUpdates),
+    public void init(final boolean checkForUpdates) {
+        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(checkForUpdates),
             StateTransition.CREATE, StateTransition.SUSPEND);
     }
 
