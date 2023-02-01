@@ -194,12 +194,12 @@ export const actions = {
         }
         if (applicationState.hasOwnProperty('nodeRepoFilterEnabled')) {
             commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
-            dispatch(
+            await dispatch('nodeRepository/getAllNodes', { append: false }, { root: true });
+            await dispatch(
                 'nodeRepository/setIncludeAllAndSearchNodes',
                 !applicationState.nodeRepoFilterEnabled,
                 { root: true }
             );
-            commit('nodeRepository/setNodesPerCategories', { groupedNodes: [], append: false }, { root: true });
         }
     },
     async setActiveProject({ commit, dispatch, state }, openProjects) {
