@@ -47,6 +47,9 @@ describe('application store', () => {
         const actions = {
             canvas: {
                 restoreScrollState: jest.fn()
+            },
+            spaces: {
+                fetchAllSpaceProviders: jest.fn()
             }
         };
 
@@ -65,6 +68,9 @@ describe('application store', () => {
                     setIncludeAllAndSearchNodes: jest.fn(),
                     getAllNodes: jest.fn()
                 }
+            },
+            spaces: {
+                actions: actions.spaces
             },
             canvas: {
                 getters: getters.canvas,

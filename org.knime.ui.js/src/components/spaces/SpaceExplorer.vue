@@ -1,10 +1,12 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import PlusIcon from '@/assets/plus.svg';
+import AddFileIcon from '@/assets/add-file.svg';
+import ImportWorkflowIcon from '@/assets/import-workflow.svg';
 import ToolbarButton from '@/components/common/ToolbarButton.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
@@ -21,6 +23,8 @@ export default {
         Breadcrumb,
         PlusButton,
         PlusIcon,
+        AddFileIcon,
+        ImportWorkflowIcon,
         ToolbarButton
     },
 
@@ -55,7 +59,7 @@ export default {
             }));
         },
 
-        canCreateWorkflow() {
+        isLocal() {
             return this.spaceId === 'local';
         },
 
@@ -111,6 +115,7 @@ export default {
     },
 
     methods: {
+        ...mapActions('spaces', ['importToWorkflowGroup']),
         // Only display loader after a set waiting time, to avoid making the operations seem longer
         setLoading(value) {
             if (!value) {
@@ -185,19 +190,35 @@ export default {
         @click-item="onBreadcrumbClick"
       />
 
-      <ToolbarButton
-        v-if="mode === 'mini' && canCreateWorkflow"
-        primary
-        class="create-workflow-mini-btn"
-        :title="createWorkflowButtonTitle"
-        @click.native="onCreateWorkflow"
+      <div
+        v-if="mode === 'mini' && isLocal"
+        class="buttons"
       >
-        <PlusIcon />
-      </ToolbarButton>
+        <ToolbarButton
+          title="Import workflow"
+          @click.native="importToWorkflowGroup({importType: 'WORKFLOW'})"
+        >
+          <ImportWorkflowIcon />
+        </ToolbarButton>
+        <ToolbarButton
+          title="Add file"
+          @click.native="importToWorkflowGroup({importType: 'FILES'})"
+        >
+          <AddFileIcon />
+        </ToolbarButton>
+        <ToolbarButton
+          primary
+          class="create-workflow-mini-btn"
+          :title="createWorkflowButtonTitle"
+          @click.native="onCreateWorkflow"
+        >
+          <PlusIcon />
+        </ToolbarButton>
+      </div>
     </div>
 
     <PlusButton
-      v-if="mode === 'normal' && canCreateWorkflow"
+      v-if="mode === 'normal' && isLocal"
       :title="createWorkflowButtonTitle"
       primary
       class="create-workflow-btn"
@@ -243,6 +264,7 @@ export default {
 .breadcrumb-wrapper {
   position: relative;
   display: flex;
+  justify-content: space-between;
   padding-bottom: 5px;
   margin-bottom: 12px;
   width: 100%;
@@ -262,15 +284,20 @@ export default {
     -ms-overflow-style: none; /* needed to hide scroll bar in edge */
     scrollbar-width: none; /* for firefox */
     user-select: none;
+    font-size: 16px;
 
     &::-webkit-scrollbar {
       display: none;
     }
   }
+
+  & .buttons {
+    display: flex;
+  }
 }
 
 .mini {
-  padding: 20px 15px;
+  padding: 5px 15px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;

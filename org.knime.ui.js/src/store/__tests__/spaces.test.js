@@ -7,7 +7,9 @@ import { fetchWorkflowGroupContent,
     fetchAllSpaceProviders,
     fetchSpaceProvider,
     connectSpaceProvider,
-    createWorkflow } from '@api';
+    createWorkflow,
+    importFiles,
+    importWorkflows } from '@api';
 
 import * as spacesConfig from '../spaces';
 import { APP_ROUTES } from '@/router';
@@ -348,34 +350,10 @@ describe('spaces store', () => {
                 expect(createWorkflow).toHaveBeenCalledWith(
                     expect.objectContaining({ spaceId: 'local', itemId: 'level2' })
                 );
+                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
+                    expect.objectContaining({ itemId: 'level2' })
+                );
                 expect(openWorkflow).toHaveBeenCalledWith({ workflowItemId: 'NewFile' });
-                expect(store.state.spaces.activeSpace.activeWorkflowGroup.items).toEqual([
-                    { id: 'File-1', type: 'Workflow' },
-                    { id: 'NewFile', type: 'Workflow' }
-                ]);
-            });
-
-            it('should sort active workflow group items after creating a new workflow', async () => {
-                const { store } = loadStore();
-                createWorkflow.mockResolvedValue({ id: '3', name: 'A', type: 'Workflow' });
-
-                store.state.spaces.activeSpace = {
-                    spaceId: 'local',
-                    activeWorkflowGroup: {
-                        path: [{ id: 'current-group' }],
-                        items: [
-                            { id: '1', name: 'Z', type: 'WorkflowGroup' },
-                            { id: '2', name: 'B', type: 'Workflow' }
-                        ]
-                    }
-                };
-
-                await store.dispatch('spaces/createWorkflow');
-                expect(store.state.spaces.activeSpace.activeWorkflowGroup.items).toEqual([
-                    { id: '1', name: 'Z', type: 'WorkflowGroup' },
-                    { id: '3', name: 'A', type: 'Workflow' },
-                    { id: '2', name: 'B', type: 'Workflow' }
-                ]);
             });
         });
 
@@ -426,6 +404,36 @@ describe('spaces store', () => {
                     name: APP_ROUTES.WorkflowPage,
                     params: { projectId: 'dummyProject', workflowId: 'root' }
                 });
+            });
+        });
+
+        describe('importToWorkflowGroup', () => {
+            it('should import files', () => {
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: {
+                        path: [{ id: 'level1' }],
+                        items: [{ id: 'File-1', type: 'Workflow' }]
+                    }
+                };
+
+                store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' });
+                expect(importFiles).toHaveBeenCalledWith({ itemId: 'level1' });
+            });
+
+            it('should import workflows', () => {
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: {
+                        path: [{ id: 'level1' }, { id: 'level2' }],
+                        items: [{ id: 'File-1', type: 'Workflow' }]
+                    }
+                };
+
+                store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
+                expect(importWorkflows).toHaveBeenCalledWith({ itemId: 'level2' });
             });
         });
     });
