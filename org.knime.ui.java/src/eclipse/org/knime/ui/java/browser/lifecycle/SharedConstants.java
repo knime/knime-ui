@@ -63,10 +63,4 @@ final class SharedConstants {
 
     static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
 
-    private static final String REMOTE_DEBUGGING_PORT_PROP = "chromium.remote_debugging_port";
-
-    static boolean isRemoteDebuggingPortSet() {
-        return System.getProperty(REMOTE_DEBUGGING_PORT_PROP) != null;
-    }
-
 }

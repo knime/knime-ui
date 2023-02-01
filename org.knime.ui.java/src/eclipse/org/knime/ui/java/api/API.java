@@ -44,49 +44,22 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 1, 2023 (hornm): created
+ *   Jan 30, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.api;
 
-import static org.knime.ui.java.browser.function.ObjectMapperForBrowserFunction.MAPPER;
-
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Returns infos on all available {@link SpaceProviders}. It's a browser function because this functionality is only
- * available in the desktop AP (the desktop AP, e.g., can connect to multiple hubs).
+ * Marks a method that contributes to the desktop API.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class GetSpaceProvidersBrowserFunction extends BrowserFunction {
-
-    private final SpaceProviders m_spaceProviders;
-
-    /**
-     * @param browser
-     * @param spaceProviders
-     */
-    public GetSpaceProvidersBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
-        super(browser, "getSpaceProviders");
-        m_spaceProviders = spaceProviders;
-    }
-
-    @Override
-    public Object function(final Object[] arguments) {
-        var res = MAPPER.createObjectNode();
-        for (var sp : m_spaceProviders.getProvidersMap().values()) {
-            var isLocalSpaceProvider = sp.isLocal();
-            var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
-            res.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
-                .put("name", sp.getName()) //
-                .put("connected", isLocalSpaceProvider || sp.getConnection(false).isPresent()) //
-                .put("connectionMode", connectionMode) //
-                .put("local", isLocalSpaceProvider));
-        }
-        return res.toPrettyString();
-    }
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@interface API {
 
 }

@@ -50,7 +50,7 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.function.IntSupplier;
 
-import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
+import org.knime.ui.java.api.SaveAndCloseWorkflows;
 
 /**
  * Life-cycle-state only available to the state-transitions (within this package).
@@ -61,17 +61,10 @@ public interface LifeCycleStateInternal extends LifeCycleState {
 
     /**
      * @return the logic which saves and closes all workflows; see
-     *         {@link SaveAndCloseWorkflowsBrowserFunction#saveAndCloseWorkflowsInteractively(java.util.Set, org.knime.gateway.impl.service.util.EventConsumer, org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction)}
+     *         {@link SaveAndCloseWorkflows#saveAndCloseWorkflowsInteractively(java.util.Set, org.knime.gateway.impl.service.util.EventConsumer, org.knime.ui.java.browser.function.SaveAndCloseWorkflows.PostWorkflowCloseAction)}
      *         for documentation on the result
      */
     default IntSupplier saveAndCloseAllWorkflows() {
-        return null;
-    }
-
-    /**
-     * @return the logic which removes and disposes all browser functions
-     */
-    default Runnable removeAndDisposeAllBrowserFunctions() {
         return null;
     }
 
