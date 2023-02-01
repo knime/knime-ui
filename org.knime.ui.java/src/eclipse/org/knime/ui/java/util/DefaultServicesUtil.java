@@ -75,24 +75,30 @@ public final class DefaultServicesUtil {
     /**
      * Set all dependencies required by the default service implementations
      *
+     * @param workflowProjectManager
+     * @param workflowMiddleware
      * @param appStateUpdater The application state updater
      * @param eventConsumer The event consumer
      * @param spaceProviders The space providers
      * @param updateStateProvider The update state provider
      * @param preferencesProvider
      * @param exampleProjects
+     * @param uriImporter
      */
-    public static void setDefaultServiceDependencies(final AppStateUpdater appStateUpdater,
-        final EventConsumer eventConsumer, final SpaceProviders spaceProviders,
-        final UpdateStateProvider updateStateProvider, final PreferencesProvider preferencesProvider,
+    public static void setDefaultServiceDependencies( // NOSONAR
+        final WorkflowProjectManager workflowProjectManager, //
+        final WorkflowMiddleware workflowMiddleware, //
+        final AppStateUpdater appStateUpdater, //
+        final EventConsumer eventConsumer, //
+        final SpaceProviders spaceProviders, //
+        final UpdateStateProvider updateStateProvider, //
+        final PreferencesProvider preferencesProvider, //
         final ExampleProjects exampleProjects) {
         if (!ServiceInstances.areServicesInitialized()) {
             ServiceDependencies.setServiceDependency(AppStateUpdater.class, appStateUpdater);
             ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
-            ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
-                new WorkflowMiddleware(WorkflowProjectManager.getInstance()));
-            ServiceDependencies.setServiceDependency(WorkflowProjectManager.class,
-                WorkflowProjectManager.getInstance());
+            ServiceDependencies.setServiceDependency(WorkflowMiddleware.class, workflowMiddleware);
+            ServiceDependencies.setServiceDependency(WorkflowProjectManager.class, workflowProjectManager);
             ServiceDependencies.setServiceDependency(SpaceProviders.class, spaceProviders);
             ServiceDependencies.setServiceDependency(UpdateStateProvider.class, updateStateProvider);
             ServiceDependencies.setServiceDependency(PreferencesProvider.class, preferencesProvider);

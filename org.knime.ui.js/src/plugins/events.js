@@ -2,6 +2,7 @@ import { registerEventHandlers } from '@api';
 import { notifyPatch } from '@/util/event-syncer';
 import { APP_ROUTES } from '@/router';
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
+import { nodeSize } from '@/style/shapes.mjs';
 
 export default ({ store: $store, router: $router }) => {
     registerEventHandlers({
@@ -87,6 +88,16 @@ export default ({ store: $store, router: $router }) => {
                 // send over any parameters that are sent in the event payload, or empty in case none
                 ...params
             );
+        },
+
+        ImportURIEvent({ x, y }) {
+            const el = document.elementFromPoint(x, y);
+            if (document.querySelector('#kanvas').contains(el)) {
+                let [canvasX, canvasY] = $store.getters['canvas/screenToCanvasCoordinates']([x, y]);
+                const workflow = $store.state.workflow.activeWorkflow;
+                window.importURIAtWorkflowCanvas(null, workflow.projectId, workflow.info.containerId,
+                    canvasX - nodeSize / 2, canvasY - nodeSize / 2);
+            }
         }
     });
 };

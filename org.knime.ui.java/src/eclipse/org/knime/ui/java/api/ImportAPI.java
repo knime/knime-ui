@@ -59,6 +59,8 @@ final class ImportAPI {
 
     private static final ImportFiles IMPORT_FILES = new ImportFiles();
 
+    private static String uri;
+
     private ImportAPI() {
         // stateless
     }
@@ -72,12 +74,20 @@ final class ImportAPI {
     }
 
     /**
-     *
      * Import data files into a workspace and save them to the specified location.
      */
     @API
     static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId) {
         return IMPORT_FILES.importItems(spaceProviderId, spaceId, itemId);
+    }
+
+    /**
+     * TODO
+     */
+    @API
+    static void importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId, final double canvasX,
+        final double canvasY) {
+        ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
     }
 
 }
