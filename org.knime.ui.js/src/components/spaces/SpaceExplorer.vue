@@ -64,7 +64,8 @@ export default {
         fileExplorerItems() {
             return this.activeWorkflowGroup.items.map(item => ({
                 ...item,
-                displayOpenIndicator: this.openedWorkflowItems.includes(item.id),
+                displayOpenIndicator:
+                    this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id),
                 canBeDeleted: !this.openedWorkflowItems.includes(item.id) && !this.openedFolderItems.includes(item.id)
             }));
         },

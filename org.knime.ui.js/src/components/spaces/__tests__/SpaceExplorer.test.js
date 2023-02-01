@@ -203,14 +203,30 @@ describe('SpaceExplorer.vue', () => {
         expect(wrapper.emitted('item-changed')[0][0]).toBe('parentId');
     });
 
-    it('should set the openIndicator for open workflows', async () => {
-        const openProjects = [
-            { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
-        ];
-        const { wrapper } = await doMountAndLoad({ openProjects });
-        expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
-            expect.objectContaining({ displayOpenIndicator: true })
-        );
+    describe('Open indicator', () => {
+        it('should set the openIndicator for open workflows', async () => {
+            const openProjects = [
+                { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
+            ];
+            const { wrapper } = await doMountAndLoad({ openProjects });
+            expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
+                expect.objectContaining({ displayOpenIndicator: true })
+            );
+        });
+
+        it('should set the openIndicator for folders with open workflows', async () => {
+            const openProjects = [{
+                origin: {
+                    spaceId: 'local',
+                    itemId: '8',
+                    ancestorItemIds: ['1', '7']
+                }
+            }];
+            const { wrapper } = await doMountAndLoad({ openProjects });
+            expect(wrapper.findComponent(FileExplorer).props('items')[0]).toEqual(
+                expect.objectContaining({ displayOpenIndicator: true })
+            );
+        });
     });
 
     describe('Can be deleted', () => {
