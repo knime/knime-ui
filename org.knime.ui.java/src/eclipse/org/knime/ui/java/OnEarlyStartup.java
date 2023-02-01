@@ -44,28 +44,23 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 28, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.lifecycle;
+package org.knime.ui.java;
+
+import org.knime.core.util.IEarlyStartup;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
 
 /**
- * Constants shared accross lifecycle state transitions.
+ * Hooks into the early-startup routine.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class SharedConstants {
+public class OnEarlyStartup implements IEarlyStartup {
 
-    private SharedConstants() {
-        // utility
+    @Override
+    public void run() {
+        LifeCycle.get().startup();
     }
 
-    static final String JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
-
-    static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
-
-    static final String PERSPECTIVE_SYSTEM_PROPERTY = "perspective";
-
-    static final String PREFERENCE_NODE_QUALIFIER = "org.knime.ui.java";
-
-    static final String PREFERENCE_KEY = "startWithWebUI";
 }

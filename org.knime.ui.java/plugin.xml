@@ -45,6 +45,13 @@
       </initializer>
    </extension>
    <extension
+         point="org.knime.core.EarlyStartup">
+      <provider
+            callBeforeKNIMEApplicationStart="true"
+            class="org.knime.ui.java.OnEarlyStartup">
+      </provider>
+   </extension>
+   <extension
          point="org.knime.product.preShutdown">
       <preShutdown
             class="org.knime.ui.java.OnPreShutdown">
