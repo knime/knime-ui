@@ -44,44 +44,40 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 7, 2022 (kai): created
+ *   Jan 30, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.function;
-
-import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.NodeContainer;
-import org.knime.core.node.workflow.SubNodeContainer;
-import org.knime.workbench.editor2.actions.SubnodeLayoutAction;
-
-import com.equo.chromium.swt.Browser;
+package org.knime.ui.java.api;
 
 /**
- * Opens the layout editor of a component
+ * Functions around importing stuff.
  *
- * @author Kai Franze, KNIME GmbH
+ * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class OpenLayoutEditorBrowserFunction extends AbstractNodeBrowserFunction {
+final class ImportAPI {
 
-    private static final String FUNCTION_NAME = "openLayoutEditor";
+    private static final ImportWorkflows IMPORT_WORKFLOWS = new ImportWorkflows();
 
-    /**
-     * @param browser
-     */
-    public OpenLayoutEditorBrowserFunction(final Browser browser) {
-        super(browser, FUNCTION_NAME);
+    private static final ImportFiles IMPORT_FILES = new ImportFiles();
+
+    private ImportAPI() {
+        // stateless
     }
 
-    @Override
-    protected String apply(final NodeContainer nc) {
-        if (nc instanceof SubNodeContainer) {
-            var subnode = (SubNodeContainer)nc;
-            SubnodeLayoutAction.openLayoutEditor(subnode);
-            return null;
-        } else {
-            var message = String.format("There is no layout editor for node '%s'", nc);
-            NodeLogger.getLogger(OpenLayoutEditorBrowserFunction.class).warn(message);
-            return message;
-        }
+    /**
+     * Import workflows into a workspace and save them to the specified location.
+     */
+    @API
+    static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId) {
+        return IMPORT_WORKFLOWS.importItems(spaceProviderId, spaceId, itemId);
+    }
+
+    /**
+     *
+     * Import data files into a workspace and save them to the specified location.
+     */
+    @API
+    static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId) {
+        return IMPORT_FILES.importItems(spaceProviderId, spaceId, itemId);
     }
 
 }

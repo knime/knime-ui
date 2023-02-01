@@ -111,7 +111,7 @@ describe('SpaceExplorer.vue', () => {
     it('should load startItemId directory when data is reset', async () => {
         const { store } = await doMountAndLoad();
 
-        // initial fetch of root has happend
+        // initial fetch of root has happened
         fetchWorkflowGroupContent.mockReset();
 
         store.state.spaces.activeSpace.startItemId = 'startItemId';
@@ -239,8 +239,22 @@ describe('SpaceExplorer.vue', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
     });
 
-    it('should only allow creating workflows on the local space', async () => {
-        const { wrapper, store } = doMount();
+    it('should show buttons for space that is local and in the mini mode', async () => {
+        const { wrapper, store } = doMount({ props: { mode: 'mini' } });
+        store.state.spaces.activeSpace = {
+            spaceId: 'local',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('.buttons').exists()).toBe(true);
+    });
+
+    it('should not show buttons in the mini mode in space that is not local', async () => {
+        const { wrapper, store } = doMount({ props: { mode: 'mini' } });
         store.state.spaces.activeSpace = {
             spaceId: 'somerandomhub',
             activeWorkflowGroup: {
@@ -250,8 +264,35 @@ describe('SpaceExplorer.vue', () => {
         };
 
         await wrapper.vm.$nextTick();
+        expect(wrapper.find('.buttons').exists()).toBe(false);
+    });
+
+    it('should only show create workflow button on the local space', async () => {
+        const { wrapper, store } = doMount();
+        store.state.spaces.activeSpace = {
+            spaceId: 'local',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('.create-workflow-btn').exists()).toBe(true);
+    });
+
+    it('should not show create workflow button in space that is not local', async () => {
+        const { wrapper, store } = doMount();
+        store.state.spaces.activeSpace = {
+            spaceId: 'someSpace',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+
+        await wrapper.vm.$nextTick();
         expect(wrapper.find('.create-workflow-btn').exists()).toBe(false);
-        expect(wrapper.find('.create-workflow-mini-btn').exists()).toBe(false);
     });
 
     it('should handle create workflow for "mini" mode', async () => {
@@ -269,6 +310,36 @@ describe('SpaceExplorer.vue', () => {
 
         wrapper.find('.create-workflow-mini-btn').trigger('click');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
+    });
+
+    it('should handle import workflow for "mini" mode', async () => {
+        const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
+        store.state.spaces.activeSpace = {
+            spaceId: 'local',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+        await wrapper.vm.$nextTick();
+
+        wrapper.find("[title='Import workflow']").trigger('click');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
+    });
+
+    it('should handle import files for "mini" mode', async () => {
+        const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
+        store.state.spaces.activeSpace = {
+            spaceId: 'local',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+        await wrapper.vm.$nextTick();
+
+        wrapper.find("[title='Add file']").trigger('click');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'FILES' });
     });
 
     it('should display the loader only after a specific timeout', async () => {

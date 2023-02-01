@@ -194,7 +194,6 @@ export const disconnectSpaceProvider = ({ spaceProviderId }) => {
     }
 };
 
-// Will be adapted with NXT-1254
 export const importFiles = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
     try {
         // Returns true on success
@@ -205,7 +204,6 @@ export const importFiles = ({ spaceProviderId = 'local', spaceId = 'local', item
     }
 };
 
-// Will be adapted with NXT-1254
 export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
     try {
         // Returns true on success

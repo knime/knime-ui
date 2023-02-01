@@ -192,7 +192,7 @@ nav {
         background-color: var(--knime-porcelain);
 
         &.expanded {
-          background-color: var(--knime-gray-ultra-light);
+          background-color: var(--knime-porcelain);
         }
       }
 

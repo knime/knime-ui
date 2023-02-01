@@ -48,6 +48,7 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
+import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DefaultServicesUtil;
 
@@ -64,10 +65,7 @@ final class Suspend {
     }
 
     static LifeCycleStateInternal run(final LifeCycleStateInternal state) {
-        var removeAndDisposeAllBrowserFunctions = state.removeAndDisposeAllBrowserFunctions();
-        if (removeAndDisposeAllBrowserFunctions != null) {
-            removeAndDisposeAllBrowserFunctions.run();
-        }
+        DesktopAPI.disposeDependencies();
         DefaultServicesUtil.disposeDefaultServices();
         KnimeUIPreferences.setNodeRepoFilterChangeListener(null);
         return new LifeCycleStateInternal() {

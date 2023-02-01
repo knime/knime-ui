@@ -34,16 +34,11 @@ export default {
             this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
         }
     },
-
     created() {
-        this.fetchSpaceProviders();
+        this.$store.dispatch('spaces/fetchAllSpaceProviders');
     },
 
     methods: {
-        async fetchSpaceProviders() {
-            await this.$store.dispatch('spaces/fetchAllSpaceProviders');
-        },
-
         onLogin(spaceProviderId) {
             this.$store.dispatch('spaces/connectProvider', { spaceProviderId });
         },
