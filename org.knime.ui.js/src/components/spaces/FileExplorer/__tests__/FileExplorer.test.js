@@ -297,27 +297,66 @@ describe('FileExplorer.vue', () => {
         });
 
         it('should have rename enabled when item is not open', () => {
+            const { wrapper } = doMount();
 
+            const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
+            expect(menuItem.findAll('li').at(0).element.innerHTML).toContain('Rename');
         });
 
         it('should have rename disabled when item is open', () => {
+            const indexOpenedItem = 0;
+            const { wrapper } = doMount({
+                props: {
+                    items: MOCK_DATA.map((item, index) => ({
+                        ...item,
+                        displayOpenIndicator: index === indexOpenedItem
+                    }))
+                }
+            });
 
+            const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
+            expect(menuItem.findAll('li').at(0).element.outerHTML).toContain('Open workflows cannot be renamed');
         });
 
-        it('should render TextInput when users wants to rename', () => {
+        it('should render TextInput when users wants to rename', async () => {
+            const { wrapper } = doMount();
+            const renameOptionIdx = 0;
+
+            const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
+            await menuItem.findAll('.clickable-item').at(renameOptionIdx).trigger('click');
             
+            expect(wrapper.vm.isRenamingItemId).toBe(MOCK_DATA[0].id);
+            expect(wrapper.vm.renameValue).toBe(MOCK_DATA[0].name);
+            expect(wrapper.findAll('input').at(0).exists()).toBe(true);
         });
 
-        it('should show verification message in case of error during renaming', () => {
+        it('should show verification message in case of error during renaming', async () => {
+            const { wrapper } = doMount();
+            const renameOptionIdx = 0;
+
+            const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
+            await menuItem.findAll('span').at(renameOptionIdx).trigger('click');
             
+            const inputValue = wrapper.findAll('input').at(0);
+            inputValue.element.value = 'invalid ? string';
+            await inputValue.trigger('input');
+            expect(wrapper.findAll('.item-error').at(0).exists()).toBe(true);
         });
 
-        it('should submit renaming event', () => {
-            
-        });
+        it('should submit renaming event', async () => {
+            const { wrapper } = doMount();
+            const renameOptionIdx = 0;
 
-        it('should fail on duplicates', () => {
+            const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
+            await menuItem.findAll('span').at(renameOptionIdx).trigger('click');
             
+            const inputValue = wrapper.findAll('input').at(0);
+            const newName = 'New Folder name';
+            await wrapper.setData({ renameValue: newName });
+            await inputValue.trigger('keyup.enter');
+
+            expect(wrapper.emitted('rename-file')).toBeTruthy();
+            expect(wrapper.emitted('rename-file')[0][0].newName).toEqual(newName);
         });
     });
 });

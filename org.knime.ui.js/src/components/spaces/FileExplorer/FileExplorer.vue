@@ -251,21 +251,8 @@ export default {
             }
         },
 
-        onMenuClick(option, item) {
-            console.log(option);
-            console.log(item);
-            if (option === 'rename') {
-                this.isRenamingItemId = item.id;
-                this.renameValue = item.name;
-                this.setupRenameInput();
-            }
-        },
         onRenameChange(value) {
-            console.log(value);
             this.isRenamingInvalid = INVALID_NAME_CHARACTERS.test(value) || INVALID_TRAILING_WHITESPACES.test(value);
-        },
-        onRenameFocus() {
-            console.log('rename focus');
         },
         setupRenameInput(id, name) {
             this.isRenamingItemId = id;
