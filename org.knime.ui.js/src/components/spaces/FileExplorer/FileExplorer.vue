@@ -10,9 +10,14 @@ import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 
+import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
 import ITEM_TYPES from '../itemTypes';
+
+const INVALID_NAME_CHARACTERS = /[(*?#:"<>%~|/).]/;
+
+const INVALID_TRAILING_WHITESPACES = /\s+$/;
 
 export default {
     components: {
@@ -23,7 +28,8 @@ export default {
         ComponentIcon,
         DataIcon,
         MetaNodeIcon,
-        ArrowIcon
+        ArrowIcon,
+        InputField
     },
 
     mixins: [clickaway],
@@ -56,7 +62,10 @@ export default {
             ITEM_TYPES,
             multiSelectionState: multiSelectionService.getInitialState(),
             isDragging: false,
-            startDragItemIndex: null
+            startDragItemIndex: null,
+            isRenamingItemId: null,
+            renameValue: '',
+            isRenamingInvalid: false
         };
     },
 
@@ -219,6 +228,12 @@ export default {
 
         getMenuOptions(item) {
             return [{
+                id: 'rename',
+                text: 'Rename',
+                ...item.displayOpenIndicator
+                    ? { title: 'Open workflows cannot be renamed', disabled: true }
+                    : {}
+            }, {
                 id: 'delete',
                 text: 'Delete',
                 ...item.canBeDeleted
@@ -230,6 +245,44 @@ export default {
         onMenuClick(optionId, item) {
             if (optionId === 'delete') {
                 this.$emit('delete-items', { items: [item] });
+            }
+            if (optionId === 'rename') {
+                this.setupRenameInput(item.id, item.name);
+            }
+        },
+
+        onMenuClick(option, item) {
+            console.log(option);
+            console.log(item);
+            if (option === 'rename') {
+                this.isRenamingItemId = item.id;
+                this.renameValue = item.name;
+                this.setupRenameInput();
+            }
+        },
+        onRenameChange(value) {
+            console.log(value);
+            this.isRenamingInvalid = INVALID_NAME_CHARACTERS.test(value) || INVALID_TRAILING_WHITESPACES.test(value);
+        },
+        onRenameFocus() {
+            console.log('rename focus');
+        },
+        setupRenameInput(id, name) {
+            this.isRenamingItemId = id;
+            this.renameValue = name;
+            this.$nextTick(() => {
+                this.$refs.renameRef[0].$refs.input.focus();
+            
+                this.$refs.renameRef[0].$refs.input.addEventListener('keyup', this.onRenameSubmit);
+            });
+        },
+        onRenameSubmit(keyupEvent) {
+            if (keyupEvent.keyCode === 13 && !this.isRenamingInvalid) {
+                this.$emit('rename-file', { itemId: this.isRenamingItemId, newName: this.renameValue });
+                console.log('rename submit');
+                this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
+                this.isRenamingItemId = null;
+                this.renameValue = '';
             }
         }
     }
@@ -306,7 +359,24 @@ export default {
           :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup }"
           :title="item.name"
         >
-          {{ item.name }}
+          <span v-if="isRenamingItemId !== item.id">{{ item.name }}</span>
+          <template v-else>
+            <InputField
+              ref="renameRef"
+              v-model="renameValue"
+              class="is-renamed"
+              type="text"
+              title="rename"
+              :is-valid="!isRenamingInvalid"
+              @input="onRenameChange"
+            />
+            <div
+              v-if="isRenamingInvalid"
+              class="item-error"
+            >
+              <span>Name contains invalid characters (*?#:"<>%~|/) or trailing spaces.</span>
+            </div>
+          </template>
         </td>
 
         <td
@@ -419,11 +489,48 @@ tbody.mini {
 
   /* Prevent children from interfering with drag events */
   & td {
+    & .is-renamed {
+      pointer-events: auto;
+
+      & >>> input {
+        font-size: 18px;
+        font-weight: 700;
+      }
+    }
+
     pointer-events: none;
   }
-
+  
+  & .item-error {
+    backdrop-filter: blur(10px);
+    font-weight: 300;
+    position: absolute;
+    color: var(--theme-color-error);
+    padding: 7px 5px;
+    margin-top: 5px;
+  }
+  
   & .item-icon,
   & .item-option {
+    pointer-events: auto;
+    /*
+    & >>> .submenu-toggle {
+       height: 100%;
+      border-radius: 0;
+    }
+    */
+
+    /*
+     * NB: The MenuItems set the svg size to 18px x 18px
+     * but this is too big here and causes misalignment
+     */
+    & >>> .menu-wrapper {
+      & svg {
+        height: 14px;
+        width: 14px;
+      }
+    }
+
     & svg {
       display: flex;
 

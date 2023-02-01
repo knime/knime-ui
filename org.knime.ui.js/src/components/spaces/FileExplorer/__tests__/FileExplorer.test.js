@@ -295,5 +295,29 @@ describe('FileExplorer.vue', () => {
             await optionsMenu.findAll('.clickable-item').at(deleteOptionIdx).trigger('click');
             expect(wrapper.emitted('delete-items')[0][0]).toMatchObject({ items: [{ id: `${itemIdx}` }] });
         });
+
+        it('should have rename enabled when item is not open', () => {
+
+        });
+
+        it('should have rename disabled when item is open', () => {
+
+        });
+
+        it('should render TextInput when users wants to rename', () => {
+            
+        });
+
+        it('should show verification message in case of error during renaming', () => {
+            
+        });
+
+        it('should submit renaming event', () => {
+            
+        });
+
+        it('should fail on duplicates', () => {
+            
+        });
     });
 });
