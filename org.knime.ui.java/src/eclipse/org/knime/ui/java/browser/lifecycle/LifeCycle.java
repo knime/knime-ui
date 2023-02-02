@@ -50,9 +50,11 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.Arrays;
 
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 
@@ -62,15 +64,15 @@ import com.equo.chromium.swt.Browser;
  * The state transitions need to be called in a strict order (see {@link StateTransition#rank()}). called.
  *
  * <pre>
- * NULL ┌─────┐ SHUTDOWN ┌─────────┐      SUSPEND     ┌─────────┐
- * ─────►Null ◄──────────┤Suspended◄──────────────────┤Persisted│
- *      └──┬──┘          └────┬────┘                  └────▲────┘
- *   CREATE│                  │INIT                        │SAVE_STATE
- *     ┌───▼───┐   INIT ┌─────▼─────┐ WEB_APP_LOADED ┌─────┴─────┐
- *     │Created├────────►Initialized├────────────────►Operational│
- *     └───────┘        └───────────┘                └┬─────────▲┘
- *                                                    │ RELOAD  │
- *                                                    └─────────┘
+ *STARTUP ┌─────┐ SHUTDOWN ┌─────────┐      SUSPEND     ┌─────────┐
+ *   ─────►Null ◄──────────┤Suspended◄──────────────────┤Persisted│
+ *        └──┬──┘          └────┬────┘                  └────▲────┘
+ *     CREATE│                  │INIT                        │SAVE_STATE
+ *       ┌───▼───┐   INIT ┌─────▼─────┐ WEB_APP_LOADED ┌─────┴─────┐
+ *       │Created├────────►Initialized├────────────────►Operational│
+ *       └───────┘        └───────────┘                └┬─────────▲┘
+ *                                                      │ RELOAD  │
+ *                                                      └─────────┘
  * </pre>
  * (created with asciiflow)
  *
@@ -84,7 +86,7 @@ public final class LifeCycle {
      */
     @SuppressWarnings("javadoc")
     public enum StateTransition {
-            NULL(-1), CREATE(0), INIT(1), WEB_APP_LOADED(2), RELOAD(-1), SAVE_STATE(3), SUSPEND(4), SHUTDOWN(5);
+            STARTUP(-1), CREATE(0), INIT(1), WEB_APP_LOADED(2), RELOAD(-1), SAVE_STATE(3), SUSPEND(4), SHUTDOWN(5);
 
         private final int m_rank;
 
@@ -113,17 +115,35 @@ public final class LifeCycle {
 
     private LifeCycleStateInternal m_state = null;
 
-    private StateTransition m_lastStateTransition = StateTransition.NULL;
+    private StateTransition m_lastStateTransition = null;
 
     private LifeCycle() {
         // singleton
     }
 
     /**
+     * Called on start-up.
+     */
+    public void startup() {
+        StateTransitionRunnable runnable = () -> {
+            // Determine with what perspective to start (classic or modern UI).
+            // Controlled via the 'perspective' system property.
+            var prefs = InstanceScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
+            if (prefs == null || prefs.getBoolean(SharedConstants.PREFERENCE_KEY, true)) {
+                System.setProperty(SharedConstants.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
+            } else {
+                System.setProperty(SharedConstants.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
+            }
+        };
+        doStateTransition(StateTransition.STARTUP, runnable, new StateTransition[]{null}); // NOSONAR
+    }
+
+    /**
      * Called once at first.
+     * @param browser
      */
     public void create(final Browser browser) {
-        doStateTransition(StateTransition.CREATE, () -> Create.run(browser), StateTransition.NULL);
+        doStateTransition(StateTransition.CREATE, () -> Create.run(browser), StateTransition.STARTUP);
     }
 
     /**
@@ -184,7 +204,7 @@ public final class LifeCycle {
      */
     public void shutdown() {
         doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), StateTransition.SUSPEND,
-            StateTransition.NULL);
+            StateTransition.STARTUP);
     }
 
     private void doStateTransition(final StateTransition nextStateTransition,

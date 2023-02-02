@@ -13,7 +13,7 @@ import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
-import ITEM_TYPES from '../itemTypes';
+import ITEM_TYPES from '@/util/spaceItemTypes';
 
 const INVALID_NAME_CHARACTERS = /[(*?#:"<>%~|/).]/;
 

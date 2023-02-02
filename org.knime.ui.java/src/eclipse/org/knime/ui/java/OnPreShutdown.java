@@ -44,56 +44,36 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 31, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.lifecycle;
+package org.knime.ui.java;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.Workbench;
-import org.knime.core.node.NodeLogger;
-import org.knime.ui.java.util.AppStatePersistor;
-import org.knime.ui.java.util.PerspectiveUtil;
-import org.osgi.service.prefs.BackingStoreException;
+import org.knime.product.rcp.shutdown.PreShutdown;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
 /**
- * The shutdown lifecycle state transition of the KNIME-UI. The {@link Suspend}-phase must have been run first.
- *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class Shutdown {
+public class OnPreShutdown implements PreShutdown {
 
-    private Shutdown() {
-        //
-    }
-
-    /**
-     * Runs the phase.
-     *
-     * @param state
-     */
-    static void run(final LifeCycleStateInternal state) {
-        if (state != null) {
-            AppStatePersistor.saveAppState(state.serializedAppState());
-        }
-        var prefs = InstanceScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
-        prefs.putBoolean(SharedConstants.PREFERENCE_KEY, !PerspectiveUtil.isClassicPerspectiveActive());
-        try {
-            prefs.flush();
-        } catch (BackingStoreException e) {
-            NodeLogger.getLogger(Shutdown.class).error(e);
-        }
-
-        if (!PerspectiveUtil.isClassicPerspectiveActive()) {
-            var workbench = (Workbench)PlatformUI.getWorkbench();
-            var window = workbench.getActiveWorkbenchWindow();
-            if (window != null) {
-                var pages = window.getPages();
-                for (var page : pages) {
-                    page.closeAllEditors(true);
-                }
+    @Override
+    public boolean onPreShutdown() {
+        var lifeCycle = LifeCycle.get();
+        if (lifeCycle.isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
+            // This is being called by the eclipse framework before any window is being closed.
+            // And before we close the browser, we need, e.g., to ask the user to save (and save) all the workflows
+            // (or abort the shutdown, if the user cancels).
+            lifeCycle.saveState();
+            // cancel if the workflows haven't been saved (yet). Either because the saving has been cancelled
+            // or the workflows need to be saved (through a respective event to the FE, see SaveAndCloseWorkflows)
+            if (!lifeCycle.getState().workflowsSaved()) {
+                return false;
             }
+            lifeCycle.suspend();
         }
-
+        lifeCycle.shutdown();
+        return true;
     }
+
 }

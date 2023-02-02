@@ -57,7 +57,7 @@ export const workflowAnnotationPadding = 3;
 export const nodeAnnotationPadding = 2;
 
 export const tooltipArrowSize = 12;
-export const tooltipMaxWidth = 430;
+export const tooltipMaxWidth = 540;
 export const tooltipMaxHeight = 200;
 
 // horizontal position of the output ports bar if the user hasn't moved it
