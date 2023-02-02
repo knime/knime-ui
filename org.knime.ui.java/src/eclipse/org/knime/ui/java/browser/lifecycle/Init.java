@@ -63,6 +63,7 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ExampleProjects;
+import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
@@ -80,6 +81,7 @@ import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
 import com.equo.comm.api.CommServiceProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -109,7 +111,8 @@ final class Init {
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var spaceProviders = createSpaceProviders();
         DefaultServicesUtil.setDefaultServiceDependencies(workflowProjectManager, workflowMiddleware, appStateUpdater,
-            eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects());
+            eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects(),
+            createNodeFactoryProvider());
 
         if (updateStateProvider != null) {
             // Check for updates and notify UI
@@ -194,6 +197,10 @@ final class Init {
                 );
             }
         };
+    }
+
+    private static NodeFactoryProvider createNodeFactoryProvider() {
+        return ConfigurableNodeFactoryMapper::getNodeFactory;
     }
 
     static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {

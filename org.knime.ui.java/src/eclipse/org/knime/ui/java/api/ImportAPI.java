@@ -59,8 +59,6 @@ final class ImportAPI {
 
     private static final ImportFiles IMPORT_FILES = new ImportFiles();
 
-    private static String uri;
-
     private ImportAPI() {
         // stateless
     }
@@ -82,12 +80,12 @@ final class ImportAPI {
     }
 
     /**
-     * TODO
+     * Imports a URI at a certain position in the workflow canvas (i.e. usually imported as a new node).
      */
     @API
-    static void importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId, final double canvasX,
-        final double canvasY) {
-        ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
+    static boolean importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
+        final double canvasX, final double canvasY) {
+        return ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
     }
 
 }

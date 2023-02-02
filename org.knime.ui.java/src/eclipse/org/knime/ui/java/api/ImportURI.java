@@ -52,7 +52,8 @@ import static org.knime.gateway.api.entity.EntityBuilderManager.builder;
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.eclipse.swt.widgets.Display;
@@ -71,9 +72,9 @@ import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.workbench.core.imports.EntityImport;
-import org.knime.workbench.core.imports.ImportForbiddenException;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.URIImporterFinder;
+import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
 import com.equo.chromium.swt.Browser;
 
@@ -111,13 +112,34 @@ public final class ImportURI {
     }
 
     private static EntityImport getEntityImport(final String uriString) {
+        URI uri;
+        Exception exception = null;
         try {
-            var uri = new URI(uriString);
-            return URIImporterFinder.getInstance().createEntityImportFor(uri).orElse(null);
-        } catch (URISyntaxException | ImportForbiddenException e) {
-            LOGGER.info("Can't import object from URI '" + uriString + "'", e);
-            return null;
+            uri = new URI(uriString);
+            var entityImport = URIImporterFinder.getInstance().createEntityImportFor(uri).orElse(null);
+            if (entityImport != null) {
+                return entityImport;
+            }
+            if (!uriString.startsWith("http")) {
+                var path = Path.of(uriString);
+                if (path == null) {
+                    path = Path.of(uri);
+                }
+                if (path != null && Files.exists(path)) {
+                    return new FromFileEntityImport(path);
+                }
+            }
+        } catch (Exception e) { // NOSONAR
+            exception = e;
         }
+        var message = "Can't import object from URI '" + uriString + "'. Not a valid URL nor a valid path.";
+        if (exception == null) {
+            LOGGER.warn(message);
+        } else {
+            LOGGER.warn(message, exception);
+        }
+        return null;
+
     }
 
     private static boolean sendImportURIEvent(final int x, final int y) {
@@ -139,26 +161,32 @@ public final class ImportURI {
         entityImportInProgress = null;
 
         if (entityImport instanceof NodeImport) {
-            return importNode((NodeImport)entityImport, projectId, workflowId, canvasX, canvasY);
+            var nodeImport = (NodeImport)entityImport;
+            var key = getNodeFactoryKey(nodeImport.getCanonicalNodeFactory(), nodeImport.getNodeName(),
+                nodeImport.isDynamicNode());
+            return importNode(key, null, projectId, workflowId, canvasX, canvasY);
+        } else if (entityImport instanceof FromFileEntityImport) {
+            return importNodeFromFileURI(((FromFileEntityImport)entityImport).m_path.toUri(), projectId, workflowId,
+                canvasX, canvasY);
         }
         return false;
     }
 
-    private static boolean importNode(final NodeImport nodeImport, final String projectId, final String workflowId,
+    private static boolean importNodeFromFileURI(final URI uri, final String projectId, final String workflowId,
         final int canvasX, final int canvasY) {
-        NodeFactoryKeyEnt nodeFactoryKey;
-        if (nodeImport.isDynamicNode()) {
-            var templateId = NodeTemplateId.ofDynamicNodeFactory(nodeImport.getCanonicalNodeFactory(),
-                nodeImport.getNodeName(), true);
-            nodeFactoryKey = DefaultNodeRepositoryService.getInstance().getNodeTemplates(List.of(templateId))
-                .get(templateId).getNodeFactory();
-        } else {
-            nodeFactoryKey =
-                builder(NodeFactoryKeyEntBuilder.class).setClassName(nodeImport.getCanonicalNodeFactory()).build();
+        var nodeFactory = ConfigurableNodeFactoryMapper.getNodeFactory(uri.toString());
+        if (nodeFactory == null) {
+            return false;
         }
+        return importNode(null, uri.toString(), projectId, workflowId, canvasX, canvasY);
+    }
+
+    private static boolean importNode(final NodeFactoryKeyEnt nodeFactoryKey, final String url, final String projectId,
+        final String workflowId, final int canvasX, final int canvasY) {
         var addNodeCommand = builder(AddNodeCommandEntBuilder.class) //
             .setKind(KindEnum.ADD_NODE) //
             .setNodeFactory(nodeFactoryKey) //
+            .setUrl(url) //
             .setPosition(builder(XYEntBuilder.class).setX(canvasX).setY(canvasY).build()) //
             .build();
         try {
@@ -166,9 +194,30 @@ public final class ImportURI {
                 addNodeCommand);
             return true;
         } catch (NotASubWorkflowException | NodeNotFoundException | OperationNotAllowedException e) {
-            LOGGER.warn("Failed to add node '" + nodeImport.getCanonicalNodeFactory() + "'", e);
+            LOGGER.warn("Failed to add node", e);
             return false;
         }
+    }
+
+    private static NodeFactoryKeyEnt getNodeFactoryKey(final String nodeFactoryClassName, final String nodeName,
+        final boolean isDynamicNode) {
+        if (isDynamicNode) {
+            var templateId = NodeTemplateId.ofDynamicNodeFactory(nodeFactoryClassName, nodeName, true);
+            return DefaultNodeRepositoryService.getInstance().getNodeTemplates(List.of(templateId)).get(templateId)
+                .getNodeFactory();
+        } else {
+            return builder(NodeFactoryKeyEntBuilder.class).setClassName(nodeFactoryClassName).build();
+        }
+    }
+
+    private static class FromFileEntityImport implements EntityImport {
+
+        private final Path m_path;
+
+        FromFileEntityImport(final Path path) {
+            m_path = path;
+        }
+
     }
 
 }
