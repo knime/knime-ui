@@ -155,7 +155,7 @@ public final class SaveAndCloseWorkflows {
         switch (shallSaveWorkflows) {
             case 0: // YES
                 if (shallCancelWorkflowsIfNecessary(dirtyWfms)) {
-                    sendSaveAndCloseWorkflowEventToFrontend(projectIds, eventConsumer, action);
+                    sendSaveAndCloseWorkflowEventToFrontend(dirtyProjectIds, eventConsumer, action);
                 }
                 return 2;
             case 1: // NO
@@ -204,10 +204,10 @@ public final class SaveAndCloseWorkflows {
         return success;
     }
 
-    private static void sendSaveAndCloseWorkflowEventToFrontend(final Set<String> projectIds,
+    private static void sendSaveAndCloseWorkflowEventToFrontend(final String[] dirtyProjectIds,
         final EventConsumer eventConsumer, final PostWorkflowCloseAction action) {
         var projectIdsJson = MAPPER.createArrayNode();
-        projectIds.stream().forEach(projectIdsJson::add);
+        Arrays.stream(dirtyProjectIds).forEach(projectIdsJson::add);
         var paramsJson = MAPPER.createArrayNode();
         paramsJson.add(action.name());
         var event = MAPPER.createObjectNode();
