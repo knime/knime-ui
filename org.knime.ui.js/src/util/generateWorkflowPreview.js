@@ -191,7 +191,9 @@ const useCSSfromComputedStyles = (styleOverrides = {}) => (element) => {
     const compStyles = getComputedStyle(element);
 
     if (compStyles.length > 0) {
-        for (const compStyle of compStyles) {
+        for (let i = 0; i < compStyles.length; i++) {
+            const compStyle = compStyles[i];
+            
             if (inheritedCssProperties.includes(compStyle)) {
                 const value = styleOverrides[camelCase(compStyle)]
                     ? styleOverrides[camelCase(compStyle)]
