@@ -17,7 +17,7 @@ import ITEM_TYPES from '@/util/spaceItemTypes';
 
 const INVALID_NAME_CHARACTERS = /[(*?#:"<>%~|/).]/;
 
-const INVALID_TRAILING_WHITESPACES = /\s+$/;
+const INVALID_TRAILING_WHITESPACES = /\s$/;
 
 export default {
     components: {
@@ -360,7 +360,7 @@ export default {
               v-if="isRenamingInvalid"
               class="item-error"
             >
-              <span>Name contains invalid characters (*?#:"&lt;>%~|/) or trailing spaces.</span>
+              <span>Name contains invalid characters (*?#:"&lt;>%~|/) or trailing whitespaces.</span>
             </div>
           </template>
         </td>
@@ -488,7 +488,7 @@ tbody.mini {
 
     pointer-events: none;
   }
-  
+
   & .item-error {
     backdrop-filter: blur(10px);
     font-weight: 300;
@@ -497,16 +497,25 @@ tbody.mini {
     padding: 7px 5px;
     margin-top: 5px;
   }
-  
+
   & .item-icon,
   & .item-option {
     pointer-events: auto;
+
     /*
     & >>> .submenu-toggle {
        height: 100%;
       border-radius: 0;
     }
     */
+
+    & svg {
+      display: flex;
+
+      @mixin svg-icon-size var(--icon-size);
+
+      stroke: var(--knime-masala);
+    }
 
     /*
      * NB: The MenuItems set the svg size to 18px x 18px
@@ -517,14 +526,6 @@ tbody.mini {
         height: 14px;
         width: 14px;
       }
-    }
-
-    & svg {
-      display: flex;
-
-      @mixin svg-icon-size var(--icon-size);
-
-      stroke: var(--knime-masala);
     }
   }
 
