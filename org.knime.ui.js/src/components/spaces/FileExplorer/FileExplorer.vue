@@ -266,7 +266,6 @@ export default {
         onRenameSubmit(keyupEvent) {
             if (keyupEvent.keyCode === 13 && !this.isRenamingInvalid) {
                 this.$emit('rename-file', { itemId: this.isRenamingItemId, newName: this.renameValue });
-                console.log('rename submit');
                 this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
                 this.isRenamingItemId = null;
                 this.renameValue = '';
@@ -361,7 +360,7 @@ export default {
               v-if="isRenamingInvalid"
               class="item-error"
             >
-              <span>Name contains invalid characters (*?#:"<>%~|/) or trailing spaces.</span>
+              <span>Name contains invalid characters (*?#:"&lt;>%~|/) or trailing spaces.</span>
             </div>
           </template>
         </td>
@@ -482,6 +481,8 @@ tbody.mini {
       & >>> input {
         font-size: 18px;
         font-weight: 700;
+        height: unset;
+        line-height: unset;
       }
     }
 
