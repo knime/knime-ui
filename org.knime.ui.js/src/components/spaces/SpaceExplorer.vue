@@ -12,7 +12,7 @@ import ToolbarButton from '@/components/common/ToolbarButton.vue';
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer/FileExplorer.vue';
 
-import ITEM_TYPES from './itemTypes';
+import ITEM_TYPES from '@/util/spaceItemTypes';
 
 const DISPLAY_LOADING_DELAY = 100;
 const DISPLAY_LOADING_ICON_DELAY = 350;

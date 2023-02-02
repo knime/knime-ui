@@ -14,6 +14,7 @@ import {
 } from '@api';
 
 import { APP_ROUTES } from '@/router';
+import ITEM_TYPES from '@/util/spaceItemTypes';
 
 export const state = () => ({
     activeSpaceProvider: { id: 'local' },
@@ -300,7 +301,7 @@ export const getters = {
         const { openProjects } = application;
 
         const workflowItemIds = activeWorkflowGroup.items
-            .filter(item => item.type === 'Workflow')
+            .filter(item => item.type === ITEM_TYPES.Workflow)
             .map(item => item.id);
 
         return openProjects
@@ -324,7 +325,7 @@ export const getters = {
             .flatMap(project => project.origin.ancestorItemIds);
 
         return activeWorkflowGroup.items
-            .filter(item => item.type === 'WorkflowGroup' && openProjectsFolders.includes(item.id))
+            .filter(item => item.type === ITEM_TYPES.WorkflowGroup && openProjectsFolders.includes(item.id))
             .map(item => item.id);
     },
 
