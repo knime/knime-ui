@@ -219,9 +219,9 @@ export default {
 
             if (openedWorkflows.length || isInsideFolder.length) {
                 const openedWorkflowsNames = openedWorkflows.map(workflow => workflow.name);
-                alert(`Following workflows are opened: 
-                 ${openedWorkflowsNames.map(name => `• ${name}`).join('\n')} 
-                To move your selected items, they have to be closed first`);
+                alert(`Following workflows are opened:\n
+                 ${openedWorkflowsNames.map(name => `• ${name}`).join('\n')}
+                \nTo move your selected items, they have to be closed first`);
             }
 
             this.$emit('move', {
