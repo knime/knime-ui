@@ -12,9 +12,18 @@ import ToolbarButton from '@/components/common/ToolbarButton.vue';
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer/FileExplorer.vue';
 
+import ITEM_TYPES from '@/util/spaceItemTypes';
+
 const DISPLAY_LOADING_DELAY = 100;
 const DISPLAY_LOADING_ICON_DELAY = 350;
 const DEFAULT_LOADING_INDICATOR_HEIGHT = 76; // px
+const ITEM_TYPES_TEXTS = {
+    [ITEM_TYPES.WorkflowGroup]: 'folder',
+    [ITEM_TYPES.Workflow]: 'workflow',
+    [ITEM_TYPES.Component]: 'component',
+    [ITEM_TYPES.Metanode]: 'metanode',
+    [ITEM_TYPES.Data]: 'data file'
+};
 
 export default {
     components: {
@@ -50,12 +59,14 @@ export default {
             activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
             spaceId: state => state.activeSpace?.spaceId
         }),
-        ...mapGetters('spaces', ['openedWorkflowItems', 'pathToItemId']),
+        ...mapGetters('spaces', ['openedWorkflowItems', 'openedFolderItems', 'pathToItemId']),
 
         fileExplorerItems() {
             return this.activeWorkflowGroup.items.map(item => ({
                 ...item,
-                displayOpenIndicator: this.openedWorkflowItems.includes(item.id)
+                displayOpenIndicator:
+                    this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id),
+                canBeDeleted: !this.openedWorkflowItems.includes(item.id) && !this.openedFolderItems.includes(item.id)
             }));
         },
 
@@ -174,6 +185,18 @@ export default {
         onBreadcrumbClick({ id }) {
             this.fetchWorkflowGroupContent(id);
             this.$emit('item-changed', id);
+        },
+
+        onDeleteItems({ items }) {
+            const itemNameList = items
+                .map((item) => `${ITEM_TYPES_TEXTS[item.type]} ${item.name}`)
+                .join(', ');
+            const message = `Do you want to delete the ${itemNameList}?`;
+            // TODO(NXT-1472) use a modal instead of a native dialog
+            const result = window.confirm(message);
+            if (result) {
+                this.$store.dispatch('spaces/deleteItems', { itemIds: items.map(i => i.id) });
+            }
         }
     }
 };
@@ -234,6 +257,7 @@ export default {
       :full-path="fullPath"
       @change-directory="onChangeDirectory"
       @open-file="onOpenFile"
+      @delete-items="onDeleteItems"
     />
 
     <div

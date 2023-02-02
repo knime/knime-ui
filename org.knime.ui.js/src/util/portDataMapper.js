@@ -24,7 +24,9 @@ export const toPortObject = (availablePortTypes, includeType = true) => (input) 
             ...result,
             // NodePreview component in webapps-common uses a `type` prop instead of kind.
             // See: WorkflowMetadata.vue or NodeTemplate.vue
-            type: fullPortObject.kind
+            type: fullPortObject.kind,
+            // eslint-disable-next-line no-extra-parens
+            ...(typeof input === 'string' ? {} : input)
         }
         : result;
 };

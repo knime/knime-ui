@@ -173,10 +173,11 @@ public final class AppStatePersistor {
             var projectId = project.getID();
             wpm.addWorkflowProject(projectId, project);
             if (projectJson.get(ACTIVE).asBoolean()) {
-                // needs to be called in the UI thread because opening the workflow shows a progress bar
-                // (see the 'openProject'-implementation below)
-                Display.getDefault().syncExec(() -> wpm.openAndCacheWorkflow(projectId));
-                wpm.setWorkflowProjectActive(projectId);
+                if (wpm.openAndCacheWorkflow(projectId).isPresent()) {
+                    wpm.setWorkflowProjectActive(projectId);
+                } else {
+                    wpm.removeWorkflowProject(projectId);
+                }
             }
         }
     }
@@ -231,11 +232,16 @@ public final class AppStatePersistor {
             @Override
             public WorkflowManager openProject() {
                 if (!Files.exists(absolutePath)) {
-                    DesktopAPUtil.showWarning("No workflow project found",
-                        "No workflow project found at " + absolutePath);
+                    Display.getDefault().syncExec(() -> DesktopAPUtil.showWarning("No workflow project found",
+                        "No workflow project found at " + absolutePath));
                     return null;
                 }
-                return DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(localSpace, itemId).orElseThrow();
+                var wfm = DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(localSpace, itemId).orElse(null);
+                if (wfm == null) {
+                    Display.getDefault().syncExec(() -> DesktopAPUtil.showWarning("Failed to load workflow",
+                        "The workflow at '" + absolutePath + "' couldn't be loaded."));
+                }
+                return wfm;
             }
 
         };

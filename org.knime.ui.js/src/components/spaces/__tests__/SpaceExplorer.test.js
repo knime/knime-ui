@@ -103,7 +103,9 @@ describe('SpaceExplorer.vue', () => {
 
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
         expect(wrapper.findComponent(FileExplorer).props('items')).toEqual(
-            fetchWorkflowGroupContentResponse.items.map(item => ({ ...item, displayOpenIndicator: false }))
+            fetchWorkflowGroupContentResponse.items.map(item => ({
+                ...item, displayOpenIndicator: false, canBeDeleted: true
+            }))
         );
         expect(wrapper.findComponent(FileExplorer).props('isRootFolder')).toBe(true);
     });
@@ -201,14 +203,62 @@ describe('SpaceExplorer.vue', () => {
         expect(wrapper.emitted('item-changed')[0][0]).toBe('parentId');
     });
 
-    it('should set the openIndicator for open workflows', async () => {
-        const openProjects = [
-            { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
-        ];
-        const { wrapper } = await doMountAndLoad({ openProjects });
-        expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
-            expect.objectContaining({ displayOpenIndicator: true })
-        );
+    describe('Open indicator', () => {
+        it('should set the openIndicator for open workflows', async () => {
+            const openProjects = [
+                { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
+            ];
+            const { wrapper } = await doMountAndLoad({ openProjects });
+            expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
+                expect.objectContaining({ displayOpenIndicator: true })
+            );
+        });
+
+        it('should set the openIndicator for folders with open workflows', async () => {
+            const openProjects = [{
+                origin: {
+                    spaceId: 'local',
+                    itemId: '8',
+                    ancestorItemIds: ['1', '7']
+                }
+            }];
+            const { wrapper } = await doMountAndLoad({ openProjects });
+            expect(wrapper.findComponent(FileExplorer).props('items')[0]).toEqual(
+                expect.objectContaining({ displayOpenIndicator: true })
+            );
+        });
+    });
+
+    describe('Can be deleted', () => {
+        it('open workflows should not be deletable', async () => {
+            const openProjects = [
+                { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
+            ];
+            const { wrapper } = await doMountAndLoad({ openProjects });
+            expect(wrapper.findComponent(FileExplorer).props('items')[0]).toEqual(
+                expect.objectContaining({ canBeDeleted: true })
+            );
+            expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
+                expect.objectContaining({ canBeDeleted: false })
+            );
+        });
+
+        it('folders with open workflows should not be deletable', async () => {
+            const openProjects = [{
+                origin: {
+                    spaceId: 'local',
+                    itemId: '8',
+                    ancestorItemIds: ['1', '7']
+                }
+            }];
+            const { wrapper } = await doMountAndLoad({ openProjects });
+            expect(wrapper.findComponent(FileExplorer).props('items')[0]).toEqual(
+                expect.objectContaining({ canBeDeleted: false })
+            );
+            expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
+                expect.objectContaining({ canBeDeleted: true })
+            );
+        });
     });
 
     it('should open workflows', async () => {
@@ -219,6 +269,34 @@ describe('SpaceExplorer.vue', () => {
             workflowItemId: 'dummy',
             $router: mockRouter
         });
+    });
+
+    it('should delete item', async () => {
+        const items = [{
+            type: 'Workflow',
+            name: 'WORKFLOW_NAME',
+            id: 'item0'
+        }];
+        jest.spyOn(window, 'confirm').mockImplementation(() => true);
+        const { wrapper, dispatchSpy } = await doMountAndLoad();
+
+        wrapper.findComponent(FileExplorer).vm.$emit('delete-items', { items });
+        expect(window.confirm).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
+    });
+
+    it('should not delete item on negative response', async () => {
+        const items = [{
+            type: 'Workflow',
+            name: 'WORKFLOW_NAME',
+            id: 'item0'
+        }];
+        jest.spyOn(window, 'confirm').mockImplementation(() => false);
+        const { wrapper, dispatchSpy } = await doMountAndLoad();
+
+        wrapper.findComponent(FileExplorer).vm.$emit('delete-items', { items });
+        expect(window.confirm).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
+        expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
 
     it('should handle create workflow for "normal" mode', async () => {

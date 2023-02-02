@@ -37,18 +37,16 @@ export const mutations = { };
 
 export const actions = {
     /* See docs in API */
-    async saveWorkflow({ state, dispatch, rootState }) {
+    async saveWorkflow({ state, dispatch }) {
         const { activeWorkflow: { projectId } } = state;
 
-        const workflowSnapshotElement = await dispatch(
+        const { svgElement, isCanvasEmpty } = await dispatch(
             'application/getActiveWorkflowSnapshot',
             null,
             { root: true }
         );
 
-        const isCanvasEmpty = rootState.canvas.isEmpty;
-
-        const workflowPreviewSvg = await generateWorkflowPreview(workflowSnapshotElement, isCanvasEmpty);
+        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
 
         saveWorkflow({ projectId, workflowPreviewSvg });
     },

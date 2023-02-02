@@ -111,6 +111,8 @@ public final class PerspectiveUtil {
 
     private static boolean isClassicPerspectiveLoaded = false;
 
+    private static boolean isClassicPerspectiveActive = false;
+
     /**
      * @return {@code true} if the classic perspective has been loaded (i.e. the user switched from there to the Modern
      *         UI at least once)
@@ -120,9 +122,19 @@ public final class PerspectiveUtil {
     }
 
     /**
-     * Sets the 'isClassicPerspectiveLoaded' flag to true.
+     * @return {@code true} if the classic perspective is currently active
      */
-    public static void markClassicPerspectiveAsLoaded() {
+    public static boolean isClassicPerspectiveActive() {
+        return isClassicPerspectiveActive;
+    }
+
+    /**
+     * Marks the classic perspective as currently active.
+     *
+     * @param isActive
+     */
+    public static void setClassicPerspectiveActive(final boolean isActive) {
+        isClassicPerspectiveActive = isActive;
         isClassicPerspectiveLoaded = true;
     }
 

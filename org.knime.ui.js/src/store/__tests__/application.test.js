@@ -817,9 +817,8 @@ describe('application store', () => {
             const canvasWrapperMockEl = document.createElement('div');
             const canvasMockEl = document.createElement('div');
             canvasWrapperMockEl.appendChild(canvasMockEl);
-
             // setup canvas
-            store.state.canvas = { getScrollContainerElement: () => canvasWrapperMockEl };
+            store.state.canvas = { getScrollContainerElement: () => canvasWrapperMockEl, isEmpty: false };
             // setup activeWorkflow
             store.commit('workflow/setActiveWorkflow', {
                 info: { containerId: 'root' },
@@ -838,7 +837,7 @@ describe('application store', () => {
             expect(getSnapshotKeys(store).length).toBe(1);
             expect(
                 store.state.application.rootWorkflowSnapshots.get(getSnapshotKeys(store)[0])
-            ).toEqual(canvasMockEl);
+            ).toEqual({ svgElement: canvasMockEl, isCanvasEmpty: store.state.canvas.isEmpty });
 
             // go back to the root workflow
             await store.dispatch('application/switchWorkflow', {

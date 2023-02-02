@@ -193,7 +193,7 @@ export const actions = {
         if (applicationState.exampleProjects) {
             commit('setExampleProjects', applicationState.exampleProjects);
         }
-        if (applicationState.hasOwnProperty('nodeRepoFilterEnabled')) {
+        if (applicationState.nodeRepoFilterEnabled) {
             commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
             await dispatch('nodeRepository/getAllNodes', { append: false }, { root: true });
             await dispatch(
@@ -239,6 +239,16 @@ export const actions = {
             dispatch('loadWorkflow', { projectId: activeProject.projectId, workflowId: lastActiveWorkflow });
             return;
         }
+
+        // Before opening a new workflow we need to make sure we update the preview snapshot of the one
+        // we're leaving
+        await dispatch('updatePreviewSnapshot', {
+            isChangingProject: true,
+            newWorkflow: {
+                projectId: activeProject.projectId,
+                workflowId: 'root'
+            }
+        });
 
         await dispatch('setWorkflow', {
             projectId: activeProject.projectId,
@@ -377,7 +387,8 @@ export const actions = {
             // save a snapshot of the current state of the root workflow
             dispatch('addToRootWorkflowSnapshots', {
                 projectId: activeProjectId,
-                element: canvasElement
+                element: canvasElement,
+                isCanvasEmpty: rootState.canvas.isEmpty
             });
 
             return;
@@ -391,10 +402,13 @@ export const actions = {
         }
     },
 
-    addToRootWorkflowSnapshots({ state }, { projectId, element }) {
+    addToRootWorkflowSnapshots({ state }, { projectId, element, isCanvasEmpty }) {
         // always use the "root" workflow
         const snapshotKey = encodeString(`${projectId}--root`);
-        state.rootWorkflowSnapshots.set(snapshotKey, element.cloneNode(true));
+        state.rootWorkflowSnapshots.set(snapshotKey, {
+            svgElement: element.cloneNode(true),
+            isCanvasEmpty
+        });
     },
 
     removeFromRootWorkflowSnapshots({ state }, { projectId }) {
@@ -407,16 +421,17 @@ export const actions = {
     },
 
     async getActiveWorkflowSnapshot({ rootState, dispatch }) {
-        const { getScrollContainerElement } = rootState.canvas;
+        const { getScrollContainerElement, isEmpty } = rootState.canvas;
         const { activeWorkflow: { projectId, info: { containerId } } } = rootState.workflow;
 
         const isRootWorkflow = containerId === 'root';
 
-        const rootWorkflowSnapshotElement = isRootWorkflow
-            ? getScrollContainerElement().firstChild
+        const rootWorkflowSnapshot = isRootWorkflow
+            ? { svgElement: getScrollContainerElement().firstChild, isCanvasEmpty: isEmpty }
+            // when we're on a nested workflow (metanode/component) we then need to use the saved snapshot
             : await dispatch('getRootWorkflowSnapshotByProjectId', { projectId });
 
-        return rootWorkflowSnapshotElement;
+        return rootWorkflowSnapshot;
     },
 
     toggleContextMenu({

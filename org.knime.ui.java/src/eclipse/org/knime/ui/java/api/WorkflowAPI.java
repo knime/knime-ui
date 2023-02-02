@@ -48,7 +48,9 @@
  */
 package org.knime.ui.java.api;
 
+import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
@@ -116,8 +118,15 @@ final class WorkflowAPI {
     @API
     static void setProjectActiveAndEnsureItsLoaded(final String projectId) {
         var wpm = WorkflowProjectManager.getInstance();
-        wpm.openAndCacheWorkflow(projectId);
-        wpm.setWorkflowProjectActive(projectId);
+        var wfm = wpm.openAndCacheWorkflow(projectId).orElse(null);
+        if (wfm != null) {
+            wpm.setWorkflowProjectActive(projectId);
+        } else {
+            wpm.removeWorkflowProject(projectId);
+            NodeLogger.getLogger(WorkflowAPI.class)
+                .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+        }
     }
 
 }

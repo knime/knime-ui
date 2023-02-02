@@ -67,15 +67,14 @@ export default ({ store: $store, router: $router }) => {
             $store.commit('application/setIsBusy', true);
 
             const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
-            const isCanvasEmpty = $store.state.canvas.isEmpty;
-
+            
             const resolveSVGSnapshots = projectIds
                 .map(async projectId => {
-                    const snapshotElement = projectId === activeProjectId
+                    const { svgElement, isCanvasEmpty } = projectId === activeProjectId
                         ? await $store.dispatch('application/getActiveWorkflowSnapshot')
                         : await $store.dispatch('application/getRootWorkflowSnapshotByProjectId', { projectId });
 
-                    return generateWorkflowPreview(snapshotElement, isCanvasEmpty);
+                    return generateWorkflowPreview(svgElement, isCanvasEmpty);
                 });
 
             const svgSnapshots = await Promise.all(resolveSVGSnapshots);
