@@ -100,7 +100,10 @@ export default {
         >
           {{ title }}
         </div>
-        <p v-if="text">
+        <p
+          v-if="text"
+          class="text"
+        >
           {{ text }}
         </p>
         <div
@@ -160,6 +163,12 @@ export default {
     & .title {
       font-weight: 700;
       line-height: 19px;
+    }
+
+    & .title,
+    & .text,
+    & .resolutions {
+      max-width: 350px;
     }
 
     & .issue,
