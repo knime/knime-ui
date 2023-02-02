@@ -64,8 +64,10 @@ describe('application store', () => {
             application: await import('@/store/application'),
             workflow: await import('@/store/workflow'),
             nodeRepository: {
-                mutations: { setNodesPerCategories: jest.fn() },
-                actions: { setIncludeAllAndSearchNodes: jest.fn() }
+                actions: {
+                    setIncludeAllAndSearchNodes: jest.fn(),
+                    getAllNodes: jest.fn()
+                }
             },
             spaces: {
                 actions: actions.spaces
@@ -316,14 +318,11 @@ describe('application store', () => {
 
         it('replaces nodeRepoFilterEnabled', async () => {
             const applicationState = { nodeRepoFilterEnabled: true };
-            const { store, dispatchSpy, commitSpy } = await loadStore();
+            const { store, dispatchSpy } = await loadStore();
 
             await store.dispatch('application/replaceApplicationState', applicationState);
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/setIncludeAllAndSearchNodes', false);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodesPerCategories', {
-                groupedNodes: [],
-                append: false
-            }, { root: true });
+            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/getAllNodes', { append: false });
         });
     });
 
