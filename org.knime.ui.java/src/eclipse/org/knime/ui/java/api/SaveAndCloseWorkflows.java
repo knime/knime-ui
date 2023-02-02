@@ -145,13 +145,16 @@ public final class SaveAndCloseWorkflows {
      */
     public static int saveAndCloseWorkflowsInteractively(final Set<String> projectIds,
         final EventConsumer eventConsumer, final PostWorkflowCloseAction action) {
-        var wfms =
-            projectIds.stream().map(id -> WorkflowProjectManager.getInstance().getCachedWorkflow(id).orElse(null))
-                .toArray(WorkflowManager[]::new);
-        var shallSaveWorkflows = promptWhetherToSaveWorkflows(wfms);
+        var wpm = WorkflowProjectManager.getInstance();
+        var dirtyProjectIds = projectIds.stream()
+            .filter(id -> wpm.getCachedWorkflow(id).map(WorkflowManager::isDirty).orElse(false)).toArray(String[]::new);
+        var dirtyWfms = Arrays.stream(dirtyProjectIds).flatMap(id -> wpm.getCachedWorkflow(id).stream())
+            .toArray(WorkflowManager[]::new);
+        var wfms = projectIds.stream().flatMap(id -> wpm.getCachedWorkflow(id).stream()).toArray(WorkflowManager[]::new);
+        var shallSaveWorkflows = promptWhetherToSaveWorkflows(dirtyWfms);
         switch (shallSaveWorkflows) {
             case 0: // YES
-                if (shallCancelWorkflowsIfNecessary(wfms)) {
+                if (shallCancelWorkflowsIfNecessary(dirtyWfms)) {
                     sendSaveAndCloseWorkflowEventToFrontend(projectIds, eventConsumer, action);
                 }
                 return 2;
@@ -213,9 +216,7 @@ public final class SaveAndCloseWorkflows {
         eventConsumer.accept("SaveAndCloseWorkflowsEvent", event);
     }
 
-    private static int promptWhetherToSaveWorkflows(final WorkflowManager... wfms) {
-        var dirtyWfms = Arrays.stream(wfms).filter(Objects::nonNull).filter(WorkflowManager::isDirty)
-            .toArray(WorkflowManager[]::new);
+    private static int promptWhetherToSaveWorkflows(final WorkflowManager... dirtyWfms) {
         String title;
         var message = new StringBuilder();
         if (dirtyWfms.length == 0) {
