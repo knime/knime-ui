@@ -2,6 +2,7 @@
 import { mapState } from 'vuex';
 import { mixin as clickaway } from 'vue-clickaway2';
 
+import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
 import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
@@ -12,17 +13,11 @@ import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
-
-const ITEM_TYPES = {
-    WorkflowGroup: 'WorkflowGroup',
-    Workflow: 'Workflow',
-    Component: 'Component',
-    Metanode: 'WorkflowTemplate',
-    Data: 'Data'
-};
+import ITEM_TYPES from '@/util/spaceItemTypes';
 
 export default {
     components: {
+        SubMenu,
         MenuOptionsIcon,
         WorkflowGroupIcon,
         WorkflowIcon,
@@ -236,6 +231,22 @@ export default {
                 // except for the "Go back" item, all others are present within a v-for
                 // so the refs are returned in a collection, but we only need the 1st item
                 : this.$refs[`item--${index}`][0];
+        },
+
+        getMenuOptions(item) {
+            return [{
+                id: 'delete',
+                text: 'Delete',
+                ...item.canBeDeleted
+                    ? {}
+                    : { title: 'Open workflows cannot be deleted', disabled: true }
+            }];
+        },
+
+        onMenuClick(optionId, item) {
+            if (optionId === 'delete') {
+                this.$emit('delete-items', { items: [item] });
+            }
         }
     }
 };
@@ -314,10 +325,18 @@ export default {
           {{ item.name }}
         </td>
 
-        <!-- <td class="item-option"> -->
-        <!-- TODO: add later -->
-        <!-- <MenuOptionsIcon /> -->
-        <!-- </td> -->
+        <td
+          class="item-option"
+          @dblclick.stop
+        >
+          <SubMenu
+            button-title="Options"
+            :items="getMenuOptions(item)"
+            @item-click="(e, option) => onMenuClick(option.id, item)"
+          >
+            <MenuOptionsIcon />
+          </SubMenu>
+        </td>
       </tr>
 
       <tr
@@ -374,8 +393,9 @@ tbody.mini {
   user-select: none;
   background: var(--knime-gray-ultra-light);
   transition: box-shadow 0.15s;
-  display: block;
-  border: 1px solid transparent;
+  display: flex;
+  flex-flow: row nowrap;
+  width: 100%;
   margin-bottom: 2px;
 
   &:hover {
@@ -399,12 +419,12 @@ tbody.mini {
   & .item-content {
     width: 100%;
     height: 100%;
+    flex: 2 1 auto;
     color: var(--knime-masala);
     padding: var(--item-padding);
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    max-width: 250px;
   }
 
   &:not(.selected, .dragging, .dragging-over) .item-content {
@@ -431,7 +451,6 @@ tbody.mini {
 
   & .item-icon {
     padding: var(--item-padding);
-    width: 60px;
     position: relative;
 
     & .open-indicator {
@@ -439,7 +458,6 @@ tbody.mini {
       width: 10px;
       height: 10px;
       background: var(--knime-dove-gray);
-      border: 1px solid var(--knime-gray-ultra-light);
       border-radius: 50%;
       bottom: 4px;
       right: 4px;
@@ -447,7 +465,21 @@ tbody.mini {
   }
 
   & .item-option {
-    width: 34px;
+    width: 25px;
+    pointer-events: auto;
+    padding: 0;
+    display: flex;
+
+    & .submenu-toggle.active > svg {
+      stroke: var(--theme-button-function-foreground-color-active);
+    }
+
+    & >>> .submenu-toggle {
+      border-radius: 0;
+      display: flex;
+      height: 100%;
+      padding: var(--item-padding) 3px;
+    }
   }
 }
 

@@ -249,4 +249,51 @@ describe('FileExplorer.vue', () => {
         expect(items.at(0).find('.open-indicator').exists()).toBe(false);
         expect(items.at(indexOfItemWithIndicator).find('.open-indicator').exists()).toBe(true);
     });
+
+    describe('options menu', () => {
+        it('should show the item option button', () => {
+            const { wrapper } = doMount();
+            expect(wrapper.find('.submenu').find('.submenu-toggle').exists()).toBe(true);
+        });
+
+        it('should have the delete option', () => {
+            const deleteOptionIdx = 0;
+            const { wrapper } = doMount();
+
+            const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
+            expect(menuItem.findAll('li').at(deleteOptionIdx).element.innerHTML).toContain('Delete');
+        });
+
+        it('should enable the delete option for items that specify it', () => {
+            const indexWithDeletable = 3;
+            const deleteOptionIdx = 0;
+            const { wrapper } = doMount({
+                props: {
+                    items: MOCK_DATA.map((item, index) => ({
+                        ...item,
+                        canBeDeleted: index === indexWithDeletable
+                    }))
+                }
+            });
+
+            const items = wrapper.findAll('.submenu');
+            const itemDisabledDelete = items.at(0).find('.menu-wrapper').findAll('li').at(deleteOptionIdx);
+            const itemEnabledDelete = items.at(deleteOptionIdx).find('.menu-wrapper').findAll('li').at(deleteOptionIdx);
+            expect(itemDisabledDelete.find('.disabled').exists()).toBe(true);
+            expect(itemDisabledDelete.element.title).toBe('Open workflows cannot be deleted');
+            expect(itemEnabledDelete.find('.disabled').exists()).toBe(true);
+        });
+
+        it('should emit delete-items on delete option click', async () => {
+            const deleteOptionIdx = 0;
+            const itemIdx = 2;
+            const { wrapper } = doMount({
+                props: { items: MOCK_DATA.map((item, index) => ({ ...item, canBeDeleted: true })) }
+            });
+
+            const optionsMenu = wrapper.findAll('.submenu').at(itemIdx);
+            await optionsMenu.findAll('.clickable-item').at(deleteOptionIdx).trigger('click');
+            expect(wrapper.emitted('delete-items')[0][0]).toMatchObject({ items: [{ id: `${itemIdx}` }] });
+        });
+    });
 });
