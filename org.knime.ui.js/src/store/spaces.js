@@ -6,6 +6,7 @@ import {
     disconnectSpaceProvider,
     fetchWorkflowGroupContent,
     createWorkflow,
+    createFolder,
     openWorkflow,
     importFiles,
     importWorkflows,
@@ -209,6 +210,21 @@ export const actions = {
             openWorkflow({ workflowItemId: newWorkflowItem.id });
 
             return newWorkflowItem;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    async createFolder({ dispatch, getters, state }) {
+        try {
+            const { spaceId } = state.activeSpace;
+            const itemId = getters.currentWorkflowGroupId;
+
+            const newFolderItem = await createFolder({ spaceId, itemId });
+
+            dispatch('fetchWorkflowGroupContent', { itemId });
+
+            return newFolderItem;
         } catch (error) {
             throw error;
         }

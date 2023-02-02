@@ -3,6 +3,7 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
+import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
 
 import PlusIcon from '@/assets/plus.svg';
 import AddFileIcon from '@/assets/add-file.svg';
@@ -34,6 +35,7 @@ export default {
         PlusIcon,
         AddFileIcon,
         ImportWorkflowIcon,
+        FolderPlusIcon,
         ToolbarButton
     },
 
@@ -126,7 +128,7 @@ export default {
     },
 
     methods: {
-        ...mapActions('spaces', ['importToWorkflowGroup']),
+        ...mapActions('spaces', ['importToWorkflowGroup', 'createFolder']),
         // Only display loader after a set waiting time, to avoid making the operations seem longer
         setLoading(value) {
             if (!value) {
@@ -174,6 +176,10 @@ export default {
             this.$store.dispatch('spaces/createWorkflow');
         },
 
+        onCreateFolder() {
+            this.$store.dispatch('spaces/createFolder');
+        },
+
         async onOpenFile({ id }) {
             await this.$store.dispatch('spaces/openWorkflow', {
                 workflowItemId: id,
@@ -217,6 +223,12 @@ export default {
         v-if="mode === 'mini' && isLocal"
         class="buttons"
       >
+        <ToolbarButton
+          title="Create folder"
+          @click.native="createFolder({})"
+        >
+          <FolderPlusIcon />
+        </ToolbarButton>
         <ToolbarButton
           title="Import workflow"
           @click.native="importToWorkflowGroup({importType: 'WORKFLOW'})"

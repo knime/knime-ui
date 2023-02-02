@@ -28,7 +28,8 @@ describe('SpaceBrowsingPage', () => {
         spaceBrowser = {},
         saveSpaceBrowserStateMock = jest.fn(),
         loadSpaceBrowserStateMock = jest.fn(),
-        importToWorkflowGroupMock = jest.fn()
+        importToWorkflowGroupMock = jest.fn(),
+        createFolderMock = jest.fn()
     } = {}) => {
         const $store = mockVuexStore({
             spaces: {
@@ -44,7 +45,8 @@ describe('SpaceBrowsingPage', () => {
                 actions: {
                     saveSpaceBrowserState: saveSpaceBrowserStateMock,
                     loadSpaceBrowserState: loadSpaceBrowserStateMock,
-                    importToWorkflowGroup: importToWorkflowGroupMock
+                    importToWorkflowGroup: importToWorkflowGroupMock,
+                    createFolder: createFolderMock
                 }
             }
         });
@@ -152,6 +154,14 @@ describe('SpaceBrowsingPage', () => {
         const workflowButton = wrapper.find('#import-files');
         workflowButton.trigger('click');
         expect(importToWorkflowGroupMock).toHaveBeenCalledWith(expect.anything(), { importType: 'FILES' });
+    });
+
+    it('handles create folder when clicked on a button', () => {
+        const createFolderMock = jest.fn();
+        const { wrapper } = doMount({ createFolderMock });
+
+        wrapper.find('#create-folder').trigger('click');
+        expect(createFolderMock).toHaveBeenCalledWith(expect.anything(), {});
     });
 
     describe('global spaceBrowser state', () => {
