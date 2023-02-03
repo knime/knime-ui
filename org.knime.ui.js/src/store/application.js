@@ -50,7 +50,12 @@ export const state = () => ({
     /**
      * example projects with name, svg and origin
      */
-    exampleProjects: []
+    exampleProjects: [],
+
+    /*
+     * If true, dev mode specifics buttons will be shown.
+     */
+    devMode: false
 });
 
 export const mutations = {
@@ -127,6 +132,9 @@ export const mutations = {
     },
     setNodeRepoFilterEnabled(state, nodeRepoFilterEnabled) {
         state.nodeRepoFilterEnabled = nodeRepoFilterEnabled;
+    },
+    setDevMode(state, devMode) {
+        state.devMode = devMode;
     }
 };
 
@@ -206,6 +214,9 @@ export const actions = {
                 !applicationState.nodeRepoFilterEnabled,
                 { root: true }
             );
+        }
+        if (applicationState.devMode) {
+            commit('setDevMode', applicationState.devMode);
         }
     },
     async setActiveProject({ commit, dispatch, state }, openProjects) {
