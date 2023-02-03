@@ -373,5 +373,19 @@ describe('FileExplorer.vue', () => {
             expect(wrapper.emitted('rename-file')).toBeTruthy();
             expect(wrapper.emitted('rename-file')[0][0].newName).toEqual(newName);
         });
+
+        it('should cancel renaming event', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+            
+            const inputValue = wrapper.findAll('input').at(0);
+            const newName = 'New Folder name';
+            await wrapper.setData({ renameValue: newName });
+            await inputValue.trigger('keyup.esc');
+
+            expect(wrapper.vm.activeRenameId).toBe(null);
+            expect(wrapper.vm.renameValue).toBe('');
+        });
     });
 });

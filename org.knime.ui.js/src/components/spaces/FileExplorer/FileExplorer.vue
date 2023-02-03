@@ -63,10 +63,16 @@ export default {
             multiSelectionState: multiSelectionService.getInitialState(),
             isDragging: false,
             startDragItemIndex: null,
-            isRenamingItemId: null,
-            renameValue: '',
-            isRenamingInvalid: false
+            activeRenameId: null,
+            renameValue: ''
         };
+    },
+
+    computed: {
+        isRenamingInvalid() {
+            return INVALID_NAME_CHARACTERS.test(this.renameValue) ||
+             INVALID_TRAILING_WHITESPACES.test(this.renameValue);
+        }
     },
 
     watch: {
@@ -251,23 +257,26 @@ export default {
             }
         },
 
-        onRenameChange(value) {
-            this.isRenamingInvalid = INVALID_NAME_CHARACTERS.test(value) || INVALID_TRAILING_WHITESPACES.test(value);
-        },
         setupRenameInput(id, name) {
-            this.isRenamingItemId = id;
+            this.activeRenameId = id;
             this.renameValue = name;
             this.$nextTick(() => {
                 this.$refs.renameRef[0].$refs.input.focus();
-            
+
+                // TODO expose keyup event on the InputField on webapps-common
                 this.$refs.renameRef[0].$refs.input.addEventListener('keyup', this.onRenameSubmit);
             });
         },
         onRenameSubmit(keyupEvent) {
-            if (keyupEvent.keyCode === 13 && !this.isRenamingInvalid) {
-                this.$emit('rename-file', { itemId: this.isRenamingItemId, newName: this.renameValue });
+            if (keyupEvent.key === 'Enter' && !this.isRenamingInvalid) {
+                this.$emit('rename-file', { itemId: this.activeRenameId, newName: this.renameValue });
                 this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
-                this.isRenamingItemId = null;
+                this.activeRenameId = null;
+                this.renameValue = '';
+            }
+            if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
+                this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
+                this.activeRenameId = null;
                 this.renameValue = '';
             }
         }
@@ -345,16 +354,15 @@ export default {
           :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup }"
           :title="item.name"
         >
-          <span v-if="isRenamingItemId !== item.id">{{ item.name }}</span>
+          <span v-if="activeRenameId !== item.id">{{ item.name }}</span>
           <template v-else>
             <InputField
               ref="renameRef"
               v-model="renameValue"
-              class="is-renamed"
+              :class="['is-renamed', mode]"
               type="text"
               title="rename"
               :is-valid="!isRenamingInvalid"
-              @input="onRenameChange"
             />
             <div
               v-if="isRenamingInvalid"
@@ -477,12 +485,17 @@ tbody.mini {
   & td {
     & .is-renamed {
       pointer-events: auto;
-
+      
       & >>> input {
         font-size: 18px;
         font-weight: 700;
         height: unset;
         line-height: unset;
+      }
+
+      &.mini >>> input {
+        font-size: 16px;
+        font-weight: 400;
       }
     }
 
@@ -496,6 +509,7 @@ tbody.mini {
     color: var(--theme-color-error);
     padding: 7px 5px;
     margin-top: 5px;
+    white-space: normal;
   }
 
   & .item-icon,
@@ -523,8 +537,7 @@ tbody.mini {
      */
     & >>> .menu-wrapper {
       & svg {
-        height: 14px;
-        width: 14px;
+        @mixin svg-icon-size 14px;
       }
     }
   }

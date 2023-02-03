@@ -185,6 +185,7 @@ export default {
         onRenameFile({ itemId, newName }) {
             this.$store.dispatch('spaces/renameItem', { itemId, newName })
                 .catch(() => {
+                    // TODO replace with a better notification alternative when available
                     window.alert(
                         `Could not rename the selected item with the new name "${newName}". Check for duplicates.`
                     );
