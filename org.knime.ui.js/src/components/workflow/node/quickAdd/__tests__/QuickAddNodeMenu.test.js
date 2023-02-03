@@ -164,7 +164,6 @@ describe('QuickAddNodeMenu.vue', () => {
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
-            await Vue.nextTick();
 
             expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeFactory: { className: 'org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory' },
