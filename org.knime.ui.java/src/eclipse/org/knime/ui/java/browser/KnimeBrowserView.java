@@ -8,18 +8,17 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.e4.core.contexts.Active;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.ISaveablePart2;
 import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.AppStatePersistor;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 
@@ -33,7 +32,7 @@ import com.equo.chromium.swt.Browser;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Kai Franze, KNIME GmbH
  */
-public class KnimeBrowserView implements ISaveablePart2 {
+public class KnimeBrowserView {
 
     @SuppressWarnings("javadoc")
     public static final NodeLogger LOGGER = NodeLogger.getLogger(KnimeBrowserView.class);
@@ -92,9 +91,7 @@ public class KnimeBrowserView implements ISaveablePart2 {
             if (!browser.isDisposed()) {
                 browser.setUrl(EMPTY_PAGE);
             }
-            LifeCycle.get().saveState();
-            LifeCycle.get().suspend();
-            viewInitializer = null;
+            viewInitializer = null; // NOSONAR
         }
     }
 
@@ -116,7 +113,9 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
         if (viewInitializer == null) {
             viewInitializer = () -> { // NOSONAR
-                AppStatePersistor.loadAppState();
+                if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
+                    AppStatePersistor.loadAppState();
+                }
                 initView(false, true);
             };
         }
@@ -161,11 +160,11 @@ public class KnimeBrowserView implements ISaveablePart2 {
 		browser.setFocus();
 	}
 
-	@PreDestroy
-	public void dispose() {
-	    clearView();
-		browser.dispose();
-	}
+    @PreDestroy
+    public void dispose() {
+        clearView();
+        browser.dispose();
+    }
 
 	private static boolean setDevURL(final Browser browser, final boolean ignoreEmptyPageAsDevUrl) {
 		String initURL = System.getProperty(DEV_URL_PROP);
@@ -176,42 +175,5 @@ public class KnimeBrowserView implements ISaveablePart2 {
 			return false;
 		}
 	}
-
-    @Override
-    public void doSave(final IProgressMonitor monitor) {
-        //
-    }
-
-    @Override
-    public void doSaveAs() {
-        //
-    }
-
-    @Override
-    public boolean isDirty() {
-        return LifeCycle.get().isBeforeStateTransition(StateTransition.SAVE_STATE);
-    }
-
-    @Override
-    public boolean isSaveAsAllowed() {
-        return false;
-    }
-
-    @Override
-    public boolean isSaveOnCloseNeeded() {
-        return LifeCycle.get().isNextStateTransition(StateTransition.SAVE_STATE);
-    }
-
-    @Override
-    public int promptToSaveOnClose() {
-        // This is being called by the eclipse framework before this view is disposed (usually only on shutdown).
-        // And before it's disposed, we need, e.g., to ask the user to save (and save) all the workflows (or abort
-        // the shutdown, if the user cancels).
-        LifeCycle.get().saveState();
-        // cancel if the workflows haven't been saved (yet). Either because the saving has been cancelled
-        // or the workflows need to be saved (through a respective event to the FE,
-        // see SaveAndCloseWorkflowsBrowserFunction)
-        return LifeCycle.get().getState().workflowsSaved() ? YES : CANCEL;
-    }
 
 }

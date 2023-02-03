@@ -145,18 +145,20 @@ public final class SaveAndCloseWorkflows {
      */
     public static int saveAndCloseWorkflowsInteractively(final Set<String> projectIds,
         final EventConsumer eventConsumer, final PostWorkflowCloseAction action) {
-        var wfms =
-            projectIds.stream().map(id -> WorkflowProjectManager.getInstance().getCachedWorkflow(id).orElse(null))
-                .toArray(WorkflowManager[]::new);
-        var shallSaveWorkflows = promptWhetherToSaveWorkflows(wfms);
+        var wpm = WorkflowProjectManager.getInstance();
+        var dirtyProjectIds = projectIds.stream()
+            .filter(id -> wpm.getCachedWorkflow(id).map(WorkflowManager::isDirty).orElse(false)).toArray(String[]::new);
+        var dirtyWfms = Arrays.stream(dirtyProjectIds).flatMap(id -> wpm.getCachedWorkflow(id).stream())
+            .toArray(WorkflowManager[]::new);
+        var shallSaveWorkflows = promptWhetherToSaveWorkflows(dirtyWfms);
         switch (shallSaveWorkflows) {
             case 0: // YES
-                if (shallCancelWorkflowsIfNecessary(wfms)) {
-                    sendSaveAndCloseWorkflowEventToFrontend(projectIds, eventConsumer, action);
+                if (shallCancelWorkflowsIfNecessary(dirtyWfms)) {
+                    sendSaveAndCloseWorkflowEventToFrontend(dirtyProjectIds, eventConsumer, action);
                 }
                 return 2;
             case 1: // NO
-                return closeWorkflows(projectIds.toArray(String[]::new), wfms) ? 1 : 0;
+                return closeWorkflows(projectIds) ? 1 : 0;
             default: // CANCEL button or window 'x'
                 return 0;
         }
@@ -196,15 +198,15 @@ public final class SaveAndCloseWorkflows {
         if (projectWfm != null) { // workflow not loaded -> nothing to save
             SaveWorkflow.saveWorkflow(monitor, projectWfm, projectSVG);
         }
-        var success = closeWorkflow(projectId, projectWfm);
+        var success = closeWorkflow(projectId);
         monitor.worked(1);
         return success;
     }
 
-    private static void sendSaveAndCloseWorkflowEventToFrontend(final Set<String> projectIds,
+    private static void sendSaveAndCloseWorkflowEventToFrontend(final String[] dirtyProjectIds,
         final EventConsumer eventConsumer, final PostWorkflowCloseAction action) {
         var projectIdsJson = MAPPER.createArrayNode();
-        projectIds.stream().forEach(projectIdsJson::add);
+        Arrays.stream(dirtyProjectIds).forEach(projectIdsJson::add);
         var paramsJson = MAPPER.createArrayNode();
         paramsJson.add(action.name());
         var event = MAPPER.createObjectNode();
@@ -213,9 +215,7 @@ public final class SaveAndCloseWorkflows {
         eventConsumer.accept("SaveAndCloseWorkflowsEvent", event);
     }
 
-    private static int promptWhetherToSaveWorkflows(final WorkflowManager... wfms) {
-        var dirtyWfms = Arrays.stream(wfms).filter(Objects::nonNull).filter(WorkflowManager::isDirty)
-            .toArray(WorkflowManager[]::new);
+    private static int promptWhetherToSaveWorkflows(final WorkflowManager... dirtyWfms) {
         String title;
         var message = new StringBuilder();
         if (dirtyWfms.length == 0) {
@@ -261,20 +261,22 @@ public final class SaveAndCloseWorkflows {
         return MessageDialog.openQuestion(SWTUtilities.getActiveShell(), title, message.toString());
     }
 
-    private static boolean closeWorkflows(final String[] projectIds, final WorkflowManager[] wfms) {
+    private static boolean closeWorkflows(final Set<String> projectIds) {
         var success = true;
-        for (var i = 0; i < projectIds.length; i++) {
-            success &= closeWorkflow(projectIds[i], wfms[i]);
+        for (var projectId : projectIds) {
+            success &= closeWorkflow(projectId);
         }
         return success;
     }
 
-    private static boolean closeWorkflow(final String projectId, final WorkflowManager wfm) {
+    private static boolean closeWorkflow(final String projectId) {
+        var wpm = WorkflowProjectManager.getInstance();
+        var wfm = wpm.getCachedWorkflow(projectId).orElse(null);
         try {
             if (wfm != null) {
                 CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
             }
-            WorkflowProjectManager.getInstance().removeWorkflowProject(projectId);
+            wpm.removeWorkflowProject(projectId);
             return true;
         } catch (InterruptedException e) { // NOSONAR
             NodeLogger.getLogger(SaveAndCloseWorkflows.class)

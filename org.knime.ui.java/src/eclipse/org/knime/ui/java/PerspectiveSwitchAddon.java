@@ -68,6 +68,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.ui.java.browser.KnimeBrowserView;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -150,7 +151,7 @@ public final class PerspectiveSwitchAddon {
 
     private void onSwitchToWebUI() {
         NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
-        PerspectiveUtil.markClassicPerspectiveAsLoaded();
+        PerspectiveUtil.setClassicPerspectiveActive(false);
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors(m_modelService, m_app);
@@ -176,8 +177,11 @@ public final class PerspectiveSwitchAddon {
             disposeAllWorkflowProjects();
         }
         KnimeBrowserView.clearView();
+        LifeCycle.get().saveState();
+        LifeCycle.get().suspend();
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
+        PerspectiveUtil.setClassicPerspectiveActive(true);
 
         // The color of the workflow editor canvas changes when switching back
         // -> this is a workaround to compensate for it

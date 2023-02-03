@@ -52,9 +52,13 @@ import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
@@ -62,6 +66,7 @@ import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserFunction;
 import org.knime.ui.java.browser.KnimeBrowserView;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 
@@ -85,6 +90,17 @@ final class Create {
         // the resource handlers must be registered before the browser initialization
         initializeResourceHandlers();
         DesktopAPI.forEachAPIFunction((name, function) -> new KnimeBrowserFunction(browser, name, function));
+
+        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            if (page != null) {
+                var refs = page.getEditorReferences();
+                if (refs.length > 0) {
+                    NodeLogger.getLogger(LifeCycle.class).error("There are open eclipse editors which is not expected: "
+                        + Arrays.stream(refs).map(IEditorReference::getName).collect(Collectors.joining(",")));
+                }
+            }
+        }
     }
 
     private static void initializeResourceHandlers() {

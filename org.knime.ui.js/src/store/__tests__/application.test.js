@@ -64,8 +64,10 @@ describe('application store', () => {
             application: await import('@/store/application'),
             workflow: await import('@/store/workflow'),
             nodeRepository: {
-                mutations: { setNodesPerCategories: jest.fn() },
-                actions: { setIncludeAllAndSearchNodes: jest.fn() }
+                actions: {
+                    setIncludeAllAndSearchNodes: jest.fn(),
+                    getAllNodes: jest.fn()
+                }
             },
             spaces: {
                 actions: actions.spaces
@@ -316,14 +318,11 @@ describe('application store', () => {
 
         it('replaces nodeRepoFilterEnabled', async () => {
             const applicationState = { nodeRepoFilterEnabled: true };
-            const { store, dispatchSpy, commitSpy } = await loadStore();
+            const { store, dispatchSpy } = await loadStore();
 
             await store.dispatch('application/replaceApplicationState', applicationState);
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/setIncludeAllAndSearchNodes', false);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodesPerCategories', {
-                groupedNodes: [],
-                append: false
-            }, { root: true });
+            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/getAllNodes', { append: false });
         });
     });
 
@@ -779,6 +778,26 @@ describe('application store', () => {
             expect(preventDefault).toHaveBeenCalled();
         });
 
+        it('should hide the menu when leaving the worklow page', async () => {
+            const { store, dispatchSpy } = await loadStore();
+
+            await store.dispatch('application/initializeApplication', { $router: router });
+            
+            store.state.application.contextMenu = {
+                isOpen: true,
+                position: { x: 200, y: 200 }
+            };
+
+            await router.push({
+                name: APP_ROUTES.WorkflowPage,
+                params: { projectId: 'foo', workflowId: 'bar' }
+            });
+
+            await router.push({ name: APP_ROUTES.EntryPage });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('application/toggleContextMenu', undefined);
+        });
+
         it.each([
             ['PortTypeMenu', 'portTypeMenu'],
             ['QuickAddNodeMenu', 'quickAddNodeMenu']
@@ -818,9 +837,8 @@ describe('application store', () => {
             const canvasWrapperMockEl = document.createElement('div');
             const canvasMockEl = document.createElement('div');
             canvasWrapperMockEl.appendChild(canvasMockEl);
-
             // setup canvas
-            store.state.canvas = { getScrollContainerElement: () => canvasWrapperMockEl };
+            store.state.canvas = { getScrollContainerElement: () => canvasWrapperMockEl, isEmpty: false };
             // setup activeWorkflow
             store.commit('workflow/setActiveWorkflow', {
                 info: { containerId: 'root' },
@@ -839,7 +857,7 @@ describe('application store', () => {
             expect(getSnapshotKeys(store).length).toBe(1);
             expect(
                 store.state.application.rootWorkflowSnapshots.get(getSnapshotKeys(store)[0])
-            ).toEqual(canvasMockEl);
+            ).toEqual({ svgElement: canvasMockEl, isCanvasEmpty: store.state.canvas.isEmpty });
 
             // go back to the root workflow
             await store.dispatch('application/switchWorkflow', {

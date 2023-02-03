@@ -8,11 +8,13 @@ import {
     createWorkflow,
     openWorkflow,
     importFiles,
-    importWorkflows
+    importWorkflows,
+    deleteItems
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
 import { APP_ROUTES } from '@/router';
+import ITEM_TYPES from '@/util/spaceItemTypes';
 
 export const state = () => ({
     activeSpaceProvider: { id: 'local' },
@@ -243,6 +245,14 @@ export const actions = {
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
         }
+    },
+
+    async deleteItems({ state, getters, dispatch }, { itemIds }) {
+        const { spaceId } = state.activeSpace;
+        const { id: spaceProviderId } = state.activeSpaceProvider;
+        const currentWorkflowGroupId = getters.currentWorkflowGroupId;
+        await deleteItems({ spaceProviderId, spaceId, itemIds });
+        await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     }
 };
 
@@ -291,7 +301,7 @@ export const getters = {
         const { openProjects } = application;
 
         const workflowItemIds = activeWorkflowGroup.items
-            .filter(item => item.type === 'Workflow')
+            .filter(item => item.type === ITEM_TYPES.Workflow)
             .map(item => item.id);
 
         return openProjects
@@ -300,6 +310,23 @@ export const getters = {
                 return origin.spaceId === spaceId && workflowItemIds.includes(origin.itemId);
             })
             .map(({ origin }) => origin.itemId);
+    },
+
+    openedFolderItems({ activeSpace }, _, { application }) {
+        if (!activeSpace) {
+            return [];
+        }
+
+        const { spaceId, activeWorkflowGroup } = activeSpace;
+        const { openProjects } = application;
+
+        const openProjectsFolders = openProjects
+            .filter(project => project.origin.spaceId === spaceId)
+            .flatMap(project => project.origin.ancestorItemIds);
+
+        return activeWorkflowGroup.items
+            .filter(item => item.type === ITEM_TYPES.WorkflowGroup && openProjectsFolders.includes(item.id))
+            .map(item => item.id);
     },
 
     activeSpaceInfo({ activeSpace, activeSpaceProvider }) {

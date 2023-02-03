@@ -140,7 +140,9 @@ describe('workflow store: AP Interactions', () => {
                 // 'root:1' to mimic being inside component/metanode
                 const workflowId = 'root:1';
                 // set the snapshot on the store
-                store.state.application.rootWorkflowSnapshots.set(`${projectId}--root`, 'store-snapshot');
+                store.state.application.rootWorkflowSnapshots.set(`${projectId}--root`, {
+                    svgElement: 'store-snapshot'
+                });
 
                 generateWorkflowPreviewMock.mockImplementation((input) => input);
 

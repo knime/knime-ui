@@ -44,30 +44,23 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 28, 2023 (hornm): created
  */
 package org.knime.ui.java;
 
-import javax.inject.Inject;
-
-import org.eclipse.e4.core.di.annotations.Optional;
-import org.eclipse.e4.core.di.extensions.EventTopic;
-import org.eclipse.e4.ui.workbench.UIEvents;
+import org.knime.core.util.IEarlyStartup;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
-import org.osgi.service.event.Event;
 
 /**
- * Called on shutdown.
+ * Hooks into the early-startup routine.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class AppShutdownStartedAddon {
+public class OnEarlyStartup implements IEarlyStartup {
 
-    @SuppressWarnings("javadoc")
-    @Inject
-    @Optional
-    public void applicationShutdownStarted(@EventTopic(UIEvents.UILifeCycle.APP_SHUTDOWN_STARTED) final Event event) {
-        LifeCycle.get().shutdown();
+    @Override
+    public void run() {
+        LifeCycle.get().startup();
     }
 
 }

@@ -100,15 +100,17 @@ export default {
         >
           {{ title }}
         </div>
-        <p v-if="text">
+        <p
+          v-if="text"
+          class="text"
+        >
           {{ text }}
         </p>
         <div
           v-if="issue"
           class="issue"
-        >
-          {{ issue }}
-        </div>
+          v-text="issue"
+        />
         <div
           v-if="resolutions.length"
           class="resolutions"
@@ -163,6 +165,12 @@ export default {
       line-height: 19px;
     }
 
+    & .title,
+    & .text,
+    & .resolutions {
+      max-width: 350px;
+    }
+
     & .issue,
     & .resolutions {
       margin-top: 20px;
@@ -171,7 +179,7 @@ export default {
     & .issue {
       font-family: "Roboto Mono", sans-serif;
       line-height: 13px;
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 400;
       white-space: pre-wrap;
     }

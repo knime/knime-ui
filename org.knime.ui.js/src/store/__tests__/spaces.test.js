@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import Vuex from 'vuex';
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
@@ -13,6 +14,7 @@ import { fetchWorkflowGroupContent,
 
 import * as spacesConfig from '../spaces';
 import { APP_ROUTES } from '@/router';
+import { deleteItems } from '@/api';
 
 jest.mock('@api');
 
@@ -69,7 +71,9 @@ describe('spaces store', () => {
         fetchAllSpaceProviders.mockReturnValue(mockFetchAllProvidersResponse);
         fetchWorkflowGroupContent.mockResolvedValue(mockFetchWorkflowGroupResponse);
 
-        return { store };
+        const dispatchSpy = jest.spyOn(store, 'dispatch');
+
+        return { store, dispatchSpy };
     };
 
     afterEach(() => {
@@ -436,6 +440,31 @@ describe('spaces store', () => {
                 expect(importWorkflows).toHaveBeenCalledWith({ itemId: 'level2' });
             });
         });
+
+        describe('deleteItems', () => {
+            it('should delete items', async () => {
+                const itemIds = ['item0', 'item1'];
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local'
+                };
+
+                await store.dispatch('spaces/deleteItems', { itemIds });
+                expect(deleteItems).toHaveBeenCalledWith({ spaceId: 'local', spaceProviderId: 'local', itemIds });
+            });
+
+            it('should re-fetch workflow group content', async () => {
+                const itemIds = ['item0', 'item1'];
+                const { store, dispatchSpy } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: { path: [{ id: 'foo' }, { id: 'bar' }] }
+                };
+
+                await store.dispatch('spaces/deleteItems', { itemIds });
+                expect(dispatchSpy).toHaveBeenCalledWith('spaces/fetchWorkflowGroupContent', { itemId: 'bar' });
+            });
+        });
     });
 
     describe('getters', () => {
@@ -537,6 +566,34 @@ describe('spaces store', () => {
                 };
 
                 expect(store.getters['spaces/openedWorkflowItems']).toEqual(['4']);
+            });
+        });
+
+        describe('openedFolderItems', () => {
+            it('should return the opened folder items', () => {
+                const openProjects = [{
+                    origin: {
+                        providerId: 'local',
+                        spaceId: 'local',
+                        itemId: 'workflowItem0',
+                        ancestorItemIds: ['2', 'innerFolderId']
+                    }
+                }, {
+                    origin: {
+                        providerId: 'local',
+                        spaceId: 'local',
+                        itemId: 'workflowItem2',
+                        ancestorItemIds: ['5']
+                    }
+                }];
+
+                const activeWorkflowGroup = JSON.parse(JSON.stringify(fetchWorkflowGroupContentResponse));
+                activeWorkflowGroup.items.push({ id: '5', name: 'Folder 5', type: 'WorkflowGroup' });
+
+                const { store } = loadStore({ openProjects });
+                store.state.spaces.activeSpace = { spaceId: 'local', activeWorkflowGroup };
+
+                expect(store.getters['spaces/openedFolderItems']).toEqual(['2', '5']);
             });
         });
 
