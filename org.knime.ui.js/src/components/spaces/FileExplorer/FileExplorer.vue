@@ -262,15 +262,19 @@ export default {
             }
         },
 
-        setupRenameInput(id, name) {
+        async setupRenameInput(id, name) {
             this.activeRenameId = id;
             this.renameValue = name;
-            this.$nextTick(() => {
-                this.$refs.renameRef[0].$refs.input.focus();
 
-                // TODO expose keyup event on the InputField on webapps-common
-                this.$refs.renameRef[0].$refs.input.addEventListener('keyup', this.onRenameSubmit);
-            });
+            await this.$nextTick();
+
+            // TODO expose keyup event on the InputField on webapps-common
+            this.$refs.renameRef[0].$refs.input.addEventListener('keyup', this.onRenameSubmit);
+            
+            // wait to next event loop to properly steal focus
+            setTimeout(() => {
+                this.$refs.renameRef[0].$refs.input.focus();
+            }, 0);
         },
         onRenameSubmit(keyupEvent) {
             if (keyupEvent.key === 'Enter' && !this.isRenamingInvalid) {
@@ -451,6 +455,7 @@ tbody.mini {
   flex-flow: row nowrap;
   width: 100%;
   margin-bottom: 2px;
+  align-items: center;
 
   /* add transparent border to prevent jumping when the dragging-over styles add a border */
   border: 1px solid transparent;
@@ -491,7 +496,7 @@ tbody.mini {
   }
 
   & td.is-renamed {
-    padding: 3px 0 0;
+    padding: 0;
   }
 
   & td {
@@ -541,7 +546,7 @@ tbody.mini {
     }
 
     /*
-     * NB: The MenuItems set the svg size to 18px x 18px
+     * The MenuItems set the svg size to 18px x 18px
      * but this is too big here and causes misalignment
      */
     & >>> .menu-wrapper {
