@@ -1,3 +1,4 @@
+import { camelCase } from 'lodash';
 import robotoCondensed from '@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff';
 
 const LICENSE = `<!--
@@ -78,7 +79,7 @@ const setElementFill = (element, fillStyle = 'none') => {
  * @param {Function} predicateFn
  * @returns {void}
  */
-const removeElements = (elements, predicateFn) => {
+const removeElements = (elements, predicateFn = () => true) => {
     elements.forEach(el => {
         if (predicateFn(el)) {
             el.parentNode.removeChild(el);
@@ -141,6 +142,7 @@ const updateViewBox = (svgClone, workflowSheet) => {
  * See: `useCSSfromComputedStyles`
  */
 const inheritedCssProperties = [
+    'box-sizing',
     'width',
     'height',
     'inline-size',
@@ -151,33 +153,55 @@ const inheritedCssProperties = [
     'font-style',
     'font-weight',
     'line-height',
-    'font-size'
+    'font-size',
+    'text-align',
+
+    // properties needed for correct text clipping on node names
+    'display',
+    'overflow-x',
+    'overflow-y',
+    'word-wrap',
+    'text-overflow',
+    '-webkit-line-clamp',
+    '-webkit-box-orient'
 ];
 
 /**
- * Function that, given an element, will apply all the computed styles (derived from css classes)
- * as direct inlined styles to the element. It will recursively also run the same behavior for all
- * the element's children
- *
+ * @callback ElementCallback
  * @param {HTMLElement} element
  * @returns {void}
  */
-const useCSSfromComputedStyles = (element) => {
+/**
+ * Returns a callback function that will apply all computed styles to an element. Said callback will set the styles
+ * (derived from CSS classes) as directly inlined styles to the element and will override values based on the provided
+ * (optional) `styleOverrides` parameter.
+ * It will recursively also run the same behavior for all of the element's children
+ *
+ * @param {CSSStyleDeclaration} [styleOverrides] Style overriders
+ * @returns {ElementCallback}
+ */
+const useCSSfromComputedStyles = (styleOverrides = {}) => (element) => {
     // run the same behavior for all the element's children
     element.childNodes.forEach((child, index) => {
         if (child.nodeType === 1 /* Node.ELEMENT_NODE */) {
-            useCSSfromComputedStyles(child);
+            useCSSfromComputedStyles(styleOverrides)(child);
         }
     });
    
     const compStyles = getComputedStyle(element);
 
     if (compStyles.length > 0) {
-        Object.values(compStyles).forEach(compStyle => {
+        for (let i = 0; i < compStyles.length; i++) {
+            const compStyle = compStyles[i];
+            
             if (inheritedCssProperties.includes(compStyle)) {
-                element.style.setProperty(compStyle, compStyles.getPropertyValue(compStyle));
+                const value = styleOverrides[camelCase(compStyle)]
+                    ? styleOverrides[camelCase(compStyle)]
+                    : compStyles.getPropertyValue(compStyle);
+
+                element.style.setProperty(compStyle, value);
             }
-        });
+        }
     }
 };
 
@@ -287,28 +311,37 @@ export const generateWorkflowPreview = async (svgElement, isEmpty) => {
     updateViewBox(svgClone, workflowSheet);
 
     // remove all hover areas elements which are only used for interactivity
-    removeElements(svgClone.querySelectorAll('.hover-area'), () => true);
+    removeElements(svgClone.querySelectorAll('.hover-area'));
     
     // remove all vue-portals
-    removeElements(svgClone.querySelectorAll('DIV.v-portal'), () => true);
+    removeElements(svgClone.querySelectorAll('DIV.v-portal'));
     
     // remove all portal-targets
-    removeElements(svgClone.querySelectorAll('.vue-portal-target'), () => true);
+    removeElements(svgClone.querySelectorAll('.vue-portal-target'));
     
     // remove dynamic port icons
-    removeElements(svgClone.querySelectorAll('.add-port'), () => true);
+    removeElements(svgClone.querySelectorAll('.add-port'));
+    
+    // remove non-connected flow variable port icons
+    removeElements(svgClone.querySelectorAll('.mickey-mouse:not(.connected)'));
+    
+    // remove empty node labels
+    removeElements(svgClone.querySelectorAll('.node-label > .placeholder'));
     
     // remove all empty g elements
     removeElements(svgClone.querySelectorAll('g'), (node) => !node.hasChildNodes());
     
     // remove all `display: none` elements
-    removeElements(svgClone.querySelectorAll('[style*="display: none"]'), () => true);
+    removeElements(svgClone.querySelectorAll('[style*="display: none"]'));
 
-    // select connectors and inline all styles that may be only available from classes
-    svgClone.querySelectorAll('[data-connector-id]').forEach(useCSSfromComputedStyles);
+    // Select connectors and inline all styles that may be only available from classes.
+    // Additionally, override strokeWidth in case any connector is highlighted
+    svgClone.querySelectorAll('[data-connector-id]').forEach(useCSSfromComputedStyles({
+        strokeWidth: '1px'
+    }));
     
     // select `foreignObject`s and inline all styles that may be only available from classes
-    svgClone.querySelectorAll('foreignObject').forEach(useCSSfromComputedStyles);
+    svgClone.querySelectorAll('foreignObject').forEach(useCSSfromComputedStyles());
 
     const output = getSvgContent(svgClone);
     
