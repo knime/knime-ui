@@ -347,17 +347,13 @@ describe('FileExplorer.vue', () => {
             await renameButton.trigger('click');
             
             const inputValue = wrapper.findAll('input').at(0);
-            inputValue.element.value = 'invalid ? string';
+            inputValue.element.value = 'invalid [*?#:"<>%~|.] string';
             await inputValue.trigger('input');
-            expect(wrapper.findAll('.item-error').at(0).exists()).toBe(true);
+            expect(wrapper.find('.item-error').exists()).toBe(true);
 
             inputValue.element.value = 'valid string';
             await inputValue.trigger('input');
-            expect(wrapper.findAll('.item-error').exists()).toBe(false);
-
-            inputValue.element.value = 'invalid string ';
-            await inputValue.trigger('input');
-            expect(wrapper.findAll('.item-error').at(0).exists()).toBe(true);
+            expect(wrapper.find('.item-error').exists()).toBe(false);
         });
 
         it('should submit renaming event', async () => {
@@ -372,6 +368,33 @@ describe('FileExplorer.vue', () => {
 
             expect(wrapper.emitted('rename-file')).toBeTruthy();
             expect(wrapper.emitted('rename-file')[0][0].newName).toEqual(newName);
+        });
+        
+        it('should automatically trim new name', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+            
+            const inputValue = wrapper.findAll('input').at(0);
+            const newName = '    New Folder name    ';
+            await wrapper.setData({ renameValue: newName });
+            await inputValue.trigger('keyup.enter');
+
+            expect(wrapper.emitted('rename-file')).toBeTruthy();
+            expect(wrapper.emitted('rename-file')[0][0].newName).toEqual('New Folder name');
+        });
+
+        it('should not save empty names', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+            
+            const inputValue = wrapper.findAll('input').at(0);
+            const newName = '      ';
+            await wrapper.setData({ renameValue: newName });
+            await inputValue.trigger('keyup.enter');
+
+            expect(wrapper.emitted('rename-file')).toBeUndefined();
         });
 
         it('should cancel renaming event', async () => {

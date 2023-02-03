@@ -9,15 +9,14 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
-
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
-import * as multiSelectionService from './multiSelectionStateService';
-import { createDragGhosts } from './dragGhostHelpers';
+
 import ITEM_TYPES from '@/util/spaceItemTypes';
 
-const INVALID_NAME_CHARACTERS = /[(*?#:"<>%~|/).]/;
+import * as multiSelectionService from './multiSelectionStateService';
+import { createDragGhosts } from './dragGhostHelpers';
 
-const INVALID_TRAILING_WHITESPACES = /\s$/;
+const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/.]/;
 
 export default {
     components: {
@@ -70,8 +69,7 @@ export default {
 
     computed: {
         isRenamingInvalid() {
-            return INVALID_NAME_CHARACTERS.test(this.renameValue) ||
-             INVALID_TRAILING_WHITESPACES.test(this.renameValue);
+            return INVALID_NAME_CHARACTERS.test(this.renameValue);
         }
     },
 
@@ -277,17 +275,26 @@ export default {
             }, 0);
         },
         onRenameSubmit(keyupEvent) {
-            if (keyupEvent.key === 'Enter' && !this.isRenamingInvalid) {
-                this.$emit('rename-file', { itemId: this.activeRenameId, newName: this.renameValue });
+            const clearRenameState = () => {
                 this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
                 this.activeRenameId = null;
                 this.renameValue = '';
-            }
-            
+            };
+
             if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
-                this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
-                this.activeRenameId = null;
-                this.renameValue = '';
+                clearRenameState();
+            }
+
+            if (keyupEvent.key === 'Enter' && !this.isRenamingInvalid) {
+                const newName = this.renameValue.trim();
+
+                if (newName === '') {
+                    clearRenameState();
+                    return;
+                }
+
+                this.$emit('rename-file', { itemId: this.activeRenameId, newName });
+                clearRenameState();
             }
         }
     }
@@ -378,7 +385,7 @@ export default {
               v-if="isRenamingInvalid"
               class="item-error"
             >
-              <span>Name contains invalid characters (*?#:"&lt;>%~|/) or trailing whitespaces.</span>
+              <span>Name contains invalid characters *?#:"&lt;>%~|/</span>
             </div>
           </template>
         </td>
