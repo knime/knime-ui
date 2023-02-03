@@ -214,12 +214,18 @@ export default {
 
             if (openedWorkflows.length || isInsideFolder.length) {
                 const openedWorkflowsNames = openedWorkflows.map(workflow => workflow.name);
+                const isInsideFolderNames = isInsideFolder.map(workflow => workflow.name);
+                const extraSpace = openedWorkflows.length && isInsideFolder.length ? '\n' : '';
+
                 alert(`Following workflows are opened:\n
-                 ${openedWorkflowsNames.map(name => `• ${name}`).join('\n')}
+                 ${openedWorkflowsNames.map(name => `• ${name}`).join('\n') + extraSpace +
+                 isInsideFolderNames.map(name => `• ${name}`).join('\n')}
                 \nTo move your selected items, they have to be closed first`);
+
+                return;
             }
 
-            this.$emit('move', {
+            this.$emit('move-items', {
                 sourceItems: droppedItems,
                 targetItem: isGoBackItem ? '..' : this.items[index].id
             });

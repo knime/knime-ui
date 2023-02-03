@@ -197,6 +197,14 @@ export default {
             if (result) {
                 this.$store.dispatch('spaces/deleteItems', { itemIds: items.map(i => i.id) });
             }
+        },
+
+        onMoveItems({ sourceItems, targetItem }) {
+            const isTheSameFolder = sourceItems.includes(targetItem);
+
+            if (this.isLocal && !isTheSameFolder) {
+                this.$store.dispatch('spaces/moveItems', { itemIds: sourceItems, destWorkflowGroupItemId: targetItem });
+            }
         }
     }
 };
@@ -258,6 +266,7 @@ export default {
       @change-directory="onChangeDirectory"
       @open-file="onOpenFile"
       @delete-items="onDeleteItems"
+      @move-items="onMoveItems"
     />
 
     <div
