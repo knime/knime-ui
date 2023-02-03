@@ -1,5 +1,6 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
+import Button from 'webapps-common/ui/components/Button.vue';
 import StreamingIcon from 'webapps-common/ui/assets/img/icons/nodes-connect.svg';
 import ContextMenu from '@/components/application/ContextMenu.vue';
 import WorkflowCanvas from '@/components/workflow/WorkflowCanvas.vue';
@@ -12,7 +13,8 @@ export default {
         ContextMenu,
         WorkflowCanvas,
         QuickAddNodeMenu,
-        PortTypeMenu
+        PortTypeMenu,
+        Button
     },
     computed: {
         ...mapState('workflow', {
@@ -54,6 +56,9 @@ export default {
             }
             // prevent native context menus to appear
             event.preventDefault();
+        },
+        onSaveLocalCopy() {
+            console.log('clicked');
         }
     }
 };
@@ -94,9 +99,22 @@ export default {
       <span v-else-if="isLinked">
         This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
       </span>
-      <span v-if="isOnHub">
-        This is a temporary preview, save as a local copy if you want to edit it.
-      </span>
+      <div
+        v-if="isOnHub"
+        class="banner"
+      >
+        <span>
+          This is a temporary preview, save as a local copy if you want to edit it.
+        </span>
+        <Button
+          primary
+          compact
+          class="button"
+          @click="onSaveLocalCopy"
+        >
+          Save local copy
+        </Button>
+      </div>
       <span
         v-if="isStreaming"
         :class="['streaming-indicator', { 'is-linked': isLinked }]"
@@ -150,11 +168,22 @@ export default {
     background-color: rgba(255 216 0 / 20%);
   }
 
+  & .banner {
+    width: 100%;
+    display: flex;
+    padding: 5px 10px;
+  }
+
   & span {
     font-size: 16px;
     align-self: center;
     text-align: center;
     width: 100%;
+  }
+
+  & .button {
+    width: 150px;
+    pointer-events: all;
   }
 
   & .streaming-indicator {
@@ -176,5 +205,10 @@ export default {
       margin-right: 10px;
     }
   }
+
+  /* & .banner {
+    display: flex;
+    justify-content: space-between;
+  } */
 }
 </style>
