@@ -5,164 +5,13 @@ import { mixin as clickaway } from 'vue-clickaway2';
 import { escapeStack, tooltip } from '@/mixins';
 
 import { toPortObject } from '@/util/portDataMapper';
-import { circleDetection } from '@/util/compatibleConnections';
+import { circleDetection,
+    checkCompatibleConnectionAndPort,
+    findTypeIdFromPlaceholderPort } from '@/util/compatibleConnections';
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
 import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
-
-const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
-    if (targetPortDirection === 'in') {
-        const isPortFree = toPort.connectedVia.length === 0;
-
-        if (isPortFree) {
-            return true;
-        }
-
-        // In ports can only have 1 connection at a time
-        const [connectionId] = toPort.connectedVia;
-
-        // can be connected if the existing connection is deleteable
-        return connections[connectionId].allowedActions.canDelete;
-    }
-
-    return true;
-};
-
-const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
-    const fromPortObjectInfo = toPortObject(availablePortTypes)(fromPort);
-    const toPortObjectInfo = toPortObject(availablePortTypes)(toPort);
-    const { compatibleTypes } = toPortObjectInfo;
-    const { kind: fromPortKind } = fromPortObjectInfo;
-    const { kind: toPortKind } = toPortObjectInfo;
-
-    // 'generic' and 'table' port kinds are not compatible, so we check either direction
-    if (
-        (fromPortKind === 'generic' && toPortKind === 'table') ||
-        (fromPortKind === 'table' && toPortKind === 'generic')
-    ) {
-        return false;
-    }
-
-    // generic ports accept any type of connection
-    if (fromPortKind === 'generic' || toPortKind === 'generic') {
-        return true;
-    }
-
-    // if compatible types exist, check if they contain each other
-    if (compatibleTypes) {
-        return compatibleTypes.includes(fromPort.typeId);
-    }
-
-    // lastly, if port types ids don't match then they can't be connected
-    return fromPort.typeId === toPort.typeId;
-};
-
-// creates an array of [group, supportedPortTypes] entries even for metanodes and components (where the group is null)
-const groupAddablePortTypesByPortGroup = ({
-    targetPortGroups,
-    availablePortTypes,
-    targetPortDirection
-}) => {
-    // use all port types for metanodes and components (we assume them if portGroups is null!)
-    if (!targetPortGroups) {
-        return [[null, Object.keys(availablePortTypes)]]; // end here
-    }
-
-    // unwrap compatible port type by portGroup
-    const portGroupEntries = Object.entries(targetPortGroups);
-    const filterProp = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
-    const portGroupsForTargetDirection = portGroupEntries.filter(([_, portGroup]) => portGroup[filterProp]);
-
-    return portGroupsForTargetDirection.map(([groupName, portGroup]) => [groupName, portGroup.supportedPortTypeIds]);
-};
-
-/**
- * Transforms array of portGroups and supportedPortTypes tuples to a valid portGroup object
- *
- * @param {[[string, string[]]]} groupArray - array with arrays of [portGroup, supportedPortTypeIds]
- * @param {string} canAddPortKey - either canAddInPort or canAddOutPort
- * @returns {Object.<string, Object>} returns an object with the portGroup as key and an object as value
- */
-const transformToPortGroupObject = (groupArray, canAddPortKey) => Object.assign(
-    ...groupArray.map(([groupName, supportedPortTypeIds]) => ({
-        [groupName]: {
-            [canAddPortKey]: true,
-            supportedPortTypeIds
-        }
-    }))
-);
-
-const findTypeIdFromPlaceholderPort = ({
-    fromPort,
-    availablePortTypes,
-    targetPortGroups,
-    targetPortDirection
-}) => {
-    const addablePortTypesGrouped = groupAddablePortTypesByPortGroup({
-        availablePortTypes,
-        targetPortGroups,
-        targetPortDirection
-    });
-
-    // only add the direct match in the supportedIds array
-    const directMatches = addablePortTypesGrouped.flatMap(
-        ([groupName, supportedIds]) => supportedIds.includes(fromPort.typeId)
-            ? [[groupName || 'default', [fromPort.typeId]]]
-            : []
-    );
-    const canAddPortKey = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
-
-    // case 1: direct matches
-    if (directMatches.length > 0) {
-        return {
-            didSnap: true,
-            createPortFromPlaceholder: { validPortGroups: transformToPortGroupObject(directMatches, canAddPortKey) }
-        };
-    }
-
-    // case 2: compatible matches
-    const compatibleMatches = addablePortTypesGrouped.flatMap(([group, supportedTypeIds]) => {
-        const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
-            fromPort,
-            toPort: { typeId },
-            availablePortTypes
-        }));
-        return compatibleTypeIds.length > 0 ? [[group, compatibleTypeIds]] : [];
-    });
-
-    if (compatibleMatches.length > 0) {
-        return {
-            didSnap: true,
-            createPortFromPlaceholder: { validPortGroups: transformToPortGroupObject(compatibleMatches, canAddPortKey) }
-        };
-    }
-
-    // case 3: no match -> don't snap
-    return { didSnap: false };
-};
-
-const checkCompatibleConnectionAndPort = ({
-    fromPort,
-    toPort,
-    availablePortTypes,
-    targetPortDirection,
-    connections
-}) => {
-    const isSupportedConnection = checkConnectionSupport({
-        toPort,
-        connections,
-        targetPortDirection
-    });
-
-    const isCompatiblePort = checkPortCompatibility({
-        fromPort,
-        toPort,
-        availablePortTypes
-    });
-
-    return { didSnap: isSupportedConnection && isCompatiblePort };
-};
 
 export default {
     components: {
@@ -379,13 +228,13 @@ export default {
                                 targetPortDirection,
                                 targetPortGroups
                             })
-                            : checkCompatibleConnectionAndPort({
+                            : { didSnap: checkCompatibleConnectionAndPort({
                                 fromPort: this.port,
                                 toPort: targetPort,
                                 availablePortTypes: this.availablePortTypes,
                                 targetPortDirection,
                                 connections: this.connections
-                            });
+                            }) };
 
                         this.didDragToCompatibleTarget = result.didSnap;
 
