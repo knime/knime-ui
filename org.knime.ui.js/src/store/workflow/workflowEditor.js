@@ -150,7 +150,9 @@ export const actions = {
 
     async addNode({ state, dispatch }, {
         position,
-        nodeFactory,
+        nodeFactory = null,
+        spaceItemId,
+        // use either nodeFactory or spaceItemId
         sourceNodeId = null,
         sourcePortIdx = null,
         // possible values are: 'new-only' | 'add' | 'none'
@@ -174,6 +176,7 @@ export const actions = {
             workflowId,
             position: gridAdjustedPosition,
             nodeFactory,
+            spaceItemId,
             sourceNodeId,
             sourcePortIdx
         });

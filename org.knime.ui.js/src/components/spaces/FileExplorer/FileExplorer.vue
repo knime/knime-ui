@@ -12,6 +12,7 @@ import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
 import ITEM_TYPES from '@/util/spaceItemTypes';
+import { mapActions, mapGetters, mapState } from 'vuex';
 
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
@@ -68,6 +69,9 @@ export default {
     },
 
     computed: {
+        ...mapGetters('canvas', ['screenToCanvasCoordinates', 'getVisibleFrame']),
+        ...mapGetters('selection', { selectedNode: 'singleSelectedNode' }),
+        ...mapState('spaces', ['activeSpace', 'activeSpaceProvider']),
         isRenamingInvalid() {
             return INVALID_NAME_CHARACTERS.test(this.renameValue);
         }
@@ -86,6 +90,7 @@ export default {
     },
 
     methods: {
+        ...mapActions('workflow', ['addNode', 'openNodeConfiguration']),
         resetSelection() {
             this.multiSelectionState = multiSelectionService.getInitialState();
         },
@@ -206,9 +211,36 @@ export default {
             draggedOverEl.classList.remove('dragging-over');
         },
 
-        onDragEnd() {
+        async onDragEnd(e, item) {
             this.isDragging = false;
             this.removeGhosts?.();
+
+            const [x, y] = this.screenToCanvasCoordinates([
+                e.clientX - this.$shapes.nodeSize / 2,
+                e.clientY - this.$shapes.nodeSize / 2
+            ]);
+            if (this.isAboveCanvas({ x, y })) {
+                try {
+                    await this.addNode({
+                        position: { x, y },
+                        spaceItemId: {
+                            itemId: item.id,
+                            providerId: this.activeSpaceProvider.id,
+                            spaceId: this.activeSpace.spaceId
+                        }
+                    });
+                } catch (error) {
+                    consola.error({ message: 'Error adding node via file to workflow', error });
+                    throw error;
+                }
+            }
+        },
+
+        isAboveCanvas({ x, y }) {
+            const { top, left, right, bottom } = this.getVisibleFrame();
+            const xInBounds = x > left && x < right;
+            const yInBounds = y > top && y < bottom;
+            return xInBounds && yInBounds;
         },
 
         onDrop(index, isGoBackItem = false) {
@@ -354,7 +386,7 @@ export default {
         @dragenter="!isActiveRenameItem(item) && onDragEnter(index)"
         @dragover.prevent
         @dragleave="!isActiveRenameItem(item) && onDragLeave(index)"
-        @dragend="!isActiveRenameItem(item) && onDragEnd()"
+        @dragend="!isActiveRenameItem(item) && onDragEnd($event, item)"
         @drop.prevent="!isActiveRenameItem(item) && onDrop(index)"
         @click.exact="!isActiveRenameItem(item) && clickItem(index)"
         @click.exact.ctrl="!isActiveRenameItem(item) && ctrlClickItem(index)"
