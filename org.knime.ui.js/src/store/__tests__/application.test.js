@@ -778,6 +778,26 @@ describe('application store', () => {
             expect(preventDefault).toHaveBeenCalled();
         });
 
+        it('should hide the menu when leaving the worklow page', async () => {
+            const { store, dispatchSpy } = await loadStore();
+
+            await store.dispatch('application/initializeApplication', { $router: router });
+            
+            store.state.application.contextMenu = {
+                isOpen: true,
+                position: { x: 200, y: 200 }
+            };
+
+            await router.push({
+                name: APP_ROUTES.WorkflowPage,
+                params: { projectId: 'foo', workflowId: 'bar' }
+            });
+
+            await router.push({ name: APP_ROUTES.EntryPage });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('application/toggleContextMenu', undefined);
+        });
+
         it.each([
             ['PortTypeMenu', 'portTypeMenu'],
             ['QuickAddNodeMenu', 'quickAddNodeMenu']

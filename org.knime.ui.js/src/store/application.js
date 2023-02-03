@@ -150,6 +150,11 @@ export const actions = {
             const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;
             const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
 
+            if (isLeavingWorkflow) {
+                // clear any open menus when leaving a workflow
+                await dispatch('toggleContextMenu');
+            }
+
             if (isLeavingWorkflow && !isEnteringWorkflow) {
                 await dispatch('switchWorkflow', { newWorkflow: null });
                 next();
@@ -441,9 +446,9 @@ export const actions = {
         rootGetters,
         rootState
     }, {
-        event,
+        event = null,
         deselectAllObjects = false
-    }) {
+    } = {}) {
         // close other menus if they are open
         if (rootState.workflow.quickAddNodeMenu.isOpen) {
             rootState.workflow.quickAddNodeMenu.events['menu-close']?.();
