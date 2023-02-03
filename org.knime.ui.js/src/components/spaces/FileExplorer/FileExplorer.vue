@@ -351,7 +351,7 @@ export default {
 
         <td
           class="item-content"
-          :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup }"
+          :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup, 'is-renamed': activeRenameId === item.id }"
           :title="item.name"
         >
           <span v-if="activeRenameId !== item.id">{{ item.name }}</span>
@@ -481,12 +481,18 @@ tbody.mini {
     }
   }
 
+  & td.is-renamed {
+    padding: calc(var(--item-padding) - 1px);
+    padding-left: 3px;
+  }
+
   /* Prevent children from interfering with drag events */
   & td {
     & .is-renamed {
       pointer-events: auto;
-      
+
       & >>> input {
+        padding-left: 4px;
         font-size: 18px;
         font-weight: 700;
         height: unset;
@@ -503,6 +509,8 @@ tbody.mini {
   }
 
   & .item-error {
+    font-size: 13px;
+    line-height: 1.5;
     backdrop-filter: blur(10px);
     font-weight: 300;
     position: absolute;

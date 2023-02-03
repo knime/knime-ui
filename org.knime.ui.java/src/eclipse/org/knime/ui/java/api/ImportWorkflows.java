@@ -95,8 +95,7 @@ class ImportWorkflows extends AbstractImportItems {
             // Get the name of the parent folder without extracting the *.zip archive
             var dirName = zipFile.stream()//
                 .map(entry -> new File(entry.toString()))//
-                .map(File::getParentFile)//
-                .filter(file -> file.getParentFile() == null) // Make sure it is a top level file
+                .map(ImportWorkflows::findRootDirOfFile)//
                 .map(File::getName)//
                 .findFirst()//
                 .orElseThrow(IOException::new);
@@ -150,4 +149,13 @@ class ImportWorkflows extends AbstractImportItems {
         DesktopAPUtil.showWarning("Workflow import", "Not all selected workflows could be imported");
     }
 
+    private static File findRootDirOfFile(final File file) {
+        var parent = file.getParentFile();
+        var child = file;
+        while (parent != null) {
+            child = parent;
+            parent = child.getParentFile();
+        }
+        return child;
+    }
 }

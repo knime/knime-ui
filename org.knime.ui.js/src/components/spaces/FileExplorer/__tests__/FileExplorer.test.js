@@ -336,7 +336,7 @@ describe('FileExplorer.vue', () => {
             const renameButton = getRenameOption(wrapper, 0);
             await renameButton.trigger('click');
             
-            expect(wrapper.vm.isRenamingItemId).toBe(MOCK_DATA[0].id);
+            expect(wrapper.vm.activeRenameId).toBe(MOCK_DATA[0].id);
             expect(wrapper.vm.renameValue).toBe(MOCK_DATA[0].name);
             expect(wrapper.findAll('input').at(0).exists()).toBe(true);
         });
