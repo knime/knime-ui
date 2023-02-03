@@ -128,7 +128,7 @@ export default {
     },
 
     methods: {
-        ...mapActions('spaces', ['importToWorkflowGroup', 'createFolder']),
+        ...mapActions('spaces', ['importToWorkflowGroup', 'createFolder', 'createWorkflow']),
         // Only display loader after a set waiting time, to avoid making the operations seem longer
         setLoading(value) {
             if (!value) {
@@ -170,14 +170,6 @@ export default {
             this.setLoading(false);
 
             this.$emit('item-changed', this.pathToItemId(pathId));
-        },
-
-        onCreateWorkflow() {
-            this.$store.dispatch('spaces/createWorkflow');
-        },
-
-        onCreateFolder() {
-            this.$store.dispatch('spaces/createFolder');
         },
 
         async onOpenFile({ id }) {
@@ -225,7 +217,7 @@ export default {
       >
         <ToolbarButton
           title="Create folder"
-          @click.native="createFolder({})"
+          @click.native="createFolder"
         >
           <FolderPlusIcon />
         </ToolbarButton>
@@ -245,7 +237,7 @@ export default {
           primary
           class="create-workflow-mini-btn"
           :title="createWorkflowButtonTitle"
-          @click.native="onCreateWorkflow"
+          @click.native="createWorkflow"
         >
           <PlusIcon />
         </ToolbarButton>
@@ -257,7 +249,7 @@ export default {
       :title="createWorkflowButtonTitle"
       primary
       class="create-workflow-btn"
-      @click="onCreateWorkflow"
+      @click="createWorkflow"
     />
 
     <FileExplorer

@@ -97,7 +97,7 @@ export default {
                 id="create-folder"
                 with-border
                 compact
-                @click="createFolder({})"
+                @click="createFolder"
               >
                 <FolderPlusIcon />
                 Create folder

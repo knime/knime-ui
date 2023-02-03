@@ -161,7 +161,7 @@ describe('SpaceBrowsingPage', () => {
         const { wrapper } = doMount({ createFolderMock });
 
         wrapper.find('#create-folder').trigger('click');
-        expect(createFolderMock).toHaveBeenCalledWith(expect.anything(), {});
+        expect(createFolderMock).toHaveBeenCalled();
     });
 
     describe('global spaceBrowser state', () => {

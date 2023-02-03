@@ -314,7 +314,7 @@ describe('SpaceExplorer.vue', () => {
         expect(createWorkflowButton.exists()).toBe(true);
 
         createWorkflowButton.vm.$emit('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow', undefined);
     });
 
     it('should show buttons for space that is local and in the mini mode', async () => {
@@ -387,7 +387,7 @@ describe('SpaceExplorer.vue', () => {
         expect(wrapper.find('.create-workflow-mini-btn').exists()).toBe(true);
 
         wrapper.find('.create-workflow-mini-btn').trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow', expect.anything());
     });
 
     it('should handle import workflow for "mini" mode', async () => {
@@ -432,7 +432,7 @@ describe('SpaceExplorer.vue', () => {
         await wrapper.vm.$nextTick();
 
         wrapper.find("[title='Create folder']").trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder', {});
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder', expect.anything());
     });
 
     it('should display the loader only after a specific timeout', async () => {
