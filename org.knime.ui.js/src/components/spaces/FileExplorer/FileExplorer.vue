@@ -482,21 +482,19 @@ tbody.mini {
   }
 
   & td.is-renamed {
-    padding: calc(var(--item-padding) - 1px);
-    padding-left: 3px;
+    padding: 3px 0 0;
   }
 
-  /* Prevent children from interfering with drag events */
   & td {
     & .is-renamed {
       pointer-events: auto;
+      height: 30px;
+      padding: 0;
 
       & >>> input {
-        padding-left: 4px;
         font-size: 18px;
         font-weight: 700;
-        height: unset;
-        line-height: unset;
+        padding: 0 7px 1px;
       }
 
       &.mini >>> input {
@@ -505,6 +503,7 @@ tbody.mini {
       }
     }
 
+    /* Prevent children from interfering with drag events */
     pointer-events: none;
   }
 
@@ -523,13 +522,6 @@ tbody.mini {
   & .item-icon,
   & .item-option {
     pointer-events: auto;
-
-    /*
-    & >>> .submenu-toggle {
-       height: 100%;
-      border-radius: 0;
-    }
-    */
 
     & svg {
       display: flex;
