@@ -112,6 +112,10 @@ export default {
             return typeIcons[item.type];
         },
 
+        isActiveRenameItem(item) {
+            return item.id === this.activeRenameId;
+        },
+
         isSelected(index) {
             return multiSelectionService.isItemSelected(this.multiSelectionState, index);
         },
@@ -233,19 +237,20 @@ export default {
         },
 
         getMenuOptions(item) {
-            return [{
-                id: 'rename',
-                text: 'Rename',
-                ...item.displayOpenIndicator
-                    ? { title: 'Open workflows cannot be renamed', disabled: true }
-                    : {}
-            }, {
-                id: 'delete',
-                text: 'Delete',
-                ...item.canBeDeleted
-                    ? {}
-                    : { title: 'Open workflows cannot be deleted', disabled: true }
-            }];
+            return [
+                {
+                    id: 'rename',
+                    text: 'Rename',
+                    title: item.displayOpenIndicator ? 'Open workflows cannot be renamed' : '',
+                    disabled: item.displayOpenIndicator
+                },
+                {
+                    id: 'delete',
+                    text: 'Delete',
+                    title: item.canBeDeleted ? '' : 'Open workflows cannot be deleted',
+                    disabled: !item.canBeDeleted
+                }
+            ];
         },
 
         onMenuClick(optionId, item) {
@@ -274,6 +279,7 @@ export default {
                 this.activeRenameId = null;
                 this.renameValue = '';
             }
+            
             if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
                 this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
                 this.activeRenameId = null;
@@ -329,17 +335,17 @@ export default {
         :ref="`item--${index}`"
         class="file-explorer-item"
         :class="[item.type, { selected: !isDragging && isSelected(index), dragging: isDragging && isSelected(index) }]"
-        :draggable="true"
-        @dragstart="onDragStart($event, index)"
-        @dragenter="onDragEnter(index)"
+        :draggable="!isActiveRenameItem(item)"
+        @dragstart="!isActiveRenameItem(item) && onDragStart($event, index)"
+        @dragenter="!isActiveRenameItem(item) && onDragEnter(index)"
         @dragover.prevent
-        @dragleave="onDragLeave(index)"
-        @dragend="onDragEnd"
-        @drop.prevent="onDrop(index)"
-        @click.exact="clickItem(index)"
-        @click.exact.ctrl="ctrlClickItem(index)"
-        @click.exact.shift="shiftClickItem(index)"
-        @dblclick="onItemDoubleClick(item)"
+        @dragleave="!isActiveRenameItem(item) && onDragLeave(index)"
+        @dragend="!isActiveRenameItem(item) && onDragEnd()"
+        @drop.prevent="!isActiveRenameItem(item) && onDrop(index)"
+        @click.exact="!isActiveRenameItem(item) && clickItem(index)"
+        @click.exact.ctrl="!isActiveRenameItem(item) && ctrlClickItem(index)"
+        @click.exact.shift="!isActiveRenameItem(item) && shiftClickItem(index)"
+        @dblclick="!isActiveRenameItem(item) && onItemDoubleClick(item)"
       >
         <td class="item-icon">
           <span
@@ -351,10 +357,10 @@ export default {
 
         <td
           class="item-content"
-          :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup, 'is-renamed': activeRenameId === item.id }"
+          :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup, 'is-renamed': isActiveRenameItem(item) }"
           :title="item.name"
         >
-          <span v-if="activeRenameId !== item.id">{{ item.name }}</span>
+          <span v-if="!isActiveRenameItem(item)">{{ item.name }}</span>
           <template v-else>
             <InputField
               ref="renameRef"
@@ -445,6 +451,9 @@ tbody.mini {
   flex-flow: row nowrap;
   width: 100%;
   margin-bottom: 2px;
+
+  /* add transparent border to prevent jumping when the dragging-over styles add a border */
+  border: 1px solid transparent;
 
   &:hover {
     box-shadow: 0 1px 5px 0 var(--knime-gray-dark-semi);
