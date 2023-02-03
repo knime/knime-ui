@@ -178,7 +178,15 @@ export const checkCompatibleConnectionAndPort = ({
     return isSupportedConnection && isCompatiblePort;
 };
 
-export const findTypeIdFromPlaceholderPort = ({
+/**
+ * Looks for compatible typeIds for a placeholder port connection.
+ * @param {Object} fromPort port object
+ * @param {Array} availablePortTypes
+ * @param {Object} targetPortGroups
+ * @param {('in'|'out')}targetPortDirection
+ * @returns {Object<string, Object>|null} returns a validPortGroups object or null if incompatible
+ */
+export const generateValidPortGroupsForPlaceholderPort = ({
     fromPort,
     availablePortTypes,
     targetPortGroups,
@@ -200,10 +208,7 @@ export const findTypeIdFromPlaceholderPort = ({
 
     // case 1: direct matches
     if (directMatches.length > 0) {
-        return {
-            didSnap: true,
-            createPortFromPlaceholder: { validPortGroups: transformToPortGroupObject(directMatches, canAddPortKey) }
-        };
+        return transformToPortGroupObject(directMatches, canAddPortKey);
     }
 
     // case 2: compatible matches
@@ -217,12 +222,9 @@ export const findTypeIdFromPlaceholderPort = ({
     });
 
     if (compatibleMatches.length > 0) {
-        return {
-            didSnap: true,
-            createPortFromPlaceholder: { validPortGroups: transformToPortGroupObject(compatibleMatches, canAddPortKey) }
-        };
+        return transformToPortGroupObject(compatibleMatches, canAddPortKey);
     }
 
-    // case 3: no match -> don't snap
-    return { didSnap: false };
+    // case 3: no match
+    return null;
 };

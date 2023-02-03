@@ -5,9 +5,8 @@ import { mixin as clickaway } from 'vue-clickaway2';
 import { escapeStack, tooltip } from '@/mixins';
 
 import { toPortObject } from '@/util/portDataMapper';
-import { circleDetection,
-    checkCompatibleConnectionAndPort,
-    findTypeIdFromPlaceholderPort } from '@/util/compatibleConnections';
+import { circleDetection, checkCompatibleConnectionAndPort,
+    generateValidPortGroupsForPlaceholderPort } from '@/util/compatibleConnections';
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
@@ -221,32 +220,39 @@ export default {
                     onSnapCallback: ({ snapPosition, targetPort, targetPortGroups }) => {
                         const [x, y] = snapPosition;
 
-                        let result = targetPort.isPlaceHolderPort
-                            ? findTypeIdFromPlaceholderPort({
+                        let isCompatible, validPortGroups;
+                        if (targetPort.isPlaceHolderPort) {
+                            validPortGroups = generateValidPortGroupsForPlaceholderPort({
                                 fromPort: this.port,
                                 availablePortTypes: this.availablePortTypes,
                                 targetPortDirection,
                                 targetPortGroups
-                            })
-                            : { didSnap: checkCompatibleConnectionAndPort({
+                            });
+                            isCompatible = validPortGroups !== null;
+                        } else {
+                            isCompatible = checkCompatibleConnectionAndPort({
                                 fromPort: this.port,
                                 toPort: targetPort,
                                 availablePortTypes: this.availablePortTypes,
                                 targetPortDirection,
                                 connections: this.connections
-                            }) };
+                            });
+                        }
 
-                        this.didDragToCompatibleTarget = result.didSnap;
+                        this.didDragToCompatibleTarget = isCompatible;
 
                         // setting the drag connector coordinates will cause the connector to snap
                         // We prevent that if it's not a compatible target
-                        if (this.didDragToCompatibleTarget) {
+                        if (isCompatible) {
                             setDragConnectorCoords(x, y);
                         }
 
                         // The callback should return whether a snapped connection was made to a compatible target
                         // and needs to provide data for the to be added port for placeholder snaps
-                        return result;
+                        return {
+                            didSnap: isCompatible,
+                            ...validPortGroups && { createPortFromPlaceholder: { validPortGroups } }
+                        };
                     }
                 },
                 bubbles: true
