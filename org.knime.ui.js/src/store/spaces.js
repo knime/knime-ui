@@ -200,34 +200,26 @@ export const actions = {
     },
 
     async createWorkflow({ commit, getters, state, dispatch }) {
-        try {
-            const { spaceId } = state.activeSpace;
-            const itemId = getters.currentWorkflowGroupId;
+        const { spaceId } = state.activeSpace;
+        const itemId = getters.currentWorkflowGroupId;
 
-            const newWorkflowItem = await createWorkflow({ spaceId, itemId });
+        const newWorkflowItem = await createWorkflow({ spaceId, itemId });
 
-            dispatch('fetchWorkflowGroupContent', { itemId });
-            openWorkflow({ workflowItemId: newWorkflowItem.id });
+        dispatch('fetchWorkflowGroupContent', { itemId });
+        openWorkflow({ workflowItemId: newWorkflowItem.id });
 
-            return newWorkflowItem;
-        } catch (error) {
-            throw error;
-        }
+        return newWorkflowItem;
     },
 
     async createFolder({ dispatch, getters, state }) {
-        try {
-            const { spaceId } = state.activeSpace;
-            const itemId = getters.currentWorkflowGroupId;
+        const { spaceId } = state.activeSpace;
+        const itemId = getters.currentWorkflowGroupId;
 
-            const newFolderItem = await createFolder({ spaceId, itemId });
+        const newFolderItem = await createFolder({ spaceId, itemId });
 
-            dispatch('fetchWorkflowGroupContent', { itemId });
+        dispatch('fetchWorkflowGroupContent', { itemId });
 
-            return newFolderItem;
-        } catch (error) {
-            throw error;
-        }
+        return newFolderItem;
     },
 
     openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router, spaceId = null, spaceProviderId = null }) {
