@@ -150,10 +150,12 @@ class ImportWorkflows extends AbstractImportItems {
     }
 
     private static File findRootDirOfFile(final File file) {
-        var root = file;
-        while (file.getParentFile() != null) {
-            root = file.getParentFile();
+        var parent = file.getParentFile();
+        var child = file;
+        while (parent != null) {
+            child = parent;
+            parent = child.getParentFile();
         }
-        return root;
+        return child;
     }
 }

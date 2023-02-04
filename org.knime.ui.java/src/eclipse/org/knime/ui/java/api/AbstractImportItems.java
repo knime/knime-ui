@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -82,7 +81,11 @@ abstract class AbstractImportItems {
 
         // Get file paths of files to import
         var dialog = getFileDialog();
-        var baseDir = Path.of(new File(dialog.open()).toURI()).getParent();
+        var pathString = dialog.open();
+        if (pathString == null) {
+            return false;
+        }
+        var baseDir = Path.of(pathString).getParent();
         var fileNames = dialog.getFileNames();
         var srcPaths = Arrays.stream(fileNames).map(baseDir::resolve).collect(Collectors.toList());
 

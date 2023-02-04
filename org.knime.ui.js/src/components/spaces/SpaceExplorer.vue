@@ -3,6 +3,7 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
+import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
 
 import PlusIcon from '@/assets/plus.svg';
 import AddFileIcon from '@/assets/add-file.svg';
@@ -34,6 +35,7 @@ export default {
         PlusIcon,
         AddFileIcon,
         ImportWorkflowIcon,
+        FolderPlusIcon,
         ToolbarButton
     },
 
@@ -126,7 +128,7 @@ export default {
     },
 
     methods: {
-        ...mapActions('spaces', ['importToWorkflowGroup']),
+        ...mapActions('spaces', ['importToWorkflowGroup', 'createFolder', 'createWorkflow']),
         // Only display loader after a set waiting time, to avoid making the operations seem longer
         setLoading(value) {
             if (!value) {
@@ -170,16 +172,22 @@ export default {
             this.$emit('item-changed', this.pathToItemId(pathId));
         },
 
-        onCreateWorkflow() {
-            this.$store.dispatch('spaces/createWorkflow');
-        },
-
         async onOpenFile({ id }) {
             await this.$store.dispatch('spaces/openWorkflow', {
                 workflowItemId: id,
                 // send in router, so it can be used to navigate to an already open workflow
                 $router: this.$router
             });
+        },
+
+        onRenameFile({ itemId, newName }) {
+            this.$store.dispatch('spaces/renameItem', { itemId, newName })
+                .catch(() => {
+                    // TODO replace with a better notification alternative when available
+                    window.alert(
+                        `Could not rename the selected item with the new name "${newName}". Check for duplicates.`
+                    );
+                });
         },
 
         onBreadcrumbClick({ id }) {
@@ -218,6 +226,12 @@ export default {
         class="buttons"
       >
         <ToolbarButton
+          title="Create folder"
+          @click.native="createFolder"
+        >
+          <FolderPlusIcon />
+        </ToolbarButton>
+        <ToolbarButton
           title="Import workflow"
           @click.native="importToWorkflowGroup({importType: 'WORKFLOW'})"
         >
@@ -233,7 +247,7 @@ export default {
           primary
           class="create-workflow-mini-btn"
           :title="createWorkflowButtonTitle"
-          @click.native="onCreateWorkflow"
+          @click.native="createWorkflow"
         >
           <PlusIcon />
         </ToolbarButton>
@@ -245,7 +259,7 @@ export default {
       :title="createWorkflowButtonTitle"
       primary
       class="create-workflow-btn"
-      @click="onCreateWorkflow"
+      @click="createWorkflow"
     />
 
     <FileExplorer
@@ -257,6 +271,7 @@ export default {
       :full-path="fullPath"
       @change-directory="onChangeDirectory"
       @open-file="onOpenFile"
+      @rename-file="onRenameFile"
       @delete-items="onDeleteItems"
     />
 

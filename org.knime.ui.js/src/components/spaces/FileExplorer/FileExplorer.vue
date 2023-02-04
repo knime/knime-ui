@@ -9,10 +9,14 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
+import InputField from 'webapps-common/ui/components/forms/InputField.vue';
+
+import ITEM_TYPES from '@/util/spaceItemTypes';
 
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
-import ITEM_TYPES from '@/util/spaceItemTypes';
+
+const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/.]/;
 
 export default {
     components: {
@@ -23,7 +27,8 @@ export default {
         ComponentIcon,
         DataIcon,
         MetaNodeIcon,
-        ArrowIcon
+        ArrowIcon,
+        InputField
     },
 
     mixins: [clickaway],
@@ -56,8 +61,16 @@ export default {
             ITEM_TYPES,
             multiSelectionState: multiSelectionService.getInitialState(),
             isDragging: false,
-            startDragItemIndex: null
+            startDragItemIndex: null,
+            activeRenameId: null,
+            renameValue: ''
         };
+    },
+
+    computed: {
+        isRenamingInvalid() {
+            return INVALID_NAME_CHARACTERS.test(this.renameValue);
+        }
     },
 
     watch: {
@@ -95,6 +108,10 @@ export default {
             };
 
             return typeIcons[item.type];
+        },
+
+        isActiveRenameItem(item) {
+            return item.id === this.activeRenameId;
         },
 
         isSelected(index) {
@@ -218,18 +235,66 @@ export default {
         },
 
         getMenuOptions(item) {
-            return [{
-                id: 'delete',
-                text: 'Delete',
-                ...item.canBeDeleted
-                    ? {}
-                    : { title: 'Open workflows cannot be deleted', disabled: true }
-            }];
+            return [
+                {
+                    id: 'rename',
+                    text: 'Rename',
+                    title: item.displayOpenIndicator ? 'Open workflows cannot be renamed' : '',
+                    disabled: item.displayOpenIndicator
+                },
+                {
+                    id: 'delete',
+                    text: 'Delete',
+                    title: item.canBeDeleted ? '' : 'Open workflows cannot be deleted',
+                    disabled: !item.canBeDeleted
+                }
+            ];
         },
 
         onMenuClick(optionId, item) {
             if (optionId === 'delete') {
                 this.$emit('delete-items', { items: [item] });
+            }
+            if (optionId === 'rename') {
+                this.setupRenameInput(item.id, item.name);
+            }
+        },
+
+        async setupRenameInput(id, name) {
+            this.activeRenameId = id;
+            this.renameValue = name;
+
+            await this.$nextTick();
+
+            // TODO expose keyup event on the InputField on webapps-common
+            this.$refs.renameRef[0].$refs.input.addEventListener('keyup', this.onRenameSubmit);
+            
+            // wait to next event loop to properly steal focus
+            setTimeout(() => {
+                this.$refs.renameRef[0].$refs.input.focus();
+            }, 0);
+        },
+        onRenameSubmit(keyupEvent) {
+            const clearRenameState = () => {
+                this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
+                this.activeRenameId = null;
+                this.renameValue = '';
+            };
+
+            if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
+                clearRenameState();
+            }
+
+            if (keyupEvent.key === 'Enter' && !this.isRenamingInvalid) {
+                const newName = this.renameValue.trim();
+
+                if (newName === '') {
+                    clearRenameState();
+                    return;
+                }
+
+                this.$emit('rename-file', { itemId: this.activeRenameId, newName });
+                clearRenameState();
             }
         }
     }
@@ -281,17 +346,17 @@ export default {
         :ref="`item--${index}`"
         class="file-explorer-item"
         :class="[item.type, { selected: !isDragging && isSelected(index), dragging: isDragging && isSelected(index) }]"
-        :draggable="true"
-        @dragstart="onDragStart($event, index)"
-        @dragenter="onDragEnter(index)"
+        :draggable="!isActiveRenameItem(item)"
+        @dragstart="!isActiveRenameItem(item) && onDragStart($event, index)"
+        @dragenter="!isActiveRenameItem(item) && onDragEnter(index)"
         @dragover.prevent
-        @dragleave="onDragLeave(index)"
-        @dragend="onDragEnd"
-        @drop.prevent="onDrop(index)"
-        @click.exact="clickItem(index)"
-        @click.exact.ctrl="ctrlClickItem(index)"
-        @click.exact.shift="shiftClickItem(index)"
-        @dblclick="onItemDoubleClick(item)"
+        @dragleave="!isActiveRenameItem(item) && onDragLeave(index)"
+        @dragend="!isActiveRenameItem(item) && onDragEnd()"
+        @drop.prevent="!isActiveRenameItem(item) && onDrop(index)"
+        @click.exact="!isActiveRenameItem(item) && clickItem(index)"
+        @click.exact.ctrl="!isActiveRenameItem(item) && ctrlClickItem(index)"
+        @click.exact.shift="!isActiveRenameItem(item) && shiftClickItem(index)"
+        @dblclick="!isActiveRenameItem(item) && onItemDoubleClick(item)"
       >
         <td class="item-icon">
           <span
@@ -303,10 +368,26 @@ export default {
 
         <td
           class="item-content"
-          :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup }"
+          :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup, 'is-renamed': isActiveRenameItem(item) }"
           :title="item.name"
         >
-          {{ item.name }}
+          <span v-if="!isActiveRenameItem(item)">{{ item.name }}</span>
+          <template v-else>
+            <InputField
+              ref="renameRef"
+              v-model="renameValue"
+              :class="['is-renamed', mode]"
+              type="text"
+              title="rename"
+              :is-valid="!isRenamingInvalid"
+            />
+            <div
+              v-if="isRenamingInvalid"
+              class="item-error"
+            >
+              <span>Name contains invalid characters *?#:"&lt;>%~|/</span>
+            </div>
+          </template>
         </td>
 
         <td
@@ -381,6 +462,10 @@ tbody.mini {
   flex-flow: row nowrap;
   width: 100%;
   margin-bottom: 2px;
+  align-items: center;
+
+  /* add transparent border to prevent jumping when the dragging-over styles add a border */
+  border: 1px solid transparent;
 
   &:hover {
     box-shadow: 0 1px 5px 0 var(--knime-gray-dark-semi);
@@ -417,19 +502,64 @@ tbody.mini {
     }
   }
 
-  /* Prevent children from interfering with drag events */
+  & td.is-renamed {
+    padding: 0;
+  }
+
   & td {
+    & .is-renamed {
+      pointer-events: auto;
+      height: 30px;
+      padding: 0;
+
+      & >>> input {
+        font-size: 18px;
+        font-weight: 700;
+        padding: 0 7px 1px;
+      }
+
+      &.mini >>> input {
+        font-size: 16px;
+        font-weight: 400;
+      }
+    }
+
+    /* Prevent children from interfering with drag events */
     pointer-events: none;
+  }
+
+  & .item-error {
+    font-size: 13px;
+    line-height: 1.5;
+    backdrop-filter: blur(10px);
+    font-weight: 300;
+    position: absolute;
+    color: var(--theme-color-error);
+    padding: 7px 5px;
+    margin-top: 5px;
+    white-space: normal;
   }
 
   & .item-icon,
   & .item-option {
+    pointer-events: auto;
+
     & svg {
       display: flex;
 
       @mixin svg-icon-size var(--icon-size);
 
       stroke: var(--knime-masala);
+    }
+
+    /*
+     * The MenuItems set the svg size to 18px x 18px
+     * but this is too big here and causes misalignment
+     */
+    & >>> .menu-wrapper {
+      & svg {
+        @mixin svg-icon-size 14px;
+      }
     }
   }
 
