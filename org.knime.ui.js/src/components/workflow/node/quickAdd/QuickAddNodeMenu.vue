@@ -25,6 +25,7 @@ const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) =>
         // will be a mickey mouse to mickey mouse flow port connection
         // NOTE: the index 0 is always the red mickey mouse port for nodes that
         // are on the workflow, NOT for them in the repo! They lack those ports completely.
+        // TODO: fix the inconsistency with NXT-1489
         return positions[0];
     } else {
         return positions[targetPortIndex + 1];

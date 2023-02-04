@@ -251,7 +251,8 @@ export default {
                         // and needs to provide data for the to be added port for placeholder snaps
                         return {
                             didSnap: isCompatible,
-                            ...validPortGroups && { createPortFromPlaceholder: { validPortGroups } }
+                            // eslint-disable-next-line no-extra-parens
+                            ...(validPortGroups && { createPortFromPlaceholder: { validPortGroups } })
                         };
                     }
                 },
