@@ -39,7 +39,7 @@ export const renameItem = async ({ spaceProviderId = 'local', spaceId, itemId, n
     try {
         return await rpc(
             'SpaceService.renameItem',
-            spaceId, spaceProviderId, itemId, newName
+            spaceProviderId, spaceId, itemId, newName
         );
     } catch (e) {
         consola.error(e);
