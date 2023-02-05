@@ -448,7 +448,11 @@ describe('spaces store', () => {
                 };
 
                 store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' });
-                expect(importFiles).toHaveBeenCalledWith({ itemId: 'level1' });
+                expect(importFiles).toHaveBeenCalledWith({
+                    itemId: 'level1',
+                    spaceId: 'local',
+                    spaceProviderId: 'local'
+                });
             });
 
             it('should import workflows', () => {
@@ -462,7 +466,11 @@ describe('spaces store', () => {
                 };
 
                 store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
-                expect(importWorkflows).toHaveBeenCalledWith({ itemId: 'level2' });
+                expect(importWorkflows).toHaveBeenCalledWith({
+                    itemId: 'level2',
+                    spaceId: 'local',
+                    spaceProviderId: 'local'
+                });
             });
         });
 

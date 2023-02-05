@@ -250,9 +250,13 @@ export const actions = {
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
     },
 
-    async importToWorkflowGroup({ dispatch, getters }, { importType }) {
+    async importToWorkflowGroup({ state, dispatch, getters }, { importType }) {
+        const { id: spaceProviderId } = state.activeSpaceProvider;
+        const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
-        const success = importType === 'FILES' ? await importFiles({ itemId }) : await importWorkflows({ itemId });
+        const success = importType === 'FILES'
+            ? await importFiles({ spaceProviderId, spaceId, itemId })
+            : await importWorkflows({ spaceProviderId, spaceId, itemId });
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
         }

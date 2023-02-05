@@ -50,6 +50,7 @@ package org.knime.ui.java.api;
 
 import java.io.IOException;
 
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
@@ -74,11 +75,12 @@ final class ImportAPI {
      */
     @API
     static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
+            throws IOException {
         if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
             throw new IllegalArgumentException("Cannot import workflows to non-local workspaces");
         }
-        return IMPORT_WORKFLOWS.importItems(itemId);
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        return IMPORT_WORKFLOWS.importItems(space, itemId);
     }
 
     /**
@@ -88,11 +90,9 @@ final class ImportAPI {
      */
     @API
     static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
-        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
-            throw new IllegalArgumentException("Cannot import files to non-local workspaces");
-        }
-        return IMPORT_FILES.importItems(itemId);
+            throws IOException {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        return IMPORT_FILES.importItems(space, itemId);
     }
 
     /**

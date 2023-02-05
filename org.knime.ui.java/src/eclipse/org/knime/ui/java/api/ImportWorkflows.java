@@ -61,13 +61,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.ClassUtils;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.workbench.ui.workflow.metadata.MetaInfoFile;
 
 /**
@@ -87,23 +88,27 @@ class ImportWorkflows extends AbstractImportItems {
         return dialog;
     }
 
+
     @Override
-    protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
-        final List<Path> srcPaths) throws IOException {
+    protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final Space space,
+            final String workflowGroupItemId, final List<Path> srcPaths) throws IOException {
         var archiveFilePath = srcPaths.get(0); // There can only be one
-        var nameCollision = NameCollisionChecker.checkForNameCollision(archiveFilePath, workflowGroupItemId);
+        var nameCollision = NameCollisionChecker.checkForNameCollision(space, workflowGroupItemId, archiveFilePath);
         return nameCollision.map(nc -> {
             var nameCollisions = Collections.singletonList(nc);
-            return NameCollisionChecker.openDialogToSelectCollisionHandling(workflowGroupItemId, nameCollisions);
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions);
         }).orElse(Optional.of(Space.NameCollisionHandling.NOOP));
     }
 
     @Override
-    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final String workflowGroupItemId,
-        final List<Path> srcPaths, final Space.NameCollisionHandling collisionHandling) {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        monitor.beginTask(String.format("Importing %d files to \"%s\"", srcPaths.size(),
-            localWorkspace.getItemName(workflowGroupItemId)), IProgressMonitor.UNKNOWN);
+    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final Space space,
+            final String workflowGroupItemId, final List<Path> srcPaths,
+            final Space.NameCollisionHandling collisionHandling) {
+        final var name = ClassUtils.castOptional(LocalWorkspace.class, space) //
+                .map(local -> local.getItemName(workflowGroupItemId)) //
+                .orElse(space.getName());
+        monitor.beginTask(String.format("Importing %d files to \"%s\"", srcPaths.size(), name),
+            IProgressMonitor.UNKNOWN);
         var archiveFilePath = srcPaths.get(0); // There can only be one
         List<SpaceItemEnt> importedSpaceItems;
         try {
@@ -115,7 +120,7 @@ class ImportWorkflows extends AbstractImportItems {
                     MetaInfoFile.createOrGetMetaInfoFileForDirectory(destPath.toFile(), false);
                 }
             };
-            var importedItem = localWorkspace.importWorkflowOrWorkflowGroup(archiveFilePath, workflowGroupItemId,
+            var importedItem = space.importWorkflowOrWorkflowGroup(archiveFilePath, workflowGroupItemId,
                 createMetaInfoFileFor, collisionHandling);
             importedSpaceItems = Collections.singletonList(importedItem);
         } catch (IOException e) {

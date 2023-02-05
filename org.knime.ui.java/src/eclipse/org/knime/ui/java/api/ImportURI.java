@@ -175,7 +175,7 @@ public final class ImportURI {
 
     private static boolean importNodeFromFileURI(final String uri, final String projectId, final String workflowId,
         final int canvasX, final int canvasY) {
-        var nodeFactory = ConfigurableNodeFactoryMapper.getNodeFactory(uri.toString());
+        var nodeFactory = ConfigurableNodeFactoryMapper.getNodeFactory(uri);
         if (nodeFactory == null) {
             return false;
         }
