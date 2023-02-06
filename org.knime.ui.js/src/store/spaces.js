@@ -215,10 +215,11 @@ export const actions = {
     },
 
     async createFolder({ dispatch, getters, state }) {
+        const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
 
-        const newFolderItem = await createFolder({ spaceId, itemId });
+        const newFolderItem = await createFolder({ spaceId, spaceProviderId, itemId });
 
         dispatch('fetchWorkflowGroupContent', { itemId });
 
