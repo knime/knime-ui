@@ -1,5 +1,4 @@
 import { camelCase } from 'lodash';
-import robotoCondensed from '@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff';
 
 const LICENSE = `<!--
 The embedded fonts are based on open source fonts
@@ -239,14 +238,19 @@ const fileToBase64 = async (filepath) => {
  * @returns {Promise<String>}
  */
 const getFontData = async () => {
-    const fontCacheKey = 'workflow-preview-font';
+    const fontFileName = 'roboto-condensed-all-400-normal';
+    const fontCacheKey = `workflow-preview-font-${fontFileName}`;
     const cachedFont = localStorage.getItem(fontCacheKey);
-
+    
     if (cachedFont) {
         return Promise.resolve(cachedFont);
     }
 
-    const fontBase64 = await fileToBase64(robotoCondensed);
+    // the `@` characted does not work with template strings
+    // eslint-disable-next-line no-useless-concat
+    const robotoCondensed = await import('@' + `fontsource/roboto-condensed/files/${fontFileName}.woff`);
+    
+    const fontBase64 = await fileToBase64(robotoCondensed.default);
     localStorage.setItem(fontCacheKey, fontBase64);
     
     return fontBase64;
@@ -265,12 +269,12 @@ const addFontStyles = async (svgElement) => {
     const fontBase64 = await getFontData();
 
     styleTag.appendChild(
-        document.createTextNode(`@font-face { 
-            font-family: "Roboto Condensed"; 
+        document.createTextNode(`@font-face {
+            font-family: "Roboto Condensed";
             src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}");
         }`)
     );
-    
+
     styleTag.type = 'text/css';
 
     svgElement.getElementsByTagName('defs')[0].appendChild(styleTag);
