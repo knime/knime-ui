@@ -4,6 +4,7 @@ import Button from 'webapps-common/ui/components/Button.vue';
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
+import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
 import { APP_ROUTES } from '@/router';
 import PageHeader from '@/components/common/PageHeader.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
@@ -19,6 +20,7 @@ export default {
         ComputerDesktopIcon,
         AddFileIcon,
         ImportWorkflowIcon,
+        FolderPlusIcon,
         PageHeader,
         Button
     },
@@ -53,7 +55,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('spaces', ['importToWorkflowGroup']),
+        ...mapActions('spaces', ['importToWorkflowGroup', 'createFolder']),
         async onItemChanged(itemId) {
             // remember current path
             await this.$store.dispatch('spaces/saveSpaceBrowserState', { itemId });
@@ -91,6 +93,16 @@ export default {
               v-if="activeSpaceInfo.local"
               class="toolbar-buttons"
             >
+              <Button
+                id="create-folder"
+                with-border
+                compact
+                @click="createFolder"
+              >
+                <FolderPlusIcon />
+                Create folder
+              </Button>
+
               <Button
                 id="import-workflow"
                 with-border

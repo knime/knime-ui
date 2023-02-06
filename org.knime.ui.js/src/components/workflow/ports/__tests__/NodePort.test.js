@@ -9,7 +9,7 @@ import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
 
-import { circleDetection } from '@/util/compatibleConnections';
+import * as compatibleConnections from '@/util/compatibleConnections';
 
 import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
@@ -25,9 +25,7 @@ jest.mock('raf-throttle', () => function (func) {
     };
 });
 
-jest.mock('@/util/compatibleConnections', () => ({
-    circleDetection: jest.fn().mockReturnValue([])
-}));
+const circleDetectionSpy = jest.spyOn(compatibleConnections, 'circleDetection').mockReturnValue([]);
 
 jest.mock('@/mixins/escapeStack', () => {
     function escapeStack({ onEscape }) { // eslint-disable-line func-style
@@ -397,7 +395,7 @@ describe('NodePort', () => {
                 propsData.direction = portDirection;
                 startDragging();
 
-                expect(circleDetection).toHaveBeenCalledWith({
+                expect(circleDetectionSpy).toHaveBeenCalledWith({
                     downstreamConnection: portDirection === 'out',
                     startNode: 'node:1',
                     workflow: 'workflowRef'

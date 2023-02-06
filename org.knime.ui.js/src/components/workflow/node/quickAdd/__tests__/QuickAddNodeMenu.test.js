@@ -61,7 +61,9 @@ describe('QuickAddNodeMenu.vue', () => {
                 y: 10
             },
             port: {
-                index: 1
+                index: 1,
+                typeId: 'org.knime.core.node.BufferedDataTable',
+                kind: 'table'
             }
         };
 
@@ -152,7 +154,7 @@ describe('QuickAddNodeMenu.vue', () => {
             expect(labels.at(1).text()).toBe('Row Filter');
 
             const previews = wrapper.findAllComponents(NodePreview);
-            
+
             expect(previews.length).toBe(2);
             expect(previews.at(0).props('type')).toBe('Manipulator');
         });
@@ -166,8 +168,8 @@ describe('QuickAddNodeMenu.vue', () => {
             expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeFactory: { className: 'org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory' },
                 position: {
-                    x: 10,
-                    y: 10
+                    x: 19.5,
+                    y: -6
                 },
                 sourceNodeId: 'node-id',
                 sourcePortIdx: 1
@@ -183,8 +185,8 @@ describe('QuickAddNodeMenu.vue', () => {
             expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeFactory: { className: 'org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory' },
                 position: {
-                    x: 10,
-                    y: 10
+                    x: 19.5,
+                    y: -6
                 },
                 sourceNodeId: 'node-id',
                 sourcePortIdx: 1

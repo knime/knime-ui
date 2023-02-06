@@ -6,11 +6,13 @@ import {
     disconnectSpaceProvider,
     fetchWorkflowGroupContent,
     createWorkflow,
+    createFolder,
     openWorkflow,
     importFiles,
     importWorkflows,
     deleteItems,
-    moveItems
+    moveItems,
+    renameItem
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
@@ -200,19 +202,26 @@ export const actions = {
     },
 
     async createWorkflow({ commit, getters, state, dispatch }) {
-        try {
-            const { spaceId } = state.activeSpace;
-            const itemId = getters.currentWorkflowGroupId;
+        const { spaceId } = state.activeSpace;
+        const itemId = getters.currentWorkflowGroupId;
 
-            const newWorkflowItem = await createWorkflow({ spaceId, itemId });
+        const newWorkflowItem = await createWorkflow({ spaceId, itemId });
 
-            dispatch('fetchWorkflowGroupContent', { itemId });
-            openWorkflow({ workflowItemId: newWorkflowItem.id });
+        dispatch('fetchWorkflowGroupContent', { itemId });
+        openWorkflow({ workflowItemId: newWorkflowItem.id });
 
-            return newWorkflowItem;
-        } catch (error) {
-            throw error;
-        }
+        return newWorkflowItem;
+    },
+
+    async createFolder({ dispatch, getters, state }) {
+        const { spaceId } = state.activeSpace;
+        const itemId = getters.currentWorkflowGroupId;
+
+        const newFolderItem = await createFolder({ spaceId, itemId });
+
+        dispatch('fetchWorkflowGroupContent', { itemId });
+
+        return newFolderItem;
     },
 
     openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router, spaceId = null, spaceProviderId = null }) {
@@ -246,6 +255,14 @@ export const actions = {
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
         }
+    },
+
+    async renameItem({ state, getters, dispatch }, { itemId, newName }) {
+        const { spaceId } = state.activeSpace;
+        const { id: spaceProviderId } = state.activeSpaceProvider;
+        await renameItem({ spaceProviderId, spaceId, itemId, newName });
+        const currentWorkflowGroupId = getters.currentWorkflowGroupId;
+        await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     },
 
     async deleteItems({ state, getters, dispatch }, { itemIds }) {

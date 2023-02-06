@@ -251,22 +251,35 @@ describe('FileExplorer.vue', () => {
     });
 
     describe('options menu', () => {
+        const RENAME_OPTION_IDX = 0;
+        const DELETE_OPTION_IDX = 1;
+
+        const getOptionsItem = (optionsMenu, index) => optionsMenu.findAll('.clickable-item').at(index);
+
+        const getRenameOption = (wrapper, itemIndex) => {
+            const optionsMenu = wrapper.findAll('.submenu').at(itemIndex);
+            return getOptionsItem(optionsMenu, RENAME_OPTION_IDX);
+        };
+
+        const getDeleteOption = (wrapper, itemIndex) => {
+            const optionsMenu = wrapper.findAll('.submenu').at(itemIndex);
+            return getOptionsItem(optionsMenu, DELETE_OPTION_IDX);
+        };
+
         it('should show the item option button', () => {
             const { wrapper } = doMount();
             expect(wrapper.find('.submenu').find('.submenu-toggle').exists()).toBe(true);
         });
 
         it('should have the delete option', () => {
-            const deleteOptionIdx = 0;
             const { wrapper } = doMount();
 
             const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
-            expect(menuItem.findAll('li').at(deleteOptionIdx).element.innerHTML).toContain('Delete');
+            expect(menuItem.findAll('li').at(DELETE_OPTION_IDX).element.innerHTML).toContain('Delete');
         });
 
         it('should enable the delete option for items that specify it', () => {
             const indexWithDeletable = 3;
-            const deleteOptionIdx = 0;
             const { wrapper } = doMount({
                 props: {
                     items: MOCK_DATA.map((item, index) => ({
@@ -277,23 +290,125 @@ describe('FileExplorer.vue', () => {
             });
 
             const items = wrapper.findAll('.submenu');
-            const itemDisabledDelete = items.at(0).find('.menu-wrapper').findAll('li').at(deleteOptionIdx);
-            const itemEnabledDelete = items.at(deleteOptionIdx).find('.menu-wrapper').findAll('li').at(deleteOptionIdx);
+            const itemDisabledDelete = items.at(0).find('.menu-wrapper').findAll('li').at(DELETE_OPTION_IDX);
+            const itemEnabledDelete = items.at(DELETE_OPTION_IDX).find('.menu-wrapper').findAll('li')
+                .at(DELETE_OPTION_IDX);
             expect(itemDisabledDelete.find('.disabled').exists()).toBe(true);
             expect(itemDisabledDelete.element.title).toBe('Open workflows cannot be deleted');
             expect(itemEnabledDelete.find('.disabled').exists()).toBe(true);
         });
 
         it('should emit delete-items on delete option click', async () => {
-            const deleteOptionIdx = 0;
             const itemIdx = 2;
             const { wrapper } = doMount({
                 props: { items: MOCK_DATA.map((item, index) => ({ ...item, canBeDeleted: true })) }
             });
 
-            const optionsMenu = wrapper.findAll('.submenu').at(itemIdx);
-            await optionsMenu.findAll('.clickable-item').at(deleteOptionIdx).trigger('click');
+            const deleteButton = getDeleteOption(wrapper, itemIdx);
+            await deleteButton.trigger('click');
             expect(wrapper.emitted('delete-items')[0][0]).toMatchObject({ items: [{ id: `${itemIdx}` }] });
+        });
+
+        it('should have rename enabled when item is not open', () => {
+            const { wrapper } = doMount();
+
+            const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
+            expect(menuItem.findAll('li').at(0).element.innerHTML).toContain('Rename');
+        });
+
+        it('should have rename disabled when item is open', () => {
+            const indexOpenedItem = 0;
+            const { wrapper } = doMount({
+                props: {
+                    items: MOCK_DATA.map((item, index) => ({
+                        ...item,
+                        displayOpenIndicator: index === indexOpenedItem
+                    }))
+                }
+            });
+
+            const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
+            expect(menuItem.findAll('li').at(0).element.outerHTML).toContain('Open workflows cannot be renamed');
+        });
+
+        it('should render TextInput when users wants to rename', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+            
+            expect(wrapper.vm.activeRenameId).toBe(MOCK_DATA[0].id);
+            expect(wrapper.vm.renameValue).toBe(MOCK_DATA[0].name);
+            expect(wrapper.findAll('input').at(0).exists()).toBe(true);
+        });
+
+        it('should show verification message in case of error during renaming', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+            
+            const inputValue = wrapper.findAll('input').at(0);
+            inputValue.element.value = 'invalid [*?#:"<>%~|.] string';
+            await inputValue.trigger('input');
+            expect(wrapper.find('.item-error').exists()).toBe(true);
+
+            inputValue.element.value = 'valid string';
+            await inputValue.trigger('input');
+            expect(wrapper.find('.item-error').exists()).toBe(false);
+        });
+
+        it('should submit renaming event', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+            
+            const inputValue = wrapper.findAll('input').at(0);
+            const newName = 'New Folder name';
+            await wrapper.setData({ renameValue: newName });
+            await inputValue.trigger('keyup.enter');
+
+            expect(wrapper.emitted('rename-file')).toBeTruthy();
+            expect(wrapper.emitted('rename-file')[0][0].newName).toEqual(newName);
+        });
+        
+        it('should automatically trim new name', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+            
+            const inputValue = wrapper.findAll('input').at(0);
+            const newName = '    New Folder name    ';
+            await wrapper.setData({ renameValue: newName });
+            await inputValue.trigger('keyup.enter');
+
+            expect(wrapper.emitted('rename-file')).toBeTruthy();
+            expect(wrapper.emitted('rename-file')[0][0].newName).toEqual('New Folder name');
+        });
+
+        it('should not save empty names', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+            
+            const inputValue = wrapper.findAll('input').at(0);
+            const newName = '      ';
+            await wrapper.setData({ renameValue: newName });
+            await inputValue.trigger('keyup.enter');
+
+            expect(wrapper.emitted('rename-file')).toBeUndefined();
+        });
+
+        it('should cancel renaming event', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+            
+            const inputValue = wrapper.findAll('input').at(0);
+            const newName = 'New Folder name';
+            await wrapper.setData({ renameValue: newName });
+            await inputValue.trigger('keyup.esc');
+
+            expect(wrapper.vm.activeRenameId).toBe(null);
+            expect(wrapper.vm.renameValue).toBe('');
         });
     });
 });
