@@ -240,6 +240,8 @@ const fileToBase64 = async (filepath) => {
  * @returns {Promise<String>}
  */
 const getFontData = async () => {
+    // TODO: NXT-1493 - This cache is never invalidated (updates to the font files) nor is it ever reset or deleted.
+    //       We should consider making the base64 encode a build step
     const fontCacheKey = `workflow-preview-font-${robotoCondensed}`;
     const cachedFont = localStorage.getItem(fontCacheKey);
 
