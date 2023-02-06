@@ -279,6 +279,10 @@ export const actions = {
 
         await moveItems({ spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+    },
+
+    uploadToHub(_, { itemIds }) {
+        console.log(itemIds);
     }
 };
 
@@ -377,5 +381,17 @@ export const getters = {
         }
 
         return {};
+    },
+
+    hasActiveHubSession({ spaceProviders }) {
+        if (!spaceProviders) {
+            return false;
+        }
+
+        return Boolean(
+            Object
+                .values(spaceProviders)
+                .find(({ id, connected }) => id !== 'local' && connected)
+        );
     }
 };

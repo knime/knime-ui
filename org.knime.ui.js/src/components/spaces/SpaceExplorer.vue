@@ -1,20 +1,15 @@
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import { getNameCollisionStrategy } from '@api';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
-import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
-
-import PlusIcon from '@/assets/plus.svg';
-import AddFileIcon from '@/assets/add-file.svg';
-import ImportWorkflowIcon from '@/assets/import-workflow.svg';
-import ToolbarButton from '@/components/common/ToolbarButton.vue';
-
-import LoadingIcon from './LoadingIcon.vue';
-import FileExplorer from './FileExplorer/FileExplorer.vue';
 
 import ITEM_TYPES from '@/util/spaceItemTypes';
+
+import SpaceExplorerToolbar from './SpaceExplorerToolbar.vue';
+import LoadingIcon from './LoadingIcon.vue';
+import FileExplorer from './FileExplorer/FileExplorer.vue';
 
 const DISPLAY_LOADING_DELAY = 100;
 const DISPLAY_LOADING_ICON_DELAY = 350;
@@ -29,15 +24,11 @@ const ITEM_TYPES_TEXTS = {
 
 export default {
     components: {
+        SpaceExplorerToolbar,
         FileExplorer,
         LoadingIcon,
         Breadcrumb,
-        PlusButton,
-        PlusIcon,
-        AddFileIcon,
-        ImportWorkflowIcon,
-        FolderPlusIcon,
-        ToolbarButton
+        PlusButton
     },
 
     props: {
@@ -52,25 +43,33 @@ export default {
         return {
             isLoading: false,
             showLoadingIcon: false,
-            loadingHeight: DEFAULT_LOADING_INDICATOR_HEIGHT
+            loadingHeight: DEFAULT_LOADING_INDICATOR_HEIGHT,
+            selectedItems: []
         };
     },
 
     computed: {
+        ...mapState('application', ['openProjects']),
         ...mapState('spaces', {
             startItemId: state => state.activeSpace?.startItemId,
             activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
             spaceId: state => state.activeSpace?.spaceId
         }),
-        ...mapState('application', ['openProjects']),
-        ...mapGetters('spaces', ['openedWorkflowItems', 'openedFolderItems', 'pathToItemId']),
+        ...mapGetters('spaces', [
+            'openedWorkflowItems',
+            'openedFolderItems',
+            'pathToItemId',
+            'hasActiveHubSession'
+        ]),
 
         fileExplorerItems() {
             return this.activeWorkflowGroup.items.map(item => ({
                 ...item,
                 displayOpenIndicator:
-                    this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id),
-                canBeDeleted: !this.openedWorkflowItems.includes(item.id) && !this.openedFolderItems.includes(item.id)
+                  this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id),
+                
+                canBeDeleted:
+                  !this.openedWorkflowItems.includes(item.id) && !this.openedFolderItems.includes(item.id)
             }));
         },
 
@@ -115,6 +114,10 @@ export default {
         createWorkflowButtonTitle() {
             const { text, hotkeyText } = this.$shortcuts.get('createWorkflow');
             return `${text} (${hotkeyText})`;
+        },
+
+        toolbarAllowedActions() {
+            return { canUploadToHub: this.hasActiveHubSession && this.selectedItems.length > 0 };
         }
     },
 
@@ -130,7 +133,6 @@ export default {
     },
 
     methods: {
-        ...mapActions('spaces', ['importToWorkflowGroup', 'createFolder', 'createWorkflow']),
         // Only display loader after a set waiting time, to avoid making the operations seem longer
         setLoading(value) {
             if (!value) {
@@ -162,6 +164,11 @@ export default {
             await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
 
             this.setLoading(false);
+        },
+
+        onSelectionChange(selectedItems) {
+            this.selectedItems = selectedItems;
+            this.$emit('change-selection', selectedItems);
         },
 
         async onChangeDirectory(pathId) {
@@ -259,37 +266,16 @@ export default {
         @click-item="onBreadcrumbClick"
       />
 
-      <div
-        v-if="mode === 'mini' && isLocal"
-        class="buttons"
-      >
-        <ToolbarButton
-          title="Create folder"
-          @click.native="createFolder"
-        >
-          <FolderPlusIcon />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Import workflow"
-          @click.native="importToWorkflowGroup({importType: 'WORKFLOW'})"
-        >
-          <ImportWorkflowIcon />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Add file"
-          @click.native="importToWorkflowGroup({importType: 'FILES'})"
-        >
-          <AddFileIcon />
-        </ToolbarButton>
-        <ToolbarButton
-          primary
-          class="create-workflow-mini-btn"
-          :title="createWorkflowButtonTitle"
-          @click.native="createWorkflow"
-        >
-          <PlusIcon />
-        </ToolbarButton>
-      </div>
+      <SpaceExplorerToolbar
+        v-if="isLocal && mode === 'mini'"
+        mode="mini"
+        :allowed-actions="toolbarAllowedActions"
+        @action:create-workflow="$store.dispatch('spaces/createWorkflow')"
+        @action:create-folder="$store.dispatch('spaces/createFolder')"
+        @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"
+        @action:import-files="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' })"
+        @action:upload-to-hub="$store.dispatch('spaces/uploadToHub', { itemIds: selectedItems })"
+      />
     </div>
 
     <PlusButton
@@ -297,7 +283,7 @@ export default {
       :title="createWorkflowButtonTitle"
       primary
       class="create-workflow-btn"
-      @click="createWorkflow"
+      @click="$store.dispatch('spaces/createWorkflow')"
     />
 
     <FileExplorer
@@ -308,6 +294,7 @@ export default {
       :is-root-folder="activeWorkflowGroup.path.length === 0"
       :full-path="fullPath"
       @change-directory="onChangeDirectory"
+      @change-selection="onSelectionChange"
       @open-file="onOpenFile"
       @rename-file="onRenameFile"
       @delete-items="onDeleteItems"
@@ -355,7 +342,6 @@ export default {
   margin-bottom: 12px;
   width: 100%;
   border-bottom: 1px solid var(--knime-silver-sand);
-  overflow-x: auto;
   align-items: center;
 
   & .create-workflow-mini-btn {
@@ -371,14 +357,11 @@ export default {
     scrollbar-width: none; /* for firefox */
     user-select: none;
     font-size: 16px;
+    margin-right: 8px;
 
     &::-webkit-scrollbar {
       display: none;
     }
-  }
-
-  & .buttons {
-    display: flex;
   }
 }
 

@@ -1,32 +1,38 @@
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
+
 import Button from 'webapps-common/ui/components/Button.vue';
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
-import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
+
+import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import { APP_ROUTES } from '@/router';
 import PageHeader from '@/components/common/PageHeader.vue';
-import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
-import AddFileIcon from '@/assets/add-file.svg';
-import ImportWorkflowIcon from '@/assets/import-workflow.svg';
-import SpaceExplorer from './SpaceExplorer.vue';
 
+import SpaceExplorer from './SpaceExplorer.vue';
+import SpaceExplorerToolbar from './SpaceExplorerToolbar.vue';
 
 export default {
     components: {
         ArrowLeftIcon,
         SpaceExplorer,
+        SpaceExplorerToolbar,
         ComputerDesktopIcon,
-        AddFileIcon,
-        ImportWorkflowIcon,
-        FolderPlusIcon,
         PageHeader,
         Button
     },
+
+    data() {
+        return {
+            selectedItems: []
+        };
+    },
+
     computed: {
-        ...mapState('spaces', ['spaceBrowser']),
-        ...mapGetters('spaces', ['activeSpaceInfo']),
+        ...mapState('spaces', ['spaceBrowser', 'spaceProviders']),
+        ...mapGetters('spaces', ['activeSpaceInfo', 'hasActiveHubSession']),
+
         spaceInfo() {
             if (this.activeSpaceInfo.local) {
                 return {
@@ -36,17 +42,17 @@ export default {
                 };
             }
 
-            return this.activeSpaceInfo.private
-                ? {
-                    title: this.activeSpaceInfo.name,
-                    subtitle: 'Private space',
-                    icon: PrivateSpaceIcon
-                }
-                : {
-                    title: this.activeSpaceInfo.name,
-                    subtitle: 'Public space',
-                    icon: CubeIcon
-                };
+            const isPrivateSpace = this.activeSpaceInfo.private;
+
+            return {
+                title: this.activeSpaceInfo.name,
+                subtitle: isPrivateSpace ? 'Private space' : 'Public space',
+                icon: isPrivateSpace ? PrivateSpaceIcon : CubeIcon
+            };
+        },
+
+        toolbarAllowedActions() {
+            return { canUploadToHub: this.hasActiveHubSession && this.selectedItems.length > 0 };
         }
     },
     async created() {
@@ -55,11 +61,11 @@ export default {
         }
     },
     methods: {
-        ...mapActions('spaces', ['importToWorkflowGroup', 'createFolder']),
         async onItemChanged(itemId) {
             // remember current path
             await this.$store.dispatch('spaces/saveSpaceBrowserState', { itemId });
         },
+        
         onBackButtonClick() {
             this.$store.commit('spaces/clearSpaceBrowserState');
             this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
@@ -89,39 +95,14 @@ export default {
       <div class="grid-container">
         <div class="grid-item-12">
           <div class="toolbar">
-            <div
+            <SpaceExplorerToolbar
               v-if="activeSpaceInfo.local"
-              class="toolbar-buttons"
-            >
-              <Button
-                id="create-folder"
-                with-border
-                compact
-                @click="createFolder"
-              >
-                <FolderPlusIcon />
-                Create folder
-              </Button>
-
-              <Button
-                id="import-workflow"
-                with-border
-                compact
-                @click="importToWorkflowGroup({importType: 'WORKFLOW'})"
-              >
-                <ImportWorkflowIcon />
-                Import workflow
-              </Button>
-              <Button
-                id="import-files"
-                with-border
-                compact
-                @click="importToWorkflowGroup({importType: 'FILES'})"
-              >
-                <AddFileIcon />
-                Add files
-              </Button>
-            </div>
+              :allowed-actions="toolbarAllowedActions"
+              @action:create-folder="$store.dispatch('spaces/createFolder')"
+              @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"
+              @action:import-files="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' })"
+              @action:upload-to-hub="$store.dispatch('spaces/uploadToHub', { itemIds: selectedItems })"
+            />
           </div>
         </div>
       </div>
@@ -132,6 +113,7 @@ export default {
         <div class="grid-item-12">
           <SpaceExplorer
             @item-changed="onItemChanged"
+            @change-selection="selectedItems = $event"
           />
         </div>
       </div>
@@ -164,34 +146,6 @@ main {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-
-    & .toolbar-buttons {
-      & .button {
-        margin-left: 5px;
-        border-color: var(--knime-silver-sand);
-        color: var(--knime-masala);
-
-        & svg {
-          @mixin svg-icon-size 18;
-
-          stroke: var(--knime-masala);
-          margin-right: 4px;
-        }
-
-        &:hover,
-        &:active,
-        &:focus {
-          cursor: pointer;
-          color: var(--knime-white);
-          background-color: var(--knime-masala);
-          border-color: var(--knime-masala);
-
-          & svg {
-            stroke: var(--knime-white);
-          }
-        }
-      }
-    }
   }
 }
 

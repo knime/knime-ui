@@ -79,9 +79,9 @@ export default {
         },
 
         multiSelectionState() {
-            const normalizedRanges = multiSelectionService.normalizeRanges(this.multiSelectionState);
+            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
 
-            this.$emit('selection-change', normalizedRanges);
+            this.$emit('change-selection', selectedIndexes.map(index => this.items[index].id));
         }
     },
 
