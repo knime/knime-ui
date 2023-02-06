@@ -16,7 +16,7 @@ import ITEM_TYPES from '@/util/spaceItemTypes';
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
 
-const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/.]/;
+const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/]/;
 
 export default {
     components: {
