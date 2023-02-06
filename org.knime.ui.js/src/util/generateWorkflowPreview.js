@@ -1,4 +1,6 @@
 import { camelCase } from 'lodash';
+import { hashCode } from '@/util/hashCode';
+import robotoCondensed from '@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff';
 
 const LICENSE = `<!--
 The embedded fonts are based on open source fonts
@@ -186,13 +188,13 @@ const useCSSfromComputedStyles = (styleOverrides = {}) => (element) => {
             useCSSfromComputedStyles(styleOverrides)(child);
         }
     });
-   
+
     const compStyles = getComputedStyle(element);
 
     if (compStyles.length > 0) {
         for (let i = 0; i < compStyles.length; i++) {
             const compStyle = compStyles[i];
-            
+
             if (inheritedCssProperties.includes(compStyle)) {
                 const value = styleOverrides[camelCase(compStyle)]
                     ? styleOverrides[camelCase(compStyle)]
@@ -238,21 +240,16 @@ const fileToBase64 = async (filepath) => {
  * @returns {Promise<String>}
  */
 const getFontData = async () => {
-    const fontFileName = 'roboto-condensed-all-400-normal';
-    const fontCacheKey = `workflow-preview-font-${fontFileName}`;
+    const fontCacheKey = `workflow-preview-font-${hashCode(robotoCondensed)}`;
     const cachedFont = localStorage.getItem(fontCacheKey);
-    
+
     if (cachedFont) {
         return Promise.resolve(cachedFont);
     }
 
-    // the `@` characted does not work with template strings
-    // eslint-disable-next-line no-useless-concat
-    const robotoCondensed = await import('@' + `fontsource/roboto-condensed/files/${fontFileName}.woff`);
-    
-    const fontBase64 = await fileToBase64(robotoCondensed.default);
+    const fontBase64 = await fileToBase64(robotoCondensed);
     localStorage.setItem(fontCacheKey, fontBase64);
-    
+
     return fontBase64;
 };
 
@@ -316,25 +313,25 @@ export const generateWorkflowPreview = async (svgElement, isEmpty) => {
 
     // remove all hover areas elements which are only used for interactivity
     removeElements(svgClone.querySelectorAll('.hover-area'));
-    
+
     // remove all vue-portals
     removeElements(svgClone.querySelectorAll('DIV.v-portal'));
-    
+
     // remove all portal-targets
     removeElements(svgClone.querySelectorAll('.vue-portal-target'));
-    
+
     // remove dynamic port icons
     removeElements(svgClone.querySelectorAll('.add-port'));
-    
+
     // remove non-connected flow variable port icons
     removeElements(svgClone.querySelectorAll('.mickey-mouse:not(.connected)'));
-    
+
     // remove empty node labels
     removeElements(svgClone.querySelectorAll('.node-label > .placeholder'));
-    
+
     // remove all empty g elements
     removeElements(svgClone.querySelectorAll('g'), (node) => !node.hasChildNodes());
-    
+
     // remove all `display: none` elements
     removeElements(svgClone.querySelectorAll('[style*="display: none"]'));
 
@@ -343,12 +340,12 @@ export const generateWorkflowPreview = async (svgElement, isEmpty) => {
     svgClone.querySelectorAll('[data-connector-id]').forEach(useCSSfromComputedStyles({
         strokeWidth: '1px'
     }));
-    
+
     // select `foreignObject`s and inline all styles that may be only available from classes
     svgClone.querySelectorAll('foreignObject').forEach(useCSSfromComputedStyles());
 
     const output = getSvgContent(svgClone);
-    
+
     // remove hidden preview container
     teardown();
 
