@@ -1,5 +1,4 @@
 import { camelCase } from 'lodash';
-import { hashCode } from '@/util/hashCode';
 import robotoCondensed from '@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff';
 
 const LICENSE = `<!--
@@ -241,7 +240,7 @@ const fileToBase64 = async (filepath) => {
  * @returns {Promise<String>}
  */
 const getFontData = async () => {
-    const fontCacheKey = `workflow-preview-font-${hashCode(robotoCondensed)}`;
+    const fontCacheKey = `workflow-preview-font-${robotoCondensed}`;
     const cachedFont = localStorage.getItem(fontCacheKey);
 
     if (cachedFont) {
