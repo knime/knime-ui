@@ -54,9 +54,9 @@ import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.webui.spaces.LocalWorkspace;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 
 /**
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
@@ -163,5 +163,15 @@ public final class LocalSpaceUtil {
      */
     public static String getUniqueProjectId(final String projectName) {
         return projectName + "_" + UUID.randomUUID();
+    }
+
+    /**
+     * @param spaceProviderId
+     * @param spaceId
+     * @return Returns {@code true} if both parameters indicate we work within the {@link LocalWorkspace}, {@code false}
+     *         otherwise.
+     */
+    public static boolean checkIfInLocalSpace(final String spaceProviderId, final String spaceId) {
+        return spaceProviderId.equals(LOCAL_SPACE_PROVIDER_ID) && spaceId.equals(LocalWorkspace.LOCAL_WORKSPACE_ID);
     }
 }

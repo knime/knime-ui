@@ -86,7 +86,8 @@ public final class DesktopAPI {
         WorkflowAPI.class, //
         SpaceAPI.class, //
         ImportAPI.class, //
-        EclipseUIAPI.class //
+        EclipseUIAPI.class, //
+        UpdateAPI.class //
     );
 
     // API endpoints which are only being registered when the AP is run for testing purposes.

@@ -44,75 +44,47 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 11, 2023 (kai): created
+ *   Feb 6, 2023 (kai): created
  */
 package org.knime.ui.java.api;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.FileDialog;
-import org.knime.core.node.NodeLogger;
-import org.knime.core.ui.util.SWTUtilities;
-import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.webui.spaces.Space;
-import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
- * Import data files into a workspace and save them to the specified location.
+ * Functions around updating space items within a certain space.
  *
  * @author Kai Franze, KNIME GmbH
  */
-class ImportFiles extends AbstractImportItems {
+final class UpdateAPI {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(ImportFiles.class);
+    private UpdateAPI() {
+        // Stateless
+     }
 
-    @Override
-    protected FileDialog getFileDialog() {
-        return new FileDialog(SWTUtilities.getActiveShell(), SWT.MULTI);
-    }
-
-    @Override
-    protected Space.NameCollisionHandling checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
-        final List<Path> srcPaths) {
-        var nameCollisions = NameCollisionChecker.checkForNameCollisions(srcPaths, workflowGroupItemId);
-        if (nameCollisions.isEmpty()) {
-            return Space.NameCollisionHandling.NOOP;
-        } else {
-            return NameCollisionChecker.openDialogToSelectCollisionHandling(workflowGroupItemId, nameCollisions);
-        }
-    }
-
-    @Override
-    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final String workflowGroupItemId,
-        final List<Path> srcPaths, final Space.NameCollisionHandling collisionHandling) {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        monitor.beginTask(String.format("Importing %d files to \"%s\"", srcPaths.size(),
-            localWorkspace.getItemName(workflowGroupItemId)), IProgressMonitor.UNKNOWN);
-        var importedSpaceItems = srcPaths.stream()//
-            .map(srcPath -> { // Import every single file
-                try {
-                    return localWorkspace.importFile(srcPath, workflowGroupItemId, collisionHandling);
-                } catch (IOException e) {
-                    LOGGER.error(String.format("Could not import <%s>", srcPath), e);
-                    return null;
-                }
-            })//
-            .filter(Objects::nonNull) // Exclude the failed ones from the result
-            .collect(Collectors.toList());
-        monitor.done();
-        return importedSpaceItems;
-    }
-
-    @Override
-    protected void showWarningWithTitleAndMessage() {
-        DesktopAPUtil.showWarning("File import", "Not all selected files could be imported");
-    }
+     /**
+      * Checks if the names of the corresponding space items already exists within the destination workflow group. If
+      * so, it will present a dialog to select the preferred solution.
+      *
+      * @param spaceProviderId The space provider ID
+      * @param spaceId The space ID
+      * @param itemIds The space item IDs
+      * @param destWorkflowGroupId The destination workflow group ID
+      * @return Can be either one of {@link Space.NameCollisionHandling} or {@link NameCollisionChecker#CANCEL}.
+      */
+     @API
+     static String checkForNameCollisionsAndSelectHandling(final String spaceProviderId, final String spaceId,
+         final Object[] itemIds, final String destWorkflowGroupItemId) {
+         if (!LocalSpaceUtil.checkIfInLocalSpace(spaceProviderId, spaceId)) {
+             throw new IllegalArgumentException("Cannot yet move items within non-local workspaces");
+         }
+         var nameCollisions = NameCollisionChecker.checkForNameCollisions(itemIds, destWorkflowGroupItemId);
+         if (nameCollisions.isEmpty()) {
+             return Space.NameCollisionHandling.NOOP.toString();
+         } else {
+             return NameCollisionChecker.openDialogToSelectCollisionHandling(destWorkflowGroupItemId, nameCollisions)
+                 .toString();
+         }
+     }
 
 }
