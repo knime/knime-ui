@@ -1,5 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
+import { checkForNameCollisionsAndPickCollisionHandling } from '@api';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
@@ -59,6 +60,7 @@ export default {
             activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
             spaceId: state => state.activeSpace?.spaceId
         }),
+        ...mapState('application', ['openProjects']),
         ...mapGetters('spaces', ['openedWorkflowItems', 'openedFolderItems', 'pathToItemId']),
 
         fileExplorerItems() {
@@ -199,10 +201,33 @@ export default {
             }
         },
 
-        onMoveItems({ sourceItems, targetItem }) {
+        async onMoveItems({ sourceItems, targetItem }) {
+            const openedWorkflows = this.openProjects.filter(workflow => sourceItems.includes(workflow.origin.itemId));
+            const isInsideFolder = this.openProjects.filter((project) => project.origin.ancestorItemIds
+                .some((ancestorId) => sourceItems.includes(ancestorId)));
             const isTheSameFolder = sourceItems.includes(targetItem);
 
+            if (openedWorkflows.length || isInsideFolder.length) {
+                const openedWorkflowsNames = openedWorkflows.map(workflow => workflow.name);
+                const isInsideFolderNames = isInsideFolder.map(workflow => workflow.name);
+                const extraSpace = openedWorkflows.length && isInsideFolder.length ? '\n' : '';
+
+                alert(`Following workflows are opened:\n
+                 ${openedWorkflowsNames.map(name => `• ${name}`).join('\n') + extraSpace +
+                 isInsideFolderNames.map(name => `• ${name}`).join('\n')}
+                \nTo move your selected items, they have to be closed first`);
+
+                return;
+            }
+
             if (this.isLocal && !isTheSameFolder) {
+                const collisionHandling = await checkForNameCollisionsAndPickCollisionHandling(
+                    { itemIds: sourceItems, destWorkflowGroupItemId: targetItem }
+                );
+
+                if (collisionHandling === 'cancel') {
+                    return;
+                }
                 this.$store.dispatch('spaces/moveItems', { itemIds: sourceItems, destWorkflowGroupItemId: targetItem });
             }
         }

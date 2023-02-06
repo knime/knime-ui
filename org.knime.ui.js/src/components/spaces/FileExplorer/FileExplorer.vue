@@ -1,5 +1,4 @@
 <script>
-import { mapState } from 'vuex';
 import { mixin as clickaway } from 'vue-clickaway2';
 
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
@@ -59,10 +58,6 @@ export default {
             isDragging: false,
             startDragItemIndex: null
         };
-    },
-
-    computed: {
-        ...mapState('application', ['openProjects'])
     },
 
     watch: {
@@ -200,11 +195,6 @@ export default {
         },
 
         onDrop(index, isGoBackItem = false) {
-            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
-            const droppedItems = selectedIndexes.map(index => this.items[index].id);
-            const openedWorkflows = this.openProjects.filter(workflow => droppedItems.includes(workflow.origin.itemId));
-            const isInsideFolder = this.openProjects.filter((project) => project.origin.ancestorItemIds
-                .some((ancestorId) => droppedItems.includes(ancestorId)));
             const droppedEl = this.getItemElementByRefIndex(index, isGoBackItem);
             droppedEl.classList.remove('dragging-over');
 
@@ -212,21 +202,9 @@ export default {
                 return;
             }
 
-            if (openedWorkflows.length || isInsideFolder.length) {
-                const openedWorkflowsNames = openedWorkflows.map(workflow => workflow.name);
-                const isInsideFolderNames = isInsideFolder.map(workflow => workflow.name);
-                const extraSpace = openedWorkflows.length && isInsideFolder.length ? '\n' : '';
-
-                alert(`Following workflows are opened:\n
-                 ${openedWorkflowsNames.map(name => `• ${name}`).join('\n') + extraSpace +
-                 isInsideFolderNames.map(name => `• ${name}`).join('\n')}
-                \nTo move your selected items, they have to be closed first`);
-
-                return;
-            }
-
+            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
             this.$emit('move-items', {
-                sourceItems: droppedItems,
+                sourceItems: selectedIndexes.map(index => this.items[index].id),
                 targetItem: isGoBackItem ? '..' : this.items[index].id
             });
         },

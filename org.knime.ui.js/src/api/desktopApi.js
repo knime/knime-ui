@@ -213,3 +213,21 @@ export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', 
         throw error;
     }
 };
+
+export const checkForNameCollisionsAndPickCollisionHandling = ({
+    spaceProviderId = 'local',
+    spaceId = 'local',
+    itemIds,
+    destWorkflowGroupItemId
+}) => {
+    try {
+        const collisionHandling = window.checkForNameCollisionsAndPickCollisionHandling(
+            spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId
+        );
+        return collisionHandling;
+    } catch (error) {
+        consola.error(`Could not check for collisions`,
+            { spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, error });
+        throw error;
+    }
+};
