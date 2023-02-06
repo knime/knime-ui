@@ -162,6 +162,7 @@ const inheritedCssProperties = [
     'overflow-x',
     'overflow-y',
     'word-wrap',
+    'white-space',
     'text-overflow',
     '-webkit-line-clamp',
     '-webkit-box-orient'
