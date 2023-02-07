@@ -53,7 +53,6 @@ describe('SpaceExplorer.vue', () => {
         }
 
         createWorkflow.mockResolvedValue({ type: 'Workflow' });
-        // checkForNameCollisionsAndPickCollisionHandling.mockReturnValue('overwrite');
 
         const store = mockVuexStore({
             spaces: spacesStore,
