@@ -224,7 +224,10 @@ final class OpenWorkflow {
             final RemoteExplorerFileStore source) {
         final LocalExplorerFileStore tmpDestDir;
         try {
-            tmpDestDir = ExplorerMountTable.createExplorerTempDir(source.getName()).getChild(source.getName());
+            // fetch the actual name from the remote side because `source.getName()` may only return the repository ID
+            // at that is not always a valid directory name
+            final var name = source.fetchInfo().getName();
+            tmpDestDir = ExplorerMountTable.createExplorerTempDir(name).getChild(name);
             tmpDestDir.mkdir(EFS.NONE, progress);
         } catch (CoreException e1) {
             throw new IllegalStateException(e1);
