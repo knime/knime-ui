@@ -5,7 +5,7 @@ import { mockVuexStore } from '@/test/test-utils';
 import * as spacesStore from '@/store/spaces';
 
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
-import { fetchWorkflowGroupContent, createWorkflow, checkForNameCollisionsAndPickCollisionHandling } from '@api';
+import { fetchWorkflowGroupContent, createWorkflow, checkForNameCollisionsAndSelectHandling } from '@api';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
 import FileExplorer from '../FileExplorer/FileExplorer.vue';
@@ -495,7 +495,7 @@ describe('SpaceExplorer.vue', () => {
 
     describe('Move items', () => {
         it('should move items', async () => {
-            checkForNameCollisionsAndPickCollisionHandling.mockReturnValue('OVERWRITE');
+            checkForNameCollisionsAndSelectHandling.mockReturnValue('OVERWRITE');
             const { wrapper, dispatchSpy } = doMount();
             await wrapper.vm.$nextTick();
             await wrapper.vm.$nextTick();
@@ -509,7 +509,7 @@ describe('SpaceExplorer.vue', () => {
         });
 
         it('should not move items if collision handling returns cancel', async () => {
-            checkForNameCollisionsAndPickCollisionHandling.mockReturnValue('CANCEL');
+            checkForNameCollisionsAndSelectHandling.mockReturnValue('CANCEL');
             const { wrapper, dispatchSpy } = doMount();
             await wrapper.vm.$nextTick();
             await wrapper.vm.$nextTick();

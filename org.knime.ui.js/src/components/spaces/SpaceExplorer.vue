@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { checkForNameCollisionsAndPickCollisionHandling } from '@api';
+import { checkForNameCollisionsAndSelectHandling } from '@api';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
@@ -230,7 +230,7 @@ export default {
 
             if (this.isLocal && !isTheSameFolder) {
                 const destId = targetItem === '..' ? 'root' : targetItem;
-                const collisionHandling = checkForNameCollisionsAndPickCollisionHandling(
+                const collisionHandling = checkForNameCollisionsAndSelectHandling(
                     { itemIds: sourceItems, destWorkflowGroupItemId: destId }
                 );
 

@@ -214,14 +214,14 @@ export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', 
     }
 };
 
-export const checkForNameCollisionsAndPickCollisionHandling = ({
+export const checkForNameCollisionsAndSelectHandling = ({
     spaceProviderId = 'local',
     spaceId = 'local',
     itemIds,
     destWorkflowGroupItemId
 }) => {
     try {
-        const collisionHandling = window.checkForNameCollisionsAndPickCollisionHandling(
+        const collisionHandling = window.checkForNameCollisionsAndSelectHandling(
             spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId
         );
         return collisionHandling;
