@@ -203,13 +203,14 @@ export const actions = {
     },
 
     async createWorkflow({ commit, getters, state, dispatch }) {
+        const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
 
-        const newWorkflowItem = await createWorkflow({ spaceId, itemId });
+        const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId });
 
         dispatch('fetchWorkflowGroupContent', { itemId });
-        openWorkflow({ workflowItemId: newWorkflowItem.id });
+        openWorkflow({ workflowItemId: newWorkflowItem.id, spaceId, spaceProviderId });
 
         return newWorkflowItem;
     },

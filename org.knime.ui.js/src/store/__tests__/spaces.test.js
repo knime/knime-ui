@@ -359,7 +359,11 @@ describe('spaces store', () => {
                 expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level2' })
                 );
-                expect(openWorkflow).toHaveBeenCalledWith({ workflowItemId: 'NewFile' });
+                expect(openWorkflow).toHaveBeenCalledWith({
+                    spaceId: 'local',
+                    spaceProviderId: 'local',
+                    workflowItemId: 'NewFile'
+                });
             });
         });
 
