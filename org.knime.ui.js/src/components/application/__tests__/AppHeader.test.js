@@ -28,7 +28,8 @@ describe('AppHeader.vue', () => {
                         { projectId: '2', name: 'Test2' },
                         { projectId: '3', name: 'Test3' }
                     ],
-                    activeProjectId: '1'
+                    activeProjectId: '1',
+                    devMode: false
                 },
                 actions: {
                     switchWorkflow: jest.fn()
@@ -151,6 +152,16 @@ describe('AppHeader.vue', () => {
             expect($router.push).toHaveBeenCalledWith({
                 name: APP_ROUTES.InfoPage
             });
+        });
+
+        it('hides the switch button when dev mode is disabled', async () => {
+            doMount();
+            expect(wrapper.find('.switch-classic').exists()).toBeFalsy();
+
+            storeConfig.application.state.devMode = true;
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.find('.switch-classic').exists()).toBeTruthy();
         });
     });
 });

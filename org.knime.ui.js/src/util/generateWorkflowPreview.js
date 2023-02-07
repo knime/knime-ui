@@ -1,5 +1,5 @@
 import { camelCase } from 'lodash';
-import robotoCondensed from '@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff';
+import robotoCondensed from '@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff';
 
 const LICENSE = `<!--
 The embedded fonts are based on open source fonts
@@ -161,6 +161,7 @@ const inheritedCssProperties = [
     'overflow-x',
     'overflow-y',
     'word-wrap',
+    'white-space',
     'text-overflow',
     '-webkit-line-clamp',
     '-webkit-box-orient'
@@ -187,13 +188,13 @@ const useCSSfromComputedStyles = (styleOverrides = {}) => (element) => {
             useCSSfromComputedStyles(styleOverrides)(child);
         }
     });
-   
+
     const compStyles = getComputedStyle(element);
 
     if (compStyles.length > 0) {
         for (let i = 0; i < compStyles.length; i++) {
             const compStyle = compStyles[i];
-            
+
             if (inheritedCssProperties.includes(compStyle)) {
                 const value = styleOverrides[camelCase(compStyle)]
                     ? styleOverrides[camelCase(compStyle)]
@@ -239,7 +240,9 @@ const fileToBase64 = async (filepath) => {
  * @returns {Promise<String>}
  */
 const getFontData = async () => {
-    const fontCacheKey = 'workflow-preview-font';
+    // TODO: NXT-1493 - This cache is never invalidated (updates to the font files) nor is it ever reset or deleted.
+    //       We should consider making the base64 encode a build step
+    const fontCacheKey = `workflow-preview-font-${robotoCondensed}`;
     const cachedFont = localStorage.getItem(fontCacheKey);
 
     if (cachedFont) {
@@ -248,7 +251,7 @@ const getFontData = async () => {
 
     const fontBase64 = await fileToBase64(robotoCondensed);
     localStorage.setItem(fontCacheKey, fontBase64);
-    
+
     return fontBase64;
 };
 
@@ -265,12 +268,12 @@ const addFontStyles = async (svgElement) => {
     const fontBase64 = await getFontData();
 
     styleTag.appendChild(
-        document.createTextNode(`@font-face { 
-            font-family: "Roboto Condensed"; 
+        document.createTextNode(`@font-face {
+            font-family: "Roboto Condensed";
             src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}");
         }`)
     );
-    
+
     styleTag.type = 'text/css';
 
     svgElement.getElementsByTagName('defs')[0].appendChild(styleTag);
@@ -312,25 +315,25 @@ export const generateWorkflowPreview = async (svgElement, isEmpty) => {
 
     // remove all hover areas elements which are only used for interactivity
     removeElements(svgClone.querySelectorAll('.hover-area'));
-    
+
     // remove all vue-portals
     removeElements(svgClone.querySelectorAll('DIV.v-portal'));
-    
+
     // remove all portal-targets
     removeElements(svgClone.querySelectorAll('.vue-portal-target'));
-    
+
     // remove dynamic port icons
     removeElements(svgClone.querySelectorAll('.add-port'));
-    
+
     // remove non-connected flow variable port icons
     removeElements(svgClone.querySelectorAll('.mickey-mouse:not(.connected)'));
-    
+
     // remove empty node labels
     removeElements(svgClone.querySelectorAll('.node-label > .placeholder'));
-    
+
     // remove all empty g elements
     removeElements(svgClone.querySelectorAll('g'), (node) => !node.hasChildNodes());
-    
+
     // remove all `display: none` elements
     removeElements(svgClone.querySelectorAll('[style*="display: none"]'));
 
@@ -339,12 +342,12 @@ export const generateWorkflowPreview = async (svgElement, isEmpty) => {
     svgClone.querySelectorAll('[data-connector-id]').forEach(useCSSfromComputedStyles({
         strokeWidth: '1px'
     }));
-    
+
     // select `foreignObject`s and inline all styles that may be only available from classes
     svgClone.querySelectorAll('foreignObject').forEach(useCSSfromComputedStyles());
 
     const output = getSvgContent(svgClone);
-    
+
     // remove hidden preview container
     teardown();
 

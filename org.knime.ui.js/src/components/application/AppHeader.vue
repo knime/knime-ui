@@ -34,7 +34,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow']),
+        ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow', 'devMode']),
 
         isInfoPageActive() {
             return this.$route.name === APP_ROUTES.InfoPage;
@@ -147,7 +147,7 @@ export default {
 
       <div class="buttons">
         <FunctionButton
-          v-if="!isInfoPageActive"
+          v-if="!isInfoPageActive && devMode"
           class="switch-classic"
           title="Open KNIME Modern UI Preview"
           @click="switchToJavaUI"
