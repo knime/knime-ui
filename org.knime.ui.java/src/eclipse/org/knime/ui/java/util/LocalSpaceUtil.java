@@ -171,7 +171,7 @@ public final class LocalSpaceUtil {
      * @return Returns {@code true} if both parameters indicate we work within the {@link LocalWorkspace}, {@code false}
      *         otherwise.
      */
-    public static boolean checkIfInLocalSpace(final String spaceProviderId, final String spaceId) {
+    public static boolean isLocalSpace(final String spaceProviderId, final String spaceId) {
         return spaceProviderId.equals(LOCAL_SPACE_PROVIDER_ID) && spaceId.equals(LocalWorkspace.LOCAL_WORKSPACE_ID);
     }
 }

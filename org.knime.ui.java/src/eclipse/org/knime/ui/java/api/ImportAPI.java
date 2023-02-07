@@ -75,7 +75,7 @@ final class ImportAPI {
     @API
     static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
-        if (!LocalSpaceUtil.checkIfInLocalSpace(spaceProviderId, spaceId)) {
+        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
             throw new IllegalArgumentException("Cannot import workflows to non-local workspaces");
         }
         return IMPORT_WORKFLOWS.importItems(itemId);
@@ -89,7 +89,7 @@ final class ImportAPI {
     @API
     static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
-        if (!LocalSpaceUtil.checkIfInLocalSpace(spaceProviderId, spaceId)) {
+        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
             throw new IllegalArgumentException("Cannot import files to non-local workspaces");
         }
         return IMPORT_FILES.importItems(itemId);
