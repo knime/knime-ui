@@ -60,6 +60,7 @@ header {
   min-height: 150px;
 
   & .grid-container {
+    position: relative;
     height: 100%;
   }
 

@@ -155,7 +155,6 @@ section.space-provider {
   & .cards {
     display: grid;
     gap: 24px;
-    word-break: break-all;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
