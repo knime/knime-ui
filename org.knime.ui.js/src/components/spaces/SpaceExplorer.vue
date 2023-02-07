@@ -295,8 +295,16 @@ export default {
 
   & .create-workflow-btn {
     position: absolute;
-    right: -76px;
-    top: 6px;
+    right: 0;
+    top: -34px;
+  }
+
+  @media only screen and (min-width: 1600px) {
+    & .create-workflow-btn {
+      position: absolute;
+      right: -76px;
+      top: 6px;
+    }
   }
 }
 
