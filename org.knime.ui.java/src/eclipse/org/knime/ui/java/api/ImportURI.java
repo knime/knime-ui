@@ -103,8 +103,9 @@ public final class ImportURI {
     public static boolean importURI(final Browser browser, final String uriString) {
         entityImportInProgress = getEntityImport(uriString);
         if (entityImportInProgress != null) {
-            var displayCursorLocation = Display.getCurrent().getCursorLocation();
-            var browserCursorLocation = Display.getCurrent().map(null, browser, displayCursorLocation);
+            var display = Display.getCurrent();
+            var displayCursorLocation = display.getCursorLocation();
+            var browserCursorLocation = display.map(null, browser, displayCursorLocation);
             return sendImportURIEvent(browserCursorLocation.x, browserCursorLocation.y);
         } else {
             return false;
@@ -166,19 +167,19 @@ public final class ImportURI {
                 nodeImport.isDynamicNode());
             return importNode(key, null, projectId, workflowId, canvasX, canvasY);
         } else if (entityImport instanceof FromFileEntityImport) {
-            return importNodeFromFileURI(((FromFileEntityImport)entityImport).m_path.toUri(), projectId, workflowId,
-                canvasX, canvasY);
+            return importNodeFromFileURI(((FromFileEntityImport)entityImport).m_path.toUri().toString(), projectId,
+                workflowId, canvasX, canvasY);
         }
         return false;
     }
 
-    private static boolean importNodeFromFileURI(final URI uri, final String projectId, final String workflowId,
+    private static boolean importNodeFromFileURI(final String uri, final String projectId, final String workflowId,
         final int canvasX, final int canvasY) {
         var nodeFactory = ConfigurableNodeFactoryMapper.getNodeFactory(uri.toString());
         if (nodeFactory == null) {
             return false;
         }
-        return importNode(null, uri.toString(), projectId, workflowId, canvasX, canvasY);
+        return importNode(null, uri, projectId, workflowId, canvasX, canvasY);
     }
 
     private static boolean importNode(final NodeFactoryKeyEnt nodeFactoryKey, final String url, final String projectId,

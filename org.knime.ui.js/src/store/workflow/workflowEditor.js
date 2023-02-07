@@ -379,7 +379,7 @@ export const actions = {
             // TODO: NXT-1168 Put a limit on the clipboard content size
             clipboardText = await navigator.clipboard.readText();
         } catch (e) {
-            consola.info('Could not read form clipboard. Maybe the user did not permit it?');
+            consola.info('Could not read from clipboard. Maybe the user did not permit it?');
             return;
         }
 

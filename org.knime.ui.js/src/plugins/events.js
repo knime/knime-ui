@@ -92,11 +92,17 @@ export default ({ store: $store, router: $router }) => {
 
         ImportURIEvent({ x, y }) {
             const el = document.elementFromPoint(x, y);
-            if (document.querySelector('#kanvas').contains(el)) {
+            const kanvas = $store.state.canvas.getScrollContainerElement();
+            if (kanvas.contains(el)) {
                 let [canvasX, canvasY] = $store.getters['canvas/screenToCanvasCoordinates']([x, y]);
                 const workflow = $store.state.workflow.activeWorkflow;
-                window.importURIAtWorkflowCanvas(null, workflow.projectId, workflow.info.containerId,
-                    canvasX - nodeSize / 2, canvasY - nodeSize / 2);
+                window.importURIAtWorkflowCanvas(
+                    null,
+                    workflow.projectId,
+                    workflow.info.containerId,
+                    canvasX - nodeSize / 2,
+                    canvasY - nodeSize / 2
+                );
             }
         }
     });
