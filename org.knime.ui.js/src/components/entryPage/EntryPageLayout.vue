@@ -94,6 +94,12 @@ section.main-content-wrapper {
     margin-top: -11px;
   }
 
+  @media only screen and (max-width: 900px) {
+    & .logo {
+      display: none;
+    }
+  }
+
   & .grid-container {
     height: 100%;
   }

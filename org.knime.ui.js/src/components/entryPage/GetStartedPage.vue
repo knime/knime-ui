@@ -71,7 +71,7 @@ export default {
           class="example-card"
           @click="onExampleClick(example)"
         >
-          <CardHeader>{{ example.name }}</CardHeader>
+          <CardHeader :title="example.name"><span class="example-title">{{ example.name }}</span></CardHeader>
 
           <CardContent padded>
             <img
@@ -109,7 +109,8 @@ section.examples {
   & .cards {
     display: grid;
     gap: 24px;
-    grid-template-columns: repeat(var(--grid-columns, 2), 1fr);
+    grid-template-columns: repeat(var(--grid-columns, 2), minmax(0, 1fr));
+
 
     & .example-card {
       min-width: auto;
@@ -122,6 +123,19 @@ section.examples {
     }
   }
 
+  @media only screen and (max-width: 900px) {
+    & .cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  & .example-title {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 100%;
+    display: inline-block;
+    white-space: nowrap;
+  }
 
   & .more-workflows {
     padding: 20px 0;
