@@ -243,3 +243,12 @@ export const getNameCollisionStrategy = ({
         throw error;
     }
 };
+
+export const uploadItemsToHub = ({ itemIds }) => {
+    try {
+        return window.uploadItems(itemIds);
+    } catch (error) {
+        consola.error(`Error uploading to Hub space`, { error });
+        throw error;
+    }
+};

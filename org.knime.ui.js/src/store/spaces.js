@@ -12,7 +12,8 @@ import {
     importWorkflows,
     deleteItems,
     moveItems,
-    renameItem
+    renameItem,
+    uploadItemsToHub
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
@@ -282,7 +283,7 @@ export const actions = {
     },
 
     uploadToHub(_, { itemIds }) {
-        console.log(itemIds);
+        uploadItemsToHub({ itemIds });
     }
 };
 
