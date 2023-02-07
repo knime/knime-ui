@@ -8,9 +8,8 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import * as spacesStore from '@/store/spaces';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
-import SpaceExplorerToolbar from '../SpaceExplorerToolbar.vue';
+import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 import SpaceBrowsingPage from '../SpaceBrowsingPage.vue';
-
 
 jest.mock('@api');
 
@@ -26,7 +25,7 @@ describe('SpaceBrowsingPage', () => {
         });
 
         const commitSpy = jest.spyOn($store, 'commit');
-        const dispatchSpy = jest.spyOn($store, 'dispatch');
+        const dispatchSpy = jest.spyOn($store, 'dispatch').mockImplementation(() => {});
 
         const $router = {
             push: jest.fn()
@@ -125,15 +124,10 @@ describe('SpaceBrowsingPage', () => {
         });
     });
 
-    it('renders buttons in toolbar for local space', () => {
-        const { wrapper } = doMount();
-
-        const buttons = wrapper.find('.toolbar-buttons');
-        expect(buttons.exists()).toBe(true);
-    });
-
-    it('does not render buttons in toolbar if the space is not local', async () => {
+    it('renders space explorer actions for local space only', async () => {
         const { wrapper, $store } = doMount();
+
+        expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(true);
 
         $store.state.spaces = {
             activeSpace: {
@@ -149,12 +143,13 @@ describe('SpaceBrowsingPage', () => {
                 ]
             }
         };
+
         await wrapper.vm.$nextTick();
 
-        expect(wrapper.findComponent(SpaceExplorerToolbar).exists()).toBe(false);
+        expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(false);
     });
 
-    it('handles import workflow when clicked on a button', () => {
+    it('should handle the import workflow action', () => {
         const { wrapper, dispatchSpy } = doMount();
 
         const workflowButton = wrapper.find('#import-workflow');
@@ -162,7 +157,7 @@ describe('SpaceBrowsingPage', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
     });
 
-    it('handles add files when clicked on a button', () => {
+    it('should handle the add files action', () => {
         const { wrapper, dispatchSpy } = doMount();
 
         const workflowButton = wrapper.find('#import-files');
@@ -170,14 +165,21 @@ describe('SpaceBrowsingPage', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'FILES' });
     });
 
-    it('handles create folder when clicked on a button', () => {
+    it('should handle the create folder action', () => {
+        const { wrapper, dispatchSpy } = doMount();
+
+        wrapper.find('.create-workflow-btn button').trigger('click');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
+    });
+
+    it('should handle the create folder action', () => {
         const { wrapper, dispatchSpy } = doMount();
 
         wrapper.find('#create-folder').trigger('click');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder');
     });
 
-    it('handles upload to hub when clicked on a button', async () => {
+    it('should handle the upload to hub action', async () => {
         const { wrapper, dispatchSpy } = doMount({
             initialStoreState: {
                 spaceProviders: {

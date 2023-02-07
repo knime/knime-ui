@@ -8,7 +8,7 @@ import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import { fetchWorkflowGroupContent, createWorkflow, getNameCollisionStrategy } from '@api';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
-import SpaceExplorerToolbar from '../SpaceExplorerToolbar.vue';
+import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 import FileExplorer from '../FileExplorer/FileExplorer.vue';
 
 jest.mock('@api');
@@ -302,45 +302,6 @@ describe('SpaceExplorer.vue', () => {
         expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
 
-    describe('Normal mode', () => {
-        it('should only show create workflow button on the local space', async () => {
-            const { wrapper, store } = doMount();
-            store.state.spaces.activeSpace = {
-                spaceId: 'local',
-                activeWorkflowGroup: {
-                    path: [],
-                    items: []
-                }
-            };
-            
-            await wrapper.vm.$nextTick();
-            expect(wrapper.find('.create-workflow-btn').exists()).toBe(true);
-            
-            store.state.spaces.activeSpace.spaceId = 'some other space';
-    
-            await wrapper.vm.$nextTick();
-            expect(wrapper.find('.create-workflow-btn').exists()).toBe(false);
-        });
-
-        it('should handle create workflow for "normal" mode', async () => {
-            const { wrapper, store, dispatchSpy } = doMount();
-            store.state.spaces.activeSpace = {
-                spaceId: 'local',
-                activeWorkflowGroup: {
-                    path: [],
-                    items: []
-                }
-            };
-            await wrapper.vm.$nextTick();
-    
-            const createWorkflowButton = wrapper.find('.create-workflow-btn');
-            expect(createWorkflowButton.exists()).toBe(true);
-    
-            createWorkflowButton.vm.$emit('click');
-            expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
-        });
-    });
-
     describe('Mini mode', () => {
         it('should only show toolbar for space that is local', async () => {
             const { wrapper, store } = doMount({ props: { mode: 'mini' } });
@@ -353,12 +314,12 @@ describe('SpaceExplorer.vue', () => {
             };
             
             await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(SpaceExplorerToolbar).exists()).toBe(true);
+            expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(true);
 
             store.state.spaces.activeSpace.spaceId = 'somerandomhub';
 
             await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(SpaceExplorerToolbar).exists()).toBe(false);
+            expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(false);
         });
 
         it('should handle create workflow', async () => {
@@ -387,7 +348,7 @@ describe('SpaceExplorer.vue', () => {
             };
             await wrapper.vm.$nextTick();
     
-            wrapper.findComponent(SpaceExplorerToolbar).vm.$emit('action:import-workflow');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:import-workflow');
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
         });
     
@@ -402,7 +363,7 @@ describe('SpaceExplorer.vue', () => {
             };
             await wrapper.vm.$nextTick();
     
-            wrapper.findComponent(SpaceExplorerToolbar).vm.$emit('action:import-files');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:import-files');
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'FILES' });
         });
     
@@ -417,7 +378,7 @@ describe('SpaceExplorer.vue', () => {
             };
             await wrapper.vm.$nextTick();
     
-            wrapper.findComponent(SpaceExplorerToolbar).vm.$emit('action:create-folder');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:create-folder');
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder');
         });
         
@@ -434,7 +395,7 @@ describe('SpaceExplorer.vue', () => {
             wrapper.findComponent(FileExplorer).vm.$emit('change-selection', ['1', '2']);
             await wrapper.vm.$nextTick();
     
-            wrapper.findComponent(SpaceExplorerToolbar).vm.$emit('action:upload-to-hub');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:upload-to-hub');
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/uploadToHub', { itemIds: ['1', '2'] });
         });
         
@@ -449,8 +410,8 @@ describe('SpaceExplorer.vue', () => {
             };
             await wrapper.vm.$nextTick();
     
-            expect(wrapper.findComponent(SpaceExplorerToolbar).props('allowedActions')).toEqual({
-                canUploadToHub: false
+            expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
+                uploadToHub: true
             });
 
             // simulate active selection
@@ -458,8 +419,8 @@ describe('SpaceExplorer.vue', () => {
 
             await wrapper.vm.$nextTick();
 
-            expect(wrapper.findComponent(SpaceExplorerToolbar).props('allowedActions')).toEqual({
-                canUploadToHub: false
+            expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
+                uploadToHub: true
             });
 
             // simulate 1 hub connected
@@ -469,13 +430,13 @@ describe('SpaceExplorer.vue', () => {
 
             await wrapper.vm.$nextTick();
 
-            expect(wrapper.findComponent(SpaceExplorerToolbar).props('allowedActions')).toEqual({
-                canUploadToHub: true
+            expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
+                uploadToHub: false
             });
         });
     });
 
-    it('should rename Items', async () => {
+    it('should rename items', async () => {
         const { wrapper, store, dispatchSpy } = doMount();
         store.state.spaces.activeSpace = {
             spaceId: 'local',

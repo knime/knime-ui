@@ -11,13 +11,13 @@ import { APP_ROUTES } from '@/router';
 import PageHeader from '@/components/common/PageHeader.vue';
 
 import SpaceExplorer from './SpaceExplorer.vue';
-import SpaceExplorerToolbar from './SpaceExplorerToolbar.vue';
+import SpaceExplorerActions from './SpaceExplorerActions.vue';
 
 export default {
     components: {
         ArrowLeftIcon,
         SpaceExplorer,
-        SpaceExplorerToolbar,
+        SpaceExplorerActions,
         ComputerDesktopIcon,
         PageHeader,
         Button
@@ -51,8 +51,8 @@ export default {
             };
         },
 
-        toolbarAllowedActions() {
-            return { canUploadToHub: this.hasActiveHubSession && this.selectedItems.length > 0 };
+        explorerDisabledActions() {
+            return { uploadToHub: !this.hasActiveHubSession || this.selectedItems.length === 0 };
         }
     },
     async created() {
@@ -95,9 +95,10 @@ export default {
       <div class="grid-container">
         <div class="grid-item-12">
           <div class="toolbar">
-            <SpaceExplorerToolbar
+            <SpaceExplorerActions
               v-if="activeSpaceInfo.local"
-              :allowed-actions="toolbarAllowedActions"
+              :disabled-actions="explorerDisabledActions"
+              @action:create-workflow="$store.dispatch('spaces/createWorkflow')"
               @action:create-folder="$store.dispatch('spaces/createFolder')"
               @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"
               @action:import-files="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' })"

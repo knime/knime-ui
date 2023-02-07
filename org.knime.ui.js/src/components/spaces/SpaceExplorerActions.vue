@@ -1,4 +1,6 @@
 <script>
+import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
+
 import Button from 'webapps-common/ui/components/Button.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
@@ -13,6 +15,7 @@ import ToolbarButton from '@/components/common/ToolbarButton.vue';
 
 export default {
     components: {
+        PlusButton,
         Button,
         SubMenu,
         PlusIcon,
@@ -31,58 +34,51 @@ export default {
             validator: (value) => ['normal', 'mini'].includes(value)
         },
         /**
-         * @typedef AllowedActions
-         * @property {Boolean} canUploadToHub
-         * @property {Boolean} canImportWorkflow
-         * @property {Boolean} canImportFiles
-         * @property {Boolean} canCreateFolder
+         * @typedef DisabledActions
+         * @property {Boolean} [createWorkflow]
+         * @property {Boolean} [createFolder]
+         * @property {Boolean} [importWorkflow]
+         * @property {Boolean} [importFiles]
+         * @property {Boolean} [uploadToHub]
         */
         /**
          * Object containing whether each action is allowed.
          *
-         * @type {import('vue').PropOptions<AllowedActions>}
+         * @type {import('vue').PropOptions<DisabledActions>}
          */
-        allowedActions: {
+        disabledActions: {
             type: Object,
             default: () => ({})
         }
     },
 
     computed: {
-        toolbarActions() {
+        actions() {
             return [
                 {
                     id: 'upload-to-hub',
                     text: 'Upload to Hub',
                     icon: CloudUploadIcon,
-                    disabled:
-                      this.allowedActions.hasOwnProperty('canUploadToHub') &&
-                      !this.allowedActions.canUploadToHub
+                    disabled: this.disabledActions.uploadToHub
                     
                 },
                 {
                     id: 'create-folder',
                     text: 'Create folder',
                     icon: FolderPlusIcon,
-                    disabled:
-                      this.allowedActions.hasOwnProperty('canCreateFolder') &&
-                      !this.allowedActions.canCreateFolder
+                    disabled: this.disabledActions.createFolder
                 },
                 {
                     id: 'import-workflow',
                     text: 'Import workflow',
                     icon: ImportWorkflowIcon,
-                    disabled:
-                      this.allowedActions.hasOwnProperty('canImportWorkflow') &&
-                      !this.allowedActions.canImportWorkflow
+                    disabled: this.disabledActions.importWorkflow
                 },
                 {
                     id: 'import-files',
                     text: 'Add files',
                     icon: AddFileIcon,
-                    disabled:
-                      this.allowedActions.hasOwnProperty('canImportFiles') &&
-                      !this.allowedActions.canImportFiles
+                    disabled: this.disabledActions.importFiles
                 }
             ];
         },
@@ -100,7 +96,7 @@ export default {
     <template v-if="mode === 'normal'">
       <div class="toolbar-actions-normal">
         <Button
-          v-for="action in toolbarActions"
+          v-for="action in actions"
           :id="action.id"
           :key="action.id"
           with-border
@@ -111,16 +107,24 @@ export default {
           <Component :is="action.icon" />
           {{ action.text }}
         </Button>
+
+        <PlusButton
+          :title="createWorkflowButtonTitle"
+          primary
+          class="create-workflow-btn"
+          :disabled="disabledActions.createWorkflow"
+          @click="$emit('action:create-workflow')"
+        />
       </div>
     </template>
 
     <template v-if="mode === 'mini'">
       <div class="toolbar-actions-mini">
         <SubMenu
-          :items="toolbarActions"
+          :items="actions"
           class="more-actions"
           button-title="More actions"
-          @item-click="(event, item) => $emit(`action:${item.id}`)"
+          @item-click="(_, { id }) => $emit(`action:${id}`)"
         >
           <MenuOptionsIcon class="open-icon" />
         </SubMenu>
@@ -130,6 +134,7 @@ export default {
           primary
           class="create-workflow-btn"
           :title="createWorkflowButtonTitle"
+          :disabled="disabledActions.createWorkflow"
           @click.native="$emit('action:create-workflow')"
         >
           <PlusIcon />
@@ -144,6 +149,8 @@ export default {
 
 .toolbar-buttons {
   & .toolbar-actions-normal {
+    position: relative;
+
     & .button {
       margin-left: 5px;
       border-color: var(--knime-silver-sand);
@@ -167,6 +174,25 @@ export default {
         & svg {
           stroke: var(--knime-white);
         }
+      }
+    }
+
+    & .create-workflow-btn {
+      position: absolute;
+      z-index: 2;
+      top: 110px;
+      right: 0;
+    }
+
+    @media screen and (min-width: 900px) {
+      & .create-workflow-btn {
+        right: -20px;
+      }
+    }
+
+    @media screen and (min-width: 1180px) {
+      & .create-workflow-btn {
+        right: -70px;
       }
     }
   }

@@ -2,12 +2,11 @@
 import { mapGetters, mapState } from 'vuex';
 import { getNameCollisionStrategy } from '@api';
 
-import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import ITEM_TYPES from '@/util/spaceItemTypes';
 
-import SpaceExplorerToolbar from './SpaceExplorerToolbar.vue';
+import SpaceExplorerActions from './SpaceExplorerActions.vue';
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer/FileExplorer.vue';
 
@@ -24,11 +23,10 @@ const ITEM_TYPES_TEXTS = {
 
 export default {
     components: {
-        SpaceExplorerToolbar,
+        SpaceExplorerActions,
         FileExplorer,
         LoadingIcon,
-        Breadcrumb,
-        PlusButton
+        Breadcrumb
     },
 
     props: {
@@ -111,13 +109,8 @@ export default {
             return ['home'].concat(path.map(({ name }) => name)).join('/');
         },
 
-        createWorkflowButtonTitle() {
-            const { text, hotkeyText } = this.$shortcuts.get('createWorkflow');
-            return `${text} (${hotkeyText})`;
-        },
-
-        toolbarAllowedActions() {
-            return { canUploadToHub: this.hasActiveHubSession && this.selectedItems.length > 0 };
+        explorerDisabledActions() {
+            return { uploadToHub: !this.hasActiveHubSession || this.selectedItems.length === 0 };
         }
     },
 
@@ -266,10 +259,10 @@ export default {
         @click-item="onBreadcrumbClick"
       />
 
-      <SpaceExplorerToolbar
+      <SpaceExplorerActions
         v-if="isLocal && mode === 'mini'"
         mode="mini"
-        :allowed-actions="toolbarAllowedActions"
+        :disabled-actions="explorerDisabledActions"
         @action:create-workflow="$store.dispatch('spaces/createWorkflow')"
         @action:create-folder="$store.dispatch('spaces/createFolder')"
         @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"
@@ -277,14 +270,6 @@ export default {
         @action:upload-to-hub="$store.dispatch('spaces/uploadToHub', { itemIds: selectedItems })"
       />
     </div>
-
-    <PlusButton
-      v-if="mode === 'normal' && isLocal"
-      :title="createWorkflowButtonTitle"
-      primary
-      class="create-workflow-btn"
-      @click="$store.dispatch('spaces/createWorkflow')"
-    />
 
     <FileExplorer
       v-if="activeWorkflowGroup && !isLoading"
