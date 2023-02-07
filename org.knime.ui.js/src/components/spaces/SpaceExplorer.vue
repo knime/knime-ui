@@ -209,7 +209,7 @@ export default {
             }
         },
 
-        async onMoveItems({ sourceItems, targetItem }) {
+        onMoveItems({ sourceItems, targetItem }) {
             const openedWorkflows = this.openProjects.filter(workflow => sourceItems.includes(workflow.origin.itemId));
             const isInsideFolder = this.openProjects.filter((project) => project.origin.ancestorItemIds
                 .some((ancestorId) => sourceItems.includes(ancestorId)));
@@ -229,14 +229,16 @@ export default {
             }
 
             if (this.isLocal && !isTheSameFolder) {
-                const collisionHandling = await checkForNameCollisionsAndPickCollisionHandling(
-                    { itemIds: sourceItems, destWorkflowGroupItemId: targetItem }
+                const destId = targetItem === '..' ? 'root' : targetItem;
+                const collisionHandling = checkForNameCollisionsAndPickCollisionHandling(
+                    { itemIds: sourceItems, destWorkflowGroupItemId: destId }
                 );
 
-                if (collisionHandling === 'cancel') {
+                if (collisionHandling === 'CANCEL') {
                     return;
                 }
-                this.$store.dispatch('spaces/moveItems', { itemIds: sourceItems, destWorkflowGroupItemId: targetItem });
+                this.$store.dispatch('spaces/moveItems',
+                    { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionHandling });
             }
         }
     }

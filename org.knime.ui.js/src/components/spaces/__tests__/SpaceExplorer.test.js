@@ -5,7 +5,7 @@ import { mockVuexStore } from '@/test/test-utils';
 import * as spacesStore from '@/store/spaces';
 
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
-import { fetchWorkflowGroupContent, createWorkflow } from '@api';
+import { fetchWorkflowGroupContent, createWorkflow, checkForNameCollisionsAndPickCollisionHandling } from '@api';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
 import FileExplorer from '../FileExplorer/FileExplorer.vue';
@@ -53,6 +53,7 @@ describe('SpaceExplorer.vue', () => {
         }
 
         createWorkflow.mockResolvedValue({ type: 'Workflow' });
+        // checkForNameCollisionsAndPickCollisionHandling.mockReturnValue('overwrite');
 
         const store = mockVuexStore({
             spaces: spacesStore,
@@ -490,5 +491,58 @@ describe('SpaceExplorer.vue', () => {
         await advanceTime(200);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
         expect(wrapper.find('.loading').exists()).toBe(false);
+    });
+
+    describe('Move items', () => {
+        it('should move items', async () => {
+            checkForNameCollisionsAndPickCollisionHandling.mockReturnValue('OVERWRITE');
+            const { wrapper, dispatchSpy } = doMount();
+            await wrapper.vm.$nextTick();
+            await wrapper.vm.$nextTick();
+    
+            const sourceItems = ['id1', 'id2'];
+            const targetItem = 'group1';
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/moveItems',
+                { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionHandling: 'OVERWRITE' });
+        });
+
+        it('should not move items if collision handling returns cancel', async () => {
+            checkForNameCollisionsAndPickCollisionHandling.mockReturnValue('CANCEL');
+            const { wrapper, dispatchSpy } = doMount();
+            await wrapper.vm.$nextTick();
+            await wrapper.vm.$nextTick();
+    
+            const sourceItems = ['id1', 'id2'];
+            const targetItem = 'group1';
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+
+            expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/moveItems',
+                { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionHandling: 'CANCEL' });
+        });
+
+        it('should show alert if at least one of the moved workflows is opened', async () => {
+            const openProjects = [{
+                origin: {
+                    spaceId: 'local',
+                    itemId: 'id2',
+                    ancestorItemIds: ['1', '7']
+                },
+                name: 'test2'
+            }];
+            const { wrapper } = doMount({ openProjects });
+            await wrapper.vm.$nextTick();
+            await wrapper.vm.$nextTick();
+    
+            window.alert = jest.fn();
+            const sourceItems = ['id1', 'id2'];
+            const targetItem = 'group1';
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+
+            expect(window.alert).toHaveBeenCalledWith(
+                expect.stringContaining('Following workflows are opened:' && '• test2')
+            );
+        });
     });
 });
