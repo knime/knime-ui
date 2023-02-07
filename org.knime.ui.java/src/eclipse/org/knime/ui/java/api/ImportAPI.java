@@ -72,12 +72,20 @@ final class ImportAPI {
     }
 
     /**
-     *
      * Import data files into a workspace and save them to the specified location.
      */
     @API
     static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId) {
         return IMPORT_FILES.importItems(spaceProviderId, spaceId, itemId);
+    }
+
+    /**
+     * Imports a URI at a certain position in the workflow canvas (i.e. usually imported as a new node).
+     */
+    @API
+    static boolean importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
+        final double canvasX, final double canvasY) {
+        return ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
     }
 
 }

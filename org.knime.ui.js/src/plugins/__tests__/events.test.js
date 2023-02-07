@@ -46,7 +46,8 @@ describe('Event Plugin', () => {
             'WorkflowChangedEvent',
             'AppStateChangedEvent',
             'UpdateAvailableEvent',
-            'SaveAndCloseWorkflowsEvent'
+            'SaveAndCloseWorkflowsEvent',
+            'ImportURIEvent'
         ]);
     });
 

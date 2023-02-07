@@ -63,8 +63,10 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ExampleProjects;
+import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
+import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.impl.webui.spaces.LocalWorkspace;
@@ -79,6 +81,7 @@ import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
 import com.equo.comm.api.CommServiceProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -101,12 +104,15 @@ final class Init {
     static LifeCycleStateInternal run(final boolean checkForUpdates) {
 
         // Create and set default service dependencies
+        var workflowProjectManager = WorkflowProjectManager.getInstance();
+        var workflowMiddleware = new WorkflowMiddleware(WorkflowProjectManager.getInstance());
         var eventConsumer = createEventConsumer();
         var appStateUpdater = new AppStateUpdater();
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var spaceProviders = createSpaceProviders();
-        DefaultServicesUtil.setDefaultServiceDependencies(appStateUpdater, eventConsumer, spaceProviders,
-            updateStateProvider, createPreferencesProvider(), createExampleProjects());
+        DefaultServicesUtil.setDefaultServiceDependencies(workflowProjectManager, workflowMiddleware, appStateUpdater,
+            eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects(),
+            createNodeFactoryProvider());
 
         if (updateStateProvider != null) {
             // Check for updates and notify UI
@@ -118,7 +124,8 @@ final class Init {
             updateStateProvider.checkForUpdates();
         }
 
-        DesktopAPI.injectDependencies(appStateUpdater, spaceProviders, updateStateProvider, eventConsumer);
+        DesktopAPI.injectDependencies(workflowProjectManager, appStateUpdater, spaceProviders, updateStateProvider,
+            eventConsumer);
 
         // Update the app state when the node repository filter changes
         KnimeUIPreferences.setNodeRepoFilterChangeListener((oldValue, newValue) -> {
@@ -190,6 +197,10 @@ final class Init {
                 );
             }
         };
+    }
+
+    private static NodeFactoryProvider createNodeFactoryProvider() {
+        return ConfigurableNodeFactoryMapper::getNodeFactory;
     }
 
     static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
