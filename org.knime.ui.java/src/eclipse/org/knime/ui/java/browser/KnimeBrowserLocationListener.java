@@ -53,6 +53,7 @@ import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareRe
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.knime.core.webui.WebUIUtil;
+import org.knime.ui.java.api.ImportURI;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
@@ -75,6 +76,10 @@ public class KnimeBrowserLocationListener implements LocationListener {
 
     @Override
     public void changing(final LocationEvent event) {
+        if (ImportURI.importURI(m_browser, event.location)) {
+            event.doit = false;
+            return;
+        }
         if (isCEFMiddlewareResource(event.location)) {
             // Allow location change to middleware resources, these are handled by resource handlers.
         } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
