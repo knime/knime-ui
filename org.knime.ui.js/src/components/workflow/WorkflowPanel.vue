@@ -179,12 +179,13 @@ export default {
   & span {
     font-size: 16px;
     align-self: center;
-    text-align: center;
-    width: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: center;
   }
 
   & .button {
-    width: 130px;
+    min-width: 120px;
     pointer-events: all;
   }
 
@@ -207,10 +208,5 @@ export default {
       margin-right: 10px;
     }
   }
-
-  /* & .banner {
-    display: flex;
-    justify-content: space-between;
-  } */
 }
 </style>
