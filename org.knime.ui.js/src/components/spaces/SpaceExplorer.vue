@@ -260,7 +260,7 @@ export default {
       />
 
       <SpaceExplorerActions
-        v-if="isLocal && mode === 'mini'"
+        v-if="mode === 'mini'"
         mode="mini"
         :disabled-actions="explorerDisabledActions"
         @action:create-workflow="$store.dispatch('spaces/createWorkflow')"

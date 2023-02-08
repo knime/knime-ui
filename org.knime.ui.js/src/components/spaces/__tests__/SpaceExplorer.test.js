@@ -303,7 +303,7 @@ describe('SpaceExplorer.vue', () => {
     });
 
     describe('Mini mode', () => {
-        it('should only show toolbar for space that is local', async () => {
+        /*it('should only show toolbar for space that is local', async () => {
             const { wrapper, store } = doMount({ props: { mode: 'mini' } });
             store.state.spaces.activeSpace = {
                 spaceId: 'local',
@@ -320,7 +320,7 @@ describe('SpaceExplorer.vue', () => {
 
             await wrapper.vm.$nextTick();
             expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(false);
-        });
+        });*/
 
         it('should handle create workflow', async () => {
             const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
