@@ -213,3 +213,33 @@ export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', 
         throw error;
     }
 };
+
+/**
+ * Checks for name collisions and returns a String of an option
+ * that the user chose to handle existing conflict
+ *
+ * @param {Object} arg
+ * @param {String} [arg.spaceProviderId]
+ * @param {String} [arg.spaceId]
+ * @param {Array<String>} arg.itemIds
+ * @param {String} arg.destWorkflowGroupItemId
+ *
+ * @returns {'OVERWRITE' | 'NOOP' | 'AUTORENAME' | 'CANCEL'}
+ */
+export const getNameCollisionStrategy = ({
+    spaceProviderId = 'local',
+    spaceId = 'local',
+    itemIds,
+    destWorkflowGroupItemId
+}) => {
+    try {
+        const collisionStrategy = window.getNameCollisionStrategy(
+            spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId
+        );
+        return collisionStrategy;
+    } catch (error) {
+        consola.error(`Could not check for collisions`,
+            { spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, error });
+        throw error;
+    }
+};

@@ -50,11 +50,9 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.Arrays;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 
@@ -125,17 +123,7 @@ public final class LifeCycle {
      * Called on start-up.
      */
     public void startup() {
-        StateTransitionRunnable runnable = () -> {
-            // Determine with what perspective to start (classic or modern UI).
-            // Controlled via the 'perspective' system property.
-            var prefs = InstanceScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
-            if (prefs == null || prefs.getBoolean(SharedConstants.PREFERENCE_KEY, true)) {
-                System.setProperty(SharedConstants.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
-            } else {
-                System.setProperty(SharedConstants.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
-            }
-        };
-        doStateTransition(StateTransition.STARTUP, runnable, new StateTransition[]{null}); // NOSONAR
+        doStateTransition(StateTransition.STARTUP, () -> Startup.run(), new StateTransition[]{null}); // NOSONAR
     }
 
     /**

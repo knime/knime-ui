@@ -183,7 +183,7 @@ describe('FileExplorer.vue', () => {
             await dragAndDropItem(firstItem, thirdItem);
             await dragAndDropItem(firstItem, fourthItem);
             await dragAndDropItem(firstItem, fifthItem);
-            expect(wrapper.emitted('move')).toBeUndefined();
+            expect(wrapper.emitted('move-items')).toBeUndefined();
         });
         
         it('should emit a "move" event when dropping on a "WorkflowGroup"', async () => {
@@ -196,7 +196,7 @@ describe('FileExplorer.vue', () => {
 
             await dragAndDropItem(firstItem, secondItem);
 
-            expect(wrapper.emitted('move')[0][0]).toEqual({
+            expect(wrapper.emitted('move-items')[0][0]).toEqual({
                 sourceItems: ['0'],
                 targetItem: '1'
             });
@@ -212,7 +212,7 @@ describe('FileExplorer.vue', () => {
 
             await dragAndDropItem(secondItem, firstItem);
 
-            expect(wrapper.emitted('move')[0][0]).toEqual({
+            expect(wrapper.emitted('move-items')[0][0]).toEqual({
                 sourceItems: ['0'],
                 targetItem: '..'
             });
