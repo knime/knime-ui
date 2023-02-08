@@ -53,6 +53,7 @@ import java.util.function.BiConsumer;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.knime.core.node.workflow.NodeTimer;
 import org.knime.ui.java.UIPlugin;
 
 /**
@@ -71,8 +72,12 @@ public final class KnimeUIPreferences {
 
     static {
         PREF_STORE.addPropertyChangeListener(e -> {
-            if (NODE_REPO_FILTER_PREF_KEY.equals(e.getProperty()) && NODE_REPO_FILTER_CHANGE_LISTENER != null) {
-                NODE_REPO_FILTER_CHANGE_LISTENER.accept((String)e.getOldValue(), (String)e.getNewValue());
+            if (NODE_REPO_FILTER_PREF_KEY.equals(e.getProperty())) {
+                final String newValue = (String)e.getNewValue();
+                NodeTimer.GLOBAL_TIMER.setLastUsedEdition(newValue);
+                if (NODE_REPO_FILTER_CHANGE_LISTENER != null) {
+                    NODE_REPO_FILTER_CHANGE_LISTENER.accept((String)e.getOldValue(), newValue);
+                }
             }
         });
     }
