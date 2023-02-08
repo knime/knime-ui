@@ -77,6 +77,11 @@ public final class PerspectiveUtil {
     }
 
     /**
+     * System property that controls the perspective eclipse/AP is started with.
+     */
+    public static final String PERSPECTIVE_SYSTEM_PROPERTY = "perspective";
+
+    /**
      * The Web UI perspective.
      */
     public static final String WEB_UI_PERSPECTIVE_ID = "org.knime.ui.java.perspective";
@@ -109,9 +114,9 @@ public final class PerspectiveUtil {
      */
     private static final String LOCAL_CONTENT_PROVIDER_ID = "LOCAL";
 
-    private static boolean isClassicPerspectiveLoaded = false;
+    private static boolean isClassicPerspectiveLoaded = wasStartedWithClassicPerspective();
 
-    private static boolean isClassicPerspectiveActive = false;
+    private static boolean isClassicPerspectiveActive = wasStartedWithClassicPerspective();
 
     /**
      * @return {@code true} if the classic perspective has been loaded (i.e. the user switched from there to the Modern
@@ -237,6 +242,10 @@ public final class PerspectiveUtil {
         Optional.ofNullable(ExplorerMountTable.getMountedContent().get(LOCAL_CONTENT_PROVIDER_ID))//
             .map(LocalWorkspaceContentProvider.class::cast)//
             .ifPresent(LocalWorkspaceContentProvider::refresh);
+    }
+
+    private static boolean wasStartedWithClassicPerspective() {
+        return CLASSIC_PERSPECTIVE_ID.equals(System.getProperty(PERSPECTIVE_SYSTEM_PROPERTY));
     }
 
 }
