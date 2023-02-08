@@ -516,7 +516,7 @@ describe('API', () => {
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'SpaceService.renameItem',
-                params: [spaceId, spaceProviderId, itemId, newName],
+                params: [spaceProviderId, spaceId, itemId, newName],
                 id: 0
             });
 

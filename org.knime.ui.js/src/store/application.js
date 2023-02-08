@@ -4,7 +4,6 @@ import { encodeString } from '@/util/encodeString';
 import { APP_ROUTES } from '@/router';
 
 const getCanvasStateKey = (input) => encodeString(input);
-const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
 
 /*
  * This store provides global application logic
@@ -83,7 +82,7 @@ export const mutations = {
     setSavedCanvasStates(state, newStates) {
         const { savedCanvasStates } = state;
         const { workflow, project } = newStates;
-        const rootWorkflowId = getRootWorkflowId(workflow);
+        const rootWorkflowId = 'root';
         const isRootWorkflow = rootWorkflowId === workflow;
         const emptyParentState = { children: {} };
 
@@ -185,37 +184,52 @@ export const actions = {
 
     // ----------------------------------------------------------------------------------------- //
 
-    async replaceApplicationState({ commit, dispatch, state }, applicationState) {
+    async replaceApplicationState({ commit, dispatch, state, rootState }, applicationState) {
         // Only set application state properties present in the received object
         if (applicationState.availablePortTypes) {
             commit('setAvailablePortTypes', applicationState.availablePortTypes);
         }
+
         if (applicationState.suggestedPortTypeIds) {
             commit('setSuggestedPortTypes', applicationState.suggestedPortTypeIds);
         }
+
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
         if (applicationState.hasNodeRecommendationsEnabled) {
             commit('setHasNodeRecommendationsEnabled', applicationState.hasNodeRecommendationsEnabled);
         }
+        
         if (applicationState.featureFlags) {
             commit('setFeatureFlags', applicationState.featureFlags);
         }
+        
         if (applicationState.openProjects) {
             commit('setOpenProjects', applicationState.openProjects);
             await dispatch('setActiveProject', applicationState.openProjects);
         }
+        
         if (applicationState.exampleProjects) {
             commit('setExampleProjects', applicationState.exampleProjects);
         }
-        if (applicationState.nodeRepoFilterEnabled) {
+        
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+        if (applicationState.hasOwnProperty('nodeRepoFilterEnabled')) {
             commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
-            await dispatch('nodeRepository/getAllNodes', { append: false }, { root: true });
+
             await dispatch(
                 'nodeRepository/setIncludeAllAndSearchNodes',
                 !applicationState.nodeRepoFilterEnabled,
                 { root: true }
             );
+
+            // refetch categories to add/remove nodes based on the updated filter state
+            if (rootState.nodeRepository.nodesPerCategory.length > 0) {
+                dispatch('nodeRepository/getAllNodes', { append: false }, { root: true });
+            }
         }
-        if (applicationState.devMode) {
+        
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+        if (applicationState.hasOwnProperty('devMode')) {
             commit('setDevMode', applicationState.devMode);
         }
     },
@@ -228,16 +242,8 @@ export const actions = {
 
         const activeProject = openProjects.find(item => item.activeWorkflow);
 
+        // No active project is set -> stay on entry page (aka: null project)
         if (!activeProject) {
-            consola.info('No active workflow provided');
-
-            // chose root workflow of first tab
-            const [firstProject] = openProjects;
-            await dispatch('loadWorkflow', {
-                projectId: firstProject.projectId,
-                // ATTENTION: we can only open tabs, that have root workflows (no standalone metanodes or components)
-                workflowId: 'root'
-            });
             return;
         }
 
@@ -380,9 +386,7 @@ export const actions = {
     },
 
     removeCanvasState({ rootState, state }, projectId) {
-        const { info: { containerId: workflow } } = rootState.workflow.activeWorkflow;
-        const rootWorkflowId = getRootWorkflowId(workflow);
-        const stateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
+        const stateKey = getCanvasStateKey(`${projectId}--root`);
 
         delete state.savedCanvasStates[stateKey];
     },
@@ -510,7 +514,7 @@ export const getters = {
 
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
         const { info: { containerId: workflowId }, projectId } = workflow.activeWorkflow;
-        const rootWorkflowId = getRootWorkflowId(workflowId);
+        const rootWorkflowId = 'root';
         const isRootWorkflow = rootWorkflowId === workflowId;
         const parentStateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
 

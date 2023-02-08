@@ -50,14 +50,24 @@ package org.knime.ui.java.api;
 
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import org.eclipse.swt.widgets.Display;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
+import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
+import org.knime.workbench.explorer.view.AbstractContentProvider;
 
 /**
  * Functions around spaces.
@@ -149,4 +159,56 @@ final class SpaceAPI {
         }
     }
 
+    /**
+     * Uploads items from the local workspace to Hub.
+     *
+     * @param arr array of item IDs, the type is too general because of API restrictions
+     * @return {@code true} if all files could be uploaded, {@code false} otherwise
+     */
+    @API
+    static boolean uploadItems(final Object arr) {
+        if (Array.getLength(arr) == 0) {
+            return true;
+        }
+
+        final var mountIds = ExplorerMountTable.getMountedContent().values().stream() //
+                .filter(c -> c.isWritable() && isHubMountpoint(c)) //
+                .map(AbstractContentProvider::getMountID) //
+                .collect(Collectors.toList());
+        if (mountIds.isEmpty()) {
+            DesktopAPUtil.showWarning("No Hub spaces available", "Please log into the Hub you want to upload to.");
+            return false;
+        }
+
+        final var localSpace = LocalSpaceUtil.getLocalWorkspace();
+        final var upload = new ArrayList<AbstractExplorerFileStore>();
+        for (final var idObj : (Object[]) arr) {
+            final var path = Optional.ofNullable(localSpace.toLocalAbsolutePath(null, (String) idObj)) //
+                    .orElseThrow(() -> new IllegalArgumentException("No file with ID '" + idObj
+                        + "' found in the local space."));
+            upload.add(ExplorerFileSystem.INSTANCE.fromLocalFile(path.toFile()));
+        }
+
+        final var destInfoOptional =
+                HubDestinationPicker.promptForTargetLocation(mountIds.toArray(String[]::new));
+        if (!destInfoOptional.isPresent()) {
+            return false;
+        }
+
+        final var destInfo = destInfoOptional.get();
+        final var destinationStore = destInfo.getDestination();
+        final var shell = Display.getCurrent().getActiveShell();
+        return new ClassicAPCopyMoveLogic(mountIds, shell, upload, destinationStore, false).run();
+    }
+
+    /**
+     * Determines whether or not the given content provider belongs to a Hub mountpoint by checking that it uses REST
+     * communication and that its root is not {@code /} (which would only be the case for KNIME Server).
+     *
+     * @param provider content provider
+     * @return {@code true} if the provider belongs to a Hub, {@code false} otherwise
+     */
+    private static boolean isHubMountpoint(final AbstractContentProvider provider) {
+        return provider.isUseRest() && provider.getRootStore().getFullName().length() > 1;
+    }
 }

@@ -113,7 +113,7 @@ describe('FileExplorer.vue', () => {
     });
 
     describe('Selection', () => {
-        it('should select items', async () => {
+        it('should select items and emit selected ones', async () => {
             const { wrapper } = doMount();
             await wrapper.findAll('.file-explorer-item').at(1).trigger('click');
             await wrapper.findAll('.file-explorer-item').at(3).trigger('click', { shiftKey: true });
@@ -124,7 +124,9 @@ describe('FileExplorer.vue', () => {
             expect(wrapper.findAll('.file-explorer-item').at(3).classes()).toContain('selected');
             expect(wrapper.findAll('.file-explorer-item').at(5).classes()).toContain('selected');
     
-            expect(wrapper.emitted('selection-change').length).toBe(3);
+            expect(wrapper.emitted('change-selection')[0][0]).toEqual(['1']);
+            expect(wrapper.emitted('change-selection')[1][0]).toEqual(['1', '2', '3']);
+            expect(wrapper.emitted('change-selection')[2][0]).toEqual(['1', '2', '3', '5']);
         });
     });
 

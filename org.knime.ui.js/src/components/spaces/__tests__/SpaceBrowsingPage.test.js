@@ -5,8 +5,13 @@ import { mockVuexStore } from '@/test/test-utils';
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
 import { APP_ROUTES } from '@/router';
 import PageHeader from '@/components/common/PageHeader.vue';
+import * as spacesStore from '@/store/spaces';
+
 import SpaceExplorer from '../SpaceExplorer.vue';
+import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 import SpaceBrowsingPage from '../SpaceBrowsingPage.vue';
+
+jest.mock('@api');
 
 describe('SpaceBrowsingPage', () => {
     beforeAll(() => {
@@ -14,47 +19,30 @@ describe('SpaceBrowsingPage', () => {
         localVue.use(Vuex);
     });
 
-    const $router = {
-        push: jest.fn()
-    };
-
-    const doMount = ({
-        activeSpaceInfoMock = jest.fn().mockReturnValue({
-            local: true,
-            private: false,
-            name: 'Local space'
-        }),
-        clearSpaceBrowserStateMock = jest.fn(),
-        spaceBrowser = {},
-        saveSpaceBrowserStateMock = jest.fn(),
-        loadSpaceBrowserStateMock = jest.fn(),
-        importToWorkflowGroupMock = jest.fn(),
-        createFolderMock = jest.fn()
-    } = {}) => {
+    const doMount = ({ initialStoreState = null } = {}) => {
         const $store = mockVuexStore({
-            spaces: {
-                state: {
-                    spaceBrowser
-                },
-                mutations: {
-                    clearSpaceBrowserState: clearSpaceBrowserStateMock
-                },
-                getters: {
-                    activeSpaceInfo: activeSpaceInfoMock
-                },
-                actions: {
-                    saveSpaceBrowserState: saveSpaceBrowserStateMock,
-                    loadSpaceBrowserState: loadSpaceBrowserStateMock,
-                    importToWorkflowGroup: importToWorkflowGroupMock,
-                    createFolder: createFolderMock
-                }
-            }
+            spaces: spacesStore
         });
 
+        const commitSpy = jest.spyOn($store, 'commit');
+        const dispatchSpy = jest.spyOn($store, 'dispatch').mockImplementation(() => {});
+
+        const $router = {
+            push: jest.fn()
+        };
+
+        if (initialStoreState) {
+            $store.state.spaces = {
+                ...$store.state.spaces,
+                ...initialStoreState
+            };
+        }
+    
         const wrapper = mount(SpaceBrowsingPage, {
-            mocks: { $store, $router }
+            mocks: { $store, $router, $shortcuts: { get: jest.fn(() => ({})) } }
         });
-        return { wrapper, $store };
+
+        return { wrapper, $store, $router, commitSpy, dispatchSpy };
     };
 
     it('renders the components', () => {
@@ -75,13 +63,23 @@ describe('SpaceBrowsingPage', () => {
     });
 
     it('renders correct information for private space', async () => {
-        const { wrapper } = doMount({
-            activeSpaceInfoMock: jest.fn().mockReturnValue({
-                local: false,
-                private: true,
-                name: 'My private space'
-            })
-        });
+        const { wrapper, $store } = doMount();
+
+        $store.state.spaces = {
+            activeSpace: {
+                spaceId: 'randomhub'
+            },
+            activeSpaceProvider: {
+                spaces: [
+                    {
+                        id: 'randomhub',
+                        name: 'My private space',
+                        private: true
+                    }
+                ]
+            }
+        };
+
         await wrapper.vm.$nextTick();
 
         const subtitle = wrapper.find('.subtitle').text();
@@ -91,13 +89,23 @@ describe('SpaceBrowsingPage', () => {
     });
 
     it('renders correct information for public space', async () => {
-        const { wrapper } = doMount({
-            activeSpaceInfoMock: jest.fn().mockReturnValue({
-                local: false,
-                private: false,
-                name: 'My public space'
-            })
-        });
+        const { wrapper, $store } = doMount();
+        
+        $store.state.spaces = {
+            activeSpace: {
+                spaceId: 'randomhub'
+            },
+            activeSpaceProvider: {
+                spaces: [
+                    {
+                        id: 'randomhub',
+                        name: 'My public space',
+                        private: false
+                    }
+                ]
+            }
+        };
+
         await wrapper.vm.$nextTick();
 
         const subtitle = wrapper.find('.subtitle').text();
@@ -107,93 +115,119 @@ describe('SpaceBrowsingPage', () => {
     });
 
     it('routes back to space selection page when back button is clicked and clears state', async () => {
-        const clearSpaceBrowserStateMock = jest.fn();
-        const { wrapper } = doMount({ clearSpaceBrowserStateMock });
+        const { wrapper, $router, commitSpy } = doMount();
         await wrapper.findComponent(ArrowLeftIcon).vm.$emit('click');
 
-        expect(clearSpaceBrowserStateMock).toHaveBeenCalled();
+        expect(commitSpy).toHaveBeenCalledWith('spaces/clearSpaceBrowserState');
         expect($router.push).toHaveBeenCalledWith({
             name: APP_ROUTES.EntryPage.SpaceSelectionPage
         });
     });
 
-    it('renders buttons in toolbar for local space', () => {
-        const { wrapper } = doMount();
+    it('renders space explorer actions for local space only', async () => {
+        const { wrapper, $store } = doMount();
 
-        const buttons = wrapper.find('.toolbar-buttons');
-        expect(buttons.exists()).toBe(true);
-    });
+        expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(true);
 
-    it('does not render buttons in toolbar if the space is not local', async () => {
-        const { wrapper } = doMount({
-            activeSpaceInfoMock: jest.fn().mockReturnValue({
-                local: false,
-                private: false,
-                name: 'My public space'
-            })
-        });
+        $store.state.spaces = {
+            activeSpace: {
+                spaceId: 'randomhub'
+            },
+            activeSpaceProvider: {
+                spaces: [
+                    {
+                        id: 'randomhub',
+                        name: 'My public space',
+                        private: false
+                    }
+                ]
+            }
+        };
+
         await wrapper.vm.$nextTick();
 
-        const buttons = wrapper.find('.toolbar-buttons');
-        expect(buttons.exists()).toBe(false);
+        expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(false);
     });
 
-    it('handles import workflow when clicked on a button', () => {
-        const importToWorkflowGroupMock = jest.fn();
-        const { wrapper } = doMount({ importToWorkflowGroupMock });
+    it('should handle the import workflow action', () => {
+        const { wrapper, dispatchSpy } = doMount();
 
         const workflowButton = wrapper.find('#import-workflow');
         workflowButton.trigger('click');
-        expect(importToWorkflowGroupMock).toHaveBeenCalledWith(expect.anything(), { importType: 'WORKFLOW' });
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
     });
 
-    it('handles add files when clicked on a button', () => {
-        const importToWorkflowGroupMock = jest.fn();
-        const { wrapper } = doMount({ importToWorkflowGroupMock });
+    it('should handle the add files action', () => {
+        const { wrapper, dispatchSpy } = doMount();
 
         const workflowButton = wrapper.find('#import-files');
         workflowButton.trigger('click');
-        expect(importToWorkflowGroupMock).toHaveBeenCalledWith(expect.anything(), { importType: 'FILES' });
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'FILES' });
     });
 
-    it('handles create folder when clicked on a button', () => {
-        const createFolderMock = jest.fn();
-        const { wrapper } = doMount({ createFolderMock });
+    it('should handle the create folder action', () => {
+        const { wrapper, dispatchSpy } = doMount();
+
+        wrapper.find('.create-workflow-btn button').trigger('click');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
+    });
+
+    it('should handle the create folder action', () => {
+        const { wrapper, dispatchSpy } = doMount();
 
         wrapper.find('#create-folder').trigger('click');
-        expect(createFolderMock).toHaveBeenCalled();
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder');
+    });
+
+    it('should handle the upload to hub action', async () => {
+        const { wrapper, dispatchSpy } = doMount({
+            initialStoreState: {
+                spaceProviders: {
+                    hub1: { connected: true }
+                }
+            }
+        });
+
+        wrapper.findComponent(SpaceExplorer).vm.$emit('change-selection', ['1', '2']);
+
+        await wrapper.vm.$nextTick();
+        
+        wrapper.find('#upload-to-hub').trigger('click');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/uploadToHub', { itemIds: ['1', '2'] });
     });
 
     describe('global spaceBrowser state', () => {
         it('load the spaceBrowser state on mount', () => {
-            const loadSpaceBrowserStateMock = jest.fn();
-            doMount({
-                loadSpaceBrowserStateMock,
-                spaceBrowser: {
-                    spaceId: 'spaceId',
-                    spaceProviderId: 'spaceProvId',
-                    itemId: 'someItem'
+            const { dispatchSpy } = doMount({
+                initialStoreState: {
+                    spaceBrowser: {
+                        spaceId: 'local',
+                        spaceProviderId: 'local',
+                        itemId: 'someItem'
+                    }
                 }
             });
-            expect(loadSpaceBrowserStateMock).toHaveBeenCalled();
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/loadSpaceBrowserState');
         });
-
+        
         it('does not load spaceBrowser state if its falsy', () => {
-            const loadSpaceBrowserStateMock = jest.fn();
-            doMount({
-                loadSpaceBrowserStateMock,
-                spaceBrowser: {}
+            const { dispatchSpy } = doMount({
+                initialStoreState: {
+                    spaceBrowser: {
+                        spaceId: null
+                    }
+                }
             });
-            expect(loadSpaceBrowserStateMock).toHaveBeenCalledTimes(0);
+
+            expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/loadSpaceBrowserState');
         });
 
         it('saves the spaceBrowser state on item change', () => {
-            const saveSpaceBrowserStateMock = jest.fn();
-            const { wrapper } = doMount({ saveSpaceBrowserStateMock });
+            const { wrapper, dispatchSpy } = doMount();
 
             wrapper.findComponent(SpaceExplorer).vm.$emit('item-changed', 'someNewItemId');
 
-            expect(saveSpaceBrowserStateMock).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/saveSpaceBrowserState', expect.objectContaining({
                 itemId: 'someNewItemId'
             }));
         });

@@ -244,11 +244,19 @@ export const getNameCollisionStrategy = ({
     }
 };
 
+export const uploadItemsToHub = ({ itemIds }) => {
+    try {
+        return window.uploadItems(itemIds);
+    } catch (error) {
+        consola.error(`Error uploading to Hub space`, { error });
+        throw error;
+    }
+};
+
 export const saveWorkflowLocally = ({ projectId }) => {
     try {
         window.saveWorkflowLocally(projectId);
     } catch (error) {
         consola.error(`Could not save workflow locally`, { projectId, error });
-        throw error;
     }
 };

@@ -8,6 +8,7 @@ import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import { fetchWorkflowGroupContent, createWorkflow, getNameCollisionStrategy } from '@api';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
+import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 import FileExplorer from '../FileExplorer/FileExplorer.vue';
 
 jest.mock('@api');
@@ -83,11 +84,13 @@ describe('SpaceExplorer.vue', () => {
     };
 
     const doMountAndLoad = async ({
+        props = {},
         mockResponse = fetchWorkflowGroupContentResponse,
         mockGetSpaceItems = null,
         openProjects = []
     } = {}) => {
         const mountResult = doMount({
+            props,
             mockResponse,
             mockGetSpaceItems,
             openProjects
@@ -299,98 +302,141 @@ describe('SpaceExplorer.vue', () => {
         expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
 
-    it('should handle create workflow for "normal" mode', async () => {
-        const { wrapper, store, dispatchSpy } = doMount();
-        store.state.spaces.activeSpace = {
-            spaceId: 'local',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
-        await wrapper.vm.$nextTick();
+    describe('Mini mode', () => {
+        it('should only show toolbar for space that is local', async () => {
+            const { wrapper, store } = doMount({ props: { mode: 'mini' } });
+            store.state.spaces.activeSpace = {
+                spaceId: 'local',
+                activeWorkflowGroup: {
+                    path: [],
+                    items: []
+                }
+            };
+            
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(true);
 
-        const createWorkflowButton = wrapper.find('.create-workflow-btn');
-        expect(createWorkflowButton.exists()).toBe(true);
+            store.state.spaces.activeSpace.spaceId = 'somerandomhub';
 
-        createWorkflowButton.vm.$emit('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow', undefined);
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(false);
+        });
+
+        it('should handle create workflow', async () => {
+            const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
+            store.state.spaces.activeSpace = {
+                spaceId: 'local',
+                activeWorkflowGroup: {
+                    path: [],
+                    items: []
+                }
+            };
+            await wrapper.vm.$nextTick();
+            
+            wrapper.find('.create-workflow-btn').trigger('click');
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
+        });
+
+        it('should handle import workflow', async () => {
+            const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
+            store.state.spaces.activeSpace = {
+                spaceId: 'local',
+                activeWorkflowGroup: {
+                    path: [],
+                    items: []
+                }
+            };
+            await wrapper.vm.$nextTick();
+    
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:import-workflow');
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
+        });
+    
+        it('should handle import files', async () => {
+            const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
+            store.state.spaces.activeSpace = {
+                spaceId: 'local',
+                activeWorkflowGroup: {
+                    path: [],
+                    items: []
+                }
+            };
+            await wrapper.vm.$nextTick();
+    
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:import-files');
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'FILES' });
+        });
+    
+        it('should handle create folder', async () => {
+            const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
+            store.state.spaces.activeSpace = {
+                spaceId: 'local',
+                activeWorkflowGroup: {
+                    path: [],
+                    items: []
+                }
+            };
+            await wrapper.vm.$nextTick();
+    
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:create-folder');
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder');
+        });
+        
+        it('should handle uploading to Hub', async () => {
+            const { wrapper, store, dispatchSpy } = await doMountAndLoad({ props: { mode: 'mini' } });
+            store.state.spaces.activeSpace = {
+                spaceId: 'local',
+                activeWorkflowGroup: {
+                    path: [],
+                    items: []
+                }
+            };
+            
+            wrapper.findComponent(FileExplorer).vm.$emit('change-selection', ['1', '2']);
+            await wrapper.vm.$nextTick();
+    
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:upload-to-hub');
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/uploadToHub', { itemIds: ['1', '2'] });
+        });
+        
+        it('should only allow uploading to up when there is a selection and a connected hub session', async () => {
+            const { wrapper, store } = doMount({ props: { mode: 'mini' } });
+            store.state.spaces.activeSpace = {
+                spaceId: 'local',
+                activeWorkflowGroup: {
+                    path: [],
+                    items: []
+                }
+            };
+            await wrapper.vm.$nextTick();
+    
+            expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
+                uploadToHub: true
+            });
+
+            // simulate active selection
+            wrapper.findComponent(FileExplorer).vm.$emit('change-selection', ['1', '2']);
+
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
+                uploadToHub: true
+            });
+
+            // simulate 1 hub connected
+            store.state.spaces.spaceProviders = {
+                hub1: { connected: true }
+            };
+
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
+                uploadToHub: false
+            });
+        });
     });
 
-    it('should show buttons for space that is local and in the mini mode', async () => {
-        const { wrapper, store } = doMount({ props: { mode: 'mini' } });
-        store.state.spaces.activeSpace = {
-            spaceId: 'local',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('.buttons').exists()).toBe(true);
-    });
-
-    it('should not show buttons in the mini mode in space that is not local', async () => {
-        const { wrapper, store } = doMount({ props: { mode: 'mini' } });
-        store.state.spaces.activeSpace = {
-            spaceId: 'somerandomhub',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('.buttons').exists()).toBe(false);
-    });
-
-    it('should only show create workflow button on the local space', async () => {
-        const { wrapper, store } = doMount();
-        store.state.spaces.activeSpace = {
-            spaceId: 'local',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('.create-workflow-btn').exists()).toBe(true);
-    });
-
-    it('should not show create workflow button in space that is not local', async () => {
-        const { wrapper, store } = doMount();
-        store.state.spaces.activeSpace = {
-            spaceId: 'someSpace',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('.create-workflow-btn').exists()).toBe(false);
-    });
-
-    it('should handle create workflow for "mini" mode', async () => {
-        const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
-        store.state.spaces.activeSpace = {
-            spaceId: 'local',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.find('.create-workflow-mini-btn').exists()).toBe(true);
-
-        wrapper.find('.create-workflow-mini-btn').trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow', expect.anything());
-    });
-
-    it('should rename Items', async () => {
+    it('should rename items', async () => {
         const { wrapper, store, dispatchSpy } = doMount();
         store.state.spaces.activeSpace = {
             spaceId: 'local',
@@ -405,51 +451,6 @@ describe('SpaceExplorer.vue', () => {
         const newName = 'some name';
         wrapper.findComponent(FileExplorer).vm.$emit('rename-file', { itemId, newName });
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/renameItem', { itemId, newName });
-    });
-
-    it('should handle import workflow for "mini" mode', async () => {
-        const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
-        store.state.spaces.activeSpace = {
-            spaceId: 'local',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
-        await wrapper.vm.$nextTick();
-
-        wrapper.find("[title='Import workflow']").trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
-    });
-
-    it('should handle import files for "mini" mode', async () => {
-        const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
-        store.state.spaces.activeSpace = {
-            spaceId: 'local',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
-        await wrapper.vm.$nextTick();
-
-        wrapper.find("[title='Add file']").trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'FILES' });
-    });
-
-    it('should handle create folder for "mini" mode', async () => {
-        const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
-        store.state.spaces.activeSpace = {
-            spaceId: 'local',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
-        await wrapper.vm.$nextTick();
-
-        wrapper.find("[title='Create folder']").trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder', expect.anything());
     });
 
     it('should display the loader only after a specific timeout', async () => {

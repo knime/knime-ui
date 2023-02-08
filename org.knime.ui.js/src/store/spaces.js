@@ -12,7 +12,8 @@ import {
     importWorkflows,
     deleteItems,
     moveItems,
-    renameItem
+    renameItem,
+    uploadItemsToHub
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
@@ -279,6 +280,10 @@ export const actions = {
 
         await moveItems({ spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+    },
+
+    uploadToHub(_, { itemIds }) {
+        uploadItemsToHub({ itemIds });
     }
 };
 
@@ -377,5 +382,17 @@ export const getters = {
         }
 
         return {};
+    },
+
+    hasActiveHubSession({ spaceProviders }) {
+        if (!spaceProviders) {
+            return false;
+        }
+
+        return Boolean(
+            Object
+                .values(spaceProviders)
+                .find(({ id, connected }) => id !== 'local' && connected)
+        );
     }
 };

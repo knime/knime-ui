@@ -24,6 +24,11 @@ Vue.use(VueRouter);
 // off of the window object
 window.Vue = Vue;
 
+// Enable easier store debugging while on dev
+if (import.meta.env.DEV) {
+    window.store = store;
+}
+
 // Create Vue app
 const app = new Vue({
     router,
