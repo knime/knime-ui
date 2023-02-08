@@ -52,9 +52,12 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.util.function.Predicate;
 
+import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
  * Functions around spaces.
@@ -118,6 +121,31 @@ final class SpaceAPI {
         var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
         if (spaceProvider != null) {
             spaceProvider.getConnection(false).ifPresent(SpaceProviderConnection::disconnect);
+        }
+    }
+
+    /**
+     * Checks if the names of the corresponding space items already exists within the destination workflow group. If
+     * so, it will present a dialog to select the preferred solution for it.
+     *
+     * @param spaceProviderId The space provider ID
+     * @param spaceId The space ID
+     * @param itemIds The space item IDs
+     * @param destWorkflowGroupId The destination workflow group ID
+     * @return Can be one of the {@link Space.NameCollisionHandling}-values or 'CANCEL'
+     */
+    @API
+    static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId,
+        final Object[] itemIds, final String destWorkflowGroupItemId) {
+        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
+            throw new IllegalArgumentException("Cannot yet move items within non-local workspaces");
+        }
+        var nameCollisions = NameCollisionChecker.checkForNameCollisions(itemIds, destWorkflowGroupItemId);
+        if (nameCollisions.isEmpty()) {
+            return Space.NameCollisionHandling.NOOP.toString();
+        } else {
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(destWorkflowGroupItemId, nameCollisions)
+                .map(NameCollisionHandling::toString).orElse("CANCEL");
         }
     }
 

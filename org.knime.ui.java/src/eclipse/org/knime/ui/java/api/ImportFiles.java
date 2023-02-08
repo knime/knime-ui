@@ -52,15 +52,17 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
+import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
@@ -79,36 +81,26 @@ class ImportFiles extends AbstractImportItems {
     }
 
     @Override
-    protected boolean checkForNameCollisionsAndSuggestSolution(final String workflowGroupId,
+    protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
         final List<Path> srcPaths) {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        var existingFileNames = srcPaths.stream()//
-            .map(Path::getFileName)//
-            .map(Path::toString)//
-            .filter(name -> localWorkspace.containsItemWithName(workflowGroupId, name))//
-            .collect(Collectors.joining("\n"));
-        if (existingFileNames.isEmpty()) {
-            return true;
+        var nameCollisions = NameCollisionChecker.checkForNameCollisions(srcPaths, workflowGroupItemId);
+        if (nameCollisions.isEmpty()) {
+            return Optional.of(NameCollisionHandling.NOOP);
         } else {
-            var sh = SWTUtilities.getActiveShell();
-            var msg = String.format(
-                "The following items already exist in \"%s\": %n%n%s %n%n"
-                    + "Continue and automatically solve name collision by appending numbers?",
-                getWorkflowGroupName(workflowGroupId), existingFileNames);
-            return MessageDialog.openQuestion(sh, "Files already exist", msg);
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(workflowGroupItemId, nameCollisions);
         }
     }
 
     @Override
-    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor,
-        final String workflowGroupItemId, final List<Path> srcPaths) {
-        monitor.beginTask(
-            String.format("Importing %d files to \"%s\"", srcPaths.size(), getWorkflowGroupName(workflowGroupItemId)),
-            IProgressMonitor.UNKNOWN);
+    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final String workflowGroupItemId,
+        final List<Path> srcPaths, final Space.NameCollisionHandling collisionHandling) {
+        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+        monitor.beginTask(String.format("Importing %d files to \"%s\"", srcPaths.size(),
+            localWorkspace.getItemName(workflowGroupItemId)), IProgressMonitor.UNKNOWN);
         var importedSpaceItems = srcPaths.stream()//
             .map(srcPath -> { // Import every single file
                 try {
-                    return LocalSpaceUtil.getLocalWorkspace().importFile(srcPath, workflowGroupItemId);
+                    return localWorkspace.importFile(srcPath, workflowGroupItemId, collisionHandling);
                 } catch (IOException e) {
                     LOGGER.error(String.format("Could not import <%s>", srcPath), e);
                     return null;

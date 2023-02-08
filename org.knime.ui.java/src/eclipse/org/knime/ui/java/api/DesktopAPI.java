@@ -58,6 +58,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
@@ -141,9 +142,10 @@ public final class DesktopAPI {
      * @param updateStateProvider optional, can be {@code null}
      * @param eventConsumer
      */
-    public static void injectDependencies(final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
+    public static void injectDependencies(final WorkflowProjectManager workflowProjectManager, final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer) {
         dependencies = new HashMap<>();
+        dependencies.put(WorkflowProjectManager.class, workflowProjectManager);
         dependencies.put(AppStateUpdater.class, appStateUpdater);
         dependencies.put(SpaceProviders.class, spaceProviders);
         dependencies.put(EventConsumer.class, eventConsumer);

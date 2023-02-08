@@ -479,6 +479,22 @@ describe('API', () => {
             expect(result).toStrictEqual('dummy');
         });
 
+        it('createFolder', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemId = 'item';
+            let result = await api.createFolder({ spaceProviderId, spaceId, itemId });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.createWorkflowGroup',
+                params: [spaceId, spaceProviderId, itemId],
+                id: 0
+            });
+
+            expect(result).toStrictEqual('dummy');
+        });
+
         it('fetchSpaceProvider', async () => {
             await api.fetchSpaceProvider({ spaceProviderId: 'provider' });
 
@@ -488,6 +504,23 @@ describe('API', () => {
                 params: ['provider'],
                 id: 0
             });
+        });
+
+        it('renameItem', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemId = 'item';
+            const newName = 'new name';
+            let result = await api.renameItem({ spaceProviderId, spaceId, itemId, newName });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.renameItem',
+                params: [spaceId, spaceProviderId, itemId, newName],
+                id: 0
+            });
+
+            expect(result).toStrictEqual('dummy');
         });
 
         it('deleteItems', async () => {

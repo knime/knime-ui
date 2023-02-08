@@ -9,6 +9,7 @@ import { fetchWorkflowGroupContent,
     fetchSpaceProvider,
     connectSpaceProvider,
     createWorkflow,
+    createFolder,
     importFiles,
     importWorkflows } from '@api';
 
@@ -358,6 +359,29 @@ describe('spaces store', () => {
                     expect.objectContaining({ itemId: 'level2' })
                 );
                 expect(openWorkflow).toHaveBeenCalledWith({ workflowItemId: 'NewFile' });
+            });
+        });
+
+        describe('createFolder', () => {
+            it('should create a new folder', async () => {
+                const { store } = loadStore();
+                createFolder.mockResolvedValue({ id: 'NewFolder', type: 'WorkflowGroup' });
+
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: {
+                        path: [{ id: 'level1' }, { id: 'level2' }],
+                        items: [{ id: 'File-1', type: 'Workflow' }]
+                    }
+                };
+
+                await store.dispatch('spaces/createFolder');
+                expect(createFolder).toHaveBeenCalledWith(
+                    expect.objectContaining({ spaceId: 'local', itemId: 'level2' })
+                );
+                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
+                    expect.objectContaining({ itemId: 'level2' })
+                );
             });
         });
 

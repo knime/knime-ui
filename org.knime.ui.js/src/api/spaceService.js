@@ -35,6 +35,30 @@ export const createWorkflow = async ({ spaceProviderId = 'local', spaceId, itemI
     }
 };
 
+export const renameItem = async ({ spaceProviderId = 'local', spaceId, itemId, newName }) => {
+    try {
+        return await rpc(
+            'SpaceService.renameItem',
+            spaceId, spaceProviderId, itemId, newName
+        );
+    } catch (e) {
+        consola.error(e);
+        throw new Error(`Could not rename item ${itemId} in space ${spaceId}. Error: ${e}`);
+    }
+};
+
+export const createFolder = async ({ spaceProviderId = 'local', spaceId, itemId }) => {
+    try {
+        return await rpc(
+            'SpaceService.createWorkflowGroup',
+            spaceId, spaceProviderId, itemId
+        );
+    } catch (e) {
+        consola.error(e);
+        throw new Error(`Could not create a new folder for space ${spaceId}, item ${itemId}. Error: ${e}`);
+    }
+};
+
 export const deleteItems = async ({ spaceProviderId = 'local', spaceId, itemIds }) => {
     try {
         return await rpc(

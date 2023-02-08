@@ -112,7 +112,8 @@ describe('application store', () => {
             hasNodeRecommendationsEnabled: false,
             rootWorkflowSnapshots: new Map(),
             availableUpdates: null,
-            nodeRepoFilterEnabled: false
+            nodeRepoFilterEnabled: false,
+            devMode: false
         });
     });
 
@@ -174,6 +175,12 @@ describe('application store', () => {
             const { store } = await loadStore();
             store.commit('application/setNodeRepoFilterEnabled', true);
             expect(store.state.application.nodeRepoFilterEnabled).toBe(true);
+        });
+
+        it('sets devMode', async () => {
+            const { store } = await loadStore();
+            store.commit('application/setDevMode', true);
+            expect(store.state.application.devMode).toBe(true);
         });
     });
 

@@ -48,6 +48,10 @@
  */
 package org.knime.ui.java.api;
 
+import java.io.IOException;
+
+import org.knime.ui.java.util.LocalSpaceUtil;
+
 /**
  * Functions around importing stuff.
  *
@@ -65,19 +69,39 @@ final class ImportAPI {
 
     /**
      * Import workflows into a workspace and save them to the specified location.
+     *
+     * @return Success state
      */
     @API
-    static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId) {
-        return IMPORT_WORKFLOWS.importItems(spaceProviderId, spaceId, itemId);
+    static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
+        throws IOException {
+        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
+            throw new IllegalArgumentException("Cannot import workflows to non-local workspaces");
+        }
+        return IMPORT_WORKFLOWS.importItems(itemId);
     }
 
     /**
-     *
      * Import data files into a workspace and save them to the specified location.
+     *
+     * @return Success state
      */
     @API
-    static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId) {
-        return IMPORT_FILES.importItems(spaceProviderId, spaceId, itemId);
+    static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId)
+        throws IOException {
+        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
+            throw new IllegalArgumentException("Cannot import files to non-local workspaces");
+        }
+        return IMPORT_FILES.importItems(itemId);
+    }
+
+    /**
+     * Imports a URI at a certain position in the workflow canvas (i.e. usually imported as a new node).
+     */
+    @API
+    static boolean importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
+        final double canvasX, final double canvasY) {
+        return ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
     }
 
 }

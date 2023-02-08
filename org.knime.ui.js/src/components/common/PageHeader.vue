@@ -28,8 +28,7 @@ export default {
         <slot name="button" />
       </div>
       <div
-        class="title-wrapper"
-        :class="`grid-item-${12 - leftOffset}`"
+        :class="['title-wrapper', `grid-item-${12 - leftOffset}`, $slots.button ? 'with-button' : '']"
       >
         <span
           v-if="subtitle"
@@ -61,6 +60,7 @@ header {
   min-height: 150px;
 
   & .grid-container {
+    position: relative;
     height: 100%;
   }
 
@@ -68,6 +68,17 @@ header {
     padding-right: 20px;
     margin-left: -60px;
     align-self: center;
+  }
+
+  @media only screen and (max-width: 1180px) {
+    & .button {
+      margin-left: 0;
+      position: absolute;
+    }
+
+    & .title-wrapper.with-button {
+      margin-left: 60px;
+    }
   }
 
   & .title-wrapper {

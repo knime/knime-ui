@@ -1,5 +1,6 @@
 import { areaCoverage } from '@/util/geometry';
 import { findFreeSpace } from '@/util/findFreeSpaceOnCanvas';
+import { nodeSize } from '@/style/shapes.mjs';
 
 const visibilityThreshold = 0.7;
 
@@ -154,3 +155,26 @@ export const pastePartsAt = ({ visibleFrame, clipboardContent, workflow, isWorkf
         };
     }
 };
+
+
+export const pasteURI = (string, activeWorkflow, position, visibleFrame) => {
+    if (window.importURIAtWorkflowCanvas) {
+        const { nodes, projectId, info: { containerId } } = activeWorkflow;
+        let x, y;
+        if (position) {
+            x = position.x - nodeSize / 2;
+            y = position.y - nodeSize / 2;
+        } else {
+            const center = centerStrategy({ visibleFrame,
+                nodes,
+                clipboardContent: { objectBounds: { width: nodeSize, height: nodeSize } } });
+            x = center.x;
+            y = center.y;
+        }
+        return window.importURIAtWorkflowCanvas(string, projectId, containerId,
+            x, y);
+    } else {
+        return false;
+    }
+};
+
