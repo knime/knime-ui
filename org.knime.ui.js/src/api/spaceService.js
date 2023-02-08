@@ -76,12 +76,12 @@ export const moveItems = async ({
     spaceId,
     itemIds,
     destWorkflowGroupItemId,
-    collisionHandling
+    collisionStrategy
 }) => {
     try {
         return await rpc(
             'SpaceService.moveItems',
-            spaceId, spaceProviderId, itemIds, destWorkflowGroupItemId, collisionHandling
+            spaceId, spaceProviderId, itemIds, destWorkflowGroupItemId, collisionStrategy
         );
     } catch (e) {
         consola.error(e);

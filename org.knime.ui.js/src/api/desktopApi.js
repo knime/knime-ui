@@ -233,10 +233,10 @@ export const getNameCollisionStrategy = ({
     destWorkflowGroupItemId
 }) => {
     try {
-        const collisionHandling = window.getNameCollisionStrategy(
+        const collisionStrategy = window.getNameCollisionStrategy(
             spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId
         );
-        return collisionHandling;
+        return collisionStrategy;
     } catch (error) {
         consola.error(`Could not check for collisions`,
             { spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, error });

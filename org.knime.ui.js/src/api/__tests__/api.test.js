@@ -542,13 +542,13 @@ describe('API', () => {
             const spaceId = 'local';
             const itemIds = ['id1', 'id2'];
             const destWorkflowGroupItemId = 'group1';
-            const collisionHandling = 'NOOP';
-            await api.moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionHandling });
+            const collisionStrategy = 'NOOP';
+            await api.moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
 
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'SpaceService.moveItems',
-                params: [spaceId, spaceProviderId, itemIds, destWorkflowGroupItemId, collisionHandling],
+                params: [spaceId, spaceProviderId, itemIds, destWorkflowGroupItemId, collisionStrategy],
                 id: 0
             });
         });

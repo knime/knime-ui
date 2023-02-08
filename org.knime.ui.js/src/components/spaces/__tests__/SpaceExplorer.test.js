@@ -503,8 +503,10 @@ describe('SpaceExplorer.vue', () => {
             const targetItem = 'group1';
             wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
 
-            expect(dispatchSpy).toHaveBeenCalledWith('spaces/moveItems',
-                { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionHandling: 'OVERWRITE' });
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'spaces/moveItems',
+                { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionStrategy: 'OVERWRITE' }
+            );
         });
 
         it('should not move items if collision handling returns cancel', async () => {
@@ -518,7 +520,7 @@ describe('SpaceExplorer.vue', () => {
             wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
 
             expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/moveItems',
-                { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionHandling: 'CANCEL' });
+                { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionStrategy: 'CANCEL' });
         });
 
         it('should show alert if at least one of the moved workflows is opened', async () => {

@@ -230,15 +230,18 @@ export default {
 
             if (this.isLocal && !isTheSameFolder) {
                 const destId = targetItem === '..' ? 'root' : targetItem;
-                const collisionHandling = getNameCollisionStrategy(
+                const collisionStrategy = getNameCollisionStrategy(
                     { itemIds: sourceItems, destWorkflowGroupItemId: destId }
                 );
 
-                if (collisionHandling === 'CANCEL') {
+                if (collisionStrategy === 'CANCEL') {
                     return;
                 }
-                this.$store.dispatch('spaces/moveItems',
-                    { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionHandling });
+                
+                this.$store.dispatch(
+                    'spaces/moveItems',
+                    { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionStrategy }
+                );
             }
         }
     }

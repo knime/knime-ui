@@ -495,7 +495,7 @@ describe('spaces store', () => {
             it('should move items', async () => {
                 const itemIds = ['id1', 'id2'];
                 const destWorkflowGroupItemId = 'group1';
-                const collisionHandling = 'OVERWRITE';
+                const collisionStrategy = 'OVERWRITE';
                 const { store } = loadStore();
                 store.state.spaces.activeSpace = {
                     spaceId: 'local',
@@ -504,12 +504,12 @@ describe('spaces store', () => {
                     }
                 };
 
-                await store.dispatch('spaces/moveItems', { itemIds, destWorkflowGroupItemId, collisionHandling });
+                await store.dispatch('spaces/moveItems', { itemIds, destWorkflowGroupItemId, collisionStrategy });
                 expect(moveItems).toHaveBeenCalledWith({
                     spaceId: 'local',
                     itemIds,
                     destWorkflowGroupItemId,
-                    collisionHandling
+                    collisionStrategy
                 });
                 expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level2' })

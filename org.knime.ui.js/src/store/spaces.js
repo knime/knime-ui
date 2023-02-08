@@ -273,11 +273,11 @@ export const actions = {
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     },
 
-    async moveItems({ state, getters, dispatch }, { itemIds, destWorkflowGroupItemId, collisionHandling }) {
+    async moveItems({ state, getters, dispatch }, { itemIds, destWorkflowGroupItemId, collisionStrategy }) {
         const { spaceId } = state.activeSpace;
         const currentWorkflowGroupId = getters.currentWorkflowGroupId;
 
-        await moveItems({ spaceId, itemIds, destWorkflowGroupItemId, collisionHandling });
+        await moveItems({ spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     }
 };
