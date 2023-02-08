@@ -326,6 +326,8 @@ describe('application store', () => {
         it('replaces nodeRepoFilterEnabled', async () => {
             const applicationState = { nodeRepoFilterEnabled: true };
             const { store, dispatchSpy } = await loadStore();
+ 
+            store.state.nodeRepository.nodesPerCategory = [{ dummyData: true }];
 
             await store.dispatch('application/replaceApplicationState', applicationState);
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/setIncludeAllAndSearchNodes', false);
