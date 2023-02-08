@@ -50,6 +50,8 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.LazyInitializer;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
@@ -109,7 +111,15 @@ public final class LifeCycle {
         return instance;
     }
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(LifeCycle.class);
+    // Needs to be initialized lazily in order to avoid its initialization too early when the #startup life-cycle state
+    // transition is called. Because if the NodeLogger is initialized that early, it messes with the startup procedure
+    // and the workspace-selection-prompt is not shown anymore as a result.
+    private static final LazyInitializer<NodeLogger> LOGGER = new LazyInitializer<NodeLogger>() {
+        @Override
+        protected NodeLogger initialize() {
+            return NodeLogger.getLogger(LifeCycle.class);
+        }
+    };
 
     private LifeCycleStateInternal m_state = null;
 
@@ -206,7 +216,7 @@ public final class LifeCycle {
         try {
             runStateTransition.run();
         } catch (StateTransitionAbortedException e) { // NOSONAR
-            LOGGER.info("State transition '" + nextStateTransition.name() + "' aborted");
+            getLogger().info("State transition '" + nextStateTransition.name() + "' aborted");
             return;
         }
         logStateTransition(m_lastStateTransition, nextStateTransition);
@@ -225,8 +235,21 @@ public final class LifeCycle {
 
     private static void logStateTransition(final StateTransition lastStateTransition,
         final StateTransition nextStateTransition) {
-        LOGGER.debugWithFormat("Life cycle state transition: from '%s' to '%s'", lastStateTransition,
+        if (nextStateTransition == StateTransition.STARTUP) {
+            // the startup-state transition must not initialize the node logger
+            // (see comment on the node logger field)
+            return;
+        }
+        getLogger().debugWithFormat("Life cycle state transition: from '%s' to '%s'", lastStateTransition,
             nextStateTransition);
+    }
+
+    private static NodeLogger getLogger() {
+        try {
+            return LOGGER.get();
+        } catch (ConcurrentException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
