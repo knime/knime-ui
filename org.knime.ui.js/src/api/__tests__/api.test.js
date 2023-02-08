@@ -542,7 +542,7 @@ describe('API', () => {
             const spaceId = 'local';
             const itemIds = ['id1', 'id2'];
             const destWorkflowGroupItemId = 'group1';
-            const collisionHandling = 'overwrite';
+            const collisionHandling = 'NOOP';
             await api.moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionHandling });
 
             expect(window.jsonrpc).toHaveBeenCalledWith({

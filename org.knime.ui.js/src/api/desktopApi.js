@@ -226,14 +226,14 @@ export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', 
  *
  * @returns {'OVERWRITE' | 'NOOP' | 'AUTORENAME' | 'CANCEL'}
  */
-export const checkForNameCollisionsAndSelectHandling = ({
+export const getNameCollisionStrategy = ({
     spaceProviderId = 'local',
     spaceId = 'local',
     itemIds,
     destWorkflowGroupItemId
 }) => {
     try {
-        const collisionHandling = window.checkForNameCollisionsAndSelectHandling(
+        const collisionHandling = window.getNameCollisionStrategy(
             spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId
         );
         return collisionHandling;
