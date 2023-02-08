@@ -135,7 +135,7 @@ final class SpaceAPI {
      * @return Can be one of the {@link Space.NameCollisionHandling}-values or 'CANCEL'
      */
     @API
-    static String checkForNameCollisionsAndSelectHandling(final String spaceProviderId, final String spaceId,
+    static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId,
         final Object[] itemIds, final String destWorkflowGroupItemId) {
         if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
             throw new IllegalArgumentException("Cannot yet move items within non-local workspaces");
