@@ -54,6 +54,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -85,8 +86,8 @@ abstract class AbstractImportItems {
         var fileNames = dialog.getFileNames();
         var srcPaths = Arrays.stream(fileNames).map(baseDir::resolve).collect(Collectors.toList());
 
-        var collisionHandling = checkForNameCollisionsAndSuggestSolution(itemId, srcPaths);
-        if (collisionHandling == NameCollisionHandling.CANCEL) {
+        var collisionHandling = checkForNameCollisionsAndSuggestSolution(itemId, srcPaths).orElse(null);
+        if (collisionHandling == null) {
             return false;
         }
 
@@ -112,11 +113,12 @@ abstract class AbstractImportItems {
      * @param workflowGroupItemId The workflow group item ID to check
      * @param srcPaths The source paths of the items to import
      *
-     * @return Can be one of {@link NameCollisionHandling}
+     * @return Can be one of {@link NameCollisionHandling}, or an empty optional if no collision handling strategy is
+     *         provided
      * @throws IOException In case some files could not be read
      */
-    protected abstract NameCollisionHandling checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
-        final List<Path> srcPaths) throws IOException;
+    protected abstract Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(
+        final String workflowGroupItemId, final List<Path> srcPaths) throws IOException;
 
     /**
      * Shows a warning if the import was not complete.

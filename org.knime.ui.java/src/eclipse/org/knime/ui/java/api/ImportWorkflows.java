@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -64,6 +65,7 @@ import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.workbench.ui.workflow.metadata.MetaInfoFile;
@@ -86,14 +88,14 @@ class ImportWorkflows extends AbstractImportItems {
     }
 
     @Override
-    protected Space.NameCollisionHandling checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
+    protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
         final List<Path> srcPaths) throws IOException {
         var archiveFilePath = srcPaths.get(0); // There can only be one
         var nameCollision = NameCollisionChecker.checkForNameCollision(archiveFilePath, workflowGroupItemId);
         return nameCollision.map(nc -> {
             var nameCollisions = Collections.singletonList(nc);
             return NameCollisionChecker.openDialogToSelectCollisionHandling(workflowGroupItemId, nameCollisions);
-        }).orElse(Space.NameCollisionHandling.NOOP);
+        }).orElse(Optional.of(Space.NameCollisionHandling.NOOP));
     }
 
     @Override

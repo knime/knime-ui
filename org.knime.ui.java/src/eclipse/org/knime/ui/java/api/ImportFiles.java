@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -61,6 +62,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
@@ -79,11 +81,11 @@ class ImportFiles extends AbstractImportItems {
     }
 
     @Override
-    protected Space.NameCollisionHandling checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
+    protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
         final List<Path> srcPaths) {
         var nameCollisions = NameCollisionChecker.checkForNameCollisions(srcPaths, workflowGroupItemId);
         if (nameCollisions.isEmpty()) {
-            return Space.NameCollisionHandling.NOOP;
+            return Optional.of(NameCollisionHandling.NOOP);
         } else {
             return NameCollisionChecker.openDialogToSelectCollisionHandling(workflowGroupItemId, nameCollisions);
         }

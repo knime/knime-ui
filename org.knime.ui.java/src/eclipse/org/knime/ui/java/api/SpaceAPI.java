@@ -53,6 +53,7 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import java.util.function.Predicate;
 
 import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
@@ -131,7 +132,7 @@ final class SpaceAPI {
      * @param spaceId The space ID
      * @param itemIds The space item IDs
      * @param destWorkflowGroupId The destination workflow group ID
-     * @return Can be one of {@link Space.NameCollisionHandling} as {@link String} values.
+     * @return Can be one of the {@link Space.NameCollisionHandling}-values or 'CANCEL'
      */
     @API
     static String checkForNameCollisionsAndSelectHandling(final String spaceProviderId, final String spaceId,
@@ -144,7 +145,7 @@ final class SpaceAPI {
             return Space.NameCollisionHandling.NOOP.toString();
         } else {
             return NameCollisionChecker.openDialogToSelectCollisionHandling(destWorkflowGroupItemId, nameCollisions)
-                .toString();
+                .map(NameCollisionHandling::toString).orElse("CANCEL");
         }
     }
 

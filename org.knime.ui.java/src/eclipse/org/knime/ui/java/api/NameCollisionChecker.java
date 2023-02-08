@@ -60,6 +60,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
@@ -137,9 +138,10 @@ final class NameCollisionChecker {
      * group.
      *
      * @return Can be either {@link Space.NameCollisionHandling#AUTORENAME},
-     *         {@link Space.NameCollisionHandling#OVERWRITE} or {@link Space.NameCollisionHandling#CANCEL}.
+     *         {@link Space.NameCollisionHandling#OVERWRITE} or an empty optional if no collision handling strategy has
+     *         been selected (cancel)
      */
-    static Space.NameCollisionHandling openDialogToSelectCollisionHandling(final String workflowGroupItemId,
+    static Optional<NameCollisionHandling> openDialogToSelectCollisionHandling(final String workflowGroupItemId,
         final List<String> nameCollisions) {
         var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         var names = nameCollisions.stream().map(name -> "* " + name).collect(Collectors.joining("\n"));
@@ -154,11 +156,11 @@ final class NameCollisionChecker {
             "Keep all"// 2
         );
         if (choice == 0) {
-            return Space.NameCollisionHandling.CANCEL;
+            return Optional.empty();
         } else if (choice == 1) {
-            return Space.NameCollisionHandling.OVERWRITE;
+            return Optional.of(NameCollisionHandling.OVERWRITE);
         } else {
-            return Space.NameCollisionHandling.AUTORENAME;
+            return Optional.of(NameCollisionHandling.AUTORENAME);
         }
     }
 
