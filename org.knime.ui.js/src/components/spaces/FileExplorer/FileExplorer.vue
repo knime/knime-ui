@@ -70,7 +70,6 @@ export default {
 
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates', 'getVisibleFrame']),
-        ...mapGetters('selection', { selectedNode: 'singleSelectedNode' }),
         ...mapState('spaces', ['activeSpace', 'activeSpaceProvider']),
         isRenamingInvalid() {
             return INVALID_NAME_CHARACTERS.test(this.renameValue);
@@ -90,7 +89,7 @@ export default {
     },
 
     methods: {
-        ...mapActions('workflow', ['addNode', 'openNodeConfiguration']),
+        ...mapActions('workflow', ['addNode']),
         resetSelection() {
             this.multiSelectionState = multiSelectionService.getInitialState();
         },
