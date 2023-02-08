@@ -4,7 +4,6 @@ import { encodeString } from '@/util/encodeString';
 import { APP_ROUTES } from '@/router';
 
 const getCanvasStateKey = (input) => encodeString(input);
-const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
 
 /*
  * This store provides global application logic
@@ -83,7 +82,7 @@ export const mutations = {
     setSavedCanvasStates(state, newStates) {
         const { savedCanvasStates } = state;
         const { workflow, project } = newStates;
-        const rootWorkflowId = getRootWorkflowId(workflow);
+        const rootWorkflowId = 'root';
         const isRootWorkflow = rootWorkflowId === workflow;
         const emptyParentState = { children: {} };
 
@@ -228,16 +227,8 @@ export const actions = {
 
         const activeProject = openProjects.find(item => item.activeWorkflow);
 
+        // No active project is set -> stay on entry page (aka: null project)
         if (!activeProject) {
-            consola.info('No active workflow provided');
-
-            // chose root workflow of first tab
-            const [firstProject] = openProjects;
-            await dispatch('loadWorkflow', {
-                projectId: firstProject.projectId,
-                // ATTENTION: we can only open tabs, that have root workflows (no standalone metanodes or components)
-                workflowId: 'root'
-            });
             return;
         }
 
@@ -380,9 +371,7 @@ export const actions = {
     },
 
     removeCanvasState({ rootState, state }, projectId) {
-        const { info: { containerId: workflow } } = rootState.workflow.activeWorkflow;
-        const rootWorkflowId = getRootWorkflowId(workflow);
-        const stateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
+        const stateKey = getCanvasStateKey(`${projectId}--root`);
 
         delete state.savedCanvasStates[stateKey];
     },
@@ -510,7 +499,7 @@ export const getters = {
 
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
         const { info: { containerId: workflowId }, projectId } = workflow.activeWorkflow;
-        const rootWorkflowId = getRootWorkflowId(workflowId);
+        const rootWorkflowId = 'root';
         const isRootWorkflow = rootWorkflowId === workflowId;
         const parentStateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
 

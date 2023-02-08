@@ -255,9 +255,12 @@ export default {
             if (optionId === 'delete') {
                 this.$emit('delete-items', { items: [item] });
             }
+
             if (optionId === 'rename') {
                 this.setupRenameInput(item.id, item.name);
             }
+
+            this.resetSelection();
         },
 
         async setupRenameInput(id, name) {

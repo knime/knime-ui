@@ -438,23 +438,6 @@ describe('application store', () => {
             });
         });
 
-        it('uses first in row if not provided by backend', async () => {
-            const state = {
-                openProjects: [
-                    { projectId: 'foo', name: 'bar' },
-                    { projectId: 'bee', name: 'gee' }
-                ]
-            };
-            const { store, dispatchSpy } = await loadStore();
-            await store.dispatch('application/replaceApplicationState', state);
-
-            expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow',
-                {
-                    workflowId: 'root',
-                    projectId: 'foo'
-                });
-        });
-
         it('does not set active project if there are no open workflows', async () => {
             const state = { openProjects: [] };
             const { store, dispatchSpy } = await loadStore();
@@ -465,29 +448,6 @@ describe('application store', () => {
     });
 
     describe('switch workflow', () => {
-        test('switch from workflow to nothing', async () => {
-            const { store, dispatchSpy } = await loadStore();
-            await store.dispatch('application/replaceApplicationState', {
-                openProjects:
-                    [
-                        { projectId: '0', name: 'p0' },
-                        { projectId: '1', name: 'p1' }
-                    ]
-            });
-            expect(store.state.application.activeProjectId).toBe('0');
-
-            // clean dispatch list for easier testing
-            dispatchSpy.mockClear();
-
-            await store.dispatch('application/switchWorkflow', { newWorkflow: null });
-
-            expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState');
-            expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
-            expect(store.state.application.activeProjectId).toBe(null);
-
-            expect(dispatchSpy).not.toHaveBeenCalledWith('workflow/loadWorkflow', expect.anything(), expect.anything());
-        });
-
         test('switch from nothing to workflow', async () => {
             const { store, dispatchSpy } = await loadStore();
             store.state.workflow.activeWorkflow = null;
@@ -587,7 +547,7 @@ describe('application store', () => {
             const { store, ...rest } = await loadStore();
 
             store.commit('workflow/setActiveWorkflow', {
-                info: { containerId: 'workflow1' },
+                info: { containerId: 'root' },
                 projectId: 'project1'
             });
 
@@ -600,19 +560,19 @@ describe('application store', () => {
                 zoomFactor: 1,
                 scrollTop: 100,
                 scrollLeft: 100,
-                workflow: 'workflow1',
+                workflow: 'root',
                 project: 'project1'
             });
 
             expect(store.state.application.savedCanvasStates).toStrictEqual({
-                'project1--workflow1': {
+                'project1--root': {
                     children: {},
                     project: 'project1',
                     scrollLeft: 100,
                     scrollTop: 100,
-                    workflow: 'workflow1',
+                    workflow: 'root',
                     zoomFactor: 1,
-                    lastActive: 'workflow1'
+                    lastActive: 'root'
                 }
             });
         });
@@ -623,19 +583,19 @@ describe('application store', () => {
                 zoomFactor: 1,
                 scrollTop: 100,
                 scrollLeft: 100,
-                workflow: 'workflow1:214',
+                workflow: 'root:214',
                 project: 'project1'
             });
 
             expect(store.state.application.savedCanvasStates).toStrictEqual({
-                'project1--workflow1': {
-                    lastActive: 'workflow1:214',
+                'project1--root': {
+                    lastActive: 'root:214',
                     children: {
-                        'workflow1:214': {
+                        'root:214': {
                             project: 'project1',
                             scrollLeft: 100,
                             scrollTop: 100,
-                            workflow: 'workflow1:214',
+                            workflow: 'root:214',
                             zoomFactor: 1
                         }
                     }
@@ -650,7 +610,7 @@ describe('application store', () => {
 
             expect(mockedGetters.canvas.getCanvasScrollState).toHaveBeenCalled();
             expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
-            expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
+            expect(store.state.application.savedCanvasStates['project1--root']).toBeTruthy();
         });
 
         it('restores canvas state', async () => {
@@ -661,7 +621,7 @@ describe('application store', () => {
                 scrollLeft: 100,
                 scrollHeight: 1000,
                 scrollWidth: 1000,
-                workflow: 'workflow1',
+                workflow: 'root',
                 project: 'project1'
             });
 
@@ -681,7 +641,7 @@ describe('application store', () => {
         it('restores canvas state of a child', async () => {
             const { store, mockedActions } = await loadStoreWithWorkflow();
             store.state.workflow.activeWorkflow = {
-                info: { containerId: 'workflow1:214' },
+                info: { containerId: 'root:214' },
                 projectId: 'project1'
             };
 
@@ -691,7 +651,7 @@ describe('application store', () => {
                 scrollLeft: 80,
                 scrollHeight: 800,
                 scrollWidth: 800,
-                workflow: 'workflow1:214',
+                workflow: 'root:214',
                 project: 'project1'
             });
 
@@ -712,7 +672,7 @@ describe('application store', () => {
             const { store } = await loadStoreWithWorkflow();
             store.dispatch('application/saveCanvasState');
             expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
-            expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
+            expect(store.state.application.savedCanvasStates['project1--root']).toBeTruthy();
 
             store.dispatch('application/removeCanvasState', 'project1');
             expect(store.state.application.savedCanvasStates).toEqual({});

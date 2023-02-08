@@ -62,11 +62,13 @@ export const actions = {
 
         const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
 
-        if (didClose) {
-            dispatch('application/removeFromRootWorkflowSnapshots', { projectId: closingProjectId }, { root: true });
-            dispatch('application/removeCanvasState', closingProjectId, { root: true });
-            commit('spaces/clearLastItemForProject', { projectId: closingProjectId }, { root: true });
+        if (!didClose) {
+            return;
         }
+
+        dispatch('application/removeCanvasState', closingProjectId, { root: true });
+        dispatch('application/removeFromRootWorkflowSnapshots', { projectId: closingProjectId }, { root: true });
+        commit('spaces/clearLastItemForProject', { projectId: closingProjectId }, { root: true });
     },
 
     /* Some nodes generate views from their data. A Classic UI dialog opens to present this view */
