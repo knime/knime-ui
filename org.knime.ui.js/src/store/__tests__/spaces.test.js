@@ -495,7 +495,7 @@ describe('spaces store', () => {
             it('should move items', async () => {
                 const itemIds = ['id1', 'id2'];
                 const destWorkflowGroupItemId = 'group1';
-                const collisionHandling = 'overwrite';
+                const collisionHandling = 'OVERWRITE';
                 const { store } = loadStore();
                 store.state.spaces.activeSpace = {
                     spaceId: 'local',

@@ -214,6 +214,18 @@ export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', 
     }
 };
 
+/**
+ * Checks for name collisions and returns a String of an option
+ * that the user chose to handle existing conflict
+ *
+ * @param {Object} arg
+ * @param {String} [arg.spaceProviderId]
+ * @param {String} [arg.spaceId]
+ * @param {Array<String>} arg.itemIds
+ * @param {String} arg.destWorkflowGroupItemId
+ *
+ * @returns {'OVERWRITE' | 'NOOP' | 'AUTORENAME' | 'CANCEL'}
+ */
 export const checkForNameCollisionsAndSelectHandling = ({
     spaceProviderId = 'local',
     spaceId = 'local',
