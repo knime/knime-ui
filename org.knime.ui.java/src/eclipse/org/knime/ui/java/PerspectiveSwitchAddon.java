@@ -171,6 +171,7 @@ public final class PerspectiveSwitchAddon {
     }
 
     private void onSwitchToJavaUI() {
+        NodeTimer.GLOBAL_TIMER.incJavaUIPerspectiveSwitch();
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             // dispose workflow projects if perspective switch is done, e.g., via shortcut
             disposeAllWorkflowProjects();
