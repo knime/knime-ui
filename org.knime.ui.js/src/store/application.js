@@ -185,37 +185,52 @@ export const actions = {
 
     // ----------------------------------------------------------------------------------------- //
 
-    async replaceApplicationState({ commit, dispatch, state }, applicationState) {
+    async replaceApplicationState({ commit, dispatch, state, rootState }, applicationState) {
         // Only set application state properties present in the received object
         if (applicationState.availablePortTypes) {
             commit('setAvailablePortTypes', applicationState.availablePortTypes);
         }
+
         if (applicationState.suggestedPortTypeIds) {
             commit('setSuggestedPortTypes', applicationState.suggestedPortTypeIds);
         }
+
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
         if (applicationState.hasNodeRecommendationsEnabled) {
             commit('setHasNodeRecommendationsEnabled', applicationState.hasNodeRecommendationsEnabled);
         }
+        
         if (applicationState.featureFlags) {
             commit('setFeatureFlags', applicationState.featureFlags);
         }
+        
         if (applicationState.openProjects) {
             commit('setOpenProjects', applicationState.openProjects);
             await dispatch('setActiveProject', applicationState.openProjects);
         }
+        
         if (applicationState.exampleProjects) {
             commit('setExampleProjects', applicationState.exampleProjects);
         }
-        if (applicationState.nodeRepoFilterEnabled) {
+        
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+        if (applicationState.hasOwnProperty('nodeRepoFilterEnabled')) {
             commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
-            await dispatch('nodeRepository/getAllNodes', { append: false }, { root: true });
+
             await dispatch(
                 'nodeRepository/setIncludeAllAndSearchNodes',
                 !applicationState.nodeRepoFilterEnabled,
                 { root: true }
             );
+
+            // refetch categories to add/remove nodes based on the updated filter state
+            if (rootState.nodeRepository.nodesPerCategory.length > 0) {
+                dispatch('nodeRepository/getAllNodes', { append: false }, { root: true });
+            }
         }
-        if (applicationState.devMode) {
+        
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+        if (applicationState.hasOwnProperty('devMode')) {
             commit('setDevMode', applicationState.devMode);
         }
     },
