@@ -11,11 +11,12 @@ import { fetchWorkflowGroupContent,
     createWorkflow,
     createFolder,
     importFiles,
-    importWorkflows } from '@api';
+    importWorkflows,
+    deleteItems,
+    moveItems } from '@api';
 
 import * as spacesConfig from '../spaces';
 import { APP_ROUTES } from '@/router';
-import { deleteItems } from '@/api';
 
 jest.mock('@api');
 
@@ -487,6 +488,32 @@ describe('spaces store', () => {
 
                 await store.dispatch('spaces/deleteItems', { itemIds });
                 expect(dispatchSpy).toHaveBeenCalledWith('spaces/fetchWorkflowGroupContent', { itemId: 'bar' });
+            });
+        });
+
+        describe('moveItems', () => {
+            it('should move items', async () => {
+                const itemIds = ['id1', 'id2'];
+                const destWorkflowGroupItemId = 'group1';
+                const collisionStrategy = 'OVERWRITE';
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: {
+                        path: [{ id: 'level1' }, { id: 'level2' }]
+                    }
+                };
+
+                await store.dispatch('spaces/moveItems', { itemIds, destWorkflowGroupItemId, collisionStrategy });
+                expect(moveItems).toHaveBeenCalledWith({
+                    spaceId: 'local',
+                    itemIds,
+                    destWorkflowGroupItemId,
+                    collisionStrategy
+                });
+                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
+                    expect.objectContaining({ itemId: 'level2' })
+                );
             });
         });
     });

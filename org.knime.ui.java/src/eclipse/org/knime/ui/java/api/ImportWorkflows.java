@@ -53,11 +53,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.zip.ZipFile;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.KNIMEConstants;
@@ -65,6 +64,8 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
+import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.workbench.ui.workflow.metadata.MetaInfoFile;
@@ -87,41 +88,22 @@ class ImportWorkflows extends AbstractImportItems {
     }
 
     @Override
-    protected boolean checkForNameCollisionsAndSuggestSolution(final String workflowGroupId,
-        final List<Path> srcPaths) {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+    protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
+        final List<Path> srcPaths) throws IOException {
         var archiveFilePath = srcPaths.get(0); // There can only be one
-        try (var zipFile = new ZipFile(archiveFilePath.toFile())) {
-            // Get the name of the parent folder without extracting the *.zip archive
-            var dirName = zipFile.stream()//
-                .map(entry -> new File(entry.toString()))//
-                .map(ImportWorkflows::findRootDirOfFile)//
-                .map(File::getName)//
-                .findFirst()//
-                .orElseThrow(IOException::new);
-            // Check for name collisions and show prompt if necessary
-            if (localWorkspace.containsItemWithName(workflowGroupId, dirName)) {
-                var sh = SWTUtilities.getActiveShell();
-                var msg = String.format(
-                    "The following workflow (group) already exist in \"%s\": %n%n%s %n%n"
-                        + "Continue and automatically solve name collision by appending numbers?",
-                    getWorkflowGroupName(workflowGroupId), dirName);
-                return MessageDialog.openQuestion(sh, "Workflow (group) already exist", msg);
-            } else {
-                return true;
-            }
-        } catch (IOException e) {
-            LOGGER.error(String.format("Could not unpack the workflow (group) at <%s>", archiveFilePath), e);
-            return false;
-        }
+        var nameCollision = NameCollisionChecker.checkForNameCollision(archiveFilePath, workflowGroupItemId);
+        return nameCollision.map(nc -> {
+            var nameCollisions = Collections.singletonList(nc);
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(workflowGroupItemId, nameCollisions);
+        }).orElse(Optional.of(Space.NameCollisionHandling.NOOP));
     }
 
     @Override
-    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor,
-        final String workflowGroupItemId, final List<Path> srcPaths) {
-        monitor.beginTask(
-            String.format("Importing %d files to \"%s\"", srcPaths.size(), getWorkflowGroupName(workflowGroupItemId)),
-            IProgressMonitor.UNKNOWN);
+    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final String workflowGroupItemId,
+        final List<Path> srcPaths, final Space.NameCollisionHandling collisionHandling) {
+        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+        monitor.beginTask(String.format("Importing %d files to \"%s\"", srcPaths.size(),
+            localWorkspace.getItemName(workflowGroupItemId)), IProgressMonitor.UNKNOWN);
         var archiveFilePath = srcPaths.get(0); // There can only be one
         List<SpaceItemEnt> importedSpaceItems;
         try {
@@ -133,8 +115,8 @@ class ImportWorkflows extends AbstractImportItems {
                     MetaInfoFile.createOrGetMetaInfoFileForDirectory(destPath.toFile(), false);
                 }
             };
-            var importedItem = LocalSpaceUtil.getLocalWorkspace().importWorkflows(archiveFilePath, workflowGroupItemId,
-                createMetaInfoFileFor);
+            var importedItem = localWorkspace.importWorkflowOrWorkflowGroup(archiveFilePath, workflowGroupItemId,
+                createMetaInfoFileFor, collisionHandling);
             importedSpaceItems = Collections.singletonList(importedItem);
         } catch (IOException e) {
             LOGGER.error(String.format("Could not import <%s>", archiveFilePath), e);
@@ -149,13 +131,4 @@ class ImportWorkflows extends AbstractImportItems {
         DesktopAPUtil.showWarning("Workflow import", "Not all selected workflows could be imported");
     }
 
-    private static File findRootDirOfFile(final File file) {
-        var parent = file.getParentFile();
-        var child = file;
-        while (parent != null) {
-            child = parent;
-            parent = child.getParentFile();
-        }
-        return child;
-    }
 }

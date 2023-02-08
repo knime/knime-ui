@@ -44,64 +44,48 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 30, 2023 (hornm): created
+ *   Feb 8, 2023 (hornm): created
  */
-package org.knime.ui.java.api;
+package org.knime.ui.java.browser.lifecycle;
 
-import java.io.IOException;
-
-import org.knime.ui.java.util.LocalSpaceUtil;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
- * Functions around importing stuff.
+ * The startup life cycle transition.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class ImportAPI {
+final class Startup {
 
-    private static final ImportWorkflows IMPORT_WORKFLOWS = new ImportWorkflows();
-
-    private static final ImportFiles IMPORT_FILES = new ImportFiles();
-
-    private ImportAPI() {
-        // stateless
+    private Startup() {
+        //
     }
 
-    /**
-     * Import workflows into a workspace and save them to the specified location.
-     *
-     * @return Success state
-     */
-    @API
-    static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
-        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
-            throw new IllegalArgumentException("Cannot import workflows to non-local workspaces");
+    static void run() {
+        // Determine with what perspective to start (classic or modern UI).
+        // Stored as a eclipse preference and subsequently (from here on)
+        // controlled via the 'perspective' system property.
+        IEclipsePreferences prefs = null;
+        if (isInstanceLocationSet()) {
+            // Only access the preference store if the workspace-location is already set.
+            // Otherwise a default one will be set on accessing the preferences -
+            // something we must avoid because otherwise the user doesn't get to select one
+            // later in the startup-routine (via the workspace selection prompt)
+            prefs = InstanceScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
         }
-        return IMPORT_WORKFLOWS.importItems(itemId);
-    }
-
-    /**
-     * Import data files into a workspace and save them to the specified location.
-     *
-     * @return Success state
-     */
-    @API
-    static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
-        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
-            throw new IllegalArgumentException("Cannot import files to non-local workspaces");
+        if (prefs == null || prefs.getBoolean(SharedConstants.PREFERENCE_KEY, true)) {
+            System.setProperty(SharedConstants.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
+        } else {
+            System.setProperty(SharedConstants.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
         }
-        return IMPORT_FILES.importItems(itemId);
     }
 
-    /**
-     * Imports a URI at a certain position in the workflow canvas (i.e. usually imported as a new node).
-     */
-    @API
-    static boolean importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
-        final double canvasX, final double canvasY) {
-        return ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
+    private static boolean isInstanceLocationSet() {
+        var instanceLocation = Platform.getInstanceLocation();
+        return instanceLocation != null && instanceLocation.isSet();
     }
 
 }

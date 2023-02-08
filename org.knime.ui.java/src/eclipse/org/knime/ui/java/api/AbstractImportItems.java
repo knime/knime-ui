@@ -48,19 +48,21 @@
  */
 package org.knime.ui.java.api;
 
+
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
-import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
  * Abstract helper class to import files or workflows into a given workspace.
@@ -74,12 +76,7 @@ abstract class AbstractImportItems {
     /**
      * @return True if at least one import succeeded, false otherwise
      */
-    boolean importItems(final String spaceProviderId, final String spaceId, final String itemId) {
-        if (!spaceProviderId.equals("local") || !spaceId.equals("local")) {
-            throw new IllegalArgumentException("Cannot import something to non-local workspaces");
-        }
-
-        // Get file paths of files to import
+    boolean importItems(final String itemId) throws IOException {
         var dialog = getFileDialog();
         var pathString = dialog.open();
         if (pathString == null) {
@@ -89,38 +86,20 @@ abstract class AbstractImportItems {
         var fileNames = dialog.getFileNames();
         var srcPaths = Arrays.stream(fileNames).map(baseDir::resolve).collect(Collectors.toList());
 
-        // Check for name collisions and solve them
-        var solutionAccepted = checkForNameCollisionsAndSuggestSolution(itemId, srcPaths);
-        if (!solutionAccepted) {
-            // If the user does not accept auto-renaming, we could alternatively import only those item
-            // without name collisions. Currently, we just do not import anything.
+        var collisionHandling = checkForNameCollisionsAndSuggestSolution(itemId, srcPaths).orElse(null);
+        if (collisionHandling == null) {
             return false;
         }
 
-        // Attempt to import files
-        var importedSpaceItems = DesktopAPUtil
-            .runWithProgress(itemId, LOGGER, monitor -> importItems(monitor, itemId, srcPaths))
+        var importedSpaceItems = DesktopAPUtil//
+            .runWithProgress(itemId, LOGGER, monitor -> importItems(monitor, itemId, srcPaths, collisionHandling))
             .orElse(Collections.emptyList());
 
-        // Notify the user if not all files could be imported
         if (importedSpaceItems.size() < fileNames.length) {
             showWarningWithTitleAndMessage();
         }
 
-        // Create response for the FE
-        return !importedSpaceItems.isEmpty();
-    }
-
-    /**
-     * Gets the name of a workflow group.
-     *
-     * @param workflowGroupItemId The workflow group item ID
-     * @return The name of the workflow group
-     */
-    protected static String getWorkflowGroupName(final String workflowGroupItemId) {
-        // Make sure to not look up the root item ID, because that will fail; return it instead.
-        return Space.ROOT_ITEM_ID.equals(workflowGroupItemId) ? workflowGroupItemId : LocalSpaceUtil.getLocalWorkspace()
-            .toLocalAbsolutePath(null, workflowGroupItemId).getFileName().toString();
+        return !importedSpaceItems.isEmpty(); // To create a response for the FE
     }
 
     /**
@@ -133,10 +112,13 @@ abstract class AbstractImportItems {
      *
      * @param workflowGroupItemId The workflow group item ID to check
      * @param srcPaths The source paths of the items to import
-     * @return {@code true} if auto-renaming was accepted (or no collisions existed), {@code false} otherwise
+     *
+     * @return Can be one of {@link NameCollisionHandling}, or an empty optional if no collision handling strategy is
+     *         provided
+     * @throws IOException In case some files could not be read
      */
-    protected abstract boolean checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
-        final List<Path> srcPaths);
+    protected abstract Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(
+        final String workflowGroupItemId, final List<Path> srcPaths) throws IOException;
 
     /**
      * Shows a warning if the import was not complete.
@@ -147,11 +129,13 @@ abstract class AbstractImportItems {
      * The function to run with progress to import the items
      *
      * @param monitor The progress monitor passed in
-     * @param workflowGroupItemId The workfflow group item ID
+     * @param workflowGroupItemId The workflow group item ID
      * @param srcPaths The source paths of the items to import
+     * @param collisionHandling The name collision handling to use
+     *
      * @return A list of space item entities that were imported
      */
     protected abstract List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final String workflowGroupItemId,
-        final List<Path> srcPaths);
+        final List<Path> srcPaths, final NameCollisionHandling collisionHandling);
 
 }
