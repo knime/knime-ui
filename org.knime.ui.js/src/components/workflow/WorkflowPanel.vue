@@ -1,5 +1,6 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
+import { saveWorkflowLocally } from '@api';
 import Button from 'webapps-common/ui/components/Button.vue';
 import StreamingIcon from 'webapps-common/ui/assets/img/icons/nodes-connect.svg';
 import ContextMenu from '@/components/application/ContextMenu.vue';
@@ -25,7 +26,7 @@ export default {
             'portTypeMenu',
             'quickAddNodeMenu'
         ]),
-        ...mapState('application', ['contextMenu']),
+        ...mapState('application', ['contextMenu', 'activeProjectId']),
         ...mapGetters('workflow', [
             'isLinked',
             'isInsideLinked',
@@ -58,7 +59,8 @@ export default {
             event.preventDefault();
         },
         onSaveLocalCopy() {
-            console.log('clicked');
+            saveWorkflowLocally({ projectId: this.activeProjectId });
+            // console.log(this.activeProjectId);
         }
     }
 };
@@ -182,7 +184,7 @@ export default {
   }
 
   & .button {
-    width: 150px;
+    width: 130px;
     pointer-events: all;
   }
 

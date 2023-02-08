@@ -243,3 +243,12 @@ export const getNameCollisionStrategy = ({
         throw error;
     }
 };
+
+export const saveWorkflowLocally = ({ projectId }) => {
+    try {
+        window.saveWorkflowLocally(projectId);
+    } catch (error) {
+        consola.error(`Could not save workflow locally`, { projectId, error });
+        throw error;
+    }
+};
