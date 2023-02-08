@@ -70,3 +70,22 @@ export const deleteItems = async ({ spaceProviderId = 'local', spaceId, itemIds 
         throw new Error(`Could not delete the items ${itemIds} from space ${spaceId}. Error: ${e}`);
     }
 };
+
+export const moveItems = async ({
+    spaceProviderId = 'local',
+    spaceId,
+    itemIds,
+    destWorkflowGroupItemId,
+    collisionStrategy
+}) => {
+    try {
+        return await rpc(
+            'SpaceService.moveItems',
+            spaceId, spaceProviderId, itemIds, destWorkflowGroupItemId, collisionStrategy
+        );
+    } catch (e) {
+        consola.error(e);
+        throw new Error(`Could not move the items ${itemIds} from space ${spaceId} to ${destWorkflowGroupItemId}. 
+        Error: ${e}`);
+    }
+};

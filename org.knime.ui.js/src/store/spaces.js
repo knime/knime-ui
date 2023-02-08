@@ -11,6 +11,7 @@ import {
     importFiles,
     importWorkflows,
     deleteItems,
+    moveItems,
     renameItem
 // eslint-disable-next-line object-curly-newline
 } from '@api';
@@ -269,6 +270,14 @@ export const actions = {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const currentWorkflowGroupId = getters.currentWorkflowGroupId;
         await deleteItems({ spaceProviderId, spaceId, itemIds });
+        await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+    },
+
+    async moveItems({ state, getters, dispatch }, { itemIds, destWorkflowGroupItemId, collisionStrategy }) {
+        const { spaceId } = state.activeSpace;
+        const currentWorkflowGroupId = getters.currentWorkflowGroupId;
+
+        await moveItems({ spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     }
 };

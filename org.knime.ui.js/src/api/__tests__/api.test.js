@@ -536,5 +536,21 @@ describe('API', () => {
                 id: 0
             });
         });
+
+        it('moveItems', async () => {
+            const spaceProviderId = 'local';
+            const spaceId = 'local';
+            const itemIds = ['id1', 'id2'];
+            const destWorkflowGroupItemId = 'group1';
+            const collisionStrategy = 'NOOP';
+            await api.moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.moveItems',
+                params: [spaceId, spaceProviderId, itemIds, destWorkflowGroupItemId, collisionStrategy],
+                id: 0
+            });
+        });
     });
 });

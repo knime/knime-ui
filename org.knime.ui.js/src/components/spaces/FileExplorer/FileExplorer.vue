@@ -220,7 +220,7 @@ export default {
             }
 
             const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
-            this.$emit('move', {
+            this.$emit('move-items', {
                 sourceItems: selectedIndexes.map(index => this.items[index].id),
                 targetItem: isGoBackItem ? '..' : this.items[index].id
             });
