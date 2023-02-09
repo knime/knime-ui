@@ -252,3 +252,15 @@ export const copyBetweenSpaces = ({ spaceProviderId = 'local', spaceId = 'local'
         throw error;
     }
 };
+
+// TODO: (NXT-1431) : This needs to be called with project ID and workflow preview SVG,
+// so the (potentially modified) workflow can be saved correctly.
+export const saveWorkflowLocally = ({ projectId, workflowPreviewSvg }) => {
+    try {
+        window.saveWorkflowLocally(projectId, workflowPreviewSvg);
+    } catch (error) {
+        consola.error(`Could not save workflow locally`, { projectId, error });
+        throw error;
+    }
+};
+

@@ -93,7 +93,7 @@ class ImportWorkflows extends AbstractImportItems {
     protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final Space space,
             final String workflowGroupItemId, final List<Path> srcPaths) throws IOException {
         var archiveFilePath = srcPaths.get(0); // There can only be one
-        var nameCollision = NameCollisionChecker.checkForNameCollision(space, workflowGroupItemId, archiveFilePath);
+        var nameCollision = NameCollisionChecker.checkForNameCollisionInZip(space, archiveFilePath, workflowGroupItemId);
         return nameCollision.map(nc -> {
             var nameCollisions = Collections.singletonList(nc);
             return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions);

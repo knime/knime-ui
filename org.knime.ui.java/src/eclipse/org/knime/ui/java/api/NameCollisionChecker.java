@@ -48,6 +48,8 @@
  */
 package org.knime.ui.java.api;
 
+import static org.eclipse.core.runtime.Path.forPosix;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -61,7 +63,6 @@ import org.eclipse.swt.SWT;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
-import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
  * Utility methods to checks for name collisions and handling option selection.
@@ -103,11 +104,10 @@ final class NameCollisionChecker {
      * @return List of already existing names
      */
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
-            final List<Path> srcPaths) {
+        final List<Path> srcPaths) {
         return srcPaths.stream() //
-            .map(Path::getFileName) //
-            .map(Path::toString) //
-            .filter(itemName -> space.containsItemWithName(destWorkflowGroupItemId, itemName)) //
+            .map(srcPath -> checkForNameCollisionInDir(space, srcPath, destWorkflowGroupItemId))//
+            .flatMap(Optional::stream)//
             .collect(Collectors.toList());
     }
 
@@ -120,16 +120,34 @@ final class NameCollisionChecker {
      * @return The optional name of the existing workflow group.
      * @throws IOException If it couldn't extract the *.zip file properly.
      */
-    static Optional<String> checkForNameCollision(final Space space, final String destWorkflowGroupItemId,
-            final Path srcPath) throws IOException {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+    static Optional<String> checkForNameCollisionInZip(final Space space, final Path srcPath,
+        final String destWorkflowGroupItemId) throws IOException {
         try (var zipFile = new ZipFile(srcPath.toFile())) { // To close the resource
             var dirName = zipFile.stream()//
-                .map(entry -> org.eclipse.core.runtime.Path.forPosix(entry.toString()).segment(0))//
+                .map(entry -> forPosix(entry.toString()).segment(0))//
                 .findFirst()//
                 .orElseThrow(IOException::new);
             return Optional.of(dirName)//
-                .filter(name -> localWorkspace.containsItemWithName(destWorkflowGroupItemId, name));
+                .filter(name -> space.containsItemWithName(destWorkflowGroupItemId, name));
+        }
+    }
+
+    /**
+     * Checks for name collisions before something is written to the destination workflow group.
+     *
+     * @param space surrounding space
+     * @param srcPath The source path of the directory
+     * @param destWorkflowGroupItemId The destination workflow group ID
+     *
+     * @return The optional name of the existing workflow group.
+     */
+    static Optional<String> checkForNameCollisionInDir(final Space space, final Path srcPath,
+        final String destWorkflowGroupItemId) {
+        var fileName = srcPath.getFileName().toString();
+        if (space.containsItemWithName(destWorkflowGroupItemId, fileName)) {
+            return Optional.of(fileName);
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -142,13 +160,13 @@ final class NameCollisionChecker {
      *         been selected (cancel)
      */
     static Optional<NameCollisionHandling> openDialogToSelectCollisionHandling(final Space space,
-            final String workflowGroupItemId, final List<String> nameCollisions) {
+        final String workflowGroupItemId, final List<String> nameCollisions) {
         var names = nameCollisions.stream().map(name -> "* " + name).collect(Collectors.joining("\n"));
         var sh = SWTUtilities.getActiveShell();
         var msg = String.format(
             "The following items already exist in \"%s\": %n%n%s %n%n"
                 + "Overwrite existing items or keep all by renaming automatically?",
-                space.getItemName(workflowGroupItemId), names);
+            space.getItemName(workflowGroupItemId), names);
         var choice = MessageDialog.open(MessageDialog.QUESTION, sh, "Items already exist", msg, SWT.NONE, //
             "Cancel", // 0
             "Overwrite", // 1

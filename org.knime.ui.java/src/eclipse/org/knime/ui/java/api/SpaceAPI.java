@@ -133,8 +133,8 @@ final class SpaceAPI {
     }
 
     /**
-     * Checks if the names of the corresponding space items already exists within the destination workflow group. If
-     * so, it will present a dialog to select the preferred solution for it.
+     * Checks if the names of the corresponding space items already exists within the destination workflow group. If so,
+     * it will present a dialog to select the preferred solution for it.
      *
      * @param spaceProviderId The space provider ID
      * @param spaceId The space ID
@@ -143,10 +143,10 @@ final class SpaceAPI {
      * @return Can be one of the {@link Space.NameCollisionHandling}-values or 'CANCEL'
      */
     @API
-    static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId,
-        final Object[] itemIds, final String destWorkflowGroupItemId) {
+    static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
+        final String destWorkflowGroupItemId) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
+        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) { // Does this still make sense?
             throw new IllegalArgumentException("Cannot yet move items within non-local workspaces");
         }
         var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
@@ -154,9 +154,9 @@ final class SpaceAPI {
             return Space.NameCollisionHandling.NOOP.toString();
         } else {
             return NameCollisionChecker //
-                    .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions) //
-                    .map(NameCollisionHandling::toString) //
-                    .orElse("CANCEL");
+                .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions) //
+                .map(NameCollisionHandling::toString) //
+                .orElse("CANCEL");
         }
     }
 
@@ -196,7 +196,7 @@ final class SpaceAPI {
             return false;
         }
 
-        final var destInfoOptional = HubDestinationPicker.promptForTargetLocation(mountIds);
+        final var destInfoOptional = SpaceDestinationPicker.promptForTargetLocation(mountIds);
         if (!destInfoOptional.isPresent()) {
             return false;
         }

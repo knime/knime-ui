@@ -51,6 +51,7 @@ package org.knime.ui.java.api;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
@@ -127,6 +128,23 @@ final class WorkflowAPI {
                 .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
+    }
+
+    /**
+     * Saves a currently open remote workflow locally, closes the remote one and opens the local copy instead.
+     *
+     * @param projectId The project ID of the open remote workflow
+     * @param workflowPreviewSvg The project preview SVG
+     */
+    @API
+    static void saveWorkflowLocally(final String projectId, final String workflowPreviewSvg) {
+        var spaceItem = SaveRemoteWorkflowLocally.saveAndClose(projectId, workflowPreviewSvg);
+        spaceItem.map(LocalSpaceUtil::toLocalOrigin).ifPresent(origin -> {
+            var providerId = origin.getProviderId();
+            var spaceId = origin.getSpaceId();
+            var itemId = origin.getItemId();
+            OpenWorkflow.openWorkflow(spaceId, itemId, providerId);
+        });
     }
 
 }

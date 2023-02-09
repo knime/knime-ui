@@ -61,9 +61,9 @@ import org.knime.workbench.explorer.view.dialogs.UploadDestinationSelectionDialo
  *
  * @author Leonard Wörteler, KNIME GmbH, Konstanz, Germany
  */
-final class HubDestinationPicker {
+final class SpaceDestinationPicker {
 
-    private HubDestinationPicker() {
+    private SpaceDestinationPicker() {
     }
 
     /**
