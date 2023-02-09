@@ -13,7 +13,7 @@ import {
     deleteItems,
     moveItems,
     renameItem,
-    uploadItemsToHub
+    copyBetweenSpaces
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
@@ -288,8 +288,10 @@ export const actions = {
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     },
 
-    uploadToHub(_, { itemIds }) {
-        uploadItemsToHub({ itemIds });
+    uploadToHub({ state }, { itemIds }) {
+        const { id: spaceProviderId } = state.activeSpaceProvider;
+        const { spaceId } = state.activeSpace;
+        copyBetweenSpaces({ spaceProviderId, spaceId, itemIds });
     }
 };
 

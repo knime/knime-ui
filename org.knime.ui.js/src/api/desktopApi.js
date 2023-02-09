@@ -244,9 +244,9 @@ export const getNameCollisionStrategy = ({
     }
 };
 
-export const uploadItemsToHub = ({ itemIds }) => {
+export const copyBetweenSpaces = ({ spaceProviderId = 'local', spaceId = 'local', itemIds }) => {
     try {
-        return window.uploadItems(itemIds);
+        return window.copyBetweenSpaces(spaceProviderId, spaceId, itemIds);
     } catch (error) {
         consola.error(`Error uploading to Hub space`, { error });
         throw error;
