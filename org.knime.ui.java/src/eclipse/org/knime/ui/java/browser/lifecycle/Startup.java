@@ -48,8 +48,7 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
@@ -67,7 +66,7 @@ final class Startup {
         // Determine with what perspective to start (classic or modern UI).
         // Stored as a eclipse preference and subsequently (from here on)
         // controlled via the 'perspective' system property.
-        IEclipsePreferences prefs = InstanceScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
+        var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
         if (prefs == null || prefs.getBoolean(SharedConstants.PREFERENCE_KEY, true)) {
             System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
         } else {

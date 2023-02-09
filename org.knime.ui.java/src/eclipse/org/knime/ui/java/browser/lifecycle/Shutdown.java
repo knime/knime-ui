@@ -48,7 +48,7 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
 import org.knime.core.node.NodeLogger;
@@ -76,7 +76,7 @@ final class Shutdown {
         if (state != null) {
             AppStatePersistor.saveAppState(state.serializedAppState());
         }
-        var prefs = InstanceScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
+        var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
         prefs.putBoolean(SharedConstants.PREFERENCE_KEY, !PerspectiveUtil.isClassicPerspectiveActive());
         try {
             prefs.flush();
