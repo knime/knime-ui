@@ -1,5 +1,4 @@
 <script>
-import { mapState } from 'vuex';
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 
 import Button from 'webapps-common/ui/components/Button.vue';
@@ -53,24 +52,31 @@ export default {
         disabledActions: {
             type: Object,
             default: () => ({})
+        },
+
+        isLocal: {
+            type: Boolean,
+            default: false
         }
     },
 
     computed: {
-        ...mapState('spaces', { spaceId: state => state.activeSpace?.spaceId }),
-        isLocal() {
-            return this.spaceId === 'local';
-        },
         actions() {
             return [
-                {
-                    id: this.isLocal ? 'upload-to-hub' : 'download-to-local-space',
-                    text: this.isLocal ? 'Upload to Hub' : 'Download to local space',
-                    icon: this.isLocal ? CloudUploadIcon : CloudDownloadIcon,
-                    disabled:
-                    this.isLocal ? this.disabledActions.uploadToHub : this.disabledActions.downloadToLocalSpace
+                this.isLocal
+                    ? {
+                        id: 'upload-to-hub',
+                        text: 'Upload to Hub',
+                        icon: CloudUploadIcon,
+                        disabled: this.disabledActions.uploadToHub
                     
-                },
+                    }
+                    : {
+                        id: 'download-to-local-space',
+                        text: 'Download to local space',
+                        icon: CloudDownloadIcon,
+                        disabled: this.disabledActions.downloadToLocalSpace
+                    },
                 {
                     id: 'create-folder',
                     text: 'Create folder',

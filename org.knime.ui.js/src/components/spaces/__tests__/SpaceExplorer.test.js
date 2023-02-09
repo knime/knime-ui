@@ -393,7 +393,7 @@ describe('SpaceExplorer.vue', () => {
     
             expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
                 uploadToHub: true,
-                downloadToLocalSpace: true
+                downloadToLocalSpace: false
             });
 
             // simulate active selection
