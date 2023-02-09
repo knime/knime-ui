@@ -25,7 +25,7 @@ export default {
             'portTypeMenu',
             'quickAddNodeMenu'
         ]),
-        ...mapState('application', ['contextMenu', 'activeProjectId']),
+        ...mapState('application', ['contextMenu']),
         ...mapGetters('workflow', [
             'isLinked',
             'isInsideLinked',
