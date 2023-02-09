@@ -56,7 +56,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collector;
 
-import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -232,14 +231,14 @@ public final class AppStatePersistor {
             @Override
             public WorkflowManager openProject() {
                 if (!Files.exists(absolutePath)) {
-                    Display.getDefault().syncExec(() -> DesktopAPUtil.showWarning("No workflow project found",
-                        "No workflow project found at " + absolutePath));
+                    DesktopAPUtil.showWarning("No workflow project found",
+                        "No workflow project found at " + absolutePath);
                     return null;
                 }
                 var wfm = DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(localSpace, itemId).orElse(null);
                 if (wfm == null) {
-                    Display.getDefault().syncExec(() -> DesktopAPUtil.showWarning("Failed to load workflow",
-                        "The workflow at '" + absolutePath + "' couldn't be loaded."));
+                    DesktopAPUtil.showWarning("Failed to load workflow",
+                        "The workflow at '" + absolutePath + "' couldn't be loaded.");
                 }
                 return wfm;
             }

@@ -48,9 +48,7 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
@@ -68,25 +66,13 @@ final class Startup {
         // Determine with what perspective to start (classic or modern UI).
         // Stored as a eclipse preference and subsequently (from here on)
         // controlled via the 'perspective' system property.
-        IEclipsePreferences prefs = null;
-        if (isInstanceLocationSet()) {
-            // Only access the preference store if the workspace-location is already set.
-            // Otherwise a default one will be set on accessing the preferences -
-            // something we must avoid because otherwise the user doesn't get to select one
-            // later in the startup-routine (via the workspace selection prompt)
-            // Update: it turns out that this didn't seem to be the culprit. But it makes sense nevertheless.
-            prefs = InstanceScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
-        }
+        var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
         if (prefs == null || prefs.getBoolean(SharedConstants.PREFERENCE_KEY, true)) {
             System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
         } else {
             System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
+            PerspectiveUtil.setClassicPerspectiveActive(true);
         }
-    }
-
-    private static boolean isInstanceLocationSet() {
-        var instanceLocation = Platform.getInstanceLocation();
-        return instanceLocation != null && instanceLocation.isSet();
     }
 
 }

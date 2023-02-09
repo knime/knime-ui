@@ -121,14 +121,14 @@ public final class ImportURI {
             if (entityImport != null) {
                 return entityImport;
             }
-            if (!uriString.startsWith("http")) {
-                var path = Path.of(uriString);
-                if (path == null) {
-                    path = Path.of(uri);
-                }
-                if (path != null && Files.exists(path)) {
-                    return new FromFileEntityImport(path);
-                }
+            Path path = null;
+            if ("file".equals(uri.getScheme())) {
+                path = Path.of(uri);
+            } else if (uri.getScheme() == null) {
+                path = Path.of(uriString);
+            }
+            if (path != null && Files.exists(path)) {
+                return new FromFileEntityImport(path);
             }
         } catch (Exception e) { // NOSONAR
             exception = e;

@@ -5,6 +5,9 @@ import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
 import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
+import Vuex from 'vuex';
+import Vue from 'vue';
+import { mockVuexStore } from '@/test/test-utils';
 
 import FileExplorer from '../FileExplorer.vue';
 
@@ -48,7 +51,35 @@ describe('FileExplorer.vue', () => {
         }
     ];
 
+    const storeConfig = {
+        workflow: {
+            actions: {
+                addNode: jest.fn()
+            }
+        },
+        canvas: {
+            getters: {
+                screenToCanvasCoordinates: jest.fn().mockReturnValue(() => [5, 5])
+            },
+            state: {
+                getScrollContainerElement: jest.fn().mockReturnValue({ contains: jest.fn().mockReturnValue(true) })
+            }
+        },
+        spaces: {
+            state: {
+                activeSpaceProvider: { id: 'local' },
+                activeSpace: {
+                    spaceId: 'local',
+                    activeWorkflowGroup: null,
+                    startItemId: null
+                }
+            }
+        }
+    };
+
     const doMount = ({ props = {} } = { }) => {
+        const $store = mockVuexStore(storeConfig);
+        const mocks = { $store, $shapes: { nodeSize: 32 } };
         const defaultProps = {
             items: MOCK_DATA,
             isRootFolder: true,
@@ -56,11 +87,16 @@ describe('FileExplorer.vue', () => {
         };
 
         const wrapper = mount(FileExplorer, {
-            propsData: { ...defaultProps, ...props }
+            propsData: { ...defaultProps, ...props },
+            mocks
         });
 
         return { wrapper };
     };
+
+    beforeAll(() => {
+        Vue.use(Vuex);
+    });
 
     it('should display all files and directories correctly', () => {
         const { wrapper } = doMount();
@@ -218,6 +254,24 @@ describe('FileExplorer.vue', () => {
                 sourceItems: ['0'],
                 targetItem: '..'
             });
+        });
+
+        it('should call addNode if file is above canvas', async () => {
+            document.elementFromPoint = jest.fn().mockReturnValue(null);
+            const { wrapper } = doMount();
+
+            // workflow-group item
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+
+            await firstItem.trigger('dragend');
+
+            expect(storeConfig.workflow.actions.addNode).toBeCalledWith(
+                expect.anything(),
+                {
+                    position: { x: 5, y: 5 },
+                    spaceItemId: { itemId: '0', providerId: 'local', spaceId: 'local' }
+                }
+            );
         });
     });
 
