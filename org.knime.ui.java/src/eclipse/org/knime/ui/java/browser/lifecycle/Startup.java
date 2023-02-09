@@ -81,6 +81,7 @@ final class Startup {
             System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
         } else {
             System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
+            PerspectiveUtil.setClassicPerspectiveActive(true);
         }
     }
 
