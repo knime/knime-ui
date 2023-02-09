@@ -56,10 +56,14 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -68,12 +72,15 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
+import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
 /**
  * Save the project workflow manager identified by a given project ID.
@@ -158,6 +165,8 @@ final class SaveWorkflow {
     static void saveWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
         if (wfm.isComponentProjectWFM()) {
             throw new UnsupportedOperationException("Saving a component project is not yet implemented");
+        } else if (wfm.getContextV2().getLocationType() == LocationType.HUB_SPACE) {
+            saveBackToHub(monitor, wfm, svg);
         } else {
             saveRegularWorkflow(monitor, wfm, svg);
         }
@@ -183,8 +192,8 @@ final class SaveWorkflow {
 
         // Save the workflow preview SVG
         if (svg == null) {
-            Display.getDefault().syncExec(() -> DesktopAPUtil.showWarning("Failed to save workflow preview",
-                String.format("The workflow preview (svg) couldn't be saved for workflow %s", wfm.getName())));
+            DesktopAPUtil.showWarning("Failed to save workflow preview",
+                String.format("The workflow preview (svg) couldn't be saved for workflow %s", wfm.getName()));
         } else {
             try {
                 Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg,
@@ -210,4 +219,57 @@ final class SaveWorkflow {
             .forEach(WorkflowEditor::unmarkDirty);
     }
 
+    private static boolean saveBackToHub(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
+        final var context = wfm.getContextV2();
+        if (!context.isTemporyWorkflowCopyMode()) {
+            throw new IllegalStateException("Can only save temporary copies to Hub.");
+        }
+
+        final var remoteMountpointURI = context.getMountpointURI().orElseThrow();
+        final var remoteStore = ExplorerFileSystem.INSTANCE.getStore(remoteMountpointURI);
+
+        final var fetchInfo = remoteStore.fetchInfo();
+        if (fetchInfo.exists()) {
+            if (!fetchInfo.isModifiable()) {
+                DesktopAPUtil.showError("Workflow not writable",
+                    "You don't have permissions to overwrite the workflow. Use \"Save As...\" in order to save it to "
+                    + "a different location.");
+                return false;
+            }
+
+            final var dialogResult = new AtomicInteger();
+            Display.getDefault().syncExec(() -> {
+                final var display = PlatformUI.getWorkbench().getDisplay();
+                final var dialog = new MessageDialog(display.getActiveShell(), "Overwrite on Hub?", null,
+                    "The workflow\n\n\t" + remoteStore.getMountIDWithFullPath()
+                        + "\n\nalready exists on the Hub. Do you want to overwrite it?\n",
+                    MessageDialog.QUESTION, new String[] { IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL }, 1);
+                dialogResult.set(dialog.open());
+            });
+            if (dialogResult.get() != 1) {
+                return false;
+            }
+        } else if (!remoteStore.getParent().fetchInfo().isModifiable()) {
+            DesktopAPUtil.showError("Workflow not writable", "You don't have permissions to write into the workflow's "
+                + "parent folder. Use \"Save As...\" in order to save it to a different location.");
+            return false;
+        }
+
+        // selected a remote location: save + upload
+        saveRegularWorkflow(monitor, wfm, svg);
+
+        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap();
+        final var spaceProvider = Optional.ofNullable(spaceProviders.get(remoteMountpointURI.getAuthority())) //
+                .orElseThrow(() -> new IllegalStateException("Space provider '" + remoteMountpointURI.getAuthority()
+                          + "' not found."));
+        final var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+        try {
+            spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, false, monitor, err -> {});
+        } catch (final CoreException e) {
+            final var message = "Failed to upload the workflow to its remote location\n(" + e.getMessage() + ")";
+            DesktopAPUtil.showAndLogError("Upload has failed", message, LOGGER, e);
+            return false;
+        }
+        return true;
+    }
 }

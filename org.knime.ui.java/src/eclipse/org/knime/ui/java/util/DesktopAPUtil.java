@@ -59,6 +59,7 @@ import java.util.function.Function;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.CanceledExecutionException;
@@ -166,9 +167,25 @@ public final class DesktopAPUtil {
      * @param message warning message
      */
     public static void showWarning(final String title, final String message) {
-        @SuppressWarnings("restriction")
-        var sh = org.knime.core.ui.util.SWTUtilities.getActiveShell();
-        MessageDialog.openWarning(sh, title, message);
+        Display.getDefault().syncExec(() -> {
+            @SuppressWarnings("restriction")
+            var sh = org.knime.core.ui.util.SWTUtilities.getActiveShell();
+            MessageDialog.openWarning(sh, title, message);
+        });
+    }
+
+    /**
+     * Shows an SWT error.
+     *
+     * @param title error title
+     * @param message error message
+     */
+    public static void showError(final String title, final String message) {
+        Display.getDefault().syncExec(() -> {
+            @SuppressWarnings("restriction")
+            var sh = org.knime.core.ui.util.SWTUtilities.getActiveShell();
+            MessageDialog.openError(sh, title, message);
+        });
     }
 
     /**
@@ -183,6 +200,20 @@ public final class DesktopAPUtil {
             final Throwable e) {
         logger.error(title + ": " + message, e);
         showWarning(title, message);
+    }
+
+    /**
+     * Logs an error in addition to showing it using {@link #showError(String, String)}.
+     *
+     * @param title title of warning and log message
+     * @param message warning message
+     * @param logger logger to use
+     * @param e exception to log
+     */
+    public static void showAndLogError(final String title, final String message, final NodeLogger logger,
+            final Throwable e) {
+        logger.error(title + ": " + message, e);
+        showError(title, message);
     }
 
     /**
