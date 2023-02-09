@@ -69,7 +69,7 @@ export default {
     },
 
     computed: {
-        ...mapGetters('canvas', ['screenToCanvasCoordinates', 'getVisibleFrame']),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates', 'getScrollContainerElement']),
         ...mapState('spaces', ['activeSpace', 'activeSpaceProvider']),
         isRenamingInvalid() {
             return INVALID_NAME_CHARACTERS.test(this.renameValue);
@@ -218,7 +218,9 @@ export default {
                 e.clientX - this.$shapes.nodeSize / 2,
                 e.clientY - this.$shapes.nodeSize / 2
             ]);
-            if (this.isAboveCanvas({ x, y })) {
+            const el = document.elementFromPoint(x, y);
+            const kanvas = this.getScrollContainerElement();
+            if (kanvas.contains(el)) {
                 try {
                     await this.addNode({
                         position: { x, y },
@@ -233,13 +235,6 @@ export default {
                     throw error;
                 }
             }
-        },
-
-        isAboveCanvas({ x, y }) {
-            const { top, left, right, bottom } = this.getVisibleFrame();
-            const xInBounds = x > left && x < right;
-            const yInBounds = y > top && y < bottom;
-            return xInBounds && yInBounds;
         },
 
         onDrop(index, isGoBackItem = false) {

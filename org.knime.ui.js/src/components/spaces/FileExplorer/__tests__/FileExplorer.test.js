@@ -60,7 +60,8 @@ describe('FileExplorer.vue', () => {
         canvas: {
             getters: {
                 screenToCanvasCoordinates: jest.fn().mockReturnValue(() => [5, 5]),
-                getVisibleFrame: jest.fn().mockReturnValue(() => ({ top: 0, left: 0, right: 100, bottom: 100 }))
+                getScrollContainerElement:
+                    jest.fn().mockReturnValue(() => ({ contains: jest.fn().mockReturnValue(true) }))
             }
         },
         spaces: {
@@ -255,6 +256,7 @@ describe('FileExplorer.vue', () => {
         });
 
         it('should call addNode if file is above canvas', async () => {
+            document.elementFromPoint = jest.fn().mockReturnValue(null);
             const { wrapper } = doMount();
 
             // workflow-group item
