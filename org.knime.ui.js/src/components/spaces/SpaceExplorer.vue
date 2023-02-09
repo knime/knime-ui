@@ -209,7 +209,7 @@ export default {
             }
         },
 
-        onMoveItems({ sourceItems, targetItem }) {
+        async onMoveItems({ sourceItems, targetItem }) {
             const openedWorkflows = this.openProjects.filter(workflow => sourceItems.includes(workflow.origin.itemId));
             const isInsideFolder = this.openProjects.filter((project) => project.origin.ancestorItemIds
                 .some((ancestorId) => sourceItems.includes(ancestorId)));
@@ -230,7 +230,7 @@ export default {
 
             if (this.isLocal && !isTheSameFolder) {
                 const destId = targetItem === '..' ? 'root' : targetItem;
-                const collisionStrategy = getNameCollisionStrategy(
+                const collisionStrategy = await getNameCollisionStrategy(
                     { itemIds: sourceItems, destWorkflowGroupItemId: destId }
                 );
 
@@ -240,7 +240,7 @@ export default {
                 
                 this.$store.dispatch(
                     'spaces/moveItems',
-                    { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionStrategy }
+                    { itemIds: sourceItems, destWorkflowGroupItemId: destId, collisionStrategy }
                 );
             }
         }
