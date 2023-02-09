@@ -203,22 +203,24 @@ export const actions = {
     },
 
     async createWorkflow({ commit, getters, state, dispatch }) {
+        const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
 
-        const newWorkflowItem = await createWorkflow({ spaceId, itemId });
+        const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId });
 
         dispatch('fetchWorkflowGroupContent', { itemId });
-        openWorkflow({ workflowItemId: newWorkflowItem.id });
+        openWorkflow({ workflowItemId: newWorkflowItem.id, spaceId, spaceProviderId });
 
         return newWorkflowItem;
     },
 
     async createFolder({ dispatch, getters, state }) {
+        const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
 
-        const newFolderItem = await createFolder({ spaceId, itemId });
+        const newFolderItem = await createFolder({ spaceId, spaceProviderId, itemId });
 
         dispatch('fetchWorkflowGroupContent', { itemId });
 
@@ -250,9 +252,13 @@ export const actions = {
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
     },
 
-    async importToWorkflowGroup({ dispatch, getters }, { importType }) {
+    async importToWorkflowGroup({ state, dispatch, getters }, { importType }) {
+        const { id: spaceProviderId } = state.activeSpaceProvider;
+        const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
-        const success = importType === 'FILES' ? await importFiles({ itemId }) : await importWorkflows({ itemId });
+        const success = importType === 'FILES'
+            ? await importFiles({ spaceProviderId, spaceId, itemId })
+            : await importWorkflows({ spaceProviderId, spaceId, itemId });
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
         }

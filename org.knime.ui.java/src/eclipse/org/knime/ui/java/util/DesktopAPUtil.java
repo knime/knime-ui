@@ -130,7 +130,6 @@ public final class DesktopAPUtil {
             }, wfFile, workflowContext).run(monitor);
             return wfmRef.get();
         });
-
     }
 
     /**
@@ -217,7 +216,7 @@ public final class DesktopAPUtil {
      * @return returned value
      */
     public static <T> Optional<T> runWithProgress(final String name, final NodeLogger logger,
-        final Function<IProgressMonitor, T> func) {
+            final Function<IProgressMonitor, T> func) {
         try {
             final var ref = new AtomicReference<T>();
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> ref.set(func.apply(monitor)));

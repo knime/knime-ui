@@ -61,6 +61,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
+import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.util.DesktopAPUtil;
 
@@ -76,7 +77,8 @@ abstract class AbstractImportItems {
     /**
      * @return True if at least one import succeeded, false otherwise
      */
-    boolean importItems(final String itemId) throws IOException {
+    boolean importItems(final Space space, final String itemId) throws IOException {
+        // Get file paths of files to import
         var dialog = getFileDialog();
         var pathString = dialog.open();
         if (pathString == null) {
@@ -86,20 +88,23 @@ abstract class AbstractImportItems {
         var fileNames = dialog.getFileNames();
         var srcPaths = Arrays.stream(fileNames).map(baseDir::resolve).collect(Collectors.toList());
 
-        var collisionHandling = checkForNameCollisionsAndSuggestSolution(itemId, srcPaths).orElse(null);
+        // Check for name collisions and solve them
+        var collisionHandling = checkForNameCollisionsAndSuggestSolution(space, itemId, srcPaths).orElse(null);
         if (collisionHandling == null) {
             return false;
         }
 
-        var importedSpaceItems = DesktopAPUtil//
-            .runWithProgress(itemId, LOGGER, monitor -> importItems(monitor, itemId, srcPaths, collisionHandling))
+        // Attempt to import files
+        var importedSpaceItems = DesktopAPUtil.runWithProgress(itemId, LOGGER, //
+                monitor -> importItems(monitor, space, itemId, srcPaths, collisionHandling)) //
             .orElse(Collections.emptyList());
 
         if (importedSpaceItems.size() < fileNames.length) {
             showWarningWithTitleAndMessage();
         }
 
-        return !importedSpaceItems.isEmpty(); // To create a response for the FE
+        // Create response for the FE
+        return !importedSpaceItems.isEmpty();
     }
 
     /**
@@ -110,6 +115,7 @@ abstract class AbstractImportItems {
     /**
      * Checks for name collision and prompts the user to accept suggested auto-renaming solution.
      *
+     * @param space surrounding space
      * @param workflowGroupItemId The workflow group item ID to check
      * @param srcPaths The source paths of the items to import
      *
@@ -117,7 +123,7 @@ abstract class AbstractImportItems {
      *         provided
      * @throws IOException In case some files could not be read
      */
-    protected abstract Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(
+    protected abstract Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(Space space,
         final String workflowGroupItemId, final List<Path> srcPaths) throws IOException;
 
     /**
@@ -129,13 +135,13 @@ abstract class AbstractImportItems {
      * The function to run with progress to import the items
      *
      * @param monitor The progress monitor passed in
+     * @param space space to import the items into
      * @param workflowGroupItemId The workflow group item ID
      * @param srcPaths The source paths of the items to import
      * @param collisionHandling The name collision handling to use
      *
      * @return A list of space item entities that were imported
      */
-    protected abstract List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final String workflowGroupItemId,
-        final List<Path> srcPaths, final NameCollisionHandling collisionHandling);
-
+    protected abstract List<SpaceItemEnt> importItems(IProgressMonitor monitor, Space space, String workflowGroupItemId,
+        List<Path> srcPaths, final NameCollisionHandling collisionHandling);
 }

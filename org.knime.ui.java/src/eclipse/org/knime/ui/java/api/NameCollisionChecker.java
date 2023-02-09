@@ -80,48 +80,48 @@ final class NameCollisionChecker {
     /**
      * Checks for name collisions before something is written to the destination workflow group.
      *
-     * @param itemIds The list of source item IDs
+     * @param space surrounding space
      * @param destWorkflowGroupItemId The destination workflow group ID
-     *
+     * @param itemIds The list of source item IDs
      * @return List of already existing names
      */
-    static List<String> checkForNameCollisions(final Object[] itemIds, final String destWorkflowGroupItemId) {
-        var localWorkSpace = LocalSpaceUtil.getLocalWorkspace();
+    static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
+            final Object[] itemIds) {
         return Arrays.stream(itemIds)//
             .map(String.class::cast)//
-            .map(localWorkSpace::getItemName)//
-            .filter(itemName -> localWorkSpace.containsItemWithName(destWorkflowGroupItemId, itemName))//
+            .map(space::getItemName)//
+            .filter(itemName -> space.containsItemWithName(destWorkflowGroupItemId, itemName))//
             .collect(Collectors.toList());
     }
 
     /**
      * Checks for name collisions before something is written to the destination workflow group.
      *
-     * @param srcPaths The list of source paths
+     * @param space surrounding space
      * @param destWorkflowGroupItemId The destination workflow group ID
-     *
+     * @param srcPaths The list of source paths
      * @return List of already existing names
      */
-    static List<String> checkForNameCollisions(final List<Path> srcPaths, final String destWorkflowGroupItemId) {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        return srcPaths.stream()//
-            .map(Path::getFileName)//
-            .map(Path::toString)//
-            .filter(itemName -> localWorkspace.containsItemWithName(destWorkflowGroupItemId, itemName))//
+    static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
+            final List<Path> srcPaths) {
+        return srcPaths.stream() //
+            .map(Path::getFileName) //
+            .map(Path::toString) //
+            .filter(itemName -> space.containsItemWithName(destWorkflowGroupItemId, itemName)) //
             .collect(Collectors.toList());
     }
 
     /**
      * Checks for name collisions before something is written to the destination workflow group.
      *
-     * @param srcPath The source path of the *.zip file
+     * @param space surrounding space
      * @param destWorkflowGroupItemId The destination workflow group ID
-     *
+     * @param srcPath The source path of the *.zip file
      * @return The optional name of the existing workflow group.
      * @throws IOException If it couldn't extract the *.zip file properly.
      */
-    static Optional<String> checkForNameCollision(final Path srcPath, final String destWorkflowGroupItemId)
-        throws IOException {
+    static Optional<String> checkForNameCollision(final Space space, final String destWorkflowGroupItemId,
+            final Path srcPath) throws IOException {
         var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         try (var zipFile = new ZipFile(srcPath.toFile())) { // To close the resource
             var dirName = zipFile.stream()//
@@ -141,15 +141,14 @@ final class NameCollisionChecker {
      *         {@link Space.NameCollisionHandling#OVERWRITE} or an empty optional if no collision handling strategy has
      *         been selected (cancel)
      */
-    static Optional<NameCollisionHandling> openDialogToSelectCollisionHandling(final String workflowGroupItemId,
-        final List<String> nameCollisions) {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+    static Optional<NameCollisionHandling> openDialogToSelectCollisionHandling(final Space space,
+            final String workflowGroupItemId, final List<String> nameCollisions) {
         var names = nameCollisions.stream().map(name -> "* " + name).collect(Collectors.joining("\n"));
         var sh = SWTUtilities.getActiveShell();
         var msg = String.format(
             "The following items already exist in \"%s\": %n%n%s %n%n"
                 + "Overwrite existing items or keep all by renaming automatically?",
-            localWorkspace.getItemName(workflowGroupItemId), names);
+                space.getItemName(workflowGroupItemId), names);
         var choice = MessageDialog.open(MessageDialog.QUESTION, sh, "Items already exist", msg, SWT.NONE, //
             "Cancel", // 0
             "Overwrite", // 1

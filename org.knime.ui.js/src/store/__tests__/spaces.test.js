@@ -359,7 +359,11 @@ describe('spaces store', () => {
                 expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level2' })
                 );
-                expect(openWorkflow).toHaveBeenCalledWith({ workflowItemId: 'NewFile' });
+                expect(openWorkflow).toHaveBeenCalledWith({
+                    spaceId: 'local',
+                    spaceProviderId: 'local',
+                    workflowItemId: 'NewFile'
+                });
             });
         });
 
@@ -448,7 +452,11 @@ describe('spaces store', () => {
                 };
 
                 store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' });
-                expect(importFiles).toHaveBeenCalledWith({ itemId: 'level1' });
+                expect(importFiles).toHaveBeenCalledWith({
+                    itemId: 'level1',
+                    spaceId: 'local',
+                    spaceProviderId: 'local'
+                });
             });
 
             it('should import workflows', () => {
@@ -462,7 +470,11 @@ describe('spaces store', () => {
                 };
 
                 store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
-                expect(importWorkflows).toHaveBeenCalledWith({ itemId: 'level2' });
+                expect(importWorkflows).toHaveBeenCalledWith({
+                    itemId: 'level2',
+                    spaceId: 'local',
+                    spaceProviderId: 'local'
+                });
             });
         });
 

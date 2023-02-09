@@ -96,7 +96,6 @@ export default {
         <div class="grid-item-12">
           <div class="toolbar">
             <SpaceExplorerActions
-              v-if="activeSpaceInfo.local"
               :disabled-actions="explorerDisabledActions"
               @action:create-workflow="$store.dispatch('spaces/createWorkflow')"
               @action:create-folder="$store.dispatch('spaces/createFolder')"

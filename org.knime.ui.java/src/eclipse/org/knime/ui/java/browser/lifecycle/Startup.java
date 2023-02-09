@@ -74,12 +74,13 @@ final class Startup {
             // Otherwise a default one will be set on accessing the preferences -
             // something we must avoid because otherwise the user doesn't get to select one
             // later in the startup-routine (via the workspace selection prompt)
+            // Update: it turns out that this didn't seem to be the culprit. But it makes sense nevertheless.
             prefs = InstanceScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
         }
         if (prefs == null || prefs.getBoolean(SharedConstants.PREFERENCE_KEY, true)) {
-            System.setProperty(SharedConstants.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
+            System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
         } else {
-            System.setProperty(SharedConstants.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
+            System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
         }
     }
 

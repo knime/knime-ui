@@ -59,12 +59,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.ClassUtils;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
  * Import data files into a workspace and save them to the specified location.
@@ -81,26 +82,29 @@ class ImportFiles extends AbstractImportItems {
     }
 
     @Override
-    protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final String workflowGroupItemId,
-        final List<Path> srcPaths) {
-        var nameCollisions = NameCollisionChecker.checkForNameCollisions(srcPaths, workflowGroupItemId);
+    protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final Space space,
+            final String workflowGroupItemId, final List<Path> srcPaths) {
+        final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId, srcPaths);
         if (nameCollisions.isEmpty()) {
             return Optional.of(NameCollisionHandling.NOOP);
         } else {
-            return NameCollisionChecker.openDialogToSelectCollisionHandling(workflowGroupItemId, nameCollisions);
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions);
         }
     }
 
     @Override
-    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final String workflowGroupItemId,
-        final List<Path> srcPaths, final Space.NameCollisionHandling collisionHandling) {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        monitor.beginTask(String.format("Importing %d files to \"%s\"", srcPaths.size(),
-            localWorkspace.getItemName(workflowGroupItemId)), IProgressMonitor.UNKNOWN);
+    protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final Space space,
+            final String workflowGroupItemId, final List<Path> srcPaths,
+            final Space.NameCollisionHandling collisionHandling) {
+        final var name = ClassUtils.castOptional(LocalWorkspace.class, space) //
+                .map(local -> local.getItemName(workflowGroupItemId)) //
+                .orElse(space.getName());
+        monitor.beginTask(String.format("Importing %d files into \"%s\"", srcPaths.size(), name),
+            IProgressMonitor.UNKNOWN);
         var importedSpaceItems = srcPaths.stream()//
-            .map(srcPath -> { // Import every single file
-                try {
-                    return localWorkspace.importFile(srcPath, workflowGroupItemId, collisionHandling);
+                .map(srcPath -> { // Import every single file
+                    try {
+                        return space.importFile(srcPath, workflowGroupItemId, collisionHandling, monitor);
                 } catch (IOException e) {
                     LOGGER.error(String.format("Could not import <%s>", srcPath), e);
                     return null;
