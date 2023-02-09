@@ -2,6 +2,10 @@
 import { mapGetters, mapState } from 'vuex';
 import { getNameCollisionStrategy } from '@api';
 
+import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
+import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
+import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
+
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import ITEM_TYPES from '@/util/spaceItemTypes';
@@ -57,7 +61,8 @@ export default {
             'openedWorkflowItems',
             'openedFolderItems',
             'pathToItemId',
-            'hasActiveHubSession'
+            'hasActiveHubSession',
+            'activeSpaceInfo'
         ]),
 
         fileExplorerItems() {
@@ -65,7 +70,7 @@ export default {
                 ...item,
                 displayOpenIndicator:
                   this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id),
-                
+
                 canBeDeleted:
                   !this.openedWorkflowItems.includes(item.id) && !this.openedFolderItems.includes(item.id)
             }));
@@ -75,19 +80,37 @@ export default {
             return this.spaceId === 'local';
         },
 
+        homeBreadcrumbItem() {
+            if (this.mode !== 'mini') {
+                return {
+                    text: 'Home',
+                    id: 'root'
+                };
+            }
+
+            // use icons for mini mode
+            let icon = ComputerDesktopIcon;
+            if (!this.activeSpaceInfo.local) {
+                icon = this.activeSpaceInfo.private ? PrivateSpaceIcon : CubeIcon;
+            }
+            return {
+                title: this.activeSpaceInfo.name,
+                icon,
+                id: 'root'
+            };
+        },
+
         breadcrumbItems() {
             if (!this.activeWorkflowGroup) {
                 return [{
-                    text: 'Home',
-                    id: 'root',
+                    ...this.homeBreadcrumbItem,
                     clickable: false
                 }];
             }
 
             const { path } = this.activeWorkflowGroup;
             const rootBreadcrumb = {
-                text: 'Home',
-                id: 'root',
+                ...this.homeBreadcrumbItem,
                 clickable: path.length > 0
             };
             const lastPathIndex = path.length - 1;
@@ -237,7 +260,7 @@ export default {
                 if (collisionStrategy === 'CANCEL') {
                     return;
                 }
-                
+
                 this.$store.dispatch(
                     'spaces/moveItems',
                     { itemIds: sourceItems, destWorkflowGroupItemId: destId, collisionStrategy }
@@ -346,6 +369,15 @@ export default {
 
     &::-webkit-scrollbar {
       display: none;
+    }
+
+    & >>> ul > li > span {
+      color: var(--knime-dove-gray);
+
+      &:last-child,
+      &:hover {
+        color: var(--knime-masala);
+      }
     }
   }
 }
