@@ -61,6 +61,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.util.ClassUtils;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.util.SWTUtilities;
@@ -104,12 +105,15 @@ class ImportWorkflows extends AbstractImportItems {
     protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final Space space,
             final String workflowGroupItemId, final List<Path> srcPaths,
             final Space.NameCollisionHandling collisionHandling) {
+        CheckUtils.checkArgument(srcPaths.size() == 1,
+                "Expected a single workflow or folder to import, found %", srcPaths);
+        final var archiveFilePath = srcPaths.get(0);
+
+        // avoid reading the repository item again
         final var name = ClassUtils.castOptional(LocalWorkspace.class, space) //
-                .map(local -> local.getItemName(workflowGroupItemId)) //
-                .orElse(space.getName());
-        monitor.beginTask(String.format("Importing %d files to \"%s\"", srcPaths.size(), name),
-            IProgressMonitor.UNKNOWN);
-        var archiveFilePath = srcPaths.get(0); // There can only be one
+                .map(local -> '"' + local.getItemName(workflowGroupItemId) + '"') //
+                .orElse("Hub space \"" + space.getName() + '"');
+        monitor.beginTask(String.format("Importing %d files into %s", srcPaths.size(), name), IProgressMonitor.UNKNOWN);
         List<SpaceItemEnt> importedSpaceItems;
         try {
             // Since this has `knime-workbench` dependencies, we cannot run it in `knime-gateway`.
@@ -121,7 +125,7 @@ class ImportWorkflows extends AbstractImportItems {
                 }
             };
             var importedItem = space.importWorkflowOrWorkflowGroup(archiveFilePath, workflowGroupItemId,
-                createMetaInfoFileFor, collisionHandling);
+                createMetaInfoFileFor, collisionHandling, monitor);
             importedSpaceItems = Collections.singletonList(importedItem);
         } catch (IOException e) {
             LOGGER.error(String.format("Could not import <%s>", archiveFilePath), e);

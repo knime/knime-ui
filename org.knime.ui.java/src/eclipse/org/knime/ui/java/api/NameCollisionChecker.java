@@ -88,10 +88,10 @@ final class NameCollisionChecker {
      */
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
             final Object[] itemIds) {
-        return Arrays.stream(itemIds)//
-            .map(String.class::cast)//
-            .map(space::getItemName)//
-            .filter(itemName -> space.containsItemWithName(destWorkflowGroupItemId, itemName))//
+        return Arrays.stream(itemIds) //
+            .map(String.class::cast) //
+            .map(space::getItemName) //
+            .filter(itemName -> space.containsItemWithName(destWorkflowGroupItemId, itemName)) //
             .collect(Collectors.toList());
     }
 
@@ -121,14 +121,16 @@ final class NameCollisionChecker {
      * @throws IOException If it couldn't extract the *.zip file properly.
      */
     static Optional<String> checkForNameCollisionInZip(final Space space, final Path srcPath,
-        final String destWorkflowGroupItemId) throws IOException {
-        try (var zipFile = new ZipFile(srcPath.toFile())) { // To close the resource
-            var dirName = zipFile.stream()//
-                .map(entry -> forPosix(entry.toString()).segment(0))//
-                .findFirst()//
-                .orElseThrow(IOException::new);
-            return Optional.of(dirName)//
-                .filter(name -> space.containsItemWithName(destWorkflowGroupItemId, name));
+            final String destWorkflowGroupItemId) throws IOException {
+        try (final var zipFile = new ZipFile(srcPath.toFile())) {
+            final var rootNames = zipFile.stream() //
+                .map(entry -> forPosix(entry.toString()).segment(0)) //
+                .collect(Collectors.toSet());
+            if (rootNames.size() != 1) {
+                throw new IOException("Expected one item in archive '" + srcPath + "', found " + rootNames + ".");
+            }
+            return Optional.of(rootNames.iterator().next()) //
+                    .filter(name -> space.containsItemWithName(destWorkflowGroupItemId, name));
         }
     }
 

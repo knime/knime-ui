@@ -51,7 +51,6 @@ package org.knime.ui.java.api;
 import java.io.IOException;
 
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
  * Functions around importing stuff.
@@ -76,9 +75,6 @@ final class ImportAPI {
     @API
     static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
             throws IOException {
-        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
-            throw new IllegalArgumentException("Cannot import workflows to non-local workspaces");
-        }
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         return IMPORT_WORKFLOWS.importItems(space, itemId);
     }
