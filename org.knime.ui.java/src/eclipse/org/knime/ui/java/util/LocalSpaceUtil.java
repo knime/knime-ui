@@ -53,9 +53,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProject.Origin;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
@@ -176,30 +174,4 @@ public final class LocalSpaceUtil {
     public static boolean isLocalSpace(final String spaceProviderId, final String spaceId) {
         return spaceProviderId.equals(LOCAL_SPACE_PROVIDER_ID) && spaceId.equals(LocalWorkspace.LOCAL_WORKSPACE_ID);
     }
-
-    /**
-     * @param spaceItemEnt The local space item entity
-     * @return The origin of that local space item
-     */
-    public static Origin toLocalOrigin(final SpaceItemEnt spaceItemEnt) {
-        return new Origin() {
-
-            @Override
-            public String getProviderId() {
-                return LOCAL_SPACE_PROVIDER_ID;
-            }
-
-            @Override
-            public String getSpaceId() {
-                return LocalWorkspace.LOCAL_WORKSPACE_ID;
-            }
-
-            @Override
-            public String getItemId() {
-                return spaceItemEnt.getId();
-            }
-
-        };
-    }
-
 }

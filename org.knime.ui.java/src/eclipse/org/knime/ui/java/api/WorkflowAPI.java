@@ -51,6 +51,7 @@ package org.knime.ui.java.api;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
@@ -139,12 +140,8 @@ final class WorkflowAPI {
     @API
     static void saveWorkflowLocally(final String projectId, final String workflowPreviewSvg) {
         var spaceItem = SaveRemoteWorkflowLocally.saveAndClose(projectId, workflowPreviewSvg);
-        spaceItem.map(LocalSpaceUtil::toLocalOrigin).ifPresent(origin -> {
-            var providerId = origin.getProviderId();
-            var spaceId = origin.getSpaceId();
-            var itemId = origin.getItemId();
-            OpenWorkflow.openWorkflow(spaceId, itemId, providerId);
-        });
+        spaceItem.ifPresent(item -> OpenWorkflow.openWorkflow(LocalWorkspace.LOCAL_WORKSPACE_ID, item.getId(),
+            LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID));
     }
 
 }

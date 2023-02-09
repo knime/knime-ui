@@ -146,7 +146,7 @@ final class SpaceAPI {
     static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
         final String destWorkflowGroupItemId) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) { // Does this still make sense?
+        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
             throw new IllegalArgumentException("Cannot yet move items within non-local workspaces");
         }
         var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);

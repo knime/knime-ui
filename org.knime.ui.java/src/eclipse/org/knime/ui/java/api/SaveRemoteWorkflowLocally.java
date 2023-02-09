@@ -103,7 +103,7 @@ final class SaveRemoteWorkflowLocally {
             return Optional.empty();
         }
 
-        SaveWorkflow.saveWorkflow(projectId, workflowGroupItemId);
+        SaveWorkflow.saveWorkflow(projectId, workflowPreviewSvg);
         var isClosed = CloseWorkflow.closeWorkflow(projectId, null);
         if (!isClosed) {
             return Optional.empty();
