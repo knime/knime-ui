@@ -1,4 +1,8 @@
-import { mount } from '@vue/test-utils';
+import Vuex from 'vuex';
+import { createLocalVue, mount } from '@vue/test-utils';
+
+import { mockVuexStore } from '@/test/test-utils';
+import * as spacesStore from '@/store/spaces';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
@@ -7,23 +11,48 @@ import ToolbarButton from '@/components/common/ToolbarButton.vue';
 import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 
 describe('SpaceExplorerActions.vue', () => {
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
+
     const doMount = ({ props = {} } = {}) => {
-        const wrapper = mount(SpaceExplorerActions, {
-            propsData: props,
-            mocks: { $shortcuts: { get: jest.fn(() => ({})) } }
+        const store = mockVuexStore({
+            spaces: spacesStore
         });
 
-        return { wrapper };
+        const wrapper = mount(SpaceExplorerActions, {
+            propsData: props,
+            mocks: { $store: store, $shortcuts: { get: jest.fn(() => ({})) } }
+        });
+
+        return { wrapper, store };
     };
 
     describe('Normal mode', () => {
-        it('should render actions', () => {
+        it('should render actions for local space', () => {
             const { wrapper } = doMount();
 
             expect(wrapper.find('.toolbar-actions-normal').exists()).toBe(true);
             expect(wrapper.find('.toolbar-actions-mini').exists()).toBe(false);
 
             expect(wrapper.text()).toMatch('Upload to Hub');
+            expect(wrapper.text()).toMatch('Create folder');
+            expect(wrapper.text()).toMatch('Import workflow');
+            expect(wrapper.text()).toMatch('Add files');
+
+            expect(wrapper.findComponent(PlusButton).exists()).toBe(true);
+        });
+
+        it('should render actions for hub', async () => {
+            const { wrapper, store } = doMount();
+            store.state.spaces.activeSpace = { spaceId: 'hub1' };
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.find('.toolbar-actions-normal').exists()).toBe(true);
+            expect(wrapper.find('.toolbar-actions-mini').exists()).toBe(false);
+
+            expect(wrapper.text()).toMatch('Download to local space');
             expect(wrapper.text()).toMatch('Create folder');
             expect(wrapper.text()).toMatch('Import workflow');
             expect(wrapper.text()).toMatch('Add files');
@@ -69,7 +98,7 @@ describe('SpaceExplorerActions.vue', () => {
     });
 
     describe('Mini mode', () => {
-        it('should render actions', () => {
+        it('should render actions for local space', () => {
             const { wrapper } = doMount({
                 props: { mode: 'mini' }
             });
@@ -82,6 +111,26 @@ describe('SpaceExplorerActions.vue', () => {
             expect(wrapper.text()).toMatch('Import workflow');
             expect(wrapper.text()).toMatch('Add files');
     
+            expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
+            expect(wrapper.findComponent(SubMenu).props('items').length).toBe(4);
+            expect(wrapper.findComponent(ToolbarButton).exists()).toBe(true);
+        });
+
+        it('should render actions for hub', async () => {
+            const { wrapper, store } = doMount({
+                props: { mode: 'mini' }
+            });
+            store.state.spaces.activeSpace = { spaceId: 'hub1' };
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.find('.toolbar-actions-mini').exists()).toBe(true);
+            expect(wrapper.find('.toolbar-actions-normal').exists()).toBe(false);
+
+            expect(wrapper.text()).toMatch('Download to local space');
+            expect(wrapper.text()).toMatch('Create folder');
+            expect(wrapper.text()).toMatch('Import workflow');
+            expect(wrapper.text()).toMatch('Add files');
+
             expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
             expect(wrapper.findComponent(SubMenu).props('items').length).toBe(4);
             expect(wrapper.findComponent(ToolbarButton).exists()).toBe(true);

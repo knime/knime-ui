@@ -1,9 +1,11 @@
 <script>
+import { mapState } from 'vuex';
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 
 import Button from 'webapps-common/ui/components/Button.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
+import CloudDownloadIcon from 'webapps-common/ui/assets/img/icons/cloud-download.svg';
 import CloudUploadIcon from 'webapps-common/ui/assets/img/icons/cloud-upload.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 
@@ -21,6 +23,7 @@ export default {
         PlusIcon,
         ToolbarButton,
         FolderPlusIcon,
+        CloudDownloadIcon,
         CloudUploadIcon,
         ImportWorkflowIcon,
         AddFileIcon,
@@ -40,6 +43,7 @@ export default {
          * @property {Boolean} [importWorkflow]
          * @property {Boolean} [importFiles]
          * @property {Boolean} [uploadToHub]
+         * @property {Boolean} [downloadToLocalSpace]
         */
         /**
          * Object containing whether each action is allowed.
@@ -53,13 +57,18 @@ export default {
     },
 
     computed: {
+        ...mapState('spaces', { spaceId: state => state.activeSpace?.spaceId }),
+        isLocal() {
+            return this.spaceId === 'local';
+        },
         actions() {
             return [
                 {
-                    id: 'upload-to-hub',
-                    text: 'Upload to Hub',
-                    icon: CloudUploadIcon,
-                    disabled: this.disabledActions.uploadToHub
+                    id: this.isLocal ? 'upload-to-hub' : 'download-to-local-space',
+                    text: this.isLocal ? 'Upload to Hub' : 'Download to local space',
+                    icon: this.isLocal ? CloudUploadIcon : CloudDownloadIcon,
+                    disabled:
+                    this.isLocal ? this.disabledActions.uploadToHub : this.disabledActions.downloadToLocalSpace
                     
                 },
                 {

@@ -133,7 +133,10 @@ export default {
         },
 
         explorerDisabledActions() {
-            return { uploadToHub: !this.hasActiveHubSession || this.selectedItems.length === 0 };
+            return {
+                uploadToHub: !this.hasActiveHubSession || this.selectedItems.length === 0,
+                downloadToLocalSpace: this.selectedItems.length === 0
+            };
         }
     },
 

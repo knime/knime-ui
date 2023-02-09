@@ -8,7 +8,7 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import * as spacesStore from '@/store/spaces';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
-// import SpaceExplorerActions from '../SpaceExplorerActions.vue';
+import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 import SpaceBrowsingPage from '../SpaceBrowsingPage.vue';
 
 jest.mock('@api');
@@ -51,6 +51,7 @@ describe('SpaceBrowsingPage', () => {
         expect(wrapper.findComponent(PageHeader).exists()).toBe(true);
         expect(wrapper.findComponent(SpaceExplorer).exists()).toBe(true);
         expect(wrapper.findComponent(ArrowLeftIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(true);
     });
 
     it('renders correct information for local space', () => {
@@ -123,31 +124,6 @@ describe('SpaceBrowsingPage', () => {
             name: APP_ROUTES.EntryPage.SpaceSelectionPage
         });
     });
-
-    /*it('renders space explorer actions for local space only', async () => {
-        const { wrapper, $store } = doMount();
-
-        expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(true);
-
-        $store.state.spaces = {
-            activeSpace: {
-                spaceId: 'randomhub'
-            },
-            activeSpaceProvider: {
-                spaces: [
-                    {
-                        id: 'randomhub',
-                        name: 'My public space',
-                        private: false
-                    }
-                ]
-            }
-        };
-
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(false);
-    });*/
 
     it('should handle the import workflow action', () => {
         const { wrapper, dispatchSpy } = doMount();
