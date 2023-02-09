@@ -4,6 +4,7 @@ import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
+import CloudDownloadIcon from 'webapps-common/ui/assets/img/icons/cloud-download.svg';
 import CloudUploadIcon from 'webapps-common/ui/assets/img/icons/cloud-upload.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 
@@ -21,6 +22,7 @@ export default {
         PlusIcon,
         ToolbarButton,
         FolderPlusIcon,
+        CloudDownloadIcon,
         CloudUploadIcon,
         ImportWorkflowIcon,
         AddFileIcon,
@@ -40,6 +42,7 @@ export default {
          * @property {Boolean} [importWorkflow]
          * @property {Boolean} [importFiles]
          * @property {Boolean} [uploadToHub]
+         * @property {Boolean} [downloadToLocalSpace]
         */
         /**
          * Object containing whether each action is allowed.
@@ -49,19 +52,31 @@ export default {
         disabledActions: {
             type: Object,
             default: () => ({})
+        },
+
+        isLocal: {
+            type: Boolean,
+            default: false
         }
     },
 
     computed: {
         actions() {
             return [
-                {
-                    id: 'upload-to-hub',
-                    text: 'Upload to Hub',
-                    icon: CloudUploadIcon,
-                    disabled: this.disabledActions.uploadToHub
+                this.isLocal
+                    ? {
+                        id: 'upload-to-hub',
+                        text: 'Upload to Hub',
+                        icon: CloudUploadIcon,
+                        disabled: this.disabledActions.uploadToHub
                     
-                },
+                    }
+                    : {
+                        id: 'download-to-local-space',
+                        text: 'Download to local space',
+                        icon: CloudDownloadIcon,
+                        disabled: this.disabledActions.downloadToLocalSpace
+                    },
                 {
                     id: 'create-folder',
                     text: 'Create folder',

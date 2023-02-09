@@ -52,7 +52,10 @@ export default {
         },
 
         explorerDisabledActions() {
-            return { uploadToHub: !this.hasActiveHubSession || this.selectedItems.length === 0 };
+            return {
+                uploadToHub: !this.hasActiveHubSession || this.selectedItems.length === 0,
+                downloadToLocalSpace: !this.activeSpaceInfo.local && this.selectedItems.length === 0
+            };
         }
     },
     async created() {
@@ -96,12 +99,14 @@ export default {
         <div class="grid-item-12">
           <div class="toolbar">
             <SpaceExplorerActions
+              :is-local="activeSpaceInfo.local"
               :disabled-actions="explorerDisabledActions"
               @action:create-workflow="$store.dispatch('spaces/createWorkflow')"
               @action:create-folder="$store.dispatch('spaces/createFolder')"
               @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"
               @action:import-files="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' })"
               @action:upload-to-hub="$store.dispatch('spaces/uploadToHub', { itemIds: selectedItems })"
+              @action:download-to-local-space="$store.dispatch('spaces/uploadToHub', { itemIds: selectedItems })"
             />
           </div>
         </div>

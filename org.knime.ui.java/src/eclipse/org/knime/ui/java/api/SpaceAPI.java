@@ -50,9 +50,9 @@ package org.knime.ui.java.api;
 
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -62,12 +62,10 @@ import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
-import org.knime.workbench.explorer.ExplorerMountTable;
-import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
-import org.knime.workbench.explorer.view.AbstractContentProvider;
 
 /**
  * Functions around spaces.
@@ -135,8 +133,8 @@ final class SpaceAPI {
     }
 
     /**
-     * Checks if the names of the corresponding space items already exists within the destination workflow group. If
-     * so, it will present a dialog to select the preferred solution for it.
+     * Checks if the names of the corresponding space items already exists within the destination workflow group. If so,
+     * it will present a dialog to select the preferred solution for it.
      *
      * @param spaceProviderId The space provider ID
      * @param spaceId The space ID
@@ -145,8 +143,8 @@ final class SpaceAPI {
      * @return Can be one of the {@link Space.NameCollisionHandling}-values or 'CANCEL'
      */
     @API
-    static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId,
-        final Object[] itemIds, final String destWorkflowGroupItemId) {
+    static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
+        final String destWorkflowGroupItemId) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
             throw new IllegalArgumentException("Cannot yet move items within non-local workspaces");
@@ -156,44 +154,49 @@ final class SpaceAPI {
             return Space.NameCollisionHandling.NOOP.toString();
         } else {
             return NameCollisionChecker //
-                    .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions) //
-                    .map(NameCollisionHandling::toString) //
-                    .orElse("CANCEL");
+                .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions) //
+                .map(NameCollisionHandling::toString) //
+                .orElse("CANCEL");
         }
     }
 
     /**
-     * Uploads items from the local workspace to Hub.
+     * Copies space items from Local to Hub space or vice versa.
      *
-     * @param arr array of item IDs, the type is too general because of API restrictions
+     * @param spaceProviderId provider ID of the source space
+     * @param spaceId ID of the source space
+     * @param arr array of item IDs
      * @return {@code true} if all files could be uploaded, {@code false} otherwise
      */
     @API
-    static boolean uploadItems(final Object arr) {
-        if (Array.getLength(arr) == 0) {
+    static boolean copyBetweenSpaces(final String spaceProviderId, final String spaceId, final Object[] arr) {
+        if (arr.length == 0) {
             return true;
         }
 
-        final var mountIds = ExplorerMountTable.getMountedContent().values().stream() //
-                .filter(c -> c.isWritable() && isHubMountpoint(c)) //
-                .map(AbstractContentProvider::getMountID) //
+        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+        final var sourceSpace = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
+
+        final var upload = Arrays.stream(arr) //
+                .map(String.class::cast) //
+                .map(sourceSpace::toKnimeUrl) //
+                .map(ExplorerFileSystem.INSTANCE::getStore) //
                 .collect(Collectors.toList());
-        if (mountIds.isEmpty()) {
+
+        final var isLocal = sourceSpace instanceof LocalWorkspace;
+        final var mountIds = !isLocal ? new String[] { LocalWorkspace.LOCAL_WORKSPACE_ID.toUpperCase(Locale.ROOT) }
+            : spaceProviders.getProvidersMap().entrySet().stream() //
+                .filter(provider -> !provider.getValue().isLocal()
+                    && provider.getValue().getConnection(false).isPresent()) //
+                .map(Entry::getKey) //
+                .toArray(String[]::new);
+
+        if (mountIds.length == 0) {
             DesktopAPUtil.showWarning("No Hub spaces available", "Please log into the Hub you want to upload to.");
             return false;
         }
 
-        final var localSpace = LocalSpaceUtil.getLocalWorkspace();
-        final var upload = new ArrayList<AbstractExplorerFileStore>();
-        for (final var idObj : (Object[]) arr) {
-            final var path = Optional.ofNullable(localSpace.toLocalAbsolutePath(null, (String) idObj)) //
-                    .orElseThrow(() -> new IllegalArgumentException("No file with ID '" + idObj
-                        + "' found in the local space."));
-            upload.add(ExplorerFileSystem.INSTANCE.fromLocalFile(path.toFile()));
-        }
-
-        final var destInfoOptional =
-                HubDestinationPicker.promptForTargetLocation(mountIds.toArray(String[]::new));
+        final var destInfoOptional = SpaceDestinationPicker.promptForTargetLocation(mountIds);
         if (!destInfoOptional.isPresent()) {
             return false;
         }
@@ -201,17 +204,6 @@ final class SpaceAPI {
         final var destInfo = destInfoOptional.get();
         final var destinationStore = destInfo.getDestination();
         final var shell = Display.getCurrent().getActiveShell();
-        return new ClassicAPCopyMoveLogic(mountIds, shell, upload, destinationStore, false).run();
-    }
-
-    /**
-     * Determines whether or not the given content provider belongs to a Hub mountpoint by checking that it uses REST
-     * communication and that its root is not {@code /} (which would only be the case for KNIME Server).
-     *
-     * @param provider content provider
-     * @return {@code true} if the provider belongs to a Hub, {@code false} otherwise
-     */
-    private static boolean isHubMountpoint(final AbstractContentProvider provider) {
-        return provider.isUseRest() && provider.getRootStore().getFullName().length() > 1;
+        return new ClassicAPCopyMoveLogic(Arrays.asList(mountIds), shell, upload, destinationStore, false).run();
     }
 }

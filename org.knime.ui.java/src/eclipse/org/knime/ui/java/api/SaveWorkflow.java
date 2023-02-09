@@ -64,7 +64,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.CanceledExecutionException;
@@ -144,22 +143,15 @@ final class SaveWorkflow {
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    private static boolean saveWorkflowWithProgressBar(final WorkflowManager wfm, final String svg) {
-        // Create `IRunnableWithProgress` to save the workflow
-        IRunnableWithProgress saveRunnable = monitor -> saveWorkflow(monitor, wfm, svg);
-
-        // Run the runnable to save the workflow
+    private static void saveWorkflowWithProgressBar(final WorkflowManager wfm, final String svg) {
         try {
-            var ps = PlatformUI.getWorkbench().getProgressService();
-            ps.run(true, false, saveRunnable);
+            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> saveWorkflow(monitor, wfm, svg));
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving the workflow or saving the SVG failed", e);
         } catch (InterruptedException e) {
             LOGGER.warn("Interrupted the saving process");
             Thread.currentThread().interrupt();
         }
-
-        return true;
     }
 
     static void saveWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
@@ -177,20 +169,19 @@ final class SaveWorkflow {
      */
     private static void saveRegularWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm,
         final String svg) {
-        // Get workflow path
+        monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
         var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
 
-        // Save the workflow itself
         try {
             var exec = DesktopAPUtil.toExecutionMonitor(monitor);
             wfm.save(workflowPath.toFile(), exec, true);
         } catch (final IOException | CanceledExecutionException | LockFailedException e) {
             DesktopAPUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow didn't work",
                 LOGGER, e);
+            monitor.done();
             return; // Abort if saving the workflow fails
         }
 
-        // Save the workflow preview SVG
         if (svg == null) {
             DesktopAPUtil.showWarning("Failed to save workflow preview",
                 String.format("The workflow preview (svg) couldn't be saved for workflow %s", wfm.getName()));
@@ -203,6 +194,8 @@ final class SaveWorkflow {
                     "Saving the SVG didn't work", LOGGER, e));
             }
         }
+
+        monitor.done();
     }
 
     /**

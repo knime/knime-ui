@@ -392,7 +392,8 @@ describe('SpaceExplorer.vue', () => {
             await wrapper.vm.$nextTick();
     
             expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
-                uploadToHub: true
+                uploadToHub: true,
+                downloadToLocalSpace: false
             });
 
             // simulate active selection
@@ -401,7 +402,8 @@ describe('SpaceExplorer.vue', () => {
             await wrapper.vm.$nextTick();
 
             expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
-                uploadToHub: true
+                uploadToHub: true,
+                downloadToLocalSpace: false
             });
 
             // simulate 1 hub connected
@@ -412,7 +414,8 @@ describe('SpaceExplorer.vue', () => {
             await wrapper.vm.$nextTick();
 
             expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
-                uploadToHub: false
+                uploadToHub: false,
+                downloadToLocalSpace: false
             });
         });
     });
