@@ -303,25 +303,6 @@ describe('SpaceExplorer.vue', () => {
     });
 
     describe('Mini mode', () => {
-        /*it('should only show toolbar for space that is local', async () => {
-            const { wrapper, store } = doMount({ props: { mode: 'mini' } });
-            store.state.spaces.activeSpace = {
-                spaceId: 'local',
-                activeWorkflowGroup: {
-                    path: [],
-                    items: []
-                }
-            };
-            
-            await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(true);
-
-            store.state.spaces.activeSpace.spaceId = 'somerandomhub';
-
-            await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(false);
-        });*/
-
         it('should handle create workflow', async () => {
             const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
             store.state.spaces.activeSpace = {
@@ -503,10 +484,28 @@ describe('SpaceExplorer.vue', () => {
             const sourceItems = ['id1', 'id2'];
             const targetItem = 'group1';
             wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+            await wrapper.vm.$nextTick();
 
             expect(dispatchSpy).toHaveBeenCalledWith(
                 'spaces/moveItems',
                 { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionStrategy: 'OVERWRITE' }
+            );
+        });
+
+        it('should move items to root', async () => {
+            getNameCollisionStrategy.mockReturnValue('OVERWRITE');
+            const { wrapper, dispatchSpy } = doMount();
+            await wrapper.vm.$nextTick();
+            await wrapper.vm.$nextTick();
+    
+            const sourceItems = ['id1', 'id2'];
+            const targetItem = '..';
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+            await wrapper.vm.$nextTick();
+            
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'spaces/moveItems',
+                { itemIds: sourceItems, destWorkflowGroupItemId: 'root', collisionStrategy: 'OVERWRITE' }
             );
         });
 
