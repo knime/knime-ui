@@ -69,8 +69,9 @@ export default {
     },
 
     computed: {
-        ...mapGetters('canvas', ['screenToCanvasCoordinates', 'getScrollContainerElement']),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('spaces', ['activeSpace', 'activeSpaceProvider']),
+        ...mapState('canvas', ['getScrollContainerElement']),
         isRenamingInvalid() {
             return INVALID_NAME_CHARACTERS.test(this.renameValue);
         }
@@ -214,14 +215,13 @@ export default {
             this.isDragging = false;
             this.removeGhosts?.();
 
-            const [x, y] = this.screenToCanvasCoordinates([
-                e.clientX - this.$shapes.nodeSize / 2,
-                e.clientY - this.$shapes.nodeSize / 2
-            ]);
-            const el = document.elementFromPoint(x, y);
+            const screenX = e.clientX - this.$shapes.nodeSize / 2;
+            const screenY = e.clientY - this.$shapes.nodeSize / 2;
+            const el = document.elementFromPoint(screenX, screenY);
             const kanvas = this.getScrollContainerElement();
             if (kanvas.contains(el)) {
                 try {
+                    const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
                     await this.addNode({
                         position: { x, y },
                         spaceItemId: {

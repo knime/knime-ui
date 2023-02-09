@@ -59,9 +59,10 @@ describe('FileExplorer.vue', () => {
         },
         canvas: {
             getters: {
-                screenToCanvasCoordinates: jest.fn().mockReturnValue(() => [5, 5]),
-                getScrollContainerElement:
-                    jest.fn().mockReturnValue(() => ({ contains: jest.fn().mockReturnValue(true) }))
+                screenToCanvasCoordinates: jest.fn().mockReturnValue(() => [5, 5])
+            },
+            state: {
+                getScrollContainerElement: jest.fn().mockReturnValue({ contains: jest.fn().mockReturnValue(true) })
             }
         },
         spaces: {
