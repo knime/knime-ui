@@ -1,6 +1,5 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { saveWorkflowLocally } from '@api';
 import Button from 'webapps-common/ui/components/Button.vue';
 import StreamingIcon from 'webapps-common/ui/assets/img/icons/nodes-connect.svg';
 import ContextMenu from '@/components/application/ContextMenu.vue';
@@ -59,7 +58,7 @@ export default {
             event.preventDefault();
         },
         onSaveLocalCopy() {
-            saveWorkflowLocally({ projectId: this.activeProjectId });
+            this.$store.dispatch('workflow/saveWorkflowLocally');
         }
     }
 };

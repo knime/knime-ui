@@ -3,7 +3,6 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
-import { saveWorkflowLocally } from '@api';
 import Button from 'webapps-common/ui/components/Button.vue';
 
 import * as selectionStore from '@/store/selection';
@@ -14,11 +13,6 @@ import PortTypeMenu from '@/components/workflow/ports/PortTypeMenu.vue';
 
 import WorkflowPanel from '../WorkflowPanel.vue';
 import QuickAddNodeMenu from '@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue';
-
-jest.mock('@api', () => ({
-    __esModule: true,
-    saveWorkflowLocally: jest.fn()
-}));
 
 describe('WorkflowPanel', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
@@ -56,7 +50,8 @@ describe('WorkflowPanel', () => {
                 openQuickAddNodeMenu: jest.fn(),
                 closeQuickAddNodeMenu: jest.fn(),
                 openPortTypeMenu: jest.fn(),
-                closePortTypeMenu: jest.fn()
+                closePortTypeMenu: jest.fn(),
+                saveWorkflowLocally: jest.fn()
             },
             getters: {
                 isLinked() {
@@ -149,13 +144,12 @@ describe('WorkflowPanel', () => {
 
         it('saves workflow locally when button is clicked', async () => {
             workflow.info.onHub = true;
-            $store.state.application.activeProjectId = 'id1';
             doShallowMount();
             const button = wrapper.findComponent(Button);
             expect(button.exists()).toBe(true);
             await button.vm.$emit('click');
 
-            expect(saveWorkflowLocally).toHaveBeenCalledWith({ projectId: 'id1' });
+            expect(storeConfig.workflow.actions.saveWorkflowLocally).toHaveBeenCalled();
         });
     });
 

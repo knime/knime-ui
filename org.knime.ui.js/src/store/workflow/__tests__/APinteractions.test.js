@@ -242,4 +242,41 @@ describe('workflow store: AP Interactions', () => {
             });
         });
     });
+
+    describe('Save workflow locally', () => {
+        it('saves the workflow locally via the API', async () => {
+            const saveWorkflowLocally = jest.fn();
+            const apiMocks = { saveWorkflowLocally };
+            const { store } = await loadStore({ apiMocks });
+
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                info: { containerId: 'root' }
+            });
+
+            await store.dispatch('workflow/saveWorkflowLocally');
+
+            expect(saveWorkflowLocally).toHaveBeenCalledWith(expect.objectContaining({ projectId: 'foo' }));
+        });
+
+        it('sends the correct workflow preview for a root workflow when saved locally', async () => {
+            const saveWorkflowLocally = jest.fn();
+            const apiMocks = { saveWorkflowLocally };
+
+            const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
+
+            generateWorkflowPreviewMock.mockResolvedValue('mock svg preview');
+
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                info: { containerId: 'root' }
+            });
+
+            await store.dispatch('workflow/saveWorkflowLocally');
+
+            expect(saveWorkflowLocally).toHaveBeenCalledWith(expect.objectContaining({
+                workflowPreviewSvg: 'mock svg preview'
+            }));
+        });
+    });
 });

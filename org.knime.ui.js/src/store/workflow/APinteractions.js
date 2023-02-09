@@ -1,6 +1,6 @@
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, closeWorkflow,
-    openLayoutEditor } from '@api';
+    openLayoutEditor, saveWorkflowLocally } from '@api';
 
 /**
  * Determines which project id should be set after closing the active one
@@ -91,6 +91,20 @@ export const actions = {
         let { activeWorkflow: { projectId } } = state;
         let { activeWorkflow: { info: { containerId } } } = state;
         openLayoutEditor({ projectId, workflowId: containerId });
+    },
+
+    async saveWorkflowLocally({ state, dispatch }) {
+        const { activeWorkflow: { projectId } } = state;
+
+        const { svgElement, isCanvasEmpty } = await dispatch(
+            'application/getActiveWorkflowSnapshot',
+            null,
+            { root: true }
+        );
+
+        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
+
+        saveWorkflowLocally({ projectId, workflowPreviewSvg });
     }
 };
 
