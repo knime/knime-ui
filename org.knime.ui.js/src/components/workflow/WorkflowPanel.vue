@@ -60,7 +60,6 @@ export default {
         },
         onSaveLocalCopy() {
             saveWorkflowLocally({ projectId: this.activeProjectId });
-            // console.log(this.activeProjectId);
         }
     }
 };

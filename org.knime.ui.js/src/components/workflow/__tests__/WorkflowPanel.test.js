@@ -3,6 +3,9 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
+import { saveWorkflowLocally } from '@api';
+import Button from 'webapps-common/ui/components/Button.vue';
+
 import * as selectionStore from '@/store/selection';
 import * as applicationStore from '@/store/application';
 
@@ -11,6 +14,11 @@ import PortTypeMenu from '@/components/workflow/ports/PortTypeMenu.vue';
 
 import WorkflowPanel from '../WorkflowPanel.vue';
 import QuickAddNodeMenu from '@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue';
+
+jest.mock('@api', () => ({
+    __esModule: true,
+    saveWorkflowLocally: jest.fn()
+}));
 
 describe('WorkflowPanel', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
@@ -86,7 +94,7 @@ describe('WorkflowPanel', () => {
 
         mocks = { $store };
         doShallowMount = () => {
-            wrapper = shallowMount(WorkflowPanel, { propsData, mocks });
+            wrapper = shallowMount(WorkflowPanel, { propsData, mocks, $store });
         };
     });
 
@@ -129,6 +137,25 @@ describe('WorkflowPanel', () => {
             doShallowMount();
             expect(wrapper.find('.read-only').exists()).toBe(false);
             expect(wrapper.find('.workflow-info').exists()).toBe(false);
+        });
+    });
+
+    describe('On the hub', () => {
+        it('shows banner if workflow is on the hub', () => {
+            workflow.info.onHub = true;
+            doShallowMount();
+            expect(wrapper.find('.banner').exists()).toBe(true);
+        });
+
+        it('saves workflow locally when button is clicked', async () => {
+            workflow.info.onHub = true;
+            $store.state.application.activeProjectId = 'id1';
+            doShallowMount();
+            const button = wrapper.findComponent(Button);
+            expect(button.exists()).toBe(true);
+            await button.vm.$emit('click');
+
+            expect(saveWorkflowLocally).toHaveBeenCalledWith({ projectId: 'id1' });
         });
     });
 
