@@ -76,10 +76,6 @@ public class KnimeBrowserLocationListener implements LocationListener {
 
     @Override
     public void changing(final LocationEvent event) {
-        if (ImportURI.importURI(m_browser, event.location)) {
-            event.doit = false;
-            return;
-        }
         if (isCEFMiddlewareResource(event.location)) {
             // Allow location change to middleware resources, these are handled by resource handlers.
         } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
@@ -87,6 +83,10 @@ public class KnimeBrowserLocationListener implements LocationListener {
             if (LifeCycle.get().isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
                 LifeCycle.get().reload();
             }
+        } else if (ImportURI.importURI(m_browser, event.location)) {
+            // Don't change the location but import the URI instead
+            event.doit = false;
+            return;
         } else {
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
             event.doit = false;
