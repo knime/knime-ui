@@ -140,7 +140,7 @@ export default {
         explorerDisabledActions() {
             return {
                 uploadToHub: !this.hasActiveHubSession || this.selectedItems.length === 0,
-                downloadToLocalSpace: !this.isLocal && this.selectedItems.length === 0
+                downloadToLocalSpace: this.isLocal || this.selectedItems.length === 0
             };
         }
     },
@@ -273,10 +273,10 @@ export default {
             }
 
             if (this.isLocal) {
-                const destId = targetItem === '..' ? 'root' : targetItem;
-                const collisionStrategy = await getNameCollisionStrategy(
-                    { itemIds: sourceItems, destWorkflowGroupItemId: destId }
-                );
+                const collisionStrategy = await getNameCollisionStrategy({
+                    itemIds: sourceItems,
+                    destWorkflowGroupItemId: this.pathToItemId(targetItem)
+                });
 
                 if (collisionStrategy === 'CANCEL') {
                     onComplete(false);
@@ -368,8 +368,8 @@ export default {
         @action:create-folder="$store.dispatch('spaces/createFolder')"
         @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"
         @action:import-files="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' })"
-        @action:upload-to-hub="$store.dispatch('spaces/uploadToHub', { itemIds: selectedItems })"
-        @action:download-to-local-space="$store.dispatch('spaces/uploadToHub', { itemIds: selectedItems })"
+        @action:upload-to-hub="$store.dispatch('spaces/copyBetweenSpaces', { itemIds: selectedItems })"
+        @action:download-to-local-space="$store.dispatch('spaces/copyBetweenSpaces', { itemIds: selectedItems })"
       />
     </div>
 

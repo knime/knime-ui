@@ -13,7 +13,8 @@ import { fetchWorkflowGroupContent,
     importFiles,
     importWorkflows,
     deleteItems,
-    moveItems } from '@api';
+    moveItems,
+    copyBetweenSpaces } from '@api';
 
 import * as spacesConfig from '../spaces';
 import { APP_ROUTES } from '@/router';
@@ -526,6 +527,26 @@ describe('spaces store', () => {
                 expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level2' })
                 );
+            });
+        });
+
+        describe('copyBetweenSpace', () => {
+            it('should copy items between spaces', async () => {
+                const itemIds = ['id1', 'id2'];
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: {
+                        path: [{ id: 'level1' }, { id: 'level2' }]
+                    }
+                };
+
+                await store.dispatch('spaces/copyBetweenSpaces', { itemIds });
+                expect(copyBetweenSpaces).toHaveBeenCalledWith({
+                    spaceId: 'local',
+                    spaceProviderId: 'local',
+                    itemIds
+                });
             });
         });
     });

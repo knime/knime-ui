@@ -399,7 +399,31 @@ describe('SpaceExplorer.vue', () => {
             await wrapper.vm.$nextTick();
     
             wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:upload-to-hub');
-            expect(dispatchSpy).toHaveBeenCalledWith('spaces/uploadToHub', { itemIds: ['1', '2'] });
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/copyBetweenSpaces', { itemIds: ['1', '2'] });
+        });
+
+        it('should handle downloading to local space', async () => {
+            const { wrapper, store, dispatchSpy } = await doMountAndLoad({ props: { mode: 'mini' } });
+            store.state.spaces = {
+                activeSpace: {
+                    spaceId: 'hub1'
+                },
+                activeSpaceProvider: {
+                    spaces: [
+                        {
+                            id: 'randomhub',
+                            name: 'My public space',
+                            private: false
+                        }
+                    ]
+                }
+            };
+            
+            wrapper.findComponent(FileExplorer).vm.$emit('change-selection', ['1', '2']);
+            await wrapper.vm.$nextTick();
+    
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:download-to-local-space');
+            expect(dispatchSpy).toHaveBeenCalledWith('spaces/copyBetweenSpaces', { itemIds: ['1', '2'] });
         });
         
         it('should only allow uploading to up when there is a selection and a connected hub session', async () => {
@@ -415,7 +439,7 @@ describe('SpaceExplorer.vue', () => {
     
             expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
                 uploadToHub: true,
-                downloadToLocalSpace: false
+                downloadToLocalSpace: true
             });
 
             // simulate active selection
@@ -425,7 +449,7 @@ describe('SpaceExplorer.vue', () => {
 
             expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
                 uploadToHub: true,
-                downloadToLocalSpace: false
+                downloadToLocalSpace: true
             });
 
             // simulate 1 hub connected
@@ -437,6 +461,55 @@ describe('SpaceExplorer.vue', () => {
 
             expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
                 uploadToHub: false,
+                downloadToLocalSpace: true
+            });
+        });
+
+        it('should only allow uploading to up when there is a selection and a connected hub session', async () => {
+            const { wrapper, store } = doMount({ props: { mode: 'mini' } });
+            store.state.spaces.activeSpace = {
+                spaceId: 'local',
+                activeWorkflowGroup: {
+                    path: [],
+                    items: []
+                }
+            };
+            await wrapper.vm.$nextTick();
+    
+            expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
+                uploadToHub: true,
+                downloadToLocalSpace: true
+            });
+
+            // simulate active selection
+            wrapper.findComponent(FileExplorer).vm.$emit('change-selection', ['1', '2']);
+
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
+                uploadToHub: true,
+                downloadToLocalSpace: true
+            });
+
+            store.state.spaces = {
+                activeSpace: {
+                    spaceId: 'hub1'
+                },
+                activeSpaceProvider: {
+                    spaces: [
+                        {
+                            id: 'randomhub',
+                            name: 'My public space',
+                            private: false
+                        }
+                    ]
+                }
+            };
+
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(SpaceExplorerActions).props('disabledActions')).toEqual({
+                uploadToHub: true,
                 downloadToLocalSpace: false
             });
         });
@@ -524,7 +597,12 @@ describe('SpaceExplorer.vue', () => {
 
         it('should move items to root', async () => {
             getNameCollisionStrategy.mockReturnValue('OVERWRITE');
-            const { wrapper, dispatchSpy } = doMount();
+            const { wrapper, dispatchSpy } = doMount({
+                mockResponse: {
+                    ...fetchWorkflowGroupContentResponse,
+                    path: [{ id: 'currentDirectoryId', name: 'Current Directory' }]
+                }
+            });
             await wrapper.vm.$nextTick();
             await wrapper.vm.$nextTick();
     
@@ -543,6 +621,32 @@ describe('SpaceExplorer.vue', () => {
                 { itemIds: sourceItems, destWorkflowGroupItemId: 'root', collisionStrategy: 'OVERWRITE' }
             );
             expect(onComplete).toHaveBeenCalledWith(true);
+        });
+
+        it('should move items back to the parent directory', async () => {
+            getNameCollisionStrategy.mockReturnValue('OVERWRITE');
+            const { wrapper, dispatchSpy } = await doMount({
+                mockResponse: {
+                    ...fetchWorkflowGroupContentResponse,
+                    path: [
+                        { id: 'parentId', name: 'Parent Directory' },
+                        { id: 'currentDirectoryId', name: 'Current Directory' }
+                    ]
+                }
+            });
+
+            await wrapper.vm.$nextTick();
+            await wrapper.vm.$nextTick();
+    
+            const sourceItems = ['id1', 'id2'];
+            const targetItem = '..';
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+            await wrapper.vm.$nextTick();
+            
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'spaces/moveItems',
+                { itemIds: sourceItems, destWorkflowGroupItemId: 'parentId', collisionStrategy: 'OVERWRITE' }
+            );
         });
 
         it('should not move items if collision handling returns cancel', async () => {

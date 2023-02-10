@@ -169,7 +169,34 @@ describe('SpaceBrowsingPage', () => {
         await wrapper.vm.$nextTick();
         
         wrapper.find('#upload-to-hub').trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/uploadToHub', { itemIds: ['1', '2'] });
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/copyBetweenSpaces', { itemIds: ['1', '2'] });
+    });
+
+    it('should handle the download to local space action', async () => {
+        const { wrapper, $store, dispatchSpy } = doMount();
+        $store.state.spaces = {
+            activeSpace: {
+                spaceId: 'randomhub'
+            },
+            activeSpaceProvider: {
+                spaces: [
+                    {
+                        id: 'randomhub',
+                        name: 'My public space',
+                        private: false
+                    }
+                ]
+            }
+        };
+
+        await wrapper.vm.$nextTick();
+
+        wrapper.findComponent(SpaceExplorer).vm.$emit('change-selection', ['1', '2']);
+
+        await wrapper.vm.$nextTick();
+        
+        wrapper.find('#download-to-local-space').trigger('click');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/copyBetweenSpaces', { itemIds: ['1', '2'] });
     });
 
     describe('global spaceBrowser state', () => {

@@ -288,7 +288,7 @@ export const actions = {
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     },
 
-    uploadToHub({ state }, { itemIds }) {
+    copyBetweenSpaces({ state }, { itemIds }) {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         copyBetweenSpaces({ spaceProviderId, spaceId, itemIds });

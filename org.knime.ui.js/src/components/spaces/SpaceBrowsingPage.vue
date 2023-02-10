@@ -54,7 +54,7 @@ export default {
         explorerDisabledActions() {
             return {
                 uploadToHub: !this.hasActiveHubSession || this.selectedItems.length === 0,
-                downloadToLocalSpace: !this.activeSpaceInfo.local && this.selectedItems.length === 0
+                downloadToLocalSpace: this.activeSpaceInfo.local || this.selectedItems.length === 0
             };
         }
     },
@@ -105,8 +105,8 @@ export default {
               @action:create-folder="$store.dispatch('spaces/createFolder')"
               @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"
               @action:import-files="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' })"
-              @action:upload-to-hub="$store.dispatch('spaces/uploadToHub', { itemIds: selectedItems })"
-              @action:download-to-local-space="$store.dispatch('spaces/uploadToHub', { itemIds: selectedItems })"
+              @action:upload-to-hub="$store.dispatch('spaces/copyBetweenSpaces', { itemIds: selectedItems })"
+              @action:download-to-local-space="$store.dispatch('spaces/copyBetweenSpaces', { itemIds: selectedItems })"
             />
           </div>
         </div>
