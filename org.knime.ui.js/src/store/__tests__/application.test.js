@@ -306,7 +306,7 @@ describe('application store', () => {
             const applicationState = {
                 openProjects: [
                     { projectId: 'foo', name: 'bar' },
-                    { projectId: 'baz', name: 'bar', activeWorkflow: { workflow: { info: { containerId: 'root' } } } }
+                    { projectId: 'baz', name: 'bar', activeWorkflowId: 'root' }
                 ]
             };
             const { store, dispatchSpy } = await loadStore();
@@ -414,29 +414,23 @@ describe('application store', () => {
     });
 
     describe('set active workflow', () => {
-        test('if provided by backend', async () => {
+        test('if fetched from backend', async () => {
             const state = {
                 openProjects: [
                     { projectId: 'foo', name: 'bar' },
                     {
                         projectId: 'bee',
                         name: 'gee',
-                        activeWorkflow: {
-                            workflow: {
-                                info: { containerId: 'root' }
-                            },
-                            snapshotId: '0'
-                        }
+                        activeWorkflowId: 'root'
                     }
                 ]
             };
             const { store, dispatchSpy } = await loadStore();
             await store.dispatch('application/replaceApplicationState', state);
 
-            expect(dispatchSpy).toHaveBeenCalledWith('application/setWorkflow', {
+            expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow', {
                 projectId: 'bee',
-                workflow: { info: { containerId: 'root' } },
-                snapshotId: '0'
+                workflowId: 'root'
             });
         });
 

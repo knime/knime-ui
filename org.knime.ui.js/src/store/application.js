@@ -68,7 +68,7 @@ export const mutations = {
         state.activeProjectId = projectId;
     },
     setOpenProjects(state, projects) {
-        state.openProjects = projects.map(({ activeWorkflow, ...rest }) => rest);
+        state.openProjects = projects;
     },
     setExampleProjects(state, examples) {
         state.exampleProjects = examples;
@@ -240,7 +240,7 @@ export const actions = {
             return;
         }
 
-        const activeProject = openProjects.find(item => item.activeWorkflow);
+        const activeProject = openProjects.find(item => item.activeWorkflowId);
 
         // No active project is set -> stay on entry page (aka: null project)
         if (!activeProject) {
@@ -272,11 +272,8 @@ export const actions = {
             }
         });
 
-        await dispatch('setWorkflow', {
-            projectId: activeProject.projectId,
-            workflow: activeProject.activeWorkflow.workflow,
-            snapshotId: activeProject.activeWorkflow.snapshotId
-        });
+        await dispatch('loadWorkflow',
+            { projectId: activeProject.projectId, workflowId: activeProject.activeWorkflowId });
     },
 
     /*

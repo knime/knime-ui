@@ -117,7 +117,7 @@ describe('Event Plugin', () => {
     
                 const openProjects = [
                     { projectId: 'project1' },
-                    { projectId: 'project2', activeWorkflow: {} }
+                    { projectId: 'project2', activeWorkflowId: 'root' }
                 ];
 
                 await registeredHandlers.AppStateChangedEvent({
