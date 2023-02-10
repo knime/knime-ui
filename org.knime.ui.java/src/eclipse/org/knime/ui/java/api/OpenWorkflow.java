@@ -208,7 +208,7 @@ final class OpenWorkflow {
             }
             input = tempInput.get();
         } else {
-            input = new FileStoreEditorInput(fileStore);
+            input = new FileStoreEditorInput(fileStore.getChild(WorkflowPersistor.WORKFLOW_FILE));
         }
         page.openEditor(input, WorkflowEditor.ID, false);
     }
