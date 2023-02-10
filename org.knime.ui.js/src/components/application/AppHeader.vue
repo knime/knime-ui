@@ -142,14 +142,14 @@ export default {
         v-else
         class="application-name"
       >
-        <span class="text">KNIME Modern UI Preview</span>
+        <span class="text">KNIME Analytics Platform 5.0 – Early Access</span>
       </div>
 
       <div class="buttons">
         <FunctionButton
           v-if="!isInfoPageActive && devMode"
           class="switch-classic"
-          title="Open KNIME Modern UI Preview"
+          title="Open KNIME Modern UI"
           @click="switchToJavaUI"
         >
           <SwitchIcon />

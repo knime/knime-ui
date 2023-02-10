@@ -90,19 +90,19 @@ export default {
       <div class="grid-container">
         <div class="grid-item-3 category">
           <PerspectiveSwitchIcon />
-          <h3>Switch to<br>classic user interface</h3>
+          <h3>Switch to<br>classic perspective</h3>
         </div>
 
         <div class="grid-item-9 body">
           <p>
             Switch to the classic KNIME Analytics Platform user interface. To switch back again,
-            click the button “Open KNIME Modern UI Preview” in the top right corner of the classic perspective.
+            click the button “Open KNIME Modern UI” in the top right corner of the classic perspective.
           </p>
           <Button
             with-border
             @click="switchToJavaUI"
           >
-            <strong>Switch to classic user interface</strong>
+            <strong>Switch to KNIME classic perspective</strong>
           </Button>
         </div>
       </div>

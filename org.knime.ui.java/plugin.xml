@@ -9,7 +9,7 @@
             class="org.knime.ui.java.browser.KnimeBrowserView"
             icon="icons/knime.png"
             id="org.knime.ui.java.browser.view"
-            name="KNIME Modern UI Preview"
+            name="KNIME Modern UI"
             restorable="false">
       </e4view>
    </extension>
@@ -26,7 +26,7 @@
       <theme
             basestylesheeturi="css/web-ui.css"
             id="org.knime.ui.java.theme"
-            label="KNIME Modern UI Preview">
+            label="KNIME Modern UI">
       </theme>
    </extension>
    <extension
