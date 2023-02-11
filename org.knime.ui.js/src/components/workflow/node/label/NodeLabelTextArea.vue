@@ -1,4 +1,5 @@
 <script>
+import { getMetaKey } from '@/util/navigator';
 import NodeLabelText from './NodeLabelText.vue';
 
 export default {
@@ -49,11 +50,10 @@ export default {
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;
         },
-        onSave(e) {
-            const isMac = navigator?.userAgent?.toLowerCase()?.includes('mac');
-            const metaKey = isMac ? e.metaKey : e.ctrlKey;
+        onSave(event) {
+            const metaKey = getMetaKey();
 
-            if (metaKey) {
+            if (event[metaKey]) {
                 this.$emit('save');
             }
         }

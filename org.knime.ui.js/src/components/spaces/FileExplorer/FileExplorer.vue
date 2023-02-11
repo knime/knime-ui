@@ -11,8 +11,8 @@ import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
+import { getMetaKey } from '@/util/navigator';
 import ITEM_TYPES from '@/util/spaceItemTypes';
-import { mapActions, mapGetters, mapState } from 'vuex';
 
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
@@ -123,6 +123,26 @@ export default {
         isSelected(index) {
             return multiSelectionService.isItemSelected(this.multiSelectionState, index);
         },
+        /**
+         * @param {MouseEvent} event
+         * @param {Number} index
+         * @returns {void}
+         */
+        handleClick(event, index) {
+            const metaKey = getMetaKey();
+
+            if (event.shiftKey) {
+                this.shiftClickItem(index);
+                return;
+            }
+
+            if (event[metaKey]) {
+                this.ctrlClickItem(index);
+                return;
+            }
+
+            this.clickItem(index);
+        },
 
         clickItem(index) {
             this.multiSelectionState = multiSelectionService.click(index);
@@ -212,9 +232,10 @@ export default {
             draggedOverEl.classList.remove('dragging-over');
         },
 
-        async onDragEnd(e, item) {
+        onDragEnd(event, item) {
             this.isDragging = false;
             this.removeGhosts?.();
+            this.removeGhosts = null;
             this.$emit('dragend', { event, sourceItem: item });
         },
 
@@ -231,6 +252,9 @@ export default {
                 sourceItems: selectedIndexes.map(index => this.items[index].id),
                 targetItem: isGoBackItem ? '..' : this.items[index].id
             });
+
+            this.removeGhosts?.(false);
+            this.removeGhosts = null;
         },
 
         getItemElementByRefIndex(index, isGoBackItem = false) {
@@ -362,10 +386,8 @@ export default {
         @dragover.prevent
         @dragleave="!isActiveRenameItem(item) && onDragLeave(index)"
         @dragend="!isActiveRenameItem(item) && onDragEnd($event, item)"
+        @click="!isActiveRenameItem(item) && handleClick($event, index)"
         @drop.prevent="!isActiveRenameItem(item) && onDrop(index)"
-        @click.exact="!isActiveRenameItem(item) && clickItem(index)"
-        @click.exact.ctrl="!isActiveRenameItem(item) && ctrlClickItem(index)"
-        @click.exact.shift="!isActiveRenameItem(item) && shiftClickItem(index)"
         @dblclick="!isActiveRenameItem(item) && onItemDoubleClick(item)"
       >
         <td class="item-icon">

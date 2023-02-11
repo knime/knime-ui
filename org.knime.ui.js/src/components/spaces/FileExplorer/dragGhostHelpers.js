@@ -99,6 +99,7 @@ const createGhostElement = ({ badgeCount, textContent, target, addShadow = false
         left: `${x}px`,
         width: `${width}px`,
         height: `${height}px`,
+        zIndex: 9,
 
         // make sure the ghost doesn't interfere with the drag
         pointerEvents: 'none',
@@ -159,7 +160,8 @@ const createGhostPositionUpdateHandler = (ghosts) => ({ clientX, clientY }) => {
 /**
  * @typedef CreateDragGhostsReturnType
  * @property {Array<HTMLElement>} ghosts the added ghosts
- * @property {Function} removeGhosts a function to remove the ghost when needed
+ * @property {(animateOut: boolean) => void} removeGhosts a function to remove the ghost when needed. It receives a
+ * parameter to determine whether to animate the removal of the ghosts (true by default)
  */
 /**
  *  Creates the drag ghosts for the FileExplorer drag operations
@@ -214,7 +216,17 @@ export const createDragGhosts = ({
 
     document.addEventListener('drag', updatePosition);
 
-    const removeGhosts = () => {
+    const removeGhosts = (animateOut = true) => {
+        const removeGhost = ({ ghost }) => {
+            document.body.removeChild(ghost);
+            document.removeEventListener('drag', updatePosition);
+        };
+
+        if (!animateOut) {
+            allGhosts.forEach(removeGhost);
+            return;
+        }
+
         allGhosts.forEach(({ ghost, targetEl }) => {
             const { x, y, width } = targetEl.getBoundingClientRect();
             if (badge) {
@@ -235,7 +247,7 @@ export const createDragGhosts = ({
                 duration: 0.2,
                 onComplete: () => {
                     gsap.killTweensOf(ghost);
-                    document.body.removeChild(ghost);
+                    removeGhost({ ghost });
                     document.removeEventListener('drag', updatePosition);
                 }
             });
