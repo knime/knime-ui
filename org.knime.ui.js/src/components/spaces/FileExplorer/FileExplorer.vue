@@ -19,6 +19,11 @@ import { createDragGhosts } from './dragGhostHelpers';
 
 const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/]/;
 
+/**
+ * Component that handles FileExplorer interactions.
+ *
+ * NOTE: Do not add store bindings to component to keep it as reusable as possible
+ */
 export default {
     components: {
         SubMenu,
@@ -69,9 +74,6 @@ export default {
     },
 
     computed: {
-        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapState('spaces', ['activeSpace', 'activeSpaceProvider']),
-        ...mapState('canvas', ['getScrollContainerElement']),
         isRenamingInvalid() {
             return INVALID_NAME_CHARACTERS.test(this.renameValue);
         }
@@ -90,7 +92,6 @@ export default {
     },
 
     methods: {
-        ...mapActions('workflow', ['addNode']),
         resetSelection() {
             this.multiSelectionState = multiSelectionService.getInitialState();
         },
@@ -214,27 +215,7 @@ export default {
         async onDragEnd(e, item) {
             this.isDragging = false;
             this.removeGhosts?.();
-
-            const screenX = e.clientX - this.$shapes.nodeSize / 2;
-            const screenY = e.clientY - this.$shapes.nodeSize / 2;
-            const el = document.elementFromPoint(screenX, screenY);
-            const kanvas = this.getScrollContainerElement();
-            if (kanvas.contains(el)) {
-                try {
-                    const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
-                    await this.addNode({
-                        position: { x, y },
-                        spaceItemId: {
-                            itemId: item.id,
-                            providerId: this.activeSpaceProvider.id,
-                            spaceId: this.activeSpace.spaceId
-                        }
-                    });
-                } catch (error) {
-                    consola.error({ message: 'Error adding node via file to workflow', error });
-                    throw error;
-                }
-            }
+            this.$emit('dragend', { event, sourceItem: item });
         },
 
         onDrop(index, isGoBackItem = false) {

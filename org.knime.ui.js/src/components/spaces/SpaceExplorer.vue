@@ -13,6 +13,7 @@ import ITEM_TYPES from '@/util/spaceItemTypes';
 import SpaceExplorerActions from './SpaceExplorerActions.vue';
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer/FileExplorer.vue';
+import { APP_ROUTES } from '@/router';
 
 const DISPLAY_LOADING_DELAY = 100;
 const DISPLAY_LOADING_ICON_DELAY = 350;
@@ -51,8 +52,12 @@ export default {
     },
 
     computed: {
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
+        ...mapState('canvas', ['getScrollContainerElement']),
         ...mapState('application', ['openProjects']),
         ...mapState('spaces', {
+            activeSpace: state => state.activeSpace,
+            activeSpaceProvider: state => state.activeSpaceProvider,
             startItemId: state => state.activeSpace?.startItemId,
             activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
             spaceId: state => state.activeSpace?.spaceId
@@ -269,6 +274,37 @@ export default {
                     { itemIds: sourceItems, destWorkflowGroupItemId: destId, collisionStrategy }
                 );
             }
+        },
+
+        async onDragEnd({ event, sourceItem }) {
+            const screenX = event.clientX - this.$shapes.nodeSize / 2;
+            const screenY = event.clientY - this.$shapes.nodeSize / 2;
+
+            const el = document.elementFromPoint(screenX, screenY);
+
+            // skip behavior when not on the workflow
+            if (this.$route.name !== APP_ROUTES.WorkflowPage) {
+                return;
+            }
+
+            const kanvas = this.getScrollContainerElement();
+
+            if (kanvas.contains(el)) {
+                try {
+                    const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
+                    await this.$store.dispatch('workflow/addNode', {
+                        position: { x, y },
+                        spaceItemId: {
+                            itemId: sourceItem.id,
+                            providerId: this.activeSpaceProvider.id,
+                            spaceId: this.activeSpace.spaceId
+                        }
+                    });
+                } catch (error) {
+                    consola.error({ message: 'Error adding node via file to workflow', error });
+                    throw error;
+                }
+            }
         }
     }
 };
@@ -312,6 +348,7 @@ export default {
       @rename-file="onRenameFile"
       @delete-items="onDeleteItems"
       @move-items="onMoveItems"
+      @dragend="onDragEnd"
     />
 
     <div

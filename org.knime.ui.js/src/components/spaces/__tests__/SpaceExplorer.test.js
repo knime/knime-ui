@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import Vuex from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
 
@@ -6,6 +7,7 @@ import * as spacesStore from '@/store/spaces';
 
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import { fetchWorkflowGroupContent, createWorkflow, getNameCollisionStrategy } from '@api';
+import { APP_ROUTES } from '@/router';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
 import SpaceExplorerActions from '../SpaceExplorerActions.vue';
@@ -61,11 +63,25 @@ describe('SpaceExplorer.vue', () => {
                 state: {
                     openProjects
                 }
+            },
+            workflow: {
+                actions: {
+                    addNode: () => {}
+                }
+            },
+            canvas: {
+                getters: {
+                    screenToCanvasCoordinates: jest.fn().mockReturnValue(() => [5, 5])
+                },
+                state: {
+                    getScrollContainerElement: jest.fn().mockReturnValue({ contains: jest.fn().mockReturnValue(true) })
+                }
             }
         });
 
         const dispatchSpy = jest.spyOn(store, 'dispatch');
         const mockRouter = { push: () => {} };
+        const mockRoute = { name: '' };
 
         const $shortcuts = {
             get: jest.fn().mockImplementation(name => ({
@@ -77,10 +93,16 @@ describe('SpaceExplorer.vue', () => {
         const wrapper = mount(SpaceExplorer, {
             propsData: props,
             stubs: { NuxtLink: true },
-            mocks: { $store: store, $router: mockRouter, $shortcuts }
+            mocks: {
+                $store: store,
+                $router: mockRouter,
+                $route: mockRoute,
+                $shortcuts,
+                $shapes: { nodeSize: 32 }
+            }
         });
 
-        return { wrapper, store, mockRouter, dispatchSpy };
+        return { wrapper, store, mockRouter, mockRoute, dispatchSpy };
     };
 
     const doMountAndLoad = async ({
@@ -475,6 +497,8 @@ describe('SpaceExplorer.vue', () => {
         await advanceTime(200);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
         expect(wrapper.find('.loading').exists()).toBe(false);
+
+        jest.useRealTimers();
     });
 
     describe('Move items', () => {
@@ -548,5 +572,52 @@ describe('SpaceExplorer.vue', () => {
                 expect.stringContaining('Following workflows are opened:' && '• test2')
             );
         });
+    });
+
+    it('should not attempt to add a node to canvas when the workflow is not displayed', async () => {
+        document.elementFromPoint = jest.fn().mockReturnValue(null);
+        const { wrapper, dispatchSpy, mockRoute } = await doMountAndLoad();
+
+        mockRoute.name = APP_ROUTES.SpaceBrowsingPage;
+        
+        wrapper.findComponent(FileExplorer).vm.$emit('dragend', {
+            event: new MouseEvent('dragend'),
+            sourceItem: { id: '0' }
+        });
+
+        expect(dispatchSpy).not.toHaveBeenCalledWith(
+            'workflow/addNode',
+            expect.anything()
+        );
+    });
+
+    it('should add a node to canvas when dragged from the file explorer', async () => {
+        document.elementFromPoint = jest.fn().mockReturnValue(null);
+        const { wrapper, store, dispatchSpy, mockRoute } = await doMountAndLoad();
+
+        mockRoute.name = APP_ROUTES.WorkflowPage;
+        store.state.spaces.activeSpace = {
+            spaceId: 'local',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+        store.state.spaces.activeSpaceProvider = {
+            id: 'local'
+        };
+        
+        wrapper.findComponent(FileExplorer).vm.$emit('dragend', {
+            event: new MouseEvent('dragend'),
+            sourceItem: { id: '0' }
+        });
+
+        expect(dispatchSpy).toHaveBeenCalledWith(
+            'workflow/addNode',
+            {
+                position: { x: 5, y: 5 },
+                spaceItemId: { itemId: '0', providerId: 'local', spaceId: 'local' }
+            }
+        );
     });
 });
