@@ -242,9 +242,10 @@ export default {
 
         async onMoveItems({ sourceItems, targetItem }) {
             const openedWorkflows = this.openProjects.filter(workflow => sourceItems.includes(workflow.origin.itemId));
-            const isInsideFolder = this.openProjects.filter((project) => project.origin.ancestorItemIds
-                .some((ancestorId) => sourceItems.includes(ancestorId)));
-            const isTheSameFolder = sourceItems.includes(targetItem);
+            const isInsideFolder = this.openProjects.filter(
+                (project) => project.origin.ancestorItemIds
+                    .some((ancestorId) => sourceItems.includes(ancestorId))
+            );
 
             if (openedWorkflows.length || isInsideFolder.length) {
                 const openedWorkflowsNames = openedWorkflows.map(workflow => workflow.name);
@@ -259,7 +260,7 @@ export default {
                 return;
             }
 
-            if (this.isLocal && !isTheSameFolder) {
+            if (this.isLocal) {
                 const destId = targetItem === '..' ? 'root' : targetItem;
                 const collisionStrategy = await getNameCollisionStrategy(
                     { itemIds: sourceItems, destWorkflowGroupItemId: destId }

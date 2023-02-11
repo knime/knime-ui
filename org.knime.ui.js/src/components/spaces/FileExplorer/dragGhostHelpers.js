@@ -36,6 +36,7 @@ const createGhostBadgeElement = ({ count }) => {
     const badge = document.createElement('div');
     // eslint-disable-next-line no-magic-numbers
     badge.innerText = count <= 99 ? count : '99+';
+    badge.id = 'drag-ghost-badge';
 
     /**
      * @type {CSSStyleDeclaration}
@@ -61,6 +62,26 @@ const createGhostBadgeElement = ({ count }) => {
     applyStyles(badge, badgeStyles);
 
     return badge;
+};
+
+/**
+ * Uses an existing svg icon on the `target` element to use as icon for
+ * the generated ghost. Returns null if no svg icon can be found in the target
+ * @param {HTMLElement} target
+ * @returns {HTMLElement | null} The icon element to add to the ghost
+ */
+const createGhostIcon = (target) => {
+    const originalIcon = target.querySelector('svg');
+    if (!originalIcon) {
+        return null;
+    }
+
+    const iconEl = originalIcon.cloneNode(true);
+    iconEl.style.width = '20px';
+    iconEl.style.height = '20px';
+    iconEl.style.marginRight = '10px';
+    
+    return iconEl;
 };
 
 /**
@@ -114,6 +135,9 @@ const createGhostElement = ({ badgeCount, textContent, target, addShadow = false
     };
 
     applyStyles(ghost, ghostStyles);
+
+    const iconEl = createGhostIcon(target);
+    ghost.prepend(iconEl);
 
     if (badgeCount) {
         const badge = createGhostBadgeElement({ count: badgeCount });

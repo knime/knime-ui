@@ -248,10 +248,16 @@ export default {
             }
 
             const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
-            this.$emit('move-items', {
-                sourceItems: selectedIndexes.map(index => this.items[index].id),
-                targetItem: isGoBackItem ? '..' : this.items[index].id
-            });
+            const sourceItems = selectedIndexes.map(index => this.items[index].id);
+            const targetItem = isGoBackItem ? '..' : this.items[index].id;
+
+            const isTargetSelected = sourceItems.includes(targetItem);
+
+            if (isTargetSelected) {
+                return;
+            }
+
+            this.$emit('move-items', { sourceItems, targetItem });
 
             this.removeGhosts?.(false);
             this.removeGhosts = null;

@@ -37,6 +37,8 @@ describe('dragGhostHelpers', () => {
         return { ...result, dataTransfer };
     };
 
+    const getBadgeElement = (ghost) => ghost.querySelector('#drag-ghost-badge');
+
     it('should add the proper text in the ghost', () => {
         const selectedTargets = [
             { textContent: 'MOCK', targetEl: document.createElement('div') }
@@ -67,8 +69,8 @@ describe('dragGhostHelpers', () => {
             ];
             const { ghosts } = setup({ selectedTargets, badgeCount: 10 });
 
-            expect(ghosts[0].hasChildNodes()).toBe(false);
-            expect(ghosts[1].hasChildNodes()).toBe(true);
+            expect(getBadgeElement(ghosts[0])).toBeFalsy();
+            expect(getBadgeElement(ghosts[1])).toBeTruthy();
         });
 
         it('should display the proper badge count (<99)', () => {
@@ -77,7 +79,7 @@ describe('dragGhostHelpers', () => {
             ];
             const { ghosts } = setup({ selectedTargets, badgeCount: 10 });
     
-            expect(ghosts[0].firstChild.innerText).toBe(10);
+            expect(getBadgeElement(ghosts[0]).innerText).toBe(10);
         });
         
         it('should display the proper badge count (>99)', () => {
@@ -86,7 +88,7 @@ describe('dragGhostHelpers', () => {
             ];
             const { ghosts } = setup({ selectedTargets, badgeCount: 150 });
     
-            expect(ghosts[0].firstChild.innerText).toBe('99+');
+            expect(getBadgeElement(ghosts[0]).innerText).toBe('99+');
         });
     });
 
@@ -104,7 +106,7 @@ describe('dragGhostHelpers', () => {
             { textContent: 'MOCK2', targetEl: document.createElement('div') }
         ];
         const { ghosts, removeGhosts } = setup({ selectedTargets, badgeCount: 10 });
-        const badgeEl = ghosts[1].firstChild;
+        const badgeEl = getBadgeElement(ghosts[1]);
         removeGhosts();
         
         expect(gsap.killTweensOf).toHaveBeenCalledWith(ghosts[0]);
