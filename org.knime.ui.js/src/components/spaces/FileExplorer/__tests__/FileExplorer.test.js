@@ -138,6 +138,7 @@ describe('FileExplorer.vue', () => {
             await _srcItemWrapper.trigger('dragstart', { dataTransfer });
             await _tgtItemWrapper.trigger('dragenter');
             await _tgtItemWrapper.trigger('drop');
+            await _srcItemWrapper.trigger('dragend');
         };
 
         it('should add the proper classes when handling dragging events', async () => {
@@ -206,6 +207,25 @@ describe('FileExplorer.vue', () => {
             });
         });
         
+        it('should not emit a "move" event when the target item is among the selected items', async () => {
+            const { wrapper } = doMount();
+
+            // workflow-group item
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            // workflow-group item
+            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            // workflow-group item
+            // const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
+
+            await wrapper.findAll('.file-explorer-item').at(0).trigger('click');
+            // await wrapper.findAll('.file-explorer-item').at(2).trigger('click', { shiftKey: true });
+            await wrapper.findAll('.file-explorer-item').at(1).trigger('click', { ctrlKey: true });
+
+            await dragAndDropItem(firstItem, secondItem);
+
+            expect(wrapper.emitted('move-items')).toBeUndefined();
+        });
+        
         it('should emit a "move" event when dropping on the "Go back" item', async () => {
             const { wrapper } = doMount({ props: { isRootFolder: false } });
 
@@ -219,6 +239,22 @@ describe('FileExplorer.vue', () => {
             expect(wrapper.emitted('move-items')[0][0]).toEqual({
                 sourceItems: ['0'],
                 targetItem: '..'
+            });
+        });
+
+        it('should emit a "dragend" event', async () => {
+            const { wrapper } = doMount();
+
+            // workflow-group item
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            // workflow-group item
+            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+
+            await dragAndDropItem(secondItem, firstItem);
+
+            expect(wrapper.emitted('dragend')[0][0]).toEqual({
+                event: expect.anything(),
+                sourceItem: MOCK_DATA[1] // second item
             });
         });
     });
