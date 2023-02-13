@@ -640,13 +640,15 @@ describe('SpaceExplorer.vue', () => {
     
             const sourceItems = ['id1', 'id2'];
             const targetItem = '..';
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+            const onComplete = jest.fn();
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem, onComplete });
             await wrapper.vm.$nextTick();
             
             expect(dispatchSpy).toHaveBeenCalledWith(
                 'spaces/moveItems',
                 { itemIds: sourceItems, destWorkflowGroupItemId: 'parentId', collisionStrategy: 'OVERWRITE' }
             );
+            expect(onComplete).toHaveBeenCalledWith(true);
         });
 
         it('should not move items if collision handling returns cancel', async () => {

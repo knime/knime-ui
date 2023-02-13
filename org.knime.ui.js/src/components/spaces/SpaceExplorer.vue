@@ -273,9 +273,10 @@ export default {
             }
 
             if (this.isLocal) {
+                const destWorkflowGroupItemId = this.pathToItemId(targetItem);
                 const collisionStrategy = await getNameCollisionStrategy({
                     itemIds: sourceItems,
-                    destWorkflowGroupItemId: this.pathToItemId(targetItem)
+                    destWorkflowGroupItemId
                 });
 
                 if (collisionStrategy === 'CANCEL') {
@@ -287,7 +288,7 @@ export default {
                 try {
                     this.$store.dispatch(
                         'spaces/moveItems',
-                        { itemIds: sourceItems, destWorkflowGroupItemId: destId, collisionStrategy }
+                        { itemIds: sourceItems, destWorkflowGroupItemId, collisionStrategy }
                     );
                 
                     onComplete(true);
