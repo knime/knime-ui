@@ -510,13 +510,16 @@ describe('SpaceExplorer.vue', () => {
     
             const sourceItems = ['id1', 'id2'];
             const targetItem = 'group1';
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+            const onComplete = jest.fn();
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem, onComplete });
             await wrapper.vm.$nextTick();
 
             expect(dispatchSpy).toHaveBeenCalledWith(
                 'spaces/moveItems',
                 { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionStrategy: 'OVERWRITE' }
             );
+
+            expect(onComplete).toHaveBeenCalledWith(true);
         });
 
         it('should move items to root', async () => {
@@ -527,13 +530,19 @@ describe('SpaceExplorer.vue', () => {
     
             const sourceItems = ['id1', 'id2'];
             const targetItem = '..';
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+            const onComplete = jest.fn();
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', {
+                sourceItems,
+                targetItem,
+                onComplete
+            });
             await wrapper.vm.$nextTick();
             
             expect(dispatchSpy).toHaveBeenCalledWith(
                 'spaces/moveItems',
                 { itemIds: sourceItems, destWorkflowGroupItemId: 'root', collisionStrategy: 'OVERWRITE' }
             );
+            expect(onComplete).toHaveBeenCalledWith(true);
         });
 
         it('should not move items if collision handling returns cancel', async () => {
@@ -544,10 +553,15 @@ describe('SpaceExplorer.vue', () => {
     
             const sourceItems = ['id1', 'id2'];
             const targetItem = 'group1';
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+            const onComplete = jest.fn();
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem, onComplete });
 
-            expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/moveItems',
-                { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionStrategy: 'CANCEL' });
+            expect(dispatchSpy).not.toHaveBeenCalledWith(
+                'spaces/moveItems',
+                { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionStrategy: 'CANCEL' }
+            );
+            await wrapper.vm.$nextTick();
+            expect(onComplete).toHaveBeenCalledWith(false);
         });
 
         it('should show alert if at least one of the moved workflows is opened', async () => {
@@ -566,11 +580,14 @@ describe('SpaceExplorer.vue', () => {
             window.alert = jest.fn();
             const sourceItems = ['id1', 'id2'];
             const targetItem = 'group1';
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem });
+            const onComplete = jest.fn();
+            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem, onComplete });
 
             expect(window.alert).toHaveBeenCalledWith(
                 expect.stringContaining('Following workflows are opened:' && '• test2')
             );
+            await wrapper.vm.$nextTick();
+            expect(onComplete).toHaveBeenCalledWith(false);
         });
     });
 
@@ -580,15 +597,19 @@ describe('SpaceExplorer.vue', () => {
 
         mockRoute.name = APP_ROUTES.SpaceBrowsingPage;
         
+        const onComplete = jest.fn();
         wrapper.findComponent(FileExplorer).vm.$emit('dragend', {
             event: new MouseEvent('dragend'),
-            sourceItem: { id: '0' }
+            sourceItem: { id: '0' },
+            onComplete
         });
 
         expect(dispatchSpy).not.toHaveBeenCalledWith(
             'workflow/addNode',
             expect.anything()
         );
+        await wrapper.vm.$nextTick();
+        expect(onComplete).toHaveBeenCalledWith(false);
     });
 
     it('should add a node to canvas when dragged from the file explorer', async () => {
@@ -607,9 +628,11 @@ describe('SpaceExplorer.vue', () => {
             id: 'local'
         };
         
+        const onComplete = jest.fn();
         wrapper.findComponent(FileExplorer).vm.$emit('dragend', {
             event: new MouseEvent('dragend'),
-            sourceItem: { id: '0' }
+            sourceItem: { id: '0' },
+            onComplete
         });
 
         expect(dispatchSpy).toHaveBeenCalledWith(
@@ -619,5 +642,8 @@ describe('SpaceExplorer.vue', () => {
                 spaceItemId: { itemId: '0', providerId: 'local', spaceId: 'local' }
             }
         );
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+        expect(onComplete).toHaveBeenCalledWith(true);
     });
 });

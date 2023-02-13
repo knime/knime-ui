@@ -133,6 +133,12 @@ describe('FileExplorer.vue', () => {
     });
 
     describe('Drag', () => {
+        beforeEach(() => {
+            document.querySelectorAll('[data-id="drag-ghost"]').forEach(el => {
+                el.parentNode.removeChild(el);
+            });
+        });
+
         const dragAndDropItem = async (_srcItemWrapper, _tgtItemWrapper) => {
             const dataTransfer = { setDragImage: jest.fn() };
             await _srcItemWrapper.trigger('dragstart', { dataTransfer });
@@ -175,6 +181,22 @@ describe('FileExplorer.vue', () => {
             expect(thirdItem.classes()).not.toContain('dragging-over');
         });
 
+        it('should create drag ghosts when dragging items', async () => {
+            const { wrapper } = doMount();
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
+
+            // select 2nd and 3rd item
+            await secondItem.trigger('click');
+            await thirdItem.trigger('click', { ctrlKey: true });
+
+            // drag them to 1st item
+            await dragAndDropItem(secondItem, firstItem);
+
+            expect(document.body.querySelectorAll('[data-id="drag-ghost"]').length).toBe(2);
+        });
+
         it('should only allow dropping on "WorkflowGroup"s', async () => {
             const { wrapper } = doMount();
 
@@ -203,7 +225,36 @@ describe('FileExplorer.vue', () => {
 
             expect(wrapper.emitted('move-items')[0][0]).toEqual({
                 sourceItems: ['0'],
-                targetItem: '1'
+                targetItem: '1',
+                onComplete: expect.any(Function)
+            });
+        });
+
+        it('should remove drag ghosts and reset selection after a successful move', async () => {
+            const { wrapper } = doMount();
+
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
+
+            // select 2nd and 3rd item
+            await secondItem.trigger('click');
+            await thirdItem.trigger('click', { ctrlKey: true });
+
+            // attach mock listener
+            wrapper.vm.$on('move-items', ({ onComplete }) => {
+                // invoke onComplete callback
+                onComplete(true);
+            });
+            
+            // drag them to 1st item
+            await dragAndDropItem(secondItem, firstItem);
+
+            // ghosts are removed
+            expect(document.body.querySelectorAll('[data-id="drag-ghost"]').length).toBe(0);
+
+            wrapper.findAll('.file-explorer-item').wrappers.forEach(item => {
+                expect(item.classes()).not.toContain('selected');
             });
         });
         
@@ -238,7 +289,8 @@ describe('FileExplorer.vue', () => {
 
             expect(wrapper.emitted('move-items')[0][0]).toEqual({
                 sourceItems: ['0'],
-                targetItem: '..'
+                targetItem: '..',
+                onComplete: expect.any(Function)
             });
         });
 
@@ -254,7 +306,8 @@ describe('FileExplorer.vue', () => {
 
             expect(wrapper.emitted('dragend')[0][0]).toEqual({
                 event: expect.anything(),
-                sourceItem: MOCK_DATA[1] // second item
+                sourceItem: MOCK_DATA[1], // second item
+                onComplete: expect.any(Function)
             });
         });
     });

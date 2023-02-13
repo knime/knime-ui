@@ -104,6 +104,7 @@ const createGhostElement = ({ badgeCount, textContent, target, addShadow = false
     ghost.innerText = textContent.length > TEXT_SIZE_THRESHOLD
         ? `${textContent.slice(0, TEXT_SIZE_THRESHOLD)}…`
         : textContent;
+    ghost.setAttribute('data-id', 'drag-ghost');
 
     const { x, y, width, height } = target.getBoundingClientRect();
 
