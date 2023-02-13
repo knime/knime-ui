@@ -51,7 +51,7 @@ describe('WorkflowPanel', () => {
                 closeQuickAddNodeMenu: jest.fn(),
                 openPortTypeMenu: jest.fn(),
                 closePortTypeMenu: jest.fn(),
-                saveWorkflowLocally: jest.fn()
+                saveWorkflowAs: jest.fn()
             },
             getters: {
                 isLinked() {
@@ -149,7 +149,7 @@ describe('WorkflowPanel', () => {
             expect(button.exists()).toBe(true);
             await button.vm.$emit('click');
 
-            expect(storeConfig.workflow.actions.saveWorkflowLocally).toHaveBeenCalled();
+            expect(storeConfig.workflow.actions.saveWorkflowAs).toHaveBeenCalled();
         });
     });
 

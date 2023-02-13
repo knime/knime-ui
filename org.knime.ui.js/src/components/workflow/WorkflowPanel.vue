@@ -58,7 +58,7 @@ export default {
             event.preventDefault();
         },
         onSaveLocalCopy() {
-            this.$store.dispatch('workflow/saveWorkflowLocally');
+            this.$store.dispatch('workflow/saveWorkflowAs');
         }
     }
 };

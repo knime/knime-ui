@@ -245,8 +245,8 @@ describe('workflow store: AP Interactions', () => {
 
     describe('Save workflow locally', () => {
         it('saves the workflow locally via the API', async () => {
-            const saveWorkflowLocally = jest.fn();
-            const apiMocks = { saveWorkflowLocally };
+            const saveWorkflowAs = jest.fn();
+            const apiMocks = { saveWorkflowAs };
             const { store } = await loadStore({ apiMocks });
 
             store.commit('workflow/setActiveWorkflow', {
@@ -254,14 +254,14 @@ describe('workflow store: AP Interactions', () => {
                 info: { containerId: 'root' }
             });
 
-            await store.dispatch('workflow/saveWorkflowLocally');
+            await store.dispatch('workflow/saveWorkflowAs');
 
-            expect(saveWorkflowLocally).toHaveBeenCalledWith(expect.objectContaining({ projectId: 'foo' }));
+            expect(saveWorkflowAs).toHaveBeenCalledWith(expect.objectContaining({ projectId: 'foo' }));
         });
 
         it('sends the correct workflow preview for a root workflow when saved locally', async () => {
-            const saveWorkflowLocally = jest.fn();
-            const apiMocks = { saveWorkflowLocally };
+            const saveWorkflowAs = jest.fn();
+            const apiMocks = { saveWorkflowAs };
 
             const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
 
@@ -272,9 +272,9 @@ describe('workflow store: AP Interactions', () => {
                 info: { containerId: 'root' }
             });
 
-            await store.dispatch('workflow/saveWorkflowLocally');
+            await store.dispatch('workflow/saveWorkflowAs');
 
-            expect(saveWorkflowLocally).toHaveBeenCalledWith(expect.objectContaining({
+            expect(saveWorkflowAs).toHaveBeenCalledWith(expect.objectContaining({
                 workflowPreviewSvg: 'mock svg preview'
             }));
         });

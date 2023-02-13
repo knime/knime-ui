@@ -253,9 +253,9 @@ export const copyBetweenSpaces = ({ spaceProviderId = 'local', spaceId = 'local'
     }
 };
 
-export const saveWorkflowLocally = ({ projectId, workflowPreviewSvg }) => {
+export const saveWorkflowAs = ({ projectId, workflowPreviewSvg }) => {
     try {
-        window.saveWorkflowLocally(projectId, workflowPreviewSvg);
+        window.saveWorkflowAs(projectId, workflowPreviewSvg);
     } catch (error) {
         consola.error(`Could not save workflow locally`, { projectId, error });
         throw error;
