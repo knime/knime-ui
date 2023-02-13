@@ -331,7 +331,7 @@ export default {
                 const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
                 await this.$store.dispatch('workflow/addNode', {
                     position: { x, y },
-                    spaceItemId: {
+                    spaceItemReference: {
                         itemId: sourceItem.id,
                         providerId: this.activeSpaceProvider.id,
                         spaceId: this.activeSpace.spaceId

@@ -639,7 +639,7 @@ describe('SpaceExplorer.vue', () => {
             'workflow/addNode',
             {
                 position: { x: 5, y: 5 },
-                spaceItemId: { itemId: '0', providerId: 'local', spaceId: 'local' }
+                spaceItemReference: { itemId: '0', providerId: 'local', spaceId: 'local' }
             }
         );
         await wrapper.vm.$nextTick();
