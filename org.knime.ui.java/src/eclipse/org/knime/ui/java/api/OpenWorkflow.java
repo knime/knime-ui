@@ -59,7 +59,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.internal.Workbench;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -285,7 +284,7 @@ final class OpenWorkflow {
         //   and on these pixels a drag listener is active, allowing to resize the part.
         // This workaround results in these pixels being shown while the workflow is loading, causing a slight
         //   shift back and forth of the Web UI view.
-        var workbench = (Workbench)PlatformUI.getWorkbench();
+        var workbench = (org.eclipse.ui.internal.Workbench)PlatformUI.getWorkbench();
         var modelService = workbench.getService(EModelService.class);
         var app = workbench.getApplication();
         var areaPlaceholder = modelService.find(

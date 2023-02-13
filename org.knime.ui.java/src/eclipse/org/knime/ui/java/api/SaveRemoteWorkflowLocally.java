@@ -83,7 +83,7 @@ final class SaveRemoteWorkflowLocally {
     }
 
     /**
-     * Closes a currently open remote workflow and moves it to the 'root' of the local workspace.
+     * Closes a currently open remote workflow and moves it to a user-determined workflow group in the local workspace.
      *
      * @param projectId The project ID of the open remote workflow
      * @param workflowPreviewSvg The workflow preview SVG
@@ -103,7 +103,7 @@ final class SaveRemoteWorkflowLocally {
             return Optional.empty();
         }
 
-        SaveWorkflow.saveWorkflow(projectId, workflowPreviewSvg);
+        SaveWorkflow.saveWorkflow(projectId, workflowPreviewSvg, true);
         var isClosed = CloseWorkflow.closeWorkflow(projectId, null);
         if (!isClosed) {
             return Optional.empty();

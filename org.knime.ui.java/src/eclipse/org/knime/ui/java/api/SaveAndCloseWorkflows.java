@@ -196,7 +196,7 @@ public final class SaveAndCloseWorkflows {
         final String projectSVG, final WorkflowManager projectWfm) {
         monitor.subTask("Saving '" + projectId + "'");
         if (projectWfm != null) { // workflow not loaded -> nothing to save
-            SaveWorkflow.saveWorkflow(monitor, projectWfm, projectSVG);
+            SaveWorkflow.saveWorkflow(monitor, projectWfm, projectSVG, false);
         }
         var success = closeWorkflow(projectId);
         monitor.worked(1);

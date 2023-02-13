@@ -97,7 +97,7 @@ final class WorkflowAPI {
      */
     @API
     static void saveWorkflow(final String projectId, final String projectSVG) {
-        SaveWorkflow.saveWorkflow(projectId, projectSVG);
+        SaveWorkflow.saveWorkflow(projectId, projectSVG, false);
     }
 
     /**

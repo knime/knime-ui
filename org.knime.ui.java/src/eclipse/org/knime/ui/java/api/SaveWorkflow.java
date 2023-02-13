@@ -97,8 +97,12 @@ final class SaveWorkflow {
 
     /**
      * Save the project workflow manager identified by a given project ID.
+     *
+     * @param projectId ID of the project
+     * @param projectSVG SVG of the workflow, may be {@code null} if the workflow is open in Classic AP
+     * @param localOnly if {@code true}, the workflow is only saved locally even if it is a temporary copy from Hub
      */
-    static void saveWorkflow(final String projectId, final String projectSVG) {
+    static void saveWorkflow(final String projectId, final String projectSVG, final boolean localOnly) {
         var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
 
         if (projectSVG == null) { // No SVG received, workflow editor instance must be present
@@ -114,7 +118,7 @@ final class SaveWorkflow {
                 // Show a warning otherwise
                 DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
             } else {
-                saveWorkflowWithProgressBar(projectWfm, projectSVG);
+                saveWorkflowWithProgressBar(projectWfm, projectSVG, localOnly);
                 ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
                 unmarkDirtyChildWorkflowEditors(projectWfm);
             }
@@ -143,9 +147,11 @@ final class SaveWorkflow {
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    private static void saveWorkflowWithProgressBar(final WorkflowManager wfm, final String svg) {
+    private static void saveWorkflowWithProgressBar(final WorkflowManager wfm, final String svg,
+            final boolean localOnly) {
         try {
-            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> saveWorkflow(monitor, wfm, svg));
+            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(
+                monitor -> saveWorkflow(monitor, wfm, svg, localOnly));
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving the workflow or saving the SVG failed", e);
         } catch (InterruptedException e) {
@@ -154,10 +160,11 @@ final class SaveWorkflow {
         }
     }
 
-    static void saveWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
+    static void saveWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
+            final boolean localOnly) {
         if (wfm.isComponentProjectWFM()) {
             throw new UnsupportedOperationException("Saving a component project is not yet implemented");
-        } else if (wfm.getContextV2().getLocationType() == LocationType.HUB_SPACE) {
+        } else if (!localOnly && wfm.getContextV2().getLocationType() == LocationType.HUB_SPACE) {
             saveBackToHub(monitor, wfm, svg);
         } else {
             saveRegularWorkflow(monitor, wfm, svg);
@@ -168,7 +175,7 @@ final class SaveWorkflow {
      * Save regular workflow
      */
     private static void saveRegularWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm,
-        final String svg) {
+            final String svg) {
         monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
         var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
 
