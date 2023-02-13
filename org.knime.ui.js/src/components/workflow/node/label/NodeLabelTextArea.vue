@@ -1,5 +1,5 @@
 <script>
-import { getMetaKey } from '@/util/navigator';
+import { getMetaOrCtrlKey } from '@/util/navigator';
 import NodeLabelText from './NodeLabelText.vue';
 
 export default {
@@ -51,9 +51,9 @@ export default {
             textarea.style.height = `${textarea.scrollHeight}px`;
         },
         onSave(event) {
-            const metaKey = getMetaKey();
+            const metaOrCtrlKey = getMetaOrCtrlKey();
 
-            if (event[metaKey]) {
+            if (event[metaOrCtrlKey]) {
                 this.$emit('save');
             }
         }

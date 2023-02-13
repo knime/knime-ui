@@ -11,7 +11,7 @@ import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
-import { getMetaKey } from '@/util/navigator';
+import { getMetaOrCtrlKey } from '@/util/navigator';
 import ITEM_TYPES from '@/util/spaceItemTypes';
 
 import * as multiSelectionService from './multiSelectionStateService';
@@ -129,14 +129,14 @@ export default {
          * @returns {void}
          */
         handleClick(event, index) {
-            const metaKey = getMetaKey();
+            const metaOrCtrlKey = getMetaOrCtrlKey();
 
             if (event.shiftKey) {
                 this.shiftClickItem(index);
                 return;
             }
 
-            if (event[metaKey]) {
+            if (event[metaOrCtrlKey]) {
                 this.ctrlClickItem(index);
                 return;
             }

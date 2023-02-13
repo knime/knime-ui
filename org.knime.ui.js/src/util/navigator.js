@@ -1,3 +1,3 @@
 export const isMac = () => navigator?.userAgent?.toLowerCase()?.includes('mac');
 
-export const getMetaKey = () => isMac() ? 'metaKey' : 'ctrlKey';
+export const getMetaOrCtrlKey = () => isMac() ? 'metaKey' : 'ctrlKey';
