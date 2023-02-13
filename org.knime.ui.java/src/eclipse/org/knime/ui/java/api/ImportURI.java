@@ -48,17 +48,26 @@
  */
 package org.knime.ui.java.api;
 
+import static java.util.Arrays.asList;
 import static org.knime.gateway.api.entity.EntityBuilderManager.builder;
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.knime.core.node.KNIMEComponentInformation;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.NodeTemplateId;
+import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.webui.entity.AddNodeCommandEnt.AddNodeCommandEntBuilder;
 import org.knime.gateway.api.webui.entity.NodeFactoryKeyEnt;
@@ -74,7 +83,10 @@ import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.URIImporterFinder;
+import org.knime.workbench.core.imports.UpdateSiteInfo;
+import org.knime.workbench.editor2.InstallMissingNodesJob;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
+import org.knime.workbench.ui.p2.actions.AbstractP2Action;
 
 import com.equo.chromium.swt.Browser;
 
@@ -86,6 +98,8 @@ import com.equo.chromium.swt.Browser;
 public final class ImportURI {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(ImportURI.class);
+
+    private static final String FEATURE_GROUP_SUFFIX = ".feature.group";
 
     private static EntityImport entityImportInProgress;
 
@@ -163,6 +177,10 @@ public final class ImportURI {
 
         if (entityImport instanceof NodeImport) {
             var nodeImport = (NodeImport)entityImport;
+            if (!isNodeInstalled(nodeImport)) {
+                askToInstallExtension(nodeImport);
+                return false;
+            }
             var key = getNodeFactoryKey(nodeImport.getCanonicalNodeFactory(), nodeImport.getNodeName(),
                 nodeImport.isDynamicNode());
             return importNode(key, null, projectId, workflowId, canvasX, canvasY);
@@ -171,6 +189,53 @@ public final class ImportURI {
                 workflowId, canvasX, canvasY);
         }
         return false;
+    }
+
+    private static boolean isNodeInstalled(final NodeImport nodeImport) {
+        return !DefaultNodeRepositoryService.getInstance().getNodeTemplates(Collections.singletonList(
+            NodeTemplateId.ofDynamicNodeFactory(nodeImport.getCanonicalNodeFactory(), nodeImport.getNodeName(), true)))
+            .isEmpty();
+    }
+
+    private static void askToInstallExtension(final NodeImport nodeImport) {
+        String featureName = nodeImport.getFeatureName();
+        String featureSymbolicName = nodeImport.getFeatureSymbolicName();
+        //try installing the missing extension
+        String[] dialogButtonLabels = {IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL};
+        Shell shell = SWTUtilities.getActiveShell();
+        // TODO: derive feature name from feature symbolic name (TODO)
+        MessageDialog dialog = new MessageDialog(shell, "The KNIME Extension for the node is not installed!", null,
+            "The extension '" + featureName + "' is not installed. Do you want to search and install it?"
+                + "\n\nNote: Please drag and drop the node again once the installation process is finished.",
+            MessageDialog.QUESTION, dialogButtonLabels, 0);
+        if ((dialog.open() == 0) && AbstractP2Action.checkSDKAndReadOnly()) {
+            startInstallationJob(featureName, featureSymbolicName, nodeImport.getUpdateSiteInfo());
+        }
+    }
+
+    private static void startInstallationJob(final String featureName, final String featureSymbolicName,
+        final UpdateSiteInfo siteInfo) {
+        Job j = new InstallMissingNodesJob(asList(new KNIMEComponentInformation() {
+
+            @Override
+            public Optional<String> getFeatureSymbolicName() {
+                // Our internal update-sites require ".feature.group" suffix.
+                return Optional.of(featureSymbolicName.endsWith(FEATURE_GROUP_SUFFIX) ? featureSymbolicName
+                    : featureSymbolicName + FEATURE_GROUP_SUFFIX);
+            }
+
+            @Override
+            public String getComponentName() {
+                return featureName;
+            }
+
+            @Override
+            public Optional<String> getBundleSymbolicName() {
+                return Optional.empty();
+            }
+        }), siteInfo);
+        j.setUser(true);
+        j.schedule();
     }
 
     private static boolean importNodeFromFileURI(final String uri, final String projectId, final String workflowId,
