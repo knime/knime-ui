@@ -234,9 +234,18 @@ export default {
 
         onDragEnd(event, item) {
             this.isDragging = false;
-            this.removeGhosts?.();
-            this.removeGhosts = null;
-            this.$emit('dragend', { event, sourceItem: item });
+            
+            const onComplete = (isSuccessfullDrop) => {
+                if (isSuccessfullDrop) {
+                    this.resetSelection();
+                }
+
+                // animate ghosts back if drop was unsuccessful
+                this.removeGhosts?.(!isSuccessfullDrop);
+                this.removeGhosts = null;
+            };
+
+            this.$emit('dragend', { event, sourceItem: item, onComplete });
         },
 
         onDrop(index, isGoBackItem = false) {
@@ -257,10 +266,17 @@ export default {
                 return;
             }
 
-            this.$emit('move-items', { sourceItems, targetItem });
+            const onComplete = (isSuccessfullMove) => {
+                if (isSuccessfullMove) {
+                    this.resetSelection();
+                }
 
-            this.removeGhosts?.(false);
-            this.removeGhosts = null;
+                // animate ghosts back if move was unsuccessful
+                this.removeGhosts?.(!isSuccessfullMove);
+                this.removeGhosts = null;
+            };
+
+            this.$emit('move-items', { sourceItems, targetItem, onComplete });
         },
 
         getItemElementByRefIndex(index, isGoBackItem = false) {

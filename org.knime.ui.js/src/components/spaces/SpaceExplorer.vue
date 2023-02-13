@@ -240,7 +240,17 @@ export default {
             }
         },
 
-        async onMoveItems({ sourceItems, targetItem }) {
+        /**
+         * @typedef Payload
+         * @property {Array<string>} sourceItems
+         * @property {String} targetItem
+         * @property {(success: boolean) => void} onComplete
+        */
+        /**
+         * @param {Payload} eventPayload
+         * @returns {Void}
+         */
+        async onMoveItems({ sourceItems, targetItem, onComplete }) {
             const openedWorkflows = this.openProjects.filter(workflow => sourceItems.includes(workflow.origin.itemId));
             const isInsideFolder = this.openProjects.filter(
                 (project) => project.origin.ancestorItemIds
@@ -257,6 +267,8 @@ export default {
                  isInsideFolderNames.map(name => `• ${name}`).join('\n')}
                 \nTo move your selected items, they have to be closed first`);
 
+                onComplete(false);
+
                 return;
             }
 
@@ -267,17 +279,36 @@ export default {
                 );
 
                 if (collisionStrategy === 'CANCEL') {
+                    onComplete(false);
+
                     return;
                 }
 
-                this.$store.dispatch(
-                    'spaces/moveItems',
-                    { itemIds: sourceItems, destWorkflowGroupItemId: destId, collisionStrategy }
-                );
+                try {
+                    this.$store.dispatch(
+                        'spaces/moveItems',
+                        { itemIds: sourceItems, destWorkflowGroupItemId: destId, collisionStrategy }
+                    );
+                
+                    onComplete(true);
+                } catch (error) {
+                    consola.error(`There was a problem moving the items`, { error });
+                    onComplete(false);
+                }
             }
         },
 
-        async onDragEnd({ event, sourceItem }) {
+        /**
+         * @typedef Payload
+         * @property {MouseEvent} event
+         * @property {{ id: string }} sourceItem
+         * @property {(success: boolean) => void} onComplete
+        */
+        /**
+         * @param {Payload} eventPayload
+         * @returns {Void}
+         */
+        async onDragEnd({ event, sourceItem, onComplete }) {
             const screenX = event.clientX - this.$shapes.nodeSize / 2;
             const screenY = event.clientY - this.$shapes.nodeSize / 2;
 
@@ -285,26 +316,32 @@ export default {
 
             // skip behavior when not on the workflow
             if (this.$route.name !== APP_ROUTES.WorkflowPage) {
+                onComplete(false);
                 return;
             }
 
             const kanvas = this.getScrollContainerElement();
 
-            if (kanvas.contains(el)) {
-                try {
-                    const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
-                    await this.$store.dispatch('workflow/addNode', {
-                        position: { x, y },
-                        spaceItemId: {
-                            itemId: sourceItem.id,
-                            providerId: this.activeSpaceProvider.id,
-                            spaceId: this.activeSpace.spaceId
-                        }
-                    });
-                } catch (error) {
-                    consola.error({ message: 'Error adding node via file to workflow', error });
-                    throw error;
-                }
+            if (!kanvas.contains(el)) {
+                onComplete(false);
+                return;
+            }
+
+            try {
+                const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
+                await this.$store.dispatch('workflow/addNode', {
+                    position: { x, y },
+                    spaceItemId: {
+                        itemId: sourceItem.id,
+                        providerId: this.activeSpaceProvider.id,
+                        spaceId: this.activeSpace.spaceId
+                    }
+                });
+                onComplete(true);
+            } catch (error) {
+                onComplete(false);
+                consola.error({ message: 'Error adding node via file to workflow', error });
+                throw error;
             }
         }
     }
