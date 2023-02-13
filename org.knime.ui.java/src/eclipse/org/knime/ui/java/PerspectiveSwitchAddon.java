@@ -69,6 +69,7 @@ import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -177,8 +178,11 @@ public final class PerspectiveSwitchAddon {
             disposeAllWorkflowProjects();
         }
         KnimeBrowserView.clearView();
-        LifeCycle.get().saveState();
-        LifeCycle.get().suspend();
+        var lifeCycle = LifeCycle.get();
+        if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
+            lifeCycle.saveState();
+            lifeCycle.suspend();
+        }
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
         PerspectiveUtil.setClassicPerspectiveActive(true);
