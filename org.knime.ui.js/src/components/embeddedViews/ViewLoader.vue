@@ -4,6 +4,7 @@ import { loadComponentLibrary } from '@/util/loadComponentLibrary';
 // At the moment this component has to be directly provided because no dynamic counterparts
 // that can be loaded exists. Eventually this view will also be loaded dynamically
 import FlowVariablePortView from '@/components/output/FlowVariablePortView.vue';
+import ImagePortView from '@/components/output/ImagePortView.vue';
 
 /**
  * Dynamically loads and renders a component for a view in the workflow. This could be a port view
@@ -11,7 +12,8 @@ import FlowVariablePortView from '@/components/output/FlowVariablePortView.vue';
  */
 export default {
     components: {
-        FlowVariablePortView
+        FlowVariablePortView,
+        ImagePortView
     },
 
     provide() {
@@ -117,6 +119,10 @@ export default {
          * - Remote component library scripts (VUE_COMPONENT_LIB) fetched over the network
         */
         async renderDynamicViewComponent(viewConfig) {
+            // create knime service and update provide/inject
+            const knimeService = this.initKnimeService(viewConfig);
+            this.getKnimeService = () => knimeService;
+
             // set up component, if dynamically loaded
             if (viewConfig.resourceInfo.type === 'VUE_COMPONENT_LIB') {
                 await this.setupDynamicComponent(viewConfig);
@@ -145,10 +151,6 @@ export default {
                 componentName: this.overrideComponentName || componentName
             });
             this.$options.components[this.overrideComponentName || componentName] = component;
-
-            // create knime service and update provide/inject
-            const knimeService = this.initKnimeService(viewConfig);
-            this.getKnimeService = () => knimeService;
         }
     }
 };
