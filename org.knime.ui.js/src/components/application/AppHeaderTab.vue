@@ -73,7 +73,7 @@ export default {
     @click.stop="isActive ? null : $emit('switch-workflow', projectId)"
     @mouseover="onHover(projectId)"
     @mouseleave="onHover(null)"
-    @click.middle="$emit('close-workflow', projectId)"
+    @click.middle.stop="$emit('close-workflow', projectId)"
   >
     <WorkflowIcon
       class="workflow-icon"
@@ -82,7 +82,7 @@ export default {
     <CloseButton
       class="close-icon"
       :size="20"
-      @close="$emit('close-workflow', projectId)"
+      @close.stop="$emit('close-workflow', projectId)"
     />
   </li>
 </template>

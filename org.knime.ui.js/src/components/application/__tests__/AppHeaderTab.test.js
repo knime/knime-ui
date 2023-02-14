@@ -1,8 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-
 import AppHeaderTab from '../AppHeaderTab.vue';
+import CloseButton from '@/components/common/CloseButton.vue';
 
 describe('AppHeaderTab.vue', () => {
     const doMount = (props = {}) => {
@@ -18,18 +17,17 @@ describe('AppHeaderTab.vue', () => {
     };
 
     describe('hover', () => {
-        it('should set the "visible" class when `isHoveredOver` prop is true', () => {
+        it('should set the "hovered" class when `isHoveredOver` prop is true', () => {
             const wrapper = doMount({ isHoveredOver: true });
             expect(wrapper.find('li').classes()).toContain('hovered');
-            expect(wrapper.findComponent(FunctionButton).classes()).toContain('visible');
         });
 
         it('should emit hover event', async () => {
             const wrapper = doMount({ projectId: '2' });
-    
+
             await wrapper.find('li').trigger('mouseover');
             expect(wrapper.emitted('hover')[0][0]).toBe('2');
-            
+
             await wrapper.find('li').trigger('mouseleave');
             expect(wrapper.emitted('hover')[1][0]).toBe(null);
         });
@@ -44,24 +42,34 @@ describe('AppHeaderTab.vue', () => {
     describe('switch workflow', () => {
         it('should emit a switch-workflow event when the tab is NOT active', () => {
             const wrapper = doMount({ projectId: '1' });
-            
+
             wrapper.find('li').trigger('click');
             expect(wrapper.emitted('switch-workflow')[0][0]).toBe('1');
         });
 
         it('should not emit a switch-workflow event when the tab is active', () => {
             const wrapper = doMount({ projectId: '1', isActive: true });
-            
+
             wrapper.find('li').trigger('click');
             expect(wrapper.emitted('switch-workflow')).toBeUndefined();
         });
     });
 
-    it('should emit a close-workflow event', async () => {
+    it('should emit a close-workflow event on middle click', async () => {
+        const wrapper = doMount({ projectId: '1' });
+
+        // testing click with middle click works best with triggering mouseup
+        await wrapper.trigger('mouseup', { button: 1 });
+
+        expect(wrapper.emitted('close-workflow')[0][0]).toBe('1');
+    });
+
+
+    it('should emit a close-workflow event if the close button is pressed', async () => {
         const wrapper = doMount({ projectId: '1' });
 
         const stopPropagation = jest.fn();
-        await wrapper.findComponent(FunctionButton).vm.$emit('click', { stopPropagation });
+        await wrapper.findComponent(CloseButton).vm.$emit('close', { stopPropagation });
 
         expect(stopPropagation).toHaveBeenCalled();
         expect(wrapper.emitted('close-workflow')[0][0]).toBe('1');
@@ -74,7 +82,7 @@ describe('AppHeaderTab.vue', () => {
             gine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transfo
             rm_Using_Rule_Engine_and_String_Manipulation
         `.trim();
-        
+
         it.each([
             // [viewport size, max characters]
             [400, 10],
@@ -90,7 +98,7 @@ describe('AppHeaderTab.vue', () => {
             const wrapper = doMount({ name: longName, windowWidth: width });
 
             const nameElement = wrapper.find('.text');
-            
+
             // +2 to account for the " …"
             expect(nameElement.text().length).toBe(maxChars + 2);
         });

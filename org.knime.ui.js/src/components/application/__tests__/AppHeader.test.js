@@ -8,6 +8,7 @@ import CloseIcon from '@/assets/cancel.svg';
 import AppHeader from '../AppHeader.vue';
 import AppHeaderTab from '../AppHeaderTab.vue';
 import { APP_ROUTES } from '@/router';
+import CloseButton from '@/components/common/CloseButton.vue';
 
 describe('AppHeader.vue', () => {
     let propsData, mocks, doMount, wrapper, storeConfig, $store, $router, $route;
@@ -50,7 +51,7 @@ describe('AppHeader.vue', () => {
         $route = {
             name: ''
         };
-        
+
         doMount = () => {
             $store = mockVuexStore(storeConfig);
             mocks = {
@@ -69,12 +70,12 @@ describe('AppHeader.vue', () => {
             const tabs = wrapper.findAll('li');
             expect(tabs.length).toBe(3);
         });
-        
+
         it('allows closing workflow', () => {
             doMount();
 
             expect(wrapper.findComponent(CloseIcon).exists()).toBe(true);
-            wrapper.findAllComponents(FunctionButton).at(1).trigger('click');
+            wrapper.findAllComponents(CloseButton).at(1).trigger('click');
             expect(storeConfig.workflow.actions.closeWorkflow).toHaveBeenCalledWith(expect.anything(), '2');
         });
 
@@ -93,16 +94,16 @@ describe('AppHeader.vue', () => {
             doMount();
 
             wrapper.find('#knime-logo').trigger('click');
-            
+
             expect($router.push).toHaveBeenCalledWith({
                 name: APP_ROUTES.EntryPage.GetStartedPage
             });
             $route.name = APP_ROUTES.EntryPage.GetStartedPage;
-            
+
             await Vue.nextTick();
             expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
         });
-        
+
         it('render application title, if no active project name exists', () => {
             storeConfig.application.state.openProjects = [];
             doMount();
@@ -124,12 +125,12 @@ describe('AppHeader.vue', () => {
             await Vue.nextTick();
             expect(secondTab.props('isActive')).toBe(true);
         });
-        
+
         it('updates the hoveredTab state', async () => {
             doMount();
             const secondTab = wrapper.findAllComponents(AppHeaderTab).at(1);
             expect(secondTab.props('isHoveredOver')).toBe(false);
-            
+
             secondTab.vm.$emit('hover', '2');
             await Vue.nextTick();
             expect(secondTab.props('isHoveredOver')).toBe(true);
@@ -140,7 +141,7 @@ describe('AppHeader.vue', () => {
         doMount();
         window.innerWidth = 100;
         window.dispatchEvent(new Event('resize'));
-        
+
         await Vue.nextTick();
         expect(wrapper.findAllComponents(AppHeaderTab).at(0).props('windowWidth')).toBe(100);
     });
