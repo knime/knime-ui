@@ -59,7 +59,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
@@ -80,6 +79,7 @@ import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAl
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
+import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.URIImporterFinder;
@@ -215,7 +215,7 @@ public final class ImportURI {
 
     private static void startInstallationJob(final String featureName, final String featureSymbolicName,
         final UpdateSiteInfo siteInfo) {
-        Job j = new InstallMissingNodesJob(asList(new KNIMEComponentInformation() {
+        var job = new InstallMissingNodesJob(asList(new KNIMEComponentInformation() {
 
             @Override
             public Optional<String> getFeatureSymbolicName() {
@@ -234,8 +234,7 @@ public final class ImportURI {
                 return Optional.empty();
             }
         }), siteInfo);
-        j.setUser(true);
-        j.schedule();
+        DesktopAPUtil.runWithProgress(job.getName(), LOGGER, job::run);
     }
 
     private static boolean importNodeFromFileURI(final String uri, final String projectId, final String workflowId,
