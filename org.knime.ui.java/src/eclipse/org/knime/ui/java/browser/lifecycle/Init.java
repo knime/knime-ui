@@ -55,6 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.IntSupplier;
+import java.util.function.Predicate;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -87,6 +88,7 @@ import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.ui.java.util.NodeCollectionUtil;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
 import com.equo.comm.api.CommServiceProvider;
@@ -187,10 +189,9 @@ final class Init {
 
     private static PreferencesProvider createPreferencesProvider() {
         return new PreferencesProvider() {
-
             @Override
-            public boolean isNodeRepoFilterEnabled() {
-                return !KnimeUIPreferences.SELECTED_NODE_COLLECTION_NONE_ID.equals(KnimeUIPreferences.getSelectedNodeCollection());
+            public Predicate<String> activeNodeCollection() {
+                return NodeCollectionUtil.getActiveNodeCollection();
             }
 
             @Override

@@ -101,7 +101,7 @@ public final class KnimeUIPreferences {
     public static final String SELECTED_NODE_COLLECTION_NONE_ID = "none";
 
     /** The identifier for the starter node collection. The node repository will only show starter nodes. */
-    static final String SELECTED_NODE_COLLECTION_STARTER_ID = "starter";
+    public static final String SELECTED_NODE_COLLECTION_STARTER_ID = "starter";
 
     /** If the desired mouse wheel action is scrolling */
     public static final String MOUSE_WHEEL_ACTION_SCROLL = "scroll";
