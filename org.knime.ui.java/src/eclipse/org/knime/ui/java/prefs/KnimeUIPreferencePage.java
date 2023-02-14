@@ -65,7 +65,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
     private static final String NODE_REPO_FILTER_NONE_OPTION = "All nodes";
 
-    private static final String NODE_REPO_FILTER_SPREADSHEET_OPTION = "Starter nodes";
+    private static final String NODE_REPO_FILTER_STARTER_OPTION = "Starter nodes";
 
     /** Create a new preference page for the modern UI. */
     public KnimeUIPreferencePage() {
@@ -76,7 +76,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
     protected void createFieldEditors() {
         final var nodeRepoFilterOptions = new String[][]{ //
             new String[]{NODE_REPO_FILTER_NONE_OPTION, KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID}, //
-            new String[]{NODE_REPO_FILTER_SPREADSHEET_OPTION, KnimeUIPreferences.NODE_REPO_FILTER_SPREADSHEET_ID} //
+            new String[]{NODE_REPO_FILTER_STARTER_OPTION, KnimeUIPreferences.NODE_REPO_FILTER_STARTER_ID} //
         };
         final var nodeRepoFilterEditor = new RadioGroupFieldEditor(KnimeUIPreferences.NODE_REPO_FILTER_PREF_KEY,
             NODE_REPO_FILTER_LABEL, 1, nodeRepoFilterOptions, getFieldEditorParent());

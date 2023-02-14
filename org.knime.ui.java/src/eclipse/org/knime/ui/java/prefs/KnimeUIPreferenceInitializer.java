@@ -63,6 +63,6 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
 
         // Set the node filter to the spreadsheet edition
         store.setDefault(KnimeUIPreferences.NODE_REPO_FILTER_PREF_KEY,
-            KnimeUIPreferences.NODE_REPO_FILTER_SPREADSHEET_ID);
+            KnimeUIPreferences.NODE_REPO_FILTER_STARTER_ID);
     }
 }

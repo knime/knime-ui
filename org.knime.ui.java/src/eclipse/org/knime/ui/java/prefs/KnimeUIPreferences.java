@@ -90,10 +90,10 @@ public final class KnimeUIPreferences {
     public static final String NODE_REPO_FILTER_NONE_ID = "none";
 
     /**
-     * The identifier for the spreadsheet collection node repository filter. The node repository will only show nodes
-     * that are useful for spreadsheet users.
+     * The identifier for the starter perspective repository filter. The node repository will only show nodes
+     * that are useful for beginners.
      */
-    static final String NODE_REPO_FILTER_SPREADSHEET_ID = "spreadsheet";
+    static final String NODE_REPO_FILTER_STARTER_ID = "starter";
 
     /**
      * @return the identifier of the node repository filter that is active. {@link #NODE_REPO_FILTER_NONE_ID} if no
