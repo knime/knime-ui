@@ -41,12 +41,6 @@ export const state = () => ({
     /* Object containing available updates */
     availableUpdates: null,
 
-    /*
-     * If true, the node repository will be filtered to show only the nodes that fit the current filter.
-     * This will have an effect on the node search, on the category groups, and on the node recommendations.
-     */
-    nodeRepoFilterEnabled: false,
-
     /**
      * If true, the mouse wheel should be used for zooming instead of scrolling
      */
@@ -132,9 +126,6 @@ export const mutations = {
     setAvailableUpdates(state, availableUpdates) {
         state.availableUpdates = availableUpdates;
     },
-    setNodeRepoFilterEnabled(state, nodeRepoFilterEnabled) {
-        state.nodeRepoFilterEnabled = nodeRepoFilterEnabled;
-    },
     setScrollToZoomEnabled(state, scrollToZoomEnabled) {
         state.scrollToZoomEnabled = scrollToZoomEnabled;
     },
@@ -216,22 +207,6 @@ export const actions = {
 
         if (applicationState.exampleProjects) {
             commit('setExampleProjects', applicationState.exampleProjects);
-        }
-
-        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
-        if (applicationState.hasOwnProperty('nodeRepoFilterEnabled')) {
-            commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
-
-            await dispatch(
-                'nodeRepository/setIncludeAllAndSearchNodes',
-                !applicationState.nodeRepoFilterEnabled,
-                { root: true }
-            );
-
-            // refetch categories to add/remove nodes based on the updated filter state
-            if (rootState.nodeRepository.nodesPerCategory.length > 0) {
-                dispatch('nodeRepository/getAllNodes', { append: false }, { root: true });
-            }
         }
 
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set

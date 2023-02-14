@@ -65,7 +65,6 @@ describe('application store', () => {
             workflow: await import('@/store/workflow'),
             nodeRepository: {
                 actions: {
-                    setIncludeAllAndSearchNodes: jest.fn(),
                     getAllNodes: jest.fn()
                 }
             },
@@ -148,12 +147,6 @@ describe('application store', () => {
                 { newReleases: undefined, bugfixes: ['Update1', 'Update2'] });
             expect(store.state.application.availableUpdates)
                 .toStrictEqual({ newReleases: undefined, bugfixes: ['Update1', 'Update2'] });
-        });
-
-        it('sets nodeRepoFilterEnabled', async () => {
-            const { store } = await loadStore();
-            store.commit('application/setNodeRepoFilterEnabled', true);
-            expect(store.state.application.nodeRepoFilterEnabled).toBe(true);
         });
 
         it('sets devMode', async () => {
@@ -300,17 +293,6 @@ describe('application store', () => {
                 projectId: 'baz',
                 workflowId: 'root:2'
             });
-        });
-
-        it('replaces nodeRepoFilterEnabled', async () => {
-            const applicationState = { nodeRepoFilterEnabled: true };
-            const { store, dispatchSpy } = await loadStore();
- 
-            store.state.nodeRepository.nodesPerCategory = [{ dummyData: true }];
-
-            await store.dispatch('application/replaceApplicationState', applicationState);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/setIncludeAllAndSearchNodes', false);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/getAllNodes', { append: false });
         });
     });
 

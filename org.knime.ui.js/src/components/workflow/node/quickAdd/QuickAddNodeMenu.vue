@@ -65,7 +65,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', ['availablePortTypes', 'hasNodeRecommendationsEnabled', 'nodeRepoFilterEnabled']),
+        ...mapState('application', ['availablePortTypes', 'hasNodeRecommendationsEnabled']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('workflow', ['isWritable']),

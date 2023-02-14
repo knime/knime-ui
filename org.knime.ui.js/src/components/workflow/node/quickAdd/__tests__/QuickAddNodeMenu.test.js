@@ -51,8 +51,7 @@ describe('QuickAddNodeMenu.vue', () => {
 
     const doMount = ({
         addNodeMock = jest.fn(),
-        isWriteableMock = jest.fn().mockReturnValue(true),
-        nodeRepoFilterEnabled = false
+        isWriteableMock = jest.fn().mockReturnValue(true)
     } = {}) => {
         let propsData = {
             nodeId: 'node-id',
@@ -85,8 +84,7 @@ describe('QuickAddNodeMenu.vue', () => {
                             color: 'blue'
                         }
                     },
-                    hasNodeRecommendationsEnabled: true,
-                    nodeRepoFilterEnabled
+                    hasNodeRecommendationsEnabled: true
                 }
             },
             workflow: {

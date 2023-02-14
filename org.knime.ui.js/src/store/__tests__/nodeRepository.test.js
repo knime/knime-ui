@@ -115,8 +115,7 @@ describe('Node Repository store', () => {
             nodeRepository: await import('@/store/nodeRepository'),
             application: {
                 state: {
-                    availablePortTypes,
-                    nodeRepoFilterEnabled: false
+                    availablePortTypes
                 }
             }
         });
