@@ -66,7 +66,7 @@ public class UIPlugin extends AbstractUIPlugin {
     public void start(final BundleContext bc) throws Exception {
         context = bc; // NOSONAR
         //initialize the node timer with the currently active edition
-        NodeTimer.GLOBAL_TIMER.setLastUsedEdition(KnimeUIPreferences.getNodeRepoFilter());
+        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getNodeRepoFilter());
     }
 
     @Override

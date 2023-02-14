@@ -74,7 +74,7 @@ public final class KnimeUIPreferences {
         PREF_STORE.addPropertyChangeListener(e -> {
             if (NODE_REPO_FILTER_PREF_KEY.equals(e.getProperty())) {
                 final String newValue = (String)e.getNewValue();
-                NodeTimer.GLOBAL_TIMER.setLastUsedEdition(newValue);
+                NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(newValue);
                 if (NODE_REPO_FILTER_CHANGE_LISTENER != null) {
                     NODE_REPO_FILTER_CHANGE_LISTENER.accept((String)e.getOldValue(), newValue);
                 }
