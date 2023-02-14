@@ -49,6 +49,7 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
@@ -69,6 +70,7 @@ final class Startup {
         var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
         if (prefs == null || prefs.getBoolean(SharedConstants.PREFERENCE_KEY, true)) {
             System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
+            PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
         } else {
             System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
             PerspectiveUtil.setClassicPerspectiveActive(true);

@@ -62,7 +62,6 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
-import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserFunction;
 import org.knime.ui.java.browser.KnimeBrowserView;
@@ -84,8 +83,6 @@ final class Create {
     }
 
     static void run(final Browser browser) {
-        PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
-
         // In order for the mechanism to block external requests to work (see CEFPlugin-class)
         // the resource handlers must be registered before the browser initialization
         initializeResourceHandlers();

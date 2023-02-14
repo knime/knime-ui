@@ -94,8 +94,6 @@ public final class PerspectiveSwitchAddon {
 
     private static final String PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP = "chromium.external_message_pump";
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(PerspectiveSwitchAddon.class);
-
     /**
      * The ID of the perspective that was active before the current one. {@code null} if not known.
      */
@@ -229,7 +227,7 @@ public final class PerspectiveSwitchAddon {
         IThemeEngine engine = context.get(IThemeEngine.class);
         ITheme webUITheme = engine.getThemes().stream().filter(t -> t.getId().equals(themeId)).findFirst().orElse(null);
         if (webUITheme == null) {
-            LOGGER.error("The web ui css theme couldn't be found");
+            NodeLogger.getLogger(PerspectiveSwitchAddon.class).error("The web ui css theme couldn't be found");
             return;
         }
         engine.setTheme(webUITheme, true);
