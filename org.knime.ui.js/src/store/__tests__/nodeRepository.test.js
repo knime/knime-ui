@@ -147,7 +147,6 @@ describe('Node Repository store', () => {
             categoryPage: 0,
             searchScrollPosition: 0,
             categoryScrollPosition: 0,
-            includeAll: false,
             selectedNode: null,
             isDraggingNode: false,
             isDescriptionPanelOpen: false
@@ -328,13 +327,6 @@ describe('Node Repository store', () => {
             store.commit('nodeRepository/setDraggingNode', true);
             expect(store.state.nodeRepository.isDraggingNode).toBe(true);
         });
-
-        it('sets includeAll', async () => {
-            const { store } = await createStore();
-            expect(store.state.nodeRepository.includeAll).toBe(false);
-            store.commit('nodeRepository/setIncludeAll', true);
-            expect(store.state.nodeRepository.includeAll).toBe(true);
-        });
     });
 
     describe('actions', () => {
@@ -363,8 +355,7 @@ describe('Node Repository store', () => {
                     numNodesPerTag: 6,
                     tagsOffset: 6,
                     tagsLimit: 3,
-                    fullTemplateInfo: true,
-                    includeAll: true
+                    fullTemplateInfo: true
                 });
 
                 const { nodes, tag } = getNodesGroupedByTagsResponse.groups[0];
@@ -389,8 +380,7 @@ describe('Node Repository store', () => {
                     numNodesPerTag: 6,
                     tagsOffset: 0,
                     tagsLimit: 6,
-                    fullTemplateInfo: true,
-                    includeAll: true
+                    fullTemplateInfo: true
                 });
             });
 
@@ -402,20 +392,6 @@ describe('Node Repository store', () => {
 
                 await store.dispatch('nodeRepository/getAllNodes', { append: true });
                 expect(getNodesGroupedByTagsMock).not.toHaveBeenCalled();
-            });
-
-            it('gets all nodes with node filter enabled', async () => {
-                const { store, getNodesGroupedByTagsMock } = await createStore();
-                store.state.application.nodeRepoFilterEnabled = true;
-
-                await store.dispatch('nodeRepository/getAllNodes', { append: true });
-                expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
-                    numNodesPerTag: 6,
-                    tagsOffset: 6,
-                    tagsLimit: 3,
-                    fullTemplateInfo: true,
-                    includeAll: false
-                });
             });
         });
 
@@ -439,8 +415,7 @@ describe('Node Repository store', () => {
                     nodeLimit: 100,
                     nodeOffset: 0,
                     query: 'lookup',
-                    tags: [],
-                    includeAll: false
+                    tags: []
                 });
                 expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
                 expect(store.state.nodeRepository.nodes).toEqual(
@@ -463,8 +438,7 @@ describe('Node Repository store', () => {
                     nodeLimit: 100,
                     nodeOffset: 100,
                     query: 'lookup',
-                    tags: [],
-                    includeAll: false
+                    tags: []
                 });
                 expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
                 expect(store.state.nodeRepository.nodes).toEqual([
@@ -480,7 +454,6 @@ describe('Node Repository store', () => {
 
                 expect(store.state.nodeRepository.query).toBe('some value');
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
-                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/resetIncludeAll', undefined);
             });
 
             it('searches for nodes next page', async () => {
@@ -517,7 +490,7 @@ describe('Node Repository store', () => {
                 expect(store.state.nodeRepository.query).toEqual('');
                 expect(store.state.nodeRepository.nodes).toEqual(null);
                 expect(store.state.nodeRepository.tags).toEqual([]);
-                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/resetIncludeAll', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResults', undefined);
             });
 
             it('clears search results', async () => {
@@ -526,49 +499,6 @@ describe('Node Repository store', () => {
                 store.dispatch('nodeRepository/clearSearchResults');
                 expect(store.state.nodeRepository.nodes).toEqual(null);
                 expect(store.state.nodeRepository.tags).toEqual([]);
-            });
-
-            it('reset includeAll', async () => {
-                const { store } = await createStore();
-                store.commit('nodeRepository/setIncludeAll', true);
-                store.state.application.nodeRepoFilterEnabled = false;
-                expect(store.state.nodeRepository.includeAll).toBe(true);
-
-                await store.dispatch('nodeRepository/resetIncludeAll');
-                expect(store.state.nodeRepository.includeAll).toBe(true);
-            });
-
-            it('reset includeAll with node filter enabled', async () => {
-                const { store } = await createStore();
-                store.commit('nodeRepository/setIncludeAll', true);
-                store.state.application.nodeRepoFilterEnabled = true;
-                expect(store.state.nodeRepository.includeAll).toBe(true);
-
-                await store.dispatch('nodeRepository/resetIncludeAll');
-                expect(store.state.nodeRepository.includeAll).toBe(false);
-            });
-
-            it('set includeAll', async () => {
-                const { store, searchNodesMock } = await createStore();
-                store.commit('nodeRepository/setQuery', 'lookup');
-                store.commit('nodeRepository/setNodes', ['dummy value']);
-
-                await store.dispatch('nodeRepository/setIncludeAllAndSearchNodes', true);
-                expect(searchNodesMock).toHaveBeenCalledWith({
-                    allTagsMatch: true,
-                    fullTemplateInfo: true,
-                    nodeLimit: 100,
-                    nodeOffset: 0,
-                    query: 'lookup',
-                    tags: [],
-                    includeAll: true
-                });
-            });
-
-            it('set includeAll do not search if search is inactive', async () => {
-                const { store, searchNodesMock } = await createStore();
-                await store.dispatch('nodeRepository/setIncludeAllAndSearchNodes', true);
-                expect(searchNodesMock).not.toHaveBeenCalled();
             });
         });
 

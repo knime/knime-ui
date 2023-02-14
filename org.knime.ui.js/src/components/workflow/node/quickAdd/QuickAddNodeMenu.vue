@@ -109,8 +109,7 @@ export default {
                 nodeId: this.nodeId,
                 portIdx: this.port.index,
                 nodesLimit: MAX_NODES,
-                fullTemplateInfo: true,
-                includeAll: !this.nodeRepoFilterEnabled
+                fullTemplateInfo: true
             });
 
             if (recommendedNodesResult.length > 0) {
