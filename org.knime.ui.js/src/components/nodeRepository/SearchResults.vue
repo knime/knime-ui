@@ -2,7 +2,6 @@
 import { mapState, mapActions, mapMutations } from 'vuex';
 
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
-import Button from 'webapps-common/ui/components/Button.vue';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
 
@@ -10,8 +9,7 @@ export default {
     components: {
         ScrollViewContainer,
         NodeList,
-        ReloadIcon,
-        Button
+        ReloadIcon
     },
     data() {
         return {
@@ -20,7 +18,7 @@ export default {
     },
     computed: {
         ...mapState('nodeRepository', [
-            'nodes', 'query', 'selectedTags', 'searchScrollPosition', 'totalNumNodes', 'includeAll'
+            'nodes', 'query', 'selectedTags', 'searchScrollPosition', 'totalNumNodes'
         ]),
         hasNoSearchResults() {
             return this.nodes.length === 0;
@@ -35,14 +33,11 @@ export default {
         }
     },
     methods: {
-        ...mapActions('nodeRepository', ['searchNodesNextPage', 'setIncludeAllAndSearchNodes']),
+        ...mapActions('nodeRepository', ['searchNodesNextPage']),
         ...mapMutations('nodeRepository', ['setSearchScrollPosition']),
         // Also currently the NodeRepository isn't destroyed upon closing
         onSaveScrollPosition(position) {
             this.setSearchScrollPosition(position);
-        },
-        onShowAll() {
-            this.setIncludeAllAndSearchNodes(true);
         },
         async onSearchChanged() {
             let { scroller } = this.$refs;
@@ -68,15 +63,6 @@ export default {
     class="no-matching-search"
   >
     No node matching for: {{ query }}
-    <Button
-      v-if="!includeAll"
-      class="show-all-button"
-      with-border
-      compact
-      @click="onShowAll"
-    >
-      Show more
-    </Button>
   </div>
   <ScrollViewContainer
     v-else
@@ -94,15 +80,6 @@ export default {
         v-if="isLoading"
         class="loading-indicator"
       />
-      <Button
-        v-if="!includeAll"
-        class="show-all-button"
-        with-border
-        compact
-        @click="onShowAll"
-      >
-        Show more
-      </Button>
     </div>
   </ScrollViewContainer>
 </template>
@@ -126,10 +103,6 @@ export default {
   margin-bottom: 110px; /* align text according to NodeDescription empty text when no node is selected */
   color: var(--knime-dove-gray);
   flex-direction: column;
-
-  & .show-all-button {
-    margin-top: 15px;
-  }
 }
 
 .results {
@@ -144,10 +117,6 @@ export default {
 
       animation: spin 2s linear infinite;
       stroke: var(--knime-masala);
-      align-self: center;
-    }
-
-    & .show-all-button {
       align-self: center;
     }
   }
