@@ -2,7 +2,7 @@
 import { mapState, mapActions, mapMutations } from 'vuex';
 import NodeCogIcon from 'webapps-common/ui/assets/img/icons/node-cog.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
-import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
+import PlusIcon from 'webapps-common/ui/assets/img/icons/node-stack.svg';
 import MetainfoIcon from '@/assets/metainfo.svg';
 
 import { TABS } from '@/store/panel';

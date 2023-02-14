@@ -21,7 +21,7 @@ export default {
         },
         rectangleBounds() {
             const padding = 25;
-            
+
             return {
                 left: this.bounds.left + padding,
                 top: this.bounds.top + padding,
@@ -47,8 +47,8 @@ export default {
       x="-32"
       y="-99"
     />
-    <text y="-9">Start building your workflow by</text>
-    <text y="27">dropping your nodes here.</text>
+    <text y="-9">Start building your workflow by dropping</text>
+    <text y="27">your data or nodes here.</text>
   </g>
 </template>
 
