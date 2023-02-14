@@ -102,7 +102,7 @@ final class Create {
         }
 
         // initialize the node timer with the currently active 'perspective'
-        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getNodeRepoFilter());
+        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
     }
 
     private static void initializeResourceHandlers() {

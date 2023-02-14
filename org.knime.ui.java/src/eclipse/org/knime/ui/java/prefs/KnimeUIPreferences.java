@@ -64,9 +64,9 @@ import org.knime.ui.java.util.PerspectiveUtil;
  */
 public final class KnimeUIPreferences {
 
-    private static BiConsumer<String, String> nodeRepoFilterChangeListener = null;
+    private static BiConsumer<String, String> selectedNodeCollectionChangeListener = null;
 
-    static final String NODE_REPO_FILTER_PREF_KEY = "nodeRepositoryFilterId";
+    static final String SELECTED_NODE_COLLECTION_PREF_KEY = "selectedNodeCollection";
 
     private static BiConsumer<String, String> mouseWheelActionChangeListener = null;
 
@@ -77,14 +77,14 @@ public final class KnimeUIPreferences {
 
     static {
         PREF_STORE.addPropertyChangeListener(e -> {
-            if (NODE_REPO_FILTER_PREF_KEY.equals(e.getProperty())) {
+            if (SELECTED_NODE_COLLECTION_PREF_KEY.equals(e.getProperty())) {
                 final String newValue = (String)e.getNewValue();
                 if (!PerspectiveUtil.isClassicPerspectiveActive()) {
                     //update the last used perspective only if we are in the modern UI
                     NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(newValue);
                 }
-                if (nodeRepoFilterChangeListener != null) {
-                    nodeRepoFilterChangeListener.accept((String)e.getOldValue(), newValue);
+                if (selectedNodeCollectionChangeListener != null) {
+                    selectedNodeCollectionChangeListener.accept((String)e.getOldValue(), newValue);
                 }
             }
             if (MOUSE_WHEEL_ACTION_PREF_KEY.equals(e.getProperty()) && mouseWheelActionChangeListener != null) {
@@ -98,13 +98,10 @@ public final class KnimeUIPreferences {
     }
 
     /** The identifier for a no node repository filter. The node repository will show all nodes. */
-    public static final String NODE_REPO_FILTER_NONE_ID = "none";
+    public static final String SELECTED_NODE_COLLECTION_NONE_ID = "none";
 
-    /**
-     * The identifier for the starter perspective repository filter. The node repository will only show nodes
-     * that are useful for beginners.
-     */
-    static final String NODE_REPO_FILTER_STARTER_ID = "starter";
+    /** The identifier for the starter node collection. The node repository will only show starter nodes. */
+    static final String SELECTED_NODE_COLLECTION_STARTER_ID = "starter";
 
     /** If the desired mouse wheel action is scrolling */
     public static final String MOUSE_WHEEL_ACTION_SCROLL = "scroll";
@@ -113,21 +110,21 @@ public final class KnimeUIPreferences {
     public static final String MOUSE_WHEEL_ACTION_ZOOM = "zoom";
 
     /**
-     * @return the identifier of the node repository filter that is active. {@link #NODE_REPO_FILTER_NONE_ID} if no
-     *         filter is active.
+     * @return the identifier of the selected node collection. {@link #SELECTED_NODE_COLLECTION_NONE_ID} if no
+     *         collection is selected.
      */
-    public static String getNodeRepoFilter() {
-        return PREF_STORE.getString(NODE_REPO_FILTER_PREF_KEY);
+    public static String getSelectedNodeCollection() {
+        return PREF_STORE.getString(SELECTED_NODE_COLLECTION_PREF_KEY);
     }
 
     /**
-     * Set a listener that is called whenever the node repository filter setting changes. If a listener was set already
-     * it is replaced.
+     * Set a listener that is called whenever the selected node collection changes. If a listener was set already it is
+     * replaced.
      *
      * @param listener the listener that is called with the old value and the new value. <code>null</code> is allowed.
      */
-    public static void setNodeRepoFilterChangeListener(final BiConsumer<String, String> listener) {
-        nodeRepoFilterChangeListener = listener;
+    public static void setSelectedNodeCollectionChangeListener(final BiConsumer<String, String> listener) {
+        selectedNodeCollectionChangeListener = listener;
     }
 
     /**

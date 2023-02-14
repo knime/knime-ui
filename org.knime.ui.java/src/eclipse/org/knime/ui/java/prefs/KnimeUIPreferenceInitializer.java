@@ -61,9 +61,9 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
     public void initializeDefaultPreferences() {
         final var store = KnimeUIPreferences.PREF_STORE;
 
-        // Set the node filter to the spreadsheet edition
-        store.setDefault(KnimeUIPreferences.NODE_REPO_FILTER_PREF_KEY,
-            KnimeUIPreferences.NODE_REPO_FILTER_STARTER_ID);
+        // Set the selected node collection to the starter nodes
+        store.setDefault(KnimeUIPreferences.SELECTED_NODE_COLLECTION_PREF_KEY,
+            KnimeUIPreferences.SELECTED_NODE_COLLECTION_STARTER_ID);
 
         // Set scroll-to-scroll as default option
         store.setDefault(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY,

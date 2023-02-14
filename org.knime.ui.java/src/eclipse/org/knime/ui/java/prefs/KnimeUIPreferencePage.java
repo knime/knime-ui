@@ -60,12 +60,12 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  */
 public final class KnimeUIPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
-    private static final String NODE_REPO_FILTER_LABEL =
+    private static final String SELECTED_NODE_COLLECTION_LABEL =
         "Nodes included in the node repository and node recommendations";
 
-    private static final String NODE_REPO_FILTER_NONE_OPTION = "All nodes";
+    private static final String SELECTED_NODE_COLLECTION_NONE_OPTION = "All nodes";
 
-    private static final String NODE_REPO_FILTER_STARTER_OPTION = "Starter nodes";
+    private static final String SELECTED_NODE_COLLECTION_STARTER_OPTION = "Starter nodes";
 
     private static final String MOUSE_WHEEL_ACTION_LABEL = "Mouse wheel action";
 
@@ -81,11 +81,12 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
     @Override
     protected void createFieldEditors() {
         final var nodeRepoFilterOptions = new String[][]{ //
-            new String[]{NODE_REPO_FILTER_NONE_OPTION, KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID}, //
-            new String[]{NODE_REPO_FILTER_STARTER_OPTION, KnimeUIPreferences.NODE_REPO_FILTER_STARTER_ID} //
+            new String[]{SELECTED_NODE_COLLECTION_NONE_OPTION, KnimeUIPreferences.SELECTED_NODE_COLLECTION_NONE_ID}, //
+            new String[]{SELECTED_NODE_COLLECTION_STARTER_OPTION,
+                KnimeUIPreferences.SELECTED_NODE_COLLECTION_STARTER_ID} //
         };
-        final var nodeRepoFilterEditor = new RadioGroupFieldEditor(KnimeUIPreferences.NODE_REPO_FILTER_PREF_KEY,
-            NODE_REPO_FILTER_LABEL, 1, nodeRepoFilterOptions, getFieldEditorParent());
+        final var nodeRepoFilterEditor = new RadioGroupFieldEditor(KnimeUIPreferences.SELECTED_NODE_COLLECTION_PREF_KEY,
+            SELECTED_NODE_COLLECTION_LABEL, 1, nodeRepoFilterOptions, getFieldEditorParent());
         addField(nodeRepoFilterEditor);
 
         final var scrollToZoomOptions = new String[][]{ //

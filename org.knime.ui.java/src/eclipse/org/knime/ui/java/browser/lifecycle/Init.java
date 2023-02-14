@@ -137,7 +137,7 @@ final class Init {
         var listener = registerListenerToSendProgressEvents(eventConsumer);
 
         // Update the app state when the node repository filter changes
-        KnimeUIPreferences.setNodeRepoFilterChangeListener((oldValue, newValue) -> {
+        KnimeUIPreferences.setSelectedNodeCollectionChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
                 appStateUpdater.updateAppState();
             }
@@ -190,7 +190,7 @@ final class Init {
 
             @Override
             public boolean isNodeRepoFilterEnabled() {
-                return !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
+                return !KnimeUIPreferences.SELECTED_NODE_COLLECTION_NONE_ID.equals(KnimeUIPreferences.getSelectedNodeCollection());
             }
 
             @Override
