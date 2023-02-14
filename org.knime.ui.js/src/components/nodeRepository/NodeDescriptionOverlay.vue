@@ -2,15 +2,15 @@
 import { mapActions } from 'vuex';
 import { escapeStack } from '@/mixins/escapeStack';
 import NodeDescription from '@/components/nodeRepository/NodeDescription.vue';
-import CloseIcon from '@/assets/cancel.svg';
+import CloseButton from '@/components/common/CloseButton.vue';
 
 /**
  * NodeDescription + close button, esc close + overlay/extension sidebar styling
  */
 export default {
     components: {
-        NodeDescription,
-        CloseIcon
+        CloseButton,
+        NodeDescription
     },
     mixins: [
         escapeStack({
@@ -39,12 +39,11 @@ export default {
     :selected-node="selectedNode"
   >
     <template #header-action>
-      <button
-        class="close"
-        @click="closeDescriptionPanel"
-      >
-        <CloseIcon class="icon" />
-      </button>
+      <CloseButton
+        class="close-button"
+        :size="28"
+        @close="closeDescriptionPanel"
+      />
     </template>
   </NodeDescription>
 </template>
@@ -65,27 +64,9 @@ export default {
     height: calc(100% - 34px);
   }
 
-  & button.close {
-    width: 40px;
+  & .close-button {
     margin-top: 2px;
     margin-right: -15px;
-    border: none;
-    display: flex;
-    align-items: center;
-    background-color: transparent;
-
-    & .icon {
-      border: 0;
-      border-radius: 20px;
-      stroke: var(--knime-dove-gray);
-      width: 40px;
-
-      &:hover {
-        cursor: pointer;
-        background-color: var(--knime-silver-sand-semi);
-        stroke: var(--knime-masala);
-      }
-    }
   }
 }
 </style>

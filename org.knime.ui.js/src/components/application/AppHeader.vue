@@ -39,7 +39,7 @@ export default {
         isInfoPageActive() {
             return this.$route.name === APP_ROUTES.InfoPage;
         },
-        
+
         isGetStartedPageActive() {
             return this.$route.name === APP_ROUTES.EntryPage.GetStartedPage;
         },
@@ -69,7 +69,7 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['closeWorkflow']),
-        
+
         setupResizeListener() {
             const onResize = () => {
                 this.windowWidth = window.innerWidth;
@@ -115,6 +115,7 @@ export default {
       @click="setGetStartedPageTab()"
     >
       <KnimeIcon />
+      <span class="text">Home</span>
     </div>
     <div class="toolbar">
       <ul
@@ -268,12 +269,27 @@ header {
   & #knime-logo {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: var(--app-side-bar-width);
+    justify-content: left;
+    width: auto;
     background-color: var(--knime-black);
-    text-align: center;
     height: 100%;
     margin-right: 25px;
+    padding: 0 10px;
+    font-family: "Roboto Condensed", sans-serif;
+
+    & .text {
+      font-size: 18px;
+      padding-left: 5px;
+      min-width: 45px;
+      line-height: 21px;
+      font-weight: 400;
+      text-align: left;
+      color: var(--knime-white);
+    }
+
+    &.active-logo .text {
+      color: var(--knime-black);
+    }
 
     & svg {
       width: 26px;

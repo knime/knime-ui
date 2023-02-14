@@ -1,6 +1,6 @@
 <script>
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import CloseIcon from '@/assets/cancel.svg';
+import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
+import CloseButton from '@/components/common/CloseButton.vue';
 
 
 /* eslint-disable no-magic-numbers */
@@ -22,8 +22,8 @@ const maxCharFunction = (windowWidth) => {
 
 export default {
     components: {
-        FunctionButton,
-        CloseIcon
+        CloseButton,
+        WorkflowIcon
     },
     props: {
         name: {
@@ -73,15 +73,17 @@ export default {
     @click.stop="isActive ? null : $emit('switch-workflow', projectId)"
     @mouseover="onHover(projectId)"
     @mouseleave="onHover(null)"
+    @click.middle="$emit('close-workflow', projectId)"
   >
+    <WorkflowIcon
+      class="workflow-icon"
+    />
     <span class="text">{{ truncatedProjectName }}</span>
-    <FunctionButton
-      class="icon"
-      :class="[ isHoveredOver ? 'visible' : null ]"
-      @click.stop="$emit('close-workflow', projectId)"
-    >
-      <CloseIcon />
-    </FunctionButton>
+    <CloseButton
+      class="close-icon"
+      :size="20"
+      @close="$emit('close-workflow', projectId)"
+    />
   </li>
 </template>
 
@@ -106,6 +108,12 @@ li {
   min-width: 80px;
   max-width: 300px;
 
+  & .workflow-icon {
+    width: 20px;
+    height: 20px;
+    stroke: var(--knime-white);
+  }
+
   &:hover {
     background-color: var(--knime-masala);
   }
@@ -114,7 +122,7 @@ li {
     color: var(--knime-white);
     font-family: "Roboto Condensed", sans-serif;
     font-size: 18px;
-    padding: 10px 0;
+    padding: 10px 0 10px 5px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -125,47 +133,18 @@ li {
     text-align: left;
   }
 
-  /* Increase rule specificity to override function-button's styles */
-  & .function-button.icon {
-    padding: 0;
-  }
+  & .close-icon {
+    padding-left: 0;
 
-  & .icon {
-    align-self: center;
-    align-items: center;
-    border-radius: 0;
-    margin-left: -18px;
-    margin-right: 4px;
-    width: 20px;
-    height: 100%;
-
-    & svg {
-      display: none;
-    }
-  }
-
-  /* Increase rule specificity to override function-button's styles */
-  & .function-button.icon.visible {
-    background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 30%);
-  }
-
-  & .visible {
-    & svg {
-      display: block;
-
-      @mixin svg-icon-size 18;
-
-      stroke: var(--knime-porcelain);
-    }
-
-    &:hover svg {
+    & >>> svg {
       stroke: var(--knime-white);
     }
   }
 }
 
 li.hovered:last-child:not(.active) {
-  border-right: 2px solid var(--knime-black);
+  box-shadow: 10px 10px 45px 10px var(--knime-black-semi);
+  clip-path: inset(0 -100px 0 0);
 }
 
 li.active {
@@ -177,19 +156,18 @@ li.active {
     color: var(--knime-black);
   }
 
-  & .function-button.icon.visible {
-    background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-yellow) 30%);
+  & .workflow-icon {
+    stroke: var(--knime-black);
   }
 
-  & .visible {
-    height: 49px;
-
-    & svg {
-      stroke: var(--knime-masala);
-    }
-
-    &:hover svg {
+  & .close-icon {
+    & >>> svg {
       stroke: var(--knime-black);
+
+      &:hover {
+        stroke: var(--knime-white);
+        background: var(--knime-masala-semi);
+      }
     }
   }
 
