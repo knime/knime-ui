@@ -351,10 +351,11 @@ export const actions = {
     },
 
     async moveItems({ state, getters, dispatch }, { itemIds, destWorkflowGroupItemId, collisionStrategy }) {
+        const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const currentWorkflowGroupId = getters.currentWorkflowGroupId;
 
-        await moveItems({ spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
+        await moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     },
 

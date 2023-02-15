@@ -64,7 +64,6 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
 /**
@@ -146,9 +145,6 @@ final class SpaceAPI {
     static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
         final String destWorkflowGroupItemId) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-        if (!LocalSpaceUtil.isLocalSpace(spaceProviderId, spaceId)) {
-            throw new IllegalArgumentException("Cannot yet move items within non-local workspaces");
-        }
         var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
         if (nameCollisions.isEmpty()) {
             return Space.NameCollisionHandling.NOOP.toString();

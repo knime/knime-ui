@@ -233,30 +233,30 @@ export default {
                 return;
             }
 
-            if (this.isLocal) {
-                const destWorkflowGroupItemId = this.pathToItemId(targetItem);
-                const collisionStrategy = await getNameCollisionStrategy({
-                    itemIds: sourceItems,
-                    destWorkflowGroupItemId
-                });
+            const destWorkflowGroupItemId = this.pathToItemId(targetItem);
+            const collisionStrategy = await getNameCollisionStrategy({
+                spaceProviderId: this.activeSpaceProvider.id,
+                spaceId: this.activeSpace.spaceId,
+                itemIds: sourceItems,
+                destWorkflowGroupItemId
+            });
 
-                if (collisionStrategy === 'CANCEL') {
-                    onComplete(false);
+            if (collisionStrategy === 'CANCEL') {
+                onComplete(false);
 
-                    return;
-                }
+                return;
+            }
 
-                try {
-                    this.$store.dispatch(
-                        'spaces/moveItems',
-                        { itemIds: sourceItems, destWorkflowGroupItemId, collisionStrategy }
-                    );
-                
-                    onComplete(true);
-                } catch (error) {
-                    consola.error(`There was a problem moving the items`, { error });
-                    onComplete(false);
-                }
+            try {
+                this.$store.dispatch(
+                    'spaces/moveItems',
+                    { itemIds: sourceItems, destWorkflowGroupItemId, collisionStrategy }
+                );
+            
+                onComplete(true);
+            } catch (error) {
+                consola.error(`There was a problem moving the items`, { error });
+                onComplete(false);
             }
         },
 

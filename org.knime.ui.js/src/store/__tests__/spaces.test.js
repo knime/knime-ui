@@ -556,6 +556,7 @@ describe('spaces store', () => {
 
                 await store.dispatch('spaces/moveItems', { itemIds, destWorkflowGroupItemId, collisionStrategy });
                 expect(moveItems).toHaveBeenCalledWith({
+                    spaceProviderId: 'local',
                     spaceId: 'local',
                     itemIds,
                     destWorkflowGroupItemId,
