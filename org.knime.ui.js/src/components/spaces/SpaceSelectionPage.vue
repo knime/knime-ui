@@ -22,7 +22,8 @@ export default {
     },
 
     computed: {
-        ...mapState('spaces', ['spaceProviders', 'spaceBrowser'])
+        ...mapState('spaces', ['spaceProviders', 'spaceBrowser']),
+
     },
 
     beforeMount() {
@@ -58,6 +59,19 @@ export default {
             return spaceProvider.connectionMode === 'AUTOMATIC' && spaceProvider.id === 'local';
         },
 
+        isCommunityHub(spaceProvider) {
+            // this is the official community hub that is automatically created
+            return spaceProvider.id === 'My-KNIME-Hub';
+        },
+
+        communityHubLink(spaceProvider) {
+            const base = 'https://hub.knime.com';
+            if (spaceProvider?.user?.name) {
+                return `${base}/${spaceProvider?.user?.name}`;
+            }
+            return base;
+        },
+
         shouldDisplayAvatar(spaceProvider) {
             return spaceProvider.connectionMode !== 'AUTOMATIC' && spaceProvider.connected;
         },
@@ -84,7 +98,12 @@ export default {
       class="space-provider"
     >
       <div class="space-provider-name">
-        <h2>{{ spaceProvider.name }}</h2>
+        <h2>
+          {{ isCommunityHub(spaceProvider) ? 'KNIME Community Hub' : spaceProvider.name }}
+          <span v-if="isCommunityHub(spaceProvider)">
+            (<a :href="communityHubLink(spaceProvider)">hub.knime.com</a>)
+          </span>
+        </h2>
         <div
           v-if="shouldDisplayAvatar(spaceProvider) && spaceProvider.user"
           class="owner"
@@ -123,6 +142,9 @@ export default {
           :is-local="isLocalSpace(spaceProvider)"
           @click="onSpaceCardClick({ space: $event, spaceProvider })"
         />
+      </div>
+      <div v-if="!spaceProvider?.spaces && isCommunityHub(spaceProvider)">
+        Connect to the KNIME Community Hub to find workflows, nodes and components, and collaborate in spaces.
       </div>
     </section>
   </GridOutbreaker>
