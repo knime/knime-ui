@@ -1,20 +1,25 @@
 <script>
 import { mapState } from 'vuex';
+
 import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 import Button from 'webapps-common/ui/components/Button.vue';
+import PlusIcon from 'webapps-common/ui/assets/img/icons/plus-small.svg';
 
 import { APP_ROUTES } from '@/router';
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
+import Card from '@/components/common/Card.vue';
+import CardContent from '@/components/common/CardContent.vue';
 
 import SpaceCard from './SpaceCard.vue';
-import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 
 export default {
     components: {
-        PlusButton,
+        PlusIcon,
         GridOutbreaker,
         SpaceCard,
-        Button
+        Button,
+        Card,
+        CardContent
     },
 
     data() {
@@ -143,18 +148,18 @@ export default {
           :is-local="isLocalSpace(spaceProvider)"
           @click="onSpaceCardClick({ space: $event, spaceProvider })"
         />
-        <div
+        <Card
           v-if="isLocalSpace(spaceProvider)"
           class="create-workflow-local"
+          @click="$store.dispatch('spaces/createWorkflow')"
         >
-          <!-- TODO: NXT-1461 remove this when this is a real page again -->
-          <PlusButton
-            primary
-            title="Create workflow in local space."
-            @click="$store.dispatch('spaces/createWorkflow')"
-          />
-          <span>Create workflow<br>in local space.</span>
-        </div>
+          <CardContent padded>
+            <div class="icon-wrapper">
+              <PlusIcon />
+            </div>
+            <span>Create workflow <br> in your local space.</span>
+          </CardContent>
+        </Card>
       </div>
       <div
         v-if="!spaceProvider.spaces && isCommunityHub(spaceProvider)"
@@ -167,6 +172,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 section.space-provider {
   padding-top: 30px;
   padding-bottom: 50px;
@@ -192,14 +199,25 @@ section.space-provider {
 
   & .create-workflow-local {
     display: flex;
-    margin-top: 80px;
-    padding-left: 60px;
+    align-items: center;
+    justify-content: center;
+
+    & .icon-wrapper {
+      background: var(--knime-yellow);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    & svg {
+      @mixin svg-icon-size 60;
+    }
 
     & span {
-      margin-left: 18px;
-      font-size: 18px;
-      font-weight: 700;
-      margin-top: 10px;
+      text-align: center;
+      font-size: 16px;
+      margin-top: 15px;
     }
   }
 
