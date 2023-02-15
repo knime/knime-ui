@@ -321,15 +321,9 @@ export default {
             this.activeRenameId = id;
             this.renameValue = name;
 
-            await this.$nextTick();
-
-            // TODO expose keyup event on the InputField on webapps-common
-            this.$refs.renameRef[0].$refs.input.addEventListener('keyup', this.onRenameSubmit);
-            
             // wait to next event loop to properly steal focus
-            setTimeout(() => {
-                this.$refs.renameRef[0].$refs.input.focus();
-            }, 0);
+            await new Promise(r => setTimeout(r, 0));
+            this.$refs.renameRef[0]?.$refs?.input?.focus();
         },
         onRenameSubmit(keyupEvent) {
             if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
@@ -350,10 +344,6 @@ export default {
         },
 
         clearRenameState() {
-            if (this.$refs.renameRef) {
-                this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
-            }
-            
             this.activeRenameId = null;
             this.renameValue = '';
         }
@@ -438,6 +428,7 @@ export default {
               type="text"
               title="rename"
               :is-valid="!isRenamingInvalid"
+              @keyup="onRenameSubmit"
             />
             <div
               v-if="isRenamingInvalid"
