@@ -147,6 +147,7 @@ export default {
           v-if="isLocalSpace(spaceProvider)"
           class="create-workflow-local"
         >
+          <!-- TODO: NXT-1461 remove this when this is a real page again -->
           <PlusButton
             primary
             title="Create workflow in local space."
@@ -155,7 +156,10 @@ export default {
           <span>Create workflow<br>in local space.</span>
         </div>
       </div>
-      <div v-if="!spaceProvider.spaces && isCommunityHub(spaceProvider)">
+      <div
+        v-if="!spaceProvider.spaces && isCommunityHub(spaceProvider)"
+        class="community-hub-text"
+      >
         Connect to the KNIME Community Hub to find workflows, nodes and components, and collaborate in spaces.
       </div>
     </section>

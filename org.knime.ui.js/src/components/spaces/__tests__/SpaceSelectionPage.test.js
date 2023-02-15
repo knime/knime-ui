@@ -102,6 +102,54 @@ describe('SpaceSelectionPage.vue', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/connectProvider', { spaceProviderId: 'hub1' });
     });
 
+    it('should display more information on special knime community hub', async () => {
+        const { wrapper } = doMount({
+            mockProvidersResponse: {
+                hub1: {
+                    id: 'My-KNIME-Hub',
+                    connected: false,
+                    connectionMode: 'AUTHENTICATED',
+                    name: 'My-KNIME-Hub (https://api.hub.knime.com)'
+                }
+            }
+        });
+
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+
+        const linkToProvider = wrapper.find('.space-provider-name a').attributes('href');
+        expect(linkToProvider).toBe('https://hub.knime.com');
+
+        const providerName = wrapper.find('.space-provider-name');
+        expect(providerName.text()).toContain('KNIME Community Hub');
+        expect(providerName.text()).toContain('(hub.knime.com)');
+        expect(providerName.text()).not.toContain('My-KNIME-Hub');
+        expect(wrapper.find('.community-hub-text').exists()).toBe(true);
+    });
+
+    it('should links to hub profile for community hub', async () => {
+        const { wrapper } = doMount({
+            mockProvidersResponse: {
+                hub1: {
+                    id: 'My-KNIME-Hub',
+                    connected: false,
+                    user: {
+                        name: 'testUser'
+                    },
+                    connectionMode: 'AUTHENTICATED',
+                    name: 'My-KNIME-Hub (https://api.hub.knime.com)'
+                }
+            }
+        });
+
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+
+        const linkToProvider = wrapper.find('.space-provider-name a').attributes('href');
+        expect(linkToProvider).toBe('https://hub.knime.com/testUser');
+    });
+
+
     it('should handle logout for spaces that require authentication', async () => {
         const { wrapper, dispatchSpy } = doMount({
             mockProvidersResponse: {
