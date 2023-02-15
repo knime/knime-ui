@@ -155,7 +155,7 @@ export default {
           <span>Create workflow<br>in local space.</span>
         </div>
       </div>
-      <div v-if="!spaceProvider?.spaces && isCommunityHub(spaceProvider)">
+      <div v-if="!spaceProvider.spaces && isCommunityHub(spaceProvider)">
         Connect to the KNIME Community Hub to find workflows, nodes and components, and collaborate in spaces.
       </div>
     </section>
