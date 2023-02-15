@@ -234,7 +234,7 @@ public final class ImportURI {
                 return Optional.empty();
             }
         }), siteInfo);
-        DesktopAPUtil.runWithProgress("Installing missing nodes", LOGGER, job::runModal);
+        DesktopAPUtil.runWithProgress(job.getName(), LOGGER, job::run);
     }
 
     private static boolean importNodeFromFileURI(final String uri, final String projectId, final String workflowId,
