@@ -199,6 +199,7 @@ export const actions = {
             commit('setIsLoading', false);
             return data;
         } catch (error) {
+            commit('setIsLoading', false);
             consola.error('Error trying to fetch workflow group content', { error });
             throw error;
         }
@@ -212,27 +213,37 @@ export const actions = {
     async createWorkflow({ commit, getters, state, dispatch }) {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
-        const itemId = getters.currentWorkflowGroupId;
+        const itemId = getters.currentWorkflowGroupId || 'root';
 
         // use global loader because just using the local one for the space explorer
         // is not enough since createWorkflow would also open a new workflow instead of just
         // doing a local operation like fetching data or renaming
-        dispatch(
-            'application/updateGlobalLoader',
-            { loading: true, config: { transparent: true } },
-            { root: true }
-        );
-        const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId });
-        dispatch(
-            'application/updateGlobalLoader',
-            { loading: false },
-            { root: true }
-        );
-
-        dispatch('fetchWorkflowGroupContent', { itemId });
-        openWorkflow({ workflowItemId: newWorkflowItem.id, spaceId, spaceProviderId });
-
-        return newWorkflowItem;
+        try {
+            dispatch(
+                'application/updateGlobalLoader',
+                { loading: true, config: { transparent: true } },
+                { root: true }
+            );
+            const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId });
+            dispatch(
+                'application/updateGlobalLoader',
+                { loading: false },
+                { root: true }
+            );
+    
+            dispatch('fetchWorkflowGroupContent', { itemId });
+            openWorkflow({ workflowItemId: newWorkflowItem.id, spaceId, spaceProviderId });
+    
+            return newWorkflowItem;
+        } catch (error) {
+            dispatch(
+                'application/updateGlobalLoader',
+                { loading: false },
+                { root: true }
+            );
+            consola.log('Error creating workflow', { error });
+            throw error;
+        }
     },
 
     async createFolder({ dispatch, getters, state, commit }) {
@@ -240,13 +251,19 @@ export const actions = {
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
         
-        // loading will be cleared after fetching the data by fetchWorkflowGroupContent
-        commit('setIsLoading', true);
-        const newFolderItem = await createFolder({ spaceId, spaceProviderId, itemId });
+        try {
+            // loading will be cleared after fetching the data by fetchWorkflowGroupContent
+            commit('setIsLoading', true);
+            const newFolderItem = await createFolder({ spaceId, spaceProviderId, itemId });
 
-        dispatch('fetchWorkflowGroupContent', { itemId });
+            dispatch('fetchWorkflowGroupContent', { itemId });
 
-        return newFolderItem;
+            return newFolderItem;
+        } catch (error) {
+            commit('setIsLoading', false);
+            consola.log('Error creating folder', { error });
+            throw error;
+        }
     },
 
     openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router, spaceId = null, spaceProviderId = null }) {
@@ -257,11 +274,13 @@ export const actions = {
             spaceProviderId = state.activeSpaceProvider.id;
         }
         const { openProjects } = rootState.application;
-        const foundOpenProject = openProjects.find(
-            project => project.origin.providerId === spaceProviderId &&
-                           project.origin.spaceId === spaceId &&
-                           project.origin.itemId === workflowItemId
-        );
+        
+        // eslint-disable-next-line no-extra-parens
+        const foundOpenProject = openProjects.find(project => (
+            project.origin.providerId === spaceProviderId &&
+            project.origin.spaceId === spaceId &&
+            project.origin.itemId === workflowItemId
+        ));
 
         if (foundOpenProject) {
             $router.push({
@@ -304,12 +323,18 @@ export const actions = {
         const { spaceId } = state.activeSpace;
         const { id: spaceProviderId } = state.activeSpaceProvider;
         
-        // loading is cleared after data is fetched by fetchWorkflowGroupContent
-        commit('setIsLoading', true);
-        await renameItem({ spaceProviderId, spaceId, itemId, newName });
+        try {
+            // loading is cleared after data is fetched by fetchWorkflowGroupContent
+            commit('setIsLoading', true);
+            await renameItem({ spaceProviderId, spaceId, itemId, newName });
         
-        const currentWorkflowGroupId = getters.currentWorkflowGroupId;
-        await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+            const currentWorkflowGroupId = getters.currentWorkflowGroupId;
+            await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+        } catch (error) {
+            commit('setIsLoading', false);
+            consola.log('Error renaming item', { error });
+            throw error;
+        }
     },
 
     async deleteItems({ state, getters, dispatch, commit }, { itemIds }) {
@@ -317,10 +342,16 @@ export const actions = {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const currentWorkflowGroupId = getters.currentWorkflowGroupId;
 
-        // loading is cleared after data is fetched by fetchWorkflowGroupContent
-        commit('setIsLoading', true);
-        await deleteItems({ spaceProviderId, spaceId, itemIds });
-        await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+        try {
+            // loading is cleared after data is fetched by fetchWorkflowGroupContent
+            commit('setIsLoading', true);
+            await deleteItems({ spaceProviderId, spaceId, itemIds });
+            await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+        } catch (error) {
+            commit('setIsLoading', false);
+            consola.log('Error deleting item', { error });
+            throw error;
+        }
     },
 
     async moveItems({ state, getters, dispatch }, { itemIds, destWorkflowGroupItemId, collisionStrategy }) {
