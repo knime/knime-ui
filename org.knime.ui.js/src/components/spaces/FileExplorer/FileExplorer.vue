@@ -305,6 +305,7 @@ export default {
         },
 
         onMenuClick(optionId, item) {
+            this.clearRenameState();
             if (optionId === 'delete') {
                 this.$emit('delete-items', { items: [item] });
             }
@@ -331,27 +332,30 @@ export default {
             }, 0);
         },
         onRenameSubmit(keyupEvent) {
-            const clearRenameState = () => {
-                this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
-                this.activeRenameId = null;
-                this.renameValue = '';
-            };
-
             if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
-                clearRenameState();
+                this.clearRenameState();
             }
 
             if (keyupEvent.key === 'Enter' && !this.isRenamingInvalid) {
                 const newName = this.renameValue.trim();
 
                 if (newName === '') {
-                    clearRenameState();
+                    this.clearRenameState();
                     return;
                 }
 
                 this.$emit('rename-file', { itemId: this.activeRenameId, newName });
-                clearRenameState();
+                this.clearRenameState();
             }
+        },
+
+        clearRenameState() {
+            if (this.$refs.renameRef) {
+                this.$refs.renameRef[0].$refs.input.removeEventListener('keyup', this.onRenameSubmit);
+            }
+            
+            this.activeRenameId = null;
+            this.renameValue = '';
         }
     }
 };
