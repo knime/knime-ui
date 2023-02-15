@@ -36,7 +36,7 @@ export const state = () => ({
 
     isLoadingWorkflow: false,
 
-    globalLoaderConfig: { loading: false },
+    globalLoader: { loading: false },
 
     /* Object containing available updates */
     availableUpdates: null,
@@ -501,7 +501,7 @@ export const actions = {
     toggleGlobalLoader({ state }, value) {
         const defaultPosition = 'fixed';
         // make sure this loader is always 'fixed'
-        state.globalLoaderConfig = {
+        state.globalLoader = {
             loading: value.loading,
             config: { ...value.config, position: defaultPosition }
         };

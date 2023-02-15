@@ -130,7 +130,6 @@ export default {
         teardownLoader() {
             this.setLoading(false);
             this.setLoading = () => {};
-            document.body.focus();
         },
 
         useTransparentOverlay() {

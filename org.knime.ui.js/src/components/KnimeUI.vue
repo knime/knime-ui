@@ -33,7 +33,7 @@ export default {
     
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
-        ...mapState('application', ['availableUpdates', 'globalLoaderConfig']),
+        ...mapState('application', ['availableUpdates', 'globalLoader']),
 
         isInsideAP() {
             // When the `window.isInsideAP` property is set, the app is being run in development mode
@@ -151,8 +151,8 @@ export default {
     </template>
     
     <SmartLoader
-      :loading="globalLoaderConfig.loading"
-      :config="globalLoaderConfig.config"
+      :loading="globalLoader.loading"
+      :config="globalLoader.config"
     />
 
     <UpdateBanner

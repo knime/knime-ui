@@ -40,7 +40,6 @@ export default {
 
     data() {
         return {
-            // isLoading: false,
             selectedItems: []
         };
     },
@@ -153,11 +152,7 @@ export default {
 
     methods: {
         async fetchWorkflowGroupContent(itemId) {
-            // this.isLoading = true;
-
             await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
-
-            // this.isLoading = false;
         },
 
         onSelectionChange(selectedItems) {
@@ -166,11 +161,7 @@ export default {
         },
 
         async onChangeDirectory(pathId) {
-            // this.isLoading = true;
-
             await this.$store.dispatch('spaces/changeDirectory', { pathId });
-
-            // this.isLoading = false;
 
             this.$emit('item-changed', this.pathToItemId(pathId));
         },
