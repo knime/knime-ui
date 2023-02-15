@@ -350,13 +350,20 @@ export const actions = {
         }
     },
 
-    async moveItems({ state, getters, dispatch }, { itemIds, destWorkflowGroupItemId, collisionStrategy }) {
+    async moveItems({ state, getters, dispatch, commit }, { itemIds, destWorkflowGroupItemId, collisionStrategy }) {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const currentWorkflowGroupId = getters.currentWorkflowGroupId;
 
-        await moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
-        await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+        try {
+            commit('setIsLoading', true);
+            await moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
+            await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
+        } catch (error) {
+            commit('setIsLoading', false);
+            consola.log('Error moving items', { error });
+            throw error;
+        }
     },
 
     copyBetweenSpaces({ state }, { itemIds }) {
