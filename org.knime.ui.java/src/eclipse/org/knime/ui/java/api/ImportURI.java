@@ -65,6 +65,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.KNIMEComponentInformation;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.NodeCreationType;
 import org.knime.core.ui.util.NodeTemplateId;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
@@ -133,6 +135,7 @@ public final class ImportURI {
             uri = new URI(uriString);
             var entityImport = URIImporterFinder.getInstance().createEntityImportFor(uri).orElse(null);
             if (entityImport != null) {
+                trackNodeImportFromHub(uriString, entityImport);
                 return entityImport;
             }
             Path path = null;
@@ -154,7 +157,12 @@ public final class ImportURI {
             LOGGER.warn(message, exception);
         }
         return null;
+    }
 
+    private static void trackNodeImportFromHub(final String uri, final EntityImport entityImport) {
+        if (entityImport instanceof NodeImport && uri.startsWith("http")) {
+            NodeTimer.GLOBAL_TIMER.incNodeCreatedVia(NodeCreationType.WEB_UI_HUB);
+        }
     }
 
     private static boolean sendImportURIEvent(final int x, final int y) {
