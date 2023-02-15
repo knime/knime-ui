@@ -7,9 +7,11 @@ import { APP_ROUTES } from '@/router';
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
 
 import SpaceCard from './SpaceCard.vue';
+import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
 
 export default {
     components: {
+        PlusButton,
         GridOutbreaker,
         SpaceCard,
         Button
@@ -22,8 +24,7 @@ export default {
     },
 
     computed: {
-        ...mapState('spaces', ['spaceProviders', 'spaceBrowser']),
-
+        ...mapState('spaces', ['spaceProviders', 'spaceBrowser'])
     },
 
     beforeMount() {
@@ -142,6 +143,17 @@ export default {
           :is-local="isLocalSpace(spaceProvider)"
           @click="onSpaceCardClick({ space: $event, spaceProvider })"
         />
+        <div
+          v-if="isLocalSpace(spaceProvider)"
+          class="create-workflow-local"
+        >
+          <PlusButton
+            primary
+            title="Create workflow in local space."
+            @click="$store.dispatch('spaces/createWorkflow')"
+          />
+          <span>Create workflow<br>in local space.</span>
+        </div>
       </div>
       <div v-if="!spaceProvider?.spaces && isCommunityHub(spaceProvider)">
         Connect to the KNIME Community Hub to find workflows, nodes and components, and collaborate in spaces.
@@ -171,6 +183,19 @@ section.space-provider {
       & .owner-name {
         margin-left: 8px;
       }
+    }
+  }
+
+  & .create-workflow-local {
+    display: flex;
+    margin-top: 80px;
+    padding-left: 60px;
+
+    & span {
+      margin-left: 18px;
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 10px;
     }
   }
 
