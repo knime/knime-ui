@@ -94,7 +94,7 @@ public final class LocalSpaceUtil {
      */
     public static SpaceProvider createLocalWorkspaceProvider() {
         var localSpace = getLocalWorkspace();
-        return new SpaceProvider() {
+        return new SpaceProvider() { // NOSONAR
             @Override
             public String getId() {
                 return LOCAL_SPACE_PROVIDER_ID;
@@ -103,6 +103,11 @@ public final class LocalSpaceUtil {
             @Override
             public Map<String, Space> getSpaceMap() {
                 return Collections.singletonMap(localSpace.getId(), localSpace);
+            }
+
+            @Override
+            public Space getSpace(final String spaceId) {
+                return Optional.of(localSpace).filter(space -> space.getId().equals(spaceId)).orElseThrow();
             }
 
             @Override
