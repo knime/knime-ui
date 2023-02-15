@@ -104,7 +104,6 @@ export default {
         class="banner"
       >
         <span>
-          This is a temporary preview, save as a local copy if you want to edit it.
           This is a temporary copy. Once you are done, re-upload or save it locally.
         </span>
         <Button
