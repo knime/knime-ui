@@ -511,11 +511,10 @@ export const actions = {
         };
     },
 
-    updateGlobalLoader({ state }, { loading, config }) {
-        // make sure this loader is always 'fixed'
+    updateGlobalLoader({ state }, { loading, config = { displayMode: 'fullscreen' } }) {
         state.globalLoader = {
             loading,
-            config: { ...config, position: 'fixed' }
+            config
         };
     }
 };

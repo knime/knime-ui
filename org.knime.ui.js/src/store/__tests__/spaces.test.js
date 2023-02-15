@@ -377,7 +377,7 @@ describe('spaces store', () => {
                 await store.dispatch('spaces/createWorkflow');
                 expect(dispatchSpy).toHaveBeenCalledWith(
                     'application/updateGlobalLoader',
-                    { loading: true, config: { transparent: true } }
+                    { loading: true, config: { displayMode: 'transparent' } }
                 );
                 expect(createWorkflow).toHaveBeenCalledWith(
                     expect.objectContaining({ spaceId: 'local', itemId: 'level2' })
@@ -430,7 +430,7 @@ describe('spaces store', () => {
                 await store.dispatch('spaces/openWorkflow', { workflowItemId: 'foobar' });
                 expect(dispatchSpy).toHaveBeenCalledWith(
                     'application/updateGlobalLoader',
-                    { loading: true, config: { transparent: true } }
+                    { loading: true, config: { displayMode: 'transparent' } }
                 );
                 expect(openWorkflow).toHaveBeenCalledWith({
                     spaceId: 'local', spaceProviderId: 'local', workflowItemId: 'foobar'

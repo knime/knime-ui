@@ -430,7 +430,7 @@ export default {
 }
 
 .smart-loader {
-  --smartloader-overlay-bg: var(--knime-gray-ultra-light);
+  --smartloader-bg: var(--knime-gray-ultra-light);
   --smartloader-icon-size: 30;
 }
 </style>

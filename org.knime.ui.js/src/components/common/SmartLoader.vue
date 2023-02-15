@@ -51,6 +51,24 @@ const createStaggeredLoader = ({
     return startLoader;
 };
 
+const DISPLAY_MODES = {
+    fullscreen: 'fullscreen',
+    transparent: 'transparent',
+    localized: 'localized',
+    toast: 'toast'
+};
+
+const LOADING_MODES = {
+    normal: 'normal',
+    stagger: 'stagger'
+};
+
+const DEFAULTS = Object.freeze({
+    displayMode: DISPLAY_MODES.localized,
+    loadingMode: LOADING_MODES.stagger,
+    staggerStageCount: 2
+});
+
 export default {
     components: {
         ReloadIcon
@@ -68,11 +86,10 @@ export default {
         },
         /**
          * @typedef SmartLoaderConfig
-         * @property {'relative' | 'fixed'} [position] determines the loader's position
+         * @property {'fullscreen' | 'localized' | 'toast' | 'transparent'} [displayMode] determines the loader's appeareance
          * @property {'stagger' | 'normal'} [loadingMode] whether to use standard load without delay, or a staggered
          * loader
          * @property {Number} [staggerStageCount] number of stages to stagger for (1 or 2)
-         * @property {Boolean} [transparent] whether to use a transparent loader. Using this will make the loader
          * fallback to 'fixed' position regardless of the provided `position` property
         */
         /**
@@ -88,11 +105,59 @@ export default {
 
     data() {
         return {
-            showOverlay: false,
+            DEFAULTS,
+            showLoader: false,
             isTextShown: false,
             isIconShown: false,
             setLoading: () => {}
         };
+    },
+
+    computed: {
+        overlayStyles() {
+            const { displayMode = DEFAULTS.displayMode } = this.config;
+
+            const positionMap = {
+                [DISPLAY_MODES.fullscreen]: 'fixed',
+                [DISPLAY_MODES.localized]: 'relative',
+                [DISPLAY_MODES.transparent]: 'fixed'
+            };
+
+            const zIndexMap = {
+                [DISPLAY_MODES.fullscreen]: '99',
+                [DISPLAY_MODES.localized]: '99',
+                [DISPLAY_MODES.transparent]: 'initial',
+                [DISPLAY_MODES.toast]: 'initial'
+            };
+
+            const getDimensions = () => {
+                const [firstElementChild] = this.$slots?.default || [];
+
+                // match the initialDimensions if no slot child is found
+                if (!firstElementChild) {
+                    return {
+                        height: this.config.initialDimensions?.height || '100%',
+                        width: this.config.initialDimensions?.width || '100%'
+                    };
+                }
+
+                return {
+                    width: '100%',
+                    height: '100%'
+                };
+            };
+
+            const { width, height } = getDimensions();
+
+            return {
+                position: positionMap[displayMode],
+                zIndex: zIndexMap[displayMode],
+
+                // add the initial dimensions as css properties for later usage in the styles
+                '--initial-width': width,
+                '--initial-height': height
+            };
+        }
     },
 
     watch: {
@@ -117,24 +182,24 @@ export default {
 
     methods: {
         setupLoader() {
-            const { position = 'relative', loadingMode = 'stagger', transparent = false } = this.config;
+            const {
+                displayMode = DEFAULTS.displayMode,
+                loadingMode = DEFAULTS.loadingMode
+            } = this.config;
 
-            if (transparent) {
-                this.useTransparentOverlay();
+            if (displayMode === 'transparent') {
+                this.setLoading = (value) => {
+                    this.showLoader = value;
+                };
+                this.setLoading(true);
                 return;
             }
 
-            const positionHandlers = {
-                fixed: this.handleFixedPosition,
-                relative: this.handleRelativePosition
-            };
-
             const loadingModeHandlers = {
-                normal: this.normalLoadingMode,
-                stagger: this.staggerLoadingMode
+                normal: this.useNormalLoadingMode,
+                stagger: this.useStaggerLoadingMode
             };
-
-            positionHandlers[position]();
+            
             loadingModeHandlers[loadingMode]();
             
             this.setLoading(true);
@@ -145,68 +210,29 @@ export default {
             this.setLoading = () => {};
         },
 
-        useTransparentOverlay() {
-            const loadingOverlay = this.$refs.loadOverlay;
-            loadingOverlay.style.background = 'transparent';
-            loadingOverlay.style.cursor = 'wait';
+        focus() {
+            this.$nextTick(() => {
+                this.$refs.loader.focus();
+            });
+        },
 
-            // always use fixed position for the transparent option
-            this.handleFixedPosition();
+        useNormalLoadingMode() {
             this.setLoading = (value) => {
-                this.showOverlay = value;
-            };
-            this.setLoading(true);
-        },
-
-        handleFixedPosition() {
-            const loadingOverlay = this.$refs.loadOverlay;
-
-            loadingOverlay.style.position = 'fixed';
-            loadingOverlay.style.width = '100vw';
-            loadingOverlay.style.height = '100vh';
-        },
-
-        handleRelativePosition() {
-            const getDimensions = () => {
-                const [firstElementChild] = this.$slots.default || [];
-
-                // match the initialDimensions if no slot child is found
-                if (!firstElementChild) {
-                    return {
-                        height: this.config.initialDimensions?.height || '100%',
-                        width: this.config.initialDimensions?.width || '100%'
-                    };
-                }
-
-                return {
-                    width: '100%',
-                    height: '100%'
-                };
-            };
-
-            const { width, height } = getDimensions();
-          
-            const loadingOverlay = this.$refs.loadOverlay;
-            loadingOverlay.style.position = 'absolute';
-            loadingOverlay.style.minHeight = height;
-            loadingOverlay.style.width = width;
-        },
-
-        normalLoadingMode() {
-            this.setLoading = (value) => {
-                this.showOverlay = value;
+                this.showLoader = value;
+                this.focus();
                 this.isIconShown = true;
                 this.isTextShown = true;
             };
         },
 
-        staggerLoadingMode() {
-            const { staggerStageCount = 2 } = this.config;
+        useStaggerLoadingMode() {
+            const { staggerStageCount = DEFAULTS.staggerStageCount } = this.config;
             const noop = () => {};
 
             this.setLoading = createStaggeredLoader({
                 firstStageCallback: () => {
-                    this.showOverlay = true;
+                    this.showLoader = true;
+                    this.focus();
                     this.isIconShown = true;
                 },
                 secondStageCallback: staggerStageCount === 2
@@ -215,7 +241,7 @@ export default {
                     }
                     : noop,
                 resetCallback: () => {
-                    this.showOverlay = false;
+                    this.showLoader = false;
                     this.isTextShown = false;
                     this.isIconShown = false;
                 }
@@ -226,17 +252,13 @@ export default {
 </script>
 
 <template>
-  <div
-    :style="{
-      position: config.transparent ? 'fixed' : (config.position || 'relative'),
-      zIndex: config.position === 'fixed' ? 99 : 'initial'
-    }"
-  >
+  <div :style="overlayStyles">
     <div
-      v-show="showOverlay"
-      ref="loadOverlay"
+      v-show="showLoader"
+      ref="loader"
       class="loader"
-      tabindex="0"
+      :class="config.displayMode || DEFAULTS.displayMode"
+      tabindex="-1"
     >
       <ReloadIcon v-if="isIconShown" />
       <span
@@ -258,8 +280,8 @@ export default {
 }
 
 .loader {
-  background: var(--smartloader-overlay-bg, rgba(255 255 255 / 70%));
   display: flex;
+  outline: none;
   justify-content: center;
   flex-direction: column;
   align-items: center;
@@ -274,9 +296,53 @@ export default {
   }
 
   & .text {
-    color: var(--knime-masala);
-    min-height: 20px;
+    color: var(--smartloader-text-color, var(--knime-masala));
+    min-height: 16px;
     font-size: 16px;
+  }
+
+  &.fullscreen, &.transparent {
+    background: var(--smartloader-bg, rgba(255 255 255 / 70%));
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  &.transparent {
+    background: transparent;
+    cursor: wait;
+  }
+
+  &.localized {
+    background: var(--smartloader-bg, rgba(255 255 255 / 70%));
+    position: absolute;
+    min-height: var(--initial-height);
+    width: var(--initial-width);
+  }
+  
+  &.toast {
+    background: var(--smartloader-bg, var(--knime-masala));
+    min-width: 150px;
+    height: 60px;
+    position: fixed;
+    left: 60px;
+    bottom: 40px;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    border-radius: 2px;
+    box-shadow: 0px 2px 10px rgba(130, 133, 134, 0.4);
+
+    & .text {
+      color: var(--smartloader-text-color, var(--knime-white));
+    }
+
+    & svg {
+      @mixin svg-icon-size var(--smartloader-icon-size, 20);
+
+      stroke: var(--smartloader-icon-color, var(--knime-white));
+    }
   }
 }
 </style>

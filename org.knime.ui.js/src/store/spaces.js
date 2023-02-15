@@ -218,13 +218,13 @@ export const actions = {
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId || 'root';
 
-        // use global loader because just using the local one for the space explorer
-        // is not enough since createWorkflow would also open a new workflow instead of just
-        // doing a local operation like fetching data or renaming
         try {
+            // use global loader because just using the local one for the space explorer
+            // is not enough since createWorkflow would also open a new workflow instead of just
+            // doing a local operation like fetching data or renaming
             dispatch(
                 'application/updateGlobalLoader',
-                { loading: true, config: { transparent: true } },
+                { loading: true, config: { displayMode: 'transparent' } },
                 { root: true }
             );
             const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId });
@@ -298,7 +298,7 @@ export const actions = {
         // doing a local operation like fetching data or renaming
         dispatch(
             'application/updateGlobalLoader',
-            { loading: true, config: { transparent: true } },
+            { loading: true, config: { displayMode: 'transparent' } },
             { root: true }
         );
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
