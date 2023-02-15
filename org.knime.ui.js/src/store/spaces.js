@@ -35,10 +35,15 @@ export const state = () => ({
         itemId: 'root'
     },
     // map of projectId: itemId of last used item by any project
-    lastItemForProject: {}
+    lastItemForProject: {},
+    isLoading: false
 });
 
 export const mutations = {
+    setIsLoading(state, value) {
+        state.isLoading = value;
+    },
+
     setActiveSpaceProvider(state, value) {
         state.activeSpaceProvider = value;
     },
@@ -183,6 +188,7 @@ export const actions = {
         try {
             const { activeSpaceProvider, activeSpace } = state;
 
+            commit('setIsLoading', true);
             const data = await fetchWorkflowGroupContent({
                 spaceProviderId: activeSpaceProvider.id,
                 spaceId: activeSpace.spaceId,
@@ -190,6 +196,7 @@ export const actions = {
             });
 
             commit('setActiveWorkflowGroupData', data);
+            commit('setIsLoading', false);
             return data;
         } catch (error) {
             consola.error('Error trying to fetch workflow group content', { error });
@@ -207,7 +214,20 @@ export const actions = {
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
 
+        // use global loader because just using the local one for the space explorer
+        // is not enough since createWorkflow would also open a new workflow instead of just
+        // doing a local operation like fetching data or renaming
+        dispatch(
+            'application/toggleGlobalLoader',
+            { loading: true, config: { transparent: true } },
+            { root: true }
+        );
         const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId });
+        dispatch(
+            'application/toggleGlobalLoader',
+            { loading: false },
+            { root: true }
+        );
 
         dispatch('fetchWorkflowGroupContent', { itemId });
         openWorkflow({ workflowItemId: newWorkflowItem.id, spaceId, spaceProviderId });
@@ -215,11 +235,13 @@ export const actions = {
         return newWorkflowItem;
     },
 
-    async createFolder({ dispatch, getters, state }) {
+    async createFolder({ dispatch, getters, state, commit }) {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
-
+        
+        // loading will be cleared after fetching the data by fetchWorkflowGroupContent
+        commit('setIsLoading', true);
         const newFolderItem = await createFolder({ spaceId, spaceProviderId, itemId });
 
         dispatch('fetchWorkflowGroupContent', { itemId });
@@ -249,7 +271,20 @@ export const actions = {
             return;
         }
 
+        // use global loader because just using the local one for the space explorer
+        // is not enough since openWorkflow would open a new workflow instead of just
+        // doing a local operation like fetching data or renaming
+        dispatch(
+            'application/toggleGlobalLoader',
+            { loading: true, config: { transparent: true } },
+            { root: true }
+        );
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
+        dispatch(
+            'application/toggleGlobalLoader',
+            { loading: false },
+            { root: true }
+        );
     },
 
     async importToWorkflowGroup({ state, dispatch, getters }, { importType }) {
@@ -259,23 +294,31 @@ export const actions = {
         const success = importType === 'FILES'
             ? await importFiles({ spaceProviderId, spaceId, itemId })
             : await importWorkflows({ spaceProviderId, spaceId, itemId });
+        
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
         }
     },
 
-    async renameItem({ state, getters, dispatch }, { itemId, newName }) {
+    async renameItem({ state, getters, dispatch, commit }, { itemId, newName }) {
         const { spaceId } = state.activeSpace;
         const { id: spaceProviderId } = state.activeSpaceProvider;
+        
+        // loading is cleared after data is fetched by fetchWorkflowGroupContent
+        commit('setIsLoading', true);
         await renameItem({ spaceProviderId, spaceId, itemId, newName });
+        
         const currentWorkflowGroupId = getters.currentWorkflowGroupId;
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     },
 
-    async deleteItems({ state, getters, dispatch }, { itemIds }) {
+    async deleteItems({ state, getters, dispatch, commit }, { itemIds }) {
         const { spaceId } = state.activeSpace;
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const currentWorkflowGroupId = getters.currentWorkflowGroupId;
+
+        // loading is cleared after data is fetched by fetchWorkflowGroupContent
+        commit('setIsLoading', true);
         await deleteItems({ spaceProviderId, spaceId, itemIds });
         await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
     },

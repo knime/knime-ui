@@ -36,7 +36,8 @@ export const state = () => ({
 
     isLoadingWorkflow: false,
 
-    isBusy: false,
+    globalLoaderConfig: { loading: false },
+
     /* Object containing available updates */
     availableUpdates: null,
 
@@ -58,9 +59,6 @@ export const state = () => ({
 });
 
 export const mutations = {
-    setIsBusy(state, value) {
-        state.isBusy = value;
-    },
     setIsLoadingWorkflow(state, value) {
         state.isLoadingWorkflow = value;
     },
@@ -497,6 +495,15 @@ export const actions = {
         state.contextMenu = {
             isOpen: true,
             position: { x, y }
+        };
+    },
+
+    toggleGlobalLoader({ state }, value) {
+        const defaultPosition = 'fixed';
+        // make sure this loader is always 'fixed'
+        state.globalLoaderConfig = {
+            loading: value.loading,
+            config: { ...value.config, position: defaultPosition }
         };
     }
 };

@@ -5,7 +5,7 @@ import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import AppHeader from '@/components/application/AppHeader.vue';
 import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Error from '@/components/application/Error.vue';
-import LoadingOverlay from '@/components/application/LoadingOverlay.vue';
+import SmartLoader from '@/components/common/SmartLoader.vue';
 
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
 import { APP_ROUTES } from '@/router';
@@ -21,7 +21,7 @@ export default {
         AppHeader,
         HotkeyHandler,
         Error,
-        LoadingOverlay
+        SmartLoader
     },
 
     data() {
@@ -33,7 +33,7 @@ export default {
     
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
-        ...mapState('application', ['availableUpdates']),
+        ...mapState('application', ['availableUpdates', 'globalLoaderConfig']),
 
         isInsideAP() {
             // When the `window.isInsideAP` property is set, the app is being run in development mode
@@ -150,7 +150,10 @@ export default {
       </div>
     </template>
     
-    <LoadingOverlay />
+    <SmartLoader
+      :loading="globalLoaderConfig.loading"
+      :config="globalLoaderConfig.config"
+    />
 
     <UpdateBanner
       v-if="$route.meta.showUpdateBanner"

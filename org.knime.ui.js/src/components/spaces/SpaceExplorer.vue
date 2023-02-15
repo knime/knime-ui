@@ -4,20 +4,16 @@ import { getNameCollisionStrategy } from '@api';
 
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
-import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
-
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
+import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import ITEM_TYPES from '@/util/spaceItemTypes';
+import { APP_ROUTES } from '@/router';
+import SmartLoader from '@/components/common/SmartLoader.vue';
 
 import SpaceExplorerActions from './SpaceExplorerActions.vue';
-import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer/FileExplorer.vue';
-import { APP_ROUTES } from '@/router';
 
-const DISPLAY_LOADING_DELAY = 100;
-const DISPLAY_LOADING_ICON_DELAY = 350;
-const DEFAULT_LOADING_INDICATOR_HEIGHT = 76; // px
 const ITEM_TYPES_TEXTS = {
     [ITEM_TYPES.WorkflowGroup]: 'folder',
     [ITEM_TYPES.Workflow]: 'workflow',
@@ -30,8 +26,8 @@ export default {
     components: {
         SpaceExplorerActions,
         FileExplorer,
-        LoadingIcon,
-        Breadcrumb
+        Breadcrumb,
+        SmartLoader
     },
 
     props: {
@@ -44,9 +40,7 @@ export default {
 
     data() {
         return {
-            isLoading: false,
-            showLoadingIcon: false,
-            loadingHeight: DEFAULT_LOADING_INDICATOR_HEIGHT,
+            // isLoading: false,
             selectedItems: []
         };
     },
@@ -60,7 +54,8 @@ export default {
             activeSpaceProvider: state => state.activeSpaceProvider,
             startItemId: state => state.activeSpace?.startItemId,
             activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
-            spaceId: state => state.activeSpace?.spaceId
+            spaceId: state => state.activeSpace?.spaceId,
+            isLoading: state => state.isLoading
         }),
         ...mapGetters('spaces', [
             'openedWorkflowItems',
@@ -157,37 +152,12 @@ export default {
     },
 
     methods: {
-        // Only display loader after a set waiting time, to avoid making the operations seem longer
-        setLoading(value) {
-            if (!value) {
-                this.showLoadingIcon = false;
-                this.isLoading = false;
-                this.loadingHeight = DEFAULT_LOADING_INDICATOR_HEIGHT;
-                clearTimeout(this.loadingTimer);
-                clearTimeout(this.loadingIconTimer);
-                return;
-            }
-
-            // use file explorers size as height for the loader to avoid jumping
-            if (this.$refs.fileExplorer) {
-                this.loadingHeight = this.$refs.fileExplorer.$el.getBoundingClientRect().height;
-            }
-
-            this.loadingTimer = setTimeout(() => {
-                this.isLoading = true;
-            }, DISPLAY_LOADING_DELAY);
-
-            this.loadingIconTimer = setTimeout(() => {
-                this.showLoadingIcon = true;
-            }, DISPLAY_LOADING_ICON_DELAY);
-        },
-
         async fetchWorkflowGroupContent(itemId) {
-            this.setLoading(true);
+            // this.isLoading = true;
 
             await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
 
-            this.setLoading(false);
+            // this.isLoading = false;
         },
 
         onSelectionChange(selectedItems) {
@@ -196,11 +166,11 @@ export default {
         },
 
         async onChangeDirectory(pathId) {
-            this.setLoading(true);
+            // this.isLoading = true;
 
             await this.$store.dispatch('spaces/changeDirectory', { pathId });
 
-            this.setLoading(false);
+            // this.isLoading = false;
 
             this.$emit('item-changed', this.pathToItemId(pathId));
         },
@@ -374,31 +344,29 @@ export default {
       />
     </div>
 
-    <FileExplorer
-      v-if="activeWorkflowGroup && !isLoading"
-      ref="fileExplorer"
-      :mode="mode"
-      :items="fileExplorerItems"
-      :is-root-folder="activeWorkflowGroup.path.length === 0"
-      :full-path="fullPath"
-      @change-directory="onChangeDirectory"
-      @change-selection="onSelectionChange"
-      @open-file="onOpenFile"
-      @rename-file="onRenameFile"
-      @delete-items="onDeleteItems"
-      @move-items="onMoveItems"
-      @dragend="onDragEnd"
-    />
-
-    <div
-      v-if="isLoading"
-      class="loading"
-      :style="`--loading-height: ${loadingHeight}px`"
+    <SmartLoader
+      class="smart-loader"
+      :loading="isLoading"
+      :config="{
+        initialDimensions: { height: '76px' },
+        staggerStageCount: 1,
+      }"
     >
-      <LoadingIcon
-        v-show="showLoadingIcon"
+      <FileExplorer
+        v-if="activeWorkflowGroup"
+        :mode="mode"
+        :items="fileExplorerItems"
+        :is-root-folder="activeWorkflowGroup.path.length === 0"
+        :full-path="fullPath"
+        @change-directory="onChangeDirectory"
+        @change-selection="onSelectionChange"
+        @open-file="onOpenFile"
+        @rename-file="onRenameFile"
+        @delete-items="onDeleteItems"
+        @move-items="onMoveItems"
+        @dragend="onDragEnd"
       />
-    </div>
+    </SmartLoader>
   </div>
 </template>
 
@@ -470,18 +438,8 @@ export default {
   overflow-x: hidden;
 }
 
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: var(--loading-height, 76px); /* two items */
-  background: var(--knime-gray-ultra-light);
-
-  & svg {
-    @mixin svg-icon-size 30;
-
-    stroke: var(--knime-masala);
-  }
+.smart-loader {
+  --smartloader-overlay-bg: var(--knime-gray-ultra-light);
+  --smartloader-icon-size: 30;
 }
-
 </style>
