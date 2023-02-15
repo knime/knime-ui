@@ -67,7 +67,8 @@ describe('spaces store', () => {
         const store = mockVuexStore({
             spaces: spacesConfig,
             application: {
-                state: { openProjects, activeProjectId }
+                state: { openProjects, activeProjectId },
+                actions: { updateGlobalLoader: () => {} }
             }
         });
 
@@ -342,7 +343,7 @@ describe('spaces store', () => {
 
         describe('createWorkflow', () => {
             it('should create a new workflow', async () => {
-                const { store } = loadStore();
+                const { store, dispatchSpy } = loadStore();
                 createWorkflow.mockResolvedValue({ id: 'NewFile', type: 'Workflow' });
 
                 store.state.spaces.activeSpace = {
@@ -354,6 +355,10 @@ describe('spaces store', () => {
                 };
 
                 await store.dispatch('spaces/createWorkflow');
+                expect(dispatchSpy).toHaveBeenCalledWith(
+                    'application/updateGlobalLoader',
+                    { loading: true, config: { transparent: true } }
+                );
                 expect(createWorkflow).toHaveBeenCalledWith(
                     expect.objectContaining({ spaceId: 'local', itemId: 'level2' })
                 );
@@ -365,6 +370,10 @@ describe('spaces store', () => {
                     spaceProviderId: 'local',
                     workflowItemId: 'NewFile'
                 });
+                expect(dispatchSpy).toHaveBeenCalledWith(
+                    'application/updateGlobalLoader',
+                    { loading: false }
+                );
             });
         });
 
@@ -392,16 +401,24 @@ describe('spaces store', () => {
         });
 
         describe('openWorkflow', () => {
-            it('should open workflow', () => {
-                const { store } = loadStore();
+            it('should open workflow', async () => {
+                const { store, dispatchSpy } = loadStore();
                 store.state.spaces.activeSpace = {
                     spaceId: 'local'
                 };
 
-                store.dispatch('spaces/openWorkflow', { workflowItemId: 'foobar' });
+                await store.dispatch('spaces/openWorkflow', { workflowItemId: 'foobar' });
+                expect(dispatchSpy).toHaveBeenCalledWith(
+                    'application/updateGlobalLoader',
+                    { loading: true, config: { transparent: true } }
+                );
                 expect(openWorkflow).toHaveBeenCalledWith({
                     spaceId: 'local', spaceProviderId: 'local', workflowItemId: 'foobar'
                 });
+                expect(dispatchSpy).toHaveBeenCalledWith(
+                    'application/updateGlobalLoader',
+                    { loading: false }
+                );
             });
 
             it('should open workflow from a different space', () => {

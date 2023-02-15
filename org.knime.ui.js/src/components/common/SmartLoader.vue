@@ -66,7 +66,20 @@ export default {
             type: String,
             default: 'Loading…'
         },
-
+        /**
+         * @typedef SmartLoaderConfig
+         * @property {'relative' | 'fixed'} [position] determines the loader's position
+         * @property {'stagger' | 'normal'} [loadingMode] whether to use standard load without delay, or a staggered
+         * loader
+         * @property {Number} [staggerStageCount] number of stages to stagger for (1 or 2)
+         * @property {Boolean} [transparent] whether to use a transparent loader. Using this will make the loader
+         * fallback to 'fixed' position regardless of the provided `position` property
+        */
+        /**
+         * Configuration object for the loader
+         *
+         * @type {import('vue').PropOptions<SmartLoaderConfig>}
+         */
         config: {
             type: Object,
             default: () => ({})
@@ -133,9 +146,9 @@ export default {
         },
 
         useTransparentOverlay() {
-            const loadingWrapper = this.$refs.loadOverlay;
-            loadingWrapper.style.background = 'transparent';
-            loadingWrapper.style.cursor = 'wait';
+            const loadingOverlay = this.$refs.loadOverlay;
+            loadingOverlay.style.background = 'transparent';
+            loadingOverlay.style.cursor = 'wait';
 
             // always use fixed position for the transparent option
             this.handleFixedPosition();
@@ -146,11 +159,11 @@ export default {
         },
 
         handleFixedPosition() {
-            const loadingWrapper = this.$refs.loadOverlay;
+            const loadingOverlay = this.$refs.loadOverlay;
 
-            loadingWrapper.style.position = 'fixed';
-            loadingWrapper.style.width = '100vw';
-            loadingWrapper.style.height = '100vh';
+            loadingOverlay.style.position = 'fixed';
+            loadingOverlay.style.width = '100vw';
+            loadingOverlay.style.height = '100vh';
         },
 
         handleRelativePosition() {
@@ -173,10 +186,10 @@ export default {
 
             const { width, height } = getDimensions();
           
-            const loadingWrapper = this.$refs.loadOverlay;
-            loadingWrapper.style.position = 'absolute';
-            loadingWrapper.style.minHeight = height;
-            loadingWrapper.style.width = width;
+            const loadingOverlay = this.$refs.loadOverlay;
+            loadingOverlay.style.position = 'absolute';
+            loadingOverlay.style.minHeight = height;
+            loadingOverlay.style.width = width;
         },
 
         normalLoadingMode() {
@@ -214,8 +227,10 @@ export default {
 
 <template>
   <div
-    class="loader-wrapper"
-    :style="{ position: config.position || 'relative' }"
+    :style="{
+      position: config.transparent ? 'fixed' : (config.position || 'relative'),
+      zIndex: config.position === 'fixed' ? 99 : 'initial'
+    }"
   >
     <div
       v-show="showOverlay"
@@ -240,10 +255,6 @@ export default {
   100% {
     transform: rotate(-360deg);
   }
-}
-
-.loader-wrapper {
-  z-index: 99;
 }
 
 .loader {

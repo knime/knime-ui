@@ -54,7 +54,7 @@ export default ({ store: $store, router: $router }) => {
 
             // In case a `SaveAndCloseWorkflowsEvent` was received before, which might've triggered
             // an `AppStateChangedEvent` later, then we make sure to clean up the busy state here
-            $store.dispatch('application/toggleGlobalLoader', { loading: false });
+            $store.dispatch('application/updateGlobalLoader', { loading: false });
         },
 
         // Is triggered by the backend, whenever there are AP updates available
@@ -65,7 +65,7 @@ export default ({ store: $store, router: $router }) => {
         },
 
         async SaveAndCloseWorkflowsEvent({ projectIds, params = [] }) {
-            $store.dispatch('application/toggleGlobalLoader', { loading: true });
+            $store.dispatch('application/updateGlobalLoader', { loading: true });
 
             const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
             

@@ -218,13 +218,13 @@ export const actions = {
         // is not enough since createWorkflow would also open a new workflow instead of just
         // doing a local operation like fetching data or renaming
         dispatch(
-            'application/toggleGlobalLoader',
+            'application/updateGlobalLoader',
             { loading: true, config: { transparent: true } },
             { root: true }
         );
         const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId });
         dispatch(
-            'application/toggleGlobalLoader',
+            'application/updateGlobalLoader',
             { loading: false },
             { root: true }
         );
@@ -275,13 +275,13 @@ export const actions = {
         // is not enough since openWorkflow would open a new workflow instead of just
         // doing a local operation like fetching data or renaming
         dispatch(
-            'application/toggleGlobalLoader',
+            'application/updateGlobalLoader',
             { loading: true, config: { transparent: true } },
             { root: true }
         );
         openWorkflow({ spaceId, workflowItemId, spaceProviderId });
         dispatch(
-            'application/toggleGlobalLoader',
+            'application/updateGlobalLoader',
             { loading: false },
             { root: true }
         );

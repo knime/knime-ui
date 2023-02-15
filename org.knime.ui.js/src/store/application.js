@@ -498,12 +498,11 @@ export const actions = {
         };
     },
 
-    toggleGlobalLoader({ state }, value) {
-        const defaultPosition = 'fixed';
+    updateGlobalLoader({ state }, { loading, config }) {
         // make sure this loader is always 'fixed'
         state.globalLoader = {
-            loading: value.loading,
-            config: { ...value.config, position: defaultPosition }
+            loading,
+            config: { ...config, position: 'fixed' }
         };
     }
 };

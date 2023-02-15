@@ -58,7 +58,8 @@ describe('KnimeUI.vue', () => {
                             }
                         ],
                         bugfixes: ['Update1', 'Update2']
-                    }
+                    },
+                    globalLoader: {}
                 }
             },
             workflow: {

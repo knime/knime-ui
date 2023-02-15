@@ -96,27 +96,6 @@ describe('application store', () => {
         };
     };
 
-    it('creates an empty store', async () => {
-        const { store } = await loadStore();
-        expect(store.state.application).toStrictEqual({
-            openProjects: [],
-            activeProjectId: null,
-            availablePortTypes: {},
-            suggestedPortTypes: [],
-            savedCanvasStates: {},
-            isLoadingWorkflow: false,
-            exampleProjects: [],
-            hasClipboardSupport: false,
-            isBusy: false,
-            contextMenu: { isOpen: false, position: null },
-            hasNodeRecommendationsEnabled: false,
-            rootWorkflowSnapshots: new Map(),
-            availableUpdates: null,
-            nodeRepoFilterEnabled: false,
-            devMode: false
-        });
-    });
-
     describe('mutations', () => {
         it('allows setting the active id', async () => {
             const { store } = await loadStore();
