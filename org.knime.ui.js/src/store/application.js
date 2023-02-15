@@ -48,6 +48,11 @@ export const state = () => ({
     nodeRepoFilterEnabled: false,
 
     /**
+     * If true, the mouse wheel should be used for zooming instead of scrolling
+     */
+    scrollToZoomEnabled: false,
+
+    /**
      * example projects with name, svg and origin
      */
     exampleProjects: [],
@@ -129,6 +134,9 @@ export const mutations = {
     },
     setNodeRepoFilterEnabled(state, nodeRepoFilterEnabled) {
         state.nodeRepoFilterEnabled = nodeRepoFilterEnabled;
+    },
+    setScrollToZoomEnabled(state, scrollToZoomEnabled) {
+        state.scrollToZoomEnabled = scrollToZoomEnabled;
     },
     setDevMode(state, devMode) {
         state.devMode = devMode;
@@ -224,6 +232,11 @@ export const actions = {
             if (rootState.nodeRepository.nodesPerCategory.length > 0) {
                 dispatch('nodeRepository/getAllNodes', { append: false }, { root: true });
             }
+        }
+
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+        if (applicationState.hasOwnProperty('scrollToZoomEnabled')) {
+            commit('setScrollToZoomEnabled', applicationState.scrollToZoomEnabled);
         }
         
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set

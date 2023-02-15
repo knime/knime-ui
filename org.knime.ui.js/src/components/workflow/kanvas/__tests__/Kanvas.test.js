@@ -532,6 +532,7 @@ describe('Kanvas', () => {
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {
                 deltaY: -5,
+                ctrlKey: true,
                 clientX: 10,
                 clientY: 10
             }));
@@ -548,6 +549,7 @@ describe('Kanvas', () => {
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {
                 deltaY: -5,
+                ctrlKey: true,
                 clientX: 10,
                 clientY: 10
             }));
@@ -560,6 +562,7 @@ describe('Kanvas', () => {
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {
                 deltaY: -5,
+                ctrlKey: true,
                 clientX: 10,
                 clientY: 10
             }));

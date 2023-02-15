@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import { debounce } from 'lodash';
+import { getMetaOrCtrlKey } from '@/util/navigator';
 import throttle from 'raf-throttle';
 
 export const RESIZE_DEBOUNCE = 100;
@@ -22,7 +23,8 @@ export default {
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
-        ...mapState('canvas', ['zoomFactor', 'interactionsEnabled', 'isEmpty'])
+        ...mapState('canvas', ['zoomFactor', 'interactionsEnabled', 'isEmpty']),
+        ...mapState('application', ['scrollToZoomEnabled'])
     },
     watch: {
         contentBounds(...args) {
@@ -96,11 +98,8 @@ export default {
         /*
             Zooming
         */
-        onMouseWheel: throttle(function (e) {
+        zoom: throttle(function (e) {
             /* eslint-disable no-invalid-this */
-            if (!this.interactionsEnabled || this.isEmpty) {
-                return;
-            }
 
             // delta is -1, 0 or 1 depending on scroll direction.
             let delta = Math.sign(-e.deltaY);
@@ -112,9 +111,34 @@ export default {
             let cursorY = e.clientY - bcr.y;
 
             this.zoomAroundPointer({ delta, cursorX, cursorY });
+
             /* eslint-enable no-invalid-this */
         }),
 
+        onMouseWheel(event) {
+            if (!this.interactionsEnabled || this.isEmpty) {
+                return;
+            }
+
+            // If we don't want to use the wheel to zoom by default,
+            // we still want to zoom on ctrl or meta key
+            const shouldZoom = this.scrollToZoomEnabled || event[getMetaOrCtrlKey()];
+            if (!shouldZoom) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            // we can only throttle the zoom function itself and not the event propagation,
+            // otherwise we can get a mix of zooming and scrolling because some events
+            // are propagated and some are not
+            this.zoom(event);
+        },
+
+        /*
+        Panning
+        */
         onPressSpace(e) {
             if (blacklistTagNames.test(e.target.tagName)) {
                 return;
@@ -239,75 +263,62 @@ export default {
 </script>
 
 <template>
-  <div
-    tabindex="0"
-    :class="['scroll-container', {
-      'panning': useMoveCursor,
-      'empty': isEmpty,
-      'disabled': !interactionsEnabled,
-    }]"
-    @wheel.prevent="onMouseWheel"
-    @pointerdown.middle="beginPan"
-    @pointerdown.prevent.right="beginPan"
-    @pointerdown.left="beginPan"
-    @pointerup.middle="stopPan"
-    @pointerup.left="stopPan"
-    @pointerup.prevent.right="stopPan"
-    @pointermove="movePan"
-  >
-    <svg
-      ref="svg"
-      :width="canvasSize.width"
-      :height="canvasSize.height"
-      :viewBox="viewBox.string"
-      @pointerdown.left.shift.exact.stop="$emit('selection-pointerdown', $event)"
-      @pointerdown.left.exact.stop="$emit('selection-pointerdown', $event)"
-      @pointerup.left.stop="$emit('selection-pointerup', $event)"
-      @pointermove="$emit('selection-pointermove', $event)"
-      @lostpointercapture="$emit('selection-lostpointercapture', $event)"
-    >
-      <slot />
-    </svg>
-  </div>
+    <div tabindex="0" :class="['scroll-container', {
+        'panning': useMoveCursor,
+        'empty': isEmpty,
+        'disabled': !interactionsEnabled,
+    }]" @wheel="onMouseWheel" @pointerdown.middle="beginPan" @pointerdown.prevent.right="beginPan"
+        @pointerdown.left="beginPan" @pointerup.middle="stopPan" @pointerup.left="stopPan"
+        @pointerup.prevent.right="stopPan" @pointermove="movePan">
+        <svg ref="svg" :width="canvasSize.width" :height="canvasSize.height" :viewBox="viewBox.string"
+            @pointerdown.left.shift.exact.stop="$emit('selection-pointerdown', $event)"
+            @pointerdown.left.exact.stop="$emit('selection-pointerdown', $event)"
+            @pointerup.left.stop="$emit('selection-pointerup', $event)"
+            @pointermove="$emit('selection-pointermove', $event)"
+            @lostpointercapture="$emit('selection-lostpointercapture', $event)">
+            <slot />
+        </svg>
+    </div>
 </template>
 
 <style lang="postcss" scoped>
 svg {
-  position: relative; /* needed for z-index to have effect */
-  display: block;
+    position: relative;
+    /* needed for z-index to have effect */
+    display: block;
 }
 
 .panning {
-  cursor: move;
+    cursor: move;
 
-  & svg,
-  & svg >>> * {
-    pointer-events: none !important;
-  }
+    & svg,
+    & svg>>>* {
+        pointer-events: none !important;
+    }
 }
 
 .scroll-container {
-  position: relative;
-  overflow: scroll;
-  height: 100%;
-  width: 100%;
+    position: relative;
+    overflow: scroll;
+    height: 100%;
+    width: 100%;
 
-  &:focus {
-    outline: none;
-  }
-
-  &.empty {
-    overflow: hidden; /* disables scrolling */
-  }
-
-  &.disabled {
-    pointer-events: none !important;
-
-    & svg,
-    & svg >>> * {
-      pointer-events: none !important;
+    &:focus {
+        outline: none;
     }
-  }
-}
 
+    &.empty {
+        overflow: hidden;
+        /* disables scrolling */
+    }
+
+    &.disabled {
+        pointer-events: none !important;
+
+        & svg,
+        & svg>>>* {
+            pointer-events: none !important;
+        }
+    }
+}
 </style>
