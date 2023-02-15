@@ -104,8 +104,8 @@ export const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes })
     }
 
     // if compatible types exist, check if they contain each other
-    if (compatibleTypes) {
-        return compatibleTypes.includes(fromPort.typeId);
+    if (compatibleTypes && compatibleTypes.includes(fromPort.typeId)) {
+        return true;
     }
 
     // lastly, if port types ids don't match then they can't be connected
