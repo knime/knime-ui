@@ -4,26 +4,19 @@ import CloseIcon from '@/assets/cancel.svg';
 export default {
     components: {
         CloseIcon
-    },
-    props: {
-        size: {
-            type: Number,
-            default: 28
-        }
     }
 };
 </script>
 
 <template>
-  <button
-    :style="`--size: ${size}`"
-    @click="$emit('close', $event)"
-  >
+  <button @click="$emit('close', $event)">
     <CloseIcon />
   </button>
 </template>
 
 <style scoped>
+@import "@/assets/mixins.css";
+
 button {
   border: none;
   display: flex;
@@ -32,10 +25,10 @@ button {
 
   & svg {
     border: 0;
-    border-radius: calc(var(--size) * 1px);
+    border-radius: 50%;
     stroke: var(--knime-dove-gray);
-    width: calc(var(--size) * 1px);
-    height: calc(var(--size) * 1px);
+
+    @mixin svg-icon-size 28;
 
     &:hover {
       cursor: pointer;

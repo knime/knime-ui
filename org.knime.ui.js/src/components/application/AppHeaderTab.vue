@@ -81,7 +81,6 @@ export default {
     <span class="text">{{ truncatedProjectName }}</span>
     <CloseButton
       class="close-icon"
-      :size="20"
       @close.stop="$emit('close-workflow', projectId)"
     />
   </li>
@@ -138,6 +137,8 @@ li {
 
     & >>> svg {
       stroke: var(--knime-white);
+
+      @mixin svg-icon-size 20;
     }
   }
 }

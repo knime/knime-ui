@@ -41,7 +41,6 @@ export default {
     <template #header-action>
       <CloseButton
         class="close-button"
-        :size="28"
         @close="closeDescriptionPanel"
       />
     </template>

@@ -3,7 +3,6 @@ import Vuex from 'vuex';
 import { mount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '@/assets/cancel.svg';
 import AppHeader from '../AppHeader.vue';
 import AppHeaderTab from '../AppHeaderTab.vue';
