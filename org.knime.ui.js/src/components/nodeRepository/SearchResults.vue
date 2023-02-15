@@ -1,6 +1,9 @@
 <script>
 import { mapState, mapActions, mapMutations } from 'vuex';
 
+import ExpandTransition from 'webapps-common/ui/components/transitions/ExpandTransition.vue';
+import BaseButton from 'webapps-common/ui/components/BaseButton.vue';
+import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
@@ -9,19 +12,34 @@ export default {
     components: {
         ScrollViewContainer,
         NodeList,
-        ReloadIcon
+        ReloadIcon,
+        ExpandTransition,
+        BaseButton,
+        DropdownIcon
     },
     data() {
         return {
-            isLoading: false
+            isLoading: false,
+            isLoadingMore: false
         };
     },
     computed: {
         ...mapState('nodeRepository', [
-            'nodes', 'query', 'selectedTags', 'searchScrollPosition', 'totalNumNodes'
+            'nodes',
+            'moreNodes',
+            'query',
+            'selectedTags',
+            'searchScrollPosition',
+            'totalNumNodes',
+            'showingMoreNodes'
         ]),
+        ...mapState('application', ['hasNodeCollectionActive']),
         hasNoSearchResults() {
             return this.nodes.length === 0;
+        },
+        hasNoMoreSearchResults() {
+            // NB: If moreNodes is null the results are still loading
+            return this.moreNodes !== null && this.moreNodes.length === 0;
         }
     },
     watch: {
@@ -33,7 +51,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('nodeRepository', ['searchNodesNextPage']),
+        ...mapActions('nodeRepository', ['searchNodesNextPage', 'toggleShowingMoreNodes']),
         ...mapMutations('nodeRepository', ['setSearchScrollPosition']),
         // Also currently the NodeRepository isn't destroyed upon closing
         onSaveScrollPosition(position) {
@@ -58,14 +76,7 @@ export default {
 </script>
 
 <template>
-  <div
-    v-if="hasNoSearchResults"
-    class="no-matching-search"
-  >
-    No node matching for: {{ query }}
-  </div>
   <ScrollViewContainer
-    v-else
     ref="scroller"
     class="results"
     :initial-position="searchScrollPosition"
@@ -73,13 +84,55 @@ export default {
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
-      <NodeList
-        :nodes="nodes"
-      />
-      <ReloadIcon
-        v-if="isLoading"
-        class="loading-indicator"
-      />
+      <div
+        v-if="hasNoSearchResults"
+        class="no-matching-search"
+      >
+        No node matching for: {{ query }}
+      </div>
+      <div
+        v-else
+        class="nodes"
+      >
+        <NodeList :nodes="nodes" />
+        <ReloadIcon
+          v-if="isLoading"
+          class="loading-indicator"
+        />
+      </div>
+    </div>
+    <div
+      v-if="hasNodeCollectionActive"
+      class="content"
+    >
+      <BaseButton
+        class="more-nodes-button"
+        :aria-expanded="String(showingMoreNodes)"
+        @click.prevent="toggleShowingMoreNodes"
+      >
+        <div class="more-nodes-dropdown">
+          <DropdownIcon :class="['dropdown-icon', {flip: showingMoreNodes}]" />
+        </div>
+        More advanced nodes
+      </BaseButton>
+      <ExpandTransition :is-expanded="showingMoreNodes">
+        <div
+          v-if="hasNoMoreSearchResults"
+          class="no-matching-search"
+        >
+          No additional node matching for: {{ query }}
+        </div>
+        <div
+          v-else
+          class="nodes"
+        >
+          <NodeList :nodes="moreNodes" />
+          <ReloadIcon
+            v-if="isLoadingMore"
+            class="loading-indicator"
+          />
+        </div>
+      </ExpandTransition>
     </div>
   </ScrollViewContainer>
 </template>
@@ -100,17 +153,21 @@ export default {
   text-align: center;
   height: 100%;
   font-style: italic;
-  margin-bottom: 110px; /* align text according to NodeDescription empty text when no node is selected */
   color: var(--knime-dove-gray);
   flex-direction: column;
+  margin-top: 30px;
+  margin-bottom: 15px;
 }
 
 .results {
   & .content {
     padding: 0 20px 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+
+    & .nodes {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
 
     & .loading-indicator {
       @mixin svg-icon-size 40;
@@ -118,6 +175,50 @@ export default {
       animation: spin 2s linear infinite;
       stroke: var(--knime-masala);
       align-self: center;
+    }
+
+    & .more-nodes-button {
+      width: 100%;
+      border: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      & .more-nodes-dropdown {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+
+        & .dropdown-icon {
+          margin: auto;
+          width: 18px;
+          height: 18px;
+          stroke-width: calc(32px / 18);
+          stroke: var(--knime-masala);
+
+          &.flip {
+            transform: scaleY(-1);
+          }
+        }
+
+        &:hover {
+          background-color: var(--theme-button-function-background-color-hover);
+        }
+      }
+
+      &::after,
+      &::before {
+        content: "";
+        flex: 1 1;
+        border-bottom: 1px solid var(--knime-silver-sand);
+      }
+
+      &::after {
+        margin-left: 10px;
+      }
     }
   }
 }

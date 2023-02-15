@@ -24,6 +24,11 @@ export const state = () => ({
     query: '',
     nodeSearchPage: 0,
     searchScrollPosition: 0,
+    showingMoreNodes: false,
+    moreNodes: null,
+    totalNumMoreNodes: 0,
+    moreTags: [],
+    moreNodesSearchPage: 0,
 
     /* node interaction */
     selectedNode: null,
@@ -58,6 +63,28 @@ export const mutations = {
         state.tags = tags;
     },
 
+    setMoreNodesSearchPage(state, pageNumber) {
+        state.moreNodesSearchPage = pageNumber;
+    },
+
+    setTotalNumMoreNodes(state, totalNumMoreNodes) {
+        state.totalNumMoreNodes = totalNumMoreNodes;
+    },
+
+    addMoreNodes(state, moreNodes) {
+        let existingNodeIds = state.moreNodes.map(node => node.id);
+        let newNodes = moreNodes.filter(node => !existingNodeIds.includes(node.id));
+        state.moreNodes.push(...newNodes);
+    },
+
+    setMoreNodes(state, moreNodes) {
+        state.moreNodes = moreNodes;
+    },
+
+    setMoreTags(state, moreTags) {
+        state.moreTags = moreTags;
+    },
+
     setSelectedTags(state, selectedTags) {
         state.selectedTags = selectedTags;
         state.searchScrollPosition = 0;
@@ -88,6 +115,9 @@ export const mutations = {
     },
     setDescriptionPanel(state, value) {
         state.isDescriptionPanelOpen = value;
+    },
+    setShowingMoreNodes(state, value) {
+        state.showingMoreNodes = value;
     }
 };
 
@@ -151,17 +181,70 @@ export const actions = {
             nodeOffset: state.nodeSearchPage * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
             fullTemplateInfo: true,
+            inCollection: true
         });
 
         const { availablePortTypes } = rootState.application;
         const withMappedPorts = nodes.map(toNodeWithFullPorts(availablePortTypes));
 
         commit('setTotalNumNodes', totalNumNodes);
-
-        const nodesMutation = append ? 'addNodes' : 'setNodes';
-        commit(nodesMutation, withMappedPorts);
-
+        commit(append ? 'addNodes' : 'setNodes', withMappedPorts);
         commit('setTags', tags);
+    },
+
+    /**
+     * Fetch nodes that are not part of the collection if an collection is active.
+     *
+     * @param {*} context - Vuex context.
+     * @param {Boolean} append - if the results should be added to the current nodes (for pagination) or if the state
+     *      should be cleared (for a new search).
+     * @returns {Promise}
+     */
+    async searchMoreNodes({ commit, state, dispatch, getters, rootState }, { append = false } = {}) {
+        // only do request if we search for something
+        if (!getters.hasSearchParams) {
+            // clear old results
+            dispatch('clearSearchResults');
+            return;
+        }
+        if (append) {
+            commit('setMoreNodesSearchPage', state.moreNodesSearchPage + 1);
+        } else {
+            commit('setMoreNodesSearchPage', 0);
+        }
+
+        const { nodes, totalNumNodes, tags } = await searchNodes({
+            query: state.query,
+            tags: state.selectedTags,
+            allTagsMatch: true,
+            nodeOffset: state.moreNodesSearchPage * nodeSearchPageSize,
+            nodeLimit: nodeSearchPageSize,
+            fullTemplateInfo: true,
+            inCollection: false
+        });
+
+        const { availablePortTypes } = rootState.application;
+        const withMappedPorts = nodes.map(toNodeWithFullPorts(availablePortTypes));
+
+        commit('setTotalNumMoreNodes', totalNumNodes);
+        commit(append ? 'addMoreNodes' : 'setMoreNodes', withMappedPorts);
+        commit('setMoreTags', tags);
+    },
+
+    /**
+     * Dispatches the search of nodes. If showingMoreNodes is true also a search for more nodes is dispatched.
+     * Otherwise, the results for more nodes are cleared.
+     *
+     * @param {*} context - Vuex context.
+     * @returns {Promise<void>}
+     */
+    async searchNodesAndMoreNodes({ dispatch, state }) {
+        await Promise.all([
+            dispatch('searchNodes'),
+            state.showingMoreNodes
+                ? dispatch('searchMoreNodes')
+                : dispatch('clearSearchResultsForMoreNodes')
+        ]);
     },
 
     async getNodeDescription({ commit, state, rootState }, { selectedNode }) {
@@ -181,7 +264,7 @@ export const actions = {
      */
     async updateQuery({ commit, dispatch }, value) {
         commit('setQuery', value);
-        await dispatch('searchNodes');
+        await dispatch('searchNodesAndMoreNodes');
     },
 
     /**
@@ -201,9 +284,17 @@ export const actions = {
      * @param {*} context - Vuex context.
      * @returns {undefined}
      */
-    clearSearchResults({ commit }) {
+    async clearSearchResults({ commit, dispatch }) {
         commit('setNodes', null);
         commit('setTags', []);
+        commit('setTotalNumNodes', 0);
+        await dispatch('clearSearchResultsForMoreNodes');
+    },
+
+    clearSearchResultsForMoreNodes({ commit }) {
+        commit('setMoreNodes', null);
+        commit('setMoreTags', []);
+        commit('setTotalNumMoreNodes', 0);
     },
 
     /**
@@ -225,7 +316,7 @@ export const actions = {
      */
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
-        await dispatch('searchNodes');
+        await dispatch('searchNodesAndMoreNodes');
     },
 
     openDescriptionPanel({ commit }) {
@@ -234,13 +325,23 @@ export const actions = {
 
     closeDescriptionPanel({ commit }) {
         commit('setDescriptionPanel', false);
+    },
+
+    async toggleShowingMoreNodes({ commit, dispatch, state }) {
+        commit('setShowingMoreNodes', !state.showingMoreNodes);
+        if (state.showingMoreNodes && state.moreNodes === null) {
+            await dispatch('searchMoreNodes');
+        }
     }
 };
 
 export const getters = {
     hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0,
     searchIsActive: state => Boolean(state.query || state.tags.length) && state.nodes !== null,
-    searchResultsContainSelectedNode: (state) => Boolean(state.nodes?.some(node => node.id === state.selectedNode?.id)),
+    searchResultsContainSelectedNode(state) {
+        return Boolean(state.nodes?.some(node => node.id === state.selectedNode?.id)) ||
+            Boolean(state.moreNodes?.some(node => node.id === state.selectedNode?.id));
+    },
     nodesPerCategoryContainSelectedNode(state) {
         return state.nodesPerCategory.some(category => category.nodes.some(
             node => node.id === state.selectedNode?.id

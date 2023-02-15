@@ -58,7 +58,7 @@ describe('SearchResults', () => {
         doShallowMount();
 
         expect(wrapper.text()).toMatch('No node matching for: xxx');
-        expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(false);
+        expect(wrapper.findComponent(NodeList).exists()).toBe(false);
     });
 
     it('displays icon if loading is true', async () => {

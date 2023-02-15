@@ -148,7 +148,12 @@ describe('Node Repository store', () => {
             categoryScrollPosition: 0,
             selectedNode: null,
             isDraggingNode: false,
-            isDescriptionPanelOpen: false
+            isDescriptionPanelOpen: false,
+            showingMoreNodes: false,
+            moreNodes: null,
+            moreNodesSearchPage: 0,
+            moreTags: [],
+            totalNumMoreNodes: 0
         });
     });
 
@@ -414,7 +419,8 @@ describe('Node Repository store', () => {
                     nodeLimit: 100,
                     nodeOffset: 0,
                     query: 'lookup',
-                    tags: []
+                    tags: [],
+                    inCollection: true
                 });
                 expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
                 expect(store.state.nodeRepository.nodes).toEqual(
@@ -437,7 +443,8 @@ describe('Node Repository store', () => {
                     nodeLimit: 100,
                     nodeOffset: 100,
                     query: 'lookup',
-                    tags: []
+                    tags: [],
+                    inCollection: true
                 });
                 expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
                 expect(store.state.nodeRepository.nodes).toEqual([
@@ -452,6 +459,7 @@ describe('Node Repository store', () => {
                 await store.dispatch('nodeRepository/updateQuery', 'some value');
 
                 expect(store.state.nodeRepository.query).toBe('some value');
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodesAndMoreNodes', undefined);
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
             });
 
