@@ -263,62 +263,78 @@ export default {
 </script>
 
 <template>
-    <div tabindex="0" :class="['scroll-container', {
-        'panning': useMoveCursor,
-        'empty': isEmpty,
-        'disabled': !interactionsEnabled,
-    }]" @wheel="onMouseWheel" @pointerdown.middle="beginPan" @pointerdown.prevent.right="beginPan"
-        @pointerdown.left="beginPan" @pointerup.middle="stopPan" @pointerup.left="stopPan"
-        @pointerup.prevent.right="stopPan" @pointermove="movePan">
-        <svg ref="svg" :width="canvasSize.width" :height="canvasSize.height" :viewBox="viewBox.string"
-            @pointerdown.left.shift.exact.stop="$emit('selection-pointerdown', $event)"
-            @pointerdown.left.exact.stop="$emit('selection-pointerdown', $event)"
-            @pointerup.left.stop="$emit('selection-pointerup', $event)"
-            @pointermove="$emit('selection-pointermove', $event)"
-            @lostpointercapture="$emit('selection-lostpointercapture', $event)">
-            <slot />
-        </svg>
-    </div>
+  <div
+    tabindex="0"
+    :class="['scroll-container', {
+      'panning': useMoveCursor,
+      'empty': isEmpty,
+      'disabled': !interactionsEnabled,
+    }]"
+    @wheel="onMouseWheel"
+    @pointerdown.middle="beginPan"
+    @pointerdown.prevent.right="beginPan"
+    @pointerdown.left="beginPan"
+    @pointerup.middle="stopPan"
+    @pointerup.left="stopPan"
+    @pointerup.prevent.right="stopPan"
+    @pointermove="movePan"
+  >
+    <svg
+      ref="svg"
+      :width="canvasSize.width"
+      :height="canvasSize.height"
+      :viewBox="viewBox.string"
+      @pointerdown.left.shift.exact.stop="$emit('selection-pointerdown', $event)"
+      @pointerdown.left.exact.stop="$emit('selection-pointerdown', $event)"
+      @pointerup.left.stop="$emit('selection-pointerup', $event)"
+      @pointermove="$emit('selection-pointermove', $event)"
+      @lostpointercapture="$emit('selection-lostpointercapture', $event)"
+    >
+      <slot />
+    </svg>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
 svg {
-    position: relative;
-    /* needed for z-index to have effect */
-    display: block;
+  position: relative;
+
+  /* needed for z-index to have effect */
+  display: block;
 }
 
 .panning {
-    cursor: move;
+  cursor: move;
 
-    & svg,
-    & svg>>>* {
-        pointer-events: none !important;
-    }
+  & svg,
+  & svg >>> * {
+    pointer-events: none !important;
+  }
 }
 
 .scroll-container {
-    position: relative;
-    overflow: scroll;
-    height: 100%;
-    width: 100%;
+  position: relative;
+  overflow: scroll;
+  height: 100%;
+  width: 100%;
 
-    &:focus {
-        outline: none;
+  &:focus {
+    outline: none;
+  }
+
+  &.empty {
+    overflow: hidden;
+
+    /* disables scrolling */
+  }
+
+  &.disabled {
+    pointer-events: none !important;
+
+    & svg,
+    & svg >>> * {
+      pointer-events: none !important;
     }
-
-    &.empty {
-        overflow: hidden;
-        /* disables scrolling */
-    }
-
-    &.disabled {
-        pointer-events: none !important;
-
-        & svg,
-        & svg>>>* {
-            pointer-events: none !important;
-        }
-    }
+  }
 }
 </style>
