@@ -104,13 +104,32 @@ describe('API', () => {
                     allTagsMatch: true,
                     nodeOffset: 0,
                     nodeLimit: 2,
+                    fullTemplateInfo: true,
+                    inCollection: true
+                });
+
+                expect(window.jsonrpc).toHaveBeenCalledWith({
+                    jsonrpc: '2.0',
+                    method: 'NodeRepositoryService.searchNodes',
+                    params: ['churn', ['myTag'], true, 0, 2, true, true],
+                    id: 0
+                });
+            });
+
+            it('calls jsonrpc without inCollection', async () => {
+                await api.searchNodes({
+                    query: 'churn',
+                    tags: ['myTag'],
+                    allTagsMatch: true,
+                    nodeOffset: 0,
+                    nodeLimit: 2,
                     fullTemplateInfo: true
                 });
 
                 expect(window.jsonrpc).toHaveBeenCalledWith({
                     jsonrpc: '2.0',
                     method: 'NodeRepositoryService.searchNodes',
-                    params: ['churn', ['myTag'], true, 0, 2, true],
+                    params: ['churn', ['myTag'], true, 0, 2, true, null],
                     id: 0
                 });
             });
