@@ -278,6 +278,15 @@ public final class LifeCycle {
         return m_lastStateTransition.rank() < stateTransition.rank();
     }
 
+    /**
+     * Skips to the next state transition without executing the given one. For testing purposes only. Use with care.
+     *
+     * @param stateTransition
+     */
+    public void skipStateTransition(final StateTransition stateTransition) {
+        m_lastStateTransition = stateTransition;
+    }
+
     private interface StateTransitionRunnable {
         void run() throws StateTransitionAbortedException;
     }

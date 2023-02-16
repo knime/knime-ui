@@ -95,10 +95,11 @@ public final class TestingUtil {
      * Clears the entire app state.
      */
     public static void clearAppForTesting() {
-        if (LifeCycle.get().isNextStateTransition(StateTransition.SAVE_STATE)) {
+        var lifeCycle = LifeCycle.get();
+        if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
             KnimeBrowserView.clearView();
-            LifeCycle.get().saveState();
-            LifeCycle.get().suspend();
+            lifeCycle.skipStateTransition(StateTransition.SAVE_STATE);
+            lifeCycle.suspend();
         }
         disposeLoadedWorkflowsForTesting();
     }
@@ -153,16 +154,19 @@ public final class TestingUtil {
     private static void disposeLoadedWorkflowsForTesting() {
         if (loadedWorkflowsForTesting != null) {
             for (String id : loadedWorkflowsForTesting) {
-                WorkflowProjectManager.getInstance().openAndCacheWorkflow(id).ifPresent(wfm -> {
+                var wpm = WorkflowProjectManager.getInstance();
+                wpm.openAndCacheWorkflow(id).ifPresent(wfm -> {
                     try {
                         CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
                     } catch (InterruptedException ex) { // NOSONAR should never happen
                         throw new IllegalStateException(ex);
                     }
                 });
+                wpm.removeWorkflowProject(id);
             }
             loadedWorkflowsForTesting.clear();
         }
+
     }
 
     private static File getProjectFile(final String projectId) {
