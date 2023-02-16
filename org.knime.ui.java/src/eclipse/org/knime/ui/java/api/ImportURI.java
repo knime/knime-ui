@@ -200,9 +200,11 @@ public final class ImportURI {
     }
 
     private static boolean isNodeInstalled(final NodeImport nodeImport) {
-        return !DefaultNodeRepositoryService.getInstance().getNodeTemplates(Collections.singletonList(
-            NodeTemplateId.ofDynamicNodeFactory(nodeImport.getCanonicalNodeFactory(), nodeImport.getNodeName(), true)))
-            .isEmpty();
+        var nodeTemplate = NodeTemplateId.callWithNodeTemplateIdVariants(nodeImport.getCanonicalNodeFactory(),
+            nodeImport.getNodeName(), templateId -> DefaultNodeRepositoryService.getInstance()
+                .getNodeTemplates(Collections.singletonList(templateId)).get(templateId),
+            true);
+        return nodeTemplate != null;
     }
 
     private static void askToInstallExtension(final NodeImport nodeImport) {
