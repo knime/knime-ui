@@ -301,7 +301,8 @@ export default {
     font-size: 16px;
   }
 
-  &.fullscreen, &.transparent {
+  &.fullscreen,
+  &.transparent {
     background: var(--smartloader-bg, rgba(255 255 255 / 70%));
     position: fixed;
     width: 100vw;
@@ -333,7 +334,7 @@ export default {
     gap: 10px;
     padding: 20px;
     border-radius: 2px;
-    box-shadow: 0px 2px 10px rgba(130, 133, 134, 0.4);
+    box-shadow: 0 2px 10px rgb(130 133 134 / 40%);
 
     & .text {
       color: var(--smartloader-text-color, var(--knime-white));
