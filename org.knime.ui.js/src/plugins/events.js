@@ -104,6 +104,12 @@ export default ({ store: $store, router: $router }) => {
                     canvasY - nodeSize / 2
                 );
             }
+        },
+
+        // Is triggered by the backend, whenever there are installation or update processes starting
+        // or finishing
+        ProgressEvent(event) {
+            // console.log(event);
         }
     });
 };

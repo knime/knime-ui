@@ -48,6 +48,7 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
+import org.eclipse.core.runtime.jobs.Job;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DefaultServicesUtil;
@@ -68,6 +69,8 @@ final class Suspend {
         DesktopAPI.disposeDependencies();
         DefaultServicesUtil.disposeDefaultServices();
         KnimeUIPreferences.setNodeRepoFilterChangeListener(null);
+        var listener = state.getJobChangeListener();
+        Job.getJobManager().removeJobChangeListener(listener);
         return new LifeCycleStateInternal() {
 
             @Override

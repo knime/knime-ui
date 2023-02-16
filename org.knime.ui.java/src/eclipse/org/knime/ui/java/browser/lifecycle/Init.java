@@ -48,12 +48,18 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
+import static org.knime.ui.java.api.DesktopAPI.MAPPER;
+
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.IJobManager;
+import org.eclipse.core.runtime.jobs.Job;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.gateway.api.util.ExtPointUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.InvalidRequestException;
@@ -92,6 +98,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * re-initializated after a {@link Suspend}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
 final class Init {
 
@@ -127,6 +134,8 @@ final class Init {
         DesktopAPI.injectDependencies(workflowProjectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer);
 
+        var listener = registerListenerToSendProgressEvents(eventConsumer);
+
         // Update the app state when the node repository filter changes
         KnimeUIPreferences.setNodeRepoFilterChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
@@ -140,9 +149,14 @@ final class Init {
             public IntSupplier saveAndCloseAllWorkflows() {
                 return () -> {
                     var projectIds = WorkflowProjectManager.getInstance().getWorkflowProjectsIds();
-                    return SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(projectIds,
-                        eventConsumer, PostWorkflowCloseAction.SHUTDOWN);
+                    return SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(projectIds, eventConsumer,
+                        PostWorkflowCloseAction.SHUTDOWN);
                 };
+            }
+
+            @Override
+            public IJobChangeListener getJobChangeListener() {
+                return listener;
             }
         };
 
@@ -234,6 +248,89 @@ final class Init {
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Problem creating a json-rpc notification in order to send an event", ex);
         }
+    }
+
+    /**
+     * Registers a job change listener to the {@code IJobManager} to be able to track Eclipse background jobs.
+     *
+     * @param eventConsumer The event consumer used to send events
+     * @return The job change listener that was registered
+     */
+    private static IJobChangeListener registerListenerToSendProgressEvents(final EventConsumer eventConsumer) {
+        var listener = new InstallationJobChangeListener(eventConsumer);
+        Job.getJobManager().addJobChangeListener(listener);
+        return listener;
+    }
+
+    /**
+     * Listens to all the jobs the {@link IJobManager} is aware of and sends events via the {@link EventConsumer}
+     * whenever a {@link ProfileModificationJob} starts or finishes.
+     *
+     * @author Kai Franze, KNIME GmbH
+     */
+    private static final class InstallationJobChangeListener implements IJobChangeListener {
+
+        private static final String PROFILE_MODIFICATION_JOB_CLASS =
+            "org.eclipse.equinox.p2.operations.ProfileModificationJob";
+
+        private final EventConsumer m_eventConsumer;
+
+        InstallationJobChangeListener(final EventConsumer eventConsumer) {
+            m_eventConsumer = eventConsumer;
+        }
+
+        @Override
+        public void sleeping(final IJobChangeEvent event) {
+            // No need to send an event
+        }
+
+        @Override
+        public void scheduled(final IJobChangeEvent event) {
+            // No need to send an event
+        }
+
+        @Override
+        public void running(final IJobChangeEvent event) {
+            var job = event.getJob();
+            if (isProfileModificationJob(job)) {
+                createAndSendProgressEvent(job, "STARTED");
+            }
+        }
+
+        @Override
+        public void done(final IJobChangeEvent event) {
+            var job = event.getJob();
+            if (isProfileModificationJob(job)) {
+                createAndSendProgressEvent(job, "FINISHED");
+            }
+        }
+
+        @Override
+        public void awake(final IJobChangeEvent event) {
+            // No need to send an event
+        }
+
+        @Override
+        public void aboutToRun(final IJobChangeEvent event) {
+            // No need to send an event
+        }
+
+        private static boolean isProfileModificationJob(final Job job) {
+            if (job == null) {
+                return false;
+            }
+            var className = job.getClass().getName();
+            return className.equals(PROFILE_MODIFICATION_JOB_CLASS);
+        }
+
+        private void createAndSendProgressEvent(final Job job, final String status) {
+            var progressEvent = MAPPER.createObjectNode();
+            var jobName = job.getName();
+            progressEvent.put("text", jobName);
+            progressEvent.put("status", status);
+            m_eventConsumer.accept("ProgressEvent", progressEvent);
+        }
+
     }
 
 }

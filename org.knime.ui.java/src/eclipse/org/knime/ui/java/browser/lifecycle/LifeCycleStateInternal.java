@@ -50,6 +50,8 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.function.IntSupplier;
 
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.IJobManager;
 import org.knime.ui.java.api.SaveAndCloseWorkflows;
 
 /**
@@ -72,6 +74,13 @@ public interface LifeCycleStateInternal extends LifeCycleState {
      * @return the app state serialized into a string
      */
     default String serializedAppState() {
+        return null;
+    }
+
+    /**
+     * @return The job change listener that was registered to the {@link IJobManager}
+     */
+    default IJobChangeListener getJobChangeListener() {
         return null;
     }
 

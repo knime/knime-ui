@@ -47,7 +47,8 @@ describe('Event Plugin', () => {
             'AppStateChangedEvent',
             'UpdateAvailableEvent',
             'SaveAndCloseWorkflowsEvent',
-            'ImportURIEvent'
+            'ImportURIEvent',
+            'ProgressEvent'
         ]);
     });
 

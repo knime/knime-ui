@@ -98,7 +98,10 @@ public final class DesktopAPI {
 
     private static Map<Class<?>, Object> dependencies;
 
-    static final ObjectMapper MAPPER = new ObjectMapper();
+    /**
+     * ObjectMapper to create event objects that can be sent to the UI.
+     */
+    public static final ObjectMapper MAPPER = new ObjectMapper();
 
     private DesktopAPI() {
         // utility
@@ -125,7 +128,7 @@ public final class DesktopAPI {
                     return res;
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     final var ex = e instanceof InvocationTargetException
-                            ? ((InvocationTargetException) e).getTargetException() : e;
+                        ? ((InvocationTargetException)e).getTargetException() : e;
                     // must never happen
                     var message = "Desktop API function '" + name
                         + "' couldn't be called. Most likely an implementation problem.";
@@ -139,12 +142,14 @@ public final class DesktopAPI {
     /**
      * Initializes the desktop API with dependencies for some desktop API functions.
      *
+     * @param workflowProjectManager
      * @param appStateUpdater
      * @param spaceProviders
      * @param updateStateProvider optional, can be {@code null}
      * @param eventConsumer
      */
-    public static void injectDependencies(final WorkflowProjectManager workflowProjectManager, final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
+    public static void injectDependencies(final WorkflowProjectManager workflowProjectManager,
+        final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer) {
         dependencies = new HashMap<>();
         dependencies.put(WorkflowProjectManager.class, workflowProjectManager);

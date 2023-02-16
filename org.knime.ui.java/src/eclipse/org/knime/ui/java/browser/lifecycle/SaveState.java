@@ -50,6 +50,7 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.function.IntSupplier;
 
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.PerspectiveUtil;
 
@@ -98,6 +99,11 @@ final class SaveState {
             @Override
             public String serializedAppState() {
                 return serializedAppState;
+            }
+
+            @Override
+            public IJobChangeListener getJobChangeListener() {
+                return state.getJobChangeListener();
             }
         };
     }
