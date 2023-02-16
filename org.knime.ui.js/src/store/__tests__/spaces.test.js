@@ -157,7 +157,7 @@ describe('spaces store', () => {
                 const { store } = loadStore();
                 store.state.spaces.activeSpaceProvider = { id: 'provider' };
                 store.state.spaces.activeSpace = { spaceId: 'space' };
-                store.state.spaces.spaceProviders = [];
+                store.state.spaces.spaceProviders = { local: { id: 'local' } };
                 store.state.spaces.spaceBrowser = {
                     spaceId: 'local',
                     spaceProviderId: 'local',
@@ -188,21 +188,39 @@ describe('spaces store', () => {
 
                 await store.dispatch('spaces/fetchAllSpaceProviders');
 
-                const withUser = {
-                    local: { ...mockFetchAllProvidersResponse.local, user: null },
-                    hub1: { ...mockFetchAllProvidersResponse.hub1, user: null }
-                };
-
-                expect(store.state.spaces.spaceProviders).toEqual(withUser);
+                expect(store.state.spaces.spaceProviders).toEqual(mockFetchAllProvidersResponse);
                 expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'local' });
                 expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+            });
+
+            it('should keep user data set by connectProvider', async () => {
+                const mockFetchAllProvidersResponse = {
+                    ...fetchAllSpaceProvidersResponse,
+                    hub1: {
+                        id: 'hub1',
+                        connected: true,
+                        name: 'Hub 1',
+                        connectionMode: 'AUTOMATIC'
+                    }
+                };
+                const { store } = loadStore({ mockFetchAllProvidersResponse });
+
+                const mockUser = { name: 'John Doe' };
+                store.state.spaces.spaceProviders = {
+                    hub1: {
+                        user: mockUser
+                    }
+                };
+
+                await store.dispatch('spaces/fetchAllSpaceProviders');
+
+                expect(store.state.spaces.spaceProviders.hub1.user).toEqual(mockUser);
             });
         });
 
         describe('fetchProviderSpaces', () => {
-            it('should fetch spaces and set given user', async () => {
+            it('should fetch spaces', async () => {
                 const { store } = loadStore();
-                const mockUser = { name: 'John Doe' };
                 const mockSpace = { name: 'mock space', description: '' };
 
                 store.state.spaces.spaceProviders = {
@@ -214,32 +232,34 @@ describe('spaces store', () => {
 
                 fetchSpaceProvider.mockResolvedValue({ spaces: [mockSpace] });
 
-                const data = await store.dispatch('spaces/fetchProviderSpaces', { id: 'hub1', user: mockUser });
+                const data = await store.dispatch('spaces/fetchProviderSpaces', { id: 'hub1' });
 
                 expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
 
                 expect(data).toEqual(expect.objectContaining({
                     connected: true,
-                    spaces: [mockSpace],
-                    user: mockUser
+                    spaces: [mockSpace]
                 }));
             });
         });
 
         describe('connectProvider', () => {
-            it('should fetch user to connect provider and fetch provider spaces data', async () => {
+            it('should fetch user and provider spaces data and update state', async () => {
                 const { store } = loadStore();
                 const mockUser = { name: 'John Doe' };
+                const mockSpaces = { spaces: [{ name: 'test' }] };
 
                 store.state.spaces.spaceProviders = {
                     hub1: {}
                 };
-
-                connectSpaceProvider.mockResolvedValue({ user: mockUser });
+                fetchSpaceProvider.mockResolvedValue(mockSpaces);
+                connectSpaceProvider.mockResolvedValue(mockUser);
                 await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
 
                 expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
                 expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(store.state.spaces.spaceProviders.hub1.user).toBe(mockUser);
+                expect(store.state.spaces.spaceProviders.hub1.spaces).toBe(mockSpaces.spaces);
             });
 
             it('should not fetch provider spaces data if the user is null', async () => {

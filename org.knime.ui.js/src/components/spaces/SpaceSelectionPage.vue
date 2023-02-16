@@ -55,7 +55,7 @@ export default {
         },
 
         async onSpaceCardClick({ space, spaceProvider }) {
-            this.$store.commit('spaces/setActiveSpaceProvider', spaceProvider);
+            this.$store.commit('spaces/setActiveSpaceProviderById', spaceProvider.id);
             this.$store.commit('spaces/setActiveSpaceId', space.id);
             await this.$store.dispatch('spaces/saveSpaceBrowserState');
             this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });

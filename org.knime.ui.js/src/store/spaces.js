@@ -44,15 +44,9 @@ export const mutations = {
         state.isLoading = value;
     },
 
-    setActiveSpaceProvider(state, value) {
-        state.activeSpaceProvider = value;
-    },
-
     setActiveSpaceProviderById(state, spaceProviderId) {
-        // this assumes the provider has been already loaded
-        state.activeSpaceProvider = spaceProviderId === 'local'
-            ? { id: 'local' }
-            : state.spaceProviders[spaceProviderId];
+        // this assumes the list of providers has been already loaded
+        state.activeSpaceProvider = state.spaceProviders[spaceProviderId];
     },
 
     setActiveSpaceId(state, value) {
@@ -119,7 +113,7 @@ export const actions = {
         }
     },
 
-    async fetchAllSpaceProviders({ commit, dispatch }) {
+    async fetchAllSpaceProviders({ commit, state, dispatch }) {
         try {
             let spaceProviders = await fetchAllSpaceProviders();
 
@@ -129,7 +123,9 @@ export const actions = {
 
             for (const id of connectedProviderIds) {
                 const spacesData = await dispatch('fetchProviderSpaces', { id });
-                spaceProviders[id] = { ...spaceProviders[id], ...spacesData };
+                // use current state of store to ensure the user is kept,
+                // it's not part of the response and set by connectProvider
+                spaceProviders[id] = { ...state.spaceProviders?.[id], ...spaceProviders[id], ...spacesData };
             }
 
             commit('setSpaceProviders', spaceProviders);
@@ -139,11 +135,11 @@ export const actions = {
         }
     },
 
-    async fetchProviderSpaces({ commit }, { id, user = null }) {
+    async fetchProviderSpaces({ commit }, { id }) {
         try {
             const providerData = await fetchSpaceProvider({ spaceProviderId: id });
 
-            return { ...providerData, connected: true, user };
+            return { ...providerData, connected: true };
         } catch (error) {
             consola.error('Error fetching provider spaces', { error });
             throw error;
@@ -156,10 +152,10 @@ export const actions = {
 
             if (user) {
                 // Only fetch spaces when a valid user was returned
-                const updatedProvider = await dispatch('fetchProviderSpaces', { id: spaceProviderId, user });
+                const updatedProvider = await dispatch('fetchProviderSpaces', { id: spaceProviderId });
                 commit('setSpaceProviders', {
                     ...state.spaceProviders,
-                    [spaceProviderId]: { ...state.spaceProviders[spaceProviderId], ...updatedProvider }
+                    [spaceProviderId]: { ...state.spaceProviders[spaceProviderId], ...updatedProvider, user }
                 });
             }
         } catch (error) {
@@ -230,10 +226,10 @@ export const actions = {
                 { loading: false },
                 { root: true }
             );
-    
+
             dispatch('fetchWorkflowGroupContent', { itemId });
             openWorkflow({ workflowItemId: newWorkflowItem.id, spaceId, spaceProviderId });
-    
+
             return newWorkflowItem;
         } catch (error) {
             dispatch(
@@ -250,7 +246,7 @@ export const actions = {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
-        
+
         try {
             // loading will be cleared after fetching the data by fetchWorkflowGroupContent
             commit('setIsLoading', true);
@@ -274,7 +270,7 @@ export const actions = {
             spaceProviderId = state.activeSpaceProvider.id;
         }
         const { openProjects } = rootState.application;
-        
+
         // eslint-disable-next-line no-extra-parens
         const foundOpenProject = openProjects.find(project => (
             project.origin.providerId === spaceProviderId &&
@@ -313,7 +309,7 @@ export const actions = {
         const success = importType === 'FILES'
             ? await importFiles({ spaceProviderId, spaceId, itemId })
             : await importWorkflows({ spaceProviderId, spaceId, itemId });
-        
+
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
         }
@@ -322,12 +318,12 @@ export const actions = {
     async renameItem({ state, getters, dispatch, commit }, { itemId, newName }) {
         const { spaceId } = state.activeSpace;
         const { id: spaceProviderId } = state.activeSpaceProvider;
-        
+
         try {
             // loading is cleared after data is fetched by fetchWorkflowGroupContent
             commit('setIsLoading', true);
             await renameItem({ spaceProviderId, spaceId, itemId, newName });
-        
+
             const currentWorkflowGroupId = getters.currentWorkflowGroupId;
             await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
         } catch (error) {
