@@ -234,7 +234,7 @@ export default {
 
         onDragEnd(event, item) {
             this.isDragging = false;
-            
+
             const onComplete = (isSuccessfullDrop) => {
                 if (isSuccessfullDrop) {
                     this.resetSelection();
@@ -321,6 +321,7 @@ export default {
             this.activeRenameId = id;
             this.renameValue = name;
 
+            await this.$nextTick();
             // wait to next event loop to properly steal focus
             await new Promise(r => setTimeout(r, 0));
             this.$refs.renameRef[0]?.$refs?.input?.focus();
