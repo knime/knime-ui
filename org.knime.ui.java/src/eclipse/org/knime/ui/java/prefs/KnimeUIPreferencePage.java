@@ -67,6 +67,12 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
     private static final String NODE_REPO_FILTER_STARTER_OPTION = "Starter nodes";
 
+    private static final String MOUSE_WHEEL_ACTION_LABEL = "Mouse wheel action";
+
+    private static final String MOUSE_WHEEL_TO_ZOOM_OPTION = "Zoom";
+
+    private static final String MOUSE_WHEEL_TO_SCROLL_OPTION = "Scroll";
+
     /** Create a new preference page for the modern UI. */
     public KnimeUIPreferencePage() {
         super(GRID);
@@ -81,6 +87,14 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         final var nodeRepoFilterEditor = new RadioGroupFieldEditor(KnimeUIPreferences.NODE_REPO_FILTER_PREF_KEY,
             NODE_REPO_FILTER_LABEL, 1, nodeRepoFilterOptions, getFieldEditorParent());
         addField(nodeRepoFilterEditor);
+
+        final var scrollToZoomOptions = new String[][]{ //
+            new String[]{MOUSE_WHEEL_TO_ZOOM_OPTION, KnimeUIPreferences.MOUSE_WHEEL_ACTION_ZOOM}, //
+            new String[]{MOUSE_WHEEL_TO_SCROLL_OPTION, KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL} //
+        };
+        final var scrollToZoomEditor = new RadioGroupFieldEditor(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY,
+            MOUSE_WHEEL_ACTION_LABEL, 1, scrollToZoomOptions, getFieldEditorParent());
+        addField(scrollToZoomEditor);
     }
 
     @Override

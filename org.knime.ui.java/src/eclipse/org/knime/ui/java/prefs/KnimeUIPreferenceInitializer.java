@@ -64,5 +64,9 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
         // Set the node filter to the spreadsheet edition
         store.setDefault(KnimeUIPreferences.NODE_REPO_FILTER_PREF_KEY,
             KnimeUIPreferences.NODE_REPO_FILTER_STARTER_ID);
+
+        // Set scroll-to-scroll as default option
+        store.setDefault(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY,
+            KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL);
     }
 }

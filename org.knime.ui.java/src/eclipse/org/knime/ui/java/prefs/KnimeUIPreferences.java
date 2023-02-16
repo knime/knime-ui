@@ -67,6 +67,10 @@ public final class KnimeUIPreferences {
 
     static final String NODE_REPO_FILTER_PREF_KEY = "nodeRepositoryFilterId";
 
+    private static BiConsumer<String, String> MOUSE_WHEEL_ACTION_CHANGE_LISTENER = null;
+
+    static final String MOUSE_WHEEL_ACTION_PREF_KEY = "mouseWheelAction";
+
     static final IPreferenceStore PREF_STORE =
         new ScopedPreferenceStore(InstanceScope.INSTANCE, UIPlugin.getContext().getBundle().getSymbolicName());
 
@@ -78,6 +82,9 @@ public final class KnimeUIPreferences {
                 if (NODE_REPO_FILTER_CHANGE_LISTENER != null) {
                     NODE_REPO_FILTER_CHANGE_LISTENER.accept((String)e.getOldValue(), newValue);
                 }
+            }
+            if (MOUSE_WHEEL_ACTION_PREF_KEY.equals(e.getProperty()) && MOUSE_WHEEL_ACTION_CHANGE_LISTENER != null) {
+                MOUSE_WHEEL_ACTION_CHANGE_LISTENER.accept((String)e.getOldValue(), (String)e.getNewValue());
             }
         });
     }
@@ -95,6 +102,12 @@ public final class KnimeUIPreferences {
      */
     static final String NODE_REPO_FILTER_STARTER_ID = "starter";
 
+    /** If the desired mouse wheel action is scrolling */
+    public static final String MOUSE_WHEEL_ACTION_SCROLL = "scroll";
+
+    /** If the desired mouse wheel action is zooming */
+    public static final String MOUSE_WHEEL_ACTION_ZOOM = "zoom";
+
     /**
      * @return the identifier of the node repository filter that is active. {@link #NODE_REPO_FILTER_NONE_ID} if no
      *         filter is active.
@@ -111,5 +124,23 @@ public final class KnimeUIPreferences {
      */
     public static void setNodeRepoFilterChangeListener(final BiConsumer<String, String> listener) {
         NODE_REPO_FILTER_CHANGE_LISTENER = listener;
+    }
+
+    /**
+     * @return which action to perform on mouse wheel. Can be {@link #MOUSE_WHEEL_ACTION_SCROLL} or
+     *         {@link #MOUSE_WHEEL_ACTION_ZOOM}
+     */
+    public static String getMouseWheelAction() {
+        return PREF_STORE.getString(MOUSE_WHEEL_ACTION_PREF_KEY);
+    }
+
+    /**
+     * Set a listener that is called whenever the desired mouse wheel action changes. If a listener was set already it
+     * is replaced.
+     *
+     * @param listener the listener that is called with the old value and the new value. <code>null</code> is allowed.
+     */
+    public static void setMouseWheelActionChangeListener(final BiConsumer<String, String> listener) {
+        MOUSE_WHEEL_ACTION_CHANGE_LISTENER = listener;
     }
 }

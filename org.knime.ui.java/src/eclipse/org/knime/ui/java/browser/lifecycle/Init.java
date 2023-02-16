@@ -142,6 +142,12 @@ final class Init {
                 appStateUpdater.updateAppState();
             }
         });
+        // Update the app state when the mouse wheel action changes
+        KnimeUIPreferences.setMouseWheelActionChangeListener((oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                appStateUpdater.updateAppState();
+            }
+        });
 
         return new LifeCycleStateInternal() {
 
@@ -185,6 +191,11 @@ final class Init {
             @Override
             public boolean isNodeRepoFilterEnabled() {
                 return !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
+            }
+
+            @Override
+            public boolean isScrollToZoomEnabled() {
+                return KnimeUIPreferences.MOUSE_WHEEL_ACTION_ZOOM.equals(KnimeUIPreferences.getMouseWheelAction());
             }
 
             @Override
