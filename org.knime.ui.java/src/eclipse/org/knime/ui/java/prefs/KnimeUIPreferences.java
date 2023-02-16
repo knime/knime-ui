@@ -63,11 +63,11 @@ import org.knime.ui.java.UIPlugin;
  */
 public final class KnimeUIPreferences {
 
-    private static BiConsumer<String, String> NODE_REPO_FILTER_CHANGE_LISTENER = null;
+    private static BiConsumer<String, String> nodeRepoFilterChangeListener = null;
 
     static final String NODE_REPO_FILTER_PREF_KEY = "nodeRepositoryFilterId";
 
-    private static BiConsumer<String, String> MOUSE_WHEEL_ACTION_CHANGE_LISTENER = null;
+    private static BiConsumer<String, String> mouseWheelActionChangeListener = null;
 
     static final String MOUSE_WHEEL_ACTION_PREF_KEY = "mouseWheelAction";
 
@@ -79,12 +79,12 @@ public final class KnimeUIPreferences {
             if (NODE_REPO_FILTER_PREF_KEY.equals(e.getProperty())) {
                 final String newValue = (String)e.getNewValue();
                 NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(newValue);
-                if (NODE_REPO_FILTER_CHANGE_LISTENER != null) {
-                    NODE_REPO_FILTER_CHANGE_LISTENER.accept((String)e.getOldValue(), newValue);
+                if (nodeRepoFilterChangeListener != null) {
+                    nodeRepoFilterChangeListener.accept((String)e.getOldValue(), newValue);
                 }
             }
-            if (MOUSE_WHEEL_ACTION_PREF_KEY.equals(e.getProperty()) && MOUSE_WHEEL_ACTION_CHANGE_LISTENER != null) {
-                MOUSE_WHEEL_ACTION_CHANGE_LISTENER.accept((String)e.getOldValue(), (String)e.getNewValue());
+            if (MOUSE_WHEEL_ACTION_PREF_KEY.equals(e.getProperty()) && mouseWheelActionChangeListener != null) {
+                mouseWheelActionChangeListener.accept((String)e.getOldValue(), (String)e.getNewValue());
             }
         });
     }
@@ -123,7 +123,7 @@ public final class KnimeUIPreferences {
      * @param listener the listener that is called with the old value and the new value. <code>null</code> is allowed.
      */
     public static void setNodeRepoFilterChangeListener(final BiConsumer<String, String> listener) {
-        NODE_REPO_FILTER_CHANGE_LISTENER = listener;
+        nodeRepoFilterChangeListener = listener;
     }
 
     /**
@@ -141,6 +141,6 @@ public final class KnimeUIPreferences {
      * @param listener the listener that is called with the old value and the new value. <code>null</code> is allowed.
      */
     public static void setMouseWheelActionChangeListener(final BiConsumer<String, String> listener) {
-        MOUSE_WHEEL_ACTION_CHANGE_LISTENER = listener;
+        mouseWheelActionChangeListener = listener;
     }
 }
