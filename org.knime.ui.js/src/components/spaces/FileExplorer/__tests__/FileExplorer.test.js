@@ -5,6 +5,7 @@ import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
 import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
+import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
 import FileExplorer from '../FileExplorer.vue';
 
@@ -66,7 +67,7 @@ describe('FileExplorer.vue', () => {
 
     it('should display all files and directories correctly', () => {
         const { wrapper } = doMount();
-        
+
         const allItems = wrapper.findAll('.file-explorer-item');
 
         expect(allItems.length).toBe(MOCK_DATA.length);
@@ -82,9 +83,9 @@ describe('FileExplorer.vue', () => {
 
         const allItems = wrapper.findAll('.file-explorer-item');
         allItems.at(0).trigger('dblclick');
-        
+
         expect(wrapper.emitted('change-directory')[0][0]).toBe(MOCK_DATA.at(0).id);
-        
+
         allItems.at(3).trigger('dblclick');
         expect(wrapper.emitted('change-directory')[1]).toBeUndefined();
     });
@@ -110,7 +111,7 @@ describe('FileExplorer.vue', () => {
 
     it('should apply the right styles for "mini" mode', () => {
         const { wrapper } = doMount({ props: { mode: 'mini' } });
-        
+
         expect(wrapper.find('tbody').classes()).toContain('mini');
     });
 
@@ -120,12 +121,12 @@ describe('FileExplorer.vue', () => {
             await wrapper.findAll('.file-explorer-item').at(1).trigger('click');
             await wrapper.findAll('.file-explorer-item').at(3).trigger('click', { shiftKey: true });
             await wrapper.findAll('.file-explorer-item').at(5).trigger('click', { ctrlKey: true });
-            
+
             expect(wrapper.findAll('.file-explorer-item').at(1).classes()).toContain('selected');
             expect(wrapper.findAll('.file-explorer-item').at(2).classes()).toContain('selected');
             expect(wrapper.findAll('.file-explorer-item').at(3).classes()).toContain('selected');
             expect(wrapper.findAll('.file-explorer-item').at(5).classes()).toContain('selected');
-    
+
             expect(wrapper.emitted('change-selection')[0][0]).toEqual(['1']);
             expect(wrapper.emitted('change-selection')[1][0]).toEqual(['1', '2', '3']);
             expect(wrapper.emitted('change-selection')[2][0]).toEqual(['1', '2', '3', '5']);
@@ -165,17 +166,17 @@ describe('FileExplorer.vue', () => {
             expect(firstItem.classes()).toContain('dragging');
             expect(secondItem.classes()).toContain('dragging');
             expect(thirdItem.classes()).not.toContain('dragging');
-            
+
             // dragging over selected items does not add the dragging-over class
             await firstItem.trigger('dragenter');
             expect(firstItem.classes()).not.toContain('dragging-over');
             await secondItem.trigger('dragenter');
             expect(secondItem.classes()).not.toContain('dragging-over');
-            
+
             // dragging over non-selected items adds the dragging-over class
             await thirdItem.trigger('dragenter');
             expect(thirdItem.classes()).toContain('dragging-over');
-            
+
             // leaving drag on non-selected items removes the dragging-over class
             await thirdItem.trigger('dragleave');
             expect(thirdItem.classes()).not.toContain('dragging-over');
@@ -212,7 +213,7 @@ describe('FileExplorer.vue', () => {
             await dragAndDropItem(firstItem, fifthItem);
             expect(wrapper.emitted('move-items')).toBeUndefined();
         });
-        
+
         it('should emit a "move" event when dropping on a "WorkflowGroup"', async () => {
             const { wrapper } = doMount();
 
@@ -246,7 +247,7 @@ describe('FileExplorer.vue', () => {
                 // invoke onComplete callback
                 onComplete(true);
             });
-            
+
             // drag them to 1st item
             await dragAndDropItem(secondItem, firstItem);
 
@@ -257,7 +258,7 @@ describe('FileExplorer.vue', () => {
                 expect(item.classes()).not.toContain('selected');
             });
         });
-        
+
         it('should not emit a "move" event when the target item is among the selected items', async () => {
             const { wrapper } = doMount();
 
@@ -276,7 +277,7 @@ describe('FileExplorer.vue', () => {
 
             expect(wrapper.emitted('move-items')).toBeUndefined();
         });
-        
+
         it('should emit a "move" event when dropping on the "Go back" item', async () => {
             const { wrapper } = doMount({ props: { isRootFolder: false } });
 
@@ -319,9 +320,9 @@ describe('FileExplorer.vue', () => {
         wrapper.findAll('.file-explorer-item').at(0).trigger('dblclick');
         // component
         wrapper.findAll('.file-explorer-item').at(4).trigger('dblclick');
-        
+
         expect(wrapper.emitted('open-file')).toBeUndefined();
-        
+
         // workflow
         wrapper.findAll('.file-explorer-item').at(3).trigger('dblclick');
         expect(wrapper.emitted('open-file')[0][0]).toEqual(MOCK_DATA[3]);
@@ -428,7 +429,7 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
             const renameButton = getRenameOption(wrapper, 0);
             await renameButton.trigger('click');
-            
+
             expect(wrapper.vm.activeRenameId).toBe(MOCK_DATA[0].id);
             expect(wrapper.vm.renameValue).toBe(MOCK_DATA[0].name);
             expect(wrapper.findAll('input').at(0).exists()).toBe(true);
@@ -438,7 +439,7 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
             const renameButton = getRenameOption(wrapper, 0);
             await renameButton.trigger('click');
-            
+
             const inputValue = wrapper.findAll('input').at(0);
             inputValue.element.value = 'invalid [*?#:"<>%~|.] string';
             await inputValue.trigger('input');
@@ -453,25 +454,25 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
             const renameButton = getRenameOption(wrapper, 0);
             await renameButton.trigger('click');
-            
-            const inputValue = wrapper.findAll('input').at(0);
+
+            const input = wrapper.findComponent(InputField);
             const newName = 'New Folder name';
             await wrapper.setData({ renameValue: newName });
-            await inputValue.trigger('keyup.enter');
+            await input.vm.$emit('keyup', { key: 'Enter' });
 
             expect(wrapper.emitted('rename-file')).toBeTruthy();
             expect(wrapper.emitted('rename-file')[0][0].newName).toEqual(newName);
         });
-        
+
         it('should automatically trim new name', async () => {
             const { wrapper } = doMount();
             const renameButton = getRenameOption(wrapper, 0);
             await renameButton.trigger('click');
-            
-            const inputValue = wrapper.findAll('input').at(0);
+
+            const input = wrapper.findComponent(InputField);
             const newName = '    New Folder name    ';
             await wrapper.setData({ renameValue: newName });
-            await inputValue.trigger('keyup.enter');
+            await input.vm.$emit('keyup', { key: 'Enter' });
 
             expect(wrapper.emitted('rename-file')).toBeTruthy();
             expect(wrapper.emitted('rename-file')[0][0].newName).toEqual('New Folder name');
@@ -481,11 +482,11 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
             const renameButton = getRenameOption(wrapper, 0);
             await renameButton.trigger('click');
-            
-            const inputValue = wrapper.findAll('input').at(0);
+
+            const input = wrapper.findComponent(InputField);
             const newName = '      ';
             await wrapper.setData({ renameValue: newName });
-            await inputValue.trigger('keyup.enter');
+            await input.vm.$emit('keyup', { key: 'Enter' });
 
             expect(wrapper.emitted('rename-file')).toBeUndefined();
         });
@@ -494,11 +495,11 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
             const renameButton = getRenameOption(wrapper, 0);
             await renameButton.trigger('click');
-            
-            const inputValue = wrapper.findAll('input').at(0);
+
+            const input = wrapper.findComponent(InputField);
             const newName = 'New Folder name';
             await wrapper.setData({ renameValue: newName });
-            await inputValue.trigger('keyup.esc');
+            await input.vm.$emit('keyup', { key: 'Esc' });
 
             expect(wrapper.vm.activeRenameId).toBe(null);
             expect(wrapper.vm.renameValue).toBe('');
