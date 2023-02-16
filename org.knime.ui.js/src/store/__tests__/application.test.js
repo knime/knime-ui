@@ -149,6 +149,12 @@ describe('application store', () => {
                 .toStrictEqual({ newReleases: undefined, bugfixes: ['Update1', 'Update2'] });
         });
 
+        it('sets hasNodeCollectionActive', async () => {
+            const { store } = await loadStore();
+            store.commit('application/setHasNodeCollectionActive', true);
+            expect(store.state.application.hasNodeCollectionActive).toBe(true);
+        });
+
         it('sets devMode', async () => {
             const { store } = await loadStore();
             store.commit('application/setDevMode', true);
@@ -293,6 +299,14 @@ describe('application store', () => {
                 projectId: 'baz',
                 workflowId: 'root:2'
             });
+        });
+
+        it('replaces hasNodeCollectionActive', async () => {
+            const applicationState = { hasNodeCollectionActive: true };
+            const { store } = await loadStore();
+
+            await store.dispatch('application/replaceApplicationState', applicationState);
+            // TODO check that the node seach and the categories are resetted
         });
     });
 

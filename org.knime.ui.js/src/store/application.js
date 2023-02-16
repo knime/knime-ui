@@ -41,6 +41,12 @@ export const state = () => ({
     /* Object containing available updates */
     availableUpdates: null,
 
+    /*
+     * If true, a node collection is configured on the preference page. The node search will show the nodes of the
+     * collection first and the category groups and node recommendations will only show nodes from the collection.
+     */
+    hasNodeCollectionActive: false,
+
     /**
      * If true, the mouse wheel should be used for zooming instead of scrolling
      */
@@ -129,6 +135,9 @@ export const mutations = {
     setScrollToZoomEnabled(state, scrollToZoomEnabled) {
         state.scrollToZoomEnabled = scrollToZoomEnabled;
     },
+    setHasNodeCollectionActive(state, hasNodeCollectionActive) {
+        state.hasNodeCollectionActive = hasNodeCollectionActive;
+    },
     setDevMode(state, devMode) {
         state.devMode = devMode;
     }
@@ -212,6 +221,13 @@ export const actions = {
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
         if (applicationState.hasOwnProperty('scrollToZoomEnabled')) {
             commit('setScrollToZoomEnabled', applicationState.scrollToZoomEnabled);
+        }
+
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+        if (applicationState.hasOwnProperty('hasNodeCollectionActive')) {
+            commit('setHasNodeCollectionActive', applicationState.hasNodeCollectionActive);
+
+            // TODO delete the search and reload the categories
         }
 
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
