@@ -108,8 +108,6 @@ li {
   max-width: 300px;
 
   & .workflow-icon {
-    width: 20px;
-    height: 20px;
     stroke: var(--knime-white);
 
     @mixin svg-icon-size 20;
