@@ -278,7 +278,7 @@ describe('spaces store', () => {
         });
 
         describe('disconnectProvider', () => {
-            it('should disconnect provider and clear spaces and user data', () => {
+            it('should disconnect provider and clear spaces and user data', async () => {
                 const { store } = loadStore();
 
                 const fullProvider = {
@@ -301,7 +301,7 @@ describe('spaces store', () => {
                     connected: false
                 };
 
-                store.dispatch('spaces/disconnectProvider', { spaceProviderId: 'hub1' });
+                await store.dispatch('spaces/disconnectProvider', { spaceProviderId: 'hub1' });
                 expect(store.state.spaces.spaceProviders.hub1).toEqual(expectedProvider);
             });
         });

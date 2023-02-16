@@ -117,6 +117,7 @@ export const actions = {
         try {
             let spaceProviders = await fetchAllSpaceProviders();
 
+            commit('setIsLoading', true);
             const connectedProviderIds = Object.values(spaceProviders)
                 .filter(({ connected, connectionMode }) => connected || connectionMode === 'AUTOMATIC')
                 .map(({ id }) => id);
@@ -127,11 +128,12 @@ export const actions = {
                 // it's not part of the response and set by connectProvider
                 spaceProviders[id] = { ...state.spaceProviders?.[id], ...spaceProviders[id], ...spacesData };
             }
-
             commit('setSpaceProviders', spaceProviders);
         } catch (error) {
             consola.error('Error fetching providers', { error });
             throw error;
+        } finally {
+            commit('setIsLoading', false);
         }
     },
 
@@ -148,6 +150,7 @@ export const actions = {
 
     async connectProvider({ dispatch, commit, state }, { spaceProviderId }) {
         try {
+            commit('setIsLoading', true);
             const user = await connectSpaceProvider({ spaceProviderId });
 
             if (user) {
@@ -161,12 +164,14 @@ export const actions = {
         } catch (error) {
             consola.error('Error connecting to provider', { error });
             throw error;
+        } finally {
+            commit('setIsLoading', false);
         }
     },
 
-    disconnectProvider({ commit, state }, { spaceProviderId }) {
+    async disconnectProvider({ commit, state, dispatch }, { spaceProviderId }) {
         try {
-            disconnectSpaceProvider({ spaceProviderId });
+            await disconnectSpaceProvider({ spaceProviderId });
 
             const { spaceProviders } = state;
             const { name, connectionMode } = spaceProviders[spaceProviderId];
@@ -174,6 +179,7 @@ export const actions = {
                 ...state.spaceProviders,
                 [spaceProviderId]: { id: spaceProviderId, name, connectionMode, connected: false }
             });
+            return spaceProviderId;
         } catch (error) {
             consola.error('Error disconnecting from provider', { error });
             throw error;
@@ -192,12 +198,13 @@ export const actions = {
             });
 
             commit('setActiveWorkflowGroupData', data);
-            commit('setIsLoading', false);
+
             return data;
         } catch (error) {
-            commit('setIsLoading', false);
             consola.error('Error trying to fetch workflow group content', { error });
             throw error;
+        } finally {
+            commit('setIsLoading', false);
         }
     },
 
@@ -360,9 +367,10 @@ export const actions = {
             await moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
             await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
         } catch (error) {
-            commit('setIsLoading', false);
             consola.log('Error moving items', { error });
             throw error;
+        } finally {
+            commit('setIsLoading', false);
         }
     },
 

@@ -29,7 +29,7 @@ export default {
     },
 
     computed: {
-        ...mapState('spaces', ['spaceProviders', 'spaceBrowser'])
+        ...mapState('spaces', ['spaceProviders', 'spaceBrowser', 'isLoading'])
     },
     beforeCreate() {
         // redirect to browsing page if a space was selected
@@ -37,8 +37,8 @@ export default {
             this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
         }
     },
-    created() {
-        this.$store.dispatch('spaces/fetchAllSpaceProviders');
+    async created() {
+        await this.$store.dispatch('spaces/fetchAllSpaceProviders');
     },
 
     methods: {
@@ -46,8 +46,8 @@ export default {
             this.$store.dispatch('spaces/connectProvider', { spaceProviderId });
         },
 
-        onLogout(spaceProviderId) {
-            this.$store.dispatch('spaces/disconnectProvider', { spaceProviderId });
+        async onLogout(spaceProviderId) {
+            await this.$store.dispatch('spaces/disconnectProvider', { spaceProviderId });
         },
 
         async onSpaceCardClick({ space, spaceProvider }) {
@@ -118,6 +118,7 @@ export default {
             v-if="shouldDisplayLogoutButton(spaceProvider)"
             with-border
             compact
+            :disabled="isLoading"
             class="logout"
             @click="onLogout(spaceProvider.id)"
           >
@@ -128,6 +129,7 @@ export default {
             v-if="shouldDisplayLoginButton(spaceProvider)"
             primary
             compact
+            :disabled="isLoading"
             class="sign-in"
             @click="onLogin(spaceProvider.id)"
           >

@@ -187,7 +187,7 @@ export const connectSpaceProvider = ({ spaceProviderId }) => {
 export const disconnectSpaceProvider = ({ spaceProviderId }) => {
     try {
         const user = window.disconnectSpaceProvider(spaceProviderId);
-        return JSON.parse(user);
+        return Promise.resolve(JSON.parse(user));
     } catch (error) {
         consola.error(`Could not disconnect from provider`, { spaceProviderId, error });
         throw error;
