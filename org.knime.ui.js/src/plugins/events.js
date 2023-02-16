@@ -17,12 +17,12 @@ export default ({ store: $store, router: $router }) => {
                 op.path = `/activeWorkflow${op.path}`;
             });
             $store.dispatch('workflow/patch.apply', ops);
-        
+
             if (snapshotId) {
                 notifyPatch(snapshotId);
             }
         },
-        
+
         /**
          * Is triggered by the backend, whenever the application state changes
          * sends the new state
@@ -32,12 +32,12 @@ export default ({ store: $store, router: $router }) => {
             const { openProjects } = appState;
             const currentProjectId = $store.state.application.activeProjectId;
             const nextActiveProject = openProjects?.find(item => item.activeWorkflowId);
-            
+
             // Navigate to GetStarted page when no projects are open
             if (openProjects && openProjects.length === 0) {
                 await $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
             }
-            
+
             // When a new project is set as active, navigate to the corresponding workflow
             if (nextActiveProject && currentProjectId !== nextActiveProject.projectId) {
                 await $router.push({
@@ -68,7 +68,7 @@ export default ({ store: $store, router: $router }) => {
             $store.dispatch('application/updateGlobalLoader', { loading: true });
 
             const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
-            
+
             const resolveSVGSnapshots = projectIds
                 .map(async projectId => {
                     const { svgElement, isCanvasEmpty } = projectId === activeProjectId
@@ -108,8 +108,20 @@ export default ({ store: $store, router: $router }) => {
 
         // Is triggered by the backend, whenever there are installation or update processes starting
         // or finishing
-        ProgressEvent(event) {
-            // console.log(event);
+        ProgressEvent({ status, jobName }) {
+            const isLoading = status === 'STARTED';
+            const loaderConfig = isLoading
+                ? {
+                    displayMode: 'toast',
+                    loadingMode: 'normal'
+                }
+                : null;
+
+            $store.dispatch('application/updateGlobalLoader', {
+                loading: isLoading,
+                config: loaderConfig,
+                text: jobName
+            });
         }
     });
 };

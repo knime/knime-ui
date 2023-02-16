@@ -24,7 +24,7 @@ const createStaggeredLoader = ({
 }) => {
     const DEFAULT_STAGE1_DELAY = 1000;
     const DEFAULT_STAGE2_DELAY = 2500;
-    
+
     const stage1Delay = options.stage1Delay || DEFAULT_STAGE1_DELAY;
     const stage2Delay = options.stage2Delay || DEFAULT_STAGE2_DELAY;
 
@@ -199,9 +199,9 @@ export default {
                 normal: this.useNormalLoadingMode,
                 stagger: this.useStaggerLoadingMode
             };
-            
+
             loadingModeHandlers[loadingMode]();
-            
+
             this.setLoading(true);
         },
 
@@ -319,15 +319,16 @@ export default {
     min-height: var(--initial-height);
     width: var(--initial-width);
   }
-  
+
   &.toast {
     background: var(--smartloader-bg, var(--knime-masala));
     min-width: 150px;
     height: 60px;
     position: fixed;
-    left: 60px;
-    bottom: 40px;
+    left: var(--smartloader-toast-pos-left, 60px);
+    bottom: var(--smartloader-toast-pos-bottom, 40px);
     flex-direction: row;
+    justify-content: flex-start;
     align-items: center;
     gap: 10px;
     padding: 20px;

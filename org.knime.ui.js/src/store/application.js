@@ -153,7 +153,7 @@ export const actions = {
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
         await dispatch('spaces/fetchAllSpaceProviders', {}, { root: true });
-        
+
         $router.beforeEach(async (to, from, next) => {
             if (to.params.skipGuards) {
                 next();
@@ -204,20 +204,20 @@ export const actions = {
         if (applicationState.hasNodeRecommendationsEnabled) {
             commit('setHasNodeRecommendationsEnabled', applicationState.hasNodeRecommendationsEnabled);
         }
-        
+
         if (applicationState.featureFlags) {
             commit('setFeatureFlags', applicationState.featureFlags);
         }
-        
+
         if (applicationState.openProjects) {
             commit('setOpenProjects', applicationState.openProjects);
             await dispatch('setActiveProject', applicationState.openProjects);
         }
-        
+
         if (applicationState.exampleProjects) {
             commit('setExampleProjects', applicationState.exampleProjects);
         }
-        
+
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
         if (applicationState.hasOwnProperty('nodeRepoFilterEnabled')) {
             commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
@@ -238,7 +238,7 @@ export const actions = {
         if (applicationState.hasOwnProperty('scrollToZoomEnabled')) {
             commit('setScrollToZoomEnabled', applicationState.scrollToZoomEnabled);
         }
-        
+
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
         if (applicationState.hasOwnProperty('devMode')) {
             commit('setDevMode', applicationState.devMode);
@@ -511,10 +511,11 @@ export const actions = {
         };
     },
 
-    updateGlobalLoader({ state }, { loading, config = { displayMode: 'fullscreen' } }) {
+    updateGlobalLoader({ state }, { loading, text, config }) {
         state.globalLoader = {
             loading,
-            config
+            text,
+            config: config || { displayMode: 'fullscreen' }
         };
     }
 };

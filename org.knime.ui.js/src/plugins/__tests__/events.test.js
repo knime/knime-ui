@@ -63,7 +63,7 @@ describe('Event Plugin', () => {
         afterEach(() => {
             notifyPatch.mockClear();
         });
-        
+
         it('handles WorkflowChangedEvents', () => {
             const { storeMock } = loadPlugin();
             registeredHandlers.WorkflowChangedEvent(
@@ -96,7 +96,7 @@ describe('Event Plugin', () => {
         describe('AppState event', () => {
             it('navigates to entry page when no projects are open', async () => {
                 const { storeMock, routerMock } = loadPlugin();
-    
+
                 await registeredHandlers.AppStateChangedEvent(
                     { appState: { openProjects: [] } }
                 );
@@ -110,12 +110,12 @@ describe('Event Plugin', () => {
                     { openProjects: [] }
                 );
             });
-            
+
             it('navigates to the corresponding project when it is set as active', async () => {
                 const { storeMock, routerMock } = loadPlugin();
 
                 storeMock.state.application.activeProjectId = 'project1';
-    
+
                 const openProjects = [
                     { projectId: 'project1' },
                     { projectId: 'project2', activeWorkflowId: 'root' }
@@ -138,11 +138,11 @@ describe('Event Plugin', () => {
 
             it('replaces application state', async () => {
                 const { storeMock } = loadPlugin();
-    
+
                 await registeredHandlers.AppStateChangedEvent(
                     { appState: { openProjects: [{ id: 'mock' }] } }
                 );
-    
+
                 expect(storeMock.dispatch).toHaveBeenCalledWith(
                     'application/replaceApplicationState',
                     { openProjects: [{ id: 'mock' }] }
@@ -152,7 +152,7 @@ describe('Event Plugin', () => {
             // TODO NXT-1437
             it.todo('should clear the application busy state');
         });
-        
+
         // TODO NXT-1437
         describe('SaveAndCloseWorkflowsEvent', () => {
             it.todo('should set the application busy state');
@@ -181,11 +181,11 @@ describe('Event Plugin', () => {
                     'Update1',
                     'Update2'
                 ];
-    
+
                 await registeredHandlers.UpdateAvailableEvent(
                     { newReleases, bugfixes }
                 );
-    
+
                 expect(storeMock.commit).toHaveBeenCalledWith(
                     'application/setAvailableUpdates',
                     { newReleases, bugfixes }
@@ -196,11 +196,11 @@ describe('Event Plugin', () => {
                 const { storeMock } = loadPlugin();
                 const newReleases = undefined;
                 const bugfixes = undefined;
-    
+
                 await registeredHandlers.UpdateAvailableEvent(
                     { newReleases, bugfixes }
                 );
-    
+
                 expect(storeMock.commit).not.toHaveBeenCalled();
             });
         });

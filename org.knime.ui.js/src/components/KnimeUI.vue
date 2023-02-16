@@ -152,6 +152,7 @@ export default {
     
     <SmartLoader
       :loading="globalLoader.loading"
+      :text="globalLoader.text"
       :config="globalLoader.config"
     />
 
