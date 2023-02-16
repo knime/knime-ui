@@ -1,8 +1,9 @@
 export const APP_ROUTES = {
     WorkflowPage: 'WorkflowPage',
     EntryPage: {
-        GetStartedPage: 'GetStartedPage',
-        SpaceSelectionPage: 'SpaceSelectionPage'
+        GetStartedPage: 'GetStartedPage'
+        // TODO: NXT-1461 enable again when we have a dedicated stand alone SpaceSelection page again
+        // SpaceSelectionPage: 'SpaceSelectionPage'
     },
     SpaceBrowsingPage: 'SpaceBrowsingPage',
     InfoPage: 'InfoPage'

@@ -1,6 +1,5 @@
 import VueRouter from 'vue-router';
 import WorkflowPage from '@/components/workflow/WorkflowPage.vue';
-import SpaceSelectionPage from '@/components/spaces/SpaceSelectionPage.vue';
 import SpaceBrowsingPage from '@/components/spaces/SpaceBrowsingPage.vue';
 import EntryPageLayout from '@/components/entryPage/EntryPageLayout.vue';
 import GetStartedPage from '@/components/entryPage/GetStartedPage.vue';
@@ -27,13 +26,14 @@ export const routes = [
                 path: '/get-started',
                 component: GetStartedPage,
                 meta: { showUpdateBanner: true }
-            },
-            {
-                name: APP_ROUTES.EntryPage.SpaceSelectionPage,
-                path: '/space-selection',
-                component: SpaceSelectionPage,
-                meta: { showUpdateBanner: true }
             }
+            // TODO: NXT-1461 enable again when we have a dedicated stand alone SpaceSelection page again
+            // {
+            //    name: APP_ROUTES.EntryPage.SpaceSelectionPage,
+            //    path: '/space-selection',
+            //    component: SpaceSelectionPage,
+            //    meta: { showUpdateBanner: true }
+            // }
         ]
     },
     {

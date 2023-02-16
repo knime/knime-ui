@@ -31,14 +31,10 @@ export default {
     computed: {
         ...mapState('spaces', ['spaceProviders', 'spaceBrowser'])
     },
-
-    beforeMount() {
+    beforeCreate() {
         // redirect to browsing page if a space was selected
-        if (this.spaceBrowser.spaceId) {
+        if (this.$store.state.spaces.spaceBrowser.spaceId) {
             this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
-        } else {
-            // TODO: NXT-1461 remove this when this is a real page again
-            this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
         }
     },
     created() {

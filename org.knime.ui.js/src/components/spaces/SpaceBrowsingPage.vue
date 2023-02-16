@@ -68,10 +68,11 @@ export default {
             // remember current path
             await this.$store.dispatch('spaces/saveSpaceBrowserState', { itemId });
         },
-        
+
         onBackButtonClick() {
             this.$store.commit('spaces/clearSpaceBrowserState');
-            this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
+            // TODO: NXT-1461 go back to the Entry page itself
+            this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
         }
     }
 };
