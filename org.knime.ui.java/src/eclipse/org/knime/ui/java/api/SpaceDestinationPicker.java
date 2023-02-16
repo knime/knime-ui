@@ -63,6 +63,20 @@ import org.knime.workbench.explorer.view.dialogs.UploadDestinationSelectionDialo
  */
 final class SpaceDestinationPicker {
 
+    public enum Operation {
+        UPLOAD("Upload to...", "uploaded"),
+        DOWNLOAD("Download to...", "downloaded"),
+        SAVE("Save to...", "saved");
+
+        private final String m_title;
+        private final String m_desc;
+
+        Operation(final String title, final String desc) {
+            m_title = title;
+            m_desc = desc;
+        }
+    }
+
     private SpaceDestinationPicker() {
     }
 
@@ -70,13 +84,17 @@ final class SpaceDestinationPicker {
      * Displays a modal dialog for picking a target folder or space.
      *
      * @param spaceProviders space providers to allow selections from
+     * @param operation type of operation, determines text in the dialog
      * @return destination if selected, {@link Optional#empty()} otherwise
      */
-    static Optional<SelectedDestination> promptForTargetLocation(final String[] spaceProviders) {
+    static Optional<SelectedDestination> promptForTargetLocation(final String[] spaceProviders,
+        final Operation operation) {
         final var workbench = PlatformUI.getWorkbench();
         return workbench.getDisplay().syncCall(() -> { // NOSONAR
             final var shell = workbench.getModalDialogShellProvider().getShell();
-            final var destinationDialog = new UploadDestinationSelectionDialog(shell, spaceProviders, null);
+            final var destinationDialog = new UploadDestinationSelectionDialog(shell, spaceProviders, null,
+                "Destination", operation.m_title, "Select the destination folder.",
+                "Select the destination folder to which the selected element will be " + operation.m_desc);
             while (destinationDialog.open() == Window.OK) {
                 final var destGroup = destinationDialog.getSelectedDestination();
                 final var destGroupInfo = destGroup.getDestination().fetchInfo();

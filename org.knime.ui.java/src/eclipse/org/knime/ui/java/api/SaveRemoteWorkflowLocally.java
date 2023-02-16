@@ -65,6 +65,7 @@ import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
+import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.workbench.explorer.view.dialogs.UploadDestinationSelectionDialog.SelectedDestination;
@@ -135,7 +136,7 @@ final class SaveRemoteWorkflowLocally {
 
     private static String askForDestinationWorkflowGroupAndGetId() {
         var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        return SpaceDestinationPicker.promptForTargetLocation(new String[]{"LOCAL"})//
+        return SpaceDestinationPicker.promptForTargetLocation(new String[] { "LOCAL" }, Operation.SAVE)//
             .map(SelectedDestination::getDestination)//
             .map(fileStore -> {
                 try {

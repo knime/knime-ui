@@ -47,12 +47,13 @@
 package org.knime.ui.java.util;
 
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
+import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
@@ -101,8 +102,8 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public Map<String, Space> getSpaceMap() {
-                return Collections.singletonMap(localSpace.getId(), localSpace);
+            public SpaceProviderEnt toEntity() {
+                return EntityFactory.Space.buildSpaceProviderEnt(List.of(localSpace.toEntity()));
             }
 
             @Override

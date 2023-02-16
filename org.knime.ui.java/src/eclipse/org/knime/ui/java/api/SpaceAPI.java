@@ -63,6 +63,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
@@ -192,7 +193,8 @@ final class SpaceAPI {
             return false;
         }
 
-        final var destInfoOptional = SpaceDestinationPicker.promptForTargetLocation(mountIds);
+        final var destInfoOptional = SpaceDestinationPicker.promptForTargetLocation(mountIds,
+            isLocal ? Operation.UPLOAD : Operation.DOWNLOAD);
         if (!destInfoOptional.isPresent()) {
             return false;
         }
