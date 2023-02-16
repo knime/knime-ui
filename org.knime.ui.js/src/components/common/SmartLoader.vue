@@ -51,17 +51,17 @@ const createStaggeredLoader = ({
     return startLoader;
 };
 
-const DISPLAY_MODES = {
+const DISPLAY_MODES = Object.freeze({
     fullscreen: 'fullscreen',
     transparent: 'transparent',
     localized: 'localized',
     toast: 'toast'
-};
+});
 
-const LOADING_MODES = {
+const LOADING_MODES = Object.freeze({
     normal: 'normal',
     stagger: 'stagger'
-};
+});
 
 const DEFAULTS = Object.freeze({
     displayMode: DISPLAY_MODES.localized,
@@ -89,8 +89,7 @@ export default {
          * @property {'fullscreen' | 'localized' | 'toast' | 'transparent'} [displayMode] determines the loader's appeareance
          * @property {'stagger' | 'normal'} [loadingMode] whether to use standard load without delay, or a staggered
          * loader
-         * @property {Number} [staggerStageCount] number of stages to stagger for (1 or 2)
-         * fallback to 'fixed' position regardless of the provided `position` property
+         * @property {Number} [staggerStageCount] number of stages to stagger for. (1 or 2)
         */
         /**
          * Configuration object for the loader
@@ -303,10 +302,13 @@ export default {
 
   &.fullscreen,
   &.transparent {
-    background: var(--smartloader-bg, rgba(255 255 255 / 70%));
     position: fixed;
     width: 100vw;
     height: 100vh;
+  }
+
+  &.fullscreen {
+    background: var(--smartloader-bg, rgba(255 255 255 / 70%));
   }
 
   &.transparent {
