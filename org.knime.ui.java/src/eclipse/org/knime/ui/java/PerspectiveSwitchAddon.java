@@ -92,8 +92,6 @@ import org.osgi.service.event.Event;
  */
 public final class PerspectiveSwitchAddon {
 
-    private static final String PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP = "chromium.external_message_pump";
-
     /**
      * The ID of the perspective that was active before the current one. {@code null} if not known.
      */
@@ -156,18 +154,7 @@ public final class PerspectiveSwitchAddon {
         ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors(m_modelService, m_app);
         KnimeBrowserView.activateViewInitializer(false);
         switchToWebUITheme();
-        updateChromiumExternalMessagePumpSystemProperty();
-    }
-
-    @SuppressWarnings("javadoc")
-    public static void updateChromiumExternalMessagePumpSystemProperty() {
-        if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
-            // Fixes a drag'n'drop issue on Windows, see NXT-1151.
-            // Doesn't have an effect on Linux.
-            // Must be 'true' on Mac (see AP-19241).
-            // Possibly to be removed via AP-19243.
-            System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP, "false");
-        }
+        ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
     }
 
     private void onSwitchToJavaUI() {
@@ -197,7 +184,7 @@ public final class PerspectiveSwitchAddon {
         PerspectiveUtil.refreshLocalWorkspaceContentProvider();
 
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
-            System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
+            System.clearProperty(ChromiumExternalMessagePump.PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
         }
     }
 

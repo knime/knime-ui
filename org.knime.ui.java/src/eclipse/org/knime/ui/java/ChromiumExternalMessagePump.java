@@ -44,36 +44,36 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Feb 8, 2023 (hornm): created
+ *   Feb 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.lifecycle;
+package org.knime.ui.java;
 
-import org.eclipse.core.runtime.preferences.ConfigurationScope;
-import org.knime.ui.java.ChromiumExternalMessagePump;
-import org.knime.ui.java.util.PerspectiveUtil;
+import org.eclipse.core.runtime.Platform;
 
 /**
- * The startup life cycle transition.
+ * This class only exists to host the {@link #updateChromiumExternalMessagePumpSystemProperty()}-method. It's in order
+ * to avoid any other (static) stuff to be loaded with this class because it's called very early on start-up (where,
+ * e.g., the loading of the NodeLogger-class can cause the workspace selection to not show up).
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class Startup {
+public final class ChromiumExternalMessagePump {
 
-    private Startup() {
-        //
+    private ChromiumExternalMessagePump() {
+        // utility
     }
 
-    static void run() {
-        // Determine with what perspective to start (classic or modern UI).
-        // Stored as a eclipse preference and subsequently (from here on)
-        // controlled via the 'perspective' system property.
-        var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
-        if (prefs == null || prefs.getBoolean(SharedConstants.PREFERENCE_KEY, true)) {
-            System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
-            ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
-        } else {
-            System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
-            PerspectiveUtil.setClassicPerspectiveActive(true);
+    @SuppressWarnings("javadoc")
+    public static final String PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP = "chromium.external_message_pump";
+
+    @SuppressWarnings("javadoc")
+    public static void updateChromiumExternalMessagePumpSystemProperty() {
+        if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
+            // Fixes a drag'n'drop issue on Windows, see NXT-1151.
+            // Doesn't have an effect on Linux.
+            // Must be 'true' on Mac (see AP-19241).
+            // Possibly to be removed via AP-19243.
+            System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP, "false");
         }
     }
 
