@@ -108,7 +108,7 @@ export default ({ store: $store, router: $router }) => {
 
         // Is triggered by the backend, whenever there are installation or update processes starting
         // or finishing
-        ProgressEvent({ status, jobName }) {
+        ProgressEvent({ status, text }) {
             const isLoading = status === 'STARTED';
             const loaderConfig = isLoading
                 ? {
@@ -120,7 +120,7 @@ export default ({ store: $store, router: $router }) => {
             $store.dispatch('application/updateGlobalLoader', {
                 loading: isLoading,
                 config: loaderConfig,
-                text: jobName
+                text
             });
         }
     });
