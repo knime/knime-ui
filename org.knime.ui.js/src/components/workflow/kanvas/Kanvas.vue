@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import { debounce } from 'lodash';
-import { getMetaOrCtrlKey } from '@/util/navigator';
+import { isMac } from '@/util/navigator';
 import throttle from 'raf-throttle';
 
 export const RESIZE_DEBOUNCE = 100;
@@ -121,8 +121,10 @@ export default {
             }
 
             // If we don't want to use the wheel to zoom by default,
-            // we still want to zoom on ctrl or meta key
-            const shouldZoom = this.scrollToZoomEnabled || event[getMetaOrCtrlKey()];
+            // we still want to zoom on ctrl or meta key.
+            // Note: The pinch-to-zoom gesture on Mac causes a wheel event with ctrlKey=True,
+            //       so we need to check for it to obtain zoom on pinch-to-zoom.
+            const shouldZoom = this.scrollToZoomEnabled || event.ctrlKey || (isMac() && event.metaKey);
             if (!shouldZoom) {
                 return;
             }
