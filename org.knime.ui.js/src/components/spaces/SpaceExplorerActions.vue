@@ -7,12 +7,15 @@ import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
 import CloudDownloadIcon from 'webapps-common/ui/assets/img/icons/cloud-download.svg';
 import CloudUploadIcon from 'webapps-common/ui/assets/img/icons/cloud-upload.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
+import Modal from 'webapps-common/ui/components/Modal.vue';
+import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
 import PlusIcon from '@/assets/plus.svg';
 import ImportWorkflowIcon from '@/assets/import-workflow.svg';
 import AddFileIcon from '@/assets/add-file.svg';
 
 import ToolbarButton from '@/components/common/ToolbarButton.vue';
+import CreateWorkflowModal from './CreateWorkflowModal.vue';
 
 export default {
     components: {
@@ -26,7 +29,10 @@ export default {
         CloudUploadIcon,
         ImportWorkflowIcon,
         AddFileIcon,
-        MenuOptionsIcon
+        MenuOptionsIcon,
+        Modal,
+        InputField,
+        CreateWorkflowModal
     },
 
     props: {
@@ -63,6 +69,12 @@ export default {
             type: Boolean,
             default: false
         }
+    },
+
+    data() {
+        return {
+            createWorkflowModalActive: false
+        };
     },
 
     computed: {
@@ -149,7 +161,7 @@ export default {
           primary
           class="create-workflow-btn"
           :disabled="disabledActions.createWorkflow"
-          @click="$emit('action:create-workflow')"
+          @click="createWorkflowModalActive = true"
         />
       </div>
     </template>
@@ -164,8 +176,24 @@ export default {
         >
           <MenuOptionsIcon class="open-icon" />
         </SubMenu>
+        
+        <!-- Create workflow -->
+        <ToolbarButton
+          primary
+          class="create-workflow-btn"
+          :title="createWorkflowButtonTitle"
+          :disabled="disabledActions.createWorkflow"
+          @click.native="$emit('action:create-workflow')"
+        >
+          <PlusIcon />
+        </ToolbarButton>
       </div>
     </template>
+
+    <CreateWorkflowModal
+      :modal-active="createWorkflowModalActive"
+      @cancel="createWorkflowModalActive = false"
+    />
   </div>
 </template>
 
