@@ -74,7 +74,9 @@ import org.knime.workbench.ui.p2.actions.InvokeUpdateAction;
  */
 final class EclipseUIAPI {
 
-    private static final String PREFERENCE_PAGE_ID = "org.knime.workbench.workflowcoach";
+    private static final String WORKFLOW_COACH_PREFERENCE_PAGE_ID = "org.knime.workbench.workflowcoach";
+
+    private static final String WEB_UI_PREFERENCE_PAGE_ID = "org.knime.ui.java.prefs.KnimeUIPreferencePage";
 
     private EclipseUIAPI() {
         // stateless
@@ -106,6 +108,17 @@ final class EclipseUIAPI {
     }
 
     /**
+     * Open the preference page for the modern (=web) UI settings
+     */
+    @API
+    static void openWebUIPreferencePage() {
+        var displayedIds = new String[]{WEB_UI_PREFERENCE_PAGE_ID};
+        var dialog = PreferencesUtil.createPreferenceDialogOn(null, WEB_UI_PREFERENCE_PAGE_ID, displayedIds, null);
+        dialog.open();
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState(); // Since changing the web UI settings changes the application state
+    }
+
+    /**
      * Browser function opening the workflow coach preference pages
      */
     @API
@@ -114,7 +127,8 @@ final class EclipseUIAPI {
             .map(NodeTripleProviderFactory::getPreferencePageID)//
             .filter(Predicate.not(String::isBlank))//
             .toArray(String[]::new);
-        var dialog = PreferencesUtil.createPreferenceDialogOn(null, PREFERENCE_PAGE_ID, displayedIds, null);
+        var dialog =
+            PreferencesUtil.createPreferenceDialogOn(null, WORKFLOW_COACH_PREFERENCE_PAGE_ID, displayedIds, null);
         dialog.open();
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState(); // Since changing the node recommendation settings changes the application state
     }
@@ -150,5 +164,4 @@ final class EclipseUIAPI {
             throw new RuntimeException(e); // NOSONAR
         }
     }
-
 }

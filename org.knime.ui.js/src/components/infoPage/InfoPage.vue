@@ -38,9 +38,7 @@ export default {
         },
 
         openKnimeUIPreferencePage() {
-            // TODO do not call the API directly but add a function to desktopAPI.js
-            // TODO change this for all browser functions called here
-            window.openKnimeUIPreferencePage();
+            window.openWebUIPreferencePage();
         }
     }
 };
@@ -75,18 +73,18 @@ export default {
       <div class="grid-container">
         <div class="grid-item-3 category">
           <SettingsIcon />
-          <h3>Preferences</h3>
+          <h3>Settings</h3>
         </div>
 
         <div class="grid-item-9 body">
           <p>
-            TODO write something useful
+            Change settings for the “Node repository” or the scrolling behaviour of the “Workbench”.
           </p>
           <Button
             with-border
             @click="openKnimeUIPreferencePage"
           >
-            <strong>Settings</strong>
+            <strong>Open Modern UI Settings</strong>
           </Button>
         </div>
       </div>
