@@ -226,8 +226,7 @@ export const actions = {
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
         if (applicationState.hasOwnProperty('hasNodeCollectionActive')) {
             commit('setHasNodeCollectionActive', applicationState.hasNodeCollectionActive);
-
-            // TODO delete the search and reload the categories
+            dispatch('nodeRepository/resetSearchAndCategories', {}, { root: true });
         }
 
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set

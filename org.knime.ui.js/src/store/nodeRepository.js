@@ -297,6 +297,13 @@ export const actions = {
         commit('setTotalNumMoreNodes', 0);
     },
 
+    clearCategoryResults({ commit }) {
+        commit('setNodesPerCategories', { groupedNodes: [], append: false });
+        commit('setTotalNumCategories', null);
+        commit('setCategoryPage', 0);
+        commit('setCategoryScrollPosition', 0);
+    },
+
     /**
      * Fetch the next page of node results.
      *
@@ -345,6 +352,16 @@ export const actions = {
         commit('setShowingMoreNodes', !state.showingMoreNodes);
         if (state.showingMoreNodes && state.moreNodes === null) {
             await dispatch('searchMoreNodes');
+        }
+    },
+
+    async resetSearchAndCategories({ dispatch, getters }) {
+        if (getters.searchIsActive) {
+            await dispatch('clearSearchResults');
+            await dispatch('searchNodesAndMoreNodes');
+        } else {
+            await dispatch('clearCategoryResults');
+            await dispatch('getAllNodes', { append: false });
         }
     }
 };
