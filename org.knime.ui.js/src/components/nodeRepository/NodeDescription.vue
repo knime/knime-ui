@@ -38,7 +38,7 @@ export default {
         // update description on change of node (if not null which means unselected)
         selectedNode: {
             immediate: true,
-            async handler(asd) {
+            async handler() {
                 // reset data
                 const { selectedNode } = this;
                 if (selectedNode === null) {
@@ -65,6 +65,7 @@ export default {
             if (!descriptionEl) {
                 return;
             }
+
             descriptionEl.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -153,7 +154,7 @@ export default {
     }
   }
 
-    & hr {
+  & hr {
     border: none;
     border-top: 1px solid var(--knime-silver-sand);
     margin: 0 20px;
