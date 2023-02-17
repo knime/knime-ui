@@ -100,11 +100,11 @@ export default {
         />
       </div>
       <CloseableTagList
-        v-if="showSearchResults"
+        v-if="showSearchResults && tags.length"
         v-model="selectedTags"
         :tags="tags"
       />
-      <hr v-if="!nodes || nodes.length">
+      <hr v-if="!nodes || tags.length">
     </div>
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
