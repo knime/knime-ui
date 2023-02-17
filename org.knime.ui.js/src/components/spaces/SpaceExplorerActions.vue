@@ -115,7 +115,7 @@ export default {
                             ? 'Select at least one file to download.'
                             : null
                     }
-            ].filter(a => !a.hidden);
+            ].filter(({ hidden }) => !hidden);
         },
 
         createWorkflowButtonTitle() {

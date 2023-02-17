@@ -98,7 +98,7 @@ describe('FileExplorer.vue', () => {
         // includes go back button
         expect(allItems.length).toBe(MOCK_DATA.length + 1);
 
-        allItems.at(0).trigger('dblclick');
+        allItems.at(0).trigger('click');
         expect(wrapper.emitted('change-directory')[0][0]).toBe('..');
     });
 
