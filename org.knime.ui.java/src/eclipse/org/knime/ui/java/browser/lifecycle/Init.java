@@ -76,6 +76,7 @@ import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
+import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
@@ -141,6 +142,8 @@ final class Init {
         // Update the app state when the node repository filter changes
         KnimeUIPreferences.setSelectedNodeCollectionChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
+                // Reset the node repository such that it uses the newly configured collection
+                DefaultNodeRepositoryService.getInstance().resetNodeRepository();
                 appStateUpdater.updateAppState();
             }
         });
