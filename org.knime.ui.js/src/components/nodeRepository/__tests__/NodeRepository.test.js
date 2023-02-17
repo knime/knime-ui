@@ -74,7 +74,6 @@ describe('NodeRepository', () => {
                     }],
                     totalNumNodes: 2,
                     selectedTags: ['myTag2'],
-                    tags: ['myTag1', 'myTag2'],
                     query: '',
                     scrollPosition: 100,
                     selectedNode: {
@@ -101,6 +100,9 @@ describe('NodeRepository', () => {
                     },
                     selectedNodeIsVisible() {
                         return selectedNodeIsVisible;
+                    },
+                    tagsOfVisibleNodes() {
+                        return ['myTag1', 'myTag2'];
                     }
                 },
                 mutations: {

@@ -363,5 +363,15 @@ export const getters = {
     },
     selectedNodeIsVisible: (state, getters) => getters.searchIsActive
         ? getters.searchResultsContainSelectedNode
-        : getters.nodesPerCategoryContainSelectedNode
+        : getters.nodesPerCategoryContainSelectedNode,
+    tagsOfVisibleNodes: state => {
+        if (state.showingMoreNodes) {
+            return [
+                ...state.tags,
+                ...state.moreTags.filter(t => !state.tags.includes(t))
+            ];
+        } else {
+            return state.tags;
+        }
+    }
 };

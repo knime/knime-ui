@@ -22,10 +22,11 @@ export default {
         SearchResults
     },
     computed: {
-        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
+        ...mapState('nodeRepository', ['nodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
         ...mapGetters('nodeRepository', {
             showSearchResults: 'searchIsActive',
-            selectedNodeIsVisible: 'selectedNodeIsVisible'
+            selectedNodeIsVisible: 'selectedNodeIsVisible',
+            tags: 'tagsOfVisibleNodes'
         }),
 
         /* Search and Filter */
