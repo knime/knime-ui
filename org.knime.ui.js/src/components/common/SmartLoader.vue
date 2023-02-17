@@ -329,7 +329,7 @@ export default {
     height: 60px;
     position: fixed;
     left: var(--smartloader-toast-pos-left, 60px);
-    bottom: var(--smartloader-toast-pos-bottom, 40px);
+    bottom: var(--smartloader-toast-pos-bottom, 60px);
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
