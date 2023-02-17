@@ -42,8 +42,8 @@ export const renameItem = async ({ spaceProviderId = 'local', spaceId, itemId, n
             spaceProviderId, spaceId, itemId, newName
         );
     } catch (e) {
-        consola.error(e);
-        throw new Error(`Could not rename item ${itemId} in space ${spaceId}. Error: ${e}`);
+        consola.error(`Could not rename item ${itemId} in space ${spaceId}. Error: ${e}`);
+        throw e;
     }
 };
 
