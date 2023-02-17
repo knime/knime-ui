@@ -51,7 +51,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('nodeRepository', ['searchNodesNextPage', 'toggleShowingMoreNodes']),
+        ...mapActions('nodeRepository', ['searchNodesNextPage', 'searchMoreNodesNextPage', 'toggleShowingMoreNodes']),
         ...mapMutations('nodeRepository', ['setSearchScrollPosition']),
         // Also currently the NodeRepository isn't destroyed upon closing
         onSaveScrollPosition(position) {
@@ -66,10 +66,17 @@ export default {
                 scroller.$el.scrollTop = 0;
             }
         },
-        async loadMoreSearchResults() {
+        loadMoreSearchResults() {
             this.isLoading = true;
-            await this.searchNodesNextPage(true);
-            this.isLoading = false;
+            this.searchNodesNextPage().then(() => {
+                this.isLoading = false;
+            });
+
+            // NB: The store will only load more nodes if showingMoreNodes is true
+            this.isLoadingMore = true;
+            this.searchMoreNodesNextPage().then(() => {
+                this.isLoadingMore = false;
+            });
         }
     }
 };

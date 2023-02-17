@@ -303,8 +303,22 @@ export const actions = {
      * @param {*} context - Vuex context.
      * @returns {undefined}
      */
-    async searchNodesNextPage({ dispatch }) {
-        await dispatch('searchNodes', { append: true });
+    async searchNodesNextPage({ dispatch, state }) {
+        if (state.nodes?.length !== state.totalNumNodes) {
+            await dispatch('searchNodes', { append: true });
+        }
+    },
+
+    /**
+     * Fetch the next page of node results for more nodes.
+     *
+     * @param {*} context - Vuex context.
+     * @returns {undefined}
+     */
+    async searchMoreNodesNextPage({ dispatch, state }) {
+        if (state.showingMoreNodes && state.moreNodes?.length !== state.totalNumMoreNodes) {
+            await dispatch('searchMoreNodes', { append: true });
+        }
     },
 
     /**

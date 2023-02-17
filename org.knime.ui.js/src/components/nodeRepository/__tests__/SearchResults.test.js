@@ -9,7 +9,8 @@ import ScrollViewContainer from '../ScrollViewContainer.vue';
 import NodeList from '../NodeList.vue';
 
 describe('SearchResults', () => {
-    let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setSearchScrollPositionMock;
+    let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, searchMoreNodesNextPageMock,
+        setSearchScrollPositionMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -20,6 +21,7 @@ describe('SearchResults', () => {
         wrapper = null;
 
         searchNodesNextPageMock = jest.fn();
+        searchMoreNodesNextPageMock = jest.fn();
         setSearchScrollPositionMock = jest.fn();
 
         storeState = {
@@ -40,7 +42,8 @@ describe('SearchResults', () => {
                 nodeRepository: {
                     state: storeState,
                     actions: {
-                        searchNodesNextPage: searchNodesNextPageMock
+                        searchNodesNextPage: searchNodesNextPageMock,
+                        searchMoreNodesNextPage: searchMoreNodesNextPageMock
                     },
                     mutations: {
                         setSearchScrollPosition: setSearchScrollPositionMock
@@ -110,7 +113,8 @@ describe('SearchResults', () => {
             let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
             scrollViewContainer.vm.$emit('scroll-bottom');
 
-            expect(searchNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), true);
+            expect(searchNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), undefined);
+            expect(searchMoreNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), undefined);
             expect(wrapper.vm.isLoading).toBe(true);
         });
     });
