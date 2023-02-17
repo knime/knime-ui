@@ -464,6 +464,20 @@ describe('FileExplorer.vue', () => {
             expect(wrapper.emitted('rename-file')[0][0].newName).toEqual(newName);
         });
 
+        it('should submit renaming event without invalid pre/suffix', async () => {
+            const { wrapper } = doMount();
+            const renameButton = getRenameOption(wrapper, 0);
+            await renameButton.trigger('click');
+
+            const input = wrapper.findComponent(InputField);
+            const newName = '...invalid...';
+            await wrapper.setData({ renameValue: newName });
+            await input.vm.$emit('keyup', { key: 'Enter' });
+
+            expect(wrapper.emitted('rename-file')).toBeTruthy();
+            expect(wrapper.emitted('rename-file')[0][0].newName).toEqual('invalid');
+        });
+
         it('should automatically trim new name', async () => {
             const { wrapper } = doMount();
             const renameButton = getRenameOption(wrapper, 0);
