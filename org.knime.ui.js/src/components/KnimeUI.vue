@@ -6,9 +6,11 @@ import AppHeader from '@/components/application/AppHeader.vue';
 import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Error from '@/components/application/Error.vue';
 import SmartLoader from '@/components/common/SmartLoader.vue';
+import CreateWorkflowModal from '@/components/application/CreateWorkflowModal.vue';
 
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
 import { APP_ROUTES } from '@/router';
+
 
 /**
  * Main page and entry point of KNIME Next
@@ -21,7 +23,8 @@ export default {
         AppHeader,
         HotkeyHandler,
         Error,
-        SmartLoader
+        SmartLoader,
+        CreateWorkflowModal
     },
 
     data() {
@@ -160,6 +163,8 @@ export default {
       v-if="$route.meta.showUpdateBanner"
       :available-updates="availableUpdates"
     />
+
+    <CreateWorkflowModal />
   </div>
 </template>
 

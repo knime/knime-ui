@@ -15,7 +15,6 @@ import ImportWorkflowIcon from '@/assets/import-workflow.svg';
 import AddFileIcon from '@/assets/add-file.svg';
 
 import ToolbarButton from '@/components/common/ToolbarButton.vue';
-import CreateWorkflowModal from './CreateWorkflowModal.vue';
 
 export default {
     components: {
@@ -31,8 +30,7 @@ export default {
         AddFileIcon,
         MenuOptionsIcon,
         Modal,
-        InputField,
-        CreateWorkflowModal
+        InputField
     },
 
     props: {
@@ -134,6 +132,11 @@ export default {
             const { text, hotkeyText } = this.$shortcuts.get('createWorkflow');
             return `${text} (${hotkeyText})`;
         }
+    },
+    methods: {
+        openCreateWorkflowModal() {
+            this.$store.commit('spaces/setIsCreateWorkflowModalOpen', true);
+        }
     }
 };
 </script>
@@ -161,7 +164,7 @@ export default {
           primary
           class="create-workflow-btn"
           :disabled="disabledActions.createWorkflow"
-          @click="createWorkflowModalActive = true"
+          @click="openCreateWorkflowModal"
         />
       </div>
     </template>
@@ -189,11 +192,6 @@ export default {
         </ToolbarButton>
       </div>
     </template>
-
-    <CreateWorkflowModal
-      :modal-active="createWorkflowModalActive"
-      @cancel="createWorkflowModalActive = false"
-    />
   </div>
 </template>
 

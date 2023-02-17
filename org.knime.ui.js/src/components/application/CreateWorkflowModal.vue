@@ -1,9 +1,9 @@
 <script>
+import { mapState } from 'vuex';
 import Modal from 'webapps-common/ui/components/Modal.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 import Label from 'webapps-common/ui/components/forms/Label.vue';
-import { mapActions } from 'vuex';
 
 export default {
     components: {
@@ -12,21 +12,35 @@ export default {
         Label,
         InputField
     },
-    props: {
-        modalActive: {
-            type: Boolean,
-            default: false
-        }
-    },
     data() {
         return {
-            workflowName: ''
+            workflowName: 'KNIME_project'
         };
     },
+    computed: {
+        ...mapState('spaces', ['isCreateWorkflowModalOpen'])
+    },
+    watch: {
+        isCreateWorkflowModalOpen: {
+            immediate: true,
+            handler() {
+                if (this.isCreateWorkflowModalOpen) {
+                    setTimeout(() => {
+                        this.$refs.inputRef?.$refs?.input?.focus();
+                    }, 200);
+                }
+            }
+        }
+    },
     methods: {
-        ...mapActions('spaces', ['createWorkflow']),
+        async onSubmit() {
+            await this.$store.dispatch('spaces/createWorkflow');
+            // this.$emit('onSubmit');
+            // check error...
+            this.closeModal();
+        },
         closeModal() {
-            this.$emit('cancel');
+            this.$store.commit('spaces/setIsCreateWorkflowModalOpen', false);
         }
     }
 };
@@ -34,8 +48,9 @@ export default {
 
 <template>
   <Modal
+    v-if="isCreateWorkflowModalOpen"
     ref="modalRef"
-    :active="modalActive"
+    :active="isCreateWorkflowModalOpen"
     title="Create a new KNIME workflow"
     style-type="info"
     @cancel="closeModal"
@@ -45,6 +60,7 @@ export default {
         text="Workflow name"
       >
         <InputField
+          ref="inputRef"
           v-model="workflowName"
           type="text"
           title="Workflow name"
@@ -61,6 +77,7 @@ export default {
       <Button
         primary
         with-border
+        @click="onSubmit"
       >
         <strong>Create</strong>
       </Button>

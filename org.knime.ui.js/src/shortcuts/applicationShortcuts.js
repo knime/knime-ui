@@ -10,6 +10,6 @@ export default {
     createWorkflow: {
         text: 'Create workflow',
         hotkey: ['Ctrl', 'N'],
-        execute: ({ $store }) => $store.dispatch('spaces/createWorkflow')
+        execute: ({ $store }) => $store.commit('spaces/setIsCreateWorkflowModalOpen', true)
     }
 };

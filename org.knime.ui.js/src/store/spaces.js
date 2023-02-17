@@ -36,12 +36,17 @@ export const state = () => ({
     },
     // map of projectId: itemId of last used item by any project
     lastItemForProject: {},
-    isLoading: false
+    isLoading: false,
+    isCreateWorkflowModalOpen: false
 });
 
 export const mutations = {
     setIsLoading(state, value) {
         state.isLoading = value;
+    },
+
+    setActiveSpaceProvider(state, value) {
+        state.activeSpaceProvider = value;
     },
 
     setActiveSpaceProviderById(state, spaceProviderId) {
