@@ -85,10 +85,12 @@ export default {
       :subtitle="spaceInfo.subtitle"
     >
       <template #button>
-        <ArrowLeftIcon
-          class="back-button"
-          @click="onBackButtonClick"
-        />
+        <span title="Back">
+          <ArrowLeftIcon
+            class="back-button"
+            @click="onBackButtonClick"
+          />
+        </span>
       </template>
       <template #icon>
         <Component :is="spaceInfo.icon" />
@@ -102,6 +104,7 @@ export default {
             <SpaceExplorerActions
               :is-local="activeSpaceInfo.local"
               :disabled-actions="explorerDisabledActions"
+              :has-active-hub-session="hasActiveHubSession"
               @action:create-workflow="$store.dispatch('spaces/createWorkflow')"
               @action:create-folder="$store.dispatch('spaces/createFolder')"
               @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"

@@ -252,7 +252,7 @@ export default {
                     'spaces/moveItems',
                     { itemIds: sourceItems, destWorkflowGroupItemId, collisionStrategy }
                 );
-            
+
                 onComplete(true);
             } catch (error) {
                 consola.error(`There was a problem moving the items`, { error });
@@ -326,6 +326,7 @@ export default {
         mode="mini"
         :is-local="isLocal"
         :disabled-actions="explorerDisabledActions"
+        :has-active-hub-session="hasActiveHubSession"
         @action:create-workflow="$store.dispatch('spaces/createWorkflow')"
         @action:create-folder="$store.dispatch('spaces/createFolder')"
         @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"

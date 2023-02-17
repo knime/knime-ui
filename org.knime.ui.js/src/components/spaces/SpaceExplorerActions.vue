@@ -54,6 +54,11 @@ export default {
             default: () => ({})
         },
 
+        hasActiveHubSession: {
+            type: Boolean,
+            default: false
+        },
+
         isLocal: {
             type: Boolean,
             default: false
@@ -63,25 +68,19 @@ export default {
     computed: {
         actions() {
             return [
-                this.isLocal
-                    ? {
-                        id: 'upload-to-hub',
-                        text: 'Upload to Hub',
-                        icon: CloudUploadIcon,
-                        disabled: this.disabledActions.uploadToHub
-                    
-                    }
-                    : {
-                        id: 'download-to-local-space',
-                        text: 'Download to local space',
-                        icon: CloudDownloadIcon,
-                        disabled: this.disabledActions.downloadToLocalSpace
-                    },
+                {
+                    id: 'create-workflow',
+                    text: 'Create workflow',
+                    icon: PlusIcon,
+                    disabled: this.disabledActions.createWorkflow,
+                    hidden: this.mode !== 'mini'
+                },
                 {
                     id: 'create-folder',
                     text: 'Create folder',
                     icon: FolderPlusIcon,
-                    disabled: this.disabledActions.createFolder
+                    disabled: this.disabledActions.createFolder,
+                    separator: true
                 },
                 {
                     id: 'import-workflow',
@@ -93,9 +92,30 @@ export default {
                     id: 'import-files',
                     text: 'Add files',
                     icon: AddFileIcon,
-                    disabled: this.disabledActions.importFiles
-                }
-            ];
+                    disabled: this.disabledActions.importFiles,
+                    separator: true
+                },
+                this.isLocal
+                    ? {
+                        id: 'upload-to-hub',
+                        text: 'Upload to Hub',
+                        icon: CloudUploadIcon,
+                        disabled: this.disabledActions.uploadToHub,
+                        title: this.hasActiveHubSession
+                            // eslint-disable-next-line no-extra-parens
+                            ? (this.disabledActions.uploadToHub && 'Select at least one file to upload.')
+                            : 'Login is required to upload to hub.'
+                    }
+                    : {
+                        id: 'download-to-local-space',
+                        text: 'Download to local space',
+                        icon: CloudDownloadIcon,
+                        disabled: this.disabledActions.downloadToLocalSpace,
+                        title: this.disabledActions.downloadToLocalSpace
+                            ? 'Select at least one file to download.'
+                            : null
+                    }
+            ].filter(a => !a.hidden);
         },
 
         createWorkflowButtonTitle() {
@@ -114,10 +134,11 @@ export default {
           v-for="action in actions"
           :id="action.id"
           :key="action.id"
+          :title="action.title"
           with-border
           compact
-          :disabled="action.disabled"
-          @click="$emit(`action:${action.id}`)"
+          :aria-disabled="action.disabled"
+          @click="action.disabled ? null : $emit(`action:${action.id}`)"
         >
           <Component :is="action.icon" />
           {{ action.text }}
@@ -143,17 +164,6 @@ export default {
         >
           <MenuOptionsIcon class="open-icon" />
         </SubMenu>
-        
-        <!-- Create workflow -->
-        <ToolbarButton
-          primary
-          class="create-workflow-btn"
-          :title="createWorkflowButtonTitle"
-          :disabled="disabledActions.createWorkflow"
-          @click.native="$emit('action:create-workflow')"
-        >
-          <PlusIcon />
-        </ToolbarButton>
       </div>
     </template>
   </div>
@@ -188,6 +198,24 @@ export default {
 
         & svg {
           stroke: var(--knime-white);
+        }
+      }
+
+      &[aria-disabled] {
+        cursor: default;
+        opacity: 0.6;
+
+        &:hover,
+        &:active,
+        &:focus {
+          border-color: var(--knime-silver-sand);
+          color: var(--knime-masala);
+          background-color: transparent;
+          cursor: default;
+        }
+
+        & svg {
+          stroke: var(--knime-masala);
         }
       }
     }

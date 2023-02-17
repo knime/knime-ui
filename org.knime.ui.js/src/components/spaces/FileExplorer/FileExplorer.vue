@@ -372,19 +372,21 @@ export default {
       <tr
         v-if="!isRootFolder"
         ref="item--BACK"
-        class="file-explorer-item"
+        class="file-explorer-item file-explorer-back-item"
         title="Go back"
         @dragenter="onDragEnter(null, true)"
         @dragleave="onDragLeave(null, true)"
         @dragover.prevent
         @drop.prevent="onDrop(null, true)"
-        @dblclick="changeDirectory('..')"
+        @click="changeDirectory('..')"
       >
         <td
           class="item-icon"
           colspan="3"
         >
-          <ArrowIcon />
+          <ArrowIcon
+            class="arrow-icon"
+          />
         </td>
         <td class="item-name hidden">
           Go back to parent directory
@@ -643,6 +645,24 @@ tbody.mini {
       display: flex;
       height: 100%;
       padding: var(--item-padding) 3px;
+    }
+  }
+
+  &.file-explorer-back-item {
+    cursor: pointer;
+
+    & > .item-icon {
+      & > .arrow-icon {
+        stroke: var(--knime-dove-gray);
+      }
+    }
+
+    &:hover {
+      & > .item-icon {
+        & > .arrow-icon {
+          stroke: var(--knime-masala);
+        }
+      }
     }
   }
 }
