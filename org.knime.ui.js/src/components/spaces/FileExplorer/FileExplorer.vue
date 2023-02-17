@@ -17,7 +17,9 @@ import ITEM_TYPES from '@/util/spaceItemTypes';
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
 
-const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/]/;
+const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/\\]/;
+const INVALID_PREFIX = /^(\.)+/;
+const INVALID_SUFFIX = /(\.)+$/;
 
 /**
  * Component that handles FileExplorer interactions.
@@ -75,7 +77,8 @@ export default {
 
     computed: {
         isRenamingInvalid() {
-            return INVALID_NAME_CHARACTERS.test(this.renameValue);
+            const newValue = this.removeInvalidPreOrSuffix(this.renameValue);
+            return INVALID_NAME_CHARACTERS.test(newValue);
         }
     },
 
@@ -332,7 +335,7 @@ export default {
             }
 
             if (keyupEvent.key === 'Enter' && !this.isRenamingInvalid) {
-                const newName = this.renameValue.trim();
+                const newName = this.removeInvalidPreOrSuffix(this.renameValue.trim());
 
                 if (newName === '') {
                     this.clearRenameState();
@@ -347,6 +350,9 @@ export default {
         clearRenameState() {
             this.activeRenameId = null;
             this.renameValue = '';
+        },
+        removeInvalidPreOrSuffix(value) {
+            return value.replace(INVALID_PREFIX, '').replace(INVALID_SUFFIX, '');
         }
     }
 };
