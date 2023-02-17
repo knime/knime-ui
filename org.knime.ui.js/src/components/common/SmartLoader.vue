@@ -124,7 +124,7 @@ export default {
 
             const zIndexMap = {
                 [DISPLAY_MODES.fullscreen]: '99',
-                [DISPLAY_MODES.localized]: '99',
+                [DISPLAY_MODES.localized]: 'initial',
                 [DISPLAY_MODES.transparent]: 'initial',
                 [DISPLAY_MODES.toast]: 'initial'
             };
