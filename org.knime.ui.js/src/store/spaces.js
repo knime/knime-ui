@@ -45,6 +45,10 @@ export const mutations = {
         state.isLoading = value;
     },
 
+    setIsCreateWorkflowModalOpen(state, value) {
+        state.isCreateWorkflowModalOpen = value;
+    },
+
     setActiveSpaceProvider(state, value) {
         state.activeSpaceProvider = value;
     },

@@ -39,6 +39,7 @@ export default {
     },
     async created() {
         await this.$store.dispatch('spaces/fetchAllSpaceProviders');
+        await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId: 'root' });
     },
 
     methods: {
