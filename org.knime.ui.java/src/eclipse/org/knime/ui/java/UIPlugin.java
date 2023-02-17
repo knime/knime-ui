@@ -1,7 +1,5 @@
 package org.knime.ui.java;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.knime.core.node.workflow.NodeTimer;
-import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -65,8 +63,6 @@ public class UIPlugin extends AbstractUIPlugin {
     @Override
     public void start(final BundleContext bc) throws Exception {
         context = bc; // NOSONAR
-        //initialize the node timer with the currently active edition
-        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getNodeRepoFilter());
     }
 
     @Override

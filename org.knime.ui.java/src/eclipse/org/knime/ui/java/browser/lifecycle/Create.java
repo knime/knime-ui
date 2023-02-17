@@ -60,11 +60,13 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeTimer;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserFunction;
 import org.knime.ui.java.browser.KnimeBrowserView;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
@@ -98,6 +100,9 @@ final class Create {
                 }
             }
         }
+
+        // initialize the node timer with the currently active 'perspective'
+        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getNodeRepoFilter());
     }
 
     private static void initializeResourceHandlers() {
