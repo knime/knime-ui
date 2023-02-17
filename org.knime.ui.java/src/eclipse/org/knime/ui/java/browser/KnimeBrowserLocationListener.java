@@ -79,14 +79,13 @@ public class KnimeBrowserLocationListener implements LocationListener {
         if (isCEFMiddlewareResource(event.location)) {
             // Allow location change to middleware resources, these are handled by resource handlers.
         } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but run the relaod life-cycle state transition
+            // Allow location change, but run the reload life-cycle state transition
             if (LifeCycle.get().isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
                 LifeCycle.get().reload();
             }
         } else if (ImportURI.importURI(m_browser, event.location)) {
             // Don't change the location but import the URI instead
             event.doit = false;
-            return;
         } else {
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
             event.doit = false;

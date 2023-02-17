@@ -38,7 +38,7 @@ export default {
         // update description on change of node (if not null which means unselected)
         selectedNode: {
             immediate: true,
-            async handler() {
+            async handler(asd) {
                 // reset data
                 const { selectedNode } = this;
                 if (selectedNode === null) {
@@ -49,7 +49,29 @@ export default {
                     'nodeRepository/getNodeDescription',
                     { selectedNode }
                 );
+
+                if (window.openUrlInExternalBrowser) {
+                    this.redirectLinks(window.openUrlInExternalBrowser);
+                }
             }
+        }
+    },
+
+    methods: {
+        async redirectLinks(redirect) {
+            await this.$nextTick();
+            const descriptionEl = this.$refs.description?.$el;
+
+            if (!descriptionEl) {
+                return;
+            }
+            descriptionEl.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    redirect(link.href);
+                    return false;
+                });
+            });
         }
     }
 };
@@ -72,6 +94,7 @@ export default {
           <template v-if="descriptionData">
             <Description
               v-if="descriptionData.description"
+              ref="description"
               :text="descriptionData.description"
               render-as-html
             />
@@ -130,7 +153,7 @@ export default {
     }
   }
 
-  & hr {
+    & hr {
     border: none;
     border-top: 1px solid var(--knime-silver-sand);
     margin: 0 20px;

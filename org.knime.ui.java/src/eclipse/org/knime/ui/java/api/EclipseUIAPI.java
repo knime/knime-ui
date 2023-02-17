@@ -58,6 +58,7 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.ui.workflowcoach.data.NodeTripleProviderFactory;
+import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -164,4 +165,13 @@ final class EclipseUIAPI {
             throw new RuntimeException(e); // NOSONAR
         }
     }
+
+    /**
+     * Opens the given url in the external browser.
+     */
+    @API
+    static void openUrlInExternalBrowser(final String url) {
+        WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
+    }
+
 }
