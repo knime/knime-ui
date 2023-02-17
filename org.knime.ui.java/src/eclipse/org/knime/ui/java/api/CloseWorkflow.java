@@ -108,10 +108,13 @@ final class CloseWorkflow {
         //  of child workflow managers.
         var wasClosed = page.closeEditor(editorToClose, true);
         if (wasClosed) {
-            WorkflowProjectManager.getInstance().removeWorkflowProject(projectIdToClose);
+            var wpm = WorkflowProjectManager.getInstance();
+            wpm.removeWorkflowProject(projectIdToClose);
 
             // Workaround for keeping the classic and Web UI's editors/tabs in sync
             if (nextProjectId != null) {
+                wpm.openAndCacheWorkflow(nextProjectId);
+                wpm.setWorkflowProjectActive(nextProjectId);
                 ClassicWorkflowEditorUtil.setEditorPartActive(getEditorPart(nextProjectId));
             }
 
