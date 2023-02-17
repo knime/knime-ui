@@ -197,9 +197,9 @@ export const validateNodeConfigurationState = (context, next) => {
     if (!selectedNode) {
         return next(context);
     }
-    
+
     const isNodeIdle = selectedNode.state?.executionState === 'IDLE';
-    
+
     if (isNodeIdle) {
         return {
             error: {
@@ -219,7 +219,7 @@ export const validateNodeConfigurationState = (context, next) => {
  * - The selected node is not in a busy state (QUEUE || EXECUTING)
  */
 export const validateNodeExecutionState = (context, next) => {
-    const { selectedPort, selectedNode, portTypes } = context;
+    const { selectedPort, selectedNode, portTypes, selectedPortIndex } = context;
 
     const validate = () => {
         if (selectedNode.allowedActions.canExecute) {
@@ -251,10 +251,10 @@ export const validateNodeExecutionState = (context, next) => {
     }
 
     const { kind: portKind } = getPortType({ portTypes, port: selectedPort });
-    const isNotFlowVariable = portKind !== 'flowVariable';
+    const isNotDefaultFlowVariable = portKind !== 'flowVariable' || selectedPortIndex > 0;
 
     // only flowVariable ports can be shown if the node hasn't executed
-    if (isNotFlowVariable) {
+    if (isNotDefaultFlowVariable) {
         return validate();
     }
 

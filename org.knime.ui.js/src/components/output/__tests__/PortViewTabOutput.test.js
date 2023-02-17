@@ -7,7 +7,7 @@ describe('PortViewTabOutput.vue', () => {
     const dummyNode = {
         id: 'node1',
         selected: true,
-        outPorts: [{ typeId: 'table' }, { typeId: 'flowVariable' }],
+        outPorts: [{ typeId: 'flowVariable' }, { typeId: 'table' }],
         isLoaded: false,
         state: {
             executionState: 'UNSET'
@@ -75,7 +75,8 @@ describe('PortViewTabOutput.vue', () => {
 
         it('validates that node is not executing', () => {
             const wrapper = doShallowMount({
-                selectedNode: { ...dummyNode, state: { executionState: 'EXECUTING' } }
+                selectedNode: { ...dummyNode, state: { executionState: 'EXECUTING' } },
+                selectedPortIndex: 1
             });
 
             expect(wrapper.emitted('output-state-change')[0][0]).toEqual(expect.objectContaining({
@@ -122,10 +123,27 @@ describe('PortViewTabOutput.vue', () => {
                     state: { executionState },
                     allowedActions: { canExecute: true }
                 },
-                selectedPortIndex: 1
+                selectedPortIndex: 0
             });
 
             expect(wrapper.emitted('output-state-change')).toBeUndefined();
+        });
+
+        it('validates that non-default flowVariables cannot be shown if node is not executed', () => {
+            const outPorts = [...dummyNode.outPorts, { typeId: 'flowVariable' }];
+            const wrapper = doShallowMount({
+                selectedNode: {
+                    ...dummyNode,
+                    outPorts,
+                    state: { executionState: 'NODE_UNEXECUTED' },
+                    allowedActions: { canExecute: true }
+                },
+                selectedPortIndex: 2
+            });
+
+            expect(wrapper.emitted('output-state-change')[0][0]).toEqual(expect.objectContaining({
+                message: 'To show the output, please execute the selected node.'
+            }));
         });
     });
 
