@@ -65,7 +65,8 @@ describe('application store', () => {
             workflow: await import('@/store/workflow'),
             nodeRepository: {
                 actions: {
-                    getAllNodes: jest.fn()
+                    getAllNodes: jest.fn(),
+                    resetSearchAndCategories: jest.fn()
                 }
             },
             spaces: {
@@ -303,10 +304,10 @@ describe('application store', () => {
 
         it('replaces hasNodeCollectionActive', async () => {
             const applicationState = { hasNodeCollectionActive: true };
-            const { store } = await loadStore();
+            const { store, dispatchSpy } = await loadStore();
 
             await store.dispatch('application/replaceApplicationState', applicationState);
-            // TODO check that the node seach and the categories are resetted
+            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/resetSearchAndCategories', expect.anything());
         });
     });
 
