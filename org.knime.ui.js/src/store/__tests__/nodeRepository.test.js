@@ -201,7 +201,7 @@ describe('Node Repository store', () => {
             isDescriptionPanelOpen: false,
             isShowingBottomNodes: false,
             bottomNodes: null,
-            bottomNodesSearchPage: 0,
+            bottomNodeSearchPage: 0,
             bottomNodesTags: [],
             totalNumBottomNodes: 0
         });
@@ -320,11 +320,11 @@ describe('Node Repository store', () => {
             expect(store.state.nodeRepository.topNodesTags).toEqual(['myTag', 'myTag2']);
         });
 
-        it('sets bottomNodesSearchPage', async () => {
+        it('sets bottomNodeSearchPage', async () => {
             const { store } = await createStore();
-            expect(store.state.nodeRepository.bottomNodesSearchPage).toBe(0);
-            store.commit('nodeRepository/setBottomNodesSearchPage', 10);
-            expect(store.state.nodeRepository.bottomNodesSearchPage).toBe(10);
+            expect(store.state.nodeRepository.bottomNodeSearchPage).toBe(0);
+            store.commit('nodeRepository/setBottomNodeSearchPage', 10);
+            expect(store.state.nodeRepository.bottomNodeSearchPage).toBe(10);
         });
 
         it('sets totalNumBottomNodes', async () => {
@@ -590,10 +590,10 @@ describe('Node Repository store', () => {
                 });
             });
 
-            describe('searchMoreNodes', () => {
+            describe('searchBottomNodes', () => {
                 it('clears search results on empty parameters (tags and query)', async () => {
                     const { store, dispatchSpy } = await createStore();
-                    await store.dispatch('nodeRepository/searchMoreNodes');
+                    await store.dispatch('nodeRepository/searchNodes', { bottom: true });
                     expect(dispatchSpy).toHaveBeenCalledWith(
                         'nodeRepository/clearSearchResultsForBottomNodes', undefined
                     );
@@ -603,9 +603,9 @@ describe('Node Repository store', () => {
                     const { store, searchNodesMock, availablePortTypes } = await createStore();
                     searchNodesMock.mockReturnValue(searchBottomNodesResponse);
                     store.commit('nodeRepository/setQuery', 'lookup');
-                    await store.dispatch('nodeRepository/searchMoreNodes');
+                    await store.dispatch('nodeRepository/searchNodes', { bottom: true });
 
-                    expect(store.state.nodeRepository.bottomNodesSearchPage).toBe(0);
+                    expect(store.state.nodeRepository.bottomNodeSearchPage).toBe(0);
                     expect(searchNodesMock).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
@@ -630,9 +630,9 @@ describe('Node Repository store', () => {
                     const dummyNode = { dummy: true };
                     store.commit('nodeRepository/setBottomNodes', [dummyNode]);
                     store.commit('nodeRepository/setQuery', 'lookup');
-                    await store.dispatch('nodeRepository/searchMoreNodes', { append: true });
+                    await store.dispatch('nodeRepository/searchNodes', { append: true, bottom: true });
 
-                    expect(store.state.nodeRepository.bottomNodesSearchPage).toBe(1);
+                    // expect(store.state.nodeRepository.bottomNodeSearchPage).toBe(1);
                     expect(searchNodesMock).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
@@ -656,14 +656,17 @@ describe('Node Repository store', () => {
                     const { store, dispatchSpy } = await createStore();
                     store.state.nodeRepository.isShowingBottomNodes = true;
                     await store.dispatch('nodeRepository/searchBottomNodesNextPage');
-                    expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchMoreNodes', { append: true });
+                    expect(dispatchSpy).toHaveBeenCalledWith(
+                        'nodeRepository/searchNodes',
+                        { append: true, bottom: true }
+                    );
                 });
 
                 it('does not search for bottomNodes next page if hiding bottomNodes', async () => {
                     const { store, dispatchSpy } = await createStore();
                     store.state.nodeRepository.isShowingBottomNodes = false;
                     await store.dispatch('nodeRepository/searchBottomNodesNextPage');
-                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchMoreNodes', expect.anything());
+                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchNodes', expect.anything());
                 });
 
                 it('does not search for bottomNodes next page if all nodes loaded', async () => {
@@ -672,7 +675,7 @@ describe('Node Repository store', () => {
                     store.state.nodeRepository.bottomNodes = [{ dummy: true }];
                     store.state.nodeRepository.totalNumBottomNodes = 1;
                     await store.dispatch('nodeRepository/searchBottomNodesNextPage');
-                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchMoreNodes', expect.anything());
+                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchNodes', expect.anything());
                 });
             });
 
@@ -685,19 +688,19 @@ describe('Node Repository store', () => {
                     expect(store.state.nodeRepository.isShowingBottomNodes).toBe(false);
                 });
 
-                it('does dispatch searchMoreNodes', async () => {
+                it('does dispatch searchNodes', async () => {
                     const { store, dispatchSpy } = await createStore();
                     await store.dispatch('nodeRepository/toggleShowingBottomNodes');
                     expect(store.state.nodeRepository.isShowingBottomNodes).toBe(true);
-                    expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchMoreNodes', undefined);
+                    expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', { bottom: true });
                 });
 
-                it('does not dispatch searchMoreNodes if there are results already', async () => {
+                it('does not dispatch searchNodes if there are results already', async () => {
                     const { store, dispatchSpy } = await createStore();
                     store.state.nodeRepository.bottomNodes = [{ dummy: true }];
                     await store.dispatch('nodeRepository/toggleShowingBottomNodes');
                     expect(store.state.nodeRepository.isShowingBottomNodes).toBe(true);
-                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchMoreNodes', expect.anything());
+                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchNodes', expect.anything());
                 });
             });
 

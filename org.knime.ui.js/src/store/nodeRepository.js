@@ -28,7 +28,7 @@ export const state = () => ({
     bottomNodes: null,
     totalNumBottomNodes: 0,
     bottomNodesTags: [],
-    bottomNodesSearchPage: 0,
+    bottomNodeSearchPage: 0,
 
     /* node interaction */
     selectedNode: null,
@@ -63,8 +63,8 @@ export const mutations = {
         state.topNodesTags = topNodesTags;
     },
 
-    setBottomNodesSearchPage(state, pageNumber) {
-        state.bottomNodesSearchPage = pageNumber;
+    setBottomNodeSearchPage(state, pageNumber) {
+        state.bottomNodeSearchPage = pageNumber;
     },
 
     setTotalNumBottomNodes(state, totalNumBottomNodes) {
@@ -159,76 +159,41 @@ export const actions = {
      * @param {*} context - Vuex context.
      * @param {Boolean} append - if the results should be added to the current nodes (for pagination) or if the state
      *      should be cleared (for a new search).
+     * @param {Boolean} bottom - if search should be for additional nodes that are displayed on the bottom
      * @returns {Promise}
      */
-    async searchNodes({ commit, state, dispatch, getters, rootState }, { append = false } = {}) {
+    async searchNodes({ commit, state, dispatch, getters, rootState }, { append = false, bottom = false } = {}) {
         // only do request if we search for something
         if (!getters.hasSearchParams) {
             // clear old results
             dispatch('clearSearchResults');
             return;
         }
+        const prefix = bottom ? 'Bottom' : 'Top';
+        const currentPage = () => bottom ? state.bottomNodeSearchPage : state.topNodeSearchPage;
+
         if (append) {
-            commit('setTopNodeSearchPage', state.topNodeSearchPage + 1);
+            commit(`set${prefix}NodeSearchPage`, currentPage() + 1);
         } else {
-            commit('setTopNodeSearchPage', 0);
+            commit(`set${prefix}NodeSearchPage`, 0);
         }
 
         const { nodes, totalNumNodes, tags } = await searchNodes({
             query: state.query,
             tags: state.selectedTags,
             allTagsMatch: true,
-            nodeOffset: state.topNodeSearchPage * nodeSearchPageSize,
+            nodeOffset: currentPage() * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
             fullTemplateInfo: true,
-            additionalNodes: false
+            additionalNodes: bottom
         });
 
         const { availablePortTypes } = rootState.application;
         const withMappedPorts = nodes.map(toNodeWithFullPorts(availablePortTypes));
 
-        commit('setTotalNumTopNodes', totalNumNodes);
-        commit(append ? 'addTopNodes' : 'setTopNodes', withMappedPorts);
-        commit('setTopNodesTags', tags);
-    },
-
-    /**
-     * Fetch nodes that are not part of the collection if an collection is active.
-     *
-     * @param {*} context - Vuex context.
-     * @param {Boolean} append - if the results should be added to the current nodes (for pagination) or if the state
-     *      should be cleared (for a new search).
-     * @returns {Promise}
-     */
-    async searchMoreNodes({ commit, state, dispatch, getters, rootState }, { append = false } = {}) {
-        // only do request if we search for something
-        if (!getters.hasSearchParams) {
-            // clear old results
-            dispatch('clearSearchResults');
-            return;
-        }
-        if (append) {
-            commit('setBottomNodesSearchPage', state.bottomNodesSearchPage + 1);
-        } else {
-            commit('setBottomNodesSearchPage', 0);
-        }
-
-        const { nodes, totalNumNodes, tags } = await searchNodes({
-            query: state.query,
-            tags: state.selectedTags,
-            allTagsMatch: true,
-            nodeOffset: state.bottomNodesSearchPage * nodeSearchPageSize,
-            nodeLimit: nodeSearchPageSize,
-            fullTemplateInfo: true,
-            additionalNodes: true
-        });
-
-        const { availablePortTypes } = rootState.application;
-        const withMappedPorts = nodes.map(toNodeWithFullPorts(availablePortTypes));
-
-        commit('setTotalNumBottomNodes', totalNumNodes);
-        commit(append ? 'addBottomNodes' : 'setBottomNodes', withMappedPorts);
-        commit('setBottomNodesTags', tags);
+        commit(`setTotalNum${prefix}Nodes`, totalNumNodes);
+        commit(append ? `add${prefix}Nodes` : `set${prefix}Nodes`, withMappedPorts);
+        commit(`set${prefix}NodesTags`, tags);
     },
 
     /**
@@ -242,7 +207,7 @@ export const actions = {
         await Promise.all([
             dispatch('searchNodes'),
             state.isShowingBottomNodes
-                ? dispatch('searchMoreNodes')
+                ? dispatch('searchNodes', { bottom: true })
                 : dispatch('clearSearchResultsForBottomNodes')
         ]);
     },
@@ -324,7 +289,7 @@ export const actions = {
      */
     async searchBottomNodesNextPage({ dispatch, state }) {
         if (state.isShowingBottomNodes && state.bottomNodes?.length !== state.totalNumBottomNodes) {
-            await dispatch('searchMoreNodes', { append: true });
+            await dispatch('searchNodes', { append: true, bottom: true });
         }
     },
 
@@ -351,7 +316,7 @@ export const actions = {
     async toggleShowingBottomNodes({ commit, dispatch, state }) {
         commit('setShowingBottomNodes', !state.isShowingBottomNodes);
         if (state.isShowingBottomNodes && state.bottomNodes === null) {
-            await dispatch('searchMoreNodes');
+            await dispatch('searchNodes', { bottom: true });
         }
     },
 
