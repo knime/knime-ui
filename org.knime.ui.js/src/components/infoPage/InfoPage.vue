@@ -68,6 +68,28 @@ export default {
       </div>
     </section>
 
+    <!-- Hub section -->
+    <section>
+      <div class="grid-container">
+        <div class="grid-item-3 category">
+          <SphereIcon />
+          <h3>KNIME Community Hub</h3>
+        </div>
+
+        <div class="grid-item-9 body">
+          <p>
+            Solutions for data science: find workflows, nodes and components, and collaborate in spaces.
+          </p>
+          <Button
+            with-border
+            href="https://hub.knime.com/?src=knimeappmodernui"
+          >
+            <strong>Visit KNIME Community Hub</strong>
+          </Button>
+        </div>
+      </div>
+    </section>
+
     <!-- Preferences section -->
     <section>
       <div class="grid-container">
@@ -131,28 +153,6 @@ export default {
             @click="switchToJavaUI"
           >
             <strong>Switch to KNIME classic perspective</strong>
-          </Button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Hub section -->
-    <section>
-      <div class="grid-container">
-        <div class="grid-item-3 category">
-          <SphereIcon />
-          <h3>KNIME Community Hub</h3>
-        </div>
-
-        <div class="grid-item-9 body">
-          <p>
-            Solutions for data science: find workflows, nodes and components, and collaborate in spaces.
-          </p>
-          <Button
-            with-border
-            href="https://hub.knime.com/?src=knimeappmodernui"
-          >
-            <strong>Visit KNIME Community Hub</strong>
           </Button>
         </div>
       </div>
