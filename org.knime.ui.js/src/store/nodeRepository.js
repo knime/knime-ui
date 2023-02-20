@@ -353,8 +353,7 @@ export const getters = {
                 ...state.topNodesTags,
                 ...state.bottomNodesTags.filter(t => !state.topNodesTags.includes(t))
             ];
-        } else {
-            return state.topNodesTags;
         }
+        return state.topNodesTags;
     }
 };
