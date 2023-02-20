@@ -18,8 +18,16 @@ import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
 
 const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/\\]/;
-const INVALID_PREFIX = /^(\.)+/;
-const INVALID_SUFFIX = /(\.)+$/;
+/**
+ * "/", "\" and "." are non-valid preffixes and will be auto-removed
+ */
+const INVALID_PREFIX = /^(\.)+|^(\\)+|^(\/)+/;
+/**
+ * "/", "\" and "." are non-valid suffixes and will be auto-removed
+ */
+const INVALID_SUFFIX = /(\.)+$|(\\)+$|(\/)+$/;
+
+const NAME_CHAR_LIMIT = 255;
 
 /**
  * Component that handles FileExplorer interactions.
@@ -78,7 +86,7 @@ export default {
     computed: {
         isRenamingInvalid() {
             const newValue = this.removeInvalidPreOrSuffix(this.renameValue);
-            return INVALID_NAME_CHARACTERS.test(newValue);
+            return INVALID_NAME_CHARACTERS.test(newValue) || newValue.length > NAME_CHAR_LIMIT;
         }
     },
 
@@ -443,7 +451,7 @@ export default {
               v-if="isRenamingInvalid"
               class="item-error"
             >
-              <span>Name contains invalid characters *?#:"&lt;>%~|/</span>
+              <span>Name contains invalid characters *?#:"&lt;>%~|/ or exceeds 255 characters</span>
             </div>
           </template>
         </td>
