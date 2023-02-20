@@ -73,6 +73,52 @@ const searchNodesResponse = {
     ]
 };
 
+const searchMoreNodesResponse = {
+    tags: ['H2O Machine Learning', 'R'],
+    totalNumNodes: 122,
+    nodes: [
+        {
+            name: 'H2O to Table',
+            id: 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory',
+            type: 'Manipulator',
+            component: false,
+            icon: 'data:image/png;base64,xxx',
+            inPorts: [
+                {
+                    optional: false,
+                    typeId: 'org.knime.ext.h2o.ports.H2OFramePortObject'
+                }
+            ],
+            outPorts: [
+                {
+                    optional: false,
+                    typeId: 'org.knime.core.node.BufferedDataTable'
+                }
+            ],
+            nodeFactory: {
+                className: 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory'
+            }
+        },
+        {
+            name: 'R Source (Table)',
+            id: 'org.knime.r.RReaderTableNodeFactory',
+            type: 'Source',
+            component: false,
+            icon: 'data:image/png;base64,xxx',
+            inPorts: [],
+            outPorts: [
+                {
+                    optional: false,
+                    typeId: 'org.knime.core.node.BufferedDataTable'
+                }
+            ],
+            nodeFactory: {
+                className: 'org.knime.r.RReaderTableNodeFactory'
+            }
+        }
+    ]
+};
+
 const getNodeDescriptionResponse = {
     id: 1,
     description: 'This is a node.',
@@ -95,6 +141,10 @@ describe('Node Repository store', () => {
             'org.some.otherPorType': {
                 kind: 'other',
                 color: 'blue'
+            },
+            'org.knime.ext.h2o.ports.H2OFramePortObject': {
+                kind: 'other',
+                color: 'red'
             }
         };
 
@@ -470,58 +520,181 @@ describe('Node Repository store', () => {
         });
 
         describe('search', () => {
-            it('clears search results on empty parameters (tags and query)', async () => {
-                const { store } = await createStore();
-                await store.dispatch('nodeRepository/searchNodes');
-                expect(store.state.nodeRepository.nodes).toBeNull();
-                expect(store.state.nodeRepository.tags).toEqual([]);
+            describe('searchNodes', () => {
+                it('clears search results on empty parameters (tags and query)', async () => {
+                    const { store } = await createStore();
+                    await store.dispatch('nodeRepository/searchNodes');
+                    expect(store.state.nodeRepository.nodes).toBeNull();
+                    expect(store.state.nodeRepository.tags).toEqual([]);
+                });
+
+                it('searches for nodes', async () => {
+                    const { store, searchNodesMock, availablePortTypes } = await createStore();
+                    store.commit('nodeRepository/setQuery', 'lookup');
+                    await store.dispatch('nodeRepository/searchNodes');
+
+                    expect(store.state.nodeRepository.nodeSearchPage).toBe(0);
+                    expect(searchNodesMock).toHaveBeenCalledWith({
+                        allTagsMatch: true,
+                        fullTemplateInfo: true,
+                        nodeLimit: 100,
+                        nodeOffset: 0,
+                        query: 'lookup',
+                        tags: [],
+                        inCollection: true
+                    });
+                    expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
+                    expect(store.state.nodeRepository.nodes).toEqual(
+                        withPorts(searchNodesResponse.nodes, availablePortTypes)
+                    );
+                    expect(store.state.nodeRepository.tags).toEqual(searchNodesResponse.tags);
+                });
+
+                it('searches for nodes with append=true', async () => {
+                    const { store, searchNodesMock, availablePortTypes } = await createStore();
+                    const dummyNode = { dummy: true };
+                    store.commit('nodeRepository/setNodes', [dummyNode]);
+                    store.commit('nodeRepository/setQuery', 'lookup');
+                    await store.dispatch('nodeRepository/searchNodes', { append: true });
+
+                    expect(store.state.nodeRepository.nodeSearchPage).toBe(1);
+                    expect(searchNodesMock).toHaveBeenCalledWith({
+                        allTagsMatch: true,
+                        fullTemplateInfo: true,
+                        nodeLimit: 100,
+                        nodeOffset: 100,
+                        query: 'lookup',
+                        tags: [],
+                        inCollection: true
+                    });
+                    expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
+                    expect(store.state.nodeRepository.nodes).toEqual([
+                        dummyNode,
+                        ...withPorts(searchNodesResponse.nodes, availablePortTypes)
+                    ]);
+                    expect(store.state.nodeRepository.tags).toEqual(searchNodesResponse.tags);
+                });
+
+                it('searches for nodes next page', async () => {
+                    const { store, dispatchSpy } = await createStore();
+                    await store.dispatch('nodeRepository/searchNodesNextPage');
+                    expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', { append: true });
+                });
+
+                it('does not search for nodes next page if all nodes loaded', async () => {
+                    const { store, dispatchSpy } = await createStore();
+                    store.state.nodeRepository.nodes = [{ dummy: true }];
+                    store.state.nodeRepository.totalNumNodes = 1;
+                    await store.dispatch('nodeRepository/searchNodesNextPage');
+                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchNodes', expect.anything());
+                });
             });
 
-            it('searches for nodes', async () => {
-                const { store, searchNodesMock, availablePortTypes } = await createStore();
-                store.commit('nodeRepository/setQuery', 'lookup');
-                await store.dispatch('nodeRepository/searchNodes');
-
-                expect(store.state.nodeRepository.nodeSearchPage).toBe(0);
-                expect(searchNodesMock).toHaveBeenCalledWith({
-                    allTagsMatch: true,
-                    fullTemplateInfo: true,
-                    nodeLimit: 100,
-                    nodeOffset: 0,
-                    query: 'lookup',
-                    tags: [],
-                    inCollection: true
+            describe('searchMoreNodes', () => {
+                it('clears search results on empty parameters (tags and query)', async () => {
+                    const { store, dispatchSpy } = await createStore();
+                    await store.dispatch('nodeRepository/searchMoreNodes');
+                    expect(dispatchSpy).toHaveBeenCalledWith(
+                        'nodeRepository/clearSearchResultsForMoreNodes', undefined
+                    );
                 });
-                expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
-                expect(store.state.nodeRepository.nodes).toEqual(
-                    withPorts(searchNodesResponse.nodes, availablePortTypes)
-                );
-                expect(store.state.nodeRepository.tags).toEqual(searchNodesResponse.tags);
+
+                it('searches for moreNodes', async () => {
+                    const { store, searchNodesMock, availablePortTypes } = await createStore();
+                    searchNodesMock.mockReturnValue(searchMoreNodesResponse);
+                    store.commit('nodeRepository/setQuery', 'lookup');
+                    await store.dispatch('nodeRepository/searchMoreNodes');
+
+                    expect(store.state.nodeRepository.moreNodesSearchPage).toBe(0);
+                    expect(searchNodesMock).toHaveBeenCalledWith({
+                        allTagsMatch: true,
+                        fullTemplateInfo: true,
+                        nodeLimit: 100,
+                        nodeOffset: 0,
+                        query: 'lookup',
+                        tags: [],
+                        inCollection: false
+                    });
+                    expect(store.state.nodeRepository.totalNumMoreNodes).toBe(searchMoreNodesResponse.totalNumNodes);
+                    expect(store.state.nodeRepository.moreNodes).toEqual(
+                        withPorts(searchMoreNodesResponse.nodes, availablePortTypes)
+                    );
+                    expect(store.state.nodeRepository.moreTags).toEqual(searchMoreNodesResponse.tags);
+                });
+
+                it('searches for moreNodes with append=true', async () => {
+                    const { store, searchNodesMock, availablePortTypes } = await createStore();
+                    searchNodesMock.mockReturnValue(searchMoreNodesResponse);
+                    const dummyNode = { dummy: true };
+                    store.commit('nodeRepository/setMoreNodes', [dummyNode]);
+                    store.commit('nodeRepository/setQuery', 'lookup');
+                    await store.dispatch('nodeRepository/searchMoreNodes', { append: true });
+
+                    expect(store.state.nodeRepository.moreNodesSearchPage).toBe(1);
+                    expect(searchNodesMock).toHaveBeenCalledWith({
+                        allTagsMatch: true,
+                        fullTemplateInfo: true,
+                        nodeLimit: 100,
+                        nodeOffset: 100,
+                        query: 'lookup',
+                        tags: [],
+                        inCollection: false
+                    });
+                    expect(store.state.nodeRepository.totalNumMoreNodes).toBe(searchMoreNodesResponse.totalNumNodes);
+                    expect(store.state.nodeRepository.moreNodes).toEqual([
+                        dummyNode,
+                        ...withPorts(searchMoreNodesResponse.nodes, availablePortTypes)
+                    ]);
+                    expect(store.state.nodeRepository.moreTags).toEqual(searchMoreNodesResponse.tags);
+                });
+
+                it('searches for moreNodes next page', async () => {
+                    const { store, dispatchSpy } = await createStore();
+                    store.state.nodeRepository.showingMoreNodes = true;
+                    await store.dispatch('nodeRepository/searchMoreNodesNextPage');
+                    expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchMoreNodes', { append: true });
+                });
+
+                it('does not search for moreNodes next page if hiding moreNodes', async () => {
+                    const { store, dispatchSpy } = await createStore();
+                    store.state.nodeRepository.showingMoreNodes = false;
+                    await store.dispatch('nodeRepository/searchMoreNodesNextPage');
+                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchMoreNodes', expect.anything());
+                });
+
+                it('does not search for moreNodes next page if all nodes loaded', async () => {
+                    const { store, dispatchSpy } = await createStore();
+                    store.state.nodeRepository.showingMoreNodes = true;
+                    store.state.nodeRepository.moreNodes = [{ dummy: true }];
+                    store.state.nodeRepository.totalNumMoreNodes = 1;
+                    await store.dispatch('nodeRepository/searchMoreNodesNextPage');
+                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchMoreNodes', expect.anything());
+                });
             });
 
-            it('searches for nodes with append=true', async () => {
-                const { store, searchNodesMock, availablePortTypes } = await createStore();
-                const dummyNode = { dummy: true };
-                store.commit('nodeRepository/setNodes', [dummyNode]);
-                store.commit('nodeRepository/setQuery', 'lookup');
-                await store.dispatch('nodeRepository/searchNodes', { append: true });
-
-                expect(store.state.nodeRepository.nodeSearchPage).toBe(1);
-                expect(searchNodesMock).toHaveBeenCalledWith({
-                    allTagsMatch: true,
-                    fullTemplateInfo: true,
-                    nodeLimit: 100,
-                    nodeOffset: 100,
-                    query: 'lookup',
-                    tags: [],
-                    inCollection: true
+            describe('toggleShowingMoreNodes', () => {
+                it('does toggle showingMoreNodes', async () => {
+                    const { store } = await createStore();
+                    await store.dispatch('nodeRepository/toggleShowingMoreNodes');
+                    expect(store.state.nodeRepository.showingMoreNodes).toBe(true);
+                    await store.dispatch('nodeRepository/toggleShowingMoreNodes');
+                    expect(store.state.nodeRepository.showingMoreNodes).toBe(false);
                 });
-                expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
-                expect(store.state.nodeRepository.nodes).toEqual([
-                    dummyNode,
-                    ...withPorts(searchNodesResponse.nodes, availablePortTypes)
-                ]);
-                expect(store.state.nodeRepository.tags).toEqual(searchNodesResponse.tags);
+
+                it('does dispatch searchMoreNodes', async () => {
+                    const { store, dispatchSpy } = await createStore();
+                    await store.dispatch('nodeRepository/toggleShowingMoreNodes');
+                    expect(store.state.nodeRepository.showingMoreNodes).toBe(true);
+                    expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchMoreNodes', undefined);
+                });
+
+                it('does not dispatch searchMoreNodes if there are results already', async () => {
+                    const { store, dispatchSpy } = await createStore();
+                    store.state.nodeRepository.moreNodes = [{ dummy: true }];
+                    await store.dispatch('nodeRepository/toggleShowingMoreNodes');
+                    expect(store.state.nodeRepository.showingMoreNodes).toBe(true);
+                    expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchMoreNodes', expect.anything());
+                });
             });
 
             it('updates query', async () => {
@@ -533,18 +706,12 @@ describe('Node Repository store', () => {
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
             });
 
-            it('searches for nodes next page', async () => {
-                const { store, dispatchSpy } = await createStore();
-                await store.dispatch('nodeRepository/searchNodesNextPage');
-                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', { append: true });
-            });
-
             it('set selected Tags', async () => {
                 const { store, dispatchSpy } = await createStore();
                 store.dispatch('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
                 expect(store.state.nodeRepository.selectedTags).toEqual(['myTag', 'myTag2']);
 
-                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodesAndMoreNodes', undefined);
             });
 
             it('set selected tags to empty list', async () => {
@@ -556,7 +723,7 @@ describe('Node Repository store', () => {
 
                 await store.dispatch('nodeRepository/setSelectedTags', []);
                 expect(store.state.nodeRepository.selectedTags).toEqual([]);
-                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodesAndMoreNodes', undefined);
             });
 
             it('clears search params (tags and query)', async () => {
@@ -571,11 +738,21 @@ describe('Node Repository store', () => {
             });
 
             it('clears search results', async () => {
-                const { store } = await createStore();
+                const { store, dispatchSpy } = await createStore();
 
                 store.dispatch('nodeRepository/clearSearchResults');
                 expect(store.state.nodeRepository.nodes).toEqual(null);
                 expect(store.state.nodeRepository.tags).toEqual([]);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResultsForMoreNodes', undefined);
+            });
+
+            it('clears search results for moreNodes', async () => {
+                const { store } = await createStore();
+
+                store.dispatch('nodeRepository/clearSearchResultsForMoreNodes');
+                expect(store.state.nodeRepository.moreNodes).toEqual(null);
+                expect(store.state.nodeRepository.moreTags).toEqual([]);
+                expect(store.state.nodeRepository.totalNumMoreNodes).toEqual(0);
             });
         });
 
@@ -609,6 +786,41 @@ describe('Node Repository store', () => {
 
                 await store.dispatch('nodeRepository/closeDescriptionPanel');
                 expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
+            });
+        });
+
+        describe('reset', () => {
+            it('resets search results', async () => {
+                const { store, dispatchSpy } = await createStore();
+                store.state.nodeRepository.query = 'foo';
+                store.state.nodeRepository.nodes = [{ dummy: true }];
+                await store.dispatch('nodeRepository/resetSearchAndCategories');
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResults', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodesAndMoreNodes', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearCategoryResults', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/getAllNodes', { append: false });
+            });
+
+            it('resets category results', async () => {
+                const { store, dispatchSpy } = await createStore();
+                await store.dispatch('nodeRepository/resetSearchAndCategories');
+                expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/clearSearchResults', undefined);
+                expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/searchNodesAndMoreNodes', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearCategoryResults', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/getAllNodes', { append: false });
+            });
+
+            it('clears category results', async () => {
+                const { store } = await createStore();
+                store.state.nodeRepository.nodesPerCategory = [{ dummy: true }];
+                store.state.nodeRepository.totalNumCategories = 100;
+                store.state.nodeRepository.categoryPage = 5;
+                store.state.nodeRepository.categoryScrollPosition = 10;
+                await store.dispatch('nodeRepository/clearCategoryResults');
+                expect(store.state.nodeRepository.nodesPerCategory).toEqual([]);
+                expect(store.state.nodeRepository.totalNumCategories).toEqual(null);
+                expect(store.state.nodeRepository.categoryPage).toEqual(0);
+                expect(store.state.nodeRepository.categoryScrollPosition).toEqual(0);
             });
         });
     });
