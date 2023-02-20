@@ -359,10 +359,10 @@ export const actions = {
         if (getters.searchIsActive) {
             await dispatch('clearSearchResults');
             await dispatch('searchNodesAndMoreNodes');
-        } else {
-            await dispatch('clearCategoryResults');
-            await dispatch('getAllNodes', { append: false });
         }
+        // Always clear the category results
+        await dispatch('clearCategoryResults');
+        await dispatch('getAllNodes', { append: false });
     }
 };
 
