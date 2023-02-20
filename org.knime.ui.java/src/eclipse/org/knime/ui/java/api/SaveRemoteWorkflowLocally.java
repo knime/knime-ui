@@ -68,7 +68,7 @@ import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
-import org.knime.workbench.explorer.view.dialogs.UploadDestinationSelectionDialog.SelectedDestination;
+import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.SelectedDestination;
 
 /**
  * Helper class to save an opened remote workflow locally

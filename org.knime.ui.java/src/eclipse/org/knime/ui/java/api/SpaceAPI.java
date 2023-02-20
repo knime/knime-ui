@@ -53,10 +53,12 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
@@ -65,6 +67,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
 /**
@@ -172,16 +175,18 @@ final class SpaceAPI {
         }
 
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        final var sourceSpace = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
+        final var sourceSpaceProvider = Optional.ofNullable(spaceProviders.getProvidersMap().get(spaceProviderId)) //
+                .orElseThrow(() -> new NoSuchElementException("Space provider '" + spaceProviderId + "' not found."));
 
-        final var upload = Arrays.stream(arr) //
+        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
+        final var selection = Arrays.stream(arr) //
                 .map(String.class::cast) //
                 .map(sourceSpace::toKnimeUrl) //
                 .map(ExplorerFileSystem.INSTANCE::getStore) //
                 .collect(Collectors.toList());
 
-        final var isLocal = sourceSpace instanceof LocalWorkspace;
-        final var mountIds = !isLocal ? new String[] { LocalWorkspace.LOCAL_WORKSPACE_ID.toUpperCase(Locale.ROOT) }
+        final var isUpload = sourceSpace instanceof LocalWorkspace;
+        final var mountIds = !isUpload ? new String[] { LocalWorkspace.LOCAL_WORKSPACE_ID.toUpperCase(Locale.ROOT) }
             : spaceProviders.getProvidersMap().entrySet().stream() //
                 .filter(provider -> !provider.getValue().isLocal()
                     && provider.getValue().getConnection(false).isPresent()) //
@@ -194,14 +199,23 @@ final class SpaceAPI {
         }
 
         final var destInfoOptional = SpaceDestinationPicker.promptForTargetLocation(mountIds,
-            isLocal ? Operation.UPLOAD : Operation.DOWNLOAD);
+            isUpload ? Operation.UPLOAD : Operation.DOWNLOAD);
         if (!destInfoOptional.isPresent()) {
             return false;
         }
 
         final var destInfo = destInfoOptional.get();
         final var destinationStore = destInfo.getDestination();
-        final var shell = Display.getCurrent().getActiveShell();
-        return new ClassicAPCopyMoveLogic(Arrays.asList(mountIds), shell, upload, destinationStore, false).run();
+        final var targetMountId = destinationStore.getMountID();
+        final SpaceProvider targetSpaceProvider;
+        if (targetMountId.equalsIgnoreCase(LocalWorkspace.LOCAL_WORKSPACE_ID)) {
+            targetSpaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
+        } else {
+            targetSpaceProvider = Optional.ofNullable(spaceProviders.getProvidersMap().get(targetMountId)) //
+                    .orElseThrow(() -> new NoSuchElementException("Space provider '" + targetMountId + "' not found."));
+        }
+        final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
+        return ClassicAPCopyMoveLogic.copy(shellProvider, sourceSpaceProvider, selection, targetSpaceProvider,
+            destinationStore);
     }
 }

@@ -264,7 +264,7 @@ final class SaveWorkflow {
                           + "' not found."));
         final var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
         try {
-            spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, false, monitor, err -> {});
+             spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, false, false, monitor);
         } catch (final CoreException e) {
             final var message = "Failed to upload the workflow to its remote location\n(" + e.getMessage() + ")";
             DesktopAPUtil.showAndLogError("Upload has failed", message, LOGGER, e);

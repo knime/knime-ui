@@ -53,8 +53,8 @@ import java.util.Optional;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.PlatformUI;
-import org.knime.workbench.explorer.view.dialogs.UploadDestinationSelectionDialog;
-import org.knime.workbench.explorer.view.dialogs.UploadDestinationSelectionDialog.SelectedDestination;
+import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog;
+import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.SelectedDestination;
 
 /**
  * Destination folder/space picker for uploads.
@@ -92,9 +92,10 @@ final class SpaceDestinationPicker {
         final var workbench = PlatformUI.getWorkbench();
         return workbench.getDisplay().syncCall(() -> { // NOSONAR
             final var shell = workbench.getModalDialogShellProvider().getShell();
-            final var destinationDialog = new UploadDestinationSelectionDialog(shell, spaceProviders, null,
+            final var destinationDialog = new DestinationSelectionDialog(shell, spaceProviders, null,
                 "Destination", operation.m_title, "Select the destination folder.",
                 "Select the destination folder to which the selected element will be " + operation.m_desc);
+            destinationDialog.setShowExcludeDataOption(operation == Operation.UPLOAD);
             while (destinationDialog.open() == Window.OK) {
                 final var destGroup = destinationDialog.getSelectedDestination();
                 final var destGroupInfo = destGroup.getDestination().fetchInfo();
