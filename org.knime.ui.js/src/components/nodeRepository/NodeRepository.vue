@@ -25,7 +25,7 @@ export default {
         ...mapState('nodeRepository', ['nodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
         ...mapGetters('nodeRepository', {
             showSearchResults: 'searchIsActive',
-            selectedNodeIsVisible: 'selectedNodeIsVisible',
+            isSelectedNodeVisible: 'isSelectedNodeVisible',
             tags: 'tagsOfVisibleNodes'
         }),
 
@@ -111,7 +111,7 @@ export default {
     <portal to="extension-panel">
       <NodeDescriptionOverlay
         v-if="isDescriptionPanelOpen"
-        :selected-node="selectedNodeIsVisible ? selectedNode : null"
+        :selected-node="isSelectedNodeVisible ? selectedNode : null"
       />
     </portal>
   </div>

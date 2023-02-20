@@ -378,7 +378,7 @@ export const getters = {
             node => node.id === state.selectedNode?.id
         ));
     },
-    selectedNodeIsVisible: (state, getters) => getters.searchIsActive
+    isSelectedNodeVisible: (state, getters) => getters.searchIsActive
         ? getters.searchResultsContainSelectedNode
         : getters.nodesPerCategoryContainSelectedNode,
     tagsOfVisibleNodes: state => {

@@ -32,7 +32,7 @@ jest.mock('lodash', () => ({
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock, setSelectedTagsMock,
         getAllNodesMock, clearSearchParamsMock, setScrollPositionMock,
-        setSelectedNodeMock, updateQueryMock, searchIsActive, selectedNodeIsVisible;
+        setSelectedNodeMock, updateQueryMock, searchIsActive, isSelectedNodeVisible;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -50,7 +50,7 @@ describe('NodeRepository', () => {
         setSelectedNodeMock = jest.fn();
         updateQueryMock = jest.fn();
         searchIsActive = true;
-        selectedNodeIsVisible = true;
+        isSelectedNodeVisible = true;
 
         $store = mockVuexStore({
             nodeRepository: {
@@ -98,8 +98,8 @@ describe('NodeRepository', () => {
                     searchIsActive() {
                         return searchIsActive;
                     },
-                    selectedNodeIsVisible() {
-                        return selectedNodeIsVisible;
+                    isSelectedNodeVisible() {
+                        return isSelectedNodeVisible;
                     },
                     tagsOfVisibleNodes() {
                         return ['myTag1', 'myTag2'];
@@ -220,7 +220,7 @@ describe('NodeRepository', () => {
 
         it('hides info if selectedNode is invisible', () => {
             $store.state.nodeRepository.isDescriptionPanelOpen = true;
-            selectedNodeIsVisible = false;
+            isSelectedNodeVisible = false;
             doShallowMount();
             expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
             expect(wrapper.findComponent(NodeDescriptionOverlay).props('selectedNode')).toBeNull();

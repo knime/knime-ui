@@ -252,22 +252,22 @@ describe('Node Repository store', () => {
             expect(store.getters['nodeRepository/nodesPerCategoryContainSelectedNode']).toBe(true);
         });
 
-        it('returns proper value for selectedNodeIsVisible for searches', async () => {
+        it('returns proper value for isSelectedNodeVisible for searches', async () => {
             const { store } = await createStore();
             store.state.nodeRepository.nodes = [{ id: 1, name: 'Node' }];
             store.state.nodeRepository.query = 'value';
             store.state.nodeRepository.selectedNode = { id: 3, name: 'Node 3' };
-            expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(false);
+            expect(store.getters['nodeRepository/isSelectedNodeVisible']).toBe(false);
             store.state.nodeRepository.selectedNode = { id: 1, name: 'Node' };
-            expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(true);
+            expect(store.getters['nodeRepository/isSelectedNodeVisible']).toBe(true);
         });
 
-        it('returns proper value for selectedNodeIsVisible for categories', async () => {
+        it('returns proper value for isSelectedNodeVisible for categories', async () => {
             const { store } = await createStore();
-            expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(false);
+            expect(store.getters['nodeRepository/isSelectedNodeVisible']).toBe(false);
             store.state.nodeRepository.nodesPerCategory = [{ tag: 'tag:1', nodes: [{ id: 1 }, { id: 2 }] }];
             store.state.nodeRepository.selectedNode = { id: 2, name: 'Node' };
-            expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(true);
+            expect(store.getters['nodeRepository/isSelectedNodeVisible']).toBe(true);
         });
 
         it('returns proper value for tagsOfVisibleNodes', async () => {
