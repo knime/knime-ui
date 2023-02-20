@@ -7,12 +7,14 @@ jest.mock('@api', () => ({
 }));
 
 describe('applicationShortcuts', () => {
-    let mockDispatch, $store;
+    let mockDispatch, mockCommit, $store;
 
     beforeEach(() => {
         mockDispatch = jest.fn();
+        mockCommit = jest.fn();
         $store = {
             dispatch: mockDispatch,
+            commit: mockCommit,
             state: {
                 workflow: {
                     activeWorkflow: {
@@ -25,7 +27,7 @@ describe('applicationShortcuts', () => {
 
     test('createWorkflow', () => {
         applicationShortcuts.createWorkflow.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith('spaces/createWorkflow');
+        expect(mockCommit).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', true);
     });
 
     test('closeWorkflow', () => {

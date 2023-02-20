@@ -83,6 +83,7 @@ describe('SpaceExplorer.vue', () => {
         });
 
         const dispatchSpy = jest.spyOn(store, 'dispatch');
+        const commitSpy = jest.spyOn(store, 'commit');
         const mockRouter = { push: () => {} };
         const mockRoute = { name: '' };
 
@@ -105,7 +106,7 @@ describe('SpaceExplorer.vue', () => {
             }
         });
 
-        return { wrapper, store, mockRouter, mockRoute, dispatchSpy };
+        return { wrapper, store, mockRouter, mockRoute, dispatchSpy, commitSpy };
     };
 
     const doMountAndLoad = async ({
@@ -329,7 +330,7 @@ describe('SpaceExplorer.vue', () => {
 
     describe('Mini mode', () => {
         it('should handle create workflow', async () => {
-            const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
+            const { wrapper, store, commitSpy } = doMount({ props: { mode: 'mini' } });
             store.state.spaces.activeSpace = {
                 spaceId: 'local',
                 activeWorkflowGroup: {
@@ -340,7 +341,7 @@ describe('SpaceExplorer.vue', () => {
             await wrapper.vm.$nextTick();
 
             wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:create-workflow');
-            expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
+            expect(commitSpy).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', true);
         });
 
         it('should handle import workflow', async () => {

@@ -1,5 +1,6 @@
 <script>
 import { mixin as clickaway } from 'vue-clickaway2';
+import { mapState } from 'vuex';
 
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
@@ -71,6 +72,10 @@ export default {
             activeRenameId: null,
             renameValue: ''
         };
+    },
+
+    computed: {
+        ...mapState('spaces', ['activeSpace'])
     },
 
     watch: {
@@ -421,6 +426,7 @@ export default {
             <WorkflowNameValidator
               :name="renameValue"
               :current-item-id="item.id"
+              :workflow-items="activeSpace.activeWorkflowGroup.items"
             >
               <template #default="{ isValid, cleanNameFn, errorMessage }">
                 <div>

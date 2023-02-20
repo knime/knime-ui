@@ -168,17 +168,6 @@ export default {
         >
           <MenuOptionsIcon class="open-icon" />
         </SubMenu>
-        
-        <!-- Create workflow -->
-        <ToolbarButton
-          primary
-          class="create-workflow-btn"
-          :title="createWorkflowButtonTitle"
-          :disabled="disabledActions.createWorkflow"
-          @click.native="$emit('action:create-workflow')"
-        >
-          <PlusIcon />
-        </ToolbarButton>
       </div>
     </template>
   </div>

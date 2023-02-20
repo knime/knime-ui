@@ -24,7 +24,7 @@ export default {
     },
 
     computed: {
-        ...mapState('spaces', ['isCreateWorkflowModalOpen'])
+        ...mapState('spaces', ['isCreateWorkflowModalOpen', 'activeSpace'])
     },
 
     watch: {
@@ -70,6 +70,7 @@ export default {
       >
         <WorkflowNameValidator
           :name="workflowName"
+          :workflow-items="activeSpace.activeWorkflowGroup.items"
           @is-valid-changed="onValidChange"
         >
           <template #default="{ isValid, errorMessage }">

@@ -142,10 +142,10 @@ describe('SpaceBrowsingPage', () => {
     });
 
     it('should handle the create folder action', () => {
-        const { wrapper, dispatchSpy } = doMount();
+        const { wrapper, commitSpy } = doMount();
 
         wrapper.find('.create-workflow-btn button').trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
+        expect(commitSpy).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', true);
     });
 
     it('should handle the create folder action', () => {

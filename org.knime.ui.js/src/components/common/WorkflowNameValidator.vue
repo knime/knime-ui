@@ -1,5 +1,4 @@
 <script>
-import { mapState } from 'vuex';
 
 const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/\\]/;
 /**
@@ -23,16 +22,22 @@ export default {
             type: String,
             required: false,
             default: null
+        },
+        workflowItems: {
+            type: Array,
+            required: false,
+            default() {
+                return [];
+            }
         }
     },
     computed: {
-        ...mapState('spaces', ['activeSpace']),
         isValidName() {
             const newValue = this.cleanName(this.renameValue);
             return !INVALID_NAME_CHARACTERS.test(newValue) && newValue.length <= NAME_CHAR_LIMIT;
         },
         isNameAvailable() {
-            const itemsWithNameCollision = this.activeSpace.activeWorkflowGroup.items.filter(
+            const itemsWithNameCollision = this.workflowItems.filter(
                 (workflow) => workflow.name === this.name && workflow.id !== this.currentItemId
             );
             return itemsWithNameCollision.length === 0;
