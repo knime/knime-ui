@@ -55,6 +55,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.ui.java.UIPlugin;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
  * The preference of the modern UI.
@@ -78,7 +79,10 @@ public final class KnimeUIPreferences {
         PREF_STORE.addPropertyChangeListener(e -> {
             if (NODE_REPO_FILTER_PREF_KEY.equals(e.getProperty())) {
                 final String newValue = (String)e.getNewValue();
-                NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(newValue);
+                if (!PerspectiveUtil.isClassicPerspectiveActive()) {
+                    //update the last used perspective only if we are in the modern UI
+                    NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(newValue);
+                }
                 if (nodeRepoFilterChangeListener != null) {
                     nodeRepoFilterChangeListener.accept((String)e.getOldValue(), newValue);
                 }

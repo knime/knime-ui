@@ -65,11 +65,13 @@ import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -148,6 +150,7 @@ public final class PerspectiveSwitchAddon {
 
     private void onSwitchToWebUI() {
         NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
+        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getNodeRepoFilter());
         PerspectiveUtil.setClassicPerspectiveActive(false);
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
@@ -159,6 +162,7 @@ public final class PerspectiveSwitchAddon {
 
     private void onSwitchToJavaUI() {
         NodeTimer.GLOBAL_TIMER.incJavaUIPerspectiveSwitch();
+        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(GlobalNodeStats.CLASSIC_PERSPECTIVE_PLACEHOLDER);
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             // dispose workflow projects if perspective switch is done, e.g., via shortcut
             disposeAllWorkflowProjects();
