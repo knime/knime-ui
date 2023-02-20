@@ -39,8 +39,7 @@ export const routes = [
     {
         name: APP_ROUTES.SpaceBrowsingPage,
         path: '/space-browsing',
-        component: SpaceBrowsingPage,
-        meta: { showUpdateBanner: true }
+        component: SpaceBrowsingPage
     },
     {
         name: APP_ROUTES.InfoPage,
