@@ -270,6 +270,50 @@ describe('Node Repository store', () => {
             expect(store.state.nodeRepository.tags).toEqual(['myTag', 'myTag2']);
         });
 
+        it('sets moreNodesSearchPage', async () => {
+            const { store } = await createStore();
+            expect(store.state.nodeRepository.moreNodesSearchPage).toBe(0);
+            store.commit('nodeRepository/setMoreNodesSearchPage', 10);
+            expect(store.state.nodeRepository.moreNodesSearchPage).toBe(10);
+        });
+
+        it('sets totalNumMoreNodes', async () => {
+            const { store } = await createStore();
+            expect(store.state.nodeRepository.totalNumMoreNodes).toBe(0);
+            store.commit('nodeRepository/setTotalNumMoreNodes', 20);
+            expect(store.state.nodeRepository.totalNumMoreNodes).toBe(20);
+        });
+
+        it('sets totalNumMoreNodes', async () => {
+            const { store } = await createStore();
+            expect(store.state.nodeRepository.totalNumMoreNodes).toBe(0);
+            store.commit('nodeRepository/setTotalNumMoreNodes', 20);
+            expect(store.state.nodeRepository.totalNumMoreNodes).toBe(20);
+        });
+
+        it('adds moreNodes (and skips duplicates)', async () => {
+            const { store } = await createStore();
+            const moreNodes = [{ id: 'node1' }, { id: 'node2' }];
+            store.commit('nodeRepository/setMoreNodes', moreNodes);
+
+            const newMoreNodes = [...moreNodes, { id: 'node3' }];
+            store.commit('nodeRepository/addMoreNodes', newMoreNodes);
+            expect(store.state.nodeRepository.moreNodes).toEqual(newMoreNodes);
+        });
+
+        it('sets moreNodes', async () => {
+            const { store } = await createStore();
+            expect(store.state.nodeRepository.moreNodes).toBeNull();
+            store.commit('nodeRepository/setMoreNodes', [{ id: 'node1' }]);
+            expect(store.state.nodeRepository.moreNodes).toEqual([{ id: 'node1' }]);
+        });
+
+        it('sets moreTags', async () => {
+            const { store } = await createStore();
+            store.commit('nodeRepository/setMoreTags', ['tag2', 'tag3']);
+            expect(store.state.nodeRepository.moreTags).toEqual(['tag2', 'tag3']);
+        });
+
         it('sets selectedTags', async () => {
             const { store } = await createStore();
             store.commit('nodeRepository/setSearchScrollPosition', 100);
@@ -349,6 +393,13 @@ describe('Node Repository store', () => {
             expect(store.state.nodeRepository.isDraggingNode).toBe(false);
             store.commit('nodeRepository/setDraggingNode', true);
             expect(store.state.nodeRepository.isDraggingNode).toBe(true);
+        });
+
+        it('sets showingMoreNodes', async () => {
+            const { store } = await createStore();
+            expect(store.state.nodeRepository.showingMoreNodes).toBe(false);
+            store.commit('nodeRepository/setShowingMoreNodes', true);
+            expect(store.state.nodeRepository.showingMoreNodes).toBe(true);
         });
     });
 
