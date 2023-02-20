@@ -15,15 +15,18 @@ export default {
         InputField,
         WorkflowNameValidator
     },
+
     data() {
         return {
             workflowName: 'KNIME_project',
             enableSubmit: true
         };
     },
+
     computed: {
         ...mapState('spaces', ['isCreateWorkflowModalOpen'])
     },
+
     watch: {
         isCreateWorkflowModalOpen: {
             immediate: true,
@@ -36,6 +39,7 @@ export default {
             }
         }
     },
+    
     methods: {
         async onSubmit() {
             await this.$store.dispatch('spaces/createWorkflow', { workflowName: this.workflowName });

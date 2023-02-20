@@ -39,6 +39,7 @@ export default {
     },
     async created() {
         await this.$store.dispatch('spaces/fetchAllSpaceProviders');
+        // Load local space by default
         await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId: 'root' });
     },
 
@@ -150,7 +151,7 @@ export default {
         <Card
           v-if="isLocalSpace(spaceProvider)"
           class="create-workflow-local"
-          @click="$store.dispatch('spaces/createWorkflow')"
+          @click="$store.commit('spaces/setIsCreateWorkflowModalOpen', true)"
         >
           <CardContent padded>
             <div class="icon-wrapper">

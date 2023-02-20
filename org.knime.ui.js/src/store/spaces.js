@@ -49,10 +49,6 @@ export const mutations = {
         state.isCreateWorkflowModalOpen = value;
     },
 
-    setActiveSpaceProvider(state, value) {
-        state.activeSpaceProvider = value;
-    },
-
     setActiveSpaceProviderById(state, spaceProviderId) {
         // this assumes the list of providers has been already loaded
         state.activeSpaceProvider = state.spaceProviders[spaceProviderId];

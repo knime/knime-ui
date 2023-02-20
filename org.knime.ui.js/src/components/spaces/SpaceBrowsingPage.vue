@@ -105,7 +105,7 @@ export default {
               :is-local="activeSpaceInfo.local"
               :disabled-actions="explorerDisabledActions"
               :has-active-hub-session="hasActiveHubSession"
-              @action:create-workflow="$store.dispatch('spaces/createWorkflow')"
+              @action:create-workflow="$store.commit('spaces/setIsCreateWorkflowModalOpen', true)"
               @action:create-folder="$store.dispatch('spaces/createFolder')"
               @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"
               @action:import-files="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' })"

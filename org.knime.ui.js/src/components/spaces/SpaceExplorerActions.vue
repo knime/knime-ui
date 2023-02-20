@@ -69,12 +69,6 @@ export default {
         }
     },
 
-    data() {
-        return {
-            createWorkflowModalActive: false
-        };
-    },
-
     computed: {
         actions() {
             return [
@@ -132,11 +126,6 @@ export default {
             const { text, hotkeyText } = this.$shortcuts.get('createWorkflow');
             return `${text} (${hotkeyText})`;
         }
-    },
-    methods: {
-        openCreateWorkflowModal() {
-            this.$store.commit('spaces/setIsCreateWorkflowModalOpen', true);
-        }
     }
 };
 </script>
@@ -164,7 +153,7 @@ export default {
           primary
           class="create-workflow-btn"
           :disabled="disabledActions.createWorkflow"
-          @click="openCreateWorkflowModal"
+          @click="$emit('action:create-workflow')"
         />
       </div>
     </template>
@@ -186,7 +175,7 @@ export default {
           class="create-workflow-btn"
           :title="createWorkflowButtonTitle"
           :disabled="disabledActions.createWorkflow"
-          @click.native="openCreateWorkflowModal"
+          @click.native="$emit('action:create-workflow')"
         >
           <PlusIcon />
         </ToolbarButton>
