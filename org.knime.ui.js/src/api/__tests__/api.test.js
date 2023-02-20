@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable consistent-return */
 import * as api from '@api';
 import { waitForPatch } from '@/util/event-syncer';
@@ -154,6 +155,26 @@ describe('API', () => {
             });
         });
 
+        describe('getNodeRecommendations', () => {
+            it('calls jsonrpc', async () => {
+                await api.getNodeRecommendations({
+                    projectId: 'project_id',
+                    workflowId: 'workflow_id',
+                    nodeId: 'node_id',
+                    portIdx: 1,
+                    nodesLimit: 6,
+                    fullTemplateInfo: true
+                });
+
+                expect(window.jsonrpc).toHaveBeenCalledWith({
+                    jsonrpc: '2.0',
+                    method: 'NodeRepositoryService.getNodeRecommendations',
+                    params: ['project_id', 'workflow_id', 'node_id', 1, 6, true],
+                    id: 0
+                });
+            });
+        });
+
         describe('error handling', () => {
             beforeAll(() => {
                 window.consola.error = jest.fn();
@@ -185,6 +206,36 @@ describe('API', () => {
                 } catch (e) {
                     expect(e.message).toContain('churn');
                     expect(e.message).toContain('myTag');
+                }
+            });
+
+            it('handles errors on getNodesGroupedByTag', async () => {
+                try {
+                    await api.getNodesGroupedByTags({
+                        numNodesPerTag: 6,
+                        tagsOffset: 0,
+                        tagsLimit: 2,
+                        fullTemplateInfo: true
+                    });
+                    return new Error('Error not thrown');
+                } catch (e) {
+                    expect(e.message).toContain('nodes grouped by tags');
+                }
+            });
+
+            it('handles errors on getNodeRecommendations', async () => {
+                try {
+                    await api.getNodeRecommendations({
+                        projectId: 'project_id',
+                        workflowId: 'workflow_id',
+                        nodeId: 'node_id',
+                        portIdx: 1,
+                        nodesLimit: 6,
+                        fullTemplateInfo: true
+                    });
+                    return new Error('Error not thrown');
+                } catch (e) {
+                    expect(e.message).toContain('recommended nodes');
                 }
             });
         });
