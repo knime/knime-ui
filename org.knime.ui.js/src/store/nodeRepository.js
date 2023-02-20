@@ -17,18 +17,18 @@ export const state = () => ({
     categoryScrollPosition: 0,
 
     /* search results */
-    nodes: null,
-    totalNumNodes: 0,
+    topNodes: null,
+    totalNumTopNodes: 0,
     selectedTags: [],
-    tags: [],
+    topNodesTags: [],
     query: '',
-    nodeSearchPage: 0,
+    topNodeSearchPage: 0,
     searchScrollPosition: 0,
-    showingMoreNodes: false,
-    moreNodes: null,
-    totalNumMoreNodes: 0,
-    moreTags: [],
-    moreNodesSearchPage: 0,
+    isShowingBottomNodes: false,
+    bottomNodes: null,
+    totalNumBottomNodes: 0,
+    bottomNodesTags: [],
+    bottomNodesSearchPage: 0,
 
     /* node interaction */
     selectedNode: null,
@@ -41,48 +41,48 @@ export const mutations = {
     setCategoryPage(state, pageNumber) {
         state.categoryPage = pageNumber;
     },
-    setNodeSearchPage(state, pageNumber) {
-        state.nodeSearchPage = pageNumber;
+    setTopNodeSearchPage(state, pageNumber) {
+        state.topNodeSearchPage = pageNumber;
     },
 
-    setTotalNumNodes(state, totalNumNodes) {
-        state.totalNumNodes = totalNumNodes;
+    setTotalNumTopNodes(state, totalNumTopNodes) {
+        state.totalNumTopNodes = totalNumTopNodes;
     },
 
-    addNodes(state, nodes) {
-        let existingNodeIds = state.nodes.map(node => node.id);
-        let newNodes = nodes.filter(node => !existingNodeIds.includes(node.id));
-        state.nodes.push(...newNodes);
+    addTopNodes(state, topNodes) {
+        let existingNodeIds = state.topNodes.map(node => node.id);
+        let newNodes = topNodes.filter(node => !existingNodeIds.includes(node.id));
+        state.topNodes.push(...newNodes);
     },
 
-    setNodes(state, nodes) {
-        state.nodes = nodes;
+    setTopNodes(state, topNodes) {
+        state.topNodes = topNodes;
     },
 
-    setTags(state, tags) {
-        state.tags = tags;
+    setTopNodesTags(state, topNodesTags) {
+        state.topNodesTags = topNodesTags;
     },
 
-    setMoreNodesSearchPage(state, pageNumber) {
-        state.moreNodesSearchPage = pageNumber;
+    setBottomNodesSearchPage(state, pageNumber) {
+        state.bottomNodesSearchPage = pageNumber;
     },
 
-    setTotalNumMoreNodes(state, totalNumMoreNodes) {
-        state.totalNumMoreNodes = totalNumMoreNodes;
+    setTotalNumBottomNodes(state, totalNumBottomNodes) {
+        state.totalNumBottomNodes = totalNumBottomNodes;
     },
 
-    addMoreNodes(state, moreNodes) {
-        let existingNodeIds = state.moreNodes.map(node => node.id);
-        let newNodes = moreNodes.filter(node => !existingNodeIds.includes(node.id));
-        state.moreNodes.push(...newNodes);
+    addBottomNodes(state, bottomNodes) {
+        let existingNodeIds = state.bottomNodes.map(node => node.id);
+        let newNodes = bottomNodes.filter(node => !existingNodeIds.includes(node.id));
+        state.bottomNodes.push(...newNodes);
     },
 
-    setMoreNodes(state, moreNodes) {
-        state.moreNodes = moreNodes;
+    setBottomNodes(state, bottomNodes) {
+        state.bottomNodes = bottomNodes;
     },
 
-    setMoreTags(state, moreTags) {
-        state.moreTags = moreTags;
+    setBottomNodesTags(state, bottomNodesTags) {
+        state.bottomNodesTags = bottomNodesTags;
     },
 
     setSelectedTags(state, selectedTags) {
@@ -116,8 +116,8 @@ export const mutations = {
     setDescriptionPanel(state, value) {
         state.isDescriptionPanelOpen = value;
     },
-    setShowingMoreNodes(state, value) {
-        state.showingMoreNodes = value;
+    setShowingBottomNodes(state, value) {
+        state.isShowingBottomNodes = value;
     }
 };
 
@@ -132,7 +132,7 @@ export const actions = {
         if (append) {
             commit('setCategoryPage', state.categoryPage + 1);
         } else {
-            commit('setNodeSearchPage', 0);
+            commit('setTopNodeSearchPage', 0);
             commit('setCategoryPage', 0);
         }
 
@@ -169,16 +169,16 @@ export const actions = {
             return;
         }
         if (append) {
-            commit('setNodeSearchPage', state.nodeSearchPage + 1);
+            commit('setTopNodeSearchPage', state.topNodeSearchPage + 1);
         } else {
-            commit('setNodeSearchPage', 0);
+            commit('setTopNodeSearchPage', 0);
         }
 
         const { nodes, totalNumNodes, tags } = await searchNodes({
             query: state.query,
             tags: state.selectedTags,
             allTagsMatch: true,
-            nodeOffset: state.nodeSearchPage * nodeSearchPageSize,
+            nodeOffset: state.topNodeSearchPage * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
             fullTemplateInfo: true,
             additionalNodes: false
@@ -187,9 +187,9 @@ export const actions = {
         const { availablePortTypes } = rootState.application;
         const withMappedPorts = nodes.map(toNodeWithFullPorts(availablePortTypes));
 
-        commit('setTotalNumNodes', totalNumNodes);
-        commit(append ? 'addNodes' : 'setNodes', withMappedPorts);
-        commit('setTags', tags);
+        commit('setTotalNumTopNodes', totalNumNodes);
+        commit(append ? 'addTopNodes' : 'setTopNodes', withMappedPorts);
+        commit('setTopNodesTags', tags);
     },
 
     /**
@@ -208,16 +208,16 @@ export const actions = {
             return;
         }
         if (append) {
-            commit('setMoreNodesSearchPage', state.moreNodesSearchPage + 1);
+            commit('setBottomNodesSearchPage', state.bottomNodesSearchPage + 1);
         } else {
-            commit('setMoreNodesSearchPage', 0);
+            commit('setBottomNodesSearchPage', 0);
         }
 
         const { nodes, totalNumNodes, tags } = await searchNodes({
             query: state.query,
             tags: state.selectedTags,
             allTagsMatch: true,
-            nodeOffset: state.moreNodesSearchPage * nodeSearchPageSize,
+            nodeOffset: state.bottomNodesSearchPage * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
             fullTemplateInfo: true,
             additionalNodes: true
@@ -226,24 +226,24 @@ export const actions = {
         const { availablePortTypes } = rootState.application;
         const withMappedPorts = nodes.map(toNodeWithFullPorts(availablePortTypes));
 
-        commit('setTotalNumMoreNodes', totalNumNodes);
-        commit(append ? 'addMoreNodes' : 'setMoreNodes', withMappedPorts);
-        commit('setMoreTags', tags);
+        commit('setTotalNumBottomNodes', totalNumNodes);
+        commit(append ? 'addBottomNodes' : 'setBottomNodes', withMappedPorts);
+        commit('setBottomNodesTags', tags);
     },
 
     /**
-     * Dispatches the search of nodes. If showingMoreNodes is true also a search for more nodes is dispatched.
+     * Dispatches the search of nodes. If isShowingBottomNodes is true also a search for more nodes is dispatched.
      * Otherwise, the results for more nodes are cleared.
      *
      * @param {*} context - Vuex context.
      * @returns {Promise<void>}
      */
-    async searchNodesAndMoreNodes({ dispatch, state }) {
+    async searchTopAndBottomNodes({ dispatch, state }) {
         await Promise.all([
             dispatch('searchNodes'),
-            state.showingMoreNodes
+            state.isShowingBottomNodes
                 ? dispatch('searchMoreNodes')
-                : dispatch('clearSearchResultsForMoreNodes')
+                : dispatch('clearSearchResultsForBottomNodes')
         ]);
     },
 
@@ -264,7 +264,7 @@ export const actions = {
      */
     async updateQuery({ commit, dispatch }, value) {
         commit('setQuery', value);
-        await dispatch('searchNodesAndMoreNodes');
+        await dispatch('searchTopAndBottomNodes');
     },
 
     /**
@@ -285,16 +285,16 @@ export const actions = {
      * @returns {undefined}
      */
     async clearSearchResults({ commit, dispatch }) {
-        commit('setNodes', null);
-        commit('setTags', []);
-        commit('setTotalNumNodes', 0);
-        await dispatch('clearSearchResultsForMoreNodes');
+        commit('setTopNodes', null);
+        commit('setTopNodesTags', []);
+        commit('setTotalNumTopNodes', 0);
+        await dispatch('clearSearchResultsForBottomNodes');
     },
 
-    clearSearchResultsForMoreNodes({ commit }) {
-        commit('setMoreNodes', null);
-        commit('setMoreTags', []);
-        commit('setTotalNumMoreNodes', 0);
+    clearSearchResultsForBottomNodes({ commit }) {
+        commit('setBottomNodes', null);
+        commit('setBottomNodesTags', []);
+        commit('setTotalNumBottomNodes', 0);
     },
 
     clearCategoryResults({ commit }) {
@@ -310,8 +310,8 @@ export const actions = {
      * @param {*} context - Vuex context.
      * @returns {undefined}
      */
-    async searchNodesNextPage({ dispatch, state }) {
-        if (state.nodes?.length !== state.totalNumNodes) {
+    async searchTopNodesNextPage({ dispatch, state }) {
+        if (state.topNodes?.length !== state.totalNumTopNodes) {
             await dispatch('searchNodes', { append: true });
         }
     },
@@ -322,8 +322,8 @@ export const actions = {
      * @param {*} context - Vuex context.
      * @returns {undefined}
      */
-    async searchMoreNodesNextPage({ dispatch, state }) {
-        if (state.showingMoreNodes && state.moreNodes?.length !== state.totalNumMoreNodes) {
+    async searchBottomNodesNextPage({ dispatch, state }) {
+        if (state.isShowingBottomNodes && state.bottomNodes?.length !== state.totalNumBottomNodes) {
             await dispatch('searchMoreNodes', { append: true });
         }
     },
@@ -337,7 +337,7 @@ export const actions = {
      */
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
-        await dispatch('searchNodesAndMoreNodes');
+        await dispatch('searchTopAndBottomNodes');
     },
 
     openDescriptionPanel({ commit }) {
@@ -348,9 +348,9 @@ export const actions = {
         commit('setDescriptionPanel', false);
     },
 
-    async toggleShowingMoreNodes({ commit, dispatch, state }) {
-        commit('setShowingMoreNodes', !state.showingMoreNodes);
-        if (state.showingMoreNodes && state.moreNodes === null) {
+    async toggleShowingBottomNodes({ commit, dispatch, state }) {
+        commit('setShowingBottomNodes', !state.isShowingBottomNodes);
+        if (state.isShowingBottomNodes && state.bottomNodes === null) {
             await dispatch('searchMoreNodes');
         }
     },
@@ -358,7 +358,7 @@ export const actions = {
     async resetSearchAndCategories({ dispatch, getters }) {
         if (getters.searchIsActive) {
             await dispatch('clearSearchResults');
-            await dispatch('searchNodesAndMoreNodes');
+            await dispatch('searchTopAndBottomNodes');
         }
         // Always clear the category results
         await dispatch('clearCategoryResults');
@@ -368,10 +368,11 @@ export const actions = {
 
 export const getters = {
     hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0,
-    searchIsActive: state => Boolean(state.query || state.tags.length) && state.nodes !== null,
+    searchIsActive: state => Boolean(state.query || state.topNodesTags.length) && state.topNodes !== null,
     searchResultsContainSelectedNode(state) {
-        return Boolean(state.nodes?.some(node => node.id === state.selectedNode?.id)) ||
-            (state.showingMoreNodes && Boolean(state.moreNodes?.some(node => node.id === state.selectedNode?.id)));
+        return Boolean(state.topNodes?.some(node => node.id === state.selectedNode?.id)) ||
+            (state.isShowingBottomNodes &&
+                Boolean(state.bottomNodes?.some(node => node.id === state.selectedNode?.id)));
     },
     nodesPerCategoryContainSelectedNode(state) {
         return state.nodesPerCategory.some(category => category.nodes.some(
@@ -382,13 +383,13 @@ export const getters = {
         ? getters.searchResultsContainSelectedNode
         : getters.nodesPerCategoryContainSelectedNode,
     tagsOfVisibleNodes: state => {
-        if (state.showingMoreNodes) {
+        if (state.isShowingBottomNodes) {
             return [
-                ...state.tags,
-                ...state.moreTags.filter(t => !state.tags.includes(t))
+                ...state.topNodesTags,
+                ...state.bottomNodesTags.filter(t => !state.topNodesTags.includes(t))
             ];
         } else {
-            return state.tags;
+            return state.topNodesTags;
         }
     }
 };

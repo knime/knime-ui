@@ -30,7 +30,7 @@ jest.mock('lodash', () => ({
 }));
 
 describe('NodeRepository', () => {
-    let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock, setSelectedTagsMock,
+    let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchTopNodesNextPageMock, setSelectedTagsMock,
         getAllNodesMock, clearSearchParamsMock, setScrollPositionMock,
         setSelectedNodeMock, updateQueryMock, searchIsActive, isSelectedNodeVisible;
 
@@ -42,7 +42,7 @@ describe('NodeRepository', () => {
     beforeEach(() => {
         wrapper = null;
         searchNodesMock = jest.fn();
-        searchNodesNextPageMock = jest.fn();
+        searchTopNodesNextPageMock = jest.fn();
         setSelectedTagsMock = jest.fn();
         getAllNodesMock = jest.fn();
         clearSearchParamsMock = jest.fn();
@@ -65,14 +65,14 @@ describe('NodeRepository', () => {
                             name: 'Node 4'
                         }]
                     }],
-                    nodes: [{
+                    topNodes: [{
                         id: 'node1',
                         name: 'Node 1'
                     }, {
                         id: 'node2',
                         name: 'Node 2'
                     }],
-                    totalNumNodes: 2,
+                    totalNumTopNodes: 2,
                     selectedTags: ['myTag2'],
                     query: '',
                     scrollPosition: 100,
@@ -88,7 +88,7 @@ describe('NodeRepository', () => {
                 },
                 actions: {
                     searchNodes: searchNodesMock,
-                    searchNodesNextPage: searchNodesNextPageMock,
+                    searchTopNodesNextPage: searchTopNodesNextPageMock,
                     setSelectedTags: setSelectedTagsMock,
                     getAllNodes: getAllNodesMock,
                     clearSearchParams: clearSearchParamsMock,
@@ -193,7 +193,7 @@ describe('NodeRepository', () => {
         it('links back to repository view on search/filter results', () => {
             $store.state.nodeRepository.query = 'some node';
             $store.state.nodeRepository.selectedTags = [];
-            $store.state.nodeRepository.nodes = [];
+            $store.state.nodeRepository.topNodes = [];
             doShallowMount();
             expect(wrapper.findComponent(ActionBreadcrumb).props('items'))
                 .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);

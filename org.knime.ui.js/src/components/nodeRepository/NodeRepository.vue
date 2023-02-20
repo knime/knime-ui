@@ -22,7 +22,7 @@ export default {
         SearchResults
     },
     computed: {
-        ...mapState('nodeRepository', ['nodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
+        ...mapState('nodeRepository', ['topNodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
         ...mapGetters('nodeRepository', {
             showSearchResults: 'searchIsActive',
             isSelectedNodeVisible: 'isSelectedNodeVisible',
@@ -104,7 +104,7 @@ export default {
         v-model="selectedTags"
         :tags="tags"
       />
-      <hr v-if="!nodes || tags.length">
+      <hr v-if="!topNodes || tags.length">
     </div>
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />

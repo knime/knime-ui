@@ -25,21 +25,21 @@ export default {
     },
     computed: {
         ...mapState('nodeRepository', [
-            'nodes',
-            'moreNodes',
+            'topNodes',
+            'bottomNodes',
             'query',
             'selectedTags',
             'searchScrollPosition',
-            'totalNumNodes',
-            'showingMoreNodes'
+            'totalNumTopNodes',
+            'isShowingBottomNodes'
         ]),
         ...mapState('application', ['hasNodeCollectionActive']),
         hasNoSearchResults() {
-            return this.nodes.length === 0;
+            return this.topNodes.length === 0;
         },
         hasNoMoreSearchResults() {
-            // NB: If moreNodes is null the results are still loading
-            return this.moreNodes !== null && this.moreNodes.length === 0;
+            // NB: If bottomNodes is null the results are still loading
+            return this.bottomNodes !== null && this.bottomNodes.length === 0;
         }
     },
     watch: {
@@ -51,7 +51,9 @@ export default {
         }
     },
     methods: {
-        ...mapActions('nodeRepository', ['searchNodesNextPage', 'searchMoreNodesNextPage', 'toggleShowingMoreNodes']),
+        ...mapActions('nodeRepository', [
+            'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
+        ]),
         ...mapMutations('nodeRepository', ['setSearchScrollPosition']),
         // Also currently the NodeRepository isn't destroyed upon closing
         onSaveScrollPosition(position) {
@@ -68,13 +70,13 @@ export default {
         },
         loadMoreSearchResults() {
             this.isLoading = true;
-            this.searchNodesNextPage().then(() => {
+            this.searchTopNodesNextPage().then(() => {
                 this.isLoading = false;
             });
 
-            // NB: The store will only load more nodes if showingMoreNodes is true
+            // NB: The store will only load more nodes if isShowingBottomNodes is true
             this.isLoadingMore = true;
-            this.searchMoreNodesNextPage().then(() => {
+            this.searchBottomNodesNextPage().then(() => {
                 this.isLoadingMore = false;
             });
         }
@@ -101,7 +103,7 @@ export default {
         v-else
         class="nodes"
       >
-        <NodeList :nodes="nodes" />
+        <NodeList :nodes="topNodes" />
         <ReloadIcon
           v-if="isLoading"
           class="loading-indicator"
@@ -114,15 +116,15 @@ export default {
     >
       <BaseButton
         class="more-nodes-button"
-        :aria-expanded="String(showingMoreNodes)"
-        @click.prevent="toggleShowingMoreNodes"
+        :aria-expanded="String(isShowingBottomNodes)"
+        @click.prevent="toggleShowingBottomNodes"
       >
         <div class="more-nodes-dropdown">
-          <DropdownIcon :class="['dropdown-icon', {flip: showingMoreNodes}]" />
+          <DropdownIcon :class="['dropdown-icon', {flip: isShowingBottomNodes}]" />
         </div>
         More advanced nodes
       </BaseButton>
-      <ExpandTransition :is-expanded="showingMoreNodes">
+      <ExpandTransition :is-expanded="isShowingBottomNodes">
         <div
           v-if="hasNoMoreSearchResults"
           class="no-matching-search"
@@ -133,7 +135,7 @@ export default {
           v-else
           class="nodes"
         >
-          <NodeList :nodes="moreNodes" />
+          <NodeList :nodes="bottomNodes" />
           <ReloadIcon
             v-if="isLoadingMore"
             class="loading-indicator"
