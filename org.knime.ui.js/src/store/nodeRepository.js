@@ -371,7 +371,7 @@ export const getters = {
     searchIsActive: state => Boolean(state.query || state.tags.length) && state.nodes !== null,
     searchResultsContainSelectedNode(state) {
         return Boolean(state.nodes?.some(node => node.id === state.selectedNode?.id)) ||
-            Boolean(state.moreNodes?.some(node => node.id === state.selectedNode?.id));
+            (state.showingMoreNodes && Boolean(state.moreNodes?.some(node => node.id === state.selectedNode?.id)));
     },
     nodesPerCategoryContainSelectedNode(state) {
         return state.nodesPerCategory.some(category => category.nodes.some(

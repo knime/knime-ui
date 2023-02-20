@@ -185,6 +185,12 @@ describe('Node Repository store', () => {
             expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(false);
             store.state.nodeRepository.selectedNode = { id: 1, name: 'Node' };
             expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(true);
+            store.state.nodeRepository.nodes = [];
+            expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(false);
+            store.state.nodeRepository.moreNodes = [{ id: 1, name: 'Node' }];
+            expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(false);
+            store.state.nodeRepository.showingMoreNodes = true;
+            expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(true);
         });
 
         it('returns proper value for nodesPerCategoryContainSelectedNode', async () => {
