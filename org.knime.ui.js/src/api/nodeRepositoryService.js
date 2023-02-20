@@ -36,11 +36,12 @@ export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLi
  * @param {Number} nodeOffset - the numeric offset of the search (for pagination).
  * @param {Number} nodeLimit - the number of results which should be returned.
  * @param {Boolean} fullTemplateInfo - if the results should contain all node info (incl. img data).
- * @param {Boolean} inCollection - if the results should contain nodes of the active collection or not
+ * @param {Boolean} additionalNodes - if the results should contain contain only the nodes that are not part of the
+ *                      active selection
  * @returns {Object} the node repository search results.
  */
 export const searchNodes = async (
-    { query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo, inCollection = null }
+    { query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo, additionalNodes = false }
 ) => {
     try {
         const nodes = await rpc(
@@ -51,7 +52,7 @@ export const searchNodes = async (
             nodeOffset,
             nodeLimit,
             fullTemplateInfo,
-            inCollection
+            additionalNodes
         );
         consola.debug('Loaded node search results', nodes);
 

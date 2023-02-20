@@ -106,7 +106,7 @@ describe('API', () => {
                     nodeOffset: 0,
                     nodeLimit: 2,
                     fullTemplateInfo: true,
-                    inCollection: true
+                    additionalNodes: true
                 });
 
                 expect(window.jsonrpc).toHaveBeenCalledWith({
@@ -130,7 +130,7 @@ describe('API', () => {
                 expect(window.jsonrpc).toHaveBeenCalledWith({
                     jsonrpc: '2.0',
                     method: 'NodeRepositoryService.searchNodes',
-                    params: ['churn', ['myTag'], true, 0, 2, true, null],
+                    params: ['churn', ['myTag'], true, 0, 2, true, false],
                     id: 0
                 });
             });

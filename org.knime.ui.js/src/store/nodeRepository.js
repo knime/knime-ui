@@ -181,7 +181,7 @@ export const actions = {
             nodeOffset: state.nodeSearchPage * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
             fullTemplateInfo: true,
-            inCollection: true
+            additionalNodes: false
         });
 
         const { availablePortTypes } = rootState.application;
@@ -220,7 +220,7 @@ export const actions = {
             nodeOffset: state.moreNodesSearchPage * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
             fullTemplateInfo: true,
-            inCollection: false
+            additionalNodes: true
         });
 
         const { availablePortTypes } = rootState.application;
