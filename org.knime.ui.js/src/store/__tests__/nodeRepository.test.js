@@ -219,6 +219,19 @@ describe('Node Repository store', () => {
             store.state.nodeRepository.selectedNode = { id: 2, name: 'Node' };
             expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(true);
         });
+
+        it('returns proper value for tagsOfVisibleNodes', async () => {
+            const { store } = await createStore();
+            expect(store.getters['nodeRepository/tagsOfVisibleNodes']).toEqual([]);
+            store.state.nodeRepository.tags = ['tag1', 'tag2'];
+            expect(store.getters['nodeRepository/tagsOfVisibleNodes']).toEqual(['tag1', 'tag2']);
+            store.state.nodeRepository.moreTags = ['tag3', 'tag1', 'tag4'];
+            expect(store.getters['nodeRepository/tagsOfVisibleNodes']).toEqual(['tag1', 'tag2']);
+            store.state.nodeRepository.showingMoreNodes = true;
+            expect(store.getters['nodeRepository/tagsOfVisibleNodes']).toEqual(['tag1', 'tag2', 'tag3', 'tag4']);
+            store.state.nodeRepository.tags = [];
+            expect(store.getters['nodeRepository/tagsOfVisibleNodes']).toEqual(['tag3', 'tag1', 'tag4']);
+        });
     });
 
     describe('mutations', () => {
