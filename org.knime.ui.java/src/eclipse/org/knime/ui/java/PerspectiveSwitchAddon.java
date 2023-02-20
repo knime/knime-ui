@@ -150,7 +150,7 @@ public final class PerspectiveSwitchAddon {
 
     private void onSwitchToWebUI() {
         NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
-        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getNodeRepoFilter());
+        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
         PerspectiveUtil.setClassicPerspectiveActive(false);
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
