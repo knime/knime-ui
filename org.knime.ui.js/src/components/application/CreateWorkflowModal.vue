@@ -17,7 +17,8 @@ export default {
     },
     data() {
         return {
-            workflowName: 'KNIME_project'
+            workflowName: 'KNIME_project',
+            enableSubmit: true
         };
     },
     computed: {
@@ -38,12 +39,13 @@ export default {
     methods: {
         async onSubmit() {
             await this.$store.dispatch('spaces/createWorkflow', { workflowName: this.workflowName });
-            // this.$emit('onSubmit');
-            // check error...
             this.closeModal();
         },
         closeModal() {
             this.$store.commit('spaces/setIsCreateWorkflowModalOpen', false);
+        },
+        onValidChange(isValid) {
+            this.enableSubmit = isValid;
         }
     }
 };
@@ -62,8 +64,11 @@ export default {
       <Label
         text="Workflow name"
       >
-        <WorkflowNameValidator :name="workflowName">
-          <template #default="{ isValid }">
+        <WorkflowNameValidator
+          :name="workflowName"
+          @is-valid-changed="onValidChange"
+        >
+          <template #default="{ isValid, errorMessage }">
             <div>
               <InputField
                 ref="inputRef"
@@ -76,7 +81,7 @@ export default {
                 v-if="!isValid"
                 class="item-error"
               >
-                <span>Name contains invalid characters *?#:"&lt;>%~|/</span>
+                <span>{{ errorMessage }}</span>
               </div>
             </div>
           </template>
@@ -93,6 +98,7 @@ export default {
       <Button
         primary
         with-border
+        :disabled="!enableSubmit"
         @click="onSubmit"
       >
         <strong>Create</strong>

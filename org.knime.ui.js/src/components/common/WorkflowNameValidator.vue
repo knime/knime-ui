@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex';
 
 const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/\\]/;
 /**
@@ -17,12 +18,43 @@ export default {
         name: {
             type: String,
             required: true
+        },
+        currentItemId: {
+            type: String,
+            required: false,
+            default: null
         }
     },
     computed: {
+        ...mapState('spaces', ['activeSpace']),
         isValidName() {
-            const newValue = this.removeInvalidPreOrSuffix(this.renameValue);
+            const newValue = this.cleanName(this.renameValue);
             return !INVALID_NAME_CHARACTERS.test(newValue) && newValue.length <= NAME_CHAR_LIMIT;
+        },
+        isNameAvailable() {
+            const itemsWithNameCollision = this.activeSpace.activeWorkflowGroup.items.filter(
+                (workflow) => workflow.name === this.name && workflow.id !== this.currentItemId
+            );
+            return itemsWithNameCollision.length === 0;
+        },
+        isValid() {
+            return this.isValidName && this.isNameAvailable;
+        },
+        errorMessage() {
+            if (!this.isValidName) {
+                return 'Name contains invalid characters *?#:"&lt;>%~|/ or exceeds 255 characters';
+            }
+
+            if (!this.isNameAvailable) {
+                return `Name is already taken by another workflow in the active space`;
+            }
+
+            return '';
+        }
+    },
+    watch: {
+        isValid() {
+            this.$emit('is-valid-changed', this.isValid);
         }
     },
     methods: {
@@ -32,7 +64,8 @@ export default {
     },
     render() {
         return this.$scopedSlots.default({
-            isValid: this.isValidName,
+            isValid: this.isValid,
+            errorMessage: this.errorMessage,
             cleanNameFn: this.cleanName
         });
     }

@@ -186,7 +186,7 @@ export default {
           class="create-workflow-btn"
           :title="createWorkflowButtonTitle"
           :disabled="disabledActions.createWorkflow"
-          @click.native="$emit('action:create-workflow')"
+          @click.native="openCreateWorkflowModal"
         >
           <PlusIcon />
         </ToolbarButton>

@@ -418,8 +418,11 @@ export default {
         >
           <span v-if="!isActiveRenameItem(item)">{{ item.name }}</span>
           <template v-else>
-            <WorkflowNameValidator :name="renameValue">
-              <template #default="{ isValid, cleanNameFn }">
+            <WorkflowNameValidator
+              :name="renameValue"
+              :current-item-id="item.id"
+            >
+              <template #default="{ isValid, cleanNameFn, errorMessage }">
                 <div>
                   <InputField
                     ref="renameRef"
@@ -434,7 +437,7 @@ export default {
                     v-if="!isValid"
                     class="item-error"
                   >
-                    <span>Name contains invalid characters *?#:"&lt;>%~|/ or exceeds 255 characters</span>
+                    <span>{{ errorMessage }}</span>
                   </div>
                 </div>
               </template>
