@@ -23,11 +23,11 @@ export const fetchSpaceProvider = async ({ spaceProviderId }) => {
 };
 
 
-export const createWorkflow = async ({ spaceProviderId = 'local', spaceId, itemId }) => {
+export const createWorkflow = async ({ spaceProviderId = 'local', spaceId, itemId, workflowName }) => {
     try {
         return await rpc(
             'SpaceService.createWorkflow',
-            spaceId, spaceProviderId, itemId
+            spaceId, spaceProviderId, itemId, workflowName
         );
     } catch (e) {
         consola.error(e);

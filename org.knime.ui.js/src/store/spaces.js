@@ -222,7 +222,7 @@ export const actions = {
         return dispatch('fetchWorkflowGroupContent', { itemId });
     },
 
-    async createWorkflow({ commit, getters, state, dispatch }) {
+    async createWorkflow({ commit, getters, state, dispatch }, { workflowName }) {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId || 'root';
@@ -236,7 +236,7 @@ export const actions = {
                 { loading: true, config: { displayMode: 'transparent' } },
                 { root: true }
             );
-            const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId });
+            const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId, workflowName });
             dispatch(
                 'application/updateGlobalLoader',
                 { loading: false },

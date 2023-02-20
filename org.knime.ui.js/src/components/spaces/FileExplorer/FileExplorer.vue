@@ -13,21 +13,10 @@ import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
 import { getMetaOrCtrlKey } from '@/util/navigator';
 import ITEM_TYPES from '@/util/spaceItemTypes';
+import WorkflowNameValidator from '@/components/common/WorkflowNameValidator.vue';
 
 import * as multiSelectionService from './multiSelectionStateService';
 import { createDragGhosts } from './dragGhostHelpers';
-
-const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/\\]/;
-/**
- * "/", "\" and "." are non-valid preffixes and will be auto-removed
- */
-const INVALID_PREFIX = /^(\.)+|^(\\)+|^(\/)+/;
-/**
- * "/", "\" and "." are non-valid suffixes and will be auto-removed
- */
-const INVALID_SUFFIX = /(\.)+$|(\\)+$|(\/)+$/;
-
-const NAME_CHAR_LIMIT = 255;
 
 /**
  * Component that handles FileExplorer interactions.
@@ -44,6 +33,7 @@ export default {
         DataIcon,
         MetaNodeIcon,
         ArrowIcon,
+        WorkflowNameValidator,
         InputField
     },
 
@@ -81,13 +71,6 @@ export default {
             activeRenameId: null,
             renameValue: ''
         };
-    },
-
-    computed: {
-        isRenamingInvalid() {
-            const newValue = this.removeInvalidPreOrSuffix(this.renameValue);
-            return INVALID_NAME_CHARACTERS.test(newValue) || newValue.length > NAME_CHAR_LIMIT;
-        }
     },
 
     watch: {
@@ -337,13 +320,13 @@ export default {
             await new Promise(r => setTimeout(r, 0));
             this.$refs.renameRef[0]?.$refs?.input?.focus();
         },
-        onRenameSubmit(keyupEvent) {
+        onRenameSubmit(keyupEvent, isValid, cleanNameFn) {
             if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
                 this.clearRenameState();
             }
 
-            if (keyupEvent.key === 'Enter' && !this.isRenamingInvalid) {
-                const newName = this.removeInvalidPreOrSuffix(this.renameValue.trim());
+            if (keyupEvent.key === 'Enter' && isValid) {
+                const newName = cleanNameFn(this.renameValue.trim());
 
                 if (newName === '') {
                     this.clearRenameState();
@@ -358,9 +341,6 @@ export default {
         clearRenameState() {
             this.activeRenameId = null;
             this.renameValue = '';
-        },
-        removeInvalidPreOrSuffix(value) {
-            return value.replace(INVALID_PREFIX, '').replace(INVALID_SUFFIX, '');
         }
     }
 };
@@ -438,21 +418,27 @@ export default {
         >
           <span v-if="!isActiveRenameItem(item)">{{ item.name }}</span>
           <template v-else>
-            <InputField
-              ref="renameRef"
-              v-model="renameValue"
-              :class="['is-renamed', mode]"
-              type="text"
-              title="rename"
-              :is-valid="!isRenamingInvalid"
-              @keyup="onRenameSubmit"
-            />
-            <div
-              v-if="isRenamingInvalid"
-              class="item-error"
-            >
-              <span>Name contains invalid characters *?#:"&lt;>%~|/ or exceeds 255 characters</span>
-            </div>
+            <WorkflowNameValidator :name="renameValue">
+              <template #default="{ isValid, cleanNameFn }">
+                <div>
+                  <InputField
+                    ref="renameRef"
+                    v-model="renameValue"
+                    :class="['is-renamed', mode]"
+                    type="text"
+                    title="rename"
+                    :is-valid="isValid"
+                    @keyup="onRenameSubmit($event, isValid, cleanNameFn)"
+                  />
+                  <div
+                    v-if="!isValid"
+                    class="item-error"
+                  >
+                    <span>Name contains invalid characters *?#:"&lt;>%~|/ or exceeds 255 characters</span>
+                  </div>
+                </div>
+              </template>
+            </WorkflowNameValidator>
           </template>
         </td>
 
