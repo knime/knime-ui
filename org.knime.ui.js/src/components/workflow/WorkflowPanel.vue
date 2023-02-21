@@ -104,7 +104,7 @@ export default {
         class="banner"
       >
         <span>
-          This is a temporary copy. Once you are done, re-upload or save it locally.
+          This is a temporary copy. Once you are done, save to re-upload or save a local copy.
         </span>
         <Button
           primary
