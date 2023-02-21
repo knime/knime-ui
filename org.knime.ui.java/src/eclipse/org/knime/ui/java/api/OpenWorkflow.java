@@ -61,6 +61,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
@@ -69,6 +71,7 @@ import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -119,6 +122,8 @@ final class OpenWorkflow {
                         .toRelativePath(wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath()).toString();
                 }
                 registerWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
+                NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm,
+                    space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
             });
         }
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
