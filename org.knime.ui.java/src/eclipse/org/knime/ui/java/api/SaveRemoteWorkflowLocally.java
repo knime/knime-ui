@@ -85,8 +85,7 @@ final class SaveRemoteWorkflowLocally {
         // State-less
     }
 
-    static void saveTempWorkflowAs(final String projectId, final String workflowSvg)
-            throws IOException {
+    static void saveTempWorkflowAs(final String projectId, final String workflowSvg) throws IOException {
         final var projectManager = WorkflowProjectManager.getInstance();
         final var workflowProject = projectManager.getWorkflowProject(projectId) //
                 .orElseThrow(() -> new NoSuchElementException(
@@ -141,8 +140,9 @@ final class SaveRemoteWorkflowLocally {
             final var localItemId = localWorkspace.getItemId(newPath);
             final var relativePath = localWorkspace.getLocalRootPath().relativize(newPath).toString();
             final var project = OpenWorkflow.createWorkflowProject(workflowManager,
-                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID, localItemId, relativePath);
-            projectManager.addWorkflowProject(workflowProject.getID(), project);
+                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID, localItemId, relativePath,
+                projectId);
+            projectManager.addWorkflowProject(projectId, project);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
     }

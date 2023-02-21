@@ -132,7 +132,7 @@ final class OpenWorkflow {
     private static void registerWorkflowProject(final WorkflowManager wfm, final String spaceProviderId,
         final String spaceId, final String itemId, final String relativePath) {
         var wpm = WorkflowProjectManager.getInstance();
-        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
+        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, null);
         var projectId = wfProj.getID();
         wpm.addWorkflowProject(projectId, wfProj);
         wpm.openAndCacheWorkflow(projectId);
@@ -140,8 +140,8 @@ final class OpenWorkflow {
     }
 
     static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
-        final String spaceId, final String itemId, final String relativePath) {
-        var projectId = LocalSpaceUtil.getUniqueProjectId(wfm.getName());
+        final String spaceId, final String itemId, final String relativePath, final String oldProjectId) {
+        var projectId = oldProjectId == null ? LocalSpaceUtil.getUniqueProjectId(wfm.getName()) : oldProjectId;
         return new WorkflowProject() { // NOSONAR
             @Override
             public WorkflowManager openProject() {
