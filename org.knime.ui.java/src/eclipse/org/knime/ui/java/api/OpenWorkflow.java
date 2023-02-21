@@ -139,7 +139,7 @@ final class OpenWorkflow {
         wpm.setWorkflowProjectActive(projectId);
     }
 
-    private static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
+    static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
         final String spaceId, final String itemId, final String relativePath) {
         var projectId = LocalSpaceUtil.getUniqueProjectId(wfm.getName());
         return new WorkflowProject() { // NOSONAR

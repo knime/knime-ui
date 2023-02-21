@@ -51,20 +51,22 @@ package org.knime.ui.java.api;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.core.node.workflow.contextv2.ExecutorInfo;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
-import org.knime.gateway.api.webui.entity.SpaceItemEnt;
-import org.knime.gateway.impl.project.WorkflowProject;
+import org.knime.core.util.FileUtil;
+import org.knime.core.util.LockFailedException;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -83,54 +85,65 @@ final class SaveRemoteWorkflowLocally {
         // State-less
     }
 
-    /**
-     * Closes a currently open remote workflow and moves it to a user-determined workflow group in the local workspace.
-     *
-     * @param projectId The project ID of the open remote workflow
-     * @param workflowPreviewSvg The workflow preview SVG
-     *
-     * @return The optional origin of the newly created workflow
-     */
-    static Optional<SpaceItemEnt> saveAndClose(final String projectId, final String workflowPreviewSvg) {
-        var srcPath = toAbsolutePath(projectId);
+    static void saveTempWorkflowAs(final String projectId, final String workflowSvg)
+            throws IOException {
+        final var projectManager = WorkflowProjectManager.getInstance();
+        final var workflowProject = projectManager.getWorkflowProject(projectId) //
+                .orElseThrow(() -> new NoSuchElementException(
+                    String.format("No local workflow path found for <%s>", projectId)));
 
-        var workflowGroupItemId = askForDestinationWorkflowGroupAndGetId();
+        final var workflowManager = workflowProject.openProject();
+        final var workflowGroupItemId = askForDestinationWorkflowGroupAndGetId();
         if (workflowGroupItemId == null) {
-            return Optional.empty();
+            return;
         }
 
-        var collisionHandling = getNameCollisionStrategy(srcPath, workflowGroupItemId);
+        final var oldContext = CheckUtils.checkArgumentNotNull(workflowManager.getContextV2());
+        final var execInfo = oldContext.getExecutorInfo();
+        final var srcPath = execInfo.getLocalWorkflowPath();
+
+        final var collisionHandling = getNameCollisionStrategy(srcPath, workflowGroupItemId);
         if (collisionHandling == null) {
-            return Optional.empty();
+            return;
         }
 
-        SaveWorkflow.saveWorkflow(projectId, workflowPreviewSvg, true);
-        var isClosed = CloseWorkflow.closeWorkflow(projectId, null);
-        if (!isClosed) {
-            return Optional.empty();
-        }
+        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+        final var workflowName = srcPath.getFileName().toString();
+        final var newPath = localWorkspace.createWorkflowDir(workflowGroupItemId, workflowName, collisionHandling);
 
-        var spaceItemEnt = DesktopAPUtil.runWithProgress("Save workflow locally", LOGGER,
-            monitor -> moveWorkflow(monitor, srcPath, workflowGroupItemId, collisionHandling));
-        if (spaceItemEnt.isEmpty()) {
-            DesktopAPUtil.showWarning("Failed to save workflow locally",
-                "There was an error while trying to make a local copy of the opened workflow");
-        }
-        return spaceItemEnt;
-    }
+        final WorkflowContextV2 newContext = WorkflowContextV2.builder() //
+                .withAnalyticsPlatformExecutor(exec -> exec //
+                    .withCurrentUserAsUserId() //
+                    .withLocalWorkflowPath(newPath) //
+                    .withMountpoint(localWorkspace.getId().toUpperCase(Locale.US), localWorkspace.getLocalRootPath()) //
+                    .withTempFolder(execInfo.getTempFolder()))
+                .withLocalLocation()
+                .build();
 
-    private static SpaceItemEnt moveWorkflow(final IProgressMonitor monitor, final Path srcPath,
-        final String workflowGroupItemId, final NameCollisionHandling collisionHandling) {
-        monitor.beginTask("Begin to move from tmp to local workspace", IProgressMonitor.UNKNOWN);
-        try {
-            var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-            var spaceItemEnt = localWorkspace.moveItemFromTmp(srcPath, workflowGroupItemId, collisionHandling);
-            monitor.done();
-            return spaceItemEnt;
-        } catch (IOException e) {
-            LOGGER.error(String.format("Failed to move workflow at <%s>", srcPath), e);
-            monitor.done();
-            return null;
+        final var result = DesktopAPUtil.runWithProgress("Saving workflow locally", LOGGER, monitor -> { // NOSONAR
+            try {
+                workflowManager.saveAs(newContext, DesktopAPUtil.toExecutionMonitor(monitor));
+                SaveWorkflow.saveWorkflowSvg(workflowName, workflowSvg, newPath);
+                return true;
+            } catch (IOException | LockFailedException e) {
+                throw ExceptionUtils.<RuntimeException>rethrow(e);
+            } catch (CanceledExecutionException e) { // NOSONAR user cancelled
+                return null;
+            }
+        });
+
+        if (result.isEmpty()) {
+            // saving has failed
+            FileUtil.deleteRecursively(newPath.toFile());
+        } else {
+            FileUtil.deleteRecursively(srcPath.toFile());
+            // update the `WorkflowProject` origin
+            final var localItemId = localWorkspace.getItemId(newPath);
+            final var relativePath = localWorkspace.getLocalRootPath().relativize(newPath).toString();
+            final var project = OpenWorkflow.createWorkflowProject(workflowManager,
+                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID, localItemId, relativePath);
+            projectManager.addWorkflowProject(workflowProject.getID(), project);
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
     }
 
@@ -150,16 +163,6 @@ final class SaveRemoteWorkflowLocally {
             .map(File::toPath)//
             .map(localWorkspace::getItemId)//
             .orElse(null);
-    }
-
-    private static Path toAbsolutePath(final String projectId) {
-        return WorkflowProjectManager.getInstance().getWorkflowProject(projectId)//
-            .map(WorkflowProject::openProject)//
-            .map(WorkflowManager::getContextV2)//
-            .map(WorkflowContextV2::getExecutorInfo)//
-            .map(ExecutorInfo::getLocalWorkflowPath)//
-            .orElseThrow(
-                () -> new NoSuchElementException(String.format("No local workflow path found for <%s>", projectId)));
     }
 
     private static NameCollisionHandling getNameCollisionStrategy(final Path srcPath,

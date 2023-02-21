@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -189,9 +190,22 @@ final class SaveWorkflow {
             return; // Abort if saving the workflow fails
         }
 
+        saveWorkflowSvg(wfm.getName(), svg, workflowPath);
+
+        monitor.done();
+    }
+
+    /**
+     * Saves the workflow SVG to the workflow's directory.
+     *
+     * @param name workflow name
+     * @param svg workflow SVG
+     * @param workflowPath workflow path
+     */
+    public static void saveWorkflowSvg(final String name, final String svg, final Path workflowPath) {
         if (svg == null) {
             DesktopAPUtil.showWarning("Failed to save workflow preview",
-                String.format("The workflow preview (svg) couldn't be saved for workflow %s", wfm.getName()));
+                String.format("The workflow preview (svg) couldn't be saved for workflow %s", name));
         } else {
             try {
                 Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg,
@@ -201,8 +215,6 @@ final class SaveWorkflow {
                     "Saving the SVG didn't work", LOGGER, e));
             }
         }
-
-        monitor.done();
     }
 
     /**

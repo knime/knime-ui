@@ -63,13 +63,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.CanceledExecutionException;
-import org.knime.core.node.DefaultNodeProgressMonitor;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
+import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.product.rcp.intro.UpdateDetector;
@@ -223,18 +223,7 @@ public final class DesktopAPUtil {
      * @return execution monitor adapter
      */
     public static ExecutionMonitor toExecutionMonitor(final IProgressMonitor monitor) {
-        return new ExecutionMonitor(new DefaultNodeProgressMonitor() {
-
-            @Override
-            protected boolean isCanceled() {
-                return super.isCanceled() || monitor.isCanceled();
-            }
-
-            @Override
-            public synchronized void reset() {
-                throw new IllegalStateException("Reset not supported");
-            }
-        });
+        return new ExecutionMonitor(new ProgressMonitorAdapter(monitor));
     }
 
     /**
