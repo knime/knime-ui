@@ -256,6 +256,23 @@ export default {
       line-height: 61px;
     }
   }
+/* TODO NXT-1569 Find a real solution */
+
+  & >>> .table-view-wrapper {
+    & .table-header th:first-child{
+      margin-left: 0px;
+      padding-left: 10px;
+      font-style: italic;
+      color: var(--knime-porcelain);
+    }
+    
+    & tr.row.no-sub-menu.compact-mode td:first-child {
+      background-color: var(--knime-porcelain);
+      font-style: italic;
+      padding-left: 10px;
+      margin-left: 0px;
+    }
+  }
 }
 
 .action-button {
