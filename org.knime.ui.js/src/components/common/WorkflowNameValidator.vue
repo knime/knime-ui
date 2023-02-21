@@ -33,7 +33,7 @@ export default {
     },
     computed: {
         isValidName() {
-            const newValue = this.cleanName(this.renameValue);
+            const newValue = this.cleanName(this.name);
             return !INVALID_NAME_CHARACTERS.test(newValue) && newValue.length <= NAME_CHAR_LIMIT;
         },
         isNameAvailable() {
@@ -61,6 +61,9 @@ export default {
         isValid() {
             this.$emit('is-valid-changed', this.isValid);
         }
+    },
+    mounted() {
+        this.$emit('clean-name', this.cleanName);
     },
     methods: {
         cleanName(value) {

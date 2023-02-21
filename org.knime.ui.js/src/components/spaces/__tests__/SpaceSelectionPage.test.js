@@ -4,7 +4,7 @@ import { createLocalVue, mount } from '@vue/test-utils';
 
 import * as spacesStore from '@/store/spaces';
 
-import { fetchAllSpaceProviders } from '@api';
+import { fetchAllSpaceProviders, fetchWorkflowGroupContent } from '@api';
 import SpaceSelectionPage from '../SpaceSelectionPage.vue';
 import SpaceCard from '../SpaceCard.vue';
 import { APP_ROUTES } from '@/router';
@@ -23,6 +23,7 @@ jest.mock('@api');
 describe('SpaceSelectionPage.vue', () => {
     const doMount = ({ mockProvidersResponse = mockSpaceProviders, spacesStoreOverrides = null } = {}) => {
         fetchAllSpaceProviders.mockResolvedValue(mockProvidersResponse);
+        fetchWorkflowGroupContent.mockResolvedValue({});
 
         const $store = mockVuexStore({
             spaces: spacesStoreOverrides || spacesStore

@@ -1,6 +1,5 @@
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+/* eslint-disable max-lines */
+import { mount } from '@vue/test-utils';
 
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
 import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
@@ -9,16 +8,9 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
-import * as spacesStore from '@/store/spaces';
-
 import FileExplorer from '../FileExplorer.vue';
 
 describe('FileExplorer.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     const MOCK_DATA = [
         {
             id: '0',
@@ -59,18 +51,7 @@ describe('FileExplorer.vue', () => {
     ];
 
     const doMount = ({ props = {} } = { }, initialStoreState = null) => {
-        const $store = mockVuexStore({
-            spaces: spacesStore
-        });
-
-        if (initialStoreState) {
-            $store.state.spaces = {
-                ...$store.state.spaces,
-                ...initialStoreState
-            };
-        }
-
-        const mocks = { $shapes: { nodeSize: 32 }, $store };
+        const mocks = { $shapes: { nodeSize: 32 } };
         const defaultProps = {
             items: MOCK_DATA,
             isRootFolder: true,

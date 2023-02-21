@@ -374,13 +374,15 @@ describe('spaces store', () => {
                     }
                 };
 
-                await store.dispatch('spaces/createWorkflow');
+                const workflowName = 'workflow 1';
+
+                await store.dispatch('spaces/createWorkflow', { workflowName });
                 expect(dispatchSpy).toHaveBeenCalledWith(
                     'application/updateGlobalLoader',
                     { loading: true, config: { displayMode: 'transparent' } }
                 );
                 expect(createWorkflow).toHaveBeenCalledWith(
-                    expect.objectContaining({ spaceId: 'local', itemId: 'level2' })
+                    expect.objectContaining({ spaceId: 'local', itemId: 'level2', workflowName })
                 );
                 expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level2' })

@@ -19,7 +19,8 @@ export default {
     data() {
         return {
             workflowName: 'KNIME_project',
-            enableSubmit: true
+            enableSubmit: true,
+            cleanName: () => {}
         };
     },
 
@@ -43,14 +44,25 @@ export default {
     
     methods: {
         async onSubmit() {
-            await this.$store.dispatch('spaces/createWorkflow', { workflowName: this.workflowName });
-            this.closeModal();
+            try {
+                await this.$store.dispatch(
+                    'spaces/createWorkflow',
+                    { workflowName: this.cleanName(this.workflowName) }
+                );
+                this.closeModal();
+            } catch (error) {
+                consola.log(`There was an error creating the workflow`, error);
+            }
         },
         closeModal() {
+            this.enableSubmit = true;
             this.$store.commit('spaces/setIsCreateWorkflowModalOpen', false);
         },
         onValidChange(isValid) {
             this.enableSubmit = isValid;
+        },
+        getNameCleanerFunction(cleanName) {
+            this.cleanName = cleanName;
         },
         setNameSuggestion() {
             const NAME_TEMPLATE = 'KNIME_project';
@@ -87,6 +99,7 @@ export default {
           :name="workflowName"
           :workflow-items="activeSpace.activeWorkflowGroup.items"
           @is-valid-changed="onValidChange"
+          @clean-name="getNameCleanerFunction"
         >
           <template #default="{ isValid, errorMessage }">
             <div>
