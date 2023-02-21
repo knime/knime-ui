@@ -50,6 +50,7 @@ package org.knime.ui.java.api;
 
 import java.io.IOException;
 
+import org.knime.core.node.workflow.NodeTimer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 
 /**
@@ -76,7 +77,11 @@ final class ImportAPI {
     static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
             throws IOException {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-        return IMPORT_WORKFLOWS.importItems(space, itemId);
+        var success = IMPORT_WORKFLOWS.importItems(space, itemId);
+        if (success) {
+            NodeTimer.GLOBAL_TIMER.incWorkflowImport();
+        }
+        return success;
     }
 
     /**
