@@ -60,12 +60,12 @@ describe('Error.vue', () => {
         const wrapper = mount(Error);
 
         delete window.location;
-        window.location = { reload: jest.fn() };
+        window.location = { href: '' };
 
         let reloadButton = wrapper.findAllComponents(Button).at(0);
         reloadButton.trigger('click');
 
-        expect(window.location.reload).toHaveBeenCalled();
+        expect(window.location.href).toEqual('/index.html');
     });
 
     it('switch to java app', () => {
