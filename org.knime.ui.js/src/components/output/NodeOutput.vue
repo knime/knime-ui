@@ -263,7 +263,6 @@ export default {
       margin-left: 0px;
       padding-left: 10px;
       font-style: italic;
-      color: var(--knime-porcelain);
     }
     
     & tr.row.no-sub-menu.compact-mode td:first-child {
