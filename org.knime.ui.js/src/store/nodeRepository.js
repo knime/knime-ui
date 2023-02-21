@@ -348,12 +348,12 @@ export const getters = {
         ? getters.searchResultsContainSelectedNode
         : getters.nodesPerCategoryContainSelectedNode,
     tagsOfVisibleNodes: state => {
-        if (state.isShowingBottomNodes) {
-            return [
-                ...state.topNodesTags,
-                ...state.bottomNodesTags.filter(t => !state.topNodesTags.includes(t))
-            ];
-        }
-        return state.topNodesTags;
+        const allTags = [
+            ...state.topNodesTags,
+            ...state.selectedTags,
+            // eslint-disable-next-line no-extra-parens
+            ...(state.isShowingBottomNodes ? state.bottomNodesTags : [])
+        ];
+        return [...new Set(allTags)];
     }
 };
