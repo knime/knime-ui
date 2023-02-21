@@ -49,6 +49,8 @@
 package org.knime.ui.java.api;
 
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
@@ -120,7 +122,14 @@ final class WorkflowAPI {
     @API
     static void setProjectActiveAndEnsureItsLoaded(final String projectId) {
         var wpm = WorkflowProjectManager.getInstance();
-        var wfm = wpm.openAndCacheWorkflow(projectId).orElse(null);
+        var wfm = wpm.getCachedWorkflow(projectId).orElse(null);
+        if (wfm == null) {
+            // workflow hasn't been loaded, yet -> open it
+            wfm = wpm.openAndCacheWorkflow(projectId).orElse(null);
+            if (wfm != null) {
+                NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
+            }
+        }
         if (wfm != null) {
             wpm.setWorkflowProjectActive(projectId);
         } else {
