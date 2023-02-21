@@ -143,7 +143,7 @@ export default {
         v-else
         class="application-name"
       >
-        <span class="text">KNIME Analytics Platform 5.0 – Early Access</span>
+        <span class="text">KNIME Analytics Platform 5 – Early Access</span>
       </div>
 
       <div class="buttons">

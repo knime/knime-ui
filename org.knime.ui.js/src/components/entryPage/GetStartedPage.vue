@@ -1,7 +1,7 @@
 <script>
 import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 
-import LinkExternal from 'webapps-common/ui/assets/img/icons/link-external.svg';
+import LinkExternalIcon from 'webapps-common/ui/assets/img/icons/link-external.svg';
 
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
 import Card from '@/components/common/Card.vue';
@@ -16,7 +16,7 @@ const MAX_EXAMPLES_PER_ROW = 3;
 export default {
     components: {
         SpaceSelectionPage,
-        LinkExternal,
+        LinkExternalIcon,
         GridOutbreaker,
         Card,
         CardHeader,
@@ -84,8 +84,8 @@ export default {
       </div>
 
       <div class="grid-container more-workflows">
-        <a href="https://knime.com/spreadsheet-edition-collection?src=knimeappmodernui">
-          <LinkExternal />Find more resources for spreadsheet automation on the KNIME Community Hub
+        <a href="https://knime.com/50-modern-ui-hub-collection?src=knimeappmodernui">
+          <LinkExternalIcon />Find more resources on the KNIME Community Hub
         </a>
       </div>
     </section>

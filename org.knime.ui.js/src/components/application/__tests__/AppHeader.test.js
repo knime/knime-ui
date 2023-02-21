@@ -108,7 +108,7 @@ describe('AppHeader.vue', () => {
             doMount();
 
             const title = wrapper.find('.application-name');
-            expect(title.text()).toBe('KNIME Analytics Platform 5.0 – Early Access');
+            expect(title.text()).toBe('KNIME Analytics Platform 5 – Early Access');
         });
 
         it('sets the entry tab at startup when there are no open projects', () => {
