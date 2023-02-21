@@ -220,9 +220,9 @@ final class Init {
             @Override
             public List<String> getRelativeExampleProjectPaths() {
                 return List.of( //
-                    "Example Workflows/Basic Examples/Building a Simple Classifier", //
-                    "Example Workflows/Basic Examples/Data Blending", //
-                    "Example Workflows/Basic Examples/Simple Reporting Example" //
+                    "Example Workflows/Basic Examples/Combine Clean and Summarize Spreadsheet Data", //
+                    "Example Workflows/Basic Examples/CountIf and SumIf", //
+                    "Example Workflows/Basic Examples/Non-standard format Spreadsheets" //
                 );
             }
         };
