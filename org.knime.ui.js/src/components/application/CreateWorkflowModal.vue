@@ -32,6 +32,7 @@ export default {
             immediate: true,
             handler() {
                 if (this.isCreateWorkflowModalOpen) {
+                    this.setNameSuggestion();
                     setTimeout(() => {
                         this.$refs.inputRef?.$refs?.input?.focus();
                     }, 200);
@@ -50,6 +51,20 @@ export default {
         },
         onValidChange(isValid) {
             this.enableSubmit = isValid;
+        },
+        setNameSuggestion() {
+            const NAME_TEMPLATE = 'KNIME_project';
+            const items = this.activeSpace.activeWorkflowGroup.items;
+            if (!items.some((item) => item.name === `${NAME_TEMPLATE}`)) {
+                this.workflowName = `${NAME_TEMPLATE}`;
+                return;
+            }
+
+            let counter = 1;
+            while (items.some(({ name }) => name === `${NAME_TEMPLATE}${counter}`)) {
+                counter++;
+            }
+            this.workflowName = `${NAME_TEMPLATE}${counter}`;
         }
     }
 };
@@ -60,7 +75,7 @@ export default {
     v-if="isCreateWorkflowModalOpen"
     ref="modalRef"
     :active="isCreateWorkflowModalOpen"
-    title="Create a new KNIME workflow"
+    title="Create a new workflow"
     style-type="info"
     @cancel="closeModal"
   >
@@ -102,7 +117,6 @@ export default {
       </Button>
       <Button
         primary
-        with-border
         :disabled="!enableSubmit"
         @click="onSubmit"
       >
