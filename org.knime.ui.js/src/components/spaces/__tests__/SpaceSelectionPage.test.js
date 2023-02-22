@@ -1,6 +1,5 @@
-import Vuex from 'vuex';
 import { mockVuexStore } from '@/test/test-utils';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 
 import * as spacesStore from '@/store/spaces';
 
@@ -34,16 +33,14 @@ describe('SpaceSelectionPage.vue', () => {
         const mockRouter = { push: jest.fn() };
 
         const wrapper = mount(SpaceSelectionPage, {
-            mocks: { $store, $router: mockRouter }
+            global: {
+                plugins: [$store],
+                mocks: { $router: mockRouter }
+            }
         });
 
         return { wrapper, $store, dispatchSpy, $router: mockRouter };
     };
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
 
     it('should fetch space providers on created', () => {
         const { dispatchSpy } = doMount();
@@ -188,10 +185,7 @@ describe('SpaceSelectionPage.vue', () => {
             }
         });
 
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
+        await new Promise(r => setTimeout(r, 0));
 
         const dummySpace = { id: 'dummy-id', name: 'Dummy Space', private: true, description: '' };
 
@@ -202,10 +196,8 @@ describe('SpaceSelectionPage.vue', () => {
                 spaces: [dummySpace]
             }
         });
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
+
+        await new Promise(r => setTimeout(r, 0));
 
         expect(wrapper.findComponent(SpaceCard).exists()).toBe(true);
 
@@ -217,7 +209,8 @@ describe('SpaceSelectionPage.vue', () => {
         // remember current state
         expect($store.state.spaces.spaceBrowser.spaceId).toEqual(dummySpace.id);
         expect($store.state.spaces.spaceBrowser.spaceProviderId).toEqual('hub1');
-        await wrapper.vm.$nextTick();
+
+        await new Promise(r => setTimeout(r, 0));
         expect($router.push).toHaveBeenCalledWith({ name: APP_ROUTES.SpaceBrowsingPage });
     });
 });

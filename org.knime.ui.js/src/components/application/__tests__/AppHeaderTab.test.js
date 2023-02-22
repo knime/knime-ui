@@ -61,7 +61,7 @@ describe('AppHeaderTab.vue', () => {
         // testing click with middle click works best with triggering mouseup
         await wrapper.trigger('mouseup', { button: 1 });
 
-        expect(wrapper.emitted('close-workflow')[0][0]).toBe('1');
+        expect(wrapper.emitted('closeWorkflow')[0][0]).toBe('1');
     });
 
 

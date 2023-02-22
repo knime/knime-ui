@@ -16,9 +16,9 @@ export default {
 
         const footerChildren = this.avatar
             // eslint-disable-next-line no-extra-parens
-            ? [...icons, ...(this.$slots.default() || []), createElement(Avatar, { props: { text: this.avatar } })]
+            ? [...icons, ...(this.$slots.default?.() || []), createElement(Avatar, { props: { text: this.avatar } })]
             // eslint-disable-next-line no-extra-parens
-            : [...icons, ...(this.$slots.default() || [])];
+            : [...icons, ...(this.$slots.default?.() || [])];
 
         return createElement(
             'div',

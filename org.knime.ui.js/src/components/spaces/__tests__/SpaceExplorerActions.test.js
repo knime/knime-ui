@@ -8,8 +8,8 @@ import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 describe('SpaceExplorerActions.vue', () => {
     const doMount = ({ props = {} } = {}) => {
         const wrapper = mount(SpaceExplorerActions, {
-            propsData: props,
-            mocks: { $shortcuts: { get: jest.fn(() => ({})) } }
+            props,
+            global: { mocks: { $shortcuts: { get: jest.fn(() => ({})) } } }
         });
 
         return { wrapper };

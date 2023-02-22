@@ -1,6 +1,4 @@
-import Vuex from 'vuex';
-
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 import * as spacesStore from '@/store/spaces';
 
@@ -52,8 +50,8 @@ describe('SidebarSpaceExplorer.vue', () => {
         const dispatchSpy = jest.spyOn($store, 'dispatch');
         const commitSpy = jest.spyOn($store, 'commit');
         const wrapper = shallowMount(SidebarSpaceExplorer, {
-            mocks: {
-                $store
+            global: {
+                plugins: [$store]
             }
         });
 
@@ -64,11 +62,6 @@ describe('SidebarSpaceExplorer.vue', () => {
             commitSpy
         };
     };
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
 
     it('remembers state on item change', async () => {
         const { wrapper, dispatchSpy } = doMount();

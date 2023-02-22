@@ -1,6 +1,4 @@
 /* eslint-disable max-lines */
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import { fetchWorkflowGroupContent,
@@ -53,11 +51,6 @@ const fetchAllSpaceProvidersResponse = {
 };
 
 describe('spaces store', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     const loadStore = ({
         mockFetchWorkflowGroupResponse = fetchWorkflowGroupContentResponse,
         mockFetchAllProvidersResponse = fetchAllSpaceProvidersResponse,
@@ -258,8 +251,8 @@ describe('spaces store', () => {
 
                 expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
                 expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
-                expect(store.state.spaces.spaceProviders.hub1.user).toBe(mockUser);
-                expect(store.state.spaces.spaceProviders.hub1.spaces).toBe(mockSpaces.spaces);
+                expect(store.state.spaces.spaceProviders.hub1.user).toEqual(mockUser);
+                expect(store.state.spaces.spaceProviders.hub1.spaces).toEqual(mockSpaces.spaces);
             });
 
             it('should not fetch provider spaces data if the user is null', async () => {

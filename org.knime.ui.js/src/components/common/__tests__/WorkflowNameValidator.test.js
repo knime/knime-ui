@@ -1,3 +1,4 @@
+import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
 import WorkflowNameValidator from '../WorkflowNameValidator.vue';
@@ -10,44 +11,49 @@ describe('WorkflowNameValidator', () => {
 
         const componentInSlot = `<div
             id="slotted-component"
-            :is-valid="props.isValid"
-            :error-message="props.errorMessage"
-            @click="() => (nameInSlot = props.cleanNameFn(nameInSlot))"
+            :is-valid="scope.isValid"
+            :error-message="scope.errorMessage"
+            @click="() => (nameInSlot = scope.cleanNameFn(nameInSlot))"
         ></div>`;
-        
+
         const getScopedComponent = {
+            name: 'SlottedChild',
             template: componentInSlot,
+            props: {
+                scope: {
+                    type: Object,
+                    required: true
+                }
+            },
             data() {
                 return { nameInSlot: '' };
             }
         };
 
         const wrapper = mount(WorkflowNameValidator, {
-            propsData: { ...defaultProps, ...props },
-            scopedSlots: {
-                default: (props) => {
-                    const scoped = mount(getScopedComponent, { mocks: { props } });
-                    // `render` function needs VNode
-                    return scoped.vnode;
-                }
+            props: { ...defaultProps, ...props },
+            slots: {
+                default: (_props) => Vue.h(getScopedComponent, { scope: _props })
             }
         });
 
         return { wrapper };
     };
 
+    const getSlottedChildComponent = (wrapper) => wrapper.findComponent({ name: 'SlottedChild' });
+
     // eslint-disable-next-line arrow-body-style
     const getSlottedStubProp = ({ wrapper, propName }) => {
-        // access VM of dummy slotted component and get value that was injected by
-        // WorkflowNameValidator from the slot props
-        return wrapper.find('#slotted-component').vm[propName];
+        // access the `scope` prop of the dummy slotted component and get value that was injected by
+        // WorkflowNameValidator via the slot props
+        return getSlottedChildComponent(wrapper).props('scope')[propName];
     };
-    
+
     it('should check for invalid characters', async () => {
         const { wrapper } = doMount();
 
         expect(getSlottedStubProp({ wrapper, propName: 'isValid' })).toBeTruthy();
-        
+
         await wrapper.setProps({ name: '&*9a?/\\sdasd' });
 
         expect(getSlottedStubProp({ wrapper, propName: 'isValid' })).toBeFalsy();
@@ -61,7 +67,7 @@ describe('WorkflowNameValidator', () => {
         const { wrapper } = doMount({ props: { name: 'test', workflowItems, currentItemId: '1' } });
 
         expect(getSlottedStubProp({ wrapper, propName: 'isValid' })).toBeTruthy();
-        
+
         await wrapper.setProps({
             workflowItems: workflowItems.concat({ id: '2', name: 'test' })
         });
@@ -78,7 +84,7 @@ describe('WorkflowNameValidator', () => {
 
         expect(getSlottedStubProp({ wrapper, propName: 'isValid' })).toBeTruthy();
         const newName = new Array(256).fill(0).map(_ => 'a').join('');
-        
+
         await wrapper.setProps({ name: newName });
 
         expect(getSlottedStubProp({ wrapper, propName: 'isValid' })).toBeFalsy();

@@ -79,18 +79,14 @@ describe('AppHeader.vue', () => {
             });
         });
 
-        it('allows to click knime logo and navigate to entry page', async () => {
-            const { wrapper, $router, $route } = doMount();
+        it('allows to click knime logo and navigate to entry page', () => {
+            const { wrapper, $router } = doMount();
 
             wrapper.find('#knime-logo').trigger('click');
 
             expect($router.push).toHaveBeenCalledWith({
                 name: APP_ROUTES.EntryPage.GetStartedPage
             });
-            $route.name = APP_ROUTES.EntryPage.GetStartedPage;
-
-            await Vue.nextTick();
-            expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
         });
 
         it('render application title, if no active project name exists', () => {

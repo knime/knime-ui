@@ -141,7 +141,7 @@ describe('PortViewTabOutput.vue', () => {
                 selectedPortIndex: 2
             });
 
-            expect(wrapper.emitted('output-state-change')[0][0]).toEqual(expect.objectContaining({
+            expect(wrapper.emitted('outputStateChange')[0][0]).toEqual(expect.objectContaining({
                 message: 'To show the output, please execute the selected node.'
             }));
         });

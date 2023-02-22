@@ -48,7 +48,7 @@ export default {
       y="-99"
     />
     <text y="-9">Start building your workflow by dropping</text>
-    <text y="27">your data or nodes here.</text>
+    <text y="27"> your data or nodes here.</text>
   </g>
 </template>
 

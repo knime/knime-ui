@@ -1,6 +1,5 @@
 /* eslint-disable max-lines */
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 import * as spacesStore from '@/store/spaces';
@@ -38,11 +37,6 @@ const fetchWorkflowGroupContentResponse = {
 };
 
 describe('SpaceExplorer.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     const doMount = ({
         props = {},
         mockResponse = fetchWorkflowGroupContentResponse,
@@ -95,14 +89,16 @@ describe('SpaceExplorer.vue', () => {
         };
 
         const wrapper = mount(SpaceExplorer, {
-            propsData: props,
-            stubs: { NuxtLink: true },
-            mocks: {
-                $store: store,
-                $router: mockRouter,
-                $route: mockRoute,
-                $shortcuts,
-                $shapes: { nodeSize: 32 }
+            props,
+            global: {
+                plugins: [store],
+                stubs: { NuxtLink: true },
+                mocks: {
+                    $router: mockRouter,
+                    $route: mockRoute,
+                    $shortcuts,
+                    $shapes: { nodeSize: 32 }
+                }
             }
         });
 

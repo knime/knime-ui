@@ -19,6 +19,8 @@ export default {
         }
     },
 
+    emits: ['click'],
+
     render() {
         const element = this.link ? 'router-link' : 'div';
 
@@ -28,11 +30,11 @@ export default {
 
         const handlers = this.link
             ? {}
-            : { click: () => this.$emit('click') };
+            : { onClick: () => this.$emit('click') };
 
         return createElement(
             element,
-            { class: 'card', attrs, on: handlers },
+            { class: 'card', ...attrs, ...handlers },
             this.$slots.default()
         );
     }

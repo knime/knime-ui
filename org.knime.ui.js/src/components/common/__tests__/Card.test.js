@@ -8,12 +8,14 @@ import CardFooter from '../CardFooter.vue';
 describe('Card.vue', () => {
     const doMount = ({ props = {}, renderSubElements = true } = {}) => {
         const wrapper = mount(Card, {
-            propsData: props,
+            props,
             slots: {
                 default: renderSubElements ? [CardHeader, CardContent, CardFooter] : []
             },
-            stubs: {
-                RouterLink: { name: 'RouterLink', template: '<a></a>' }
+            global: {
+                stubs: {
+                    RouterLink: { name: 'RouterLink', template: '<a></a>' }
+                }
             }
         });
 
@@ -38,14 +40,14 @@ describe('Card.vue', () => {
         const { wrapper } = doMount();
 
         expect(wrapper.attributes('role')).toBe('button');
-        
+
         wrapper.trigger('click');
         expect(wrapper.emitted('click')).toBeDefined();
     });
-    
+
     it('should behave as a router link when `link` prop is specified', () => {
         const { wrapper } = doMount({ props: { link: true, href: 'http://example.com' } });
 
-        expect(wrapper.findComponent({ name: 'RouterLink' }).attributes('to')).toBe('http://example.com');
+        expect(wrapper.find('router-link').attributes('to')).toBe('http://example.com');
     });
 });

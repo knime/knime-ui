@@ -1,20 +1,10 @@
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import GetStartedPage from '@/components/entryPage/GetStartedPage.vue';
 import Card from '@/components/common/Card.vue';
 
 describe('GettingStartedPage.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    const $router = {
-        push: jest.fn()
-    };
-
     const doMount = ({
         openWorkflowMock = jest.fn()
     } = {}) => {
@@ -47,16 +37,24 @@ describe('GettingStartedPage.vue', () => {
             }
         });
 
+        const $router = {
+            push: jest.fn()
+        };
+
         // stubs
         const SpaceSelectionPage = {
             template: '<div />'
         };
 
         const wrapper = mount(GetStartedPage, {
-            mocks: { $store, $router },
-            stubs: { SpaceSelectionPage }
+            global: {
+                plugins: [$store],
+                mocks: { $router },
+                stubs: { SpaceSelectionPage }
+            }
         });
-        return { wrapper, $store, SpaceSelectionPage };
+
+        return { wrapper, $store, SpaceSelectionPage, $router };
     };
 
     it('renders the components', () => {

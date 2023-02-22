@@ -121,7 +121,7 @@ describe('AddPortPlaceholder.vue', () => {
         });
 
         it('does not show preview port if menu is closed', () => {
-            let wrapper = doMount({ portTypeMenu: { isOpen: false, previewPort: { typeId: 'test' } } });
+            const { wrapper } = doMount({ portTypeMenu: { isOpen: false, previewPort: { typeId: 'test' } } });
 
             expect(wrapper.findComponent(Port).exists()).toBe(false);
         });

@@ -200,13 +200,13 @@ describe('application store', () => {
                 params: { projectId: 'foo', workflowId: 'bar' }
             });
 
-            await router.push({ name: APP_ROUTES.EntryPage });
+            await router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', {
                 newWorkflow: null
             });
 
-            expect(router.currentRoute.value.name).toBe(APP_ROUTES.EntryPage);
+            expect(router.currentRoute.value.name).toBe(APP_ROUTES.EntryPage.GetStartedPage);
         });
 
         it('should load aworkflow when entering the worklow page', async () => {
@@ -723,7 +723,7 @@ describe('application store', () => {
                 params: { projectId: 'foo', workflowId: 'bar' }
             });
 
-            await router.push({ name: APP_ROUTES.EntryPage });
+            await router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/toggleContextMenu', undefined);
         });

@@ -25,7 +25,7 @@ describe('WorkflowEmpty', () => {
     it('renders text', () => {
         const wrapper = doShallowMount();
 
-        expect(wrapper.text()).toContain('Start building your workflow by dropping your data or nodes here.');
+        expect(wrapper.text()).toMatch('Start building your workflow by dropping your data or nodes here.');
     });
 
     it('calculates width and height of rect based on size of the viewBox', () => {

@@ -126,7 +126,7 @@ describe('directive-move', () => {
             },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
-        wrapper.vm.$vnode.elm.onpointerdown({
+        wrapper.wrapperElement.onpointerdown({
             clientX: 50,
             clientY: 50,
             button: 1,

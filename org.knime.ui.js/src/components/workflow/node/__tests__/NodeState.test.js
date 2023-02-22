@@ -191,7 +191,7 @@ describe('NodeState.vue', () => {
         it('shows tooltips on error', async () => {
             props.error = 'this is an error';
             doShallowMount();
-            
+
             wrapper.find('g').trigger('mouseenter');
             jest.runAllTimers();
             await Vue.nextTick();
@@ -216,11 +216,11 @@ describe('NodeState.vue', () => {
         });
 
         it('shows tooltips with error/warning, issue and resolution', async () => {
-            propsData.error = 'this is an error';
-            propsData.issue = 'this is the issue';
-            propsData.resultions = ['this is a potental resolution'];
+            props.error = 'this is an error';
+            props.issue = 'this is the issue';
+            props.resultions = ['this is a potental resolution'];
             doShallowMount();
-            
+
             wrapper.find('g').trigger('mouseenter');
             jest.runAllTimers();
             await Vue.nextTick();
@@ -235,8 +235,8 @@ describe('NodeState.vue', () => {
                 },
                 hoverable: true,
                 gap: 10,
-                issue: propsData.issue,
-                resolutions: propsData.resolutions
+                issue: props.issue,
+                resolutions: props.resolutions
             });
 
             wrapper.find('g').trigger('mouseleave');
@@ -247,7 +247,7 @@ describe('NodeState.vue', () => {
         it('updates tooltips on data change', async () => {
             props.progressMessage = 'Progress';
             doShallowMount();
-            
+
             wrapper.find('g').trigger('mouseenter');
             await Vue.nextTick();
 

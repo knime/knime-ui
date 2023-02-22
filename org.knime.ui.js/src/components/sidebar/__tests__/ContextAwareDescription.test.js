@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 import ContextAwareDescription from '@/components/sidebar/ContextAwareDescription.vue';
@@ -7,15 +6,10 @@ import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue
 import NodeDescription from '@/components/nodeRepository/NodeDescription.vue';
 
 describe('ContextAwareDescription.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     const doMount = ({
         singleSelectedNodeMock = jest.fn()
     } = {}) => {
-        const store = mockVuexStore({
+        const $store = mockVuexStore({
             selection: {
                 getters: {
                     singleSelectedNode: singleSelectedNodeMock
@@ -34,12 +28,12 @@ describe('ContextAwareDescription.vue', () => {
         });
 
         const wrapper = shallowMount(ContextAwareDescription, {
-            mocks: { $store: store }
+            global: { plugins: [$store] }
         });
 
         return {
             wrapper,
-            store
+            $store
         };
     };
 

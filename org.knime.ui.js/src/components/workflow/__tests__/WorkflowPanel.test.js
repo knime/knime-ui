@@ -39,23 +39,23 @@ describe('WorkflowPanel', () => {
                 saveWorkflowAs: () => {}
             },
             getters: {
-                isLinked({ workflow }) {
-                    return workflow.info.linked;
+                isLinked({ activeWorkflow }) {
+                    return activeWorkflow.info.linked;
                 },
-                isInsideLinked({ workflow }) {
-                    return workflow.parents.some(p => p.linked);
+                isInsideLinked({ activeWorkflow }) {
+                    return activeWorkflow.parents.some(({ linked }) => linked);
                 },
-                insideLinkedType({ workflow }) {
-                    return workflow.parents.find(p => p.linked).containerType;
+                insideLinkedType({ activeWorkflow }) {
+                    return activeWorkflow.parents.find(({ linked }) => linked).containerType;
                 },
-                isStreaming({ workflow }) {
-                    return workflow.info.jobManager;
+                isStreaming({ activeWorkflow }) {
+                    return activeWorkflow.info.jobManager;
                 },
-                isWritable({ workflow }) {
-                    return !(workflow.info.linked || workflow.parents.some(p => p.linked));
+                isWritable({ activeWorkflow }) {
+                    return !(activeWorkflow.info.linked || activeWorkflow.parents.some(({ linked }) => linked));
                 },
-                isOnHub({ workflow }) {
-                    return workflow.info.onHub || workflow.parents.some(p => p.onHub);
+                isOnHub({ activeWorkflow }) {
+                    return activeWorkflow.info.onHub || activeWorkflow.parents.some(({ onHub }) => onHub);
                 }
             }
         };
@@ -127,14 +127,16 @@ describe('WorkflowPanel', () => {
     describe('On the hub', () => {
         it('shows banner if workflow is on the hub', async () => {
             const { wrapper, $store } = doShallowMount();
-            $store.state.workflow.info.onHub = true;
+            $store.state.workflow.activeWorkflow.info.onHub = true;
+            await Vue.nextTick();
+            await Vue.nextTick();
             await Vue.nextTick();
             expect(wrapper.find('.banner').exists()).toBe(true);
         });
 
         it('saves workflow locally when button is clicked', async () => {
             const { wrapper, $store, dispatchSpy } = doShallowMount();
-            $store.state.workflow.info.onHub = true;
+            $store.state.workflow.activeWorkflow.info.onHub = true;
             await Vue.nextTick();
             const button = wrapper.findComponent(Button);
             expect(button.exists()).toBe(true);

@@ -1,14 +1,8 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import UpdateBanner from '../UpdateBanner.vue';
 
 describe('UpdateBanner', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     const doShallowMount = ({ props = {} } = { }) => {
         const defaultProps = {
             availableUpdates: {
@@ -24,7 +18,7 @@ describe('UpdateBanner', () => {
         };
 
         const wrapper = shallowMount(UpdateBanner, {
-            propsData: { ...defaultProps, ...props }
+            props: { ...defaultProps, ...props }
         });
 
         return { wrapper };

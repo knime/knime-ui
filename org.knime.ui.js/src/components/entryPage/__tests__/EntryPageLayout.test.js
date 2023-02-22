@@ -3,18 +3,22 @@ import EntryPageLayout from '@/components/entryPage/EntryPageLayout.vue';
 import PageHeader from '@/components/common/PageHeader.vue';
 
 describe('EntryPageLayout.vue', () => {
-    const $router = {
-        push: jest.fn()
-    };
-    const $route = {
-        name: 'GetStartedPage'
-    };
-
     const doMount = () => {
+        const $router = {
+            push: jest.fn()
+        };
+
+        const $route = {
+            name: 'GetStartedPage'
+        };
+
         const wrapper = mount(EntryPageLayout, {
-            mocks: { $router, $route },
-            stubs: { RouterView: { template: '<div/>' } }
+            global: {
+                mocks: { $router, $route },
+                stubs: { RouterView: { template: '<div/>' } }
+            }
         });
+
         return { wrapper };
     };
 

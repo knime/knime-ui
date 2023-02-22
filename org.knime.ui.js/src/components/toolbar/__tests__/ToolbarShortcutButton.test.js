@@ -1,3 +1,4 @@
+import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
 import IconComponent from '@/assets/redo.svg';
@@ -5,56 +6,82 @@ import ToolbarButton from '@/components/common/ToolbarButton.vue';
 import ToolbarShortcutButton from '../ToolbarShortcutButton.vue';
 
 describe('ToolbarShortcutButton.vue', () => {
-    let wrapper, doMount, props, shortcut, $shortcuts;
+    // const wrapper, doMount, props, shortcut, $shortcuts;
 
-    beforeEach(() => {
-        shortcut = {
+    // beforeEach(() => {
+    //     shortcut = {
+    //         icon: IconComponent,
+    //         title: 'save workflow',
+    //         text: 'save',
+    //         hotkeyText: 'Ctrl S'
+    //     };
+
+    //     $shortcuts = {
+    //         get: jest.fn().mockImplementation(() => shortcut),
+    //         isEnabled: jest.fn().mockReturnValue(true),
+    //         dispatch: jest.fn()
+    //     };
+
+    //     props = {
+    //         name: 'save'
+    //     };
+
+    //     doMount = () => {
+    //         wrapper = mount(ToolbarShortcutButton, { props, global: { mocks: { $shortcuts } } });
+    //     };
+    // });
+
+    const doMount = ({ shortcut, isEnabledMock = jest.fn().mockReturnValue(true) } = {}) => {
+        const defaultShortcut = {
             icon: IconComponent,
             title: 'save workflow',
             text: 'save',
             hotkeyText: 'Ctrl S'
         };
 
-        $shortcuts = {
-            get: jest.fn().mockImplementation(() => shortcut),
-            isEnabled: jest.fn().mockReturnValue(true),
+        const $shortcuts = {
+            get: jest.fn().mockImplementation(() => shortcut || defaultShortcut),
+            isEnabled: isEnabledMock,
             dispatch: jest.fn()
         };
 
-        props = {
+        const props = {
             name: 'save'
         };
 
-        doMount = () => {
-            wrapper = mount(ToolbarShortcutButton, { props, global: { mocks: { $shortcuts } } });
-        };
-    });
+        const wrapper = mount(ToolbarShortcutButton, {
+            props,
+            global: { mocks: { $shortcuts } }
+        });
+        return { wrapper, $shortcuts };
+    };
 
     describe('renders button', () => {
         test('fetches shortcut', () => {
-            doMount();
+            const { $shortcuts } = doMount();
             expect($shortcuts.get).toHaveBeenCalledWith('save');
         });
 
         test('renders full info', () => {
-            doMount();
+            const { wrapper } = doMount();
 
-            let toolbarButton = wrapper.getComponent(ToolbarButton);
+            const toolbarButton = wrapper.getComponent(ToolbarButton);
             expect(toolbarButton.text()).toBe('save');
             expect(toolbarButton.classes()).toContain('with-text');
             expect(toolbarButton.attributes('title')).toBe('save workflow – Ctrl S');
-            expect(toolbarButton.attributes('disabled')).toBe('false');
+
+            expect(toolbarButton.attributes('disabled')).toBeUndefined();
 
             expect(wrapper.findComponent(IconComponent).exists()).toBe(true);
         });
 
         test('renders only with title', () => {
-            shortcut = {
+            const shortcut = {
                 title: 'save workflow'
             };
-            doMount();
+            const { wrapper } = doMount({ shortcut });
 
-            let toolbarButton = wrapper.getComponent(ToolbarButton);
+            const toolbarButton = wrapper.getComponent(ToolbarButton);
             expect(toolbarButton.text()).toBeFalsy();
             expect(toolbarButton.classes()).not.toContain('with-text');
             expect(toolbarButton.attributes('title')).toBe('save workflow');
@@ -62,18 +89,18 @@ describe('ToolbarShortcutButton.vue', () => {
             expect(wrapper.findComponent(IconComponent).exists()).toBe(false);
         });
 
-        test('renders disabled', () => {
-            $shortcuts.isEnabled.mockReturnValue(false);
-            doMount();
+        test('renders disabled', async () => {
+            const { wrapper, $shortcuts } = doMount({ isEnabledMock: jest.fn(() => false) });
 
             expect($shortcuts.isEnabled).toHaveBeenCalledWith('save');
+            await Vue.nextTick();
 
-            let toolbarButton = wrapper.getComponent(ToolbarButton);
-            expect(toolbarButton.attributes('disabled')).toBeTruthy();
+            const toolbarButton = wrapper.getComponent(ToolbarButton);
+            expect(toolbarButton.attributes('disabled')).toBeDefined();
         });
 
         test('dispatches shortcut handler', () => {
-            doMount();
+            const { wrapper, $shortcuts } = doMount();
 
             wrapper.trigger('click');
             expect($shortcuts.dispatch).toHaveBeenCalledWith('save');

@@ -7,7 +7,7 @@ import SmartLoader from '../SmartLoader.vue';
 describe('SmarLoader.vue', () => {
     const doMount = ({ props = {} } = {}) => {
         const wrapper = mount(SmartLoader, {
-            propsData: props
+            props
         });
 
         return { wrapper };

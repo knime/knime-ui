@@ -1,4 +1,5 @@
 /* eslint-disable max-lines */
+import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
@@ -73,7 +74,7 @@ describe('FileExplorer.vue', () => {
 
         expect(allItems.length).toBe(MOCK_DATA.length);
 
-        allItems.wrappers.forEach((item, index) => {
+        allItems.forEach((item, index) => {
             expect(item.classes()).toContain(MOCK_DATA.at(index).type);
             expect(wrapper.findComponent(MOCK_DATA.at(index).icon).exists()).toBe(true);
         });
@@ -243,19 +244,24 @@ describe('FileExplorer.vue', () => {
             await secondItem.trigger('click');
             await thirdItem.trigger('click', { ctrlKey: true });
 
-            // attach mock listener
-            wrapper.vm.$on('move-items', ({ onComplete }) => {
-                // invoke onComplete callback
-                onComplete(true);
-            });
-
             // drag them to 1st item
             await dragAndDropItem(secondItem, firstItem);
+
+            expect(wrapper.emitted('move-items')[0][0]).toEqual(
+                expect.objectContaining({ onComplete: expect.any(Function) })
+            );
+
+            const { onComplete } = wrapper.emitted('move-items')[0][0];
+
+            // mimic callback being triggered from outside listener
+            onComplete(true);
+
+            await Vue.nextTick();
 
             // ghosts are removed
             expect(document.body.querySelectorAll('[data-id="drag-ghost"]').length).toBe(0);
 
-            wrapper.findAll('.file-explorer-item').wrappers.forEach(item => {
+            wrapper.findAll('.file-explorer-item').forEach(item => {
                 expect(item.classes()).not.toContain('selected');
             });
         });

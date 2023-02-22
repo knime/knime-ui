@@ -77,6 +77,7 @@ module.exports = {
         // https://github.com/vuejs/vue-jest/issues/479#issuecomment-1163421581
         customExportConditions: ['node', 'node-addons']
     },
+    modulePathIgnorePatterns: ['<rootDir>/webapps-common/*'],
     testMatch: [
         '<rootDir>/**/__tests__/*.test.js'
     ],

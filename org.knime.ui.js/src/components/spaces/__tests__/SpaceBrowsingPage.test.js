@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
@@ -14,11 +13,6 @@ import SpaceBrowsingPage from '../SpaceBrowsingPage.vue';
 jest.mock('@api');
 
 describe('SpaceBrowsingPage', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     const doMount = ({ initialStoreState = null } = {}) => {
         const $store = mockVuexStore({
             spaces: spacesStore
@@ -39,7 +33,10 @@ describe('SpaceBrowsingPage', () => {
         }
 
         const wrapper = mount(SpaceBrowsingPage, {
-            mocks: { $store, $router, $shortcuts: { get: jest.fn(() => ({})) } }
+            global: {
+                plugins: [$store],
+                mocks: { $router, $shortcuts: { get: jest.fn(() => ({})) } }
+            }
         });
 
         return { wrapper, $store, $router, commitSpy, dispatchSpy };

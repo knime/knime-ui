@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { mount, createLocalVue } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 import * as spacesStore from '@/store/spaces';
@@ -10,11 +9,6 @@ import Modal from 'webapps-common/ui/components/Modal.vue';
 import CreateWorkflowModal from '../CreateWorkflowModal.vue';
 
 describe('CreateWorkflowModal.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     const MOCK_DATA = [
         {
             id: '1',
@@ -46,18 +40,12 @@ describe('CreateWorkflowModal.vue', () => {
                 }
             }
         };
-        
-        const store = mockVuexStore(storeConfig);
-        
-        const mocks = {
-            $store: store
-            // stubs: {
-            //     FocusTrap: { template: '<div><slot/></div>' }
-            // }
-        };
-        const wrapper = mount(CreateWorkflowModal, { mocks });
 
-        return { wrapper, store };
+        const $store = mockVuexStore(storeConfig);
+
+        const wrapper = mount(CreateWorkflowModal, { global: { plugins: [$store] } });
+
+        return { wrapper, $store };
     };
 
     describe('CreateWorkflowModal', () => {

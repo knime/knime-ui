@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import NodeDescriptionOverlay from '../NodeDescriptionOverlay.vue';
@@ -15,16 +14,7 @@ jest.mock('@/mixins/escapeStack', () => {
 });
 
 describe('NodeDescription', () => {
-    let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanelMock, propsData;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    beforeEach(() => {
-        wrapper = null;
-        closeDescriptionPanelMock = jest.fn();
+    const doMount = () => {
         const getNodeDescription = () => ({
             id: 1,
             description: 'This is a node.',
@@ -34,19 +24,18 @@ describe('NodeDescription', () => {
             }]
         });
 
-        storeConfig = {
+        const $store = mockVuexStore({
             nodeRepository: {
                 actions: {
                     getNodeDescription,
-                    closeDescriptionPanel: closeDescriptionPanelMock
+                    closeDescriptionPanel: () => {}
                 }
             }
-        };
+        });
 
-        $store = mockVuexStore(storeConfig);
+        const dispatchSpy = jest.spyOn($store, 'dispatch');
 
-        mocks = { $store };
-        propsData = {
+        const props = {
             selectedNode: {
                 id: 1,
                 name: 'Test',
@@ -56,30 +45,32 @@ describe('NodeDescription', () => {
                 }
             }
         };
-        doMount = () => {
-            wrapper = mount(NodeDescriptionOverlay, { propsData, mocks });
-        };
-    });
+        const wrapper = mount(NodeDescriptionOverlay, { props, global: { plugins: [$store] } });
+
+        return { wrapper, dispatchSpy };
+    };
 
     it('renders all components', () => {
-        doMount();
+        const { wrapper } = doMount();
         expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
         expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
         expect(wrapper.findComponent(NodeDescription).props('selectedNode').id).toBe(1);
     });
 
     it('closes the panel when button is clicked', () => {
-        doMount();
+        const { wrapper, dispatchSpy } = doMount();
         const button = wrapper.find('button');
         button.trigger('click');
-        expect(closeDescriptionPanelMock).toHaveBeenCalled();
+        expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/closeDescriptionPanel', expect.anything());
     });
 
     it('closes on escape', () => {
         // adds event handler on mount
-        doMount();
+        const { wrapper, dispatchSpy } = doMount();
+        dispatchSpy.mockClear();
         escapeStackMock.onEscape.call(wrapper.vm);
 
-        expect(closeDescriptionPanelMock).toHaveBeenCalledTimes(1);
+        expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/closeDescriptionPanel', undefined);
+        expect(dispatchSpy).toHaveBeenCalledTimes(1);
     });
 });
