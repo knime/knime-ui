@@ -45,7 +45,7 @@ export const state = () => ({
      * If true, a node collection is configured on the preference page. The node search will show the nodes of the
      * collection first and the category groups and node recommendations will only show nodes from the collection.
      */
-    hasNodeCollectionActive: false,
+    hasNodeCollectionActive: null,
 
     /**
      * If true, the mouse wheel should be used for zooming instead of scrolling
@@ -225,8 +225,15 @@ export const actions = {
 
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
         if (applicationState.hasOwnProperty('hasNodeCollectionActive')) {
+            const currentValue = state.hasNodeCollectionActive;
+
+            // we always set the state to init the value based on the saved user preference
             commit('setHasNodeCollectionActive', applicationState.hasNodeCollectionActive);
-            dispatch('nodeRepository/resetSearchAndCategories', {}, { root: true });
+
+            if (currentValue !== null && currentValue !== applicationState.hasNodeCollectionActive) {
+                // only fetch when the value has actually changed
+                dispatch('nodeRepository/resetSearchAndCategories', {}, { root: true });
+            }
         }
 
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set

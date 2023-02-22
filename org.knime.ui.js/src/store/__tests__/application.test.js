@@ -303,10 +303,14 @@ describe('application store', () => {
         });
 
         it('replaces hasNodeCollectionActive', async () => {
-            const applicationState = { hasNodeCollectionActive: true };
             const { store, dispatchSpy } = await loadStore();
 
-            await store.dispatch('application/replaceApplicationState', applicationState);
+            // first call sets the `hasNodeCollectionActive` flag from `null` to `true`, no refetch
+            await store.dispatch('application/replaceApplicationState', { hasNodeCollectionActive: true });
+            expect(dispatchSpy).not.toHaveBeenCalledWith('nodeRepository/resetSearchAndCategories', expect.anything());
+
+            // second call sets the flag from `true` to `false`, triggers a refetch
+            await store.dispatch('application/replaceApplicationState', { hasNodeCollectionActive: false });
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/resetSearchAndCategories', expect.anything());
         });
     });
