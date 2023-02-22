@@ -4,7 +4,9 @@ import CloseIcon from '@/assets/cancel.svg';
 export default {
     components: {
         CloseIcon
-    }
+    },
+
+    emits: ['close']
 };
 </script>
 

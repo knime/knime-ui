@@ -1,4 +1,5 @@
 <script>
+import { h as createElement } from 'vue';
 import Avatar from './Avatar.vue';
 
 export default {
@@ -9,15 +10,15 @@ export default {
         }
     },
 
-    render(createElement) {
+    render() {
         const icons = (this.$slots.icons || [])
             .map(vnode => createElement(vnode.tag, { class: 'icon' }, vnode.children));
 
         const footerChildren = this.avatar
             // eslint-disable-next-line no-extra-parens
-            ? [...icons, ...(this.$slots.default || []), createElement(Avatar, { props: { text: this.avatar } })]
+            ? [...icons, ...(this.$slots.default() || []), createElement(Avatar, { props: { text: this.avatar } })]
             // eslint-disable-next-line no-extra-parens
-            : [...icons, ...(this.$slots.default || [])];
+            : [...icons, ...(this.$slots.default() || [])];
 
         return createElement(
             'div',
@@ -42,7 +43,7 @@ export default {
       align-items: center;
       margin-right: 12px;
 
-      & svg {
+      & :slotted(svg) {
         stroke: var(--knime-masala);
         margin-right: 6px;
 

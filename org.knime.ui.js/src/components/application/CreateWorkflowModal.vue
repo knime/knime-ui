@@ -36,12 +36,13 @@ export default {
                     this.setNameSuggestion();
                     setTimeout(() => {
                         this.$refs.inputRef?.$refs?.input?.focus();
+                    // eslint-disable-next-line no-magic-numbers
                     }, 200);
                 }
             }
         }
     },
-    
+
     methods: {
         async onSubmit() {
             try {
@@ -92,9 +93,7 @@ export default {
     @cancel="closeModal"
   >
     <template #confirmation>
-      <Label
-        text="Workflow name"
-      >
+      <Label text="Workflow name">
         <WorkflowNameValidator
           :name="workflowName"
           :workflow-items="activeSpace.activeWorkflowGroup.items"

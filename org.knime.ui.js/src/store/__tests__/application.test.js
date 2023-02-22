@@ -235,7 +235,8 @@ describe('application store', () => {
 
             await router.push({
                 name: APP_ROUTES.WorkflowPage,
-                params: { projectId: 'foo', workflowId: 'bar', skipGuards: true }
+                params: { projectId: 'foo', workflowId: 'bar' },
+                query: { skipGuards: true }
             });
 
             expect(dispatchSpy).not.toHaveBeenCalledWith('application/switchWorkflow');

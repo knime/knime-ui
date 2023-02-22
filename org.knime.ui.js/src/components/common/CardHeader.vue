@@ -44,7 +44,7 @@ export default {
     justify-content: flex-start;
     padding: 0 30px;
 
-    & svg {
+    & :slotted(svg) {
       stroke: var(--knime-white);
 
       @mixin svg-icon-size 20;
@@ -54,7 +54,7 @@ export default {
       background-color: var(--knime-yellow);
       color: var(--knime-masala);
 
-      & svg {
+      & :slotted(svg) {
         stroke: var(--knime-masala);
       }
     }
@@ -63,7 +63,7 @@ export default {
       background-color: hsl(210deg 17% 98% / 100%);
       color: var(--knime-masala);
 
-      & svg {
+      & :slotted(svg) {
         stroke: var(--knime-masala);
       }
     }

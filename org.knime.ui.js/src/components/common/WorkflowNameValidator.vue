@@ -31,6 +31,9 @@ export default {
             }
         }
     },
+
+    emits: ['is-valid-changed', 'clean-name'],
+
     computed: {
         isValidName() {
             const newValue = this.cleanName(this.name);
@@ -71,7 +74,7 @@ export default {
         }
     },
     render() {
-        return this.$scopedSlots.default({
+        return this.$slots.default({
             isValid: this.isValid,
             errorMessage: this.errorMessage,
             cleanNameFn: this.cleanName

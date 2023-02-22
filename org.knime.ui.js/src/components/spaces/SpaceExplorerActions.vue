@@ -69,6 +69,15 @@ export default {
         }
     },
 
+    emits: [
+        'action:create-workflow',
+        'action:create-folder',
+        'action:import-workflow',
+        'action:import-files',
+        'action:upload-to-hub',
+        'action:download-to-local-space'
+    ],
+
     computed: {
         actions() {
             return [

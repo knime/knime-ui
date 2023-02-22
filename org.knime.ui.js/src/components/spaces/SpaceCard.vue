@@ -37,6 +37,8 @@ export default {
         }
     },
 
+    emits: ['click'],
+
     computed: {
         icon() {
             if (this.isLocal) {

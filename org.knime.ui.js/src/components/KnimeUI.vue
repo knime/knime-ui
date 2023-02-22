@@ -96,7 +96,6 @@ export default {
 
             await this.$router.push({
                 name: APP_ROUTES.WorkflowPage,
-                // params: { workflowId, projectId, skipGuards: true }
                 params: { workflowId, projectId },
                 query: { skipGuards: true }
             });

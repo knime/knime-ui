@@ -60,7 +60,7 @@ export default {
     methods: {
         async redirectLinks(redirect) {
             await this.$nextTick();
-            const descriptionEl = this.$refs.description?.$el;
+            const descriptionEl = document.querySelector('#node-description-html');
 
             if (!descriptionEl) {
                 return;
@@ -81,10 +81,8 @@ export default {
 <template>
   <div class="node-description">
     <div class="header">
-      <h2>{{ selectedNodeIsVisible ? selectedNode.name : '&nbsp;' }}</h2>
-      <button @click="closeDescriptionPanel">
-        <CloseIcon class="icon" />
-      </button>
+      <h2>{{ title }}</h2>
+      <slot name="header-action" />
     </div>
 
     <hr>
@@ -97,7 +95,7 @@ export default {
           <template v-if="descriptionData">
             <Description
               v-if="descriptionData.description"
-              ref="description"
+              id="node-description-html"
               :text="descriptionData.description"
               render-as-html
             />

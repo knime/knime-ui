@@ -34,8 +34,6 @@ main {
   flex-direction: column;
   background-color: var(--knime-white);
   color: var(--knime-masala);
-
-  /* align-items: stretch; */
   overflow-x: hidden;
   height: 100%;
 

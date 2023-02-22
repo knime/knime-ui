@@ -109,12 +109,12 @@ export default {
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
     <Portal to="extension-panel">
-      <Transition name="fade">
+      <!-- <Transition name="fade"> -->
         <NodeDescriptionOverlay
           v-if="isDescriptionPanelOpen"
           :selected-node="isSelectedNodeVisible ? selectedNode : null"
         />
-      </Transition>
+      <!-- </Transition> -->
     </Portal>
   </div>
 </template>

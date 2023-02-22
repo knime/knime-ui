@@ -63,6 +63,16 @@ export default {
         }
     },
 
+    emits: [
+        'change-selection',
+        'change-directory',
+        'open-file',
+        'delete-items',
+        'move-items',
+        'dragend',
+        'rename-file'
+    ],
+
     data() {
         return {
             ITEM_TYPES,

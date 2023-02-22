@@ -1,4 +1,5 @@
 <script>
+import { h as createElement } from 'vue';
 import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
 
 export default {
@@ -18,9 +19,9 @@ export default {
         }
     },
 
-    render(createElement) {
+    render() {
         const element = this.link ? 'router-link' : 'div';
-        
+
         const attrs = this.link
             ? { to: this.href }
             : { role: 'button' };
@@ -32,7 +33,7 @@ export default {
         return createElement(
             element,
             { class: 'card', attrs, on: handlers },
-            this.$slots.default
+            this.$slots.default()
         );
     }
 };

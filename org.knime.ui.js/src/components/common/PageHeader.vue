@@ -93,8 +93,7 @@ header {
     color: var(--knime-masala);
     display: flex;
 
-    /* slotted icon */
-    & svg {
+    & :slotted(svg) {
       @mixin svg-icon-size 18;
 
       margin-right: 5px;

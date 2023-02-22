@@ -130,7 +130,7 @@ export default {
             };
 
             const getDimensions = () => {
-                const [firstElementChild] = this.$slots?.default || [];
+                const [firstElementChild] = this.$slots.default?.() || [];
 
                 // match the initialDimensions if no slot child is found
                 if (!firstElementChild) {

@@ -1,7 +1,7 @@
 <script>
+import { mapGetters } from 'vuex';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeDescription from '@/components/nodeRepository/NodeDescription.vue';
-import { mapGetters } from 'vuex';
 
 /**
  * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)

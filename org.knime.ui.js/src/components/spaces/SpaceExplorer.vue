@@ -38,6 +38,8 @@ export default {
         }
     },
 
+    emits: ['change-selection', 'item-changed'],
+
     data() {
         return {
             selectedItems: []
