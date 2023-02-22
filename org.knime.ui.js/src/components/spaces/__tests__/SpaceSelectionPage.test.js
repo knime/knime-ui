@@ -62,7 +62,8 @@ describe('SpaceSelectionPage.vue', () => {
                     }
                 },
                 actions: {
-                    fetchAllSpaceProviders: jest.fn()
+                    fetchAllSpaceProviders: jest.fn(),
+                    fetchWorkflowGroupContent: jest.fn()
                 }
             }
         });

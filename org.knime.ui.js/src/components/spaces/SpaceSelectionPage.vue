@@ -86,6 +86,14 @@ export default {
 
         shouldDisplayLogoutButton(spaceProvider) {
             return spaceProvider.connectionMode === 'AUTHENTICATED' && spaceProvider.connected;
+        },
+
+        async createWorkflowLocally() {
+            this.$store.commit('spaces/setActiveSpaceProviderById', 'local');
+            this.$store.commit('spaces/setActiveSpaceId', 'local');
+            await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId: 'root' });
+
+            this.$store.commit('spaces/setIsCreateWorkflowModalOpen', true);
         }
     }
 };
@@ -151,7 +159,7 @@ export default {
         <Card
           v-if="isLocalSpace(spaceProvider)"
           class="create-workflow-local"
-          @click="$store.commit('spaces/setIsCreateWorkflowModalOpen', true)"
+          @click="createWorkflowLocally"
         >
           <CardContent padded>
             <div class="icon-wrapper">
