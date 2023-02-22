@@ -12,7 +12,7 @@ import Port from '@/components/common/Port.vue';
 import AddPortPlaceholder, { addPortPlaceholderPath } from '../AddPortPlaceholder.vue';
 
 describe('AddPortPlaceholder.vue', () => {
-    const doMount = (customProps = {}) => {
+    const doMount = ({ props, portTypeMenu } = {}) => {
         const defaultProps = {
             position: [10, 10],
             side: 'output',
@@ -33,7 +33,8 @@ describe('AddPortPlaceholder.vue', () => {
             workflow: {
                 state: {
                     portTypeMenu: {
-                        isOpen: false
+                        isOpen: false,
+                        ...portTypeMenu
                     }
                 },
                 actions: workflowStoreActions,
@@ -41,12 +42,10 @@ describe('AddPortPlaceholder.vue', () => {
             }
         };
 
-        const props = { ...defaultProps, ...customProps };
-
         const $store = mockVuexStore(storeConfig);
-        
+
         const wrapper = shallowMount(AddPortPlaceholder, {
-            props,
+            props: { ...defaultProps, ...props },
             global: {
                 plugins: [$store],
                 mocks: { $shapes, $colors },
@@ -104,7 +103,7 @@ describe('AddPortPlaceholder.vue', () => {
 
         test('adds port directly, if only one option is given', () => {
             const props = { portGroups: { input: { supportedPortTypeIds: ['table'], canAddInPort: true } } };
-            const { wrapper } = doMount(props);
+            const { wrapper } = doMount({ props });
 
             wrapper.find('.add-port-icon').trigger('click');
             expect(wrapper.emitted('addPort')).toStrictEqual([[{ portGroup: 'input', typeId: 'table' }]]);
@@ -119,6 +118,12 @@ describe('AddPortPlaceholder.vue', () => {
 
             expect(wrapper.find('.add-port-icon').exists()).toBe(false);
             expect(wrapper.findComponent(Port).props('port')).toStrictEqual(targetPort);
+        });
+
+        it('does not show preview port if menu is closed', () => {
+            let wrapper = doMount({ portTypeMenu: { isOpen: false, previewPort: { typeId: 'test' } } });
+
+            expect(wrapper.findComponent(Port).exists()).toBe(false);
         });
 
         describe('with open menu', () => {

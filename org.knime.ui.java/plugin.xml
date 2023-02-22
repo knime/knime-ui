@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
+   <extension-point id="SpaceProviders" name="Space Providers" schema="schema/SpaceProviders.exsd"/>
 
    <extension
          point="org.eclipse.ui.views">
@@ -8,7 +9,7 @@
             class="org.knime.ui.java.browser.KnimeBrowserView"
             icon="icons/knime.png"
             id="org.knime.ui.java.browser.view"
-            name="KNIME Modern UI Preview"
+            name="KNIME Modern UI"
             restorable="false">
       </e4view>
    </extension>
@@ -25,8 +26,36 @@
       <theme
             basestylesheeturi="css/web-ui.css"
             id="org.knime.ui.java.theme"
-            label="KNIME Modern UI Preview">
+            label="KNIME Modern UI">
       </theme>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.knime.workbench.ui.preferences.gui"
+            class="org.knime.ui.java.prefs.KnimeUIPreferencePage"
+            id="org.knime.ui.java.prefs.KnimeUIPreferencePage"
+            name="Modern UI Settings">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.knime.ui.java.prefs.KnimeUIPreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.knime.core.EarlyStartup">
+      <provider
+            callBeforeKNIMEApplicationStart="true"
+            class="org.knime.ui.java.OnEarlyStartup">
+      </provider>
+   </extension>
+   <extension
+         point="org.knime.product.preShutdown">
+      <preShutdown
+            class="org.knime.ui.java.OnPreShutdown">
+      </preShutdown>
    </extension>
 
 </plugin>

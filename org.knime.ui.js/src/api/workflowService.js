@@ -61,6 +61,7 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
  * @param { String } cfg.nodeFactory The representation of the node's factory
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
+ * @param { Object } cfg.spaceItemReference The global id of the space item (optional)
  * @returns { Promise } Promise
  */
 export const addNode = ({
@@ -68,11 +69,12 @@ export const addNode = ({
     nodeFactory,
     projectId,
     workflowId,
+    spaceItemReference,
     sourceNodeId = null,
     sourcePortIdx = null
 }) => workflowCommand({
     command: 'add_node',
-    args: { position, nodeFactory, sourceNodeId, sourcePortIdx },
+    args: { position, nodeFactory, spaceItemReference, sourceNodeId, sourcePortIdx },
     projectId,
     workflowId
 });

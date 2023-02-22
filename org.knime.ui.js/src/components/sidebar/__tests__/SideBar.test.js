@@ -4,11 +4,10 @@ import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 import * as panelStoreConfig from '@/store/panel';
 import * as nodeRepositoryStoreConfig from '@/store/nodeRepository';
 
-import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
+import PlusIcon from 'webapps-common/ui/assets/img/icons/node-stack.svg';
 import Metainfo from '@/assets/metainfo.svg';
 
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
-import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
 import Sidebar from '../Sidebar.vue';
 
@@ -31,6 +30,11 @@ describe('Sidebar', () => {
         };
 
         store = mockVuexStore({
+            application: {
+                state: {
+                    activeProjectId: 'activeProject1'
+                }
+            },
             workflow: {
                 state: {
                     activeWorkflow: workflow
@@ -39,7 +43,7 @@ describe('Sidebar', () => {
             panel: panelStoreConfig,
             nodeRepository: nodeRepositoryStoreConfig
         });
-        
+
         doShallowMount = () => {
             wrapper = shallowMount(Sidebar, {
                 global: {
@@ -56,38 +60,33 @@ describe('Sidebar', () => {
         expect(wrapper.findComponent(Metainfo).exists()).toBe(true);
         expect(wrapper.findComponent(PlusIcon).exists()).toBe(true);
 
-        expect(wrapper.find('[title="Workflow metadata"]').classes('active')).toBe(true);
+        expect(wrapper.find('[title="Description"]').classes('active')).toBe(true);
         expect(wrapper.find('[title="Node repository"]').classes('active')).toBe(false);
         wrapper.findAll('li').forEach(wp => {
-            expect(wp.classes('expanded')).toBe(false);
+            expect(wp.classes('expanded')).toBe(true);
         });
     });
 
-    it.each([
-        ['Workflow metadata', WorkflowMetadata],
-        ['Node repository', NodeRepository]
-    ])('expands and activates "%s"', async (tabName, renderedComponent) => {
+    it('expands and activates tab', async () => {
+        const tabName = 'Node repository';
         doShallowMount();
-        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(false);
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
 
         await wrapper.find(`[title="${tabName}"]`).trigger('click');
         expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
         expect(wrapper.find(`[title="${tabName}"]`).classes('active')).toBe(true);
 
-        expect(wrapper.findComponent(renderedComponent).exists()).toBe(true);
+        expect(wrapper.findComponent(NodeRepository).exists()).toBe(true);
     });
 
-    it.each([
-        ['Workflow metadata', WorkflowMetadata],
-        ['Node repository', NodeRepository],
-        ['Node dialog', NodeDialogWrapper]
-    ])('clicking on open tab should close it', async (tabName, renderedComponent) => {
+    it('clicking on open tab should close it', async () => {
+        const tabName = 'Description';
         doShallowMount();
         await wrapper.find(`[title="${tabName}"]`).trigger('click');
-        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(false);
 
         await wrapper.find(`[title="${tabName}"]`).trigger('click');
-        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(false);
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
     });
 
     it('click on node repository icon when description panel is open closes both panels', async () => {
@@ -97,7 +96,7 @@ describe('Sidebar', () => {
         // emulate opening the description panel
         await store.dispatch('nodeRepository/openDescriptionPanel');
         expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
-        
+
         await wrapper.find('[title="Node repository"]').trigger('click');
         expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
     });
@@ -109,8 +108,8 @@ describe('Sidebar', () => {
         // emulate opening the description panel
         await store.dispatch('nodeRepository/openDescriptionPanel');
 
-        // back to workflow metadata
-        await wrapper.find('[title="Workflow metadata"]').trigger('click');
+        // back to Description
+        await wrapper.find('[title="Description"]').trigger('click');
 
         // back to node repository
         await wrapper.find('[title="Node repository"]').trigger('click');

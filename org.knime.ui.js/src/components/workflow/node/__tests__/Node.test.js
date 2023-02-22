@@ -378,11 +378,11 @@ describe('Node', () => {
             );
         });
 
-        it('shift-click adds to selection', async () => {
+        it.each(['shift', 'ctrl', 'meta'])('%ss-click adds to selection', async (mod) => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
 
-            await wrapper.find('.mouse-clickable').trigger('click', { button: 0, shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('click', { button: 0, [`${mod}Key`]: true });
 
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
@@ -390,28 +390,22 @@ describe('Node', () => {
             );
         });
 
-        it('shift-click removes from selection', async () => {
+        it.each(['shift', 'ctrl', 'meta'])('%ss-click removes from selection', async (mod) => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
 
-            await wrapper.find('.mouse-clickable').trigger('click', { button: 0, shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('click', { button: 0, [`${mod}Key`]: true });
             expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')
             );
         });
 
-        it('ctrl-click doest influence selection', async () => {
-            doMount();
-            await wrapper.find('.mouse-clickable').trigger('mousedown', { button: 0, ctrlKey: true });
-            expect(storeConfig.selection.actions.selectNode).not.toHaveBeenCalled();
-        });
-
-        it('shift-right-click adds to selection', async () => {
+        it.each(['shift', 'ctrl', 'meta'])('%ss-right-click adds to selection', async (mod) => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
 
-            await wrapper.find('.mouse-clickable').trigger('pointerdown', { button: 2, shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('pointerdown', { button: 2, [`${mod}Key`]: true });
 
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
@@ -420,11 +414,11 @@ describe('Node', () => {
             expect(storeConfig.application.actions.toggleContextMenu).toHaveBeenCalled();
         });
 
-        it('shift-right-click does not remove from selection', async () => {
+        it.each(['shift', 'ctrl', 'meta'])('%ss-right-click does not remove from selection', async (mod) => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
 
-            await wrapper.find('.mouse-clickable').trigger('contextmenu', { shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('contextmenu', { [`${mod}Key`]: true });
             expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledTimes(0);
         });
 

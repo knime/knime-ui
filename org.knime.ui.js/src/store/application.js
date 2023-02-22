@@ -1,9 +1,9 @@
-import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '@api';
+import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow,
+    setProjectActiveAndEnsureItsLoadedInBackend } from '@api';
 import { encodeString } from '@/util/encodeString';
 import { APP_ROUTES } from '@/router';
 
 const getCanvasStateKey = (input) => encodeString(input);
-const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
 
 /*
  * This store provides global application logic
@@ -31,11 +31,36 @@ export const state = () => ({
     /* Indicates whether node recommendations are available or not */
     hasNodeRecommendationsEnabled: false,
 
-    // Map that keeps track of root workflow snapshots. Only needed when
-    // wanting to generate a workflow preview while being in a nested workflow
+    // Map that keeps track of root workflow snapshots. Used to generate SVGs when saving
     rootWorkflowSnapshots: new Map(),
 
-    isLoadingWorkflow: false
+    isLoadingWorkflow: false,
+
+    globalLoader: { loading: false },
+
+    /* Object containing available updates */
+    availableUpdates: null,
+
+    /*
+     * If true, a node collection is configured on the preference page. The node search will show the nodes of the
+     * collection first and the category groups and node recommendations will only show nodes from the collection.
+     */
+    hasNodeCollectionActive: false,
+
+    /**
+     * If true, the mouse wheel should be used for zooming instead of scrolling
+     */
+    scrollToZoomEnabled: false,
+
+    /**
+     * example projects with name, svg and origin
+     */
+    exampleProjects: [],
+
+    /*
+     * If true, dev mode specifics buttons will be shown.
+     */
+    devMode: false
 });
 
 export const mutations = {
@@ -46,7 +71,10 @@ export const mutations = {
         state.activeProjectId = projectId;
     },
     setOpenProjects(state, projects) {
-        state.openProjects = projects.map(({ projectId, name }) => ({ projectId, name }));
+        state.openProjects = projects;
+    },
+    setExampleProjects(state, examples) {
+        state.exampleProjects = examples;
     },
     setAvailablePortTypes(state, availablePortTypes) {
         state.availablePortTypes = availablePortTypes;
@@ -57,7 +85,7 @@ export const mutations = {
     setSavedCanvasStates(state, newStates) {
         const { savedCanvasStates } = state;
         const { workflow, project } = newStates;
-        const rootWorkflowId = getRootWorkflowId(workflow);
+        const rootWorkflowId = 'root';
         const isRootWorkflow = rootWorkflowId === workflow;
         const emptyParentState = { children: {} };
 
@@ -100,6 +128,18 @@ export const mutations = {
     },
     setHasNodeRecommendationsEnabled(state, hasNodeRecommendationsEnabled) {
         state.hasNodeRecommendationsEnabled = hasNodeRecommendationsEnabled;
+    },
+    setAvailableUpdates(state, availableUpdates) {
+        state.availableUpdates = availableUpdates;
+    },
+    setScrollToZoomEnabled(state, scrollToZoomEnabled) {
+        state.scrollToZoomEnabled = scrollToZoomEnabled;
+    },
+    setHasNodeCollectionActive(state, hasNodeCollectionActive) {
+        state.hasNodeCollectionActive = hasNodeCollectionActive;
+    },
+    setDevMode(state, devMode) {
+        state.devMode = devMode;
     }
 };
 
@@ -112,16 +152,22 @@ export const actions = {
 
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
-        
+        await dispatch('spaces/fetchAllSpaceProviders', {}, { root: true });
+
         $router.beforeEach(async (to, from, next) => {
-            if (to.query.skipGuards) {
+            if (to.query.skipGuards === 'true') {
                 next();
                 return;
             }
 
-            const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage.name;
-            const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage.name;
-        
+            const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;
+            const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
+
+            if (isLeavingWorkflow) {
+                // clear any open menus when leaving a workflow
+                await dispatch('toggleContextMenu');
+            }
+
             if (isLeavingWorkflow && !isEnteringWorkflow) {
                 await dispatch('switchWorkflow', { newWorkflow: null });
                 next();
@@ -139,7 +185,7 @@ export const actions = {
                 await dispatch('switchWorkflow', { newWorkflow: to.params, navigateToWorkflow });
                 return;
             }
-        
+
             next();
         });
     },
@@ -150,23 +196,48 @@ export const actions = {
 
     // ----------------------------------------------------------------------------------------- //
 
-    async replaceApplicationState({ commit, dispatch, state }, applicationState) {
+    async replaceApplicationState({ commit, dispatch, state, rootState }, applicationState) {
         // Only set application state properties present in the received object
         if (applicationState.availablePortTypes) {
             commit('setAvailablePortTypes', applicationState.availablePortTypes);
         }
+
         if (applicationState.suggestedPortTypeIds) {
             commit('setSuggestedPortTypes', applicationState.suggestedPortTypeIds);
         }
+
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
         if (applicationState.hasNodeRecommendationsEnabled) {
             commit('setHasNodeRecommendationsEnabled', applicationState.hasNodeRecommendationsEnabled);
         }
+
         if (applicationState.featureFlags) {
             commit('setFeatureFlags', applicationState.featureFlags);
         }
+
         if (applicationState.openProjects) {
             commit('setOpenProjects', applicationState.openProjects);
             await dispatch('setActiveProject', applicationState.openProjects);
+        }
+
+        if (applicationState.exampleProjects) {
+            commit('setExampleProjects', applicationState.exampleProjects);
+        }
+
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+        if (applicationState.hasOwnProperty('scrollToZoomEnabled')) {
+            commit('setScrollToZoomEnabled', applicationState.scrollToZoomEnabled);
+        }
+
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+        if (applicationState.hasOwnProperty('hasNodeCollectionActive')) {
+            commit('setHasNodeCollectionActive', applicationState.hasNodeCollectionActive);
+            dispatch('nodeRepository/resetSearchAndCategories', {}, { root: true });
+        }
+
+        // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+        if (applicationState.hasOwnProperty('devMode')) {
+            commit('setDevMode', applicationState.devMode);
         }
     },
     async setActiveProject({ commit, dispatch, state }, openProjects) {
@@ -175,22 +246,14 @@ export const actions = {
             await dispatch('switchWorkflow', { newWorkflow: null });
             return;
         }
-        
-        const activeProject = openProjects.find(item => item.activeWorkflow);
-        
-        if (!activeProject) {
-            consola.info('No active workflow provided');
 
-            // chose root workflow of first tab
-            const [firstProject] = openProjects;
-            await dispatch('loadWorkflow', {
-                projectId: firstProject.projectId,
-                // ATTENTION: we can only open tabs, that have root workflows (no standalone metanodes or components)
-                workflowId: 'root'
-            });
+        const activeProject = openProjects.find(item => item.activeWorkflowId);
+
+        // No active project is set -> stay on entry page (aka: null project)
+        if (!activeProject) {
             return;
         }
-        
+
         const isSameActiveProject = state?.activeProjectId === activeProject.projectId;
         if (isSameActiveProject) {
             // don't set the workflow if already on it. e.g another tab was closed
@@ -206,11 +269,18 @@ export const actions = {
             return;
         }
 
-        await dispatch('setWorkflow', {
-            projectId: activeProject.projectId,
-            workflow: activeProject.activeWorkflow.workflow,
-            snapshotId: activeProject.activeWorkflow.snapshotId
+        // Before opening a new workflow we need to make sure we update the preview snapshot of the one
+        // we're leaving
+        await dispatch('updatePreviewSnapshot', {
+            isChangingProject: true,
+            newWorkflow: {
+                projectId: activeProject.projectId,
+                workflowId: 'root'
+            }
         });
+
+        await dispatch('loadWorkflow',
+            { projectId: activeProject.projectId, workflowId: activeProject.activeWorkflowId });
     },
 
     /*
@@ -229,7 +299,7 @@ export const actions = {
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
             commit('setActiveProjectId', null);
         }
-        
+
         // only continue if the new workflow exists
         if (newWorkflow) {
             let { projectId, workflowId = 'root' } = newWorkflow;
@@ -244,10 +314,12 @@ export const actions = {
                 await dispatch('loadWorkflow', { projectId, workflowId, navigateToWorkflow });
             }
         }
-        
+
         commit('setIsLoadingWorkflow', false);
     },
     async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
+        // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
+        setProjectActiveAndEnsureItsLoadedInBackend({ projectId });
         const project = await loadWorkflow({ projectId, workflowId });
         if (project) {
             dispatch('setWorkflow', {
@@ -272,7 +344,7 @@ export const actions = {
         // TODO: remove this 'root' fallback after mocks have been adjusted
         const workflowId = workflow.info.containerId || 'root';
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
-        
+
         // Call navigate to workflow function (if provided) before restoring the canvas state
         await navigateToWorkflow?.();
 
@@ -308,6 +380,7 @@ export const actions = {
 
         commit('setSavedCanvasStates', { ...scrollState, project, workflow });
     },
+
     async restoreCanvasState({ dispatch, getters }) {
         // console.log('HEREEEE')
         const { workflowCanvasState } = getters;
@@ -316,43 +389,74 @@ export const actions = {
             await dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
     },
+
     removeCanvasState({ rootState, state }, projectId) {
-        const { info: { containerId: workflow } } = rootState.workflow.activeWorkflow;
-        const rootWorkflowId = getRootWorkflowId(workflow);
-        const stateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
+        const stateKey = getCanvasStateKey(`${projectId}--root`);
 
         delete state.savedCanvasStates[stateKey];
     },
+
     updatePreviewSnapshot({ rootState, state, dispatch }, { isChangingProject, newWorkflow }) {
         const isCurrentlyOnRoot = rootState.workflow?.activeWorkflow?.info.containerId === 'root';
+        const isWorkflowUnsaved = rootState.workflow?.activeWorkflow?.dirty;
 
         const { activeProjectId } = state;
 
         // Going from the root into deeper levels (e.g into a Metanode or Component)
         // without having changed projects
-        if (isCurrentlyOnRoot && newWorkflow && !isChangingProject) {
+        const isEnteringSubWorkflow = isCurrentlyOnRoot && newWorkflow && !isChangingProject;
+
+        if (isEnteringSubWorkflow || (isChangingProject && isWorkflowUnsaved)) {
             const canvasElement = rootState.canvas.getScrollContainerElement().firstChild;
 
             // save a snapshot of the current state of the root workflow
-            dispatch('setRootWorkflowSnapshot', {
+            dispatch('addToRootWorkflowSnapshots', {
                 projectId: activeProjectId,
-                element: canvasElement
+                element: canvasElement,
+                isCanvasEmpty: rootState.canvas.isEmpty
             });
 
-            // Going back to the root of a workflow without having changed projects
-        } else if (!isCurrentlyOnRoot && newWorkflow?.workflowId === 'root' && !isChangingProject) {
+            return;
+        }
+
+        // Going back to the root of a workflow without having changed projects
+        const isGoingBackToRoot = newWorkflow?.workflowId === 'root';
+        if (!isCurrentlyOnRoot && isGoingBackToRoot && !isChangingProject) {
             // Since we're back in the root workflow, we can clear the previously saved snapshot
-            dispatch('removeRootWorkflowSnapshot', { projectId: activeProjectId });
+            dispatch('removeFromRootWorkflowSnapshots', { projectId: activeProjectId });
         }
     },
-    setRootWorkflowSnapshot({ state }, { projectId, element }) {
+
+    addToRootWorkflowSnapshots({ state }, { projectId, element, isCanvasEmpty }) {
         // always use the "root" workflow
         const snapshotKey = encodeString(`${projectId}--root`);
-        state.rootWorkflowSnapshots.set(snapshotKey, element.cloneNode(true));
+        state.rootWorkflowSnapshots.set(snapshotKey, {
+            svgElement: element.cloneNode(true),
+            isCanvasEmpty
+        });
     },
 
-    removeRootWorkflowSnapshot({ state }, { projectId }) {
+    removeFromRootWorkflowSnapshots({ state }, { projectId }) {
         state.rootWorkflowSnapshots.delete(encodeString(`${projectId}--root`));
+    },
+
+    getRootWorkflowSnapshotByProjectId({ state }, { projectId }) {
+        const snapshotKey = encodeString(`${projectId}--root`);
+        return state.rootWorkflowSnapshots.get(snapshotKey);
+    },
+
+    async getActiveWorkflowSnapshot({ rootState, dispatch }) {
+        const { getScrollContainerElement, isEmpty } = rootState.canvas;
+        const { activeWorkflow: { projectId, info: { containerId } } } = rootState.workflow;
+
+        const isRootWorkflow = containerId === 'root';
+
+        const rootWorkflowSnapshot = isRootWorkflow
+            ? { svgElement: getScrollContainerElement().firstChild, isCanvasEmpty: isEmpty }
+            // when we're on a nested workflow (metanode/component) we then need to use the saved snapshot
+            : await dispatch('getRootWorkflowSnapshotByProjectId', { projectId });
+
+        return rootWorkflowSnapshot;
     },
 
     toggleContextMenu({
@@ -362,9 +466,9 @@ export const actions = {
         rootGetters,
         rootState
     }, {
-        event,
+        event = null,
         deselectAllObjects = false
-    }) {
+    } = {}) {
         // close other menus if they are open
         if (rootState.workflow.quickAddNodeMenu.isOpen) {
             rootState.workflow.quickAddNodeMenu.events.menuClose?.();
@@ -402,6 +506,14 @@ export const actions = {
             isOpen: true,
             position: { x, y }
         };
+    },
+
+    updateGlobalLoader({ state }, { loading, text, config }) {
+        state.globalLoader = {
+            loading,
+            text,
+            config: config || { displayMode: 'fullscreen' }
+        };
     }
 };
 
@@ -415,7 +527,7 @@ export const getters = {
 
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
         const { info: { containerId: workflowId }, projectId } = workflow.activeWorkflow;
-        const rootWorkflowId = getRootWorkflowId(workflowId);
+        const rootWorkflowId = 'root';
         const isRootWorkflow = rootWorkflowId === workflowId;
         const parentStateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
 
@@ -428,13 +540,5 @@ export const getters = {
 
             return savedCanvasStates[parentStateKey]?.children[savedStateKey];
         }
-    },
-
-    getWorkflowPreviewSnapshot(state) {
-        return (projectId) => {
-            const snapshotKey = encodeString(`${projectId}--root`);
-
-            return state.rootWorkflowSnapshots.get(snapshotKey);
-        };
     }
 };

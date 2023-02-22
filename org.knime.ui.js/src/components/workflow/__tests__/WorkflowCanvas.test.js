@@ -60,8 +60,8 @@ describe('Kanvas', () => {
                 }
             },
             panel: {
-                mutations: {
-                    setActiveTab: jest.fn()
+                actions: {
+                    setCurrentProjectActiveTab: jest.fn()
                 }
             },
             application: {
@@ -136,18 +136,9 @@ describe('Kanvas', () => {
 
             expect(storeConfig.canvas.mutations.setIsEmpty).toHaveBeenCalledWith(expect.anything(), false);
             expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
-            expect(storeConfig.panel.mutations.setActiveTab).not.toHaveBeenCalledWith(
+            expect(storeConfig.panel.actions.setCurrentProjectActiveTab).not.toHaveBeenCalledWith(
                 expect.any(Object),
                 TABS.NODE_REPOSITORY
-            );
-        });
-
-        it('sets workflow meta information as active', () => {
-            doShallowMount();
-
-            expect(storeConfig.panel.mutations.setActiveTab).toHaveBeenCalledWith(
-                expect.any(Object),
-                TABS.WORKFLOW_METADATA
             );
         });
     });
@@ -175,15 +166,13 @@ describe('Kanvas', () => {
         });
 
         test('switch to empty workflow', async () => {
-            storeConfig.canvas.actions.fillScreen.mockReset();
-
             // workaround, instead of triggering the canvas getter to reevaluate
             wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, true);
             await Vue.nextTick();
 
             expect(storeConfig.canvas.mutations.setIsEmpty).toHaveBeenCalledWith(expect.anything(), true);
             expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
-            expect(storeConfig.panel.mutations.setActiveTab).toHaveBeenCalledWith(
+            expect(storeConfig.panel.actions.setCurrentProjectActiveTab).toHaveBeenCalledWith(
                 expect.any(Object),
                 TABS.NODE_REPOSITORY
             );
@@ -192,7 +181,7 @@ describe('Kanvas', () => {
         it('sets node repository as active', () => {
             doShallowMount();
 
-            expect(storeConfig.panel.mutations.setActiveTab).toHaveBeenCalledWith(
+            expect(storeConfig.panel.actions.setCurrentProjectActiveTab).toHaveBeenCalledWith(
                 expect.any(Object),
                 TABS.NODE_REPOSITORY
             );

@@ -2,7 +2,7 @@ import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameCo
     addNodePort, removeNodePort, expandContainerNode, copyOrCutWorkflowParts, pasteWorkflowParts,
     renameNodeLabel } from '@api';
 import workflowObjectBounds from '@/util/workflowObjectBounds';
-import { pastePartsAt } from '@/util/pasteToWorkflow';
+import { pastePartsAt, pasteURI } from '@/util/pasteToWorkflow';
 import { adjustToGrid } from '@/util/geometry';
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -150,7 +150,9 @@ export const actions = {
 
     async addNode({ state, dispatch }, {
         position,
-        nodeFactory,
+        nodeFactory = null,
+        spaceItemReference,
+        // use either nodeFactory or spaceItemReference
         sourceNodeId = null,
         sourcePortIdx = null,
         // possible values are: 'new-only' | 'add' | 'none'
@@ -174,6 +176,7 @@ export const actions = {
             workflowId,
             position: gridAdjustedPosition,
             nodeFactory,
+            spaceItemReference,
             sourceNodeId,
             sourcePortIdx
         });
@@ -374,17 +377,26 @@ export const actions = {
         getters: { isWorkflowEmpty },
         dispatch, rootGetters, commit, rootState
     }, { position: customPosition } = {}) {
-        let clipboardContent;
-
+        let clipboardContent, clipboardText;
         try {
             // TODO: NXT-1168 Put a limit on the clipboard content size
-            const clipboardText = await navigator.clipboard.readText();
-            clipboardContent = JSON.parse(clipboardText);
-            consola.info('Pasted workflow parts');
+            clipboardText = await navigator.clipboard.readText();
         } catch (e) {
-            consola.info('Could not read form clipboard. Maybe the user did not permit it?');
+            consola.info('Could not read from clipboard. Maybe the user did not permit it?');
             return;
         }
+
+        try {
+            clipboardContent = JSON.parse(clipboardText);
+        } catch (e) {
+            // try to paste the clipboard content as a URI
+            if (!pasteURI(clipboardText, activeWorkflow, customPosition, rootGetters['canvas/getVisibleFrame']())) {
+                consola.info('Could not parse json or URI from clipboard.');
+            }
+            return;
+        }
+
+        consola.info('Pasted workflow parts');
 
         // 1. Decide where to paste
         const { position, doAfterPaste } = customPosition
@@ -426,3 +438,4 @@ export const getters = {
         return movePreviewDelta.x !== 0 || movePreviewDelta.y !== 0;
     }
 };
+

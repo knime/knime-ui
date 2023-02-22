@@ -1,44 +1,79 @@
 <script>
-import { mapState, mapActions, mapGetters } from 'vuex';
-
-import CloseIcon from '@/assets/cancel.svg';
 import Description from 'webapps-common/ui/components/Description.vue';
 import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.vue';
-
-import { escapeStack } from '@/mixins/escapeStack';
 import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
 
+/*
+ * Base component for the NodeDescriptionOverlay for the nodeRepo, also used in the ContextAwareDescription for nodes
+ * of the workflow
+ */
 export default {
     components: {
-        CloseIcon,
         Description,
         NodeFeatureList,
         ExternalResourcesList
     },
-    mixins: [
-        escapeStack({
-            onEscape() {
-                this.closeDescriptionPanel();
-            }
-        })
-    ],
+    props: {
+        selectedNode: {
+            type: Object,
+            default: null,
+            validator: node => node === null || (typeof node.nodeFactory?.className === 'string' &&
+                typeof node.name === 'string')
+        }
+    },
+    data() {
+        return {
+            descriptionData: null
+        };
+    },
     computed: {
-        ...mapState('nodeRepository', ['selectedNode', 'nodeDescriptionObject']),
-        ...mapGetters('nodeRepository', ['selectedNodeIsVisible'])
+        title() {
+            if (!this.selectedNode) {
+                return '';
+            }
+            return this.selectedNode.name;
+        }
     },
     watch: {
         // update description on change of node (if not null which means unselected)
         selectedNode: {
             immediate: true,
-            handler() {
-                if (this.selectedNode !== null) {
-                    this.getNodeDescription();
+            async handler() {
+                // reset data
+                const { selectedNode } = this;
+                if (selectedNode === null) {
+                    return;
+                }
+
+                this.descriptionData = await this.$store.dispatch(
+                    'nodeRepository/getNodeDescription',
+                    { selectedNode }
+                );
+
+                if (window.openUrlInExternalBrowser) {
+                    this.redirectLinks(window.openUrlInExternalBrowser);
                 }
             }
         }
     },
+
     methods: {
-        ...mapActions('nodeRepository', ['getNodeDescription', 'closeDescriptionPanel'])
+        async redirectLinks(redirect) {
+            await this.$nextTick();
+            const descriptionEl = this.$refs.description?.$el;
+
+            if (!descriptionEl) {
+                return;
+            }
+
+            descriptionEl.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    redirect(link.href);
+                    return false;
+                });
+            });
+        }
     }
 };
 </script>
@@ -56,16 +91,14 @@ export default {
 
     <div class="scroll-container">
       <div class="node-info">
-        <!--
-          The v-else should be active if the selected node is not visible,
-          but the nodeDescriptionObject might still
-          have some data as the selection is not cleared.
-        -->
-        <template v-if="selectedNodeIsVisible">
-          <template v-if="nodeDescriptionObject">
+        <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
+             have some data as the selection is not cleared. -->
+        <template v-if="selectedNode">
+          <template v-if="descriptionData">
             <Description
-              v-if="nodeDescriptionObject.description"
-              :text="nodeDescriptionObject.description"
+              v-if="descriptionData.description"
+              ref="description"
+              :text="descriptionData.description"
               render-as-html
             />
 
@@ -77,17 +110,17 @@ export default {
             </span>
 
             <ExternalResourcesList
-              v-if="nodeDescriptionObject.links"
-              :links="nodeDescriptionObject.links"
+              v-if="descriptionData.links"
+              :links="descriptionData.links"
             />
 
             <NodeFeatureList
-              :in-ports="nodeDescriptionObject.inPorts"
-              :dyn-in-ports="nodeDescriptionObject.dynInPorts"
-              :out-ports="nodeDescriptionObject.outPorts"
-              :dyn-out-ports="nodeDescriptionObject.dynOutPorts"
-              :views="nodeDescriptionObject.views"
-              :options="nodeDescriptionObject.options"
+              :in-ports="descriptionData.inPorts"
+              :dyn-in-ports="descriptionData.dynInPorts"
+              :out-ports="descriptionData.outPorts"
+              :dyn-out-ports="descriptionData.dynOutPorts"
+              :views="descriptionData.views"
+              :options="descriptionData.options"
               class="node-feature-list"
             />
           </template>
@@ -105,16 +138,9 @@ export default {
 
 <style lang="postcss" scoped>
 .node-description {
-  width: 360px;
-  font-family: "Roboto Condensed", sans-serif;
   height: 100%;
-  background-color: var(--knime-gray-ultra-light);
-  padding: 8px 0 172px;
-  position: fixed;
-  left: 400px;
-  z-index: 2;
-  border: solid var(--knime-silver-sand);
-  border-width: 0 1px;
+  padding: 8px 0;
+  font-family: "Roboto Condensed", sans-serif;
 
   & .header {
     display: flex;
@@ -128,29 +154,6 @@ export default {
       font-size: 18px;
       line-height: 36px;
     }
-
-    & button {
-      width: 40px;
-      margin-top: 2px;
-      margin-right: -15px;
-      border: none;
-      display: flex;
-      align-items: center;
-      background-color: transparent;
-
-      & .icon {
-        border: 0;
-        border-radius: 20px;
-        stroke: var(--knime-dove-gray);
-        width: 40px;
-
-        &:hover {
-          cursor: pointer;
-          background-color: var(--knime-silver-sand-semi);
-          stroke: var(--knime-masala);
-        }
-      }
-    }
   }
 
   & hr {
@@ -160,14 +163,13 @@ export default {
   }
 
   & .scroll-container {
-    background-color: var(--knime-gray-ultra-light);
     overflow-x: hidden;
     text-align: left;
     height: 100%;
   }
 
   & .node-info {
-    padding: 10px 20px 0;
+    padding: 10px 20px;
     display: flex;
     min-height: 100%;
     flex-direction: column;

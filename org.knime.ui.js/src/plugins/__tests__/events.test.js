@@ -27,7 +27,8 @@ describe('Event Plugin', () => {
             state: {
                 application: {}
             },
-            dispatch: jest.fn()
+            dispatch: jest.fn(),
+            commit: jest.fn()
         };
 
         const routerMock = {
@@ -43,7 +44,11 @@ describe('Event Plugin', () => {
         loadPlugin();
         expect(Object.keys(registeredHandlers)).toStrictEqual([
             'WorkflowChangedEvent',
-            'AppStateChangedEvent'
+            'AppStateChangedEvent',
+            'UpdateAvailableEvent',
+            'SaveAndCloseWorkflowsEvent',
+            'ImportURIEvent',
+            'ProgressEvent'
         ]);
     });
 
@@ -58,7 +63,7 @@ describe('Event Plugin', () => {
         afterEach(() => {
             notifyPatch.mockClear();
         });
-        
+
         it('handles WorkflowChangedEvents', () => {
             const { storeMock } = loadPlugin();
             registeredHandlers.WorkflowChangedEvent(
@@ -91,13 +96,13 @@ describe('Event Plugin', () => {
         describe('AppState event', () => {
             it('navigates to entry page when no projects are open', async () => {
                 const { storeMock, routerMock } = loadPlugin();
-    
+
                 await registeredHandlers.AppStateChangedEvent(
                     { appState: { openProjects: [] } }
                 );
 
                 expect(routerMock.push).toHaveBeenCalledWith({
-                    name: APP_ROUTES.EntryPage.name
+                    name: APP_ROUTES.EntryPage.GetStartedPage
                 });
 
                 expect(storeMock.dispatch).toHaveBeenCalledWith(
@@ -105,15 +110,15 @@ describe('Event Plugin', () => {
                     { openProjects: [] }
                 );
             });
-            
+
             it('navigates to the corresponding project when it is set as active', async () => {
                 const { storeMock, routerMock } = loadPlugin();
 
                 storeMock.state.application.activeProjectId = 'project1';
-    
+
                 const openProjects = [
                     { projectId: 'project1' },
-                    { projectId: 'project2', activeWorkflow: {} }
+                    { projectId: 'project2', activeWorkflowId: 'root' }
                 ];
 
                 await registeredHandlers.AppStateChangedEvent({
@@ -134,15 +139,70 @@ describe('Event Plugin', () => {
 
             it('replaces application state', async () => {
                 const { storeMock } = loadPlugin();
-    
+
                 await registeredHandlers.AppStateChangedEvent(
                     { appState: { openProjects: [{ id: 'mock' }] } }
                 );
-    
+
                 expect(storeMock.dispatch).toHaveBeenCalledWith(
                     'application/replaceApplicationState',
                     { openProjects: [{ id: 'mock' }] }
                 );
+            });
+
+            // TODO NXT-1437
+            it.todo('should clear the application busy state');
+        });
+
+        // TODO NXT-1437
+        describe('SaveAndCloseWorkflowsEvent', () => {
+            it.todo('should set the application busy state');
+
+            it.todo('should generate all unsaved project snapshots');
+
+            it.todo('should call the browser function with the correct parameters');
+        });
+
+        describe('UpdateAvailable event', () => {
+            it('replaces availableUpdates state', async () => {
+                const { storeMock } = loadPlugin();
+                const newReleases = [
+                    {
+                        isUpdatePossible: true,
+                        name: 'KNIME Analytics Platform 5.0',
+                        shortName: '5.0'
+                    },
+                    {
+                        isUpdatePossible: false,
+                        name: 'KNIME Analytics Platform 6.0',
+                        shortName: '6.0'
+                    }
+                ];
+                const bugfixes = [
+                    'Update1',
+                    'Update2'
+                ];
+
+                await registeredHandlers.UpdateAvailableEvent(
+                    { newReleases, bugfixes }
+                );
+
+                expect(storeMock.commit).toHaveBeenCalledWith(
+                    'application/setAvailableUpdates',
+                    { newReleases, bugfixes }
+                );
+            });
+
+            it('does not replace availableUpdates state if there are no updates', async () => {
+                const { storeMock } = loadPlugin();
+                const newReleases = undefined;
+                const bugfixes = undefined;
+
+                await registeredHandlers.UpdateAvailableEvent(
+                    { newReleases, bugfixes }
+                );
+
+                expect(storeMock.commit).not.toHaveBeenCalled();
             });
         });
     });

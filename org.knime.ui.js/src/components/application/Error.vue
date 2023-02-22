@@ -54,7 +54,8 @@ export default {
     },
     methods: {
         reloadApp() {
-            window.location.reload();
+            // redirect to the index.html page to trigger a refetch of the whole app
+            window.location.href = '/index.html';
         },
         copyToClipboard() {
             copyText(JSON.stringify({

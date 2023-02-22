@@ -7,7 +7,7 @@ describe('PortViewTabOutput.vue', () => {
     const dummyNode = {
         id: 'node1',
         selected: true,
-        outPorts: [{ typeId: 'table' }, { typeId: 'flowVariable' }],
+        outPorts: [{ typeId: 'flowVariable' }, { typeId: 'table' }],
         isLoaded: false,
         state: {
             executionState: 'UNSET'
@@ -21,7 +21,7 @@ describe('PortViewTabOutput.vue', () => {
         projectId: 'project-1',
         workflowId: 'workflow-1',
         selectedNode: dummyNode,
-        selectedPortIndex: '0',
+        selectedPortIndex: 0,
         availablePortTypes: {
             table: {
                 kind: 'table',
@@ -47,7 +47,7 @@ describe('PortViewTabOutput.vue', () => {
             const wrapper = doShallowMount({
                 selectedNode: { ...dummyNode, outPorts: [] }
             });
-            
+
             expect(wrapper.emitted('outputStateChange')[0][0]).toEqual(expect.objectContaining({
                 message: 'The selected node has no output ports.'
             }));
@@ -72,10 +72,11 @@ describe('PortViewTabOutput.vue', () => {
                 message: 'Please first configure the selected node.'
             }));
         });
-        
+
         it('validates that node is not executing', () => {
             const wrapper = doShallowMount({
-                selectedNode: { ...dummyNode, state: { executionState: 'EXECUTING' } }
+                selectedNode: { ...dummyNode, state: { executionState: 'EXECUTING' } },
+                selectedPortIndex: 1
             });
 
             expect(wrapper.emitted('outputStateChange')[0][0]).toEqual(expect.objectContaining({
@@ -91,7 +92,7 @@ describe('PortViewTabOutput.vue', () => {
                 ...dummyNode,
                 outPorts: [...dummyNode.outPorts, { typeId: 'something-unsupported' }]
             };
-            const selectedPortIndex = (selectedNode.outPorts.length - 1).toString();
+            const selectedPortIndex = selectedNode.outPorts.length - 1;
             const wrapper = doShallowMount({ selectedNode, selectedPortIndex });
 
             expect(wrapper.emitted('outputStateChange')[0][0]).toEqual(expect.objectContaining({
@@ -104,7 +105,7 @@ describe('PortViewTabOutput.vue', () => {
                 ...dummyNode,
                 outPorts: dummyNode.outPorts.map(port => ({ ...port, inactive: true }))
             };
-            const wrapper = doShallowMount({ selectedNode, selectedPortIndex: '0' });
+            const wrapper = doShallowMount({ selectedNode, selectedPortIndex: 0 });
 
             expect(wrapper.emitted('outputStateChange')[0][0]).toEqual(expect.objectContaining({
                 message: 'This output port is inactive and therefore no output data is available for display.'
@@ -122,23 +123,40 @@ describe('PortViewTabOutput.vue', () => {
                     state: { executionState },
                     allowedActions: { canExecute: true }
                 },
-                selectedPortIndex: '1'
+                selectedPortIndex: 0
             });
 
             expect(wrapper.emitted('outputStateChange')).toBeUndefined();
+        });
+
+        it('validates that non-default flowVariables cannot be shown if node is not executed', () => {
+            const outPorts = [...dummyNode.outPorts, { typeId: 'flowVariable' }];
+            const wrapper = doShallowMount({
+                selectedNode: {
+                    ...dummyNode,
+                    outPorts,
+                    state: { executionState: 'NODE_UNEXECUTED' },
+                    allowedActions: { canExecute: true }
+                },
+                selectedPortIndex: 2
+            });
+
+            expect(wrapper.emitted('output-state-change')[0][0]).toEqual(expect.objectContaining({
+                message: 'To show the output, please execute the selected node.'
+            }));
         });
     });
 
     it('should emit outputStateChange events when the PortViewLoader state changes', () => {
         const wrapper = doShallowMount({
-            selectedPortIndex: '1'
+            selectedPortIndex: 1
         });
 
         wrapper.findComponent(PortViewLoader).vm.$emit('state-change', { state: 'loading' });
         expect(wrapper.emitted('outputStateChange')[0][0]).toEqual(expect.objectContaining({
             loading: true
         }));
-        
+
         wrapper.findComponent(PortViewLoader).vm.$emit('state-change', { state: 'error', message: 'Error message' });
         expect(wrapper.emitted('outputStateChange')[1][0]).toEqual(expect.objectContaining({
             message: 'Error message'

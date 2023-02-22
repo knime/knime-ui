@@ -6,8 +6,31 @@ import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import { toNodeWithFullPorts } from '@/util/portDataMapper';
+import { checkPortCompatibility } from '@/util/compatibleConnections';
+import { portPositions } from '@/util/portShift';
 
 const MAX_NODES = 12;
+
+const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) => {
+    const targetPortIndex = targetPorts.findIndex(toPort => checkPortCompatibility({
+        fromPort: sourcePort,
+        toPort,
+        availablePortTypes
+    }));
+
+    const portCount = targetPorts.length + 1; // +1 for the mickey mouse port
+    const positions = portPositions({ portCount });
+
+    if (targetPortIndex === -1 && sourcePort.index === 0) {
+        // will be a mickey mouse to mickey mouse flow port connection
+        // NOTE: the index 0 is always the red mickey mouse port for nodes that
+        // are on the workflow, NOT for them in the repo! They lack those ports completely.
+        // TODO: fix the inconsistency with NXT-1489
+        return positions[0];
+    } else {
+        return positions[targetPortIndex + 1];
+    }
+};
 
 /*
  * Quick Add Node Menu: Shows a menu with recommended nodes that are provided by the api (based on usage statistics).
@@ -96,15 +119,24 @@ export default {
 
             this.recommendedNodes = recommendedNodesResult.map(toNodeWithFullPorts(this.availablePortTypes));
         },
-        async addNode({ nodeFactory }) {
+        async addNode({ nodeFactory, inPorts }) {
             if (!this.isWritable) {
                 return; // end here
             }
 
+            const [offsetX, offsetY] = calculatePortOffset({
+                targetPorts: inPorts,
+                sourcePort: this.port,
+                availablePortTypes: this.availablePortTypes
+            });
+
             // add node
-            const { position } = this;
+            const { canvasPosition: { x, y } } = this;
             await this.addNodeToWorkflow({
-                position,
+                position: {
+                    x: x - offsetX,
+                    y: y - offsetY
+                },
                 nodeFactory,
                 sourceNodeId: this.nodeId,
                 sourcePortIdx: this.port.index

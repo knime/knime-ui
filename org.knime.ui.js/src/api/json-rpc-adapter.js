@@ -16,14 +16,16 @@ export const handleResponse = ({ response, method = '<unknown>', args }) => {
     }
 
     // check validity of JSON-RPC response
-    let { result, error } = response;
-    if (error) {
+    let { result, error: originalError } = response;
+    if (originalError) {
         if (result) {
             consola.error(`Invalid JSON-RPC response: Both error and result exist.\n${JSON.stringify(response)}`);
         }
-        throw new Error(
-            `Error returned from JSON-RPC API ${JSON.stringify([method, args])}: ${JSON.stringify(error)}`
+        const error = new Error(
+            `Error returned from JSON-RPC API ${JSON.stringify([method, args])}: ${JSON.stringify(originalError)}`
         );
+        error.originalError = originalError;
+        throw error;
     } else if (typeof result === 'undefined') {
         throw new Error(`Invalid JSON-RPC response: Neither error nor result exist.\n${JSON.stringify(response)}`);
     }

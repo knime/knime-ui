@@ -1,10 +1,12 @@
 import { registerEventHandlers } from '@api';
 import { notifyPatch } from '@/util/event-syncer';
 import { APP_ROUTES } from '@/router';
+import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
+import { nodeSize } from '@/style/shapes.mjs';
 
 export default ({ $store, $router }) => {
     registerEventHandlers({
-        /*
+        /**
          * Is triggered by the backend, whenever a change to the workflow has been made/requested
          * Sends a list of json-patch operations to update the frontend's state
          */
@@ -15,13 +17,13 @@ export default ({ $store, $router }) => {
                 op.path = `/activeWorkflow${op.path}`;
             });
             $store.dispatch('workflow/patch.apply', ops);
-        
+
             if (snapshotId) {
                 notifyPatch(snapshotId);
             }
         },
-        
-        /*
+
+        /**
          * Is triggered by the backend, whenever the application state changes
          * sends the new state
          */
@@ -29,17 +31,17 @@ export default ({ $store, $router }) => {
         async AppStateChangedEvent({ appState }) {
             const { openProjects } = appState;
             const currentProjectId = $store.state.application.activeProjectId;
-            const nextActiveProject = openProjects.find(item => item.activeWorkflow);
-            
-            // Navigate to EntryPage when no projects are open
-            if (openProjects.length === 0) {
-                await $router.push({ name: APP_ROUTES.EntryPage.name });
+            const nextActiveProject = openProjects?.find(item => item.activeWorkflowId);
+
+            // Navigate to GetStarted page when no projects are open
+            if (openProjects && openProjects.length === 0) {
+                await $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
             }
-            
+
             // When a new project is set as active, navigate to the corresponding workflow
             if (nextActiveProject && currentProjectId !== nextActiveProject.projectId) {
                 await $router.push({
-                    name: APP_ROUTES.WorkflowPage.name,
+                    name: APP_ROUTES.WorkflowPage,
                     params: {
                         projectId: nextActiveProject.projectId,
                         workflowId: 'root'
@@ -49,6 +51,77 @@ export default ({ $store, $router }) => {
             }
 
             $store.dispatch('application/replaceApplicationState', appState);
+
+            // In case a `SaveAndCloseWorkflowsEvent` was received before, which might've triggered
+            // an `AppStateChangedEvent` later, then we make sure to clean up the busy state here
+            $store.dispatch('application/updateGlobalLoader', { loading: false });
+        },
+
+        // Is triggered by the backend, whenever there are AP updates available
+        UpdateAvailableEvent({ newReleases, bugfixes }) {
+            if (newReleases || bugfixes) {
+                $store.commit('application/setAvailableUpdates', { newReleases, bugfixes });
+            }
+        },
+
+        async SaveAndCloseWorkflowsEvent({ projectIds, params = [] }) {
+            $store.dispatch('application/updateGlobalLoader', { loading: true });
+
+            const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
+
+            const resolveSVGSnapshots = projectIds
+                .map(async projectId => {
+                    const { svgElement, isCanvasEmpty } = projectId === activeProjectId
+                        ? await $store.dispatch('application/getActiveWorkflowSnapshot')
+                        : await $store.dispatch('application/getRootWorkflowSnapshotByProjectId', { projectId });
+
+                    return generateWorkflowPreview(svgElement, isCanvasEmpty);
+                });
+
+            const svgSnapshots = await Promise.all(resolveSVGSnapshots);
+            const totalProjects = projectIds.length;
+
+            window.saveAndCloseWorkflows(
+                totalProjects,
+                ...projectIds,
+                ...svgSnapshots,
+                // send over any parameters that are sent in the event payload, or empty in case none
+                ...params
+            );
+        },
+
+        ImportURIEvent({ x, y }) {
+            const el = document.elementFromPoint(x, y);
+            const kanvas = $store.state.canvas.getScrollContainerElement();
+            if (kanvas.contains(el)) {
+                let [canvasX, canvasY] = $store.getters['canvas/screenToCanvasCoordinates']([x, y]);
+                const workflow = $store.state.workflow.activeWorkflow;
+                window.importURIAtWorkflowCanvas(
+                    null,
+                    workflow.projectId,
+                    workflow.info.containerId,
+                    canvasX - nodeSize / 2,
+                    canvasY - nodeSize / 2
+                );
+            }
+        },
+
+        // Is triggered by the backend, whenever there are installation or update processes starting
+        // or finishing
+        ProgressEvent({ status, text }) {
+            const isLoading = status === 'STARTED';
+            const loaderConfig = isLoading
+                ? {
+                    displayMode: 'toast',
+                    loadingMode: 'normal'
+                }
+                : null;
+
+            $store.dispatch('application/updateGlobalLoader', {
+                loading: isLoading,
+                config: loaderConfig,
+                text
+            });
         }
     });
 };

@@ -2,24 +2,24 @@
 import { mapState, mapActions, mapMutations } from 'vuex';
 import NodeCogIcon from 'webapps-common/ui/assets/img/icons/node-cog.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
-import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
+import PlusIcon from 'webapps-common/ui/assets/img/icons/node-stack.svg';
 import MetainfoIcon from '@/assets/metainfo.svg';
 
 import { TABS } from '@/store/panel';
-import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
-import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
+import SidebarSpaceExplorer from '@/components/sidebar/SidebarSpaceExplorer.vue';
 
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
+import ContextAwareDescription from '@/components/sidebar/ContextAwareDescription.vue';
 
 export default {
     components: {
+        ContextAwareDescription,
         MetainfoIcon,
-        SpaceExplorer,
+        SidebarSpaceExplorer,
         PlusIcon,
         LeftCollapsiblePanel,
-        WorkflowMetadata,
         NodeRepository,
         NodeDialogWrapper
     },
@@ -30,16 +30,17 @@ export default {
     },
     computed: {
         ...mapState('panel', ['activeTab', 'expanded']),
+        ...mapState('application', ['activeProjectId']),
         ...mapState('nodeRepository', ['isDescriptionPanelOpen']),
-        
+
         sidebarSections() {
             return [
                 {
-                    title: 'Workflow metadata',
+                    title: 'Description',
                     icon: MetainfoIcon,
-                    isActive: this.isTabActive(TABS.WORKFLOW_METADATA),
+                    isActive: this.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
                     isExpanded: this.expanded,
-                    onClick: () => this.clickItem(TABS.WORKFLOW_METADATA)
+                    onClick: () => this.clickItem(TABS.CONTEXT_AWARE_DESCRIPTION)
                 },
                 {
                     title: 'Node repository',
@@ -68,11 +69,13 @@ export default {
         }
     },
     methods: {
-        ...mapMutations('panel', ['setActiveTab', 'closePanel', 'toggleExpanded']),
+        ...mapMutations('panel', ['closePanel', 'toggleExpanded']),
+        ...mapActions('panel', ['setCurrentProjectActiveTab']),
         ...mapActions('nodeRepository', ['closeDescriptionPanel']),
 
         isTabActive(tabName) {
-            return this.activeTab === tabName;
+            const activeTab = this.activeTab[this.activeProjectId] || TABS.CONTEXT_AWARE_DESCRIPTION;
+            return activeTab === tabName;
         },
 
         clickItem(tabName) {
@@ -80,7 +83,7 @@ export default {
             if (isAlreadyActive && this.expanded) {
                 this.closePanel();
             } else {
-                this.setActiveTab(tabName);
+                this.setCurrentProjectActiveTab(tabName);
             }
 
             this.closeDescriptionPanel();
@@ -122,9 +125,9 @@ export default {
           key="node-repository"
         />
 
-        <WorkflowMetadata
-          v-show="isTabActive(TABS.WORKFLOW_METADATA)"
-          key="workflow-metadata"
+        <ContextAwareDescription
+          v-show="isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
+          key="context-aware-description"
         />
 
         <NodeDialogWrapper
@@ -132,11 +135,9 @@ export default {
           v-show="isTabActive(TABS.NODE_DIALOG)"
           key="node-dialog"
         />
-
-        <SpaceExplorer
+        <SidebarSpaceExplorer
           v-show="isTabActive(TABS.SPACE_EXPLORER)"
           key="space-explorer"
-          mode="mini"
         />
       </TransitionGroup>
     </LeftCollapsiblePanel>
@@ -158,7 +159,7 @@ export default {
 }
 
 nav {
-  width: var(--app-side-bar-width);
+  width: var(--app-side-bar-buttons-width);
   background-color: var(--knime-black);
 
   & ul {
@@ -183,7 +184,7 @@ nav {
         background-color: var(--knime-porcelain);
 
         &.expanded {
-          background-color: var(--knime-gray-ultra-light);
+          background-color: var(--knime-porcelain);
         }
       }
 

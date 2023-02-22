@@ -1,6 +1,6 @@
 #!groovy
 
-def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2022-12'
+def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2023-03'
 
 library "knime-pipeline@$BN"
 
@@ -14,7 +14,7 @@ properties([
 ])
 
 try {
-    node('maven && java11 && large') {
+    node('maven && java17 && large') {
         knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui')
         
         junit '**/test-results/junit.xml'

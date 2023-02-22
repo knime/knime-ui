@@ -34,14 +34,14 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow']),
+        ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow', 'devMode']),
 
         isInfoPageActive() {
-            return this.$route.name === APP_ROUTES.InfoPage.name;
+            return this.$route.name === APP_ROUTES.InfoPage;
         },
-        
-        isEntryPageActive() {
-            return this.$route.name === APP_ROUTES.EntryPage.name;
+
+        isGetStartedPageActive() {
+            return this.$route.name === APP_ROUTES.EntryPage.GetStartedPage;
         },
 
         isLogoActive() {
@@ -52,7 +52,7 @@ export default {
             return (
                 this.openProjects.length === 0 ||
                 (!this.activeProjectId && !this.isLoadingWorkflow) ||
-                this.isEntryPageActive
+                this.isGetStartedPageActive
             );
         }
     },
@@ -69,7 +69,7 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['closeWorkflow']),
-        
+
         setupResizeListener() {
             const onResize = () => {
                 this.windowWidth = window.innerWidth;
@@ -88,18 +88,18 @@ export default {
                 this.$router.back();
             } else {
                 this.activeProjectTab = null;
-                this.$router.push({ name: APP_ROUTES.InfoPage.name });
+                this.$router.push({ name: APP_ROUTES.InfoPage });
             }
         },
 
-        setEntryPageTab() {
+        setGetStartedPageTab() {
             this.activeProjectTab = null;
-            this.$router.push({ name: APP_ROUTES.EntryPage.name });
+            this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
         },
 
         onProjectTabChange(projectId) {
             this.$router.push({
-                name: APP_ROUTES.WorkflowPage.name,
+                name: APP_ROUTES.WorkflowPage,
                 params: { projectId, workflowId: 'root' }
             });
         }
@@ -112,9 +112,10 @@ export default {
     <div
       id="knime-logo"
       :class="[ isLogoActive ? 'active-logo' : null ]"
-      @click="setEntryPageTab()"
+      @click="setGetStartedPageTab()"
     >
       <KnimeIcon />
+      <span class="text">Home</span>
     </div>
     <div class="toolbar">
       <ul
@@ -142,14 +143,14 @@ export default {
         v-else
         class="application-name"
       >
-        <span class="text">KNIME Modern UI Preview</span>
+        <span class="text">KNIME Analytics Platform 5 – Early Access</span>
       </div>
 
       <div class="buttons">
         <FunctionButton
-          v-if="!isInfoPageActive"
+          v-if="!isInfoPageActive && devMode"
           class="switch-classic"
-          title="Open KNIME Modern UI Preview"
+          title="Open KNIME Modern UI"
           @click="switchToJavaUI"
         >
           <SwitchIcon />
@@ -268,12 +269,27 @@ header {
   & #knime-logo {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: var(--app-side-bar-width);
+    justify-content: left;
+    width: auto;
     background-color: var(--knime-black);
-    text-align: center;
     height: 100%;
     margin-right: 25px;
+    padding: 0 10px;
+    font-family: "Roboto Condensed", sans-serif;
+
+    & .text {
+      font-size: 18px;
+      padding-left: 5px;
+      min-width: 45px;
+      line-height: 21px;
+      font-weight: 400;
+      text-align: left;
+      color: var(--knime-white);
+    }
+
+    &.active-logo .text {
+      color: var(--knime-black);
+    }
 
     & svg {
       width: 26px;

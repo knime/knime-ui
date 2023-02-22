@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import { debounce } from 'lodash';
+import { isMac } from '@/util/navigator';
 import throttle from 'raf-throttle';
 
 export const RESIZE_DEBOUNCE = 100;
@@ -23,7 +24,8 @@ export default {
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
-        ...mapState('canvas', ['zoomFactor', 'interactionsEnabled', 'isEmpty'])
+        ...mapState('canvas', ['zoomFactor', 'interactionsEnabled', 'isEmpty']),
+        ...mapState('application', ['scrollToZoomEnabled'])
     },
     watch: {
         contentBounds(...args) {
@@ -97,11 +99,8 @@ export default {
         /*
             Zooming
         */
-        onMouseWheel: throttle(function (e) {
+        zoom: throttle(function (e) {
             /* eslint-disable no-invalid-this */
-            if (!this.interactionsEnabled || this.isEmpty) {
-                return;
-            }
 
             // delta is -1, 0 or 1 depending on scroll direction.
             let delta = Math.sign(-e.deltaY);
@@ -113,9 +112,36 @@ export default {
             let cursorY = e.clientY - bcr.y;
 
             this.zoomAroundPointer({ delta, cursorX, cursorY });
+
             /* eslint-enable no-invalid-this */
         }),
 
+        onMouseWheel(event) {
+            if (!this.interactionsEnabled || this.isEmpty) {
+                return;
+            }
+
+            // If we don't want to use the wheel to zoom by default,
+            // we still want to zoom on ctrl or meta key.
+            // Note: The pinch-to-zoom gesture on Mac causes a wheel event with ctrlKey=True,
+            //       so we need to check for it to obtain zoom on pinch-to-zoom.
+            const shouldZoom = this.scrollToZoomEnabled || event.ctrlKey || (isMac() && event.metaKey);
+            if (!shouldZoom) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            // we can only throttle the zoom function itself and not the event propagation,
+            // otherwise we can get a mix of zooming and scrolling because some events
+            // are propagated and some are not
+            this.zoom(event);
+        },
+
+        /*
+        Panning
+        */
         onPressSpace(e) {
             if (blacklistTagNames.test(e.target.tagName)) {
                 return;
@@ -124,7 +150,7 @@ export default {
             if (e.code !== 'Space') {
                 return;
             }
-            
+
             e.preventDefault();
             e.stopPropagation();
 
@@ -202,7 +228,7 @@ export default {
             }
             /* eslint-enable no-invalid-this */
         }),
-        
+
         stopPan(event) {
             // user is not panning but did right-clicked
             if (!this.isPanning && this.isHoldingDownRightClick) {
@@ -247,8 +273,7 @@ export default {
       'empty': isEmpty,
       'disabled': !interactionsEnabled,
     }]"
-    @wheel.meta.prevent="onMouseWheel"
-    @wheel.ctrl.prevent="onMouseWheel"
+    @wheel="onMouseWheel"
     @pointerdown.middle="beginPan"
     @pointerdown.prevent.right="beginPan"
     @pointerdown.left="beginPan"
@@ -275,7 +300,9 @@ export default {
 
 <style lang="postcss" scoped>
 svg {
-  position: relative; /* needed for z-index to have effect */
+  position: relative;
+
+  /* needed for z-index to have effect */
   display: block;
 }
 
@@ -299,7 +326,9 @@ svg {
   }
 
   &.empty {
-    overflow: hidden; /* disables scrolling */
+    overflow: hidden;
+
+    /* disables scrolling */
   }
 
   &.disabled {
@@ -311,5 +340,4 @@ svg {
     }
   }
 }
-
 </style>

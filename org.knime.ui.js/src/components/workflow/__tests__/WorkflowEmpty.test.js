@@ -9,7 +9,7 @@ describe('WorkflowEmpty', () => {
             width: 1000,
             height: 1000
         };
-    
+
         const storeConfig = {
             canvas: {
                 state: {
@@ -17,15 +17,15 @@ describe('WorkflowEmpty', () => {
                 }
             }
         };
-    
+
         const $store = mockVuexStore(storeConfig);
         return shallowMount(WorkflowEmpty, { global: { plugins: [$store] } });
     };
 
     it('renders text', () => {
         const wrapper = doShallowMount();
-        expect(wrapper.findAll('text')[0].text()).toMatch('Start building your workflow by');
-        expect(wrapper.findAll('text')[1].text()).toMatch('dropping your nodes here.');
+
+        expect(wrapper.text()).toContain('Start building your workflow by dropping your data or nodes here.');
     });
 
     it('calculates width and height of rect based on size of the viewBox', () => {

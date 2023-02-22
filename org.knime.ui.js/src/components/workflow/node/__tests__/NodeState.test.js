@@ -21,7 +21,9 @@ describe('NodeState.vue', () => {
             executionState: null,
             progress: null,
             error: null,
-            warning: null
+            warning: null,
+            issue: null,
+            resolutions: []
         };
 
         doShallowMount = () => {
@@ -203,7 +205,38 @@ describe('NodeState.vue', () => {
                     y: 52
                 },
                 hoverable: true,
-                gap: 10
+                gap: 10,
+                issue: null,
+                resolutions: []
+            });
+
+            wrapper.find('g').trigger('mouseleave');
+            await Vue.nextTick();
+            expect(currentTooltip).toBeFalsy();
+        });
+
+        it('shows tooltips with error/warning, issue and resolution', async () => {
+            propsData.error = 'this is an error';
+            propsData.issue = 'this is the issue';
+            propsData.resultions = ['this is a potental resolution'];
+            doShallowMount();
+            
+            wrapper.find('g').trigger('mouseenter');
+            jest.runAllTimers();
+            await Vue.nextTick();
+
+            expect(currentTooltip).toStrictEqual({
+                anchorPoint: { x: 123, y: 456 },
+                text: 'this is an error',
+                type: 'error',
+                position: {
+                    x: 16,
+                    y: 52
+                },
+                hoverable: true,
+                gap: 10,
+                issue: propsData.issue,
+                resolutions: propsData.resolutions
             });
 
             wrapper.find('g').trigger('mouseleave');
@@ -233,7 +266,9 @@ describe('NodeState.vue', () => {
                     y: 52
                 },
                 hoverable: true,
-                gap: 10
+                gap: 10,
+                issue: null,
+                resolutions: []
             });
         });
     });

@@ -2,9 +2,13 @@
 import ForumIcon from 'webapps-common/ui/assets/img/icons/forum.svg';
 import ExtensionIcon from 'webapps-common/ui/assets/img/icons/extension.svg';
 import PerspectiveSwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
+import SphereIcon from 'webapps-common/ui/assets/img/icons/sphere.svg';
+import SettingsIcon from 'webapps-common/ui/assets/img/icons/settings.svg';
 import KnimeLogo from 'webapps-common/ui/assets/img/KNIME_Logo_gray.svg';
 import Button from 'webapps-common/ui/components/Button.vue';
 
+import Page from '@/components/common/Page.vue';
+import PageHeader from '@/components/common/PageHeader.vue';
 import OpenSourceCreditsModal from './OpenSourceCreditsModal.vue';
 
 export default {
@@ -12,8 +16,12 @@ export default {
         ForumIcon,
         ExtensionIcon,
         PerspectiveSwitchIcon,
+        SphereIcon,
+        SettingsIcon,
         KnimeLogo,
         Button,
+        Page,
+        PageHeader,
         OpenSourceCreditsModal
     },
     methods: {
@@ -27,20 +35,18 @@ export default {
 
         openInstallExtensionsDialog() {
             window.openInstallExtensionsDialog();
+        },
+
+        openKnimeUIPreferencePage() {
+            window.openWebUIPreferencePage();
         }
     }
 };
 </script>
 
 <template>
-  <main>
-    <header>
-      <div class="grid-container">
-        <div class="grid-item-12 page-title">
-          <h1>Information</h1>
-        </div>
-      </div>
-    </header>
+  <Page>
+    <PageHeader title="Information" />
 
     <!-- Forum section -->
     <section>
@@ -54,9 +60,53 @@ export default {
           <p>Get answers to your data questions from the active, global community.</p>
           <Button
             with-border
-            href="https://forum.knime.com/?src=knimeapp"
+            href="https://forum.knime.com/?src=knimeappmodernui"
           >
             <strong>Visit Forum</strong>
+          </Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hub section -->
+    <section>
+      <div class="grid-container">
+        <div class="grid-item-3 category">
+          <SphereIcon />
+          <h3>KNIME Community Hub</h3>
+        </div>
+
+        <div class="grid-item-9 body">
+          <p>
+            Solutions for data science: find workflows, nodes and components, and collaborate in spaces.
+          </p>
+          <Button
+            with-border
+            href="https://hub.knime.com/?src=knimeappmodernui"
+          >
+            <strong>Visit KNIME Community Hub</strong>
+          </Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preferences section -->
+    <section>
+      <div class="grid-container">
+        <div class="grid-item-3 category">
+          <SettingsIcon />
+          <h3>Settings</h3>
+        </div>
+
+        <div class="grid-item-9 body">
+          <p>
+            Change settings for the “Node repository” or the scrolling behaviour of the “Workbench”.
+          </p>
+          <Button
+            with-border
+            @click="openKnimeUIPreferencePage"
+          >
+            <strong>Open Modern UI Settings</strong>
           </Button>
         </div>
       </div>
@@ -72,9 +122,8 @@ export default {
 
         <div class="grid-item-9 body">
           <p>
-            Extensions provide additional functionality such as access to and processing of complex data types,
-            as well as the use of advanced algorithms. Install extensions to add additional functionality.
-            The KNIME Extensions page gives you an overview of the extensions available for KNIME Analytics Platform.
+            Install Extensions to access additional functionality such as the ability to
+            process complex data types, as well as to use advanced algorithms.
           </p>
           <Button
             with-border
@@ -91,19 +140,19 @@ export default {
       <div class="grid-container">
         <div class="grid-item-3 category">
           <PerspectiveSwitchIcon />
-          <h3>Switch back to<br>classic user interface</h3>
+          <h3>Switch to<br>classic user interface</h3>
         </div>
 
         <div class="grid-item-9 body">
           <p>
-            Switch to the classic KNIME Analytics Platform user interface. To switch back again, click in the classic
-            perspective the button “Open KNIME Modern UI Preview” in the top right corner
+            Switch to the classic KNIME Analytics Platform user interface. To switch back again,
+            click the button “Open KNIME Modern UI” in the top right corner of the classic user interface.
           </p>
           <Button
             with-border
             @click="switchToJavaUI"
           >
-            <strong>Switch to classic user interface</strong>
+            <strong>Switch to KNIME classic user interface</strong>
           </Button>
         </div>
       </div>
@@ -130,8 +179,7 @@ export default {
             <br>
             <br>
             This software is a bundle of multiple modules, each released under its own license.
-            Please check the individual licenses by clicking opening the “About KNIME” inside the
-            “Installation Details” → “Properties”; and in addition to that the “Credits” button.
+            Please check the individual licenses by clicking “About KNIME” and the “Credits” button.
           </p>
           <div class="section-buttons">
             <Button
@@ -149,40 +197,11 @@ export default {
         </div>
       </div>
     </section>
-  </main>
+  </Page>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
-
-main {
-  display: flex;
-  flex-direction: column;
-  color: var(--knime-masala);
-  overflow-y: auto;
-  height: 100%;
-}
-
-header {
-  min-height: 150px;
-
-  & .grid-container {
-    height: 100%;
-  }
-
-  & .page-title {
-    display: flex !important;
-    align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
-    margin-top: 20px;
-
-    & h1 {
-      font-size: 36px;
-      line-height: 42px;
-    }
-  }
-}
 
 section {
   background-color: var(--knime-gray-light-semi);

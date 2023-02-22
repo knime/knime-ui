@@ -18,7 +18,7 @@ export const state = () => ({
     ...workflowExecution.state,
     ...workflowEditor.state,
     ...APinteractions.state,
-    
+
     // TODO: rename to just workflow someday
     activeWorkflow: null,
     activeSnapshotId: null,
@@ -57,7 +57,7 @@ export const getters = {
     ...workflowExecution.getters,
     ...workflowEditor.getters,
     ...APinteractions.getters,
-    
+
     /* Workflow is empty if it doesn't contain nodes */
     isWorkflowEmpty({ activeWorkflow }) {
         let hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);
@@ -73,6 +73,7 @@ export const getters = {
     isLinked({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.linked);
     },
+
     insideLinkedType({ activeWorkflow }) {
         if (!activeWorkflow?.parents) {
             return null;
@@ -90,6 +91,10 @@ export const getters = {
 
         // TODO: document better under which conditions a workflow is not writable
         return !linkage;
+    },
+
+    isOnHub({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.onHub);
     },
 
     /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
@@ -114,6 +119,16 @@ export const getters = {
             return activeWorkflow.nodeTemplates[templateId].name;
         } else {
             return node.name;
+        }
+    },
+
+    getNodeFactory: ({ activeWorkflow }) => nodeId => {
+        let node = activeWorkflow.nodes[nodeId];
+        let { templateId } = node;
+        if (templateId) {
+            return activeWorkflow.nodeTemplates[templateId].nodeFactory;
+        } else {
+            return null;
         }
     },
 

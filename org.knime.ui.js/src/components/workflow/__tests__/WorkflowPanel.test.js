@@ -4,6 +4,8 @@ import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
+import Button from 'webapps-common/ui/components/Button.vue';
+
 import * as selectionStore from '@/store/selection';
 import * as applicationStore from '@/store/application';
 
@@ -22,7 +24,7 @@ describe('WorkflowPanel', () => {
             },
             parents: []
         };
-        
+
         const workflowStoreConfig = {
             state: {
                 activeWorkflow: merge(baseWorkflow, workflow),
@@ -33,21 +35,27 @@ describe('WorkflowPanel', () => {
                     isOpen: false
                 }
             },
+            actions: {
+                saveWorkflowAs: () => {}
+            },
             getters: {
-                isLinked() {
-                    return baseWorkflow.info.linked;
+                isLinked({ workflow }) {
+                    return workflow.info.linked;
                 },
-                isInsideLinked() {
-                    return baseWorkflow.parents.some(p => p.linked);
+                isInsideLinked({ workflow }) {
+                    return workflow.parents.some(p => p.linked);
                 },
-                insideLinkedType() {
-                    return baseWorkflow.parents.find(p => p.linked).containerType;
+                insideLinkedType({ workflow }) {
+                    return workflow.parents.find(p => p.linked).containerType;
                 },
-                isStreaming() {
-                    return baseWorkflow.info.jobManager;
+                isStreaming({ workflow }) {
+                    return workflow.info.jobManager;
                 },
-                isWritable() {
-                    return !(baseWorkflow.info.linked || baseWorkflow.parents.some(p => p.linked));
+                isWritable({ workflow }) {
+                    return !(workflow.info.linked || workflow.parents.some(p => p.linked));
+                },
+                isOnHub({ workflow }) {
+                    return workflow.info.onHub || workflow.parents.some(p => p.onHub);
                 }
             }
         };
@@ -65,12 +73,14 @@ describe('WorkflowPanel', () => {
 
         const $store = mockVuexStore(storeConfig);
 
+        const dispatchSpy = jest.spyOn($store, 'dispatch');
+
         const wrapper = shallowMount(WorkflowPanel, {
             props,
             global: { plugins: [$store] }
         });
 
-        return { wrapper, $store };
+        return { wrapper, $store, dispatchSpy };
     };
 
     describe('Linked and Streaming', () => {
@@ -111,6 +121,26 @@ describe('WorkflowPanel', () => {
             const { wrapper } = doShallowMount();
             expect(wrapper.find('.read-only').exists()).toBe(false);
             expect(wrapper.find('.workflow-info').exists()).toBe(false);
+        });
+    });
+
+    describe('On the hub', () => {
+        it('shows banner if workflow is on the hub', async () => {
+            const { wrapper, $store } = doShallowMount();
+            $store.state.workflow.info.onHub = true;
+            await Vue.nextTick();
+            expect(wrapper.find('.banner').exists()).toBe(true);
+        });
+
+        it('saves workflow locally when button is clicked', async () => {
+            const { wrapper, $store, dispatchSpy } = doShallowMount();
+            $store.state.workflow.info.onHub = true;
+            await Vue.nextTick();
+            const button = wrapper.findComponent(Button);
+            expect(button.exists()).toBe(true);
+            await button.vm.$emit('click');
+
+            expect(dispatchSpy).toHaveBeenCalledWith('workflow/saveWorkflowAs');
         });
     });
 
@@ -227,7 +257,7 @@ describe('WorkflowPanel', () => {
         test('renders menu if open', async () => {
             const { wrapper, $store } = doShallowMount();
             expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
-            
+
             $store.state.workflow.quickAddNodeMenu = {
                 isOpen: true,
                 props: { direction: 'in', position: { x: 0, y: 0 }, port: { index: 2 }, nodeId: 'node:0' },

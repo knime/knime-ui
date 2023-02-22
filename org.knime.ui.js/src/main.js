@@ -22,6 +22,12 @@ const app = createApp(KnimeUI);
 
 // Provide store and init plugins
 const store = initStore();
+
+// Enable easier store debugging while on dev
+if (import.meta.env.DEV) {
+    window.store = store;
+}
+
 initPlugins({ app, store, router });
 
 app.use(store);

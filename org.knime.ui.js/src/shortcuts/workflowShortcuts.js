@@ -99,7 +99,7 @@ export default {
         ),
         condition: ({ $store }) => {
             const singleSelectedNode = $store.getters['selection/singleSelectedNode'];
-            
+
             return (
                 singleSelectedNode !== null &&
                 $store.getters['workflow/isWritable']
@@ -206,10 +206,12 @@ export default {
             ({ $store }) => {
                 const kanvas = $store.state.canvas.getScrollContainerElement();
                 const selectedNodes = Object.keys($store.getters['selection/selectedNodes']);
+                const textSelectionIsEmpty = window?.getSelection().toString() === '';
+                const kanvasIsActiveElement = document.activeElement === kanvas;
                 return (
                     selectedNodes.length !== 0 &&
                     $store.state.application.hasClipboardSupport &&
-                    document.activeElement === kanvas
+                    (textSelectionIsEmpty || kanvasIsActiveElement)
                 );
             }
     },

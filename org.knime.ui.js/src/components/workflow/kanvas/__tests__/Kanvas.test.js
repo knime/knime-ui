@@ -107,11 +107,11 @@ describe('Kanvas', () => {
         };
 
         const $store = mockVuexStore(storeConfig);
-        
+
         const mockBus = {
             emit: jest.fn()
         };
-        
+
         const wrapper = shallowMount(Kanvas, {
             global: {
                 plugins: [$store],
@@ -215,7 +215,7 @@ describe('Kanvas', () => {
             ])('should ignore space press on %s elements', async (elementType) => {
                 const { wrapper } = doShallowMount();
                 const element = document.createElement(elementType);
-                
+
                 document.body.appendChild(element);
                 element.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space', bubbles: true }));
 
@@ -226,21 +226,21 @@ describe('Kanvas', () => {
 
             it('adds and removes the panning cursor with space', async () => {
                 const { wrapper } = doShallowMount();
-    
+
                 expect(wrapper.classes()).not.toContain('panning');
-                
+
                 document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
                 await Vue.nextTick();
                 expect(wrapper.classes()).toContain('panning');
-                
+
                 document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space' }));
                 await Vue.nextTick();
                 expect(wrapper.classes()).not.toContain('panning');
             });
-    
+
             it('pans with space', async () => {
                 const { wrapper } = doShallowMount({ scrollLeft: 100, scrollTop: 100 });
-                
+
                 document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
                 await Vue.nextTick();
 
@@ -253,9 +253,9 @@ describe('Kanvas', () => {
                     },
                     pointerId: -1
                 });
-    
+
                 await triggerPointerMove({ wrapper, position: { x: 90, y: 90 } });
-    
+
                 expect(wrapper.element.scrollLeft).toBe(110);
                 expect(wrapper.element.scrollTop).toBe(110);
             });
@@ -263,10 +263,10 @@ describe('Kanvas', () => {
             it('should not pan if interactionsEnabled is false', async () => {
                 const { wrapper, $store } = doShallowMount({ scrollLeft: 100, scrollTop: 100 });
                 $store.state.canvas.interactionsEnabled = false;
-                
+
                 document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
                 await Vue.nextTick();
-    
+
                 await triggerPointerDown({
                     wrapper,
                     button: 0, // left click
@@ -276,9 +276,9 @@ describe('Kanvas', () => {
                     },
                     pointerId: -1
                 });
-    
+
                 await triggerPointerMove({ wrapper, position: { x: 90, y: 90 } });
-                
+
                 expect(wrapper.element.scrollLeft).toBe(100);
                 expect(wrapper.element.scrollTop).toBe(100);
             });
@@ -290,7 +290,7 @@ describe('Kanvas', () => {
                     scrollLeft: 100,
                     scrollTop: 100
                 });
-    
+
                 await triggerPointerDown({
                     wrapper,
                     button: 1, // middle
@@ -301,15 +301,15 @@ describe('Kanvas', () => {
                     pointerId: -1
                 });
                 expect(setPointerCapture).toHaveBeenCalledWith(-1);
-    
+
                 expect(wrapper.classes()).toContain('panning');
-                
+
                 await triggerPointerMove({ wrapper, position: { x: 90, y: 90 } });
-    
+
                 expect(wrapper.classes()).toContain('panning');
                 expect(wrapper.element.scrollLeft).toBe(110);
                 expect(wrapper.element.scrollTop).toBe(110);
-    
+
                 await triggerPointerUp({ wrapper });
                 expect(releasePointerCapture).toHaveBeenCalledWith(-1);
                 expect(actions.application.toggleContextMenu).not.toHaveBeenCalled();
@@ -318,10 +318,10 @@ describe('Kanvas', () => {
             it('should not pan if interactionsEnabled is false', async () => {
                 const { wrapper, $store } = doShallowMount();
                 $store.state.canvas.interactionsEnabled = false;
-    
+
                 wrapper.element.setPointerCapture = jest.fn();
                 wrapper.element.releasePointerCapture = jest.fn();
-    
+
                 wrapper.element.scrollLeft = 100;
                 wrapper.element.scrollTop = 100;
                 await triggerPointerDown({
@@ -333,7 +333,7 @@ describe('Kanvas', () => {
                     },
                     pointerId: -1
                 });
-    
+
                 expect(wrapper.element.setPointerCapture).not.toHaveBeenCalled();
                 expect(wrapper.classes()).not.toContain('panning');
             });
@@ -345,7 +345,7 @@ describe('Kanvas', () => {
                     scrollLeft: 100,
                     scrollTop: 100
                 });
-    
+
                 await triggerPointerDown({
                     wrapper,
                     button: 2, // right
@@ -356,9 +356,9 @@ describe('Kanvas', () => {
                     pointerId: -1
                 });
                 expect(setPointerCapture).not.toHaveBeenCalled();
-    
+
                 expect(wrapper.classes()).not.toContain('panning');
-    
+
                 // we need (1) a larger delta to trigger the move with right click
                 // and (2) to trigger the event more than once to make sure the right-click panned is triggered
                 // since the first time it only validates that the move threshold is exceeded
@@ -366,10 +366,10 @@ describe('Kanvas', () => {
                 await triggerPointerMove({ wrapper, position: { x: 200, y: 200 } });
 
                 expect(wrapper.classes()).toContain('panning');
-                
+
                 expect(wrapper.element.scrollLeft).toBe(90);
                 expect(wrapper.element.scrollTop).toBe(90);
-    
+
                 await triggerPointerUp({ wrapper });
                 expect(releasePointerCapture).toHaveBeenCalledWith(-1);
                 expect(actions.application.toggleContextMenu).not.toHaveBeenCalled();
@@ -398,10 +398,10 @@ describe('Kanvas', () => {
                 await triggerPointerMove({ wrapper, position: { x: 91, y: 91 } });
 
                 expect(wrapper.classes()).not.toContain('panning');
-                
+
                 expect(wrapper.element.scrollLeft).toBe(100);
                 expect(wrapper.element.scrollTop).toBe(100);
-    
+
                 await triggerPointerUp({ wrapper });
                 expect(releasePointerCapture).not.toHaveBeenCalledWith(-1);
                 expect(actions.application.toggleContextMenu).toHaveBeenCalled();
@@ -414,7 +414,7 @@ describe('Kanvas', () => {
                 });
 
                 $store.state.canvas.interactionsEnabled = false;
-                
+
                 await triggerPointerDown({
                     wrapper,
                     button: 2, // right
@@ -425,9 +425,9 @@ describe('Kanvas', () => {
                     pointerId: -1
                 });
                 expect(setPointerCapture).not.toHaveBeenCalled();
-    
+
                 expect(wrapper.classes()).not.toContain('panning');
-    
+
                 // we need (1) a larger delta to trigger the move with right click
                 // and (2) to trigger the event more than once to make sure the right-click panned is triggered
                 // since the first time it only validates that the move threshold is exceeded
@@ -435,10 +435,10 @@ describe('Kanvas', () => {
                 await triggerPointerMove({ wrapper, position: { x: 200, y: 200 } });
 
                 expect(wrapper.classes()).not.toContain('panning');
-                
+
                 expect(wrapper.element.scrollLeft).toBe(100);
                 expect(wrapper.element.scrollTop).toBe(100);
-    
+
                 await triggerPointerUp({ wrapper });
                 expect(releasePointerCapture).not.toHaveBeenCalledWith(-1);
                 expect(actions.application.toggleContextMenu).not.toHaveBeenCalled();
@@ -502,7 +502,7 @@ describe('Kanvas', () => {
 
             expect(wrapper.emitted('containerSizeChanged')).toBeTruthy();
             expect(actions.canvas.updateContainerSize).toHaveBeenCalledTimes(1);
-            
+
             jest.useRealTimers();
         });
 

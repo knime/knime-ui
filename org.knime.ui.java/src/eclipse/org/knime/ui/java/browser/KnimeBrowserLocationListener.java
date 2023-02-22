@@ -53,7 +53,12 @@ import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareRe
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.knime.core.webui.WebUIUtil;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
+import org.knime.js.cef.CEFUtils;
+import org.knime.ui.java.api.ImportURI;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
+
+import com.equo.chromium.swt.Browser;
 
 /**
  * Listens for changes of the URL in the KNIME browser and triggers respective
@@ -63,10 +68,10 @@ import org.knime.gateway.impl.webui.service.DefaultEventService;
  */
 public class KnimeBrowserLocationListener implements LocationListener {
 
-    private final KnimeBrowserView m_browserView;
+    private final Browser m_browser;
 
-    KnimeBrowserLocationListener(final KnimeBrowserView browserView) {
-        m_browserView = browserView;
+    KnimeBrowserLocationListener(final Browser browser) {
+        m_browser = browser;
     }
 
     @Override
@@ -74,9 +79,13 @@ public class KnimeBrowserLocationListener implements LocationListener {
         if (isCEFMiddlewareResource(event.location)) {
             // Allow location change to middleware resources, these are handled by resource handlers.
         } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but de-register any listeners in case the web app is being
-            //   refreshed. Required listeners will be registered on initialisation.
-            DefaultEventService.getInstance().removeAllEventListeners();
+            // Allow location change, but run the reload life-cycle state transition
+            if (LifeCycle.get().isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
+                LifeCycle.get().reload();
+            }
+        } else if (ImportURI.importURI(m_browser, event.location)) {
+            // Don't change the location but import the URI instead
+            event.doit = false;
         } else {
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
             event.doit = false;
@@ -86,8 +95,8 @@ public class KnimeBrowserLocationListener implements LocationListener {
     @Override
     public void changed(final LocationEvent event) {
         if (isAppPage(event.location) || isDevPage(event.location)) {
-            // inject the communication (message transport) logic
-            m_browserView.initializeJSBrowserCommunication();
+            LifeCycle.get().webAppLoaded(m_browser);
+            CEFUtils.setZoomFactorFromSystemProperty(m_browser);
         }
     }
 

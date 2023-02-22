@@ -48,8 +48,6 @@ package org.knime.ui.java;
 
 import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
 
-import java.util.function.Supplier;
-
 import javax.inject.Inject;
 
 import org.eclipse.core.runtime.Platform;
@@ -67,10 +65,15 @@ import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.browser.KnimeBrowserView;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
+import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
+import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.osgi.service.event.Event;
 
@@ -87,12 +90,9 @@ import org.osgi.service.event.Event;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
 public final class PerspectiveSwitchAddon {
-
-    private static final String PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP = "chromium.external_message_pump";
-
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(PerspectiveSwitchAddon.class);
 
     /**
      * The ID of the perspective that was active before the current one. {@code null} if not known.
@@ -150,42 +150,45 @@ public final class PerspectiveSwitchAddon {
 
     private void onSwitchToWebUI() {
         NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
-        PerspectiveUtil.markClassicPerspectiveAsLoaded();
+        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
+        PerspectiveUtil.setClassicPerspectiveActive(false);
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
-        Supplier<AppStateProvider.AppState> supplier = () -> EclipseUIStateUtil.createAppState(m_modelService, m_app);
-        KnimeBrowserView.activateViewInitializer(supplier);
+        ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors(m_modelService, m_app);
+        KnimeBrowserView.activateViewInitializer(false);
         switchToWebUITheme();
-        updateChromiumExternalMessagePumpSystemProperty();
-    }
-
-    @SuppressWarnings("javadoc")
-    public static void updateChromiumExternalMessagePumpSystemProperty() {
-        if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
-            // Fixes a drag'n'drop issue on Windows, see NXT-1151.
-            // Doesn't have an effect on Linux.
-            // Must be 'true' on Mac (see AP-19241).
-            // Possibly to be removed via AP-19243.
-            System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP, "false");
-        }
+        ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
     }
 
     private void onSwitchToJavaUI() {
+        NodeTimer.GLOBAL_TIMER.incJavaUIPerspectiveSwitch();
+        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(GlobalNodeStats.CLASSIC_PERSPECTIVE_PLACEHOLDER);
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            // dispose workflow projects if perspective switch is done, e.g., via shortcut
             disposeAllWorkflowProjects();
         }
         KnimeBrowserView.clearView();
+        var lifeCycle = LifeCycle.get();
+        if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
+            lifeCycle.saveState();
+            lifeCycle.suspend();
+        }
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
-        // the color of the workflow editor canvas changes when switching back
+        PerspectiveUtil.setClassicPerspectiveActive(true);
+
+        // The color of the workflow editor canvas changes when switching back
         // -> this is a workaround to compensate for it
         // (couldn't be solved via css styling because the background color differs if the respective workflow
         // is write protected)
-        EclipseUIStateUtil.getOpenWorkflowEditors(m_modelService, m_app)
+        ClassicWorkflowEditorUtil.getOpenWorkflowEditors(m_modelService, m_app)
             .forEach(WorkflowEditor::updateEditorBackgroundColor);
 
+        // Keeps Classic UI in sync with the file system
+        PerspectiveUtil.refreshLocalWorkspaceContentProvider();
+
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
-            System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
+            System.clearProperty(ChromiumExternalMessagePump.PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
         }
     }
 
@@ -216,7 +219,7 @@ public final class PerspectiveSwitchAddon {
         IThemeEngine engine = context.get(IThemeEngine.class);
         ITheme webUITheme = engine.getThemes().stream().filter(t -> t.getId().equals(themeId)).findFirst().orElse(null);
         if (webUITheme == null) {
-            LOGGER.error("The web ui css theme couldn't be found");
+            NodeLogger.getLogger(PerspectiveSwitchAddon.class).error("The web ui css theme couldn't be found");
             return;
         }
         engine.setTheme(webUITheme, true);

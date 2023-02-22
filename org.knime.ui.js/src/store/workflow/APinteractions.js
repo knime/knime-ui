@@ -1,6 +1,6 @@
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, closeWorkflow,
-    openLayoutEditor } from '@api';
+    openLayoutEditor, saveWorkflowAs } from '@api';
 
 /**
  * Determines which project id should be set after closing the active one
@@ -37,21 +37,17 @@ export const mutations = { };
 
 export const actions = {
     /* See docs in API */
-    async saveWorkflow({ state, rootState, rootGetters }) {
-        const { getScrollContainerElement } = rootState.canvas;
-        const { activeWorkflow: { projectId, info: { containerId } } } = state;
-        
-        const getWorkflowPreviewSnapshot = rootGetters['application/getWorkflowPreviewSnapshot'];
+    async saveWorkflow({ state, dispatch }) {
+        const { activeWorkflow: { projectId } } = state;
 
-        const isRootWorkflow = containerId === 'root';
-
-        const svgElement = isRootWorkflow
-            ? getScrollContainerElement().firstChild
-            : getWorkflowPreviewSnapshot(projectId);
-
-        const isCanvasEmpty = rootState.canvas.isEmpty;
+        const { svgElement, isCanvasEmpty } = await dispatch(
+            'application/getActiveWorkflowSnapshot',
+            null,
+            { root: true }
+        );
 
         const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
+
         saveWorkflow({ projectId, workflowPreviewSvg });
     },
 
@@ -65,33 +61,50 @@ export const actions = {
         });
 
         const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
-        
-        if (didClose) {
-            dispatch('application/removeRootWorkflowSnapshot', { projectId: closingProjectId }, { root: true });
-            dispatch('application/removeCanvasState', closingProjectId, { root: true });
+
+        if (!didClose) {
+            return;
         }
+
+        dispatch('application/removeCanvasState', closingProjectId, { root: true });
+        dispatch('application/removeFromRootWorkflowSnapshots', { projectId: closingProjectId }, { root: true });
+        commit('spaces/clearLastItemForProject', { projectId: closingProjectId }, { root: true });
     },
-    
+
     /* Some nodes generate views from their data. A Classic UI dialog opens to present this view */
     openView({ state }, nodeId) {
         openView({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    
+
     /* See docs in API */
     openNodeConfiguration({ state }, nodeId) {
         openNodeDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    
+
     /* See docs in API */
     openFlowVariableConfiguration({ state }, nodeId) {
         openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    
+
     /* See docs in API */
     openLayoutEditor({ state, getters }) {
         let { activeWorkflow: { projectId } } = state;
         let { activeWorkflow: { info: { containerId } } } = state;
         openLayoutEditor({ projectId, workflowId: containerId });
+    },
+
+    async saveWorkflowAs({ state, dispatch }) {
+        const { activeWorkflow: { projectId } } = state;
+
+        const { svgElement, isCanvasEmpty } = await dispatch(
+            'application/getActiveWorkflowSnapshot',
+            null,
+            { root: true }
+        );
+
+        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
+
+        saveWorkflowAs({ projectId, workflowPreviewSvg });
     }
 };
 

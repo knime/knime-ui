@@ -1,5 +1,5 @@
 import * as Vue from 'vue';
-import { shallowMount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
@@ -8,50 +8,65 @@ import ScrollViewContainer from '../ScrollViewContainer.vue';
 import NodeList from '../NodeList.vue';
 
 describe('SearchResults', () => {
-    let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setSearchScrollPositionMock;
+    let doShallowMount, doMount, wrapper, $store, storeState, applicationStoreState, searchTopNodesNextPageMock,
+        searchBottomNodesNextPageMock, setSearchScrollPositionMock, toggleShowingBottomNodesMock;
 
     beforeEach(() => {
         wrapper = null;
 
-        searchNodesNextPageMock = jest.fn();
+        searchTopNodesNextPageMock = jest.fn();
+        searchBottomNodesNextPageMock = jest.fn();
         setSearchScrollPositionMock = jest.fn();
+        toggleShowingBottomNodesMock = jest.fn();
 
         storeState = {
             query: '',
-            nodes: [{
+            topNodes: [{
                 id: 'node1',
                 name: 'Node 1'
             }, {
                 id: 'node2',
                 name: 'Node 2'
             }],
-            totalNumNodes: 2,
-            searchScrollPosition: 100
+            totalNumTopNodes: 2,
+            searchScrollPosition: 100,
+            bottomNodes: null,
+            isShowingBottomNodes: false
         };
 
-        doShallowMount = () => {
-            $store = mockVuexStore({
-                nodeRepository: {
-                    state: storeState,
-                    actions: {
-                        searchNodesNextPage: searchNodesNextPageMock
-                    },
-                    mutations: {
-                        setSearchScrollPosition: setSearchScrollPositionMock
-                    }
+        applicationStoreState = {
+            hasNodeCollectionActive: false
+        };
+
+        $store = mockVuexStore({
+            nodeRepository: {
+                state: storeState,
+                actions: {
+                    searchTopNodesNextPage: searchTopNodesNextPageMock,
+                    searchBottomNodesNextPage: searchBottomNodesNextPageMock,
+                    toggleShowingBottomNodes: toggleShowingBottomNodesMock
+                },
+                mutations: {
+                    setSearchScrollPosition: setSearchScrollPositionMock
                 }
-            });
-            wrapper = shallowMount(SearchResults, { global: { plugins: [$store] } });
+            },
+            application: {
+                state: applicationStoreState
+            }
+        });
+
+        doMount = () => {
+            wrapper = mount(SearchResults, { global: { plugins: [$store] } });
         };
     });
 
     it('shows placeholder for empty result', () => {
         storeState.query = 'xxx';
-        storeState.nodes = [];
+        storeState.topNodes = [];
         doShallowMount();
 
         expect(wrapper.text()).toMatch('No node matching for: xxx');
-        expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(false);
+        expect(wrapper.findComponent(NodeList).exists()).toBe(false);
     });
 
     it('displays icon if loading is true', async () => {
@@ -62,11 +77,11 @@ describe('SearchResults', () => {
         expect(loadingIcon.exists()).toBe(true);
     });
 
-    it('renders nodes', () => {
+    it('renders topNodes', () => {
         doShallowMount();
 
         let nodeList = wrapper.findComponent(NodeList);
-        expect(nodeList.props('nodes')).toStrictEqual(storeState.nodes);
+        expect(nodeList.props('nodes')).toStrictEqual(storeState.topNodes);
     });
 
     describe('scroll', () => {
@@ -103,8 +118,51 @@ describe('SearchResults', () => {
             let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
             scrollViewContainer.vm.$emit('scroll-bottom');
 
-            expect(searchNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), true);
+            expect(searchTopNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), undefined);
+            expect(searchBottomNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), undefined);
             expect(wrapper.vm.isLoading).toBe(true);
+        });
+    });
+
+    describe('more advanced nodes', () => {
+        it('shows "More advanced nodes" button', () => {
+            applicationStoreState.hasNodeCollectionActive = true;
+            doShallowMount();
+
+            const moreNodesButton = wrapper.find('.more-nodes-button');
+            expect(moreNodesButton.html()).toContain('More advanced nodes');
+        });
+
+        it('clicking show more should toggleShowingBottomNodes', async () => {
+            applicationStoreState.hasNodeCollectionActive = true;
+            doMount();
+
+            await wrapper.find('.more-nodes-button').trigger('click');
+            expect(toggleShowingBottomNodesMock).toHaveBeenCalled();
+        });
+
+        it('should show more advanced nodes', () => {
+            applicationStoreState.hasNodeCollectionActive = true;
+            storeState.isShowingBottomNodes = true;
+            storeState.bottomNodes = [
+                { id: 'node_1', name: 'Node 1' },
+                { id: 'node_2', name: 'Node 2' }
+            ];
+            doShallowMount();
+
+            const moreNodesList = wrapper.findAllComponents(NodeList).at(1);
+            expect(moreNodesList.props('nodes')).toStrictEqual(storeState.bottomNodes);
+        });
+
+        it('should show placeholder for empty more nodes', () => {
+            applicationStoreState.hasNodeCollectionActive = true;
+            storeState.query = 'xxx';
+            storeState.isShowingBottomNodes = true;
+            storeState.bottomNodes = [];
+            doShallowMount();
+
+            expect(wrapper.findAllComponents(NodeList).length).toBe(1);
+            expect(wrapper.text()).toMatch('No additional node matching for: xxx');
         });
     });
 });

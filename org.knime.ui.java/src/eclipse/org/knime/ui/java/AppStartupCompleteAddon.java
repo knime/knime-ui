@@ -48,7 +48,7 @@ package org.knime.ui.java;
 
 import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
 import static org.knime.ui.java.PerspectiveSwitchAddon.setTrimsAndMenuVisible;
-import static org.knime.ui.java.PerspectiveUtil.WEB_UI_PERSPECTIVE_ID;
+import static org.knime.ui.java.util.PerspectiveUtil.WEB_UI_PERSPECTIVE_ID;
 
 import java.util.List;
 

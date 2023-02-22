@@ -92,6 +92,8 @@ export default {
         :gap="zoomedGap"
         :text="tooltip.text"
         :title="tooltip.title"
+        :issue="tooltip.issue"
+        :resolutions="tooltip.resolutions"
         :orientation="tooltip.orientation"
         :hoverable="tooltip.hoverable"
         :type="tooltip.type"

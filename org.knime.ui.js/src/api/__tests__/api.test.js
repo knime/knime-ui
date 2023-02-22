@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable consistent-return */
 import * as api from '@api';
 import { waitForPatch } from '@/util/event-syncer';
@@ -104,13 +105,32 @@ describe('API', () => {
                     allTagsMatch: true,
                     nodeOffset: 0,
                     nodeLimit: 2,
+                    fullTemplateInfo: true,
+                    additionalNodes: true
+                });
+
+                expect(window.jsonrpc).toHaveBeenCalledWith({
+                    jsonrpc: '2.0',
+                    method: 'NodeRepositoryService.searchNodes',
+                    params: ['churn', ['myTag'], true, 0, 2, true, true],
+                    id: 0
+                });
+            });
+
+            it('calls jsonrpc without inCollection', async () => {
+                await api.searchNodes({
+                    query: 'churn',
+                    tags: ['myTag'],
+                    allTagsMatch: true,
+                    nodeOffset: 0,
+                    nodeLimit: 2,
                     fullTemplateInfo: true
                 });
 
                 expect(window.jsonrpc).toHaveBeenCalledWith({
                     jsonrpc: '2.0',
                     method: 'NodeRepositoryService.searchNodes',
-                    params: ['churn', ['myTag'], true, 0, 2, true],
+                    params: ['churn', ['myTag'], true, 0, 2, true, false],
                     id: 0
                 });
             });
@@ -130,6 +150,26 @@ describe('API', () => {
                     jsonrpc: '2.0',
                     method: 'NodeRepositoryService.getNodesGroupedByTags',
                     params: [NODES_LIMIT, 0, 2, true],
+                    id: 0
+                });
+            });
+        });
+
+        describe('getNodeRecommendations', () => {
+            it('calls jsonrpc', async () => {
+                await api.getNodeRecommendations({
+                    projectId: 'project_id',
+                    workflowId: 'workflow_id',
+                    nodeId: 'node_id',
+                    portIdx: 1,
+                    nodesLimit: 6,
+                    fullTemplateInfo: true
+                });
+
+                expect(window.jsonrpc).toHaveBeenCalledWith({
+                    jsonrpc: '2.0',
+                    method: 'NodeRepositoryService.getNodeRecommendations',
+                    params: ['project_id', 'workflow_id', 'node_id', 1, 6, true],
                     id: 0
                 });
             });
@@ -166,6 +206,36 @@ describe('API', () => {
                 } catch (e) {
                     expect(e.message).toContain('churn');
                     expect(e.message).toContain('myTag');
+                }
+            });
+
+            it('handles errors on getNodesGroupedByTag', async () => {
+                try {
+                    await api.getNodesGroupedByTags({
+                        numNodesPerTag: 6,
+                        tagsOffset: 0,
+                        tagsLimit: 2,
+                        fullTemplateInfo: true
+                    });
+                    return new Error('Error not thrown');
+                } catch (e) {
+                    expect(e.message).toContain('nodes grouped by tags');
+                }
+            });
+
+            it('handles errors on getNodeRecommendations', async () => {
+                try {
+                    await api.getNodeRecommendations({
+                        projectId: 'project_id',
+                        workflowId: 'workflow_id',
+                        nodeId: 'node_id',
+                        portIdx: 1,
+                        nodesLimit: 6,
+                        fullTemplateInfo: true
+                    });
+                    return new Error('Error not thrown');
+                } catch (e) {
+                    expect(e.message).toContain('recommended nodes');
                 }
             });
         });
@@ -442,6 +512,114 @@ describe('API', () => {
                     expect(e.message).toContain('foo');
                     expect(e.message).toContain('bar');
                 }
+            });
+        });
+    });
+    
+    describe('Space Service', () => {
+        it('fetchWorkflowGroupContent', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemId = 'item';
+            let result = await api.fetchWorkflowGroupContent({ spaceProviderId, spaceId, itemId });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.listWorkflowGroup',
+                params: [spaceId, spaceProviderId, itemId],
+                id: 0
+            });
+
+            expect(result).toStrictEqual('dummy');
+        });
+        
+        it('createWorkflow', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemId = 'item';
+            let result = await api.createWorkflow({ spaceProviderId, spaceId, itemId });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.createWorkflow',
+                params: [spaceId, spaceProviderId, itemId],
+                id: 0
+            });
+
+            expect(result).toStrictEqual('dummy');
+        });
+
+        it('createFolder', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemId = 'item';
+            let result = await api.createFolder({ spaceProviderId, spaceId, itemId });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.createWorkflowGroup',
+                params: [spaceId, spaceProviderId, itemId],
+                id: 0
+            });
+
+            expect(result).toStrictEqual('dummy');
+        });
+
+        it('fetchSpaceProvider', async () => {
+            await api.fetchSpaceProvider({ spaceProviderId: 'provider' });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.getSpaceProvider',
+                params: ['provider'],
+                id: 0
+            });
+        });
+
+        it('renameItem', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemId = 'item';
+            const newName = 'new name';
+            let result = await api.renameItem({ spaceProviderId, spaceId, itemId, newName });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.renameItem',
+                params: [spaceProviderId, spaceId, itemId, newName],
+                id: 0
+            });
+
+            expect(result).toStrictEqual('dummy');
+        });
+
+        it('deleteItems', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemIds = ['item1', 'item2'];
+            await api.deleteItems({ spaceProviderId, spaceId, itemIds });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.deleteItems',
+                params: [spaceId, spaceProviderId, itemIds],
+                id: 0
+            });
+        });
+
+        it('moveItems', async () => {
+            const spaceProviderId = 'local';
+            const spaceId = 'local';
+            const itemIds = ['id1', 'id2'];
+            const destWorkflowGroupItemId = 'group1';
+            const collisionStrategy = 'NOOP';
+            await api.moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.moveItems',
+                params: [spaceId, spaceProviderId, itemIds, destWorkflowGroupItemId, collisionStrategy],
+                id: 0
             });
         });
     });

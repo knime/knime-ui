@@ -1,12 +1,10 @@
 import shortcuts from '@/shortcuts';
-
-// The user agent tells whether this code is currently run on a mac
-const isMac = navigator?.userAgent?.toLowerCase()?.includes('mac');
+import { isMac } from '@/util/navigator';
 
 // Returns a string representation of a hotkey
 // Replaces some special key names with symbols on macs
 const formatHotkeys = hotkeys => {
-    if (isMac) {
+    if (isMac()) {
         const MacOSkeyMap = {
             Shift: '⇧',
             Delete: '⌫',
@@ -48,14 +46,14 @@ export default ({ app, $store, $router }) => {
             let character = modifiers.pop();
 
             // Ctrl-modifier has to match "Command ⌘" (metaKey) on Mac, and Ctrl-Key on other systems
-            let ctrlMatches = modifiers.includes('Ctrl') === (isMac ? metaKey : ctrlKey);
+            let ctrlMatches = modifiers.includes('Ctrl') === (isMac() ? metaKey : ctrlKey);
             let shiftMatches = Boolean(shiftKey) === modifiers.includes('Shift');
             let altMatches = Boolean(altKey) === modifiers.includes('Alt');
 
             // keys are matched case insensitively
             let keysMatch = key.toUpperCase() === character.toUpperCase() ||
                 // on mac 'backspace' can be used instead of delete
-                (isMac && character === 'Delete' && key === 'Backspace');
+                (isMac() && character === 'Delete' && key === 'Backspace');
 
             if (ctrlMatches && shiftMatches && altMatches && keysMatch) {
                 consola.trace('Shortcut', hotkey, shortcutName);

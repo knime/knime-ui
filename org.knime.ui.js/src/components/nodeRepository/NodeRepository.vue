@@ -7,7 +7,7 @@ import SearchBar from '@/components/common/SearchBar.vue';
 import CloseableTagList from './CloseableTagList.vue';
 import CategoryResults from './CategoryResults.vue';
 import SearchResults from './SearchResults.vue';
-import NodeDescription from './NodeDescription.vue';
+import NodeDescriptionOverlay from './NodeDescriptionOverlay.vue';
 
 const SEARCH_COOLDOWN = 150; // ms
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
@@ -18,12 +18,16 @@ export default {
         ActionBreadcrumb,
         SearchBar,
         CategoryResults,
-        NodeDescription,
+        NodeDescriptionOverlay,
         SearchResults
     },
     computed: {
-        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory', 'isDescriptionPanelOpen']),
-        ...mapGetters('nodeRepository', { showSearchResults: 'searchIsActive' }),
+        ...mapState('nodeRepository', ['topNodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
+        ...mapGetters('nodeRepository', {
+            showSearchResults: 'searchIsActive',
+            isSelectedNodeVisible: 'isSelectedNodeVisible',
+            tags: 'tagsOfVisibleNodes'
+        }),
 
         /* Search and Filter */
         selectedTags: {
@@ -96,17 +100,20 @@ export default {
         />
       </div>
       <CloseableTagList
-        v-if="showSearchResults"
+        v-if="showSearchResults && tags.length"
         v-model="selectedTags"
         :tags="tags"
       />
-      <hr v-if="!nodes || nodes.length">
+      <hr v-if="!topNodes || tags.length">
     </div>
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
     <Portal to="extension-panel">
       <Transition name="fade">
-        <NodeDescription v-if="isDescriptionPanelOpen" />
+        <NodeDescriptionOverlay
+          v-if="isDescriptionPanelOpen"
+          :selected-node="isSelectedNodeVisible ? selectedNode : null"
+        />
       </Transition>
     </Portal>
   </div>

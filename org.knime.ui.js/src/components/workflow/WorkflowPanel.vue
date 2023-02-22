@@ -1,5 +1,6 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
+import Button from 'webapps-common/ui/components/Button.vue';
 import StreamingIcon from 'webapps-common/ui/assets/img/icons/nodes-connect.svg';
 import ContextMenu from '@/components/application/ContextMenu.vue';
 import WorkflowCanvas from '@/components/workflow/WorkflowCanvas.vue';
@@ -12,7 +13,8 @@ export default {
         ContextMenu,
         WorkflowCanvas,
         QuickAddNodeMenu,
-        PortTypeMenu
+        PortTypeMenu,
+        Button
     },
     computed: {
         ...mapState('workflow', {
@@ -29,7 +31,8 @@ export default {
             'isInsideLinked',
             'insideLinkedType',
             'isWritable',
-            'isStreaming'
+            'isStreaming',
+            'isOnHub'
         ]),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('selection', ['selectedNodeIds'])
@@ -53,6 +56,9 @@ export default {
             }
             // prevent native context menus to appear
             event.preventDefault();
+        },
+        onSaveLocalCopy() {
+            this.$store.dispatch('workflow/saveWorkflowAs');
         }
     }
 };
@@ -84,8 +90,8 @@ export default {
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
-      v-if="isLinked || isStreaming || isInsideLinked"
-      :class="['workflow-info', { 'only-streaming': isStreaming && !isLinked }]"
+      v-if="isLinked || isStreaming || isInsideLinked || isOnHub"
+      :class="['workflow-info', { 'only-streaming': isStreaming && !isLinked }, { 'only-on-hub': isOnHub }]"
     >
       <span v-if="isInsideLinked">
         This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
@@ -93,6 +99,22 @@ export default {
       <span v-else-if="isLinked">
         This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
       </span>
+      <div
+        v-if="isOnHub"
+        class="banner"
+      >
+        <span>
+          This is a temporary copy. Once you are done, save to re-upload or save a local copy.
+        </span>
+        <Button
+          primary
+          compact
+          class="button"
+          @click="onSaveLocalCopy"
+        >
+          Save local copy
+        </Button>
+      </div>
       <span
         v-if="isStreaming"
         :class="['streaming-indicator', { 'is-linked': isLinked }]"
@@ -142,11 +164,27 @@ export default {
     margin-right: 0;
   }
 
+  &.only-on-hub {
+    background-color: rgba(255 216 0 / 20%);
+  }
+
+  & .banner {
+    width: 100%;
+    display: flex;
+    padding: 5px 10px;
+  }
+
   & span {
     font-size: 16px;
     align-self: center;
-    text-align: center;
-    width: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  & .button {
+    min-width: 120px;
+    pointer-events: all;
   }
 
   & .streaming-indicator {

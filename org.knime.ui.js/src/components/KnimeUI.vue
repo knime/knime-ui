@@ -1,11 +1,16 @@
 <script>
 import { mapActions, mapState } from 'vuex';
 
+import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import AppHeader from '@/components/application/AppHeader.vue';
+import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Error from '@/components/application/Error.vue';
+import SmartLoader from '@/components/common/SmartLoader.vue';
+import CreateWorkflowModal from '@/components/application/CreateWorkflowModal.vue';
 
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
 import { APP_ROUTES } from '@/router';
+
 
 /**
  * Main page and entry point of KNIME Next
@@ -14,8 +19,12 @@ import { APP_ROUTES } from '@/router';
  */
 export default {
     components: {
+        UpdateBanner,
         AppHeader,
-        Error
+        HotkeyHandler,
+        Error,
+        SmartLoader,
+        CreateWorkflowModal
     },
 
     data() {
@@ -24,9 +33,10 @@ export default {
             error: null
         };
     },
-    
+
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
+        ...mapState('application', ['availableUpdates', 'globalLoader']),
 
         isInsideAP() {
             // When the `window.isInsideAP` property is set, the app is being run in development mode
@@ -42,10 +52,10 @@ export default {
     async beforeMount() {
         await this.setup();
     },
-    
+
     async mounted() {
         this.checkClipboardSupport();
-        
+
         if (this.$features.shouldLoadPageBuilder()) {
             await loadPageBuilder({ window, store: this.$store });
         }
@@ -78,14 +88,15 @@ export default {
             }
 
             if (!this.workflow) {
-                await this.$router.push({ name: APP_ROUTES.EntryPage.name });
+                await this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
                 return;
             }
 
             const { info: { containerId: workflowId }, projectId } = this.workflow;
 
             await this.$router.push({
-                name: APP_ROUTES.WorkflowPage.name,
+                name: APP_ROUTES.WorkflowPage,
+                // params: { workflowId, projectId, skipGuards: true }
                 params: { workflowId, projectId },
                 query: { skipGuards: true }
             });
@@ -133,19 +144,28 @@ export default {
       v-bind="error"
       @close="onCloseError"
     />
-    
+
     <AppHeader id="header" />
-   
+    <HotkeyHandler />
+
     <template v-if="loaded">
-      <div class="main-content">
+      <div :class="($route.meta.showUpdateBanner && availableUpdates) ? 'main-content-with-banner' : 'main-content'">
         <RouterView />
       </div>
     </template>
-    
-    <div
-      v-else
-      class="loader"
+
+    <SmartLoader
+      :loading="globalLoader.loading"
+      :text="globalLoader.text"
+      :config="globalLoader.config"
     />
+
+    <UpdateBanner
+      v-if="$route.meta.showUpdateBanner"
+      :available-updates="availableUpdates"
+    />
+
+    <CreateWorkflowModal />
   </div>
 </template>
 
@@ -167,16 +187,7 @@ export default {
   grid-area: workflow;
 }
 
-.loader {
-  height: 100vh;
-
-  &::after {
-    content: "Loading…";
-    display: block;
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    color: var(--knime-silver-sand);
-  }
+.main-content-with-banner {
+  height: calc(100vh - var(--app-header-height) - var(--app-update-banner-height));
 }
 </style>

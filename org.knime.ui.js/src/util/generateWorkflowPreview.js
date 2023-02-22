@@ -1,4 +1,5 @@
-import robotoCondensed from '@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff';
+import { camelCase } from 'lodash';
+import robotoCondensed from '@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff';
 
 const LICENSE = `<!--
 The embedded fonts are based on open source fonts
@@ -78,7 +79,7 @@ const setElementFill = (element, fillStyle = 'none') => {
  * @param {Function} predicateFn
  * @returns {void}
  */
-const removeElements = (elements, predicateFn) => {
+const removeElements = (elements, predicateFn = () => true) => {
     elements.forEach(el => {
         if (predicateFn(el)) {
             el.parentNode.removeChild(el);
@@ -141,6 +142,7 @@ const updateViewBox = (svgClone, workflowSheet) => {
  * See: `useCSSfromComputedStyles`
  */
 const inheritedCssProperties = [
+    'box-sizing',
     'width',
     'height',
     'inline-size',
@@ -151,33 +153,56 @@ const inheritedCssProperties = [
     'font-style',
     'font-weight',
     'line-height',
-    'font-size'
+    'font-size',
+    'text-align',
+
+    // properties needed for correct text clipping on node names
+    'display',
+    'overflow-x',
+    'overflow-y',
+    'word-wrap',
+    'white-space',
+    'text-overflow',
+    '-webkit-line-clamp',
+    '-webkit-box-orient'
 ];
 
 /**
- * Function that, given an element, will apply all the computed styles (derived from css classes)
- * as direct inlined styles to the element. It will recursively also run the same behavior for all
- * the element's children
- *
+ * @callback ElementCallback
  * @param {HTMLElement} element
  * @returns {void}
  */
-const useCSSfromComputedStyles = (element) => {
+/**
+ * Returns a callback function that will apply all computed styles to an element. Said callback will set the styles
+ * (derived from CSS classes) as directly inlined styles to the element and will override values based on the provided
+ * (optional) `styleOverrides` parameter.
+ * It will recursively also run the same behavior for all of the element's children
+ *
+ * @param {CSSStyleDeclaration} [styleOverrides] Style overriders
+ * @returns {ElementCallback}
+ */
+const useCSSfromComputedStyles = (styleOverrides = {}) => (element) => {
     // run the same behavior for all the element's children
     element.childNodes.forEach((child, index) => {
         if (child.nodeType === 1 /* Node.ELEMENT_NODE */) {
-            useCSSfromComputedStyles(child);
+            useCSSfromComputedStyles(styleOverrides)(child);
         }
     });
-   
+
     const compStyles = getComputedStyle(element);
 
     if (compStyles.length > 0) {
-        Object.values(compStyles).forEach(compStyle => {
+        for (let i = 0; i < compStyles.length; i++) {
+            const compStyle = compStyles[i];
+
             if (inheritedCssProperties.includes(compStyle)) {
-                element.style.setProperty(compStyle, compStyles.getPropertyValue(compStyle));
+                const value = styleOverrides[camelCase(compStyle)]
+                    ? styleOverrides[camelCase(compStyle)]
+                    : compStyles.getPropertyValue(compStyle);
+
+                element.style.setProperty(compStyle, value);
             }
-        });
+        }
     }
 };
 
@@ -215,7 +240,9 @@ const fileToBase64 = async (filepath) => {
  * @returns {Promise<String>}
  */
 const getFontData = async () => {
-    const fontCacheKey = 'workflow-preview-font';
+    // TODO: NXT-1493 - This cache is never invalidated (updates to the font files) nor is it ever reset or deleted.
+    //       We should consider making the base64 encode a build step
+    const fontCacheKey = `workflow-preview-font-${robotoCondensed}`;
     const cachedFont = localStorage.getItem(fontCacheKey);
 
     if (cachedFont) {
@@ -224,7 +251,7 @@ const getFontData = async () => {
 
     const fontBase64 = await fileToBase64(robotoCondensed);
     localStorage.setItem(fontCacheKey, fontBase64);
-    
+
     return fontBase64;
 };
 
@@ -241,12 +268,12 @@ const addFontStyles = async (svgElement) => {
     const fontBase64 = await getFontData();
 
     styleTag.appendChild(
-        document.createTextNode(`@font-face { 
-            font-family: "Roboto Condensed"; 
+        document.createTextNode(`@font-face {
+            font-family: "Roboto Condensed";
             src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}");
         }`)
     );
-    
+
     styleTag.type = 'text/css';
 
     svgElement.getElementsByTagName('defs')[0].appendChild(styleTag);
@@ -287,31 +314,40 @@ export const generateWorkflowPreview = async (svgElement, isEmpty) => {
     updateViewBox(svgClone, workflowSheet);
 
     // remove all hover areas elements which are only used for interactivity
-    removeElements(svgClone.querySelectorAll('.hover-area'), () => true);
-    
+    removeElements(svgClone.querySelectorAll('.hover-area'));
+
     // remove all vue-portals
-    removeElements(svgClone.querySelectorAll('DIV.v-portal'), () => true);
-    
+    removeElements(svgClone.querySelectorAll('DIV.v-portal'));
+
     // remove all portal-targets
-    removeElements(svgClone.querySelectorAll('.vue-portal-target'), () => true);
-    
+    removeElements(svgClone.querySelectorAll('.vue-portal-target'));
+
     // remove dynamic port icons
-    removeElements(svgClone.querySelectorAll('.add-port'), () => true);
-    
+    removeElements(svgClone.querySelectorAll('.add-port'));
+
+    // remove non-connected flow variable port icons
+    removeElements(svgClone.querySelectorAll('.mickey-mouse:not(.connected)'));
+
+    // remove empty node labels
+    removeElements(svgClone.querySelectorAll('.node-label > .placeholder'));
+
     // remove all empty g elements
     removeElements(svgClone.querySelectorAll('g'), (node) => !node.hasChildNodes());
-    
-    // remove all `display: none` elements
-    removeElements(svgClone.querySelectorAll('[style*="display: none"]'), () => true);
 
-    // select connectors and inline all styles that may be only available from classes
-    svgClone.querySelectorAll('[data-connector-id]').forEach(useCSSfromComputedStyles);
-    
+    // remove all `display: none` elements
+    removeElements(svgClone.querySelectorAll('[style*="display: none"]'));
+
+    // Select connectors and inline all styles that may be only available from classes.
+    // Additionally, override strokeWidth in case any connector is highlighted
+    svgClone.querySelectorAll('[data-connector-id]').forEach(useCSSfromComputedStyles({
+        strokeWidth: '1px'
+    }));
+
     // select `foreignObject`s and inline all styles that may be only available from classes
-    svgClone.querySelectorAll('foreignObject').forEach(useCSSfromComputedStyles);
+    svgClone.querySelectorAll('foreignObject').forEach(useCSSfromComputedStyles());
 
     const output = getSvgContent(svgClone);
-    
+
     // remove hidden preview container
     teardown();
 

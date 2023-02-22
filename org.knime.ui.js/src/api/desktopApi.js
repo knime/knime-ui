@@ -71,13 +71,15 @@ export const saveWorkflow = ({ projectId, workflowPreviewSvg }) => {
 
 /**
  * Open a workflow.
- * @param {String} workflowItemId
+ * @param {Object} param
+ * @param {String} [param.spaceId]
+ * @param {String} param.workflowItemId
  * @returns {void}
  */
-export const openWorkflow = (workflowItemId) => {
+export const openWorkflow = ({ spaceId = 'local', workflowItemId, spaceProviderId = 'local' }) => {
     try {
         // returns falsy on success
-        let error = window.openWorkflow('local', workflowItemId);
+        const error = window.openWorkflow(spaceId, workflowItemId, spaceProviderId);
         if (error) {
             throw new Error(error);
         }
@@ -104,18 +106,16 @@ export const closeWorkflow = ({ closingProjectId, nextProjectId }) => {
 };
 
 /**
- * Create a workflow.
+ * Ensures that a project-workflow is loaded (and loads it, if not) and set it to be the active one.
+ * @param {String} projectId
  * @returns {void}
  */
-export const createWorkflow = () => {
+export const setProjectActiveAndEnsureItsLoadedInBackend = ({ projectId }) => {
     try {
-        // returns falsy on success
-        let error = window.createWorkflow();
-        if (error) {
-            throw new Error(error);
-        }
-    } catch (e) {
-        consola.error(`Could not create a workflow`, e);
+        window.setProjectActiveAndEnsureItsLoaded(projectId);
+    } catch (error) {
+        consola.error(`Failed to set project as active in the backend`, { projectId, error });
+        throw error;
     }
 };
 
@@ -152,3 +152,113 @@ export const openWorkflowCoachPreferencePage = () => {
         consola.error(`Could not open preference page`, e);
     }
 };
+
+/**
+ * @typedef SpaceProvider
+ * @property {String} id
+ * @property {String} name
+ * @property {Boolean} connected
+ * @property {'AUTHENTICATED' | 'ANONYMOUS' | 'AUTOMATIC'} connectionMode
+ */
+/**
+ * Get all available space providers
+ * @returns {Record<string, SpaceProvider>}
+ */
+export const fetchAllSpaceProviders = () => {
+    try {
+        const spaceProviders = window.getSpaceProviders();
+        return Promise.resolve(JSON.parse(spaceProviders));
+    } catch (error) {
+        consola.error(`Could not fetch space providers`, error);
+        throw error;
+    }
+};
+
+export const connectSpaceProvider = ({ spaceProviderId }) => {
+    try {
+        const user = window.connectSpaceProvider(spaceProviderId);
+        return JSON.parse(user);
+    } catch (error) {
+        consola.error(`Could not connect to provider`, { spaceProviderId, error });
+        throw error;
+    }
+};
+
+export const disconnectSpaceProvider = ({ spaceProviderId }) => {
+    try {
+        const user = window.disconnectSpaceProvider(spaceProviderId);
+        return Promise.resolve(JSON.parse(user));
+    } catch (error) {
+        consola.error(`Could not disconnect from provider`, { spaceProviderId, error });
+        throw error;
+    }
+};
+
+export const importFiles = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
+    try {
+        // Returns true on success
+        return window.importFiles(spaceProviderId, spaceId, itemId);
+    } catch (error) {
+        consola.error(`Could not import files`, { spaceProviderId, spaceId, itemId, error });
+        throw error;
+    }
+};
+
+export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
+    try {
+        // Returns true on success
+        return window.importWorkflows(spaceProviderId, spaceId, itemId);
+    } catch (error) {
+        consola.error(`Could not import workflows`, { spaceProviderId, spaceId, itemId, error });
+        throw error;
+    }
+};
+
+/**
+ * Checks for name collisions and returns a String of an option
+ * that the user chose to handle existing conflict
+ *
+ * @param {Object} arg
+ * @param {String} [arg.spaceProviderId]
+ * @param {String} [arg.spaceId]
+ * @param {Array<String>} arg.itemIds
+ * @param {String} arg.destWorkflowGroupItemId
+ *
+ * @returns {'OVERWRITE' | 'NOOP' | 'AUTORENAME' | 'CANCEL'}
+ */
+export const getNameCollisionStrategy = ({
+    spaceProviderId = 'local',
+    spaceId = 'local',
+    itemIds,
+    destWorkflowGroupItemId
+}) => {
+    try {
+        const collisionStrategy = window.getNameCollisionStrategy(
+            spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId
+        );
+        return collisionStrategy;
+    } catch (error) {
+        consola.error(`Could not check for collisions`,
+            { spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, error });
+        throw error;
+    }
+};
+
+export const copyBetweenSpaces = ({ spaceProviderId = 'local', spaceId = 'local', itemIds }) => {
+    try {
+        return window.copyBetweenSpaces(spaceProviderId, spaceId, itemIds);
+    } catch (error) {
+        consola.error(`Error uploading to Hub space`, { error });
+        throw error;
+    }
+};
+
+export const saveWorkflowAs = ({ projectId, workflowPreviewSvg }) => {
+    try {
+        window.saveWorkflowAs(projectId, workflowPreviewSvg);
+    } catch (error) {
+        consola.error(`Could not save workflow locally`, { projectId, error });
+        throw error;
+    }
+};
+
