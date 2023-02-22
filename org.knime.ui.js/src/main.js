@@ -17,6 +17,22 @@ silentLogger();
 // e.g: TableView, NodeDialog, PageBuilder
 // window.Vue = Vue;
 
+function dispatchJsonrpcNotification(jsonrpcNotification) {
+    window.jsonrpcNotification(jsonrpcNotification);
+}
+
+if (window.EquoCommService) {
+    window.EquoCommService.on(
+        'org.knime.ui.java.jsonrpcNotification',
+        dispatchJsonrpcNotification,
+        e => console.error(e)
+    );
+ 
+    if (!window.jsonrpc) {
+        window.jsonrpc = request => window.EquoCommService.send('org.knime.ui.java.jsonrpc', JSON.stringify(request));
+    }
+}
+
 // Create Vue app
 const app = createApp(KnimeUI);
 

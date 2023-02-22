@@ -48,21 +48,6 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import static org.knime.ui.java.browser.KnimeBrowserView.DOMAIN_NAME;
-import static org.knime.ui.java.browser.lifecycle.SharedConstants.JSON_RPC_ACTION_ID;
-import static org.knime.ui.java.browser.lifecycle.SharedConstants.JSON_RPC_NOTIFICATION_ACTION_ID;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
-import org.knime.ui.java.browser.KnimeBrowserView;
-
 import com.equo.chromium.swt.Browser;
 
 /**
@@ -78,32 +63,7 @@ final class WebAppLoaded {
     }
 
     static void runPhase(final Browser browser) {
-        initializeJSBrowserCommunication(browser);
-    }
-
-    private static void initializeJSBrowserCommunication(final Browser browser) {
-        // inject the communication (message transport) logic
-        try {
-            var script = Files.readString(Path.of(getAbsolutePath(DOMAIN_NAME, "files/script-snippet.template")))
-                .replace("##JSON_RPC_NOTIFICATION_ACTION_ID##", JSON_RPC_NOTIFICATION_ACTION_ID)
-                .replace("##JSON_RPC_ACTION_ID##", JSON_RPC_ACTION_ID);
-            if (!browser.execute(script)) {
-                KnimeBrowserView.LOGGER.error("Script to initialize JS browser communication failed to execute");
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to read script to initialize JS browser communication", e);
-        }
-    }
-
-    private static String getAbsolutePath(final String bundle, final String relativePath) {
-        var url = Platform.getBundle(bundle).getEntry(relativePath);
-        try {
-            var fileUrl = FileLocator.toFileURL(url);
-            return Paths.get(new URI(fileUrl.getProtocol(), fileUrl.getFile(), null)).toString();
-        } catch (IOException | URISyntaxException e) {
-            // should never happen
-            throw new IllegalStateException(e);
-        }
+        // does nothing for now
     }
 
 }
