@@ -258,12 +258,16 @@ export default {
   }
 
   /* TODO NXT-1569 Find a real solution */
-
   & :deep(.table-view-wrapper) {
     & .table-header th:first-child {
       margin-left: 0;
       padding-left: 10px;
       font-style: italic;
+    }
+
+    /* override width of first th in the filters element */
+    & .table-header + thead th:first-child {
+      width: 40px !important;
     }
 
     & tr.row.no-sub-menu.compact-mode td:first-child {

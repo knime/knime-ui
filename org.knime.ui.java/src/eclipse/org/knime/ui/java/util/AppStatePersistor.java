@@ -58,6 +58,8 @@ import java.util.stream.Collector;
 
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
@@ -172,8 +174,10 @@ public final class AppStatePersistor {
             var projectId = project.getID();
             wpm.addWorkflowProject(projectId, project);
             if (projectJson.get(ACTIVE).asBoolean()) {
-                if (wpm.openAndCacheWorkflow(projectId).isPresent()) {
+                var wfm = wpm.openAndCacheWorkflow(projectId).orElse(null);
+                if (wfm != null) {
                     wpm.setWorkflowProjectActive(projectId);
+                    NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
                 } else {
                     wpm.removeWorkflowProject(projectId);
                 }
