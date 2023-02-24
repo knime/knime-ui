@@ -285,7 +285,7 @@ export default {
 }
 
 .scroll-container {
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   text-align: left;
   height: 100%;
