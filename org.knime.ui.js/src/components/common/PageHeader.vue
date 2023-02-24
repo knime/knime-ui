@@ -52,7 +52,7 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-@import "@/assets/mixins.css";
+@import url("@/assets/mixins.css");
 
 header {
   margin-top: 51px;

@@ -17,7 +17,7 @@ export default {
 </template>
 
 <style scoped>
-@import "@/assets/mixins.css";
+@import url("@/assets/mixins.css");
 
 button {
   border: none;

@@ -131,7 +131,7 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-@import "@/assets/mixins.css";
+@import url("@/assets/mixins.css");
 
 main {
   display: flex;

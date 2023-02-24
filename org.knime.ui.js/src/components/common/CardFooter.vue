@@ -30,7 +30,7 @@ export default {
 </script>
 
 <style lang="postcss" scoped>
-@import "@/assets/mixins.css";
+@import url("@/assets/mixins.css");
 
 .card {
   & .card-footer {
