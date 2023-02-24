@@ -25,8 +25,8 @@ export default {
             return {
                 left: this.bounds.left + padding,
                 top: this.bounds.top + padding,
-                height: this.bounds.height - 2 * padding,
-                width: this.bounds.width - 2 * padding
+                height: Math.max(this.bounds.height - 2 * padding, 0),
+                width: Math.max(this.bounds.width - 2 * padding, 0)
             };
         }
     }
