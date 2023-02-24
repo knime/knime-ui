@@ -60,11 +60,7 @@ export default async (method, ...args) => {
 
     let response;
     try {
-        response = window.jsonrpc(req);
-        if (response instanceof Promise) {
-            consola.trace('using synchronous backend');
-            response = await response;
-        }
+        response = await window.jsonrpc(req);
     } catch (e) {
         throw new Error(`Error calling JSON-RPC api "${[method, JSON.stringify(args)].join('", "')}": ${e.message}`);
     }

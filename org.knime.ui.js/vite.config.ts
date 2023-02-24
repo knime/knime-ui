@@ -9,21 +9,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
     process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
-    
+
     return {
         plugins: [vue(), svgLoader()],
-        
+
         server: {
             port: Number(process.env.VITE_APP_PORT) || 3000,
             watch: {
                 ignored: ['**/test-results/**']
             }
         },
-        
+
         resolve: {
             alias: {
                 '@': path.join(__dirname, 'src'),
-                '@api': path.join(__dirname, 'src', 'api', 'index.js'),
+                '@api': path.join(__dirname, 'src', 'api', 'index'),
                 'webapps-common': path.join(__dirname, 'webapps-common')
             }
         }

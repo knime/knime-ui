@@ -10,6 +10,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@api": [
+        "./src/api/index"
       ]
     },
     "strict": false,

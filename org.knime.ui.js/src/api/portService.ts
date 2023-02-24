@@ -2,14 +2,11 @@ import rpc from './json-rpc-adapter';
 
 /**
  * Calls the 'getPortView' endpoint (see API documentation).
- *
- * @param {String} projectId
- * @param {String} workflowId
- * @param {String} nodeId
- * @param {Number} portIndex
- * @returns {Object}
  */
-export const getPortView = async ({ projectId, workflowId, nodeId, portIndex }) => {
+export const getPortView = async (
+    { projectId, workflowId, nodeId, portIndex }:
+    { projectId: string, workflowId: string, nodeId: string, portIndex: number }
+) => {
     try {
         return await rpc('PortService.getPortView', projectId, workflowId, nodeId, portIndex);
     } catch (e) {
