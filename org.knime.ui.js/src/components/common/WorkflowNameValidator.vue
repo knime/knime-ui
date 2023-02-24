@@ -32,7 +32,7 @@ export default {
         }
     },
 
-    emits: ['is-valid-changed', 'clean-name'],
+    emits: ['isValidChanged', 'cleanName'],
 
     computed: {
         isValidName() {
@@ -62,11 +62,11 @@ export default {
     },
     watch: {
         isValid() {
-            this.$emit('is-valid-changed', this.isValid);
+            this.$emit('isValidChanged', this.isValid);
         }
     },
     mounted() {
-        this.$emit('clean-name', this.cleanName);
+        this.$emit('cleanName', this.cleanName);
     },
     methods: {
         cleanName(value) {

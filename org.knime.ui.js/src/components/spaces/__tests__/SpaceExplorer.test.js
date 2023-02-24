@@ -158,7 +158,7 @@ describe('SpaceExplorer.vue', () => {
 
         fetchWorkflowGroupContent.mockReset();
 
-        wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '1234');
+        wrapper.findComponent(FileExplorer).vm.$emit('changeDirectory', '1234');
         expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
             spaceProviderId: 'local',
             spaceId: 'local',
@@ -166,7 +166,7 @@ describe('SpaceExplorer.vue', () => {
         });
 
         await new Promise(r => setTimeout(r, 0));
-        expect(wrapper.emitted('item-changed')[0][0]).toBe('1234');
+        expect(wrapper.emitted('itemChanged')[0][0]).toBe('1234');
     });
 
     describe('Navigate back', () => {
@@ -182,7 +182,7 @@ describe('SpaceExplorer.vue', () => {
             });
 
             fetchWorkflowGroupContent.mockReset();
-            wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
+            wrapper.findComponent(FileExplorer).vm.$emit('changeDirectory', '..');
             expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
                 spaceProviderId: 'local',
                 spaceId: 'local',
@@ -199,7 +199,7 @@ describe('SpaceExplorer.vue', () => {
             });
 
             fetchWorkflowGroupContent.mockReset();
-            wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
+            wrapper.findComponent(FileExplorer).vm.$emit('changeDirectory', '..');
             expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
                 spaceProviderId: 'local',
                 spaceId: 'local',
@@ -225,7 +225,7 @@ describe('SpaceExplorer.vue', () => {
             spaceId: 'local',
             itemId: 'parentId'
         });
-        expect(wrapper.emitted('item-changed')[0][0]).toBe('parentId');
+        expect(wrapper.emitted('itemChanged')[0][0]).toBe('parentId');
     });
 
     describe('Open indicator', () => {
@@ -288,7 +288,7 @@ describe('SpaceExplorer.vue', () => {
 
     it('should open workflows', async () => {
         const { wrapper, dispatchSpy, mockRouter } = await doMountAndLoad();
-        wrapper.findComponent(FileExplorer).vm.$emit('open-file', { id: 'dummy' });
+        wrapper.findComponent(FileExplorer).vm.$emit('openFile', { id: 'dummy' });
 
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/openWorkflow', {
             workflowItemId: 'dummy',
@@ -305,7 +305,7 @@ describe('SpaceExplorer.vue', () => {
         jest.spyOn(window, 'confirm').mockImplementation(() => true);
         const { wrapper, dispatchSpy } = await doMountAndLoad();
 
-        wrapper.findComponent(FileExplorer).vm.$emit('delete-items', { items });
+        wrapper.findComponent(FileExplorer).vm.$emit('deleteItems', { items });
         expect(window.confirm).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
@@ -319,7 +319,7 @@ describe('SpaceExplorer.vue', () => {
         jest.spyOn(window, 'confirm').mockImplementation(() => false);
         const { wrapper, dispatchSpy } = await doMountAndLoad();
 
-        wrapper.findComponent(FileExplorer).vm.$emit('delete-items', { items });
+        wrapper.findComponent(FileExplorer).vm.$emit('deleteItems', { items });
         expect(window.confirm).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
         expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
@@ -336,7 +336,7 @@ describe('SpaceExplorer.vue', () => {
             };
             await wrapper.vm.$nextTick();
 
-            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:create-workflow');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:createWorkflow');
             expect(commitSpy).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', true);
         });
 
@@ -351,7 +351,7 @@ describe('SpaceExplorer.vue', () => {
             };
             await wrapper.vm.$nextTick();
 
-            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:import-workflow');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:importWorkflow');
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
         });
 
@@ -366,7 +366,7 @@ describe('SpaceExplorer.vue', () => {
             };
             await wrapper.vm.$nextTick();
 
-            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:import-files');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:importFiles');
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'FILES' });
         });
 
@@ -381,7 +381,7 @@ describe('SpaceExplorer.vue', () => {
             };
             await wrapper.vm.$nextTick();
 
-            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:create-folder');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:createFolder');
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder');
         });
 
@@ -395,10 +395,10 @@ describe('SpaceExplorer.vue', () => {
                 }
             };
 
-            wrapper.findComponent(FileExplorer).vm.$emit('change-selection', ['1', '2']);
+            wrapper.findComponent(FileExplorer).vm.$emit('changeSelection', ['1', '2']);
             await wrapper.vm.$nextTick();
 
-            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:upload-to-hub');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:uploadToHub');
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/copyBetweenSpaces', { itemIds: ['1', '2'] });
         });
 
@@ -419,10 +419,10 @@ describe('SpaceExplorer.vue', () => {
                 }
             };
 
-            wrapper.findComponent(FileExplorer).vm.$emit('change-selection', ['1', '2']);
+            wrapper.findComponent(FileExplorer).vm.$emit('changeSelection', ['1', '2']);
             await wrapper.vm.$nextTick();
 
-            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:download-to-local-space');
+            wrapper.findComponent(SpaceExplorerActions).vm.$emit('action:downloadToLocalSpace');
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/copyBetweenSpaces', { itemIds: ['1', '2'] });
         });
 
@@ -443,7 +443,7 @@ describe('SpaceExplorer.vue', () => {
             });
 
             // simulate active selection
-            wrapper.findComponent(FileExplorer).vm.$emit('change-selection', ['1', '2']);
+            wrapper.findComponent(FileExplorer).vm.$emit('changeSelection', ['1', '2']);
 
             await wrapper.vm.$nextTick();
 
@@ -482,7 +482,7 @@ describe('SpaceExplorer.vue', () => {
             });
 
             // simulate active selection
-            wrapper.findComponent(FileExplorer).vm.$emit('change-selection', ['1', '2']);
+            wrapper.findComponent(FileExplorer).vm.$emit('changeSelection', ['1', '2']);
 
             await wrapper.vm.$nextTick();
 
@@ -528,7 +528,7 @@ describe('SpaceExplorer.vue', () => {
 
         const itemId = '12345';
         const newName = 'some name';
-        wrapper.findComponent(FileExplorer).vm.$emit('rename-file', { itemId, newName });
+        wrapper.findComponent(FileExplorer).vm.$emit('renameFile', { itemId, newName });
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/renameItem', { itemId, newName });
     });
 
@@ -542,7 +542,7 @@ describe('SpaceExplorer.vue', () => {
             const sourceItems = ['id1', 'id2'];
             const targetItem = 'group1';
             const onComplete = jest.fn();
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem, onComplete });
+            wrapper.findComponent(FileExplorer).vm.$emit('moveItems', { sourceItems, targetItem, onComplete });
             await wrapper.vm.$nextTick();
 
             expect(dispatchSpy).toHaveBeenCalledWith(
@@ -567,7 +567,7 @@ describe('SpaceExplorer.vue', () => {
             const sourceItems = ['id1', 'id2'];
             const targetItem = '..';
             const onComplete = jest.fn();
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', {
+            wrapper.findComponent(FileExplorer).vm.$emit('moveItems', {
                 sourceItems,
                 targetItem,
                 onComplete
@@ -599,7 +599,7 @@ describe('SpaceExplorer.vue', () => {
             const sourceItems = ['id1', 'id2'];
             const targetItem = '..';
             const onComplete = jest.fn();
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem, onComplete });
+            wrapper.findComponent(FileExplorer).vm.$emit('moveItems', { sourceItems, targetItem, onComplete });
             await wrapper.vm.$nextTick();
 
             expect(dispatchSpy).toHaveBeenCalledWith(
@@ -618,7 +618,7 @@ describe('SpaceExplorer.vue', () => {
             const sourceItems = ['id1', 'id2'];
             const targetItem = 'group1';
             const onComplete = jest.fn();
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem, onComplete });
+            wrapper.findComponent(FileExplorer).vm.$emit('moveItems', { sourceItems, targetItem, onComplete });
 
             expect(dispatchSpy).not.toHaveBeenCalledWith(
                 'spaces/moveItems',
@@ -645,7 +645,7 @@ describe('SpaceExplorer.vue', () => {
             const sourceItems = ['id1', 'id2'];
             const targetItem = 'group1';
             const onComplete = jest.fn();
-            wrapper.findComponent(FileExplorer).vm.$emit('move-items', { sourceItems, targetItem, onComplete });
+            wrapper.findComponent(FileExplorer).vm.$emit('moveItems', { sourceItems, targetItem, onComplete });
 
             expect(window.alert).toHaveBeenCalledWith(
                 expect.stringContaining('Following workflows are opened:' && '• test2')

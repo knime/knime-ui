@@ -125,7 +125,7 @@ describe('SpaceBrowsingPage', () => {
     it('should handle the import workflow action', () => {
         const { wrapper, dispatchSpy } = doMount();
 
-        const workflowButton = wrapper.find('#import-workflow');
+        const workflowButton = wrapper.find('#importWorkflow');
         workflowButton.trigger('click');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
     });
@@ -133,7 +133,7 @@ describe('SpaceBrowsingPage', () => {
     it('should handle the add files action', () => {
         const { wrapper, dispatchSpy } = doMount();
 
-        const workflowButton = wrapper.find('#import-files');
+        const workflowButton = wrapper.find('#importFiles');
         workflowButton.trigger('click');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/importToWorkflowGroup', { importType: 'FILES' });
     });
@@ -148,7 +148,7 @@ describe('SpaceBrowsingPage', () => {
     it('should handle the create folder action', () => {
         const { wrapper, dispatchSpy } = doMount();
 
-        wrapper.find('#create-folder').trigger('click');
+        wrapper.find('#createFolder').trigger('click');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder');
     });
 
@@ -161,11 +161,11 @@ describe('SpaceBrowsingPage', () => {
             }
         });
 
-        wrapper.findComponent(SpaceExplorer).vm.$emit('change-selection', ['1', '2']);
+        wrapper.findComponent(SpaceExplorer).vm.$emit('changeSelection', ['1', '2']);
 
         await wrapper.vm.$nextTick();
 
-        wrapper.find('#upload-to-hub').trigger('click');
+        wrapper.find('#uploadToHub').trigger('click');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/copyBetweenSpaces', { itemIds: ['1', '2'] });
     });
 
@@ -188,11 +188,11 @@ describe('SpaceBrowsingPage', () => {
 
         await wrapper.vm.$nextTick();
 
-        wrapper.findComponent(SpaceExplorer).vm.$emit('change-selection', ['1', '2']);
+        wrapper.findComponent(SpaceExplorer).vm.$emit('changeSelection', ['1', '2']);
 
         await wrapper.vm.$nextTick();
 
-        wrapper.find('#download-to-local-space').trigger('click');
+        wrapper.find('#downloadToLocalSpace').trigger('click');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/copyBetweenSpaces', { itemIds: ['1', '2'] });
     });
 
@@ -225,7 +225,7 @@ describe('SpaceBrowsingPage', () => {
         it('saves the spaceBrowser state on item change', () => {
             const { wrapper, dispatchSpy } = doMount();
 
-            wrapper.findComponent(SpaceExplorer).vm.$emit('item-changed', 'someNewItemId');
+            wrapper.findComponent(SpaceExplorer).vm.$emit('itemChanged', 'someNewItemId');
 
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/saveSpaceBrowserState', expect.objectContaining({
                 itemId: 'someNewItemId'

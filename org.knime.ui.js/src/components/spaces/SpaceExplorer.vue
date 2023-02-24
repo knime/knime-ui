@@ -38,7 +38,7 @@ export default {
         }
     },
 
-    emits: ['change-selection', 'item-changed'],
+    emits: ['changeSelection', 'itemChanged'],
 
     data() {
         return {
@@ -159,13 +159,13 @@ export default {
 
         onSelectionChange(selectedItems) {
             this.selectedItems = selectedItems;
-            this.$emit('change-selection', selectedItems);
+            this.$emit('changeSelection', selectedItems);
         },
 
         async onChangeDirectory(pathId) {
             await this.$store.dispatch('spaces/changeDirectory', { pathId });
 
-            this.$emit('item-changed', this.pathToItemId(pathId));
+            this.$emit('itemChanged', this.pathToItemId(pathId));
         },
 
         async onOpenFile({ id }) {
@@ -188,7 +188,7 @@ export default {
 
         onBreadcrumbClick({ id }) {
             this.fetchWorkflowGroupContent(id);
-            this.$emit('item-changed', id);
+            this.$emit('itemChanged', id);
         },
 
         onDeleteItems({ items }) {

@@ -70,39 +70,39 @@ export default {
     },
 
     emits: [
-        'action:create-workflow',
-        'action:create-folder',
-        'action:import-workflow',
-        'action:import-files',
-        'action:upload-to-hub',
-        'action:download-to-local-space'
+        'action:createWorkflow',
+        'action:createFolder',
+        'action:importWorkflow',
+        'action:importFiles',
+        'action:uploadToHub',
+        'action:downloadToLocalSpace'
     ],
 
     computed: {
         actions() {
             return [
                 {
-                    id: 'create-workflow',
+                    id: 'createWorkflow',
                     text: 'Create workflow',
                     icon: PlusIcon,
                     disabled: this.disabledActions.createWorkflow,
                     hidden: this.mode !== 'mini'
                 },
                 {
-                    id: 'create-folder',
+                    id: 'createFolder',
                     text: 'Create folder',
                     icon: FolderPlusIcon,
                     disabled: this.disabledActions.createFolder,
                     separator: true
                 },
                 {
-                    id: 'import-workflow',
+                    id: 'importWorkflow',
                     text: 'Import workflow',
                     icon: ImportWorkflowIcon,
                     disabled: this.disabledActions.importWorkflow
                 },
                 {
-                    id: 'import-files',
+                    id: 'importFiles',
                     text: 'Add files',
                     icon: AddFileIcon,
                     disabled: this.disabledActions.importFiles,
@@ -110,7 +110,7 @@ export default {
                 },
                 this.isLocal
                     ? {
-                        id: 'upload-to-hub',
+                        id: 'uploadToHub',
                         text: 'Upload to Hub',
                         icon: CloudUploadIcon,
                         disabled: this.disabledActions.uploadToHub,
@@ -120,7 +120,7 @@ export default {
                             : 'Login is required to upload to hub.'
                     }
                     : {
-                        id: 'download-to-local-space',
+                        id: 'downloadToLocalSpace',
                         text: 'Download to local space',
                         icon: CloudDownloadIcon,
                         disabled: this.disabledActions.downloadToLocalSpace,
@@ -159,10 +159,10 @@ export default {
 
         <PlusButton
           :title="createWorkflowButtonTitle"
-          primary
+          primary-
           class="create-workflow-btn"
           :disabled="disabledActions.createWorkflow"
-          @click="$emit('action:create-workflow')"
+          @click="$emit('action:createWorkflow')"
         />
       </div>
     </template>

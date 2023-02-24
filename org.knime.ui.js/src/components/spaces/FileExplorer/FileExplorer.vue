@@ -64,13 +64,13 @@ export default {
     },
 
     emits: [
-        'change-selection',
-        'change-directory',
-        'open-file',
-        'delete-items',
-        'move-items',
+        'changeSelection',
+        'changeDirectory',
+        'openFile',
+        'deleteItems',
+        'moveItems',
         'dragend',
-        'rename-file'
+        'renameFile'
     ],
 
     data() {
@@ -92,7 +92,7 @@ export default {
         multiSelectionState() {
             const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
 
-            this.$emit('change-selection', selectedIndexes.map(index => this.items[index].id));
+            this.$emit('changeSelection', selectedIndexes.map(index => this.items[index].id));
         }
     },
 
@@ -168,7 +168,7 @@ export default {
         },
 
         changeDirectory(pathId) {
-            this.$emit('change-directory', pathId);
+            this.$emit('changeDirectory', pathId);
         },
 
         onItemDoubleClick(item) {
@@ -178,7 +178,7 @@ export default {
             }
 
             if (this.canOpenFile(item)) {
-                this.$emit('open-file', item);
+                this.$emit('openFile', item);
             }
         },
 
@@ -281,7 +281,7 @@ export default {
                 this.removeGhosts = null;
             };
 
-            this.$emit('move-items', { sourceItems, targetItem, onComplete });
+            this.$emit('moveItems', { sourceItems, targetItem, onComplete });
         },
 
         getItemElementByRefIndex(index, isGoBackItem = false) {
@@ -312,7 +312,7 @@ export default {
         onMenuClick(optionId, item) {
             this.clearRenameState();
             if (optionId === 'delete') {
-                this.$emit('delete-items', { items: [item] });
+                this.$emit('deleteItems', { items: [item] });
             }
 
             if (optionId === 'rename') {
@@ -344,7 +344,7 @@ export default {
                     return;
                 }
 
-                this.$emit('rename-file', { itemId: this.activeRenameId, newName });
+                this.$emit('renameFile', { itemId: this.activeRenameId, newName });
                 this.clearRenameState();
             }
         },

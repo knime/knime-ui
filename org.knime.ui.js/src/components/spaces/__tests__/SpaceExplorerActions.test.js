@@ -58,18 +58,18 @@ describe('SpaceExplorerActions.vue', () => {
                 }
             });
 
-            expect(wrapper.find('#download-to-local-space').attributes('aria-disabled')).toBeTruthy();
-            expect(wrapper.find('#create-folder').attributes('disabled')).toBeFalsy();
-            expect(wrapper.find('#import-files').attributes('disabled')).toBeFalsy();
+            expect(wrapper.find('#downloadToLocalSpace').attributes('aria-disabled')).toBeTruthy();
+            expect(wrapper.find('#createFolder').attributes('disabled')).toBeFalsy();
+            expect(wrapper.find('#importFiles').attributes('disabled')).toBeFalsy();
 
             expect(wrapper.findComponent(PlusButton).attributes('disabled')).toBeTruthy();
         });
 
         it.each([
-            ['create-folder'],
-            ['download-to-local-space'],
-            ['import-files'],
-            ['import-workflow']
+            ['createFolder'],
+            ['downloadToLocalSpace'],
+            ['importFiles'],
+            ['importWorkflow']
         ])('should emit an "action:%s" event when clicking on the relevant action', (actionId) => {
             const { wrapper } = doMount();
 
@@ -77,11 +77,11 @@ describe('SpaceExplorerActions.vue', () => {
             expect(wrapper.emitted(`action:${actionId}`)).toBeTruthy();
         });
 
-        it('should emit an "action:create-workflow" event when clicking on the relevant action', () => {
+        it('should emit an "action:createWorkflow" event when clicking on the relevant action', () => {
             const { wrapper } = doMount();
 
             wrapper.findComponent(PlusButton).vm.$emit('click');
-            expect(wrapper.emitted('action:create-workflow')).toBeTruthy();
+            expect(wrapper.emitted('action:createWorkflow')).toBeTruthy();
         });
     });
 
@@ -138,17 +138,17 @@ describe('SpaceExplorerActions.vue', () => {
 
             expect(wrapper.findComponent(SubMenu).props('items')).toEqual(
                 expect.arrayContaining([
-                    expect.objectContaining({ id: 'create-folder', disabled: true })
+                    expect.objectContaining({ id: 'createFolder', disabled: true })
                 ])
             );
         });
 
         it.each([
-            ['create-folder'],
-            ['create-workflow'],
-            ['upload-to-hub'],
-            ['import-files'],
-            ['import-workflow']
+            ['createFolder'],
+            ['createWorkflow'],
+            ['uploadToHub'],
+            ['importFiles'],
+            ['importWorkflow']
         ])('should emit an "action:%s" event when clicking on the relevant action', (actionId) => {
             const { wrapper } = doMount({
                 props: { mode: 'mini' }

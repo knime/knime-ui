@@ -86,10 +86,10 @@ describe('FileExplorer.vue', () => {
         const allItems = wrapper.findAll('.file-explorer-item');
         allItems.at(0).trigger('dblclick');
 
-        expect(wrapper.emitted('change-directory')[0][0]).toBe(MOCK_DATA.at(0).id);
+        expect(wrapper.emitted('changeDirectory')[0][0]).toBe(MOCK_DATA.at(0).id);
 
         allItems.at(3).trigger('dblclick');
-        expect(wrapper.emitted('change-directory')[1]).toBeUndefined();
+        expect(wrapper.emitted('changeDirectory')[1]).toBeUndefined();
     });
 
     it('should navigate back to parent', () => {
@@ -101,7 +101,7 @@ describe('FileExplorer.vue', () => {
         expect(allItems.length).toBe(MOCK_DATA.length + 1);
 
         allItems.at(0).trigger('click');
-        expect(wrapper.emitted('change-directory')[0][0]).toBe('..');
+        expect(wrapper.emitted('changeDirectory')[0][0]).toBe('..');
     });
 
     it('should render placeholder for empty directories', () => {
@@ -129,9 +129,9 @@ describe('FileExplorer.vue', () => {
             expect(wrapper.findAll('.file-explorer-item').at(3).classes()).toContain('selected');
             expect(wrapper.findAll('.file-explorer-item').at(5).classes()).toContain('selected');
 
-            expect(wrapper.emitted('change-selection')[0][0]).toEqual(['1']);
-            expect(wrapper.emitted('change-selection')[1][0]).toEqual(['1', '2', '3']);
-            expect(wrapper.emitted('change-selection')[2][0]).toEqual(['1', '2', '3', '5']);
+            expect(wrapper.emitted('changeSelection')[0][0]).toEqual(['1']);
+            expect(wrapper.emitted('changeSelection')[1][0]).toEqual(['1', '2', '3']);
+            expect(wrapper.emitted('changeSelection')[2][0]).toEqual(['1', '2', '3', '5']);
         });
     });
 
@@ -213,7 +213,7 @@ describe('FileExplorer.vue', () => {
             await dragAndDropItem(firstItem, thirdItem);
             await dragAndDropItem(firstItem, fourthItem);
             await dragAndDropItem(firstItem, fifthItem);
-            expect(wrapper.emitted('move-items')).toBeUndefined();
+            expect(wrapper.emitted('moveItems')).toBeUndefined();
         });
 
         it('should emit a "move" event when dropping on a "WorkflowGroup"', async () => {
@@ -226,7 +226,7 @@ describe('FileExplorer.vue', () => {
 
             await dragAndDropItem(firstItem, secondItem);
 
-            expect(wrapper.emitted('move-items')[0][0]).toEqual({
+            expect(wrapper.emitted('moveItems')[0][0]).toEqual({
                 sourceItems: ['0'],
                 targetItem: '1',
                 onComplete: expect.any(Function)
@@ -247,11 +247,11 @@ describe('FileExplorer.vue', () => {
             // drag them to 1st item
             await dragAndDropItem(secondItem, firstItem);
 
-            expect(wrapper.emitted('move-items')[0][0]).toEqual(
+            expect(wrapper.emitted('moveItems')[0][0]).toEqual(
                 expect.objectContaining({ onComplete: expect.any(Function) })
             );
 
-            const { onComplete } = wrapper.emitted('move-items')[0][0];
+            const { onComplete } = wrapper.emitted('moveItems')[0][0];
 
             // mimic callback being triggered from outside listener
             onComplete(true);
@@ -282,10 +282,10 @@ describe('FileExplorer.vue', () => {
 
             await dragAndDropItem(firstItem, secondItem);
 
-            expect(wrapper.emitted('move-items')).toBeUndefined();
+            expect(wrapper.emitted('moveItems')).toBeUndefined();
         });
 
-        it('should emit a "move" event when dropping on the "Go back" item', async () => {
+        it('should emit a "moveItems" event when dropping on the "Go back" item', async () => {
             const { wrapper } = doMount({ props: { isRootFolder: false } });
 
             // workflow-group item
@@ -295,7 +295,7 @@ describe('FileExplorer.vue', () => {
 
             await dragAndDropItem(secondItem, firstItem);
 
-            expect(wrapper.emitted('move-items')[0][0]).toEqual({
+            expect(wrapper.emitted('moveItems')[0][0]).toEqual({
                 sourceItems: ['0'],
                 targetItem: '..',
                 onComplete: expect.any(Function)
@@ -328,11 +328,11 @@ describe('FileExplorer.vue', () => {
         // component
         wrapper.findAll('.file-explorer-item').at(4).trigger('dblclick');
 
-        expect(wrapper.emitted('open-file')).toBeUndefined();
+        expect(wrapper.emitted('openFile')).toBeUndefined();
 
         // workflow
         wrapper.findAll('.file-explorer-item').at(3).trigger('dblclick');
-        expect(wrapper.emitted('open-file')[0][0]).toEqual(MOCK_DATA[3]);
+        expect(wrapper.emitted('openFile')[0][0]).toEqual(MOCK_DATA[3]);
     });
 
     it('should show the open indicator for items that specify it', () => {
@@ -399,7 +399,7 @@ describe('FileExplorer.vue', () => {
             expect(itemEnabledDelete.find('.disabled').exists()).toBe(true);
         });
 
-        it('should emit delete-items on delete option click', async () => {
+        it('should emit deleteItems on delete option click', async () => {
             const itemIdx = 2;
             const { wrapper } = doMount({
                 props: { items: MOCK_DATA.map((item, index) => ({ ...item, canBeDeleted: true })) }
@@ -407,7 +407,7 @@ describe('FileExplorer.vue', () => {
 
             const deleteButton = getDeleteOption(wrapper, itemIdx);
             await deleteButton.trigger('click');
-            expect(wrapper.emitted('delete-items')[0][0]).toMatchObject({ items: [{ id: `${itemIdx}` }] });
+            expect(wrapper.emitted('deleteItems')[0][0]).toMatchObject({ items: [{ id: `${itemIdx}` }] });
         });
 
         it('should have rename enabled when item is not open', () => {
@@ -467,8 +467,8 @@ describe('FileExplorer.vue', () => {
             await wrapper.setData({ renameValue: newName });
             await input.vm.$emit('keyup', { key: 'Enter' });
 
-            expect(wrapper.emitted('rename-file')).toBeTruthy();
-            expect(wrapper.emitted('rename-file')[0][0].newName).toEqual(newName);
+            expect(wrapper.emitted('renameFile')).toBeTruthy();
+            expect(wrapper.emitted('renameFile')[0][0].newName).toEqual(newName);
         });
 
         it('should submit renaming event without invalid pre/suffix', async () => {
@@ -481,8 +481,8 @@ describe('FileExplorer.vue', () => {
             await wrapper.setData({ renameValue: newName });
             await input.vm.$emit('keyup', { key: 'Enter' });
 
-            expect(wrapper.emitted('rename-file')).toBeTruthy();
-            expect(wrapper.emitted('rename-file')[0][0].newName).toEqual('invalid');
+            expect(wrapper.emitted('renameFile')).toBeTruthy();
+            expect(wrapper.emitted('renameFile')[0][0].newName).toEqual('invalid');
         });
 
         it('should automatically trim new name', async () => {
@@ -495,8 +495,8 @@ describe('FileExplorer.vue', () => {
             await wrapper.setData({ renameValue: newName });
             await input.vm.$emit('keyup', { key: 'Enter' });
 
-            expect(wrapper.emitted('rename-file')).toBeTruthy();
-            expect(wrapper.emitted('rename-file')[0][0].newName).toEqual('New Folder name');
+            expect(wrapper.emitted('renameFile')).toBeTruthy();
+            expect(wrapper.emitted('renameFile')[0][0].newName).toEqual('New Folder name');
         });
 
         it('should not save empty names', async () => {
@@ -509,7 +509,7 @@ describe('FileExplorer.vue', () => {
             await wrapper.setData({ renameValue: newName });
             await input.vm.$emit('keyup', { key: 'Enter' });
 
-            expect(wrapper.emitted('rename-file')).toBeUndefined();
+            expect(wrapper.emitted('renameFile')).toBeUndefined();
         });
 
         it('should cancel renaming event', async () => {
