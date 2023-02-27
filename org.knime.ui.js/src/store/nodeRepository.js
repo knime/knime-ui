@@ -1,4 +1,4 @@
-import { searchNodes, getNodesGroupedByTags, getNodeDescription } from '@api';
+import { searchNodes, getNodesGroupedByTags, getNodeDescription, getNodeTemplates } from '@api';
 import { toNodeWithFullPorts } from '../util/portDataMapper';
 
 /**
@@ -33,7 +33,10 @@ export const state = () => ({
     /* node interaction */
     selectedNode: null,
     isDraggingNode: false,
-    isDescriptionPanelOpen: false
+    isDescriptionPanelOpen: false,
+
+    /* node templates */
+    nodeTemplates: {}
 });
 
 export const mutations = {
@@ -355,5 +358,18 @@ export const getters = {
             ...(state.isShowingBottomNodes ? state.bottomNodesTags : [])
         ];
         return [...new Set(allTags)];
+    },
+    getNodeTemplate: (state) => async (nodeTemplateId) => {
+        if (state.nodeTemplates?.nodeTemplateId) {
+            return state.nodeTemplates?.nodeTemplateId;
+        } else {
+            const nodeTemplates = await getNodeTemplates({
+                nodeTemplateIds: [nodeTemplateId]
+            });
+
+            // cache results
+            state.nodeTemplates[nodeTemplateId] = nodeTemplates[nodeTemplateId];
+            return nodeTemplates[nodeTemplateId];
+        }
     }
 };

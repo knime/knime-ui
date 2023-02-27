@@ -101,3 +101,25 @@ export const getNodeRecommendations = async ({
         throw new Error('Could not fetch recommended nodes');
     }
 };
+
+/**
+ * TODO
+ *
+ * @param {Array} nodeTemplateIds - the node template ids for the templates to fetch.
+ * @returns {Object} the nodeTemplate results
+ */
+export const getNodeTemplates = async ({
+    nodeTemplateIds
+}) => {
+    try {
+        const templates = await rpc(
+            'NodeRepositoryService.getNodeTemplates',
+            nodeTemplateIds
+        );
+
+        return templates;
+    } catch (e) {
+        consola.error(e);
+        throw new Error('Could not fetch recommended nodes');
+    }
+};
