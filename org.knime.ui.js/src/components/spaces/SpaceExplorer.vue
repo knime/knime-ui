@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapGetters, mapState, mapMutations } from 'vuex';
 import { getNameCollisionStrategy } from '@api';
 
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
@@ -42,14 +42,15 @@ export default {
 
     data() {
         return {
-            selectedItems: []
+            selectedItems: [],
+            isAboveCanvas: false
         };
     },
 
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('canvas', ['getScrollContainerElement']),
-        ...mapState('application', ['openProjects']),
+        ...mapState('application', ['openProjects', 'fileExtensionToNodeTemplateId']),
         ...mapState('spaces', {
             activeSpace: state => state.activeSpace,
             activeSpaceProvider: state => state.activeSpaceProvider,
@@ -58,6 +59,7 @@ export default {
             spaceId: state => state.activeSpace?.spaceId,
             isLoading: state => state.isLoading
         }),
+        ...mapState('nodeRepository', ['nodesPerCategory']),
         ...mapGetters('spaces', [
             'openedWorkflowItems',
             'openedFolderItems',
@@ -153,6 +155,7 @@ export default {
     },
 
     methods: {
+        ...mapMutations('nodeRepository', ['setSelectedNode', 'setDraggingNode']),
         async fetchWorkflowGroupContent(itemId) {
             await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
         },
@@ -262,6 +265,47 @@ export default {
             }
         },
 
+        onDrag({ event, item, onUpdate }) {
+            // check if item is above canvas
+            const screenX = event.clientX - this.$shapes.nodeSize / 2;
+            const screenY = event.clientY - this.$shapes.nodeSize / 2;
+
+            const el = document.elementFromPoint(screenX, screenY);
+
+            const kanvas = this.getScrollContainerElement();
+
+            // get node template
+            const nodeTemplate = {
+                name: 'Excel Writer',
+                id: 'org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory',
+                type: 'Sink',
+                nodeFactory: {
+                    className: 'org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory'
+                },
+                outPorts: [],
+                // eslint-disable-next-line max-len
+                icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADUSURBVHgBpZFLDoIwEIYH7RrUA4AegOhWiOJZ5CK4NtyES6AB14YDGIxuNfQCSJuU1KSvpN+inWmnM/NPASxx9tG2Nwm81DdHdI7IUs4XysfJ9yO9m4AlSFfBKEFZ1dRJ4mi0N2EIHcZj4NL3RbPKpBL4xwoy6S88X2+6P9qW7qsgEPpSCSxgPUi5Nw2c8xyg78czBgINeJCyi2O4VhX1iY05eYhVZvC2CNd1/3xHFshPneguigJw18ExTakE1oU2gW6IRh2omMouZp5Hkh9AzQls+QHI9FBAzPdfuAAAAABJRU5ErkJggg==',
+                component: false,
+                inPorts: [
+                    {
+                        name: 'Table',
+                        kind: 'table',
+                        hasView: true,
+                        color: '#000000',
+                        typeId: 'org.knime.core.node.BufferedDataTable',
+                        type: 'table',
+                        optional: false
+                    }
+                ]
+            };
+          
+            // call on update
+            if (this.isAboveCanvas !== kanvas.contains(el) && el) {
+                this.isAboveCanvas = kanvas.contains(el);
+                onUpdate(this.isAboveCanvas, nodeTemplate);
+            }
+        },
+
         /**
          * @typedef Payload
          * @property {MouseEvent} event
@@ -291,8 +335,16 @@ export default {
                 return;
             }
 
+            // TODO check if this is still needed  here
+            // const sourceFileExtension = `.${sourceItem.name.split('.')[1]}`;
+            // if (!(sourceFileExtension in this.fileExtensionToNodeTemplateId)) {
+            //     onComplete(false);
+            //     return;
+            // }
+
             try {
                 const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
+                // TODO add changed call here
                 await this.$store.dispatch('workflow/addNode', {
                     position: { x, y },
                     spaceItemReference: {
@@ -358,6 +410,7 @@ export default {
         @rename-file="onRenameFile"
         @delete-items="onDeleteItems"
         @move-items="onMoveItems"
+        @drag="onDrag"
         @dragend="onDragEnd"
       />
     </SmartLoader>

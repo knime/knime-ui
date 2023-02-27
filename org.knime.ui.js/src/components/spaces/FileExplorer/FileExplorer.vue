@@ -11,6 +11,7 @@ import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
+import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 import { getMetaOrCtrlKey } from '@/util/navigator';
 import ITEM_TYPES from '@/util/spaceItemTypes';
@@ -35,7 +36,8 @@ export default {
         MetaNodeIcon,
         ArrowIcon,
         WorkflowNameValidator,
-        InputField
+        InputField,
+        NodePreview
     },
 
     mixins: [VueClickAway],
@@ -80,7 +82,8 @@ export default {
             isDragging: false,
             startDragItemIndex: null,
             activeRenameId: null,
-            renameValue: ''
+            renameValue: '',
+            nodeTemplate: null
         };
     },
 
@@ -212,13 +215,14 @@ export default {
                 .concat(toGhostTarget(index))
                 .concat(selectedIndexes.map(toGhostTarget));
 
-            const { removeGhosts } = createDragGhosts({
+            const { removeGhosts, replaceGhostPreview } = createDragGhosts({
                 dragStartEvent: e,
                 badgeCount: isMultipleSelectionActive ? selectedIndexes.length + 1 : null,
                 selectedTargets
             });
 
             this.removeGhosts = removeGhosts;
+            this.replaceGhostPreview = replaceGhostPreview;
         },
 
         onDragEnter(index, isGoBackItem = false) {
@@ -357,6 +361,23 @@ export default {
         clearRenameState() {
             this.activeRenameId = null;
             this.renameValue = '';
+        },
+
+        onDrag(event, item) {
+            const onUpdate = (isAboveCanvas, nodeTemplate) => {
+                this.nodeTemplate = nodeTemplate;
+                const nodePreview = this.$refs.nodePreview.$el;
+
+                // TODO move to css
+                nodePreview.style.position = 'fixed';
+                nodePreview.style.width = '70px';
+                nodePreview.style.height = '70px';
+                nodePreview.style.pointerEvents = 'none';
+                nodePreview.style.zIndex = 9;
+                
+                this.replaceGhostPreview({ isAboveCanvas, nodePreview });
+            };
+            this.$emit('drag', { event, item, onUpdate });
         }
     }
 };
@@ -402,7 +423,6 @@ export default {
           Go back to parent directory
         </td>
       </tr>
-
       <tr
         v-for="(item, index) in items"
         :key="index"
@@ -415,6 +435,7 @@ export default {
         @dragover.prevent
         @dragleave="!isActiveRenameItem(item) && onDragLeave(index)"
         @dragend="!isActiveRenameItem(item) && onDragEnd($event, item)"
+        @drag="onDrag($event, item)"
         @click="!isActiveRenameItem(item) && handleClick($event, index)"
         @drop.prevent="!isActiveRenameItem(item) && onDrop(index)"
         @dblclick="!isActiveRenameItem(item) && onItemDoubleClick(item)"
@@ -485,6 +506,15 @@ export default {
         </td>
       </tr>
     </tbody>
+    <NodePreview
+      v-show="false"
+      ref="nodePreview"
+      class="node-preview"
+      :type="nodeTemplate?.type"
+      :in-ports="nodeTemplate?.inPorts"
+      :out-ports="nodeTemplate?.outPorts"
+      :icon="nodeTemplate?.icon"
+    />
   </table>
 </template>
 

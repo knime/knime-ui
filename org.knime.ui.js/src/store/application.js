@@ -60,7 +60,12 @@ export const state = () => ({
     /*
      * If true, dev mode specifics buttons will be shown.
      */
-    devMode: false
+    devMode: false,
+    
+    /**
+     * TODO
+     */
+    fileExtensionToNodeTemplateId: []
 });
 
 export const mutations = {
@@ -140,6 +145,9 @@ export const mutations = {
     },
     setDevMode(state, devMode) {
         state.devMode = devMode;
+    },
+    setFileExtensionToNodeTemplateId(state, fileExtensionToNodeTemplateId) {
+        state.fileExtensionToNodeTemplateId = fileExtensionToNodeTemplateId;
     }
 };
 
@@ -245,6 +253,10 @@ export const actions = {
         // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
         if (applicationState.hasOwnProperty('devMode')) {
             commit('setDevMode', applicationState.devMode);
+        }
+
+        if (applicationState.fileExtensionToNodeTemplateId) {
+            commit('setFileExtensionToNodeTemplateId', applicationState.fileExtensionToNodeTemplateId);
         }
     },
     async setActiveProject({ commit, dispatch, state }, openProjects) {

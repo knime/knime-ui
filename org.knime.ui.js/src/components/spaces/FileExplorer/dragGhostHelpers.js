@@ -243,9 +243,14 @@ export const createDragGhosts = ({
 
     const removeGhosts = (animateOut = true) => {
         const removeGhost = ({ ghost }) => {
+            if (!animateOut) {
+                ghost.style.display = 'none';
+            }
             document.body.removeChild(ghost);
             document.removeEventListener('drag', updatePosition);
         };
+
+        document.getElementById('ghostNodePreview').style.display = 'none';
 
         if (!animateOut) {
             allGhosts.forEach(removeGhost);
@@ -279,5 +284,33 @@ export const createDragGhosts = ({
         });
     };
     
-    return { ghosts: ghostElements, removeGhosts };
+
+    const replaceGhostPreview = ({ isAboveCanvas, nodePreview }) => {
+        // TODO move out to helper function
+        nodePreview.id = 'ghostNodePreview';
+
+        if (isAboveCanvas) {
+            document.removeEventListener('drag', updatePosition);
+               
+            // document.getElementById('ghostNodePreview').style.display = 'flex';
+            nodePreview.style.display = 'flex';
+            document.addEventListener('drag', (event) => {
+                // TODO change offset
+                nodePreview.style.left = event.clientX - 35;
+                nodePreview.style.top = event.clientY - 35;
+            });
+            allGhosts.forEach(({ ghost }) => {
+                ghost.style.display = 'none';
+            });
+        } else {
+            document.addEventListener('drag', updatePosition);
+            nodePreview.style.display = 'none';
+
+            allGhosts.forEach(({ ghost }) => {
+                ghost.style.display = 'flex';
+            });
+        }
+    };
+
+    return { ghosts: ghostElements, removeGhosts, replaceGhostPreview };
 };

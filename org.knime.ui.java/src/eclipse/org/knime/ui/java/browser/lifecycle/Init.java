@@ -53,6 +53,7 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 import java.util.function.Predicate;
@@ -61,6 +62,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
+import org.knime.core.node.NodeFactory;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.gateway.api.util.ExtPointUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.InvalidRequestException;
@@ -229,7 +231,18 @@ final class Init {
     }
 
     private static NodeFactoryProvider createNodeFactoryProvider() {
-        return ConfigurableNodeFactoryMapper::getNodeFactory;
+        return new NodeFactoryProvider() {
+            // TODO is this still needed?
+            @Override
+            public Class<? extends NodeFactory<?>> fromFileExtension(final String filename) {
+                return ConfigurableNodeFactoryMapper.getNodeFactory(filename);
+            }
+
+            @Override
+            public Map<String, String> getFileExtensionToNodeFactoryMap() {
+                return ConfigurableNodeFactoryMapper.getAllNodeFactoriesForFileExtensions();
+            }
+        };
     }
 
     static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
