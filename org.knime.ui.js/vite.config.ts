@@ -1,11 +1,7 @@
+import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import svgLoader from 'vite-svg-loader';
-
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
     process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
@@ -22,9 +18,9 @@ export default defineConfig(({ mode }) => {
 
         resolve: {
             alias: {
-                '@': path.join(__dirname, 'src'),
-                '@api': path.join(__dirname, 'src', 'api', 'index'),
-                'webapps-common': path.join(__dirname, 'webapps-common')
+                '@': fileURLToPath(new URL('./src', import.meta.url)),
+                '@api': fileURLToPath(new URL('./src/api/index', import.meta.url)),
+                'webapps-common': fileURLToPath(new URL('./webapps-common', import.meta.url))
             }
         }
     };
