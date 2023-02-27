@@ -37,7 +37,7 @@ describe('directive-move', () => {
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
-        wrapper.wrapperElement.onpointerdown({
+        wrapper.element.onpointerdown({
             clientX: 100,
             clientY: 100,
             button: 0,
@@ -54,7 +54,7 @@ describe('directive-move', () => {
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
-        wrapper.wrapperElement.onpointerdown({
+        wrapper.element.onpointerdown({
             clientX: 50,
             clientY: 50,
             button: 0,
@@ -62,7 +62,7 @@ describe('directive-move', () => {
             preventDefault: jest.fn(),
             target: dummyTarget
         });
-        wrapper.wrapperElement.onpointermove({
+        wrapper.element.onpointermove({
             clientX: 53,
             clientY: 50,
             stopPropagation: jest.fn(),
@@ -78,7 +78,7 @@ describe('directive-move', () => {
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
-        wrapper.wrapperElement.onpointerdown({
+        wrapper.element.onpointerdown({
             clientX: 50,
             clientY: 50,
             button: 0,
@@ -86,7 +86,7 @@ describe('directive-move', () => {
             preventDefault: jest.fn(),
             target: dummyTarget
         });
-        wrapper.wrapperElement.onpointermove({
+        wrapper.element.onpointermove({
             clientX: 100,
             clientY: 100,
             stopPropagation: jest.fn(),
@@ -101,7 +101,7 @@ describe('directive-move', () => {
             totalDeltaX: 50,
             totalDeltaY: 50
         }));
-        wrapper.wrapperElement.onpointermove({
+        wrapper.element.onpointermove({
             clientX: 150,
             clientY: 150,
             stopPropagation: jest.fn(),
@@ -126,7 +126,7 @@ describe('directive-move', () => {
             },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
-        wrapper.wrapperElement.onpointerdown({
+        wrapper.element.onpointerdown({
             clientX: 50,
             clientY: 50,
             button: 1,
@@ -142,8 +142,8 @@ describe('directive-move', () => {
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
-        wrapper.wrapperElement.releasePointerCapture = jest.fn();
-        wrapper.wrapperElement.onpointerdown({
+        wrapper.element.releasePointerCapture = jest.fn();
+        wrapper.element.onpointerdown({
             clientX: 50,
             clientY: 50,
             button: 0,
@@ -151,14 +151,14 @@ describe('directive-move', () => {
             preventDefault: jest.fn(),
             target: dummyTarget
         });
-        wrapper.wrapperElement.onpointermove({
+        wrapper.element.onpointermove({
             clientX: 100,
             clientY: 100,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
         });
-        wrapper.wrapperElement.onpointerup({
+        wrapper.element.onpointerup({
             clientX: 100,
             clientY: 100,
             stopPropagation: jest.fn(),
@@ -179,9 +179,9 @@ describe('directive-move', () => {
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
         wrapper.unmount();
-        expect(wrapper.wrapperElement.onpointerdown).toBe(null);
-        expect(wrapper.wrapperElement.onpointermove).toBe(null);
-        expect(wrapper.wrapperElement.onpointerup).toBe(null);
+        expect(wrapper.element.onpointerdown).toBe(null);
+        expect(wrapper.element.onpointermove).toBe(null);
+        expect(wrapper.element.onpointerup).toBe(null);
     });
 
     it('does nothing if protected property is set', () => {
@@ -190,20 +190,20 @@ describe('directive-move', () => {
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5, isProtected: true }"></div>'
         });
-        expect(wrapper.wrapperElement.onpointerdown).toBe(undefined);
-        expect(wrapper.wrapperElement.onpointermove).toBe(undefined);
-        expect(wrapper.wrapperElement.onpointerup).toBe(undefined);
+        expect(wrapper.element.onpointerdown).toBe(undefined);
+        expect(wrapper.element.onpointermove).toBe(undefined);
+        expect(wrapper.element.onpointerup).toBe(undefined);
 
         // calls the componentUpdated hook
         wrapper.vm.$forceUpdate();
-        expect(wrapper.wrapperElement.onpointerdown).toBe(undefined);
-        expect(wrapper.wrapperElement.onpointermove).toBe(undefined);
-        expect(wrapper.wrapperElement.onpointerup).toBe(undefined);
+        expect(wrapper.element.onpointerdown).toBe(undefined);
+        expect(wrapper.element.onpointermove).toBe(undefined);
+        expect(wrapper.element.onpointerup).toBe(undefined);
 
         // calls the unbind hook
         wrapper.unmount();
-        expect(wrapper.wrapperElement.onpointerdown).toBe(undefined);
-        expect(wrapper.wrapperElement.onpointermove).toBe(undefined);
-        expect(wrapper.wrapperElement.onpointerup).toBe(undefined);
+        expect(wrapper.element.onpointerdown).toBe(undefined);
+        expect(wrapper.element.onpointermove).toBe(undefined);
+        expect(wrapper.element.onpointerup).toBe(undefined);
     });
 });

@@ -123,7 +123,7 @@ describe('NodePort', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            
+
             wrapper = shallowMount(NodePort, {
                 props,
                 global: {
@@ -151,7 +151,7 @@ describe('NodePort', () => {
         let port = wrapper.findComponent(Port);
         expect(port.exists()).toBe(true);
         expect(port.props('port')).toStrictEqual(props.port);
-        
+
         expect(wrapper.findComponent(Connector).exists()).toBe(false);
         expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
 
@@ -190,7 +190,7 @@ describe('NodePort', () => {
 
         it('shows tooltips for non-table ports', async () => {
             props.port.typeId = 'flowVariable';
-    
+
             doShallowMount();
             wrapper.trigger('mouseenter');
             jest.runAllTimers();
@@ -343,8 +343,8 @@ describe('NodePort', () => {
 
                 document.getElementById = jest.fn().mockReturnValue(KanvasMock);
 
-                wrapper.wrapperElement.setPointerCapture = jest.fn();
-                wrapper.wrapperElement.releasePointerCapture = jest.fn();
+                wrapper.element.setPointerCapture = jest.fn();
+                wrapper.element.releasePointerCapture = jest.fn();
 
                 // Start dragging
                 await wrapper.trigger('pointerdown', { pointerId: -1, x, y, button: 0 });
@@ -730,7 +730,7 @@ describe('NodePort', () => {
                     };
                     startDragging([0, 0]);
                     await wrapper.setProps({ port: { ...props.port, typeId: sourceTypeId } });
-    
+
                     let hitTarget = document.createElement('div');
                     hitTarget.addEventListener('connector-move', (e) => {
                         e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort });
@@ -807,7 +807,7 @@ describe('NodePort', () => {
 
                 test('cannot snap to a port with an existing and non-deletable connection', async () => {
                     props.direction = 'out';
-                    
+
                     storeConfig.workflow.state.activeWorkflow = {
                         connections: {
                             'mock:connection': {
@@ -815,7 +815,7 @@ describe('NodePort', () => {
                             }
                         }
                     };
-                    
+
                     const port = { ...props.port, typeId: 'other', connectedVia: ['mock:connection'] };
 
                     startDragging([0, 0]);
@@ -837,7 +837,7 @@ describe('NodePort', () => {
             await startDragging();
             await wrapper.trigger('pointerup', { pointerId: -1 });
 
-            expect(wrapper.wrapperElement.releasePointerCapture).toHaveBeenCalledWith(-1);
+            expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
         });
 
         test('clicking a port after a connector was drawn doesnt emit to parent', async () => {
@@ -936,7 +936,7 @@ describe('NodePort', () => {
         it('should abort dragging a port when Esc is pressed', async () => {
             doShallowMount();
             await startDragging();
-            
+
             escapeStackMock.onEscape.call(wrapper.vm);
 
             await Vue.nextTick();
@@ -959,7 +959,7 @@ describe('NodePort', () => {
 
                 it('shows quick add node ghost', async () => {
                     await startDragging();
-                    
+
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                 });
 

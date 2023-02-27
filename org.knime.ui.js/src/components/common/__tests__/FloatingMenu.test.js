@@ -118,7 +118,7 @@ describe('FloatingMenu.vue', () => {
             props: { ...defaultProps, ...props },
             global: { plugins: [$store] }
         });
-        
+
         return { wrapper, $store, mockResizeObserver, mutations, mockKanvas };
     };
 
@@ -131,7 +131,7 @@ describe('FloatingMenu.vue', () => {
             const { wrapper } = doMount();
 
             escapeStackMock.onEscape.call(wrapper.vm);
-            
+
             expect(wrapper.emitted('menuClose')).toBeDefined();
         });
 
@@ -141,7 +141,7 @@ describe('FloatingMenu.vue', () => {
 
             focusOutEvent.relatedTarget = document.createElement('div');
 
-            wrapper.find('.floating-menu').wrapperElement.dispatchEvent(focusOutEvent);
+            wrapper.find('.floating-menu').element.dispatchEvent(focusOutEvent);
 
             expect(wrapper.emitted('menuClose')).toBeDefined();
         });
@@ -152,11 +152,11 @@ describe('FloatingMenu.vue', () => {
 
             expect(wrapper.emitted('menuClose')).toBeDefined();
         });
-        
+
         it('closes menu when a node is dragged in the canvas', async () => {
             const { wrapper, $store } = doMount();
             $store.state.workflow._isDragging = true;
-            
+
             await Vue.nextTick();
             expect(wrapper.emitted('menuClose')).toBeDefined();
         });
@@ -166,7 +166,7 @@ describe('FloatingMenu.vue', () => {
         test('position inside canvas; top-left', async () => {
             const { wrapper } = doMount();
             await Vue.nextTick();
-    
+
             expect(wrapper.attributes('style')).toMatch('left: 20px;');
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
             expect(wrapper.attributes('style')).toMatch('opacity: 1;');
@@ -176,7 +176,7 @@ describe('FloatingMenu.vue', () => {
             const { wrapper } = doMount({ props: { anchor: 'top-right' } });
 
             await Vue.nextTick();
-    
+
             expect(wrapper.attributes('style')).toMatch('left: 10px;');
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
             expect(wrapper.attributes('style')).toMatch('opacity: 1;');
@@ -205,7 +205,7 @@ describe('FloatingMenu.vue', () => {
         test('prevent window overflow top-left', async () => {
             const { wrapper } = doMount({ props: { canvasPosition: { x: -20, y: -20 }, preventOverflow: true } });
             await Vue.nextTick();
-    
+
             expect(wrapper.attributes('style')).toMatch('left: 0px;');
             expect(wrapper.attributes('style')).toMatch('top: 0px;');
         });
@@ -213,7 +213,7 @@ describe('FloatingMenu.vue', () => {
         test('prevent window overflow bottom-right', async () => {
             const { wrapper } = doMount({ props: { canvasPosition: { x: 150, y: 150 }, preventOverflow: true } });
             await Vue.nextTick();
-    
+
             expect(wrapper.attributes('style')).toMatch('left: 90px;');
             expect(wrapper.attributes('style')).toMatch('top: 90px;');
         });
@@ -224,7 +224,7 @@ describe('FloatingMenu.vue', () => {
 
             wrapper.setProps({ canvasPosition: { x: 0, y: 0 } });
             await Vue.nextTick();
-    
+
             expect(wrapper.attributes('style')).toMatch('left: 0px;');
             expect(wrapper.attributes('style')).toMatch('top: 0px;');
         });
@@ -235,7 +235,7 @@ describe('FloatingMenu.vue', () => {
 
             $store.state.canvas.zoomFactor = 2;
             await Vue.nextTick();
-    
+
             expect(wrapper.attributes('style')).toMatch('left: 40px;');
             expect(wrapper.attributes('style')).toMatch('top: 40px;');
         });
@@ -247,7 +247,7 @@ describe('FloatingMenu.vue', () => {
             // warning: tests internal behavior
             let setPositionSpy = jest.spyOn(wrapper.vm, 'setAbsolutePosition');
             document.getElementById('kanvas').dispatchEvent(new CustomEvent('scroll'));
-            
+
             expect(setPositionSpy).toHaveBeenCalled();
         });
 
@@ -260,7 +260,7 @@ describe('FloatingMenu.vue', () => {
 
             mockResizeObserver.resize();
             await Vue.nextTick();
-            
+
             expect(wrapper.attributes('style')).toMatch('left: -80px;');
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
         });
@@ -283,7 +283,7 @@ describe('FloatingMenu.vue', () => {
             wrapper.unmount();
 
             document.getElementById('kanvas').dispatchEvent(new CustomEvent('scroll'));
-            
+
             expect(setPositionSpy).not.toHaveBeenCalled();
         });
 

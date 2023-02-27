@@ -13,8 +13,8 @@ describe('Splitter.vue', () => {
     startMove = (wrapper) => {
         const handle = wrapper.find('.handle');
 
-        handle.wrapperElement.setPointerCapture = jest.fn();
-        handle.wrapperElement.releasePointerCapture = jest.fn();
+        handle.element.setPointerCapture = jest.fn();
+        handle.element.releasePointerCapture = jest.fn();
 
         handle.trigger('pointerdown', {
             clientY: 100,
@@ -51,10 +51,10 @@ describe('Splitter.vue', () => {
             const handle = wrapper.find('.handle');
             const secondary = wrapper.find('.secondary');
 
-            handle.wrapperElement.setPointerCapture = jest.fn();
-            handle.wrapperElement.releasePointerCapture = jest.fn();
+            handle.element.setPointerCapture = jest.fn();
+            handle.element.releasePointerCapture = jest.fn();
 
-            secondary.wrapperElement.getBoundingClientRect = jest.fn(() => ({
+            secondary.element.getBoundingClientRect = jest.fn(() => ({
                 y: 200,
                 height: 150
             }));
@@ -63,7 +63,7 @@ describe('Splitter.vue', () => {
                 clientY: 100,
                 pointerId: -1
             });
-            expect(handle.wrapperElement.setPointerCapture).toHaveBeenCalledWith(-1);
+            expect(handle.element.setPointerCapture).toHaveBeenCalledWith(-1);
 
             handle.trigger('pointermove', {
                 clientY: 120
@@ -74,17 +74,17 @@ describe('Splitter.vue', () => {
             handle.trigger('pointerup', {
                 pointerId: -1
             });
-            expect(handle.wrapperElement.releasePointerCapture).toHaveBeenCalledWith(-1);
+            expect(handle.element.releasePointerCapture).toHaveBeenCalledWith(-1);
         });
 
         it('saves to localStorage', async () => {
             const handle = wrapper.find('.handle');
             const secondary = wrapper.find('.secondary');
 
-            handle.wrapperElement.setPointerCapture = jest.fn();
-            handle.wrapperElement.releasePointerCapture = jest.fn();
+            handle.element.setPointerCapture = jest.fn();
+            handle.element.releasePointerCapture = jest.fn();
 
-            secondary.wrapperElement.getBoundingClientRect = jest.fn(() => ({
+            secondary.element.getBoundingClientRect = jest.fn(() => ({
                 y: 200,
                 height: 150
             }));
@@ -153,10 +153,10 @@ describe('Splitter.vue', () => {
             const handle = wrapper.find('.handle');
             const secondary = wrapper.find('.secondary');
 
-            handle.wrapperElement.setPointerCapture = jest.fn();
-            handle.wrapperElement.releasePointerCapture = jest.fn();
+            handle.element.setPointerCapture = jest.fn();
+            handle.element.releasePointerCapture = jest.fn();
 
-            secondary.wrapperElement.getBoundingClientRect = jest.fn(() => ({
+            secondary.element.getBoundingClientRect = jest.fn(() => ({
                 x: 200,
                 width: 150
             }));
@@ -165,7 +165,7 @@ describe('Splitter.vue', () => {
                 clientX: 100,
                 pointerId: -1
             });
-            expect(handle.wrapperElement.setPointerCapture).toHaveBeenCalledWith(-1);
+            expect(handle.element.setPointerCapture).toHaveBeenCalledWith(-1);
 
             handle.trigger('pointermove', {
                 clientX: 120
@@ -176,7 +176,7 @@ describe('Splitter.vue', () => {
             handle.trigger('pointerup', {
                 pointerId: -1
             });
-            expect(handle.wrapperElement.releasePointerCapture).toHaveBeenCalledWith(-1);
+            expect(handle.element.releasePointerCapture).toHaveBeenCalledWith(-1);
         });
     });
 });
