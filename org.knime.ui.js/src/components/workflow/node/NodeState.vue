@@ -231,13 +231,13 @@ export default {
       <path
         d="M6,1.25 L0.5,10.75 H11.5 Z"
         :fill="$colors.warning"
-        :stroke="$colors.named.Masala"
+        :stroke="$colors.Masala"
         stroke-linejoin="round"
       />
       <line
         x1="6"
         x2="6"
-        :stroke="$colors.named.Masala"
+        :stroke="$colors.Masala"
         y1="4.2"
         y2="7.3"
       />
@@ -245,7 +245,7 @@ export default {
         r="0.5"
         cy="8.75"
         cx="6"
-        :fill="$colors.named.Masala"
+        :fill="$colors.Masala"
       />
     </g>
   </g>

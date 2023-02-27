@@ -54,7 +54,7 @@ export default {
         portDirection() {
             return this.type === 'out' ? 'in' : 'out';
         },
-        
+
         portPositions() {
             const delta = this.$shapes.portSize / 2;
             // horizontal center of ports
@@ -66,7 +66,7 @@ export default {
                 positionX,
                 this.portBarItemYPos(port.index, this.ports)
             ]);
-            
+
             return {
                 in: this.portDirection === 'in' ? mappedPorts : [],
                 out: this.portDirection === 'out' ? mappedPorts : []
@@ -122,7 +122,7 @@ export default {
           :width="$shapes.metaNodeBarWidth"
           :height="portBarHeight"
           :x="barPosition"
-          :fill="$colors.named.Yellow"
+          :fill="$colors.Yellow"
         />
         <NodePort
           v-for="port of ports"

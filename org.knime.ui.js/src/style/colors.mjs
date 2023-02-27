@@ -54,4 +54,4 @@ export const warning = knimeColors.Yellow;
 
 export const notificationBackground = 'hsla(206, 42%, 86%, 90%)';
 
-export const named = knimeColors;
+export * from 'webapps-common/ui/colors/knimeColors.mjs';

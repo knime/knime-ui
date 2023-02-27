@@ -1,3 +1,9 @@
+export type Features = {
+    shouldDisplayEmbeddedDialogs: () => boolean;
+    shouldDisplayEmbeddedViews: () => boolean;
+    shouldLoadPageBuilder: () => boolean;
+}
+
 const featureFlagsPrefix = 'org.knime.ui.feature';
 
 const featureFlagDefaults = {
@@ -9,9 +15,8 @@ const getFlagValue = (store, name) => {
     return featureFlags[`${featureFlagsPrefix}.${name}`];
 };
 
-
 export default ({ app, $store }) => {
-    const features = {
+    const features: Features = {
         shouldDisplayEmbeddedDialogs: () => getFlagValue($store, 'embedded_views_and_dialogs'),
 
         shouldDisplayEmbeddedViews: () => getFlagValue($store, 'embedded_views_and_dialogs'),
