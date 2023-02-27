@@ -5,8 +5,6 @@ import { mount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 import * as spacesStore from '@/store/spaces';
 
-import BaseModal from 'webapps-common/ui/components/BaseModal.vue';
-
 import CreateWorkflowModal from '../CreateWorkflowModal.vue';
 
 describe('CreateWorkflowModal.vue', () => {
@@ -34,13 +32,7 @@ describe('CreateWorkflowModal.vue', () => {
         }
     ];
 
-    const triggerBaseModalTransition = async (wrapper) => {
-        wrapper.findComponent(BaseModal).setData({ showContent: true });
-        await Vue.nextTick();
-        return wrapper;
-    };
-
-    const doMount = async ({ items = MOCK_DATA, isOpen = true } = {}) => {
+    const doMount = ({ items = MOCK_DATA, isOpen = true } = {}) => {
         const storeConfig = {
             spaces: {
                 ...spacesStore,
@@ -59,26 +51,21 @@ describe('CreateWorkflowModal.vue', () => {
         const mocks = {
             $store: store
         };
-        const wrapper = mount(CreateWorkflowModal, { mocks });
-
-        if (isOpen) {
-            await triggerBaseModalTransition(wrapper);
-        }
+        const wrapper = mount(CreateWorkflowModal, { mocks, stubs: { BaseModal: true } });
 
         return { wrapper, store, dispatchSpy, commitSpy };
     };
 
     describe('CreateWorkflowModal', () => {
         it('Opens on state change', async () => {
-            const { wrapper, store } = await doMount({ isOpen: false });
+            const { wrapper, store } = doMount({ isOpen: false });
             await store.commit('spaces/setIsCreateWorkflowModalOpen', true);
             await Vue.nextTick();
-            await triggerBaseModalTransition(wrapper);
             expect(wrapper.find('input').exists()).toBe(true);
         });
 
         it('Closes on state change', async () => {
-            const { wrapper, commitSpy } = await doMount({ isOpen: true });
+            const { wrapper, commitSpy } = doMount({ isOpen: true });
             wrapper.vm.closeModal();
             await Vue.nextTick();
             expect(wrapper.find('input').exists()).toBe(false);
@@ -86,14 +73,14 @@ describe('CreateWorkflowModal.vue', () => {
         });
 
         describe('Name Suggestion', () => {
-            it('should set default name suggestion', async () => {
-                const { wrapper } = await doMount();
+            it('should set default name suggestion', () => {
+                const { wrapper } = doMount();
                 const input = wrapper.find('input');
                 expect(input.element.value).toBe('KNIME_project');
             });
             
-            it('should find suitable name suggestion', async () => {
-                const { wrapper } = await doMount({ items: [{
+            it('should find suitable name suggestion', () => {
+                const { wrapper } = doMount({ items: [{
                     id: '1',
                     name: 'KNIME_project'
                 },
