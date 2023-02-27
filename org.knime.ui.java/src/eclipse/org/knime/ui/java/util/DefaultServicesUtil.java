@@ -84,6 +84,7 @@ public final class DefaultServicesUtil {
      * @param updateStateProvider The update state provider
      * @param preferencesProvider
      * @param exampleProjects
+     * @param nodeFactoryProvider
      */
     public static void setDefaultServiceDependencies( // NOSONAR
         final WorkflowProjectManager workflowProjectManager, //

@@ -55,12 +55,13 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.progress.IProgressService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.util.SWTUtilities;
@@ -68,7 +69,7 @@ import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.util.DesktopAPUtil;
 
 /**
  * Called to 'headlessly' (i.e. without any user-interaction) save and close all the workflows specified as parameter.
@@ -101,34 +102,29 @@ public final class SaveAndCloseWorkflows {
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
      *            by n svg-strings. And there is one last string at the very end describing the action to be carried out
      *            after the workflows have been saved ('PostWorkflowCloseAction').
+     * @param runPostWorkflowCloseAction callback to the the provided post-workflow-close-action
+     * @param progressService displays the progress
      */
-    static void saveAndCloseWorkflows(final Object[] projectIdsAndSvgsAndMore) { // NOSONAR
+    static void saveAndCloseWorkflows(final Object[] projectIdsAndSvgsAndMore,
+        final Consumer<PostWorkflowCloseAction> runPostWorkflowCloseAction, final IProgressService progressService) { // NOSONAR
         var count = ((Double)projectIdsAndSvgsAndMore[0]).intValue();
         var firstFailure = new AtomicReference<String>();
         var projectIds = Arrays.copyOfRange(projectIdsAndSvgsAndMore, 1, count + 1, String[].class);
         var svgs = Arrays.copyOfRange(projectIdsAndSvgsAndMore, count + 1, count * 2 + 1, String[].class);
-        saveWorkflowsWithProgressBar(projectIds, svgs, firstFailure);
+        saveWorkflowsWithProgressBar(projectIds, svgs, firstFailure, progressService);
 
         if (firstFailure.get() != null) {
-            MessageDialog.openWarning(SWTUtilities.getActiveShell(), "Failed to save workflow",
-                "Workflow could not be saved.\nSee log for details.");
+            DesktopAPUtil.showWarning("Failed to save workflow", "Workflow could not be saved.\nSee log for details.");
             // make the first workflow active which couldn't be saved
             WorkflowProjectManager.getInstance().setWorkflowProjectActive(firstFailure.get());
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
 
         var postWorkflowCloseAction = PostWorkflowCloseAction.valueOf((String)projectIdsAndSvgsAndMore[count * 2 + 1]);
-        switch (postWorkflowCloseAction) {
-            case SWITCH_PERSPECTIVE:
-                EclipseUIAPI.doSwitchToJavaUI();
-                break;
-            case SHUTDOWN:
-                LifeCycle.get().suspend();
-                PlatformUI.getWorkbench().close();
-                break;
-            default:
-                DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-                break;
+        if (postWorkflowCloseAction == PostWorkflowCloseAction.UPDATE_APP_STATE) {
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+        } else {
+            runPostWorkflowCloseAction.accept(postWorkflowCloseAction);
         }
     }
 
@@ -165,11 +161,10 @@ public final class SaveAndCloseWorkflows {
     }
 
     private static void saveWorkflowsWithProgressBar(final String[] projectIds, final String[] svgs,
-        final AtomicReference<String> firstFailure) {
+        final AtomicReference<String> firstFailure, final IProgressService progressService) {
         IRunnableWithProgress saveRunnable = monitor -> saveWorkflows(projectIds, svgs, firstFailure, monitor);
         try {
-            var ps = PlatformUI.getWorkbench().getProgressService();
-            ps.run(true, false, saveRunnable);
+            progressService.run(true, false, saveRunnable);
         } catch (InvocationTargetException e) {
             NodeLogger.getLogger(SaveAndCloseWorkflows.class).error("Saving workflow failed", e);
         } catch (InterruptedException e) {
