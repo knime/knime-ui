@@ -5,5 +5,4 @@ export * from './nodeService';
 export * from './portService';
 export * from './workflowService';
 export * from './desktopApi';
-export * from './json-rpc-notifications';
 export * from './spaceService';

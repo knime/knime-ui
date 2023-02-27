@@ -1,11 +1,11 @@
-import { registerEventHandlers } from '@api';
 import { notifyPatch } from '@/util/event-syncer';
 import { APP_ROUTES } from '@/router';
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { nodeSize } from '@/style/shapes.mjs';
+import { API } from '@/api/knime-gateway-api';
 
 export default ({ $store, $router }) => {
-    registerEventHandlers({
+    const eventHandlers = {
         /**
          * Is triggered by the backend, whenever a change to the workflow has been made/requested
          * Sends a list of json-patch operations to update the frontend's state
@@ -123,5 +123,7 @@ export default ({ $store, $router }) => {
                 text
             });
         }
-    });
+    };
+
+    API.event.registerEventHandler(eventHandlers);
 };

@@ -1,3 +1,8 @@
+// ********************** TODO *********************** //
+// Remove this file once the API integration is completed
+// ********************** TODO *********************** //
+
+
 /**
  * Helper to parse and verify a JSON-RPC response. Throws an Error if the response is invalid
  * @param {String | Object} response The JSON-RPC response, serialized or as object

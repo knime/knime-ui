@@ -1,11 +1,11 @@
 import * as Vue from 'vue';
 import KnimeUI from './components/KnimeUI.vue';
 
+import { initJsonRpcClient } from './api/json-rpc-client';
 import { silentLogger } from './plugins/logger';
 import { initStore } from './store';
 import { router } from './router';
 import { initPlugins } from './plugins';
-import { setupAPI } from './api/setup';
 
 import './assets/index.css';
 
@@ -16,7 +16,7 @@ silentLogger();
 // e.g: TableView, NodeDialog, PageBuilder
 window.Vue = Vue;
 
-setupAPI();
+initJsonRpcClient();
 
 // Create Vue app
 const app = Vue.createApp(KnimeUI);

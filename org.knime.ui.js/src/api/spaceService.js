@@ -1,11 +1,13 @@
 import rpc from './json-rpc-adapter';
+import { API } from '@/api/knime-gateway-api';
 
 export const fetchWorkflowGroupContent = async ({ spaceProviderId, spaceId, itemId }) => {
     try {
-        return await rpc(
-            'SpaceService.listWorkflowGroup',
-            spaceId, spaceProviderId, itemId
-        );
+        return await API.space.listWorkflowGroup({
+            spaceId,
+            spaceProviderId,
+            itemId
+        });
     } catch (e) {
         consola.error(e);
         throw new Error(`Could not fetch space items for space ${spaceId}, item ${itemId}. Error: ${e}`);
@@ -85,7 +87,7 @@ export const moveItems = async ({
         );
     } catch (e) {
         consola.error(e);
-        throw new Error(`Could not move the items ${itemIds} from space ${spaceId} to ${destWorkflowGroupItemId}. 
+        throw new Error(`Could not move the items ${itemIds} from space ${spaceId} to ${destWorkflowGroupItemId}.
         Error: ${e}`);
     }
 };
