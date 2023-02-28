@@ -129,6 +129,7 @@ final class Create {
             builder.append("&os=" + Platform.getOS());
             builder.append("&osname=" + KNIMEConstants.getOSVariant());
             builder.append("&arch=" + Platform.getOSArch());
+            builder.append("&ui=modern");
 
             // details
             builder.append("&details=");
