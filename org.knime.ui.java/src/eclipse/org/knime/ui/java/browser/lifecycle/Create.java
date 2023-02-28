@@ -49,18 +49,27 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import java.io.ByteArrayInputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.util.EclipseUtil;
+import org.knime.core.util.HubStatistics;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.ui.java.api.DesktopAPI;
@@ -68,6 +77,8 @@ import org.knime.ui.java.browser.KnimeBrowserFunction;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import com.equo.chromium.swt.Browser;
 
@@ -99,10 +110,86 @@ final class Create {
                         + Arrays.stream(refs).map(IEditorReference::getName).collect(Collectors.joining(",")));
                 }
             }
+            callWelcomeAPEndpoint();
         }
 
         // initialize the node timer with the currently active 'perspective'
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
+    }
+
+    private static void callWelcomeAPEndpoint() {
+        if (EclipseUtil.isRunFromSDK()) {
+            return;
+        }
+        try {
+            final String baseUrl = "https://www.knime.com/welcome-ap";
+            StringBuilder builder = new StringBuilder(baseUrl);
+            builder.append("?knid=" + KNIMEConstants.getKNID());
+            builder.append("&version=" + KNIMEConstants.VERSION);
+            builder.append("&os=" + Platform.getOS());
+            builder.append("&osname=" + KNIMEConstants.getOSVariant());
+            builder.append("&arch=" + Platform.getOSArch());
+
+            // details
+            builder.append("&details=");
+            builder.append(buildAPUsage());
+            builder.append(",");
+            builder.append(buildHubUsage());
+
+            var url = new URL(builder.toString().replace(" ", "%20"));
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            conn.setReadTimeout(5000);
+            conn.setConnectTimeout(2000);
+            conn.connect();
+
+            try (var is = conn.getInputStream()) {
+                IOUtils.toString(is, StandardCharsets.UTF_8);
+            } finally {
+                conn.disconnect();
+            }
+        } catch (Throwable e) { // NOSONAR
+            NodeLogger.getLogger(Create.class).debug("Could not call 'welcome-AP' endpoint: " + e.getMessage(), e);
+        }
+    }
+
+    private static String buildAPUsage() {
+        // simple distinction between first and recurring users
+        String apUsage = "apUsage:";
+        if (isFreshWorkspace()) {
+            apUsage += "first";
+        } else {
+            apUsage += "recurring";
+        }
+        return apUsage;
+    }
+
+    private static String buildHubUsage() {
+        String hubUsage = "hubUsage:";
+        Optional<ZonedDateTime> lastLogin = Optional.empty();
+        Optional<ZonedDateTime> lastUpload = Optional.empty();
+        try {
+            lastLogin = HubStatistics.getLastLogin();
+            lastUpload = HubStatistics.getLastUpload();
+        } catch (Exception e) {
+            NodeLogger.getLogger(Create.class).info("Hub statistics could not be fetched: " + e.getMessage(), e);
+        }
+
+        if (lastUpload.isPresent()) {
+            hubUsage += "contributer";
+        } else if (lastLogin.isPresent()) {
+            hubUsage += "user";
+        } else {
+            hubUsage += "none";
+        }
+        return hubUsage;
+    }
+
+    private static boolean isFreshWorkspace() {
+        Bundle productBundle = FrameworkUtil.getBundle(Create.class);
+        IPath path = Platform.getStateLocation(productBundle);
+        var workbenchStateFile =
+            path.toFile().toPath().getParent().resolve("org.eclipse.e4.workbench").resolve("workbench.xmi");
+        return !Files.exists(workbenchStateFile);
     }
 
     private static void initializeResourceHandlers() {
