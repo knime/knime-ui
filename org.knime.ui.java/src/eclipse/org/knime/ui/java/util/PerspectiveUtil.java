@@ -63,7 +63,6 @@ import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
-import org.knime.workbench.explorer.view.actions.OpenKnimeUrlAction;
 
 /**
  * Utility methods and constants to manage switching between Web UI and classic perspectives.
@@ -142,7 +141,6 @@ public final class PerspectiveUtil {
     public static void setClassicPerspectiveActive(final boolean isActive) {
         isClassicPerspectiveActive = isActive;
         isClassicPerspectiveLoaded = true;
-        OpenKnimeUrlAction.setEventHandlingActive(isActive);
     }
 
     /**
