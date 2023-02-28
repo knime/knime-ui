@@ -63,7 +63,7 @@ export const state = () => ({
     devMode: false,
     
     /**
-     * TODO
+     * an object that maps supported file extensions to their node template id
      */
     fileExtensionToNodeTemplateId: []
 });

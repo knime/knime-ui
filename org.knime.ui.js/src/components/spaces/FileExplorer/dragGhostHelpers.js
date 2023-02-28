@@ -286,18 +286,16 @@ export const createDragGhosts = ({
     
 
     const replaceGhostPreview = ({ isAboveCanvas, nodePreview }) => {
-        // TODO move out to helper function
+        const nodePreviewOffset = 35;
         nodePreview.id = 'ghostNodePreview';
 
         if (isAboveCanvas) {
             document.removeEventListener('drag', updatePosition);
                
-            // document.getElementById('ghostNodePreview').style.display = 'flex';
             nodePreview.style.display = 'flex';
             document.addEventListener('drag', (event) => {
-                // TODO change offset
-                nodePreview.style.left = event.clientX - 35;
-                nodePreview.style.top = event.clientY - 35;
+                nodePreview.style.left = event.clientX - nodePreviewOffset;
+                nodePreview.style.top = event.clientY - nodePreviewOffset;
             });
             allGhosts.forEach(({ ghost }) => {
                 ghost.style.display = 'none';

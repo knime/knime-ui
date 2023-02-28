@@ -232,7 +232,6 @@ final class Init {
 
     private static NodeFactoryProvider createNodeFactoryProvider() {
         return new NodeFactoryProvider() {
-            // TODO is this still needed?
             @Override
             public Class<? extends NodeFactory<?>> fromFileExtension(final String filename) {
                 return ConfigurableNodeFactoryMapper.getNodeFactory(filename);

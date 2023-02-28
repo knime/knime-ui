@@ -321,20 +321,23 @@ export default {
                 return;
             }
 
-            if (!this.getNodeTemplateId(sourceItem)) {
+            const nodeTemplateId = this.getNodeTemplateId(sourceItem);
+            if (!nodeTemplateId) {
                 onComplete(false);
                 return;
             }
 
             try {
                 const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
-                // TODO add changed call here
                 await this.$store.dispatch('workflow/addNode', {
                     position: { x, y },
                     spaceItemReference: {
                         itemId: sourceItem.id,
                         providerId: this.activeSpaceProvider.id,
                         spaceId: this.activeSpace.spaceId
+                    },
+                    nodeFactory: {
+                        className: nodeTemplateId
                     }
                 });
                 onComplete(true);

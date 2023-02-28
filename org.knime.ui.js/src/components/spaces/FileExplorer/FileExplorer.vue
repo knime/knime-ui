@@ -368,13 +368,6 @@ export default {
                 this.nodeTemplate = nodeTemplate;
                 const nodePreview = this.$refs.nodePreview.$el;
 
-                // TODO move to css
-                nodePreview.style.position = 'fixed';
-                nodePreview.style.width = '70px';
-                nodePreview.style.height = '70px';
-                nodePreview.style.pointerEvents = 'none';
-                nodePreview.style.zIndex = 9;
-                
                 this.replaceGhostPreview({ isAboveCanvas, nodePreview });
             };
             this.$emit('drag', { event, item, onUpdate });
@@ -715,6 +708,14 @@ tbody.mini {
       }
     }
   }
+}
+
+.node-preview {
+  position: fixed;
+  height: 70px;
+  width: 70px;
+  pointer-events: none;
+  z-index: 9;
 }
 
 .empty {
