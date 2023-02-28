@@ -68,6 +68,7 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.EclipseUtil;
 import org.knime.core.util.HubStatistics;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
@@ -115,6 +116,9 @@ final class Create {
 
         // initialize the node timer with the currently active 'perspective'
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
+
+        // initialize the workflow manager class -> mainly helps to indirectly trigger IEarlyStartup.executeEarlyStartup
+        WorkflowManager.ROOT.getClass();
     }
 
     private static void callWelcomeAPEndpoint() {

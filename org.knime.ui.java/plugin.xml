@@ -50,6 +50,10 @@
             callBeforeKNIMEApplicationStart="true"
             class="org.knime.ui.java.OnEarlyStartup">
       </provider>
+      <provider
+            callBeforeKNIMEApplicationStart="false"
+            class="org.knime.ui.java.OnEarlyStartup2">
+      </provider>
    </extension>
    <extension
          point="org.knime.product.preShutdown">

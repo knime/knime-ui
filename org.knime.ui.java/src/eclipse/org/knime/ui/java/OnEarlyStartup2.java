@@ -44,23 +44,23 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 28, 2023 (hornm): created
+ *   Feb 28, 2023 (hornm): created
  */
 package org.knime.ui.java;
 
 import org.knime.core.util.IEarlyStartup;
-import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.workbench.explorer.view.actions.OpenKnimeUrlAction;
 
 /**
- * Hooks into the early-startup routine, right before(!) the KNIME application is being loaded.
- *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * Early startup-hook which is called later than the {@link OnEarlyStartup}-hook (i.e. after most of the KNIME
+ * application has been loaded already).
  */
-public class OnEarlyStartup implements IEarlyStartup {
+public class OnEarlyStartup2 implements IEarlyStartup {
 
     @Override
     public void run() {
-        LifeCycle.get().startup();
+        OpenKnimeUrlAction.setEventHandlingActive(PerspectiveUtil.isClassicPerspectiveActive());
     }
 
 }
