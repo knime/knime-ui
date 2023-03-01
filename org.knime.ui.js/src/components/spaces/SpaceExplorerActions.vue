@@ -159,7 +159,7 @@ export default {
 
         <PlusButton
           :title="createWorkflowButtonTitle"
-          primary-
+          primary
           class="create-workflow-btn"
           :disabled="disabledActions.createWorkflow"
           @click="$emit('action:createWorkflow')"
