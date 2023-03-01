@@ -266,6 +266,16 @@ export default {
             }
         },
 
+        /**
+         * @typedef Payload
+         * @property {MouseEvent} event
+         * @property {item} sourceItem
+         * @property {isAboveCanvas: boolean, nodeTemplate: object) => void} onUpdate
+        */
+        /**
+         * @param {Payload} eventPayload
+         * @returns {Void}
+         */
         async onDrag({ event, item, onUpdate }) {
             const nodeTemplateId = this.getNodeTemplateId(item);
             if (!nodeTemplateId) {
@@ -347,6 +357,7 @@ export default {
                 throw error;
             }
         },
+
         getNodeTemplateId(sourceItem) {
             const sourceFileExtension = `.${sourceItem.name.split('.')[1]}`;
             return this.fileExtensionToNodeTemplateId[sourceFileExtension];
