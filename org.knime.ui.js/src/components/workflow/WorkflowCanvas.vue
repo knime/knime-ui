@@ -82,7 +82,7 @@ export default {
     ref="kanvas"
     :class="{ 'indicate-node-drag': isWorkflowEmpty && isDraggingNodeFromRepository }"
     @drop.native.stop="onDrop"
-    @dragover.native.stop="onDragOver"
+    @dragover.native.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
   >
     <!-- Includes shadows for Nodes -->

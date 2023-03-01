@@ -86,9 +86,6 @@ describe('Drop Node Mixin', () => {
         wrapper.trigger('dragover', dummyEvent);
 
         expect(dummyEvent.dataTransfer.dropEffect).toBe('copy');
-
-        // drop target enabled
-        expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);
     });
 
     it('calls the addNode api with the correct position to add the node', async () => {

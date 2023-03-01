@@ -146,7 +146,7 @@ describe('FileExplorer.vue', () => {
             await _srcItemWrapper.trigger('dragstart', { dataTransfer });
             await _tgtItemWrapper.trigger('dragenter');
             await _tgtItemWrapper.trigger('drop');
-            await _srcItemWrapper.trigger('dragend');
+            await _srcItemWrapper.trigger('dragend', { dataTransfer: { dropEffect: 'move' } });
         };
 
         it('should add the proper classes when handling dragging events', async () => {
@@ -163,7 +163,7 @@ describe('FileExplorer.vue', () => {
             // start dragging on 1
             await firstItem.trigger('dragstart', { dataTransfer });
 
-            // selecte items (1 & 2) should have the proper class
+            // selected items (1 & 2) should have the proper class
             expect(firstItem.classes()).toContain('dragging');
             expect(secondItem.classes()).toContain('dragging');
             expect(thirdItem.classes()).not.toContain('dragging');
