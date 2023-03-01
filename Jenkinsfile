@@ -18,7 +18,7 @@ try {
         knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui')
         
         junit '**/test-results/junit.xml'
-        knimetools.processAuditResults()
+        // knimetools.processAuditResults()
         
         stage('Sonarqube analysis') {
             withCredentials([usernamePassword(credentialsId: 'ARTIFACTORY_CREDENTIALS', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_LOGIN')]) {
