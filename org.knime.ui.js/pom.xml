@@ -20,8 +20,8 @@
         <sonar.javascript.lcov.reportPaths>test-results/lcov.info</sonar.javascript.lcov.reportPaths>
         <sonar.css.stylelint.reportPaths>target/stylelint.json</sonar.css.stylelint.reportPaths>
         <sonar.eslint.reportPaths>target/eslint.json</sonar.eslint.reportPaths>
-        <node.version>v18.8.0</node.version>
-        <npm.version>8.18.0</npm.version>
+        <node.version>v18.14.2</node.version>
+        <npm.version>9.5.0</npm.version>
 		<revision>5.0.0</revision>
     </properties>
 
@@ -116,17 +116,6 @@
                         </goals>
                         <configuration>
                             <arguments>run jenkins:audit</arguments>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>npm run jenkins:lint</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run jenkins:lint</arguments>
                         </configuration>
                     </execution>
                 </executions>

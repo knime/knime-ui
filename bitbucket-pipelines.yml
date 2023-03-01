@@ -1,9 +1,9 @@
-image: node:18.8
+image: node:18.14.2
 
 options:
   max-time: 10
 
-definitions: 
+definitions:
   steps:
     - step: &lint-test-build
         name: Lint, tests and build

@@ -12,7 +12,6 @@
     "lint:js": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.json",
     "lint:css": "stylelint '**/*.{css,vue}'",
     "ci:lint": "run-p lint:*",
-    "jenkins:lint": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
     "audit": "check-audit --omit dev",
     "audit:resolve": "resolve-audit --omit dev",
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
