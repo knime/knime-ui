@@ -105,6 +105,29 @@ describe('Drop Node Mixin', () => {
         expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);
     });
 
+    it('does not call addNode if data in dataTransfer is not set', () => {
+        const { wrapper, addNodeMock } = doMount();
+        const dummyEvent = {
+            clientX: 0,
+            clientY: 1,
+            dataTransfer: {
+                dropEffect: '',
+                types: ['text/plain'],
+                getData: jest.fn().mockReturnValue(null)
+            }
+        };
+
+        wrapper.trigger('drop', dummyEvent);
+
+        expect(addNodeMock).not.toHaveBeenCalledWith(expect.anything(), {
+            nodeFactory: { className: 'sampleClassName' },
+            position: {
+                x: -10 + dummyEvent.clientX - $shapes.nodeSize / 2,
+                y: -10 + dummyEvent.clientY - $shapes.nodeSize / 2
+            }
+        });
+    });
+
     it('does not allow drag and drop in write-protected workflow', () => {
         const { wrapper, dummyEvent, addNodeMock } = doMount({ isWritable: false });
 

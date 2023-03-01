@@ -312,6 +312,17 @@ describe('FileExplorer.vue', () => {
                 onComplete: expect.any(Function)
             });
         });
+
+        it('should not emit a "dragend" event if drag was cancelled', async () => {
+            const { wrapper } = doMount();
+
+            // workflow-group item
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+
+            await firstItem.trigger('dragend', { dataTransfer: { dropEffect: 'none' } });
+
+            expect(wrapper.emitted('dragend')).toBeUndefined();
+        });
     });
 
     it('should emit an event when opening a file', () => {
