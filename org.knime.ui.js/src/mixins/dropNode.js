@@ -12,6 +12,7 @@ export const dropNode = {
         ...mapActions('workflow', ['addNode']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects']),
         async onDrop(e) {
+            // TODO NXT-1586 Enhance drag and drop from side panel
             if (this.isWritable) {
                 const data = e.dataTransfer.getData(KnimeMIME);
 
