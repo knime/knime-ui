@@ -368,7 +368,11 @@ export default {
                 this.nodeTemplate = nodeTemplate;
                 const nodePreview = this.$refs.nodePreview.$el;
 
-                this.replaceGhostPreview({ isAboveCanvas, nodePreview });
+                this.replaceGhostPreview({
+                    shouldUseCustomPreview: isAboveCanvas,
+                    ghostPreviewEl: nodePreview,
+                    opts: { leftOffset: 35, topOffset: 35 }
+                });
             };
             this.$emit('drag', { event, item, onUpdate });
         }

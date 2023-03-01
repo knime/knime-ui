@@ -80,7 +80,7 @@ const createGhostIcon = (target) => {
     iconEl.style.width = '20px';
     iconEl.style.height = '20px';
     iconEl.style.marginRight = '10px';
-    
+
     return iconEl;
 };
 
@@ -114,7 +114,7 @@ const createGhostElement = ({ badgeCount, textContent, target, addShadow = false
     const ghostStyles = {
         background: COLORS.dragGhostContainer.background,
         color: COLORS.dragGhostContainer.font,
-        
+
         // use the original target's position to initialize the ghost
         position: 'absolute',
         top: `${y}px`,
@@ -171,7 +171,7 @@ const createGhostPositionUpdateHandler = (ghosts) => ({ clientX, clientY }) => {
     if (clientX === 0 && clientY === 0) {
         return;
     }
-    
+
     ghosts.forEach(g => {
         gsap.to(g, {
             left: clientX,
@@ -182,11 +182,34 @@ const createGhostPositionUpdateHandler = (ghosts) => ({ clientX, clientY }) => {
     });
 };
 
+const CUSTOM_GHOST_PREVIEW_ID = 'custom-ghost-preview';
+let customGhostPreviewElement = null;
+
+const hideCustomGhostPreviewElement = () => {
+    if (customGhostPreviewElement) {
+        customGhostPreviewElement.style.display = 'none';
+    }
+};
+
+const showCustomGhostPreviewElement = () => {
+    if (customGhostPreviewElement) {
+        customGhostPreviewElement.style.display = 'flex';
+    }
+};
+
+
 /**
+ *
  * @typedef CreateDragGhostsReturnType
  * @property {Array<HTMLElement>} ghosts the added ghosts
  * @property {(animateOut: boolean) => void} removeGhosts a function to remove the ghost when needed. It receives a
  * parameter to determine whether to animate the removal of the ghosts (true by default)
+ * @property {(params: {
+ *  shouldUseCustomPreview: boolean;
+ *  ghostPreviewEl: HTMLElement;
+ *  opts?: { leftOffset?: number; topOffset?: number }
+ * }) => void} replaceGhostPreview
+ * a function to replace the ghost element when needed.
  */
 /**
  *  Creates the drag ghosts for the FileExplorer drag operations
@@ -215,7 +238,7 @@ export const createDragGhosts = ({
         badgeCount,
         target: firstTarget.targetEl
     });
-    
+
     const ghosts = otherTargets.map(({ textContent, targetEl }, index) => {
         const { ghost } = createGhostElement({
             textContent,
@@ -236,10 +259,14 @@ export const createDragGhosts = ({
     });
 
     const ghostElements = allGhosts.map(({ ghost }) => ghost);
-    
+
     const updatePosition = createGhostPositionUpdateHandler(ghostElements);
 
     document.addEventListener('drag', updatePosition);
+
+    const setGhostDisplay = (display) => ({ ghost }) => {
+        ghost.style.display = display;
+    };
 
     const removeGhosts = (animateOut = true) => {
         const removeGhost = ({ ghost }) => {
@@ -250,7 +277,7 @@ export const createDragGhosts = ({
             document.removeEventListener('drag', updatePosition);
         };
 
-        document.getElementById('ghostNodePreview').style.display = 'none';
+        hideCustomGhostPreviewElement();
 
         if (!animateOut) {
             allGhosts.forEach(removeGhost);
@@ -283,30 +310,31 @@ export const createDragGhosts = ({
             });
         });
     };
-    
 
-    const replaceGhostPreview = ({ isAboveCanvas, nodePreview }) => {
-        const nodePreviewOffset = 35;
-        nodePreview.id = 'ghostNodePreview';
+    const replaceGhostPreview = ({
+        shouldUseCustomPreview,
+        ghostPreviewEl,
+        opts = {}
+    }) => {
+        customGhostPreviewElement = ghostPreviewEl;
 
-        if (isAboveCanvas) {
+        if (shouldUseCustomPreview) {
             document.removeEventListener('drag', updatePosition);
-               
-            nodePreview.style.display = 'flex';
+
+            showCustomGhostPreviewElement();
+
             document.addEventListener('drag', (event) => {
-                nodePreview.style.left = event.clientX - nodePreviewOffset;
-                nodePreview.style.top = event.clientY - nodePreviewOffset;
+                customGhostPreviewElement.style.left = event.clientX - (opts.leftOffset || 0);
+                customGhostPreviewElement.style.top = event.clientY - (opts.topOffset || 0);
             });
-            allGhosts.forEach(({ ghost }) => {
-                ghost.style.display = 'none';
-            });
+
+            allGhosts.forEach(setGhostDisplay('none'));
         } else {
             document.addEventListener('drag', updatePosition);
-            nodePreview.style.display = 'none';
 
-            allGhosts.forEach(({ ghost }) => {
-                ghost.style.display = 'flex';
-            });
+            hideCustomGhostPreviewElement();
+
+            allGhosts.forEach(setGhostDisplay('flex'));
         }
     };
 

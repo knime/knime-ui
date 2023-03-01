@@ -293,7 +293,7 @@ export default {
             if (!this.nodeTemplate) {
                 this.nodeTemplate = await this.getNodeTemplate(nodeTemplateId);
             }
-            
+
             if (this.isAboveCanvas !== kanvas.contains(el) && el) {
                 this.isAboveCanvas = kanvas.contains(el);
                 onUpdate(this.isAboveCanvas, this.nodeTemplate);
