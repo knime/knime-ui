@@ -14,6 +14,7 @@
     "ci:lint": "run-p lint:*",
     "audit": "check-audit --omit dev",
     "audit:resolve": "resolve-audit --omit dev",
+    "jenkins:lint": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
     "test:unit": "TZ='Europe/Berlin' jest",
     "coverage": "npm run test:unit -- --coverage --no-cache",

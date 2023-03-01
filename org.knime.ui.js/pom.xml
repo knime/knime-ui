@@ -118,6 +118,17 @@
                             <arguments>run jenkins:audit</arguments>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>npm run jenkins:lint</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run jenkins:lint</arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
