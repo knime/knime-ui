@@ -29,6 +29,7 @@ describe('SpaceSelectionPage.vue', () => {
         });
 
         const dispatchSpy = jest.spyOn($store, 'dispatch');
+        const commitSpy = jest.spyOn($store, 'commit');
 
         const mockRouter = { push: jest.fn() };
 
@@ -39,8 +40,10 @@ describe('SpaceSelectionPage.vue', () => {
             }
         });
 
-        return { wrapper, $store, dispatchSpy, $router: mockRouter };
+        return { wrapper, $store, dispatchSpy, commitSpy, $router: mockRouter };
     };
+
+    beforeEach(() => jest.clearAllMocks());
 
     it('should fetch space providers on created', () => {
         const { dispatchSpy } = doMount();
@@ -68,13 +71,21 @@ describe('SpaceSelectionPage.vue', () => {
         expect($router.push).toHaveBeenCalledWith({ name: APP_ROUTES.SpaceBrowsingPage });
     });
 
+    it('should create New workflow on local space', async () => {
+        const { wrapper, dispatchSpy, commitSpy } = doMount();
+
+        await new Promise(r => setTimeout(r, 0));
+        await wrapper.find('.create-workflow-local').trigger('click');
+        await new Promise(r => setTimeout(r, 0));
+        expect(commitSpy).toHaveBeenCalledWith('spaces/setActiveSpaceId', 'local');
+        expect(dispatchSpy).toHaveBeenCalledWith('spaces/fetchWorkflowGroupContent', { itemId: 'root' });
+        expect(commitSpy).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', true);
+    });
+
     it('should render all space providers', async () => {
         const { wrapper } = doMount();
 
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
+        await new Promise(r => setTimeout(r, 0));
 
         expect(wrapper.findAll('.space-provider').length).toBe(1);
     });
@@ -113,8 +124,7 @@ describe('SpaceSelectionPage.vue', () => {
             }
         });
 
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
+        await new Promise(r => setTimeout(r, 0));
 
         const linkToProvider = wrapper.find('.space-provider-name a').attributes('href');
         expect(linkToProvider).toBe('https://hub.knime.com');
@@ -141,8 +151,7 @@ describe('SpaceSelectionPage.vue', () => {
             }
         });
 
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
+        await new Promise(r => setTimeout(r, 0));
 
         const linkToProvider = wrapper.find('.space-provider-name a').attributes('href');
         expect(linkToProvider).toBe('https://hub.knime.com/testUser');
@@ -161,10 +170,7 @@ describe('SpaceSelectionPage.vue', () => {
             }
         });
 
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
+        await new Promise(r => setTimeout(r, 0));
 
         const signInButton = wrapper.find('.logout');
         expect(signInButton.exists()).toBe(true);

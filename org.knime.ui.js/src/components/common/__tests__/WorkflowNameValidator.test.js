@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import WorkflowNameValidator from '../WorkflowNameValidator.vue';
 
 describe('WorkflowNameValidator', () => {
-    const doMount = ({ props } = {}) => {
+    const doMount = ({ props, data = { nameInSlot: '' } } = {}) => {
         const defaultProps = {
             name: 'test name'
         };
@@ -14,7 +14,7 @@ describe('WorkflowNameValidator', () => {
             :is-valid="scope.isValid"
             :error-message="scope.errorMessage"
             @click="() => (nameInSlot = scope.cleanNameFn(nameInSlot))"
-        ></div>`;
+        >{{nameInSlot}}</div>`;
 
         const getScopedComponent = {
             name: 'SlottedChild',
@@ -26,7 +26,7 @@ describe('WorkflowNameValidator', () => {
                 }
             },
             data() {
-                return { nameInSlot: '' };
+                return data;
             }
         };
 
@@ -91,5 +91,10 @@ describe('WorkflowNameValidator', () => {
         expect(getSlottedStubProp({ wrapper, propName: 'errorMessage' })).toMatch('exceeds 255 characters');
     });
 
-    it.todo('should clean invalid prefix and suffix');
+    it.each(['.', '\\', '/'])('should clean invalid prefix and suffix', async (invalidChar) => {
+        const { wrapper } = doMount({ data: { nameInSlot: `${invalidChar}some text${invalidChar}` } });
+
+        await wrapper.trigger('click');
+        expect(wrapper.text()).toMatch('some text');
+    });
 });
