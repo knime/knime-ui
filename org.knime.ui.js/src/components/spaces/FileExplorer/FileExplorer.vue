@@ -504,13 +504,13 @@ export default {
       </tr>
     </tbody>
     <NodePreview
-      v-show="false"
+      v-show="false && nodeTemplate"
       ref="nodePreview"
       class="node-preview"
-      :type="nodeTemplate?.type"
-      :in-ports="nodeTemplate?.inPorts"
-      :out-ports="nodeTemplate?.outPorts"
-      :icon="nodeTemplate?.icon"
+      :type="nodeTemplate.type"
+      :in-ports="nodeTemplate.inPorts"
+      :out-ports="nodeTemplate.outPorts"
+      :icon="nodeTemplate.icon"
     />
   </table>
 </template>
