@@ -109,10 +109,12 @@ export default {
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
     <Portal to="extension-panel">
-      <NodeDescriptionOverlay
-        v-if="isDescriptionPanelOpen"
-        :selected-node="isSelectedNodeVisible ? selectedNode : null"
-      />
+      <Transition name="extension-panel">
+        <NodeDescriptionOverlay
+          v-if="isDescriptionPanelOpen"
+          :selected-node="isSelectedNodeVisible ? selectedNode : null"
+        />
+      </Transition>
     </Portal>
   </div>
 </template>
@@ -184,14 +186,16 @@ export default {
   }
 }
 
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 120ms ease;
+.extension-panel-enter-active {
+  transition: all 50ms ease-in;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.extension-panel-leave-active {
+  transition: all 50ms ease-out;
+}
+
+.extension-panel-enter-from,
+.extension-panel-leave-to {
   opacity: 0;
 }
 

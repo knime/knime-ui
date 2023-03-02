@@ -35,15 +35,6 @@ export default {
                 }
             }
             return [...unselected, ...selected];
-        },
-        selectedPortTransition() {
-            // returns a functional component that is used as transition prop on <portal>. This way the transition
-            // behaves as without portal, see https://portal-vue.linusb.org/api/portal-target.html#transition
-            return {
-                render(h) {
-                    return h('transition', { props: { name: 'fade' } }, this.$slots.default);
-                }
-            };
         }
     },
     methods: {
@@ -124,56 +115,10 @@ export default {
       tag="g"
       name="selected-port"
     />
-    <!-- :transition="selectedPortTransition" -->
-    
+
     <PortalTarget
       tag="g"
       name="drag-connector"
     />
   </g>
 </template>
-
-<style lang="postcss" scoped>
-/*
-  This targets the action button of the selected port. This workarond is required in order to make the transition
-  work, for SVG elements coming into and out of a portal (html element work with the provided vue-portal API)
-*/
-.workflow {
-  --selected-port-transition-time: 150ms;
-}
-
-:deep(.action-button) {
-  transition: all var(--selected-port-transition-time) ease-in;
-  transform: scale(1);
-}
-
-:deep(.selected-port) {
-  transition: opacity var(--selected-port-transition-time) ease-out;
-  opacity: 1;
-}
-
-.fade-enter {
-  & :deep(.action-button) {
-    opacity: 0;
-    transform: scale(0);
-  }
-
-  & :deep(.selected-port) {
-    opacity: 0;
-  }
-}
-
-.fade-leave-to {
-  & :deep(.action-button) {
-    transform: scale(0);
-  }
-
-  & :deep(.selected-port) {
-    opacity: 0;
-  }
-}
-
-.fade-leave-active {
-  transition: opacity var(--selected-port-transition-time) ease-out;
-}
-</style>

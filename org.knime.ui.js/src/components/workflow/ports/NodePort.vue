@@ -450,16 +450,18 @@ export default {
     />
 
     <Portal to="selected-port">
-      <NodePortActions
-        v-if="selected"
-        :key="`${nodeId}-${port.index}-${direction}`"
-        :port="port"
-        :anchor-point="anchorPoint"
-        :relative-position="relativePosition"
-        :direction="direction"
-        @action:remove="$emit('remove')"
-        @close="onClose"
-      />
+      <Transition name="fade">
+        <NodePortActions
+          v-if="selected"
+          :key="`${nodeId}-${port.index}-${direction}`"
+          :port="port"
+          :anchor-point="anchorPoint"
+          :relative-position="relativePosition"
+          :direction="direction"
+          @action:remove="$emit('remove')"
+          @close="onClose"
+        />
+      </Transition>
     </Portal>
 
     <Portal
@@ -510,5 +512,40 @@ export default {
     transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
     transform: scale(1.2);
   }
+}
+
+:deep(.action-button) {
+  transition: all 150ms ease-in;
+  transform: scale(1);
+}
+
+:deep(.selected-port) {
+  transition: opacity 150ms ease-out;
+  opacity: 1;
+}
+
+.fade-enter-from {
+  & :deep(.action-button) {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  & :deep(.selected-port) {
+    opacity: 0;
+  }
+}
+
+.fade-leave-to {
+  & :deep(.action-button) {
+    transform: scale(0);
+  }
+
+  & :deep(.selected-port) {
+    opacity: 0;
+  }
+}
+
+.fade-leave-active {
+  transition: opacity 150ms ease-out;
 }
 </style>
