@@ -48,6 +48,15 @@ describe('dragGhostHelpers', () => {
         expect(ghosts[0].innerText).toBe('MOCK');
     });
 
+    it('should return replaceGhostPreview', () => {
+        const selectedTargets = [
+            { textContent: 'MOCK', targetEl: document.createElement('div') }
+        ];
+        const { replaceGhostPreview } = setup({ selectedTargets });
+
+        expect(replaceGhostPreview).not.toBeNull();
+    });
+
     it('should add multiple ghosts', () => {
         const selectedTargets = [
             { textContent: 'MOCK1', targetEl: document.createElement('div') },

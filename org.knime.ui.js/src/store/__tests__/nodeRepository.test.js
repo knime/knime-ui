@@ -192,6 +192,7 @@ describe('Node Repository store', () => {
             isDraggingNode: false,
             isDescriptionPanelOpen: false,
             isShowingBottomNodes: false,
+            nodeTemplates: {},
             bottomNodes: null,
             bottomNodeSearchPage: 0,
             bottomNodesTags: [],

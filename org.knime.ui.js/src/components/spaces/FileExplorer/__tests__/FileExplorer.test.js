@@ -146,6 +146,7 @@ describe('FileExplorer.vue', () => {
             const dataTransfer = { setDragImage: jest.fn() };
             await _srcItemWrapper.trigger('dragstart', { dataTransfer });
             await _tgtItemWrapper.trigger('dragenter');
+            await _tgtItemWrapper.trigger('drag');
             await _tgtItemWrapper.trigger('drop');
             await _srcItemWrapper.trigger('dragend', { dataTransfer: { dropEffect: 'move' } });
         };
@@ -328,6 +329,33 @@ describe('FileExplorer.vue', () => {
             await firstItem.trigger('dragend', { dataTransfer: { dropEffect: 'none' } });
 
             expect(wrapper.emitted('dragend')).toBeUndefined();
+            // workflow-group item
+            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+
+            await dragAndDropItem(secondItem, firstItem);
+
+            expect(wrapper.emitted('drag')[0][0]).toEqual({
+                event: expect.anything(),
+                item: MOCK_DATA[0], // second item
+                onUpdate: expect.any(Function)
+            });
+        });
+
+        it('should emit a "drag" event', async () => {
+            const { wrapper } = doMount();
+
+            // workflow-group item
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+
+            // workflow-group item
+            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            
+            await dragAndDropItem(secondItem, firstItem);
+            expect(wrapper.emitted('drag')[0][0]).toEqual({
+                event: expect.anything(),
+                item: MOCK_DATA[0], // second item
+                onUpdate: expect.any(Function)
+            });
         });
     });
 

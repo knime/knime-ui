@@ -41,7 +41,8 @@ describe('SpaceExplorer.vue', () => {
         props = {},
         mockResponse = fetchWorkflowGroupContentResponse,
         mockGetSpaceItems = null,
-        openProjects = []
+        openProjects = [],
+        fileExtensionToNodeTemplateId = {}
     } = {}) => {
         if (mockGetSpaceItems) {
             fetchWorkflowGroupContent.mockImplementation(mockGetSpaceItems);
@@ -55,7 +56,8 @@ describe('SpaceExplorer.vue', () => {
             spaces: spacesStore,
             application: {
                 state: {
-                    openProjects
+                    openProjects,
+                    fileExtensionToNodeTemplateId
                 },
                 actions: {
                     updateGlobalLoader: jest.fn()
@@ -72,6 +74,12 @@ describe('SpaceExplorer.vue', () => {
                 },
                 state: {
                     getScrollContainerElement: jest.fn().mockReturnValue({ contains: jest.fn().mockReturnValue(true) })
+                }
+            },
+            nodeRepository: {
+                getters: {
+                    getNodeTemplate: jest.fn().mockReturnValue(() => (
+                        { id: 'test.id', name: 'test.test', type: 'type', inPorts: [], outPorts: [], icon: 'icon' }))
                 }
             }
         });
@@ -109,13 +117,15 @@ describe('SpaceExplorer.vue', () => {
         props = {},
         mockResponse = fetchWorkflowGroupContentResponse,
         mockGetSpaceItems = null,
-        openProjects = []
+        openProjects = [],
+        fileExtensionToNodeTemplateId = {}
     } = {}) => {
         const mountResult = doMount({
             props,
             mockResponse,
             mockGetSpaceItems,
-            openProjects
+            openProjects,
+            fileExtensionToNodeTemplateId
         });
 
         await new Promise(r => setTimeout(r, 0));
@@ -678,19 +688,55 @@ describe('SpaceExplorer.vue', () => {
 
     it('should add a node to canvas when dragged from the file explorer', async () => {
         document.elementFromPoint = jest.fn().mockReturnValue(null);
-        const { wrapper, store, dispatchSpy, mockRoute } = await doMountAndLoad();
+        const { wrapper, store, dispatchSpy, mockRoute } = await doMountAndLoad(
+            { fileExtensionToNodeTemplateId: {
+                '.test': 'org.knime.test.test.nodeFactory'
+            },
+            mockResponse: {
+                id: 'test.id',
+                path: [],
+                items: [
+                    {
+                        id: '4',
+                        name: 'testFile.test',
+                        type: 'Workflow'
+                    }
+                ]
+            },
+            activeWorkflowGroup: 'testWorkflowGroup' }
+        );
 
         mockRoute.name = APP_ROUTES.WorkflowPage;
-        store.state.spaces.activeSpace = {
-            spaceId: 'local',
-            activeWorkflowGroup: {
-                path: [],
-                items: []
-            }
-        };
         store.state.spaces.activeSpaceProvider = {
             id: 'local'
         };
+
+        const onComplete = jest.fn();
+        wrapper.findComponent(FileExplorer).vm.$emit('dragend', {
+            event: new MouseEvent('dragend'),
+            sourceItem: { id: '0', name: 'file.test' },
+            onComplete
+        });
+
+        expect(dispatchSpy).toHaveBeenNthCalledWith(2,
+            'workflow/addNode',
+            {
+                nodeFactory: {
+                    className: 'org.knime.test.test.nodeFactory'
+                },
+                position: { x: 5, y: 5 },
+                spaceItemReference: { itemId: '0', providerId: 'local', spaceId: 'local' }
+            });
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+        expect(onComplete).toHaveBeenCalledWith(true);
+    });
+
+    it('should not attempt to add a node to canvas when the workflow is not displayed', async () => {
+        document.elementFromPoint = jest.fn().mockReturnValue(null);
+        const { wrapper, dispatchSpy, mockRoute } = await doMountAndLoad();
+
+        mockRoute.name = APP_ROUTES.SpaceBrowsingPage;
 
         const onComplete = jest.fn();
         wrapper.findComponent(FileExplorer).vm.$emit('dragend', {
@@ -699,15 +745,51 @@ describe('SpaceExplorer.vue', () => {
             onComplete
         });
 
-        expect(dispatchSpy).toHaveBeenCalledWith(
+        expect(dispatchSpy).not.toHaveBeenCalledWith(
             'workflow/addNode',
-            {
-                position: { x: 5, y: 5 },
-                spaceItemReference: { itemId: '0', providerId: 'local', spaceId: 'local' }
-            }
+            expect.anything()
         );
         await wrapper.vm.$nextTick();
+        expect(onComplete).toHaveBeenCalledWith(false);
+    });
+
+    it('should call onUpdate when dragging supported file above canvas', async () => {
+        document.elementFromPoint = jest.fn().mockReturnValue({ id: 'someElementThatIsNotNull' });
+        const { wrapper, store, mockRoute } = await doMountAndLoad(
+            { fileExtensionToNodeTemplateId: {
+                '.test': 'org.knime.test.test.nodeFactory'
+            },
+            mockResponse: {
+                id: 'test.id',
+                path: [],
+                items: [
+                    {
+                        id: '4',
+                        name: 'testFile.test',
+                        type: 'Workflow'
+                    }
+                ]
+            },
+            activeWorkflowGroup: 'testWorkflowGroup' }
+        );
+
+        mockRoute.name = APP_ROUTES.WorkflowPage;
+        store.state.spaces.activeSpaceProvider = {
+            id: 'local'
+        };
+
+        const onUpdate = jest.fn();
+        wrapper.findComponent(FileExplorer).vm.$emit('drag', {
+            event: new MouseEvent('drag'),
+            item: { id: '4', name: 'testFile.test', type: 'Workflow' },
+            onUpdate
+        });
+
         await wrapper.vm.$nextTick();
-        expect(onComplete).toHaveBeenCalledWith(true);
+        await wrapper.vm.$nextTick();
+        expect(onUpdate).toHaveBeenCalledWith(
+            true,
+            { icon: 'icon', id: 'test.id', inPorts: [], name: 'test.test', outPorts: [], type: 'type' }
+        );
     });
 });

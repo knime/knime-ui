@@ -504,7 +504,8 @@ export default {
       </tr>
     </tbody>
     <NodePreview
-      v-show="false && nodeTemplate"
+      v-if="nodeTemplate"
+      v-show="false"
       ref="nodePreview"
       class="node-preview"
       :type="nodeTemplate.type"
