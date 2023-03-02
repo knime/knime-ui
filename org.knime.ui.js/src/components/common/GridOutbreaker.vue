@@ -26,65 +26,64 @@ export default {
                 '--outbreaker-background-color': this.color
             };
         }
-    },
-
-    mounted() {
-        (this.$slots.default() || []).forEach(vnode => {
-            vnode.elm?.classList?.add('outbreaker');
-        });
     }
 };
 </script>
 
 <template>
-  <div :style="styles">
+  <div
+    class="outbreaker-wrapper"
+    :style="styles"
+  >
     <slot />
   </div>
 </template>
 
 <style lang="postcss" scoped>
-:deep(.outbreaker) {
-  position: relative;
-  isolation: isolate;
-
-  /* set this CSS var in the parent component to define the background color */
-  background-color: var(--outbreaker-background-color, transparent);
-
-  &::before,
-  &::after {
-    position: absolute;
-    content: "";
-    height: 100%;
-    top: 0;
-    background-color: var(--outbreaker-background-color, transparent);
-    z-index: 0; /* so it's behind the grid content, e.g. space card shadow can overlap */
-  }
-
-  /* left background extension then has width: 1 gap width + half column width */
-  --grid-gap-plus-half-column: calc(var(--grid-gap-width) + (var(--grid-outbreaker-column-width) / 2));
-
-  &::before {
-    width: var(--grid-gap-plus-half-column);
-    left: calc(-1 * var(--grid-gap-plus-half-column));
-
-    @media only screen and (max-width: 1180px) {
-      display: none;
-    }
-
-    @media only screen and (max-width: 900px) {
-      display: initial;
-    }
-  }
-
-  &::after {
-    width: 50vw;
-    right: -50vw;
-  }
-
+.outbreaker-wrapper {
   & > * {
-    /* needed for shadows to pop out */
-    z-index: 1;
     position: relative;
+    isolation: isolate;
+
+    /* set this CSS var in the parent component to define the background color */
+    background-color: var(--outbreaker-background-color, transparent);
+
+    &::before,
+    &::after {
+      position: absolute;
+      content: "";
+      height: 100%;
+      top: 0;
+      background-color: var(--outbreaker-background-color, transparent);
+      z-index: 0; /* so it's behind the grid content, e.g. space card shadow can overlap */
+    }
+
+    /* left background extension then has width: 1 gap width + half column width */
+    --grid-gap-plus-half-column: calc(var(--grid-gap-width) + (var(--grid-outbreaker-column-width) / 2));
+
+    &::before {
+      width: var(--grid-gap-plus-half-column);
+      left: calc(-1 * var(--grid-gap-plus-half-column));
+
+      @media only screen and (max-width: 1180px) {
+        display: none;
+      }
+
+      @media only screen and (max-width: 900px) {
+        display: initial;
+      }
+    }
+
+    &::after {
+      width: 50vw;
+      right: -50vw;
+    }
+
+    & > * {
+      /* needed for shadows to pop out */
+      z-index: 1;
+      position: relative;
+    }
   }
 }
 </style>
