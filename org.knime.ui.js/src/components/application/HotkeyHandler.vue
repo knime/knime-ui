@@ -28,7 +28,7 @@ export default {
                 escapePressed();
             }
 
-            // getAttribute?.() is conditionally called, because the jest-dom doesn't provide this function while testing.
+            // getAttribute?.() is conditionally called, because jsdom doesn't provide this function while testing.
             if (blacklistTagNames.test(e.target.tagName) || e.target.getAttribute?.('contenteditable') === 'true') {
                 return;
             }
