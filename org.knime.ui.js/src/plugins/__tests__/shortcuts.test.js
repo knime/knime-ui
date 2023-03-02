@@ -12,17 +12,19 @@ describe('Shortcuts Plugin', () => {
     beforeEach(() => {
         loadPlugin = async () => {
             vi.mock('@/shortcuts', () => ({
-                crazyHotkey: {
-                    hotkey: ['Ctrl', 'Alt', 'Shift', 'Delete'],
-                    execute: vi.fn(),
-                    condition: vi.fn()
-                },
-                selectAll: {
-                    hotkey: ['Ctrl', 'A']
-                },
-                copy: {
-                    hotkey: ['Ctrl', 'C'],
-                    allowEventDefault: true
+                default: {
+                    crazyHotkey: {
+                        hotkey: ['Ctrl', 'Alt', 'Shift', 'Delete'],
+                        execute: vi.fn(),
+                        condition: vi.fn()
+                    },
+                    selectAll: {
+                        hotkey: ['Ctrl', 'A']
+                    },
+                    copy: {
+                        hotkey: ['Ctrl', 'C'],
+                        allowEventDefault: true
+                    }
                 }
             }));
             mockUserAgent(userAgent);

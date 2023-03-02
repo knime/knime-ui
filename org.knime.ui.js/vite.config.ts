@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
         resolve: {
             alias: {
                 '@': fileURLToPath(new URL('./src', import.meta.url)),
-                '@api': fileURLToPath(new URL('./src/api/index', import.meta.url))
+                '@api': fileURLToPath(new URL('./src/api', import.meta.url))
             },
             /* Because of the possibility of having multiple distinct vue packages being loaded when using the PageBuilder
             the following needs to be added to not confuse vite/vue while rendering components.
