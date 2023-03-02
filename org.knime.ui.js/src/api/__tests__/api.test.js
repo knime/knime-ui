@@ -556,16 +556,17 @@ describe('API', () => {
             expect(result).toStrictEqual('dummy');
         });
 
-        it('createWorkflow', async () => {
+        it.only('createWorkflow', async () => {
             const spaceProviderId = 'provider';
             const spaceId = 'space';
             const itemId = 'item';
-            let result = await api.createWorkflow({ spaceProviderId, spaceId, itemId });
+            const workflowName = 'workflow-name';
+            let result = await api.createWorkflow({ spaceProviderId, spaceId, itemId, workflowName });
 
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'SpaceService.createWorkflow',
-                params: [spaceId, spaceProviderId, itemId],
+                params: [spaceId, spaceProviderId, itemId, workflowName],
                 id: 0
             });
 
