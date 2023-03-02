@@ -31,13 +31,15 @@ export default {
         }
     },
 
+    emits: ['stateChange'],
+
     computed: {
         uniquePortKey() {
             // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
             // is created upon switching ports
             // port object version changes whenever a port state has updated.
             // "ABA"-Changes on the port will always trigger a re-render.
-           
+
             return [
                 this.projectId,
                 this.workflowId,
@@ -74,7 +76,7 @@ export default {
         initKnimeService(config) {
             return new KnimeService(
                 config,
-                
+
                 // Data Service Callback
                 async (_, serviceType, request) => {
                     const response = await callPortDataService({
@@ -88,7 +90,7 @@ export default {
 
                     return { result: JSON.parse(response) };
                 },
-                
+
                 // Notification Callback
                 () => {
                     // TODO: NXT-1211 implement follow-up ticket for selection/hightlighting in the knime-ui-table
@@ -106,7 +108,7 @@ export default {
     :init-knime-service="initKnimeService"
     :view-config-loader-fn="viewConfigLoaderFn"
     :resource-location-resolver="resourceLocationResolver"
-    @state-change="$emit('state-change', $event)"
+    @state-change="$emit('stateChange', $event)"
   />
 </template>
 

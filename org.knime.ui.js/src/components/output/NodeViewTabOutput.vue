@@ -54,6 +54,8 @@ export default {
         }
     },
 
+    emits: ['outputStateChange'],
+
     data() {
         return {
             nodeViewState: null
@@ -88,7 +90,7 @@ export default {
             immediate: true,
             handler() {
                 if (this.nodeErrors) {
-                    this.$emit('output-state-change', {
+                    this.$emit('outputStateChange', {
                         loading: this.nodeErrors.code === 'NODE_BUSY',
                         message: this.nodeErrors.message,
                         error: this.nodeErrors
@@ -101,18 +103,18 @@ export default {
     methods: {
         onNodeViewStateChange(newState) {
             this.nodeViewState = newState;
-            
+
             switch (this.nodeViewState?.state) {
                 case 'loading': {
-                    this.$emit('output-state-change', { message: 'Loading data', loading: true });
+                    this.$emit('outputStateChange', { message: 'Loading data', loading: true });
                     return;
                 }
                 case 'error': {
-                    this.$emit('output-state-change', { message: this.nodeViewState.message });
+                    this.$emit('outputStateChange', { message: this.nodeViewState.message });
                     return;
                 }
                 default: {
-                    this.$emit('output-state-change', null);
+                    this.$emit('outputStateChange', null);
                 }
             }
         }

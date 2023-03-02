@@ -9,6 +9,8 @@ import { loadPageBuilder } from './pagebuilderLoader';
  * Renders a node view via the PageBuilder component
  */
 export default {
+    emits: ['stateChange'],
+
     data() {
         return {
             pageBuilderComponent: null,
@@ -20,7 +22,7 @@ export default {
         ...mapState('application', { projectId: 'activeProjectId' }),
         ...mapState('workflow', { workflowId: state => state.activeWorkflow.info.containerId }),
         ...mapGetters('selection', { selectedNode: 'singleSelectedNode' }),
-        
+
         hasView() {
             return Boolean(this.selectedNode?.hasView);
         }
@@ -45,18 +47,18 @@ export default {
 
     async created() {
         try {
-            this.$emit('state-change', { state: 'loading', message: 'Loading view' });
+            this.$emit('stateChange', { state: 'loading', message: 'Loading view' });
 
             this.pageBuilderComponent = await loadPageBuilder({ window, store: this.$store });
             await this.loadContent();
-        
+
             this.isReady = true;
-            this.$emit('state-change', { state: 'ready' });
+            this.$emit('stateChange', { state: 'ready' });
         } catch (error) {
-            this.$emit('state-change', { state: 'error', message: error });
+            this.$emit('stateChange', { state: 'error', message: error });
         }
     },
-    
+
     methods: {
         async loadContent() {
             try {
@@ -72,7 +74,7 @@ export default {
 
                 const page = JSON.parse(JSON.stringify(singleViewPage));
                 page.wizardPageContent.nodeViews.ROOT = nodeView;
-                
+
                 // eslint-disable-next-line consistent-return
                 return this.$store.dispatch('pagebuilder/setPage', { page });
             } catch (error) {
@@ -81,7 +83,7 @@ export default {
             }
         }
     }
-    
+
 };
 </script>
 
