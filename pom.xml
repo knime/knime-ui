@@ -99,6 +99,13 @@
             <url>${knime.product.p2}</url>
             <layout>p2</layout>
         </repository>
+
+		<!-- only required to run the tests -->
+		<repository>
+			<id>p2-knime-dev</id>
+			<layout>p2</layout>
+			<url>${knime.dev.p2}</url>
+		</repository>
     </repositories>
 
 	<build>

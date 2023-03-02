@@ -139,8 +139,9 @@ class SaveAndCloseWorkflowsTest {
     }
 
     @AfterEach
-    void clearWorkflowProjectManager() {
+    void cleanUp() {
         var wpm = WorkflowProjectManager.getInstance();
         wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
+        DesktopAPI.disposeDependencies();
     }
 }

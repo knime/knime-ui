@@ -107,7 +107,7 @@ public class KnimeBrowserLocationListener implements LocationListener {
     @Override
     public void changed(final LocationEvent event) {
         if (isAppPage(event.location) || isDevPage(event.location)) {
-            LifeCycle.get().webAppLoaded(m_browser);
+            LifeCycle.get().webAppLoaded();
             CEFUtils.setZoomFactorFromSystemProperty(m_browser);
         }
     }

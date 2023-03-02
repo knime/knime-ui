@@ -140,7 +140,9 @@ public final class PerspectiveUtil {
      */
     public static void setClassicPerspectiveActive(final boolean isActive) {
         isClassicPerspectiveActive = isActive;
-        isClassicPerspectiveLoaded = true;
+        if (isActive) {
+            isClassicPerspectiveLoaded = true;
+        }
     }
 
     /**

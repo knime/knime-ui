@@ -109,7 +109,7 @@ public class KnimeBrowserView {
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
         browser.setMenu(new Menu(browser.getShell()));
 
-        LifeCycle.get().create(browser);
+        LifeCycle.get().create((name, function) -> new KnimeBrowserFunction(browser, name, function));
 
         if (viewInitializer == null) {
             viewInitializer = () -> { // NOSONAR

@@ -58,7 +58,7 @@ import com.equo.chromium.swt.BrowserFunction;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class KnimeBrowserFunction extends BrowserFunction {
+class KnimeBrowserFunction extends BrowserFunction {
 
     private final Function<Object[], Object> m_function;
 

@@ -144,4 +144,12 @@ public final class KnimeUIPreferences {
     public static void setMouseWheelActionChangeListener(final BiConsumer<String, String> listener) {
         mouseWheelActionChangeListener = listener;
     }
+
+    /**
+     * Removes all the set listeners.
+     */
+    public static void unsetAllListeners() {
+        selectedNodeCollectionChangeListener = null;
+        mouseWheelActionChangeListener = null;
+    }
 }

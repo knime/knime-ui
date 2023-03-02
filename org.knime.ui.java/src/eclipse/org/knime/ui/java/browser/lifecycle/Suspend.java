@@ -68,7 +68,7 @@ final class Suspend {
     static LifeCycleStateInternal run(final LifeCycleStateInternal state) {
         DesktopAPI.disposeDependencies();
         DefaultServicesUtil.disposeDefaultServices();
-        KnimeUIPreferences.setSelectedNodeCollectionChangeListener(null);
+        KnimeUIPreferences.unsetAllListeners();
         var listener = state.getJobChangeListener();
         Job.getJobManager().removeJobChangeListener(listener);
         return new LifeCycleStateInternal() {

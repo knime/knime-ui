@@ -57,6 +57,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
@@ -155,6 +156,11 @@ class SpaceAPITest {
         SpaceAPI.disconnectSpaceProvider("1");
 
         verify(connection).disconnect();
+    }
+
+    @AfterEach
+    void disposeDesktopAPIDependencies() {
+        DesktopAPI.disposeDependencies();
     }
 
 }

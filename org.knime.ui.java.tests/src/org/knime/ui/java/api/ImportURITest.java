@@ -57,6 +57,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.function.Supplier;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.exec.dataexchange.in.PortObjectInNodeFactory;
 import org.knime.core.util.FileUtil;
@@ -120,6 +121,11 @@ class ImportURITest {
             WorkflowProjectManager.getInstance().removeWorkflowProject("projectId");
             ServiceInstances.disposeAllServiceInstancesAndDependencies();
         }
+    }
+
+    @AfterEach
+    void disposeDesktopAPIDependencies() {
+        DesktopAPI.disposeDependencies();
     }
 
 }
