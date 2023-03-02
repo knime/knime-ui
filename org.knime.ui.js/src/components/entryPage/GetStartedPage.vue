@@ -89,8 +89,8 @@ export default {
         </a>
       </div>
     </section>
-    <SpaceSelectionPage />
   </GridOutbreaker>
+  <SpaceSelectionPage />
 </template>
 
 <style lang="postcss" scoped>

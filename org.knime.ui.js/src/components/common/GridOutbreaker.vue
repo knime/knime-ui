@@ -41,7 +41,7 @@ export default {
 
 <style lang="postcss" scoped>
 .outbreaker-wrapper {
-  & > * {
+  & :deep(> *) {
     position: relative;
     isolation: isolate;
 
