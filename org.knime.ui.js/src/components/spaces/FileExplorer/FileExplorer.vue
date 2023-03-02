@@ -231,7 +231,7 @@ export default {
             this.isDragging = false;
 
             if (event.dataTransfer.dropEffect === 'none') {
-                this.removeGhosts();
+                this.removeGhosts?.();
                 return;
             }
 
