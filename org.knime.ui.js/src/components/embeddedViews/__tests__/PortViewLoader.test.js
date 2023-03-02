@@ -49,7 +49,7 @@ describe('PortViewLoader.vue', () => {
     });
 
     const doMount = () => mount(PortViewLoader, { props });
-    
+
     it('should load port view on mount', () => {
         doMount();
 
@@ -64,7 +64,7 @@ describe('PortViewLoader.vue', () => {
     it('should load port view when the selected node changes', async () => {
         const wrapper = doMount();
         const newNode = { ...dummyNode, id: 'node2' };
-        
+
         wrapper.setProps({ selectedNode: newNode });
 
         await Vue.nextTick();
@@ -77,7 +77,7 @@ describe('PortViewLoader.vue', () => {
 
     it('should load port view when the selected port index changes', async () => {
         const wrapper = doMount();
-        
+
         wrapper.setProps({ selectedPortIndex: 1 });
 
         await Vue.nextTick();
@@ -93,10 +93,10 @@ describe('PortViewLoader.vue', () => {
         setupGetPortViewMock(RESOURCE_TYPES.VUE_COMPONENT_REFERENCE, 'FlowVariablePortView', []);
         const wrapper = doMount();
 
-        expect(wrapper.emitted('state-change')[0][0]).toEqual({ state: 'loading' });
-        
+        expect(wrapper.emitted('stateChange')[0][0]).toEqual({ state: 'loading' });
+
         await flushRender();
 
-        expect(wrapper.emitted('state-change')[1][0]).toEqual({ state: 'ready' });
+        expect(wrapper.emitted('stateChange')[1][0]).toEqual({ state: 'ready' });
     });
 });
