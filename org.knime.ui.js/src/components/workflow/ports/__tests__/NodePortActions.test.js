@@ -6,7 +6,7 @@ import Port from '@/components/common/Port.vue';
 import NodePortActions, { portActionButtonSize } from '../NodePortActions.vue';
 
 import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
-jest.mock('@/mixins/escapeStack', () => {
+vi.mock('@/mixins/escapeStack', () => {
     function escapeStack({ onEscape }) { // eslint-disable-line func-style
         escapeStack.onEscape = onEscape;
         return { /* empty mixin */ };
@@ -31,18 +31,18 @@ describe('NodePortActions.vue', () => {
     const doShallowMount = (customProps = {}) => shallowMount(NodePortActions, {
         props: { ...defaultProps, ...customProps }
     });
-    
+
     it('should render properly', () => {
         const wrapper = doShallowMount();
-        
+
         expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
         expect(wrapper.findComponent(Port).exists()).toBe(true);
-        
+
         // class is used in a css selector to target the animation of the element
         // as it shows up in a portal
         expect(wrapper.findComponent(Port).classes()).toContain('selected-port');
     });
-    
+
     it('should emit the action event', () => {
         const wrapper = doShallowMount();
 
@@ -91,7 +91,7 @@ describe('NodePortActions.vue', () => {
     });
 
     it('should capture events on the area between actions', () => {
-        const mockStopPropagation = jest.fn();
+        const mockStopPropagation = vi.fn();
 
         MouseEvent.prototype.stopPropagation = mockStopPropagation;
 

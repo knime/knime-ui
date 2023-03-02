@@ -3,7 +3,8 @@ require('@rushstack/eslint-patch/modern-module-resolution');
 module.exports = {
     extends: ['@knime/eslint-config/vue3-typescript'],
     globals: {
-        consola: false
+        consola: false,
+        vi: false
     },
     ignorePatterns: [
         'generated-api.ts',

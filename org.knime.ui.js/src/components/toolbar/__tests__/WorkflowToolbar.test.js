@@ -43,7 +43,7 @@ describe('WorkflowToolbar.vue', () => {
         };
 
         $shortcuts = {
-            isEnabled: jest.fn().mockReturnValue(true)
+            isEnabled: vi.fn().mockReturnValue(true)
         };
 
         storeConfig = {
@@ -52,7 +52,7 @@ describe('WorkflowToolbar.vue', () => {
                     activeWorkflow: workflow
                 },
                 getters: {
-                    isWorkflowEmpty: jest.fn()
+                    isWorkflowEmpty: vi.fn()
                 }
             },
             selection: {
@@ -141,7 +141,7 @@ describe('WorkflowToolbar.vue', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
             const toolbarShortcuts = wrapper.findAllComponents(ToolbarShortcutButton)
-                
+
                 .map(tb => tb.props('name'));
             expect(toolbarShortcuts).toStrictEqual([]);
         });

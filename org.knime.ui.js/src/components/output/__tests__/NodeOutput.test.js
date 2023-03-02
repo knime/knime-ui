@@ -16,9 +16,9 @@ import PortTabs from '../PortTabs.vue';
 import PortViewTabOutput from '../PortViewTabOutput.vue';
 import NodeViewTabOutput from '../NodeViewTabOutput.vue';
 
-jest.mock('@api', () => ({ getPortView: jest.fn() }), { virtual: true });
+vi.mock('@api', () => ({ getPortView: vi.fn() }), { virtual: true });
 
-jest.mock('@knime/ui-extension-service');
+vi.mock('@knime/ui-extension-service');
 
 describe('NodeOutput.vue', () => {
     const FLOW_VARIABLE = 'flowVariable';
@@ -26,7 +26,7 @@ describe('NodeOutput.vue', () => {
     const UNSUPPORTED = 'unsupported';
 
     const mockFeatureFlags = {
-        shouldDisplayEmbeddedViews: jest.fn(() => true)
+        shouldDisplayEmbeddedViews: vi.fn(() => true)
     };
 
     const dummyNodes = {
@@ -48,8 +48,8 @@ describe('NodeOutput.vue', () => {
     const createStore = ({
         nodes = dummyNodes,
         selectedNodeIds = ['node1'],
-        isDragging = jest.fn().mockReturnValue(false),
-        executeNodes = jest.fn()
+        isDragging = vi.fn().mockReturnValue(false),
+        executeNodes = vi.fn()
     } = {}) => {
         const workflow = {
             mutations: {
@@ -177,7 +177,7 @@ describe('NodeOutput.vue', () => {
     });
 
     it('should show execute node button and trigger node execution', async () => {
-        const executeNodes = jest.fn();
+        const executeNodes = vi.fn();
         const node = createNode();
         const store = createStore({ executeNodes, nodes: { [node.id]: node }, selectedNodeIds: [node.id] });
         const wrapper = doMount(store);
@@ -196,7 +196,7 @@ describe('NodeOutput.vue', () => {
     });
 
     it('should display placeholder when node is dragging', () => {
-        const store = createStore({ isDragging: jest.fn(() => true) });
+        const store = createStore({ isDragging: vi.fn(() => true) });
         const wrapper = doMount(store);
 
         expect(placeholderMessage(wrapper)).toBe('Node output will be loaded after moving is completed');

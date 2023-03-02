@@ -73,7 +73,7 @@ describe('WorkflowPanel', () => {
 
         const $store = mockVuexStore(storeConfig);
 
-        const dispatchSpy = jest.spyOn($store, 'dispatch');
+        const dispatchSpy = vi.spyOn($store, 'dispatch');
 
         const wrapper = shallowMount(WorkflowPanel, {
             props,
@@ -150,8 +150,8 @@ describe('WorkflowPanel', () => {
         const createEvent = (x, y) => ({
             clientX: x,
             clientY: y,
-            preventDefault: jest.fn(),
-            stopPropagation: jest.fn()
+            preventDefault: vi.fn(),
+            stopPropagation: vi.fn()
         });
 
         it('renders context menu', async () => {
@@ -180,14 +180,14 @@ describe('WorkflowPanel', () => {
 
         it('prevents native context menu by default', async () => {
             const { wrapper } = doShallowMount();
-            const preventDefault = jest.fn();
+            const preventDefault = vi.fn();
             await wrapper.trigger('contextmenu', { preventDefault });
             expect(preventDefault).toHaveBeenCalled();
         });
 
         it('allows native context menu if source element allows it', async () => {
             const { wrapper } = doShallowMount();
-            const preventDefault = jest.fn();
+            const preventDefault = vi.fn();
             wrapper.element.classList.add('native-context-menu');
             await wrapper.trigger('contextmenu', { preventDefault });
             expect(preventDefault).not.toHaveBeenCalled();
@@ -195,7 +195,7 @@ describe('WorkflowPanel', () => {
     });
 
     describe('Port Type menu', () => {
-        const mountAndOpenMenu = async ({ closeCallback = jest.fn() } = {}) => {
+        const mountAndOpenMenu = async ({ closeCallback = vi.fn() } = {}) => {
             const mountResult = doShallowMount();
             mountResult.$store.state.workflow.portTypeMenu = {
                 isOpen: true,
@@ -244,7 +244,7 @@ describe('WorkflowPanel', () => {
     });
 
     describe('Quick add node menu', () => {
-        const mountAndOpenMenu = async ({ closeCallback = jest.fn() } = {}) => {
+        const mountAndOpenMenu = async ({ closeCallback = vi.fn() } = {}) => {
             const mountResult = doShallowMount();
             mountResult.$store.state.workflow.quickAddNodeMenu = {
                 isOpen: true,

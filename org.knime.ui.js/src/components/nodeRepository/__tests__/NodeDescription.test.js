@@ -14,8 +14,8 @@ describe('NodeDescription', () => {
 
     beforeEach(() => {
         wrapper = null;
-        closeDescriptionPanelMock = jest.fn();
-        getNodeDescriptionMock = jest.fn().mockReturnValue({
+        closeDescriptionPanelMock = vi.fn();
+        getNodeDescriptionMock = vi.fn().mockReturnValue({
             id: 1,
             description: 'This is a node.',
             links: [{

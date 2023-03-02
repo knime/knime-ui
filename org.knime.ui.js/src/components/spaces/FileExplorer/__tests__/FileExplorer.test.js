@@ -143,7 +143,7 @@ describe('FileExplorer.vue', () => {
         });
 
         const dragAndDropItem = async (_srcItemWrapper, _tgtItemWrapper) => {
-            const dataTransfer = { setDragImage: jest.fn() };
+            const dataTransfer = { setDragImage: vi.fn() };
             await _srcItemWrapper.trigger('dragstart', { dataTransfer });
             await _tgtItemWrapper.trigger('dragenter');
             await _tgtItemWrapper.trigger('drag');
@@ -152,7 +152,7 @@ describe('FileExplorer.vue', () => {
         };
 
         it('should add the proper classes when handling dragging events', async () => {
-            const dataTransfer = { setDragImage: jest.fn() };
+            const dataTransfer = { setDragImage: vi.fn() };
             const { wrapper } = doMount();
             const firstItem = wrapper.findAll('.file-explorer-item').at(0);
             const secondItem = wrapper.findAll('.file-explorer-item').at(1);

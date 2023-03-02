@@ -6,7 +6,7 @@ import * as $shapes from '@/style/shapes.mjs';
 import NodeLabelTextArea from '../NodeLabelTextArea.vue';
 
 describe('NodeLabelTextArea', () => {
-    const mockSizeChangeFn = jest.fn();
+    const mockSizeChangeFn = vi.fn();
 
     const doShallowMount = (opts = { props: { modelValue: '' } }) => {
         const wrapper = shallowMount(NodeLabelTextArea, {

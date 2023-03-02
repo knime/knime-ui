@@ -47,8 +47,8 @@ describe('SidebarSpaceExplorer.vue', () => {
         };
         $store.state.spaces.lastItemForProject = { ...lastItemForProjectData };
 
-        const dispatchSpy = jest.spyOn($store, 'dispatch');
-        const commitSpy = jest.spyOn($store, 'commit');
+        const dispatchSpy = vi.spyOn($store, 'dispatch');
+        const commitSpy = vi.spyOn($store, 'commit');
         const wrapper = shallowMount(SidebarSpaceExplorer, {
             global: {
                 plugins: [$store]

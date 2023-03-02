@@ -44,8 +44,8 @@ describe('NodeNameEditor', () => {
 
 
     describe('blocks events to canvas', () => {
-        const mockStopPropagation = jest.fn();
-        const mockPreventDefault = jest.fn();
+        const mockStopPropagation = vi.fn();
+        const mockPreventDefault = vi.fn();
 
         beforeAll(() => {
             MouseEvent.prototype.stopPropagation = mockStopPropagation;
@@ -53,7 +53,7 @@ describe('NodeNameEditor', () => {
         });
 
         afterEach(() => {
-            jest.clearAllMocks();
+            vi.clearAllMocks();
         });
 
         it('should block click events', () => {
@@ -89,7 +89,7 @@ describe('NodeNameEditor', () => {
         it('should emit save when clicking the save button', () => {
             const wrapper = doShallowMount();
             wrapper.findComponent(NodeNameTextarea).vm.$emit('update:modelValue', 'new value');
-            
+
             wrapper.findAll('.action-button').at(0).trigger('click');
             expect(wrapper.emitted('save')).toBeDefined();
         });
@@ -184,18 +184,18 @@ describe('NodeNameEditor', () => {
 
     it('hides error message after some time', async () => {
         const wrapper = doShallowMount();
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         expect(wrapper.find('foreignObject').exists()).toBe(false);
         await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalidInput');
         expect(wrapper.find('foreignObject').exists()).toBe(true);
-        jest.runAllTimers();
+        vi.runAllTimers();
         await wrapper.vm.$nextTick();
         expect(wrapper.find('foreignObject').exists()).toBe(false);
     });
 
     it('clears active hide error message timer if another inlaid input occurs', async () => {
         const wrapper = doShallowMount();
-        window.clearTimeout = jest.fn();
+        window.clearTimeout = vi.fn();
         await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalidInput');
         await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalidInput');
         expect(window.clearTimeout).toBeCalled();

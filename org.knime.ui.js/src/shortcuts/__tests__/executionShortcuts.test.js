@@ -4,7 +4,7 @@ describe('executionShortcuts', () => {
     let mockDispatch, $store;
 
     beforeEach(() => {
-        mockDispatch = jest.fn();
+        mockDispatch = vi.fn();
         $store = {
             dispatch: mockDispatch,
             state: {

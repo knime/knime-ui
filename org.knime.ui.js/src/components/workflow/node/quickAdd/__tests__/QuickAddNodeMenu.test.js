@@ -31,10 +31,10 @@ const getNodeRecommendationsResponse = [{
     type: 'Manipulator'
 }];
 
-jest.mock('@api', () => ({
+vi.mock('@api', () => ({
     __esModule: true,
-    getNodeRecommendations: jest.fn().mockReturnValue(getNodeRecommendationsResponse),
-    openWorkflowCoachPreferencePage: jest.fn()
+    getNodeRecommendations: vi.fn().mockReturnValue([]),
+    openWorkflowCoachPreferencePage: vi.fn()
 }));
 
 describe('QuickAddNodeMenu.vue', () => {
@@ -46,9 +46,13 @@ describe('QuickAddNodeMenu.vue', () => {
         props: FloatingMenu.props
     };
 
+    beforeAll(() => {
+        getNodeRecommendations.mockReturnValue(getNodeRecommendationsResponse);
+    });
+
     const doMount = ({
-        addNodeMock = jest.fn(),
-        isWriteableMock = jest.fn().mockReturnValue(true)
+        addNodeMock = vi.fn(),
+        isWriteableMock = vi.fn().mockReturnValue(true)
     } = {}) => {
         const props = {
             nodeId: 'node-id',
@@ -191,7 +195,7 @@ describe('QuickAddNodeMenu.vue', () => {
 
         it('does not add node if workflow is not writeable', async () => {
             let { wrapper, addNodeMock } = doMount({
-                isWriteableMock: jest.fn(() => false)
+                isWriteableMock: vi.fn(() => false)
             });
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);

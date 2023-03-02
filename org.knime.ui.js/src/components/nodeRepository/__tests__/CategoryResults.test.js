@@ -12,9 +12,9 @@ describe('CategoryResults', () => {
     beforeEach(() => {
         wrapper = null;
 
-        getAllNodesMock = jest.fn();
-        setSelectedTagsMock = jest.fn();
-        setCategoryScrollPositionMock = jest.fn();
+        getAllNodesMock = vi.fn();
+        setSelectedTagsMock = vi.fn();
+        setCategoryScrollPositionMock = vi.fn();
 
         storeState = {
             nodesPerCategory: [

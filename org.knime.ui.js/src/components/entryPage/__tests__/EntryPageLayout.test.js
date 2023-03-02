@@ -5,7 +5,7 @@ import PageHeader from '@/components/common/PageHeader.vue';
 describe('EntryPageLayout.vue', () => {
     const doMount = () => {
         const $router = {
-            push: jest.fn()
+            push: vi.fn()
         };
 
         const $route = {

@@ -5,8 +5,8 @@ import { loadAsyncComponent } from 'webapps-common/ui/util/loadComponentLibrary'
 import FlowVariablePortView from '@/components/output/FlowVariablePortView.vue';
 import ViewLoader from '../ViewLoader.vue';
 
-jest.mock('webapps-common/ui/util/loadComponentLibrary', () => ({
-    loadAsyncComponent: jest.fn()
+vi.mock('webapps-common/ui/util/loadComponentLibrary', () => ({
+    loadAsyncComponent: vi.fn()
 }));
 
 describe('ViewLoader.vue', () => {
@@ -26,7 +26,7 @@ describe('ViewLoader.vue', () => {
             }
         };
 
-        const viewConfigLoaderFn = jest.fn(() => ({
+        const viewConfigLoaderFn = vi.fn(() => ({
             resourceInfo: {
                 type: 'VUE_COMPONENT_LIB',
                 id: 'MockComponent'
@@ -41,9 +41,9 @@ describe('ViewLoader.vue', () => {
     const doMount = (customProps = {}) => {
         const defaultProps = {
             renderKey: '123',
-            viewConfigLoaderFn: jest.fn(),
-            initKnimeService: jest.fn(),
-            resourceLocationResolver: jest.fn()
+            viewConfigLoaderFn: vi.fn(),
+            initKnimeService: vi.fn(),
+            resourceLocationResolver: vi.fn()
         };
 
         return mount(ViewLoader, {
@@ -55,14 +55,14 @@ describe('ViewLoader.vue', () => {
     };
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it.each([
         ['load view', true],
         ['not load view', false]
     ])('should %s on mount when the `loadOnMount` prop is set to %s', (testType, loadOnMount) => {
-        const viewConfigLoaderFn = jest.fn();
+        const viewConfigLoaderFn = vi.fn();
         doMount({ viewConfigLoaderFn, loadOnMount });
 
         if (testType.includes('not')) {
@@ -73,7 +73,7 @@ describe('ViewLoader.vue', () => {
     });
 
     it('should reload view when renderKey changes', async () => {
-        const viewConfigLoaderFn = jest.fn();
+        const viewConfigLoaderFn = vi.fn();
         const wrapper = doMount({ viewConfigLoaderFn, loadOnMount: false });
 
         await wrapper.setProps({ renderKey: 'changed' });
@@ -108,7 +108,7 @@ describe('ViewLoader.vue', () => {
 
     it('should emit state:error when an error occurs while loading the component', async () => {
         const error = new Error('Error loading');
-        const viewConfigLoaderFn = jest.fn(() => {
+        const viewConfigLoaderFn = vi.fn(() => {
             throw error;
         });
         const wrapper = doMount({ viewConfigLoaderFn });
@@ -126,7 +126,7 @@ describe('ViewLoader.vue', () => {
     it('should call initKnimeService', async () => {
         const { viewConfigLoaderFn } = setupDynamicMockComponent();
 
-        const initKnimeService = jest.fn(() => ({ mockService: true }));
+        const initKnimeService = vi.fn(() => ({ mockService: true }));
 
         const wrapper = doMount({ viewConfigLoaderFn, initKnimeService });
 
@@ -139,7 +139,7 @@ describe('ViewLoader.vue', () => {
     it('should use the resourceLocationResolver', async () => {
         const { viewConfigLoaderFn } = setupDynamicMockComponent();
 
-        const resourceLocationResolver = jest.fn(() => 'dummy-location');
+        const resourceLocationResolver = vi.fn(() => 'dummy-location');
 
         doMount({ viewConfigLoaderFn, resourceLocationResolver });
 
@@ -163,7 +163,7 @@ describe('ViewLoader.vue', () => {
     });
 
     it('should load views for component reference', async () => {
-        const viewConfigLoaderFn = jest.fn(() => ({
+        const viewConfigLoaderFn = vi.fn(() => ({
             resourceInfo: {
                 id: 'FlowVariablePortView',
                 type: 'VUE_COMPONENT_REFERENCE'

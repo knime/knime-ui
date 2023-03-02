@@ -1,17 +1,17 @@
 import applicationShortcuts from '../applicationShortcuts';
 
-jest.mock('@api', () => ({
+vi.mock('@api', () => ({
     __esModule: true,
-    openWorkflow: jest.fn(),
-    createWorkflow: jest.fn()
+    openWorkflow: vi.fn(),
+    createWorkflow: vi.fn()
 }));
 
 describe('applicationShortcuts', () => {
     let mockDispatch, mockCommit, $store;
 
     beforeEach(() => {
-        mockDispatch = jest.fn();
-        mockCommit = jest.fn();
+        mockDispatch = vi.fn();
+        mockCommit = vi.fn();
         $store = {
             dispatch: mockDispatch,
             commit: mockCommit,

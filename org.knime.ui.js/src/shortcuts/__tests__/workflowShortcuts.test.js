@@ -11,9 +11,9 @@ describe('workflowShortcuts', () => {
         selectedConnections = [],
         singleSelectedNode = mockSelectedNode,
         isWorkflowWritable = true,
-        getScrollContainerElement = jest.fn()
+        getScrollContainerElement = vi.fn()
     } = {}) => {
-        const mockDispatch = jest.fn();
+        const mockDispatch = vi.fn();
         const $store = {
             dispatch: mockDispatch,
             state: {
@@ -426,7 +426,7 @@ describe('workflowShortcuts', () => {
             const kanvasElement = document.getElementById('kanvas');
             kanvasElement.focus();
             expect(document.activeElement).toBe(kanvasElement);
-            let getScrollContainerElement = jest.fn().mockReturnValue(kanvasElement);
+            let getScrollContainerElement = vi.fn().mockReturnValue(kanvasElement);
 
             const { $store } = createStore({ getScrollContainerElement });
 

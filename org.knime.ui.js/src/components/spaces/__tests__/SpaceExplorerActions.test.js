@@ -9,7 +9,7 @@ describe('SpaceExplorerActions.vue', () => {
     const doMount = ({ props = {} } = {}) => {
         const wrapper = mount(SpaceExplorerActions, {
             props,
-            global: { mocks: { $shortcuts: { get: jest.fn(() => ({})) } } }
+            global: { mocks: { $shortcuts: { get: vi.fn(() => ({})) } } }
         });
 
         return { wrapper };

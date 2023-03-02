@@ -16,16 +16,9 @@ import NodePort from '../NodePort.vue';
 import NodePortActions from '../NodePortActions.vue';
 import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
 
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
+const circleDetectionSpy = vi.spyOn(compatibleConnections, 'circleDetection').mockReturnValue([]);
 
-const circleDetectionSpy = jest.spyOn(compatibleConnections, 'circleDetection').mockReturnValue([]);
-
-jest.mock('@/mixins/escapeStack', () => {
+vi.mock('@/mixins/escapeStack', () => {
     function escapeStack({ onEscape }) { // eslint-disable-line func-style
         escapeStack.onEscape = onEscape;
         return { /* empty mixin */ };
@@ -38,7 +31,7 @@ describe('NodePort', () => {
     const provide = { anchorPoint: { x: 123, y: 456 } };
 
     const mockBus = {
-        emit: jest.fn()
+        emit: vi.fn()
     };
 
     beforeEach(() => {
@@ -75,13 +68,13 @@ describe('NodePort', () => {
                     }
                 },
                 mutations: {
-                    setTooltip: jest.fn()
+                    setTooltip: vi.fn()
                 },
                 actions: {
-                    connectNodes: jest.fn(),
-                    openQuickAddNodeMenu: jest.fn(),
-                    closeQuickAddNodeMenu: jest.fn(),
-                    removeContainerNodePort: jest.fn()
+                    connectNodes: vi.fn(),
+                    openQuickAddNodeMenu: vi.fn(),
+                    closeQuickAddNodeMenu: vi.fn(),
+                    removeContainerNodePort: vi.fn()
                 },
                 getters: {
                     isWritable() {
@@ -139,7 +132,7 @@ describe('NodePort', () => {
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders base case', () => {
@@ -160,7 +153,7 @@ describe('NodePort', () => {
 
     describe('Tooltips', () => {
         beforeEach(() => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
         });
 
         it('shows tooltips on table ports', async () => {
@@ -168,7 +161,7 @@ describe('NodePort', () => {
 
             wrapper.trigger('mouseenter');
             await Vue.nextTick();
-            jest.runAllTimers();
+            vi.runAllTimers();
 
             expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), {
                 anchorPoint: { x: 123, y: 456 },
@@ -193,7 +186,7 @@ describe('NodePort', () => {
 
             doShallowMount();
             wrapper.trigger('mouseenter');
-            jest.runAllTimers();
+            vi.runAllTimers();
             await Vue.nextTick();
 
             expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), {
@@ -327,7 +320,7 @@ describe('NodePort', () => {
 
     describe('Drag Connector', () => {
         let startDragging, dragAboveTarget, KanvasMock, dropOnTarget;
-        document.elementFromPoint = jest.fn();
+        document.elementFromPoint = vi.fn();
 
         beforeEach(() => {
             // Set up
@@ -341,10 +334,10 @@ describe('NodePort', () => {
             startDragging = async ([x, y] = [0, 0]) => {
                 doShallowMount();
 
-                document.getElementById = jest.fn().mockReturnValue(KanvasMock);
+                document.getElementById = vi.fn().mockReturnValue(KanvasMock);
 
-                wrapper.element.setPointerCapture = jest.fn();
-                wrapper.element.releasePointerCapture = jest.fn();
+                wrapper.element.setPointerCapture = vi.fn();
+                wrapper.element.releasePointerCapture = vi.fn();
 
                 // Start dragging
                 await wrapper.trigger('pointerdown', { pointerId: -1, x, y, button: 0 });
@@ -352,7 +345,7 @@ describe('NodePort', () => {
             };
 
             dragAboveTarget = async (targetElement, [x, y] = [0, 0], enableDropTarget = true) => {
-                document.elementFromPoint = jest.fn().mockReturnValueOnce(targetElement);
+                document.elementFromPoint = vi.fn().mockReturnValueOnce(targetElement);
 
                 if (targetElement) {
                     targetElement.addEventListener('connector-enter', e => {
@@ -942,7 +935,7 @@ describe('NodePort', () => {
             await Vue.nextTick();
             expect(wrapper.findComponent(Connector).exists()).toBe(false);
 
-            const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
+            const dispatchEventSpy = vi.spyOn(wrapper.element, 'dispatchEvent');
             await wrapper.trigger('lostpointercapture');
 
             // only the trigger of `lostpointecapture`, but not opening the quick node add menu
@@ -1060,7 +1053,7 @@ describe('NodePort', () => {
                     await startDragging();
 
                     // we cannot mock dispatchEvent as it is required to be the real function for wrapper.trigger calls!
-                    const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
+                    const dispatchEventSpy = vi.spyOn(wrapper.element, 'dispatchEvent');
 
                     // connector and QuickAddNodeGhost should be visible
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);

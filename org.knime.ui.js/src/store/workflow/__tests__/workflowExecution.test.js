@@ -13,8 +13,8 @@ describe('workflow store: Execution', () => {
              * Because the module is cached after it is required for the first time,
              * a reset is needed
              */
-            jest.resetModules();
-            jest.doMock('@api', () => ({
+            vi.resetModules();
+            vi.doMock('@api', () => ({
                 __esModule: true,
                 ...apiMocks
             }), { virtual: true });
@@ -32,7 +32,7 @@ describe('workflow store: Execution', () => {
             ['cancelNodeExecution', 'cancel'],
             ['resetNodes', 'reset']
         ])('passes %s to API', async (fn, action) => {
-            let mock = jest.fn();
+            let mock = vi.fn();
             let apiMocks = { changeNodeState: mock };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
@@ -48,7 +48,7 @@ describe('workflow store: Execution', () => {
             ['resumeLoopExecution', 'resume'],
             ['stepLoopExecution', 'step']
         ])('passes %s to API', async (fn, action) => {
-            let mock = jest.fn();
+            let mock = vi.fn();
             let apiMocks = { changeLoopState: mock };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
@@ -59,7 +59,7 @@ describe('workflow store: Execution', () => {
         });
 
         test('overloaded changeNodeState', async () => {
-            let mock = jest.fn();
+            let mock = vi.fn();
             let apiMocks = { changeNodeState: mock };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', {

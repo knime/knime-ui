@@ -134,14 +134,14 @@ describe('SmarLoader.vue', () => {
             };
 
             it('should display the loader and its visual elements after a delay', async () => {
-                jest.useFakeTimers();
+                vi.useFakeTimers();
 
                 const { wrapper } = doMount({
                     props: { loading: true, config }
                 });
 
                 const advanceTime = async (timeMs) => {
-                    jest.advanceTimersByTime(timeMs);
+                    vi.advanceTimersByTime(timeMs);
                     await wrapper.vm.$nextTick();
                 };
 
@@ -183,7 +183,7 @@ describe('SmarLoader.vue', () => {
                 expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
                 expect(wrapper.find('.text').exists()).toBe(true);
 
-                jest.useRealTimers();
+                vi.useRealTimers();
             });
         });
     });

@@ -35,9 +35,9 @@ describe('NodeName', () => {
                         nameEditorNodeId: 'editNodeId'
                     },
                     actions: {
-                        openNameEditor: jest.fn(),
-                        closeNameEditor: jest.fn(),
-                        renameContainerNode: jest.fn()
+                        openNameEditor: vi.fn(),
+                        closeNameEditor: vi.fn(),
+                        renameContainerNode: vi.fn()
                     }
                 }
             };
@@ -94,9 +94,9 @@ describe('NodeName', () => {
                         nameEditorNodeId: defaultProps.nodeId
                     },
                     actions: {
-                        openNameEditor: jest.fn(),
-                        closeNameEditor: jest.fn(),
-                        renameContainerNode: jest.fn()
+                        openNameEditor: vi.fn(),
+                        closeNameEditor: vi.fn(),
+                        renameContainerNode: vi.fn()
                     }
                 }
             };
@@ -135,7 +135,7 @@ describe('NodeName', () => {
         });
 
         it('should handle saving the name', async () => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
             const saveEventPayload = {
                 newName: 'This is new',
                 dimensionsOnClose: {
@@ -150,7 +150,7 @@ describe('NodeName', () => {
                 expect.objectContaining({ nodeId: defaultProps.nodeId, name: saveEventPayload.newName })
             );
 
-            jest.runAllTimers();
+            vi.runAllTimers();
             expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
 
             // emulate editor being closed from store

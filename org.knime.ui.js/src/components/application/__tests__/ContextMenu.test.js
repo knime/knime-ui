@@ -8,12 +8,12 @@ import ContextMenu from '../ContextMenu.vue';
 
 describe('ContextMenu.vue', () => {
     const $shortcuts = {
-        dispatch: jest.fn(),
-        get: jest.fn().mockImplementation(name => ({
+        dispatch: vi.fn(),
+        get: vi.fn().mockImplementation(name => ({
             text: name,
             hotkeyText: 'hotkeyText'
         })),
-        isEnabled: jest.fn().mockReturnValue(false)
+        isEnabled: vi.fn().mockReturnValue(false)
     };
 
     const doMount = ({ props = {}, selectedNodes, singleSelectedNode, selectedConnections } = {}) => {
@@ -57,7 +57,7 @@ describe('ContextMenu.vue', () => {
             expect(wrapper.findComponent(FloatingMenu).props('canvasPosition')).toStrictEqual({ x: 10, y: 10 });
             expect(wrapper.findComponent(FloatingMenu).props('preventOverflow')).toBe(true);
         });
-        
+
         it('re-emits menu-close', () => {
             const { wrapper } = doMount();
             wrapper.findComponent(FloatingMenu).vm.$emit('menu-close');
@@ -66,32 +66,32 @@ describe('ContextMenu.vue', () => {
 
         it('focuses menu items on position change', async () => {
             const { wrapper, $store } = doMount();
-            
+
             $store.state.selection._selectedNodes = ['a node'];
             expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
-            
-            const focusMock = jest.fn();
-    
+
+            const focusMock = vi.fn();
+
             wrapper.findComponent(MenuItems).vm.$el.focus = focusMock;
             wrapper.setProps({ position: { x: 2, y: 3 } });
             await Vue.nextTick();
-    
+
             expect(focusMock).toHaveBeenCalled();
         });
     });
 
     it('sets items on mounted', () => {
         const { wrapper } = doMount();
-        
+
         expect(renderedMenuItems(wrapper).length).toBe(4);
     });
 
     it('sets items on position change', async () => {
         const { wrapper, $store } = doMount();
-        
+
         $store.state.selection._selectedNodes = ['a node'];
         expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
-        
+
         wrapper.setProps({ position: { x: 2, y: 3 } });
         await Vue.nextTick();
 
@@ -104,13 +104,13 @@ describe('ContextMenu.vue', () => {
         $store.state.selection._selectedNodes = ['a node'];
         expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
         await Vue.nextTick();
-        
+
         expect(renderedMenuItems(wrapper).length).toBe(4);
     });
 
     it('uses right format for MenuItems', async () => {
         const { wrapper } = doMount();
-        
+
         await Vue.nextTick();
 
         expect($shortcuts.isEnabled).toHaveBeenCalledWith('executeAll');
@@ -131,7 +131,7 @@ describe('ContextMenu.vue', () => {
 
     it('closes menu after item has been clicked', () => {
         const { wrapper } = doMount();
-        
+
         expect(wrapper.emitted('menuClose')).toBeFalsy();
         wrapper.findComponent(MenuItems).vm.$emit('item-click', null, { name: 'shortcut' });
         expect(wrapper.emitted('menuClose')).toBeTruthy();
@@ -142,7 +142,7 @@ describe('ContextMenu.vue', () => {
 
         it('shows correct menu items if nothing is selected', async () => {
             const { wrapper } = doMount();
-            
+
             await Vue.nextTick();
 
             expect(renderedMenuItems(wrapper)).toEqual(
@@ -157,12 +157,12 @@ describe('ContextMenu.vue', () => {
 
         it('shows correct menu items if one node is selected', async () => {
             const node = { id: 'root:0', allowedActions: {} };
-           
+
             const { wrapper } = doMount({
                 selectedNodes: () => [node],
                 singleSelectedNode: () => node
             });
-            
+
             await Vue.nextTick();
 
             expect(renderedMenuItems(wrapper)).toEqual(
@@ -191,7 +191,7 @@ describe('ContextMenu.vue', () => {
                 selectedNodes: () => [node],
                 singleSelectedNode: () => node
             });
-            
+
             await Vue.nextTick();
 
             expect(renderedMenuItems(wrapper)).toEqual(
@@ -293,7 +293,7 @@ describe('ContextMenu.vue', () => {
             const conn2 = { id: 'conn2' };
 
             const { wrapper } = doMount({ selectedConnections: () => [conn, conn2] });
-            
+
             await Vue.nextTick();
 
             expect(renderedMenuItems(wrapper)).toEqual(
@@ -305,7 +305,7 @@ describe('ContextMenu.vue', () => {
 
         it('shows correct menu items for single selected connections', async () => {
             const conn = { id: 'conn1' };
-            
+
             const { wrapper } = doMount({ selectedConnections: () => [conn] });
 
             await Vue.nextTick();
@@ -327,7 +327,7 @@ describe('ContextMenu.vue', () => {
                 selectedNodes: () => [node],
                 singleSelectedNode: () => node
             });
-            
+
             expect(renderedMenuItems(wrapper)).toEqual(
                 assertItems([
                     { text: 'configureNode' },
@@ -356,7 +356,7 @@ describe('ContextMenu.vue', () => {
                 selectedNodes: () => [node],
                 singleSelectedNode: () => node
             });
-            
+
             expect(renderedMenuItems(wrapper)).toEqual(
                 assertItems([
                     { text: 'configureNode' },

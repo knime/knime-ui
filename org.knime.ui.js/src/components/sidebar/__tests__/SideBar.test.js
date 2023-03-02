@@ -15,7 +15,7 @@ describe('Sidebar', () => {
     let store, workflow, wrapper, doShallowMount;
 
     const mockFeatureFlags = {
-        shouldDisplayEmbeddedDialogs: jest.fn(() => true)
+        shouldDisplayEmbeddedDialogs: vi.fn(() => true)
     };
 
     beforeEach(() => {

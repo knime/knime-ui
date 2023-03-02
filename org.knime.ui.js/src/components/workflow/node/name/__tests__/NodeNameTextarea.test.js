@@ -5,7 +5,7 @@ import * as $shapes from '@/style/shapes.mjs';
 import NodeNameTextarea from '../NodeNameTextarea.vue';
 
 describe('NodeNameTextarea', () => {
-    const mockSizeChangeFn = jest.fn();
+    const mockSizeChangeFn = vi.fn();
 
     const doShallowMount = (opts = { props: { value: '' } }) => {
         const wrapper = shallowMount(NodeNameTextarea, {
@@ -123,7 +123,7 @@ describe('NodeNameTextarea', () => {
 
         const event = {
             key: '#',
-            preventDefault: jest.fn()
+            preventDefault: vi.fn()
         };
         wrapper.find('textarea').trigger('keydown', event);
 

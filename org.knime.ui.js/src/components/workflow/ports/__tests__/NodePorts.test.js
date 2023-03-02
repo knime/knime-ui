@@ -19,8 +19,8 @@ const mockPort = ({ index, connectedVia = [], portGroupId = null }) => ({
 
 describe('NodePorts.vue', () => {
     const doMount = ({
-        addNodePortMock = jest.fn(),
-        removeNodePortMock = jest.fn(),
+        addNodePortMock = vi.fn(),
+        removeNodePortMock = vi.fn(),
         customProps = {}
     } = {}) => {
         let defaultProps = {
@@ -473,7 +473,7 @@ describe('NodePorts.vue', () => {
         } });
         let ports = wrapper.findAllComponents(NodePort);
         const [inPort, outPort] = ports;
-        
+
         expect([
             inPort.props('targeted'),
             outPort.props('targeted')

@@ -5,8 +5,8 @@ describe('workflow store', () => {
     let store, loadStore, addEventListenerMock, removeEventListenerMock, workflowObjectsBoundsMock;
 
     beforeEach(() => {
-        addEventListenerMock = jest.fn();
-        removeEventListenerMock = jest.fn();
+        addEventListenerMock = vi.fn();
+        removeEventListenerMock = vi.fn();
         store = null;
 
         loadStore = async ({ apiMocks = {} } = {}) => {
@@ -15,17 +15,17 @@ describe('workflow store', () => {
              * Because the module is cached after it is required for the first time,
              * a reset is needed
              */
-            jest.resetModules();
-            jest.doMock('@api', () => ({
+            vi.resetModules();
+            vi.doMock('@api', () => ({
                 __esModule: true,
                 addEventListener: addEventListenerMock,
                 removeEventListener: removeEventListenerMock,
                 ...apiMocks
             }), { virtual: true });
 
-            jest.doMock('@/util/workflowObjectBounds', () => ({
+            vi.doMock('@/util/workflowObjectBounds', () => ({
                 __esModule: true,
-                default: jest.fn().mockReturnValue('bounds')
+                default: vi.fn().mockReturnValue('bounds')
             }));
 
             workflowObjectsBoundsMock = (await import('@/util/workflowObjectBounds')).default;
@@ -71,7 +71,7 @@ describe('workflow store', () => {
             ['undo'],
             ['redo']
         ])('passes %s to the API', async (action) => {
-            let mock = jest.fn();
+            let mock = vi.fn();
             let apiMocks = { [action]: mock };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });

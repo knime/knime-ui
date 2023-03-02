@@ -5,13 +5,6 @@ import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import Kanvas, { RESIZE_DEBOUNCE } from '../Kanvas.vue';
 
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
-
 describe('Kanvas', () => {
     const doShallowMount = ({
         isWorkflowEmpty = true,
@@ -19,7 +12,7 @@ describe('Kanvas', () => {
         scrollLeft = 0,
         scrollTop = 0
     } = {}) => {
-        const getBoundingClientRectMock = jest.fn();
+        const getBoundingClientRectMock = vi.fn();
         getBoundingClientRectMock.mockReturnValue({
             x: 5,
             y: 10,
@@ -34,7 +27,7 @@ describe('Kanvas', () => {
             this.callbackRef = callback;
             this.element = null;
 
-            const disconnect = jest.fn();
+            const disconnect = vi.fn();
             ResizeObserverMock.__trigger__ = () => {
                 this.callbackRef([{ target: this.element }]);
             };
@@ -52,17 +45,17 @@ describe('Kanvas', () => {
 
         const actions = {
             canvas: {
-                zoomAroundPointer: jest.fn(),
-                updateContainerSize: jest.fn(),
-                contentBoundsChanged: jest.fn(),
-                initScrollContainerElement: jest.fn().mockImplementation(
+                zoomAroundPointer: vi.fn(),
+                updateContainerSize: vi.fn(),
+                contentBoundsChanged: vi.fn(),
+                initScrollContainerElement: vi.fn().mockImplementation(
                     ({ state }, el) => {
                         state.getScrollContainerElement = () => el;
                     }
                 )
             },
             application: {
-                toggleContextMenu: jest.fn()
+                toggleContextMenu: vi.fn()
             }
         };
 
@@ -88,8 +81,8 @@ describe('Kanvas', () => {
                 },
                 actions: actions.canvas,
                 mutations: {
-                    clearScrollContainerElement: jest.fn(),
-                    setSuggestPanning: jest.fn()
+                    clearScrollContainerElement: vi.fn(),
+                    setSuggestPanning: vi.fn()
                 }
             },
             workflow: {
@@ -109,7 +102,7 @@ describe('Kanvas', () => {
         const $store = mockVuexStore(storeConfig);
 
         const mockBus = {
-            emit: jest.fn()
+            emit: vi.fn()
         };
 
         const wrapper = shallowMount(Kanvas, {
@@ -119,8 +112,8 @@ describe('Kanvas', () => {
             }
         });
 
-        const setPointerCapture = jest.fn();
-        const releasePointerCapture = jest.fn();
+        const setPointerCapture = vi.fn();
+        const releasePointerCapture = vi.fn();
         wrapper.element.setPointerCapture = setPointerCapture;
         wrapper.element.releasePointerCapture = releasePointerCapture;
         wrapper.element.scrollLeft = scrollLeft;
@@ -319,8 +312,8 @@ describe('Kanvas', () => {
                 const { wrapper, $store } = doShallowMount();
                 $store.state.canvas.interactionsEnabled = false;
 
-                wrapper.element.setPointerCapture = jest.fn();
-                wrapper.element.releasePointerCapture = jest.fn();
+                wrapper.element.setPointerCapture = vi.fn();
+                wrapper.element.releasePointerCapture = vi.fn();
 
                 wrapper.element.scrollLeft = 100;
                 wrapper.element.scrollTop = 100;
@@ -491,19 +484,19 @@ describe('Kanvas', () => {
 
     describe('Container Resize', () => {
         it('should observe container resizes', async () => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
             const { wrapper, actions, ResizeObserverMock } = doShallowMount();
 
             ResizeObserverMock.__trigger__();
             ResizeObserverMock.__trigger__();
 
-            jest.advanceTimersByTime(RESIZE_DEBOUNCE);
+            vi.advanceTimersByTime(RESIZE_DEBOUNCE);
             await Vue.nextTick();
 
             expect(wrapper.emitted('containerSizeChanged')).toBeTruthy();
             expect(actions.canvas.updateContainerSize).toHaveBeenCalledTimes(1);
 
-            jest.useRealTimers();
+            vi.useRealTimers();
         });
 
         it('should disconnect resize observer', () => {

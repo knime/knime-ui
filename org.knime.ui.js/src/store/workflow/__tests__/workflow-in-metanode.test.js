@@ -23,8 +23,8 @@ describe('workflow store', () => {
              * Because the module is cached after it is required for the first time,
              * a reset is needed
              */
-            jest.resetModules();
-            jest.doMock('@api', () => ({
+            vi.resetModules();
+            vi.doMock('@api', () => ({
                 __esModule: true,
                 ...apiMocks
             }), { virtual: true });
@@ -35,7 +35,7 @@ describe('workflow store', () => {
             });
         };
     });
-    
+
     const node = { id: 'root:1', position: { x: 50, y: 21 } };
 
     describe('metanode content workflows', () => {

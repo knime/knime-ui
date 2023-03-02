@@ -37,7 +37,7 @@ describe('SearchBar', () => {
     it('can be focused via public method', () => {
         doShallowMount();
 
-        let focusMock = jest.fn();
+        let focusMock = vi.fn();
         wrapper.find('input').element.focus = focusMock;
         wrapper.vm.focus();
 

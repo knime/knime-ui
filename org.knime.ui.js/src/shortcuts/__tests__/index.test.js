@@ -4,7 +4,7 @@ import workflowShortcutsMock from '../workflowShortcuts';
 import canvasShortcutsMock from '../canvasShortcuts';
 import { selectionShortcuts as selectionShortcutsMocks } from '../miscShortcuts';
 
-jest.mock('@/shortcuts/workflowShortcuts', () => ({
+vi.mock('@/shortcuts/workflowShortcuts', () => ({
     __esModule: true,
     default: {
         save: {},
@@ -12,7 +12,7 @@ jest.mock('@/shortcuts/workflowShortcuts', () => ({
     }
 }));
 
-jest.mock('@/shortcuts/canvasShortcuts', () => ({
+vi.mock('@/shortcuts/canvasShortcuts', () => ({
     __esModule: true,
     default: {
         fitToScreen: {},
@@ -27,7 +27,7 @@ describe('Shortcuts', () => {
         beforeEach(() => {
             shortcuts = {
                 noCondition: { name: 'c1' },
-                withCondition: { name: 'c2', condition: jest.fn().mockImplementation(({ age }) => age >= 18) }
+                withCondition: { name: 'c2', condition: vi.fn().mockImplementation(({ age }) => age >= 18) }
             };
         });
 
@@ -97,7 +97,7 @@ describe('Shortcuts', () => {
             const resultInteractions = Object
                 .keys(canvasShortcuts)
                 .filter(c => canvasShortcuts[c].condition({ $store }));
-                
+
             expect(resultInteractions).toStrictEqual(expect.arrayContaining(['fitToScreen', 'zoomTo100']));
         });
 
@@ -120,7 +120,7 @@ describe('Shortcuts', () => {
             const resultInteractions = Object
                 .keys(selectionShortcuts)
                 .filter(c => selectionShortcuts[c].condition({ $store }));
-                
+
             expect(resultInteractions).toStrictEqual(expect.arrayContaining(['selectAllNodes', 'deselectAll']));
         });
     });

@@ -9,7 +9,7 @@ import * as spacesStore from '@/store/spaces';
 
 import CreateWorkflowModal from '../CreateWorkflowModal.vue';
 import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
-jest.mock('@/mixins/escapeStack', () => {
+vi.mock('@/mixins/escapeStack', () => {
     function escapeStack({ onEscape }) { // eslint-disable-line func-style
         escapeStack.onEscape = onEscape;
         return { /* empty mixin */ };
@@ -50,8 +50,8 @@ describe('CreateWorkflowModal.vue', () => {
         };
 
         const $store = mockVuexStore(storeConfig);
-        const dispatchSpy = jest.spyOn($store, 'dispatch');
-        const commitSpy = jest.spyOn($store, 'commit');
+        const dispatchSpy = vi.spyOn($store, 'dispatch');
+        const commitSpy = vi.spyOn($store, 'commit');
 
         const wrapper = mount(CreateWorkflowModal, {
             global: {
@@ -118,12 +118,12 @@ describe('CreateWorkflowModal.vue', () => {
         });
 
         it('Should focus the input', async () => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
             const { wrapper } = await doMount();
 
             const input = wrapper.find('input');
-            const focusSpy = jest.spyOn(input.element, 'focus');
-            jest.runAllTimers();
+            const focusSpy = vi.spyOn(input.element, 'focus');
+            vi.runAllTimers();
             expect(focusSpy).toHaveBeenCalled();
         });
 

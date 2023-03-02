@@ -2,20 +2,20 @@ import { clear as clearUserAgent, mockUserAgent } from 'jest-useragent-mock';
 
 describe('Shortcuts Plugin', () => {
     let loadPlugin, $shortcuts, userAgent;
-   
+
     const mockApp = { config: { globalProperties: {} } };
     const mockStore = { isDummy: true };
     const mockRouter = {
-        push: jest.fn()
+        push: vi.fn()
     };
 
     beforeEach(() => {
         loadPlugin = async () => {
-            jest.mock('@/shortcuts', () => ({
+            vi.mock('@/shortcuts', () => ({
                 crazyHotkey: {
                     hotkey: ['Ctrl', 'Alt', 'Shift', 'Delete'],
-                    execute: jest.fn(),
-                    condition: jest.fn()
+                    execute: vi.fn(),
+                    condition: vi.fn()
                 },
                 selectAll: {
                     hotkey: ['Ctrl', 'A']
@@ -35,7 +35,7 @@ describe('Shortcuts Plugin', () => {
 
     afterEach(() => {
         clearUserAgent();
-        jest.resetModules();
+        vi.resetModules();
     });
 
     describe('on apple', () => {

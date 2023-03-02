@@ -26,7 +26,7 @@ describe('canvas store', () => {
             scrollTop: 0,
             clientWidth: 300,
             clientHeight: 300,
-            getBoundingClientRect: jest.fn().mockReturnValue({
+            getBoundingClientRect: vi.fn().mockReturnValue({
                 x: 10,
                 y: 10,
                 width: 300,
@@ -34,15 +34,15 @@ describe('canvas store', () => {
                 bottom: 310,
                 right: 310
             }),
-            scrollTo: jest.fn().mockImplementation(({ top, left, behavior }) => {
+            scrollTo: vi.fn().mockImplementation(({ top, left, behavior }) => {
                 scrollContainer.scrollLeft = left;
                 scrollContainer.scrollTop = top;
             })
         };
 
         // put intermediate jest function into toCanvasCoordinates to be able to count how often it is called
-        toCanvasCoordinatesSpy = jest.fn().mockImplementation(canvasStoreConfig.getters.toCanvasCoordinates);
-      
+        toCanvasCoordinatesSpy = vi.fn().mockImplementation(canvasStoreConfig.getters.toCanvasCoordinates);
+
         store = mockVuexStore({
             canvas: {
                 ...canvasStoreConfig,
@@ -57,7 +57,7 @@ describe('canvas store', () => {
                 }
             }
         });
-        dispatchSpy = jest.spyOn(store, 'dispatch');
+        dispatchSpy = vi.spyOn(store, 'dispatch');
     });
 
     test('setFactor', () => {
@@ -221,7 +221,7 @@ describe('canvas store', () => {
                     scrollHeight: 1000,
                     scrollWidth: 1000
                 });
-    
+
                 await store.dispatch('canvas/restoreScrollState', {
                     zoomFactor: 2,
                     scrollLeft: 200,
@@ -230,11 +230,11 @@ describe('canvas store', () => {
                     scrollHeight: 500
                 });
                 expect(store.state.canvas.zoomFactor).toBe(2);
-    
+
                 // proportion:
                 // 200(scrollLeft) is to 500(scrollWidth) as 400(expected) is to 1000(currentScrollWidth)
                 expect(scrollContainer.scrollLeft).toBe(400);
-                
+
                 // proportion:
                 // 100(scrollTop) is to 500(scrollHeight) as 200(expected) is to 1000(currentScrollHeight)
                 expect(scrollContainer.scrollTop).toBe(200);
@@ -242,7 +242,7 @@ describe('canvas store', () => {
 
             it('defaults to `fillScreen` if canvas state is not valid when restoring', async () => {
                 await store.dispatch('canvas/restoreScrollState', {});
-                
+
                 expect(dispatchSpy).toHaveBeenCalledWith('canvas/fillScreen', undefined);
             });
         });
@@ -280,7 +280,7 @@ describe('canvas store', () => {
                 width: 200,
                 height: 200
             });
-            
+
             await Vue.nextTick();
 
             // new padding is 200 (screen units) => decreasy by 100 => scroll by 100

@@ -11,8 +11,8 @@ describe('JsonRpcNotifications', () => {
 
     beforeEach(() => {
         eventHandlers = {
-            WorkingEvent: jest.fn(),
-            ErrorEvent: jest.fn().mockImplementation(() => {
+            WorkingEvent: vi.fn(),
+            ErrorEvent: vi.fn().mockImplementation(() => {
                 throw new Error('boo!');
             }),
             NotFunction: null
@@ -35,7 +35,7 @@ describe('JsonRpcNotifications', () => {
 
     describe('error handling', () => {
         beforeAll(() => {
-            window.consola.error = jest.fn();
+            window.consola.error = vi.fn();
         });
 
         afterAll(() => {

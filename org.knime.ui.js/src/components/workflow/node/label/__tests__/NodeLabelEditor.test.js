@@ -44,8 +44,8 @@ describe('NodeLabelEditor', () => {
 
 
     describe('blocks events to canvas', () => {
-        const mockStopPropagation = jest.fn();
-        const mockPreventDefault = jest.fn();
+        const mockStopPropagation = vi.fn();
+        const mockPreventDefault = vi.fn();
 
         beforeAll(() => {
             MouseEvent.prototype.stopPropagation = mockStopPropagation;
@@ -53,7 +53,7 @@ describe('NodeLabelEditor', () => {
         });
 
         afterEach(() => {
-            jest.clearAllMocks();
+            vi.clearAllMocks();
         });
 
         it('should block click events', () => {
@@ -98,7 +98,7 @@ describe('NodeLabelEditor', () => {
         it('should emit save when clicking the save button', () => {
             const { wrapper } = doMount();
             wrapper.findComponent(NodeLabelTextArea).vm.$emit('update:modelValue', 'new value');
-            
+
             wrapper.findAll('.action-button').at(0).trigger('click');
 
             expect(wrapper.emitted('save')).toBeDefined();

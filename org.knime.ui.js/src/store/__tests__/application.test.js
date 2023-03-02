@@ -4,12 +4,12 @@ import * as selectionStore from '@/store/selection';
 
 import { APP_ROUTES, router } from '@/router';
 
-jest.mock('@/util/fuzzyPortTypeSearch', () => ({
-    makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
+vi.mock('@/util/fuzzyPortTypeSearch', () => ({
+    makeTypeSearch: vi.fn().mockReturnValue('searchFunction')
 }));
 
-jest.mock('@/util/encodeString', () => ({
-    encodeString: jest.fn(value => value)
+vi.mock('@/util/encodeString', () => ({
+    encodeString: vi.fn(value => value)
 }));
 
 describe('application store', () => {
@@ -18,14 +18,14 @@ describe('application store', () => {
     };
 
     const loadStore = async () => {
-        const fetchApplicationState = jest.fn().mockReturnValue(applicationState);
-        const addEventListener = jest.fn();
-        const removeEventListener = jest.fn();
-        const loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
-        const setProjectActiveAndEnsureItsLoadedInBackend = jest.fn();
+        const fetchApplicationState = vi.fn().mockReturnValue(applicationState);
+        const addEventListener = vi.fn();
+        const removeEventListener = vi.fn();
+        const loadWorkflow = vi.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
+        const setProjectActiveAndEnsureItsLoadedInBackend = vi.fn();
 
-        jest.resetModules();
-        jest.doMock('@api', () => ({
+        vi.resetModules();
+        vi.doMock('@api', () => ({
             __esModule: true,
             addEventListener,
             removeEventListener,
@@ -36,17 +36,17 @@ describe('application store', () => {
 
         const actions = {
             canvas: {
-                restoreScrollState: jest.fn()
+                restoreScrollState: vi.fn()
             },
             spaces: {
-                fetchAllSpaceProviders: jest.fn()
+                fetchAllSpaceProviders: vi.fn()
             }
         };
 
         const getters = {
             canvas: {
-                getCanvasScrollState: jest.fn(() => () => ({ mockCanvasState: true })),
-                screenToCanvasCoordinates: jest.fn(() => ([x, y]) => [x, y])
+                getCanvasScrollState: vi.fn(() => () => ({ mockCanvasState: true })),
+                screenToCanvasCoordinates: vi.fn(() => ([x, y]) => [x, y])
             }
         };
 
@@ -55,8 +55,8 @@ describe('application store', () => {
             workflow: await import('@/store/workflow'),
             nodeRepository: {
                 actions: {
-                    getAllNodes: jest.fn(),
-                    resetSearchAndCategories: jest.fn()
+                    getAllNodes: vi.fn(),
+                    resetSearchAndCategories: vi.fn()
                 }
             },
             spaces: {
@@ -69,8 +69,8 @@ describe('application store', () => {
             selection: selectionStore
         };
         const store = mockVuexStore(storeConfig);
-        const dispatchSpy = jest.spyOn(store, 'dispatch');
-        const commitSpy = jest.spyOn(store, 'commit');
+        const dispatchSpy = vi.spyOn(store, 'dispatch');
+        const commitSpy = vi.spyOn(store, 'commit');
 
         return {
             store,
@@ -648,8 +648,8 @@ describe('application store', () => {
 
     describe('Context Menu', () => {
         const createEvent = ({ x = 0, y = 0, srcElemClasses = [] } = {}) => {
-            const preventDefault = jest.fn();
-            const stopPropagation = jest.fn();
+            const preventDefault = vi.fn();
+            const stopPropagation = vi.fn();
             const eventMock = {
                 clientX: x,
                 clientY: y,
@@ -737,7 +737,7 @@ describe('application store', () => {
             ['QuickAddNodeMenu', 'quickAddNodeMenu']
         ])('closes the %s if its open when context menu opens', async (_, stateMenuKey) => {
             const { store } = await loadStore();
-            const menuCloseMock = jest.fn();
+            const menuCloseMock = vi.fn();
             store.state.workflow[stateMenuKey] = {
                 isOpen: true,
                 events: {

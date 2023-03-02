@@ -14,10 +14,10 @@ describe('SearchResults', () => {
     // beforeEach(() => {
     //     wrapper = null;
 
-    //     searchTopNodesNextPageMock = jest.fn();
-    //     searchBottomNodesNextPageMock = jest.fn();
-    //     setSearchScrollPositionMock = jest.fn();
-    //     toggleShowingBottomNodesMock = jest.fn();
+    //     searchTopNodesNextPageMock = vi.fn();
+    //     searchBottomNodesNextPageMock = vi.fn();
+    //     setSearchScrollPositionMock = vi.fn();
+    //     toggleShowingBottomNodesMock = vi.fn();
 
     //     storeState = {
     //         query: '',
@@ -61,10 +61,10 @@ describe('SearchResults', () => {
     // });
 
     const doMount = () => {
-        // const searchTopNodesNextPageMock = jest.fn();
-        // const searchBottomNodesNextPageMock = jest.fn();
-        // const setSearchScrollPositionMock = jest.fn();
-        // const toggleShowingBottomNodesMock = jest.fn();
+        // const searchTopNodesNextPageMock = vi.fn();
+        // const searchBottomNodesNextPageMock = vi.fn();
+        // const setSearchScrollPositionMock = vi.fn();
+        // const toggleShowingBottomNodesMock = vi.fn();
 
         const $store = mockVuexStore({
             nodeRepository: {
@@ -98,7 +98,7 @@ describe('SearchResults', () => {
             }
         });
 
-        const dispatchSpy = jest.spyOn($store, 'dispatch');
+        const dispatchSpy = vi.spyOn($store, 'dispatch');
 
         const wrapper = mount(SearchResults, { global: { plugins: [$store] } });
 

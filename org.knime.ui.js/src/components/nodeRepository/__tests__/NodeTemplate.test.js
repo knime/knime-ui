@@ -15,24 +15,24 @@ describe('NodeTemplate', () => {
     beforeEach(() => {
         isWritable = true;
         wrapper = null;
-        openDescriptionPanelMock = jest.fn();
-        closeDescriptionPanelMock = jest.fn();
-        setSelectedNodeMock = jest.fn();
-        setDraggingNodeMock = jest.fn();
-        addNodeMock = jest.fn();
+        openDescriptionPanelMock = vi.fn();
+        closeDescriptionPanelMock = vi.fn();
+        setSelectedNodeMock = vi.fn();
+        setDraggingNodeMock = vi.fn();
+        addNodeMock = vi.fn();
 
-        let getBoundingClientRectMock = jest.fn().mockReturnValue({
+        let getBoundingClientRectMock = vi.fn().mockReturnValue({
             width: 70,
             height: 70
         });
-        getElementByIdMock = jest.fn();
+        getElementByIdMock = vi.fn();
         HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
         Document.prototype.getElementById = getElementByIdMock;
 
         testEvent = {
             dataTransfer: {
-                setData: jest.fn(),
-                setDragImage: jest.fn()
+                setData: vi.fn(),
+                setDragImage: vi.fn()
             }
         };
 

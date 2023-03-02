@@ -163,14 +163,14 @@ describe('Node Repository store', () => {
             }
         };
 
-        const searchNodesMock = jest.fn().mockReturnValue(searchNodesResponse);
-        const getNodesGroupedByTagsMock = jest.fn().mockReturnValue(getNodesGroupedByTagsResponse);
-        const getNodeDescriptionMock = jest.fn().mockReturnValue(getNodeDescriptionResponse);
-        const getNodeTemplatesMock = jest.fn().mockReturnValue(getNodeTemplatesResponse);
+        const searchNodesMock = vi.fn().mockReturnValue(searchNodesResponse);
+        const getNodesGroupedByTagsMock = vi.fn().mockReturnValue(getNodesGroupedByTagsResponse);
+        const getNodeDescriptionMock = vi.fn().mockReturnValue(getNodeDescriptionResponse);
+        const getNodeTemplatesMock = vi.fn().mockReturnValue(getNodeTemplatesResponse);
 
         // remove any caching on mocks
-        jest.resetModules();
-        jest.doMock('@api', () => ({
+        vi.resetModules();
+        vi.doMock('@api', () => ({
             __esModule: true,
             searchNodes: searchNodesMock,
             getNodesGroupedByTags: getNodesGroupedByTagsMock,
@@ -187,7 +187,7 @@ describe('Node Repository store', () => {
             }
         });
 
-        const dispatchSpy = jest.spyOn(store, 'dispatch');
+        const dispatchSpy = vi.spyOn(store, 'dispatch');
 
         return {
             dispatchSpy,

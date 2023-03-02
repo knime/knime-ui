@@ -4,13 +4,14 @@ import { APP_ROUTES } from '@/router';
 
 import eventsPlugin from '../events';
 
-jest.mock('@/util/event-syncer');
+vi.mock('@/util/event-syncer');
 
-jest.mock('@/router');
+vi.mock('@/router');
 
 let registeredHandlers = {};
 
-jest.mock('@api', () => {
+vi.mock('@api', async () => {
+    const actual = await vi.importActual('@api');
     const registerEventHandlers = (handlers) => {
         Object.entries(handlers).forEach(([key, value]) => {
             registeredHandlers[key] = value;
@@ -18,6 +19,7 @@ jest.mock('@api', () => {
     };
 
     return {
+        ...actual,
         API: {
             event: { registerEventHandlers },
             desktop: { registerEventHandlers }
@@ -31,12 +33,12 @@ describe('Event Plugin', () => {
             state: {
                 application: {}
             },
-            dispatch: jest.fn(),
-            commit: jest.fn()
+            dispatch: vi.fn(),
+            commit: vi.fn()
         };
 
         const routerMock = {
-            push: jest.fn()
+            push: vi.fn()
         };
 
         eventsPlugin({ $store: storeMock, $router: routerMock });

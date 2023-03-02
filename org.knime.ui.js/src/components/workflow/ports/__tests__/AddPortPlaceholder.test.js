@@ -72,7 +72,7 @@ describe('AddPortPlaceholder.vue', () => {
         });
 
         it('show and hide with port type menu', async () => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
             const { wrapper, $store } = doMount();
 
             expect(wrapper.element.style.opacity).toBe('');
@@ -82,7 +82,7 @@ describe('AddPortPlaceholder.vue', () => {
             expect(wrapper.element.style.opacity).toBe('1');
 
             await $store.dispatch('workflow/closePortTypeMenu');
-            jest.runAllTimers();
+            vi.runAllTimers();
 
             expect(wrapper.element.style.opacity).toBe('');
         });
@@ -92,11 +92,11 @@ describe('AddPortPlaceholder.vue', () => {
 
             expect(wrapper.element.style.opacity).toBe('');
 
-            jest.useFakeTimers();
+            vi.useFakeTimers();
             await $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
             await $store.dispatch('workflow/closePortTypeMenu');
             await $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
-            jest.advanceTimersToNextTimer();
+            vi.advanceTimersToNextTimer();
 
             expect(wrapper.element.style.opacity).toBe('1');
         });

@@ -5,11 +5,11 @@ import { waitForPatch } from '@/util/event-syncer';
 
 const origErrorLogger = window.consola.error;
 
-jest.mock('@/util/event-syncer');
+vi.mock('@/util/event-syncer');
 
 describe('API', () => {
     beforeEach(() => {
-        window.jsonrpc = jest.fn().mockReturnValue({
+        window.jsonrpc = vi.fn().mockReturnValue({
             jsonrpc: '2.0',
             result: 'dummy',
             id: -1
@@ -33,7 +33,7 @@ describe('API', () => {
 
         describe('error handling', () => {
             beforeAll(() => {
-                window.consola.error = jest.fn();
+                window.consola.error = vi.fn();
             });
 
             beforeEach(() => {
@@ -68,7 +68,7 @@ describe('API', () => {
 
         describe('error handling', () => {
             beforeAll(() => {
-                window.consola.error = jest.fn();
+                window.consola.error = vi.fn();
             });
 
             beforeEach(() => {
@@ -198,7 +198,7 @@ describe('API', () => {
 
         describe('error handling', () => {
             beforeAll(() => {
-                window.consola.error = jest.fn();
+                window.consola.error = vi.fn();
             });
 
             beforeEach(() => {
@@ -359,7 +359,7 @@ describe('API', () => {
 
         describe('error handling', () => {
             beforeAll(() => {
-                window.consola.error = jest.fn();
+                window.consola.error = vi.fn();
             });
 
             beforeEach(() => {
@@ -512,7 +512,7 @@ describe('API', () => {
 
         describe('error handling', () => {
             beforeAll(() => {
-                window.consola.error = jest.fn();
+                window.consola.error = vi.fn();
             });
 
             beforeEach(() => {

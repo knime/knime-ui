@@ -8,7 +8,7 @@ import NodeActionBar from '../NodeActionBar.vue';
 
 describe('NodeActionBar', () => {
     const $shortcuts = {
-        get: jest.fn(() => ({}))
+        get: vi.fn(() => ({}))
     };
 
     const doMount = ({ props, isNodeSelected = () => () => false } = {}) => {
@@ -18,14 +18,14 @@ describe('NodeActionBar', () => {
         const storeConfig = {
             workflow: {
                 actions: {
-                    executeNodes: jest.fn(),
-                    cancelNodeExecution: jest.fn(),
-                    resetNodes: jest.fn(),
-                    pauseLoopExecution: jest.fn(),
-                    resumeLoopExecution: jest.fn(),
-                    stepLoopExecution: jest.fn(),
-                    openView: jest.fn(),
-                    openNodeConfiguration: jest.fn()
+                    executeNodes: vi.fn(),
+                    cancelNodeExecution: vi.fn(),
+                    resetNodes: vi.fn(),
+                    pauseLoopExecution: vi.fn(),
+                    resumeLoopExecution: vi.fn(),
+                    stepLoopExecution: vi.fn(),
+                    openView: vi.fn(),
+                    openNodeConfiguration: vi.fn()
                 }
             },
             selection: {
@@ -52,14 +52,14 @@ describe('NodeActionBar', () => {
     };
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders disabled action buttons without openNodeConfiguration and openView', () => {
         const { wrapper } = doMount();
 
         let buttons = wrapper.findAllComponents(ActionButton);
-        
+
         expect(buttons[0].props()).toStrictEqual(expect.objectContaining({ x: -25, disabled: true }));
         expect(buttons[1].props()).toStrictEqual(expect.objectContaining({ x: 0, disabled: true }));
         expect(buttons[2].props()).toStrictEqual(expect.objectContaining({ x: 25, disabled: true }));
@@ -69,7 +69,7 @@ describe('NodeActionBar', () => {
         const { wrapper } = doMount({ props: { canOpenDialog: false } });
 
         let buttons = wrapper.findAllComponents(ActionButton);
-        
+
         expect(buttons.at(0).props()).toStrictEqual(expect.objectContaining({ x: -37.5, disabled: true }));
         expect(buttons.at(1).props()).toStrictEqual(expect.objectContaining({ x: -12.5, disabled: true }));
         expect(buttons.at(2).props()).toStrictEqual(expect.objectContaining({ x: 12.5, disabled: true }));
@@ -82,7 +82,7 @@ describe('NodeActionBar', () => {
         });
 
         let buttons = wrapper.findAllComponents(ActionButton);
-        
+
         expect(buttons.at(0).props()).toStrictEqual(expect.objectContaining({ x: -50, disabled: true }));
         expect(buttons.at(1).props()).toStrictEqual(expect.objectContaining({ x: -25, disabled: true }));
         expect(buttons.at(2).props()).toStrictEqual(expect.objectContaining({ x: 0, disabled: true }));
@@ -166,7 +166,7 @@ describe('NodeActionBar', () => {
     });
 
     it('should add the hotkey binding to the action tooltip when node is selected', () => {
-        $shortcuts.get = jest.fn((name) => ({ hotkeyText: 'MOCK HOTKEY TEXT' }));
+        $shortcuts.get = vi.fn((name) => ({ hotkeyText: 'MOCK HOTKEY TEXT' }));
 
         const { wrapper } = doMount({
             props: { canReset: true },

@@ -5,7 +5,7 @@ import * as $shapes from '@/style/shapes.mjs';
 import AutoSizeForeignObject from '../AutoSizeForeignObject.vue';
 
 const mockBoundingRect = ({ x, y, width, height }) => {
-    const mockFn = jest.fn(() => ({ x, y, width, height }));
+    const mockFn = vi.fn(() => ({ x, y, width, height }));
     HTMLElement.prototype.getBoundingClientRect = mockFn;
 };
 
@@ -72,10 +72,10 @@ describe('AutoSizeForeignObject.vue', () => {
     });
 
     it('shows error on console if wrapper DOM element is missing', async () => {
-        const errorMock = jest.spyOn(global.consola, 'error').mockImplementation(() => {});
+        const errorMock = vi.spyOn(global.consola, 'error').mockImplementation(() => {});
 
         HTMLElement.prototype.getBoundingClientRect = () => null;
-        
+
         doShallowMount();
         await flushTaskQueue();
 
@@ -115,7 +115,7 @@ describe('AutoSizeForeignObject.vue', () => {
             height: mockRectHeight
         });
         doShallowMount();
-            
+
         // Schedule callback to run after next task in order to let the component render the template
         // otherwise we'd have to call $nextTick twice for this case, which is not very clean
         await flushTaskQueue();
@@ -140,7 +140,7 @@ describe('AutoSizeForeignObject.vue', () => {
 
     it('should adjust dimensions when the "resizeKey" prop changes', async () => {
         doShallowMount();
-        
+
         await flushTaskQueue();
 
         expect(wrapper.attributes()).toEqual(expect.objectContaining({

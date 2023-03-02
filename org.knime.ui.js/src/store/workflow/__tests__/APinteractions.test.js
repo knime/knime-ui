@@ -8,17 +8,17 @@ describe('workflow store: AP Interactions', () => {
          * Because the module is cached after it is required for the first time,
          * a reset is needed
          */
-        jest.resetModules();
-        jest.doMock('@api', () => ({
+        vi.resetModules();
+        vi.doMock('@api', () => ({
             __esModule: true,
             ...apiMocks
         }), { virtual: true });
 
-        const generateWorkflowPreviewMock = jest.fn();
-        jest.doMock('@/util/generateWorkflowPreview', () => ({
+        const generateWorkflowPreviewMock = vi.fn();
+        vi.doMock('@/util/generateWorkflowPreview', () => ({
             generateWorkflowPreview: generateWorkflowPreviewMock
         }));
-        jest.doMock('@/util/encodeString', () => ({
+        vi.doMock('@/util/encodeString', () => ({
             encodeString: (value) => value
         }));
 
@@ -26,7 +26,7 @@ describe('workflow store: AP Interactions', () => {
         const mockCanvasEl = document.createElement('div');
         mockCanvasWrapperEl.appendChild(mockCanvasEl);
 
-        const clearLastItemForProjectMock = jest.fn();
+        const clearLastItemForProjectMock = vi.fn();
 
         const store = mockVuexStore({
             workflow: await import('@/store/workflow'),
@@ -42,14 +42,14 @@ describe('workflow store: AP Interactions', () => {
                 }
             }
         });
-        const dispatchSpy = jest.spyOn(store, 'dispatch');
+        const dispatchSpy = vi.spyOn(store, 'dispatch');
 
         return { store, dispatchSpy, mockCanvasEl, generateWorkflowPreviewMock, clearLastItemForProjectMock };
     };
 
     describe('actions', () => {
         it('calls openView from API', async () => {
-            let openView = jest.fn();
+            let openView = vi.fn();
             const { store } = await loadStore({ apiMocks: { openView } });
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
@@ -59,7 +59,7 @@ describe('workflow store: AP Interactions', () => {
         });
 
         it('calls openNodeDialog from API', async () => {
-            let openNodeDialog = jest.fn();
+            let openNodeDialog = vi.fn();
             const { store } = await loadStore({ apiMocks: { openNodeDialog } });
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
@@ -69,7 +69,7 @@ describe('workflow store: AP Interactions', () => {
         });
 
         it('calls openFlowVariableConfiguration from API', async () => {
-            let openLegacyFlowVariableDialog = jest.fn();
+            let openLegacyFlowVariableDialog = vi.fn();
             const { store } = await loadStore({ apiMocks: { openLegacyFlowVariableDialog } });
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
@@ -80,7 +80,7 @@ describe('workflow store: AP Interactions', () => {
 
 
         it('calls openLayoutEditor from API', async () => {
-            let openLayoutEditor = jest.fn();
+            let openLayoutEditor = vi.fn();
             const { store } = await loadStore({ apiMocks: { openLayoutEditor } });
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
@@ -91,7 +91,7 @@ describe('workflow store: AP Interactions', () => {
 
         describe('Save workflow', () => {
             it('saves the workflow via the API', async () => {
-                const saveWorkflow = jest.fn();
+                const saveWorkflow = vi.fn();
                 const apiMocks = { saveWorkflow };
                 const { store } = await loadStore({ apiMocks });
 
@@ -106,7 +106,7 @@ describe('workflow store: AP Interactions', () => {
             });
 
             it('sends the correct workflow preview for a root workflow', async () => {
-                const saveWorkflow = jest.fn();
+                const saveWorkflow = vi.fn();
                 const apiMocks = { saveWorkflow };
 
                 const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
@@ -126,7 +126,7 @@ describe('workflow store: AP Interactions', () => {
             });
 
             it('sends the correct workflow preview for a nested workflow', async () => {
-                const saveWorkflow = jest.fn();
+                const saveWorkflow = vi.fn();
                 const apiMocks = { saveWorkflow };
                 const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
 
@@ -155,7 +155,7 @@ describe('workflow store: AP Interactions', () => {
 
         describe('Close workflow', () => {
             it('closes correctly when single project is opened', async () => {
-                let closeWorkflow = jest.fn(() => true);
+                let closeWorkflow = vi.fn(() => true);
                 let apiMocks = { closeWorkflow };
 
                 const openProjects = [
@@ -198,7 +198,7 @@ describe('workflow store: AP Interactions', () => {
                     { activeProject: 2, closingProject: 2, expectedNextProject: 1 }
                 ]
             ])('should %s', async (_, { activeProject, closingProject, expectedNextProject }) => {
-                let closeWorkflow = jest.fn(() => true);
+                let closeWorkflow = vi.fn(() => true);
                 let apiMocks = { closeWorkflow };
 
                 const openProjects = [
@@ -225,7 +225,7 @@ describe('workflow store: AP Interactions', () => {
             });
 
             it('does not remove canvasState nor workflowPreviewSnapshot if closeWorkflow is cancelled', async () => {
-                let closeWorkflow = jest.fn(() => false);
+                let closeWorkflow = vi.fn(() => false);
                 let apiMocks = { closeWorkflow };
                 const { store, dispatchSpy } = await loadStore({ apiMocks });
 
@@ -239,7 +239,7 @@ describe('workflow store: AP Interactions', () => {
 
     describe('Save workflow locally', () => {
         it('saves the workflow locally via the API', async () => {
-            const saveWorkflowAs = jest.fn();
+            const saveWorkflowAs = vi.fn();
             const apiMocks = { saveWorkflowAs };
             const { store } = await loadStore({ apiMocks });
 
@@ -254,7 +254,7 @@ describe('workflow store: AP Interactions', () => {
         });
 
         it('sends the correct workflow preview for a root workflow when saved locally', async () => {
-            const saveWorkflowAs = jest.fn();
+            const saveWorkflowAs = vi.fn();
             const apiMocks = { saveWorkflowAs };
 
             const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });

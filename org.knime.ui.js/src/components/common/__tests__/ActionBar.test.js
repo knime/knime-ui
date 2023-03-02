@@ -11,13 +11,13 @@ describe('ActionBar.vue', () => {
             {
                 name: 'save',
                 title: 'save',
-                onClick: jest.fn(),
+                onClick: vi.fn(),
                 primary: true
             },
             {
                 name: 'cancel',
                 title: 'cancel',
-                onClick: jest.fn()
+                onClick: vi.fn()
             }
         ];
 
@@ -32,7 +32,7 @@ describe('ActionBar.vue', () => {
     it('renders', () => {
         const { wrapper } = doShallowMount();
         let buttons = wrapper.findAllComponents(ActionButton);
-        
+
         expect(buttons.at(0).props()).toStrictEqual(
             expect.objectContaining({ x: -12.5, disabled: false, primary: true })
         );
@@ -50,7 +50,7 @@ describe('ActionBar.vue', () => {
         expect(actions[0].onClick).toHaveBeenCalled();
         expect(actions[1].onClick).not.toHaveBeenCalled();
     });
-    
+
     it('should render the correct title', () => {
         const actions = [
             {

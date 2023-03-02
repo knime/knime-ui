@@ -6,24 +6,24 @@ import { wrapAPI } from '../workflowEditor';
 
 describe('workflow store: Editing', () => {
     const loadStore = async ({ apiMocks = {} } = {}) => {
-        const moveObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
-        const deleteObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
+        const moveObjectsMock = vi.fn().mockReturnValue(Promise.resolve());
+        const deleteObjectsMock = vi.fn().mockReturnValue(Promise.resolve());
 
         /**
          * We have to import the workflow-store dynamically to apply our @api mocks.
          * Because the module is cached after it is required for the first time,
          * a reset is needed
          */
-        jest.resetModules();
-        jest.doMock('@api', () => ({
+        vi.resetModules();
+        vi.doMock('@api', () => ({
             __esModule: true,
             ...apiMocks,
             moveObjects: moveObjectsMock,
             deleteObjects: deleteObjectsMock
         }), { virtual: true });
 
-        const pastePartsAtMock = jest.fn();
-        jest.doMock('@/util/pasteToWorkflow', () => ({
+        const pastePartsAtMock = vi.fn();
+        vi.doMock('@/util/pasteToWorkflow', () => ({
             __esModule: true,
             pastePartsAt: pastePartsAtMock
         }));
@@ -97,7 +97,7 @@ describe('workflow store: Editing', () => {
 
     describe('actions', () => {
         test('wrap api call: automatically include projectId and workflowId', () => {
-            let apiCall = jest.fn();
+            let apiCall = vi.fn();
 
             let wrappedCall = wrapAPI(apiCall);
 
@@ -126,7 +126,7 @@ describe('workflow store: Editing', () => {
 
         describe('Add node', () => {
             const setupStoreWithWorkflow = async () => {
-                const addNodeMock = jest.fn(() => ({ newNodeId: 'new-mock-node' }));
+                const addNodeMock = vi.fn(() => ({ newNodeId: 'new-mock-node' }));
                 const loadStoreResponse = await loadStore({ apiMocks: { addNode: addNodeMock } });
 
                 loadStoreResponse.store.commit('workflow/setActiveWorkflow', {
@@ -182,7 +182,7 @@ describe('workflow store: Editing', () => {
         });
 
         it('can add Node Ports', async () => {
-            let apiMocks = { addNodePort: jest.fn() };
+            let apiMocks = { addNodePort: vi.fn() };
             const { store } = await loadStore({ apiMocks });
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
@@ -200,7 +200,7 @@ describe('workflow store: Editing', () => {
         });
 
         it('can remove Node Ports', async () => {
-            let apiMocks = { removeNodePort: jest.fn() };
+            let apiMocks = { removeNodePort: vi.fn() };
             const { store } = await loadStore({ apiMocks });
 
             const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1, portGroup: 'group' };
@@ -343,7 +343,7 @@ describe('workflow store: Editing', () => {
         });
 
         describe('tries to delete objects that cannot be deleted', () => {
-            jest.spyOn(window, 'alert').mockImplementation(() => { });
+            vi.spyOn(window, 'alert').mockImplementation(() => { });
 
             let nodeName = `node-1`;
             let connectorName = `connection-1`;
@@ -405,7 +405,7 @@ describe('workflow store: Editing', () => {
         });
 
         it('connects nodes', async () => {
-            let connectNodes = jest.fn();
+            let connectNodes = vi.fn();
             let apiMocks = { connectNodes };
             const { store } = await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
@@ -464,7 +464,7 @@ describe('workflow store: Editing', () => {
             };
 
             it('collapses nodes to a container', async () => {
-                let collapseToContainer = jest.fn(() => ({ newNodeId: '' }));
+                let collapseToContainer = vi.fn(() => ({ newNodeId: '' }));
                 let apiMocks = { collapseToContainer };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
@@ -484,7 +484,7 @@ describe('workflow store: Editing', () => {
 
             it('selects the new container after collapsing nodes', async () => {
                 const newNodeId = 'new-container';
-                let collapseToContainer = jest.fn(() => ({ newNodeId }));
+                let collapseToContainer = vi.fn(() => ({ newNodeId }));
                 let apiMocks = { collapseToContainer };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
@@ -499,7 +499,7 @@ describe('workflow store: Editing', () => {
 
             it('does not select new container if user made a selection before collapse command finishes', async () => {
                 const newNodeId = 'new-container';
-                let collapseToContainer = jest.fn(() => ({ newNodeId }));
+                let collapseToContainer = vi.fn(() => ({ newNodeId }));
                 let apiMocks = { collapseToContainer };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
@@ -557,7 +557,7 @@ describe('workflow store: Editing', () => {
             };
 
             it('expands a container node', async () => {
-                let expandContainerNode = jest.fn(() => ({ expandedNodeIds: [] }));
+                let expandContainerNode = vi.fn(() => ({ expandedNodeIds: [] }));
                 let apiMocks = { expandContainerNode };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');
@@ -574,7 +574,7 @@ describe('workflow store: Editing', () => {
             it('selects the expanded nodes after the command finishes', async () => {
                 const expandedNodeIds = ['foo', 'bar'];
 
-                let expandContainerNode = jest.fn(() => ({ expandedNodeIds }));
+                let expandContainerNode = vi.fn(() => ({ expandedNodeIds }));
                 let apiMocks = { expandContainerNode };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');
@@ -587,7 +587,7 @@ describe('workflow store: Editing', () => {
             it('does not select the expanded nodes if user selected something before command ends', async () => {
                 const expandedNodeIds = ['bar', 'baz'];
 
-                let expandContainerNode = jest.fn(() => ({ expandedNodeIds }));
+                let expandContainerNode = vi.fn(() => ({ expandedNodeIds }));
                 let apiMocks = { expandContainerNode };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');
@@ -688,7 +688,7 @@ describe('workflow store: Editing', () => {
             };
 
             afterEach(() => {
-                jest.clearAllMocks();
+                vi.clearAllMocks();
             });
 
             it.each([
@@ -700,7 +700,7 @@ describe('workflow store: Editing', () => {
                     otherData: 'is here'
                 });
 
-                const copyOrCutWorkflowParts = jest.fn().mockReturnValue({
+                const copyOrCutWorkflowParts = vi.fn().mockReturnValue({
                     content: stringifiedPayload
                 });
 
@@ -754,7 +754,7 @@ describe('workflow store: Editing', () => {
             describe('executes paste command', () => {
                 const setupStoreForPaste = async () => {
                     // register "pasteWorkflowParts" API function
-                    const pasteWorkflowParts = jest.fn().mockReturnValue({
+                    const pasteWorkflowParts = vi.fn().mockReturnValue({
                         nodeIds: ['bar']
                     });
 
@@ -781,7 +781,7 @@ describe('workflow store: Editing', () => {
                     });
 
                     // mock strategy result
-                    const doAfterPasteMock = jest.fn();
+                    const doAfterPasteMock = vi.fn();
                     loadStoreResponse.pastePartsAtMock.mockReturnValue({
                         position: { x: 5, y: 5 },
                         doAfterPaste: doAfterPasteMock

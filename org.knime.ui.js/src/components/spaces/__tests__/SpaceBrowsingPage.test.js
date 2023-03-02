@@ -10,7 +10,7 @@ import SpaceExplorer from '../SpaceExplorer.vue';
 import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 import SpaceBrowsingPage from '../SpaceBrowsingPage.vue';
 
-jest.mock('@api');
+vi.mock('@api');
 
 describe('SpaceBrowsingPage', () => {
     const doMount = ({ initialStoreState = null } = {}) => {
@@ -18,11 +18,11 @@ describe('SpaceBrowsingPage', () => {
             spaces: spacesStore
         });
 
-        const commitSpy = jest.spyOn($store, 'commit');
-        const dispatchSpy = jest.spyOn($store, 'dispatch').mockImplementation(() => {});
+        const commitSpy = vi.spyOn($store, 'commit');
+        const dispatchSpy = vi.spyOn($store, 'dispatch').mockImplementation(() => {});
 
         const $router = {
-            push: jest.fn()
+            push: vi.fn()
         };
 
         if (initialStoreState) {
@@ -35,7 +35,7 @@ describe('SpaceBrowsingPage', () => {
         const wrapper = mount(SpaceBrowsingPage, {
             global: {
                 plugins: [$store],
-                mocks: { $router, $shortcuts: { get: jest.fn(() => ({})) } }
+                mocks: { $router, $shortcuts: { get: vi.fn(() => ({})) } }
             }
         });
 

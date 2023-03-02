@@ -9,15 +9,8 @@ import * as $colors from '@/style/colors.mjs';
 import { findNodesInsideOfRectangle as findNodesInsideOfRectangleMock } from '@/util/rectangleSelection';
 import SelectionRectangle from '../SelectionRectangle.vue';
 
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
-
-jest.mock('@/util/rectangleSelection', () => ({
-    findNodesInsideOfRectangle: jest.fn()
+vi.mock('@/util/rectangleSelection', () => ({
+    findNodesInsideOfRectangle: vi.fn()
 }));
 
 describe('SelectionRectangle', () => {
@@ -43,17 +36,17 @@ describe('SelectionRectangle', () => {
             },
             canvas: {
                 getters: {
-                    screenToCanvasCoordinates: () => jest.fn().mockImplementation(([x, y]) => [x, y])
+                    screenToCanvasCoordinates: () => vi.fn().mockImplementation(([x, y]) => [x, y])
                 }
             },
             selection: {
                 getters: {
-                    selectedNodeIds: jest.fn().mockReturnValue([])
+                    selectedNodeIds: vi.fn().mockReturnValue([])
                 },
                 actions: {
-                    selectNodes: jest.fn(),
-                    deselectNodes: jest.fn(),
-                    deselectAllObjects: jest.fn()
+                    selectNodes: vi.fn(),
+                    deselectNodes: vi.fn(),
+                    deselectAllObjects: vi.fn()
                 }
             }
         };
@@ -120,17 +113,17 @@ describe('SelectionRectangle', () => {
         };
 
         pointerUp = () => {
-            jest.useFakeTimers(); // implementation contains setTimout
+            vi.useFakeTimers(); // implementation contains setTimout
 
             // stop also changes global dragging state
             $bus.emit('selection-pointerup', {
                 pointerId: pointerId || 1,
                 target: {
-                    releasePointerCapture: jest.fn()
+                    releasePointerCapture: vi.fn()
                 }
             });
 
-            jest.runAllTimers();
+            vi.runAllTimers();
         };
     });
 
@@ -225,7 +218,7 @@ describe('SelectionRectangle', () => {
 
     describe('De-Selection with Shift', () => {
         beforeEach(async () => {
-            storeConfig.selection.getters.selectedNodeIds = jest.fn().mockReturnValue([
+            storeConfig.selection.getters.selectedNodeIds = vi.fn().mockReturnValue([
                 'inside-1',
                 'inside-2'
             ]);
@@ -279,7 +272,7 @@ describe('SelectionRectangle', () => {
 
     describe('Selection with shift', () => {
         it('adds to selection with shift', async () => {
-            storeConfig.selection.getters.selectedNodeIds = jest.fn().mockReturnValue([
+            storeConfig.selection.getters.selectedNodeIds = vi.fn().mockReturnValue([
                 'root:1'
             ]);
             doShallowMount();
@@ -308,9 +301,9 @@ describe('SelectionRectangle', () => {
 
     describe('non actions', () => {
         it('unregisters events on beforeUnmount', () => {
-            jest.spyOn($bus, 'off');
+            vi.spyOn($bus, 'off');
             doShallowMount();
-            wrapper.vm.$parent.$off = jest.fn();
+            wrapper.vm.$parent.$off = vi.fn();
             wrapper.unmount();
             expect($bus.off).toHaveBeenCalledTimes(4);
         });

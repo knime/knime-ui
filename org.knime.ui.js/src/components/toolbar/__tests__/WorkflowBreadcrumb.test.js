@@ -23,12 +23,12 @@ describe('WorkflowBreadcrumb.vue', () => {
                         activeWorkflow: workflow
                     },
                     actions: {
-                        loadWorkflow: jest.fn()
+                        loadWorkflow: vi.fn()
                     }
                 },
                 application: {
                     actions: {
-                        switchWorkflow: jest.fn()
+                        switchWorkflow: vi.fn()
                     }
                 }
             };

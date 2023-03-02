@@ -1,9 +1,9 @@
 import { generateWorkflowPreview } from '../generateWorkflowPreview';
 
-jest.mock('@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff', () => 'font data');
+vi.mock('@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff', () => 'font data');
 
 describe('generateWorkflowPreview', () => {
-    const mockFetch = jest.fn(() => Promise.resolve({
+    const mockFetch = vi.fn(() => Promise.resolve({
         blob: () => new Blob(['mock'])
     }));
 
@@ -172,8 +172,8 @@ describe('generateWorkflowPreview', () => {
     it('caches the fonts for continued usage', async () => {
         localStorage.clear();
         const { svg } = setup();
-        jest.spyOn(Storage.prototype, 'setItem');
-        jest.spyOn(Storage.prototype, 'getItem');
+        vi.spyOn(Storage.prototype, 'setItem');
+        vi.spyOn(Storage.prototype, 'getItem');
 
         await generateWorkflowPreview(svg);
 

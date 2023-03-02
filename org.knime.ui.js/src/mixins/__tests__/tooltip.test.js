@@ -9,7 +9,7 @@ let wrapper, setTooltipMock, setTimeoutMock;
 
 describe('Tooltip Mixin', () => {
     beforeEach(() => {
-        setTimeoutMock = jest.fn().mockImplementation(fn => {
+        setTimeoutMock = vi.fn().mockImplementation(fn => {
             fn();
             return 0;
         });
@@ -23,7 +23,7 @@ describe('Tooltip Mixin', () => {
             })
         };
 
-        setTooltipMock = jest.fn().mockImplementation((state, tooltip) => {
+        setTooltipMock = vi.fn().mockImplementation((state, tooltip) => {
             state.tooltip = tooltip;
         });
         let storeConfig = {
@@ -42,7 +42,7 @@ describe('Tooltip Mixin', () => {
     });
 
     it('removes event handlers', () => {
-        let spy = jest.spyOn(wrapper.element, 'removeEventListener');
+        let spy = vi.spyOn(wrapper.element, 'removeEventListener');
         wrapper.unmount();
         expect(spy).toHaveBeenCalledWith('mouseenter', wrapper.vm.onTooltipMouseEnter);
         expect(spy).toHaveBeenCalledWith('mouseleave', wrapper.vm.onTooltipMouseLeave);
@@ -74,8 +74,8 @@ describe('Tooltip Mixin', () => {
 
     it('clears tooltip timeout when aborting', () => {
         // dont execute callback
-        window.setTimeout = jest.fn().mockReturnValue(0);
-        window.clearTimeout = jest.fn();
+        window.setTimeout = vi.fn().mockReturnValue(0);
+        window.clearTimeout = vi.fn();
 
         wrapper.setData({ tooltip: 'hello there' });
         wrapper.trigger('mouseenter');

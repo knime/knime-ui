@@ -9,12 +9,12 @@ import { $bus } from '@/plugins/event-bus';
 import ConnectorSnappingProvider from '../ConnectorSnappingProvider.vue';
 
 describe('ConnectorSnappingProvider.vue', () => {
-    Event.prototype.preventDefault = jest.fn();
-    const connectNodesMock = jest.fn();
-    const addNodePortMock = jest.fn();
-    const openPortTypeMenuMock = jest.fn();
-    const closePortTypeMenuMock = jest.fn();
-    const setPortTypeMenuPreviewPortMock = jest.fn();
+    Event.prototype.preventDefault = vi.fn();
+    const connectNodesMock = vi.fn();
+    const addNodePortMock = vi.fn();
+    const openPortTypeMenuMock = vi.fn();
+    const closePortTypeMenuMock = vi.fn();
+    const setPortTypeMenuPreviewPortMock = vi.fn();
     const mockPorts = {
         inPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` })),
         outPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` }))
@@ -129,7 +129,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         wrapper,
         ports = mockPorts,
         eventDetails = { x: 0, y: 0, targetPortDirection: 'in' },
-        onSnapCallback = jest.fn(() => true)
+        onSnapCallback = vi.fn(() => true)
     }) => {
         getSlottedChildComponent(wrapper).trigger('connector-move', {
             detail: { ...eventDetails, onSnapCallback }
@@ -148,7 +148,7 @@ describe('ConnectorSnappingProvider.vue', () => {
     };
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('connector enter & leave', () => {
@@ -233,7 +233,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                 supportedPortTypeIds: ['TYPE_ID']
             }
         };
-        const onSnapCallback = jest.fn(() => ({
+        const onSnapCallback = vi.fn(() => ({
             didSnap: true,
             createPortFromPlaceholder: {
                 validPortGroups
@@ -345,7 +345,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                         y: 24,
                         targetPortDirection: 'out'
                     },
-                    onSnapCallback: jest.fn(() => ({
+                    onSnapCallback: vi.fn(() => ({
                         didSnap: true,
                         createPortFromPlaceholder: {
                             validPortGroups
@@ -510,7 +510,7 @@ describe('ConnectorSnappingProvider.vue', () => {
     });
 
     describe('Snapping', () => {
-        const onSnapCallback = jest.fn(() => ({ didSnap: true }));
+        const onSnapCallback = vi.fn(() => ({ didSnap: true }));
 
         it('should not snap when no portPositions are given', async () => {
             const wrapper = doMount({ portPositions: { in: [], out: [] } });

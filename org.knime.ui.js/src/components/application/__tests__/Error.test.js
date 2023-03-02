@@ -7,8 +7,8 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
 import Error from '../Error.vue';
 
-jest.mock('webapps-common/util/copyText.js', () => ({
-    copyText: jest.fn()
+vi.mock('webapps-common/util/copyText.js', () => ({
+    copyText: vi.fn()
 }));
 
 describe('Error.vue', () => {
@@ -72,7 +72,7 @@ describe('Error.vue', () => {
         const wrapper = mount(Error);
 
         delete window.switchToJavaUI;
-        window.switchToJavaUI = jest.fn();
+        window.switchToJavaUI = vi.fn();
 
         let switchButton = wrapper.findAllComponents(FunctionButton).at(0);
         switchButton.vm.$emit('click');

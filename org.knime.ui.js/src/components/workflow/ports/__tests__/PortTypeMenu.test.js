@@ -52,7 +52,7 @@ describe('PortTypeMenu.vue', () => {
 
         doMount = (customProps = {}) => {
             $store = mockVuexStore(storeConfig);
-            
+
             // attachTo document body so that focus works
             wrapper = mount(PortTypeMenu, {
                 props: { ...props, ...customProps },
@@ -79,17 +79,17 @@ describe('PortTypeMenu.vue', () => {
         describe('header', () => {
             it('sets up header for output ports', () => {
                 doMount();
-                
+
                 let header = wrapper.find('.header');
                 expect(header.classes()).toContain('output');
                 expect(header.attributes('style')).toMatch(`--margin: 10px`);
                 expect(header.text()).toBe('Add Output Port');
             });
-            
+
             it('sets up header for input ports', () => {
                 props.side = 'input';
                 doMount();
-                
+
                 let header = wrapper.find('.header');
                 expect(header.classes()).toContain('input');
                 expect(header.attributes('style')).toMatch(`--margin: 10px`);
@@ -157,20 +157,20 @@ describe('PortTypeMenu.vue', () => {
 
             test('keyboard navigation: down', () => {
                 doMount();
-                let focusFirstMock = jest.fn();
+                let focusFirstMock = vi.fn();
 
                 wrapper.findComponent(MenuItems).vm.focusFirst = focusFirstMock;
                 wrapper.findComponent(SearchBar).trigger('keydown.down');
-                
+
                 expect(focusFirstMock).toHaveBeenCalled();
             });
 
             test('keyboard navigation: up', () => {
                 doMount();
-                let focusLastMock = jest.fn();
+                let focusLastMock = vi.fn();
                 wrapper.findComponent(MenuItems).vm.focusLast = focusLastMock;
                 wrapper.findComponent(SearchBar).trigger('keydown.up');
-                
+
                 expect(focusLastMock).toHaveBeenCalled();
             });
         });
@@ -217,7 +217,7 @@ describe('PortTypeMenu.vue', () => {
                 it('does a fuzzy search', async () => {
                     doMount();
                     await doSearch(wrapper, 'flow');
-                
+
                     // Test that the results are rendered properly
                     expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
                         {
@@ -250,13 +250,13 @@ describe('PortTypeMenu.vue', () => {
                         };
 
                         doMount({ portGroups, side });
-                    
+
                         expect(wrapper.findComponent(MenuItems).props('items')).toEqual(
                             Object.keys(portGroups).map(key => ({ text: key }))
                         );
                     }
                 );
-                
+
                 it('should automatically select the port group when only 1 is given', () => {
                     const portGroups = {
                         group1: { supportedPortTypeIds: ['table', 'flowVariable'], canAddInPort: true },
@@ -286,7 +286,7 @@ describe('PortTypeMenu.vue', () => {
                     };
 
                     doMount({ portGroups });
-                    
+
                     // select a group
                     wrapper.findComponent(MenuItems).vm.$emit('item-click', {}, { text: 'group1' });
                     await Vue.nextTick();
@@ -328,7 +328,7 @@ describe('PortTypeMenu.vue', () => {
                     // select a group
                     wrapper.findComponent(MenuItems).vm.$emit('item-click', {}, { text: 'group1' });
                     await Vue.nextTick();
-                    
+
                     // go back
                     wrapper.find('.return-button').trigger('click');
                     await Vue.nextTick();
@@ -377,7 +377,7 @@ describe('PortTypeMenu.vue', () => {
             });
 
             test.each(['top-reached', 'bottom-reached'])('keyboard-navigation top reached', async (event) => {
-                let preventDefaultMock = jest.fn();
+                let preventDefaultMock = vi.fn();
                 doMount();
 
                 wrapper.findComponent(MenuItems).vm.focusFirst();

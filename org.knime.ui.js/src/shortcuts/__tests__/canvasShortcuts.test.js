@@ -1,17 +1,10 @@
 import canvasShortcuts from '../canvasShortcuts';
 
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
-
 describe('canvasShortcuts', () => {
     let mockDispatch, $store;
 
     beforeEach(() => {
-        mockDispatch = jest.fn();
+        mockDispatch = vi.fn();
         $store = {
             dispatch: mockDispatch
         };

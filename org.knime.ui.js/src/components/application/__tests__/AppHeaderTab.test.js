@@ -68,7 +68,7 @@ describe('AppHeaderTab.vue', () => {
     it('should emit a close-workflow event if the close button is pressed', async () => {
         const wrapper = doMount({ projectId: '1' });
 
-        const stopPropagation = jest.fn();
+        const stopPropagation = vi.fn();
         await wrapper.findComponent(CloseButton).vm.$emit('close', { stopPropagation });
 
         expect(stopPropagation).toHaveBeenCalled();

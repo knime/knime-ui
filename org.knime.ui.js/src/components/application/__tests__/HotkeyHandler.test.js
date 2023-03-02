@@ -5,8 +5,8 @@ import { escapePressed as escapePressedMock } from '@/mixins/escapeStack';
 
 import HotkeyHandler from '../HotkeyHandler.vue';
 
-jest.mock('@/mixins/escapeStack', () => ({
-    escapePressed: jest.fn()
+vi.mock('@/mixins/escapeStack', () => ({
+    escapePressed: vi.fn()
 }));
 
 const expectEventHandled = () => {
@@ -28,22 +28,22 @@ describe('HotKeys', () => {
 
     afterEach(() => {
         wrapper.unmount();
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     beforeEach(() => {
         $shortcuts = {
-            findByHotkey: jest.fn(),
-            isEnabled: jest.fn(),
-            preventDefault: jest.fn(),
-            dispatch: jest.fn()
+            findByHotkey: vi.fn(),
+            isEnabled: vi.fn(),
+            preventDefault: vi.fn(),
+            dispatch: vi.fn()
         };
 
         $store = null;
         wrapper = null;
 
-        KeyboardEvent.prototype.preventDefault = jest.fn();
-        KeyboardEvent.prototype.stopPropagation = jest.fn();
+        KeyboardEvent.prototype.preventDefault = vi.fn();
+        KeyboardEvent.prototype.stopPropagation = vi.fn();
 
         escapePressedMock.mockClear();
 
@@ -58,7 +58,7 @@ describe('HotKeys', () => {
                     suggestPanning: false
                 },
                 mutations: {
-                    setSuggestPanning: jest.fn().mockImplementation((state, val) => {
+                    setSuggestPanning: vi.fn().mockImplementation((state, val) => {
                         state.suggestPanning = val;
                     })
                 }

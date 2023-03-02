@@ -2,17 +2,10 @@ import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
+import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
 import FloatingMenu from '../FloatingMenu.vue';
 
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
-
-import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
-jest.mock('@/mixins/escapeStack', () => {
+vi.mock('@/mixins/escapeStack', () => {
     function escapeStack({ onEscape }) { // eslint-disable-line func-style
         escapeStack.onEscape = onEscape;
         return { /* empty mixin */ };
@@ -48,7 +41,7 @@ describe('FloatingMenu.vue', () => {
             this.resize = function () {
                 this.callback([{ target: this.element }]);
             };
-            this.disconnect = jest.fn();
+            this.disconnect = vi.fn();
         };
 
         // Mock 'kanvas' element
@@ -63,13 +56,8 @@ describe('FloatingMenu.vue', () => {
         document.body.appendChild(mockKanvas);
 
         // Mock window bounds
-        const originalWindow = { ...window };
-        const windowSpy = jest.spyOn(global, 'window', 'get');
-        windowSpy.mockImplementation(() => ({
-            ...originalWindow,
-            innerWidth: 100,
-            innerHeight: 100
-        }));
+        window.innerWidth = 100;
+        window.innerHeight = 100;
 
         Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
             get: () => contentHeight
@@ -79,13 +67,13 @@ describe('FloatingMenu.vue', () => {
         });
 
         // Mock screenFromCanvasCoordinates
-        const screenFromCanvasCoordinatesMock = jest.fn().mockImplementation(({ zoomFactor }) => ({ x, y }) => ({
+        const screenFromCanvasCoordinatesMock = vi.fn().mockImplementation(({ zoomFactor }) => ({ x, y }) => ({
             x: x * zoomFactor,
             y: y * zoomFactor
         }));
 
         const mutations = {
-            canvas: { setInteractionsEnabled: jest.fn() }
+            canvas: { setInteractionsEnabled: vi.fn() }
         };
 
         const storeConfig = {
@@ -123,7 +111,7 @@ describe('FloatingMenu.vue', () => {
     };
 
     afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
     });
 
     describe('close menu', () => {
@@ -245,7 +233,7 @@ describe('FloatingMenu.vue', () => {
             await Vue.nextTick();
 
             // warning: tests internal behavior
-            let setPositionSpy = jest.spyOn(wrapper.vm, 'setAbsolutePosition');
+            let setPositionSpy = vi.spyOn(wrapper.vm, 'setAbsolutePosition');
             document.getElementById('kanvas').dispatchEvent(new CustomEvent('scroll'));
 
             expect(setPositionSpy).toHaveBeenCalled();
@@ -278,7 +266,7 @@ describe('FloatingMenu.vue', () => {
             await Vue.nextTick();
 
             // warning: tests internal behavior
-            let setPositionSpy = jest.spyOn(wrapper.vm, 'setAbsolutePosition');
+            let setPositionSpy = vi.spyOn(wrapper.vm, 'setAbsolutePosition');
 
             wrapper.unmount();
 

@@ -10,7 +10,7 @@ import CategoryResults from '../CategoryResults.vue';
 import SearchResults from '../SearchResults.vue';
 import NodeDescriptionOverlay from '../NodeDescriptionOverlay.vue';
 
-jest.mock('lodash', () => ({
+vi.mock('lodash', () => ({
     debounce(func) {
         return function (...args) {
             // eslint-disable-next-line no-invalid-this
@@ -32,14 +32,14 @@ describe('NodeRepository', () => {
 
     beforeEach(() => {
         wrapper = null;
-        searchNodesMock = jest.fn();
-        searchTopNodesNextPageMock = jest.fn();
-        setSelectedTagsMock = jest.fn();
-        getAllNodesMock = jest.fn();
-        clearSearchParamsMock = jest.fn();
-        setScrollPositionMock = jest.fn();
-        setSelectedNodeMock = jest.fn();
-        updateQueryMock = jest.fn();
+        searchNodesMock = vi.fn();
+        searchTopNodesNextPageMock = vi.fn();
+        setSelectedTagsMock = vi.fn();
+        getAllNodesMock = vi.fn();
+        clearSearchParamsMock = vi.fn();
+        setScrollPositionMock = vi.fn();
+        setSelectedNodeMock = vi.fn();
+        updateQueryMock = vi.fn();
         searchIsActive = true;
         isSelectedNodeVisible = true;
 
@@ -221,7 +221,7 @@ describe('NodeRepository', () => {
         });
 
         it('de-selectes node on close of description panel', async () => {
-            window.setTimeout = jest.fn().mockImplementation(fn => {
+            window.setTimeout = vi.fn().mockImplementation(fn => {
                 fn();
                 return 0;
             });

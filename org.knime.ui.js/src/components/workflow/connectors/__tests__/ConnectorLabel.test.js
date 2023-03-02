@@ -21,7 +21,7 @@ describe('ConnectorLabel.vue', () => {
         let doMount, wrapper, isNodeSelectedMock;
 
         beforeEach(() => {
-            isNodeSelectedMock = jest.fn().mockReturnValue(() => false);
+            isNodeSelectedMock = vi.fn().mockReturnValue(() => false);
             $store = mockVuexStore({
                 workflow: {
                     state: {

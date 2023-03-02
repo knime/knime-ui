@@ -44,8 +44,8 @@ describe('Workflow', () => {
         'root:1': mockNode({ id: 'root:1', position: { x: 50, y: 50 } }),
         'root:2': mockNode({ id: 'root:2', position: { x: 0, y: 100 } })
     };
-    
-    const getStore = ({ isNodeSelectedMock = jest.fn(() => true), customWorkflow = {} } = {}) => {
+
+    const getStore = ({ isNodeSelectedMock = vi.fn(() => true), customWorkflow = {} } = {}) => {
         const workflow = {
             projectId: 'some id',
             info: {
@@ -109,7 +109,7 @@ describe('Workflow', () => {
             next: () => getPosition.next().value
         };
     };
-    
+
     const doShallowMount = ({
         props = {},
         store = getStore()
@@ -136,7 +136,7 @@ describe('Workflow', () => {
             }
         });
     };
-    
+
     describe('sample workflow', () => {
         it('has portal for selection frames', () => {
             const wrapper = doShallowMount();
@@ -145,15 +145,15 @@ describe('Workflow', () => {
 
         it('forwards nodeSelectionPreview calls to the correct node', () => {
             const wrapper = doShallowMount();
-            
+
             const node = wrapper.findAllComponents(Node).find(n => n.props('id') === 'root:1');
-            
-            node.vm.setSelectionPreview = jest.fn();
+
+            node.vm.setSelectionPreview = vi.fn();
             wrapper.vm.applyNodeSelectionPreview({ type: 'show', nodeId: 'root:1' });
-            
+
             expect(node.vm.setSelectionPreview).toHaveBeenLastCalledWith('show');
         });
-        
+
         it('renders nodes', () => {
             const wrapper = doShallowMount();
 
@@ -173,7 +173,7 @@ describe('Workflow', () => {
                     },
                     portGroups: null
                 };
-                
+
                 expect(props).toStrictEqual(expected);
             });
         });
@@ -181,15 +181,15 @@ describe('Workflow', () => {
         it.skip('renders connectors', () => {
             const store = getStore();
             const wrapper = doShallowMount({ store });
-            
+
             const connections = Object.values(store.state.workflow.activeWorkflow.connections);
-            
+
             // TODO: FIX props do not list mixin props when using shallowMount. The assertion fails
             // because the props that the mixin uses do not get reflected in the object
             const connectorProps = wrapper.findAllComponents(Connector).map(c => c.props());
             expect(connectorProps).toEqual(connections);
         });
-        
+
         it('is not streaming', () => {
             const wrapper = doShallowMount();
             expect(wrapper.find('.streaming-decorator').exists()).toBe(false);
@@ -208,7 +208,7 @@ describe('Workflow', () => {
             }
         });
         const wrapper = doShallowMount({ store });
-            
+
         const order = wrapper.findAllComponents(WorkflowAnnotation).map(c => c.attributes().id);
         expect(order).toEqual(['back', 'middle', 'front']);
     });
@@ -219,9 +219,9 @@ describe('Workflow', () => {
             const nodeOrder = wrapper.findAllComponents(MoveableNodeContainer).map(node => node.props('id'));
             expect(nodeOrder).toStrictEqual(['root:0', 'root:1', 'root:2']);
         });
-        
+
         test('selecting node brings it to the front', () => {
-            const store = getStore({ isNodeSelectedMock: jest.fn(id => id === 'root:1') });
+            const store = getStore({ isNodeSelectedMock: vi.fn(id => id === 'root:1') });
             const wrapper = doShallowMount({ store });
 
             // check order order of Node components
@@ -237,7 +237,7 @@ describe('Workflow', () => {
             }
         });
         const wrapper = doShallowMount({ store });
-        
+
         expect(wrapper.findComponent(MetaNodePortBars).exists()).toBe(true);
     });
 

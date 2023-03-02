@@ -6,15 +6,15 @@ describe('Splitter.vue', () => {
     let wrapper, startMove, localStorageGetItemSpy, localStorageSetItemSpy;
 
     // eslint-disable-next-line no-proto
-    localStorageGetItemSpy = jest.spyOn(window.localStorage.__proto__, 'getItem');
+    localStorageGetItemSpy = vi.spyOn(window.localStorage.__proto__, 'getItem');
     // eslint-disable-next-line no-proto
-    localStorageSetItemSpy = jest.spyOn(window.localStorage.__proto__, 'setItem');
+    localStorageSetItemSpy = vi.spyOn(window.localStorage.__proto__, 'setItem');
 
     startMove = (wrapper) => {
         const handle = wrapper.find('.handle');
 
-        handle.element.setPointerCapture = jest.fn();
-        handle.element.releasePointerCapture = jest.fn();
+        handle.element.setPointerCapture = vi.fn();
+        handle.element.releasePointerCapture = vi.fn();
 
         handle.trigger('pointerdown', {
             clientY: 100,
@@ -51,10 +51,10 @@ describe('Splitter.vue', () => {
             const handle = wrapper.find('.handle');
             const secondary = wrapper.find('.secondary');
 
-            handle.element.setPointerCapture = jest.fn();
-            handle.element.releasePointerCapture = jest.fn();
+            handle.element.setPointerCapture = vi.fn();
+            handle.element.releasePointerCapture = vi.fn();
 
-            secondary.element.getBoundingClientRect = jest.fn(() => ({
+            secondary.element.getBoundingClientRect = vi.fn(() => ({
                 y: 200,
                 height: 150
             }));
@@ -81,10 +81,10 @@ describe('Splitter.vue', () => {
             const handle = wrapper.find('.handle');
             const secondary = wrapper.find('.secondary');
 
-            handle.element.setPointerCapture = jest.fn();
-            handle.element.releasePointerCapture = jest.fn();
+            handle.element.setPointerCapture = vi.fn();
+            handle.element.releasePointerCapture = vi.fn();
 
-            secondary.element.getBoundingClientRect = jest.fn(() => ({
+            secondary.element.getBoundingClientRect = vi.fn(() => ({
                 y: 200,
                 height: 150
             }));
@@ -153,10 +153,10 @@ describe('Splitter.vue', () => {
             const handle = wrapper.find('.handle');
             const secondary = wrapper.find('.secondary');
 
-            handle.element.setPointerCapture = jest.fn();
-            handle.element.releasePointerCapture = jest.fn();
+            handle.element.setPointerCapture = vi.fn();
+            handle.element.releasePointerCapture = vi.fn();
 
-            secondary.element.getBoundingClientRect = jest.fn(() => ({
+            secondary.element.getBoundingClientRect = vi.fn(() => ({
                 x: 200,
                 width: 150
             }));

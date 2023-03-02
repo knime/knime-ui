@@ -5,7 +5,7 @@ import { getPortView as getPortViewMock } from '@api';
 
 import PortViewLoader from '../PortViewLoader.vue';
 
-jest.mock('@api', () => ({ getPortView: jest.fn() }), { virtual: true });
+vi.mock('@api', () => ({ getPortView: vi.fn() }), { virtual: true });
 
 const RESOURCE_TYPES = {
     VUE_COMPONENT_REFERENCE: 'VUE_COMPONENT_REFERENCE',

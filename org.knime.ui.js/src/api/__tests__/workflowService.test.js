@@ -3,7 +3,7 @@ import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer,
 
 describe('workflow commands', () => {
     beforeEach(() => {
-        window.jsonrpc = jest.fn().mockReturnValue({
+        window.jsonrpc = vi.fn().mockReturnValue({
             jsonrpc: '2.0',
             result: 'dummy',
             id: -1

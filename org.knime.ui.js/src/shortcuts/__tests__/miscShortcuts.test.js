@@ -4,8 +4,8 @@ describe('miscShortcuts', () => {
     let mockDispatch, $store, mockCommit;
 
     beforeEach(() => {
-        mockDispatch = jest.fn();
-        mockCommit = jest.fn();
+        mockDispatch = vi.fn();
+        mockCommit = vi.fn();
         $store = {
             dispatch: mockDispatch,
             commit: mockCommit

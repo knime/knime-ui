@@ -17,16 +17,14 @@ import connectorPath from '@/util/connectorPath';
 
 import Connector from '../Connector.vue';
 
-jest.mock('@/util/connectorPath', () => jest.fn());
-jest.mock('gsap', () => ({
-    to: jest.fn()
-}));
+vi.mock('@/util/connectorPath', () => ({ default: vi.fn() }));
+vi.mock('gsap', () => ({ default: { to: vi.fn() } }));
 
 describe('Connector.vue', () => {
     let portShiftMock;
 
     beforeAll(() => {
-        portShiftMock = jest.spyOn(portShift, 'default');
+        portShiftMock = vi.spyOn(portShift, 'default');
     });
 
     const defaultProps = {
@@ -39,7 +37,7 @@ describe('Connector.vue', () => {
         sourcePort: 0,
         destPort: 2
     };
-    
+
     const defaultPortMock = {
         type: 'table',
         connectedVia: []
@@ -60,7 +58,7 @@ describe('Connector.vue', () => {
         return merge({
             application: {
                 actions: {
-                    toggleContextMenu: jest.fn()
+                    toggleContextMenu: vi.fn()
                 }
             },
             workflow: {
@@ -92,15 +90,15 @@ describe('Connector.vue', () => {
             },
             selection: {
                 getters: {
-                    isConnectionSelected: () => jest.fn(),
-                    singleSelectedNode: jest.fn(),
-                    selectedConnections: jest.fn().mockReturnValue([]),
-                    isNodeSelected: () => jest.fn()
+                    isConnectionSelected: () => vi.fn(),
+                    singleSelectedNode: vi.fn(),
+                    selectedConnections: vi.fn().mockReturnValue([]),
+                    isNodeSelected: () => vi.fn()
                 },
                 actions: {
-                    selectConnection: jest.fn(),
-                    deselectConnection: jest.fn(),
-                    deselectAllObjects: jest.fn()
+                    selectConnection: vi.fn(),
+                    deselectConnection: vi.fn(),
+                    deselectAllObjects: vi.fn()
                 }
             }
         }, customStoreConfig);
@@ -131,7 +129,7 @@ describe('Connector.vue', () => {
     describe('attached to other node', () => {
         afterEach(() => {
             // connectorPath.mockReset();
-            jest.clearAllMocks();
+            vi.clearAllMocks();
         });
 
         it('draws grab cursor by default', () => {
@@ -194,12 +192,12 @@ describe('Connector.vue', () => {
                 customStoreConfig: {
                     selection: {
                         getters: {
-                            isConnectionSelected: () => jest.fn().mockReturnValue(true)
+                            isConnectionSelected: () => vi.fn().mockReturnValue(true)
                         }
                     }
                 }
             });
-            
+
             const wrapper = doShallowMount({ storeConfig });
             await wrapper.find('g path').trigger('click', { button: 0, shiftKey: true });
 
@@ -242,7 +240,7 @@ describe('Connector.vue', () => {
                     }
                 }
             });
-            
+
             const wrapper = doShallowMount({ storeConfig, props: { ...defaultProps, streaming: true } });
             expect(wrapper.find('.dashed').exists()).toBe(true);
         });
@@ -307,7 +305,7 @@ describe('Connector.vue', () => {
                     }
                 }
             });
-            
+
             connectorPath.mockReturnValueOnce('that path');
             const wrapper = doShallowMount({ storeConfig });
 
@@ -337,13 +335,13 @@ describe('Connector.vue', () => {
                 customStoreConfig: {
                     selection: {
                         getters: {
-                            singleSelectedNode: () => jest.fn(() => 'root:1'),
-                            isNodeSelected: () => jest.fn(node => node === 'root:1')
+                            singleSelectedNode: () => vi.fn(() => 'root:1'),
+                            isNodeSelected: () => vi.fn(node => node === 'root:1')
                         }
                     }
                 }
             });
-            
+
             const wrapper = doShallowMount({ storeConfig });
             const classes = wrapper.findAll('path')[1].classes();
             expect(classes.includes('highlighted')).toBe(true);
@@ -354,13 +352,13 @@ describe('Connector.vue', () => {
                 customStoreConfig: {
                     selection: {
                         getters: {
-                            singleSelectedNode: () => jest.fn(() => 'root:2'),
-                            isNodeSelected: () => jest.fn(node => node === 'root:2')
+                            singleSelectedNode: () => vi.fn(() => 'root:2'),
+                            isNodeSelected: () => vi.fn(node => node === 'root:2')
                         }
                     }
                 }
             });
-           
+
             const wrapper = doShallowMount({ storeConfig });
             const classes = wrapper.findAll('path')[1].classes();
             expect(classes.includes('highlighted')).toBe(true);
@@ -371,9 +369,9 @@ describe('Connector.vue', () => {
                 customStoreConfig: {
                     selection: {
                         getters: {
-                            singleSelectedNode: () => jest.fn(() => 'root:2'),
-                            isNodeSelected: () => jest.fn(node => node === 'root:2'),
-                            selectedConnections: jest.fn(() => ['conn'])
+                            singleSelectedNode: () => vi.fn(() => 'root:2'),
+                            isNodeSelected: () => vi.fn(node => node === 'root:2'),
+                            selectedConnections: vi.fn(() => ['conn'])
                         }
                     }
                 }
@@ -426,10 +424,10 @@ describe('Connector.vue', () => {
                 },
                 selection: {
                     getters: {
-                        isConnectionSelected: () => jest.fn(),
-                        singleSelectedNode: jest.fn(),
-                        selectedConnections: jest.fn().mockReturnValue([]),
-                        isNodeSelected: () => jest.fn()
+                        isConnectionSelected: () => vi.fn(),
+                        singleSelectedNode: vi.fn(),
+                        selectedConnections: vi.fn().mockReturnValue([]),
+                        isNodeSelected: () => vi.fn()
                     }
                 }
             }

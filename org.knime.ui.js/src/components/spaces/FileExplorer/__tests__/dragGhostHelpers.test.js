@@ -1,12 +1,12 @@
 import { gsap } from 'gsap';
 import { createDragGhosts } from '../dragGhostHelpers';
 
-jest.mock('gsap', () => ({
+vi.mock('gsap', () => ({
     gsap: {
         to: (_, { onComplete }) => {
             onComplete();
         },
-        killTweensOf: jest.fn()
+        killTweensOf: vi.fn()
     }
 }));
 
@@ -15,7 +15,7 @@ describe('dragGhostHelpers', () => {
         const dragTarget = selectedTargets.length > 0
             ? selectedTargets[0].targetEl
             : document.createElement('div');
-            
+
         const targets = selectedTargets.length > 0
             ? selectedTargets
             : [{ targetEl: dragTarget, textContent: '' }];
@@ -23,7 +23,7 @@ describe('dragGhostHelpers', () => {
         document.body.appendChild(dragTarget);
         const dragStartEvent = new Event('dragstart');
         const dataTransfer = {
-            setDragImage: jest.fn()
+            setDragImage: vi.fn()
         };
         dragStartEvent.dataTransfer = dataTransfer;
         dragTarget.dispatchEvent(dragStartEvent);
@@ -63,7 +63,7 @@ describe('dragGhostHelpers', () => {
             { textContent: 'MOCK2', targetEl: document.createElement('div') },
             { textContent: 'MOCK3', targetEl: document.createElement('div') }
         ];
-        
+
         const { ghosts } = setup({ selectedTargets });
         expect(ghosts[0].innerText).toBe('MOCK3');
         expect(ghosts[1].innerText).toBe('MOCK2');
@@ -87,16 +87,16 @@ describe('dragGhostHelpers', () => {
                 { textContent: 'MOCK', targetEl: document.createElement('div') }
             ];
             const { ghosts } = setup({ selectedTargets, badgeCount: 10 });
-    
+
             expect(getBadgeElement(ghosts[0]).innerText).toBe(10);
         });
-        
+
         it('should display the proper badge count (>99)', () => {
             const selectedTargets = [
                 { textContent: 'MOCK', targetEl: document.createElement('div') }
             ];
             const { ghosts } = setup({ selectedTargets, badgeCount: 150 });
-    
+
             expect(getBadgeElement(ghosts[0]).innerText).toBe('99+');
         });
     });
@@ -117,7 +117,7 @@ describe('dragGhostHelpers', () => {
         const { ghosts, removeGhosts } = setup({ selectedTargets, badgeCount: 10 });
         const badgeEl = getBadgeElement(ghosts[1]);
         removeGhosts();
-        
+
         expect(gsap.killTweensOf).toHaveBeenCalledWith(ghosts[0]);
         expect(gsap.killTweensOf).toHaveBeenCalledWith(ghosts[1]);
         expect(gsap.killTweensOf).toHaveBeenCalledWith(badgeEl);

@@ -29,15 +29,15 @@ describe('AppHeader.vue', () => {
                     devMode: false,
                     isLoadingWorkflow
                 },
-                actions: { switchWorkflow: jest.fn() }
+                actions: { switchWorkflow: vi.fn() }
             },
             workflow: {
-                actions: { closeWorkflow: jest.fn() }
+                actions: { closeWorkflow: vi.fn() }
             }
         };
         const $router = {
             currentRoute: {},
-            push: jest.fn()
+            push: vi.fn()
         };
 
         const $store = mockVuexStore(storeConfig);

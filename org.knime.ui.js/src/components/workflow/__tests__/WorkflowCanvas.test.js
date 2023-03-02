@@ -29,15 +29,15 @@ describe('Kanvas', () => {
                     })
                 },
                 actions: {
-                    fillScreen: jest.fn()
+                    fillScreen: vi.fn()
                 },
                 mutations: {
-                    setIsEmpty: jest.fn()
+                    setIsEmpty: vi.fn()
                 }
             },
             selection: {
                 actions: {
-                    deselectAllObjects: jest.fn()
+                    deselectAllObjects: vi.fn()
                 }
             },
             workflow: {
@@ -61,7 +61,7 @@ describe('Kanvas', () => {
             },
             panel: {
                 actions: {
-                    setCurrentProjectActiveTab: jest.fn()
+                    setCurrentProjectActiveTab: vi.fn()
                 }
             },
             application: {
@@ -69,7 +69,7 @@ describe('Kanvas', () => {
                     activeProjectId: 'project1'
                 },
                 mutations: {
-                    setSavedStates: jest.fn()
+                    setSavedStates: vi.fn()
                 },
                 getters: {
                     workflowCanvasState: () => null
@@ -107,7 +107,7 @@ describe('Kanvas', () => {
 
             let workflowComponent = wrapper.findComponent(Workflow);
 
-            workflowComponent.vm.applyNodeSelectionPreview = jest.fn();
+            workflowComponent.vm.applyNodeSelectionPreview = vi.fn();
             wrapper.findComponent(SelectionRectangle).vm.$emit('node-selection-preview', 'args');
 
             expect(workflowComponent.vm.applyNodeSelectionPreview).toHaveBeenCalledWith('args');

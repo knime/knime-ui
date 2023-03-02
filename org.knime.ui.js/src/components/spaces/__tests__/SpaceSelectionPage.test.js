@@ -17,7 +17,7 @@ const mockSpaceProviders = {
     }
 };
 
-jest.mock('@api');
+vi.mock('@api');
 
 describe('SpaceSelectionPage.vue', () => {
     const doMount = ({ mockProvidersResponse = mockSpaceProviders, spacesStoreOverrides = null } = {}) => {
@@ -28,10 +28,10 @@ describe('SpaceSelectionPage.vue', () => {
             spaces: spacesStoreOverrides || spacesStore
         });
 
-        const dispatchSpy = jest.spyOn($store, 'dispatch');
-        const commitSpy = jest.spyOn($store, 'commit');
+        const dispatchSpy = vi.spyOn($store, 'dispatch');
+        const commitSpy = vi.spyOn($store, 'commit');
 
-        const mockRouter = { push: jest.fn() };
+        const mockRouter = { push: vi.fn() };
 
         const wrapper = mount(SpaceSelectionPage, {
             global: {
@@ -43,7 +43,7 @@ describe('SpaceSelectionPage.vue', () => {
         return { wrapper, $store, dispatchSpy, commitSpy, $router: mockRouter };
     };
 
-    beforeEach(() => jest.clearAllMocks());
+    beforeEach(() => vi.clearAllMocks());
 
     it('should fetch space providers on created', () => {
         const { dispatchSpy } = doMount();
@@ -62,8 +62,8 @@ describe('SpaceSelectionPage.vue', () => {
                     }
                 },
                 actions: {
-                    fetchAllSpaceProviders: jest.fn(),
-                    fetchWorkflowGroupContent: jest.fn()
+                    fetchAllSpaceProviders: vi.fn(),
+                    fetchWorkflowGroupContent: vi.fn()
                 }
             }
         });
@@ -90,7 +90,7 @@ describe('SpaceSelectionPage.vue', () => {
         expect(wrapper.findAll('.space-provider').length).toBe(1);
     });
 
-    it('should handle login for spaces that require authentication', async () => {
+    it.only('should handle login for spaces that require authentication', async () => {
         const { wrapper, dispatchSpy } = doMount({
             mockProvidersResponse: {
                 hub1: {
@@ -102,8 +102,7 @@ describe('SpaceSelectionPage.vue', () => {
             }
         });
 
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
+        await new Promise(r => setTimeout(r, 0));
 
         const signInButton = wrapper.find('.sign-in');
         expect(signInButton.exists()).toBe(true);

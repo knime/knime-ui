@@ -17,7 +17,7 @@ import { fetchWorkflowGroupContent,
 import * as spacesConfig from '../spaces';
 import { APP_ROUTES } from '@/router';
 
-jest.mock('@api');
+vi.mock('@api');
 
 const fetchWorkflowGroupContentResponse = {
     id: 'root',
@@ -68,13 +68,13 @@ describe('spaces store', () => {
         fetchAllSpaceProviders.mockReturnValue(mockFetchAllProvidersResponse);
         fetchWorkflowGroupContent.mockResolvedValue(mockFetchWorkflowGroupResponse);
 
-        const dispatchSpy = jest.spyOn(store, 'dispatch');
+        const dispatchSpy = vi.spyOn(store, 'dispatch');
 
         return { store, dispatchSpy };
     };
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('actions', () => {
@@ -462,7 +462,7 @@ describe('spaces store', () => {
                     spaceId: 'local'
                 };
 
-                const mockRouter = { push: jest.fn() };
+                const mockRouter = { push: vi.fn() };
                 store.dispatch('spaces/openWorkflow', { workflowItemId: 'dummy', $router: mockRouter });
 
                 expect(openWorkflow).not.toHaveBeenCalled();
