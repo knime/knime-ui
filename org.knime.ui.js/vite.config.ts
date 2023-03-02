@@ -19,8 +19,7 @@ export default defineConfig(({ mode }) => {
         resolve: {
             alias: {
                 '@': fileURLToPath(new URL('./src', import.meta.url)),
-                '@api': fileURLToPath(new URL('./src/api/index', import.meta.url)),
-                'webapps-common': fileURLToPath(new URL('./webapps-common', import.meta.url))
+                '@api': fileURLToPath(new URL('./src/api/index', import.meta.url))
             }
         }
     };
