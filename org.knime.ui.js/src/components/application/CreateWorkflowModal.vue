@@ -103,7 +103,7 @@ export default {
 
 <template>
   <Modal
-    v-if="isCreateWorkflowModalOpen"
+    v-show="isCreateWorkflowModalOpen"
     ref="modalRef"
     :active="isCreateWorkflowModalOpen"
     title="Create a new workflow"

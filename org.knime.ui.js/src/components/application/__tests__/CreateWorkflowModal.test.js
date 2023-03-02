@@ -1,6 +1,7 @@
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
+import Modal from 'webapps-common/ui/components/Modal.vue';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
 import { mockVuexStore } from '@/test/test-utils';
@@ -63,18 +64,20 @@ describe('CreateWorkflowModal.vue', () => {
     };
 
     describe('CreateWorkflowModal', () => {
-        it('Opens on state change', async () => {
+        it('opens on state change', async () => {
             const { wrapper, $store } = doMount({ isOpen: false });
             await $store.commit('spaces/setIsCreateWorkflowModalOpen', true);
             await Vue.nextTick();
-            expect(wrapper.find('input').exists()).toBe(true);
+            expect(wrapper.find('input').isVisible()).toBe(true);
         });
 
-        it('Closes on state change', async () => {
+        it('closes on state change', async () => {
             const { wrapper, commitSpy } = doMount({ isOpen: true });
-            wrapper.vm.closeModal();
+
+            wrapper.findComponent(Modal).vm.$emit('cancel');
             await Vue.nextTick();
-            expect(wrapper.find('input').exists()).toBe(false);
+
+            expect(wrapper.find('input').isVisible()).toBe(false);
             expect(commitSpy).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', false);
         });
 
