@@ -7,6 +7,8 @@ import Label from 'webapps-common/ui/components/forms/Label.vue';
 
 import WorkflowNameValidator from '@/components/common/WorkflowNameValidator.vue';
 
+import { escapeStack } from '@/mixins/escapeStack';
+
 export default {
     components: {
         Modal,
@@ -15,6 +17,17 @@ export default {
         InputField,
         WorkflowNameValidator
     },
+
+    mixins: [
+        escapeStack({
+            alwaysActive: true,
+            onEscape() {
+                if (this.isCreateWorkflowModalOpen) {
+                    this.closeModal();
+                }
+            }
+        })
+    ],
 
     data() {
         return {
@@ -59,6 +72,11 @@ export default {
             this.enableSubmit = true;
             this.$store.commit('spaces/setIsCreateWorkflowModalOpen', false);
         },
+        onkeyup(keyupEvent, isValid) {
+            if (keyupEvent.key === 'Enter' && isValid) {
+                this.onSubmit();
+            }
+        },
         onValidChange(isValid) {
             this.enableSubmit = isValid;
         },
@@ -90,6 +108,7 @@ export default {
     :active="isCreateWorkflowModalOpen"
     title="Create a new workflow"
     style-type="info"
+    class="modal"
     @cancel="closeModal"
   >
     <template #confirmation>
@@ -108,6 +127,7 @@ export default {
                 type="text"
                 title="Workflow name"
                 :is-valid="isValid"
+                @keyup="onkeyup($event, isValid)"
               />
               <div
                 v-if="!isValid"
@@ -140,7 +160,7 @@ export default {
 
 <style lang="postcss" scoped>
 .modal {
-  --modal-width: 960px;
+  --modal-width: 400px;
 }
 
 .item-error {

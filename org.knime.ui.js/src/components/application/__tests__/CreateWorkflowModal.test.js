@@ -1,10 +1,20 @@
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
+import InputField from 'webapps-common/ui/components/forms/InputField.vue';
+
 import { mockVuexStore } from '@/test/test-utils';
 import * as spacesStore from '@/store/spaces';
 
 import CreateWorkflowModal from '../CreateWorkflowModal.vue';
+import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
+jest.mock('@/mixins/escapeStack', () => {
+    function escapeStack({ onEscape }) { // eslint-disable-line func-style
+        escapeStack.onEscape = onEscape;
+        return { /* empty mixin */ };
+    }
+    return { escapeStack };
+});
 
 describe('CreateWorkflowModal.vue', () => {
     const MOCK_DATA = [
@@ -68,27 +78,6 @@ describe('CreateWorkflowModal.vue', () => {
             expect(commitSpy).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', false);
         });
 
-        describe('Name Suggestion', () => {
-            it('should set default name suggestion', () => {
-                const { wrapper } = doMount();
-                const input = wrapper.find('input');
-                expect(input.element.value).toBe('KNIME_project');
-            });
-
-            it('should find suitable name suggestion', () => {
-                const { wrapper } = doMount({ items: [{
-                    id: '1',
-                    name: 'KNIME_project'
-                },
-                {
-                    id: '2',
-                    name: 'KNIME_project1'
-                }] });
-                const input = wrapper.find('input');
-                expect(input.element.value).toBe('KNIME_project2');
-            });
-        });
-
         it('should create workflow', async () => {
             const { wrapper, dispatchSpy } = await doMount();
 
@@ -133,6 +122,63 @@ describe('CreateWorkflowModal.vue', () => {
             const focusSpy = jest.spyOn(input.element, 'focus');
             jest.runAllTimers();
             expect(focusSpy).toHaveBeenCalled();
+        });
+
+        describe('Name Suggestion', () => {
+            it('should set default name suggestion', () => {
+                const { wrapper } = doMount();
+                const input = wrapper.find('input');
+                expect(input.element.value).toBe('KNIME_project');
+            });
+
+            it('should find suitable name suggestion', () => {
+                const { wrapper } = doMount({ items: [{
+                    id: '1',
+                    name: 'KNIME_project'
+                },
+                {
+                    id: '2',
+                    name: 'KNIME_project1'
+                }] });
+                const input = wrapper.find('input');
+                expect(input.element.value).toBe('KNIME_project2');
+            });
+        });
+
+        describe('Hotkeys', () => {
+            it('Should submit on keypress enter and with a valid name', async () => {
+                const { wrapper, dispatchSpy } = doMount();
+
+                const newName = 'A valid name';
+                const input = wrapper.find('input');
+                input.element.value = newName;
+                input.trigger('input');
+
+                const inputField = wrapper.findComponent(InputField);
+                await inputField.vm.$emit('keyup', { key: 'Enter' });
+                expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow', { workflowName: newName });
+            });
+
+            it('Should not submit on keypress enter with an invalid name', async () => {
+                const { wrapper, dispatchSpy } = doMount();
+
+                const newName = 'An invalid name *?#:"<>%~|/\\>?';
+                const input = wrapper.find('input');
+                input.element.value = newName;
+                await input.trigger('input');
+
+                const inputField = wrapper.findComponent(InputField);
+                await inputField.vm.$emit('keyup', { key: 'Enter' });
+                expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/createWorkflow', { workflowName: newName });
+            });
+
+            it('Should close on ESC', () => {
+                const { wrapper, commitSpy } = doMount();
+
+                escapeStackMock.onEscape.call(wrapper.vm);
+
+                expect(commitSpy).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', false);
+            });
         });
     });
 });

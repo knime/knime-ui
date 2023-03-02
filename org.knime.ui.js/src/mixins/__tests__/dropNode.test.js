@@ -80,9 +80,6 @@ describe('Drop Node Mixin', () => {
         wrapper.trigger('dragover', dummyEvent);
 
         expect(dummyEvent.dataTransfer.dropEffect).toBe('copy');
-
-        // drop target enabled
-        expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);
     });
 
     it('calls the addNode api with the correct position to add the node', async () => {
@@ -101,6 +98,29 @@ describe('Drop Node Mixin', () => {
         await Vue.nextTick();
         await Vue.nextTick();
         expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not call addNode if data in dataTransfer is not set', () => {
+        const { wrapper, addNodeMock } = doMount();
+        const dummyEvent = {
+            clientX: 0,
+            clientY: 1,
+            dataTransfer: {
+                dropEffect: '',
+                types: ['text/plain'],
+                getData: jest.fn().mockReturnValue(null)
+            }
+        };
+
+        wrapper.trigger('drop', dummyEvent);
+
+        expect(addNodeMock).not.toHaveBeenCalledWith(expect.anything(), {
+            nodeFactory: { className: 'sampleClassName' },
+            position: {
+                x: -10 + dummyEvent.clientX - $shapes.nodeSize / 2,
+                y: -10 + dummyEvent.clientY - $shapes.nodeSize / 2
+            }
+        });
     });
 
     it('does not allow drag and drop in write-protected workflow', () => {

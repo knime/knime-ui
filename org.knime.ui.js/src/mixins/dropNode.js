@@ -12,8 +12,15 @@ export const dropNode = {
         ...mapActions('workflow', ['addNode']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects']),
         async onDrop(e) {
+            // TODO NXT-1586 Enhance drag and drop from side panel
             if (this.isWritable) {
-                const nodeFactory = JSON.parse(e.dataTransfer.getData(KnimeMIME));
+                const data = e.dataTransfer.getData(KnimeMIME);
+
+                if (!data) {
+                    return;
+                }
+                
+                const nodeFactory = JSON.parse(data);
                 const [x, y] = this.screenToCanvasCoordinates([
                     e.clientX - this.$shapes.nodeSize / 2,
                     e.clientY - this.$shapes.nodeSize / 2
@@ -34,9 +41,6 @@ export const dropNode = {
         onDragOver(e) {
             if (this.isWritable && isKnimeNode(e)) {
                 e.dataTransfer.dropEffect = 'copy';
-
-                // Enables drop target to accept this node
-                e.preventDefault();
             }
         }
     }
