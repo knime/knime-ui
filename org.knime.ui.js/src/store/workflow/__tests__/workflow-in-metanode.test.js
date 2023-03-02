@@ -23,9 +23,11 @@ describe('workflow store', () => {
              * Because the module is cached after it is required for the first time,
              * a reset is needed
              */
+            vi.doUnmock('@api');
             vi.resetModules();
+            const fullyMockedModule = await vi.importMock('@api');
             vi.doMock('@api', () => ({
-                __esModule: true,
+                ...fullyMockedModule,
                 ...apiMocks
             }), { virtual: true });
 

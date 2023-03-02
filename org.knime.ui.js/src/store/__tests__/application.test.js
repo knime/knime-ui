@@ -24,9 +24,12 @@ describe('application store', () => {
         const loadWorkflow = vi.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
         const setProjectActiveAndEnsureItsLoadedInBackend = vi.fn();
 
+        vi.doUnmock('@api');
+        vi.clearAllMocks();
         vi.resetModules();
+        const fullyMockedModule = await vi.importMock('@api');
         vi.doMock('@api', () => ({
-            __esModule: true,
+            ...fullyMockedModule,
             addEventListener,
             removeEventListener,
             fetchApplicationState,

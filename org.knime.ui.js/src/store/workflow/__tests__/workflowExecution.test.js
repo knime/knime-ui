@@ -14,8 +14,10 @@ describe('workflow store: Execution', () => {
              * a reset is needed
              */
             vi.resetModules();
+            vi.resetModules();
+            const fullyMockedModule = await vi.importMock('@api');
             vi.doMock('@api', () => ({
-                __esModule: true,
+                ...fullyMockedModule,
                 ...apiMocks
             }), { virtual: true });
 

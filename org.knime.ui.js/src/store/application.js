@@ -401,7 +401,6 @@ export const actions = {
     },
 
     async restoreCanvasState({ dispatch, getters }) {
-        // console.log('HEREEEE')
         const { workflowCanvasState } = getters;
 
         if (workflowCanvasState) {
@@ -545,6 +544,10 @@ export const getters = {
     },
 
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
+        if (!workflow.activeWorkflow) {
+            return null;
+        }
+
         const { info: { containerId: workflowId }, projectId } = workflow.activeWorkflow;
         const rootWorkflowId = 'root';
         const isRootWorkflow = rootWorkflowId === workflowId;

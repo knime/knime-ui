@@ -14,17 +14,19 @@ describe('workflow store: Editing', () => {
          * Because the module is cached after it is required for the first time,
          * a reset is needed
          */
+        vi.doUnmock('@api');
+        vi.doUnmock('@/util/pasteToWorkflow');
         vi.resetModules();
+        const fullyMockedModule = await vi.importMock('@api');
         vi.doMock('@api', () => ({
-            __esModule: true,
+            ...fullyMockedModule,
             ...apiMocks,
             moveObjects: moveObjectsMock,
             deleteObjects: deleteObjectsMock
-        }), { virtual: true });
+        }));
 
         const pastePartsAtMock = vi.fn();
         vi.doMock('@/util/pasteToWorkflow', () => ({
-            __esModule: true,
             pastePartsAt: pastePartsAtMock
         }));
 
