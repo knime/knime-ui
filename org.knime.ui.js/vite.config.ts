@@ -39,6 +39,7 @@ export default defineConfig(({ mode }) => {
             coverage: {
                 all: true,
                 reportsDirectory: 'test-results',
+                reporter: 'lcov',
                 exclude: [
                     'test-results',
                     'src/test',
