@@ -98,6 +98,10 @@ export default {
   margin-left: auto;
   z-index: 5;
 
+  & .expanded .zoom-input {
+    color: var(--theme-button-function-foreground-color-active, var(--knime-white));
+  }
+
   & :deep(.submenu-toggle) {
     padding: 0 13px 0 0;
     align-items: center;
@@ -126,10 +130,6 @@ export default {
         outline: none;
       }
     }
-  }
-
-  & .expanded .zoom-input {
-    color: var(--theme-button-function-foreground-color-active, var(--knime-white));
   }
 
   & :deep(.function-button:not(.active) svg) {
