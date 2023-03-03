@@ -45,7 +45,8 @@ export default {
     },
     data: () => ({
         suggestDelete: false,
-        hover: false
+        hover: false,
+        isDraggedOver: false
     }),
     computed: {
         ...mapState('workflow', {
@@ -150,6 +151,16 @@ export default {
             // lock this connector in place to prevent it from jumping back before being removed
             // TODO: NXT-954 enable locking again if know when the node will be really removed (only backend knows)
             // this.suggestDelete = 'locked';
+        },
+        onConnectorDragEnter(dragEvent) {
+            this.isDraggedOver = true;
+        },
+        onConnectorDragLeave() {
+            this.isDraggedOver = false;
+        },
+        onConnectorDragDrop(dragEvent) {
+            window.alert(`Dropping ${dragEvent.dataTransfer.getData('text/plain')} onto ${this.id}`);
+            this.isDraggedOver = false;
         }
     }
 };
@@ -168,6 +179,9 @@ export default {
       @mouseleave="hover = false"
       @click.left="onMouseClick"
       @pointerdown.right="onContextMenu"
+      @dragenter="onConnectorDragEnter"
+      @dragleave="onConnectorDragLeave"
+      @drop.stop="onConnectorDragDrop"
     />
     <path
       ref="visiblePath"
@@ -177,7 +191,8 @@ export default {
         'read-only': !isWorkflowWritable,
         highlighted: isHighlighted,
         dashed: streaming,
-        selected: isConnectionSelected(id) && !isDragging
+        selected: isConnectionSelected(id) && !isDragging,
+        isDraggedOver
       }"
       fill="none"
     />
@@ -215,6 +230,11 @@ path:not(.hover-area) {
   &.highlighted {
     stroke-width: var(--highlighted-connector-width-shape);
     stroke: var(--knime-masala);
+  }
+
+  &.isDraggedOver {
+    stroke-width: var(--selected-connector-width-shape);
+    stroke: var(--knime-hibiscus-dark);
   }
 
   &.dashed {

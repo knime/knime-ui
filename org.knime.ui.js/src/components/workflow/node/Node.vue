@@ -321,7 +321,6 @@ export default {
         },
 
         onTorsoDragDrop(dragEvent) {
-            dragEvent.preventDefault();
             window.alert(`Dropping ${dragEvent.dataTransfer.getData('text/plain')} onto ${this.id}`);
             this.isDraggedOver = false;
         },
@@ -435,7 +434,7 @@ export default {
                   @dblclick.left="onLeftDoubleClick"
                   @dragenter="onTorsoDragEnter"
                   @dragleave="onTorsoDragLeave"
-                  @drop="onTorsoDragDrop"
+                  @drop.stop="onTorsoDragDrop"
                 />
 
                 <NodeDecorators v-bind="$props" />
