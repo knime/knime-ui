@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { getNodeRecommendations, openWorkflowCoachPreferencePage } from '@api';
+import { getNodeRecommendations, openWorkflowCoachPreferencePage, searchNodes } from '@api';
 
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
@@ -8,8 +8,11 @@ import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import { toNodeWithFullPorts } from '@/util/portDataMapper';
 import { checkPortCompatibility } from '@/util/compatibleConnections';
 import { portPositions } from '@/util/portShift';
+import SearchBar from '@/components/common/SearchBar.vue';
 
 const MAX_NODES = 12;
+const NODES_PER_ROW = 3;
+const NODE_SEARCH_LIMIT = 100;
 
 const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) => {
     const targetPortIndex = targetPorts.findIndex(toPort => checkPortCompatibility({
@@ -38,6 +41,7 @@ const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) =>
  */
 export default {
     components: {
+        SearchBar,
         NodePreview,
         Button,
         FloatingMenu
@@ -61,9 +65,12 @@ export default {
     data() {
         return {
             recommendedNodes: [],
-            showOverlay: false,
-            hasNodeRecommendations: false
+            searchResult: [],
+            searchQuery: ''
         };
+    },
+    mounted() {
+        this.$refs.search?.focus();
     },
     computed: {
         ...mapState('application', ['availablePortTypes', 'hasNodeRecommendationsEnabled']),
@@ -82,18 +89,32 @@ export default {
         },
         ghostSizeZoomed() {
             return this.$shapes.addNodeGhostSize * this.zoomFactor;
+        },
+        hasResults() {
+            return this.searchResult.length > 0 || this.recommendedNodes.length > 0;
+        },
+        nodes() {
+            if (this.searchResult.length > 0) {
+                return this.searchResult;
+            }
+            if (this.recommendedNodes.length > 0) {
+                return this.recommendedNodes;
+            }
+            return [];
         }
     },
     watch: {
         hasNodeRecommendationsEnabled: {
             immediate: true,
             handler() {
-                this.showOverlay = !this.hasNodeRecommendationsEnabled;
-
                 if (this.hasNodeRecommendationsEnabled) {
                     this.fetchRecommendedNodes();
                 }
             }
+        },
+        searchQuery() {
+            // TODO: delay/thorttle this, look into NodeRepo
+            this.fetchSearchResults();
         }
     },
     methods: {
@@ -113,11 +134,24 @@ export default {
                 fullTemplateInfo: true
             });
 
-            if (recommendedNodesResult.length > 0) {
-                this.hasNodeRecommendations = true;
-            }
-
             this.recommendedNodes = recommendedNodesResult.map(toNodeWithFullPorts(this.availablePortTypes));
+        },
+        async fetchSearchResults() {
+            if (this.searchQuery === '') {
+                this.searchResult = [];
+                // TODO: do we need to refetch recommended ones? What if we searched before enabling the wf coach
+                return;
+            }
+            const results = await searchNodes({
+                query: this.searchQuery,
+                tags: null,
+                allTagsMatch: true,
+                nodeOffset: 0,
+                nodeLimit: NODE_SEARCH_LIMIT,
+                fullTemplateInfo: true,
+                portTypeId: this.port.typeId, // TODO: update when available
+            });
+            this.searchResult = results.nodes.map(toNodeWithFullPorts(this.availablePortTypes));
         },
         async addNode({ nodeFactory, inPorts }) {
             if (!this.isWritable) {
@@ -143,6 +177,58 @@ export default {
             });
 
             this.$emit('menuClose');
+        },
+        onKeyDown(key) {
+            const getIndex = (element) => parseInt(element.getAttribute('data-index'), 10);
+            const activeNodeItem = this.$refs.nodes?.find(x => x === document.activeElement);
+            const itemsHaveFocus = Boolean(activeNodeItem);
+            // we need to sort the nodes because refs are NOT guaranteed to be in the correct display order!
+            // TODO: we also might use DOM methods to fetch them in the correct order?!
+            const nodes = [...this.$refs.nodes].sort((a, b) => getIndex(a) - getIndex(b));
+            const activeItemIndex = activeNodeItem ? getIndex(activeNodeItem) : -1;
+
+            // switch from search to items
+            if (!itemsHaveFocus) {
+                if (key === 'down') {
+                    nodes[0].focus();
+                }
+                if (key === 'enter') {
+                    if (this.nodes.length > 0) {
+                        this.addNode(this.nodes[0]);
+                    }
+                }
+                return;
+            }
+
+            // switch from items to search on the first row
+            if (activeItemIndex < NODES_PER_ROW && key === 'up') {
+                this.$refs.search.focus();
+                return;
+            }
+
+            // items navigation
+            if (key === 'up') {
+                const nextIndex = activeItemIndex - NODES_PER_ROW;
+                nodes[nextIndex]?.focus();
+                return;
+            }
+
+            if (key === 'down') {
+                const nextIndex = activeItemIndex + NODES_PER_ROW;
+                nodes[nextIndex]?.focus();
+                return;
+            }
+
+            if (key === 'left') {
+                const nextIndex = activeItemIndex - 1;
+                nodes[nextIndex]?.focus();
+                return;
+            }
+
+            if (key === 'right') {
+                const nextIndex = activeItemIndex + 1;
+                nodes[nextIndex]?.focus();
+            }
         }
     }
 };
@@ -157,11 +243,25 @@ export default {
     prevent-overflow
     tabindex="0"
     @menu-close="$emit('menuClose')"
+    @keydown.left.stop="onKeyDown('left')"
+    @keydown.up.stop.prevent="onKeyDown('up')"
+    @keydown.down.stop.prevent="onKeyDown('down')"
+    @keydown.right.stop="onKeyDown('right')"
+    @keydown.enter.stop.prevent="onKeyDown('enter')"
   >
     <div class="wrapper">
+      <div class="header">
+        <SearchBar
+          ref="search"
+          v-model="searchQuery"
+          placeholder="Search all compatible nodes"
+          class="search-bar"
+        />
+        <hr>
+      </div>
       <div
-        v-if="showOverlay"
-        class="overlay"
+        v-if="!hasNodeRecommendationsEnabled && !hasResults"
+        class="disabled-workflow-coach"
       >
         <h2>Workflow coach</h2>
         <span>
@@ -180,18 +280,21 @@ export default {
         </Button>
       </div>
       <div
-        v-if="hasNodeRecommendations"
+        v-else-if="hasResults"
         class="results"
       >
         <div class="content">
           <ul class="nodes">
             <li
-              v-for="node in recommendedNodes"
+              v-for="(node, index) in nodes"
               :key="node.id"
             >
               <div
+                ref="nodes"
                 class="node"
-                tabindex="0"
+                :class="[ index === 0 ? 'first' : '']"
+                tabindex="-1"
+                :data-index="index"
                 @keydown.enter.stop.prevent="addNode(node, $event)"
                 @click="addNode(node, $event)"
               >
@@ -220,21 +323,17 @@ export default {
 
 <style lang="postcss" scoped>
 .quick-add-node {
-  width: 330px;
+  width: 350px;
   margin-top: calc(var(--ghost-size) / 2 * 1px + var(--extra-margin) * 1px + 3px);
 
-  & .overlay {
+  & .disabled-workflow-coach {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     align-content: center;
     justify-content: center;
     width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
+    flex: 1;
     padding: 20px;
     background: var(--knime-black-semi);
     color: var(--knime-white);
@@ -262,11 +361,11 @@ export default {
   }
 
   & .wrapper {
-    min-height: 357px;
+    height: 410px;
     box-shadow: 0 1px 6px 0 var(--knime-gray-dark-semi);
     background: var(--knime-gray-ultra-light);
-    padding: 0.5em 0;
     display: flex;
+    flex-direction: column;
   }
 
   &:focus {
@@ -276,22 +375,33 @@ export default {
   & hr {
     border: none;
     border-top: 1px solid var(--knime-silver-sand);
+    margin: 0;
   }
+
+  & .header {
+    padding: 15px 15px 5px 15px;
+
+    & hr {
+      margin: 10px 0;
+    }
+  }
+
 
   & .results {
     overflow-y: auto;
-    max-height: calc(100% - 50px);
-    padding-top: 0.5em;
+    scrollbar-width: thin;
+    scrollbar-gutter: stable both-edges;
+    max-height: 352px;
+    padding-bottom: 10px;
+    padding-top: 3px;
 
     & .content {
-      padding: 0 10px 15px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
+      padding-bottom: 10px;
     }
   }
 
   & .placeholder {
+    flex: 1;
     font-family: "Roboto Condensed", sans-serif;
     font-style: italic;
     font-size: 16px;
@@ -306,8 +416,16 @@ export default {
     padding: 0;
     display: flex;
     flex-wrap: wrap;
-    margin: 0 -5px;
+    margin: auto;
     list-style-type: none;
+
+    /* do fake focus for first item if other items have focus */
+    &:focus-within .node.first:not(:focus) {
+      outline: 0;
+      box-shadow: none;
+      border: none;
+      background-color: transparent;
+    }
 
     & .node {
       width: 100px;
@@ -351,8 +469,17 @@ export default {
           filter: url("#node-torso-shadow");
         }
       }
+      &.first {
+        outline: 0;
 
-      &:focus {
+        /* outline with border-radius is not working properly in Safari and CEF */
+        box-shadow: 0 0 0 calc(var(--selected-node-stroke-width-shape) * 1px) var(--knime-dove-gray);
+        border-radius: calc(var(--selected-node-border-radius-shape) * 1px);
+        background-color: var(--knime-porcelain);
+      }
+
+      &:focus,
+      &.first:focus {
         outline: 0;
 
         /* outline with border-radius is not working properly in Safari and CEF */
