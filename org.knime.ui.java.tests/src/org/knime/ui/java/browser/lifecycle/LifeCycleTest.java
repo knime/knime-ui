@@ -51,26 +51,18 @@ package org.knime.ui.java.browser.lifecycle;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import org.knime.core.node.KNIMEConstants;
-import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProject.Origin;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
-import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.ui.java.util.AppStatePersistorTest;
 import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
@@ -112,7 +104,7 @@ class LifeCycleTest {
         lc.reload();
         assertStateTransition(lc, StateTransition.WEB_APP_LOADED, StateTransition.SAVE_STATE);
 
-        openWorkflowProject();
+        AppStatePersistorTest.openWorkflowProject();
         lc.saveState();
         assertStateTransition(lc, StateTransition.SAVE_STATE, StateTransition.SUSPEND);
         assertThat(lc.getState().workflowsSaved()).isTrue();
@@ -123,36 +115,7 @@ class LifeCycleTest {
         assertThat(DesktopAPI.areDependenciesInjected()).isFalse();
 
         lc.shutdown();
-        var appStateJson = new String(Files.readAllBytes(Paths.get(KNIMEConstants.getKNIMEHomeDir(), "app_state.json")),
-            StandardCharsets.UTF_8);
-        assertThat(appStateJson).isEqualTo("""
-          {
-            "version" : "5.0.0.qualifier",
-            "projects" : [ {
-              "name" : "Test Project",
-              "active" : true,
-              "origin" : {
-                "providerId" : "local",
-                "spaceId" : "test_space_id",
-                "relativePath" : "a/relative/path"
-              }
-            } ]
-          }""");
-    }
-
-    private static void openWorkflowProject() {
-        var wpm = WorkflowProjectManager.getInstance();
-        var project = mock(WorkflowProject.class);
-        when(project.getID()).thenReturn("test_id");
-        when(project.getName()).thenReturn("Test Project");
-        var origin = mock(Origin.class);
-        when(origin.getSpaceId()).thenReturn("test_space_id");
-        when(origin.getProviderId()).thenReturn(LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID);
-        when(origin.getRelativePath()).thenReturn(Optional.of("a/relative/path"));
-        when(project.getOrigin()).thenReturn(Optional.of(origin));
-        wpm.addWorkflowProject("test_id", project);
-        wpm.openAndCacheWorkflow("test_id");
-        wpm.setWorkflowProjectActive("test_id");
+        AppStatePersistorTest.assertAppStateFile();
     }
 
     @Test
@@ -174,6 +137,7 @@ class LifeCycleTest {
         lc.create(biConsumer);
         assertFails(() -> lc.startup());
         assertFails(() -> lc.webAppLoaded());
+        assertFails(() -> lc.reload());
         assertFails(() -> lc.saveState());
         assertFails(() -> lc.suspend());
         assertFails(() -> lc.shutdown());
@@ -181,6 +145,7 @@ class LifeCycleTest {
         lc.init(false);
         assertFails(() -> lc.startup());
         assertFails(() -> lc.create(biConsumer));
+        assertFails(() -> lc.reload());
         assertFails(() -> lc.saveState());
         assertFails(() -> lc.suspend());
         assertFails(() -> lc.shutdown());
@@ -197,14 +162,28 @@ class LifeCycleTest {
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.webAppLoaded());
+        assertFails(() -> lc.reload());
         assertFails(() -> lc.shutdown());
 
         lc.suspend();
         assertFails(() -> lc.startup());
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.webAppLoaded());
+        assertFails(() -> lc.reload());
         assertFails(() -> lc.saveState());
         lc.init(false); // init is allowed here again
+
+        lc.skipStateTransition(StateTransition.SUSPEND);
+        assertThat(lc.isLastStateTransition(StateTransition.SUSPEND)).isTrue();
+
+        lc.shutdown();
+        assertFails(() -> lc.startup());
+        assertFails(() -> lc.create(biConsumer));
+        assertFails(() -> lc.init(false));
+        assertFails(() -> lc.webAppLoaded());
+        assertFails(() -> lc.reload());
+        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.suspend());
     }
 
     private static void assertFails(final Executable executable) {
