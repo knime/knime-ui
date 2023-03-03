@@ -1,12 +1,12 @@
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { loadComponentLibrary } from '@/util/loadComponentLibrary';
+import { loadAsyncComponent } from 'webapps-common/ui/util/loadComponentLibrary';
 import FlowVariablePortView from '@/components/output/FlowVariablePortView.vue';
 import ViewLoader from '../ViewLoader.vue';
 
-jest.mock('@/util/loadComponentLibrary', () => ({
-    loadComponentLibrary: jest.fn()
+jest.mock('webapps-common/ui/util/loadComponentLibrary', () => ({
+    loadAsyncComponent: jest.fn()
 }));
 
 describe('ViewLoader.vue', () => {
@@ -34,7 +34,7 @@ describe('ViewLoader.vue', () => {
             initialData: initialData || JSON.stringify({ result: {} })
         }));
 
-        loadComponentLibrary.mockImplementation(() => MockComponent);
+        loadAsyncComponent.mockImplementation(() => MockComponent);
         return { MockComponent, viewConfigLoaderFn };
     };
 
@@ -75,7 +75,7 @@ describe('ViewLoader.vue', () => {
     it('should reload view when renderKey changes', async () => {
         const viewConfigLoaderFn = jest.fn();
         const wrapper = doMount({ viewConfigLoaderFn, loadOnMount: false });
-         
+
         await wrapper.setProps({ renderKey: 'changed' });
         expect(viewConfigLoaderFn).toHaveBeenCalled();
     });
@@ -86,10 +86,10 @@ describe('ViewLoader.vue', () => {
         });
 
         const wrapper = doMount({ viewConfigLoaderFn });
-        
+
         await flushRender();
 
-        expect(loadComponentLibrary).toHaveBeenCalled();
+        expect(loadAsyncComponent).toHaveBeenCalled();
         expect(wrapper.findComponent(MockComponent).exists()).toBe(true);
         expect(wrapper.findComponent(MockComponent).props('initialData')).toEqual({ myProp: 'mock-prop' });
     });
@@ -98,11 +98,11 @@ describe('ViewLoader.vue', () => {
         const { viewConfigLoaderFn } = setupDynamicMockComponent();
 
         const wrapper = doMount({ viewConfigLoaderFn });
-        
+
         expect(wrapper.emitted('stateChange')[0][0]).toEqual({ state: 'loading' });
-        
+
         await flushRender();
-        
+
         expect(wrapper.emitted('stateChange')[1][0]).toEqual({ state: 'ready' });
     });
 
@@ -112,9 +112,9 @@ describe('ViewLoader.vue', () => {
             throw error;
         });
         const wrapper = doMount({ viewConfigLoaderFn });
-        
+
         expect(wrapper.emitted('stateChange')[0][0]).toEqual({ state: 'loading' });
-        
+
         await flushRender();
 
         expect(wrapper.emitted('stateChange')[1][0]).toEqual({
@@ -146,7 +146,7 @@ describe('ViewLoader.vue', () => {
         await flushRender();
 
         expect(resourceLocationResolver).toHaveBeenCalled();
-        expect(loadComponentLibrary).toHaveBeenCalledWith(
+        expect(loadAsyncComponent).toHaveBeenCalledWith(
             expect.objectContaining({ resourceLocation: 'dummy-location' })
         );
     });
@@ -173,7 +173,7 @@ describe('ViewLoader.vue', () => {
         const wrapper = doMount({ viewConfigLoaderFn });
 
         await flushRender();
-        
+
         expect(wrapper.findComponent(FlowVariablePortView).exists()).toBe(true);
     });
 });
