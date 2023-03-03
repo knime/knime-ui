@@ -182,7 +182,6 @@ const createGhostPositionUpdateHandler = (ghosts) => ({ clientX, clientY }) => {
     });
 };
 
-const CUSTOM_GHOST_PREVIEW_ID = 'custom-ghost-preview';
 let customGhostPreviewElement = null;
 
 const hideCustomGhostPreviewElement = () => {
