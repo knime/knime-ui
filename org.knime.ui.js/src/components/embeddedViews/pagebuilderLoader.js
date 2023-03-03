@@ -1,4 +1,4 @@
-import { loadComponentLibrary } from '@/util/loadComponentLibrary';
+import { loadComponentLibrary } from 'webapps-common/ui/util/loadComponentLibrary';
 
 const pageBuilderResources = [
     {

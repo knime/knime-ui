@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import * as Vue from 'vue';
 import KnimeUI from './components/KnimeUI.vue';
 
 import { silentLogger } from './plugins/logger';
@@ -11,11 +11,9 @@ import './assets/index.css';
 // Setup logger for production
 silentLogger();
 
-// required for dynamically loaded components which will access the Vue instance
-// off of the window object
-// TODO: this is needed to dynamically loaded components. Bring back when external dependencies are migrated
+// required for dynamically loaded components which will access the Vue instance off of the window object
 // e.g: TableView, NodeDialog, PageBuilder
-// window.Vue = Vue;
+window.Vue = Vue;
 
 if (window.EquoCommService) {
     window.EquoCommService.on(
@@ -31,7 +29,7 @@ if (window.EquoCommService) {
 }
 
 // Create Vue app
-const app = createApp(KnimeUI);
+const app = Vue.createApp(KnimeUI);
 
 // Provide store and init plugins
 const store = initStore();

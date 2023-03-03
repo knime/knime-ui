@@ -1,5 +1,5 @@
 <script>
-import { loadComponentLibrary } from '@/util/loadComponentLibrary';
+import { loadAsyncComponent } from 'webapps-common/ui/util/loadComponentLibrary';
 
 // At the moment this component has to be directly provided because no dynamic counterparts
 // that can be loaded exists. Eventually this view will also be loaded dynamically
@@ -81,7 +81,7 @@ export default {
     },
 
     watch: {
-        componentName(componentName, prev) {
+        componentName(componentName) {
             if (componentName && !this.$options.components[componentName]) {
                 throw new Error(`Component ${componentName} hasn't been loaded properly`);
             }
@@ -102,10 +102,10 @@ export default {
             this.$emit('stateChange', { state: 'loading' });
             this.initialData = null;
             this.componentName = null;
-            
+
             try {
                 const viewConfig = await this.viewConfigLoaderFn();
-                
+
                 await this.renderDynamicViewComponent(viewConfig);
                 this.$emit('stateChange', { state: 'ready' });
             } catch (e) {
@@ -142,16 +142,15 @@ export default {
          */
         async setupDynamicComponent(viewConfig) {
             const { resourceInfo } = viewConfig;
-            const { id: componentName } = resourceInfo;
 
             const resourceLocation = this.resourceLocationResolver({ resourceInfo });
-        
-            const component = await loadComponentLibrary({
-                window,
+
+            const componentName = this.overrideComponentName || resourceInfo.id;
+            const component = await loadAsyncComponent({
                 resourceLocation,
-                componentName: this.overrideComponentName || componentName
+                componentName
             });
-            this.$options.components[this.overrideComponentName || componentName] = component;
+            this.$options.components[componentName] = component;
         }
     }
 };
