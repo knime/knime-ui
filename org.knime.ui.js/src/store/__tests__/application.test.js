@@ -1,5 +1,14 @@
-import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-lines */
+import { expect, describe, it, vi, afterEach } from 'vitest';
+// eslint-disable-next-line object-curly-newline
+import {
+    fetchApplicationState,
+    addEventListener,
+    removeEventListener,
+    loadWorkflow,
+    setProjectActiveAndEnsureItsLoadedInBackend
+// eslint-disable-next-line object-curly-newline
+} from '@api';
 import { mockVuexStore } from '@/test/test-utils';
 import * as selectionStore from '@/store/selection';
 
@@ -13,30 +22,20 @@ vi.mock('@/util/encodeString', () => ({
     encodeString: vi.fn(value => value)
 }));
 
+vi.mock('@api');
+
 describe('application store', () => {
     const applicationState = {
         openProjects: [{ projectId: 'foo', name: 'bar' }]
     };
 
-    const loadStore = async () => {
-        const fetchApplicationState = vi.fn().mockReturnValue(applicationState);
-        const addEventListener = vi.fn();
-        const removeEventListener = vi.fn();
-        const loadWorkflow = vi.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
-        const setProjectActiveAndEnsureItsLoadedInBackend = vi.fn();
-
-        vi.doUnmock('@api');
+    afterEach(() => {
         vi.clearAllMocks();
-        vi.resetModules();
-        const fullyMockedModule = await vi.importMock('@api');
-        vi.doMock('@api', () => ({
-            ...fullyMockedModule,
-            addEventListener,
-            removeEventListener,
-            fetchApplicationState,
-            loadWorkflow,
-            setProjectActiveAndEnsureItsLoadedInBackend
-        }), { virtual: true });
+    });
+
+    const loadStore = async () => {
+        fetchApplicationState.mockReturnValue(applicationState);
+        loadWorkflow.mockResolvedValue({ workflow: { info: { containerId: '' } } });
 
         const actions = {
             canvas: {

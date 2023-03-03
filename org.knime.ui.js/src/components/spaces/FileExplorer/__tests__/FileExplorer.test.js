@@ -1,6 +1,6 @@
-import { expect, describe, beforeEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import * as Vue from 'vue';
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
@@ -52,7 +52,7 @@ describe('FileExplorer.vue', () => {
         }
     ];
 
-    const doMount = ({ props = {} } = { }, initialStoreState = null) => {
+    const doMount = ({ props = {} } = {}) => {
         const mocks = { $shapes: { nodeSize: 32 } };
         const defaultProps = {
             items: MOCK_DATA,

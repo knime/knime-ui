@@ -1,30 +1,23 @@
-import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-lines */
+import { expect, describe, it, vi, afterEach } from 'vitest';
 import { mockVuexStore } from '@/test/test-utils';
+import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
+import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, closeWorkflow,
+    openLayoutEditor, saveWorkflowAs } from '@api';
+
+vi.mock('@api');
+vi.mock('@/util/generateWorkflowPreview');
+vi.mock('@/util/encodeString', () => ({
+    encodeString: (value) => value
+}));
+
 
 describe('workflow store: AP Interactions', () => {
-    const loadStore = async ({ apiMocks = {} } = {}) => {
-        /**
-         * We have to import the workflow-store dynamically to apply our @api mocks.
-         * Because the module is cached after it is required for the first time,
-         * a reset is needed
-         */
-        vi.doUnmock('@api');
-        vi.resetModules();
-        const fullyMockedModule = await vi.importMock('@api');
-        vi.doMock('@api', () => ({
-            ...fullyMockedModule,
-            ...apiMocks
-        }), { virtual: true });
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
 
-        const generateWorkflowPreviewMock = vi.fn();
-        vi.doMock('@/util/generateWorkflowPreview', () => ({
-            generateWorkflowPreview: generateWorkflowPreviewMock
-        }));
-        vi.doMock('@/util/encodeString', () => ({
-            encodeString: (value) => value
-        }));
-
+    const loadStore = async () => {
         const mockCanvasWrapperEl = document.createElement('div');
         const mockCanvasEl = document.createElement('div');
         mockCanvasWrapperEl.appendChild(mockCanvasEl);
@@ -47,13 +40,12 @@ describe('workflow store: AP Interactions', () => {
         });
         const dispatchSpy = vi.spyOn(store, 'dispatch');
 
-        return { store, dispatchSpy, mockCanvasEl, generateWorkflowPreviewMock, clearLastItemForProjectMock };
+        return { store, dispatchSpy, mockCanvasEl, clearLastItemForProjectMock };
     };
 
     describe('actions', () => {
         it('calls openView from API', async () => {
-            let openView = vi.fn();
-            const { store } = await loadStore({ apiMocks: { openView } });
+            const { store } = await loadStore();
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
             store.dispatch('workflow/openView', 'node x');
@@ -62,8 +54,7 @@ describe('workflow store: AP Interactions', () => {
         });
 
         it('calls openNodeDialog from API', async () => {
-            let openNodeDialog = vi.fn();
-            const { store } = await loadStore({ apiMocks: { openNodeDialog } });
+            const { store } = await loadStore();
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
             store.dispatch('workflow/openNodeConfiguration', 'node x');
@@ -72,8 +63,7 @@ describe('workflow store: AP Interactions', () => {
         });
 
         it('calls openFlowVariableConfiguration from API', async () => {
-            let openLegacyFlowVariableDialog = vi.fn();
-            const { store } = await loadStore({ apiMocks: { openLegacyFlowVariableDialog } });
+            const { store } = await loadStore();
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
             store.dispatch('workflow/openFlowVariableConfiguration', 'node x');
@@ -83,8 +73,7 @@ describe('workflow store: AP Interactions', () => {
 
 
         it('calls openLayoutEditor from API', async () => {
-            let openLayoutEditor = vi.fn();
-            const { store } = await loadStore({ apiMocks: { openLayoutEditor } });
+            const { store } = await loadStore();
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
             store.dispatch('workflow/openLayoutEditor', 'node x');
@@ -94,9 +83,7 @@ describe('workflow store: AP Interactions', () => {
 
         describe('save workflow', () => {
             it('saves the workflow via the API', async () => {
-                const saveWorkflow = vi.fn();
-                const apiMocks = { saveWorkflow };
-                const { store } = await loadStore({ apiMocks });
+                const { store } = await loadStore();
 
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'foo',
@@ -109,12 +96,9 @@ describe('workflow store: AP Interactions', () => {
             });
 
             it('sends the correct workflow preview for a root workflow', async () => {
-                const saveWorkflow = vi.fn();
-                const apiMocks = { saveWorkflow };
+                const { store } = await loadStore();
 
-                const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
-
-                generateWorkflowPreviewMock.mockResolvedValue('mock svg preview');
+                generateWorkflowPreview.mockResolvedValue('mock svg preview');
 
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'foo',
@@ -129,9 +113,7 @@ describe('workflow store: AP Interactions', () => {
             });
 
             it('sends the correct workflow preview for a nested workflow', async () => {
-                const saveWorkflow = vi.fn();
-                const apiMocks = { saveWorkflow };
-                const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
+                const { store } = await loadStore();
 
                 const projectId = 'project1';
                 // 'root:1' to mimic being inside component/metanode
@@ -141,7 +123,7 @@ describe('workflow store: AP Interactions', () => {
                     svgElement: 'store-snapshot'
                 });
 
-                generateWorkflowPreviewMock.mockImplementation((input) => input);
+                generateWorkflowPreview.mockImplementation((input) => input);
 
                 store.commit('workflow/setActiveWorkflow', {
                     projectId,
@@ -158,8 +140,7 @@ describe('workflow store: AP Interactions', () => {
 
         describe('close workflow', () => {
             it('closes correctly when single project is opened', async () => {
-                let closeWorkflow = vi.fn(() => true);
-                let apiMocks = { closeWorkflow };
+                closeWorkflow.mockImplementation(() => true);
 
                 const openProjects = [
                     { name: 'Mock project 1', projectId: 'Mock project 1' }
@@ -168,7 +149,7 @@ describe('workflow store: AP Interactions', () => {
                 const { projectId: closingProjectId } = openProjects[0];
 
                 // setup
-                const { store, dispatchSpy, clearLastItemForProjectMock } = await loadStore({ apiMocks });
+                const { store, dispatchSpy, clearLastItemForProjectMock } = await loadStore();
                 store.commit('application/setOpenProjects', openProjects);
                 store.commit('application/setActiveProjectId', activeProjectId);
                 store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
@@ -201,8 +182,7 @@ describe('workflow store: AP Interactions', () => {
                     { activeProject: 2, closingProject: 2, expectedNextProject: 1 }
                 ]
             ])('should %s', async (_, { activeProject, closingProject, expectedNextProject }) => {
-                let closeWorkflow = vi.fn(() => true);
-                let apiMocks = { closeWorkflow };
+                closeWorkflow.mockImplementation(() => true);
 
                 const openProjects = [
                     { name: 'Mock project 1', projectId: 'Mock project 1' },
@@ -214,7 +194,7 @@ describe('workflow store: AP Interactions', () => {
                 const { projectId: expectedNextProjectId } = openProjects[expectedNextProject];
 
                 // setup
-                const { store, dispatchSpy } = await loadStore({ apiMocks });
+                const { store, dispatchSpy } = await loadStore();
                 store.commit('application/setOpenProjects', openProjects);
                 store.commit('application/setActiveProjectId', activeProjectId);
                 store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
@@ -228,9 +208,8 @@ describe('workflow store: AP Interactions', () => {
             });
 
             it('does not remove canvasState nor workflowPreviewSnapshot if closeWorkflow is cancelled', async () => {
-                let closeWorkflow = vi.fn(() => false);
-                let apiMocks = { closeWorkflow };
-                const { store, dispatchSpy } = await loadStore({ apiMocks });
+                closeWorkflow.mockImplementation(() => false);
+                const { store, dispatchSpy } = await loadStore();
 
                 await store.dispatch('workflow/closeWorkflow', 'foo');
 
@@ -242,9 +221,7 @@ describe('workflow store: AP Interactions', () => {
 
     describe('save workflow locally', () => {
         it('saves the workflow locally via the API', async () => {
-            const saveWorkflowAs = vi.fn();
-            const apiMocks = { saveWorkflowAs };
-            const { store } = await loadStore({ apiMocks });
+            const { store } = await loadStore();
 
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
@@ -257,12 +234,9 @@ describe('workflow store: AP Interactions', () => {
         });
 
         it('sends the correct workflow preview for a root workflow when saved locally', async () => {
-            const saveWorkflowAs = vi.fn();
-            const apiMocks = { saveWorkflowAs };
+            const { store } = await loadStore();
 
-            const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
-
-            generateWorkflowPreviewMock.mockResolvedValue('mock svg preview');
+            generateWorkflowPreview.mockResolvedValue('mock svg preview');
 
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',

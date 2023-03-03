@@ -1,4 +1,4 @@
-import { expect, describe, beforeEach, it, vi } from 'vitest';
+import { expect, describe, it, vi } from 'vitest';
 import { mockVuexStore } from '@/test/test-utils';
 
 // eslint-disable-next-line object-curly-newline
@@ -14,30 +14,17 @@ import {
 
 import * as canvasStoreConfig from '@/store/canvas';
 
+vi.mock('@api');
+
 describe('workflow store', () => {
-    let store, loadStore;
+    const loadStore = async () => {
+        const store = mockVuexStore({
+            workflow: await import('@/store/workflow'),
+            canvas: canvasStoreConfig
+        });
 
-    beforeEach(() => {
-        loadStore = async ({ apiMocks = {}, nodes = {} } = {}) => {
-            /**
-             * We have to import the workflow-store dynamically to apply our @api mocks.
-             * Because the module is cached after it is required for the first time,
-             * a reset is needed
-             */
-            vi.doUnmock('@api');
-            vi.resetModules();
-            const fullyMockedModule = await vi.importMock('@api');
-            vi.doMock('@api', () => ({
-                ...fullyMockedModule,
-                ...apiMocks
-            }), { virtual: true });
-
-            store = mockVuexStore({
-                workflow: await import('@/store/workflow'),
-                canvas: canvasStoreConfig
-            });
-        };
-    });
+        return { store };
+    };
 
     const node = { id: 'root:1', position: { x: 50, y: 21 } };
 
@@ -54,10 +41,6 @@ describe('workflow store', () => {
                 ports: []
             }
         };
-
-        beforeEach(async () => {
-            await loadStore();
-        });
 
         const fixtures = {
             'without any ports nor nodes': {
@@ -266,7 +249,10 @@ describe('workflow store', () => {
             }
         };
 
-        it.each(Object.entries(fixtures))('calculates dimensions %s', (title, { additionalProps, nodes, expected }) => {
+        it.each(
+            Object.entries(fixtures)
+        )('calculates dimensions %s', async (title, { additionalProps, nodes, expected }) => {
+            const { store } = await loadStore();
             const workflow = {
                 ...baseWorkflow,
                 nodes

@@ -38,6 +38,7 @@ export default defineConfig(({ mode }) => {
             reporters: ['default', 'junit'],
             coverage: {
                 all: true,
+                reportsDirectory: 'test-results',
                 exclude: [
                     'test-results',
                     'src/test',
