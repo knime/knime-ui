@@ -176,7 +176,8 @@ export default {
                 width: 0,
                 height: 20
             },
-            portPositions: { in: [], out: [] }
+            portPositions: { in: [], out: [] },
+            isDraggedOver: false
         };
     },
     computed: {
@@ -311,6 +312,20 @@ export default {
             this.$store.dispatch('application/toggleContextMenu', { event });
         },
 
+        onTorsoDragEnter(dragEvent) {
+            this.isDraggedOver = true;
+        },
+
+        onTorsoDragLeave() {
+            this.isDraggedOver = false;
+        },
+
+        onTorsoDragDrop(dragEvent) {
+            dragEvent.preventDefault();
+            window.alert(`Dropping ${dragEvent.dataTransfer.getData('text/plain')} onto ${this.id}`);
+            this.isDraggedOver = false;
+        },
+
         // public
         setSelectionPreview(preview) {
             this.selectionPreview = preview === 'clear' ? null : preview;
@@ -415,9 +430,12 @@ export default {
                   :kind="kind"
                   :icon="icon"
                   :execution-state="state && state.executionState"
-                  :class="['node-torso', { hover: isHovering }]"
+                  :class="['node-torso', { hover: isHovering, isDraggedOver }]"
                   :filter="isHovering && 'url(#node-torso-shadow)'"
                   @dblclick.left="onLeftDoubleClick"
+                  @dragenter="onTorsoDragEnter"
+                  @dragleave="onTorsoDragLeave"
+                  @drop="onTorsoDragDrop"
                 />
 
                 <NodeDecorators v-bind="$props" />
@@ -485,6 +503,11 @@ export default {
 .node-torso:hover,
 .node-state:hover {
   filter: "url(#node-state-shadow)";
+}
+
+
+.isDraggedOver {
+  outline: 3px solid rgb(233, 21, 21);
 }
 
 .connection-forbidden .hover-container {
