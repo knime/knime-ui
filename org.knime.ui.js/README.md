@@ -1,4 +1,4 @@
-# org.knime.ui.js 
+# org.knime.ui.js
 
 This project contains the web frontend for the KNIME Analytics Platform.
 The frontend is based on the [Vue.js] JavaScript framework.
@@ -36,7 +36,7 @@ npm run dev
 
 #### Running unit tests
 
-This project contains unit tests written with [jest].
+This project contains unit tests written with [vitest].
 They are run with
 
 ```sh
@@ -65,7 +65,7 @@ dependencies that are used in production. Run it by calling
 npm audit --production
 ```
 
-In some cases security issues can not be addressed right away or do not pose a direct threat (e.g. build dependencies). 
+In some cases security issues can not be addressed right away or do not pose a direct threat (e.g. build dependencies).
 To deal with these run
 
 ```sh
@@ -109,9 +109,9 @@ In turn, this app provides a global function called `jsonrpcNotification` that c
 See `json-rpc-notification.js` for details.
 
 
-[vue.js]: https://v2.vuejs.org/
+[vue.js]: https://vuejs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
-[jest]: https://jestjs.io/en
+[vitest]: https://vitest.dev/
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
 [Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file

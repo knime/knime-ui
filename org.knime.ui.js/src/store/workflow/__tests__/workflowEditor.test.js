@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 // eslint-disable-next-line object-curly-newline
-import { expect, describe, afterEach, it, vi, beforeAll } from 'vitest';
+import { expect, describe, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 
 import { mockVuexStore } from '@/test/test-utils';
@@ -24,18 +24,12 @@ vi.mock('@api');
 vi.mock('@/util/pasteToWorkflow');
 
 describe('workflow store: Editing', () => {
-    beforeAll(() => {
-        moveObjects.mockReturnValue(Promise.resolve());
-        deleteObjects.mockReturnValue(Promise.resolve());
-    });
-
     afterEach(() => {
         vi.clearAllMocks();
     });
 
     const loadStore = async () => {
         const store = mockVuexStore({
-            application: await import('@/store/application'),
             workflow: await import('@/store/workflow'),
             selection: await import('@/store/selection'),
             canvas: {
@@ -705,7 +699,6 @@ describe('workflow store: Editing', () => {
                 const clipboardMock = createClipboardMock();
                 const { store } = await loadStore();
 
-                store.commit('application/setHasClipboardSupport', true);
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
                     info: { containerId: 'root' },

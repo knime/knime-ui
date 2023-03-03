@@ -11,6 +11,11 @@ vi.mock('@/util/encodeString', () => ({
     encodeString: (value) => value
 }));
 
+// mock the router import (which is a dependency of the application store) to prevent the test runner
+// from creating a real router
+vi.mock('@/router', () => ({
+    APP_ROUTES: {}
+}));
 
 describe('workflow store: AP Interactions', () => {
     afterEach(() => {
