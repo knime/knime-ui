@@ -53,8 +53,10 @@ export default defineConfig(({ mode }) => {
                     'src/plugins/index.js',
                     'src/plugins/constants.js',
                     'src/store/index.js',
-                    'coverage/**', 'dist/**',
-                    '**/*.d.ts', '**/__tests__/**', '**/{vite,vitest}.config.{js,cjs,mjs,ts}',
+                    'coverage/**',
+                    'dist/**',
+                    '**/*.d.ts',
+                    '**/__tests__/**', '**/{vite,vitest}.config.{js,cjs,mjs,ts}',
                     '**/.{eslint,prettier,stylelint}rc.{js,cjs,yml}'
                 ]
             },
