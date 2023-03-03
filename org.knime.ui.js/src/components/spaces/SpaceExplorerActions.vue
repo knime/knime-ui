@@ -150,7 +150,7 @@ export default {
           :title="action.title"
           with-border
           compact
-          :aria-disabled="action.disabled"
+          :aria-disabled="action.disabled || null"
           @click="action.disabled ? null : $emit(`action:${action.id}`)"
         >
           <Component :is="action.icon" />
