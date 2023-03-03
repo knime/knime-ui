@@ -117,6 +117,7 @@ class CloseWorkflowTest {
         var wpm = WorkflowProjectManager.getInstance();
         wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
         m_wfms.forEach(WorkflowManagerUtil::disposeWorkflow);
+        DesktopAPI.disposeDependencies();
     }
 
 }

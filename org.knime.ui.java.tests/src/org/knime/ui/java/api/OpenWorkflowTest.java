@@ -60,6 +60,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
@@ -81,6 +82,7 @@ class OpenWorkflowTest {
     WorkflowManager m_wfm;
 
     @Test
+    @DisabledIfSystemProperty(named = "java.awt.headless", matches = "true")
     void testOpenWorkflowInWebUIOnly() throws IOException {
         var localWorkspace = new LocalWorkspace(getTestWorkspacePath("test_workspace"));
         var spaceProvider = mock(SpaceProvider.class);

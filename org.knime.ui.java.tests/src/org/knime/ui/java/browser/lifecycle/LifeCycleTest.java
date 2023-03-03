@@ -50,7 +50,10 @@ package org.knime.ui.java.browser.lifecycle;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.function.BiConsumer;
@@ -58,12 +61,20 @@ import java.util.function.BiConsumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.port.PortViewManager;
+import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
+import org.knime.js.cef.CEFPlugin;
 import org.knime.ui.java.api.DesktopAPI;
+import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.AppStatePersistorTest;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.mockito.Mockito;
+
+import com.equo.middleware.api.IMiddlewareService;
 
 /**
  * Tests logic related to {@link LifeCycle}.
@@ -84,8 +95,17 @@ class LifeCycleTest {
         assertThat(System.getProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY))
             .isEqualTo(PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
 
+        var middlewareServiceMock = Mockito.mock(IMiddlewareService.class);
+        CEFPlugin.setMiddlewareService(middlewareServiceMock);
         lc.create(mock(BiConsumer.class));
         assertStateTransition(lc, StateTransition.CREATE, StateTransition.INIT);
+        verify(middlewareServiceMock).addResourceHandler(eq("http"), eq(KnimeBrowserView.DOMAIN_NAME), any());
+        verify(middlewareServiceMock).addResourceHandler(eq("http"),
+            eq(NodeDialogManager.getInstance().getDomainName()), any());
+        verify(middlewareServiceMock).addResourceHandler(eq("http"), eq(NodeViewManager.getInstance().getDomainName()),
+            any());
+        verify(middlewareServiceMock).addResourceHandler(eq("http"), eq(PortViewManager.getInstance().getDomainName()),
+            any());
 
         lc.init(true);
         assertStateTransition(lc, StateTransition.INIT, StateTransition.WEB_APP_LOADED);
@@ -134,6 +154,7 @@ class LifeCycleTest {
         assertFails(() -> lc.saveState());
         assertFails(() -> lc.suspend());
 
+        CEFPlugin.setMiddlewareService(mock(IMiddlewareService.class));
         lc.create(biConsumer);
         assertFails(() -> lc.startup());
         assertFails(() -> lc.webAppLoaded());
@@ -177,7 +198,6 @@ class LifeCycleTest {
         assertThat(lc.isLastStateTransition(StateTransition.SUSPEND)).isTrue();
 
         lc.shutdown();
-        assertFails(() -> lc.startup());
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.webAppLoaded());

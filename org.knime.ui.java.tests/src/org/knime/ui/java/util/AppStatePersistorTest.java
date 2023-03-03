@@ -113,7 +113,7 @@ public class AppStatePersistorTest {
             StandardCharsets.UTF_8);
         assertThat(appStateJson).isEqualTo("""
                 {
-                  "version" : "5.0.0.qualifier",
+                  "version" : "%s",
                   "projects" : [ {
                     "name" : "Test Project",
                     "active" : false,
@@ -123,7 +123,7 @@ public class AppStatePersistorTest {
                       "relativePath" : "a/relative/path"
                     }
                   } ]
-                }""");
+                }""", KNIMEConstants.VERSION);
     }
 
 }
