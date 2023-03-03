@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.exec.dataexchange.in.PortObjectInNodeFactory;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -67,13 +68,20 @@ import org.knime.testing.util.WorkflowManagerUtil;
  */
 class SaveWorkflowTest {
 
+    private WorkflowManager m_wfm;
+
     @Test
     void testSaveLocalWorkflow() throws Exception {
-        var wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        WorkflowManagerUtil.createAndAddNode(wfm, new PortObjectInNodeFactory());
+        m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
+        WorkflowManagerUtil.createAndAddNode(m_wfm, new PortObjectInNodeFactory());
 
-        SaveWorkflow.saveWorkflow(new NullProgressMonitor(), wfm, "svg img data", true);
-        assertWorkflowSaved(wfm, "svg img data");
+        SaveWorkflow.saveWorkflow(new NullProgressMonitor(), m_wfm, "svg img data", true);
+        assertWorkflowSaved(m_wfm, "svg img data");
+    }
+
+    @AfterEach
+    void disposeWorkflowManager() {
+        WorkflowManagerUtil.disposeWorkflow(m_wfm);
     }
 
     static void assertWorkflowSaved(final WorkflowManager wfm, final String expectedSvgContent) throws IOException {

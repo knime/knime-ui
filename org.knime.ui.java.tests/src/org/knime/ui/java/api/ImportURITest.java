@@ -55,11 +55,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.exec.dataexchange.in.PortObjectInNodeFactory;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.FileUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
@@ -75,6 +78,8 @@ import org.knime.testing.util.WorkflowManagerUtil;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 class ImportURITest {
+
+    private List<WorkflowManager> m_wfms = new ArrayList<>();
 
     @Test
     void testImportURI() throws IOException {
@@ -103,9 +108,10 @@ class ImportURITest {
         importURIAtWorkflowCanvasAndAssert(file.toURI().toString());
     }
 
-    private static void importURIAtWorkflowCanvasAndAssert(final String uri) throws IOException {
+    private void importURIAtWorkflowCanvasAndAssert(final String uri) throws IOException {
         try {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();
+            m_wfms.add(wfm);
             WorkflowProjectManager.getInstance().addWorkflowProject("projectId", OpenWorkflow.createWorkflowProject(wfm,
                 "providerID", "spaceId", "itemId", "relativePath", "projectId"));
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
@@ -124,8 +130,9 @@ class ImportURITest {
     }
 
     @AfterEach
-    void disposeDesktopAPIDependencies() {
+    void cleanUp() {
         DesktopAPI.disposeDependencies();
+        m_wfms.forEach(WorkflowManagerUtil::disposeWorkflow);
     }
 
 }

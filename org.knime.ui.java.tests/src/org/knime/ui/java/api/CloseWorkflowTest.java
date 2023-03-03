@@ -54,6 +54,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -75,6 +76,8 @@ import org.knime.testing.util.WorkflowManagerUtil;
  */
 class CloseWorkflowTest {
 
+    private List<WorkflowManager> m_wfms;
+
     @Test
     void testCloseWorkflow() throws IOException, InvalidSettingsException, CanceledExecutionException,
         UnsupportedWorkflowVersionException, LockFailedException {
@@ -88,6 +91,7 @@ class CloseWorkflowTest {
 
         var wfm1 = WorkflowManagerUtil.loadWorkflow(workflowDir);
         var wfm2 = WorkflowManagerUtil.loadWorkflow(workflowDir);
+        m_wfms = List.of(wfm1, wfm2);
 
         var wpm = WorkflowProjectManager.getInstance();
         wpm.addWorkflowProject("projectId1",
@@ -109,9 +113,10 @@ class CloseWorkflowTest {
     }
 
     @AfterEach
-    void clearWorkflowProjectManager() {
+    void cleanUp() {
         var wpm = WorkflowProjectManager.getInstance();
         wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
+        m_wfms.forEach(WorkflowManagerUtil::disposeWorkflow);
     }
 
 }

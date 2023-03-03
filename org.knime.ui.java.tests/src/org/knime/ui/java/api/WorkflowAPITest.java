@@ -54,6 +54,7 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.testing.util.WorkflowManagerUtil;
 
@@ -64,12 +65,14 @@ import org.knime.testing.util.WorkflowManagerUtil;
  */
 class WorkflowAPITest {
 
+    private WorkflowManager m_wfm;
+
     @Test
     void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
-        var wfm = WorkflowManagerUtil.createEmptyWorkflow();
+        m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         var wpm = WorkflowProjectManager.getInstance();
         wpm.addWorkflowProject("projectId",
-            OpenWorkflow.createWorkflowProject(wfm, "providerId", "spaceId", "itemId", "relativePath", "projectId"));
+            OpenWorkflow.createWorkflowProject(m_wfm, "providerId", "spaceId", "itemId", "relativePath", "projectId"));
 
         WorkflowAPI.setProjectActiveAndEnsureItsLoaded("projectId");
 
@@ -78,8 +81,9 @@ class WorkflowAPITest {
     }
 
     @AfterEach
-    void clearWorkflowProjectManager() {
+    void cleanUp() {
         WorkflowProjectManager.getInstance().removeWorkflowProject("projectId");
+        WorkflowManagerUtil.disposeWorkflow(m_wfm);
     }
 
 }

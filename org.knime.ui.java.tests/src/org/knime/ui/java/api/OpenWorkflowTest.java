@@ -60,6 +60,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
@@ -68,6 +69,7 @@ import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.testing.util.WorkflowManagerUtil;
 
 /**
  * Tests methods in {@link OpenWorkflow}.
@@ -75,6 +77,8 @@ import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 class OpenWorkflowTest {
+
+    WorkflowManager m_wfm;
 
     @Test
     void testOpenWorkflowInWebUIOnly() throws IOException {
@@ -98,11 +102,26 @@ class OpenWorkflowTest {
         assertThat(projectIds).hasSize(1);
         var project = wpm.getWorkflowProject(projectIds.iterator().next()).get();
         assertThat(project.getName()).isEqualTo("simple");
-        var wfm = project.openProject();
-        assertThat(wfm).isNotNull();
-        assertThat(wfm.getName()).startsWith("simple");
+        m_wfm = project.openProject();
+        assertThat(m_wfm).isNotNull();
+        assertThat(m_wfm.getName()).startsWith("simple");
 
         verify(appStateUpdateListener).run();;
+    }
+
+    @Test
+    void testCreateWorkflowProject() throws IOException {
+        m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
+        var project =
+            OpenWorkflow.createWorkflowProject(m_wfm, "providerId", "spaceId", "itemId", "relativePath", "projectId");
+        assertThat(project.getName()).isEqualTo("workflow");
+        assertThat(project.getID()).isEqualTo("projectId");
+        assertThat(project.openProject()).isSameAs(m_wfm);
+        var origin = project.getOrigin().get();
+        assertThat(origin.getItemId()).isEqualTo("itemId");
+        assertThat(origin.getSpaceId()).isEqualTo("spaceId");
+        assertThat(origin.getProviderId()).isEqualTo("providerId");
+        assertThat(origin.getRelativePath().get()).hasToString("relativePath");
     }
 
     private static Path getTestWorkspacePath(final String name) throws IOException {
@@ -114,6 +133,7 @@ class OpenWorkflowTest {
         var wpm = WorkflowProjectManager.getInstance();
         wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
         DesktopAPI.disposeDependencies();
+        WorkflowManagerUtil.disposeWorkflow(m_wfm);
     }
 
 }

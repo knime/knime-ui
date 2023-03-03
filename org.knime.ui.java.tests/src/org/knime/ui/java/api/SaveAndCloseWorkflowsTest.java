@@ -57,6 +57,7 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -79,11 +80,14 @@ import org.mockito.Mockito;
  */
 class SaveAndCloseWorkflowsTest {
 
+    private List<WorkflowManager> m_wfms;
+
     @Test
     void testSaveAndCloseWorkflows() throws IOException, InvocationTargetException, InterruptedException {
         var wfm1 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm2 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm3 = WorkflowManagerUtil.createEmptyWorkflow();
+        m_wfms = List.of(wfm1, wfm2, wfm3);
         assertThat(wfm1.isDirty()).isTrue();
         var wpm = WorkflowProjectManager.getInstance();
         wpm.addWorkflowProject("projectId1",
@@ -143,5 +147,6 @@ class SaveAndCloseWorkflowsTest {
         var wpm = WorkflowProjectManager.getInstance();
         wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
         DesktopAPI.disposeDependencies();
+        m_wfms.forEach(WorkflowManagerUtil::disposeWorkflow);
     }
 }
