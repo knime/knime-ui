@@ -24,7 +24,7 @@ export default {
         },
         toolbarButtons() {
             const isInsideComponent = this.workflow?.info.containerType === 'component';
-          
+
             if (!this.workflow) {
                 return [];
             }
@@ -90,7 +90,6 @@ export default {
     <ZoomMenu
       v-if="workflow"
       :disabled="isWorkflowEmpty"
-      class="zoommenu"
     />
   </div>
 </template>

@@ -116,9 +116,7 @@ export default {
       background: transparent;
       border: none;
       text-align: right;
-
-      /* TODO: NXT-841 use --theme-button-function-foreground-color */
-      color: var(--knime-masala);
+      color: var(--theme-button-foreground-color, var(--knime-masala));
       width: 54px;
       padding: 8px 4px 8px 16px;
       font-size: 14px;
@@ -128,16 +126,14 @@ export default {
         outline: none;
       }
     }
-
-    &.expanded .zoom-input {
-      /* TODO: NXT-841 use --theme-button-function-foreground-active */
-      color: var(--knime-white);
-    }
   }
 
-  /* TODO: NXT-841 add a app specific definition of --theme-button-function-foreground-color */
+  & .expanded .zoom-input {
+    color: var(--theme-button-function-foreground-color-active, var(--knime-white));
+  }
+
   & :deep(.function-button:not(.active) svg) {
-    stroke: var(--knime-masala);
+    stroke: var(--theme-button-foreground-color, var(--knime-masala));
   }
 }
 </style>
