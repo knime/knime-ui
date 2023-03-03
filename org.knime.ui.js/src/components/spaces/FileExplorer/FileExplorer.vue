@@ -72,7 +72,8 @@ export default {
         'deleteItems',
         'moveItems',
         'dragend',
-        'renameFile'
+        'renameFile',
+        'drag'
     ],
 
     data() {
