@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -17,7 +18,7 @@ describe('Port', () => {
         ['FV', 'flowVariable', $colors.portColors.flowVariable],
         ['TA', 'table', $colors.portColors.table],
         ['OT', 'other', '#123442']
-    ])('Port (%s)', (typeId, portKind, portColor) => {
+    ])('port (%s)', (typeId, portKind, portColor) => {
         beforeEach(() => {
             wrapper = null;
             props = {
@@ -153,7 +154,7 @@ describe('Port', () => {
             expect(transform).toBeUndefined();
         });
         
-        describe('Selection', () => {
+        describe('selection', () => {
             it('should display the port-outline when selected', async () => {
                 doShallowMount();
                 await wrapper.setProps({ isSelected: true });

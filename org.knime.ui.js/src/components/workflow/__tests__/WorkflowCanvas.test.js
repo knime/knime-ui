@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
@@ -125,7 +126,7 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
         });
 
-        test('switch from empty workflow', async () => {
+        it('switch from empty workflow', async () => {
             doShallowMount();
             await Vue.nextTick();
             storeConfig.canvas.actions.fillScreen.mockReset();
@@ -165,7 +166,7 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
         });
 
-        test('switch to empty workflow', async () => {
+        it('switch to empty workflow', async () => {
             // workaround, instead of triggering the canvas getter to reevaluate
             wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, true);
             await Vue.nextTick();

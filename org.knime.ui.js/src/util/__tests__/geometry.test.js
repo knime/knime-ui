@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { rectangleIntersection, areaCoverage, adjustToGrid } from '../geometry';
 
 describe('Geometry', () => {
@@ -6,10 +7,10 @@ describe('Geometry', () => {
             expect(rectangleIntersection(
                 { left: 0, top: 0, width: 10, height: 10 },
                 { left: 10, top: 10, width: 10, height: 10 }
-            )).toBe(null);
+            )).toBeNull();
         });
 
-        test('intersecting rectangles', () => {
+        it('intersecting rectangles', () => {
             expect(rectangleIntersection(
                 { left: 0, top: 0, width: 10, height: 10 },
                 { left: 9, top: 9, width: 10, height: 10 }
@@ -18,7 +19,7 @@ describe('Geometry', () => {
             );
         });
 
-        test('concentric rectangles', () => {
+        it('concentric rectangles', () => {
             expect(rectangleIntersection(
                 { left: -5, top: -5, width: 10, height: 10 },
                 { left: -10, top: -10, width: 20, height: 20 }
@@ -36,14 +37,14 @@ describe('Geometry', () => {
             )).toBe(0);
         });
 
-        test('intersecting rectangles', () => {
+        it('intersecting rectangles', () => {
             expect(areaCoverage(
                 { left: 0, top: 0, width: 10, height: 10 },
                 { left: 9, top: 9, width: 10, height: 10 }
             )).toBe(1 / 100);
         });
 
-        test('concentric rectangles', () => {
+        it('concentric rectangles', () => {
             expect(areaCoverage(
                 { left: -5, top: -5, width: 10, height: 10 },
                 { left: -10, top: -10, width: 20, height: 20 }

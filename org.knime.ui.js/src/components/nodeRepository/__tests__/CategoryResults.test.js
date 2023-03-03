@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -41,7 +42,7 @@ describe('CategoryResults', () => {
         };
     });
 
-    describe('Scroller', () => {
+    describe('scroller', () => {
         it('remembers scroll position', () => {
             doShallowMount();
 

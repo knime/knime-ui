@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
@@ -133,7 +134,7 @@ describe('SelectionRectangle', () => {
         storeConfig.selection.actions.deselectAllObjects.mockClear();
     });
 
-    test('all object are deselected on start', async () => {
+    it('all object are deselected on start', async () => {
         doShallowMount();
 
         pointerDown({ clientX: 0, clientY: 0 });
@@ -142,7 +143,7 @@ describe('SelectionRectangle', () => {
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
     });
 
-    test('appears on pointerDown, disappears on pointerUp', async () => {
+    it('appears on pointerDown, disappears on pointerUp', async () => {
         doShallowMount();
         expect(wrapper.isVisible()).toBe(false);
 
@@ -157,7 +158,7 @@ describe('SelectionRectangle', () => {
         expect(wrapper.isVisible()).toBe(false);
     });
 
-    describe('Selection', () => {
+    describe('selection', () => {
         beforeEach(async () => {
             doShallowMount();
 
@@ -216,7 +217,7 @@ describe('SelectionRectangle', () => {
         });
     });
 
-    describe('De-Selection with Shift', () => {
+    describe('de-Selection with Shift', () => {
         beforeEach(async () => {
             storeConfig.selection.getters.selectedNodeIds = vi.fn().mockReturnValue([
                 'inside-1',
@@ -229,7 +230,7 @@ describe('SelectionRectangle', () => {
             await Vue.nextTick();
         });
 
-        test('no global deselection', () => {
+        it('no global deselection', () => {
             expect(storeConfig.selection.actions.deselectAllObjects).not.toHaveBeenCalled();
         });
 
@@ -270,7 +271,7 @@ describe('SelectionRectangle', () => {
         });
     });
 
-    describe('Selection with shift', () => {
+    describe('selection with shift', () => {
         it('adds to selection with shift', async () => {
             storeConfig.selection.getters.selectedNodeIds = vi.fn().mockReturnValue([
                 'root:1'

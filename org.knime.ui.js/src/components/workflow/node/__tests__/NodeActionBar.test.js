@@ -1,3 +1,4 @@
+import { expect, describe, afterEach, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 

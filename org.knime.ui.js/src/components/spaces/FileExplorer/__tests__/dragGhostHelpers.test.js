@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { gsap } from 'gsap';
 import { createDragGhosts } from '../dragGhostHelpers';
 

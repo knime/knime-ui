@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import NodeCategory from '../NodeCategory.vue';
@@ -23,7 +24,7 @@ describe('NodeCategory', () => {
         };
     });
 
-    test('renders node list and tag', () => {
+    it('renders node list and tag', () => {
         doShallowMount();
 
         expect(wrapper.findComponent(NodeList).props('nodes')).toStrictEqual([
@@ -36,12 +37,12 @@ describe('NodeCategory', () => {
         expect(wrapper.find('.category-title').text()).toMatch('tag');
     });
 
-    test('has no more nodes', () => {
+    it('has no more nodes', () => {
         doShallowMount();
         expect(wrapper.findComponent(NodeList).props('hasMoreNodes')).toBe(false);
     });
 
-    test('has more nodes', () => {
+    it('has more nodes', () => {
         props.nodes.push({ id: 'node:6' });
         doShallowMount();
 
@@ -49,14 +50,14 @@ describe('NodeCategory', () => {
     });
 
     describe('select tag', () => {
-        test('tag can be selected', async () => {
+        it('tag can be selected', async () => {
             doShallowMount();
 
             await wrapper.find('.category-title').trigger('click');
             expect(wrapper.emitted('selectTag')).toStrictEqual([['tag']]);
         });
 
-        test('tag can be selected through button', async () => {
+        it('tag can be selected through button', async () => {
             doShallowMount();
 
             await wrapper.findComponent(NodeList).vm.$emit('show-more');

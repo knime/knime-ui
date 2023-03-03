@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -353,13 +354,6 @@ describe('Node Repository store', () => {
             expect(store.state.nodeRepository.totalNumBottomNodes).toBe(20);
         });
 
-        it('sets totalNumBottomNodes', async () => {
-            const { store } = await createStore();
-            expect(store.state.nodeRepository.totalNumBottomNodes).toBe(0);
-            store.commit('nodeRepository/setTotalNumBottomNodes', 20);
-            expect(store.state.nodeRepository.totalNumBottomNodes).toBe(20);
-        });
-
         it('adds bottomNodes (and skips duplicates)', async () => {
             const { store } = await createStore();
             const bottomNodes = [{ id: 'node1' }, { id: 'node2' }];
@@ -435,19 +429,19 @@ describe('Node Repository store', () => {
         it('sets totalNumCategories', async () => {
             const { store } = await createStore();
             store.commit('nodeRepository/setTotalNumCategories', 2);
-            expect(store.state.nodeRepository.totalNumCategories).toEqual(2);
+            expect(store.state.nodeRepository.totalNumCategories).toBe(2);
         });
 
         it('sets search scroll position', async () => {
             const { store } = await createStore();
             store.commit('nodeRepository/setSearchScrollPosition', 22);
-            expect(store.state.nodeRepository.searchScrollPosition).toEqual(22);
+            expect(store.state.nodeRepository.searchScrollPosition).toBe(22);
         });
 
         it('sets category scroll position', async () => {
             const { store } = await createStore();
             store.commit('nodeRepository/setCategoryScrollPosition', 22);
-            expect(store.state.nodeRepository.categoryScrollPosition).toEqual(22);
+            expect(store.state.nodeRepository.categoryScrollPosition).toBe(22);
         });
 
         it('sets selected node', async () => {
@@ -541,6 +535,7 @@ describe('Node Repository store', () => {
         });
 
         describe('search', () => {
+            // eslint-disable-next-line vitest/max-nested-describe
             describe('searchNodes', () => {
                 it('clears search results on empty parameters (tags and query)', async () => {
                     const { store } = await createStore();
@@ -611,6 +606,7 @@ describe('Node Repository store', () => {
                 });
             });
 
+            // eslint-disable-next-line vitest/max-nested-describe
             describe('searchBottomNodes', () => {
                 it('clears search results on empty parameters (tags and query)', async () => {
                     const { store, dispatchSpy } = await createStore();
@@ -700,6 +696,7 @@ describe('Node Repository store', () => {
                 });
             });
 
+            // eslint-disable-next-line vitest/max-nested-describe
             describe('toggleShowingBottomNodes', () => {
                 it('does toggle isShowingBottomNodes', async () => {
                     const { store } = await createStore();
@@ -759,8 +756,8 @@ describe('Node Repository store', () => {
                 store.dispatch('nodeRepository/clearSearchParams');
 
                 expect(store.state.nodeRepository.selectedTags).toEqual([]);
-                expect(store.state.nodeRepository.query).toEqual('');
-                expect(store.state.nodeRepository.topNodes).toEqual(null);
+                expect(store.state.nodeRepository.query).toBe('');
+                expect(store.state.nodeRepository.topNodes).toBeNull();
                 expect(store.state.nodeRepository.topNodesTags).toEqual([]);
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResults', undefined);
             });
@@ -769,7 +766,7 @@ describe('Node Repository store', () => {
                 const { store, dispatchSpy } = await createStore();
 
                 store.dispatch('nodeRepository/clearSearchResults');
-                expect(store.state.nodeRepository.topNodes).toEqual(null);
+                expect(store.state.nodeRepository.topNodes).toBeNull();
                 expect(store.state.nodeRepository.topNodesTags).toEqual([]);
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResultsForBottomNodes', undefined);
             });
@@ -778,9 +775,9 @@ describe('Node Repository store', () => {
                 const { store } = await createStore();
 
                 store.dispatch('nodeRepository/clearSearchResultsForBottomNodes');
-                expect(store.state.nodeRepository.bottomNodes).toEqual(null);
+                expect(store.state.nodeRepository.bottomNodes).toBeNull();
                 expect(store.state.nodeRepository.bottomNodesTags).toEqual([]);
-                expect(store.state.nodeRepository.totalNumBottomNodes).toEqual(0);
+                expect(store.state.nodeRepository.totalNumBottomNodes).toBe(0);
             });
         });
 
@@ -846,9 +843,9 @@ describe('Node Repository store', () => {
                 store.state.nodeRepository.categoryScrollPosition = 10;
                 await store.dispatch('nodeRepository/clearCategoryResults');
                 expect(store.state.nodeRepository.nodesPerCategory).toEqual([]);
-                expect(store.state.nodeRepository.totalNumCategories).toEqual(null);
-                expect(store.state.nodeRepository.categoryPage).toEqual(0);
-                expect(store.state.nodeRepository.categoryScrollPosition).toEqual(0);
+                expect(store.state.nodeRepository.totalNumCategories).toBeNull();
+                expect(store.state.nodeRepository.categoryPage).toBe(0);
+                expect(store.state.nodeRepository.categoryScrollPosition).toBe(0);
             });
         });
 

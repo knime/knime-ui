@@ -1,3 +1,4 @@
+import { expect, describe, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
@@ -151,7 +152,7 @@ describe('FloatingMenu.vue', () => {
     });
 
     describe('menu position and effects', () => {
-        test('position inside canvas; top-left', async () => {
+        it('position inside canvas; top-left', async () => {
             const { wrapper } = doMount();
             await Vue.nextTick();
 
@@ -160,7 +161,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('opacity: 1;');
         });
 
-        test('position inside canvas; top-right', async () => {
+        it('position inside canvas; top-right', async () => {
             const { wrapper } = doMount({ props: { anchor: 'top-right' } });
 
             await Vue.nextTick();
@@ -170,14 +171,14 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('opacity: 1;');
         });
 
-        test('position outside left border, half threshold', async () => {
+        it('position outside left border, half threshold', async () => {
             const { wrapper } = doMount({ props: { canvasPosition: { x: -5, y: 20 } } });
 
             await Vue.nextTick();
             expect(wrapper.attributes('style')).toMatch('opacity: 0.5;');
         });
 
-        test.each([
+        it.each([
             ['left border', { x: -31, y: 20 }],
             ['top border', { x: 20, y: -31 }],
             ['right border', { x: 151, y: 20 }],
@@ -190,7 +191,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.emitted('menuClose')).toBeTruthy();
         });
 
-        test('prevent window overflow top-left', async () => {
+        it('prevent window overflow top-left', async () => {
             const { wrapper } = doMount({ props: { canvasPosition: { x: -20, y: -20 }, preventOverflow: true } });
             await Vue.nextTick();
 
@@ -198,7 +199,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 0px;');
         });
 
-        test('prevent window overflow bottom-right', async () => {
+        it('prevent window overflow bottom-right', async () => {
             const { wrapper } = doMount({ props: { canvasPosition: { x: 150, y: 150 }, preventOverflow: true } });
             await Vue.nextTick();
 
@@ -206,7 +207,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 90px;');
         });
 
-        test('re-position on position update', async () => {
+        it('re-position on position update', async () => {
             const { wrapper } = doMount();
             await Vue.nextTick();
 
@@ -217,7 +218,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 0px;');
         });
 
-        test('re-position on zoom factor update', async () => {
+        it('re-position on zoom factor update', async () => {
             const { wrapper, $store } = doMount();
             await Vue.nextTick();
 
@@ -228,7 +229,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 40px;');
         });
 
-        test('re-position on canvas scroll', async () => {
+        it('re-position on canvas scroll', async () => {
             const { wrapper } = doMount();
             await Vue.nextTick();
 
@@ -239,7 +240,7 @@ describe('FloatingMenu.vue', () => {
             expect(setPositionSpy).toHaveBeenCalled();
         });
 
-        test('re-position on content resize', async () => {
+        it('re-position on content resize', async () => {
             const { wrapper, mockResizeObserver } = doMount({
                 props: { anchor: 'top-right' },
                 contentHeight: 100,
@@ -253,7 +254,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
         });
 
-        test('disable interactions when the prop is set', () => {
+        it('disable interactions when the prop is set', () => {
             const { mutations } = doMount({ props: { disableInteractions: true } });
 
             expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);
@@ -261,7 +262,7 @@ describe('FloatingMenu.vue', () => {
     });
 
     describe('clean up', () => {
-        test('removes scroll listener', async () => {
+        it('removes scroll listener', async () => {
             const { wrapper } = doMount();
             await Vue.nextTick();
 
@@ -275,7 +276,7 @@ describe('FloatingMenu.vue', () => {
             expect(setPositionSpy).not.toHaveBeenCalled();
         });
 
-        test('disconnects resize observer', async () => {
+        it('disconnects resize observer', async () => {
             const { wrapper, mockResizeObserver } = doMount();
             await Vue.nextTick();
 
@@ -284,7 +285,7 @@ describe('FloatingMenu.vue', () => {
             expect(mockResizeObserver.disconnect).toHaveBeenCalled();
         });
 
-        test('enables interactions', () => {
+        it('enables interactions', () => {
             const { wrapper, mutations } = doMount();
             wrapper.unmount();
 

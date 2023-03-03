@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { sidePanelShortcuts, selectionShortcuts } from '../miscShortcuts';
 
 describe('miscShortcuts', () => {
@@ -13,19 +14,19 @@ describe('miscShortcuts', () => {
     });
 
     describe('sidePanelShortcuts', () => {
-        test('execute toggleSidePanel', () => {
+        it('execute toggleSidePanel', () => {
             sidePanelShortcuts.toggleSidePanel.execute({ $store });
             expect(mockCommit).toHaveBeenCalledWith('panel/toggleExpanded');
         });
     });
 
     describe('selectionShortcuts', () => {
-        test('execute selectAllNodes', () => {
+        it('execute selectAllNodes', () => {
             selectionShortcuts.selectAllNodes.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('selection/selectAllNodes');
         });
 
-        test('execute deselectAll', () => {
+        it('execute deselectAll', () => {
             selectionShortcuts.deselectAll.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('selection/deselectAllObjects');
         });

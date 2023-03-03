@@ -1,3 +1,4 @@
+import { expect, describe, afterEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import * as Vue from 'vue';
 import { mockVuexStore } from '@/test/test-utils';
@@ -93,12 +94,12 @@ describe('workflow store: Editing', () => {
             const { store } = await loadStore();
             store.commit('workflow/setLabelEditorNodeId', 'root:1');
 
-            expect(store.state.workflow.labelEditorNodeId).toStrictEqual('root:1');
+            expect(store.state.workflow.labelEditorNodeId).toBe('root:1');
         });
     });
 
     describe('actions', () => {
-        test('wrap api call: automatically include projectId and workflowId', () => {
+        it('wrap api call: automatically include projectId and workflowId', () => {
             let apiCall = vi.fn();
 
             let wrappedCall = wrapAPI(apiCall);
@@ -126,7 +127,7 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        describe('Add node', () => {
+        describe('add node', () => {
             const setupStoreWithWorkflow = async () => {
                 const addNodeMock = vi.fn(() => ({ newNodeId: 'new-mock-node' }));
                 const loadStoreResponse = await loadStore({ apiMocks: { addNode: addNodeMock } });
@@ -262,6 +263,7 @@ describe('workflow store: Editing', () => {
             await Vue.nextTick();
             // select every even node
             Object.values(nodesArray).forEach((node, index) => {
+                // eslint-disable-next-line vitest/no-conditional-tests
                 if (index % 2 === 0) {
                     store.dispatch('selection/selectNode', node.id);
                 }
@@ -367,7 +369,7 @@ describe('workflow store: Editing', () => {
                 return loadStoreResponse;
             };
 
-            test('nodes', async () => {
+            it('nodes', async () => {
                 const { store } = await setupStoreWithWorkflow();
 
                 store.dispatch('selection/selectNode', nodesArray[nodeName].id);
@@ -379,7 +381,7 @@ describe('workflow store: Editing', () => {
                 );
             });
 
-            test('connections', async () => {
+            it('connections', async () => {
                 const { store } = await setupStoreWithWorkflow();
 
                 store.dispatch('selection/selectConnection', connectionsArray[connectorName].id);
@@ -391,7 +393,7 @@ describe('workflow store: Editing', () => {
                 );
             });
 
-            test('nodes and connections', async () => {
+            it('nodes and connections', async () => {
                 const { store } = await setupStoreWithWorkflow();
 
                 store.dispatch('selection/selectNode', nodesArray[nodeName].id);
@@ -429,7 +431,7 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        describe('Collapse', () => {
+        describe('collapse', () => {
             const loadStoreWithNodes = async ({ apiMocks }) => {
                 const result = await loadStore({ apiMocks });
                 result.store.commit('workflow/setActiveWorkflow', {
@@ -515,11 +517,11 @@ describe('workflow store: Editing', () => {
                 await commandCall;
 
                 expect(store.state.selection.selectedNodes).toStrictEqual({ foo: true });
-                expect(store.state.workflow.nameEditorNodeId).toBe(null);
+                expect(store.state.workflow.nameEditorNodeId).toBeNull();
             });
         });
 
-        describe('Expand', () => {
+        describe('expand', () => {
             const loadStoreWithNodes = async ({ apiMocks }) => {
                 const result = await loadStore({ apiMocks });
                 result.store.commit('workflow/setActiveWorkflow', {
@@ -604,7 +606,7 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        describe('QuickAddNodeMenu', () => {
+        describe('quickAddNodeMenu', () => {
             it('opens the quick add node menu', async () => {
                 const { store } = await loadStore();
                 expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);
@@ -629,7 +631,7 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        describe('PortTypeMenu', () => {
+        describe('portTypeMenu', () => {
             it('opens the port type menu', async () => {
                 const { store } = await loadStore();
                 expect(store.state.workflow.portTypeMenu.isOpen).toBe(false);
@@ -645,7 +647,7 @@ describe('workflow store: Editing', () => {
                 expect(store.state.workflow.portTypeMenu.isOpen).toBe(true);
                 expect(store.state.workflow.portTypeMenu.nodeId).toBe('node-id');
                 expect(store.state.workflow.portTypeMenu.startNodeId).toBe('start-node-id');
-                expect(store.state.workflow.portTypeMenu.previewPort).toBe(null);
+                expect(store.state.workflow.portTypeMenu.previewPort).toBeNull();
                 expect(store.state.workflow.portTypeMenu.props).toStrictEqual({ side: 'out' });
                 expect(store.state.workflow.portTypeMenu.events).toMatchObject({ 'menu-close': expect.anything() });
             });
@@ -659,7 +661,7 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        describe('Copy, Cut and Paste', () => {
+        describe('copy, Cut and Paste', () => {
             const createClipboardMock = (initialContent = {}) => {
                 const clipboardMock = (function (_initialContent) {
                     let clipboardContent = _initialContent;
@@ -753,6 +755,7 @@ describe('workflow store: Editing', () => {
                 });
             });
 
+            // eslint-disable-next-line vitest/max-nested-describe
             describe('executes paste command', () => {
                 const setupStoreForPaste = async () => {
                     // register "pasteWorkflowParts" API function
@@ -890,7 +893,7 @@ describe('workflow store: Editing', () => {
             await store.dispatch('workflow/openLabelEditor', 'root:1');
             expect(store.state.workflow.labelEditorNodeId).toBe('root:1');
             await store.dispatch('workflow/closeLabelEditor');
-            expect(store.state.workflow.labelEditorNodeId).toBe(null);
+            expect(store.state.workflow.labelEditorNodeId).toBeNull();
         });
     });
 });

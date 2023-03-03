@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { applyStyleRanges } from '../styleRanges';
 
 describe('styleRanges util', () => {

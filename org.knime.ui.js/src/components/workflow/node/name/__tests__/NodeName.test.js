@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
@@ -25,7 +26,7 @@ describe('NodeName', () => {
         return wrapper;
     };
 
-    describe('Handles text', () => {
+    describe('handles text', () => {
         let storeConfig, wrapper;
 
         beforeEach(() => {
@@ -84,7 +85,7 @@ describe('NodeName', () => {
         });
     });
 
-    describe('Handles editor', () => {
+    describe('handles editor', () => {
         let storeConfig, wrapper, $store;
 
         beforeEach(() => {

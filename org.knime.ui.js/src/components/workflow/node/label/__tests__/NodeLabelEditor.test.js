@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, afterEach, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
@@ -77,7 +78,7 @@ describe('NodeLabelEditor', () => {
         });
     });
 
-    describe('Action bar', () => {
+    describe('action bar', () => {
         it('should be positioned based on the relevant prop', () => {
             const { wrapper } = doMount();
             const actionBar = wrapper.findComponent(ActionBar);
@@ -114,7 +115,7 @@ describe('NodeLabelEditor', () => {
         });
     });
 
-    describe('Handle textarea events', () => {
+    describe('handle textarea events', () => {
         it('should emit a save event', () => {
             const { wrapper } = doMount();
             wrapper.findComponent(NodeLabelTextArea).vm.$emit('update:modelValue', 'new value');

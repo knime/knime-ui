@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount, shallowMount } from '@vue/test-utils';
 import Splitter from '../Splitter.vue';

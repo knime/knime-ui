@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-params */
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
@@ -117,7 +118,7 @@ describe('NodeOutput.vue', () => {
         await Vue.nextTick();
     };
 
-    describe('Selection check', () => {
+    describe('selection check', () => {
         it('should render placeholder if no node is selected', () => {
             const store = createStore({ selectedNodeIds: [] });
             const wrapper = doMount(store);
@@ -207,7 +208,7 @@ describe('NodeOutput.vue', () => {
         expect(wrapper.find('.action-button').exists()).toBe(false);
     });
 
-    describe('Updates', () => {
+    describe('updates', () => {
         it('node gets problem -> display error placeholder', async () => {
             const wrapper = doMount();
 
@@ -253,7 +254,7 @@ describe('NodeOutput.vue', () => {
             expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe(0);
         });
 
-        describe('Select port', () => {
+        describe('select port', () => {
             const nodeWithPorts = createNode({
                 id: '1',
                 kind: 'node',
@@ -308,7 +309,7 @@ describe('NodeOutput.vue', () => {
                 expect(wrapper.findComponent(NodeViewTabOutput).props('selectedNode')).toEqual(node2);
             });
 
-            test.each([
+            it.each([
                 ['node with port', () => nodeWithPorts, 1],
                 ['node without port', () => nodeWithoutPort, 0],
                 ['component with port', () => ({ ...nodeWithPorts, kind: 'component' }), 1],
@@ -326,7 +327,7 @@ describe('NodeOutput.vue', () => {
                 expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe(expectedPort);
             });
 
-            test.each([
+            it.each([
                 ['tablePort to tablePort', () => nodeWithPorts, () => nodeWithPorts, 1, 1],
                 ['tablePort to tablePort', () => nodeWithManyPorts, () => nodeWithPorts, 2, 1],
                 ['tablePort to flowVariablePort', () => nodeWithPorts, () => nodeWithoutPort, 1, 0]

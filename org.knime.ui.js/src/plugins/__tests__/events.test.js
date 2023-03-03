@@ -1,3 +1,4 @@
+import { expect, describe, afterEach, it, vi } from 'vitest';
 /* eslint-disable new-cap */
 import { notifyPatch } from '@/util/event-syncer';
 import { APP_ROUTES } from '@/router';
@@ -46,7 +47,7 @@ describe('Event Plugin', () => {
         return { storeMock, routerMock };
     };
 
-    test('Fixed Events', () => {
+    it('fixed Events', () => {
         loadPlugin();
         expect(Object.keys(registeredHandlers)).toStrictEqual([
             'WorkflowChangedEvent',
@@ -58,7 +59,7 @@ describe('Event Plugin', () => {
         ]);
     });
 
-    test('All eventsHandlers are functions', () => {
+    it('all eventsHandlers are functions', () => {
         loadPlugin();
         Object.values(registeredHandlers).forEach(handler => {
             expect(typeof handler === 'function').toBe(true);
@@ -99,7 +100,7 @@ describe('Event Plugin', () => {
             expect(notifyPatch).not.toHaveBeenCalled();
         });
 
-        describe('AppState event', () => {
+        describe('appState event', () => {
             it('navigates to entry page when no projects are open', async () => {
                 const { storeMock, routerMock } = loadPlugin();
 
@@ -161,7 +162,7 @@ describe('Event Plugin', () => {
         });
 
         // TODO NXT-1437
-        describe('SaveAndCloseWorkflowsEvent', () => {
+        describe('saveAndCloseWorkflowsEvent', () => {
             it.todo('should set the application busy state');
 
             it.todo('should generate all unsaved project snapshots');
@@ -169,7 +170,7 @@ describe('Event Plugin', () => {
             it.todo('should call the browser function with the correct parameters');
         });
 
-        describe('UpdateAvailable event', () => {
+        describe('updateAvailable event', () => {
             it('replaces availableUpdates state', async () => {
                 const { storeMock } = loadPlugin();
                 const newReleases = [

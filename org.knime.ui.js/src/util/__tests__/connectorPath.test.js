@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 /* eslint-disable dot-notation */
 /* eslint-disable quote-props */
 import connectorPath from '../connectorPath';

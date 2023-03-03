@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import Modal from 'webapps-common/ui/components/Modal.vue';

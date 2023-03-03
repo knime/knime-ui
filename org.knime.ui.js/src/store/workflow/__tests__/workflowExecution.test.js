@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -60,7 +61,7 @@ describe('workflow store: Execution', () => {
             expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo', action, workflowId: 'root' });
         });
 
-        test('overloaded changeNodeState', async () => {
+        it('overloaded changeNodeState', async () => {
             let mock = vi.fn();
             let apiMocks = { changeNodeState: mock };
             await loadStore({ apiMocks });

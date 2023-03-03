@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 import { KnimeService } from '@knime/ui-extension-service';
@@ -71,7 +72,7 @@ describe('NodeDialogLoader.vue', () => {
         }));
     });
 
-    describe('Knime service callbacks', () => {
+    describe('knime service callbacks', () => {
         const mockCallbackRegistry = () => {
             const registeredCallbacks = new Map();
 

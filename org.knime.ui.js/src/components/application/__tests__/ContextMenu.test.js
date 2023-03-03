@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
@@ -51,7 +52,7 @@ describe('ContextMenu.vue', () => {
 
     const renderedMenuItems = (wrapper) => wrapper.findComponent(MenuItems).props('items');
 
-    describe('Menu', () => {
+    describe('menu', () => {
         it('sets position', () => {
             const { wrapper } = doMount();
             expect(wrapper.findComponent(FloatingMenu).props('canvasPosition')).toStrictEqual({ x: 10, y: 10 });
@@ -137,7 +138,7 @@ describe('ContextMenu.vue', () => {
         expect(wrapper.emitted('menuClose')).toBeTruthy();
     });
 
-    describe('Visibility of menu items', () => {
+    describe('visibility of menu items', () => {
         const assertItems = (items) => items.map(item => expect.objectContaining(item));
 
         it('shows correct menu items if nothing is selected', async () => {

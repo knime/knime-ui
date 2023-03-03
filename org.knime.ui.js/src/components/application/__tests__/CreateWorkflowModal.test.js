@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
@@ -63,7 +64,7 @@ describe('CreateWorkflowModal.vue', () => {
         return { wrapper, $store, dispatchSpy, commitSpy };
     };
 
-    describe('CreateWorkflowModal', () => {
+    describe('createWorkflowModal', () => {
         it('opens on state change', async () => {
             const { wrapper, $store } = doMount({ isOpen: false });
             await $store.commit('spaces/setIsCreateWorkflowModalOpen', true);
@@ -117,7 +118,7 @@ describe('CreateWorkflowModal.vue', () => {
             expect(errorMessage.text()).toMatch('contains invalid characters');
         });
 
-        it('Should focus the input', async () => {
+        it('should focus the input', async () => {
             vi.useFakeTimers();
             const { wrapper } = await doMount();
 
@@ -127,7 +128,7 @@ describe('CreateWorkflowModal.vue', () => {
             expect(focusSpy).toHaveBeenCalled();
         });
 
-        describe('Name Suggestion', () => {
+        describe('name Suggestion', () => {
             it('should set default name suggestion', () => {
                 const { wrapper } = doMount();
                 const input = wrapper.find('input');
@@ -148,8 +149,8 @@ describe('CreateWorkflowModal.vue', () => {
             });
         });
 
-        describe('Hotkeys', () => {
-            it('Should submit on keypress enter and with a valid name', async () => {
+        describe('hotkeys', () => {
+            it('should submit on keypress enter and with a valid name', async () => {
                 const { wrapper, dispatchSpy } = doMount();
 
                 const newName = 'A valid name';
@@ -162,7 +163,7 @@ describe('CreateWorkflowModal.vue', () => {
                 expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow', { workflowName: newName });
             });
 
-            it('Should not submit on keypress enter with an invalid name', async () => {
+            it('should not submit on keypress enter with an invalid name', async () => {
                 const { wrapper, dispatchSpy } = doMount();
 
                 const newName = 'An invalid name *?#:"<>%~|/\\>?';
@@ -175,7 +176,7 @@ describe('CreateWorkflowModal.vue', () => {
                 expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/createWorkflow', { workflowName: newName });
             });
 
-            it('Should close on ESC', () => {
+            it('should close on ESC', () => {
                 const { wrapper, commitSpy } = doMount();
 
                 escapeStackMock.onEscape.call(wrapper.vm);

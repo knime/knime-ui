@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -77,8 +78,8 @@ describe('WorkflowToolbar.vue', () => {
 
     const toNameProp = (tab) => tab.props('name');
 
-    describe('Toolbar Shortcut', () => {
-        test('Shortcut buttons match computed items', () => {
+    describe('toolbar Shortcut', () => {
+        it('shortcut buttons match computed items', () => {
             doShallowMount();
 
             let shortcutButtons = wrapper.findAllComponents(ToolbarShortcutButton);

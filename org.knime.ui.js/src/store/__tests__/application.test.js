@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import { mockVuexStore } from '@/test/test-utils';
 import * as selectionStore from '@/store/selection';
@@ -156,8 +157,8 @@ describe('application store', () => {
         });
     });
 
-    describe('Application Lifecycle', () => {
-        test('initialization', async () => {
+    describe('application Lifecycle', () => {
+        it('initialization', async () => {
             const { store, dispatchSpy, fetchApplicationState, addEventListener } = await loadStore();
             await store.dispatch('application/initializeApplication', { $router: router });
 
@@ -166,7 +167,7 @@ describe('application store', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('application/replaceApplicationState', applicationState);
         });
 
-        test('calls setExampleProjects', async () => {
+        it('calls setExampleProjects', async () => {
             const { store, commitSpy } = await loadStore();
 
             const exampleProjects = [{
@@ -183,7 +184,7 @@ describe('application store', () => {
             expect(commitSpy).toHaveBeenCalledWith('application/setExampleProjects', exampleProjects, undefined);
         });
 
-        test('destroy application', async () => {
+        it('destroy application', async () => {
             const { store, dispatchSpy, removeEventListener } = await loadStore();
             store.dispatch('application/destroyApplication');
 
@@ -192,7 +193,7 @@ describe('application store', () => {
         });
     });
 
-    describe('Load workflows on navigation', () => {
+    describe('load workflows on navigation', () => {
         it('should unload workflows when leaving the worklow page', async () => {
             const { store, dispatchSpy } = await loadStore();
 
@@ -247,7 +248,7 @@ describe('application store', () => {
         });
     });
 
-    describe('Replace application State', () => {
+    describe('replace application State', () => {
         it('replaces application state', async () => {
             const { store, dispatchSpy } = await loadStore();
             await store.dispatch('application/replaceApplicationState', applicationState);
@@ -309,7 +310,7 @@ describe('application store', () => {
         });
     });
 
-    describe('Workflow Lifecycle', () => {
+    describe('workflow Lifecycle', () => {
         it('loads root workflow successfully', async () => {
             const {
                 store,
@@ -373,7 +374,7 @@ describe('application store', () => {
                 workflowId: 'root',
                 snapshotId: 'snap'
             });
-            expect(store.state.workflow.activeWorkflow).toBe(null);
+            expect(store.state.workflow.activeWorkflow).toBeNull();
             expect(store.state.selection.selectedConnections).toEqual({});
             expect(store.state.selection.selectedNodes).toEqual({});
         });
@@ -388,7 +389,7 @@ describe('application store', () => {
     });
 
     describe('set active workflow', () => {
-        test('if fetched from backend', async () => {
+        it('if fetched from backend', async () => {
             const state = {
                 openProjects: [
                     { projectId: 'foo', name: 'bar' },
@@ -418,7 +419,7 @@ describe('application store', () => {
     });
 
     describe('switch workflow', () => {
-        test('switch from nothing to workflow', async () => {
+        it('switch from nothing to workflow', async () => {
             const { store, dispatchSpy } = await loadStore();
             store.state.workflow.activeWorkflow = null;
 
@@ -512,7 +513,7 @@ describe('application store', () => {
         });
     });
 
-    describe('Saved Canvas States', () => {
+    describe('saved Canvas States', () => {
         const loadStoreWithWorkflow = async () => {
             const { store, ...rest } = await loadStore();
 
@@ -649,7 +650,7 @@ describe('application store', () => {
         });
     });
 
-    describe('Context Menu', () => {
+    describe('context Menu', () => {
         const createEvent = ({ x = 0, y = 0, srcElemClasses = [] } = {}) => {
             const preventDefault = vi.fn();
             const stopPropagation = vi.fn();

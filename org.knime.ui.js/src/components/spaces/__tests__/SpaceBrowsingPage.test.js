@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -112,6 +113,7 @@ describe('SpaceBrowsingPage', () => {
         expect(title).toBe('My public space');
     });
 
+    // eslint-disable-next-line vitest/no-skipped-tests
     it.skip('routes back to space selection page when back button is clicked and clears state', async () => {
         const { wrapper, $router, commitSpy } = doMount();
         await wrapper.findComponent(ArrowLeftIcon).vm.$emit('click');
@@ -143,13 +145,6 @@ describe('SpaceBrowsingPage', () => {
 
         wrapper.find('.create-workflow-btn button').trigger('click');
         expect(commitSpy).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', true);
-    });
-
-    it('should handle the create folder action', () => {
-        const { wrapper, dispatchSpy } = doMount();
-
-        wrapper.find('#createFolder').trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder');
     });
 
     it('should handle the upload to hub action', async () => {

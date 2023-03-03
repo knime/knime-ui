@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -41,9 +42,9 @@ describe('workflow store', () => {
 
     it('creates an empty store', async () => {
         await loadStore();
-        expect(store.state.workflow.activeWorkflow).toBe(null);
-        expect(store.state.workflow.activeSnapshotId).toBe(null);
-        expect(store.state.workflow.tooltip).toBe(null);
+        expect(store.state.workflow.activeWorkflow).toBeNull();
+        expect(store.state.workflow.activeSnapshotId).toBeNull();
+        expect(store.state.workflow.tooltip).toBeNull();
     });
 
     describe('mutation', () => {
@@ -118,7 +119,7 @@ describe('workflow store', () => {
     });
 
     describe('getters', () => {
-        test('isLinked', async () => {
+        it('isLinked', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 info: {
@@ -128,7 +129,7 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isLinked']).toBe(true);
         });
 
-        test('isWritable', async () => {
+        it('isWritable', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 info: {
@@ -138,7 +139,7 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isWritable']).toBe(false);
         });
 
-        test('isInsideLinked defaults to false', async () => {
+        it('isInsideLinked defaults to false', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 parents: [{
@@ -149,7 +150,7 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isInsideLinked']).toBe(false);
         });
 
-        test('isInsideLinked', async () => {
+        it('isInsideLinked', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 parents: [{
@@ -160,7 +161,7 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isInsideLinked']).toBe(true);
         });
 
-        test('insideLinkedType', async () => {
+        it('insideLinkedType', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 parents: [{
@@ -171,7 +172,7 @@ describe('workflow store', () => {
             expect(store.getters['workflow/insideLinkedType']).toBe('metanode');
         });
 
-        test('isWorkflowEmpty', async () => {
+        it('isWorkflowEmpty', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
@@ -194,7 +195,7 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isWorkflowEmpty']).toBe(false);
         });
 
-        test('workflowBounds', async () => {
+        it('workflowBounds', async () => {
             await loadStore();
             let workflow = {
                 projectId: 'foo',
@@ -246,7 +247,7 @@ describe('workflow store', () => {
                 expect(store.getters['workflow/getNodeFactory']('foo')).toMatchObject({
                     className: 'example.class.name'
                 });
-                expect(store.getters['workflow/getNodeFactory']('ownData')).toBe(null);
+                expect(store.getters['workflow/getNodeFactory']('ownData')).toBeNull();
             });
 
             it('gets icon', () => {

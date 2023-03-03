@@ -1,3 +1,4 @@
+import { expect, describe, afterEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import { mockVuexStore } from '@/test/test-utils';
 

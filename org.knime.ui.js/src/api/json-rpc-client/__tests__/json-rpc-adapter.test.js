@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import { rpc } from '../json-rpc-adapter';
 
 describe('JSON-RPC adapter', () => {

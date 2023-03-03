@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 
 import * as Vue from 'vue';
@@ -179,7 +180,7 @@ describe('Node', () => {
             expect(nodePorts.props('nodeId')).toBe(commonNode.id);
             expect(nodePorts.props('inPorts')).toStrictEqual(commonNode.inPorts);
             expect(nodePorts.props('outPorts')).toStrictEqual(commonNode.inPorts);
-            expect(nodePorts.props('targetPort')).toBe(null);
+            expect(nodePorts.props('targetPort')).toBeNull();
             expect(nodePorts.props('isEditable')).toBe(true);
             expect(nodePorts.props('nodeKind')).toBe(commonNode.kind);
             expect(nodePorts.props('hover')).toBe(false);
@@ -253,6 +254,7 @@ describe('Node', () => {
             });
 
             ports.forEach((port, index) => {
+                // eslint-disable-next-line vitest/no-conditional-tests
                 expect(port.props('direction')).toBe(index < commonNode.inPorts.length ? 'in' : 'out');
             });
         });
@@ -271,7 +273,7 @@ describe('Node', () => {
         expect(storeConfig.workflow.actions.openNodeConfiguration).toHaveBeenCalledWith(expect.anything(), 'root:1');
     });
 
-    describe('Node selection preview', () => {
+    describe('node selection preview', () => {
         beforeEach(() => {
             props =
                 {
@@ -317,7 +319,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Node selected', () => {
+    describe('node selected', () => {
         beforeEach(() => {
             props =
             {
@@ -443,7 +445,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Node hover', () => {
+    describe('node hover', () => {
         const triggerHover = (wrapper, hover) => {
             const eventName = hover ? 'enter' : 'leave';
             wrapper
@@ -519,7 +521,7 @@ describe('Node', () => {
         });
 
         describe('portalled elements need MouseLeave Listener', () => {
-            it('NodeActionBar', async () => {
+            it('nodeActionBar', async () => {
                 triggerHover(wrapper, true);
                 await Vue.nextTick();
 
@@ -556,7 +558,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Connector drag & drop', () => {
+    describe('connector drag & drop', () => {
         beforeEach(() => {
             props = { ...commonNode };
             doMount();
@@ -639,42 +641,42 @@ describe('Node', () => {
             // when outside region, targetPort is set to null
             const isOutside = () => wrapper.findComponent(NodePorts).props('targetPort') === null;
 
-            test('above upper bound', async () => {
+            it('above upper bound', async () => {
                 moveConnectorTo(0, -21);
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(true);
             });
 
-            test('below upper bound', async () => {
+            it('below upper bound', async () => {
                 moveConnectorTo(0, -20);
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(false);
             });
 
-            test('targeting inPorts, inside of node torso', async () => {
+            it('targeting inPorts, inside of node torso', async () => {
                 moveConnectorTo(32, 0);
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(false);
             });
 
-            test('targeting inPorts, outside of node torso', async () => {
+            it('targeting inPorts, outside of node torso', async () => {
                 moveConnectorTo(33, 0);
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(true);
             });
 
-            test('targeting outPorts, inside of node torso', async () => {
+            it('targeting outPorts, inside of node torso', async () => {
                 moveConnectorTo(0, 0, 'out');
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(false);
             });
 
-            test('targeting inPorts, outside of node torso', async () => {
+            it('targeting outPorts, outside of node torso', async () => {
                 moveConnectorTo(-1, 0, 'out');
                 await Vue.nextTick();
 
@@ -714,11 +716,11 @@ describe('Node', () => {
                 };
             };
 
-            test('legal', () => {
+            it('legal', () => {
                 expect(wrapper.classes('connection-forbidden')).toBe(false);
             });
 
-            test('illegal', async () => {
+            it('illegal', async () => {
                 doMount(getConnectorSnappingProviderStub({ connectionForbidden: true }));
 
                 await Vue.nextTick();
@@ -726,7 +728,7 @@ describe('Node', () => {
                 expect(wrapper.find('.connection-forbidden').exists()).toBe(true);
             });
 
-            test('illegal but connection source', async () => {
+            it('illegal but connection source', async () => {
                 doMount(getConnectorSnappingProviderStub({ connectionForbidden: true, isConnectionSource: true }));
 
                 await Vue.nextTick();
@@ -736,7 +738,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Opening containers', () => {
+    describe('opening containers', () => {
         it('opens metanode on double click', async () => {
             props = { ...metaNode };
             doMount();
@@ -784,7 +786,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Node name', () => {
+    describe('node name', () => {
         beforeEach(() => {
             props = { ...commonNode };
             doMount();

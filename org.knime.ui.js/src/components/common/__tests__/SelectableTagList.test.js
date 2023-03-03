@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 import Tag from 'webapps-common/ui/components/Tag.vue';
 import SelectableTagList, { defaultInitialTagCount } from '../SelectableTagList.vue';
@@ -15,7 +16,7 @@ const checkTagTexts = (wrappers, expectedTags, numInitialTags) => {
             i++;
         }
         // last wrapper is expander tag
-        expect(wrappers.at(i).text()).toEqual(`+${expectedTags.length - numInitialTags}`);
+        expect(wrappers.at(i).text()).toBe(`+${expectedTags.length - numInitialTags}`);
     } else {
         expect(wrappers.length).toEqual(expectedTags.length);
         let i = 0;

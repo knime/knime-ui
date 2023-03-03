@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
@@ -49,12 +50,12 @@ describe('Tooltip Mixin', () => {
     });
 
     describe('destruction closes tooltip', () => {
-        test('tooltip is not open', () => {
+        it('tooltip is not open', () => {
             wrapper.unmount();
             expect(setTooltipMock).not.toHaveBeenCalled();
         });
 
-        test('tootlip is open', async () => {
+        it('tootlip is open', async () => {
             wrapper.trigger('mouseenter');
 
             await Vue.nextTick();

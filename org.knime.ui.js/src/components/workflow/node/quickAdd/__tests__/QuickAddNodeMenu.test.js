@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
@@ -128,7 +129,7 @@ describe('QuickAddNodeMenu.vue', () => {
         return { wrapper, $store, addNodeMock };
     };
 
-    describe('Menu', () => {
+    describe('menu', () => {
         it('re-emits menuClose', () => {
             let { wrapper } = doMount();
             wrapper.findComponent(FloatingMenuStub).vm.$emit('menuClose');

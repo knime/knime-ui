@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import CardHeader from '../CardHeader.vue';
 

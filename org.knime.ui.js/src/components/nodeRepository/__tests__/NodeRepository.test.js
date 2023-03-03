@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -111,7 +112,7 @@ describe('NodeRepository', () => {
         };
     });
 
-    describe('Renders', () => {
+    describe('renders', () => {
         it('renders empty Node Repository view and fetch first grouped nodes ', () => {
             $store.state.nodeRepository.nodesPerCategory = [];
             searchIsActive = false;
@@ -139,7 +140,7 @@ describe('NodeRepository', () => {
     });
 
 
-    describe('Tags', () => {
+    describe('tags', () => {
         it('renders with selected tags', () => {
             doShallowMount();
             expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
@@ -167,7 +168,7 @@ describe('NodeRepository', () => {
         });
     });
 
-    describe('Tag de-selection', () => {
+    describe('tag de-selection', () => {
         it('de-selects tag and clears search using back to Repository link', () => {
             doShallowMount();
             expect(wrapper.findComponent(ActionBreadcrumb).props('items'))
@@ -177,7 +178,7 @@ describe('NodeRepository', () => {
         });
     });
 
-    describe('Search for nodes', () => {
+    describe('search for nodes', () => {
         it('updates query on SearchBar input', () => {
             doShallowMount();
             wrapper.findComponent(SearchBar).vm.$emit('update:modelValue', 'myquery');
@@ -194,7 +195,7 @@ describe('NodeRepository', () => {
         });
     });
 
-    describe('Info panel', () => {
+    describe('info panel', () => {
         it('shows node description panel', async () => {
             doShallowMount();
             expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(false);

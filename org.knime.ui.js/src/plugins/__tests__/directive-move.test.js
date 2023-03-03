@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount, config } from '@vue/test-utils';
 
@@ -179,9 +180,9 @@ describe('directive-move', () => {
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
         wrapper.unmount();
-        expect(wrapper.element.onpointerdown).toBe(null);
-        expect(wrapper.element.onpointermove).toBe(null);
-        expect(wrapper.element.onpointerup).toBe(null);
+        expect(wrapper.element.onpointerdown).toBeNull();
+        expect(wrapper.element.onpointermove).toBeNull();
+        expect(wrapper.element.onpointerup).toBeNull();
     });
 
     it('does nothing if protected property is set', () => {
@@ -190,20 +191,20 @@ describe('directive-move', () => {
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5, isProtected: true }"></div>'
         });
-        expect(wrapper.element.onpointerdown).toBe(undefined);
-        expect(wrapper.element.onpointermove).toBe(undefined);
-        expect(wrapper.element.onpointerup).toBe(undefined);
+        expect(wrapper.element.onpointerdown).toBeUndefined();
+        expect(wrapper.element.onpointermove).toBeUndefined();
+        expect(wrapper.element.onpointerup).toBeUndefined();
 
         // calls the componentUpdated hook
         wrapper.vm.$forceUpdate();
-        expect(wrapper.element.onpointerdown).toBe(undefined);
-        expect(wrapper.element.onpointermove).toBe(undefined);
-        expect(wrapper.element.onpointerup).toBe(undefined);
+        expect(wrapper.element.onpointerdown).toBeUndefined();
+        expect(wrapper.element.onpointermove).toBeUndefined();
+        expect(wrapper.element.onpointerup).toBeUndefined();
 
         // calls the unbind hook
         wrapper.unmount();
-        expect(wrapper.element.onpointerdown).toBe(undefined);
-        expect(wrapper.element.onpointermove).toBe(undefined);
-        expect(wrapper.element.onpointerup).toBe(undefined);
+        expect(wrapper.element.onpointerdown).toBeUndefined();
+        expect(wrapper.element.onpointermove).toBeUndefined();
+        expect(wrapper.element.onpointerup).toBeUndefined();
     });
 });

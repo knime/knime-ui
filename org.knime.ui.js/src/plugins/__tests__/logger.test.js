@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, afterEach, it } from 'vitest';
 import { silentLogger } from '../logger';
 
 describe('logger', () => {

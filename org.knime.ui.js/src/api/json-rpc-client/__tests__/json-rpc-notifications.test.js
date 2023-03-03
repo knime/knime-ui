@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, beforeEach, afterAll, it, vi } from 'vitest';
 import { registerNotificationHandler, initJsonRpcNotifications } from '../json-rpc-notifications';
 
 const origErrorLogger = window.consola.error;
@@ -20,7 +21,6 @@ describe('JsonRpcNotifications', () => {
         Object.entries(eventHandlers).forEach(([eventName, eventHandler]) => {
             registerNotificationHandler(eventName, eventHandler);
         });
-        // registerEventHandlers(eventHandlers);
     });
 
     it('defines a global function', () => {

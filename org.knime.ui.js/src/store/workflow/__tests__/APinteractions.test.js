@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -91,7 +92,7 @@ describe('workflow store: AP Interactions', () => {
             expect(openLayoutEditor).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
         });
 
-        describe('Save workflow', () => {
+        describe('save workflow', () => {
             it('saves the workflow via the API', async () => {
                 const saveWorkflow = vi.fn();
                 const apiMocks = { saveWorkflow };
@@ -155,7 +156,7 @@ describe('workflow store: AP Interactions', () => {
             });
         });
 
-        describe('Close workflow', () => {
+        describe('close workflow', () => {
             it('closes correctly when single project is opened', async () => {
                 let closeWorkflow = vi.fn(() => true);
                 let apiMocks = { closeWorkflow };
@@ -239,7 +240,7 @@ describe('workflow store: AP Interactions', () => {
         });
     });
 
-    describe('Save workflow locally', () => {
+    describe('save workflow locally', () => {
         it('saves the workflow locally via the API', async () => {
             const saveWorkflowAs = vi.fn();
             const apiMocks = { saveWorkflowAs };

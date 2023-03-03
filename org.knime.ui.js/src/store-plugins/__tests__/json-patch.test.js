@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import { mutations, actions } from '../json-patch';

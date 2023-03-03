@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, beforeEach, afterAll, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 /* eslint-disable consistent-return */
 import * as api from '@api';
@@ -16,7 +17,7 @@ describe('API', () => {
         });
     });
 
-    describe('Application Service', () => {
+    describe('application Service', () => {
         describe('fetchApplicationState', () => {
             it('calls jsonrpc', async () => {
                 await api.fetchApplicationState();
@@ -54,7 +55,7 @@ describe('API', () => {
         });
     });
 
-    describe('Event Service', () => {
+    describe('event Service', () => {
         it.each(['add', 'remove'])('%ss event listeners', async (type) => {
             await api[`${type}EventListener`]('foo', { bar: 1, baz: 2 });
             expect(window.jsonrpc).toHaveBeenCalledWith({
@@ -96,7 +97,7 @@ describe('API', () => {
         });
     });
 
-    describe('Node Repository Service', () => {
+    describe('node Repository Service', () => {
         describe('searchNodes', () => {
             it('calls jsonrpc', async () => {
                 await api.searchNodes({
@@ -262,7 +263,7 @@ describe('API', () => {
         });
     });
 
-    describe('Node Service', () => {
+    describe('node Service', () => {
         it('executes nodes', async () => {
             await api.changeNodeState({
                 projectId: '123',
@@ -385,7 +386,7 @@ describe('API', () => {
         });
     });
 
-    describe('Workflow Service', () => {
+    describe('workflow Service', () => {
         it('does not wait for patch if command does not have snapshot id', async () => {
             window.jsonrpc.mockReturnValueOnce({
                 jsonrpc: '2.0',
@@ -495,7 +496,7 @@ describe('API', () => {
                     id: 0
                 });
 
-                expect(result).toStrictEqual('dummy');
+                expect(result).toBe('dummy');
             });
 
             it('passes the container ID', async () => {
@@ -539,7 +540,7 @@ describe('API', () => {
         });
     });
 
-    describe('Space Service', () => {
+    describe('space Service', () => {
         it('fetchWorkflowGroupContent', async () => {
             const spaceProviderId = 'provider';
             const spaceId = 'space';
@@ -553,10 +554,10 @@ describe('API', () => {
                 id: 0
             });
 
-            expect(result).toStrictEqual('dummy');
+            expect(result).toBe('dummy');
         });
 
-        it.only('createWorkflow', async () => {
+        it('createWorkflow', async () => {
             const spaceProviderId = 'provider';
             const spaceId = 'space';
             const itemId = 'item';
@@ -570,7 +571,7 @@ describe('API', () => {
                 id: 0
             });
 
-            expect(result).toStrictEqual('dummy');
+            expect(result).toBe('dummy');
         });
 
         it('createFolder', async () => {
@@ -586,7 +587,7 @@ describe('API', () => {
                 id: 0
             });
 
-            expect(result).toStrictEqual('dummy');
+            expect(result).toBe('dummy');
         });
 
         it('fetchSpaceProvider', async () => {
@@ -614,7 +615,7 @@ describe('API', () => {
                 id: 0
             });
 
-            expect(result).toStrictEqual('dummy');
+            expect(result).toBe('dummy');
         });
 
         it('deleteItems', async () => {

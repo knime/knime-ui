@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import NodeTemplate from '../NodeTemplate.vue';
@@ -11,7 +12,7 @@ describe('NodeList', () => {
 
     const doShallowMount = (props = {}) => shallowMount(NodeList, { props: { ...defaultProps, ...props } });
 
-    test('show-more button', async () => {
+    it('show-more button', async () => {
         const wrapper = doShallowMount({ hasMoreNodes: true });
 
         const showMoreButton = wrapper.find('.show-more');
@@ -21,7 +22,7 @@ describe('NodeList', () => {
         expect(wrapper.emitted('showMore')).toBeTruthy();
     });
 
-    test('renders nodes', () => {
+    it('renders nodes', () => {
         const wrapper = doShallowMount();
         let nodeTemplates = wrapper.findAllComponents(NodeTemplate);
         expect(nodeTemplates.at(0).props('nodeTemplate')).toStrictEqual({ id: 'node1' });

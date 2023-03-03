@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, beforeEach, afterEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import * as Vue from 'vue';
 import gsap from 'gsap';

@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import ScrollViewContainer from '../ScrollViewContainer.vue';
 
@@ -68,7 +69,7 @@ describe('ScrollViewContainer', () => {
 
             wrapper.find('.scroll-container').trigger('scroll');
 
-            expect(wrapper.emitted('scrollBottom')).toBe(undefined);
+            expect(wrapper.emitted('scrollBottom')).toBeUndefined();
         });
 
         it('scrolls, and is above threshold', () => {

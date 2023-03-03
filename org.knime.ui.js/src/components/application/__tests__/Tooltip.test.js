@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
@@ -78,14 +79,14 @@ describe('Tooltip', () => {
     });
 
     describe('only have pointer events for hoverable', () => {
-        test('hoverable', () => {
+        it('hoverable', () => {
             props.hoverable = true;
             doShallowMount();
 
             expect(wrapper.classes()).toContain('hoverable');
         });
 
-        test('not hoverable', () => {
+        it('not hoverable', () => {
             doShallowMount();
 
             expect(wrapper.classes()).not.toContain('hoverable');

@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
@@ -57,12 +58,12 @@ describe('ToolbarShortcutButton.vue', () => {
     };
 
     describe('renders button', () => {
-        test('fetches shortcut', () => {
+        it('fetches shortcut', () => {
             const { $shortcuts } = doMount();
             expect($shortcuts.get).toHaveBeenCalledWith('save');
         });
 
-        test('renders full info', () => {
+        it('renders full info', () => {
             const { wrapper } = doMount();
 
             const toolbarButton = wrapper.getComponent(ToolbarButton);
@@ -75,7 +76,7 @@ describe('ToolbarShortcutButton.vue', () => {
             expect(wrapper.findComponent(IconComponent).exists()).toBe(true);
         });
 
-        test('renders only with title', () => {
+        it('renders only with title', () => {
             const shortcut = {
                 title: 'save workflow'
             };
@@ -89,7 +90,7 @@ describe('ToolbarShortcutButton.vue', () => {
             expect(wrapper.findComponent(IconComponent).exists()).toBe(false);
         });
 
-        test('renders disabled', async () => {
+        it('renders disabled', async () => {
             const { wrapper, $shortcuts } = doMount({ isEnabledMock: vi.fn(() => false) });
 
             expect($shortcuts.isEnabled).toHaveBeenCalledWith('save');
@@ -99,7 +100,7 @@ describe('ToolbarShortcutButton.vue', () => {
             expect(toolbarButton.attributes('disabled')).toBeDefined();
         });
 
-        test('dispatches shortcut handler', () => {
+        it('dispatches shortcut handler', () => {
             const { wrapper, $shortcuts } = doMount();
 
             wrapper.trigger('click');

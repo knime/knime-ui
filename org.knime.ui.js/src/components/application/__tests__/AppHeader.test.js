@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
@@ -49,7 +50,7 @@ describe('AppHeader.vue', () => {
         return { storeConfig, wrapper, $store, $route, $router };
     };
 
-    describe('Tabs', () => {
+    describe('tabs', () => {
         it('renders tabs of opened projects', () => {
             const { wrapper } = doMount();
 
@@ -131,7 +132,7 @@ describe('AppHeader.vue', () => {
         expect(wrapper.findAllComponents(AppHeaderTab).at(0).props('windowWidth')).toBe(100);
     });
 
-    describe('Right side buttons', () => {
+    describe('right side buttons', () => {
         it('allows switching to Info Page', async () => {
             const { wrapper, $router } = doMount();
             await wrapper.find('.switch-info-page').trigger('click');

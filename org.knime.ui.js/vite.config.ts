@@ -33,7 +33,6 @@ export default defineConfig(({ mode }) => {
         test: {
             include: ['**/__tests__/*.test.{js,mjs,cjs,ts,mts,cts}'],
             exclude: [...configDefaults.exclude, 'webapps-common'],
-            globals: true,
             setupFiles: ['src/test/setup'],
             environment: 'jsdom',
             reporters: ['default', 'junit'],

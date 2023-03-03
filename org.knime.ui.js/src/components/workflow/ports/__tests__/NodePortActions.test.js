@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import ActionButton from '@/components/common/ActionButton.vue';

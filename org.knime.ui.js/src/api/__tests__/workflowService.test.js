@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainerNode,
     copyOrCutWorkflowParts, pasteWorkflowParts, renameContainerNode, renameNodeLabel, addNodePort } from '@api';
 
@@ -10,7 +11,7 @@ describe('workflow commands', () => {
         });
     });
 
-    test('connectNodes', () => {
+    it('connectNodes', () => {
         connectNodes({
             projectId: 'project',
             workflowId: 'workflow',
@@ -38,7 +39,7 @@ describe('workflow commands', () => {
     });
 
     describe('moveObjects', () => {
-        test('nodes and annotations', () => {
+        it('nodes and annotations', () => {
             moveObjects({
                 projectId: 'project',
                 workflowId: 'workflow',
@@ -63,7 +64,7 @@ describe('workflow commands', () => {
             });
         });
 
-        test('empty arrays', () => {
+        it('empty arrays', () => {
             moveObjects({
                 projectId: 'project',
                 workflowId: 'workflow',
@@ -88,7 +89,7 @@ describe('workflow commands', () => {
     });
 
     describe('deleteObjects', () => {
-        test('nodes, annotations and connections', () => {
+        it('nodes, annotations and connections', () => {
             deleteObjects({
                 projectId: 'project',
                 workflowId: 'workflow',
@@ -113,7 +114,7 @@ describe('workflow commands', () => {
             });
         });
 
-        test('empty arrays', () => {
+        it('empty arrays', () => {
             deleteObjects({
                 projectId: 'project',
                 workflowId: 'workflow'
@@ -136,7 +137,7 @@ describe('workflow commands', () => {
         });
     });
 
-    test('addNode', () => {
+    it('addNode', () => {
         addNode({
             projectId: 'project',
             workflowId: 'workflow',
@@ -169,7 +170,7 @@ describe('workflow commands', () => {
         });
     });
 
-    test('collapseToContainer', () => {
+    it('collapseToContainer', () => {
         collapseToContainer({
             projectId: 'project',
             workflowId: 'workflow',
@@ -193,7 +194,7 @@ describe('workflow commands', () => {
         });
     });
 
-    test('expandContainerNode', () => {
+    it('expandContainerNode', () => {
         expandContainerNode({
             projectId: 'project',
             workflowId: 'workflow',
@@ -217,7 +218,7 @@ describe('workflow commands', () => {
     // TODO: add test for open layout editor
 
     describe('copy & paste', () => {
-        test.each([
+        it.each([
             ['copy'],
             ['cut']
         ])('%s', (command) => {
@@ -244,7 +245,7 @@ describe('workflow commands', () => {
             });
         });
 
-        test('paste', () => {
+        it('paste', () => {
             pasteWorkflowParts({
                 projectId: 'project',
                 workflowId: 'workflow',
@@ -281,7 +282,7 @@ describe('workflow commands', () => {
             });
         });
 
-        test('addNodePort', () => {
+        it('addNodePort', () => {
             addNodePort({
                 projectId: 'project',
                 workflowId: 'workflow',
@@ -308,7 +309,7 @@ describe('workflow commands', () => {
             });
         });
 
-        test('renameContainerNode', () => {
+        it('renameContainerNode', () => {
             renameContainerNode({
                 projectId: 'project',
                 workflowId: 'workflow',
@@ -331,7 +332,7 @@ describe('workflow commands', () => {
             });
         });
 
-        test('renameNodeLabel', () => {
+        it('renameNodeLabel', () => {
             renameNodeLabel({
                 projectId: 'project',
                 workflowId: 'workflow',

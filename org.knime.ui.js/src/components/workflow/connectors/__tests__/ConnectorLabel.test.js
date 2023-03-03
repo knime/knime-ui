@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
@@ -17,7 +18,7 @@ describe('ConnectorLabel.vue', () => {
         };
     });
 
-    describe('Check label creation', () => {
+    describe('check label creation', () => {
         let doMount, wrapper, isNodeSelectedMock;
 
         beforeEach(() => {

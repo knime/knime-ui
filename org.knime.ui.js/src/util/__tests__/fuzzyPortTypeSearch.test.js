@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { makeTypeSearch } from '../fuzzyPortTypeSearch';
 
 describe('Port Type Search', () => {

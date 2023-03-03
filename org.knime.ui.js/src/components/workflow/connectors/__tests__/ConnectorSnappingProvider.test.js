@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import * as Vue from 'vue';
 
@@ -190,7 +191,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         });
     });
 
-    describe('Validates drop targets', () => {
+    describe('validates drop targets', () => {
         it('should not allow connection to self', async () => {
             const myId = 'self';
             const wrapper = doMount({ id: myId });
@@ -225,7 +226,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         });
     });
 
-    describe('Placeholder ports', () => {
+    describe('placeholder ports', () => {
         const validPortGroups = {
             default: {
                 canAddInPort: true,
@@ -248,8 +249,8 @@ describe('ConnectorSnappingProvider.vue', () => {
             }
         };
 
-        describe('Add Port', () => {
-            test.each([
+        describe('add Port', () => {
+            it.each([
                 ['input', 'in', 0],
                 ['output', 'out', 30]
             ])('snaps to %s placeholder port ', async (_, direction, x) => {
@@ -285,7 +286,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                 });
             });
 
-            test.each([
+            it.each([
                 ['input', 'in', 0, {
                     destNode: 'root',
                     destPort: 3,
@@ -334,7 +335,7 @@ describe('ConnectorSnappingProvider.vue', () => {
             });
         });
 
-        describe('Port type menu', () => {
+        describe('port type menu', () => {
             const dropForMenu = async (validPortGroups) => {
                 const wrapper = doMount({ portGroups });
 
@@ -446,7 +447,7 @@ describe('ConnectorSnappingProvider.vue', () => {
             });
         });
 
-        describe('Incompatible and incomplete states', () => {
+        describe('incompatible and incomplete states', () => {
             beforeEach(() => {
                 addNodePortMock.mockReset();
                 connectNodesMock.mockReset();
@@ -509,7 +510,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         });
     });
 
-    describe('Snapping', () => {
+    describe('snapping', () => {
         const onSnapCallback = vi.fn(() => ({ didSnap: true }));
 
         it('should not snap when no portPositions are given', async () => {
@@ -553,7 +554,7 @@ describe('ConnectorSnappingProvider.vue', () => {
             expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toBeNull();
         });
 
-        describe('Snap to Ports', () => {
+        describe('snap to Ports', () => {
             it.each([
                 ['in', { x: 38, y: 0 }],
                 ['out', { x: -10, y: 5 }]

@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, it, vi } from 'vitest';
 import { generateWorkflowPreview } from '../generateWorkflowPreview';
 
 vi.mock('@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff', () => 'font data');

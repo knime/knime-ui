@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 /* eslint-disable max-nested-callbacks */
 import shortcuts, { conditionGroup } from '..';
 import workflowShortcutsMock from '../workflowShortcuts';
@@ -31,13 +32,13 @@ describe('Shortcuts', () => {
             };
         });
 
-        test('group condition true', () => {
+        it('group condition true', () => {
             let group = conditionGroup(() => true, shortcuts);
             expect(group.noCondition.condition({ age: 10 })).toBe(true);
             expect(group.withCondition.condition({ age: 10 })).toBe(false);
         });
 
-        test('group condition false', () => {
+        it('group condition false', () => {
             let group = conditionGroup(() => false, shortcuts);
             expect(group.noCondition.condition({ age: 10 })).toBe(false);
             expect(group.withCondition.condition({ age: 10 })).toBe(false);
@@ -60,7 +61,7 @@ describe('Shortcuts', () => {
             };
         });
 
-        test('adds workflow shortcuts if workflow is present', () => {
+        it('adds workflow shortcuts if workflow is present', () => {
             const workflowShortcuts = Object.keys(workflowShortcutsMock).reduce((res, key) => {
                 res[key] = shortcuts[key];
                 return res;
@@ -77,7 +78,7 @@ describe('Shortcuts', () => {
             expect(resultWithWorkflow).toStrictEqual(expect.arrayContaining(['save', 'undo']));
         });
 
-        test('adds canvas shortcuts if interactions are enabled and workflow is not empty', () => {
+        it('adds canvas shortcuts if interactions are enabled and workflow is not empty', () => {
             const canvasShortcuts = Object.keys(canvasShortcutsMock).reduce((res, key) => {
                 res[key] = shortcuts[key];
                 return res;
@@ -101,7 +102,7 @@ describe('Shortcuts', () => {
             expect(resultInteractions).toStrictEqual(expect.arrayContaining(['fitToScreen', 'zoomTo100']));
         });
 
-        test('adds selection shortcuts if interactions are enabled', () => {
+        it('adds selection shortcuts if interactions are enabled', () => {
             const selectionShortcuts = Object.keys(selectionShortcutsMocks).reduce((res, key) => {
                 res[key] = shortcuts[key];
                 return res;

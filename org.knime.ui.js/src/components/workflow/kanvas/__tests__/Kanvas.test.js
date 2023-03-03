@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
@@ -199,8 +200,8 @@ describe('Kanvas', () => {
         });
     });
 
-    describe('Panning', () => {
-        describe('With space', () => {
+    describe('panning', () => {
+        describe('with space', () => {
             it.each([
                 ['input'],
                 ['textarea'],
@@ -277,7 +278,7 @@ describe('Kanvas', () => {
             });
         });
 
-        describe('With middle mouse button click', () => {
+        describe('with middle mouse button click', () => {
             it('pans with middle mouse button', async () => {
                 const { wrapper, setPointerCapture, releasePointerCapture, actions } = doShallowMount({
                     scrollLeft: 100,
@@ -332,7 +333,7 @@ describe('Kanvas', () => {
             });
         });
 
-        describe('With right mouse button click', () => {
+        describe('with right mouse button click', () => {
             it('pans with right mouse button if mouse movement threshold is exceeded', async () => {
                 const { wrapper, setPointerCapture, releasePointerCapture, actions } = doShallowMount({
                     scrollLeft: 100,
@@ -456,7 +457,7 @@ describe('Kanvas', () => {
         });
     });
 
-    describe('Context Menu', () => {
+    describe('context Menu', () => {
         it('shows context menu if user has not panned and used right mouse button', async () => {
             const { wrapper, actions } = doShallowMount();
 
@@ -482,7 +483,7 @@ describe('Kanvas', () => {
         });
     });
 
-    describe('Container Resize', () => {
+    describe('container Resize', () => {
         it('should observe container resizes', async () => {
             vi.useFakeTimers();
             const { wrapper, actions, ResizeObserverMock } = doShallowMount();
@@ -506,7 +507,7 @@ describe('Kanvas', () => {
         });
     });
 
-    describe('Zooming', () => {
+    describe('zooming', () => {
         it('uses canvasSize and viewBox from store', async () => {
             const { wrapper, $store } = doShallowMount();
             await Vue.nextTick();

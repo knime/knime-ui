@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockUserAgent } from 'jest-useragent-mock';
@@ -169,7 +170,7 @@ describe('KnimeUI.vue', () => {
         expect(destroyApplication).toHaveBeenCalled();
     });
 
-    describe('Clipboard support', () => {
+    describe('clipboard support', () => {
         it.each([
             ['granted', true],
             ['prompt', true],

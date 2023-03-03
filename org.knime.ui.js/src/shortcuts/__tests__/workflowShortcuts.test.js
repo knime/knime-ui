@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import workflowShortcuts from '../workflowShortcuts';
 
 const capitalize = (str) => str.charAt(0).toUpperCase().concat(str.slice(1));
@@ -44,97 +45,97 @@ describe('workflowShortcuts', () => {
     };
 
     describe('execute', () => {
-        test('save', () => {
+        it('save', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.save.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/saveWorkflow');
         });
 
-        test('undo', () => {
+        it('undo', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.undo.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/undo');
         });
 
-        test('redo', () => {
+        it('redo', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.redo.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/redo');
         });
 
-        test('configureNode', () => {
+        it('configureNode', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.configureNode.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openNodeConfiguration', 'root:0');
         });
 
-        test('configureFlowVariables', () => {
+        it('configureFlowVariables', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.configureFlowVariables.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openFlowVariableConfiguration', 'root:0');
         });
 
-        test('openView', () => {
+        it('openView', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.openView.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openView', 'root:0');
         });
 
-        test('editName', () => {
+        it('editName', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.editName.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openNameEditor', 'root:0');
         });
 
-        test('editNodeLabel', () => {
+        it('editNodeLabel', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.editNodeLabel.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openLabelEditor', 'root:0');
         });
 
-        test('deleteSelected', () => {
+        it('deleteSelected', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.deleteSelected.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/deleteSelectedObjects');
         });
 
-        test('create metanode', () => {
+        it('create metanode', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.createMetanode.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'metanode' });
         });
 
-        test('create component', () => {
+        it('create component', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.createComponent.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'component' });
         });
 
-        test('expand container node', () => {
+        it('expand container node', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.expandMetanode.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/expandContainerNode');
         });
 
-        test('open layout editor', () => {
+        it('open layout editor', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.openLayoutEditor.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openLayoutEditor');
         });
 
-        test('copy', () => {
+        it('copy', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.copy.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/copyOrCutWorkflowParts', { command: 'copy' });
         });
 
-        test('cut', () => {
+        it('cut', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.cut.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/copyOrCutWorkflowParts', { command: 'cut' });
         });
 
-        test('paste', () => {
+        it('paste', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.paste.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/pasteWorkflowParts', expect.anything());
@@ -142,35 +143,35 @@ describe('workflowShortcuts', () => {
     });
 
     describe('condition', () => {
-        test('save', () => {
+        it('save', () => {
             const { $store } = createStore();
             expect(workflowShortcuts.save.condition({ $store })).toBeFalsy();
             $store.state.workflow.activeWorkflow.dirty = true;
             expect(workflowShortcuts.save.condition({ $store })).toBe(true);
         });
 
-        test('undo', () => {
+        it('undo', () => {
             const { $store } = createStore();
             expect(workflowShortcuts.undo.condition({ $store })).toBeFalsy();
             $store.state.workflow.activeWorkflow.allowedActions.canUndo = true;
             expect(workflowShortcuts.undo.condition({ $store })).toBe(true);
         });
 
-        test('redo', () => {
+        it('redo', () => {
             const { $store } = createStore();
             expect(workflowShortcuts.redo.condition({ $store })).toBeFalsy();
             $store.state.workflow.activeWorkflow.allowedActions.canRedo = true;
             expect(workflowShortcuts.redo.condition({ $store })).toBe(true);
         });
 
-        test('configureNode', () => {
+        it('configureNode', () => {
             const { $store } = createStore();
             expect(workflowShortcuts.configureNode.condition({ $store })).toBeFalsy();
             $store.getters['selection/singleSelectedNode'].allowedActions = { canOpenDialog: true };
             expect(workflowShortcuts.configureNode.condition({ $store })).toBe(true);
         });
 
-        test('configureFlowVariables', () => {
+        it('configureFlowVariables', () => {
             const { $store } = createStore();
             expect(workflowShortcuts.configureFlowVariables.condition({ $store })).toBeFalsy();
             $store.getters['selection/singleSelectedNode'].allowedActions = {
@@ -179,7 +180,7 @@ describe('workflowShortcuts', () => {
             expect(workflowShortcuts.configureFlowVariables.condition({ $store })).toBe(true);
         });
 
-        test('openView', () => {
+        it('openView', () => {
             const { $store } = createStore();
             expect(workflowShortcuts.openView.condition({ $store })).toBeFalsy();
             $store.getters['selection/singleSelectedNode'].allowedActions = {
@@ -189,7 +190,7 @@ describe('workflowShortcuts', () => {
         });
 
         describe('editName', () => {
-            test('cannot rename when workflow is not writable', () => {
+            it('cannot rename when workflow is not writable', () => {
                 const { $store } = createStore();
                 $store.getters['selection/singleSelectedNode'].kind = 'component';
                 $store.getters['workflow/isWritable'] = false;
@@ -197,7 +198,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.editName.condition({ $store })).toBe(false);
             });
 
-            test.each([
+            it.each([
                 ['component', true],
                 ['metanode', true],
                 ['node', false]
@@ -209,7 +210,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.editName.condition({ $store })).toBe(conditionValue);
             });
 
-            test('cannot rename if the selected node is linked', () => {
+            it('cannot rename if the selected node is linked', () => {
                 const { $store } = createStore();
                 $store.getters['workflow/isWritable'] = true;
                 $store.getters['selection/singleSelectedNode'].kind = 'component';
@@ -220,7 +221,7 @@ describe('workflowShortcuts', () => {
         });
 
         describe('editNodeLabel', () => {
-            test('cannot edit label if no node is selected', () => {
+            it('cannot edit label if no node is selected', () => {
                 const { $store } = createStore({
                     isWorkflowWritable: true,
                     singleSelectedNode: null
@@ -229,7 +230,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.editNodeLabel.condition({ $store })).toBe(false);
             });
 
-            test('cannot edit label when workflow is not writable', () => {
+            it('cannot edit label when workflow is not writable', () => {
                 const { $store } = createStore({
                     isWorkflowWritable: false,
                     singleSelectedNode: {
@@ -243,20 +244,20 @@ describe('workflowShortcuts', () => {
         });
 
         describe('deleteSelected', () => {
-            test('is not writeable ', () => {
+            it('is not writeable ', () => {
                 const { $store } = createStore({ singleSelectedNode: null });
                 $store.getters['workflow/isWritable'] = false;
                 expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(false);
             });
 
-            test('nothing selected', () => {
+            it('nothing selected', () => {
                 const { $store } = createStore({ singleSelectedNode: null });
                 $store.getters['selection/selectedNodes'] = [];
                 $store.getters['selection/selectedConnections'] = [];
                 expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(false);
             });
 
-            test('one node is not deletable', () => {
+            it('one node is not deletable', () => {
                 const { $store } = createStore({
                     singleSelectedNode: null,
                     selectedNodes: [
@@ -269,7 +270,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(false);
             });
 
-            test('one connection is not deletable', () => {
+            it('one connection is not deletable', () => {
                 const { $store } = createStore({
                     singleSelectedNode: null,
                     selectedNodes: [
@@ -281,7 +282,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(false);
             });
 
-            test('all selected are deletable', () => {
+            it('all selected are deletable', () => {
                 const { $store } = createStore({
                     singleSelectedNode: null,
                     selectedNodes: [
@@ -296,7 +297,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(true);
             });
 
-            test('only nodes are selected', () => {
+            it('only nodes are selected', () => {
                 const { $store } = createStore({
                     singleSelectedNode: null,
                     selectedNodes: [
@@ -315,7 +316,7 @@ describe('workflowShortcuts', () => {
         ])('create %s', (nodeKind) => {
             const shortcut = `create${capitalize(nodeKind)}`;
 
-            test(`it can not create ${nodeKind} when canCollapse is false`, () => {
+            it(`it can not create ${nodeKind} when canCollapse is false`, () => {
                 const { $store } = createStore({
                     selectedNodes: [{ allowedActions: { canCollapse: 'true' } }]
                 });
@@ -326,7 +327,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
             });
 
-            test(`it can not create ${nodeKind} when workflow is not writable`, () => {
+            it(`it can not create ${nodeKind} when workflow is not writable`, () => {
                 const { $store } = createStore({
                     isWorkflowWritable: false,
                     selectedNodes: [{ allowedActions: { canCollapse: 'true' } }]
@@ -335,7 +336,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
             });
 
-            test(`it can not create ${nodeKind} when no node is selected`, () => {
+            it(`it can not create ${nodeKind} when no node is selected`, () => {
                 const { $store } = createStore({ isWorkflowWritable: false });
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
             });
@@ -347,7 +348,7 @@ describe('workflowShortcuts', () => {
         ])('expand %s', (nodeKind) => {
             const shortcut = `expand${capitalize(nodeKind)}`;
 
-            test(`it allows to expand if a ${nodeKind} is selected and canExpand is true`, () => {
+            it(`it allows to expand if a ${nodeKind} is selected and canExpand is true`, () => {
                 const { $store } = createStore({
                     singleSelectedNode: {
                         kind: nodeKind,
@@ -367,7 +368,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(true);
             });
 
-            test(`it can not expand ${nodeKind} when workflow is not writable`, () => {
+            it(`it can not expand ${nodeKind} when workflow is not writable`, () => {
                 const { $store } = createStore({
                     isWorkflowWritable: false,
                     singleSelectedNode: {
@@ -381,7 +382,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
             });
 
-            test(`it can not expand ${nodeKind} when the metanode is linked`, () => {
+            it(`it can not expand ${nodeKind} when the metanode is linked`, () => {
                 const { $store } = createStore({
                     singleSelectedNode: {
                         kind: nodeKind,
@@ -397,12 +398,12 @@ describe('workflowShortcuts', () => {
         });
 
         describe('openLayoutEditor', () => {
-            test('it is not a component, button disabled', () => {
+            it('it is not a component, button disabled', () => {
                 const { $store } = createStore();
                 expect(workflowShortcuts.openLayoutEditor.condition({ $store })).toBeFalsy();
             });
 
-            test('it is not a writable component, button disabled', () => {
+            it('it is not a writable component, button disabled', () => {
                 const { $store } = createStore({
                     isWorkflowWritable: false,
                     containerType: 'component'
@@ -411,7 +412,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.openLayoutEditor.condition({ $store })).toBeFalsy();
             });
 
-            test('it is a writable component, button enabled', () => {
+            it('it is a writable component, button enabled', () => {
                 const { $store } = createStore({
                     isWorkflowWritable: true,
                     containerType: 'component'
@@ -420,7 +421,7 @@ describe('workflowShortcuts', () => {
             });
         });
 
-        test('copy', () => {
+        it('copy', () => {
             // mock kanvas element and make it the activeElement
             document.body.innerHTML = '<div id="kanvas" tabindex="0"></div>';
             const kanvasElement = document.getElementById('kanvas');
@@ -442,12 +443,12 @@ describe('workflowShortcuts', () => {
         });
 
         describe('cut', () => {
-            test('nothing selected, not writeable -> disabled', () => {
+            it('nothing selected, not writeable -> disabled', () => {
                 const { $store } = createStore();
                 expect(workflowShortcuts.cut.condition({ $store })).toBeFalsy();
             });
 
-            test('nodes selected, not writeable -> disabled', () => {
+            it('nodes selected, not writeable -> disabled', () => {
                 const { $store } = createStore({
                     selectedNodes: [{ allowedActions: {} }],
                     isWorkflowWritable: false
@@ -456,13 +457,13 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.cut.condition({ $store })).toBeFalsy();
             });
 
-            test('nothing selected, writeable -> disabled', () => {
+            it('nothing selected, writeable -> disabled', () => {
                 const { $store } = createStore({ isWorkflowWritable: true });
 
                 expect(workflowShortcuts.cut.condition({ $store })).toBeFalsy();
             });
 
-            test('nodes selected, writeable -> enabled', () => {
+            it('nodes selected, writeable -> enabled', () => {
                 const { $store } = createStore({
                     selectedNodes: [{ allowedActions: {} }],
                     isWorkflowWritable: true
@@ -470,7 +471,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.cut.condition({ $store })).toBe(true);
             });
 
-            test('nodes selected, writeable but no clipboard permission -> disabled', () => {
+            it('nodes selected, writeable but no clipboard permission -> disabled', () => {
                 const { $store } = createStore({
                     selectedNodes: [{ allowedActions: {} }],
                     isWorkflowWritable: true
@@ -481,7 +482,7 @@ describe('workflowShortcuts', () => {
             });
         });
 
-        test('paste', () => {
+        it('paste', () => {
             const { $store } = createStore({
                 selectedNodes: [{ allowedActions: {} }],
                 isWorkflowWritable: false

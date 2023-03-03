@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -76,14 +77,14 @@ describe('HotKeys', () => {
         };
     });
 
-    test('Escape triggers event', () => {
+    it('escape triggers event', () => {
         doShallowMount();
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
 
         expect(escapePressedMock).toHaveBeenCalled();
     });
 
-    test('shortcut found and is enabled', () => {
+    it('shortcut found and is enabled', () => {
         $shortcuts.findByHotkey.mockReturnValue('shortcut');
         $shortcuts.isEnabled.mockReturnValue(true);
         $shortcuts.preventDefault.mockReturnValue(false);
@@ -99,7 +100,7 @@ describe('HotKeys', () => {
         expectPreventDefaultHandled();
     });
 
-    test('no matching shortcut found', () => {
+    it('no matching shortcut found', () => {
         $shortcuts.findByHotkey.mockReturnValue(null);
         doShallowMount();
 
@@ -110,14 +111,14 @@ describe('HotKeys', () => {
         expectEventNotHandled();
     });
 
-    test.each(['Control', 'Shift', 'Meta'])('modifier %s-keydown does nothing', (key) => {
+    it.each(['Control', 'Shift', 'Meta'])('modifier %s-keydown does nothing', (key) => {
         doShallowMount();
         document.dispatchEvent(new KeyboardEvent('keydown', { key }));
 
         expectEventNotHandled();
     });
 
-    test('shortcut found but is not enabled', () => {
+    it('shortcut found but is not enabled', () => {
         $shortcuts.findByHotkey.mockReturnValue('shortcut');
         $shortcuts.isEnabled.mockReturnValue(false);
         $shortcuts.preventDefault.mockReturnValue(true);
@@ -132,7 +133,7 @@ describe('HotKeys', () => {
         expectPreventDefaultHandled();
     });
 
-    test('shortcut allows event default action', () => {
+    it('shortcut allows event default action', () => {
         $shortcuts.findByHotkey.mockReturnValue('shortcut');
         $shortcuts.isEnabled.mockReturnValue(false);
         $shortcuts.preventDefault.mockReturnValue(false);

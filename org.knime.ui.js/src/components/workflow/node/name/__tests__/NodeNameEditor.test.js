@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, afterEach, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
@@ -77,7 +78,7 @@ describe('NodeNameEditor', () => {
         });
     });
 
-    describe('Action bar', () => {
+    describe('action bar', () => {
         it('should be positioned based on the relevant prop', () => {
             const wrapper = doShallowMount();
             const actionBar = wrapper.findComponent(ActionBar);
@@ -102,7 +103,7 @@ describe('NodeNameEditor', () => {
         });
     });
 
-    describe('Handle textarea events', () => {
+    describe('handle textarea events', () => {
         it.each([
             'widthChange',
             'heightChange'

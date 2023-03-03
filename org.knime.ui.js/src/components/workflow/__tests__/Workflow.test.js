@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
@@ -213,14 +214,14 @@ describe('Workflow', () => {
         expect(order).toEqual(['back', 'middle', 'front']);
     });
 
-    describe('Node order', () => {
-        test('original order without selection', () => {
+    describe('node order', () => {
+        it('original order without selection', () => {
             const wrapper = doShallowMount();
             const nodeOrder = wrapper.findAllComponents(MoveableNodeContainer).map(node => node.props('id'));
             expect(nodeOrder).toStrictEqual(['root:0', 'root:1', 'root:2']);
         });
 
-        test('selecting node brings it to the front', () => {
+        it('selecting node brings it to the front', () => {
             const store = getStore({ isNodeSelectedMock: vi.fn(id => id === 'root:1') });
             const wrapper = doShallowMount({ store });
 

@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -19,7 +20,7 @@ describe('QuickAddNodeGhost.vue', () => {
         }
     });
 
-    describe('Ghost', () => {
+    describe('ghost', () => {
         it('renders', () => {
             let wrapper = doMount();
             expect(wrapper.html()).toBeTruthy();

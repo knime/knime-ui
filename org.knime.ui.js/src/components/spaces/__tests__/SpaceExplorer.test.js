@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
@@ -181,7 +182,7 @@ describe('SpaceExplorer.vue', () => {
         expect(wrapper.emitted('itemChanged')[0][0]).toBe('1234');
     });
 
-    describe('Navigate back', () => {
+    describe('navigate back', () => {
         it('should load data when navigating back to the parent directory', async () => {
             const { wrapper } = await doMountAndLoad({
                 mockResponse: {
@@ -240,7 +241,7 @@ describe('SpaceExplorer.vue', () => {
         expect(wrapper.emitted('itemChanged')[0][0]).toBe('parentId');
     });
 
-    describe('Open indicator', () => {
+    describe('open indicator', () => {
         it('should set the openIndicator for open workflows', async () => {
             const openProjects = [
                 { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
@@ -266,7 +267,7 @@ describe('SpaceExplorer.vue', () => {
         });
     });
 
-    describe('Can be deleted', () => {
+    describe('can be deleted', () => {
         it('open workflows should not be deletable', async () => {
             const openProjects = [
                 { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
@@ -336,7 +337,7 @@ describe('SpaceExplorer.vue', () => {
         expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
 
-    describe('Mini mode', () => {
+    describe('mini mode', () => {
         it('should handle create workflow', async () => {
             const { wrapper, store, commitSpy } = doMount({ props: { mode: 'mini' } });
             store.state.spaces.activeSpace = {
@@ -438,7 +439,7 @@ describe('SpaceExplorer.vue', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('spaces/copyBetweenSpaces', { itemIds: ['1', '2'] });
         });
 
-        it('should only allow uploading to up when there is a selection and a connected hub session', async () => {
+        it('should only allow uploading to hub when there is a selection and a connected hub session', async () => {
             const { wrapper, store } = doMount({ props: { mode: 'mini' } });
             store.state.spaces.activeSpace = {
                 spaceId: 'local',
@@ -477,7 +478,7 @@ describe('SpaceExplorer.vue', () => {
             });
         });
 
-        it('should only allow uploading to up when there is a selection and a connected hub session', async () => {
+        it('should only allow downloading to local when there is a selection and a connected hub session', async () => {
             const { wrapper, store } = doMount({ props: { mode: 'mini' } });
             store.state.spaces.activeSpace = {
                 spaceId: 'local',
@@ -544,7 +545,7 @@ describe('SpaceExplorer.vue', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/renameItem', { itemId, newName });
     });
 
-    describe('Move items', () => {
+    describe('move items', () => {
         it('should move items', async () => {
             getNameCollisionStrategy.mockReturnValue('OVERWRITE');
             const { wrapper, dispatchSpy } = doMount();

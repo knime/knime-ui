@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
@@ -58,7 +59,7 @@ describe('WorkflowMetadata.vue', () => {
         };
     });
 
-    describe('Project', () => {
+    describe('project', () => {
         it.each([
             ['empty metadata object', { info: { containerType: 'project' } }],
             ['metadata object but no content', {
@@ -119,7 +120,7 @@ describe('WorkflowMetadata.vue', () => {
         });
     });
 
-    describe('Component', () => {
+    describe('component', () => {
         it('displays component metadata', () => {
             availablePortTypes = { mock: {} };
             doMount({

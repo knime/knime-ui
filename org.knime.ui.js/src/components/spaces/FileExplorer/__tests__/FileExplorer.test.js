@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
@@ -117,7 +118,7 @@ describe('FileExplorer.vue', () => {
         expect(wrapper.find('tbody').classes()).toContain('mini');
     });
 
-    describe('Selection', () => {
+    describe('selection', () => {
         it('should select items and emit selected ones', async () => {
             const { wrapper } = doMount();
             await wrapper.findAll('.file-explorer-item').at(1).trigger('click');
@@ -135,7 +136,7 @@ describe('FileExplorer.vue', () => {
         });
     });
 
-    describe('Drag', () => {
+    describe('drag', () => {
         beforeEach(() => {
             document.querySelectorAll('[data-id="drag-ghost"]').forEach(el => {
                 el.parentNode.removeChild(el);
@@ -521,7 +522,7 @@ describe('FileExplorer.vue', () => {
             await input.vm.$emit('keyup', { key: 'Enter' });
 
             expect(wrapper.emitted('renameFile')).toBeTruthy();
-            expect(wrapper.emitted('renameFile')[0][0].newName).toEqual('invalid');
+            expect(wrapper.emitted('renameFile')[0][0].newName).toBe('invalid');
         });
 
         it('should automatically trim new name', async () => {
@@ -535,7 +536,7 @@ describe('FileExplorer.vue', () => {
             await input.vm.$emit('keyup', { key: 'Enter' });
 
             expect(wrapper.emitted('renameFile')).toBeTruthy();
-            expect(wrapper.emitted('renameFile')[0][0].newName).toEqual('New Folder name');
+            expect(wrapper.emitted('renameFile')[0][0].newName).toBe('New Folder name');
         });
 
         it('should not save empty names', async () => {
@@ -561,7 +562,7 @@ describe('FileExplorer.vue', () => {
             await wrapper.setData({ renameValue: newName });
             await input.vm.$emit('keyup', { key: 'Esc' });
 
-            expect(wrapper.vm.activeRenameId).toBe(null);
+            expect(wrapper.vm.activeRenameId).toBeNull();
             expect(wrapper.vm.renameValue).toBe('');
         });
     });

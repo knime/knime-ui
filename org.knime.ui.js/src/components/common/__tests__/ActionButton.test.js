@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { mount, shallowMount } from '@vue/test-utils';
 
 import ActionButton from '../ActionButton.vue';

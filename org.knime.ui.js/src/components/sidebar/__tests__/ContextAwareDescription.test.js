@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';

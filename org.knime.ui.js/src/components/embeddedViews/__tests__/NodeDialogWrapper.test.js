@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 

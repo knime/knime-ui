@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { mockVuexStore } from '@/test/test-utils';
 import { mount } from '@vue/test-utils';
 
@@ -90,7 +91,7 @@ describe('SpaceSelectionPage.vue', () => {
         expect(wrapper.findAll('.space-provider').length).toBe(1);
     });
 
-    it.only('should handle login for spaces that require authentication', async () => {
+    it('should handle login for spaces that require authentication', async () => {
         const { wrapper, dispatchSpy } = doMount({
             mockProvidersResponse: {
                 hub1: {
@@ -208,12 +209,12 @@ describe('SpaceSelectionPage.vue', () => {
 
         wrapper.findComponent(SpaceCard).vm.$emit('click', dummySpace);
 
-        expect($store.state.spaces.activeSpaceProvider.id).toEqual('hub1');
+        expect($store.state.spaces.activeSpaceProvider.id).toBe('hub1');
         expect($store.state.spaces.activeSpace.spaceId).toEqual(dummySpace.id);
 
         // remember current state
         expect($store.state.spaces.spaceBrowser.spaceId).toEqual(dummySpace.id);
-        expect($store.state.spaces.spaceBrowser.spaceProviderId).toEqual('hub1');
+        expect($store.state.spaces.spaceBrowser.spaceProviderId).toBe('hub1');
 
         await new Promise(r => setTimeout(r, 0));
         expect($router.push).toHaveBeenCalledWith({ name: APP_ROUTES.SpaceBrowsingPage });

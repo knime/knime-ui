@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import PortViewLoader from '@/components/embeddedViews/PortViewLoader.vue';
@@ -42,7 +43,7 @@ describe('PortViewTabOutput.vue', () => {
         }
     });
 
-    describe('Node problems', () => {
+    describe('node problems', () => {
         it('validates that output port are present', () => {
             const wrapper = doShallowMount({
                 selectedNode: { ...dummyNode, outPorts: [] }
@@ -86,7 +87,7 @@ describe('PortViewTabOutput.vue', () => {
         });
     });
 
-    describe('Port problems', () => {
+    describe('port problems', () => {
         it('validates that selected port is supported', () => {
             const selectedNode = {
                 ...dummyNode,

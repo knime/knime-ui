@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
@@ -321,7 +322,7 @@ describe('NodeTemplate', () => {
 
             wrapper.trigger('dragend', { dataTransfer: { dropEffect: '' } });
 
-            expect(node.attributes().style).toBe(undefined);
+            expect(node.attributes().style).toBeUndefined();
         });
 
         it('closes description panel when dragging starts', () => {

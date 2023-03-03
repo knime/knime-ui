@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
@@ -15,7 +16,7 @@ describe('SpaceExplorerActions.vue', () => {
         return { wrapper };
     };
 
-    describe('Normal mode', () => {
+    describe('normal mode', () => {
         it('should render actions for local space', () => {
             const { wrapper } = doMount({
                 props: {
@@ -85,7 +86,7 @@ describe('SpaceExplorerActions.vue', () => {
         });
     });
 
-    describe('Mini mode', () => {
+    describe('mini mode', () => {
         it('should render actions for local space', () => {
             const { wrapper } = doMount({
                 props: {
