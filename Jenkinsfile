@@ -14,12 +14,12 @@ properties([
 ])
 
 try {
-    node('maven && java17 && xlarge') {
+    node('maven && java17 && large') {
         knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui')
-        
+
         junit '**/test-results/junit.xml'
         // knimetools.processAuditResults()
-        
+
         stage('Sonarqube analysis') {
             withCredentials([usernamePassword(credentialsId: 'ARTIFACTORY_CREDENTIALS', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_LOGIN')]) {
                 withSonarQubeEnv('Sonarcloud') {
