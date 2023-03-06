@@ -69,9 +69,6 @@ export default {
             searchQuery: ''
         };
     },
-    mounted() {
-        this.$refs.search?.focus();
-    },
     computed: {
         ...mapState('application', ['availablePortTypes', 'hasNodeRecommendationsEnabled']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
@@ -113,9 +110,12 @@ export default {
             }
         },
         searchQuery() {
-            // TODO: delay/thorttle this, look into NodeRepo
+            // TODO: delay/throttle this, look into NodeRepo
             this.fetchSearchResults();
         }
+    },
+    mounted() {
+        this.$refs.search?.focus();
     },
     methods: {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
@@ -139,7 +139,7 @@ export default {
         async fetchSearchResults() {
             if (this.searchQuery === '') {
                 this.searchResult = [];
-                // TODO: do we need to refetch recommended ones? What if we searched before enabling the wf coach
+                // TODO: do we need to re-fetch recommended ones? What if we searched before enabling the wf coach
                 return;
             }
             const results = await searchNodes({
@@ -149,7 +149,7 @@ export default {
                 nodeOffset: 0,
                 nodeLimit: NODE_SEARCH_LIMIT,
                 fullTemplateInfo: true,
-                portTypeId: this.port.typeId, // TODO: update when available
+                portTypeId: this.port.typeId // TODO: update when available
             });
             this.searchResult = results.nodes.map(toNodeWithFullPorts(this.availablePortTypes));
         },
@@ -179,10 +179,10 @@ export default {
             this.$emit('menuClose');
         },
         onKeyDown(key) {
-            const getIndex = (element) => parseInt(element.getAttribute('data-index'), 10);
+            const getIndex = (element) => parseInt(element.dataset.index, 10);
             const activeNodeItem = this.$refs.nodes?.find(x => x === document.activeElement);
             const itemsHaveFocus = Boolean(activeNodeItem);
-            // we need to sort the nodes because refs are NOT guaranteed to be in the correct display order!
+            // NOTE: we need to sort the nodes because refs are NOT guaranteed to be in the correct display order!
             // TODO: we also might use DOM methods to fetch them in the correct order?!
             const nodes = [...this.$refs.nodes].sort((a, b) => getIndex(a) - getIndex(b));
             const activeItemIndex = activeNodeItem ? getIndex(activeNodeItem) : -1;
@@ -292,7 +292,7 @@ export default {
               <div
                 ref="nodes"
                 class="node"
-                :class="[ index === 0 ? 'first' : '']"
+                :class="{ first: index === 0 }"
                 tabindex="-1"
                 :data-index="index"
                 @keydown.enter.stop.prevent="addNode(node, $event)"
