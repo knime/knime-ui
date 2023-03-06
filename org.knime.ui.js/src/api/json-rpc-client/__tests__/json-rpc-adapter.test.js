@@ -1,9 +1,9 @@
-import { expect, describe, beforeEach, it } from 'vitest';
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { rpc } from '../json-rpc-adapter';
 
 describe('JSON-RPC adapter', () => {
     beforeEach(() => {
-        window.jsonrpc = jest.fn().mockReturnValue({
+        window.jsonrpc = vi.fn().mockReturnValue({
             jsonrpc: '2.0',
             result: 'dummy result',
             id: 0
@@ -22,7 +22,7 @@ describe('JSON-RPC adapter', () => {
     });
 
     it('handles serialized result', async () => {
-        window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
+        window.jsonrpc = vi.fn().mockReturnValue(JSON.stringify({
             jsonrpc: '2.0',
             result: 'dummy result',
             id: 0
