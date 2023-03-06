@@ -1,18 +1,19 @@
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex';
-import { getNodeRecommendations, openWorkflowCoachPreferencePage, searchNodes } from '@api';
+import { mapGetters, mapState } from 'vuex';
+import { openWorkflowCoachPreferencePage } from '@api';
 
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
-import { toNodeWithFullPorts } from '@/util/portDataMapper';
-import { checkPortCompatibility } from '@/util/compatibleConnections';
-import { portPositions } from '@/util/portShift';
 import SearchBar from '@/components/common/SearchBar.vue';
 
-const MAX_NODES = 12;
+import { checkPortCompatibility } from '@/util/compatibleConnections';
+import { portPositions } from '@/util/portShift';
+
+import { debounce } from 'lodash';
+
 const NODES_PER_ROW = 3;
-const NODE_SEARCH_LIMIT = 100;
+const SEARCH_COOLDOWN = 150; // ms
 
 const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) => {
     const targetPortIndex = targetPorts.findIndex(toPort => checkPortCompatibility({
@@ -62,18 +63,21 @@ export default {
         }
     },
     emits: ['menuClose'],
-    data() {
-        return {
-            recommendedNodes: [],
-            searchResult: [],
-            searchQuery: ''
-        };
-    },
     computed: {
-        ...mapState('application', ['availablePortTypes', 'hasNodeRecommendationsEnabled']),
-        ...mapState('workflow', { workflow: 'activeWorkflow' }),
+        ...mapState('application', ['hasNodeRecommendationsEnabled']),
         ...mapState('canvas', ['zoomFactor']),
+        ...mapState('quickAddNodes', { searchResult: 'topNodes', recommendedNodes: 'recommendedNodes' }),
         ...mapGetters('workflow', ['isWritable']),
+
+        searchQuery: {
+            get() {
+                return this.$store.state.quickAddNodes.query;
+            },
+            set: debounce(function (value) {
+                this.$store.dispatch('quickAddNodes/updateQuery', value); // eslint-disable-line no-invalid-this
+            },
+            SEARCH_COOLDOWN, { leading: true, trailing: true })
+        },
         canvasPosition() {
             let pos = { ...this.position };
             const halfPort = this.$shapes.portSize / 2;
@@ -88,13 +92,13 @@ export default {
             return this.$shapes.addNodeGhostSize * this.zoomFactor;
         },
         hasResults() {
-            return this.searchResult.length > 0 || this.recommendedNodes.length > 0;
+            return this.searchResult?.length > 0 || this.recommendedNodes?.length > 0;
         },
         nodes() {
-            if (this.searchResult.length > 0) {
+            if (this.searchResult?.length > 0) {
                 return this.searchResult;
             }
-            if (this.recommendedNodes.length > 0) {
+            if (this.recommendedNodes?.length > 0) {
                 return this.recommendedNodes;
             }
             return [];
@@ -105,68 +109,41 @@ export default {
             immediate: true,
             handler() {
                 if (this.hasNodeRecommendationsEnabled) {
-                    this.fetchRecommendedNodes();
+                    this.fetchNodeRecommendations();
                 }
             }
-        },
-        searchQuery() {
-            // TODO: delay/throttle this, look into NodeRepo
-            this.fetchSearchResults();
         }
     },
     mounted() {
         this.$refs.search?.focus();
     },
+    beforeUnmount() {
+        this.searchQuery = '';
+    },
     methods: {
-        ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
         openWorkflowCoachPreferencePage,
-        async fetchRecommendedNodes() {
-            const workflowId = this.workflow.info.containerId;
-            const projectId = this.workflow.projectId;
 
-            // call api
-            const recommendedNodesResult = await getNodeRecommendations({
-                workflowId,
-                projectId,
+        async fetchNodeRecommendations() {
+            await this.$store.dispatch('quickAddNodes/getNodeRecommendations', {
                 nodeId: this.nodeId,
-                portIdx: this.port.index,
-                nodesLimit: MAX_NODES,
-                fullTemplateInfo: true
+                portIdx: this.port.index
             });
-
-            this.recommendedNodes = recommendedNodesResult.map(toNodeWithFullPorts(this.availablePortTypes));
-        },
-        async fetchSearchResults() {
-            if (this.searchQuery === '') {
-                this.searchResult = [];
-                // TODO: do we need to re-fetch recommended ones? What if we searched before enabling the wf coach
-                return;
-            }
-            const results = await searchNodes({
-                query: this.searchQuery,
-                tags: null,
-                allTagsMatch: true,
-                nodeOffset: 0,
-                nodeLimit: NODE_SEARCH_LIMIT,
-                fullTemplateInfo: true,
-                portTypeId: this.port.typeId // TODO: update when available
-            });
-            this.searchResult = results.nodes.map(toNodeWithFullPorts(this.availablePortTypes));
         },
         async addNode({ nodeFactory, inPorts }) {
             if (!this.isWritable) {
                 return; // end here
             }
 
+            const { availablePortTypes } = this.$store.state.application;
             const [offsetX, offsetY] = calculatePortOffset({
                 targetPorts: inPorts,
                 sourcePort: this.port,
-                availablePortTypes: this.availablePortTypes
+                availablePortTypes
             });
 
             // add node
             const { canvasPosition: { x, y } } = this;
-            await this.addNodeToWorkflow({
+            await this.$store.dispatch('workflow/addNode', {
                 position: {
                     x: x - offsetX,
                     y: y - offsetY

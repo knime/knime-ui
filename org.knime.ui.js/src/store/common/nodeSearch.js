@@ -8,19 +8,19 @@ import { toNodeWithFullPorts } from '@/util/portDataMapper';
 const nodeSearchPageSize = 100;
 
 export const state = {
-    /* search results */
-    selectedTags: [],
-
     query: '',
+    selectedTags: [],
 
     searchScrollPosition: 0,
     isShowingBottomNodes: false,
 
+    // nodes always visible
     topNodes: null,
     totalNumTopNodes: 0,
     topNodeSearchPage: 0,
     topNodesTags: [],
 
+    // nodes that might be hidden if a nodeCollection is active (see application state for that)
     bottomNodes: null,
     totalNumBottomNodes: 0,
     bottomNodeSearchPage: 0,
@@ -131,6 +131,7 @@ export const actions = {
             nodeOffset: currentPage() * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
             fullTemplateInfo: true,
+            // TODO: rename if backend is merged: nodeSubset: 'in_collection'
             additionalNodes: bottom
         });
 

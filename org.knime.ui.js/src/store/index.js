@@ -8,6 +8,7 @@ import * as selection from './selection';
 import * as workflow from './workflow';
 import * as api from './uiExtApi';
 import * as spaces from './spaces';
+import * as quickAddNodes from './quickAddNodes';
 
 // eslint-disable-next-line arrow-body-style
 export const initStore = () => {
@@ -20,6 +21,7 @@ export const initStore = () => {
             selection: { namespaced: true, ...selection },
             workflow: { namespaced: true, ...workflow },
             spaces: { namespaced: true, ...spaces },
+            quickAddNodes: { namespaced: true, ...quickAddNodes },
             // TODO: NXT-1217 Remove this unnecessary store once the issue in the ticket
             // can be solved in a better way
             api: { namespaced: true, ...api }
