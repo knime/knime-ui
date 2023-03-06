@@ -54,7 +54,7 @@ export default {
             }
 
             let { outPorts, kind } = this.node;
-       
+
             const isMetanode = kind === 'metanode';
             const ports = (isMetanode
                 // Metanodes don't have Mickey Mouse ears, so all ports are actual output ports.
@@ -63,7 +63,7 @@ export default {
                 // and later reposition it to the end
                 : outPorts.slice(1))
                 .map(portToPortTab);
-              
+
             return []
                 .concat(
                     this.hasViewTab && this.$features.shouldDisplayEmbeddedViews()
@@ -88,7 +88,7 @@ export default {
     :model-value="modelValue"
     :disabled="disabled"
     :possible-values="possibleTabValues"
-    @update:value="$emit('update:modelValue', $event)"
+    @update:model-value="$emit('update:modelValue', $event)"
   />
 </template>
 

@@ -20,7 +20,7 @@ describe('PortTabs.vue', () => {
             mocks: { $features: mockFeatureFlags }
         }
     });
-    
+
     afterEach(() => {
         jest.clearAllMocks();
     });
@@ -30,7 +30,7 @@ describe('PortTabs.vue', () => {
             modelValue: '5',
             node: { outPorts: [] }
         });
-        
+
         expect(wrapper.findComponent(TabBar).props('modelValue')).toBe('5');
     });
 
@@ -40,7 +40,7 @@ describe('PortTabs.vue', () => {
             node: { outPorts: [] }
         });
 
-        wrapper.findComponent(TabBar).vm.$emit('update:value', 1);
+        wrapper.findComponent(TabBar).vm.$emit('update:modelValue', 1);
         await Vue.nextTick();
         expect(wrapper.emitted('update:modelValue')[0]).toStrictEqual([1]);
     });
@@ -61,17 +61,17 @@ describe('PortTabs.vue', () => {
                 ]
             }
         });
-        
+
         expect(wrapper.findComponent(TabBar).props('possibleValues')).toStrictEqual([
             { value: '0', label: '0: flowVariable port', icon: 'portIcon-fv' },
             { value: '1', label: '1: triangle port', icon: 'portIcon-1' }
         ]);
         expect(portIcon).toHaveBeenCalledWith(expect.anything(), portIconSize);
     });
-    
+
     it('displays view tab as the first tab', () => {
         portIcon.mockReturnValue('portIcon');
-            
+
         const wrapper = doShallowMount({
             hasViewTab: true,
             node: {
@@ -87,7 +87,7 @@ describe('PortTabs.vue', () => {
                 ]
             }
         });
-        
+
         expect(wrapper.findComponent(TabBar).props().possibleValues).toStrictEqual([
             { value: 'view', label: 'View', icon: expect.anything() },
             { value: '1', label: '1: triangle port', icon: expect.anything() },
@@ -122,7 +122,7 @@ describe('PortTabs.vue', () => {
 
     it('should not display view tab when feature flag is set to false', () => {
         mockFeatureFlags.shouldDisplayEmbeddedViews.mockImplementation(() => false);
-        
+
         const wrapper = doShallowMount({
             hasViewTab: true,
             node: {
