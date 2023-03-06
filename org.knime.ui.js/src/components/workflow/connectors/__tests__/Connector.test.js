@@ -16,6 +16,8 @@ import * as $colors from '@/style/colors.mjs';
 import * as portShift from '@/util/portShift';
 import connectorPath from '@/util/connectorPath';
 
+import { KnimeMIME } from '@/mixins/dropNode';
+
 import Connector from '../Connector.vue';
 
 vi.mock('@/util/connectorPath', () => ({ default: vi.fn() }));
@@ -87,6 +89,9 @@ describe('Connector.vue', () => {
                     isDragging() {
                         return false;
                     }
+                },
+                actions: {
+                    insertNode: jest.fn()
                 }
             },
             selection: {
@@ -629,6 +634,50 @@ describe('Connector.vue', () => {
             await Vue.nextTick();
 
             expect(wrapper.vm.suggestDelete).toBeTruthy();
+        });
+    });
+
+    describe('inserts node when drag and dropped', () => {
+        const triggerDragEvent = (element, type, dataTransfer = {}) => {
+            const event = new CustomEvent(type);
+            Object.assign(event, { dataTransfer });
+            element.dispatchEvent(event);
+            return event;
+        };
+
+        it('Check if dragged object is compatible', async () => {
+            const wrapper = doShallowMount({ storeConfig: getStoreConfig() });
+            const paths = wrapper.findAll('path');
+
+            triggerDragEvent(paths.at(0).element, 'dragenter', { types: [KnimeMIME] });
+            await Vue.nextTick();
+            expect(paths.at(1).classes()).toContain('isDraggedOver');
+
+            triggerDragEvent(paths.at(0).element, 'dragleave');
+            await Vue.nextTick();
+            expect(paths.at(1).classes()).not.toContain('isDraggedOver');
+        });
+
+        it('Check if dragged object is compatible', async () => {
+            const wrapper = doShallowMount({ storeConfig: getStoreConfig() });
+            const paths = wrapper.findAll('path');
+
+            triggerDragEvent(paths.at(0).element, 'dragenter', { types: ['unsupportedType'] });
+            await Vue.nextTick();
+            expect(paths.at(1).classes()).not.toContain('isDraggedOver');
+        });
+
+        it('inserts node on drop', async () => {
+            const storeConfig = getStoreConfig();
+            const wrapper = doShallowMount({ storeConfig });
+            const paths = wrapper.findAll('path');
+
+            triggerDragEvent(paths.at(0).element, 'drop', { getData: () => 'test' });
+            await Vue.nextTick();
+
+            expect(storeConfig.workflow.actions.insertNode).toHaveBeenCalledWith(
+                expect.anything(), { nodeFactory: 'test', connectionId: 'root:2_2' }
+            );
         });
     });
 });

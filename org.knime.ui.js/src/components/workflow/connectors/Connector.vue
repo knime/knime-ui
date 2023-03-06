@@ -5,6 +5,8 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { portBar, connectorPosition } from '@/mixins';
 import connectorPath from '@/util/connectorPath';
 
+import { KnimeMIME } from '@/mixins/dropNode';
+
 /**
  * A curved line, connecting one node's output with another node's input port.
  * Must be embedded in an `<svg>` element.
@@ -114,6 +116,7 @@ export default {
     methods: {
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
+        ...mapActions('workflow', ['insertNode']),
 
         onContextMenu(event) {
             // right click should work same as left click
@@ -153,13 +156,15 @@ export default {
             // this.suggestDelete = 'locked';
         },
         onConnectorDragEnter(dragEvent) {
-            this.isDraggedOver = true;
+            if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
+                this.isDraggedOver = true;
+            }
         },
         onConnectorDragLeave() {
             this.isDraggedOver = false;
         },
         onConnectorDragDrop(dragEvent) {
-            window.alert(`Dropping ${dragEvent.dataTransfer.getData('text/plain')} onto ${this.id}`);
+            this.insertNode({ connectionId: this.id, nodeFactory: dragEvent.dataTransfer.getData(KnimeMIME) });
             this.isDraggedOver = false;
         }
     }

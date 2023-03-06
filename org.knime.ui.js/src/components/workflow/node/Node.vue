@@ -17,6 +17,7 @@ import NodeState from './NodeState.vue';
 import NodeSelectionPlane from './NodeSelectionPlane.vue';
 import NodeHoverSizeProvider from './NodeHoverSizeProvider.vue';
 
+import { KnimeMIME } from '@/mixins/dropNode';
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
  * Must be embedded in an `<svg>` element.
@@ -239,7 +240,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['openNodeConfiguration']),
+        ...mapActions('workflow', ['openNodeConfiguration', 'replaceNode']),
         ...mapActions('application', ['switchWorkflow']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
 
@@ -313,7 +314,9 @@ export default {
         },
 
         onTorsoDragEnter(dragEvent) {
-            this.isDraggedOver = true;
+            if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
+                this.isDraggedOver = true;
+            }
         },
 
         onTorsoDragLeave() {
@@ -321,7 +324,7 @@ export default {
         },
 
         onTorsoDragDrop(dragEvent) {
-            window.alert(`Dropping ${dragEvent.dataTransfer.getData('text/plain')} onto ${this.id}`);
+            this.replaceNode({ nodeId: this.id, nodeFactory: dragEvent.dataTransfer.getData(KnimeMIME) });
             this.isDraggedOver = false;
         },
 
