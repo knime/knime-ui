@@ -1,5 +1,4 @@
 import rpc from './json-rpc-adapter';
-import port from '@/components/common/Port.vue';
 
 /**
  * Get repository nodes grouped by tags via RPC.
