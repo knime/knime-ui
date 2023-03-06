@@ -78,8 +78,8 @@ describe('SpaceExplorer.vue', () => {
             },
             nodeRepository: {
                 actions: {
-                    getNodeTemplate: jest.fn().mockReturnValue(() => (
-                        { id: 'test.id', name: 'test.test', type: 'type', inPorts: [], outPorts: [], icon: 'icon' }))
+                    getNodeTemplate: jest.fn().mockReturnValue(
+                        { id: 'test.id', name: 'test.test', type: 'type', inPorts: [], outPorts: [], icon: 'icon' })
                 }
             }
         });

@@ -123,7 +123,7 @@ const getNodeDescriptionResponse = {
     outPorts: []
 };
 
-const getNodeTemplatesResponse = {'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory': {
+const getNodeTemplatesResponse = { 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory': {
     name: 'H2O to Table',
     id: 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory',
     type: 'Manipulator',
@@ -144,7 +144,7 @@ const getNodeTemplatesResponse = {'org.knime.ext.h2o.nodes.frametotable.H2OFrame
     nodeFactory: {
         className: 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory'
     }
-}};
+} };
 
 describe('Node Repository store', () => {
     const createStore = async () => {
@@ -851,7 +851,7 @@ describe('Node Repository store', () => {
         });
 
         it('fetches and caches nodeTemplates based on id', async () => {
-            const { store, getNodeTemplatesMock } = await createStore();
+            const { store } = await createStore();
             const nodeTemplate = await store.dispatch('nodeRepository/getNodeTemplate', 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory');
 
             expect(nodeTemplate).toEqual(getNodeTemplatesResponse['org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory']);

@@ -332,7 +332,7 @@ export const actions = {
         await dispatch('clearCategoryResults');
         await dispatch('getAllNodes', { append: false });
     },
-    async getNodeTemplate ({ state }, nodeTemplateId) {
+    async getNodeTemplate({ state }, nodeTemplateId) {
         if (state.nodeTemplates?.nodeTemplateId) {
             return state.nodeTemplates?.nodeTemplateId;
         } else {
@@ -371,5 +371,5 @@ export const getters = {
             ...(state.isShowingBottomNodes ? state.bottomNodesTags : [])
         ];
         return [...new Set(allTags)];
-    } 
+    }
 };
