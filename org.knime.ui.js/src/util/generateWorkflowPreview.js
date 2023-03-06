@@ -316,11 +316,8 @@ export const generateWorkflowPreview = async (svgElement, isEmpty) => {
     // remove all hover areas elements which are only used for interactivity
     removeElements(svgClone.querySelectorAll('.hover-area'));
 
-    // remove all vue-portals
-    removeElements(svgClone.querySelectorAll('DIV.v-portal'));
-
     // remove all portal-targets
-    removeElements(svgClone.querySelectorAll('.vue-portal-target'));
+    removeElements(svgClone.querySelectorAll('[data-portal-target]'));
 
     // remove dynamic port icons
     removeElements(svgClone.querySelectorAll('.add-port'));

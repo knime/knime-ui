@@ -26,7 +26,7 @@ describe('generateWorkflowPreview', () => {
     const setup = ({ workflowSheetDimensions = null } = {}) => {
         const svgNS = 'http://www.w3.org/2000/svg';
         const svg = document.createElementNS(svgNS, 'svg');
-        
+
         const defs = document.createElementNS(svgNS, 'defs');
         const styleTag = document.createElement('style');
         styleTag.appendChild(
@@ -34,10 +34,10 @@ describe('generateWorkflowPreview', () => {
         );
         defs.appendChild(styleTag);
         svg.appendChild(defs);
-        
+
         const workflowSheet = document.createElementNS(svgNS, 'rect');
         workflowSheet.classList.add('workflow-sheet');
-        
+
         if (workflowSheetDimensions) {
             workflowSheet.setAttribute('x', workflowSheetDimensions.x || 0);
             workflowSheet.setAttribute('y', workflowSheetDimensions.y || 0);
@@ -53,11 +53,8 @@ describe('generateWorkflowPreview', () => {
         svg.appendChild(hoverArea);
 
         // add mock portal elements
-        const vPortal = document.createElement('div');
         const vPortalTarget = document.createElement('div');
-        vPortal.classList.add('v-portal');
-        vPortalTarget.classList.add('vue-portal-target');
-        svg.appendChild(vPortal);
+        vPortalTarget.dataset.portalTarget = 'mock-portal';
         svg.appendChild(vPortalTarget);
 
         // add dynamic port icon
@@ -68,7 +65,7 @@ describe('generateWorkflowPreview', () => {
         // add empty g element
         const emptyG = document.createElementNS(svgNS, 'g');
         svg.appendChild(emptyG);
-        
+
         // add invisible element
         const hiddenG = document.createElementNS(svgNS, 'rect');
         hiddenG.style.display = 'none';
@@ -113,7 +110,7 @@ describe('generateWorkflowPreview', () => {
             height: 200
         };
         const { svg } = setup({ workflowSheetDimensions });
-        
+
         const output = await generateWorkflowPreview(svg);
 
         const outputEl = createElementFromOutput(output);
@@ -122,7 +119,7 @@ describe('generateWorkflowPreview', () => {
 
     it('should remove hover areas', async () => {
         const { svg } = setup();
-        
+
         const output = await generateWorkflowPreview(svg);
         const outputEl = createElementFromOutput(output);
 
@@ -131,12 +128,11 @@ describe('generateWorkflowPreview', () => {
 
     it('should remove portal elements', async () => {
         const { svg } = setup();
-        
+
         const output = await generateWorkflowPreview(svg);
         const outputEl = createElementFromOutput(output);
 
-        expect(outputEl.querySelectorAll('DIV.v-portal').length).toBe(0);
-        expect(outputEl.querySelectorAll('.vue-portal-target').length).toBe(0);
+        expect(outputEl.querySelectorAll('[data-portal-target]').length).toBe(0);
     });
 
     it('should remove dynamic port icons', async () => {
@@ -178,13 +174,13 @@ describe('generateWorkflowPreview', () => {
         const { svg } = setup();
         jest.spyOn(Storage.prototype, 'setItem');
         jest.spyOn(Storage.prototype, 'getItem');
-        
+
         await generateWorkflowPreview(svg);
-        
+
         expect(localStorage.setItem).toHaveBeenCalledTimes(1);
-        
+
         await generateWorkflowPreview(svg);
-        
+
         expect(localStorage.getItem).toHaveBeenCalled();
         expect(localStorage.setItem).toHaveBeenCalledTimes(1);
     });

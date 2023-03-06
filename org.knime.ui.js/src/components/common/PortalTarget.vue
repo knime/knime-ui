@@ -20,6 +20,7 @@ export default defineComponent({
   <Component
     :is="tag"
     :id="name"
+    :data-portal-target="name"
   />
 </template>
 
