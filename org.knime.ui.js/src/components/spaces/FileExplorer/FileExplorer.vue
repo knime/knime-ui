@@ -367,13 +367,15 @@ export default {
         onDrag(event, item) {
             const onUpdate = (isAboveCanvas, nodeTemplate) => {
                 this.nodeTemplate = nodeTemplate;
-                const nodePreview = this.$refs.nodePreview.$el;
+                if (this.nodeTemplate) {
+                    const nodePreview = this.$refs.nodePreview.$el;
 
-                this.replaceGhostPreview({
-                    shouldUseCustomPreview: isAboveCanvas,
-                    ghostPreviewEl: nodePreview,
-                    opts: { leftOffset: 35, topOffset: 35 }
-                });
+                    this.replaceGhostPreview({
+                        shouldUseCustomPreview: isAboveCanvas,
+                        ghostPreviewEl: nodePreview,
+                        opts: { leftOffset: 35, topOffset: 35 }
+                    });
+                }
             };
             this.$emit('drag', { event, item, onUpdate });
         }
