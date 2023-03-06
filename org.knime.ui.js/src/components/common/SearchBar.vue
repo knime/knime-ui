@@ -25,13 +25,13 @@ export default {
         }
     },
     emits: ['clear', 'update:modelValue'],
+    expose: ['focus'],
     methods: {
         clearSearch() {
             this.$emit('clear');
             this.$emit('update:modelValue', '');
             this.$refs.searchInput.focus();
         },
-        // publicly accessible
         focus() {
             this.$refs.searchInput.focus();
         }

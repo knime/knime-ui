@@ -68,6 +68,7 @@ export default {
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('quickAddNodes', { searchResult: 'topNodes', recommendedNodes: 'recommendedNodes' }),
         ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('quickAddNodes', ['searchIsActive']),
 
         searchQuery: {
             get() {
@@ -95,13 +96,10 @@ export default {
             return this.searchResult?.length > 0 || this.recommendedNodes?.length > 0;
         },
         nodes() {
-            if (this.searchResult?.length > 0) {
+            if (this.searchIsActive) {
                 return this.searchResult;
             }
-            if (this.recommendedNodes?.length > 0) {
-                return this.recommendedNodes;
-            }
-            return [];
+            return this.recommendedNodes;
         }
     },
     watch: {
@@ -118,6 +116,7 @@ export default {
         this.$refs.search?.focus();
     },
     beforeUnmount() {
+        // reset query on close (in any case!)
         this.searchQuery = '';
     },
     methods: {
@@ -156,18 +155,22 @@ export default {
             this.$emit('menuClose');
         },
         onKeyDown(key) {
+            // no navigation for empty nodes
+            if (!this.$refs.nodes) {
+                return;
+            }
             const getIndex = (element) => parseInt(element.dataset.index, 10);
-            const activeNodeItem = this.$refs.nodes?.find(x => x === document.activeElement);
+            const activeNodeItem = this.$refs.nodes.find(x => x === document.activeElement);
             const itemsHaveFocus = Boolean(activeNodeItem);
             // NOTE: we need to sort the nodes because refs are NOT guaranteed to be in the correct display order!
             // TODO: we also might use DOM methods to fetch them in the correct order?!
             const nodes = [...this.$refs.nodes].sort((a, b) => getIndex(a) - getIndex(b));
             const activeItemIndex = activeNodeItem ? getIndex(activeNodeItem) : -1;
 
-            // switch from search to items
+            // actions in the search bar
             if (!itemsHaveFocus) {
                 if (key === 'down') {
-                    nodes[0].focus();
+                    nodes[0]?.focus();
                 }
                 if (key === 'enter') {
                     if (this.nodes.length > 0) {
@@ -183,28 +186,28 @@ export default {
                 return;
             }
 
+            const focusNext = (indexOffset) => {
+                nodes[activeItemIndex + indexOffset]?.focus();
+            };
+
             // items navigation
             if (key === 'up') {
-                const nextIndex = activeItemIndex - NODES_PER_ROW;
-                nodes[nextIndex]?.focus();
+                focusNext(-NODES_PER_ROW);
                 return;
             }
 
             if (key === 'down') {
-                const nextIndex = activeItemIndex + NODES_PER_ROW;
-                nodes[nextIndex]?.focus();
+                focusNext(NODES_PER_ROW);
                 return;
             }
 
             if (key === 'left') {
-                const nextIndex = activeItemIndex - 1;
-                nodes[nextIndex]?.focus();
+                focusNext(-1);
                 return;
             }
 
             if (key === 'right') {
-                const nextIndex = activeItemIndex + 1;
-                nodes[nextIndex]?.focus();
+                focusNext(+1);
             }
         }
     }
@@ -237,7 +240,7 @@ export default {
         <hr>
       </div>
       <div
-        v-if="!hasNodeRecommendationsEnabled && !hasResults"
+        v-if="!hasNodeRecommendationsEnabled && !searchIsActive"
         class="disabled-workflow-coach"
       >
         <h2>Workflow coach</h2>
@@ -289,7 +292,13 @@ export default {
         </div>
       </div>
       <span
-        v-else
+        v-if="searchIsActive && (!searchResult || searchResult.length === 0)"
+        class="placeholder"
+      >
+        No compatible node matching for:<br>{{ searchQuery }}
+      </span>
+      <span
+        v-if="!searchIsActive && (!recommendedNodes || recommendedNodes.length === 0)"
         class="placeholder"
       >
         The Workflow Coach cannot recommend any nodes to you yet.
@@ -379,6 +388,8 @@ export default {
 
   & .placeholder {
     flex: 1;
+    flex-direction: column;
+    justify-content: center;
     font-family: "Roboto Condensed", sans-serif;
     font-style: italic;
     font-size: 16px;
