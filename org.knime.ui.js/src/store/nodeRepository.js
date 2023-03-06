@@ -331,6 +331,19 @@ export const actions = {
         // Always clear the category results
         await dispatch('clearCategoryResults');
         await dispatch('getAllNodes', { append: false });
+    },
+    async getNodeTemplate ({ state }, nodeTemplateId) {
+        if (state.nodeTemplates?.nodeTemplateId) {
+            return state.nodeTemplates?.nodeTemplateId;
+        } else {
+            const nodeTemplates = await getNodeTemplates({
+                nodeTemplateIds: [nodeTemplateId]
+            });
+
+            // cache results
+            state.nodeTemplates[nodeTemplateId] = nodeTemplates[nodeTemplateId];
+            return nodeTemplates[nodeTemplateId];
+        }
     }
 };
 
@@ -358,18 +371,5 @@ export const getters = {
             ...(state.isShowingBottomNodes ? state.bottomNodesTags : [])
         ];
         return [...new Set(allTags)];
-    },
-    getNodeTemplate: (state) => async (nodeTemplateId) => {
-        if (state.nodeTemplates?.nodeTemplateId) {
-            return state.nodeTemplates?.nodeTemplateId;
-        } else {
-            const nodeTemplates = await getNodeTemplates({
-                nodeTemplateIds: [nodeTemplateId]
-            });
-
-            // cache results
-            state.nodeTemplates[nodeTemplateId] = nodeTemplates[nodeTemplateId];
-            return nodeTemplates[nodeTemplateId];
-        }
-    }
+    } 
 };

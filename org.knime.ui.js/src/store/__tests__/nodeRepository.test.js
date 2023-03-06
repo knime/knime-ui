@@ -123,6 +123,29 @@ const getNodeDescriptionResponse = {
     outPorts: []
 };
 
+const getNodeTemplatesResponse = {'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory': {
+    name: 'H2O to Table',
+    id: 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory',
+    type: 'Manipulator',
+    component: false,
+    icon: 'data:image/png;base64,xxx',
+    inPorts: [
+        {
+            optional: false,
+            typeId: 'org.knime.ext.h2o.ports.H2OFramePortObject'
+        }
+    ],
+    outPorts: [
+        {
+            optional: false,
+            typeId: 'org.knime.core.node.BufferedDataTable'
+        }
+    ],
+    nodeFactory: {
+        className: 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory'
+    }
+}};
+
 describe('Node Repository store', () => {
     const createStore = async () => {
         const availablePortTypes = {
@@ -143,6 +166,7 @@ describe('Node Repository store', () => {
         const searchNodesMock = jest.fn().mockReturnValue(searchNodesResponse);
         const getNodesGroupedByTagsMock = jest.fn().mockReturnValue(getNodesGroupedByTagsResponse);
         const getNodeDescriptionMock = jest.fn().mockReturnValue(getNodeDescriptionResponse);
+        const getNodeTemplatesMock = jest.fn().mockReturnValue(getNodeTemplatesResponse);
 
         // remove any caching on mocks
         jest.resetModules();
@@ -150,7 +174,8 @@ describe('Node Repository store', () => {
             __esModule: true,
             searchNodes: searchNodesMock,
             getNodesGroupedByTags: getNodesGroupedByTagsMock,
-            getNodeDescription: getNodeDescriptionMock
+            getNodeDescription: getNodeDescriptionMock,
+            getNodeTemplates: getNodeTemplatesMock
         }), { virtual: true });
 
         const store = mockVuexStore({
@@ -170,7 +195,8 @@ describe('Node Repository store', () => {
             store,
             searchNodesMock,
             getNodesGroupedByTagsMock,
-            getNodeDescriptionMock
+            getNodeDescriptionMock,
+            getNodeTemplatesMock
         };
     };
 
@@ -822,6 +848,14 @@ describe('Node Repository store', () => {
                 expect(store.state.nodeRepository.categoryPage).toEqual(0);
                 expect(store.state.nodeRepository.categoryScrollPosition).toEqual(0);
             });
+        });
+
+        it('fetches and caches nodeTemplates based on id', async () => {
+            const { store, getNodeTemplatesMock } = await createStore();
+            const nodeTemplate = await store.dispatch('nodeRepository/getNodeTemplate', 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory');
+
+            expect(nodeTemplate).toEqual(getNodeTemplatesResponse['org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory']);
+            expect(store.state.nodeRepository.nodeTemplates).toEqual(getNodeTemplatesResponse);
         });
     });
 });

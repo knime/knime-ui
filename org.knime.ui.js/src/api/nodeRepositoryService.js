@@ -103,9 +103,9 @@ export const getNodeRecommendations = async ({
 };
 
 /**
- * TODO
+ * Get node templates based on their ids.
  *
- * @param {Array} nodeTemplateIds - the node template ids for the templates to fetch.
+ * @param {Array} nodeTemplateIds - the node template ids for the templates to fetch
  * @returns {Object} the nodeTemplate results
  */
 export const getNodeTemplates = async ({

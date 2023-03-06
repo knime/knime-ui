@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import { getNameCollisionStrategy } from '@api';
 
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
@@ -50,7 +50,6 @@ export default {
 
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapGetters('nodeRepository', ['getNodeTemplate']),
         ...mapState('canvas', ['getScrollContainerElement']),
         ...mapState('application', ['openProjects', 'fileExtensionToNodeTemplateId']),
         ...mapState('spaces', {
@@ -157,6 +156,7 @@ export default {
     },
 
     methods: {
+        ...mapActions('nodeRepository', ['getNodeTemplate']),
         async fetchWorkflowGroupContent(itemId) {
             await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
         },
