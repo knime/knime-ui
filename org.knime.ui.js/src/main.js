@@ -5,6 +5,7 @@ import { silentLogger } from './plugins/logger';
 import { initStore } from './store';
 import { router } from './router';
 import { initPlugins } from './plugins';
+import { setupAPI } from './api/setup';
 
 import './assets/index.css';
 
@@ -15,18 +16,7 @@ silentLogger();
 // e.g: TableView, NodeDialog, PageBuilder
 window.Vue = Vue;
 
-if (window.EquoCommService) {
-    window.EquoCommService.on(
-        'org.knime.ui.java.jsonrpcNotification',
-        (jsonrpcNotification) => window.jsonrpcNotification(jsonrpcNotification),
-        // eslint-disable-next-line no-console
-        e => console.error(e)
-    );
-
-    if (!window.jsonrpc) {
-        window.jsonrpc = request => window.EquoCommService.send('org.knime.ui.java.jsonrpc', JSON.stringify(request));
-    }
-}
+setupAPI();
 
 // Create Vue app
 const app = Vue.createApp(KnimeUI);
