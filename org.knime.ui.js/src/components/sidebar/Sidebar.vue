@@ -9,6 +9,7 @@ import { TABS } from '@/store/panel';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
 import SidebarSpaceExplorer from '@/components/sidebar/SidebarSpaceExplorer.vue';
+import AnnotationsPanel from '@/components/workflow/annotations/AnnotationsPanel.vue';
 
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 import ContextAwareDescription from '@/components/sidebar/ContextAwareDescription.vue';
@@ -21,7 +22,8 @@ export default {
         PlusIcon,
         LeftCollapsiblePanel,
         NodeRepository,
-        NodeDialogWrapper
+        NodeDialogWrapper,
+        AnnotationsPanel
     },
     data() {
         return {
@@ -64,6 +66,13 @@ export default {
                     isActive: this.isTabActive(TABS.SPACE_EXPLORER),
                     isExpanded: this.expanded,
                     onClick: () => this.clickItem(TABS.SPACE_EXPLORER)
+                }, {
+                    title: 'Annotations',
+                    // Change icon
+                    icon: NodeCogIcon,
+                    isActive: this.isTabActive(TABS.ANNOTATIONS_PANEL),
+                    isExpanded: this.expanded,
+                    onClick: () => this.clickItem(TABS.ANNOTATIONS_PANEL)
                 }
             ].filter(Boolean);
         }
@@ -135,9 +144,15 @@ export default {
           v-show="isTabActive(TABS.NODE_DIALOG)"
           key="node-dialog"
         />
+        
         <SidebarSpaceExplorer
           v-show="isTabActive(TABS.SPACE_EXPLORER)"
           key="space-explorer"
+        />
+
+        <AnnotationsPanel
+          v-show="isTabActive(TABS.ANNOTATIONS_PANEL)"
+          key="annotations-panel"
         />
       </TransitionGroup>
     </LeftCollapsiblePanel>

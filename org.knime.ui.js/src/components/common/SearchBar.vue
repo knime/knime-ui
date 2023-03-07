@@ -1,6 +1,5 @@
 <script>
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
-import LensIcon from 'webapps-common/ui/assets/img/icons/lens.svg';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
@@ -11,8 +10,7 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 export default {
     components: {
         FunctionButton,
-        CloseIcon,
-        LensIcon
+        CloseIcon
     },
     props: {
         modelValue: {
@@ -45,8 +43,8 @@ export default {
     id="node-search"
     class="node-search"
   >
-    <div class="lens-icon">
-      <LensIcon />
+    <div class="searchbar-icon">
+      <slot name="icon" />
     </div>
     <input
       ref="searchInput"
@@ -76,18 +74,11 @@ export default {
   background-color: var(--knime-white);
   font-size: 17px;
 
-  & .lens-icon {
+  & .searchbar-icon {
     display: flex;
     padding: 6px;
     margin-left: 3px;
     pointer-events: none;
-
-    & svg {
-      vertical-align: top;
-      stroke: var(--theme-button-function-foreground-color);
-
-      @mixin svg-icon-size 18;
-    }
   }
 
   & .clear-search {

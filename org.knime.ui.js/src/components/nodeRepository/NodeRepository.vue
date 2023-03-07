@@ -2,6 +2,7 @@
 import { mapState, mapGetters, mapMutations } from 'vuex';
 import { debounce } from 'lodash';
 
+import LensIcon from 'webapps-common/ui/assets/img/icons/lens.svg';
 import ActionBreadcrumb from '@/components/common/ActionBreadcrumb.vue';
 import SearchBar from '@/components/common/SearchBar.vue';
 import CloseableTagList from './CloseableTagList.vue';
@@ -19,7 +20,8 @@ export default {
         SearchBar,
         CategoryResults,
         NodeDescriptionOverlay,
-        SearchResults
+        SearchResults,
+        LensIcon
     },
     computed: {
         ...mapState('nodeRepository', ['topNodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
@@ -97,7 +99,11 @@ export default {
           v-model="searchQuery"
           placeholder="Search Nodes"
           class="search-bar"
-        />
+        >
+          <template #icon>
+            <LensIcon class="icon" />
+          </template>
+        </SearchBar>
       </div>
       <CloseableTagList
         v-if="showSearchResults && tags.length"
@@ -120,6 +126,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .node-repo {
   font-family: "Roboto Condensed", sans-serif;
   height: 100%;
@@ -183,6 +191,13 @@ export default {
   &:focus-within {
     background-color: var(--knime-white);
     border-color: var(--knime-masala);
+  }
+
+  & .icon{
+    vertical-align: top;
+      stroke: var(--theme-button-function-foreground-color);
+
+      @mixin svg-icon-size 18;
   }
 }
 

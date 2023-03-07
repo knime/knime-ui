@@ -6,7 +6,8 @@ export const TABS = {
     CONTEXT_AWARE_DESCRIPTION: 'description',
     NODE_REPOSITORY: 'nodeRepository',
     NODE_DIALOG: 'nodeDialog',
-    SPACE_EXPLORER: 'spaceExplorer'
+    SPACE_EXPLORER: 'spaceExplorer',
+    ANNOTATIONS_PANEL: 'annotationsPanel'
 };
 
 export const state = () => ({
