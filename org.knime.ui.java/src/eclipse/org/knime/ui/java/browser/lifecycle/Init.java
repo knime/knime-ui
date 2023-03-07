@@ -231,6 +231,7 @@ final class Init {
     }
 
     private static NodeFactoryProvider createNodeFactoryProvider() {
+        var fileExtensionToNodeFactoryMap = ConfigurableNodeFactoryMapper.getAllNodeFactoriesForFileExtensions();
         return new NodeFactoryProvider() {
             @Override
             public Class<? extends NodeFactory<?>> fromFileExtension(final String filename) {
@@ -239,7 +240,7 @@ final class Init {
 
             @Override
             public Map<String, String> getFileExtensionToNodeFactoryMap() {
-                return ConfigurableNodeFactoryMapper.getAllNodeFactoriesForFileExtensions();
+                return fileExtensionToNodeFactoryMap;
             }
         };
     }
