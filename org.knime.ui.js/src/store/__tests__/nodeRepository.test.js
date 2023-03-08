@@ -560,7 +560,7 @@ describe('Node Repository store', () => {
                         nodeOffset: 0,
                         query: 'lookup',
                         tags: [],
-                        additionalNodes: false
+                        nodesPartition: 'IN_COLLECTION'
                     });
                     expect(store.state.nodeRepository.totalNumTopNodes).toBe(searchNodesResponse.totalNumNodes);
                     expect(store.state.nodeRepository.topNodes).toEqual(
@@ -584,7 +584,7 @@ describe('Node Repository store', () => {
                         nodeOffset: 100,
                         query: 'lookup',
                         tags: [],
-                        additionalNodes: false
+                        nodesPartition: 'IN_COLLECTION'
                     });
                     expect(store.state.nodeRepository.totalNumTopNodes).toBe(searchNodesResponse.totalNumNodes);
                     expect(store.state.nodeRepository.topNodes).toEqual([
@@ -632,7 +632,7 @@ describe('Node Repository store', () => {
                         nodeOffset: 0,
                         query: 'lookup',
                         tags: [],
-                        additionalNodes: true
+                        nodesPartition: 'NOT_IN_COLLECTION'
                     });
                     expect(store.state.nodeRepository.totalNumBottomNodes).toBe(
                         searchBottomNodesResponse.totalNumNodes
@@ -659,7 +659,7 @@ describe('Node Repository store', () => {
                         nodeOffset: 100,
                         query: 'lookup',
                         tags: [],
-                        additionalNodes: true
+                        nodesPartition: 'NOT_IN_COLLECTION'
                     });
                     expect(store.state.nodeRepository.totalNumBottomNodes).toBe(
                         searchBottomNodesResponse.totalNumNodes

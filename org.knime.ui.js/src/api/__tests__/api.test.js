@@ -103,16 +103,17 @@ describe('API', () => {
                     query: 'churn',
                     tags: ['myTag'],
                     allTagsMatch: true,
-                    nodeOffset: 0,
-                    nodeLimit: 2,
+                    offset: 0,
+                    limit: 2,
                     fullTemplateInfo: true,
-                    additionalNodes: true
+                    nodesPartition: 'NOT_IN_COLLECTION',
+                    portTypeId: ''
                 });
 
                 expect(window.jsonrpc).toHaveBeenCalledWith({
                     jsonrpc: '2.0',
                     method: 'NodeRepositoryService.searchNodes',
-                    params: ['churn', ['myTag'], true, 0, 2, true, true],
+                    params: ['churn', ['myTag'], true, 0, 2, true, 'NOT_IN_COLLECTION', ''],
                     id: 0
                 });
             });
@@ -122,15 +123,35 @@ describe('API', () => {
                     query: 'churn',
                     tags: ['myTag'],
                     allTagsMatch: true,
-                    nodeOffset: 0,
-                    nodeLimit: 2,
-                    fullTemplateInfo: true
+                    offset: 0,
+                    limit: 2,
+                    fullTemplateInfo: true,
+                    portTypeId: ''
                 });
 
                 expect(window.jsonrpc).toHaveBeenCalledWith({
                     jsonrpc: '2.0',
                     method: 'NodeRepositoryService.searchNodes',
-                    params: ['churn', ['myTag'], true, 0, 2, true, false],
+                    params: ['churn', ['myTag'], true, 0, 2, true, 'ALL', ''],
+                    id: 0
+                });
+            });
+                
+            it('calls jsonrpc without portTypeId', async () => {
+                await api.searchNodes({
+                    query: 'churn',
+                    tags: ['myTag'],
+                    allTagsMatch: true,
+                    offset: 0,
+                    limit: 2,
+                    fullTemplateInfo: true,
+                    nodesPartition: 'IN_COLLECTION'
+                });
+    
+                expect(window.jsonrpc).toHaveBeenCalledWith({
+                    jsonrpc: '2.0',
+                    method: 'NodeRepositoryService.searchNodes',
+                    params: ['churn', ['myTag'], true, 0, 2, true, 'IN_COLLECTION', null],
                     id: 0
                 });
             });

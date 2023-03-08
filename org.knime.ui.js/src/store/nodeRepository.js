@@ -188,7 +188,7 @@ export const actions = {
             nodeOffset: currentPage() * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
             fullTemplateInfo: true,
-            additionalNodes: bottom
+            nodesPartition: bottom ? 'NOT_IN_COLLECTION' : 'IN_COLLECTION'
         });
 
         const { availablePortTypes } = rootState.application;

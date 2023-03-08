@@ -33,15 +33,15 @@ export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLi
  * @param {String} query - query for specific matches in the returned nodes or empty string.
  * @param {Array} tags - tags to filter the results of the search.
  * @param {Boolean} allTagsMatch - if the tags are inclusive or exclusive.
- * @param {Number} nodeOffset - the numeric offset of the search (for pagination).
- * @param {Number} nodeLimit - the number of results which should be returned.
+ * @param {Number} offset - the numeric offset of the search (for pagination).
+ * @param {Number} limit - the number of results which should be returned.
  * @param {Boolean} fullTemplateInfo - if the results should contain all node info (incl. img data).
- * @param {Boolean} additionalNodes - if the results should contain contain only the nodes that are not part of the
- *                      active selection
+ * @param {String} nodesPartition - can be 'IN_COLLECTION', 'NOT_IN_COLLECTION' or 'ALL'. Defaults to 'ALL'.
+ * @param {String} portTypeId - if set it specifies the port type the nodes need to be compatible to
  * @returns {Object} the node repository search results.
  */
 export const searchNodes = async (
-    { query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo, additionalNodes = false }
+    { query, tags, allTagsMatch, offset, limit, fullTemplateInfo, nodesPartition = 'ALL', portTypeId = null }
 ) => {
     try {
         const nodes = await rpc(
@@ -49,10 +49,11 @@ export const searchNodes = async (
             query,
             tags,
             allTagsMatch,
-            nodeOffset,
-            nodeLimit,
+            offset,
+            limit,
             fullTemplateInfo,
-            additionalNodes
+            nodesPartition,
+            portTypeId
         );
         consola.debug('Loaded node search results', nodes);
 
