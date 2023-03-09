@@ -200,7 +200,7 @@ final class OpenWorkflow {
             NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm,
                 space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
 
-           DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
     }
 

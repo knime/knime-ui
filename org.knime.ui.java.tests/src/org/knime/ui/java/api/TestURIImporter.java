@@ -94,7 +94,7 @@ public class TestURIImporter implements URIImporter {
 
                 @Override
                 public String getNodeName() {
-                    return "TODO";
+                    return "Test URI Importer Node Name";
                 }
 
                 @Override

@@ -80,7 +80,6 @@ import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
 /**
@@ -108,7 +107,7 @@ final class Create {
                 page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
                 if (page != null) {
                     var refs = page.getEditorReferences();
-                    if (refs.length > 0) {
+                    if (refs.length > 0) { // NOSONAR
                         NodeLogger.getLogger(LifeCycle.class)
                             .error("There are open eclipse editors which is not expected: "
                                 + Arrays.stream(refs).map(IEditorReference::getName).collect(Collectors.joining(",")));
@@ -132,8 +131,8 @@ final class Create {
             return;
         }
         try {
-            final String baseUrl = "https://www.knime.com/welcome-ap";
-            StringBuilder builder = new StringBuilder(baseUrl);
+            final var baseUrl = "https://www.knime.com/welcome-ap";
+            var builder = new StringBuilder(baseUrl);
             builder.append("?knid=" + KNIMEConstants.getKNID());
             builder.append("&version=" + KNIMEConstants.VERSION);
             builder.append("&os=" + Platform.getOS());
@@ -165,7 +164,7 @@ final class Create {
 
     private static String buildAPUsage() {
         // simple distinction between first and recurring users
-        String apUsage = "apUsage:";
+        var apUsage = "apUsage:";
         if (isFreshWorkspace()) {
             apUsage += "first";
         } else {
@@ -175,13 +174,13 @@ final class Create {
     }
 
     private static String buildHubUsage() {
-        String hubUsage = "hubUsage:";
+        var hubUsage = "hubUsage:";
         Optional<ZonedDateTime> lastLogin = Optional.empty();
         Optional<ZonedDateTime> lastUpload = Optional.empty();
         try {
             lastLogin = HubStatistics.getLastLogin();
             lastUpload = HubStatistics.getLastUpload();
-        } catch (Exception e) {
+        } catch (Exception e) { // NOSONAR
             NodeLogger.getLogger(Create.class).info("Hub statistics could not be fetched: " + e.getMessage(), e);
         }
 
@@ -196,7 +195,7 @@ final class Create {
     }
 
     private static boolean isFreshWorkspace() {
-        Bundle productBundle = FrameworkUtil.getBundle(Create.class);
+        var productBundle = FrameworkUtil.getBundle(Create.class);
         IPath path = Platform.getStateLocation(productBundle);
         var workbenchStateFile =
             path.toFile().toPath().getParent().resolve("org.eclipse.e4.workbench").resolve("workbench.xmi");

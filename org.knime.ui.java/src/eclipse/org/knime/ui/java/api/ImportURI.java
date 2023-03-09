@@ -110,6 +110,9 @@ public final class ImportURI {
     /**
      * Helper to import objects (e.g. nodes) from a URI (e.g. a Hub-URL) into the App.
      *
+     * Sends an event to the FE in order to get the actual workflow canvas coordinates (and more) back (the FE
+     * indirectly calls {@link #importURIAtWorkflowCanvas(String, String, String, int, int)} to return those).
+     *
      * @param cursorLocationSupplier
      * @param uriString the URI to import from
      * @return {@code true} if the import was successful
@@ -169,6 +172,19 @@ public final class ImportURI {
         return true;
     }
 
+    /**
+     * Imports the entity represented by the given URI (usually a node) at the given position in the workflow canvas.
+     *
+     * If no URI is given, the {@value #entityImportInProgress} is used instead (if given). It set in the
+     * {@link #importURI(Supplier, String)}-method.
+     *
+     * @param uri can be {@code null}
+     * @param projectId
+     * @param workflowId
+     * @param canvasX
+     * @param canvasY
+     * @return {@code true} if the import was successful
+     */
     static boolean importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
         final int canvasX, final int canvasY) {
         EntityImport entityImport;
@@ -187,8 +203,8 @@ public final class ImportURI {
             var key = getNodeFactoryKey(nodeImport.getCanonicalNodeFactory(), nodeImport.getNodeName(),
                 nodeImport.isDynamicNode());
             return importNode(key, null, projectId, workflowId, canvasX, canvasY);
-        } else if (entityImport instanceof FromFileEntityImport) {
-            return importNodeFromFileURI(((FromFileEntityImport)entityImport).m_path.toUri().toString(), projectId,
+        } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
+            return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId,
                 workflowId, canvasX, canvasY);
         }
         return false;

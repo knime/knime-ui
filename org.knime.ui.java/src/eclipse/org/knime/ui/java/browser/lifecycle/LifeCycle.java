@@ -166,7 +166,7 @@ public final class LifeCycle {
      * Runs the state transition required once the web app (web page) is loaded.
      */
     public void webAppLoaded() {
-        doStateTransition(StateTransition.WEB_APP_LOADED, () -> WebAppLoaded.run(), StateTransition.INIT,
+        doStateTransition(StateTransition.WEB_APP_LOADED, WebAppLoaded::run, StateTransition.INIT,
             StateTransition.RELOAD);
     }
 
@@ -174,10 +174,9 @@ public final class LifeCycle {
      * Runs the state transition required to reload the web app.
      */
     public void reload() {
-        doStateTransition(StateTransition.RELOAD, () -> {
-            // removed event listeners will be re-added again by the web app
-            DefaultEventService.getInstance().removeAllEventListeners();
-        }, StateTransition.WEB_APP_LOADED);
+        doStateTransition(StateTransition.RELOAD, () ->
+        // removed event listeners will be re-added again by the web app
+        DefaultEventService.getInstance().removeAllEventListeners(), StateTransition.WEB_APP_LOADED);
         m_lastStateTransition = StateTransition.WEB_APP_LOADED;
     }
 

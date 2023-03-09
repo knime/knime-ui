@@ -119,11 +119,11 @@ class OpenWorkflowTest {
         assertThat(project.getName()).isEqualTo("workflow");
         assertThat(project.getID()).isEqualTo("projectId");
         assertThat(project.openProject()).isSameAs(m_wfm);
-        var origin = project.getOrigin().get();
+        var origin = project.getOrigin().orElseThrow();
         assertThat(origin.getItemId()).isEqualTo("itemId");
         assertThat(origin.getSpaceId()).isEqualTo("spaceId");
         assertThat(origin.getProviderId()).isEqualTo("providerId");
-        assertThat(origin.getRelativePath().get()).hasToString("relativePath");
+        assertThat(origin.getRelativePath().orElseThrow()).hasToString("relativePath");
     }
 
     private static Path getTestWorkspacePath(final String name) throws IOException {

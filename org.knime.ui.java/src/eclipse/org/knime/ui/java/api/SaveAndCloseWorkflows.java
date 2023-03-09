@@ -98,6 +98,9 @@ public final class SaveAndCloseWorkflows {
     }
 
     /**
+     * Saves and closes the workflows represented by the given project-ids. Project-ids that don't reference an opened
+     * workflow will just be ignored.
+     *
      * @param projectIdsAndSvgsAndMore array containing the project-ids and svgs of the projects to save. The very first
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
      *            by n svg-strings. And there is one last string at the very end describing the action to be carried out

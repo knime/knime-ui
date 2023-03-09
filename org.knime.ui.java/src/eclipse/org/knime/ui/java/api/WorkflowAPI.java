@@ -126,16 +126,12 @@ final class WorkflowAPI {
         var progressService = PlatformUI.getWorkbench().getProgressService();
         SaveAndCloseWorkflows.saveAndCloseWorkflows(projectIdsAndSvgsAndMore, postWorkflowCloseAction -> {
             switch (postWorkflowCloseAction) {
-                case SWITCH_PERSPECTIVE:
-                    EclipseUIAPI.doSwitchToJavaUI();
-                    break;
-                case SHUTDOWN:
+                case SWITCH_PERSPECTIVE -> EclipseUIAPI.doSwitchToJavaUI();
+                case SHUTDOWN -> {
                     LifeCycle.get().suspend();
                     PlatformUI.getWorkbench().close();
-                    break;
-                default:
-                    DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-                    break;
+                }
+                default -> DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             }
         }, progressService);
     }

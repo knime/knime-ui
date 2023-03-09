@@ -87,18 +87,16 @@ class SaveAndCloseWorkflowsTest {
         var wfm1 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm2 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm3 = WorkflowManagerUtil.createEmptyWorkflow();
-        m_wfms = List.of(wfm1, wfm2, wfm3);
+        var wfms = List.of(wfm1, wfm2, wfm3);
+        m_wfms = wfms;
         assertThat(wfm1.isDirty()).isTrue();
         var wpm = WorkflowProjectManager.getInstance();
-        wpm.addWorkflowProject("projectId1",
-            OpenWorkflow.createWorkflowProject(wfm1, "providerId", "spaceId", "itemId", "relativePath", "projectId1"));
-        wpm.openAndCacheWorkflow("projectId1");
-        wpm.addWorkflowProject("projectId2",
-            OpenWorkflow.createWorkflowProject(wfm2, "providerId", "spaceId", "itemId", "relativePath", "projectId2"));
-        wpm.openAndCacheWorkflow("projectId2");
-        wpm.addWorkflowProject("projectId3",
-            OpenWorkflow.createWorkflowProject(wfm3, "providerId", "spaceId", "itemId", "relativePath", "projectId3"));
-        wpm.openAndCacheWorkflow("projectId3");
+        for (int i = 1; i <= 3; i++) {
+            var projectId = "projectId" + i;
+            wpm.addWorkflowProject(projectId, OpenWorkflow.createWorkflowProject(wfms.get(i - 1), "providerId",
+                "spaceId", "itemId", "relativePath", projectId));
+            wpm.openAndCacheWorkflow(projectId);
+        }
 
         var appStateUpdater = new AppStateUpdater();
         var appStateUpdateListener = mock(Runnable.class);
@@ -118,12 +116,10 @@ class SaveAndCloseWorkflowsTest {
             new Object[]{3.0, "projectId1", "projectId2", "projectId3", "svg1", "svg2", "svg3", "UPDATE_APP_STATE"},
             postWorkflowCloseActionConsumer, progressService);
 
-        assertWorkflowSaved(wfm1, "svg1");
-        assertWorkflowSaved(wfm2, "svg2");
-        assertWorkflowSaved(wfm3, "svg3");
-        assertWorkflowClosed(wfm1, "projectId1");
-        assertWorkflowClosed(wfm2, "projectId2");
-        assertWorkflowClosed(wfm3, "projectId3");
+        for (int i = 1; i <= 3; i++) {
+            assertWorkflowSaved(wfms.get(i - 1), "svg" + i);
+            assertWorkflowClosed(wfms.get(i - 1), "projectId" + i);
+        }
         verify(appStateUpdateListener).run();
 
         // check the other post workflow closed actions
