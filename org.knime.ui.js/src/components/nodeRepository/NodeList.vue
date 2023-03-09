@@ -80,6 +80,9 @@ export default {
                 if (node) {
                     this.$emit('update:selectedNode', node);
                 }
+                // use a DOM query as refs are not soreted and we would need to sort them every time
+                const nodeListElement = this.$refs.list.querySelector(`[data-index="${nextIndex}"]`);
+                nodeListElement?.focus();
             };
 
             // items navigation
@@ -119,8 +122,8 @@ export default {
     >
       <li
         v-for="(node, index) in nodes"
-        ref="nodes"
         :key="node.id"
+        tabindex="-1"
         :data-index="index"
       >
         <slot
@@ -161,10 +164,14 @@ export default {
       outline: none;
     }
 
-    & li:focus {
-      outline: none;
-    }
+    & li {
+      /* fixes the scrolling to top selected border cut off problem */
+      padding: 3px 0;
 
+      &:focus {
+        outline: none;
+      }
+    }
   }
 }
 
