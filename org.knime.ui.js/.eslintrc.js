@@ -11,6 +11,9 @@ module.exports = {
     env: {
         node: true
     },
+    ignorePatterns: [
+        'knime-js-pagebuilder/'
+    ],
     settings: {
         'import/resolver': {
             alias: {
