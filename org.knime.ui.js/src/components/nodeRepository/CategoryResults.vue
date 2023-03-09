@@ -10,7 +10,7 @@ export default {
         ScrollViewContainer
     },
     computed: {
-        ...mapState('nodeRepository', ['categoryScrollPosition', 'nodesPerCategory'])
+        ...mapState('nodeRepository', ['selectedNode', 'categoryScrollPosition', 'nodesPerCategory'])
     },
     methods: {
         ...mapActions('nodeRepository', ['getAllNodes', 'setSelectedTags']),
@@ -45,6 +45,7 @@ export default {
           class="category"
           :tag="tag"
           :nodes="nodes"
+          :selected-node="selectedNode"
           @select-tag="onSelectTag"
         />
         <hr>

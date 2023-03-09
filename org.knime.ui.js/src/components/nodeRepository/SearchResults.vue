@@ -7,9 +7,11 @@ import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg'
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
+import DraggableNodeTemplate from '@/components/nodeRepository/DraggableNodeTemplate.vue';
 
 export default {
     components: {
+        DraggableNodeTemplate,
         ScrollViewContainer,
         NodeList,
         ReloadIcon,
@@ -28,6 +30,7 @@ export default {
             'topNodes',
             'bottomNodes',
             'query',
+            'selectedNode',
             'selectedTags',
             'searchScrollPosition',
             'totalNumTopNodes',
@@ -103,7 +106,14 @@ export default {
         v-else
         class="nodes"
       >
-        <NodeList :nodes="topNodes" />
+        <NodeList
+          :nodes="topNodes"
+          :selected-node="selectedNode"
+        >
+          <template #item="slotProps">
+            <DraggableNodeTemplate v-bind="slotProps" />
+          </template>
+        </NodeList>
         <ReloadIcon
           v-if="isLoading"
           class="loading-indicator"
@@ -135,7 +145,14 @@ export default {
           v-else
           class="nodes"
         >
-          <NodeList :nodes="bottomNodes" />
+          <NodeList
+            :nodes="bottomNodes"
+            :selected-node="selectedNode"
+          >
+            <template #item="slotProps">
+              <DraggableNodeTemplate v-bind="slotProps" />
+            </template>
+          </NodeList>
           <ReloadIcon
             v-if="isLoadingMore"
             class="loading-indicator"

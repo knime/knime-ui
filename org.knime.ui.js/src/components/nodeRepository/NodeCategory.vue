@@ -1,10 +1,12 @@
 <script>
 import NodeList from './NodeList.vue';
+import DraggableNodeTemplate from '@/components/nodeRepository/DraggableNodeTemplate.vue';
 
 const CATEGORY_LIMIT = 6;
 
 export default {
     components: {
+        DraggableNodeTemplate,
         NodeList
     },
     props: {
@@ -15,6 +17,10 @@ export default {
         nodes: {
             type: Array,
             default: () => []
+        },
+        selectedNode: {
+            type: Object,
+            required: true
         }
     },
     emits: ['selectTag'],
@@ -37,8 +43,12 @@ export default {
     <NodeList
       :nodes="nodes"
       :has-more-nodes="hasMoreNodes"
+      :selected-node="selectedNode"
       @show-more="$emit('selectTag', tag)"
     >
+      <template #item="itemProps">
+        <DraggableNodeTemplate v-bind="itemProps" />
+      </template>
       <template #more-button>More {{ tag }} nodes</template>
     </NodeList>
   </div>

@@ -15,9 +15,22 @@ export default {
         hasMoreNodes: {
             type: Boolean,
             default: false
+        },
+        selectedNode: {
+            type: Object,
+            default: null
         }
     },
-    emits: ['showMore']
+    emits: ['showMore'],
+    methods: {
+        nodeTemplateProps(node, index) {
+            return {
+                nodeTemplate: node,
+                isSelected: this.selectedNode?.id === node.id,
+                index
+            };
+        }
+    }
 };
 </script>
 
@@ -25,10 +38,21 @@ export default {
   <div class="nodes-container">
     <ul class="nodes">
       <li
-        v-for="node in nodes"
+        v-for="(node, index) in nodes"
+        ref="nodes"
         :key="node.id"
+        :data-index="index"
+        :data-node-id="node.id"
+        tabindex="-1"
       >
-        <NodeTemplate :node-template="node" />
+        <slot
+          name="item"
+          v-bind="nodeTemplateProps(node, index)"
+        >
+          <NodeTemplate
+            v-bind="nodeTemplateProps(node, index)"
+          />
+        </slot>
       </li>
     </ul>
     <Button
@@ -54,6 +78,10 @@ export default {
     margin-right: -5px;
     margin-left: -5px;
     list-style-type: none;
+
+    & li:focus {
+      outline: red;
+    }
   }
 }
 
