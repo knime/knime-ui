@@ -1,7 +1,6 @@
 <script>
 import { mapState, mapActions, mapMutations } from 'vuex';
 
-import ExpandTransition from 'webapps-common/ui/components/transitions/ExpandTransition.vue';
 import BaseButton from 'webapps-common/ui/components/BaseButton.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
@@ -15,7 +14,6 @@ export default {
         ScrollViewContainer,
         NodeList,
         ReloadIcon,
-        ExpandTransition,
         BaseButton,
         DropdownIcon
     },
@@ -167,7 +165,7 @@ export default {
         </div>
         More advanced nodes
       </BaseButton>
-      <ExpandTransition :is-expanded="isShowingBottomNodes">
+      <div v-show="isShowingBottomNodes">
         <div
           v-if="hasNoMoreSearchResults"
           class="no-matching-search"
@@ -193,7 +191,7 @@ export default {
             class="loading-indicator"
           />
         </div>
-      </ExpandTransition>
+      </div>
     </div>
   </ScrollViewContainer>
 </template>
