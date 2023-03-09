@@ -7,12 +7,9 @@ import { mockVuexStore } from '@/test/test-utils';
 import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import AppHeader from '@/components/application/AppHeader.vue';
 import Error from '@/components/application/Error.vue';
-import { loadPageBuilder as loadPageBuilderMock } from '@/components/embeddedViews/pagebuilderLoader';
 
 import KnimeUI from '../KnimeUI.vue';
 import { APP_ROUTES } from '@/router';
-
-jest.mock('@/components/embeddedViews/pagebuilderLoader');
 
 describe('KnimeUI.vue', () => {
     let $store, doShallowMount, initializeApplication, wrapper, storeConfig, destroyApplication,
@@ -87,11 +84,6 @@ describe('KnimeUI.vue', () => {
 
     afterEach(() => {
         jest.clearAllMocks();
-    });
-
-    it('loads the pagebuilder on mount', () => {
-        doShallowMount();
-        expect(loadPageBuilderMock).toHaveBeenCalled();
     });
 
     it('renders before loading', () => {
@@ -215,13 +207,5 @@ describe('KnimeUI.vue', () => {
             await doShallowMount();
             expect(setHasClipboardSupport).toHaveBeenCalledWith(expect.anything(), true);
         });
-    });
-
-    it('should not load pagebuilder when the feature flag is set', async () => {
-        mockFeatureFlags.shouldLoadPageBuilder.mockImplementation(() => false);
-
-        await doShallowMount();
-
-        expect(loadPageBuilderMock).not.toHaveBeenCalled();
     });
 });

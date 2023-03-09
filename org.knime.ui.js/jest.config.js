@@ -6,6 +6,7 @@ const coverageIgnoreFolders = [
     'node_modules',
     'bin',
     'webapps-common',
+    'knime-js-pagebuilder',
     'buildtools',
     '.history'
 ];
@@ -27,7 +28,8 @@ const coverageIgnoreFiles = [
 module.exports = {
     moduleNameMapper: {
         // place the svg stub first so that it gets resolved before other `@` prefixed svg imports
-        '\\.svg$': '<rootDir>/src/test/svgStub.vue',
+        '\\.svg$': '<rootDir>/src/test/ComponentStub.vue',
+        '^pagebuilder/(.*)$': '<rootDir>/src/test/ComponentStub.vue',
         '^@/(.*)$': '<rootDir>/src/$1',
         '@api': '<rootDir>/src/api/index',
         '@fontsource/(.*)$': 'jest-transform-stub'
@@ -68,7 +70,7 @@ module.exports = {
         `<rootDir>/(${coverageIgnoreFiles.join('|')})`
     ],
     watchPathIgnorePatterns: [
-        '^<rootDir>/(test-results|dist|target|node_modules|bin|webapps-common|.history)/'
+        '^<rootDir>/(test-results|dist|target|node_modules|bin|webapps-common|knime-js-pagebuilder|.history)/'
     ],
     testEnvironment: 'jsdom',
     testEnvironmentOptions: {
@@ -77,7 +79,7 @@ module.exports = {
         // https://github.com/vuejs/vue-jest/issues/479#issuecomment-1163421581
         customExportConditions: ['node', 'node-addons']
     },
-    modulePathIgnorePatterns: ['<rootDir>/webapps-common/*'],
+    modulePathIgnorePatterns: ['<rootDir>/webapps-common/*', '<rootDir>/knime-js-pagebuilder/*'],
     testMatch: [
         '<rootDir>/**/__tests__/*.test.js'
     ],

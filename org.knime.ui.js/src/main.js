@@ -9,11 +9,13 @@ import { initPlugins } from './plugins';
 
 import './assets/index.css';
 
+import PageBuilder from 'pagebuilder/src/components/PageBuilder.vue';
+
 // Setup logger for production
 silentLogger();
 
 // required for dynamically loaded components which will access the Vue instance off of the window object
-// e.g: TableView, NodeDialog, PageBuilder
+// e.g: TableView, NodeDialog
 window.Vue = Vue;
 
 initJsonRpcClient();
@@ -23,6 +25,8 @@ const app = Vue.createApp(KnimeUI);
 
 // Provide store and init plugins
 const store = initStore();
+
+PageBuilder.initStore(store);
 
 // Enable easier store debugging while on dev
 if (import.meta.env.DEV) {

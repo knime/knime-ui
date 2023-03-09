@@ -33,7 +33,8 @@
     "vue": "^3.2.47",
     "vue-router": "^4.1.6",
     "vuex": "^4.1.0",
-    "webapps-common": "file:webapps-common"
+    "webapps-common": "file:webapps-common",
+    "pagebuilder": "file:knime-js-pagebuilder/org.knime.js.pagebuilder"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
