@@ -32,6 +32,28 @@ export const toPortObject = (availablePortTypes, includeType = true) => (input) 
 };
 
 /**
+ * Processes a dynamic port group description so it can be rendered.
+ * @param {Object} availablePortTypes Dictionary of all available port types and their information
+ * @returns {Function} A function that maps the raw port group description as it was received to the format needed to
+ * to render it.
+ */
+const toPortGroupDescription = (availablePortTypes) => (portGroupDescription) => {
+    const { identifier, description, name, supportedPortTypes } = portGroupDescription;
+    const types = supportedPortTypes
+        .map(toPortObject(availablePortTypes))
+        .map(supportedType => ({
+            ...supportedType,
+            typeName: name
+        }));
+
+    return {
+        groupName: identifier,
+        groupDescription: description,
+        types
+    };
+};
+
+/**
  * Maps over a collection of ports to add information about their color and kind, extracted from the
  * provided dictionary in the parameter `availablePortTypes`
  * @param {Array} ports
@@ -46,11 +68,14 @@ export const mapPortTypes = (ports = [], availablePortTypes = {}) => ports.map(t
  * @returns {Function} mapping function that takes a node to which all the port information will be added
  */
 export const toNodeWithFullPorts = (availablePortTypes) => (node) => {
-    const { inPorts = [], outPorts = [] } = node;
-    
+    const { inPorts = [], outPorts = [], dynamicInPortGroupDescriptions = [],
+        dynamicOutPortGroupDescriptions = [] } = node;
+
     return {
         ...node,
         inPorts: inPorts.map(toPortObject(availablePortTypes)),
-        outPorts: outPorts.map(toPortObject(availablePortTypes))
+        outPorts: outPorts.map(toPortObject(availablePortTypes)),
+        dynInPorts: dynamicInPortGroupDescriptions.map(toPortGroupDescription(availablePortTypes)),
+        dynOutPorts: dynamicOutPortGroupDescriptions.map(toPortGroupDescription(availablePortTypes))
     };
 };

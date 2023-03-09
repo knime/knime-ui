@@ -484,7 +484,9 @@ describe('Node Repository store', () => {
                 ...port,
                 ...availablePortTypes[port.typeId],
                 type: availablePortTypes[port.typeId].kind
-            }))
+            })),
+            dynInPorts: [],
+            dynOutPorts: []
         }));
 
         describe('getAllNodes', () => {
