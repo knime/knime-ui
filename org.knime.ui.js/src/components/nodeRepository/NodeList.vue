@@ -23,13 +23,8 @@ export default {
             default: null
         }
     },
-    emits: ['showMore', 'update:selectedNode', 'navReachedTop', 'navReachedEnd'],
+    emits: ['enter-key', 'showMore', 'update:selectedNode', 'navReachedTop', 'navReachedEnd'],
     expose: ['focusFirst', 'focusLast'],
-    mounted() {
-        if (this.selectedNode === null && this.nodes.length > 0) {
-            this.$emit('update:selectedNode', this.nodes[0]);
-        }
-    },
     methods: {
         nodeTemplateProps(node) {
             return {
@@ -46,7 +41,7 @@ export default {
         focusItem(node) {
             // focus for nav to work
             this.$refs.list.focus();
-            // select the first item if the current selection is not in our list
+            // select the item if the current selection is not in our list
             if (!this.nodes.find(node => node.id === this.selectedNode?.id)) {
                 this.$emit('update:selectedNode', node);
             }
@@ -124,7 +119,9 @@ export default {
         v-for="(node, index) in nodes"
         :key="node.id"
         tabindex="-1"
+        :class="{ 'no-selection': selectedNode === null }"
         :data-index="index"
+        @keydown.enter.stop.prevent="$emit('enter-key', node)"
       >
         <slot
           name="item"

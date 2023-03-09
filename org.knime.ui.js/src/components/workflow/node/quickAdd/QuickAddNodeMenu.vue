@@ -11,8 +11,9 @@ import { checkPortCompatibility } from '@/util/compatibleConnections';
 import { portPositions } from '@/util/portShift';
 
 import { debounce } from 'lodash';
+import NodeList from '@/components/nodeRepository/NodeList.vue';
+import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
 
-const NODES_PER_ROW = 3;
 const SEARCH_COOLDOWN = 150; // ms
 
 const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) => {
@@ -42,8 +43,9 @@ const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) =>
  */
 export default {
     components: {
+        NodeTemplate,
+        NodeList,
         SearchBar,
-        NodePreview,
         Button,
         FloatingMenu
     },
@@ -63,6 +65,11 @@ export default {
         }
     },
     emits: ['menuClose'],
+    data() {
+        return {
+            selectedNode: null
+        };
+    },
     computed: {
         ...mapState('application', ['hasNodeRecommendationsEnabled']),
         ...mapState('canvas', ['zoomFactor']),
@@ -154,61 +161,13 @@ export default {
 
             this.$emit('menuClose');
         },
-        onKeyDown(key) {
-            // no navigation for empty nodes
-            if (!this.$refs.nodes) {
-                return;
+        searchEnterKey() {
+            if (this.nodes.length > 0) {
+                this.addNode(this.nodes[0]);
             }
-            const getIndex = (element) => parseInt(element.dataset.index, 10);
-            const activeNodeItem = this.$refs.nodes.find(x => x === document.activeElement);
-            const itemsHaveFocus = Boolean(activeNodeItem);
-            // NOTE: we need to sort the nodes because refs are NOT guaranteed to be in the correct display order!
-            // TODO: we also might use DOM methods to fetch them in the correct order?!
-            const nodes = [...this.$refs.nodes].sort((a, b) => getIndex(a) - getIndex(b));
-            const activeItemIndex = activeNodeItem ? getIndex(activeNodeItem) : -1;
-
-            // actions in the search bar
-            if (!itemsHaveFocus) {
-                if (key === 'down') {
-                    nodes[0]?.focus();
-                }
-                if (key === 'enter') {
-                    if (this.nodes.length > 0) {
-                        this.addNode(this.nodes[0]);
-                    }
-                }
-                return;
-            }
-
-            // switch from items to search on the first row
-            if (activeItemIndex < NODES_PER_ROW && key === 'up') {
-                this.$refs.search.focus();
-                return;
-            }
-
-            const focusNext = (indexOffset) => {
-                nodes[activeItemIndex + indexOffset]?.focus();
-            };
-
-            // items navigation
-            if (key === 'up') {
-                focusNext(-NODES_PER_ROW);
-                return;
-            }
-
-            if (key === 'down') {
-                focusNext(NODES_PER_ROW);
-                return;
-            }
-
-            if (key === 'left') {
-                focusNext(-1);
-                return;
-            }
-
-            if (key === 'right') {
-                focusNext(+1);
-            }
+        },
+        searchDownKey() {
+            this.$refs.list.focusFirst();
         }
     }
 };
@@ -221,13 +180,7 @@ export default {
     :style="`--ghost-size: ${ghostSizeZoomed}; --extra-margin: ${Math.log(ghostSizeZoomed) / 1.1}`"
     aria-label="Quick add node"
     prevent-overflow
-    tabindex="0"
     @menu-close="$emit('menuClose')"
-    @keydown.left.stop="onKeyDown('left')"
-    @keydown.up.stop.prevent="onKeyDown('up')"
-    @keydown.down.stop.prevent="onKeyDown('down')"
-    @keydown.right.stop="onKeyDown('right')"
-    @keydown.enter.stop.prevent="onKeyDown('enter')"
   >
     <div class="wrapper">
       <div class="header">
@@ -236,6 +189,10 @@ export default {
           v-model="searchQuery"
           placeholder="Search all compatible nodes"
           class="search-bar"
+          tabindex="-1"
+          @focusin="selectedNode = null"
+          @keydown.enter.prevent.stop="searchEnterKey"
+          @keydown.down.prevent.stop="searchDownKey"
         />
         <hr>
       </div>
@@ -264,31 +221,20 @@ export default {
         class="results"
       >
         <div class="content">
-          <ul class="nodes">
-            <li
-              v-for="(node, index) in nodes"
-              :key="node.id"
-            >
-              <div
-                ref="nodes"
-                class="node"
-                :class="{ first: index === 0 }"
-                tabindex="-1"
-                :data-index="index"
-                @keydown.enter.stop.prevent="addNode(node, $event)"
-                @click="addNode(node, $event)"
-              >
-                <label :title="node.name">{{ node.name }}</label>
-                <NodePreview
-                  class="node-preview"
-                  :type="node.type"
-                  :in-ports="node.inPorts"
-                  :out-ports="node.outPorts"
-                  :icon="node.icon"
-                />
-              </div>
-            </li>
-          </ul>
+          <NodeList
+            ref="list"
+            v-model:selected-node="selectedNode"
+            :nodes="nodes"
+            @nav-reached-top="$refs.search.focus()"
+            @enter-key="addNode($event)"
+          >
+            <template #item="itemProps">
+              <NodeTemplate
+                v-bind="itemProps"
+                @click="addNode(itemProps.nodeTemplate)"
+              />
+            </template>
+          </NodeList>
         </div>
       </div>
       <span
@@ -372,7 +318,6 @@ export default {
     }
   }
 
-
   & .results {
     overflow-y: auto;
     scrollbar-width: thin;
@@ -400,82 +345,12 @@ export default {
     padding: 10px 30px;
   }
 
-  & .nodes {
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    margin: auto;
-    list-style-type: none;
-
-    /* do fake focus for first item if other items have focus */
-    &:focus-within .node.first:not(:focus) {
-      outline: 0;
-      box-shadow: none;
-      border: none;
-      background-color: transparent;
-    }
-
-    & .node {
-      width: 100px;
-      height: 78px;
-      margin: 0 2px;
-      padding-bottom: 47px;
-      position: relative;
-      display: flex;
-      flex-direction: column-reverse;
-      align-items: center;
-      font-size: 12px;
-      font-weight: 700;
-      text-align: center;
-
-      & label {
-        max-height: 26px;
-        max-width: 90px;
-        /* stylelint-disable-next-line value-no-vendor-prefix */
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        overflow: hidden;
-        pointer-events: none;
-      }
-
-      & .node-preview {
-        padding-bottom: 6px;
-      }
-
-      & svg {
-        width: 70px;
-        position: absolute;
-        bottom: -15px;
-        right: 15px;
-      }
-
-      &:hover {
-        cursor: pointer;
-
-        & .node-preview {
-          filter: url("#node-torso-shadow");
-        }
-      }
-      &.first {
-        outline: 0;
-
-        /* outline with border-radius is not working properly in Safari and CEF */
-        box-shadow: 0 0 0 calc(var(--selected-node-stroke-width-shape) * 1px) var(--knime-dove-gray);
-        border-radius: calc(var(--selected-node-border-radius-shape) * 1px);
-        background-color: var(--knime-porcelain);
-      }
-
-      &:focus,
-      &.first:focus {
-        outline: 0;
-
-        /* outline with border-radius is not working properly in Safari and CEF */
-        box-shadow: 0 0 0 calc(var(--selected-node-stroke-width-shape) * 1px) var(--selection-active-border-color);
-        border-radius: calc(var(--selected-node-border-radius-shape) * 1px);
-        background-color: var(--selection-active-background-color);
-      }
-    }
+  /* marks the default item (first one); gets inserted on enter while still in the search box */
+  & :deep(li.no-selection[data-index="0"] > div) {
+    outline: calc(var(--selected-node-stroke-width-shape) * 1px) solid var(--knime-dove-gray);
+    border-radius: calc(var(--selected-node-border-radius-shape) * 1px);
+    background-color: var(--knime-porcelain);
   }
+
 }
 </style>

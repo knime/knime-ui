@@ -128,6 +128,7 @@ export const actions = {
         await dispatch('clearCategoryResults');
         await dispatch('getAllNodes', { append: false });
     },
+
     async getNodeTemplate({ state }, nodeTemplateId) {
         if (state.nodeTemplates?.nodeTemplateId) {
             return state.nodeTemplates?.nodeTemplateId;
