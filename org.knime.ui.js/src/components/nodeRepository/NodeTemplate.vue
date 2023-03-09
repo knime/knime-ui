@@ -21,10 +21,6 @@ export default {
         isSelected: {
             type: Boolean,
             default: false
-        },
-        index: {
-            type: Number,
-            default: 0
         }
     },
     methods: {
@@ -38,8 +34,7 @@ export default {
 <template>
   <div
     class="node"
-    :class="{ 'selected': isSelected, 'first': index === 0 }"
-    :data-index="index"
+    :class="{ 'selected': isSelected }"
   >
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview

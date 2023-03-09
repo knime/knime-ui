@@ -24,10 +24,6 @@ export default {
         isSelected: {
             type: Boolean,
             default: false
-        },
-        index: {
-            type: Number,
-            default: 0
         }
     },
     data() {
@@ -141,7 +137,6 @@ export default {
     draggable="true"
     :node-template="nodeTemplate"
     :is-selected="isSelected"
-    :index="index"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @click="onClick"

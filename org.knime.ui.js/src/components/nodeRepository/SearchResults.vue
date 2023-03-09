@@ -19,6 +19,8 @@ export default {
         BaseButton,
         DropdownIcon
     },
+    emits: ['focusSearchBar'],
+    expose: ['focusFirst'],
     data() {
         return {
             isLoading: false,
@@ -30,7 +32,6 @@ export default {
             'topNodes',
             'bottomNodes',
             'query',
-            'selectedNode',
             'selectedTags',
             'searchScrollPosition',
             'totalNumTopNodes',
@@ -43,6 +44,14 @@ export default {
         hasNoMoreSearchResults() {
             // NB: If bottomNodes is null the results are still loading
             return this.bottomNodes !== null && this.bottomNodes.length === 0;
+        },
+        selectedNode: {
+            get() {
+                return this.$store.state.nodeRepository.selectedNode;
+            },
+            set(value) {
+                this.$store.commit('nodeRepository/setSelectedNode', value);
+            }
         }
     },
     watch: {
@@ -82,6 +91,16 @@ export default {
             this.searchBottomNodesNextPage().then(() => {
                 this.isLoadingMore = false;
             });
+        },
+        async openBottomNodes() {
+            if (!this.isShowingBottomNodes) {
+                await this.toggleShowingBottomNodes();
+            }
+            await this.$nextTick();
+            this.$refs.bottomList?.focusFirst();
+        },
+        focusFirst() {
+            this.$refs.topList?.focusFirst();
         }
     }
 };
@@ -107,8 +126,11 @@ export default {
         class="nodes"
       >
         <NodeList
+          ref="topList"
+          v-model:selected-node="selectedNode"
           :nodes="topNodes"
-          :selected-node="selectedNode"
+          @nav-reached-top="$emit('focusSearchBar')"
+          @nav-reached-end="openBottomNodes"
         >
           <template #item="slotProps">
             <DraggableNodeTemplate v-bind="slotProps" />
@@ -146,8 +168,10 @@ export default {
           class="nodes"
         >
           <NodeList
+            ref="bottomList"
+            v-model:selected-node="selectedNode"
             :nodes="bottomNodes"
-            :selected-node="selectedNode"
+            @nav-reached-top="$refs.topList.focusLast()"
           >
             <template #item="slotProps">
               <DraggableNodeTemplate v-bind="slotProps" />
