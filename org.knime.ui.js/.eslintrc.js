@@ -5,6 +5,9 @@ module.exports = {
     globals: {
         consola: false
     },
+    ignorePatterns: [
+        'generated-api.ts'
+    ],
     env: {
         node: true
     },

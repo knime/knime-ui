@@ -6,3 +6,4 @@ export * from './portService';
 export * from './workflowService';
 export * from './desktopApi';
 export * from './spaceService';
+export * from './knime-gateway-api';

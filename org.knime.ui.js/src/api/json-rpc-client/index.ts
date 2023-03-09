@@ -15,7 +15,7 @@ const initJsonRpcClient = () => {
 
     if (window.EquoCommService) {
         window.EquoCommService.on(
-            JSON_RPC_ACTION_ID,
+            JSON_RPC_NOTIFICATION_ACTION_ID,
             (jsonrpcNotification) => window.jsonrpcNotification(jsonrpcNotification),
             // eslint-disable-next-line no-console
             error => console.error(error)
@@ -23,7 +23,7 @@ const initJsonRpcClient = () => {
 
         if (!window.jsonrpc) {
             window.jsonrpc = request => window.EquoCommService.send(
-                JSON_RPC_NOTIFICATION_ACTION_ID,
+                JSON_RPC_ACTION_ID,
                 JSON.stringify(request)
             );
         }
