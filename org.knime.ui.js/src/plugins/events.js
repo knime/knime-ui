@@ -1,8 +1,8 @@
-import { notifyPatch } from '@/util/event-syncer';
+import { API } from '@api';
 import { APP_ROUTES } from '@/router';
+import { notifyPatch } from '@/util/event-syncer';
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { nodeSize } from '@/style/shapes.mjs';
-import { API } from '@/api/knime-gateway-api';
 
 export default ({ $store, $router }) => {
     const eventHandlers = {

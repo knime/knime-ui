@@ -45,8 +45,7 @@ const tryParse = (json: string): MaybeValidJSONRPC => {
         const errorResponse = createJSONRPCErrorResponse(
             null,
             ErrorCodes.parseError,
-            GENERIC_ERROR_MESSAGE,
-            error.stack
+            GENERIC_ERROR_MESSAGE
         );
         return { isValid: false, response: errorResponse };
     }
@@ -63,7 +62,11 @@ const validateFormat = (data: MaybeValidJSONRPC): MaybeValidJSONRPC => {
 
     const response = isValid
         ? data.response as JSONRPCRequest
-        : createJSONRPCErrorResponse(id, ErrorCodes.invalidRequest, GENERIC_ERROR_MESSAGE);
+        : createJSONRPCErrorResponse(
+            isJSONRPCID(id) ? id : null,
+            ErrorCodes.invalidRequest,
+            'Invalid JSON-RPC format'
+        );
 
     return { isValid, response };
 };
@@ -122,7 +125,12 @@ export const jsonrpcNotification = function (json: string, ...other: unknown[]) 
             result: 'ok'
         });
     } catch (error) {
-        const rpcError = createJSONRPCErrorResponse(id, ErrorCodes.internalError, error.message, error.stack);
+        const rpcError = createJSONRPCErrorResponse(
+            id,
+            ErrorCodes.internalError,
+            error.message,
+            error.stack
+        );
         return JSON.stringify(rpcError);
     }
 };

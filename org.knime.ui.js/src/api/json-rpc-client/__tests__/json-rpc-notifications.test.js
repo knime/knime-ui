@@ -1,9 +1,13 @@
-import { registerEventHandlers } from '../json-rpc-notifications';
+import { registerNotificationHandler, initJsonRpcNotifications } from '../json-rpc-notifications';
 
 const origErrorLogger = window.consola.error;
 
 describe('JsonRpcNotifications', () => {
     let eventHandlers;
+
+    beforeAll(() => {
+        initJsonRpcNotifications();
+    });
 
     beforeEach(() => {
         eventHandlers = {
@@ -13,7 +17,10 @@ describe('JsonRpcNotifications', () => {
             }),
             NotFunction: null
         };
-        registerEventHandlers(eventHandlers);
+        Object.entries(eventHandlers).forEach(([eventName, eventHandler]) => {
+            registerNotificationHandler(eventName, eventHandler);
+        });
+        // registerEventHandlers(eventHandlers);
     });
 
     it('defines a global function', () => {

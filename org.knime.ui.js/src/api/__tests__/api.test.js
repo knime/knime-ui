@@ -15,7 +15,7 @@ describe('API', () => {
             id: -1
         });
     });
-    
+
     describe('Application Service', () => {
         describe('fetchApplicationState', () => {
             it('calls jsonrpc', async () => {
@@ -316,7 +316,7 @@ describe('API', () => {
                 nodeId: 'root:1:2',
                 portIndex: 10
             });
-            
+
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'PortService.getPortView',
@@ -392,7 +392,7 @@ describe('API', () => {
             });
 
             await api.collapseToContainer({ projectId: '123', workflowId: '12' });
-            
+
             expect(waitForPatch).not.toHaveBeenCalled();
             expect(window.jsonrpc).toHaveBeenCalled();
         });
@@ -402,7 +402,7 @@ describe('API', () => {
             let isSecondPatchResolved = false;
             const firstSnapshotId = 1;
             const secondSnapshotId = 2;
-            
+
             waitForPatch.mockImplementation(
                 // eslint-disable-next-line max-nested-callbacks
                 (params) => new Promise(resolve => setTimeout(() => {
@@ -434,14 +434,14 @@ describe('API', () => {
 
             expect(isFirstPatchResolved).toBe(false);
             expect(isSecondPatchResolved).toBe(false);
-            
+
             await firstCommandCall;
-            
+
             expect(isFirstPatchResolved).toBe(true);
             expect(isSecondPatchResolved).toBe(false);
-            
+
             await secondCommandCall;
-            
+
             expect(isSecondPatchResolved).toBe(true);
             expect(window.jsonrpc).toHaveBeenCalledTimes(2);
         });
@@ -536,7 +536,7 @@ describe('API', () => {
             });
         });
     });
-    
+
     describe('Space Service', () => {
         it('fetchWorkflowGroupContent', async () => {
             const spaceProviderId = 'provider';
@@ -547,13 +547,13 @@ describe('API', () => {
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'SpaceService.listWorkflowGroup',
-                params: [spaceId, spaceProviderId, itemId],
+                params: { spaceId, spaceProviderId, itemId },
                 id: 0
             });
 
             expect(result).toStrictEqual('dummy');
         });
-        
+
         it('createWorkflow', async () => {
             const spaceProviderId = 'provider';
             const spaceId = 'space';

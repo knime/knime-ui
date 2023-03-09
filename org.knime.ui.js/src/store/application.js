@@ -61,7 +61,7 @@ export const state = () => ({
      * If true, dev mode specifics buttons will be shown.
      */
     devMode: false,
-    
+
     /**
      * an object that maps supported file extensions to their node template id
      */

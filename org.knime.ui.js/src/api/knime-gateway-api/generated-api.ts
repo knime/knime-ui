@@ -392,23 +392,29 @@ export interface AppState {
      */
     featureFlags?: { [key: string]: any; };
     /**
-     * If true, the node repository will be filtered to show only the nodes that fit the current filter. This will have an effect on the node search, on the category groups, and on the node recommendations.
-     * @type {boolean}
-     * @memberof AppState
-     */
-    nodeRepoFilterEnabled?: boolean;
-    /**
      * If true, scrolling in the workflow canvas will be interpreted as zooming
      * @type {boolean}
      * @memberof AppState
      */
     scrollToZoomEnabled?: boolean;
     /**
+     * If true, a node collection is configured on the preference page. The node search will show the nodes of the collection first and the category groups and node recommendations will only show nodes from the collection.
+     * @type {boolean}
+     * @memberof AppState
+     */
+    hasNodeCollectionActive?: boolean;
+    /**
      * If true, dev mode specific buttons will be shown.
      * @type {boolean}
      * @memberof AppState
      */
     devMode?: boolean;
+    /**
+     * Mapping from file extension (e.g. \"csv\") to the template ID of a node that can process such files
+     * @type {{ [key: string]: string; }}
+     * @memberof AppState
+     */
+    fileExtensionToNodeTemplateId?: { [key: string]: string; };
 
 }
 
@@ -2728,7 +2734,7 @@ export interface UpdateInfo {
      * @type {boolean}
      * @memberof UpdateInfo
      */
-    isUpdatePossible?: boolean;
+    isUpdatePossible: boolean;
 
 }
 
@@ -3210,12 +3216,12 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {'dialog' | 'view'} extensionType The node ui-extension-type, i.e. dialog or view.
          * @param {'initial_data' | 'data' | 'apply_data'} serviceType
-         * @param {string} [body]
+         * @param {string} [dataServiceRequest]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         callNodeDataService(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  extensionType: 'dialog' | 'view',  serviceType: 'initial_data' | 'data' | 'apply_data',  body?: string  }
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  extensionType: 'dialog' | 'view',  serviceType: 'initial_data' | 'data' | 'apply_data',  dataServiceRequest?: string  }
         ): Promise<string> {
            return rpcClient.call('NodeService.callNodeDataService', params);
         },
@@ -3290,12 +3296,12 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {'add' | 'remove' | 'replace'} mode Whether to add, remove or replace the data point selection.
-         * @param {Array<string>} [requestBody] A list of strings that are translated to the row keys affected by the data point selection modification.
+         * @param {Array<string>} [selections] A list of strings that are translated to the row keys affected by the data point selection modification.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         updateDataPointSelection(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  mode: 'add' | 'remove' | 'replace',  requestBody?: Array<string>  }
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  mode: 'add' | 'remove' | 'replace',  selections?: Array<string>  }
         ): Promise<Response> {
            return rpcClient.call('NodeService.updateDataPointSelection', params);
         },
@@ -3316,23 +3322,22 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {number} portIdx The port index to be used.
          * @param {number} [nodesLimit] The maximum number of node recommendations to return.
          * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
-         * @param {boolean} [includeAll] If true, all nodes/components will be included in the result. Otherwise, only the nodes/components that are part of the current collection will be included.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getNodeRecommendations(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  nodesLimit?: number,  fullTemplateInfo?: boolean,  includeAll?: boolean  }
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  nodesLimit?: number,  fullTemplateInfo?: boolean  }
         ): Promise<Array<NodeTemplate>> {
            return rpcClient.call('NodeRepositoryService.getNodeRecommendations', params);
         },
         /**
          * Compiles a list of node templates (with complete information, i.e. including icons, etc.). It doesn't actually change any state or create a new resource (despite the 'post').
-         * @param {Array<string>} [requestBody] A list of template ids to request the node templates for.
+         * @param {Array<string>} [nodeTemplateIds] A list of template ids to request the node templates for.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getNodeTemplates(
-        	params: { requestBody?: Array<string>  }
+        	params: { nodeTemplateIds?: Array<string>  }
         ): Promise<{ [key: string]: NodeTemplate; }> {
            return rpcClient.call('NodeRepositoryService.getNodeTemplates', params);
         },
@@ -3342,12 +3347,11 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {number} [tagsOffset] The number of tags to be skipped (for pagination).
          * @param {number} [tagsLimit] The maximum number of tags to be returned (mainly for pagination).
          * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
-         * @param {boolean} [includeAll] If true, all nodes/components will be included in the result. Otherwise, only the nodes/components that are part of the current collection will be included.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getNodesGroupedByTags(
-        	params: { numNodesPerTag?: number,  tagsOffset?: number,  tagsLimit?: number,  fullTemplateInfo?: boolean,  includeAll?: boolean  }
+        	params: { numNodesPerTag?: number,  tagsOffset?: number,  tagsLimit?: number,  fullTemplateInfo?: boolean  }
         ): Promise<NodeGroups> {
            return rpcClient.call('NodeRepositoryService.getNodesGroupedByTags', params);
         },
@@ -3356,15 +3360,16 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {string} [q] The term to search for.
          * @param {Array<string>} [tags] A list of tags. Only nodes/components having any/all tags will be included in the search result.
          * @param {boolean} [allTagsMatch] If true, only the nodes/components that have all of the given tags are included in the search result. Otherwise nodes/components that have at least one of the given tags are included.
-         * @param {number} [nodesOffset] Number of nodes/components to be skipped in the search result (for pagination).
-         * @param {number} [nodesLimit] The maximum number of nodes/components in the search result (mainly for pagination).
+         * @param {number} [offset] Number of nodes/components to be skipped in the search result (for pagination).
+         * @param {number} [limit] The maximum number of nodes/components in the search result (mainly for pagination).
          * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
-         * @param {boolean} [includeAll] If true, all nodes/components will be included in the result. Otherwise, only the nodes/components that are part of the current collection will be included.
+         * @param {'IN_COLLECTION' | 'NOT_IN_COLLECTION' | 'ALL'} [nodesPartition] If &#39;IN_COLLECTION&#39; then only nodes that are part of the collection are returned. If &#39;NOT_IN_COLLECTION&#39;  then only nodes that are not part of the active collection are returned. If &#39;ALL&#39; then all nodes (ignoring  collections) are returned. Defaults to &#39;ALL&#39;.
+         * @param {string} [portTypeId] The port type ID of the port type all returned nodes (and components) have to be compatible with.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         searchNodes(
-        	params: { q?: string,  tags?: Array<string>,  allTagsMatch?: boolean,  nodesOffset?: number,  nodesLimit?: number,  fullTemplateInfo?: boolean,  includeAll?: boolean  }
+        	params: { q?: string,  tags?: Array<string>,  allTagsMatch?: boolean,  offset?: number,  limit?: number,  fullTemplateInfo?: boolean,  nodesPartition?: 'IN_COLLECTION' | 'NOT_IN_COLLECTION' | 'ALL',  portTypeId?: string  }
         ): Promise<NodeSearchResult> {
            return rpcClient.call('NodeRepositoryService.searchNodes', params);
         },
@@ -3384,12 +3389,12 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} portIdx The port index to be used.
          * @param {'initial_data' | 'data'} serviceType
-         * @param {string} [body]
+         * @param {string} [dataServiceRequest]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         callPortDataService(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  serviceType: 'initial_data' | 'data',  body?: string  }
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
         ): Promise<string> {
            return rpcClient.call('PortService.callPortDataService', params);
         },
@@ -3421,11 +3426,12 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {string} itemName Name given to a space item.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         createWorkflow(
-        	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
+        	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  itemName: string  }
         ): Promise<SpaceItem> {
            return rpcClient.call('SpaceService.createWorkflow', params);
         },
@@ -3499,12 +3505,12 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} spaceProviderId Identifies a space-provider.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
-         * @param {string} newName The new name of the space item
+         * @param {string} itemName Name given to a space item.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         renameItem(
-        	params: { spaceProviderId: string,  spaceId: string,  itemId: string,  newName: string  }
+        	params: { spaceProviderId: string,  spaceId: string,  itemId: string,  itemName: string  }
         ): Promise<SpaceItem> {
            return rpcClient.call('SpaceService.renameItem', params);
         },
@@ -3773,16 +3779,16 @@ interface EventHandlers {
 
 const EventApiWrapper = function (rpcClient: RPCClient) {
     return {
-        subscribeEvent(params: { eventType: EventParams }): Promise<Response> {
-        	return event(rpcClient).addEventListener(params);
+        subscribeEvent(params: EventParams): Promise<Response> {
+			return event(rpcClient).addEventListener({ eventType: params });
         },
 
         registerEventHandler(handlers: EventHandlers): void {
-            rpcClient.registerEventHandler(handlers);
+			rpcClient.registerEventHandler(handlers);
         },
 
-        unsubscribeEventListener(params: { eventType: EventParams }): Promise<Response> {
-        	return event(rpcClient).removeEventListener(params);
+        unsubscribeEventListener(params: EventParams): Promise<Response> {
+			return event(rpcClient).removeEventListener({ eventType: params });
         },
     };
 };

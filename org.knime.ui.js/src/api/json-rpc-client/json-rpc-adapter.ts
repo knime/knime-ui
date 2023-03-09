@@ -35,13 +35,20 @@ const validateResponse = (
 ): JSONRPCResponse => {
     const { result, error: originalError } = maybeResponse;
 
-    if (!originalError) {
+    if (!originalError && result) {
         return maybeResponse as JSONRPCSuccessResponse;
     }
 
     if (result) {
         consola.error(`Invalid JSON-RPC response: Both error and result exist.\n${JSON.stringify(maybeResponse)}`);
 
+        throw createWrappedError(
+            `Error returned from JSON-RPC API ${JSON.stringify([method, params])}: ${JSON.stringify(originalError)}`,
+            originalError
+        );
+    }
+
+    if (originalError) {
         throw createWrappedError(
             `Error returned from JSON-RPC API ${JSON.stringify([method, params])}: ${JSON.stringify(originalError)}`,
             originalError

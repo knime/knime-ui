@@ -1,5 +1,4 @@
 /* eslint-disable new-cap */
-import { registeredHandlers } from '@api/json-rpc-notifications';
 import { notifyPatch } from '@/util/event-syncer';
 import { APP_ROUTES } from '@/router';
 
@@ -7,19 +6,21 @@ import eventsPlugin from '../events';
 
 jest.mock('@/util/event-syncer');
 
-jest.mock('@api/json-rpc-notifications', () => {
-    let registeredHandlers = {};
-    const registerEventHandlers = (handlers) => {
-        Object.entries(handlers).forEach(([key, value]) => {
-            registeredHandlers[key] = value;
-        });
-    };
+jest.mock('@/router');
 
-    return {
-        registerEventHandlers,
-        registeredHandlers
-    };
-});
+let registeredHandlers = {};
+
+jest.mock('@api', () => ({
+    API: {
+        event: {
+            registerEventHandler: (handlers) => {
+                Object.entries(handlers).forEach(([key, value]) => {
+                    registeredHandlers[key] = value;
+                });
+            }
+        }
+    }
+}));
 
 describe('Event Plugin', () => {
     const loadPlugin = () => {
