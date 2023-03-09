@@ -100,7 +100,18 @@ export default {
             this.$refs.bottomList?.focusFirst();
         },
         focusFirst() {
-            this.$refs.topList?.focusFirst();
+            if (this.topNodes.length > 0) {
+                this.$refs.topList?.focusFirst();
+            } else {
+                this.$refs.bottomList?.focusFirst();
+            }
+        },
+        bottomListNavReachedTop() {
+            if (this.topNodes.length > 0) {
+                this.$refs.topList?.focusLast();
+            } else {
+                this.$emit('focusSearchBar');
+            }
         }
     }
 };
@@ -171,7 +182,7 @@ export default {
             ref="bottomList"
             v-model:selected-node="selectedNode"
             :nodes="bottomNodes"
-            @nav-reached-top="$refs.topList.focusLast()"
+            @nav-reached-top="bottomListNavReachedTop"
           >
             <template #item="slotProps">
               <DraggableNodeTemplate v-bind="slotProps" />
