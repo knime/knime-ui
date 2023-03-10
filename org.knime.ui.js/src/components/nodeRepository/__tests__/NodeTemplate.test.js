@@ -106,7 +106,7 @@ describe('NodeTemplate', () => {
             },
             canvas: {
                 getters: {
-                    toCanvasCoordinates: state => toCanvasCoordinatesMock
+                    toCanvasCoordinates: () => toCanvasCoordinatesMock
                 }
             }
         };

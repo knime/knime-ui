@@ -35,7 +35,7 @@ describe('canvas store', () => {
                 bottom: 310,
                 right: 310
             }),
-            scrollTo: vi.fn().mockImplementation(({ top, left, behavior }) => {
+            scrollTo: vi.fn().mockImplementation(({ top, left }) => {
                 scrollContainer.scrollLeft = left;
                 scrollContainer.scrollTop = top;
             })

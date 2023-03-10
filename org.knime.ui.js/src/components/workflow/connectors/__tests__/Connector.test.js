@@ -44,7 +44,7 @@ describe('Connector.vue', () => {
         connectedVia: []
     };
 
-    const doShallowMount = ({ props = defaultProps, storeConfig, mocks } = {}) => {
+    const doShallowMount = ({ props = defaultProps, storeConfig } = {}) => {
         const $store = mockVuexStore(storeConfig);
 
         return shallowMount(Connector, {

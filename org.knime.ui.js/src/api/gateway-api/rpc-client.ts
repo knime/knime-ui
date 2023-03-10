@@ -7,6 +7,7 @@ export interface RPCClient {
     registerEventHandlers(eventHandlers: Record<string, any>): void;
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 export const createRPCClient = (configuration: Configuration): RPCClient => {
     const rpcClient: RPCClient = {
         call(method, params) {

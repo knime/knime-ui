@@ -350,7 +350,7 @@ describe('FileExplorer.vue', () => {
 
             // workflow-group item
             const secondItem = wrapper.findAll('.file-explorer-item').at(1);
-            
+
             await dragAndDropItem(secondItem, firstItem);
             expect(wrapper.emitted('drag')[0][0]).toEqual({
                 event: expect.anything(),
@@ -442,7 +442,7 @@ describe('FileExplorer.vue', () => {
         it('should emit deleteItems on delete option click', async () => {
             const itemIdx = 2;
             const { wrapper } = doMount({
-                props: { items: MOCK_DATA.map((item, index) => ({ ...item, canBeDeleted: true })) }
+                props: { items: MOCK_DATA.map((item) => ({ ...item, canBeDeleted: true })) }
             });
 
             const deleteButton = getDeleteOption(wrapper, itemIdx);

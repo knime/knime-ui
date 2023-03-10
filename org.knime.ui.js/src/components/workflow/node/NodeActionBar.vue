@@ -122,7 +122,7 @@ export default {
 
                 // plain execution
                 execute: !this.canPause && !this.canResume,
-                
+
                 // loop execution
                 pauseLoopExecution: this.canPause,
                 resumeLoopExecution: !this.canPause && this.canResume,
@@ -136,8 +136,8 @@ export default {
             };
 
             return Object.entries(conditionMap)
-                .filter(([name, visible]) => visible)
-                .map(([name, visible]) => this.actions[name]);
+                .filter(([_, visible]) => visible)
+                .map(([name, _]) => this.actions[name]);
         }
     },
     methods: {

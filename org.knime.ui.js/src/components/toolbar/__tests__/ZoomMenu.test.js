@@ -25,7 +25,7 @@ describe('ZoomMenu', () => {
                         zoomFactor
                     },
                     actions: {
-                        zoomCentered({ state }, { delta, factor }) {
+                        zoomCentered({ state }, { factor }) {
                             if (factor) {
                                 state.zoomFactor = factor;
                             }

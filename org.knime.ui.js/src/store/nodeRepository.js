@@ -215,7 +215,7 @@ export const actions = {
         ]);
     },
 
-    async getNodeDescription({ commit, state, rootState }, { selectedNode }) {
+    async getNodeDescription({ rootState }, { selectedNode }) {
         const { className, settings } = selectedNode.nodeFactory;
         const node = await getNodeDescription({ className, settings });
 

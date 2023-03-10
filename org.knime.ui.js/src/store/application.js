@@ -204,7 +204,7 @@ export const actions = {
 
     // ----------------------------------------------------------------------------------------- //
 
-    async replaceApplicationState({ commit, dispatch, state, rootState }, applicationState) {
+    async replaceApplicationState({ commit, dispatch, state }, applicationState) {
         // Only set application state properties present in the received object
         if (applicationState.availablePortTypes) {
             commit('setAvailablePortTypes', applicationState.availablePortTypes);
@@ -259,7 +259,7 @@ export const actions = {
             commit('setFileExtensionToNodeTemplateId', applicationState.fileExtensionToNodeTemplateId);
         }
     },
-    async setActiveProject({ commit, dispatch, state }, openProjects) {
+    async setActiveProject({ dispatch, state }, openProjects) {
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
             await dispatch('switchWorkflow', { newWorkflow: null });
@@ -336,7 +336,7 @@ export const actions = {
 
         commit('setIsLoadingWorkflow', false);
     },
-    async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
+    async loadWorkflow({ dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
         // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
         setProjectActiveAndEnsureItsLoadedInBackend({ projectId });
         const project = await loadWorkflow({ projectId, workflowId });
@@ -408,7 +408,7 @@ export const actions = {
         }
     },
 
-    removeCanvasState({ rootState, state }, projectId) {
+    removeCanvasState({ state }, projectId) {
         const stateKey = getCanvasStateKey(`${projectId}--root`);
 
         delete state.savedCanvasStates[stateKey];

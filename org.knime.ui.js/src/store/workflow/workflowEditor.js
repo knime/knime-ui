@@ -375,7 +375,7 @@ export const actions = {
     async pasteWorkflowParts({
         state: { activeWorkflow, copyPaste },
         getters: { isWorkflowEmpty },
-        dispatch, rootGetters, commit, rootState
+        dispatch, rootGetters, commit
     }, { position: customPosition } = {}) {
         let clipboardContent, clipboardText;
         try {

@@ -52,8 +52,8 @@ export default {
 
             return Object
                 .entries(visibleItems)
-                .filter(([name, visible]) => visible)
-                .map(([name, visible]) => name);
+                .filter(([_, visible]) => visible)
+                .map(([name, _]) => name);
         }
     }
 };

@@ -108,7 +108,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         return getSlottedChildComponent(wrapper).props('scope')[propName];
     };
 
-    const startConnection = async ({ wrapper, startNodeId = '', validConnectionTargets = [] }) => {
+    const startConnection = async ({ startNodeId = '', validConnectionTargets = [] }) => {
         $bus.emit('connector-start', {
             startNodeId,
             validConnectionTargets: new Set(validConnectionTargets)
@@ -143,7 +143,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         await Vue.nextTick();
     };
 
-    const connectorEnd = async ({ wrapper }) => {
+    const connectorEnd = async () => {
         $bus.emit('connector-end');
         await Vue.nextTick();
     };

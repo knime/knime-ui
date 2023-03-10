@@ -167,7 +167,7 @@ describe('NodeActionBar', () => {
     });
 
     it('should add the hotkey binding to the action tooltip when node is selected', () => {
-        $shortcuts.get = vi.fn((name) => ({ hotkeyText: 'MOCK HOTKEY TEXT' }));
+        $shortcuts.get = vi.fn(() => ({ hotkeyText: 'MOCK HOTKEY TEXT' }));
 
         const { wrapper } = doMount({
             props: { canReset: true },

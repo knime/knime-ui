@@ -2,19 +2,17 @@
 /* eslint-disable no-undefined */
 /* eslint-disable no-use-before-define */
 export type JSONRPC = '2.0';
+// eslint-disable-next-line no-redeclare
 export const JSONRPC: JSONRPC = '2.0';
 
 export type JSONRPCID = string | number | null;
 export type JSONRPCParams = any;
 
 // eslint-disable-next-line no-extra-parens
-export const isJSONRPCID = (id: any): id is JSONRPCID => (
-    typeof id === 'undefined' ||
+export const isJSONRPCID = (id: any): id is JSONRPCID => typeof id === 'undefined' ||
     typeof id === 'string' ||
     typeof id === 'number' ||
-    id === null
-);
-
+    id === null;
 export interface JSONRPCRequest {
   jsonrpc: JSONRPC;
   method: string;

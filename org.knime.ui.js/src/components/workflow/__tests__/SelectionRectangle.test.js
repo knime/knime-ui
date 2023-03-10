@@ -91,7 +91,7 @@ describe('SelectionRectangle', () => {
                     })
                 },
                 target: {
-                    setPointerCapture: (pointerId) => null
+                    setPointerCapture: () => null
                 }
             });
         };

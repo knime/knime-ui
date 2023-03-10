@@ -78,7 +78,7 @@ export const getNodeView = async ({ projectId, workflowId, nodeId }) => {
  * @param {String} projectId
  * @returns {void}
  */
-export const updateDataPointSelection = async (projectId) => {
+export const updateDataPointSelection = async () => {
     // TODO: implement update selection. Also, is this needed for our use case?
 };
 
