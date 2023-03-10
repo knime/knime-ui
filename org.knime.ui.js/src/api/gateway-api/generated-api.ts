@@ -2387,6 +2387,41 @@ export interface RemovePortCommand extends PortCommand {
 export namespace RemovePortCommand {
 }
 /**
+ * Replace a node with a new one.
+ * @export
+ * @interface ReplaceNodeCommand
+ */
+export interface ReplaceNodeCommand extends WorkflowCommand {
+
+    /**
+     * 
+     * @type {XY}
+     * @memberof ReplaceNodeCommand
+     */
+    position: XY;
+    /**
+     * 
+     * @type {NodeFactoryKey}
+     * @memberof ReplaceNodeCommand
+     */
+    nodeFactory: NodeFactoryKey;
+    /**
+     * 
+     * @type {string}
+     * @memberof ReplaceNodeCommand
+     */
+    nodeId: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace ReplaceNodeCommand
+ */
+export namespace ReplaceNodeCommand {
+}
+/**
  * Event type to register for SelectionEvents.
  * @export
  * @interface SelectionEventType
@@ -3004,6 +3039,7 @@ export namespace WorkflowCommand {
         Delete = 'delete',
         Connect = 'connect',
         AddNode = 'add_node',
+        ReplaceNode = 'replace_node',
         UpdateComponentOrMetanodeName = 'update_component_or_metanode_name',
         UpdateNodeLabel = 'update_node_label',
         Collapse = 'collapse',
@@ -3670,6 +3706,20 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddNode }
 		}) as Promise<AddNodeResult>;
 		return postProcessCommandResponse(commandResponse);
+	},	
+	 
+ 	/**
+	 * Replace a node with a new one.
+	 */
+	ReplaceNode(
+		params: { projectId: string, workflowId: string } & Omit<ReplaceNodeCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		return workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ReplaceNode }
+		});
 	},	
 	 
  	/**
