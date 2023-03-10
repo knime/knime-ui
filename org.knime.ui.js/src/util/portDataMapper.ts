@@ -1,7 +1,18 @@
+// eslint-disable-next-line object-curly-newline
+import type {
+    PortType,
+    DynamicPortGroupDescription,
+    NativeNodeDescription
+// eslint-disable-next-line object-curly-newline
+} from '@/api/gateway-api/generated-api';
+
+type AvailablePortTypes = Record<string, PortType>
+type FullPortType = PortType & { typeId: string; type?: string; }
+
 /**
  * Maps a port `typeId` string or a object with a `typeId` property to a port object with all the properties of the
  * PortObject schema from the API
- * @param {Object} availablePortTypes Dictionary of all available port types and their information
+ * @param {AvailablePortTypes} availablePortTypes Dictionary of all available port types and their information
  * @param {Boolean} includeType whether to include a `type` property holding the value of the port kind.
  * This is necessary when the data will injected (down the line) into the PortIcon component from webapps-common
  * which uses a `type` prop instead of a `kind`
@@ -9,14 +20,20 @@
  * with a `typeId` property. This mapping function will return the whole port object with information about color, kind,
  * etc
  */
-export const toPortObject = (availablePortTypes, includeType = true) => (input) => {
-    const fullPortObject = typeof input === 'string'
+export const toPortObject = (
+    availablePortTypes: AvailablePortTypes,
+    includeType = true
+) => (
+    input: string | { typeId: string }
+): FullPortType => {
+    const isStringInput = typeof input === 'string';
+    const fullPortObject = isStringInput
         ? availablePortTypes[input]
         : availablePortTypes[input.typeId];
-    
+
     const result = {
         ...fullPortObject,
-        typeId: input?.typeId || input
+        typeId: isStringInput ? input : input?.typeId
     };
 
     return includeType
@@ -37,21 +54,22 @@ export const toPortObject = (availablePortTypes, includeType = true) => (input) 
  * @returns {Function} A function that maps the raw port group description as it was received to the format needed to
  * to render it.
  */
-const toPortGroupDescription = (availablePortTypes) => (portGroupDescription) => {
-    const { identifier, description, name, supportedPortTypes } = portGroupDescription;
-    const types = supportedPortTypes
-        .map(toPortObject(availablePortTypes))
-        .map(supportedType => ({
-            ...supportedType,
-            typeName: name
-        }));
+const toPortGroupDescription =
+    (availablePortTypes: AvailablePortTypes) => (portGroupDescription: DynamicPortGroupDescription) => {
+        const { identifier, description, name, supportedPortTypes } = portGroupDescription;
+        const types: Array<FullPortType & { typeName: string }> = supportedPortTypes
+            .map(toPortObject(availablePortTypes))
+            .map(supportedType => ({
+                ...supportedType,
+                typeName: name
+            }));
 
-    return {
-        groupName: identifier,
-        groupDescription: description,
-        types
+        return {
+            groupName: identifier,
+            groupDescription: description,
+            types
+        };
     };
-};
 
 /**
  * Maps over a collection of ports to add information about their color and kind, extracted from the
@@ -60,16 +78,23 @@ const toPortGroupDescription = (availablePortTypes) => (portGroupDescription) =>
  * @param {Record<string, any>} availablePortTypes
  * @returns {Array} ports
  */
-export const mapPortTypes = (ports = [], availablePortTypes = {}) => ports.map(toPortObject(availablePortTypes));
+export const mapPortTypes = (
+    ports: Array<string | { typeId: string }> = [],
+    availablePortTypes: AvailablePortTypes = {}
+) => ports.map(toPortObject(availablePortTypes));
 
 /**
  * Maps a node object and adds to every of its ports all the properties of the PortObject schema from the API
  * @param {Object} availablePortTypes Dictionary of all available port types and their information
  * @returns {Function} mapping function that takes a node to which all the port information will be added
  */
-export const toNodeWithFullPorts = (availablePortTypes) => (node) => {
-    const { inPorts = [], outPorts = [], dynamicInPortGroupDescriptions = [],
-        dynamicOutPortGroupDescriptions = [] } = node;
+export const toNodeWithFullPorts = (availablePortTypes: AvailablePortTypes) => (node: NativeNodeDescription) => {
+    const {
+        inPorts = [],
+        outPorts = [],
+        dynamicInPortGroupDescriptions = [],
+        dynamicOutPortGroupDescriptions = []
+    } = node;
 
     return {
         ...node,
