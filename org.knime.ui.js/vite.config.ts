@@ -64,8 +64,7 @@ export default defineConfig(({ mode }) => {
                 // needed for Bitbucket Pipeline
                 // see https://support.atlassian.com/bitbucket-cloud/docs/test-reporting-in-pipelines/
                 junit: 'test-results/junit.xml'
-            },
-            root: fileURLToPath(new URL('./', import.meta.url))
+            }
         }
     };
 });
