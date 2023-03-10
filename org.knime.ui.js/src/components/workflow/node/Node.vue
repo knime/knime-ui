@@ -325,7 +325,7 @@ export default {
 
         onTorsoDragDrop(dragEvent) {
             const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
-            this.replaceNode({ nodeId: this.id, nodeFactory });
+            this.replaceNode({ position: { x: this.position.x, y: this.position.y }, nodeId: this.id, nodeFactory });
             this.isDraggedOver = false;
         },
 
