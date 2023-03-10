@@ -10,17 +10,20 @@ jest.mock('@/router');
 
 let registeredHandlers = {};
 
-jest.mock('@api', () => ({
-    API: {
-        event: {
-            registerEventHandler: (handlers) => {
-                Object.entries(handlers).forEach(([key, value]) => {
-                    registeredHandlers[key] = value;
-                });
-            }
+jest.mock('@api', () => {
+    const registerEventHandler = (handlers) => {
+        Object.entries(handlers).forEach(([key, value]) => {
+            registeredHandlers[key] = value;
+        });
+    };
+
+    return {
+        API: {
+            event: { registerEventHandler },
+            desktop: { registerEventHandler }
         }
-    }
-}));
+    };
+});
 
 describe('Event Plugin', () => {
     const loadPlugin = () => {
