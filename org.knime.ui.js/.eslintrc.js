@@ -1,7 +1,7 @@
 require('@rushstack/eslint-patch/modern-module-resolution');
 
 module.exports = {
-    extends: ['@knime/eslint-config/vue3-typescript', '@knime/eslint-config/vitest'],
+    extends: ['@knime/eslint-config/vue3-typescript', '@knime/eslint-config/typescript', '@knime/eslint-config/vitest'],
     globals: {
         consola: false
     },
@@ -10,13 +10,6 @@ module.exports = {
         'knime-js-pagebuilder/'
     ],
     env: { browser: true, node: true },
-    overrides: [
-        {
-            files: ['**/*.ts'],
-            extends: ['@knime/eslint-config/typescript'],
-            env: { browser: true, node: true }
-        }
-    ],
     settings: {
         'import/resolver': {
             alias: {
