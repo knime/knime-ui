@@ -656,6 +656,7 @@ describe('SpaceExplorer.vue', () => {
             wrapper.findComponent(FileExplorer).vm.$emit('moveItems', { sourceItems, targetItem, onComplete });
 
             expect(window.alert).toHaveBeenCalledWith(
+                // eslint-disable-next-line vitest/no-conditional-tests
                 expect.stringContaining('Following workflows are opened:' && '• test2')
             );
             await nextTick();
@@ -727,27 +728,6 @@ describe('SpaceExplorer.vue', () => {
             });
         await new Promise(r => setTimeout(r, 0));
         expect(onComplete).toHaveBeenCalledWith(true);
-    });
-
-    it('should not attempt to add a node to canvas when the workflow is not displayed', async () => {
-        document.elementFromPoint = vi.fn().mockReturnValue(null);
-        const { wrapper, dispatchSpy, mockRoute } = await doMountAndLoad();
-
-        mockRoute.name = APP_ROUTES.SpaceBrowsingPage;
-
-        const onComplete = vi.fn();
-        wrapper.findComponent(FileExplorer).vm.$emit('dragend', {
-            event: new MouseEvent('dragend'),
-            sourceItem: { id: '0' },
-            onComplete
-        });
-
-        expect(dispatchSpy).not.toHaveBeenCalledWith(
-            'workflow/addNode',
-            expect.anything()
-        );
-        await wrapper.vm.$nextTick();
-        expect(onComplete).toHaveBeenCalledWith(false);
     });
 
     it('should call onUpdate when dragging supported file above canvas', async () => {

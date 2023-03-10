@@ -62,7 +62,7 @@ describe('SpaceExplorerActions.vue', () => {
             expect(wrapper.find('#downloadToLocalSpace').attributes('aria-disabled')).toBeTruthy();
             expect(wrapper.find('#createFolder').attributes('disabled')).toBeFalsy();
             expect(wrapper.find('#importFiles').attributes('disabled')).toBeFalsy();
-            expect(wrapper.findComponent(PlusButton).attributes('disabled')).toBe('true')
+            expect(wrapper.findComponent(PlusButton).attributes('disabled')).toBe('true');
         });
 
         it.each([
