@@ -1,5 +1,5 @@
 import rpc from './json-rpc-adapter';
-import { API } from '@/api/knime-gateway-api';
+import { API } from '@api';
 
 export const fetchWorkflowGroupContent = async ({ spaceProviderId, spaceId, itemId }) => {
     try {

@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 import { API } from '@api';
 import { APP_ROUTES } from '@/router';
 import { notifyPatch } from '@/util/event-syncer';
@@ -5,12 +6,11 @@ import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { nodeSize } from '@/style/shapes.mjs';
 
 export default ({ $store, $router }) => {
-    const eventHandlers = {
+    API.event.registerEventHandler({
         /**
          * Is triggered by the backend, whenever a change to the workflow has been made/requested
          * Sends a list of json-patch operations to update the frontend's state
          */
-        // NXT-962: Unpack arguments from Object?
         WorkflowChangedEvent({ patch: { ops }, snapshotId }) {
             // for all patch ops rewrite their path such that they are applied to 'activeWorkflow'
             ops.forEach(op => {
@@ -27,7 +27,6 @@ export default ({ $store, $router }) => {
          * Is triggered by the backend, whenever the application state changes
          * sends the new state
          */
-        // NXT-962: Unpack arguments from Object?
         async AppStateChangedEvent({ appState }) {
             const { openProjects } = appState;
             const currentProjectId = $store.state.application.activeProjectId;
@@ -62,8 +61,10 @@ export default ({ $store, $router }) => {
             if (newReleases || bugfixes) {
                 $store.commit('application/setAvailableUpdates', { newReleases, bugfixes });
             }
-        },
+        }
+    });
 
+    API.desktop.registerEventHandler({
         async SaveAndCloseWorkflowsEvent({ projectIds, params = [] }) {
             $store.dispatch('application/updateGlobalLoader', { loading: true });
 
@@ -123,7 +124,5 @@ export default ({ $store, $router }) => {
                 text
             });
         }
-    };
-
-    API.event.registerEventHandler(eventHandlers);
+    });
 };
