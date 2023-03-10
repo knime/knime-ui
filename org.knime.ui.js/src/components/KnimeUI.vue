@@ -8,7 +8,7 @@ import Error from '@/components/application/Error.vue';
 import SmartLoader from '@/components/common/SmartLoader.vue';
 import CreateWorkflowModal from '@/components/application/CreateWorkflowModal.vue';
 
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 
 
 /**

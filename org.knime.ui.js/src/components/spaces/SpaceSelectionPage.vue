@@ -5,7 +5,7 @@ import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 import Button from 'webapps-common/ui/components/Button.vue';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/plus-small.svg';
 
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
 import Card from '@/components/common/Card.vue';
 import CardContent from '@/components/common/CardContent.vue';

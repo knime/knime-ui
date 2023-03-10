@@ -1,6 +1,6 @@
 /* eslint-disable valid-jsdoc */
 import { API } from '@api';
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 import { notifyPatch } from '@/util/event-syncer';
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { nodeSize } from '@/style/shapes.mjs';

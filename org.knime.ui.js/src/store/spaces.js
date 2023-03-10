@@ -17,7 +17,7 @@ import {
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 import ITEM_TYPES from '@/util/spaceItemTypes';
 
 export const state = () => ({

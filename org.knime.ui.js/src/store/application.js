@@ -1,7 +1,7 @@
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow,
     setProjectActiveAndEnsureItsLoadedInBackend } from '@api';
 import { encodeString } from '@/util/encodeString';
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 
 const getCanvasStateKey = (input) => encodeString(input);
 

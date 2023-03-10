@@ -7,7 +7,7 @@ import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
 
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 import PageHeader from '@/components/common/PageHeader.vue';
 
 import SpaceExplorer from './SpaceExplorer.vue';

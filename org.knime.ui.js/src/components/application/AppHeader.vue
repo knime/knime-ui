@@ -8,7 +8,7 @@ import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
 import SwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
 import InfoIcon from '@/assets/info.svg';
 
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 
 import AppHeaderTab from './AppHeaderTab.vue';
 
