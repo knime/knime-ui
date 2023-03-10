@@ -556,8 +556,8 @@ describe('Node Repository store', () => {
                     expect(searchNodesMock).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
-                        nodeLimit: 100,
-                        nodeOffset: 0,
+                        limit: 100,
+                        offset: 0,
                         query: 'lookup',
                         tags: [],
                         nodesPartition: 'IN_COLLECTION'
@@ -580,8 +580,8 @@ describe('Node Repository store', () => {
                     expect(searchNodesMock).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
-                        nodeLimit: 100,
-                        nodeOffset: 100,
+                        limit: 100,
+                        offset: 100,
                         query: 'lookup',
                         tags: [],
                         nodesPartition: 'IN_COLLECTION'
@@ -628,8 +628,8 @@ describe('Node Repository store', () => {
                     expect(searchNodesMock).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
-                        nodeLimit: 100,
-                        nodeOffset: 0,
+                        limit: 100,
+                        offset: 0,
                         query: 'lookup',
                         tags: [],
                         nodesPartition: 'NOT_IN_COLLECTION'
@@ -655,8 +655,8 @@ describe('Node Repository store', () => {
                     expect(searchNodesMock).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
-                        nodeLimit: 100,
-                        nodeOffset: 100,
+                        limit: 100,
+                        offset: 100,
                         query: 'lookup',
                         tags: [],
                         nodesPartition: 'NOT_IN_COLLECTION'
@@ -852,9 +852,12 @@ describe('Node Repository store', () => {
 
         it('fetches and caches nodeTemplates based on id', async () => {
             const { store } = await createStore();
-            const nodeTemplate = await store.dispatch('nodeRepository/getNodeTemplate', 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory');
+            const nodeTemplate = await store.dispatch(
+                'nodeRepository/getNodeTemplate', 'org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory'
+            );
 
-            expect(nodeTemplate).toEqual(getNodeTemplatesResponse['org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory']);
+            expect(nodeTemplate)
+                .toEqual(getNodeTemplatesResponse['org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory']);
             expect(store.state.nodeRepository.nodeTemplates).toEqual(getNodeTemplatesResponse);
         });
     });

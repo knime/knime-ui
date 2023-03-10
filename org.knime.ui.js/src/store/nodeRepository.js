@@ -185,8 +185,8 @@ export const actions = {
             query: state.query,
             tags: state.selectedTags,
             allTagsMatch: true,
-            nodeOffset: currentPage() * nodeSearchPageSize,
-            nodeLimit: nodeSearchPageSize,
+            offset: currentPage() * nodeSearchPageSize,
+            limit: nodeSearchPageSize,
             fullTemplateInfo: true,
             nodesPartition: bottom ? 'NOT_IN_COLLECTION' : 'IN_COLLECTION'
         });
