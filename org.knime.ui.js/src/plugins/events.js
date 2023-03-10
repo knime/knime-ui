@@ -6,7 +6,7 @@ import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { nodeSize } from '@/style/shapes.mjs';
 
 export default ({ $store, $router }) => {
-    API.event.registerEventHandler({
+    API.event.registerEventHandlers({
         /**
          * Is triggered by the backend, whenever a change to the workflow has been made/requested
          * Sends a list of json-patch operations to update the frontend's state
@@ -64,7 +64,7 @@ export default ({ $store, $router }) => {
         }
     });
 
-    API.desktop.registerEventHandler({
+    API.desktop.registerEventHandlers({
         async SaveAndCloseWorkflowsEvent({ projectIds, params = [] }) {
             $store.dispatch('application/updateGlobalLoader', { loading: true });
 

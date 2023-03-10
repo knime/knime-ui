@@ -7,7 +7,7 @@ interface DesktopEventHandlers {
 }
 
 export const desktop = {
-    registerEventHandler: (handlers: DesktopEventHandlers) => {
+    registerEventHandlers: (handlers: DesktopEventHandlers) => {
         Object.entries(handlers).forEach(([eventName, eventHandler]) => {
             registerNotificationHandler(eventName, eventHandler);
         });

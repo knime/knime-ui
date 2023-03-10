@@ -11,7 +11,7 @@ jest.mock('@/router');
 let registeredHandlers = {};
 
 jest.mock('@api', () => {
-    const registerEventHandler = (handlers) => {
+    const registerEventHandlers = (handlers) => {
         Object.entries(handlers).forEach(([key, value]) => {
             registeredHandlers[key] = value;
         });
@@ -19,8 +19,8 @@ jest.mock('@api', () => {
 
     return {
         API: {
-            event: { registerEventHandler },
-            desktop: { registerEventHandler }
+            event: { registerEventHandlers },
+            desktop: { registerEventHandlers }
         }
     };
 });

@@ -4,7 +4,7 @@ import { rpc, registerNotificationHandler } from '../json-rpc-client';
 export interface RPCClient {
     call(method: string, params: unknown): Promise<any>;
 
-    registerEventHandler(eventHandlers: Record<string, any>): void;
+    registerEventHandlers(eventHandlers: Record<string, any>): void;
 }
 
 export const createRPCClient = (configuration: Configuration): RPCClient => {
@@ -13,7 +13,7 @@ export const createRPCClient = (configuration: Configuration): RPCClient => {
             return rpc(method, params);
         },
 
-        registerEventHandler(handlers) {
+        registerEventHandlers(handlers) {
             Object.entries(handlers).forEach(([eventName, eventHandler]) => {
                 registerNotificationHandler(eventName, eventHandler);
             });
