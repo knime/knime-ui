@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
 
         test: {
             include: ['**/__tests__/*.test.{js,mjs,cjs,ts,mts,cts}'],
-            exclude: [...configDefaults.exclude, 'webapps-common'],
+            exclude: [...configDefaults.exclude, 'webapps-common', 'knime-js-pagebuilder'],
             setupFiles: ['src/test/setup'],
             environment: 'jsdom',
             reporters: ['default', 'junit'],
@@ -46,6 +46,7 @@ export default defineConfig(({ mode }) => {
                     'target',
                     'bin',
                     'webapps-common',
+                    'knime-js-pagebuilder',
                     'buildtools',
                     '.history',
                     'src/main.js',
