@@ -69,9 +69,9 @@ export default {
             
             this.nodeIdsToSelectOnEnd = [];
             this.nodeIdsToDeselectOnEnd = [];
-            
-            // deselect all objects if we do not hold shift key
-            if (e.shiftKey) {
+
+            // deselect all objects if we do not hold shift or control/meta key
+            if (e.shiftKey || e.ctrlKey || e.metaKey) {
                 // remember currently selected nodes, the nodes under the rectangle will inverse them
                 this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
             } else {

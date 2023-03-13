@@ -1,6 +1,7 @@
 import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
+import { mockUserAgent } from 'jest-useragent-mock';
 
 import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
@@ -197,6 +198,40 @@ describe('Kanvas', () => {
             wrapper.find('svg').trigger('pointerup');
 
             expect(mockBus.emit).toHaveBeenCalledWith('selection-pointerup', expect.anything());
+        });
+
+        it('should emit select-pointerdown when pressing meta on Mac and left mouse button', async () => {
+            mockUserAgent('mac');
+            const { wrapper, mockBus } = doShallowMount();
+            const svg = wrapper.find('svg');
+            await svg.trigger('pointerdown', {
+                button: 0, // left click
+                position: {
+                    x: 100,
+                    y: 100
+                },
+                pointerId: -1,
+                metaKey: true
+            });
+
+            expect(mockBus.emit).toHaveBeenCalledWith('selection-pointerdown', expect.anything());
+        });
+
+        it('should emit select-pointerdown when pressing control on Windows/Linux and left mouse button', async () => {
+            mockUserAgent('windows');
+            const { wrapper, mockBus } = doShallowMount();
+            const svg = wrapper.find('svg');
+            await svg.trigger('pointerdown', {
+                button: 0, // left click
+                position: {
+                    x: 100,
+                    y: 100
+                },
+                pointerId: -1,
+                ctrlKey: true
+            });
+
+            expect(mockBus.emit).toHaveBeenCalledWith('selection-pointerdown', expect.anything());
         });
     });
 
