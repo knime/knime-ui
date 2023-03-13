@@ -4,7 +4,7 @@ import { shallowMount } from '@vue/test-utils';
 
 import Button from 'webapps-common/ui/components/Button.vue';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import { openWorkflowCoachPreferencePage as openWorkflowCoachPreferencePageMock, getNodeRecommendations } from '@api';
 import * as $shapes from '@/style/shapes.mjs';

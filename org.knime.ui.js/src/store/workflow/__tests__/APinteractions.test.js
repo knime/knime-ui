@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi, afterEach } from 'vitest';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, closeWorkflow,
     openLayoutEditor, saveWorkflowAs } from '@api';

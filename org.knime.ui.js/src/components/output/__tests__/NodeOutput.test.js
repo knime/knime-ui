@@ -2,7 +2,7 @@ import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-params */
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import * as selectionStore from '@/store/selection';
 

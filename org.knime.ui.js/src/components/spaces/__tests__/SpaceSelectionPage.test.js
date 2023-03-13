@@ -1,5 +1,5 @@
 import { expect, describe, beforeEach, it, vi } from 'vitest';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import { mount } from '@vue/test-utils';
 
 import * as spacesStore from '@/store/spaces';

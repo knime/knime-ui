@@ -2,7 +2,7 @@ import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import Kanvas, { RESIZE_DEBOUNCE } from '../Kanvas.vue';
 

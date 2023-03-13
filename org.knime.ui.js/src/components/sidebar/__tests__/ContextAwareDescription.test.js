@@ -1,7 +1,7 @@
 import { expect, describe, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import ContextAwareDescription from '@/components/sidebar/ContextAwareDescription.vue';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeDescription from '@/components/nodeRepository/NodeDescription.vue';

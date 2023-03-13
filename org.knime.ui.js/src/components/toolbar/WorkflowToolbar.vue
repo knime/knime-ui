@@ -53,7 +53,7 @@ export default {
             return Object
                 .entries(visibleItems)
                 .filter(([_, visible]) => visible)
-                .map(([name, _]) => name);
+                .map(([name]) => name);
         }
     }
 };

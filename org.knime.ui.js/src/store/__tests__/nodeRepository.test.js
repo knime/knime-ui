@@ -1,6 +1,6 @@
 import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-lines */
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 const getNodesGroupedByTagsResponse = {
     groups: [{

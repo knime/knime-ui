@@ -2,7 +2,7 @@ import { expect, describe, it } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 import SwitchIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
 
 import * as panelStoreConfig from '@/store/panel';
@@ -11,7 +11,7 @@ import LeftCollapsiblePanel from '../LeftCollapsiblePanel.vue';
 describe('LeftCollapsiblePanel.vue', () => {
     const doShallowMount = (customProps = {}) => {
         const $store = mockVuexStore({ panel: panelStoreConfig });
-        
+
         return shallowMount(LeftCollapsiblePanel, {
             props: {
                 title: 'hover-title',
@@ -32,22 +32,22 @@ describe('LeftCollapsiblePanel.vue', () => {
 
     it('is opened via props', async () => {
         const wrapper = doShallowMount();
-        
+
         expect(wrapper.find('.container').attributes('style')).toMatch('width: 0px');
-        
+
         await wrapper.setProps({ expanded: true });
         expect(wrapper.find('.container').attributes('style')).toMatch('width: 200px');
     });
 
     it('width matches prop', () => {
         const wrapper = doShallowMount({ width: '400px', expanded: true });
-        
+
         expect(wrapper.find('.container').attributes('style')).toMatch('width: 400px');
     });
 
     it('emits "toggle-expand" event when clicking on button', () => {
         const wrapper = doShallowMount();
-        
+
         wrapper.find('button').trigger('click');
         expect(wrapper.emitted('toggleExpand')).toBeDefined();
     });
@@ -85,12 +85,12 @@ describe('LeftCollapsiblePanel.vue', () => {
             const wrapper = doShallowMount();
             expect(wrapper.find('.container').attributes().style).toBe('width: 0px;');
         });
-        
+
         it('shows hover title', () => {
             const wrapper = doShallowMount();
             expect(wrapper.find('button').attributes().title).toBe('hover-title');
         });
-        
+
         it('flips icon', () => {
             const wrapper = doShallowMount();
             expect(wrapper.findComponent(SwitchIcon).attributes().style).toBe('transform: scaleX(-1);');

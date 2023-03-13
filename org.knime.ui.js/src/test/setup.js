@@ -1,6 +1,5 @@
 import { vi } from 'vitest';
-import consola from 'consola';
-import { level } from './logger.config';
+import consola, { LogLevel } from 'consola';
 import { config } from '@vue/test-utils';
 
 config.global.renderStubDefaultSlot = true;
@@ -9,7 +8,7 @@ config.global.stubs = {
     PortalTarget: true,
     PageBuilder: true
 };
-consola.level = level;
+consola.level = LogLevel.Error;
 
 vi.mock('raf-throttle', () => ({
     default(func) {

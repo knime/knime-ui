@@ -5,7 +5,7 @@ import gsap from 'gsap';
 import { merge } from 'lodash';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import { $bus } from '@/plugins/event-bus';
 import * as workflowStoreConfig from '@/store/workflow';

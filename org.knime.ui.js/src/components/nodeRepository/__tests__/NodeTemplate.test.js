@@ -1,7 +1,7 @@
 import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 import { KnimeMIME } from '@/mixins/dropNode';

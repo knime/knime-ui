@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi, afterEach } from 'vitest';
 import { changeLoopState, changeNodeState } from '@api';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 vi.mock('@api');
 

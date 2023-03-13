@@ -3,7 +3,7 @@ import * as Vue from 'vue';
 import { merge } from 'lodash';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import Button from 'webapps-common/ui/components/Button.vue';
 

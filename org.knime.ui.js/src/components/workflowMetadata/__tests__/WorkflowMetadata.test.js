@@ -2,7 +2,7 @@ import { expect, describe, beforeEach, it } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import LinkList from 'webapps-common/ui/components/LinkList.vue';
 import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.vue';
@@ -23,7 +23,7 @@ describe('WorkflowMetadata.vue', () => {
 
     beforeEach(() => {
         availablePortTypes = {};
-        
+
         workflow = {
             projectMetadata: {
                 title: 'title'
@@ -35,7 +35,7 @@ describe('WorkflowMetadata.vue', () => {
             }
         };
 
-        
+
         doMount = (customState = null) => {
             store = mockVuexStore({
                 workflow: {
@@ -69,18 +69,18 @@ describe('WorkflowMetadata.vue', () => {
         ])('renders placeholders %s', (testTitle, metadata) => {
             // workflow = metadata;
             doMount(metadata);
-    
+
             // show placeholder parents
             expect(wrapper.find('.last-updated').exists()).toBe(true);
             expect(wrapper.find('.tags').exists()).toBe(true);
             expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(true);
-    
+
             // show placeholder tags
             expect(wrapper.text()).toMatch('No title has been set yet');
             expect(wrapper.text()).toMatch('Last update: no update yet');
             expect(wrapper.text()).toMatch('No description has been set yet');
             expect(wrapper.text()).toMatch('No tags have been set yet');
-    
+
             // don't show content containers
             expect(wrapper.findComponent(LinkList).exists()).toBe(false);
             expect(wrapper.findComponent(TagList).exists()).toBe(false);
@@ -101,21 +101,21 @@ describe('WorkflowMetadata.vue', () => {
                     nodeFeatures: { inPorts: [{ name: 'Port 1' }] }
                 }
             });
-    
+
             expect(wrapper.text()).toMatch('Title');
             expect(wrapper.text()).toMatch('Last update: Jan 1, 2000');
-    
+
             let description = wrapper.findComponent(Description);
             expect(description.props().text).toMatch('Description');
-    
+
             let linkList = wrapper.findComponent(LinkList);
             expect(linkList.props().links).toStrictEqual([{ text: 'link1' }]);
-    
+
             expect(wrapper.findComponent(TagList).exists()).toBe(true);
             let tags = wrapper.findAllComponents(Tag);
             expect(tags.length).toBe(1);
             expect(tags.at(0).text()).toBe('tag1');
-    
+
             expect(wrapper.findComponent(NodeFeatureList).props('inPorts')).toEqual([{ name: 'Port 1' }]);
         });
     });
@@ -156,14 +156,14 @@ describe('WorkflowMetadata.vue', () => {
                     nodeFeatures: { emptyText: 'nodeFeatureData' }
                 }
             });
-    
+
             const header = wrapper.find('h2');
             expect(header.classes('with-node-preview')).toBe(true);
         });
 
         it('removes placeholders for components', () => {
             doMount({ info: { containerType: 'component' } });
-    
+
             expect(wrapper.find('.last-updated').exists()).toBe(false);
             expect(wrapper.find('.external-resources').exists()).toBe(false);
             expect(wrapper.find('.tags').exists()).toBe(false);
@@ -189,7 +189,7 @@ describe('WorkflowMetadata.vue', () => {
                     fields: [{ description: dangerousContent, name: '' }]
                 }
             ];
-            
+
             doMount({
                 info: { containerType: 'component' },
                 componentMetadata: {
@@ -200,7 +200,7 @@ describe('WorkflowMetadata.vue', () => {
             });
 
             await Vue.nextTick();
-    
+
             const sectionDescription = wrapper.findComponent(NodeFeatureList).find('.options .section-description');
             const optionDescription = wrapper.findComponent(NodeFeatureList).find('.options .option-description');
             expect(sectionDescription.element.innerHTML).toMatch(expectedContent);

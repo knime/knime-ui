@@ -1,6 +1,6 @@
 import { expect, describe, beforeEach, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import PortIcon from 'webapps-common/ui/components/node/PortIcon.vue';
 import Port from '../Port.vue';
@@ -153,7 +153,7 @@ describe('Port', () => {
             expect(d).not.toContain('h');
             expect(transform).toBeUndefined();
         });
-        
+
         describe('selection', () => {
             it('should display the port-outline when selected', async () => {
                 doShallowMount();

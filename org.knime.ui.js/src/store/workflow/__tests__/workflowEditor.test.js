@@ -3,7 +3,7 @@
 import { expect, describe, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import { connectNodes,
     addNode,
     collapseToContainer,

@@ -9,7 +9,7 @@ import {
     setProjectActiveAndEnsureItsLoadedInBackend
 // eslint-disable-next-line object-curly-newline
 } from '@api';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import * as selectionStore from '@/store/selection';
 
 import { APP_ROUTES, router } from '@/router';

@@ -2,7 +2,7 @@ import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
 import Port from '@/components/common/Port.vue';

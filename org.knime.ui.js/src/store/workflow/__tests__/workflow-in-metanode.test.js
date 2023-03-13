@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from 'vitest';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 // eslint-disable-next-line object-curly-newline
 import {

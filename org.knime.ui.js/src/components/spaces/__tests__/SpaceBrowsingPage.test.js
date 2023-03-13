@@ -1,6 +1,6 @@
 import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
 import { APP_ROUTES } from '@/router';

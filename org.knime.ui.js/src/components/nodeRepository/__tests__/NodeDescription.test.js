@@ -1,7 +1,7 @@
 import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import Description from 'webapps-common/ui/components/Description.vue';
 import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.vue';

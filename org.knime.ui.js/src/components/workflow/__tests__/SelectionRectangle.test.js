@@ -1,7 +1,7 @@
 import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import { $bus } from '@/plugins/event-bus';
 import * as $shapes from '@/style/shapes.mjs';

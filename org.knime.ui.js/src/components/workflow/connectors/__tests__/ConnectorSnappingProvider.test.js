@@ -3,7 +3,7 @@ import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import * as $shapes from '@/style/shapes.mjs';
 import { $bus } from '@/plugins/event-bus';
 

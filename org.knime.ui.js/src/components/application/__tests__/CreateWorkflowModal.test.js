@@ -5,7 +5,7 @@ import { mount } from '@vue/test-utils';
 import Modal from 'webapps-common/ui/components/Modal.vue';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import * as spacesStore from '@/store/spaces';
 
 import CreateWorkflowModal from '../CreateWorkflowModal.vue';

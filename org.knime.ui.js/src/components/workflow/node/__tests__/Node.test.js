@@ -4,7 +4,7 @@ import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import { $bus } from '@/plugins/event-bus';
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';

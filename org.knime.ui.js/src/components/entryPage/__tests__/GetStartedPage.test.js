@@ -1,6 +1,6 @@
 import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import GetStartedPage from '@/components/entryPage/GetStartedPage.vue';
 import Card from '@/components/common/Card.vue';

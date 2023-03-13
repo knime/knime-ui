@@ -2,7 +2,7 @@ import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import { TABS } from '@/store/panel';
 import Kanvas from '@/components/workflow/kanvas/Kanvas.vue';

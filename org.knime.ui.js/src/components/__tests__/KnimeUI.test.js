@@ -3,7 +3,7 @@ import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockUserAgent } from 'jest-useragent-mock';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import AppHeader from '@/components/application/AppHeader.vue';

@@ -2,7 +2,7 @@ import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
 import * as $shapes from '@/style/shapes.mjs';
