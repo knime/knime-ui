@@ -1,4 +1,5 @@
 import rpc from './json-rpc-adapter';
+import { API } from '@api';
 
 /**
  * Do Action on nodes or an entire workflow.
@@ -43,9 +44,12 @@ export const changeLoopState = async ({ projectId, workflowId, nodeId, action })
  */
 export const getNodeDescription = async ({ className, settings }) => {
     try {
-        const node = await rpc('NodeService.getNodeDescription', { className, settings });
-
-        return node;
+        return await API.node.getNodeDescription({
+            nodeFactoryKey: {
+                className,
+                settings
+            }
+        });
     } catch (e) {
         consola.error(e);
         throw new Error('Could not fetch node description');

@@ -301,10 +301,12 @@ describe('API', () => {
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'NodeService.getNodeDescription',
-                params: [{
-                    className: 'test',
-                    settings: 'settings1'
-                }],
+                params: {
+                    nodeFactoryKey: {
+                        className: 'test',
+                        settings: 'settings1'
+                    }
+                },
                 id: 0
             });
         });
