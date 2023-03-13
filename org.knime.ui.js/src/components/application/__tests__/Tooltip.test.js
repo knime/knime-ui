@@ -78,15 +78,15 @@ describe('Tooltip', () => {
         expect(wrapper.find('.scroller').attributes('style')).toContain(`max-height: ${$shapes.tooltipMaxHeight}`);
     });
 
-    describe('only have pointer events for hoverable', () => {
-        it('hoverable', () => {
+    describe('hoverable', () => {
+        it('should have the `hoverable` class when the prop is set', () => {
             props.hoverable = true;
             doShallowMount();
 
             expect(wrapper.classes()).toContain('hoverable');
         });
 
-        it('not hoverable', () => {
+        it('should not have the `hoverable` class when the prop is set', () => {
             doShallowMount();
 
             expect(wrapper.classes()).not.toContain('hoverable');
