@@ -39,7 +39,7 @@ export default {
         });
     },
     methods: {
-        onInput(event, sizeChangeCallback) {
+        onInput(event) {
             let value = event.target.value;
             value = value.replace(/(\r\n|\n|\r)/gm, ''); // remove all new lines
 
@@ -51,9 +51,6 @@ export default {
 
             this.$refs.textarea.value = value;
             this.$refs.ghost.innerText = value;
-
-            // trigger callback to update size on the autosize wrapper
-            sizeChangeCallback();
 
             // apply the styles that resize the textarea according to the content
             this.resizeTextarea();
@@ -104,26 +101,24 @@ export default {
     @width-change="$emit('widthChange', $event)"
     @height-change="$emit('heightChange', $event)"
   >
-    <template #default="{ on: { sizeChange } }">
-      <span
-        ref="ghost"
-        class="ghost"
-        aria-hidden="true"
-      >
-        {{ modelValue }}
-      </span>
-      <textarea
-        ref="textarea"
-        rows="1"
-        class="name-textarea native-context-menu"
-        :value="modelValue"
-        @pointerdown.stop
-        @input="onInput($event, sizeChange)"
-        @keydown="onKeyDown"
-        @keydown.enter.exact="onEnter"
-        @keydown.esc="onEscape"
-      />
-    </template>
+    <span
+      ref="ghost"
+      class="ghost"
+      aria-hidden="true"
+    >
+      {{ modelValue }}
+    </span>
+    <textarea
+      ref="textarea"
+      rows="1"
+      class="name-textarea native-context-menu"
+      :value="modelValue"
+      @pointerdown.stop
+      @input="onInput"
+      @keydown="onKeyDown"
+      @keydown.enter.exact="onEnter"
+      @keydown.esc="onEscape"
+    />
   </NodeNameText>
 </template>
 

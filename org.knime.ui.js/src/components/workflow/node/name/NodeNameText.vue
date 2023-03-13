@@ -62,23 +62,21 @@ export default {
     @width-change="$emit('widthChange', $event)"
     @height-change="$emit('heightChange', $event)"
   >
-    <template #default="{ on }">
-      <div
-        class="node-name"
-        @click.prevent="$emit('click', $event)"
-        @dblclick.left.prevent.stop="editable ? $emit('requestEdit') : null"
-        @mouseleave="$emit('mouseleave', $event)"
-        @mouseenter="$emit('mouseenter', $event)"
+    <div
+      class="node-name"
+      @click.prevent="$emit('click', $event)"
+      @dblclick.left.prevent.stop="editable ? $emit('requestEdit') : null"
+      @mouseleave="$emit('mouseleave', $event)"
+      @mouseenter="$emit('mouseenter', $event)"
+    >
+      <span
+        :style="{ 'max-width': `${$shapes.maxNodeNameWidth}px` }"
+        :title="showOverflow ? null : value"
+        class="text"
       >
-        <span
-          :style="{ 'max-width': `${$shapes.maxNodeNameWidth}px` }"
-          :title="showOverflow ? null : value"
-          class="text"
-        >
-          <slot :on="on">{{ value }}</slot>
-        </span>
-      </div>
-    </template>
+        <slot>{{ value }}</slot>
+      </span>
+    </div>
   </AutoSizeForeignObject>
 </template>
 

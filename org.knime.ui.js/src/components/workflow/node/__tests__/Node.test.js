@@ -154,6 +154,7 @@ describe('Node', () => {
                     plugins: [$store],
                     stubs: {
                         NodeName: true,
+                        NodeLabel: true,
                         NodeDecorators: true,
                         NodeActionBar: true,
                         NodeSelectionPlane: true,

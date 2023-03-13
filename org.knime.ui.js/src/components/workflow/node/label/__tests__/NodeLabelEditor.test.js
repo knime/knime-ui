@@ -30,7 +30,7 @@ describe('NodeLabelEditor', () => {
             global: {
                 plugins: [$store],
                 mocks: { $shapes },
-                stubs: { NodeLabelTextarea: true }
+                stubs: { NodeLabelTextArea: true }
             }
         });
 

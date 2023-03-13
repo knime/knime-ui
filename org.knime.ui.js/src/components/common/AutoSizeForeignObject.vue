@@ -1,7 +1,4 @@
 <script>
-import { mapState } from 'vuex';
-const MINIMUM_SIZE_CHANGE = 1; // pixel
-
 /**
  * A <foreignObject> that can be used in SVG to render HTML. It automatically updates the size based on the contents.
  * Updates to the contents can be done via `adjustDimensions` method.
@@ -10,20 +7,6 @@ const MINIMUM_SIZE_CHANGE = 1; // pixel
  */
 export default {
     props: {
-        /**
-         * Similar to Vue's native key attribute we can
-         * use this prop's changes to signal this component
-         * that it should re-run its sizing calculations
-         *
-         * Note that we can't use Vue's native key attribute
-         * as we want to have more control of when we want to
-         * trigger this behavior
-         */
-        resizeKey: {
-            type: String,
-            required: false,
-            default: ''
-        },
         /**
          * Max width of the element.
          */
@@ -51,19 +34,11 @@ export default {
         parentWidth: {
             type: Number,
             default: null
-        },
-        /* start width to use instead of performing calculation on mount */
-        startWidth: {
-            type: Number,
-            default: null
-        },
-        /* start height to use instead of performing calculation on mount */
-        startHeight: {
-            type: Number,
-            default: null
         }
     },
+
     emits: ['widthChange', 'heightChange'],
+
     data() {
         return {
             width: this.maxWidth,
@@ -73,8 +48,8 @@ export default {
             x: 0
         };
     },
+
     computed: {
-        ...mapState('canvas', ['zoomFactor']),
         y() {
             if (this.offsetByHeight) {
                 return -this.height + this.yOffset;
@@ -82,67 +57,36 @@ export default {
             return this.yOffset;
         }
     },
-    watch: {
-        resizeKey(newVal, prevVal) {
-            if (newVal !== prevVal) {
-                this.adjustDimensions();
+
+    async mounted() {
+        this.centerAroundParentWidth();
+        await this.$nextTick();
+
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { contentRect } = entry;
+                this.width = contentRect.width;
+                this.height = contentRect.height;
+
+                this.centerAroundParentWidth();
+                this.emitDimensions();
             }
-        }
+        });
+
+        resizeObserver.observe(this.$refs.wrapper);
+
+        this.resizeObserver = resizeObserver;
     },
-    mounted() {
-        // if initial dimensions are provided use those instead
-        // of performing the calculation
-        if (this.startWidth && this.startHeight) {
-            this.width = this.startWidth;
-            this.height = this.startHeight;
-            this.centerAroundParentWidth();
-            this.emitDimensions();
-        } else {
-            this.centerAroundParentWidth();
-            this.adjustDimensions();
-        }
+
+    beforeUnmount() {
+        this.resizeObserver?.disconnect();
     },
+
     methods: {
         centerAroundParentWidth() {
             if (this.parentWidth !== null) {
                 this.x = (this.parentWidth - this.width) / 2;
             }
-        },
-        
-        // foreignObject requires `width` and `height` attributes, or the content is cut off.
-        // So we need to 1. render, 2. measure, 3. update
-        async adjustDimensions() {
-            const lastWidth = this.width;
-            // 1. render with max width or given startWidth
-            this.width = this.maxWidth;
-            
-            // wait for re-render
-            await this.$nextTick();
-            await this.$nextTick();
-
-            // 2. measure content's actual size
-            const rect = this.$refs.wrapper?.getBoundingClientRect();
-            if (!rect) {
-                consola.error('Tried to adjust dimensions of NodeTitle, but element is gone or is not a DOM Node');
-                return;
-            }
-
-            // account for zoom
-            const width = Math.ceil(rect.width / this.zoomFactor);
-            const height = Math.ceil(rect.height / this.zoomFactor);
-            
-            // 3. set container size to content size
-            // avoid width jitter
-            this.width = Math.abs(lastWidth - width) > MINIMUM_SIZE_CHANGE ? width : lastWidth;
-
-            // avoid height jitter
-            if (Math.abs(this.height - height) > MINIMUM_SIZE_CHANGE) {
-                this.height = height;
-            }
-    
-            this.centerAroundParentWidth();
-    
-            this.emitDimensions();
         },
 
         emitDimensions() {
@@ -166,7 +110,7 @@ export default {
       ref="wrapper"
       class="wrapper"
     >
-      <slot :on="{ sizeChange: adjustDimensions }" />
+      <slot />
     </div>
   </foreignObject>
 </template>

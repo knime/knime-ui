@@ -1,4 +1,4 @@
-import { expect, describe, it, vi } from 'vitest';
+import { expect, describe, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { mockUserAgent } from 'jest-useragent-mock';
 
@@ -7,19 +7,14 @@ import * as $shapes from '@/style/shapes.mjs';
 import NodeLabelTextArea from '../NodeLabelTextArea.vue';
 
 describe('NodeLabelTextArea', () => {
-    const mockSizeChangeFn = vi.fn();
-
     const doShallowMount = (opts = { props: { modelValue: '' } }) => {
         const wrapper = shallowMount(NodeLabelTextArea, {
             ...opts,
             global: {
-                mocks: {
-                    $shapes,
-                    mockSizeChangeFn
-                },
+                mocks: { $shapes },
                 stubs: {
                     NodeLabelText: {
-                        template: `<div id="node-label-stub"><slot :on="{ sizeChange: mockSizeChangeFn }"></slot></div>`
+                        template: `<div id="node-label-stub"><slot></slot></div>`
                     }
                 }
             }
@@ -32,14 +27,6 @@ describe('NodeLabelTextArea', () => {
         const modelValue = 'test';
         const wrapper = doShallowMount({ props: { modelValue } });
         expect(wrapper.find('textarea').element.value).toBe(modelValue);
-    });
-
-    it('should call the size change callback provided by the slot of the NodeLabelText', () => {
-        const wrapper = doShallowMount();
-
-        wrapper.find('textarea').trigger('input');
-
-        expect(mockSizeChangeFn).toHaveBeenCalled();
     });
 
     it('should emit "save" on control and enter', () => {
