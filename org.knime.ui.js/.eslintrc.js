@@ -6,14 +6,12 @@ module.exports = {
         consola: false
     },
     ignorePatterns: [
-        'generated-api.ts'
+        'generated-api.ts',
+        'knime-js-pagebuilder/'
     ],
     env: {
         node: true
     },
-    ignorePatterns: [
-        'knime-js-pagebuilder/'
-    ],
     settings: {
         'import/resolver': {
             alias: {

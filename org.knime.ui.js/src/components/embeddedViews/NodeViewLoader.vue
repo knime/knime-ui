@@ -103,7 +103,7 @@ export default {
   & :deep(> div),
   & :deep(.container-fluid),
   & :deep(.row) {
-      height: 100% !important;
+      height: 100%;
   }
 }
 </style>
