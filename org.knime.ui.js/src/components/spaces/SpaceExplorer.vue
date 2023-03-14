@@ -360,7 +360,7 @@ export default {
 
         getNodeTemplateId(sourceItem) {
             const sourceItemNameParts = sourceItem.name.split('.');
-            const sourceFileExtension = `.${sourceItemNameParts[sourceItemNameParts.length - 1]}`;
+            const sourceFileExtension = sourceItemNameParts[sourceItemNameParts.length - 1].toLowerCase();
             return this.fileExtensionToNodeTemplateId[sourceFileExtension];
         }
     }
