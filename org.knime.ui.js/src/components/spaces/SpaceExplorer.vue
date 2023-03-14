@@ -3,8 +3,11 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import { API } from '@api';
 
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
+import TrashIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
 import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
+import Modal from 'webapps-common/ui/components/Modal.vue';
+import Button from 'webapps-common/ui/components/Button.vue';
 
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import ITEM_TYPES from '@/util/spaceItemTypes';
@@ -27,7 +30,10 @@ export default {
         SpaceExplorerActions,
         FileExplorer,
         Breadcrumb,
-        SmartLoader
+        SmartLoader,
+        Modal,
+        Button,
+        TrashIcon
     },
 
     props: {
@@ -44,7 +50,12 @@ export default {
         return {
             selectedItems: [],
             isAboveCanvas: false,
-            fileNodeTemplate: null
+            fileNodeTemplate: null,
+            deleteModal: {
+                deleteModalActive: false,
+                modalMessage: null,
+                items: []
+            }
         };
     },
 
@@ -75,8 +86,7 @@ export default {
                 displayOpenIndicator:
                   this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id),
 
-                canBeDeleted:
-                  !this.openedWorkflowItems.includes(item.id) && !this.openedFolderItems.includes(item.id)
+                canBeDeleted: !this.openedFolderItems.includes(item.id)
             }));
         },
 
@@ -157,6 +167,7 @@ export default {
 
     methods: {
         ...mapActions('nodeRepository', ['getNodeTemplate']),
+        ...mapActions('application', ['closeProjects']),
         async fetchWorkflowGroupContent(itemId) {
             await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
         },
@@ -199,11 +210,30 @@ export default {
             const itemNameList = items
                 .map((item) => `${ITEM_TYPES_TEXTS[item.type]} ${item.name}`)
                 .join(', ');
-            const message = `Do you want to delete the ${itemNameList}?`;
-            // TODO(NXT-1472) use a modal instead of a native dialog
-            const result = window.confirm(message);
-            if (result) {
-                this.$store.dispatch('spaces/deleteItems', { itemIds: items.map(i => i.id) });
+
+            this.deleteModal.modalMessage = `Do you want to delete the ${itemNameList}?`;
+
+            this.deleteModal.items = items;
+            this.deleteModal.deleteModalActive = true;
+        },
+
+        async deleteItems() {
+            this.deleteModal.deleteModalActive = false;
+
+            const itemIds = this.deleteModal.items.map(item => item.id);
+            const relevantProjects = this.openProjects.filter(({ origin }) => itemIds.includes(origin.itemId));
+            const projectIds = relevantProjects.map(({ projectId }) => projectId);
+            let nextProjectId;
+            if (projectIds.length) {
+                nextProjectId = await this.closeProjects({ projectIds, force: true });
+            }
+
+            await this.$store.dispatch('spaces/deleteItems', { itemIds });
+            if (nextProjectId) {
+                this.$router.push({
+                    name: APP_ROUTES.WorkflowPage,
+                    params: { projectId: nextProjectId, workflowId: 'root' }
+                });
             }
         },
 
@@ -419,6 +449,31 @@ export default {
         @dragend="onDragEnd"
       />
     </SmartLoader>
+    <div>
+      <Modal
+        :active="deleteModal.deleteModalActive && Boolean(deleteModal.modalMessage)"
+        title="Delete"
+        style-type="info"
+        @cancel="deleteModal.deleteModalActive = false"
+      >
+        <template #icon><TrashIcon /></template>
+        <template #confirmation>{{ deleteModal.modalMessage }}</template>
+        <template #controls>
+          <Button
+            with-border
+            @click="deleteModal.deleteModalActive = false"
+          >
+            Cancel
+          </Button>
+          <Button
+            primary
+            @click="deleteItems"
+          >
+            Ok
+          </Button>
+        </template>
+      </Modal>
+    </div>
   </div>
 </template>
 

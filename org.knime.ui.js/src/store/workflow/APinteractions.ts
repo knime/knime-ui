@@ -7,23 +7,27 @@ import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
  * @param {Object} param
  * @param {Array} param.openProjects
  * @param {String} param.activeProjectId
- * @param {String} param.closingProjectId
+ * @param {String} param.closingProjectIds
  * @returns {String} next project id to set
  */
-const getNextProjectId = ({ openProjects, activeProjectId, closingProjectId }) => {
-    if (closingProjectId !== activeProjectId) {
+export const getNextProjectId = ({ openProjects, activeProjectId, closingProjectIds }) => {
+    if (!closingProjectIds.includes(activeProjectId)) {
         return activeProjectId;
     }
 
     if (openProjects.length === 1) {
-        return null;
+        return null; // null equals going to the entry page
     }
 
-    const activeProjectIndex = openProjects.findIndex(({ projectId }) => projectId === activeProjectId);
-    const isLastIndex = openProjects.length - 1 === activeProjectIndex;
-    const nextIndex = isLastIndex ? activeProjectIndex - 1 : activeProjectIndex + 1;
+    const remainingProjects = openProjects.filter(
+        (project) => !closingProjectIds.includes(project.projectId)
+    );
 
-    return openProjects[nextIndex].projectId;
+    if (remainingProjects.length === 0) {
+        return null; // null equals going to the entry page
+    }
+
+    return remainingProjects.at(-1).projectId;
 };
 
 /**
@@ -56,7 +60,7 @@ export const actions = {
         const nextProjectId = getNextProjectId({
             openProjects,
             activeProjectId,
-            closingProjectId
+            closingProjectIds: [closingProjectId]
         });
 
         const didClose = API.desktop.closeWorkflow({ closingProjectId, nextProjectId });

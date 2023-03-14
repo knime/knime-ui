@@ -3,6 +3,7 @@ import { expect, describe, it, vi, afterEach, type MockedFunction } from 'vitest
 import { deepMocked, mockVuexStore } from '@/test/utils';
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { API } from '@api';
+import { getNextProjectId } from '../APinteractions';
 
 vi.mock('@/util/generateWorkflowPreview');
 vi.mock('@/util/encodeString', () => ({
@@ -261,6 +262,16 @@ describe('workflow store: AP Interactions', () => {
             expect(mockedAPI.desktop.saveWorkflowAs).toHaveBeenCalledWith(expect.objectContaining({
                 workflowPreviewSvg: 'mock svg preview'
             }));
+        });
+    });
+
+    describe('utils', () => {
+        it('determines next project id correctly', () => {
+            const closingProjectIds = ['test1', 'test2', 'test3'];
+            const activeProjectId = 'test1';
+            const openProjects = [{ projectId: 'test1' }, { projectId: 'test2' }, { projectId: 'test4' }];
+            const nextProjectId = getNextProjectId({ closingProjectIds, activeProjectId, openProjects });
+            expect(nextProjectId).toBe('test4');
         });
     });
 });

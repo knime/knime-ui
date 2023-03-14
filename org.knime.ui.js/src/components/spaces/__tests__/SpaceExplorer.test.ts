@@ -8,6 +8,7 @@ import * as spacesStore from '@/store/spaces';
 
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import { API } from '@api';
+import Modal from 'webapps-common/ui/components/Modal.vue';
 import { APP_ROUTES } from '@/router';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
@@ -62,7 +63,8 @@ describe('SpaceExplorer.vue', () => {
                     fileExtensionToNodeTemplateId
                 },
                 actions: {
-                    updateGlobalLoader: vi.fn()
+                    updateGlobalLoader: vi.fn(),
+                    closeProjects: vi.fn()
                 }
             },
             workflow: {
@@ -103,7 +105,7 @@ describe('SpaceExplorer.vue', () => {
             props,
             global: {
                 plugins: [store],
-                stubs: { NuxtLink: true },
+                stubs: { NuxtLink: true, FocusTrap: true },
                 mocks: {
                     $router: mockRouter,
                     $route: mockRoute,
@@ -268,19 +270,6 @@ describe('SpaceExplorer.vue', () => {
     });
 
     describe('can be deleted', () => {
-        it('open workflows should not be deletable', async () => {
-            const openProjects = [
-                { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
-            ];
-            const { wrapper } = await doMountAndLoad({ openProjects });
-            expect(wrapper.findComponent(FileExplorer).props('items')[0]).toEqual(
-                expect.objectContaining({ canBeDeleted: true })
-            );
-            expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
-                expect.objectContaining({ canBeDeleted: false })
-            );
-        });
-
         it('folders with open workflows should not be deletable', async () => {
             const openProjects = [{
                 origin: {
@@ -309,18 +298,45 @@ describe('SpaceExplorer.vue', () => {
         });
     });
 
-    it('should delete item', async () => {
+    it('should show delete modal on deleteItems', async () => {
         const items = [{
             type: 'Workflow',
             name: 'WORKFLOW_NAME',
             id: 'item0'
         }];
-        vi.spyOn(window, 'confirm').mockImplementation(() => true);
-        const { wrapper, dispatchSpy } = await doMountAndLoad();
+        const { wrapper } = await doMountAndLoad();
 
         wrapper.findComponent(FileExplorer).vm.$emit('deleteItems', { items });
-        expect(window.confirm).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
+        expect(wrapper.vm.$data.deleteModal.deleteModalActive).toBeTruthy();
+    });
+
+    it('should trigger closeItems before deleteItems onDeleteItems', async () => {
+        const items = [{
+            type: 'Workflow',
+            name: 'WORKFLOW_NAME',
+            id: 'item0'
+        }];
+        const openProjects = [{
+            origin: {
+                spaceId: 'local',
+                itemId: 'item0',
+                ancestorItemIds: ['1', '7']
+            },
+            name: 'test2',
+            projectId: 'testPID'
+        }];
+        const { wrapper, dispatchSpy } = await doMountAndLoad({ openProjects });
+
+        wrapper.findComponent(FileExplorer).vm.$emit('deleteItems', { items });
+        await wrapper.vm.deleteItems();
+
+        expect(dispatchSpy).toHaveBeenNthCalledWith(2,
+            'application/closeProjects',
+            { projectIds: [openProjects[0].projectId], force: true });
+
+        expect(dispatchSpy).toHaveBeenNthCalledWith(3,
+            'spaces/deleteItems',
+            { itemIds: ['item0'] });
     });
 
     it('should not delete item on negative response', async () => {
@@ -333,7 +349,8 @@ describe('SpaceExplorer.vue', () => {
         const { wrapper, dispatchSpy } = await doMountAndLoad();
 
         wrapper.findComponent(FileExplorer).vm.$emit('deleteItems', { items });
-        expect(window.confirm).toHaveBeenCalledWith('Do you want to delete the workflow WORKFLOW_NAME?');
+        expect(wrapper.vm.$data.deleteModal.deleteModalActive).toBeTruthy();
+        wrapper.findComponent(Modal).vm.$emit('cancel');
         expect(dispatchSpy).not.toHaveBeenCalledWith('spaces/deleteItems', { itemIds: ['item0'] });
     });
 

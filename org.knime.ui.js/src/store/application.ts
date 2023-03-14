@@ -1,6 +1,7 @@
 import { API } from '@api';
 import { encodeString } from '@/util/encodeString';
 import { APP_ROUTES } from '@/router/appRoutes';
+import { getNextProjectId } from './workflow/APinteractions';
 
 const getCanvasStateKey = (input) => encodeString(input);
 
@@ -199,6 +200,18 @@ export const actions = {
     destroyApplication({ dispatch }) {
         API.event.unsubscribeEventListener({ typeId: 'AppStateChangedEventType' });
         dispatch('unloadActiveWorkflow', { clearWorkflow: true });
+    },
+
+    async closeProjects({ state }, { projectIds, force = false }) {
+        const { openProjects, activeProjectId } = state;
+        const nextProjectId = getNextProjectId({
+            openProjects,
+            activeProjectId,
+            closingProjectIds: projectIds
+        });
+        await API.application.closeProjects({ projectIds, force });
+        
+        return nextProjectId;
     },
 
     // ----------------------------------------------------------------------------------------- //

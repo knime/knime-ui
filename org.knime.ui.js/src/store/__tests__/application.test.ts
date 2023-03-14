@@ -385,6 +385,16 @@ describe('application store', () => {
 
             expect(unsubscribeEventListener).not.toHaveBeenCalled();
         });
+
+        it('force closes projects on call', async () => {
+            const { store } = await loadStore();
+            await store.dispatch('application/closeProjects', { projectIds: ['projectTest1'], force: true });
+
+            expect(mockedAPI.application.closeProjects).toHaveBeenCalledWith({
+                projectIds: ['projectTest1'],
+                force: true
+            });
+        });
     });
 
     describe('set active workflow', () => {

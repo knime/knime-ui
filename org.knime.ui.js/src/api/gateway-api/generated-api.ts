@@ -3260,6 +3260,23 @@ export interface XY {
 const application = function(rpcClient: RPCClient) {
     return {
         /**
+         * Closes workflows (without saving the changes for now).
+         * @param {Array<string>} [projectIds] the projectIds of the workflows to close
+         * @param {boolean} [force] whether to present a user prompt to save or not
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        closeProjects(
+        	params: { projectIds?: Array<string>,  force?: boolean  }
+        ): Promise<Response> {
+           const defaultParams = { 
+                projectIds: null,
+                force: null,
+           }
+
+           return rpcClient.call('ApplicationService.closeProjects', { ...defaultParams, ...params });
+        },
+        /**
          * Provides information on the global application state, such as opened workflows etc.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
