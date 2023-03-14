@@ -98,8 +98,14 @@ export default {
   margin-left: auto;
   z-index: 5;
 
-  & .expanded .zoom-input {
-    color: var(--theme-button-function-foreground-color-active, var(--knime-white));
+  & :deep(.submenu-toggle.expanded) {
+    & .zoom-input {
+      color: var(--theme-button-foreground-color-active, var(--knime-white));
+    }
+
+    & svg {
+      transform: scaleY(-1);
+    }
   }
 
   & :deep(.submenu-toggle) {
@@ -110,10 +116,6 @@ export default {
       @mixin svg-icon-size 12;
 
       margin-bottom: 1px;
-    }
-
-    &.expanded svg {
-      transform: scaleY(-1);
     }
 
     & .zoom-input {
