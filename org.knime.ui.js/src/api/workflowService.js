@@ -1,5 +1,5 @@
 import { waitForPatch } from '@/util/event-syncer';
-import rpc from './json-rpc-adapter';
+import { API } from '@api';
 
 /**
  * Load a specific workflow.
@@ -10,11 +10,15 @@ import rpc from './json-rpc-adapter';
  * @param { Boolean } cfg.includeInfoOnAllowedActions Whether to enclose information on the actions
  *   (such as reset, execute, cancel) allowed on the contained nodes and the entire workflow itself.
  Defaults to `true`.
- * @return { Promise } A promise containing the workflow as defined in the API
+ * @return { Promise<WorkflowSnapshot> } A promise containing the workflow as defined in the API
  */
 export const loadWorkflow = async ({ projectId, workflowId = 'root', includeInfoOnAllowedActions = true }) => {
     try {
-        const workflow = await rpc('WorkflowService.getWorkflow', projectId, workflowId, includeInfoOnAllowedActions);
+        const workflow = await API.workflow.getWorkflow({
+            projectId,
+            workflowId,
+            includeInteractionInfo: includeInfoOnAllowedActions
+        });
         consola.debug('Loaded workflow', workflow);
 
         return workflow;
@@ -24,31 +28,26 @@ export const loadWorkflow = async ({ projectId, workflowId = 'root', includeInfo
     }
 };
 
-
 /**
  * Generates workflow commands that are part of the undo/redo stack
- * @param { Object } cfg The configuration object
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { String } cfg.command name of the command to be executed
- * @param { String } cfg.args arguments for the command
- * @returns { Promise }
+ * @param {*} responseSupplier The command to execute
+ * @param {*} commandName The name of the executed command
+ * @returns {Promise} Maybe empty, since some commands don't return a result
  */
-const workflowCommand = async ({ projectId, workflowId, command, args }) => {
+const workflowCommand = async (responseSupplier, commandName) => { // TODO: This deserves a better name
     try {
-        let rpcArgs = { kind: command, ...args };
-        let response = await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
+        let response = await responseSupplier();
 
         if (!response || !response.snapshotId) {
             return response;
         }
 
         await waitForPatch(response.snapshotId);
-
+        
         return response;
     } catch (e) {
         consola.error(e);
-        throw new Error(`Couldn't execute ${command}(${JSON.stringify(args)})`);
+        throw new Error(`Couldn't execute ${commandName}`);
     }
 };
 
@@ -56,12 +55,14 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
 /* eslint-disable arrow-body-style */
 
 /**
- * @param { Object } cfg The configuration object
- * @param { String } cfg.position The X,Y position where node is going to be added
- * @param { String } cfg.nodeFactory The representation of the node's factory
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { Object } cfg.spaceItemReference The global id of the space item (optional)
+ * Adds a node to the canvas
+ * @param { String } position The X,Y position where node is going to be added
+ * @param { String } nodeFactory The representation of the node's factory
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @param { Object } spaceItemReference The global id of the space item (optional)
+ * @param { String } sourceNodeId
+ * @param { Number } sourcePortIdx
  * @returns { Promise } Promise
  */
 export const addNode = ({
@@ -72,151 +73,139 @@ export const addNode = ({
     spaceItemReference,
     sourceNodeId = null,
     sourcePortIdx = null
-}) => workflowCommand({
-    command: 'add_node',
-    args: { position, nodeFactory, spaceItemReference, sourceNodeId, sourcePortIdx },
+}) => workflowCommand(() => API.workflowCommand.AddNode({ // TODO: Fix linter, this is fine
+    position,
+    nodeFactory,
     projectId,
-    workflowId
-});
-
+    workflowId,
+    spaceItemReference,
+    sourceNodeId,
+    sourcePortIdx
+}), 'add_node');
 
 /**
- * @param { Object } cfg The configuration object
- * @param { String } cfg.name The new name of the component or metanode
- * @param { String } cfg.nodeId Id of the node that will be updated
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
+ * Renames a container node
+ * @param { String } name The new name of the component or metanode
+ * @param { String } nodeId Id of the node that will be updated
+ * @param { String } projectId
+ * @param { String } workflowId
  * @returns { Promise } Promise
  */
-export const renameContainerNode = ({
-    nodeId,
-    name,
-    projectId,
-    workflowId
-}) => workflowCommand({
-    command: 'update_component_or_metanode_name',
-    args: {
+export const renameContainerNode = ({ nodeId, name, projectId, workflowId }) => {
+    return workflowCommand(() => API.workflowCommand.UpdateComponentOrMetanodeName({
+        projectId,
+        workflowId,
         nodeId,
         name
-    },
-    projectId,
-    workflowId
-});
+    }), 'update_component_or_metanode_name');
+};
 
 /**
- * @param { Object } cfg The configuration object
- * @param { String } cfg.label The new label of the node
- * @param { String } cfg.nodeId Id of the node that will be updated
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
+ * Renames a native node
+ * @param { String } label The new label of the node
+ * @param { String } nodeId Id of the node that will be updated
+ * @param { String } projectId
+ * @param { String } workflowId
  * @returns { Promise } Promise
  */
-export const renameNodeLabel = ({
-    nodeId,
-    label,
-    projectId,
-    workflowId
-}) => workflowCommand({
-    command: 'update_node_label',
-    args: {
+export const renameNodeLabel = ({ nodeId, label, projectId, workflowId }) => {
+    return workflowCommand(() => API.workflowCommand.UpdateNodeLabel({
+        projectId,
+        workflowId,
         nodeId,
         label
-    },
-    projectId,
-    workflowId
-});
-
+    }), 'update_node_label');
+};
 
 /**
- * @param { Object } cfg The configuration object
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { Array } cfg.nodeIds The nodes to be deleted
- * @param { Array } cfg.annotationIds The annotations to be deleted
- * @param { Array } cfg.connectionIds The connections to be deleted
+ * Deletes an object
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @param { Array } nodeIds The nodes to be deleted
+ * @param { Array } annotationIds The annotations to be deleted
+ * @param { Array } connectionIds The connections to be deleted
  * @returns { Promise } Promise
  */
-export const deleteObjects = ({
-    nodeIds = [], annotationIds = [], connectionIds = [], projectId, workflowId
-}) => workflowCommand({
-    command: 'delete',
-    args: { nodeIds, annotationIds, connectionIds },
-    projectId,
-    workflowId
-});
-
+export const deleteObjects = ({ nodeIds = [], annotationIds = [], connectionIds = [], projectId, workflowId }) => {
+    return workflowCommand(() => API.workflowCommand.Delete({
+        nodeIds,
+        annotationIds,
+        connectionIds,
+        projectId,
+        workflowId
+    }, 'delete'));
+};
 
 /**
- * @param { Object } cfg The configuration object
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { Array } cfg.nodeIds The nodes to be moved
- * @param { Array } cfg.annotationIds The annotations to be moved
- * @param { Array } cfg.translation the translation by which the objects are to be moved
+ * Moves an object on the canvas
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @param { Array } nodeIds The nodes to be moved
+ * @param { Array } annotationIds The annotations to be moved
+ * @param { Array } translation the translation by which the objects are to be moved
  * @returns { Promise } Promise
  */
-export const moveObjects = ({
-    projectId, workflowId, nodeIds = [], translation, annotationIds = []
-}) => workflowCommand({
-    command: 'translate',
-    args: { nodeIds, annotationIds, translation },
-    projectId,
-    workflowId
-});
-
+export const moveObjects = ({ projectId, workflowId, nodeIds = [], translation, annotationIds = [] }) => {
+    return workflowCommand(() => API.workflowCommand.Translate({
+        projectId,
+        workflowId,
+        nodeIds,
+        annotationIds,
+        translation
+    }), 'translate');
+};
 
 /**
- * @param { Object } cfg The configuration object
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { String } cfg.sourceNode node with outPort
- * @param { String } cfg.destNode   node with inPort
- * @param { String } cfg.sourcePort index of outPort
- * @param { String } cfg.destPort   index of inPort
+ * Connects two nodes
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @param { String } sourceNode node with outPort
+ * @param { String } destNode   node with inPort
+ * @param { Number } sourcePort index of outPort
+ * @param { Number } destPort   index of inPort
  * @returns { Promise } Promise
  */
 export const connectNodes = ({ projectId, workflowId, sourceNode, sourcePort, destNode, destPort }) => {
-    return workflowCommand({
-        command: 'connect',
-        args: {
-            sourceNodeId: sourceNode,
-            sourcePortIdx: sourcePort,
-            destinationNodeId: destNode,
-            destinationPortIdx: destPort
-        },
+    return workflowCommand(() => API.workflowCommand.Connect({
         projectId,
-        workflowId
-    });
+        workflowId,
+        sourceNodeId: sourceNode,
+        sourcePortIdx: sourcePort,
+        destinationNodeId: destNode,
+        destinationPortIdx: destPort
+    }), 'connect');
 };
-
 
 /**
  * Performs an undo command
- * @param { Object } cfg The configuration object
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
+ * @param { String } projectId
+ * @param { String } workflowId
  * @returns { Promise }
  */
 export const undo = async ({ projectId, workflowId }) => {
     try {
-        return await rpc(`WorkflowService.undoWorkflowCommand`, projectId, workflowId);
+        return await API.workflow.undoWorkflowCommand({
+            projectId,
+            workflowId
+        });
     } catch (e) {
         consola.error(e);
         throw new Error('Couldn\'t undo');
     }
 };
 
-
 /**
  * Performs a redo command
- * @param { Object } cfg The configuration object
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @returns {Promise}
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @returns { Promise }
  */
 export const redo = async ({ projectId, workflowId }) => {
     try {
-        return await rpc(`WorkflowService.redoWorkflowCommand`, projectId, workflowId);
+        return await API.workflow.redoWorkflowCommand({
+            projectId,
+            workflowId
+        });
     } catch (e) {
         consola.error(e);
         throw new Error('Couldn\'t redo');
@@ -225,102 +214,113 @@ export const redo = async ({ projectId, workflowId }) => {
 
 /**
  * Creates a metanode or component
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { 'metanode' | 'component' } cfg.containerType
- * @param { Array } cfg.nodeIds
- * @param { Array } cfg.annotationIds
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @param { 'metanode' | 'component' } containerType
+ * @param { Array } nodeIds
+ * @param { Array } annotationIds
  * @returns {Promise}
  */
-export const collapseToContainer = ({
-    projectId, workflowId, containerType, nodeIds = [], annotationIds = []
-}) => workflowCommand({
-    command: 'collapse',
-    args: { containerType, nodeIds, annotationIds },
-    projectId,
-    workflowId
-});
+export const collapseToContainer = ({ projectId, workflowId, containerType, nodeIds = [], annotationIds = [] }) => {
+    return workflowCommand(() => API.workflowCommand.Collapse({
+        projectId,
+        workflowId,
+        containerType,
+        nodeIds,
+        annotationIds
+    }), 'collapse');
+};
 
 /**
  * Adds a port to a node
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { String } cfg.nodeId
- * @param { String } cfg.portType
- * @param { 'input' | 'output' } cfg.side
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @param { String } nodeId
+ * @param { String } portType
+ * @param { 'input' | 'output' } side
  * @returns { Promise }
  */
 export const addNodePort = ({ projectId, workflowId, nodeId, side, portGroup, typeId }) => {
-    return workflowCommand({
-        command: 'add_port',
-        args: { nodeId, side, portGroup, portTypeId: typeId },
+    return workflowCommand(() => API.workflowCommand.AddPort({
         projectId,
-        workflowId
-    });
+        workflowId,
+        nodeId,
+        side,
+        portGroup,
+        portTypeId: typeId
+    }), 'add_port');
 };
 
 /**
  * Removes a port from a node
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { String } cfg.nodeId
- * @param { 'input' | 'output' } cfg.side
- * @param { Number } cfg.index
- * @param { String } cfg.portGroup
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @param { String } nodeId
+ * @param { 'input' | 'output' } side
+ * @param { Number } index
+ * @param { String } portGroup
  * @returns { Promise }
  */
-export const removeNodePort = ({ projectId, workflowId, nodeId, side, index, portGroup }) => workflowCommand({
-    command: 'remove_port',
-    args: { nodeId, side, portIndex: index, portGroup },
-    projectId,
-    workflowId
-});
+export const removeNodePort = ({ projectId, workflowId, nodeId, side, index, portGroup }) => {
+    return workflowCommand(() => API.workflowCommand.RemovePort({
+        projectId,
+        workflowId,
+        nodeId,
+        side,
+        portGroup,
+        portIndex: index
+    }), 'remove_port');
+};
 
 /**
  * Expands a metanode or component
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { String } cfg.nodeId
- * @returns {Promise}
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @param { String } nodeId
+ * @returns { Promise }
  */
-export const expandContainerNode = ({ projectId, workflowId, nodeId }) => workflowCommand({
-    command: 'expand',
-    args: { nodeId },
-    projectId,
-    workflowId
-});
+export const expandContainerNode = ({ projectId, workflowId, nodeId }) => {
+    return workflowCommand(() => API.workflowCommand.Expand({
+        projectId,
+        workflowId,
+        nodeId
+    }), 'expand');
+};
 
 /**
  * Copies or cuts workflow parts and serializes them
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { 'copy' | 'cut' } cfg.command The command to execute, can be 'copy' or 'cut'
- * @param { Array } cfg.nodeIds The node ids to copy
- * @param { Array } cfg.annotationIds The annotation ids to copy
+ * @param { String } projectId
+ * @param { String } workflowId
+ * @param { 'copy' | 'cut' } command The command to execute, can be 'copy' or 'cut'
+ * @param { Array } nodeIds The node ids to copy
+ * @param { Array } annotationIds The annotation ids to copy
  * @returns { Promise } The serialized workflow parts
  */
 export const copyOrCutWorkflowParts = ({ projectId, workflowId, command, nodeIds = [], annotationIds = [] }) => {
-    return workflowCommand({
-        command,
-        args: { nodeIds, annotationIds },
+    const params = {
         projectId,
-        workflowId
-    });
+        workflowId,
+        nodeIds,
+        annotationIds
+    };
+    return workflowCommand(() => command === 'copy'
+        ? API.workflowCommand.Copy(params)
+        : API.workflowCommand.Cut(params));
 };
 
 /**
  * Pastes workflow parts to the canvas
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
+ * @param { String } projectId
+ * @param { String } workflowId
  * @param { Object } content Workflow parts to be pasted
  * @param { Object } position Paste the workflow parts at this position
  * @returns { void }
  */
-export const pasteWorkflowParts = ({
-    projectId, workflowId, content = {}, position
-}) => workflowCommand({
-    command: 'paste',
-    args: { content, position },
-    projectId,
-    workflowId
-});
+export const pasteWorkflowParts = ({ projectId, workflowId, content = {}, position }) => {
+    return workflowCommand(() => API.workflowCommand.Paste({
+        projectId,
+        workflowId,
+        content,
+        position
+    }), 'paste');
+};

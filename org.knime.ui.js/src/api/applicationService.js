@@ -1,4 +1,4 @@
-import rpc from './json-rpc-adapter';
+import { API } from '@api';
 
 /**
  * Fetch "application state", that is: opened tabs etc.
@@ -7,7 +7,7 @@ import rpc from './json-rpc-adapter';
  */
 export const fetchApplicationState = async () => {
     try {
-        const state = await rpc('ApplicationService.getState');
+        const state = await API.application.getState();
         consola.debug('Current app state', state);
 
         return state;

@@ -1,9 +1,9 @@
-import rpc from './json-rpc-adapter';
+import { API } from '@api';
 
-const makeToggleEventListener = addOrRemove => async (type, args = {}) => {
+const makeToggleListener = (addOrRemove, consumer) => async (type, args = {}) => {
     try {
         consola.debug(addOrRemove, 'event listener', type, args);
-        await rpc(`EventService.${addOrRemove}EventListener`, {
+        await consumer({
             typeId: `${type}EventType`,
             ...args
         });
@@ -26,5 +26,5 @@ const makeToggleEventListener = addOrRemove => async (type, args = {}) => {
  *       snapshotId // only required when adding an event listener, not required for removing
  *   }
  */
-export const addEventListener = makeToggleEventListener('add');
-export const removeEventListener = makeToggleEventListener('remove');
+export const addEventListener = makeToggleListener('add', params => API.event.subscribeEvent(params));
+export const removeEventListener = makeToggleListener('remove', params => API.event.unsubscribeEventListener(params));

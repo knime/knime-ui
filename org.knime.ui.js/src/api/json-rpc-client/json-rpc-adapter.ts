@@ -35,7 +35,8 @@ const validateResponse = (
 ): JSONRPCResponse => {
     const { result, error: originalError } = maybeResponse;
 
-    if (!originalError && result) {
+    // eslint-disable-next-line @typescript-eslint/no-extra-parens
+    if ((!originalError && result) || result === null) {
         return maybeResponse as JSONRPCSuccessResponse;
     }
 
@@ -92,10 +93,8 @@ export const rpc = async (method: string, params: any) => {
     };
 
     consola.trace('JSON-RPC Request:', request);
-
     try {
         const response = await window.jsonrpc(request) as string | JSONRPCResponse;
-
         return handleResponse({ response, method, params });
     } catch (error) {
         throw createWrappedError(

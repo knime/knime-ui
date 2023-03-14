@@ -1,4 +1,4 @@
-import rpc from './json-rpc-adapter';
+import { API } from '@api';
 
 /**
  * Get repository nodes grouped by tags via RPC.
@@ -11,13 +11,12 @@ import rpc from './json-rpc-adapter';
  */
 export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
     try {
-        const groupedNodes = await rpc(
-            'NodeRepositoryService.getNodesGroupedByTags',
+        const groupedNodes = await API.noderepository.getNodesGroupedByTags({
             numNodesPerTag,
             tagsOffset,
             tagsLimit,
             fullTemplateInfo
-        );
+        });
         consola.debug('Loaded nodes grouped by tags', groupedNodes);
 
         return groupedNodes;
@@ -44,9 +43,8 @@ export const searchNodes = async (
     { query, tags, allTagsMatch, offset, limit, fullTemplateInfo, nodesPartition = 'ALL', portTypeId = null }
 ) => {
     try {
-        const nodes = await rpc(
-            'NodeRepositoryService.searchNodes',
-            query,
+        const nodes = await API.noderepository.searchNodes({
+            q: query,
             tags,
             allTagsMatch,
             offset,
@@ -54,7 +52,7 @@ export const searchNodes = async (
             fullTemplateInfo,
             nodesPartition,
             portTypeId
-        );
+        });
         consola.debug('Loaded node search results', nodes);
 
         return nodes;
@@ -86,15 +84,14 @@ export const getNodeRecommendations = async ({
     fullTemplateInfo
 }) => {
     try {
-        const recommendations = await rpc(
-            'NodeRepositoryService.getNodeRecommendations',
+        const recommendations = await API.noderepository.getNodeRecommendations({
             projectId,
             workflowId,
             nodeId,
             portIdx,
             nodesLimit,
             fullTemplateInfo
-        );
+        });
 
         return recommendations;
     } catch (e) {
@@ -113,10 +110,9 @@ export const getNodeTemplates = async ({
     nodeTemplateIds
 }) => {
     try {
-        const templates = await rpc(
-            'NodeRepositoryService.getNodeTemplates',
+        const templates = await API.noderepository.getNodeTemplates({
             nodeTemplateIds
-        );
+        });
 
         return templates;
     } catch (e) {
