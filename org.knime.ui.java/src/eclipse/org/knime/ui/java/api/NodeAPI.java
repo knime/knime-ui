@@ -50,6 +50,11 @@ package org.knime.ui.java.api;
 
 import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
+import javax.swing.SwingUtilities;
+
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.Node;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.NativeNodeContainer;
@@ -111,9 +116,21 @@ final class NodeAPI {
             // legacy js-view
             OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,
                 nc.getInteractiveWebViews().get(0).getViewName());
+        } else if (nc.getNrNodeViews() > 0) {
+            // swing-based view
+            final String title = nc.getViewName(0) + " - " + nc.getDisplayLabel();
+            final java.awt.Rectangle knimeWindowBounds = getAppBoundsAsAWTRec();
+            SwingUtilities.invokeLater(() -> Node.invokeOpenView(nc.getView(0), title, knimeWindowBounds));
+        } else {
+            NodeLogger.getLogger(NodeAPI.class).warnWithFormat(
+                "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
         }
-        NodeLogger.getLogger(NodeAPI.class).warnWithFormat(
-            "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
+    }
+
+    private static java.awt.Rectangle getAppBoundsAsAWTRec() {
+        final Rectangle knimeWindowBounds = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getBounds();
+        return new java.awt.Rectangle(knimeWindowBounds.x, knimeWindowBounds.y, knimeWindowBounds.width,
+            knimeWindowBounds.height);
     }
 
     /**
