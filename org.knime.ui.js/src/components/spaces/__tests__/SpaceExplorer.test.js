@@ -689,7 +689,7 @@ describe('SpaceExplorer.vue', () => {
         document.elementFromPoint = vi.fn().mockReturnValue(null);
         const { wrapper, store, dispatchSpy, mockRoute } = await doMountAndLoad(
             { fileExtensionToNodeTemplateId: {
-                '.test': 'org.knime.test.test.nodeFactory'
+                test: 'org.knime.test.test.nodeFactory'
             },
             mockResponse: {
                 id: 'test.id',
@@ -734,7 +734,7 @@ describe('SpaceExplorer.vue', () => {
         document.elementFromPoint = vi.fn().mockReturnValue({ id: 'someElementThatIsNotNull' });
         const { wrapper, store, mockRoute } = await doMountAndLoad(
             { fileExtensionToNodeTemplateId: {
-                '.test': 'org.knime.test.test.nodeFactory'
+                test: 'org.knime.test.test.nodeFactory'
             },
             mockResponse: {
                 id: 'test.id',
