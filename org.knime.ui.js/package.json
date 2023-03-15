@@ -11,7 +11,7 @@
     "lint": "run-p 'lint:* -- --fix'",
     "lint:js": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.json",
     "lint:css": "stylelint '**/*.{css,vue}'",
-    "ci:lint": "run-p lint:*",
+    "ci:lint": "run-p lint:* && npm run format:check",
     "audit": "check-audit --omit dev",
     "audit:resolve": "resolve-audit --omit dev",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
@@ -21,6 +21,7 @@
     "coverage": "vitest run --coverage",
     "opensourcecredits": "npm run --prefix webapps-common opensourcecredits",
     "format": "prettier --write src/",
+    "format:check": "prettier --check src/",
     "prepare": "cd .. && husky install ./org.knime.ui.js/.husky"
   },
   "lint-staged": {
