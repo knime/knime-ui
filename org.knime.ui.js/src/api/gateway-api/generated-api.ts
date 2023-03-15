@@ -2297,7 +2297,7 @@ export interface PortType {
      */
     hidden?: boolean;
     /**
-     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included. 
+     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included.
      * @type {boolean}
      * @memberof PortType
      */
@@ -3180,7 +3180,7 @@ const event = function(rpcClient: RPCClient) {
     return {
         /**
          * Adds a new event listener for a certain type of event.
-         * @param {EventType} [eventType] 
+         * @param {EventType} [eventType]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3191,7 +3191,7 @@ const event = function(rpcClient: RPCClient) {
         },
         /**
          * Unregisters event listeners.
-         * @param {EventType} [eventType] 
+         * @param {EventType} [eventType]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3215,8 +3215,8 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {'dialog' | 'view'} extensionType The node ui-extension-type, i.e. dialog or view.
-         * @param {'initial_data' | 'data' | 'apply_data'} serviceType 
-         * @param {string} [dataServiceRequest] 
+         * @param {'initial_data' | 'data' | 'apply_data'} serviceType
+         * @param {string} [dataServiceRequest]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3388,8 +3388,8 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} portIdx The port index to be used.
-         * @param {'initial_data' | 'data'} serviceType 
-         * @param {string} [dataServiceRequest] 
+         * @param {'initial_data' | 'data'} serviceType
+         * @param {string} [dataServiceRequest]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3577,7 +3577,10 @@ const workflow = function(rpcClient: RPCClient) {
 };
 
 
-const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
+const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: Configuration) {
+const identity = (response) => response
+const { postProcessCommandResponse = identity } = configuration;
+
   return {
  	/**
      * Moves workflow nodes and workflow annotations to a defined position.
@@ -3586,13 +3589,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<TranslateCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Translate }
 		});
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Deletes the specified nodes, workflow annotations or connections. Note that there are potentially more connections deleted than specified, i.e. those connected to a node that is to be deleted. If any of the elements can&#39;t be deleted (because it doesn&#39;t exist or the deletion is not allowed) the entire delete operation is aborted (i.e. nothing is deleted).
      */
@@ -3600,13 +3604,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<DeleteCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Delete }
 		});
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Connects two nodes (and by doing that possibly replacing another connection).
      */
@@ -3614,13 +3619,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<ConnectCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Connect }
 		});
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Adds a new node to the workflow.
      */
@@ -3628,13 +3634,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<AddNodeCommand, 'kind'>
     ): Promise<AddNodeResult> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddNode }
 		}) as Promise<AddNodeResult>;
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Updates the name of a component or metanode
      */
@@ -3642,13 +3649,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<UpdateComponentOrMetanodeNameCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentOrMetanodeName }
 		});
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Updates the label of a native node, component or metanode.
      */
@@ -3656,13 +3664,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<UpdateNodeLabelCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateNodeLabel }
 		});
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Resets nodes contained in the metanode or container and expands it.
      */
@@ -3670,13 +3679,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<ExpandCommand, 'kind'>
     ): Promise<ExpandResult> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Expand }
 		}) as Promise<ExpandResult>;
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Resets selected nodes and collapses selected nodes and annotations into a metanode or component.
      */
@@ -3684,13 +3694,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<CollapseCommand, 'kind'>
     ): Promise<CollapseResult> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Collapse }
 		}) as Promise<CollapseResult>;
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Add a port to a node. In case of native nodes, the port will be appended to the given port group. In case of container nodes, port will be added as last port.
      */
@@ -3698,13 +3709,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<AddPortCommand, 'kind'>
     ): Promise<AddPortResult> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddPort }
 		}) as Promise<AddPortResult>;
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Remove a port from a node
      */
@@ -3712,13 +3724,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<RemovePortCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.RemovePort }
 		});
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Copy selected workflow parts and serialize to workflow definition format.  This command only returns the serialized workflow parts.
      */
@@ -3726,13 +3739,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<CopyCommand, 'kind'>
     ): Promise<CopyResult> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Copy }
 		}) as Promise<CopyResult>;
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Cut selected workflow parts and serialize to workflow definition format. This command returns the serialized workflow parts and deletes the selected nodes and annotations.
      */
@@ -3740,13 +3754,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<CutCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Cut }
 		});
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
  	/**
      * Paste workflow parts in workflow definition format into the active workflow.
      */
@@ -3754,13 +3769,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
 		params: { projectId: string, workflowId: string } & Omit<PasteCommand, 'kind'>
     ): Promise<PasteResult> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Paste }
 		}) as Promise<PasteResult>;
-	},	
-	 
+		return postProcessCommandResponse(commandResponse);
+	},
+
   }
 }
 
@@ -3798,7 +3814,7 @@ const EventApiWrapper = function (rpcClient: RPCClient) {
 export const createAPI = (configuration: Configuration) => {
     const rpcClient = createRPCClient(configuration);
 
-    const api = { 
+    const api = {
         application: application(rpcClient),
         event: event(rpcClient),
         node: node(rpcClient),
@@ -3807,13 +3823,13 @@ export const createAPI = (configuration: Configuration) => {
         space: space(rpcClient),
         workflow: workflow(rpcClient),
     };
-    
+
     const { workflow: { executeWorkflowCommand, ...rest } } = api;
-    
+
     return {
         ...api,
         workflow: rest,
         event: EventApiWrapper(rpcClient),
-        workflowCommand: WorkflowCommandApiWrapper(rpcClient)
+        workflowCommand: WorkflowCommandApiWrapper(rpcClient, configuration)
     }
 };
