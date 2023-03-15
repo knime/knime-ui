@@ -78,6 +78,19 @@ describe('NodeNameEditor', () => {
         });
     });
 
+    it('should save name when clicking on rect overlay', () => {
+        const wrapper = doMount();
+        const rect = wrapper.find('rect');
+
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('update:modelValue', 'new value');
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
+        rect.trigger('click');
+
+        expect(wrapper.emitted('save')[0][0]).toEqual(expect.objectContaining({
+            newName: 'new value'
+        }));
+    });
+
     describe('action bar', () => {
         it('should be positioned based on the relevant prop', () => {
             const wrapper = doMount();
