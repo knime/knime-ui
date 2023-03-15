@@ -359,8 +359,8 @@ export default {
         },
 
         getNodeTemplateId(sourceItem) {
-            const sourceItemNameParts = sourceItem.name.split('.');
-            const sourceFileExtension = sourceItemNameParts[sourceItemNameParts.length - 1].toLowerCase();
+            const sourceFileExtension =
+                Object.keys(this.fileExtensionToNodeTemplateId).find(extension => sourceItem.name.endsWith(extension));
             return this.fileExtensionToNodeTemplateId[sourceFileExtension];
         }
     }
