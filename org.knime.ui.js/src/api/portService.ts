@@ -1,6 +1,9 @@
 import { API } from '@api';
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.port` methods directly.
+ *
  * Calls the 'getPortView' endpoint (see API documentation).
  * @param {String} projectId
  * @param {String} workflowId
@@ -26,6 +29,9 @@ export const getPortView = async (
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.port` methods directly.
+ *
  * Calls the 'callPortDataService' endpoint (see API documentation).
  * @param {String} projectId
  * @param {String} workflowId

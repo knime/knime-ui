@@ -1,6 +1,9 @@
 import { API } from '@api';
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.node` methods directly.
+ *
  * Do Action on nodes or an entire workflow.
  * @param {String} cfg.projectId
  * @param {String} cfg.workflowId
@@ -23,6 +26,9 @@ export const changeNodeState = async ({ projectId, workflowId, nodeIds = [], act
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.node` methods directly.
+ *
  * Actions for LoopExecution.
  * @param {String} cfg.projectId
  * @param {String} cfg.workflowId
@@ -45,6 +51,9 @@ export const changeLoopState = async ({ projectId, workflowId, nodeId, action })
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.node` methods directly.
+ *
  * Actions for node description.
  * @param {String} cfg.className - class name of the selected node
  * @param {String} cfg.settings - settings of the selected node
@@ -65,6 +74,9 @@ export const getNodeDescription = async ({ className, settings }) => {
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.node` methods directly.
+ *
  * Calls the 'getNodeView' endpoint (see API documentation).
  * @param {String} projectId
  * @param {String} workflowId
@@ -94,6 +106,9 @@ export const updateDataPointSelection = async () => {
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.node` methods directly.
+ *
  * Calls the 'getNodeDialog' endpoint (see API documentation).
  * @param {String} projectId
  * @param {String} workflowId
@@ -114,6 +129,9 @@ export const getNodeDialog = async ({ projectId, workflowId, nodeId }) => {
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.node` methods directly.
+ *
  * Calls the 'callNodeDataService' endpoint (see API documentation).
  * @param {String} projectId
  * @param {String} workflowId

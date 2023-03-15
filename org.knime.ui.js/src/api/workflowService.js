@@ -1,15 +1,16 @@
-import { waitForPatch } from '@/util/event-syncer';
 import { API } from '@api';
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflow` methods directly.
+ *
  * Load a specific workflow.
  * @param { Object } cfg The configuration object
  * @param { String } cfg.projectId The ID of the project to load
  * @param { String } cfg.workflowId The ID of the component / metanode that contains the workflow, or "root" for the
  *   top-level workflow. Defaults to `'root'`.
  * @param { Boolean } cfg.includeInfoOnAllowedActions Whether to enclose information on the actions
- *   (such as reset, execute, cancel) allowed on the contained nodes and the entire workflow itself.
- Defaults to `true`.
+ *   (such as reset, execute, cancel) allowed on the contained nodes and the entire workflow itself. Defaults to `true`.
  * @return { Promise<WorkflowSnapshot> } A promise containing the workflow as defined in the API
  */
 export const loadWorkflow = async ({ projectId, workflowId = 'root', includeInfoOnAllowedActions = true }) => {
@@ -28,33 +29,13 @@ export const loadWorkflow = async ({ projectId, workflowId = 'root', includeInfo
     }
 };
 
-/**
- * Generates workflow commands that are part of the undo/redo stack
- * @param {*} responseSupplier The command to execute
- * @param {*} commandName The name of the executed command
- * @returns {Promise} Maybe empty, since some commands don't return a result
- */
-const workflowCommand = async (responseSupplier, commandName) => { // TODO: This deserves a better name
-    try {
-        let response = await responseSupplier();
-
-        if (!response || !response.snapshotId) {
-            return response;
-        }
-
-        await waitForPatch(response.snapshotId);
-        
-        return response;
-    } catch (e) {
-        consola.error(e);
-        throw new Error(`Couldn't execute ${commandName}`);
-    }
-};
-
 // Disable arrow-body-style for workflow commands to be more flexible
 /* eslint-disable arrow-body-style */
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Adds a node to the canvas
  * @param { String } position The X,Y position where node is going to be added
  * @param { String } nodeFactory The representation of the node's factory
@@ -73,7 +54,8 @@ export const addNode = ({
     spaceItemReference,
     sourceNodeId = null,
     sourcePortIdx = null
-}) => workflowCommand(() => API.workflowCommand.AddNode({ // TODO: Fix linter, this is fine
+// eslint-disable-next-line new-cap
+}) => API.workflowCommand.AddNode({
     position,
     nodeFactory,
     projectId,
@@ -81,9 +63,12 @@ export const addNode = ({
     spaceItemReference,
     sourceNodeId,
     sourcePortIdx
-}), 'add_node');
+});
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Renames a container node
  * @param { String } name The new name of the component or metanode
  * @param { String } nodeId Id of the node that will be updated
@@ -92,15 +77,14 @@ export const addNode = ({
  * @returns { Promise } Promise
  */
 export const renameContainerNode = ({ nodeId, name, projectId, workflowId }) => {
-    return workflowCommand(() => API.workflowCommand.UpdateComponentOrMetanodeName({
-        projectId,
-        workflowId,
-        nodeId,
-        name
-    }), 'update_component_or_metanode_name');
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.UpdateComponentOrMetanodeName({ projectId, workflowId, nodeId, name });
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Renames a native node
  * @param { String } label The new label of the node
  * @param { String } nodeId Id of the node that will be updated
@@ -109,15 +93,14 @@ export const renameContainerNode = ({ nodeId, name, projectId, workflowId }) => 
  * @returns { Promise } Promise
  */
 export const renameNodeLabel = ({ nodeId, label, projectId, workflowId }) => {
-    return workflowCommand(() => API.workflowCommand.UpdateNodeLabel({
-        projectId,
-        workflowId,
-        nodeId,
-        label
-    }), 'update_node_label');
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.UpdateNodeLabel({ projectId, workflowId, nodeId, label });
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Deletes an object
  * @param { String } projectId
  * @param { String } workflowId
@@ -127,16 +110,14 @@ export const renameNodeLabel = ({ nodeId, label, projectId, workflowId }) => {
  * @returns { Promise } Promise
  */
 export const deleteObjects = ({ nodeIds = [], annotationIds = [], connectionIds = [], projectId, workflowId }) => {
-    return workflowCommand(() => API.workflowCommand.Delete({
-        nodeIds,
-        annotationIds,
-        connectionIds,
-        projectId,
-        workflowId
-    }, 'delete'));
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.Delete({ nodeIds, annotationIds, connectionIds, projectId, workflowId });
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Moves an object on the canvas
  * @param { String } projectId
  * @param { String } workflowId
@@ -146,16 +127,14 @@ export const deleteObjects = ({ nodeIds = [], annotationIds = [], connectionIds 
  * @returns { Promise } Promise
  */
 export const moveObjects = ({ projectId, workflowId, nodeIds = [], translation, annotationIds = [] }) => {
-    return workflowCommand(() => API.workflowCommand.Translate({
-        projectId,
-        workflowId,
-        nodeIds,
-        annotationIds,
-        translation
-    }), 'translate');
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.Translate({ projectId, workflowId, nodeIds, annotationIds, translation });
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Connects two nodes
  * @param { String } projectId
  * @param { String } workflowId
@@ -166,17 +145,21 @@ export const moveObjects = ({ projectId, workflowId, nodeIds = [], translation, 
  * @returns { Promise } Promise
  */
 export const connectNodes = ({ projectId, workflowId, sourceNode, sourcePort, destNode, destPort }) => {
-    return workflowCommand(() => API.workflowCommand.Connect({
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.Connect({
         projectId,
         workflowId,
         sourceNodeId: sourceNode,
         sourcePortIdx: sourcePort,
         destinationNodeId: destNode,
         destinationPortIdx: destPort
-    }), 'connect');
+    });
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Performs an undo command
  * @param { String } projectId
  * @param { String } workflowId
@@ -195,6 +178,9 @@ export const undo = async ({ projectId, workflowId }) => {
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Performs a redo command
  * @param { String } projectId
  * @param { String } workflowId
@@ -213,6 +199,9 @@ export const redo = async ({ projectId, workflowId }) => {
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Creates a metanode or component
  * @param { String } projectId
  * @param { String } workflowId
@@ -222,16 +211,14 @@ export const redo = async ({ projectId, workflowId }) => {
  * @returns {Promise}
  */
 export const collapseToContainer = ({ projectId, workflowId, containerType, nodeIds = [], annotationIds = [] }) => {
-    return workflowCommand(() => API.workflowCommand.Collapse({
-        projectId,
-        workflowId,
-        containerType,
-        nodeIds,
-        annotationIds
-    }), 'collapse');
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.Collapse({ projectId, workflowId, containerType, nodeIds, annotationIds });
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Adds a port to a node
  * @param { String } projectId
  * @param { String } workflowId
@@ -241,17 +228,21 @@ export const collapseToContainer = ({ projectId, workflowId, containerType, node
  * @returns { Promise }
  */
 export const addNodePort = ({ projectId, workflowId, nodeId, side, portGroup, typeId }) => {
-    return workflowCommand(() => API.workflowCommand.AddPort({
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.AddPort({
         projectId,
         workflowId,
         nodeId,
         side,
         portGroup,
         portTypeId: typeId
-    }), 'add_port');
+    });
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Removes a port from a node
  * @param { String } projectId
  * @param { String } workflowId
@@ -262,17 +253,21 @@ export const addNodePort = ({ projectId, workflowId, nodeId, side, portGroup, ty
  * @returns { Promise }
  */
 export const removeNodePort = ({ projectId, workflowId, nodeId, side, index, portGroup }) => {
-    return workflowCommand(() => API.workflowCommand.RemovePort({
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.RemovePort({
         projectId,
         workflowId,
         nodeId,
         side,
         portGroup,
         portIndex: index
-    }), 'remove_port');
+    });
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Expands a metanode or component
  * @param { String } projectId
  * @param { String } workflowId
@@ -280,14 +275,14 @@ export const removeNodePort = ({ projectId, workflowId, nodeId, side, index, por
  * @returns { Promise }
  */
 export const expandContainerNode = ({ projectId, workflowId, nodeId }) => {
-    return workflowCommand(() => API.workflowCommand.Expand({
-        projectId,
-        workflowId,
-        nodeId
-    }), 'expand');
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.Expand({ projectId, workflowId, nodeId });
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Copies or cuts workflow parts and serializes them
  * @param { String } projectId
  * @param { String } workflowId
@@ -297,18 +292,15 @@ export const expandContainerNode = ({ projectId, workflowId, nodeId }) => {
  * @returns { Promise } The serialized workflow parts
  */
 export const copyOrCutWorkflowParts = ({ projectId, workflowId, command, nodeIds = [], annotationIds = [] }) => {
-    const params = {
-        projectId,
-        workflowId,
-        nodeIds,
-        annotationIds
-    };
-    return workflowCommand(() => command === 'copy'
-        ? API.workflowCommand.Copy(params)
-        : API.workflowCommand.Cut(params));
+    const params = { projectId, workflowId, nodeIds, annotationIds };
+    // eslint-disable-next-line new-cap
+    return command === 'copy' ? API.workflowCommand.Copy(params) : API.workflowCommand.Cut(params);
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.workflowCommand` methods directly.
+ *
  * Pastes workflow parts to the canvas
  * @param { String } projectId
  * @param { String } workflowId
@@ -317,10 +309,6 @@ export const copyOrCutWorkflowParts = ({ projectId, workflowId, command, nodeIds
  * @returns { void }
  */
 export const pasteWorkflowParts = ({ projectId, workflowId, content = {}, position }) => {
-    return workflowCommand(() => API.workflowCommand.Paste({
-        projectId,
-        workflowId,
-        content,
-        position
-    }), 'paste');
+    // eslint-disable-next-line new-cap
+    return API.workflowCommand.Paste({ projectId, workflowId, content, position });
 };

@@ -1,6 +1,9 @@
 import { API } from '@api';
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.space` methods directly.
+ *
  * Fetches the content of a workflow group.
  * @param {String} spaceProviderId
  * @param {String} spaceId
@@ -21,6 +24,9 @@ export const fetchWorkflowGroupContent = async ({ spaceProviderId, spaceId, item
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.space` methods directly.
+ *
  * Fetches a space provider.
  * @param {String} spaceProviderId
  * @returns {Promice<SpaceProvider>}
@@ -37,6 +43,9 @@ export const fetchSpaceProvider = async ({ spaceProviderId }) => {
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.space` methods directly.
+ *
  * Creates a new workflow within the specified workflow group.
  * @param {String} spaceProviderId
  * @param {String} spaceId
@@ -59,6 +68,9 @@ export const createWorkflow = async ({ spaceProviderId = 'local', spaceId, itemI
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.space` methods directly.
+ *
  * Renames a space item.
  * @param {String} spaceProviderId
  * @param {String} spaceId
@@ -81,6 +93,9 @@ export const renameItem = async ({ spaceProviderId = 'local', spaceId, itemId, n
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.space` methods directly.
+ *
  * Creates a new folder aka workflow group.
  * @param {String} spaceProviderId
  * @param {String} spaceId
@@ -101,6 +116,9 @@ export const createFolder = async ({ spaceProviderId = 'local', spaceId, itemId 
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.space` methods directly.
+ *
  * Deletes space items.
  * @param {String} spaceProviderId
  * @param {String} spaceId
@@ -121,6 +139,9 @@ export const deleteItems = async ({ spaceProviderId = 'local', spaceId, itemIds 
 };
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.space` methods directly.
+ *
  * Moves space items to a specified workflow group.
  * @param {String} spaceId
  * @param {String} spaceProviderId

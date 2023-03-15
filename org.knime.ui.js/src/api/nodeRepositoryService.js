@@ -1,8 +1,10 @@
 import { API } from '@api';
 
 /**
- * Get repository nodes grouped by tags via RPC.
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.noderepository` methods directly.
  *
+ * Get repository nodes grouped by tags via RPC.
  * @param {Number} numNodesPerTag - The number of nodes per tag to be returned.
  * @param {Number} tagsOffset - The number of tags to be skipped (for pagination).
  * @param {Number} tagsLimit - The maximum number of tags to be returned (mainly for pagination).
@@ -27,8 +29,10 @@ export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLi
 };
 
 /**
- * Search the node repository via RPC.
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.noderepository` methods directly.
  *
+ * Search the node repository via RPC.
  * @param {String} query - query for specific matches in the returned nodes or empty string.
  * @param {Array} tags - tags to filter the results of the search.
  * @param {Boolean} allTagsMatch - if the tags are inclusive or exclusive.
@@ -64,9 +68,11 @@ export const searchNodes = async (
 
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.noderepository` methods directly.
+ *
  * Get recommendations of nodes based on a predecessor (nodeId, portIdx) or just the most popular ones
  * (set nodeId and portIdx both to null).
- *
  * @param {String} projectId - ID of the workflow-project
  * @param {String} workflowId - The ID of a workflow which has the same format as a node-id
  * @param {String|null} nodeId - The ID of a node (optional)
@@ -101,8 +107,10 @@ export const getNodeRecommendations = async ({
 };
 
 /**
- * Get node templates based on their ids.
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.noderepository` methods directly.
  *
+ * Get node templates based on their ids.
  * @param {Array} nodeTemplateIds - the node template ids for the templates to fetch
  * @returns {Object} the nodeTemplate results
  */

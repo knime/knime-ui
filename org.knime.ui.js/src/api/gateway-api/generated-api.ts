@@ -9,13 +9,13 @@ import { createRPCClient, type RPCClient } from './rpc-client';
 export interface AddNodeCommand extends WorkflowCommand {
 
     /**
-     *
+     * 
      * @type {XY}
      * @memberof AddNodeCommand
      */
     position: XY;
     /**
-     *
+     * 
      * @type {NodeFactoryKey}
      * @memberof AddNodeCommand
      */
@@ -27,7 +27,7 @@ export interface AddNodeCommand extends WorkflowCommand {
      */
     url?: string;
     /**
-     *
+     * 
      * @type {SpaceItemReference}
      * @memberof AddNodeCommand
      */
@@ -55,7 +55,7 @@ export interface AddNodeCommand extends WorkflowCommand {
 export namespace AddNodeCommand {
 }
 /**
- *
+ * 
  * @export
  * @interface AddNodeResult
  */
@@ -101,7 +101,7 @@ export interface AddPortCommand extends PortCommand {
 export namespace AddPortCommand {
 }
 /**
- *
+ * 
  * @export
  * @interface AddPortResult
  */
@@ -300,7 +300,7 @@ export interface AllowedWorkflowActions extends AllowedActions {
 export interface Annotation {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof Annotation
      */
@@ -312,7 +312,7 @@ export interface Annotation {
      */
     backgroundColor?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof Annotation
      */
@@ -427,7 +427,7 @@ export interface AppState {
 export interface AppStateChangedEvent extends Event {
 
     /**
-     *
+     * 
      * @type {AppState}
      * @memberof AppStateChangedEvent
      */
@@ -448,32 +448,32 @@ export interface AppStateChangedEventType extends EventType {
 
 
 /**
- *
+ * 
  * @export
  * @interface Bounds
  */
 export interface Bounds {
 
     /**
-     *
+     * 
      * @type {number}
      * @memberof Bounds
      */
     x: number;
     /**
-     *
+     * 
      * @type {number}
      * @memberof Bounds
      */
     y: number;
     /**
-     *
+     * 
      * @type {number}
      * @memberof Bounds
      */
     width: number;
     /**
-     *
+     * 
      * @type {number}
      * @memberof Bounds
      */
@@ -490,7 +490,7 @@ export interface Bounds {
 export interface CollapseCommand extends PartBasedCommand {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof CollapseCommand
      */
@@ -514,14 +514,14 @@ export namespace CollapseCommand {
     }
 }
 /**
- *
+ * 
  * @export
  * @interface CollapseResult
  */
 export interface CollapseResult extends CommandResult {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof CollapseResult
      */
@@ -537,7 +537,7 @@ export interface CollapseResult extends CommandResult {
 export namespace CollapseResult {
 }
 /**
- *
+ * 
  * @export
  * @interface CommandResult
  */
@@ -550,7 +550,7 @@ export interface CommandResult {
      */
     snapshotId?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof CommandResult
      */
@@ -586,7 +586,7 @@ export namespace CommandResult {
 export interface ComponentNode extends Node {
 
     /**
-     *
+     * 
      * @type {NodeState}
      * @memberof ComponentNode
      */
@@ -679,25 +679,25 @@ export namespace ComponentNodeDescription {
 export interface ConnectCommand extends WorkflowCommand {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof ConnectCommand
      */
     sourceNodeId: string;
     /**
-     *
+     * 
      * @type {number}
      * @memberof ConnectCommand
      */
     sourcePortIdx: number;
     /**
-     *
+     * 
      * @type {string}
      * @memberof ConnectCommand
      */
     destinationNodeId: string;
     /**
-     *
+     * 
      * @type {number}
      * @memberof ConnectCommand
      */
@@ -750,7 +750,7 @@ export interface Connection {
      */
     sourcePort: number;
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof Connection
      */
@@ -768,7 +768,7 @@ export interface Connection {
      */
     label?: string;
     /**
-     *
+     * 
      * @type {AllowedConnectionActions}
      * @memberof Connection
      */
@@ -778,14 +778,14 @@ export interface Connection {
 
 
 /**
- *
+ * 
  * @export
  * @interface ConvertContainerResult
  */
 export interface ConvertContainerResult extends CommandResult {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof ConvertContainerResult
      */
@@ -818,14 +818,14 @@ export interface CopyCommand extends PartBasedCommand {
 export namespace CopyCommand {
 }
 /**
- *
+ * 
  * @export
  * @interface CopyResult
  */
 export interface CopyResult extends CommandResult {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof CopyResult
      */
@@ -1004,7 +1004,7 @@ export interface ExampleProject {
      */
     svg?: string;
     /**
-     *
+     * 
      * @type {SpaceItemReference}
      * @memberof ExampleProject
      */
@@ -1037,20 +1037,20 @@ export interface ExpandCommand extends WorkflowCommand {
 export namespace ExpandCommand {
 }
 /**
- *
+ * 
  * @export
  * @interface ExpandResult
  */
 export interface ExpandResult extends CommandResult {
 
     /**
-     *
+     * 
      * @type {Array<string>}
      * @memberof ExpandResult
      */
     expandedNodeIds: Array<string>;
     /**
-     *
+     * 
      * @type {Array<string>}
      * @memberof ExpandResult
      */
@@ -1079,7 +1079,7 @@ export interface JobManager {
      */
     type: JobManager.TypeEnum;
     /**
-     *
+     * 
      * @type {CustomJobManager}
      * @memberof JobManager
      */
@@ -1133,7 +1133,7 @@ export interface Link {
 export interface LoopInfo {
 
     /**
-     *
+     * 
      * @type {AllowedLoopActions}
      * @memberof LoopInfo
      */
@@ -1171,13 +1171,13 @@ export namespace LoopInfo {
 export interface MetaNode extends Node {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof MetaNode
      */
     name: string;
     /**
-     *
+     * 
      * @type {MetaNodeState}
      * @memberof MetaNode
      */
@@ -1253,7 +1253,7 @@ export namespace MetaNodePort {
 export interface MetaNodeState {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof MetaNodeState
      */
@@ -1291,7 +1291,7 @@ export interface MetaPorts {
      */
     xPos?: number;
     /**
-     *
+     * 
      * @type {Array<NodePort>}
      * @memberof MetaPorts
      */
@@ -1314,13 +1314,13 @@ export interface NativeNode extends Node {
      */
     templateId: string;
     /**
-     *
+     * 
      * @type {NodeState}
      * @memberof NativeNode
      */
     state?: NodeState;
     /**
-     *
+     * 
      * @type {LoopInfo}
      * @memberof NativeNode
      */
@@ -1361,19 +1361,19 @@ export interface NativeNodeDescription extends NodeDescription {
      */
     shortDescription?: string;
     /**
-     *
+     * 
      * @type {Array<DynamicPortGroupDescription>}
      * @memberof NativeNodeDescription
      */
     dynamicInPortGroupDescriptions?: Array<DynamicPortGroupDescription>;
     /**
-     *
+     * 
      * @type {Array<DynamicPortGroupDescription>}
      * @memberof NativeNodeDescription
      */
     dynamicOutPortGroupDescriptions?: Array<DynamicPortGroupDescription>;
     /**
-     *
+     * 
      * @type {NodeViewDescription}
      * @memberof NativeNodeDescription
      */
@@ -1414,7 +1414,7 @@ export interface NativeNodeInvariants {
      */
     icon?: string;
     /**
-     *
+     * 
      * @type {NodeFactoryKey}
      * @memberof NativeNodeInvariants
      */
@@ -1481,13 +1481,13 @@ export interface Node {
      */
     outPorts: Array<NodePort>;
     /**
-     *
+     * 
      * @type {NodeAnnotation}
      * @memberof Node
      */
     annotation?: NodeAnnotation;
     /**
-     *
+     * 
      * @type {XY}
      * @memberof Node
      */
@@ -1505,13 +1505,13 @@ export interface Node {
      */
     hasDialog?: boolean;
     /**
-     *
+     * 
      * @type {AllowedNodeActions}
      * @memberof Node
      */
     allowedActions?: AllowedNodeActions;
     /**
-     *
+     * 
      * @type {NodeExecutionInfo}
      * @memberof Node
      */
@@ -1642,7 +1642,7 @@ export interface NodeDialogOptionGroup {
      */
     sectionDescription?: string;
     /**
-     *
+     * 
      * @type {Array<NodeDialogOptionDescription>}
      * @memberof NodeDialogOptionGroup
      */
@@ -1659,7 +1659,7 @@ export interface NodeDialogOptionGroup {
 export interface NodeExecutionInfo {
 
     /**
-     *
+     * 
      * @type {JobManager}
      * @memberof NodeExecutionInfo
      */
@@ -1769,13 +1769,13 @@ export interface NodePort extends NodePortTemplate {
      */
     index: number;
     /**
-     *
+     * 
      * @type {Array<string>}
      * @memberof NodePort
      */
     connectedVia?: Array<string>;
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof NodePort
      */
@@ -1803,7 +1803,7 @@ export interface NodePort extends NodePortTemplate {
 
 
 /**
- *
+ * 
  * @export
  * @interface NodePortDescription
  */
@@ -1897,37 +1897,37 @@ export interface NodeState {
      */
     executionState?: NodeState.ExecutionStateEnum;
     /**
-     *
+     * 
      * @type {number}
      * @memberof NodeState
      */
     progress?: number;
     /**
-     *
+     * 
      * @type {string}
      * @memberof NodeState
      */
     progressMessage?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof NodeState
      */
     error?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof NodeState
      */
     warning?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof NodeState
      */
     issue?: string;
     /**
-     *
+     * 
      * @type {Array<string>}
      * @memberof NodeState
      */
@@ -1996,7 +1996,7 @@ export interface NodeTemplate extends NativeNodeInvariants {
 export namespace NodeTemplate {
 }
 /**
- *
+ * 
  * @export
  * @interface NodeViewDescription
  */
@@ -2055,13 +2055,13 @@ export namespace PartBasedCommand {
 export interface PasteCommand extends WorkflowCommand {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof PasteCommand
      */
     content: string;
     /**
-     *
+     * 
      * @type {XY}
      * @memberof PasteCommand
      */
@@ -2077,7 +2077,7 @@ export interface PasteCommand extends WorkflowCommand {
 export namespace PasteCommand {
 }
 /**
- *
+ * 
  * @export
  * @interface PasteResult
  */
@@ -2183,7 +2183,7 @@ export namespace PatchOp {
 export interface PortCommand extends WorkflowCommand {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof PortCommand
      */
@@ -2195,7 +2195,7 @@ export interface PortCommand extends WorkflowCommand {
      */
     portGroup?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof PortCommand
      */
@@ -2273,7 +2273,7 @@ export interface PortType {
      */
     name: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof PortType
      */
@@ -2297,7 +2297,7 @@ export interface PortType {
      */
     hidden?: boolean;
     /**
-     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included.
+     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included. 
      * @type {boolean}
      * @memberof PortType
      */
@@ -2406,7 +2406,7 @@ export interface SelectionEventType extends EventType {
      */
     workflowId: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof SelectionEventType
      */
@@ -2510,19 +2510,19 @@ export namespace SpaceItem {
 export interface SpaceItemReference {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof SpaceItemReference
      */
     providerId: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof SpaceItemReference
      */
     spaceId: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof SpaceItemReference
      */
@@ -2568,7 +2568,7 @@ export interface SpacePathSegment {
 export interface SpaceProvider {
 
     /**
-     *
+     * 
      * @type {Array<Space>}
      * @memberof SpaceProvider
      */
@@ -2597,13 +2597,13 @@ export interface StyleRange {
      */
     length: number;
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof StyleRange
      */
     bold?: boolean;
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof StyleRange
      */
@@ -2632,7 +2632,7 @@ export interface StyleRange {
 export interface TranslateCommand extends PartBasedCommand {
 
     /**
-     *
+     * 
      * @type {XY}
      * @memberof TranslateCommand
      */
@@ -2689,13 +2689,13 @@ export interface UpdateAvailableEventType extends EventType {
 export interface UpdateComponentOrMetanodeNameCommand extends WorkflowCommand {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof UpdateComponentOrMetanodeNameCommand
      */
     name: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof UpdateComponentOrMetanodeNameCommand
      */
@@ -2747,13 +2747,13 @@ export interface UpdateInfo {
 export interface UpdateNodeLabelCommand extends WorkflowCommand {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof UpdateNodeLabelCommand
      */
     label: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof UpdateNodeLabelCommand
      */
@@ -2776,7 +2776,7 @@ export namespace UpdateNodeLabelCommand {
 export interface Workflow {
 
     /**
-     *
+     * 
      * @type {WorkflowInfo}
      * @memberof Workflow
      */
@@ -2812,31 +2812,31 @@ export interface Workflow {
      */
     parents?: Array<WorkflowInfo>;
     /**
-     *
+     * 
      * @type {MetaPorts}
      * @memberof Workflow
      */
     metaInPorts?: MetaPorts;
     /**
-     *
+     * 
      * @type {MetaPorts}
      * @memberof Workflow
      */
     metaOutPorts?: MetaPorts;
     /**
-     *
+     * 
      * @type {AllowedWorkflowActions}
      * @memberof Workflow
      */
     allowedActions?: AllowedWorkflowActions;
     /**
-     *
+     * 
      * @type {ComponentNodeDescription}
      * @memberof Workflow
      */
     componentMetadata?: ComponentNodeDescription;
     /**
-     *
+     * 
      * @type {ProjectMetadata}
      * @memberof Workflow
      */
@@ -2859,7 +2859,7 @@ export interface Workflow {
 export interface WorkflowAnnotation extends Annotation {
 
     /**
-     *
+     * 
      * @type {Bounds}
      * @memberof WorkflowAnnotation
      */
@@ -2871,13 +2871,13 @@ export interface WorkflowAnnotation extends Annotation {
      */
     id: string;
     /**
-     *
+     * 
      * @type {number}
      * @memberof WorkflowAnnotation
      */
     borderWidth: number;
     /**
-     *
+     * 
      * @type {string}
      * @memberof WorkflowAnnotation
      */
@@ -2906,7 +2906,7 @@ export interface WorkflowChangedEvent extends Event {
      */
     snapshotId: string;
     /**
-     *
+     * 
      * @type {Patch}
      * @memberof WorkflowChangedEvent
      */
@@ -3010,14 +3010,14 @@ export interface WorkflowGroupContent {
 
 
 /**
- *
+ * 
  * @export
  * @interface WorkflowInfo
  */
 export interface WorkflowInfo {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof WorkflowInfo
      */
@@ -3047,7 +3047,7 @@ export interface WorkflowInfo {
      */
     onHub?: boolean;
     /**
-     *
+     * 
      * @type {JobManager}
      * @memberof WorkflowInfo
      */
@@ -3079,19 +3079,19 @@ export namespace WorkflowInfo {
 export interface WorkflowProject {
 
     /**
-     *
+     * 
      * @type {string}
      * @memberof WorkflowProject
      */
     projectId: string;
     /**
-     *
+     * 
      * @type {SpaceItemReference}
      * @memberof WorkflowProject
      */
     origin: SpaceItemReference;
     /**
-     *
+     * 
      * @type {string}
      * @memberof WorkflowProject
      */
@@ -3114,7 +3114,7 @@ export interface WorkflowProject {
 export interface WorkflowSnapshot {
 
     /**
-     *
+     * 
      * @type {Workflow}
      * @memberof WorkflowSnapshot
      */
@@ -3130,20 +3130,20 @@ export interface WorkflowSnapshot {
 
 
 /**
- *
+ * 
  * @export
  * @interface XY
  */
 export interface XY {
 
     /**
-     *
+     * 
      * @type {number}
      * @memberof XY
      */
     x: number;
     /**
-     *
+     * 
      * @type {number}
      * @memberof XY
      */
@@ -3169,9 +3169,9 @@ const application = function(rpcClient: RPCClient) {
         ): Promise<AppState> {
            return rpcClient.call('ApplicationService.getState', params);
         },
+        
     }
 };
-
 /**
  * event - functional programming interface
  * @export
@@ -3180,7 +3180,7 @@ const event = function(rpcClient: RPCClient) {
     return {
         /**
          * Adds a new event listener for a certain type of event.
-         * @param {EventType} [eventType]
+         * @param {EventType} [eventType] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3189,9 +3189,10 @@ const event = function(rpcClient: RPCClient) {
         ): Promise<Response> {
            return rpcClient.call('EventService.addEventListener', params);
         },
+        
         /**
          * Unregisters event listeners.
-         * @param {EventType} [eventType]
+         * @param {EventType} [eventType] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3200,9 +3201,9 @@ const event = function(rpcClient: RPCClient) {
         ): Promise<Response> {
            return rpcClient.call('EventService.removeEventListener', params);
         },
+        
     }
 };
-
 /**
  * node - functional programming interface
  * @export
@@ -3215,8 +3216,8 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {'dialog' | 'view'} extensionType The node ui-extension-type, i.e. dialog or view.
-         * @param {'initial_data' | 'data' | 'apply_data'} serviceType
-         * @param {string} [dataServiceRequest]
+         * @param {'initial_data' | 'data' | 'apply_data'} serviceType 
+         * @param {string} [dataServiceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3225,6 +3226,7 @@ const node = function(rpcClient: RPCClient) {
         ): Promise<string> {
            return rpcClient.call('NodeService.callNodeDataService', params);
         },
+        
         /**
          * Changes state of a loop. The provided node-id must reference a loop-end node.
          * @param {string} projectId ID of the workflow-project.
@@ -3239,6 +3241,7 @@ const node = function(rpcClient: RPCClient) {
         ): Promise<Response> {
            return rpcClient.call('NodeService.changeLoopState', params);
         },
+        
         /**
          * Changes the node state of multiple nodes represented by a list of node-ids.
          * @param {string} projectId ID of the workflow-project.
@@ -3253,6 +3256,7 @@ const node = function(rpcClient: RPCClient) {
         ): Promise<Response> {
            return rpcClient.call('NodeService.changeNodeStates', params);
         },
+        
         /**
          * Obtain the description of a given node.
          * @param {NodeFactoryKey} nodeFactoryKey The key identifying the node.
@@ -3264,6 +3268,7 @@ const node = function(rpcClient: RPCClient) {
         ): Promise<NativeNodeDescription> {
            return rpcClient.call('NodeService.getNodeDescription', params);
         },
+        
         /**
          * Returns all the information on a node dialog required to render it.
          * @param {string} projectId ID of the workflow-project.
@@ -3277,6 +3282,7 @@ const node = function(rpcClient: RPCClient) {
         ): Promise<any> {
            return rpcClient.call('NodeService.getNodeDialog', params);
         },
+        
         /**
          * Returns all the information on a node view required to render it.
          * @param {string} projectId ID of the workflow-project.
@@ -3290,6 +3296,7 @@ const node = function(rpcClient: RPCClient) {
         ): Promise<any> {
            return rpcClient.call('NodeService.getNodeView', params);
         },
+        
         /**
          * Updates the data point selection (aka hiliting) for a single node as specified.
          * @param {string} projectId ID of the workflow-project.
@@ -3305,9 +3312,9 @@ const node = function(rpcClient: RPCClient) {
         ): Promise<Response> {
            return rpcClient.call('NodeService.updateDataPointSelection', params);
         },
+        
     }
 };
-
 /**
  * noderepository - functional programming interface
  * @export
@@ -3330,6 +3337,7 @@ const noderepository = function(rpcClient: RPCClient) {
         ): Promise<Array<NodeTemplate>> {
            return rpcClient.call('NodeRepositoryService.getNodeRecommendations', params);
         },
+        
         /**
          * Compiles a list of node templates (with complete information, i.e. including icons, etc.). It doesn't actually change any state or create a new resource (despite the 'post').
          * @param {Array<string>} [nodeTemplateIds] A list of template ids to request the node templates for.
@@ -3341,6 +3349,7 @@ const noderepository = function(rpcClient: RPCClient) {
         ): Promise<{ [key: string]: NodeTemplate; }> {
            return rpcClient.call('NodeRepositoryService.getNodeTemplates', params);
         },
+        
         /**
          * Returns a pre-defined set of groups (defined by tags) and nodes per group (the most frequently used ones in that group).
          * @param {number} [numNodesPerTag] The number of nodes per tag/group to be returned.
@@ -3355,6 +3364,7 @@ const noderepository = function(rpcClient: RPCClient) {
         ): Promise<NodeGroups> {
            return rpcClient.call('NodeRepositoryService.getNodesGroupedByTags', params);
         },
+        
         /**
          * Searches for nodes (and components) in the node repository.
          * @param {string} [q] The term to search for.
@@ -3373,9 +3383,9 @@ const noderepository = function(rpcClient: RPCClient) {
         ): Promise<NodeSearchResult> {
            return rpcClient.call('NodeRepositoryService.searchNodes', params);
         },
+        
     }
 };
-
 /**
  * port - functional programming interface
  * @export
@@ -3388,8 +3398,8 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} portIdx The port index to be used.
-         * @param {'initial_data' | 'data'} serviceType
-         * @param {string} [dataServiceRequest]
+         * @param {'initial_data' | 'data'} serviceType 
+         * @param {string} [dataServiceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3398,6 +3408,7 @@ const port = function(rpcClient: RPCClient) {
         ): Promise<string> {
            return rpcClient.call('PortService.callPortDataService', params);
         },
+        
         /**
          * Returns all the information on a port view required to render it.
          * @param {string} projectId ID of the workflow-project.
@@ -3412,9 +3423,9 @@ const port = function(rpcClient: RPCClient) {
         ): Promise<any> {
            return rpcClient.call('PortService.getPortView', params);
         },
+        
     }
 };
-
 /**
  * space - functional programming interface
  * @export
@@ -3435,6 +3446,7 @@ const space = function(rpcClient: RPCClient) {
         ): Promise<SpaceItem> {
            return rpcClient.call('SpaceService.createWorkflow', params);
         },
+        
         /**
          * Create a new workflow group within a given workflow group.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
@@ -3448,6 +3460,7 @@ const space = function(rpcClient: RPCClient) {
         ): Promise<SpaceItem> {
            return rpcClient.call('SpaceService.createWorkflowGroup', params);
         },
+        
         /**
          * Deletes items from the space.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
@@ -3461,6 +3474,7 @@ const space = function(rpcClient: RPCClient) {
         ): Promise<Response> {
            return rpcClient.call('SpaceService.deleteItems', params);
         },
+        
         /**
          * Mainly returns the spaces provided by this space-provider.
          * @param {string} spaceProviderId Identifies a space-provider.
@@ -3472,6 +3486,7 @@ const space = function(rpcClient: RPCClient) {
         ): Promise<SpaceProvider> {
            return rpcClient.call('SpaceService.getSpaceProvider', params);
         },
+        
         /**
          * Get shallow list of workflows, components and data-files within a given workflow group.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
@@ -3485,6 +3500,7 @@ const space = function(rpcClient: RPCClient) {
         ): Promise<WorkflowGroupContent> {
            return rpcClient.call('SpaceService.listWorkflowGroup', params);
         },
+        
         /**
          * Move a space items to a different workflow group within its space.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
@@ -3500,6 +3516,7 @@ const space = function(rpcClient: RPCClient) {
         ): Promise<Response> {
            return rpcClient.call('SpaceService.moveItems', params);
         },
+        
         /**
          * Rename a space Item
          * @param {string} spaceProviderId Identifies a space-provider.
@@ -3514,9 +3531,9 @@ const space = function(rpcClient: RPCClient) {
         ): Promise<SpaceItem> {
            return rpcClient.call('SpaceService.renameItem', params);
         },
+        
     }
 };
-
 /**
  * workflow - functional programming interface
  * @export
@@ -3536,6 +3553,7 @@ const workflow = function(rpcClient: RPCClient) {
         ): Promise<CommandResult> {
            return rpcClient.call('WorkflowService.executeWorkflowCommand', params);
         },
+        
         /**
          * Retrieves the complete structure (sub-)workflows.
          * @param {string} projectId ID of the workflow-project.
@@ -3549,6 +3567,7 @@ const workflow = function(rpcClient: RPCClient) {
         ): Promise<WorkflowSnapshot> {
            return rpcClient.call('WorkflowService.getWorkflow', params);
         },
+        
         /**
          * Re-does the last command from the redo-stack.
          * @param {string} projectId ID of the workflow-project.
@@ -3561,6 +3580,7 @@ const workflow = function(rpcClient: RPCClient) {
         ): Promise<Response> {
            return rpcClient.call('WorkflowService.redoWorkflowCommand', params);
         },
+        
         /**
          * Un-does the last command from the undo-stack.
          * @param {string} projectId ID of the workflow-project.
@@ -3573,14 +3593,15 @@ const workflow = function(rpcClient: RPCClient) {
         ): Promise<Response> {
            return rpcClient.call('WorkflowService.undoWorkflowCommand', params);
         },
+        
     }
 };
 
-
 const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: Configuration) {
-const identity = (response) => response
-const { postProcessCommandResponse = identity } = configuration;
+    const identity = response => response;
+    const { postProcessCommandResponse = identity } = configuration;
 
+<<<<<<< HEAD
   return {
  	/**
      * Moves workflow nodes and workflow annotations to a defined position.
@@ -3778,19 +3799,218 @@ const { postProcessCommandResponse = identity } = configuration;
 	},
 
   }
+=======
+    return {
+ 	    /**
+		* Moves workflow nodes and workflow annotations to a defined position.
+		*/
+		Translate(
+			params: { projectId: string, workflowId: string } & Omit<TranslateCommand, 'kind'>
+		): Promise<unknown> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Translate }
+			});
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Deletes the specified nodes, workflow annotations or connections. Note that there are potentially more connections deleted than specified, i.e. those connected to a node that is to be deleted. If any of the elements can&#39;t be deleted (because it doesn&#39;t exist or the deletion is not allowed) the entire delete operation is aborted (i.e. nothing is deleted).
+		*/
+		Delete(
+			params: { projectId: string, workflowId: string } & Omit<DeleteCommand, 'kind'>
+		): Promise<unknown> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Delete }
+			});
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Connects two nodes (and by doing that possibly replacing another connection).
+		*/
+		Connect(
+			params: { projectId: string, workflowId: string } & Omit<ConnectCommand, 'kind'>
+		): Promise<unknown> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Connect }
+			});
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Adds a new node to the workflow.
+		*/
+		AddNode(
+			params: { projectId: string, workflowId: string } & Omit<AddNodeCommand, 'kind'>
+		): Promise<AddNodeResult> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddNode }
+			}) as Promise<AddNodeResult>;
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Updates the name of a component or metanode
+		*/
+		UpdateComponentOrMetanodeName(
+			params: { projectId: string, workflowId: string } & Omit<UpdateComponentOrMetanodeNameCommand, 'kind'>
+		): Promise<unknown> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentOrMetanodeName }
+			});
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Updates the label of a native node, component or metanode.
+		*/
+		UpdateNodeLabel(
+			params: { projectId: string, workflowId: string } & Omit<UpdateNodeLabelCommand, 'kind'>
+		): Promise<unknown> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateNodeLabel }
+			});
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Resets nodes contained in the metanode or container and expands it.
+		*/
+		Expand(
+			params: { projectId: string, workflowId: string } & Omit<ExpandCommand, 'kind'>
+		): Promise<ExpandResult> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Expand }
+			}) as Promise<ExpandResult>;
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Resets selected nodes and collapses selected nodes and annotations into a metanode or component.
+		*/
+		Collapse(
+			params: { projectId: string, workflowId: string } & Omit<CollapseCommand, 'kind'>
+		): Promise<CollapseResult> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Collapse }
+			}) as Promise<CollapseResult>;
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Add a port to a node. In case of native nodes, the port will be appended to the given port group. In case of container nodes, port will be added as last port.
+		*/
+		AddPort(
+			params: { projectId: string, workflowId: string } & Omit<AddPortCommand, 'kind'>
+		): Promise<AddPortResult> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddPort }
+			}) as Promise<AddPortResult>;
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Remove a port from a node
+		*/
+		RemovePort(
+			params: { projectId: string, workflowId: string } & Omit<RemovePortCommand, 'kind'>
+		): Promise<unknown> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.RemovePort }
+			});
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Copy selected workflow parts and serialize to workflow definition format.  This command only returns the serialized workflow parts.
+		*/
+		Copy(
+			params: { projectId: string, workflowId: string } & Omit<CopyCommand, 'kind'>
+		): Promise<CopyResult> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Copy }
+			}) as Promise<CopyResult>;
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Cut selected workflow parts and serialize to workflow definition format. This command returns the serialized workflow parts and deletes the selected nodes and annotations.
+		*/
+		Cut(
+			params: { projectId: string, workflowId: string } & Omit<CutCommand, 'kind'>
+		): Promise<unknown> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Cut }
+			});
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+ 	    /**
+		* Paste workflow parts in workflow definition format into the active workflow.
+		*/
+		Paste(
+			params: { projectId: string, workflowId: string } & Omit<PasteCommand, 'kind'>
+		): Promise<PasteResult> {
+			const { projectId, workflowId, ...commandParams } = params;
+			const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+				projectId: params.projectId,
+				workflowId: params.workflowId,
+				workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Paste }
+			}) as Promise<PasteResult>;
+			return postProcessCommandResponse(commandResponse);
+		},
+        
+    }
+>>>>>>> 95ef19c3 (NXT-1627: Finalize documentation and tests)
 }
 
 type EventParams =
-    | (WorkflowChangedEventType & { typeId: 'WorkflowChangedEventType' })
-    | (AppStateChangedEventType & { typeId: 'AppStateChangedEventType' })
-    | (SelectionEventType & { typeId: 'SelectionEventType' })
-    | (UpdateAvailableEventType & { typeId: 'UpdateAvailableEventType' })
-;
+        | (WorkflowChangedEventType & { typeId: 'WorkflowChangedEventType' })
+            | (AppStateChangedEventType & { typeId: 'AppStateChangedEventType' })
+            | (SelectionEventType & { typeId: 'SelectionEventType' })
+            | (UpdateAvailableEventType & { typeId: 'UpdateAvailableEventType' })
+    ;
 
 interface EventHandlers {
-    WorkflowChangedEvent?(payload: WorkflowChangedEvent): void;
-    AppStateChangedEvent?(payload: AppStateChangedEvent): void;
-    UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;
+        WorkflowChangedEvent?(payload: WorkflowChangedEvent): void;
+        AppStateChangedEvent?(payload: AppStateChangedEvent): void;
+        UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;
 }
 
 const EventApiWrapper = function (rpcClient: RPCClient) {
@@ -3814,18 +4034,18 @@ const EventApiWrapper = function (rpcClient: RPCClient) {
 export const createAPI = (configuration: Configuration) => {
     const rpcClient = createRPCClient(configuration);
 
-    const api = {
-        application: application(rpcClient),
-        event: event(rpcClient),
-        node: node(rpcClient),
-        noderepository: noderepository(rpcClient),
-        port: port(rpcClient),
-        space: space(rpcClient),
-        workflow: workflow(rpcClient),
+    const api = { 
+                    application: application(rpcClient),
+                    event: event(rpcClient),
+                    node: node(rpcClient),
+                    noderepository: noderepository(rpcClient),
+                    port: port(rpcClient),
+                    space: space(rpcClient),
+                    workflow: workflow(rpcClient),
     };
-
+    
     const { workflow: { executeWorkflowCommand, ...rest } } = api;
-
+    
     return {
         ...api,
         workflow: rest,
