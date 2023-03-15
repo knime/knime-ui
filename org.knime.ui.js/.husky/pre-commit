@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-cd org.knime.ui.js && npx lint-staged --debug
+cd org.knime.ui.js && npx lint-staged
