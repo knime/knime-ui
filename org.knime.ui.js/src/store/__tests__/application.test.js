@@ -333,7 +333,7 @@ describe('application store', () => {
             });
             expect(store.state.workflow.activeSnapshotId).toBe('snap');
             expect(subscribeEvent).toHaveBeenCalledWith({
-                typeId: 'WorkflowChanged',
+                typeId: 'WorkflowChangedEventType',
                 projectId: 'wf1',
                 workflowId: 'root',
                 snapshotId: 'snap'
@@ -353,7 +353,7 @@ describe('application store', () => {
                 projectId: 'wf2'
             });
             expect(subscribeEvent).toHaveBeenCalledWith({
-                typeId: 'WorkflowChanged',
+                typeId: 'WorkflowChangedEventType',
                 projectId: 'wf2',
                 workflowId: 'root'
             });
@@ -370,7 +370,7 @@ describe('application store', () => {
             await store.dispatch('application/unloadActiveWorkflow', { clearWorkflow: true });
 
             expect(unsubscribeEventListener).toHaveBeenCalledWith({
-                typeId: 'WorkflowChanged',
+                typeId: 'WorkflowChangedEventType',
                 projectId: 'wf1',
                 workflowId: 'root',
                 snapshotId: 'snap'

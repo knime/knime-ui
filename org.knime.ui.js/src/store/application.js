@@ -155,7 +155,7 @@ export const actions = {
      *   A P P L I C A T I O N   L I F E C Y C L E
      */
     async initializeApplication({ dispatch }, { $router }) {
-        await API.event.subscribeEvent({ typeId: 'AppStateChanged' });
+        await API.event.subscribeEvent({ typeId: 'AppStateChangedEventType' });
 
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
@@ -197,7 +197,7 @@ export const actions = {
         });
     },
     destroyApplication({ dispatch }) {
-        API.event.unsubscribeEventListener({ typeId: 'AppStateChanged' });
+        API.event.unsubscribeEventListener({ typeId: 'AppStateChangedEventType' });
         dispatch('unloadActiveWorkflow', { clearWorkflow: true });
     },
 
@@ -361,7 +361,7 @@ export const actions = {
 
         // TODO: remove this 'root' fallback after mocks have been adjusted
         const workflowId = workflow.info.containerId || 'root';
-        API.event.subscribeEvent({ typeId: 'WorkflowChanged', projectId, workflowId, snapshotId });
+        API.event.subscribeEvent({ typeId: 'WorkflowChangedEventType', projectId, workflowId, snapshotId });
 
         // Call navigate to workflow function (if provided) before restoring the canvas state
         await navigateToWorkflow?.();
@@ -382,7 +382,7 @@ export const actions = {
         let { activeSnapshotId: snapshotId } = rootState.workflow;
         let workflowId = rootState.workflow.activeWorkflow.info.containerId;
 
-        API.event.unsubscribeEventListener({ typeId: 'WorkflowChanged', projectId, workflowId, snapshotId });
+        API.event.unsubscribeEventListener({ typeId: 'WorkflowChangedEventType', projectId, workflowId, snapshotId });
 
         commit('selection/clearSelection', null, { root: true });
         commit('workflow/setTooltip', null, { root: true });
