@@ -8,7 +8,7 @@ type YTransform = { startY: number; moveY: number; origHeight: number; }
 type TransformParams = XTransform & YTransform;
 type DirectionHandler = (currentBounds: Required<Bounds>, params: TransformParams) => Required<Bounds>
 
-const MIN_DIMENSIONS = { width: 100, height: 100 };
+const MIN_DIMENSIONS = { width: 0, height: 0 };
 
 const isValidHeight = (value: number) => value > MIN_DIMENSIONS.height;
 const isValidWidth = (value: number) => value > MIN_DIMENSIONS.width;

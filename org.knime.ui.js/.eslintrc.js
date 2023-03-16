@@ -21,5 +21,13 @@ module.exports = {
     },
     rules: {
         'new-cap': ['warn', { capIsNewExceptionPattern: '^API\\..' }]
-    }
+    },
+    overrides: [
+        {
+            files: ['**/*.ts'],
+            rules: {
+                'valid-jsdoc': 'off'
+            }
+        }
+    ]
 };
