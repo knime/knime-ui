@@ -54,7 +54,6 @@ export const addNode = ({
     spaceItemReference,
     sourceNodeId = null,
     sourcePortIdx = null
-// eslint-disable-next-line new-cap
 }) => API.workflowCommand.AddNode({
     position,
     nodeFactory,
@@ -77,7 +76,6 @@ export const addNode = ({
  * @returns { Promise } Promise
  */
 export const renameContainerNode = ({ nodeId, name, projectId, workflowId }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.UpdateComponentOrMetanodeName({ projectId, workflowId, nodeId, name });
 };
 
@@ -93,7 +91,6 @@ export const renameContainerNode = ({ nodeId, name, projectId, workflowId }) => 
  * @returns { Promise } Promise
  */
 export const renameNodeLabel = ({ nodeId, label, projectId, workflowId }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.UpdateNodeLabel({ projectId, workflowId, nodeId, label });
 };
 
@@ -110,7 +107,6 @@ export const renameNodeLabel = ({ nodeId, label, projectId, workflowId }) => {
  * @returns { Promise } Promise
  */
 export const deleteObjects = ({ nodeIds = [], annotationIds = [], connectionIds = [], projectId, workflowId }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.Delete({ nodeIds, annotationIds, connectionIds, projectId, workflowId });
 };
 
@@ -127,7 +123,6 @@ export const deleteObjects = ({ nodeIds = [], annotationIds = [], connectionIds 
  * @returns { Promise } Promise
  */
 export const moveObjects = ({ projectId, workflowId, nodeIds = [], translation, annotationIds = [] }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.Translate({ projectId, workflowId, nodeIds, annotationIds, translation });
 };
 
@@ -145,7 +140,6 @@ export const moveObjects = ({ projectId, workflowId, nodeIds = [], translation, 
  * @returns { Promise } Promise
  */
 export const connectNodes = ({ projectId, workflowId, sourceNode, sourcePort, destNode, destPort }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.Connect({
         projectId,
         workflowId,
@@ -211,7 +205,6 @@ export const redo = async ({ projectId, workflowId }) => {
  * @returns {Promise}
  */
 export const collapseToContainer = ({ projectId, workflowId, containerType, nodeIds = [], annotationIds = [] }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.Collapse({ projectId, workflowId, containerType, nodeIds, annotationIds });
 };
 
@@ -228,7 +221,6 @@ export const collapseToContainer = ({ projectId, workflowId, containerType, node
  * @returns { Promise }
  */
 export const addNodePort = ({ projectId, workflowId, nodeId, side, portGroup, typeId }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.AddPort({
         projectId,
         workflowId,
@@ -253,7 +245,6 @@ export const addNodePort = ({ projectId, workflowId, nodeId, side, portGroup, ty
  * @returns { Promise }
  */
 export const removeNodePort = ({ projectId, workflowId, nodeId, side, index, portGroup }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.RemovePort({
         projectId,
         workflowId,
@@ -275,7 +266,6 @@ export const removeNodePort = ({ projectId, workflowId, nodeId, side, index, por
  * @returns { Promise }
  */
 export const expandContainerNode = ({ projectId, workflowId, nodeId }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.Expand({ projectId, workflowId, nodeId });
 };
 
@@ -293,7 +283,7 @@ export const expandContainerNode = ({ projectId, workflowId, nodeId }) => {
  */
 export const copyOrCutWorkflowParts = ({ projectId, workflowId, command, nodeIds = [], annotationIds = [] }) => {
     const params = { projectId, workflowId, nodeIds, annotationIds };
-    // eslint-disable-next-line new-cap
+
     return command === 'copy' ? API.workflowCommand.Copy(params) : API.workflowCommand.Cut(params);
 };
 
@@ -309,6 +299,5 @@ export const copyOrCutWorkflowParts = ({ projectId, workflowId, command, nodeIds
  * @returns { void }
  */
 export const pasteWorkflowParts = ({ projectId, workflowId, content = {}, position }) => {
-    // eslint-disable-next-line new-cap
     return API.workflowCommand.Paste({ projectId, workflowId, content, position });
 };

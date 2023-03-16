@@ -18,5 +18,8 @@ module.exports = {
                 ]
             }
         }
+    },
+    rules: {
+        'new-cap': ['warn', { capIsNewExceptionPattern: '^API\\..' }]
     }
 };
