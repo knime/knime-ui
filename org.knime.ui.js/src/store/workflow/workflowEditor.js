@@ -3,8 +3,7 @@ import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameCo
     renameNodeLabel } from '@api';
 import workflowObjectBounds from '@/util/workflowObjectBounds';
 import { pastePartsAt, pasteURI } from '@/util/pasteToWorkflow';
-import { adjustToGrid } from '@/util/geometry';
-import * as $shapes from '@/style/shapes.mjs';
+import { snapToGrid } from '@/util/geometry';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -166,10 +165,10 @@ export const actions = {
         const { info: { containerId: workflowId } } = activeWorkflow;
 
         // Adjusted For Grid Snapping
-        const gridAdjustedPosition = adjustToGrid({
-            coords: position,
-            gridSize: $shapes.gridSize
-        });
+        const gridAdjustedPosition = {
+            x: snapToGrid(position.x),
+            y: snapToGrid(position.y)
+        };
 
         const response = await addNode({
             projectId,

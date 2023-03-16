@@ -1,9 +1,10 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { mixin as VueClickAway } from 'vue3-click-away';
 
-import type { Bounds } from '@/api/gateway-api/generated-api';
+import type { Bounds, WorkflowAnnotation } from '@/api/gateway-api/generated-api';
+import { API } from '@api';
 
 import TransformControls from './TransformControls.vue';
 import LegacyAnnotationText from './LegacyAnnotationText.vue';
@@ -18,72 +19,40 @@ export default defineComponent({
     },
     mixins: [VueClickAway],
     inheritAttrs: false,
-    props: {
-        /**
-         * @values "left", "center", "right"
-         */
-        textAlign: {
-            type: String,
-            default: 'left',
-            validator: (value: string) => ['left', 'center', 'right'].includes(value)
-        },
-        /**
-         * Font size (in pt) that should be applied to un-styled text
-         */
-        defaultFontSize: {
-            type: Number,
-            default: 12
-        },
-        borderWidth: {
-            type: Number,
-            default: 2
-        },
-        borderColor: {
-            type: String,
-            required: true
-        },
-        backgroundColor: {
-            type: String,
-            required: true
-        },
-        bounds: {
-            type: Object as PropType<Required<Bounds>>,
-            required: true,
-            validator: ({ x, y, height, width }) => typeof x === 'number' &&
-                typeof y === 'number' &&
-                typeof height === 'number' &&
-                typeof width === 'number'
 
-        },
-        text: {
-            type: String,
-            default: ''
-        },
-        /**
-         * passed through to `LegacyAnnotationText`
-         */
-        styleRanges: {
-            type: Array,
-            default: () => []
+    props: {
+        annotation: {
+            type: Object as PropType<WorkflowAnnotation>,
+            required: true,
         }
     },
+
     data() {
         return {
             isSelected: false,
-            isEditing: false,
-            isHovering: false,
-            isTransforming: false
+            isEditing: false
         };
     },
-    computed: {
-        ...mapGetters('canvas', ['viewBox', 'screenToCanvasCoordinates']),
 
+    computed: {
+        ...mapState('workflow', {
+            projectId: state => state.activeWorkflow.projectId,
+            activeWorkflowId: state => state.activeWorkflow.info.containerId
+        }),
         annotationWrapperStyle() {
+            const {
+                backgroundColor,
+                borderColor,
+                defaultFontSize = 12,
+                borderWidth = 2,
+                textAlign = 'left'
+            } = this.annotation;
+
             return {
-                fontSize: `${this.defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`,
-                border: `${this.borderWidth}px solid ${this.borderColor}`,
-                background: this.backgroundColor,
-                textAlign: this.textAlign,
+                fontSize: `${defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`,
+                border: `${borderWidth}px solid ${borderColor}`,
+                background: backgroundColor,
+                textAlign: textAlign,
                 padding: `${this.$shapes.workflowAnnotationPadding}px`,
                 width: '100%',
                 height: '100%'
@@ -93,13 +62,21 @@ export default defineComponent({
 
     methods: {
         toggleEdit() {
-            this.isTransforming = true;
             // this.$emit('toggle-edit', this.editable ? null : this.id);
         },
 
         unselect() {
             this.isEditing = false;
             this.isSelected = false;
+        },
+
+        moveAnnotation(newBounds: Bounds) {
+            API.workflowCommand.ResizeWorkflowAnnotation({
+                projectId: this.projectId,
+                workflowId: this.projectId,
+                id: this.annotation.id,
+                ...newBounds
+            });
         }
     }
 });
@@ -109,7 +86,8 @@ export default defineComponent({
   <TransformControls
     v-click-away="() => unselect()"
     :disabled="!isEditing"
-    :initial-value="bounds"
+    :initial-value="annotation.bounds"
+    @transform-end="moveAnnotation($event.newBounds)"
   >
     <template #default="{ transformedBounds }">
       <foreignObject
@@ -122,9 +100,9 @@ export default defineComponent({
         @dblclick="isSelected ? (isEditing = true) : null"
       >
         <LegacyAnnotationText
-          :text="text"
+          :text="annotation.text"
           :style="annotationWrapperStyle"
-          :style-ranges="styleRanges"
+          :style-ranges="annotation.styleRanges"
         />
       </foreignObject>
     </template>

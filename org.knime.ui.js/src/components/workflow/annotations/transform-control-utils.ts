@@ -1,4 +1,6 @@
 import type { Bounds } from '@/api/gateway-api/generated-api';
+import * as shapes from '@/style/shapes.mjs';
+import { snapToGrid } from '@/util/geometry';
 
 export const DIRECTIONS = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'] as const;
 export type Directions = typeof DIRECTIONS[number]
@@ -6,9 +8,9 @@ export type Directions = typeof DIRECTIONS[number]
 type XTransform = { startX: number; moveX: number; origWidth: number; }
 type YTransform = { startY: number; moveY: number; origHeight: number; }
 type TransformParams = XTransform & YTransform;
-type DirectionHandler = (currentBounds: Required<Bounds>, params: TransformParams) => Required<Bounds>
+type DirectionHandler = (currentBounds: Bounds, params: TransformParams) => Bounds
 
-const MIN_DIMENSIONS = { width: 0, height: 0 };
+const MIN_DIMENSIONS = { width: shapes.gridSize.x, height: shapes.gridSize.y };
 
 const isValidHeight = (value: number) => value > MIN_DIMENSIONS.height;
 const isValidWidth = (value: number) => value > MIN_DIMENSIONS.width;
@@ -152,8 +154,15 @@ const directionHandlers: Record<Directions, DirectionHandler> = {
     }
 };
 
+export const getGridAdjustedBounds = (bounds: Bounds): Bounds => ({
+    x: snapToGrid(bounds.x),
+    y: snapToGrid(bounds.y),
+    width: snapToGrid(bounds.width),
+    height: snapToGrid(bounds.height)
+});
+
 export const getNewBounds = (
-    currentBounds: Required<Bounds>,
+    currentBounds: Bounds,
     {
         startX,
         startY,
@@ -175,5 +184,5 @@ export const getNewBounds = (
         origHeight
     });
 
-    return newBounds;
+    return getGridAdjustedBounds(newBounds);
 };

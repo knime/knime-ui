@@ -1,9 +1,9 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { mapGetters } from 'vuex';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
-import { type Directions, DIRECTIONS, getNewBounds } from './transform-control-utils';
+import { type Directions, DIRECTIONS, getNewBounds, getGridAdjustedBounds } from './transform-control-utils';
+import { mapGetters } from 'vuex';
 
 export default defineComponent({
     props: {
@@ -13,24 +13,21 @@ export default defineComponent({
         },
 
         initialValue: {
-            type: Object as PropType<Required<Bounds>>,
+            type: Object as PropType<Bounds>,
             default: () => ({ x: 0, y: 0, width: 0, height: 0 })
-        },
-
-        canvasCoordinatesMapper: {
-            type: Function,
-            default: () => () => [0, 0]
         }
     },
 
-    emits: ['transform:stop'],
+    emits: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        transformEnd: (_payload: { newBounds: Bounds }) => true
+    },
 
     data() {
         return {
             directions: DIRECTIONS,
-            isTransforming: false,
             CONTROL_SIZE: 6,
-            innerValue: this.initialValue
+            innerValue: getGridAdjustedBounds(this.initialValue)
         };
     },
 
@@ -39,8 +36,11 @@ export default defineComponent({
     },
 
     watch: {
-        initialValue() {
-            this.innerValue = this.initialValue;
+        initialValue: {
+            handler() {
+                this.innerValue = getGridAdjustedBounds(this.initialValue);
+            },
+            immediate: true
         }
     },
 
@@ -82,9 +82,8 @@ export default defineComponent({
             window.addEventListener('mouseup', mouseUpHandler);
         },
 
-        onStop({ event }) {
-            this.isTransforming = false;
-            this.$emit('transform:stop', { event });
+        onStop() {
+            this.$emit('transformEnd', { newBounds: this.innerValue });
         },
 
         getControlPosition(controlDirection: Directions) {
@@ -148,7 +147,7 @@ export default defineComponent({
         :style="getCursorStyle(direction)"
         @click.stop
         @pointerdown.self.stop="onStart({ event: $event, direction })"
-        @pointerup="onStop({ event: $event })"
+        @pointerup="onStop"
       />
     </template>
   </g>
