@@ -131,7 +131,7 @@ export namespace AddPortResult {
 export interface AllowedActions {
 
     /**
-     * Whether the node can be executed which depends on the node state and the states of the node's predecessors.
+     * Whether the node can be executed which depends on the node state and the states of the node&#39;s predecessors.
      * @type {boolean}
      * @memberof AllowedActions
      */
@@ -143,7 +143,7 @@ export interface AllowedActions {
      */
     canCancel: boolean;
     /**
-     * Whether the node can be reset which depends on the node state and the states of the node's successors. Not given in case of the project workflow (action to reset all is not supported there).
+     * Whether the node can be reset which depends on the node state and the states of the node&#39;s successors. Not given in case of the project workflow (action to reset all is not supported there).
      * @type {boolean}
      * @memberof AllowedActions
      */
@@ -153,7 +153,7 @@ export interface AllowedActions {
 
 
 /**
- * Set of actions allowed on connections. This information is not available if no 'interaction info' is supposed to be included in the response.
+ * Set of actions allowed on connections. This information is not available if no &#39;interaction info&#39; is supposed to be included in the response.
  * @export
  * @interface AllowedConnectionActions
  */
@@ -230,13 +230,13 @@ export interface AllowedNodeActions extends AllowedActions {
      */
     canDelete?: boolean;
     /**
-     * Only present for components or metanodes. Describes whether the node can be expanded. In case of \"resetRequired\", the contained nodes have to be reset first.
+     * Only present for components or metanodes. Describes whether the node can be expanded. In case of \&quot;resetRequired\&quot;, the contained nodes have to be reset first.
      * @type {string}
      * @memberof AllowedNodeActions
      */
     canExpand?: AllowedNodeActions.CanExpandEnum;
     /**
-     * Describes whether the selection can be collapsed if it contains this node. In case of \"resetRequired\", the node has to be reset first.
+     * Describes whether the selection can be collapsed if it contains this node. In case of \&quot;resetRequired\&quot;, the node has to be reset first.
      * @type {string}
      * @memberof AllowedNodeActions
      */
@@ -362,7 +362,7 @@ export interface AppState {
      */
     openProjects?: Array<WorkflowProject>;
     /**
-     * List of example projects, e.g., to be shown on and opened from the 'get started' page.
+     * List of example projects, e.g., to be shown on and opened from the &#39;get started&#39; page.
      * @type {Array<ExampleProject>}
      * @memberof AppState
      */
@@ -410,7 +410,7 @@ export interface AppState {
      */
     devMode?: boolean;
     /**
-     * Mapping from file extension (e.g. \"csv\") to the template ID of a node that can process such files
+     * Mapping from file extension (e.g. \&quot;csv\&quot;) to the template ID of a node that can process such files
      * @type {{ [key: string]: string; }}
      * @memberof AppState
      */
@@ -437,7 +437,7 @@ export interface AppStateChangedEvent extends Event {
 
 
 /**
- * Event type to register for `AppStateChangedEvent`s
+ * Event type to register for &#x60;AppStateChangedEvent&#x60;s
  * @export
  * @interface AppStateChangedEventType
  */
@@ -459,25 +459,25 @@ export interface Bounds {
      * @type {number}
      * @memberof Bounds
      */
-    x?: number;
+    x: number;
     /**
      *
      * @type {number}
      * @memberof Bounds
      */
-    y?: number;
+    y: number;
     /**
      *
      * @type {number}
      * @memberof Bounds
      */
-    width?: number;
+    width: number;
     /**
      *
      * @type {number}
      * @memberof Bounds
      */
-    height?: number;
+    height: number;
 
 }
 
@@ -544,7 +544,7 @@ export namespace CollapseResult {
 export interface CommandResult {
 
     /**
-     * Workflow changes produced by this command are guaranteed to be contained in a workflow snapshot patch as emitted by `WorkflowChangedEventSource` with ID less-or-equal to this ID.
+     * Workflow changes produced by this command are guaranteed to be contained in a workflow snapshot patch as emitted by &#x60;WorkflowChangedEventSource&#x60; with ID less-or-equal to this ID.
      * @type {string}
      * @memberof CommandResult
      */
@@ -608,7 +608,7 @@ export interface ComponentNode extends Node {
 export namespace ComponentNode {
 }
 /**
- * Properties common to ComponentNode and ComponentNodeDescription. Only purpose is to avoid 'code' duplication. Never directly returned or used in another schema.
+ * Properties common to ComponentNode and ComponentNodeDescription. Only purpose is to avoid &#39;code&#39; duplication. Never directly returned or used in another schema.
  * @export
  * @interface ComponentNodeAndDescription
  */
@@ -726,7 +726,7 @@ export interface Connection {
      */
     id: string;
     /**
-     * The destination node. The node-id format: Node IDs always start with 'root' and optionally followed by numbers separated by ':' referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing '0', e.g. 'root:3:6:0:4' (if 'root:3:6' is a component).
+     * The destination node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
      * @type {string}
      * @memberof Connection
      */
@@ -738,7 +738,7 @@ export interface Connection {
      */
     destPort: number;
     /**
-     * The source node. The node-id format: Node IDs always start with 'root' and optionally followed by numbers separated by ':' referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing '0', e.g. 'root:3:6:0:4' (if 'root:3:6' is a component).
+     * The source node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
      * @type {string}
      * @memberof Connection
      */
@@ -848,7 +848,7 @@ export namespace CopyResult {
 export interface CustomJobManager {
 
     /**
-     * The job manager's name
+     * The job manager&#39;s name
      * @type {string}
      * @memberof CustomJobManager
      */
@@ -887,7 +887,7 @@ export interface CutCommand extends PartBasedCommand {
 export namespace CutCommand {
 }
 /**
- * Deletes the specified nodes, workflow annotations or connections. Note that there are potentially more connections deleted than specified, i.e. those connected to a node that is to be deleted. If any of the elements can't be deleted (because it doesn't exist or the deletion is not allowed) the entire delete operation is aborted (i.e. nothing is deleted).
+ * Deletes the specified nodes, workflow annotations or connections. Note that there are potentially more connections deleted than specified, i.e. those connected to a node that is to be deleted. If any of the elements can&#39;t be deleted (because it doesn&#39;t exist or the deletion is not allowed) the entire delete operation is aborted (i.e. nothing is deleted).
  * @export
  * @interface DeleteCommand
  */
@@ -922,7 +922,7 @@ export interface DeleteCommand extends WorkflowCommand {
 export namespace DeleteCommand {
 }
 /**
- * The description of a dynamic port group. A dynamic port group is a collection of dynamic ports, grouped by a common identifier, e.g. \"Input\" or \"Output\".
+ * The description of a dynamic port group. A dynamic port group is a collection of dynamic ports, grouped by a common identifier, e.g. \&quot;Input\&quot; or \&quot;Output\&quot;.
  * @export
  * @interface DynamicPortGroupDescription
  */
@@ -975,7 +975,7 @@ export interface Event {
 export interface EventType {
 
     /**
-     * A unique type id. Must be the name of the actual event type object (e.g. 'WorkflowChangedEventType')
+     * A unique type id. Must be the name of the actual event type object (e.g. &#39;WorkflowChangedEventType&#39;)
      * @type {string}
      * @memberof EventType
      */
@@ -1066,14 +1066,14 @@ export interface ExpandResult extends CommandResult {
 export namespace ExpandResult {
 }
 /**
- * The node/workflow's job manager, if a special one is defined. Otherwise not given.
+ * The node/workflow&#39;s job manager, if a special one is defined. Otherwise not given.
  * @export
  * @interface JobManager
  */
 export interface JobManager {
 
     /**
-     * The type of job manager being used. Either a build-in job manager type or 'other' in case of a third party job manager. Details for custom job managers are provided via the 'custom'-field.
+     * The type of job manager being used. Either a build-in job manager type or &#39;other&#39; in case of a third party job manager. Details for custom job managers are provided via the &#39;custom&#39;-field.
      * @type {string}
      * @memberof JobManager
      */
@@ -1218,7 +1218,7 @@ export namespace MetaNode {
 export interface MetaNodePort extends NodePort {
 
     /**
-     * The execution state of the node connected to this port if it's a out port. Otherwise not present.
+     * The execution state of the node connected to this port if it&#39;s a out port. Otherwise not present.
      * @type {string}
      * @memberof MetaNodePort
      */
@@ -1278,7 +1278,7 @@ export namespace MetaNodeState {
     }
 }
 /**
- * Describes the ports(-bar) leading into or leaving a metanode's workflow. Is not given if there aren't any metanode inputs/outputs or if it's not a metanode's workflow (but a component's workflow or the root).
+ * Describes the ports(-bar) leading into or leaving a metanode&#39;s workflow. Is not given if there aren&#39;t any metanode inputs/outputs or if it&#39;s not a metanode&#39;s workflow (but a component&#39;s workflow or the root).
  * @export
  * @interface MetaPorts
  */
@@ -1396,7 +1396,7 @@ export interface NativeNodeDescription extends NodeDescription {
 export interface NativeNodeInvariants {
 
     /**
-     * The node's name.
+     * The node&#39;s name.
      * @type {string}
      * @memberof NativeNodeInvariants
      */
@@ -1493,7 +1493,7 @@ export interface Node {
      */
     position: XY;
     /**
-     * Whether it's a native node, component or a metanode.
+     * Whether it&#39;s a native node, component or a metanode.
      * @type {string}
      * @memberof Node
      */
@@ -1560,7 +1560,7 @@ export namespace NodeAnnotation {
 export interface NodeDescription {
 
     /**
-     * The freeform description text of the node. Sometimes also referred to as \"intro text\". May contain HTML markup tags.
+     * The freeform description text of the node. Sometimes also referred to as \&quot;intro text\&quot;. May contain HTML markup tags.
      * @type {string}
      * @memberof NodeDescription
      */
@@ -1652,7 +1652,7 @@ export interface NodeDialogOptionGroup {
 
 
 /**
- * Information about the node execution. Might not be present if no special node execution info is available. If given, usually only one of the following properties is set, either the icon, the 'streamable'-flag, or the job-manager.
+ * Information about the node execution. Might not be present if no special node execution info is available. If given, usually only one of the following properties is set, either the icon, the &#39;streamable&#39;-flag, or the job-manager.
  * @export
  * @interface NodeExecutionInfo
  */
@@ -1665,13 +1665,13 @@ export interface NodeExecutionInfo {
      */
     jobManager?: JobManager;
     /**
-     * This properties is only given if this node is part of a workflow (i.e. a component's workflow) that is in streaming mode. If true, this node can process the data in streamed manner, if false, it can't.
+     * This properties is only given if this node is part of a workflow (i.e. a component&#39;s workflow) that is in streaming mode. If true, this node can process the data in streamed manner, if false, it can&#39;t.
      * @type {boolean}
      * @memberof NodeExecutionInfo
      */
     streamable?: boolean;
     /**
-     * A custom (decorator) icon set by its node executor (or the node executor of the parent workflow). Not present if the custom executor doesn't define a special icon or the 'streamable' property is given. The icon is encoded in a data-url.
+     * A custom (decorator) icon set by its node executor (or the node executor of the parent workflow). Not present if the custom executor doesn&#39;t define a special icon or the &#39;streamable&#39; property is given. The icon is encoded in a data-url.
      * @type {string}
      * @memberof NodeExecutionInfo
      */
@@ -1694,7 +1694,7 @@ export interface NodeFactoryKey {
      */
     className: string;
     /**
-     * Additional factory settings. Only required in case of 'dynamic' node factories.
+     * Additional factory settings. Only required in case of &#39;dynamic&#39; node factories.
      * @type {string}
      * @memberof NodeFactoryKey
      */
@@ -1740,7 +1740,7 @@ export interface NodeGroups {
      */
     groups: Array<NodeGroup>;
     /**
-     * Total number of groups available. In case the maximum number of included groups has been limited, the length of the \"groups\" list may be smaller than this number.
+     * Total number of groups available. In case the maximum number of included groups has been limited, the length of the \&quot;groups\&quot; list may be smaller than this number.
      * @type {number}
      * @memberof NodeGroups
      */
@@ -1757,7 +1757,7 @@ export interface NodeGroups {
 export interface NodePort extends NodePortTemplate {
 
     /**
-     * For native nodes, this provides additional information if the port carries data (i.e. if the respective node is executed and the port is active). For components, the port description is taken from the component's description, if provided by the user.
+     * For native nodes, this provides additional information if the port carries data (i.e. if the respective node is executed and the port is active). For components, the port description is taken from the component&#39;s description, if provided by the user.
      * @type {string}
      * @memberof NodePort
      */
@@ -1781,7 +1781,7 @@ export interface NodePort extends NodePortTemplate {
      */
     inactive?: boolean;
     /**
-     * A port object version which allows one to detect port object changes. Will be absent if there is no data, i.e. no port object or if it's an input port. Will also be absent if there is no 'interaction info' supposed to be included.
+     * A port object version which allows one to detect port object changes. Will be absent if there is no data, i.e. no port object or if it&#39;s an input port. Will also be absent if there is no &#39;interaction info&#39; supposed to be included.
      * @type {number}
      * @memberof NodePort
      */
@@ -1793,7 +1793,7 @@ export interface NodePort extends NodePortTemplate {
      */
     portGroupId?: string;
     /**
-     * Whether this port can be removed. Only available if 'interaction info' is supposed to be included.
+     * Whether this port can be removed. Only available if &#39;interaction info&#39; is supposed to be included.
      * @type {boolean}
      * @memberof NodePort
      */
@@ -1833,19 +1833,19 @@ export interface NodePortDescription extends NodePortTemplate {
 export interface NodePortTemplate {
 
     /**
-     * A descriptive name for the port. For native nodes, this name is taken from the node description. For components, the port name is taken from the component's description, if provided by the user.
+     * A descriptive name for the port. For native nodes, this name is taken from the node description. For components, the port name is taken from the component&#39;s description, if provided by the user.
      * @type {string}
      * @memberof NodePortTemplate
      */
     name?: string;
     /**
-     * A unique port type id helping to infer the corresponding 'PortType'
+     * A unique port type id helping to infer the corresponding &#39;PortType&#39;
      * @type {string}
      * @memberof NodePortTemplate
      */
     typeId: string;
     /**
-     * Whether it's a optional port or not.
+     * Whether it&#39;s a optional port or not.
      * @type {boolean}
      * @memberof NodePortTemplate
      */
@@ -1862,7 +1862,7 @@ export interface NodePortTemplate {
 export interface NodeSearchResult {
 
     /**
-     * The found nodes. If a non-empty search query has been given for the search, the nodes are sorted by their 'search score' (i.e. how well it 'fits' the query). If there is no search query but, e.g., only a list of tags (which is then more a 'node filter result'), the nodes are sorted by their pre-defined weight (the weight might be, e.g., the nodes general popularity).
+     * The found nodes. If a non-empty search query has been given for the search, the nodes are sorted by their &#39;search score&#39; (i.e. how well it &#39;fits&#39; the query). If there is no search query but, e.g., only a list of tags (which is then more a &#39;node filter result&#39;), the nodes are sorted by their pre-defined weight (the weight might be, e.g., the nodes general popularity).
      * @type {Array<NodeTemplate>}
      * @memberof NodeSearchResult
      */
@@ -1884,7 +1884,7 @@ export interface NodeSearchResult {
 
 
 /**
- * Encapsulates properties around a node's execution state.
+ * Encapsulates properties around a node&#39;s execution state.
  * @export
  * @interface NodeState
  */
@@ -1955,7 +1955,7 @@ export namespace NodeState {
     }
 }
 /**
- * Contains all the 'static' properties of a node or component required to draw the node/component figure.
+ * Contains all the &#39;static&#39; properties of a node or component required to draw the node/component figure.
  * @export
  * @interface NodeTemplate
  */
@@ -1974,13 +1974,13 @@ export interface NodeTemplate extends NativeNodeInvariants {
      */
     component?: boolean;
     /**
-     * The node's input ports.
+     * The node&#39;s input ports.
      * @type {Array<NodePortTemplate>}
      * @memberof NodeTemplate
      */
     inPorts?: Array<NodePortTemplate>;
     /**
-     * The node's output ports.
+     * The node&#39;s output ports.
      * @type {Array<NodePortTemplate>}
      * @memberof NodeTemplate
      */
@@ -2226,25 +2226,25 @@ export namespace PortCommand {
 export interface PortGroup {
 
     /**
-     * Which input ports (identified by index position) belong to the port group. Either this or the  'outputRange' is required for a port group.
+     * Which input ports (identified by index position) belong to the port group. Either this or the  &#39;outputRange&#39; is required for a port group.
      * @type {Array<number>}
      * @memberof PortGroup
      */
     inputRange?: Array<number>;
     /**
-     * Which output ports (identified by index position) belong to the port group. Either this or the  'inputRange' is required for a port group.
+     * Which output ports (identified by index position) belong to the port group. Either this or the  &#39;inputRange&#39; is required for a port group.
      * @type {Array<number>}
      * @memberof PortGroup
      */
     outputRange?: Array<number>;
     /**
-     * Can you add another input port or not. Either this or the 'canAddOutPort' is required for a port group.
+     * Can you add another input port or not. Either this or the &#39;canAddOutPort&#39; is required for a port group.
      * @type {boolean}
      * @memberof PortGroup
      */
     canAddInPort?: boolean;
     /**
-     * Can you add another output port or not. Either this or the 'canAddInPort' is required for a port group.
+     * Can you add another output port or not. Either this or the &#39;canAddInPort&#39; is required for a port group.
      * @type {boolean}
      * @memberof PortGroup
      */
@@ -2279,13 +2279,13 @@ export interface PortType {
      */
     kind: PortType.KindEnum;
     /**
-     * The color of the port. Only given if 'kind' is 'other'.
+     * The color of the port. Only given if &#39;kind&#39; is &#39;other&#39;.
      * @type {string}
      * @memberof PortType
      */
     color?: string;
     /**
-     * List of port type ids this port type is compatible with (i.e. can be connected with). Not present if it's only compatible with itself. Only present if interaction info is supposed to be included. Only given if 'kind' is 'other'. Will never contain the 'generic' port type since it's compatible with every port.
+     * List of port type ids this port type is compatible with (i.e. can be connected with). Not present if it&#39;s only compatible with itself. Only present if interaction info is supposed to be included. Only given if &#39;kind&#39; is &#39;other&#39;. Will never contain the &#39;generic&#39; port type since it&#39;s compatible with every port.
      * @type {Array<string>}
      * @memberof PortType
      */
@@ -2297,7 +2297,7 @@ export interface PortType {
      */
     hidden?: boolean;
     /**
-     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included.
+     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included. 
      * @type {boolean}
      * @memberof PortType
      */
@@ -2671,7 +2671,7 @@ export interface UpdateAvailableEvent extends Event {
 
 
 /**
- * Event type to register for `UpdateAvailableEvent`s
+ * Event type to register for &#x60;UpdateAvailableEvent&#x60;s
  * @export
  * @interface UpdateAvailableEventType
  */
@@ -2711,20 +2711,20 @@ export interface UpdateComponentOrMetanodeNameCommand extends WorkflowCommand {
 export namespace UpdateComponentOrMetanodeNameCommand {
 }
 /**
- * Information about an available update, derived from `UpdateInfo` core class.
+ * Information about an available update, derived from &#x60;UpdateInfo&#x60; core class.
  * @export
  * @interface UpdateInfo
  */
 export interface UpdateInfo {
 
     /**
-     * The name for the update, e.g. \"KNIME Analytics Platform 5.0\".
+     * The name for the update, e.g. \&quot;KNIME Analytics Platform 5.0\&quot;.
      * @type {string}
      * @memberof UpdateInfo
      */
     name: string;
     /**
-     * Short name for the update, e.g. \"5.0\"
+     * Short name for the update, e.g. \&quot;5.0\&quot;
      * @type {string}
      * @memberof UpdateInfo
      */
@@ -2916,7 +2916,7 @@ export interface WorkflowChangedEvent extends Event {
 
 
 /**
- * Event type to register for 'WorkflowChangedEvent's.
+ * Event type to register for &#39;WorkflowChangedEvent&#39;s.
  * @export
  * @interface WorkflowChangedEventType
  */
@@ -2952,7 +2952,7 @@ export interface WorkflowChangedEventType extends EventType {
 export interface WorkflowCommand {
 
     /**
-     * The kind of command which directly maps to a specific 'implementation'.
+     * The kind of command which directly maps to a specific &#39;implementation&#39;.
      * @type {string}
      * @memberof WorkflowCommand
      */
@@ -3141,13 +3141,13 @@ export interface XY {
      * @type {number}
      * @memberof XY
      */
-    x?: number;
+    x: number;
     /**
      *
      * @type {number}
      * @memberof XY
      */
-    y?: number;
+    y: number;
 
 }
 
@@ -3180,7 +3180,7 @@ const event = function(rpcClient: RPCClient) {
     return {
         /**
          * Adds a new event listener for a certain type of event.
-         * @param {EventType} [eventType]
+         * @param {EventType} [eventType] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3191,7 +3191,7 @@ const event = function(rpcClient: RPCClient) {
         },
         /**
          * Unregisters event listeners.
-         * @param {EventType} [eventType]
+         * @param {EventType} [eventType] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3215,8 +3215,8 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {'dialog' | 'view'} extensionType The node ui-extension-type, i.e. dialog or view.
-         * @param {'initial_data' | 'data' | 'apply_data'} serviceType
-         * @param {string} [dataServiceRequest]
+         * @param {'initial_data' | 'data' | 'apply_data'} serviceType 
+         * @param {string} [dataServiceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3388,8 +3388,8 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} portIdx The port index to be used.
-         * @param {'initial_data' | 'data'} serviceType
-         * @param {string} [dataServiceRequest]
+         * @param {'initial_data' | 'data'} serviceType 
+         * @param {string} [dataServiceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3580,8 +3580,8 @@ const workflow = function(rpcClient: RPCClient) {
 const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
   return {
  	/**
-	 * Moves workflow nodes and workflow annotations to a defined position.
-	 */
+     * Moves workflow nodes and workflow annotations to a defined position.
+     */
 	Translate(
 		params: { projectId: string, workflowId: string } & Omit<TranslateCommand, 'kind'>
     ): Promise<unknown> {
@@ -3591,11 +3591,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Translate }
 		});
-	},
-
+	},	
+	 
  	/**
-	 * Deletes the specified nodes, workflow annotations or connections. Note that there are potentially more connections deleted than specified, i.e. those connected to a node that is to be deleted. If any of the elements can&#39;t be deleted (because it doesn&#39;t exist or the deletion is not allowed) the entire delete operation is aborted (i.e. nothing is deleted).
-	 */
+     * Deletes the specified nodes, workflow annotations or connections. Note that there are potentially more connections deleted than specified, i.e. those connected to a node that is to be deleted. If any of the elements can&#39;t be deleted (because it doesn&#39;t exist or the deletion is not allowed) the entire delete operation is aborted (i.e. nothing is deleted).
+     */
 	Delete(
 		params: { projectId: string, workflowId: string } & Omit<DeleteCommand, 'kind'>
     ): Promise<unknown> {
@@ -3605,11 +3605,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Delete }
 		});
-	},
-
+	},	
+	 
  	/**
-	 * Connects two nodes (and by doing that possibly replacing another connection).
-	 */
+     * Connects two nodes (and by doing that possibly replacing another connection).
+     */
 	Connect(
 		params: { projectId: string, workflowId: string } & Omit<ConnectCommand, 'kind'>
     ): Promise<unknown> {
@@ -3619,11 +3619,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Connect }
 		});
-	},
-
+	},	
+	 
  	/**
-	 * Adds a new node to the workflow.
-	 */
+     * Adds a new node to the workflow.
+     */
 	AddNode(
 		params: { projectId: string, workflowId: string } & Omit<AddNodeCommand, 'kind'>
     ): Promise<AddNodeResult> {
@@ -3633,11 +3633,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddNode }
 		}) as Promise<AddNodeResult>;
-	},
-
+	},	
+	 
  	/**
-	 * Updates the name of a component or metanode
-	 */
+     * Updates the name of a component or metanode
+     */
 	UpdateComponentOrMetanodeName(
 		params: { projectId: string, workflowId: string } & Omit<UpdateComponentOrMetanodeNameCommand, 'kind'>
     ): Promise<unknown> {
@@ -3647,11 +3647,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentOrMetanodeName }
 		});
-	},
-
+	},	
+	 
  	/**
-	 * Updates the label of a native node, component or metanode.
-	 */
+     * Updates the label of a native node, component or metanode.
+     */
 	UpdateNodeLabel(
 		params: { projectId: string, workflowId: string } & Omit<UpdateNodeLabelCommand, 'kind'>
     ): Promise<unknown> {
@@ -3661,11 +3661,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateNodeLabel }
 		});
-	},
-
+	},	
+	 
  	/**
-	 * Resets nodes contained in the metanode or container and expands it.
-	 */
+     * Resets nodes contained in the metanode or container and expands it.
+     */
 	Expand(
 		params: { projectId: string, workflowId: string } & Omit<ExpandCommand, 'kind'>
     ): Promise<ExpandResult> {
@@ -3675,11 +3675,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Expand }
 		}) as Promise<ExpandResult>;
-	},
-
+	},	
+	 
  	/**
-	 * Resets selected nodes and collapses selected nodes and annotations into a metanode or component.
-	 */
+     * Resets selected nodes and collapses selected nodes and annotations into a metanode or component.
+     */
 	Collapse(
 		params: { projectId: string, workflowId: string } & Omit<CollapseCommand, 'kind'>
     ): Promise<CollapseResult> {
@@ -3689,11 +3689,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Collapse }
 		}) as Promise<CollapseResult>;
-	},
-
+	},	
+	 
  	/**
-	 * Add a port to a node. In case of native nodes, the port will be appended to the given port group. In case of container nodes, port will be added as last port.
-	 */
+     * Add a port to a node. In case of native nodes, the port will be appended to the given port group. In case of container nodes, port will be added as last port.
+     */
 	AddPort(
 		params: { projectId: string, workflowId: string } & Omit<AddPortCommand, 'kind'>
     ): Promise<AddPortResult> {
@@ -3703,11 +3703,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddPort }
 		}) as Promise<AddPortResult>;
-	},
-
+	},	
+	 
  	/**
-	 * Remove a port from a node
-	 */
+     * Remove a port from a node
+     */
 	RemovePort(
 		params: { projectId: string, workflowId: string } & Omit<RemovePortCommand, 'kind'>
     ): Promise<unknown> {
@@ -3717,11 +3717,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.RemovePort }
 		});
-	},
-
+	},	
+	 
  	/**
-	 * Copy selected workflow parts and serialize to workflow definition format.  This command only returns the serialized workflow parts.
-	 */
+     * Copy selected workflow parts and serialize to workflow definition format.  This command only returns the serialized workflow parts.
+     */
 	Copy(
 		params: { projectId: string, workflowId: string } & Omit<CopyCommand, 'kind'>
     ): Promise<CopyResult> {
@@ -3731,11 +3731,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Copy }
 		}) as Promise<CopyResult>;
-	},
-
+	},	
+	 
  	/**
-	 * Cut selected workflow parts and serialize to workflow definition format. This command returns the serialized workflow parts and deletes the selected nodes and annotations.
-	 */
+     * Cut selected workflow parts and serialize to workflow definition format. This command returns the serialized workflow parts and deletes the selected nodes and annotations.
+     */
 	Cut(
 		params: { projectId: string, workflowId: string } & Omit<CutCommand, 'kind'>
     ): Promise<unknown> {
@@ -3745,11 +3745,11 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Cut }
 		});
-	},
-
+	},	
+	 
  	/**
-	 * Paste workflow parts in workflow definition format into the active workflow.
-	 */
+     * Paste workflow parts in workflow definition format into the active workflow.
+     */
 	Paste(
 		params: { projectId: string, workflowId: string } & Omit<PasteCommand, 'kind'>
     ): Promise<PasteResult> {
@@ -3759,8 +3759,8 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient) {
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Paste }
 		}) as Promise<PasteResult>;
-	},
-
+	},	
+	 
   }
 }
 
@@ -3798,7 +3798,7 @@ const EventApiWrapper = function (rpcClient: RPCClient) {
 export const createAPI = (configuration: Configuration) => {
     const rpcClient = createRPCClient(configuration);
 
-    const api = {
+    const api = { 
         application: application(rpcClient),
         event: event(rpcClient),
         node: node(rpcClient),
@@ -3807,9 +3807,9 @@ export const createAPI = (configuration: Configuration) => {
         space: space(rpcClient),
         workflow: workflow(rpcClient),
     };
-
+    
     const { workflow: { executeWorkflowCommand, ...rest } } = api;
-
+    
     return {
         ...api,
         workflow: rest,
