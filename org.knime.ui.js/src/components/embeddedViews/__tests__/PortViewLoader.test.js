@@ -58,7 +58,7 @@ describe('PortViewLoader.vue', () => {
             projectId: props.projectId,
             workflowId: props.workflowId,
             nodeId: props.selectedNode.id,
-            portIndex: props.selectedPortIndex
+            portIdx: props.selectedPortIndex
         }));
     });
 
@@ -86,7 +86,7 @@ describe('PortViewLoader.vue', () => {
 
         expect(getPortViewMock).toBeCalledTimes(2);
         expect(getPortViewMock).toBeCalledWith(expect.objectContaining({
-            portIndex: 1
+            portIdx: 1
         }));
     });
 

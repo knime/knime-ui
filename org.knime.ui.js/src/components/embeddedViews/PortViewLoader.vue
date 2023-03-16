@@ -56,7 +56,7 @@ export default {
                     projectId: this.projectId,
                     workflowId: this.workflowId,
                     nodeId: this.selectedNode.id,
-                    portIndex: this.selectedPortIndex
+                    portIdx: this.selectedPortIndex
                 });
                 return portView;
             } catch (error) {
@@ -83,7 +83,7 @@ export default {
                         projectId: this.projectId,
                         workflowId: this.workflowId,
                         nodeId: this.selectedNode.id,
-                        portIndex: this.selectedPortIndex,
+                        portIdx: this.selectedPortIndex,
                         serviceType,
                         request
                     });
