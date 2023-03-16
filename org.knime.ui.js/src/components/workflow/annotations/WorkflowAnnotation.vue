@@ -23,7 +23,7 @@ export default defineComponent({
     props: {
         annotation: {
             type: Object as PropType<WorkflowAnnotation>,
-            required: true,
+            required: true
         }
     },
 
@@ -43,6 +43,7 @@ export default defineComponent({
             const {
                 backgroundColor,
                 borderColor,
+                // eslint-disable-next-line no-magic-numbers
                 defaultFontSize = 12,
                 borderWidth = 2,
                 textAlign = 'left'
@@ -52,7 +53,7 @@ export default defineComponent({
                 fontSize: `${defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`,
                 border: `${borderWidth}px solid ${borderColor}`,
                 background: backgroundColor,
-                textAlign: textAlign,
+                textAlign,
                 padding: `${this.$shapes.workflowAnnotationPadding}px`,
                 width: '100%',
                 height: '100%'
@@ -61,21 +62,17 @@ export default defineComponent({
     },
 
     methods: {
-        toggleEdit() {
-            // this.$emit('toggle-edit', this.editable ? null : this.id);
-        },
-
         unselect() {
             this.isEditing = false;
             this.isSelected = false;
         },
 
         moveAnnotation(newBounds: Bounds) {
-            API.workflowCommand.ResizeWorkflowAnnotation({
+            API.workflowCommand.TransformWorkflowAnnotation({
                 projectId: this.projectId,
                 workflowId: this.projectId,
                 id: this.annotation.id,
-                ...newBounds
+                bounds: newBounds
             });
         }
     }

@@ -179,8 +179,8 @@ describe('MoveableNodeContainer', () => {
         });
 
         it.each([
-            ['without grid', { x: 1, y: 1 }, true]
-            // ['with grid', $shapes.gridSize, false]
+            ['without grid', { x: 1, y: 1 }, true],
+            ['with grid', $shapes.gridSize, false]
         ])('moves a single node %s', (_, gridSize, altKey) => {
             const kanvasMock = document.createElement('div');
             kanvasMock.id = 'kanvas';

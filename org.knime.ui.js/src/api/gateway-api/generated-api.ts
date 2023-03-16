@@ -2625,6 +2625,35 @@ export interface StyleRange {
 
 
 /**
+ * Changes the size (widht and height) and position (x, y) of a workflow annotation.
+ * @export
+ * @interface TransformWorkflowAnnotationCommand
+ */
+export interface TransformWorkflowAnnotationCommand extends WorkflowCommand {
+
+    /**
+     * the id of the annotation to resize
+     * @type {string}
+     * @memberof TransformWorkflowAnnotationCommand
+     */
+    id: string;
+    /**
+     *
+     * @type {Bounds}
+     * @memberof TransformWorkflowAnnotationCommand
+     */
+    bounds: Bounds;
+
+}
+
+
+/**
+ * @export
+ * @namespace TransformWorkflowAnnotationCommand
+ */
+export namespace TransformWorkflowAnnotationCommand {
+}
+/**
  * Moves workflow nodes and workflow annotations to a defined position.
  * @export
  * @interface TranslateCommand
@@ -2983,7 +3012,8 @@ export namespace WorkflowCommand {
         RemovePort = 'remove_port',
         Copy = 'copy',
         Cut = 'cut',
-        Paste = 'paste'
+        Paste = 'paste',
+        TransformWorkflowAnnotation = 'transform_workflow_annotation'
     }
 }
 /**
@@ -3774,6 +3804,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Paste }
 		}) as Promise<PasteResult>;
+		return postProcessCommandResponse(commandResponse);
+	},	
+	 
+ 	/**
+     * Changes the size (widht and height) and position (x, y) of a workflow annotation.
+     */
+	TransformWorkflowAnnotation(
+		params: { projectId: string, workflowId: string } & Omit<TransformWorkflowAnnotationCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.TransformWorkflowAnnotation }
+		});
 		return postProcessCommandResponse(commandResponse);
 	},	
 	 

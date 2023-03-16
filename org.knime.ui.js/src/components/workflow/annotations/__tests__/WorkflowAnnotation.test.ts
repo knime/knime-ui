@@ -2,14 +2,18 @@ import { expect, describe, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
+import { type WorkflowAnnotation, Annotation } from '@/api/gateway-api/generated-api';
 
-import WorkflowAnnotation from '../WorkflowAnnotation.vue';
+import WorkflowAnnotationComp from '../WorkflowAnnotation.vue';
 import LegacyAnnotationText from '../LegacyAnnotationText.vue';
 
 describe('Workflow Annotation', () => {
-    const defaultProps = {
+    const defaultProps: {
+        annotation: WorkflowAnnotation
+    } = {
         annotation: {
-            textAlign: 'right',
+            id: '',
+            textAlign: Annotation.TextAlignEnum.Right,
             borderWidth: 4,
             borderColor: '#000',
             backgroundColor: '#000',
@@ -23,10 +27,9 @@ describe('Workflow Annotation', () => {
         props = {},
         mocks = {}
     } = {}) => {
-
         const defaultMocks = { $shapes };
 
-        const wrapper = mount(WorkflowAnnotation, {
+        const wrapper = mount(WorkflowAnnotationComp, {
             props: { ...defaultProps, ...props },
             global: {
                 mocks: { ...defaultMocks, ...mocks }
@@ -62,7 +65,7 @@ describe('Workflow Annotation', () => {
         expect(legacyAnnotationStyles).toMatch('padding: 3px;');
     });
 
-    it('passes props to LegacyAnnotationText', () => {
+    it('should pass props to LegacyAnnotationText', () => {
         const { wrapper } = doShallowMount();
 
         expect(wrapper.findComponent(LegacyAnnotationText).props('text')).toBe('hallo');
@@ -72,7 +75,7 @@ describe('Workflow Annotation', () => {
         );
     });
 
-    it('honors annotationsFontSizePointToPixelFactor', () => {
+    it('should honor annotationsFontSizePointToPixelFactor', () => {
         const shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2 };
         const { wrapper } = doShallowMount({
             props: {

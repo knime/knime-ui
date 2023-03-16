@@ -210,7 +210,7 @@ describe('Workflow', () => {
         });
         const wrapper = doShallowMount({ store });
 
-        const order = wrapper.findAllComponents(WorkflowAnnotation).map(c => c.attributes().id);
+        const order = wrapper.findAllComponents(WorkflowAnnotation).map(c => c.props('annotation').id);
         expect(order).toEqual(['back', 'middle', 'front']);
     });
 
