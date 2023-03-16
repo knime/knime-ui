@@ -1,5 +1,4 @@
-import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow,
-    setProjectActiveAndEnsureItsLoadedInBackend } from '@api';
+import { API, fetchApplicationState, loadWorkflow, setProjectActiveAndEnsureItsLoadedInBackend } from '@api';
 import { encodeString } from '@/util/encodeString';
 import { APP_ROUTES } from '@/router/appRoutes';
 
@@ -156,7 +155,7 @@ export const actions = {
      *   A P P L I C A T I O N   L I F E C Y C L E
      */
     async initializeApplication({ dispatch }, { $router }) {
-        await addEventListener('AppStateChanged');
+        await API.event.subscribeEvent({ typeId: 'AppStateChanged' });
 
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
@@ -198,7 +197,7 @@ export const actions = {
         });
     },
     destroyApplication({ dispatch }) {
-        removeEventListener('AppStateChanged');
+        API.event.unsubscribeEventListener({ typeId: 'AppStateChanged' });
         dispatch('unloadActiveWorkflow', { clearWorkflow: true });
     },
 
@@ -362,7 +361,7 @@ export const actions = {
 
         // TODO: remove this 'root' fallback after mocks have been adjusted
         const workflowId = workflow.info.containerId || 'root';
-        addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        API.event.subscribeEvent({ typeId: 'WorkflowChanged', projectId, workflowId, snapshotId });
 
         // Call navigate to workflow function (if provided) before restoring the canvas state
         await navigateToWorkflow?.();
@@ -383,7 +382,7 @@ export const actions = {
         let { activeSnapshotId: snapshotId } = rootState.workflow;
         let workflowId = rootState.workflow.activeWorkflow.info.containerId;
 
-        removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        API.event.unsubscribeEventListener({ typeId: 'WorkflowChanged', projectId, workflowId, snapshotId });
 
         commit('selection/clearSelection', null, { root: true });
         commit('workflow/setTooltip', null, { root: true });

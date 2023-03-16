@@ -2,9 +2,8 @@
 import { expect, describe, it, vi, afterEach } from 'vitest';
 // eslint-disable-next-line object-curly-newline
 import {
+    API,
     fetchApplicationState,
-    addEventListener,
-    removeEventListener,
     loadWorkflow,
     setProjectActiveAndEnsureItsLoadedInBackend
 // eslint-disable-next-line object-curly-newline
@@ -82,8 +81,8 @@ describe('application store', () => {
             mockedGetters: getters,
             mockedActions: actions,
             fetchApplicationState,
-            addEventListener,
-            removeEventListener,
+            subscribeEvent: API.event.subscribeEvent,
+            unsubscribeEventListener: API.event.unsubscribeEventListener,
             loadWorkflow,
             setProjectActiveAndEnsureItsLoadedInBackend
         };
@@ -158,10 +157,10 @@ describe('application store', () => {
 
     describe('application Lifecycle', () => {
         it('initialization', async () => {
-            const { store, dispatchSpy, fetchApplicationState, addEventListener } = await loadStore();
+            const { store, dispatchSpy, fetchApplicationState, subscribeEvent } = await loadStore();
             await store.dispatch('application/initializeApplication', { $router: router });
 
-            expect(addEventListener).toHaveBeenCalled();
+            expect(subscribeEvent).toHaveBeenCalled();
             expect(fetchApplicationState).toHaveBeenCalled();
             expect(dispatchSpy).toHaveBeenCalledWith('application/replaceApplicationState', applicationState);
         });
@@ -184,10 +183,10 @@ describe('application store', () => {
         });
 
         it('destroy application', async () => {
-            const { store, dispatchSpy, removeEventListener } = await loadStore();
+            const { store, dispatchSpy, unsubscribeEventListener } = await loadStore();
             store.dispatch('application/destroyApplication');
 
-            expect(removeEventListener).toHaveBeenCalled();
+            expect(unsubscribeEventListener).toHaveBeenCalled();
             expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
         });
     });
@@ -314,7 +313,7 @@ describe('application store', () => {
             const {
                 store,
                 loadWorkflow,
-                addEventListener,
+                subscribeEvent,
                 setProjectActiveAndEnsureItsLoadedInBackend
             } = await loadStore();
             loadWorkflow.mockResolvedValue({
@@ -333,7 +332,8 @@ describe('application store', () => {
                 projectId: 'wf1'
             });
             expect(store.state.workflow.activeSnapshotId).toBe('snap');
-            expect(addEventListener).toHaveBeenCalledWith('WorkflowChanged', {
+            expect(subscribeEvent).toHaveBeenCalledWith({
+                typeId: 'WorkflowChanged',
                 projectId: 'wf1',
                 workflowId: 'root',
                 snapshotId: 'snap'
@@ -341,7 +341,7 @@ describe('application store', () => {
         });
 
         it('loads inner workflow successfully', async () => {
-            const { store, loadWorkflow, addEventListener } = await loadStore();
+            const { store, loadWorkflow, subscribeEvent } = await loadStore();
             loadWorkflow.mockResolvedValue({ workflow: { dummy: true, info: { containerId: 'root' }, nodes: [] } });
             await store.dispatch('application/loadWorkflow', { projectId: 'wf2', workflowId: 'root:0:123' });
 
@@ -352,14 +352,15 @@ describe('application store', () => {
                 nodes: [],
                 projectId: 'wf2'
             });
-            expect(addEventListener).toHaveBeenCalledWith('WorkflowChanged', {
+            expect(subscribeEvent).toHaveBeenCalledWith({
+                typeId: 'WorkflowChanged',
                 projectId: 'wf2',
                 workflowId: 'root'
             });
         });
 
         it('unloads workflow when another one is loaded', async () => {
-            const { store, loadWorkflow, removeEventListener } = await loadStore();
+            const { store, loadWorkflow, unsubscribeEventListener } = await loadStore();
             loadWorkflow.mockResolvedValue({
                 workflow: { dummy: true, info: { containerId: 'root' }, nodes: [] },
                 snapshotId: 'snap'
@@ -368,7 +369,8 @@ describe('application store', () => {
 
             await store.dispatch('application/unloadActiveWorkflow', { clearWorkflow: true });
 
-            expect(removeEventListener).toHaveBeenCalledWith('WorkflowChanged', {
+            expect(unsubscribeEventListener).toHaveBeenCalledWith({
+                typeId: 'WorkflowChanged',
                 projectId: 'wf1',
                 workflowId: 'root',
                 snapshotId: 'snap'
@@ -379,11 +381,11 @@ describe('application store', () => {
         });
 
         it('does not unload if there is no active workflow', async () => {
-            const { store, removeEventListener } = await loadStore();
+            const { store, unsubscribeEventListener } = await loadStore();
             store.state.workflow.activeWorkflow = null;
             await store.dispatch('application/unloadActiveWorkflow', { clearWorkflow: false });
 
-            expect(removeEventListener).not.toHaveBeenCalled();
+            expect(unsubscribeEventListener).not.toHaveBeenCalled();
         });
     });
 

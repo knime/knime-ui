@@ -55,19 +55,24 @@ describe('API', () => {
     });
 
     describe('event Service', () => {
-        it.each(['add', 'remove'])('%ss event listeners', async (eventType) => {
-            const type = 'foo';
-            const args = { bar: 1, baz: 2 };
-            await api[`${eventType}EventListener`](type, args);
+        it('adds event listeners', async () => {
+            const eventType = { typeId: 'FooEventType', bar: 1, baz: 2 };
+            await api.API.event.subscribeEvent(eventType);
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
-                method: `EventService.${eventType}EventListener`,
-                params: {
-                    eventType: {
-                        typeId: `${type}EventType`,
-                        ...args
-                    }
-                },
+                method: `EventService.addEventListener`,
+                params: { eventType },
+                id: 0
+            });
+        });
+
+        it('removes event listeners', async () => {
+            const eventType = { typeId: 'FooEventType', bar: 1, baz: 2 };
+            await api.API.event.unsubscribeEventListener(eventType);
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: `EventService.removeEventListener`,
+                params: { eventType },
                 id: 0
             });
         });
@@ -89,15 +94,14 @@ describe('API', () => {
                 window.consola.error = origErrorLogger;
             });
 
-
             it('handles errors on addEventListener', async () => {
-                await expect(api.addEventListener('foo'))
-                    .rejects.toThrow('Couldn\'t register event "foo" with args {}');
+                await expect(api.API.event.subscribeEvent('foo'))
+                    .rejects.toThrow('Error calling JSON-RPC api "EventService.addEventListener"');
             });
 
             it('handles errors on removeEventListener', async () => {
-                await expect(api.removeEventListener('foo'))
-                    .rejects.toThrow('Couldn\'t unregister event "foo" with args {}');
+                await expect(() => api.API.event.unsubscribeEventListener('foo'))
+                    .rejects.toThrow('Error calling JSON-RPC api "EventService.removeEventListener"');
             });
         });
     });
