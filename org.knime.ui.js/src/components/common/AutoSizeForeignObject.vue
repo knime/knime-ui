@@ -8,6 +8,13 @@
 export default {
     props: {
         /**
+         * content that will be rendered in the wrapper
+         */
+        value: {
+            type: String,
+            default: ''
+        },
+        /**
          * Max width of the element.
          */
         maxWidth: {
@@ -55,6 +62,12 @@ export default {
                 return -this.height + this.yOffset;
             }
             return this.yOffset;
+        }
+    },
+
+    watch: {
+        value() {
+            this.width = this.maxWidth;
         }
     },
 

@@ -52,6 +52,7 @@ export default {
 
 <template>
   <AutoSizeForeignObject
+    :value="value"
     :start-width="startWidth"
     :start-height="startHeight"
     :class="['node-name-text-container', { editable, 'text-ellipsis': !showOverflow }]"
