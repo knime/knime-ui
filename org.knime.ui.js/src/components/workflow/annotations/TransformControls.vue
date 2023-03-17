@@ -1,9 +1,18 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
+import { mapGetters } from 'vuex';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
-import { type Directions, DIRECTIONS, getNewBounds, getGridAdjustedBounds } from './transform-control-utils';
-import { mapGetters } from 'vuex';
+// eslint-disable-next-line object-curly-newline
+import {
+    type Directions,
+    DIRECTIONS,
+    transformBounds,
+    getGridAdjustedBounds,
+    getTransformControlPosition,
+    CONTROL_SIZE
+// eslint-disable-next-line object-curly-newline
+} from './transform-control-utils';
 
 export default defineComponent({
     props: {
@@ -20,13 +29,13 @@ export default defineComponent({
 
     emits: {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        transformEnd: (_payload: { newBounds: Bounds }) => true
+        transformEnd: (_payload: { bounds: Bounds }) => true
     },
 
     data() {
         return {
             directions: DIRECTIONS,
-            CONTROL_SIZE: 6,
+            CONTROL_SIZE,
             innerValue: getGridAdjustedBounds(this.initialValue)
         };
     },
@@ -45,21 +54,19 @@ export default defineComponent({
     },
 
     methods: {
-        onStart({ event, direction }: { event: PointerEvent, direction: Directions }) {
+        onStart({ direction }: { event: PointerEvent, direction: Directions }) {
             const startX = this.innerValue.x;
             const startY = this.innerValue.y;
             const origWidth = this.innerValue.width;
             const origHeight = this.innerValue.height;
-            // eslint-disable-next-line no-extra-parens
-            (event.target as HTMLElement).setPointerCapture(event.pointerId);
 
-            const transformHandler = (_event) => {
+            const transformHandler = (_event: MouseEvent) => {
                 _event.stopPropagation();
                 _event.preventDefault();
                 const { clientX, clientY } = _event;
                 const [moveX, moveY] = this.screenToCanvasCoordinates([clientX, clientY]);
 
-                this.innerValue = getNewBounds(
+                this.innerValue = transformBounds(
                     this.innerValue,
                     {
                         startX,
@@ -83,33 +90,14 @@ export default defineComponent({
         },
 
         onStop() {
-            this.$emit('transformEnd', { newBounds: this.innerValue });
+            this.$emit('transformEnd', { bounds: this.innerValue });
         },
 
-        getControlPosition(controlDirection: Directions) {
-            const OFFSET = this.CONTROL_SIZE / 2;
-
-            const { x, y, width, height } = this.innerValue;
-            const centerX = () => x + width / 2 - this.CONTROL_SIZE / 2;
-            const centerY = () => y + height / 2 - this.CONTROL_SIZE / 2;
-
-            const flushX = () => x + width - this.CONTROL_SIZE + OFFSET;
-            const flushY = () => y + height - this.CONTROL_SIZE + OFFSET;
-
-            const offset = (pos: number) => pos - OFFSET;
-
-            const positionMap: Record<Directions, { x: number; y: number }> = {
-                nw: { x: offset(x), y: offset(y) },
-                n: { x: centerX(), y: offset(y) },
-                ne: { x: flushX(), y: offset(y) },
-                e: { x: flushX(), y: centerY() },
-                se: { x: flushX(), y: flushY() },
-                s: { x: centerX(), y: flushY() },
-                sw: { x: offset(x), y: flushY() },
-                w: { x: offset(x), y: centerY() }
-            };
-
-            return positionMap[controlDirection] || { x, y };
+        getControlPosition(direction: Directions) {
+            return getTransformControlPosition({
+                bounds: this.innerValue,
+                direction
+            });
         },
 
         getCursorStyle(direction: Directions) {

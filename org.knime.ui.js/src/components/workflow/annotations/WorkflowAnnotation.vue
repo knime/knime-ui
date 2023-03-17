@@ -67,12 +67,12 @@ export default defineComponent({
             this.isSelected = false;
         },
 
-        moveAnnotation(newBounds: Bounds) {
+        moveAnnotation(bounds: Bounds) {
             API.workflowCommand.TransformWorkflowAnnotation({
                 projectId: this.projectId,
-                workflowId: this.projectId,
+                workflowId: this.activeWorkflowId,
                 id: this.annotation.id,
-                bounds: newBounds
+                bounds
             });
         }
     }
@@ -84,7 +84,7 @@ export default defineComponent({
     v-click-away="() => unselect()"
     :disabled="!isEditing"
     :initial-value="annotation.bounds"
-    @transform-end="moveAnnotation($event.newBounds)"
+    @transform-end="moveAnnotation($event.bounds)"
   >
     <template #default="{ transformedBounds }">
       <foreignObject

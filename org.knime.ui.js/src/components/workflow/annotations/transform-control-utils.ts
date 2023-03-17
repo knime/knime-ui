@@ -1,5 +1,4 @@
 import type { Bounds } from '@/api/gateway-api/generated-api';
-import * as shapes from '@/style/shapes.mjs';
 import { snapToGrid } from '@/util/geometry';
 
 export const DIRECTIONS = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'] as const;
@@ -10,7 +9,8 @@ type YTransform = { startY: number; moveY: number; origHeight: number; }
 type TransformParams = XTransform & YTransform;
 type DirectionHandler = (currentBounds: Bounds, params: TransformParams) => Bounds
 
-const MIN_DIMENSIONS = { width: shapes.gridSize.x, height: shapes.gridSize.y };
+export const CONTROL_SIZE = 6;
+const MIN_DIMENSIONS = { width: 0, height: 0 };
 
 const isValidHeight = (value: number) => value > MIN_DIMENSIONS.height;
 const isValidWidth = (value: number) => value > MIN_DIMENSIONS.width;
@@ -161,7 +161,7 @@ export const getGridAdjustedBounds = (bounds: Bounds): Bounds => ({
     height: snapToGrid(bounds.height)
 });
 
-export const getNewBounds = (
+export const transformBounds = (
     currentBounds: Bounds,
     {
         startX,
@@ -185,4 +185,34 @@ export const getNewBounds = (
     });
 
     return getGridAdjustedBounds(newBounds);
+};
+
+export const getTransformControlPosition = (params: {
+    bounds: Bounds
+    direction: Directions;
+}) => {
+    const { bounds, direction } = params;
+    const OFFSET = CONTROL_SIZE / 2;
+
+    const { x, y, width, height } = bounds;
+    const centerX = () => x + width / 2 - CONTROL_SIZE / 2;
+    const centerY = () => y + height / 2 - CONTROL_SIZE / 2;
+
+    const flushX = () => x + width - CONTROL_SIZE + OFFSET;
+    const flushY = () => y + height - CONTROL_SIZE + OFFSET;
+
+    const offset = (pos: number) => pos - OFFSET;
+
+    const positionMap: Record<Directions, { x: number; y: number }> = {
+        nw: { x: offset(x), y: offset(y) },
+        n: { x: centerX(), y: offset(y) },
+        ne: { x: flushX(), y: offset(y) },
+        e: { x: flushX(), y: centerY() },
+        se: { x: flushX(), y: flushY() },
+        s: { x: centerX(), y: flushY() },
+        sw: { x: offset(x), y: flushY() },
+        w: { x: offset(x), y: centerY() }
+    };
+
+    return positionMap[direction] || { x, y };
 };

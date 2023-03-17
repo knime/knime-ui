@@ -1,11 +1,27 @@
-import { expect, describe, it } from 'vitest';
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import { mockVuexStore } from '@/test/utils';
 import * as $shapes from '@/style/shapes.mjs';
+import { API } from '@api';
 import { type WorkflowAnnotation, Annotation } from '@/api/gateway-api/generated-api';
 
 import WorkflowAnnotationComp from '../WorkflowAnnotation.vue';
 import LegacyAnnotationText from '../LegacyAnnotationText.vue';
+import TransformControls from '../TransformControls.vue';
+
+vi.mock('@api', async () => {
+    const actual: typeof API = await vi.importActual('@api');
+
+    return {
+        ...actual,
+        API: {
+            workflowCommand: {
+                TransformWorkflowAnnotation: vi.fn()
+            }
+        }
+    };
+});
 
 describe('Workflow Annotation', () => {
     const defaultProps: {
@@ -23,20 +39,32 @@ describe('Workflow Annotation', () => {
         }
     };
 
-    const doShallowMount = ({
+    const doMount = ({
         props = {},
         mocks = {}
     } = {}) => {
         const defaultMocks = { $shapes };
 
-        const wrapper = mount(WorkflowAnnotationComp, {
-            props: { ...defaultProps, ...props },
-            global: {
-                mocks: { ...defaultMocks, ...mocks }
+        const $store = mockVuexStore({
+            workflow: {
+                state: {
+                    activeWorkflow: {
+                        projectId: 'project1',
+                        info: { containerId: 'root' }
+                    }
+                }
             }
         });
 
-        return { wrapper };
+        const wrapper = mount(WorkflowAnnotationComp, {
+            props: { ...defaultProps, ...props },
+            global: {
+                mocks: { ...defaultMocks, ...mocks },
+                plugins: [$store]
+            }
+        });
+
+        return { wrapper, $store };
     };
 
     it('should apply styles to legacy annotation', async () => {
@@ -46,7 +74,7 @@ describe('Workflow Annotation', () => {
             x: '5',
             y: '5'
         };
-        const { wrapper } = doShallowMount({
+        const { wrapper } = doMount({
             props: {
                 annotation: { ...defaultProps.annotation, bounds }
             }
@@ -66,7 +94,7 @@ describe('Workflow Annotation', () => {
     });
 
     it('should pass props to LegacyAnnotationText', () => {
-        const { wrapper } = doShallowMount();
+        const { wrapper } = doMount();
 
         expect(wrapper.findComponent(LegacyAnnotationText).props('text')).toBe('hallo');
 
@@ -77,7 +105,7 @@ describe('Workflow Annotation', () => {
 
     it('should honor annotationsFontSizePointToPixelFactor', () => {
         const shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2 };
-        const { wrapper } = doShallowMount({
+        const { wrapper } = doMount({
             props: {
                 annotation: { ...defaultProps.annotation, defaultFontSize: 18 }
             },
@@ -87,5 +115,21 @@ describe('Workflow Annotation', () => {
         expect(wrapper.findComponent(LegacyAnnotationText).attributes('style')).toMatch(
             'font-size: 36px;'
         );
+    });
+
+    it('should transform annotation', () => {
+        const { wrapper, $store } = doMount();
+        const bounds = { x: 15, y: 15, width: 100, height: 100 };
+
+        wrapper.findComponent(TransformControls).vm.$emit('transformEnd', { bounds });
+        const projectId = $store.state.workflow.activeWorkflow.projectId;
+        const workflowId = $store.state.workflow.activeWorkflow.info.containerId;
+
+        expect(API.workflowCommand.TransformWorkflowAnnotation).toHaveBeenCalledWith({
+            projectId,
+            workflowId,
+            bounds,
+            id: defaultProps.annotation.id
+        });
     });
 });
