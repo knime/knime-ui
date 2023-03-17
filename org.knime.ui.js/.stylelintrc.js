@@ -1,11 +1,11 @@
 module.exports = {
-    extends: [
-        '@knime/eslint-config/stylelint/vue',
-        'stylelint-config-prettier'
+  extends: ["@knime/eslint-config/stylelint/vue"],
+  rules: {
+    "at-rule-no-unknown": [
+      true,
+      {
+        ignoreAtRules: ["define-mixin", "mixin"],
+      },
     ],
-    rules: {
-        "at-rule-no-unknown": [true, {
-            ignoreAtRules: ["define-mixin", "mixin"]
-        }]
-    }
-}
+  },
+};
