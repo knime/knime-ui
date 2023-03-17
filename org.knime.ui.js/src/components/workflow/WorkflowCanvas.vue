@@ -64,6 +64,9 @@ export default {
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
         },
+        onAnnotationPreview($event) {
+            this.$refs.workflow.applyAnnotationSelectionPreview($event);
+        },
         async onContainerSizeUpdated() {
             if (this.isWorkflowEmpty) {
                 await this.$nextTick();
@@ -106,6 +109,7 @@ export default {
     <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas) -->
     <SelectionRectangle
       @node-selection-preview="onNodeSelectionPreview"
+      @annotation-selection-preview="onAnnotationPreview"
     />
   </Kanvas>
 </template>

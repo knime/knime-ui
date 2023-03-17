@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { mapState } from 'vuex';
+import { mapState, mapActions, mapGetters } from 'vuex';
 import { mixin as VueClickAway } from 'vue3-click-away';
 
 import type { Bounds, WorkflowAnnotation } from '@/api/gateway-api/generated-api';
@@ -29,8 +29,8 @@ export default defineComponent({
 
     data() {
         return {
-            isSelected: false,
-            isEditing: false
+            isEditing: false,
+            selectionPreview: false
         };
     },
 
@@ -39,6 +39,8 @@ export default defineComponent({
             projectId: state => state.activeWorkflow.projectId,
             activeWorkflowId: state => state.activeWorkflow.info.containerId
         }),
+        ...mapState('selection', ['selectedAnnotations']),
+        ...mapGetters('selection', ['isAnnotationSelected']),
         annotationWrapperStyle() {
             const {
                 backgroundColor,
@@ -58,16 +60,37 @@ export default defineComponent({
                 width: '100%',
                 height: '100%'
             };
+        },
+        isSelected() {
+            return this.isAnnotationSelected(this.annotation.id);
         }
     },
-
     methods: {
+        ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation']),
+        onClick() {
+            this.isEditing = true;
+            return this.isSelected
+                ? this.deselectAnnotation(this.annotation.id)
+                : this.selectAnnotation(this.annotation.id);
+            
+            // console.log(this.isAnnotationSelected(annotationId));
+            // this.selectAnnotation(annotationId);
+            // this.isSelected = true;
+        },
+        setSelectionPreview(preview) {
+            this.selectionPreview = preview;
+        },
         unselect() {
             this.isEditing = false;
             this.isSelected = false;
         },
 
         moveAnnotation(bounds: Bounds) {
+            // rect outside foreignObject
+            //         fill="transparent"
+            //   :stroke="$colors.selection.activeBorder"
+            //   :stroke-width="2"
+            //   :rx="$shapes.selectedNodeBorderRadius"
             API.workflowCommand.TransformWorkflowAnnotation({
                 projectId: this.projectId,
                 workflowId: this.activeWorkflowId,
@@ -81,6 +104,7 @@ export default defineComponent({
 
 <template>
   <TransformControls
+    v-if="isSelected || selectionPreview"
     v-click-away="() => unselect()"
     :disabled="!isEditing"
     :initial-value="annotation.bounds"
@@ -93,7 +117,7 @@ export default defineComponent({
         :width="transformedBounds.width"
         :height="transformedBounds.height"
         :class="['annotation-foreign-object', { selected: isSelected }]"
-        @click="isSelected = true"
+        @click="onClick"
         @dblclick="isSelected ? (isEditing = true) : null"
       >
         <LegacyAnnotationText
@@ -110,7 +134,7 @@ export default defineComponent({
 div {
   font-family: "Roboto Condensed", sans-serif;
   border-radius: 2px;
-  cursor: default;
+  cursor: pointer;
   user-select: none;
 }
 

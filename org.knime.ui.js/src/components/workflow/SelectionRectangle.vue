@@ -1,7 +1,7 @@
 <script>
 import { mapGetters, mapState, mapActions } from 'vuex';
 import throttle from 'raf-throttle';
-import { findNodesInsideOfRectangle } from '@/util/rectangleSelection';
+import { findItemsInsideOfRectangle } from '@/util/rectangleSelection';
 
 /**
  * SelectionRectangle - select multiple nodes by drawing a rectangle with by mouse (pointer) movement
@@ -13,7 +13,7 @@ import { findNodesInsideOfRectangle } from '@/util/rectangleSelection';
  * define what is rendered, but that's too slow in this case.
  */
 export default {
-    emits: ['nodeSelectionPreview'],
+    emits: ['nodeSelectionPreview', 'annotationSelectionPreview'],
     data: () => ({
         startPos: {
             x: 0,
@@ -27,7 +27,11 @@ export default {
         nodeIdsToSelectOnEnd: [],
         nodeIdsToDeselectOnEnd: [],
         selectedNodeIdsAtStart: [],
-        nodeIdsInsidePreviousSelection: []
+        nodeIdsInsidePreviousSelection: [],
+        annotationIdsToSelectOnEnd: [],
+        annotationIdsToDeselectOnEnd: [],
+        selectedAnnotationIdsAtStart: [],
+        annotationIdsInsidePreviousSelection: []
     }),
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
@@ -58,7 +62,13 @@ export default {
         this.$bus.off('selection-lostpointercapture', this.stopRectangleSelection);
     },
     methods: {
-        ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),
+        ...mapActions('selection', [
+            'selectNodes',
+            'deselectNodes',
+            'deselectAllObjects',
+            'selectAnnotations',
+            'deselectAnnotations'
+        ]),
 
         startRectangleSelection(e) {
             this.pointerId = e.pointerId;
@@ -104,14 +114,29 @@ export default {
                     this.deselectNodes(this.nodeIdsToDeselectOnEnd);
                 }
 
+                if (this.annotationIdsToSelectOnEnd.length > 0) {
+                    this.selectAnnotations(this.annotationIdsToSelectOnEnd);
+                }
+
+                if (this.annotationIdsToDeselectOnEnd.length > 0) {
+                    this.deselectNodes(this.annotationIdsToDeselectOnEnd);
+                }
+
                 // clear "preview state" of now selected elements
                 [...this.nodeIdsToSelectOnEnd, ...this.nodeIdsToDeselectOnEnd].forEach(nodeId => {
                     this.$emit('nodeSelectionPreview', { type: 'clear', nodeId });
                 });
 
+                [...this.annotationIdsToSelectOnEnd, ...this.annotationIdsToDeselectOnEnd].forEach(annotationId => {
+                    this.$emit('annotationSelectionPreview', { preview: false, annotationId });
+                });
+
                 this.nodeIdsToSelectOnEnd = [];
                 this.nodeIdsToDeselectOnEnd = [];
                 this.selectedNodeIdsAtStart = [];
+                this.annotationIdsToSelectOnEnd = [];
+                this.annotationIdsToDeselectOnEnd = [];
+                this.selectedAnnotationIdsAtStart = [];
             }, 0);
             /* eslint-enable no-invalid-this */
         }),
@@ -128,7 +153,7 @@ export default {
         }),
 
         previewSelectionForNodesInRectangle(startPos, endPos) {
-            let { inside, outside } = findNodesInsideOfRectangle({
+            let { nodesInside, nodesOutside, annotationsInside, annotationsOutside } = findItemsInsideOfRectangle({
                 startPos,
                 endPos,
                 workflow: this.activeWorkflow
@@ -137,9 +162,12 @@ export default {
             // remember this for the real selection at the end of the movement (pointerup)
             let selectNodes = [];
             let deselectNodes = [];
+            let selectAnnotations = [];
+            let deselectAnnotations = [];
+            // console.log(annotationsInside);
 
             // do the preview
-            inside.forEach(nodeId => {
+            nodesInside.forEach(nodeId => {
                 // support for shift (remove selection on selected ones)
                 if (this.selectedNodeIdsAtStart?.includes(nodeId)) {
                     this.$emit('nodeSelectionPreview', { type: 'hide', nodeId });
@@ -153,15 +181,34 @@ export default {
             // As we update the selection, we need to tell every node that is NOW outside
             // the selection AND that it used to be inside the previous selection
             // to clear its selected state
-            outside.forEach(nodeId => {
+            nodesOutside.forEach(nodeId => {
                 if (this.nodeIdsInsidePreviousSelection?.includes(nodeId)) {
                     this.$emit('nodeSelectionPreview', { type: 'clear', nodeId });
                 }
             });
 
-            this.nodeIdsInsidePreviousSelection = inside;
+            annotationsInside.forEach(annotationId => {
+                // support for shift (remove selection on selected annotations)
+                if (this.selectedAnnotationIdsAtStart?.includes(annotationId)) {
+                    this.$emit('annotationSelectionPreview', { preview: false, annotationId });
+                    deselectAnnotations.push(annotationId);
+                } else {
+                    this.$emit('annotationSelectionPreview', { preview: true, annotationId });
+                    selectAnnotations.push(annotationId);
+                }
+            });
+
+            annotationsOutside.forEach(annotationId => {
+                if (this.nodeIdsInsidePreviousSelection?.includes(annotationId)) {
+                    this.$emit('annotationSelectionPreview', { preview: false, annotationId });
+                }
+            });
+
+            this.nodeIdsInsidePreviousSelection = nodesInside;
             this.nodeIdsToSelectOnEnd = selectNodes;
             this.nodeIdsToDeselectOnEnd = deselectNodes;
+            this.annotationIdsToSelectOnEnd = selectAnnotations;
+            this.annotationIdsToDeselectOnEnd = deselectAnnotations;
         }
     }
 };

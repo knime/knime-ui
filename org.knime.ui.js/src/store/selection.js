@@ -12,7 +12,11 @@ export const state = () => ({
     /**
      * @type {Object.<string, boolean>}
      */
-    selectedConnections: {}
+    selectedConnections: {},
+    /**
+     * @type {Object.<string, boolean>}
+     */
+    selectedAnnotations: {}
 });
 
 export const mutations = {
@@ -49,6 +53,9 @@ export const mutations = {
         if (Object.keys(state.selectedConnections).length > 0) {
             state.selectedConnections = {};
         }
+        if (Object.keys(state.selectedAnnotations).length > 0) {
+            state.selectedAnnotations = {};
+        }
     },
 
     //  Add connectionIds to selection.
@@ -63,6 +70,28 @@ export const mutations = {
         connectionIds.forEach(id => {
             delete state.selectedConnections[id];
         });
+    },
+
+    //  Add annotationIds to selection.
+    addAnnotationToSelection(state, annotationIds) {
+        // let selectedAnnotations = { ...state.selectedAnnotations };
+        // console.log(selectedAnnotations);
+
+        annotationIds.forEach(id => {
+            state.selectedAnnotations[id] = true;
+        });
+        // console.log(selectedAnnotations);
+        // state.selectedAnnotations = selectedAnnotations;
+    },
+
+    // Removes each annotation of the provided annotation object to the selected annotation object.
+    removeAnnotationFromSelection(state, annotationIds) {
+        // let selectedAnnotations = { ...state.selectedAnnotations };
+
+        annotationIds.forEach(id => {
+            delete state.selectedAnnotations[id];
+        });
+        // state.selectedAnnotations = selectedAnnotations;
     }
 };
 
@@ -106,6 +135,22 @@ export const actions = {
     // Deselects the given connection.
     deselectConnection({ commit }, connectionId) {
         commit('removeConnectionsFromSelection', [connectionId]);
+    },
+
+    selectAnnotation({ commit }, annotationId) {
+        commit('addAnnotationToSelection', [annotationId]);
+    },
+
+    selectAnnotations({ commit }, annotationId) {
+        commit('addAnnotationToSelection', annotationId);
+    },
+
+    deselectAnnotation({ commit }, annotationId) {
+        commit('removeAnnotationFromSelection', [annotationId]);
+    },
+
+    deselectAnnotations({ commit }, annotationId) {
+        commit('removeAnnotationFromSelection', annotationId);
     }
 };
 
@@ -136,6 +181,9 @@ export const getters = {
 
     // Checks if a given node id is present in the selected object.
     isNodeSelected: (state) => (nodeId) => nodeId in state.selectedNodes,
+
+    // Checks if a given annotation id is present in the selected object.
+    isAnnotationSelected: (state) => (annotationId) => annotationId in state.selectedAnnotations,
 
     // Returns an array of selected connection objects.
     selectedConnections(state, getters, { workflow: { activeWorkflow } }) {

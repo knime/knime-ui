@@ -41,6 +41,9 @@ export default {
         // public
         applyNodeSelectionPreview({ nodeId, type }) {
             this.$refs[`node-${nodeId}`][0].setSelectionPreview(type);
+        },
+        applyAnnotationSelectionPreview({ annotationId, preview }) {
+            this.$refs[`annotation-${annotationId}`][0].setSelectionPreview(preview);
         }
     }
 };
@@ -51,6 +54,7 @@ export default {
     <!-- Workflow Annotation Layer. Background -->
     <WorkflowAnnotation
       v-for="annotation of workflow.workflowAnnotations"
+      :ref="`annotation-${annotation.id}`"
       :key="`annotation-${annotation.id}`"
       :annotation="annotation"
     />

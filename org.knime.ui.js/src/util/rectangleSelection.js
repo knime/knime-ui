@@ -1,7 +1,7 @@
 import * as $shapes from '@/style/shapes.mjs';
 
 // find nodes that are fully or partly inside the rectangle defined by startPos and endPos
-export const findNodesInsideOfRectangle = ({ startPos, endPos, workflow }) => {
+export const findItemsInsideOfRectangle = ({ startPos, endPos, workflow }) => {
     // normalize rectangle
     let rectangle = {
         x1: Math.min(startPos.x, endPos.x),
@@ -11,25 +11,43 @@ export const findNodesInsideOfRectangle = ({ startPos, endPos, workflow }) => {
     };
 
     // divide nodes
-    let inside = [];
-    let outside = [];
+    let nodesInside = [];
+    let nodesOutside = [];
     Object.values(workflow.nodes).forEach(({ position, id }) => {
         const { nodeSize } = $shapes;
 
-        // [left rectanlge edge] left from [right node edge] && [right rectangle edge] right from [left node edge]
+        // [left rectangle edge] left from [right node edge] && [right rectangle edge] right from [left node edge]
         let xInside = (rectangle.x1 <= position.x + nodeSize) && (rectangle.x2 >= position.x);
         let yInside = (rectangle.y1 <= position.y + nodeSize) && (rectangle.y2 >= position.y);
 
         // create lists with node ids
         if (xInside && yInside) {
-            inside.push(id);
+            nodesInside.push(id);
         } else {
-            outside.push(id);
+            nodesOutside.push(id);
         }
     });
 
+    // divide annotations
+    let annotationsInside = [];
+    let annotationsOutside = [];
+    Object.values(workflow.workflowAnnotations).forEach(({ bounds, id }) => {
+        // [left rectangle edge] left from [right annotation edge] && [right rectangle edge] right from [left annotation edge]
+        let xInside = (rectangle.x1 <= bounds.x + bounds.width) && (rectangle.x2 >= bounds.x);
+        let yInside = (rectangle.y1 <= bounds.y + bounds.height) && (rectangle.y2 >= bounds.y);
+    
+        // create lists with node ids
+        if (xInside && yInside) {
+            annotationsInside.push(id);
+        } else {
+            annotationsOutside.push(id);
+        }
+    });
+        
     return {
-        inside,
-        outside
+        nodesInside,
+        nodesOutside,
+        annotationsInside,
+        annotationsOutside
     };
 };
