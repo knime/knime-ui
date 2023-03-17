@@ -110,7 +110,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <g>
+  <g class="transform">
     <slot :transformed-bounds="innerValue" />
 
     <rect
@@ -142,13 +142,19 @@ export default defineComponent({
 </template>
 
 <style lang="postcss" scoped>
+.transform {
+    --control-color: var(--knime-cornflower);
+}
+
 .transform-box {
     fill: transparent;
     stroke-width: 1px;
-    stroke: var(--knime-masala);
+    stroke: var(--control-color);
     z-index: 1;
 }
 .transform-control {
-    fill: var(--knime-masala);
+    fill: var(--control-color);
+    stroke: var(--knime-white);
+    stroke-width: 1px;
 }
 </style>

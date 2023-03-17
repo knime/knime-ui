@@ -115,6 +115,6 @@ div {
 }
 
 .annotation-foreign-object.selected {
-    outline: 1px solid var(--knime-masala);
+    outline: 1px solid var(--knime-cornflower);
 }
 </style>

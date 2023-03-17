@@ -192,16 +192,16 @@ export const getTransformControlPosition = (params: {
     direction: Directions;
 }) => {
     const { bounds, direction } = params;
-    const OFFSET = CONTROL_SIZE / 2;
+    const OFFSET = CONTROL_SIZE / 2 + 1;
 
     const { x, y, width, height } = bounds;
-    const centerX = () => x + width / 2 - CONTROL_SIZE / 2;
-    const centerY = () => y + height / 2 - CONTROL_SIZE / 2;
+    const offset = (pos: number, delta: -1 | 1 = 1) => pos - OFFSET * delta;
 
-    const flushX = () => x + width - CONTROL_SIZE + OFFSET;
-    const flushY = () => y + height - CONTROL_SIZE + OFFSET;
+    const centerX = () => offset(x + width / 2);
+    const centerY = () => offset(y + height / 2);
 
-    const offset = (pos: number) => pos - OFFSET;
+    const flushX = () => offset(x + width - CONTROL_SIZE, -1);
+    const flushY = () => offset(y + height - CONTROL_SIZE, -1);
 
     const positionMap: Record<Directions, { x: number; y: number }> = {
         nw: { x: offset(x), y: offset(y) },
