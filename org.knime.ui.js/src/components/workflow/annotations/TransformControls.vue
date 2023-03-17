@@ -152,6 +152,7 @@ export default defineComponent({
     stroke: var(--control-color);
     z-index: 1;
 }
+
 .transform-control {
     fill: var(--control-color);
     stroke: var(--knime-white);
