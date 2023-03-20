@@ -12,99 +12,109 @@ import LegacyAnnotationText from './LegacyAnnotationText.vue';
 /**
  * A workflow annotation, a rectangular box containing text.
  */
-export default defineComponent({
-    components: {
-        LegacyAnnotationText,
-        TransformControls
-    },
-    mixins: [VueClickAway],
-    inheritAttrs: false,
+export default defineComponent({ components: {
+    LegacyAnnotationText,
+    TransformControls
+},
+mixins: [VueClickAway],
+inheritAttrs: false,
 
-    props: {
-        annotation: {
-            type: Object as PropType<WorkflowAnnotation>,
-            required: true
-        }
-    },
+props: {
+    annotation: {
+        type: Object as PropType<WorkflowAnnotation>,
+        required: true
+    }
+},
 
-    data() {
+data() {
+    return {
+        isEditing: false,
+        selectionPreview: null
+    };
+},
+
+computed: {
+    ...mapState('workflow', {
+        projectId: state => state.activeWorkflow.projectId,
+        activeWorkflowId: state => state.activeWorkflow.info.containerId
+    }),
+    ...mapState('selection', ['selectedAnnotations']),
+    ...mapGetters('selection', ['isAnnotationSelected']),
+    annotationWrapperStyle() {
+        const {
+            backgroundColor,
+            borderColor,
+            // eslint-disable-next-line no-magic-numbers
+            defaultFontSize = 12,
+            borderWidth = 2,
+            textAlign = 'left'
+        } = this.annotation;
+
         return {
-            isEditing: false,
-            selectionPreview: false
+            fontSize: `${defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`,
+            border: `${borderWidth}px solid ${borderColor}`,
+            background: backgroundColor,
+            textAlign,
+            padding: `${this.$shapes.workflowAnnotationPadding}px`,
+            width: '100%',
+            height: '100%'
         };
     },
-
-    computed: {
-        ...mapState('workflow', {
-            projectId: state => state.activeWorkflow.projectId,
-            activeWorkflowId: state => state.activeWorkflow.info.containerId
-        }),
-        ...mapState('selection', ['selectedAnnotations']),
-        ...mapGetters('selection', ['isAnnotationSelected']),
-        annotationWrapperStyle() {
-            const {
-                backgroundColor,
-                borderColor,
-                // eslint-disable-next-line no-magic-numbers
-                defaultFontSize = 12,
-                borderWidth = 2,
-                textAlign = 'left'
-            } = this.annotation;
-
-            return {
-                fontSize: `${defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`,
-                border: `${borderWidth}px solid ${borderColor}`,
-                background: backgroundColor,
-                textAlign,
-                padding: `${this.$shapes.workflowAnnotationPadding}px`,
-                width: '100%',
-                height: '100%'
-            };
-        },
-        isSelected() {
-            return this.isAnnotationSelected(this.annotation.id);
-        }
+    isSelected() {
+        return this.isAnnotationSelected(this.annotation.id);
     },
-    methods: {
-        ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation']),
-        onClick() {
-            this.isEditing = true;
-            return this.isSelected
-                ? this.deselectAnnotation(this.annotation.id)
-                : this.selectAnnotation(this.annotation.id);
-            
-            // console.log(this.isAnnotationSelected(annotationId));
-            // this.selectAnnotation(annotationId);
-            // this.isSelected = true;
-        },
-        setSelectionPreview(preview) {
-            this.selectionPreview = preview;
-        },
-        unselect() {
-            this.isEditing = false;
-            this.isSelected = false;
-        },
-
-        moveAnnotation(bounds: Bounds) {
-            // rect outside foreignObject
-            //         fill="transparent"
-            //   :stroke="$colors.selection.activeBorder"
-            //   :stroke-width="2"
-            //   :rx="$shapes.selectedNodeBorderRadius"
-            API.workflowCommand.TransformWorkflowAnnotation({
-                projectId: this.projectId,
-                workflowId: this.activeWorkflowId,
-                id: this.annotation.id,
-                bounds
-            });
+    showSelectionPlane() {
+        if (this.selectionPreview === null) {
+            return this.isSelected;
         }
+
+        if (this.isSelected && this.selectionPreview === 'hide') {
+            return false;
+        }
+
+        return this.selectionPreview === 'show' || this.isSelected;
     }
-});
+},
+methods: {
+    ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation']),
+    onClick() {
+        this.isEditing = true;
+        return this.isSelected
+            ? this.deselectAnnotation(this.annotation.id)
+            : this.selectAnnotation(this.annotation.id);
+            
+        // console.log(this.isAnnotationSelected(annotationId));
+        // this.selectAnnotation(annotationId);
+        // this.isSelected = true;
+    },
+    setSelectionPreview(preview) {
+        this.selectionPreview = preview;
+    },
+    unselect() {
+        this.isEditing = false;
+        this.isSelected = false;
+    },
+
+    moveAnnotation(bounds: Bounds) {
+        // rect outside foreignObject
+        //         fill="transparent"
+        //   :stroke="$colors.selection.activeBorder"
+        //   :stroke-width="2"
+        //   :rx="$shapes.selectedNodeBorderRadius"
+        API.workflowCommand.TransformWorkflowAnnotation({
+            projectId: this.projectId,
+            workflowId: this.activeWorkflowId,
+            id: this.annotation.id,
+            bounds
+        });
+    }
+} });
+
 </script>
 
 <template>
   <TransformControls
-    v-if="isSelected || selectionPreview"
+    v-if="showSelectionPlane"
     v-click-away="() => unselect()"
     :disabled="!isEditing"
     :initial-value="annotation.bounds"

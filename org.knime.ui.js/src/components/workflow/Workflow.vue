@@ -42,8 +42,8 @@ export default {
         applyNodeSelectionPreview({ nodeId, type }) {
             this.$refs[`node-${nodeId}`][0].setSelectionPreview(type);
         },
-        applyAnnotationSelectionPreview({ annotationId, preview }) {
-            this.$refs[`annotation-${annotationId}`][0].setSelectionPreview(preview);
+        applyAnnotationSelectionPreview({ annotationId, type }) {
+            this.$refs[`annotation-${annotationId}`][0].setSelectionPreview(type);
         }
     }
 };

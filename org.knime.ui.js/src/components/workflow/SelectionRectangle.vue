@@ -36,7 +36,7 @@ export default {
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapGetters('selection', ['selectedNodeIds']),
+        ...mapGetters('selection', ['selectedNodeIds', 'selectedAnnotationIds']),
         selectionBounds() {
             const { endPos, startPos } = this;
 
@@ -79,15 +79,19 @@ export default {
             
             this.nodeIdsToSelectOnEnd = [];
             this.nodeIdsToDeselectOnEnd = [];
+            this.annotationIdsToSelectOnEnd = [];
+            this.annotationIdsToDeselectOnEnd = [];
 
             // deselect all objects if we do not hold shift or control/meta key
             if (e.shiftKey || e.ctrlKey || e.metaKey) {
                 // remember currently selected nodes, the nodes under the rectangle will inverse them
                 this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
+                this.selectedAnnotationIdsAtStart = [...this.selectedAnnotationIds];
             } else {
                 // TODO: NXT-978 could mock that for faster start of rectangle selection
                 this.deselectAllObjects();
                 this.selectedNodeIdsAtStart = [];
+                this.selectedAnnotationIdsAtStart = [];
             }
         },
 
@@ -119,7 +123,7 @@ export default {
                 }
 
                 if (this.annotationIdsToDeselectOnEnd.length > 0) {
-                    this.deselectNodes(this.annotationIdsToDeselectOnEnd);
+                    this.deselectAnnotations(this.annotationIdsToDeselectOnEnd);
                 }
 
                 // clear "preview state" of now selected elements
@@ -128,7 +132,7 @@ export default {
                 });
 
                 [...this.annotationIdsToSelectOnEnd, ...this.annotationIdsToDeselectOnEnd].forEach(annotationId => {
-                    this.$emit('annotationSelectionPreview', { preview: false, annotationId });
+                    this.$emit('annotationSelectionPreview', { type: null, annotationId });
                 });
 
                 this.nodeIdsToSelectOnEnd = [];
@@ -148,11 +152,11 @@ export default {
             }
             
             [this.endPos.x, this.endPos.y] = this.screenToCanvasCoordinates([e.clientX, e.clientY]);
-            this.previewSelectionForNodesInRectangle(this.startPos, this.endPos);
+            this.previewSelectionForItemsInRectangle(this.startPos, this.endPos);
             /* eslint-enable no-invalid-this */
         }),
 
-        previewSelectionForNodesInRectangle(startPos, endPos) {
+        previewSelectionForItemsInRectangle(startPos, endPos) {
             let { nodesInside, nodesOutside, annotationsInside, annotationsOutside } = findItemsInsideOfRectangle({
                 startPos,
                 endPos,
@@ -164,7 +168,6 @@ export default {
             let deselectNodes = [];
             let selectAnnotations = [];
             let deselectAnnotations = [];
-            // console.log(annotationsInside);
 
             // do the preview
             nodesInside.forEach(nodeId => {
@@ -188,25 +191,25 @@ export default {
             });
 
             annotationsInside.forEach(annotationId => {
-                // support for shift (remove selection on selected annotations)
                 if (this.selectedAnnotationIdsAtStart?.includes(annotationId)) {
-                    this.$emit('annotationSelectionPreview', { preview: false, annotationId });
+                    this.$emit('annotationSelectionPreview', { type: 'hide', annotationId });
                     deselectAnnotations.push(annotationId);
                 } else {
-                    this.$emit('annotationSelectionPreview', { preview: true, annotationId });
+                    this.$emit('annotationSelectionPreview', { type: 'show', annotationId });
                     selectAnnotations.push(annotationId);
                 }
             });
 
             annotationsOutside.forEach(annotationId => {
-                if (this.nodeIdsInsidePreviousSelection?.includes(annotationId)) {
-                    this.$emit('annotationSelectionPreview', { preview: false, annotationId });
+                if (this.annotationIdsInsidePreviousSelection?.includes(annotationId)) {
+                    this.$emit('annotationSelectionPreview', { type: null, annotationId });
                 }
             });
 
             this.nodeIdsInsidePreviousSelection = nodesInside;
             this.nodeIdsToSelectOnEnd = selectNodes;
             this.nodeIdsToDeselectOnEnd = deselectNodes;
+            this.annotationIdsInsidePreviousSelection = annotationsInside;
             this.annotationIdsToSelectOnEnd = selectAnnotations;
             this.annotationIdsToDeselectOnEnd = deselectAnnotations;
         }

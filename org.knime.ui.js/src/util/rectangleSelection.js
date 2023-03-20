@@ -32,11 +32,10 @@ export const findItemsInsideOfRectangle = ({ startPos, endPos, workflow }) => {
     let annotationsInside = [];
     let annotationsOutside = [];
     Object.values(workflow.workflowAnnotations).forEach(({ bounds, id }) => {
-        // [left rectangle edge] left from [right annotation edge] && [right rectangle edge] right from [left annotation edge]
         let xInside = (rectangle.x1 <= bounds.x + bounds.width) && (rectangle.x2 >= bounds.x);
         let yInside = (rectangle.y1 <= bounds.y + bounds.height) && (rectangle.y2 >= bounds.y);
     
-        // create lists with node ids
+        // create lists with annotation ids
         if (xInside && yInside) {
             annotationsInside.push(id);
         } else {

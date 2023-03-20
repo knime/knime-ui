@@ -74,24 +74,16 @@ export const mutations = {
 
     //  Add annotationIds to selection.
     addAnnotationToSelection(state, annotationIds) {
-        // let selectedAnnotations = { ...state.selectedAnnotations };
-        // console.log(selectedAnnotations);
-
         annotationIds.forEach(id => {
             state.selectedAnnotations[id] = true;
         });
-        // console.log(selectedAnnotations);
-        // state.selectedAnnotations = selectedAnnotations;
     },
 
     // Removes each annotation of the provided annotation object to the selected annotation object.
     removeAnnotationFromSelection(state, annotationIds) {
-        // let selectedAnnotations = { ...state.selectedAnnotations };
-
         annotationIds.forEach(id => {
             delete state.selectedAnnotations[id];
         });
-        // state.selectedAnnotations = selectedAnnotations;
     }
 };
 
@@ -141,8 +133,8 @@ export const actions = {
         commit('addAnnotationToSelection', [annotationId]);
     },
 
-    selectAnnotations({ commit }, annotationId) {
-        commit('addAnnotationToSelection', annotationId);
+    selectAnnotations({ commit }, annotationIds) {
+        commit('addAnnotationToSelection', annotationIds);
     },
 
     deselectAnnotation({ commit }, annotationId) {
@@ -166,9 +158,21 @@ export const getters = {
             .filter(Boolean);
     },
 
+    selectedAnnotations(state, getters, rootState) {
+        if (!rootState.workflow.activeWorkflow) {
+            return [];
+        }
+        return rootState.workflow.activeWorkflow.workflowAnnotations
+            .filter(annotation => Object.keys(state.selectedAnnotations).includes(annotation.id));
+    },
+
     // Returns an array of all selected node ids.
     selectedNodeIds(state, { selectedNodes }) {
         return selectedNodes.map(node => node.id);
+    },
+
+    selectedAnnotationIds(state, { selectedAnnotations }) {
+        return selectedAnnotations.map(annotation => annotation.id);
     },
 
     // Returns null if none or multiple nodes are selected, otherwise returns the selected node
