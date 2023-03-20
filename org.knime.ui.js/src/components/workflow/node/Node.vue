@@ -178,7 +178,8 @@ export default {
                 height: 20
             },
             portPositions: { in: [], out: [] },
-            isDraggedOver: false
+            isDraggedOver: false,
+            dragTarget: null
         };
     },
     computed: {
@@ -316,17 +317,22 @@ export default {
         onTorsoDragEnter(dragEvent) {
             if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
                 this.isDraggedOver = true;
+                this.dragTarget = dragEvent.target;
             }
         },
 
-        onTorsoDragLeave() {
-            this.isDraggedOver = false;
+        onTorsoDragLeave(dragEvent) {
+            if (this.dragTarget === dragEvent.target) {
+                this.isDraggedOver = false;
+                this.dragTarget = null;
+            }
         },
 
         onTorsoDragDrop(dragEvent) {
             const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
             this.replaceNode({ position: { x: this.position.x, y: this.position.y }, nodeId: this.id, nodeFactory });
             this.isDraggedOver = false;
+            this.dragTarget = null;
         },
 
         // public
@@ -432,8 +438,9 @@ export default {
                   :type="type"
                   :kind="kind"
                   :icon="icon"
+                  :is-dragged-over="isDraggedOver"
                   :execution-state="state && state.executionState"
-                  :class="['node-torso', { hover: isHovering, isDraggedOver }]"
+                  :class="['node-torso', { hover: isHovering }]"
                   :filter="isHovering && 'url(#node-torso-shadow)'"
                   @dblclick.left="onLeftDoubleClick"
                   @dragenter="onTorsoDragEnter"
@@ -506,11 +513,6 @@ export default {
 .node-torso:hover,
 .node-state:hover {
   filter: "url(#node-state-shadow)";
-}
-
-
-.isDraggedOver {
-  outline: 3px solid rgb(233, 21, 21);
 }
 
 .connection-forbidden .hover-container {
