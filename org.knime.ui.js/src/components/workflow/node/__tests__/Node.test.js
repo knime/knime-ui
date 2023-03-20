@@ -1,9 +1,10 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import { $bus } from '@/plugins/event-bus';
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
@@ -91,13 +92,13 @@ describe('Node', () => {
         storeConfig = {
             workflow: {
                 actions: {
-                    loadWorkflow: jest.fn(),
-                    executeNodes: jest.fn(),
-                    cancelNodeExecution: jest.fn(),
-                    resetNodes: jest.fn(),
-                    openNodeConfiguration: jest.fn(),
-                    openView: jest.fn(),
-                    removeContainerNodePort: jest.fn()
+                    loadWorkflow: vi.fn(),
+                    executeNodes: vi.fn(),
+                    cancelNodeExecution: vi.fn(),
+                    resetNodes: vi.fn(),
+                    openNodeConfiguration: vi.fn(),
+                    openView: vi.fn(),
+                    removeContainerNodePort: vi.fn()
                 },
                 getters: {
                     isWritable: () => true,
@@ -109,19 +110,19 @@ describe('Node', () => {
                     return { activeProjectId: 'projectId' };
                 },
                 actions: {
-                    switchWorkflow: jest.fn(),
-                    toggleContextMenu: jest.fn()
+                    switchWorkflow: vi.fn(),
+                    toggleContextMenu: vi.fn()
                 }
             },
             selection: {
                 getters: {
-                    isNodeSelected: () => jest.fn(),
-                    singleSelectedNode: jest.fn()
+                    isNodeSelected: () => vi.fn(),
+                    singleSelectedNode: vi.fn()
                 },
                 actions: {
-                    deselectAllObjects: jest.fn(),
-                    selectNode: jest.fn(),
-                    deselectNode: jest.fn()
+                    deselectAllObjects: vi.fn(),
+                    selectNode: vi.fn(),
+                    deselectNode: vi.fn()
                 }
             },
             canvas: {
@@ -137,13 +138,13 @@ describe('Node', () => {
 
         doMount = (customStubs) => {
             const $commands = {
-                dispatch: jest.fn(),
-                get: jest.fn().mockImplementation(name => ({
+                dispatch: vi.fn(),
+                get: vi.fn().mockImplementation(name => ({
                     text: 'text',
                     hotkeyText: 'hotkeyText',
                     name
                 })),
-                isEnabled: jest.fn().mockReturnValue(false)
+                isEnabled: vi.fn().mockReturnValue(false)
             };
             $store = mockVuexStore(storeConfig);
             wrapper = mount(Node, {
@@ -153,6 +154,7 @@ describe('Node', () => {
                     plugins: [$store],
                     stubs: {
                         NodeName: true,
+                        NodeLabel: true,
                         NodeDecorators: true,
                         NodeActionBar: true,
                         NodeSelectionPlane: true,
@@ -179,7 +181,7 @@ describe('Node', () => {
             expect(nodePorts.props('nodeId')).toBe(commonNode.id);
             expect(nodePorts.props('inPorts')).toStrictEqual(commonNode.inPorts);
             expect(nodePorts.props('outPorts')).toStrictEqual(commonNode.inPorts);
-            expect(nodePorts.props('targetPort')).toBe(null);
+            expect(nodePorts.props('targetPort')).toBeNull();
             expect(nodePorts.props('isEditable')).toBe(true);
             expect(nodePorts.props('nodeKind')).toBe(commonNode.kind);
             expect(nodePorts.props('hover')).toBe(false);
@@ -253,6 +255,7 @@ describe('Node', () => {
             });
 
             ports.forEach((port, index) => {
+                // eslint-disable-next-line vitest/no-conditional-tests
                 expect(port.props('direction')).toBe(index < commonNode.inPorts.length ? 'in' : 'out');
             });
         });
@@ -271,7 +274,7 @@ describe('Node', () => {
         expect(storeConfig.workflow.actions.openNodeConfiguration).toHaveBeenCalledWith(expect.anything(), 'root:1');
     });
 
-    describe('Node selection preview', () => {
+    describe('node selection preview', () => {
         beforeEach(() => {
             props =
                 {
@@ -283,20 +286,20 @@ describe('Node', () => {
         });
 
         it('shows frame if selection preview is active', async () => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(false);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValueOnce(false);
             doMount();
             expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
             wrapper.vm.setSelectionPreview('show');
             await Vue.nextTick();
             expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
 
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValueOnce(true);
             doMount();
             expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
         });
 
         it('hides frame if selection preview is "hide" even if real selection is active', async () => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValueOnce(true);
             doMount();
             expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
             wrapper.vm.setSelectionPreview('hide');
@@ -305,7 +308,7 @@ describe('Node', () => {
         });
 
         it('clears selection preview state', async () => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValue(true);
             doMount();
             expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
             wrapper.vm.setSelectionPreview('hide');
@@ -317,7 +320,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Node selected', () => {
+    describe('node selected', () => {
         beforeEach(() => {
             props =
             {
@@ -329,17 +332,17 @@ describe('Node', () => {
         });
 
         it('shows frame if selected', () => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValueOnce(true);
             doMount();
             expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
 
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(false);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValueOnce(false);
             doMount();
             expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
         });
 
         it('has no shadow effect', () => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValue(true);
             doMount();
 
             expect(wrapper.findComponent(NodeTorso).attributes('filter')).toBe('false');
@@ -379,7 +382,7 @@ describe('Node', () => {
         });
 
         it.each(['shift', 'ctrl', 'meta'])('%ss-click adds to selection', async (mod) => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValueOnce(true);
             doMount();
 
             await wrapper.find('.mouse-clickable').trigger('click', { button: 0, [`${mod}Key`]: true });
@@ -391,7 +394,7 @@ describe('Node', () => {
         });
 
         it.each(['shift', 'ctrl', 'meta'])('%ss-click removes from selection', async (mod) => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValue(true);
             doMount();
 
             await wrapper.find('.mouse-clickable').trigger('click', { button: 0, [`${mod}Key`]: true });
@@ -402,7 +405,7 @@ describe('Node', () => {
         });
 
         it.each(['shift', 'ctrl', 'meta'])('%ss-right-click adds to selection', async (mod) => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValueOnce(true);
             doMount();
 
             await wrapper.find('.mouse-clickable').trigger('pointerdown', { button: 2, [`${mod}Key`]: true });
@@ -415,7 +418,7 @@ describe('Node', () => {
         });
 
         it.each(['shift', 'ctrl', 'meta'])('%ss-right-click does not remove from selection', async (mod) => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValue(true);
             doMount();
 
             await wrapper.find('.mouse-clickable').trigger('contextmenu', { [`${mod}Key`]: true });
@@ -423,7 +426,7 @@ describe('Node', () => {
         });
 
         it('right click to select node', async () => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(false);
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValue(false);
             doMount();
 
             await wrapper.find('.mouse-clickable').trigger('pointerdown', { button: 2 });
@@ -443,7 +446,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Node hover', () => {
+    describe('node hover', () => {
         const triggerHover = (wrapper, hover) => {
             const eventName = hover ? 'enter' : 'leave';
             wrapper
@@ -519,7 +522,7 @@ describe('Node', () => {
         });
 
         describe('portalled elements need MouseLeave Listener', () => {
-            it('NodeActionBar', async () => {
+            it('nodeActionBar', async () => {
                 triggerHover(wrapper, true);
                 await Vue.nextTick();
 
@@ -556,7 +559,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Connector drag & drop', () => {
+    describe('connector drag & drop', () => {
         beforeEach(() => {
             props = { ...commonNode };
             doMount();
@@ -574,7 +577,7 @@ describe('Node', () => {
         });
 
         it('forwards connector hover state to children', async () => {
-            wrapper.find('.hover-container').trigger('connector-enter', { preventDefault: jest.fn() });
+            wrapper.find('.hover-container').trigger('connector-enter', { preventDefault: vi.fn() });
 
             await Vue.nextTick();
 
@@ -590,7 +593,7 @@ describe('Node', () => {
             wrapper.findComponent(NodePorts).vm.$emit('update-port-positions', mockPortPositions);
 
             // connector enters
-            wrapper.find('.hover-container').trigger('connector-enter', { preventDefault: jest.fn() });
+            wrapper.find('.hover-container').trigger('connector-enter', { preventDefault: vi.fn() });
             await Vue.nextTick();
 
             // connector moves
@@ -639,42 +642,42 @@ describe('Node', () => {
             // when outside region, targetPort is set to null
             const isOutside = () => wrapper.findComponent(NodePorts).props('targetPort') === null;
 
-            test('above upper bound', async () => {
+            it('above upper bound', async () => {
                 moveConnectorTo(0, -21);
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(true);
             });
 
-            test('below upper bound', async () => {
+            it('below upper bound', async () => {
                 moveConnectorTo(0, -20);
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(false);
             });
 
-            test('targeting inPorts, inside of node torso', async () => {
+            it('targeting inPorts, inside of node torso', async () => {
                 moveConnectorTo(32, 0);
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(false);
             });
 
-            test('targeting inPorts, outside of node torso', async () => {
+            it('targeting inPorts, outside of node torso', async () => {
                 moveConnectorTo(33, 0);
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(true);
             });
 
-            test('targeting outPorts, inside of node torso', async () => {
+            it('targeting outPorts, inside of node torso', async () => {
                 moveConnectorTo(0, 0, 'out');
                 await Vue.nextTick();
 
                 expect(isOutside()).toBe(false);
             });
 
-            test('targeting inPorts, outside of node torso', async () => {
+            it('targeting outPorts, outside of node torso', async () => {
                 moveConnectorTo(-1, 0, 'out');
                 await Vue.nextTick();
 
@@ -690,12 +693,12 @@ describe('Node', () => {
                 isConnectionSource = false
             } = {}) => {
                 const mockConnectorListeners = {
-                    onConnectorStart: jest.fn(),
-                    onConnectorEnd: jest.fn(),
-                    onConnectorEnter: jest.fn(),
-                    onConnectorLeave: jest.fn(),
-                    onConnectorMove: jest.fn(),
-                    onConnectorDrop: jest.fn()
+                    onConnectorStart: vi.fn(),
+                    onConnectorEnd: vi.fn(),
+                    onConnectorEnter: vi.fn(),
+                    onConnectorLeave: vi.fn(),
+                    onConnectorMove: vi.fn(),
+                    onConnectorDrop: vi.fn()
                 };
 
                 return {
@@ -714,11 +717,11 @@ describe('Node', () => {
                 };
             };
 
-            test('legal', () => {
+            it('legal', () => {
                 expect(wrapper.classes('connection-forbidden')).toBe(false);
             });
 
-            test('illegal', async () => {
+            it('illegal', async () => {
                 doMount(getConnectorSnappingProviderStub({ connectionForbidden: true }));
 
                 await Vue.nextTick();
@@ -726,7 +729,7 @@ describe('Node', () => {
                 expect(wrapper.find('.connection-forbidden').exists()).toBe(true);
             });
 
-            test('illegal but connection source', async () => {
+            it('illegal but connection source', async () => {
                 doMount(getConnectorSnappingProviderStub({ connectionForbidden: true, isConnectionSource: true }));
 
                 await Vue.nextTick();
@@ -736,7 +739,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Opening containers', () => {
+    describe('opening containers', () => {
         it('opens metanode on double click', async () => {
             props = { ...metaNode };
             doMount();
@@ -768,7 +771,7 @@ describe('Node', () => {
         it('does not open component on double click', async () => {
             props = { ...componentNode };
             doMount();
-            jest.spyOn($store, 'dispatch');
+            vi.spyOn($store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
@@ -777,14 +780,14 @@ describe('Node', () => {
         it('does not open native node on double click', async () => {
             props = { ...nativeNode };
             doMount();
-            jest.spyOn($store, 'dispatch');
+            vi.spyOn($store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
         });
     });
 
-    describe('Node name', () => {
+    describe('node name', () => {
         beforeEach(() => {
             props = { ...commonNode };
             doMount();

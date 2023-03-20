@@ -10,7 +10,7 @@
  * @property {Array<Number>} anchorExceptions
  * @property {Array<SelectionRange>} selectionRanges
  */
-  
+
 /**
  * Initalize the state of the multi selection service
  * @returns {MultiSelectionState}
@@ -20,7 +20,7 @@ export const getInitialState = () => ({
     anchorExceptions: [],
     selectionRanges: []
 });
-  
+
 /**
  * Merges an initial state and a partial state together
  * @param {MultiSelectionState} initialState
@@ -28,7 +28,7 @@ export const getInitialState = () => ({
  * @returns {MultiSelectionState}
  */
 const mergeStates = (initialState, newState) => ({ ...initialState, ...newState });
-  
+
 /**
  * Determines whether there is any active selection in the provided state
  * @param {MultiSelectionState} state
@@ -37,18 +37,18 @@ const mergeStates = (initialState, newState) => ({ ...initialState, ...newState 
  */
 export const isMultipleSelectionActive = (state, initialElement) => {
     const { selectionRanges } = state;
-  
+
     if (selectionRanges.length === 1) {
         const [firstRange] = selectionRanges;
         const { from, to } = firstRange;
-  
+
         // The selection is not active if it only has 1 range with a single element
         // and that element is the initial one
         if (from === to && from === initialElement) {
             return false;
         }
     }
-  
+
     return selectionRanges.length !== 0;
 };
 
@@ -68,7 +68,7 @@ export const isItemSelected = (state, item) => {
 
     return isInRange && !anchorExceptions.includes(item);
 };
-  
+
 /**
  * Executes the Ctrl+Click logic. Will set (or unset) the clicked item into the selection state
  * updating it accordingly.
@@ -87,9 +87,9 @@ export const ctrlClick = (state, clickedItem) => {
     const withUpdatedAnchorHistory = mergeStates(state, {
         anchorHistory: [...anchorHistory, clickedItem]
     });
-  
+
     const isSelected = isItemSelected(state, clickedItem);
-  
+
     // If element was not previously selected
     if (!isSelected) {
         // create a new range of a single item for that element,
@@ -98,27 +98,27 @@ export const ctrlClick = (state, clickedItem) => {
             from: clickedItem,
             to: clickedItem
         };
-  
+
         const alreadyInRange = selectionRanges.find(
             ({ from, to }) => from <= newRange.from && newRange.to <= to
         );
-  
+
         // We also have to make sure not to add the range if it would already be included
         // in an existing one.
         // (e.g: (1) Range is created (via Shift+click), (2) item is removed (with Ctrl+click), and now
         // it's being added again
         const newSelectionRanges = alreadyInRange ? selectionRanges : [...selectionRanges, newRange];
-  
+
         // update the selection state with the new range
         return mergeStates(withUpdatedAnchorHistory, {
             selectionRanges: newSelectionRanges,
-  
+
             // make sure to remove the element from the anchor exceptions in case it
             // was already in there
             anchorExceptions: anchorExceptions.filter((ex) => ex !== clickedItem)
         });
     }
-  
+
     // If the item was selected
     if (isSelected) {
         // then we need to add it to the anchor exceptions to make sure
@@ -131,7 +131,7 @@ export const ctrlClick = (state, clickedItem) => {
     // fallback to same state
     return state;
 };
-  
+
 /**
  * Executes the Shift+Click logic. Will set (or unset) the clicked item into the selection state
  * updating it accordingly and also updating any possible selection ranges.
@@ -155,10 +155,10 @@ export const shiftClick = (state, clickedItem) => {
             anchorHistory: [...anchorHistory, clickedItem]
         });
     }
-  
+
     // grab the last anchor in the history and use that one for reference
     const [lastAnchor] = anchorHistory.slice(-1);
-  
+
     // When shift + clicking we have to query the exceptions and make sure
     // to remove any that were considered as "excluded" before, but that now
     // should are "included" in the range that is being selected.
@@ -167,20 +167,20 @@ export const shiftClick = (state, clickedItem) => {
     const updatedExceptions = anchorExceptions.filter((exception) => {
         const lowerBound = Math.min(lastAnchor, clickedItem);
         const upperBound = Math.max(lastAnchor, clickedItem);
-  
+
         return !(lowerBound <= exception && exception <= upperBound);
     });
-  
+
     const withUpdatedExceptions = mergeStates(state, {
         anchorExceptions: updatedExceptions
     });
-  
+
     // Try to find an existing selection range that includes this lastAnchor
     // in either the "from" or the "to" property
     const isRangeFound = selectionRanges.find(
         ({ from, to }) => from === lastAnchor || to === lastAnchor
     );
-  
+
     // If such a range exists, then we need to update it, to either
     // expand the range (more elems selected) or contract it (less elems selected)
     if (isRangeFound) {
@@ -188,7 +188,7 @@ export const shiftClick = (state, clickedItem) => {
         const newSelectionRanges = selectionRanges.map(({ from, to }) => {
             const sameFrom = from === lastAnchor;
             const sameTo = to === lastAnchor;
-  
+
             // update the range that contains the same anchor that was last used
             return sameFrom || sameTo
                 // make sure the "from" is always the smallest number
@@ -199,7 +199,7 @@ export const shiftClick = (state, clickedItem) => {
                 // otherwise, if it's not the range we're looking for, keep it as is
                 : { from, to };
         });
-  
+
         // update the selection range, now with the proper range replaced
         return mergeStates(withUpdatedExceptions, {
             selectionRanges: newSelectionRanges
@@ -212,13 +212,13 @@ export const shiftClick = (state, clickedItem) => {
             from: Math.min(lastAnchor, clickedItem),
             to: Math.max(lastAnchor, clickedItem)
         };
-  
+
         return mergeStates(withUpdatedExceptions, {
             selectionRanges: [...selectionRanges, newRange]
         });
     }
 };
-  
+
 /**
  * Executes the "Click" logic. Will reset any selection state, since click alone would unselect
  *
@@ -233,10 +233,10 @@ export const click = (clickedItem) => {
         anchorHistory: [clickedItem],
         selectionRanges: [{ from: clickedItem, to: clickedItem }]
     };
-  
+
     return mergeStates(getInitialState(), state);
 };
-  
+
 /**
  * Given a multiselection state, output a flat collection of selection ranges that is
  * sliced taking into account the anchorExceptions provided in the state. This means
@@ -251,23 +251,23 @@ export const click = (clickedItem) => {
  */
 const sliceOnExceptions = (state) => {
     const { anchorExceptions, selectionRanges } = state;
-  
+
     const rawOutput = anchorExceptions.reduce((ranges, exception) => {
         const rangeContainingException = ranges.find(
             ({ from, to }) => from <= exception && exception <= to
         );
-  
+
         // everytime a range is found that includes an exception,
         // we have to slice that range to exclude said exception
         if (rangeContainingException) {
             const { from, to } = rangeContainingException;
-  
+
             const newRanges = ranges.reduce((acc, range) => {
                 const isRangeWithException = range.from === from && range.to === to;
                 if (isRangeWithException) {
                     const isExceptionFrom = exception === from;
                     const isExceptionTo = exception === to;
-  
+
                     // if the exception is at the beginning of the range
                     // then we have to adjust the "from" and "to" values
                     // to be that of the exception. This will create a range of a single item,
@@ -278,7 +278,7 @@ const sliceOnExceptions = (state) => {
                         from: isExceptionFrom ? exception : from,
                         to: isExceptionFrom ? exception : exception - 1
                     };
-  
+
                     // if the exception is at the end of the range
                     // then we have to adjust the "from" and "to" values
                     // to be that of the exception. This will create a range of a single item,
@@ -289,25 +289,25 @@ const sliceOnExceptions = (state) => {
                         from: isExceptionTo ? exception : exception + 1,
                         to: isExceptionTo ? exception : to
                     };
-  
+
                     return acc.concat(headRangeSlice, tailRangeSlice);
                 }
-  
+
                 return acc.concat(range);
             }, []);
-  
+
             return newRanges;
         }
-  
+
         return ranges;
     }, selectionRanges);
-  
+
     // Filter out any ranges whose "from" and "to" values are exactly that of any existing exceptions
     return rawOutput.filter(
         (range) => !anchorExceptions.includes(range.from) && !anchorExceptions.includes(range.to)
     );
 };
-  
+
 /**
  * Removes any ranges that could be included inside any other (bigger) existing range
  * inside the input.
@@ -325,7 +325,7 @@ const removeSubRanges = (ranges) => ranges.reduce((acc, range, _, arr) => {
 
         return isContained || hasSameStart || hasSameEnd;
     });
-  
+
     return isIncluded ? acc : acc.concat(range);
 }, []);
 
@@ -380,7 +380,7 @@ const removeOverlappingRanges = (ranges) => {
 
     return resultingRanges;
 };
-  
+
 /**
  *
  * @param {MultiSelectionState} state
@@ -421,12 +421,12 @@ export const getSelectedIndexes = (state) => {
     return selectionRanges.reduce((acc, range) => {
         const { to, from } = range;
         const rangeSize = to - from;
-        
+
         // given a size N (e.g: 4) and a starting value X (e.g: 3)
         // create an array of length N, whose elements are [X, X + 1, X + 2, ... X + N]
         const indexesInRange = new Array(rangeSize)
             .fill(0)
-            .reduce((acc, i) => {
+            .reduce((acc) => {
                 const [previous] = acc.slice(-1);
                 return acc.concat(previous + 1);
             }, [from]);

@@ -1,10 +1,11 @@
+import { expect, describe, beforeAll, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount, config } from '@vue/test-utils';
 
 import { directiveMove } from '../directive-move';
 
 describe('directive-move', () => {
-    window.addEventListener = jest.fn();
+    window.addEventListener = vi.fn();
     let vm, onMove, onMoveStart, onMoveEnd, dummyTarget;
 
     beforeAll(() => {
@@ -15,9 +16,9 @@ describe('directive-move', () => {
 
     beforeEach(() => {
         vm = null;
-        onMove = jest.fn();
-        onMoveStart = jest.fn();
-        onMoveEnd = jest.fn();
+        onMove = vi.fn();
+        onMoveStart = vi.fn();
+        onMoveEnd = vi.fn();
         dummyTarget = {
             hasPointerCapture() {
                 return false;
@@ -41,8 +42,8 @@ describe('directive-move', () => {
             clientX: 100,
             clientY: 100,
             button: 0,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         await Vue.nextTick();
@@ -58,15 +59,15 @@ describe('directive-move', () => {
             clientX: 50,
             clientY: 50,
             button: 0,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         wrapper.element.onpointermove({
             clientX: 53,
             clientY: 50,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         await Vue.nextTick();
@@ -82,15 +83,15 @@ describe('directive-move', () => {
             clientX: 50,
             clientY: 50,
             button: 0,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         wrapper.element.onpointermove({
             clientX: 100,
             clientY: 100,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         await Vue.nextTick();
@@ -104,8 +105,8 @@ describe('directive-move', () => {
         wrapper.element.onpointermove({
             clientX: 150,
             clientY: 150,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         await Vue.nextTick();
@@ -130,8 +131,8 @@ describe('directive-move', () => {
             clientX: 50,
             clientY: 50,
             button: 1,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         expect(onMoveStart.mock.calls.length).toBe(0);
@@ -142,27 +143,27 @@ describe('directive-move', () => {
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
-        wrapper.element.releasePointerCapture = jest.fn();
+        wrapper.element.releasePointerCapture = vi.fn();
         wrapper.element.onpointerdown({
             clientX: 50,
             clientY: 50,
             button: 0,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         wrapper.element.onpointermove({
             clientX: 100,
             clientY: 100,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         wrapper.element.onpointerup({
             clientX: 100,
             clientY: 100,
-            stopPropagation: jest.fn(),
-            preventDefault: jest.fn(),
+            stopPropagation: vi.fn(),
+            preventDefault: vi.fn(),
             target: dummyTarget
         });
         expect(onMoveEnd.mock.calls[0][0].detail).toStrictEqual(expect.objectContaining({
@@ -179,9 +180,9 @@ describe('directive-move', () => {
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
         wrapper.unmount();
-        expect(wrapper.element.onpointerdown).toBe(null);
-        expect(wrapper.element.onpointermove).toBe(null);
-        expect(wrapper.element.onpointerup).toBe(null);
+        expect(wrapper.element.onpointerdown).toBeNull();
+        expect(wrapper.element.onpointermove).toBeNull();
+        expect(wrapper.element.onpointerup).toBeNull();
     });
 
     it('does nothing if protected property is set', () => {
@@ -190,20 +191,20 @@ describe('directive-move', () => {
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5, isProtected: true }"></div>'
         });
-        expect(wrapper.element.onpointerdown).toBe(undefined);
-        expect(wrapper.element.onpointermove).toBe(undefined);
-        expect(wrapper.element.onpointerup).toBe(undefined);
+        expect(wrapper.element.onpointerdown).toBeUndefined();
+        expect(wrapper.element.onpointermove).toBeUndefined();
+        expect(wrapper.element.onpointerup).toBeUndefined();
 
         // calls the componentUpdated hook
         wrapper.vm.$forceUpdate();
-        expect(wrapper.element.onpointerdown).toBe(undefined);
-        expect(wrapper.element.onpointermove).toBe(undefined);
-        expect(wrapper.element.onpointerup).toBe(undefined);
+        expect(wrapper.element.onpointerdown).toBeUndefined();
+        expect(wrapper.element.onpointermove).toBeUndefined();
+        expect(wrapper.element.onpointerup).toBeUndefined();
 
         // calls the unbind hook
         wrapper.unmount();
-        expect(wrapper.element.onpointerdown).toBe(undefined);
-        expect(wrapper.element.onpointermove).toBe(undefined);
-        expect(wrapper.element.onpointerup).toBe(undefined);
+        expect(wrapper.element.onpointerdown).toBeUndefined();
+        expect(wrapper.element.onpointermove).toBeUndefined();
+        expect(wrapper.element.onpointerup).toBeUndefined();
     });
 });

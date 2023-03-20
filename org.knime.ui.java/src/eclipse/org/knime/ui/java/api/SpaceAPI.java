@@ -56,7 +56,6 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.eclipse.ui.PlatformUI;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -183,7 +182,7 @@ final class SpaceAPI {
                 .map(String.class::cast) //
                 .map(sourceSpace::toKnimeUrl) //
                 .map(ExplorerFileSystem.INSTANCE::getStore) //
-                .collect(Collectors.toList());
+                .toList();
 
         final var isUpload = sourceSpace instanceof LocalWorkspace;
         final var mountIds = !isUpload ? new String[] { LocalWorkspace.LOCAL_WORKSPACE_ID.toUpperCase(Locale.ROOT) }

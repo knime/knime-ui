@@ -1,66 +1,46 @@
-/* eslint-disable max-lines */
-import { mockVuexStore } from '@/test/test-utils';
+import { expect, describe, it, vi } from 'vitest';
+import { mockVuexStore } from '@/test/utils';
+import * as API from '@api';
+import workflowObjectBounds from '@/util/workflowObjectBounds';
+
+vi.mock('@api');
+vi.mock('@/util/workflowObjectBounds', () => ({
+    default: vi.fn(() => 'bounds')
+}));
 
 describe('workflow store', () => {
-    let store, loadStore, addEventListenerMock, removeEventListenerMock, workflowObjectsBoundsMock;
+    const loadStore = async () => {
+        const store = mockVuexStore({
+            workflow: await import('@/store/workflow'),
+            selection: await import('@/store/selection')
+        });
 
-    beforeEach(() => {
-        addEventListenerMock = jest.fn();
-        removeEventListenerMock = jest.fn();
-        store = null;
-
-        loadStore = async ({ apiMocks = {} } = {}) => {
-            /**
-             * We have to import the workflow-store dynamically to apply our @api mocks.
-             * Because the module is cached after it is required for the first time,
-             * a reset is needed
-             */
-            jest.resetModules();
-            jest.doMock('@api', () => ({
-                __esModule: true,
-                addEventListener: addEventListenerMock,
-                removeEventListener: removeEventListenerMock,
-                ...apiMocks
-            }), { virtual: true });
-
-            jest.doMock('@/util/workflowObjectBounds', () => ({
-                __esModule: true,
-                default: jest.fn().mockReturnValue('bounds')
-            }));
-
-            workflowObjectsBoundsMock = (await import('@/util/workflowObjectBounds')).default;
-
-            store = mockVuexStore({
-                workflow: await import('@/store/workflow'),
-                selection: await import('@/store/selection')
-            });
-        };
-    });
+        return { store };
+    };
 
     it('creates an empty store', async () => {
-        await loadStore();
-        expect(store.state.workflow.activeWorkflow).toBe(null);
-        expect(store.state.workflow.activeSnapshotId).toBe(null);
-        expect(store.state.workflow.tooltip).toBe(null);
+        const { store } = await loadStore();
+        expect(store.state.workflow.activeWorkflow).toBeNull();
+        expect(store.state.workflow.activeSnapshotId).toBeNull();
+        expect(store.state.workflow.tooltip).toBeNull();
     });
 
     describe('mutation', () => {
-        beforeEach(async () => {
-            await loadStore();
-        });
-
-        it('adds workflows', () => {
+        it('adds workflows', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
 
             expect(store.state.workflow.activeWorkflow).toStrictEqual({ projectId: 'foo' });
         });
 
-        it('allows setting the snapshot ID', () => {
+        it('allows setting the snapshot ID', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveSnapshotId', 'myId');
             expect(store.state.workflow.activeSnapshotId).toBe('myId');
         });
 
-        it('allows setting the tooltip', () => {
+        it('allows setting the tooltip', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setTooltip', { dummy: true });
             expect(store.state.workflow.tooltip).toStrictEqual({ dummy: true });
         });
@@ -71,21 +51,20 @@ describe('workflow store', () => {
             ['undo'],
             ['redo']
         ])('passes %s to the API', async (action) => {
-            let mock = jest.fn();
-            let apiMocks = { [action]: mock };
-            await loadStore({ apiMocks });
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
             store.dispatch(`workflow/${action}`);
 
-            expect(mock).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
+            expect(API[action]).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
         });
     });
 
     // TODO: remove duplicate tests
     describe('workflow getters', () => {
-        beforeEach(async () => {
-            await loadStore();
+        const loadStoreWithWorkflow = async () => {
+            const { store } = await loadStore();
+
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
                 info: {
@@ -93,13 +72,17 @@ describe('workflow store', () => {
                     jobManager: 'someJobManager'
                 }
             });
-        });
 
-        it('check linked', () => {
+            return { store };
+        };
+
+        it('check linked', async () => {
+            const { store } = await loadStoreWithWorkflow();
             expect(store.getters['workflow/isLinked']).toBe(true);
         });
 
-        it('check isWritable', () => {
+        it('check isWritable', async () => {
+            const { store } = await loadStoreWithWorkflow();
             expect(store.getters['workflow/isWritable']).toBe(false);
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
@@ -110,14 +93,15 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isWritable']).toBe(true);
         });
 
-        it('check isStreaming', () => {
+        it('check isStreaming', async () => {
+            const { store } = await loadStoreWithWorkflow();
             expect(store.getters['workflow/isStreaming']).toBe(true);
         });
     });
 
     describe('getters', () => {
-        test('isLinked', async () => {
-            await loadStore();
+        it('isLinked', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 info: {
                     linked: true
@@ -126,8 +110,8 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isLinked']).toBe(true);
         });
 
-        test('isWritable', async () => {
-            await loadStore();
+        it('isWritable', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 info: {
                     linked: true
@@ -136,8 +120,8 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isWritable']).toBe(false);
         });
 
-        test('isInsideLinked defaults to false', async () => {
-            await loadStore();
+        it('isInsideLinked defaults to false', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 parents: [{
                     containerType: 'component',
@@ -147,8 +131,8 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isInsideLinked']).toBe(false);
         });
 
-        test('isInsideLinked', async () => {
-            await loadStore();
+        it('isInsideLinked', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 parents: [{
                     containerType: 'metanode',
@@ -158,8 +142,8 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isInsideLinked']).toBe(true);
         });
 
-        test('insideLinkedType', async () => {
-            await loadStore();
+        it('insideLinkedType', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 parents: [{
                     containerType: 'metanode',
@@ -169,8 +153,8 @@ describe('workflow store', () => {
             expect(store.getters['workflow/insideLinkedType']).toBe('metanode');
         });
 
-        test('isWorkflowEmpty', async () => {
-            await loadStore();
+        it('isWorkflowEmpty', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
                 nodes: [],
@@ -192,8 +176,8 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isWorkflowEmpty']).toBe(false);
         });
 
-        test('workflowBounds', async () => {
-            await loadStore();
+        it('workflowBounds', async () => {
+            const { store } = await loadStore();
             let workflow = {
                 projectId: 'foo',
                 nodes: [],
@@ -203,12 +187,13 @@ describe('workflow store', () => {
 
             expect(store.getters['workflow/workflowBounds']).toBe('bounds');
 
-            expect(workflowObjectsBoundsMock).toHaveBeenCalled();
+            expect(workflowObjectBounds).toHaveBeenCalled();
         });
 
         describe('node getters', () => {
-            beforeEach(async () => {
-                await loadStore();
+            const loadStoreWithWorkflow = async () => {
+                const { store } = await loadStore();
+
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'foo',
                     nodes: {
@@ -233,26 +218,32 @@ describe('workflow store', () => {
                         }
                     }
                 });
-            });
 
-            it('gets name', () => {
+                return { store };
+            };
+
+            it('gets name', async () => {
+                const { store } = await loadStoreWithWorkflow();
                 expect(store.getters['workflow/getNodeName']('foo')).toBe('exampleName');
                 expect(store.getters['workflow/getNodeName']('ownData')).toBe('ownName');
             });
 
-            it('gets nodeFactory', () => {
+            it('gets nodeFactory', async () => {
+                const { store } = await loadStoreWithWorkflow();
                 expect(store.getters['workflow/getNodeFactory']('foo')).toMatchObject({
                     className: 'example.class.name'
                 });
-                expect(store.getters['workflow/getNodeFactory']('ownData')).toBe(null);
+                expect(store.getters['workflow/getNodeFactory']('ownData')).toBeNull();
             });
 
-            it('gets icon', () => {
+            it('gets icon', async () => {
+                const { store } = await loadStoreWithWorkflow();
                 expect(store.getters['workflow/getNodeIcon']('foo')).toBe('exampleIcon');
                 expect(store.getters['workflow/getNodeIcon']('ownData')).toBe('ownIcon');
             });
 
-            it('gets type', () => {
+            it('gets type', async () => {
+                const { store } = await loadStoreWithWorkflow();
                 expect(store.getters['workflow/getNodeType']('foo')).toBe('exampleType');
                 expect(store.getters['workflow/getNodeType']('ownData')).toBe('ownType');
             });

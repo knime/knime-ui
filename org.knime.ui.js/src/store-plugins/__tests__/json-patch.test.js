@@ -1,4 +1,5 @@
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { expect, describe, beforeEach, it, vi } from 'vitest';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import { mutations, actions } from '../json-patch';
 
@@ -171,7 +172,7 @@ describe('json-patch plugin', () => {
 
         describe('apply', () => {
             it('calls other commits directly', () => {
-                let commitSpy = jest.spyOn(store, 'commit');
+                let commitSpy = vi.spyOn(store, 'commit');
                 store.commit('myStore/patch.apply', [
                     { op: 'move', from: '/foo/qux', path: '/foo/x' },
                     { op: 'remove', path: '/foo/bar' },
@@ -215,7 +216,7 @@ describe('json-patch plugin', () => {
 
     describe('actions', () => {
         it('applies patches', () => {
-            store.commit = jest.fn();
+            store.commit = vi.fn();
             let patch = [
                 { op: 'move', from: '/foo/qux', path: '/foo/x' },
                 { op: 'remove', path: '/foo/bar' },

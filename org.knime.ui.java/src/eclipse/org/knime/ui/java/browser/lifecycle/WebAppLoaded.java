@@ -48,8 +48,6 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import com.equo.chromium.swt.Browser;
-
 /**
  * The 'web-app-loaded' lifecycle state transition of the KNIME-UI. Called after {@link Init} as soon as the (html)-page
  * has been completely loaded.
@@ -62,7 +60,7 @@ final class WebAppLoaded {
         //
     }
 
-    static void runPhase(final Browser browser) {
+    static void run() {
         // does nothing for now
     }
 

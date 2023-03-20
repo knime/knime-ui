@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import { debounce } from 'lodash';
-import { isMac } from '@/util/navigator';
+import { getMetaOrCtrlKey, isMac } from '@/util/navigator';
 import throttle from 'raf-throttle';
 
 export const RESIZE_DEBOUNCE = 100;
@@ -260,6 +260,14 @@ export default {
 
             // move cursor should remain set if the user is still holding down the space key
             this.useMoveCursor = this.isHoldingDownSpace;
+        },
+
+        startRectangleSelection(event) {
+            const metaOrCtrlKey = getMetaOrCtrlKey();
+
+            if (event.shiftKey || event[metaOrCtrlKey]) {
+                this.$bus.emit('selection-pointerdown', event);
+            }
         }
     }
 };
@@ -287,8 +295,8 @@ export default {
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="viewBox.string"
-      @pointerdown.left.shift.exact.stop="$bus.emit('selection-pointerdown', $event)"
       @pointerdown.left.exact.stop="$bus.emit('selection-pointerdown', $event)"
+      @pointerdown.left.stop="startRectangleSelection"
       @pointerup.left.stop="$bus.emit('selection-pointerup', $event)"
       @pointermove="$bus.emit('selection-pointermove', $event)"
       @lostpointercapture="$bus.emit('selection-lostpointercapture', $event)"

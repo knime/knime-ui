@@ -1,10 +1,11 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 /* eslint-disable max-nested-callbacks */
 import shortcuts, { conditionGroup } from '..';
 import workflowShortcutsMock from '../workflowShortcuts';
 import canvasShortcutsMock from '../canvasShortcuts';
 import { selectionShortcuts as selectionShortcutsMocks } from '../miscShortcuts';
 
-jest.mock('@/shortcuts/workflowShortcuts', () => ({
+vi.mock('@/shortcuts/workflowShortcuts', () => ({
     __esModule: true,
     default: {
         save: {},
@@ -12,7 +13,7 @@ jest.mock('@/shortcuts/workflowShortcuts', () => ({
     }
 }));
 
-jest.mock('@/shortcuts/canvasShortcuts', () => ({
+vi.mock('@/shortcuts/canvasShortcuts', () => ({
     __esModule: true,
     default: {
         fitToScreen: {},
@@ -27,17 +28,17 @@ describe('Shortcuts', () => {
         beforeEach(() => {
             shortcuts = {
                 noCondition: { name: 'c1' },
-                withCondition: { name: 'c2', condition: jest.fn().mockImplementation(({ age }) => age >= 18) }
+                withCondition: { name: 'c2', condition: vi.fn().mockImplementation(({ age }) => age >= 18) }
             };
         });
 
-        test('group condition true', () => {
+        it('group condition true', () => {
             let group = conditionGroup(() => true, shortcuts);
             expect(group.noCondition.condition({ age: 10 })).toBe(true);
             expect(group.withCondition.condition({ age: 10 })).toBe(false);
         });
 
-        test('group condition false', () => {
+        it('group condition false', () => {
             let group = conditionGroup(() => false, shortcuts);
             expect(group.noCondition.condition({ age: 10 })).toBe(false);
             expect(group.withCondition.condition({ age: 10 })).toBe(false);
@@ -60,7 +61,7 @@ describe('Shortcuts', () => {
             };
         });
 
-        test('adds workflow shortcuts if workflow is present', () => {
+        it('adds workflow shortcuts if workflow is present', () => {
             const workflowShortcuts = Object.keys(workflowShortcutsMock).reduce((res, key) => {
                 res[key] = shortcuts[key];
                 return res;
@@ -77,7 +78,7 @@ describe('Shortcuts', () => {
             expect(resultWithWorkflow).toStrictEqual(expect.arrayContaining(['save', 'undo']));
         });
 
-        test('adds canvas shortcuts if interactions are enabled and workflow is not empty', () => {
+        it('adds canvas shortcuts if interactions are enabled and workflow is not empty', () => {
             const canvasShortcuts = Object.keys(canvasShortcutsMock).reduce((res, key) => {
                 res[key] = shortcuts[key];
                 return res;
@@ -97,11 +98,11 @@ describe('Shortcuts', () => {
             const resultInteractions = Object
                 .keys(canvasShortcuts)
                 .filter(c => canvasShortcuts[c].condition({ $store }));
-                
+
             expect(resultInteractions).toStrictEqual(expect.arrayContaining(['fitToScreen', 'zoomTo100']));
         });
 
-        test('adds selection shortcuts if interactions are enabled', () => {
+        it('adds selection shortcuts if interactions are enabled', () => {
             const selectionShortcuts = Object.keys(selectionShortcutsMocks).reduce((res, key) => {
                 res[key] = shortcuts[key];
                 return res;
@@ -120,7 +121,7 @@ describe('Shortcuts', () => {
             const resultInteractions = Object
                 .keys(selectionShortcuts)
                 .filter(c => selectionShortcuts[c].condition({ $store }));
-                
+
             expect(resultInteractions).toStrictEqual(expect.arrayContaining(['selectAllNodes', 'deselectAll']));
         });
     });

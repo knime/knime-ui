@@ -50,16 +50,22 @@ package org.knime.ui.java.api;
 
 import java.io.IOException;
 
+import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 final class WorkflowAPI {
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(WorkflowAPI.class);
 
     private WorkflowAPI() {
         // stateless
@@ -74,7 +80,14 @@ final class WorkflowAPI {
      */
     @API
     static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
-        OpenWorkflow.openWorkflow(spaceId, itemId, spaceProviderId);
+        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            OpenWorkflow.openWorkflowInClassicAndWebUI(spaceProviderId, spaceId, itemId);
+        } else {
+            DesktopAPUtil.runWithProgress("Loading workflow", LOGGER, monitor -> {// NOSONAR better than inline class
+                OpenWorkflow.openWorkflowInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
+                return null;
+            });
+        }
     }
 
     /**
@@ -110,7 +123,17 @@ final class WorkflowAPI {
      */
     @API
     static void saveAndCloseWorkflows(final Object[] projectIdsAndSvgsAndMore) {
-        SaveAndCloseWorkflows.saveAndCloseWorkflows(projectIdsAndSvgsAndMore);
+        var progressService = PlatformUI.getWorkbench().getProgressService();
+        SaveAndCloseWorkflows.saveAndCloseWorkflows(projectIdsAndSvgsAndMore, postWorkflowCloseAction -> {
+            switch (postWorkflowCloseAction) {
+                case SWITCH_PERSPECTIVE -> EclipseUIAPI.doSwitchToJavaUI();
+                case SHUTDOWN -> {
+                    LifeCycle.get().suspend();
+                    PlatformUI.getWorkbench().close();
+                }
+                default -> DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            }
+        }, progressService);
     }
 
     /**

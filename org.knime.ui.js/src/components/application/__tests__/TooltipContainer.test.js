@@ -1,6 +1,7 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import * as $shapes from '@/style/shapes.mjs';
 
 import Tooltip from '../Tooltip.vue';
@@ -12,7 +13,7 @@ describe('TooltipContainer', () => {
     beforeEach(() => {
         wrapper = null;
         $store = null;
-        screenFromCanvasCoordinatesMock = jest.fn().mockImplementation(({ x, y }) => ({ x: x * 2, y: y * 2 }));
+        screenFromCanvasCoordinatesMock = vi.fn().mockImplementation(({ x, y }) => ({ x: x * 2, y: y * 2 }));
         storeConfig = {
             canvas: {
                 getters: {
@@ -40,12 +41,12 @@ describe('TooltipContainer', () => {
             offsetLeft: 0,
             offsetTop: 0,
             scrollEventListener: null,
-            addEventListener: jest.fn().mockImplementation(
+            addEventListener: vi.fn().mockImplementation(
                 (event, callback) => {
                     kanvasElement.scrollEventListener = callback;
                 }
             ),
-            removeEventListener: jest.fn()
+            removeEventListener: vi.fn()
         };
 
         doShallowMount = () => {
@@ -60,7 +61,7 @@ describe('TooltipContainer', () => {
         };
     });
 
-    test('no tooltip set', () => {
+    it('no tooltip set', () => {
         doShallowMount();
         expect(wrapper.find('div.tooltip-container').exists()).toBe(true);
         expect(wrapper.findComponent(Tooltip).exists()).toBe(false);
@@ -77,7 +78,7 @@ describe('TooltipContainer', () => {
         await Vue.nextTick();
 
         wrapper.findComponent(Tooltip).trigger('mouseleave');
-        expect(storeConfig.workflow.state.tooltip).toBe(null);
+        expect(storeConfig.workflow.state.tooltip).toBeNull();
     });
 
     describe('positioning', () => {
@@ -140,7 +141,7 @@ describe('TooltipContainer', () => {
     });
 
     describe('updating', () => {
-        test('setting first tooltip adds scroll listener', async () => {
+        it('setting first tooltip adds scroll listener', async () => {
             let tooltip = {
                 anchorPoint: { x: 0, y: 0 },
                 position: { x: 0, y: 0 }
@@ -158,7 +159,7 @@ describe('TooltipContainer', () => {
             expect(kanvasElement.addEventListener).toHaveBeenCalledTimes(1);
         });
 
-        test('closing tooltip removes scroll listener', async () => {
+        it('closing tooltip removes scroll listener', async () => {
             let tooltip = {
                 position: { x: 0, y: 0 }
             };
@@ -173,14 +174,14 @@ describe('TooltipContainer', () => {
             expect(kanvasElement.removeEventListener).toHaveBeenCalledWith('scroll', wrapper.vm.onCanvasScroll);
         });
 
-        test('destruction of tooltipContainer removes scroll listener', () => {
+        it('destruction of tooltipContainer removes scroll listener', () => {
             doShallowMount();
             wrapper.unmount();
 
             expect(kanvasElement.removeEventListener).toHaveBeenCalledWith('scroll', wrapper.vm.onCanvasScroll);
         });
 
-        test('tooltip moves while scrolling', async () => {
+        it('tooltip moves while scrolling', async () => {
             let tooltip = {
                 anchorPoint: { x: 0, y: 0 },
                 position: { x: 10, y: 10 }
@@ -193,7 +194,7 @@ describe('TooltipContainer', () => {
                 x: 20,
                 y: 20
             });
-            
+
             screenFromCanvasCoordinatesMock.mockReturnValue({ x: -50, y: -50 });
             kanvasElement.scrollEventListener({ target: { scrollLeft: 50, scrollTop: 50 } });
             await Vue.nextTick();

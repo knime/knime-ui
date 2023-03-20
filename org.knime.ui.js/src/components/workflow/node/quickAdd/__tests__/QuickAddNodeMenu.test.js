@@ -1,9 +1,10 @@
+import { expect, describe, beforeAll, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
 import Button from 'webapps-common/ui/components/Button.vue';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import { openWorkflowCoachPreferencePage as openWorkflowCoachPreferencePageMock, getNodeRecommendations } from '@api';
 import * as $shapes from '@/style/shapes.mjs';
@@ -31,10 +32,10 @@ const getNodeRecommendationsResponse = [{
     type: 'Manipulator'
 }];
 
-jest.mock('@api', () => ({
+vi.mock('@api', () => ({
     __esModule: true,
-    getNodeRecommendations: jest.fn().mockReturnValue(getNodeRecommendationsResponse),
-    openWorkflowCoachPreferencePage: jest.fn()
+    getNodeRecommendations: vi.fn().mockReturnValue([]),
+    openWorkflowCoachPreferencePage: vi.fn()
 }));
 
 describe('QuickAddNodeMenu.vue', () => {
@@ -46,9 +47,13 @@ describe('QuickAddNodeMenu.vue', () => {
         props: FloatingMenu.props
     };
 
+    beforeAll(() => {
+        getNodeRecommendations.mockReturnValue(getNodeRecommendationsResponse);
+    });
+
     const doMount = ({
-        addNodeMock = jest.fn(),
-        isWriteableMock = jest.fn().mockReturnValue(true)
+        addNodeMock = vi.fn(),
+        isWriteableMock = vi.fn().mockReturnValue(true)
     } = {}) => {
         const props = {
             nodeId: 'node-id',
@@ -124,7 +129,7 @@ describe('QuickAddNodeMenu.vue', () => {
         return { wrapper, $store, addNodeMock };
     };
 
-    describe('Menu', () => {
+    describe('menu', () => {
         it('re-emits menuClose', () => {
             let { wrapper } = doMount();
             wrapper.findComponent(FloatingMenuStub).vm.$emit('menuClose');
@@ -191,7 +196,7 @@ describe('QuickAddNodeMenu.vue', () => {
 
         it('does not add node if workflow is not writeable', async () => {
             let { wrapper, addNodeMock } = doMount({
-                isWriteableMock: jest.fn(() => false)
+                isWriteableMock: vi.fn(() => false)
             });
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);

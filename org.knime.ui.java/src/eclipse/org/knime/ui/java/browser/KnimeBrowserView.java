@@ -54,6 +54,8 @@ public class KnimeBrowserView {
 
     private static Browser browser;
 
+    static boolean isInitialized = false;
+
     /**
      * Activates the view initializer that will be executed as soon as this view becomes finally visible (again). Once
      * the view initializer has been executed, it will be de-activated (and would need to be activated again).
@@ -77,6 +79,7 @@ public class KnimeBrowserView {
     private static void initView(final boolean ignoreEmptyPageAsDevUrl,
         final boolean checkForUpdates) {
         LifeCycle.get().init(checkForUpdates); // NOSONAR
+        isInitialized = true;
         setUrl(ignoreEmptyPageAsDevUrl);
     }
 
@@ -87,6 +90,7 @@ public class KnimeBrowserView {
      * {@link #activateViewInitializer(Supplier, boolean)} or {@link #initViewForTesting(Supplier)}.
      */
     public static void clearView() {
+        isInitialized = false;
         if (browser != null) {
             if (!browser.isDisposed()) {
                 browser.setUrl(EMPTY_PAGE);
@@ -109,7 +113,7 @@ public class KnimeBrowserView {
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
         browser.setMenu(new Menu(browser.getShell()));
 
-        LifeCycle.get().create(browser);
+        LifeCycle.get().create((name, function) -> new KnimeBrowserFunction(browser, name, function));
 
         if (viewInitializer == null) {
             viewInitializer = () -> { // NOSONAR

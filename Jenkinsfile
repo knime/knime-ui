@@ -6,7 +6,7 @@ library "knime-pipeline@$BN"
 
 properties([
     pipelineTriggers([upstream(
-        'knime-gatewaay/' + env.BRANCH_NAME.replaceAll('/', '%2F')
+        'knime-gateway/' + env.BRANCH_NAME.replaceAll('/', '%2F')
     )]),
     buildDiscarder(logRotator(numToKeepStr: '5')),
     parameters([p2Tools.getP2pruningParameter()]),
@@ -14,12 +14,12 @@ properties([
 ])
 
 try {
-    node('maven && java17 && xlarge') {
+    node('maven && java17 && large') {
         knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui')
-        
+
         junit '**/test-results/junit.xml'
         // knimetools.processAuditResults()
-        
+
         stage('Sonarqube analysis') {
             withCredentials([usernamePassword(credentialsId: 'ARTIFACTORY_CREDENTIALS', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_LOGIN')]) {
                 withSonarQubeEnv('Sonarcloud') {

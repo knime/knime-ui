@@ -51,7 +51,7 @@ export default {
             const styleRanges = this.annotation ? this.annotation.styleRanges : [];
             let { textRanges, isValid } = applyStyleRanges(styleRanges, this.value);
             if (!isValid) {
-                consola.warn(`Invalid styleRanges: 
+                consola.warn(`Invalid styleRanges:
                 ${JSON.stringify(this.annotation.styleRanges)}. Using default style.`);
             }
 
@@ -82,30 +82,27 @@ export default {
     :y-offset="isMetanode ? $shapes.metanodeLabelOffsetY : $shapes.nodeLabelOffsetY"
     :parent-width="$shapes.nodeSize"
     :style="{ backgroundColor }"
-    :max-width="99999"
   >
-    <template #default="{ on }">
-      <div
-        class="node-label"
-        :style="{ textAlign }"
-        @dblclick.left="editable ? $emit('requestEdit') : null"
+    <div
+      class="node-label"
+      :style="{ textAlign }"
+      @dblclick.left="editable ? $emit('requestEdit') : null"
+    >
+      <span
+        v-for="(part, i) in styledText"
+        :key="i"
+        class="text"
+        :style="getTextStyles(part)"
       >
-        <span
-          v-for="(part, i) in styledText"
-          :key="i"
-          class="text"
-          :style="getTextStyles(part)"
-        >
-          <slot :on="on">{{ part.text }}</slot>
-        </span>
-        <span
-          v-if="!value && editable"
-          class="text placeholder"
-        >
-          <slot :on="on">Add comment</slot>
-        </span>
-      </div>
-    </template>
+        <slot>{{ part.text }}</slot>
+      </span>
+      <span
+        v-if="!value && editable"
+        class="text placeholder"
+      >
+        <slot>Add comment</slot>
+      </span>
+    </div>
   </AutoSizeForeignObject>
 </template>
 
@@ -129,7 +126,7 @@ export default {
     font-family: "Roboto Condensed", sans-serif;
     font-style: normal;
     font-size: calc(var(--node-name-font-size-shape) * 1px);
-    white-space: pre-wrap;
+    white-space: pre;
   }
 
   & .text.placeholder {

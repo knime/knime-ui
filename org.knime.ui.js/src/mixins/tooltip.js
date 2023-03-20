@@ -18,7 +18,7 @@ export const tooltip = {
     beforeUnmount() {
         this.$el.removeEventListener('mouseenter', this.onTooltipMouseEnter);
         this.$el.removeEventListener('mouseleave', this.onTooltipMouseLeave);
-        
+
         if (this.removeTooltipWatcher) {
             this.$store.commit('workflow/setTooltip', null);
         }
@@ -32,14 +32,14 @@ export const tooltip = {
         }
     },
     methods: {
-        onTooltipMouseEnter(e) {
+        onTooltipMouseEnter() {
             this.removeTooltipWatcher?.();
-            
+
             if (this.tooltip === undefined) { // eslint-disable-line no-undefined
                 consola.error('Tooltip mixin is used without providing a tooltip property');
                 return;
             }
-            
+
             // wait for entryDelay to set tooltip
             this.tooltipTimeout = setTimeout(this.showTooltip, entryDelay);
         },

@@ -157,13 +157,14 @@ export default {
           {{ action.text }}
         </Button>
 
-        <PlusButton
-          :title="createWorkflowButtonTitle"
-          primary
-          class="create-workflow-btn"
-          :disabled="disabledActions.createWorkflow"
-          @click="$emit('action:createWorkflow')"
-        />
+        <div class="create-workflow-btn">
+          <PlusButton
+            :title="createWorkflowButtonTitle"
+            primary
+            :disabled="disabledActions.createWorkflow"
+            @click="$emit('action:createWorkflow')"
+          />
+        </div>
       </div>
     </template>
 

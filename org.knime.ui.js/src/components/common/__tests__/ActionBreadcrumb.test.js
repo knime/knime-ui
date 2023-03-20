@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
@@ -25,8 +26,8 @@ describe('ActionBreadcrumb.vue', () => {
         };
         doShallowMount();
 
-        expect(wrapper.findComponent(Breadcrumb).props('greyStyle')).toStrictEqual(true);
-        expect(wrapper.findComponent(Breadcrumb).vm.$attrs.someOtherAttr).toStrictEqual('value');
+        expect(wrapper.findComponent(Breadcrumb).props('greyStyle')).toBe(true);
+        expect(wrapper.findComponent(Breadcrumb).vm.$attrs.someOtherAttr).toBe('value');
     });
 
     it('renders default', () => {

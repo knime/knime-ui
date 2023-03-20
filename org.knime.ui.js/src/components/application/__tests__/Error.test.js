@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 
 import { shallowMount, mount } from '@vue/test-utils';
@@ -7,8 +8,8 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
 import Error from '../Error.vue';
 
-jest.mock('webapps-common/util/copyText.js', () => ({
-    copyText: jest.fn()
+vi.mock('webapps-common/util/copyText.js', () => ({
+    copyText: vi.fn()
 }));
 
 describe('Error.vue', () => {
@@ -65,14 +66,14 @@ describe('Error.vue', () => {
         let reloadButton = wrapper.findAllComponents(Button)[0];
         reloadButton.vm.$emit('click');
 
-        expect(window.location.href).toEqual('/index.html');
+        expect(window.location.href).toBe('/index.html');
     });
 
     it('switch to java app', () => {
         const wrapper = mount(Error);
 
         delete window.switchToJavaUI;
-        window.switchToJavaUI = jest.fn();
+        window.switchToJavaUI = vi.fn();
 
         let switchButton = wrapper.findAllComponents(FunctionButton).at(0);
         switchButton.vm.$emit('click');

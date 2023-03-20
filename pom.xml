@@ -12,12 +12,12 @@
     <artifactId>knime-ui</artifactId>
     <version>${revision}${changelist}</version>
     <packaging>pom</packaging>
-    <name>KNIME UI</name>
     <description>User Interface for KNIME Analytics Platform Desktop App</description>
 
     <modules>
         <module>org.knime.ui.js</module>
         <module>org.knime.ui.java</module>
+        <module>org.knime.ui.java.tests</module>
         <module>org.knime.features.ui</module>
         <module>org.knime.update.ui</module>
     </modules>
@@ -98,6 +98,23 @@
             <url>${knime.product.p2}</url>
             <layout>p2</layout>
         </repository>
+
+		<!-- only required to run the tests -->
+        <repository>
+            <id>p2-knime-dev</id>
+            <layout>p2</layout>
+            <url>${knime.dev.p2}</url>
+        </repository>
+        <repository>
+            <id>p2-knime-json</id>
+            <layout>p2</layout>
+            <url>${knime.json.p2}</url>
+        </repository>
+        <repository>
+            <id>p2-knime-javasnippet</id>
+            <layout>p2</layout>
+            <url>${knime.javasnippet.p2}</url>
+        </repository>
     </repositories>
 
 	<build>
@@ -107,6 +124,15 @@
 				<artifactId>tycho-source-plugin</artifactId>
 				<configuration>
 					<skip>true</skip>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<configuration>
+					<systemProperties>
+						<java.awt.headless>true</java.awt.headless>
+				</systemProperties>
 				</configuration>
 			</plugin>
 		</plugins>

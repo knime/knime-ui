@@ -1,13 +1,15 @@
 require('@rushstack/eslint-patch/modern-module-resolution');
 
 module.exports = {
-    extends: ['@knime/eslint-config/vue3-typescript'],
+    extends: ['@knime/eslint-config/vue3-typescript', '@knime/eslint-config/typescript', '@knime/eslint-config/vitest'],
     globals: {
         consola: false
     },
-    env: {
-        node: true
-    },
+    ignorePatterns: [
+        'generated-api.ts',
+        'knime-js-pagebuilder/'
+    ],
+    env: { browser: true, node: true },
     settings: {
         'import/resolver': {
             alias: {
@@ -17,13 +19,7 @@ module.exports = {
             }
         }
     },
-    overrides: [
-        {
-            files: ['./**/__tests__/*.test.js'],
-            extends: ['@knime/eslint-config/jest'],
-            rules: {
-                'no-magic-numbers': 0
-            }
-        }
-    ]
+    rules: {
+        'new-cap': ['warn', { capIsNewExceptionPattern: '^API\\..' }]
+    }
 };

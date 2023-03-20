@@ -1,5 +1,6 @@
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
 import { APP_ROUTES } from '@/router';
@@ -10,7 +11,7 @@ import SpaceExplorer from '../SpaceExplorer.vue';
 import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 import SpaceBrowsingPage from '../SpaceBrowsingPage.vue';
 
-jest.mock('@api');
+vi.mock('@api');
 
 describe('SpaceBrowsingPage', () => {
     const doMount = ({ initialStoreState = null } = {}) => {
@@ -18,11 +19,11 @@ describe('SpaceBrowsingPage', () => {
             spaces: spacesStore
         });
 
-        const commitSpy = jest.spyOn($store, 'commit');
-        const dispatchSpy = jest.spyOn($store, 'dispatch').mockImplementation(() => {});
+        const commitSpy = vi.spyOn($store, 'commit');
+        const dispatchSpy = vi.spyOn($store, 'dispatch').mockImplementation(() => {});
 
         const $router = {
-            push: jest.fn()
+            push: vi.fn()
         };
 
         if (initialStoreState) {
@@ -35,7 +36,7 @@ describe('SpaceBrowsingPage', () => {
         const wrapper = mount(SpaceBrowsingPage, {
             global: {
                 plugins: [$store],
-                mocks: { $router, $shortcuts: { get: jest.fn(() => ({})) } }
+                mocks: { $router, $shortcuts: { get: vi.fn(() => ({})) } }
             }
         });
 
@@ -112,6 +113,7 @@ describe('SpaceBrowsingPage', () => {
         expect(title).toBe('My public space');
     });
 
+    // eslint-disable-next-line vitest/no-skipped-tests
     it.skip('routes back to space selection page when back button is clicked and clears state', async () => {
         const { wrapper, $router, commitSpy } = doMount();
         await wrapper.findComponent(ArrowLeftIcon).vm.$emit('click');
@@ -143,13 +145,6 @@ describe('SpaceBrowsingPage', () => {
 
         wrapper.find('.create-workflow-btn button').trigger('click');
         expect(commitSpy).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', true);
-    });
-
-    it('should handle the create folder action', () => {
-        const { wrapper, dispatchSpy } = doMount();
-
-        wrapper.find('#createFolder').trigger('click');
-        expect(dispatchSpy).toHaveBeenCalledWith('spaces/createFolder');
     });
 
     it('should handle the upload to hub action', async () => {

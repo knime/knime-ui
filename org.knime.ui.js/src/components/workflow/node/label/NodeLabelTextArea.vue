@@ -26,13 +26,10 @@ export default {
         });
     },
     methods: {
-        onInput(event, sizeChangeCallback) {
+        onInput(event) {
             const value = event.target.value;
             this.$refs.textarea.value = value;
             this.$refs.ghost.innerText = value;
-
-            // trigger callback to update size on the autosize wrapper
-            sizeChangeCallback();
 
             // apply the styles that resize the textarea according to the content
             this.resizeTextarea();
@@ -41,7 +38,7 @@ export default {
         },
         resizeTextarea() {
             const textarea = this.$refs.textarea;
-            
+
             // width
             // eslint-disable-next-line no-magic-numbers
             const width = this.$refs.ghost.scrollWidth + 6;
@@ -67,25 +64,23 @@ export default {
     class="editor"
     :kind="kind"
   >
-    <template #default="{ on: { sizeChange } }">
-      <span
-        ref="ghost"
-        class="ghost"
-        aria-hidden="true"
-      >
-        {{ modelValue }}
-      </span>
-      <textarea
-        ref="textarea"
-        rows="1"
-        class="label-textarea native-context-menu"
-        :value="modelValue"
-        @pointerdown.stop
-        @input="onInput($event, sizeChange)"
-        @keydown.enter="onSave"
-        @keydown.esc.prevent="$emit('cancel')"
-      />
-    </template>
+    <span
+      ref="ghost"
+      class="ghost"
+      aria-hidden="true"
+    >
+      {{ modelValue }}
+    </span>
+    <textarea
+      ref="textarea"
+      rows="1"
+      class="label-textarea native-context-menu"
+      :value="modelValue"
+      @pointerdown.stop
+      @input="onInput"
+      @keydown.enter="onSave"
+      @keydown.esc.prevent="$emit('cancel')"
+    />
   </NodeLabelText>
 </template>
 

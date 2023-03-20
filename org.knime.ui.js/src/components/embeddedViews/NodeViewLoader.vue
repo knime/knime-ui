@@ -1,19 +1,22 @@
 <script>
 import { mapGetters, mapState } from 'vuex';
 import { getNodeView } from '@api';
+import PageBuilder from 'pagebuilder/src/components/PageBuilder.vue';
 
 import singleViewPage from './singleViewPage.json';
-import { loadPageBuilder } from './pagebuilderLoader';
 
 /**
  * Renders a node view via the PageBuilder component
  */
 export default {
+    components: {
+        PageBuilder
+    },
+
     emits: ['stateChange'],
 
     data() {
         return {
-            pageBuilderComponent: null,
             isReady: false
         };
     },
@@ -49,7 +52,6 @@ export default {
         try {
             this.$emit('stateChange', { state: 'loading', message: 'Loading view' });
 
-            this.pageBuilderComponent = await loadPageBuilder({ window, store: this.$store });
             await this.loadContent();
 
             this.isReady = true;
@@ -88,8 +90,7 @@ export default {
 </script>
 
 <template>
-  <Component
-    :is="pageBuilderComponent"
+  <PageBuilder
     v-if="isReady"
     class="page-builder"
   />
@@ -97,10 +98,12 @@ export default {
 
 <style lang="postcss" scoped>
 .page-builder {
-  & :deep(.node-view) {
-    & .view-container {
-      height: unset;
-    }
+  height: 100%;
+
+  & :deep(> div),
+  & :deep(.container-fluid),
+  & :deep(.row) {
+      height: 100%;
   }
 }
 </style>

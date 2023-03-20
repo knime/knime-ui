@@ -17,7 +17,7 @@ import {
 // eslint-disable-next-line object-curly-newline
 } from '@api';
 
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 import ITEM_TYPES from '@/util/spaceItemTypes';
 
 export const state = () => ({
@@ -100,7 +100,7 @@ export const actions = {
         commit('setLastItemForProject', { projectId, itemId });
     },
 
-    saveSpaceBrowserState({ commit, getters, state }, { itemId = 'root' } = {}) {
+    saveSpaceBrowserState({ commit, state }, { itemId = 'root' } = {}) {
         commit('setSpaceBrowserState', {
             spaceId: state.activeSpace?.spaceId,
             spaceProviderId: state.activeSpaceProvider?.id,
@@ -142,7 +142,7 @@ export const actions = {
         }
     },
 
-    async fetchProviderSpaces({ commit }, { id }) {
+    async fetchProviderSpaces(_, { id }) {
         try {
             const providerData = await fetchSpaceProvider({ spaceProviderId: id });
 
@@ -174,7 +174,7 @@ export const actions = {
         }
     },
 
-    async disconnectProvider({ commit, state, dispatch }, { spaceProviderId }) {
+    async disconnectProvider({ commit, state }, { spaceProviderId }) {
         try {
             await disconnectSpaceProvider({ spaceProviderId });
 
@@ -213,12 +213,12 @@ export const actions = {
         }
     },
 
-    changeDirectory({ dispatch, getters, state }, { pathId }) {
+    changeDirectory({ dispatch, getters }, { pathId }) {
         const itemId = getters.pathToItemId(pathId);
         return dispatch('fetchWorkflowGroupContent', { itemId });
     },
 
-    async createWorkflow({ commit, getters, state, dispatch }, { workflowName }) {
+    async createWorkflow({ getters, state, dispatch }, { workflowName }) {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId || 'root';

@@ -1,7 +1,8 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import { $bus } from '@/plugins/event-bus';
 
@@ -62,7 +63,7 @@ describe('MetaNodePortBar.vue', () => {
             doMount();
 
             // global positioning
-            expect(wrapper.find('g').attributes('transform')).toEqual(`translate(${x}, ${y})`);
+            expect(wrapper.find('g').attributes('transform')).toBe(`translate(${x}, ${y})`);
 
             // visible port bar
             let portBar = wrapper.find('.port-bar');
@@ -71,7 +72,7 @@ describe('MetaNodePortBar.vue', () => {
             if (type === 'in') {
                 expect(Number(portBar.attributes('x'))).toEqual(-$shapes.metaNodeBarWidth);
             } else {
-                expect(Number(portBar.attributes('x'))).toEqual(0);
+                expect(Number(portBar.attributes('x'))).toBe(0);
             }
 
             // invisible hover-area

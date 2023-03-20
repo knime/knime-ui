@@ -1,5 +1,6 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import WorkflowToolbar from '../WorkflowToolbar.vue';
 import ToolbarShortcutButton from '../ToolbarShortcutButton.vue';
@@ -43,7 +44,7 @@ describe('WorkflowToolbar.vue', () => {
         };
 
         $shortcuts = {
-            isEnabled: jest.fn().mockReturnValue(true)
+            isEnabled: vi.fn().mockReturnValue(true)
         };
 
         storeConfig = {
@@ -52,7 +53,7 @@ describe('WorkflowToolbar.vue', () => {
                     activeWorkflow: workflow
                 },
                 getters: {
-                    isWorkflowEmpty: jest.fn()
+                    isWorkflowEmpty: vi.fn()
                 }
             },
             selection: {
@@ -77,8 +78,8 @@ describe('WorkflowToolbar.vue', () => {
 
     const toNameProp = (tab) => tab.props('name');
 
-    describe('Toolbar Shortcut', () => {
-        test('Shortcut buttons match computed items', () => {
+    describe('toolbar Shortcut', () => {
+        it('shortcut buttons match computed items', () => {
             doShallowMount();
 
             let shortcutButtons = wrapper.findAllComponents(ToolbarShortcutButton);
@@ -141,7 +142,7 @@ describe('WorkflowToolbar.vue', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
             const toolbarShortcuts = wrapper.findAllComponents(ToolbarShortcutButton)
-                
+
                 .map(tb => tb.props('name'));
             expect(toolbarShortcuts).toStrictEqual([]);
         });

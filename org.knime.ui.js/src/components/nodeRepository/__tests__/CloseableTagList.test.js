@@ -1,10 +1,11 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
 import SelectableTagList from '@/components/common/SelectableTagList.vue';
 import CloseableTagList, { maxNumberOfInitialTags, minNumberOfInitialTags } from '../CloseableTagList.vue';
 
-jest.mock('vue3-click-away', () => ({
+vi.mock('vue3-click-away', () => ({
     mixin: {}
 }), { virtual: true });
 
@@ -104,12 +105,12 @@ describe('CloseableTagList.vue', () => {
                 tags: sevenTags,
                 modelValue: threeTags
             });
-            
+
             await wrapper.setData({ displayAll: true });
             let btn = wrapper.find('.tags-popout-close');
             expect(wrapper.vm.displayAll).toBe(true);
             expect(btn.exists()).toBe(true);
-            
+
             await btn.trigger('click');
             expect(wrapper.vm.displayAll).toBe(false);
             expect(wrapper.find('.tags-popout-close').exists()).toBe(false);
@@ -125,7 +126,7 @@ describe('CloseableTagList.vue', () => {
             wrapper.findComponent({ ref: 'tagList' }).vm.$emit('show-more');
             await Vue.nextTick();
             expect(wrapper.find('.tags-popout-close').exists()).toBe(true);
-            
+
             wrapper.findComponent({ ref: 'tagList' }).vm.$emit('update:modelValue');
             await Vue.nextTick();
             expect(wrapper.find('.tags-popout-close').exists()).toBe(false);

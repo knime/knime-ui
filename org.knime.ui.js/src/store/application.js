@@ -1,7 +1,6 @@
-import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow,
-    setProjectActiveAndEnsureItsLoadedInBackend } from '@api';
+import { API, fetchApplicationState, loadWorkflow, setProjectActiveAndEnsureItsLoadedInBackend } from '@api';
 import { encodeString } from '@/util/encodeString';
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 
 const getCanvasStateKey = (input) => encodeString(input);
 
@@ -61,7 +60,7 @@ export const state = () => ({
      * If true, dev mode specifics buttons will be shown.
      */
     devMode: false,
-    
+
     /**
      * an object that maps supported file extensions to their node template id
      */
@@ -156,7 +155,7 @@ export const actions = {
      *   A P P L I C A T I O N   L I F E C Y C L E
      */
     async initializeApplication({ dispatch }, { $router }) {
-        await addEventListener('AppStateChanged');
+        await API.event.subscribeEvent({ typeId: 'AppStateChangedEventType' });
 
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
@@ -198,13 +197,13 @@ export const actions = {
         });
     },
     destroyApplication({ dispatch }) {
-        removeEventListener('AppStateChanged');
+        API.event.unsubscribeEventListener({ typeId: 'AppStateChangedEventType' });
         dispatch('unloadActiveWorkflow', { clearWorkflow: true });
     },
 
     // ----------------------------------------------------------------------------------------- //
 
-    async replaceApplicationState({ commit, dispatch, state, rootState }, applicationState) {
+    async replaceApplicationState({ commit, dispatch, state }, applicationState) {
         // Only set application state properties present in the received object
         if (applicationState.availablePortTypes) {
             commit('setAvailablePortTypes', applicationState.availablePortTypes);
@@ -259,7 +258,7 @@ export const actions = {
             commit('setFileExtensionToNodeTemplateId', applicationState.fileExtensionToNodeTemplateId);
         }
     },
-    async setActiveProject({ commit, dispatch, state }, openProjects) {
+    async setActiveProject({ dispatch, state }, openProjects) {
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
             await dispatch('switchWorkflow', { newWorkflow: null });
@@ -336,7 +335,7 @@ export const actions = {
 
         commit('setIsLoadingWorkflow', false);
     },
-    async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
+    async loadWorkflow({ dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
         // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
         setProjectActiveAndEnsureItsLoadedInBackend({ projectId });
         const project = await loadWorkflow({ projectId, workflowId });
@@ -362,7 +361,7 @@ export const actions = {
 
         // TODO: remove this 'root' fallback after mocks have been adjusted
         const workflowId = workflow.info.containerId || 'root';
-        addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        API.event.subscribeEvent({ typeId: 'WorkflowChangedEventType', projectId, workflowId, snapshotId });
 
         // Call navigate to workflow function (if provided) before restoring the canvas state
         await navigateToWorkflow?.();
@@ -383,7 +382,7 @@ export const actions = {
         let { activeSnapshotId: snapshotId } = rootState.workflow;
         let workflowId = rootState.workflow.activeWorkflow.info.containerId;
 
-        removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        API.event.unsubscribeEventListener({ typeId: 'WorkflowChangedEventType', projectId, workflowId, snapshotId });
 
         commit('selection/clearSelection', null, { root: true });
         commit('workflow/setTooltip', null, { root: true });
@@ -401,7 +400,6 @@ export const actions = {
     },
 
     async restoreCanvasState({ dispatch, getters }) {
-        // console.log('HEREEEE')
         const { workflowCanvasState } = getters;
 
         if (workflowCanvasState) {
@@ -409,7 +407,7 @@ export const actions = {
         }
     },
 
-    removeCanvasState({ rootState, state }, projectId) {
+    removeCanvasState({ state }, projectId) {
         const stateKey = getCanvasStateKey(`${projectId}--root`);
 
         delete state.savedCanvasStates[stateKey];
@@ -545,6 +543,10 @@ export const getters = {
     },
 
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
+        if (!workflow.activeWorkflow) {
+            return null;
+        }
+
         const { info: { containerId: workflowId }, projectId } = workflow.activeWorkflow;
         const rootWorkflowId = 'root';
         const isRootWorkflow = rootWorkflowId === workflowId;

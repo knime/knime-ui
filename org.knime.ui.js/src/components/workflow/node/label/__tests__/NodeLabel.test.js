@@ -1,6 +1,7 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import * as selectionStore from '@/store/selection';
 
@@ -33,7 +34,7 @@ describe('NodeLabel', () => {
         return wrapper;
     };
 
-    describe('Handles text', () => {
+    describe('handles text', () => {
         let storeConfig, wrapper;
 
         beforeEach(() => {
@@ -43,9 +44,9 @@ describe('NodeLabel', () => {
                         labelEditorNodeId: 'root:2'
                     },
                     actions: {
-                        openLabelEditor: jest.fn(),
-                        closeLabelEditor: jest.fn(),
-                        renameNodeLabel: jest.fn()
+                        openLabelEditor: vi.fn(),
+                        closeLabelEditor: vi.fn(),
+                        renameNodeLabel: vi.fn()
                     }
                 },
                 selection: selectionStore
@@ -78,7 +79,7 @@ describe('NodeLabel', () => {
         });
     });
 
-    describe('Handles editor', () => {
+    describe('handles editor', () => {
         let storeConfig, wrapper, $store;
 
         beforeEach(() => {
@@ -88,9 +89,9 @@ describe('NodeLabel', () => {
                         labelEditorNodeId: 'root:1'
                     },
                     actions: {
-                        openLabelEditor: jest.fn(),
-                        closeLabelEditor: jest.fn(),
-                        renameNodeLabel: jest.fn()
+                        openLabelEditor: vi.fn(),
+                        closeLabelEditor: vi.fn(),
+                        renameNodeLabel: vi.fn()
                     }
                 },
                 selection: selectionStore
@@ -122,7 +123,7 @@ describe('NodeLabel', () => {
         });
 
         it('should handle saving the label', async () => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
             const saveEventPayload = { newLabel: 'New label' };
 
             wrapper.findComponent(NodeLabelEditor).vm.$emit('save', saveEventPayload);
@@ -131,7 +132,7 @@ describe('NodeLabel', () => {
                 expect.objectContaining({ nodeId: defaultProps.nodeId, label: saveEventPayload.newLabel })
             );
 
-            jest.runAllTimers();
+            vi.runAllTimers();
             expect(storeConfig.workflow.actions.closeLabelEditor).toHaveBeenCalled();
 
             // emulate editor being closed from store

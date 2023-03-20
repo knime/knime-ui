@@ -1,6 +1,7 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import { $bus } from '@/plugins/event-bus';
 import * as $shapes from '@/style/shapes.mjs';
@@ -9,15 +10,8 @@ import * as $colors from '@/style/colors.mjs';
 import { findNodesInsideOfRectangle as findNodesInsideOfRectangleMock } from '@/util/rectangleSelection';
 import SelectionRectangle from '../SelectionRectangle.vue';
 
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
-
-jest.mock('@/util/rectangleSelection', () => ({
-    findNodesInsideOfRectangle: jest.fn()
+vi.mock('@/util/rectangleSelection', () => ({
+    findNodesInsideOfRectangle: vi.fn()
 }));
 
 describe('SelectionRectangle', () => {
@@ -43,17 +37,17 @@ describe('SelectionRectangle', () => {
             },
             canvas: {
                 getters: {
-                    screenToCanvasCoordinates: () => jest.fn().mockImplementation(([x, y]) => [x, y])
+                    screenToCanvasCoordinates: () => vi.fn().mockImplementation(([x, y]) => [x, y])
                 }
             },
             selection: {
                 getters: {
-                    selectedNodeIds: jest.fn().mockReturnValue([])
+                    selectedNodeIds: vi.fn().mockReturnValue([])
                 },
                 actions: {
-                    selectNodes: jest.fn(),
-                    deselectNodes: jest.fn(),
-                    deselectAllObjects: jest.fn()
+                    selectNodes: vi.fn(),
+                    deselectNodes: vi.fn(),
+                    deselectAllObjects: vi.fn()
                 }
             }
         };
@@ -97,7 +91,7 @@ describe('SelectionRectangle', () => {
                     })
                 },
                 target: {
-                    setPointerCapture: (pointerId) => null
+                    setPointerCapture: () => null
                 }
             });
         };
@@ -120,17 +114,17 @@ describe('SelectionRectangle', () => {
         };
 
         pointerUp = () => {
-            jest.useFakeTimers(); // implementation contains setTimout
+            vi.useFakeTimers(); // implementation contains setTimout
 
             // stop also changes global dragging state
             $bus.emit('selection-pointerup', {
                 pointerId: pointerId || 1,
                 target: {
-                    releasePointerCapture: jest.fn()
+                    releasePointerCapture: vi.fn()
                 }
             });
 
-            jest.runAllTimers();
+            vi.runAllTimers();
         };
     });
 
@@ -140,7 +134,7 @@ describe('SelectionRectangle', () => {
         storeConfig.selection.actions.deselectAllObjects.mockClear();
     });
 
-    test('all object are deselected on start', async () => {
+    it('all object are deselected on start', async () => {
         doShallowMount();
 
         pointerDown({ clientX: 0, clientY: 0 });
@@ -149,7 +143,7 @@ describe('SelectionRectangle', () => {
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
     });
 
-    test('appears on pointerDown, disappears on pointerUp', async () => {
+    it('appears on pointerDown, disappears on pointerUp', async () => {
         doShallowMount();
         expect(wrapper.isVisible()).toBe(false);
 
@@ -164,7 +158,7 @@ describe('SelectionRectangle', () => {
         expect(wrapper.isVisible()).toBe(false);
     });
 
-    describe('Selection', () => {
+    describe('selection', () => {
         beforeEach(async () => {
             doShallowMount();
 
@@ -223,9 +217,9 @@ describe('SelectionRectangle', () => {
         });
     });
 
-    describe('De-Selection with Shift', () => {
+    describe('de-Selection with Shift', () => {
         beforeEach(async () => {
-            storeConfig.selection.getters.selectedNodeIds = jest.fn().mockReturnValue([
+            storeConfig.selection.getters.selectedNodeIds = vi.fn().mockReturnValue([
                 'inside-1',
                 'inside-2'
             ]);
@@ -236,7 +230,7 @@ describe('SelectionRectangle', () => {
             await Vue.nextTick();
         });
 
-        test('no global deselection', () => {
+        it('no global deselection', () => {
             expect(storeConfig.selection.actions.deselectAllObjects).not.toHaveBeenCalled();
         });
 
@@ -277,9 +271,9 @@ describe('SelectionRectangle', () => {
         });
     });
 
-    describe('Selection with shift', () => {
+    describe('selection with shift', () => {
         it('adds to selection with shift', async () => {
-            storeConfig.selection.getters.selectedNodeIds = jest.fn().mockReturnValue([
+            storeConfig.selection.getters.selectedNodeIds = vi.fn().mockReturnValue([
                 'root:1'
             ]);
             doShallowMount();
@@ -308,9 +302,9 @@ describe('SelectionRectangle', () => {
 
     describe('non actions', () => {
         it('unregisters events on beforeUnmount', () => {
-            jest.spyOn($bus, 'off');
+            vi.spyOn($bus, 'off');
             doShallowMount();
-            wrapper.vm.$parent.$off = jest.fn();
+            wrapper.vm.$parent.$off = vi.fn();
             wrapper.unmount();
             expect($bus.off).toHaveBeenCalledTimes(4);
         });

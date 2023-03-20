@@ -1,8 +1,10 @@
-import rpc from './json-rpc-adapter';
+import { API } from '@api';
 
 /**
- * Get repository nodes grouped by tags via RPC.
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.noderepository` methods directly.
  *
+ * Get repository nodes grouped by tags via RPC.
  * @param {Number} numNodesPerTag - The number of nodes per tag to be returned.
  * @param {Number} tagsOffset - The number of tags to be skipped (for pagination).
  * @param {Number} tagsLimit - The maximum number of tags to be returned (mainly for pagination).
@@ -11,13 +13,12 @@ import rpc from './json-rpc-adapter';
  */
 export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
     try {
-        const groupedNodes = await rpc(
-            'NodeRepositoryService.getNodesGroupedByTags',
+        const groupedNodes = await API.noderepository.getNodesGroupedByTags({
             numNodesPerTag,
             tagsOffset,
             tagsLimit,
             fullTemplateInfo
-        );
+        });
         consola.debug('Loaded nodes grouped by tags', groupedNodes);
 
         return groupedNodes;
@@ -28,32 +29,34 @@ export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLi
 };
 
 /**
- * Search the node repository via RPC.
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.noderepository` methods directly.
  *
+ * Search the node repository via RPC.
  * @param {String} query - query for specific matches in the returned nodes or empty string.
  * @param {Array} tags - tags to filter the results of the search.
  * @param {Boolean} allTagsMatch - if the tags are inclusive or exclusive.
- * @param {Number} nodeOffset - the numeric offset of the search (for pagination).
- * @param {Number} nodeLimit - the number of results which should be returned.
+ * @param {Number} offset - the numeric offset of the search (for pagination).
+ * @param {Number} limit - the number of results which should be returned.
  * @param {Boolean} fullTemplateInfo - if the results should contain all node info (incl. img data).
- * @param {Boolean} additionalNodes - if the results should contain contain only the nodes that are not part of the
- *                      active selection
+ * @param {String} nodesPartition - can be 'IN_COLLECTION', 'NOT_IN_COLLECTION' or 'ALL'. Defaults to 'ALL'.
+ * @param {String} portTypeId - if set it specifies the port type the nodes need to be compatible to
  * @returns {Object} the node repository search results.
  */
 export const searchNodes = async (
-    { query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo, additionalNodes = false }
+    { query, tags, allTagsMatch, offset, limit, fullTemplateInfo, nodesPartition = 'ALL', portTypeId = null }
 ) => {
     try {
-        const nodes = await rpc(
-            'NodeRepositoryService.searchNodes',
-            query,
+        const nodes = await API.noderepository.searchNodes({
+            q: query,
             tags,
             allTagsMatch,
-            nodeOffset,
-            nodeLimit,
+            offset,
+            limit,
             fullTemplateInfo,
-            additionalNodes
-        );
+            nodesPartition,
+            portTypeId
+        });
         consola.debug('Loaded node search results', nodes);
 
         return nodes;
@@ -65,9 +68,11 @@ export const searchNodes = async (
 
 
 /**
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.noderepository` methods directly.
+ *
  * Get recommendations of nodes based on a predecessor (nodeId, portIdx) or just the most popular ones
  * (set nodeId and portIdx both to null).
- *
  * @param {String} projectId - ID of the workflow-project
  * @param {String} workflowId - The ID of a workflow which has the same format as a node-id
  * @param {String|null} nodeId - The ID of a node (optional)
@@ -85,15 +90,14 @@ export const getNodeRecommendations = async ({
     fullTemplateInfo
 }) => {
     try {
-        const recommendations = await rpc(
-            'NodeRepositoryService.getNodeRecommendations',
+        const recommendations = await API.noderepository.getNodeRecommendations({
             projectId,
             workflowId,
             nodeId,
             portIdx,
             nodesLimit,
             fullTemplateInfo
-        );
+        });
 
         return recommendations;
     } catch (e) {
@@ -103,8 +107,10 @@ export const getNodeRecommendations = async ({
 };
 
 /**
- * Get node templates based on their ids.
+ * @deprecated since the introduction of `generated-api.ts`,
+ * you better call `API.noderepository` methods directly.
  *
+ * Get node templates based on their ids.
  * @param {Array} nodeTemplateIds - the node template ids for the templates to fetch
  * @returns {Object} the nodeTemplate results
  */
@@ -112,10 +118,9 @@ export const getNodeTemplates = async ({
     nodeTemplateIds
 }) => {
     try {
-        const templates = await rpc(
-            'NodeRepositoryService.getNodeTemplates',
+        const templates = await API.noderepository.getNodeTemplates({
             nodeTemplateIds
-        );
+        });
 
         return templates;
     } catch (e) {

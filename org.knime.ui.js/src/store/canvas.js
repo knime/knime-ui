@@ -45,7 +45,7 @@ export const mutations = {
         no need to restore savedContainerScroll, it will be overwritten when setting containerScroll
         don't restore containerSize, it might have changed
     */
-   
+
     setFactor(state, newFactor) {
         state.zoomFactor = clampZoomFactor(newFactor);
     },
@@ -92,7 +92,7 @@ export const actions = {
         });
     },
 
-    fillScreen({ dispatch, commit, getters, state }) {
+    fillScreen({ dispatch, commit, getters }) {
         // zoom factor for that at least one axis fits on the screen, but at most 100%
         let newZoomFactor = Math.min(getters.fitToScreenZoomFactor.max * 0.95, 1); // eslint-disable-line no-magic-numbers
 
@@ -258,13 +258,13 @@ export const actions = {
         await Vue.nextTick();
 
         const kanvas = state.getScrollContainerElement();
-        
+
         const widthRatioBefore = scrollLeft / scrollWidth;
         const widthRatioAfter = kanvas.scrollWidth * widthRatioBefore;
-        
+
         const heightRatioBefore = scrollTop / scrollHeight;
         const heightRatioAfter = kanvas.scrollHeight * heightRatioBefore;
-        
+
         kanvas.scrollTo({
             top: heightRatioAfter,
             left: widthRatioAfter,
@@ -274,7 +274,7 @@ export const actions = {
 };
 
 export const getters = {
-    getCanvasScrollState(state, getters) {
+    getCanvasScrollState(state) {
         const kanvas = state.getScrollContainerElement();
 
         return () => {
@@ -382,11 +382,11 @@ export const getters = {
     */
     screenFromCanvasCoordinates({ getScrollContainerElement }, { fromCanvasCoordinates }) {
         let scrollContainerElement = getScrollContainerElement();
-        
+
         return ({ x, y }) => {
             const { x: offsetLeft, y: offsetTop } = scrollContainerElement.getBoundingClientRect();
             const { scrollLeft, scrollTop } = scrollContainerElement;
-            
+
             let screenCoordinates = fromCanvasCoordinates({ x, y });
             screenCoordinates.x = screenCoordinates.x - scrollLeft + offsetLeft;
             screenCoordinates.y = screenCoordinates.y - scrollTop + offsetTop;
@@ -410,14 +410,14 @@ export const getters = {
     */
     screenToCanvasCoordinates({ getScrollContainerElement }, { toCanvasCoordinates }) {
         let scrollContainerElement = getScrollContainerElement();
-        
+
         return ([origX, origY]) => {
             const { x: offsetLeft, y: offsetTop } = scrollContainerElement.getBoundingClientRect();
             const { scrollLeft, scrollTop } = scrollContainerElement;
-            
+
             const offsetX = origX - offsetLeft + scrollLeft;
             const offsetY = origY - offsetTop + scrollTop;
-            
+
             return toCanvasCoordinates([offsetX, offsetY]);
         };
     },
@@ -447,7 +447,7 @@ export const getters = {
         return () => {
             let container = getScrollContainerElement();
             let screenBounds = container.getBoundingClientRect();
-            
+
             let [left, top] = screenToCanvasCoordinates([screenBounds.x, screenBounds.y]);
             let [right, bottom] = screenToCanvasCoordinates([screenBounds.right, screenBounds.bottom]);
 

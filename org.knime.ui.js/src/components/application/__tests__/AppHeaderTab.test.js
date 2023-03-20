@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import AppHeaderTab from '../AppHeaderTab.vue';
@@ -29,7 +30,7 @@ describe('AppHeaderTab.vue', () => {
             expect(wrapper.emitted('hover')[0][0]).toBe('2');
 
             await wrapper.find('li').trigger('mouseleave');
-            expect(wrapper.emitted('hover')[1][0]).toBe(null);
+            expect(wrapper.emitted('hover')[1][0]).toBeNull();
         });
     });
 
@@ -68,7 +69,7 @@ describe('AppHeaderTab.vue', () => {
     it('should emit a close-workflow event if the close button is pressed', async () => {
         const wrapper = doMount({ projectId: '1' });
 
-        const stopPropagation = jest.fn();
+        const stopPropagation = vi.fn();
         await wrapper.findComponent(CloseButton).vm.$emit('close', { stopPropagation });
 
         expect(stopPropagation).toHaveBeenCalled();

@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import { findNodesInsideOfRectangle } from '../rectangleSelection';
 
 describe('findNodesInsideOfRectangle', () => {
@@ -38,7 +39,7 @@ describe('findNodesInsideOfRectangle', () => {
         };
     });
 
-    test('include all from outside', () => {
+    it('include all from outside', () => {
         let p1 = { x: -5, y: -5 }; // node size + 1 off
         let p2 = { x: 75, y: 75 }; // node position - 1 off
 
@@ -55,7 +56,7 @@ describe('findNodesInsideOfRectangle', () => {
         });
     });
 
-    test('exclude all by 1 px', () => {
+    it('exclude all by 1 px', () => {
         let p1 = { x: 33, y: 33 }; // node size + 1 off
         let p2 = { x: 49, y: 49 }; // node position - 1 off
 
@@ -72,7 +73,7 @@ describe('findNodesInsideOfRectangle', () => {
         });
     });
 
-    test('include all by 1 px', () => {
+    it('include all by 1 px', () => {
         let p1 = { x: 32, y: 32 }; // node size + 1 off
         let p2 = { x: 50, y: 50 }; // node position - 1 off
 

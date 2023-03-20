@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
@@ -29,12 +30,12 @@ describe('Workflow Annotation', () => {
         it('styles', () => {
             const wrapper = doShallowMount();
 
-            expect(wrapper.attributes()).toStrictEqual({
+            expect(wrapper.attributes()).toEqual(expect.objectContaining({
                 height: '50',
                 width: '100',
                 x: '1',
                 y: '2'
-            });
+            }));
 
             expect(wrapper.findComponent(LegacyAnnotationText).attributes().style).toBe(
                 'font-size: 12px; ' +

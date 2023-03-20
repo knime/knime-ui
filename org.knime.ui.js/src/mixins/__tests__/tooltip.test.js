@@ -1,7 +1,8 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import { entryDelay, tooltip } from '../tooltip';
 
@@ -9,7 +10,7 @@ let wrapper, setTooltipMock, setTimeoutMock;
 
 describe('Tooltip Mixin', () => {
     beforeEach(() => {
-        setTimeoutMock = jest.fn().mockImplementation(fn => {
+        setTimeoutMock = vi.fn().mockImplementation(fn => {
             fn();
             return 0;
         });
@@ -23,7 +24,7 @@ describe('Tooltip Mixin', () => {
             })
         };
 
-        setTooltipMock = jest.fn().mockImplementation((state, tooltip) => {
+        setTooltipMock = vi.fn().mockImplementation((state, tooltip) => {
             state.tooltip = tooltip;
         });
         let storeConfig = {
@@ -42,19 +43,19 @@ describe('Tooltip Mixin', () => {
     });
 
     it('removes event handlers', () => {
-        let spy = jest.spyOn(wrapper.element, 'removeEventListener');
+        let spy = vi.spyOn(wrapper.element, 'removeEventListener');
         wrapper.unmount();
         expect(spy).toHaveBeenCalledWith('mouseenter', wrapper.vm.onTooltipMouseEnter);
         expect(spy).toHaveBeenCalledWith('mouseleave', wrapper.vm.onTooltipMouseLeave);
     });
 
     describe('destruction closes tooltip', () => {
-        test('tooltip is not open', () => {
+        it('tooltip is not open', () => {
             wrapper.unmount();
             expect(setTooltipMock).not.toHaveBeenCalled();
         });
 
-        test('tootlip is open', async () => {
+        it('tootlip is open', async () => {
             wrapper.trigger('mouseenter');
 
             await Vue.nextTick();
@@ -74,8 +75,8 @@ describe('Tooltip Mixin', () => {
 
     it('clears tooltip timeout when aborting', () => {
         // dont execute callback
-        window.setTimeout = jest.fn().mockReturnValue(0);
-        window.clearTimeout = jest.fn();
+        window.setTimeout = vi.fn().mockReturnValue(0);
+        window.clearTimeout = vi.fn();
 
         wrapper.setData({ tooltip: 'hello there' });
         wrapper.trigger('mouseenter');

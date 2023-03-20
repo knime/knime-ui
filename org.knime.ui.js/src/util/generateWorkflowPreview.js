@@ -183,7 +183,7 @@ const inheritedCssProperties = [
  */
 const useCSSfromComputedStyles = (styleOverrides = {}) => (element) => {
     // run the same behavior for all the element's children
-    element.childNodes.forEach((child, index) => {
+    element.childNodes.forEach((child) => {
         if (child.nodeType === 1 /* Node.ELEMENT_NODE */) {
             useCSSfromComputedStyles(styleOverrides)(child);
         }

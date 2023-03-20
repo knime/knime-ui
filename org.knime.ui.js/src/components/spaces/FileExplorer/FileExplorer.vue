@@ -365,9 +365,10 @@ export default {
         },
 
         onDrag(event, item) {
-            const onUpdate = (isAboveCanvas, nodeTemplate) => {
+            const onUpdate = async (isAboveCanvas, nodeTemplate) => {
                 this.nodeTemplate = nodeTemplate;
                 if (this.nodeTemplate) {
+                    await this.$nextTick();
                     const nodePreview = this.$refs.nodePreview.$el;
 
                     this.replaceGhostPreview({

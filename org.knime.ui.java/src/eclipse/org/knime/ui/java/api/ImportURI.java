@@ -58,10 +58,10 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.KNIMEComponentInformation;
 import org.knime.core.node.NodeLogger;
@@ -90,8 +90,6 @@ import org.knime.workbench.editor2.InstallMissingNodesJob;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 import org.knime.workbench.ui.p2.actions.AbstractP2Action;
 
-import com.equo.chromium.swt.Browser;
-
 /**
  * Utility methods for importing URIs (e.g. a node from a hub url).
  *
@@ -112,17 +110,18 @@ public final class ImportURI {
     /**
      * Helper to import objects (e.g. nodes) from a URI (e.g. a Hub-URL) into the App.
      *
-     * @param browser the browser to import the object for
+     * Sends an event to the FE in order to get the actual workflow canvas coordinates (and more) back (the FE
+     * indirectly calls {@link #importURIAtWorkflowCanvas(String, String, String, int, int)} to return those).
+     *
+     * @param cursorLocationSupplier
      * @param uriString the URI to import from
      * @return {@code true} if the import was successful
      */
-    public static boolean importURI(final Browser browser, final String uriString) {
+    public static boolean importURI(final Supplier<int[]> cursorLocationSupplier, final String uriString) {
         entityImportInProgress = getEntityImport(uriString);
         if (entityImportInProgress != null) {
-            var display = Display.getCurrent();
-            var displayCursorLocation = display.getCursorLocation();
-            var browserCursorLocation = display.map(null, browser, displayCursorLocation);
-            return sendImportURIEvent(browserCursorLocation.x, browserCursorLocation.y);
+            var cursorLocation = cursorLocationSupplier.get();
+            return sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
         } else {
             return false;
         }
@@ -173,6 +172,19 @@ public final class ImportURI {
         return true;
     }
 
+    /**
+     * Imports the entity represented by the given URI (usually a node) at the given position in the workflow canvas.
+     *
+     * If no URI is given, the {@value #entityImportInProgress} is used instead (if given). It set in the
+     * {@link #importURI(Supplier, String)}-method.
+     *
+     * @param uri can be {@code null}
+     * @param projectId
+     * @param workflowId
+     * @param canvasX
+     * @param canvasY
+     * @return {@code true} if the import was successful
+     */
     static boolean importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
         final int canvasX, final int canvasY) {
         EntityImport entityImport;
@@ -183,8 +195,7 @@ public final class ImportURI {
         }
         entityImportInProgress = null;
 
-        if (entityImport instanceof NodeImport) {
-            var nodeImport = (NodeImport)entityImport;
+        if (entityImport instanceof NodeImport nodeImport) {
             if (!isNodeInstalled(nodeImport)) {
                 askToInstallExtension(nodeImport);
                 return false;
@@ -192,8 +203,8 @@ public final class ImportURI {
             var key = getNodeFactoryKey(nodeImport.getCanonicalNodeFactory(), nodeImport.getNodeName(),
                 nodeImport.isDynamicNode());
             return importNode(key, null, projectId, workflowId, canvasX, canvasY);
-        } else if (entityImport instanceof FromFileEntityImport) {
-            return importNodeFromFileURI(((FromFileEntityImport)entityImport).m_path.toUri().toString(), projectId,
+        } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
+            return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId,
                 workflowId, canvasX, canvasY);
         }
         return false;

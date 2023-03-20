@@ -55,7 +55,7 @@ export default {
                     workflowId: this.workflowId,
                     nodeId: this.selectedNode.id
                 });
-                
+
                 return nodeDialogView;
             } catch (error) {
                 throw error;
@@ -71,7 +71,7 @@ export default {
         initKnimeService(config) {
             return new KnimeService(
                 config,
-                
+
                 // Data Service Callback
                 async (nodeService, serviceType, request) => {
                     if (nodeService === 'NodeService.callNodeDataService') {
@@ -85,7 +85,7 @@ export default {
                         });
                     }
                 },
-                
+
                 // Notification Callback
                 (notification) => {
                     // Dispatch a notification to the page builder so that it updates the corresponding view
@@ -106,7 +106,6 @@ export default {
     :init-knime-service="initKnimeService"
     :view-config-loader-fn="viewConfigLoaderFn"
     :resource-location-resolver="resourceLocationResolver"
-    override-component-name="DefaultNodeDialog"
     v-bind="$attrs"
   />
 </template>

@@ -1,7 +1,8 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import muteConsole from 'webapps-common/util/test-utils/muteConsole';
 
@@ -178,7 +179,7 @@ describe('NodeState.vue', () => {
                     }
                 }
             });
-            jest.useFakeTimers();
+            vi.useFakeTimers();
         });
 
         it('shows no tooltips by default', async () => {
@@ -193,7 +194,7 @@ describe('NodeState.vue', () => {
             doShallowMount();
 
             wrapper.find('g').trigger('mouseenter');
-            jest.runAllTimers();
+            vi.runAllTimers();
             await Vue.nextTick();
 
             expect(currentTooltip).toStrictEqual({
@@ -222,7 +223,7 @@ describe('NodeState.vue', () => {
             doShallowMount();
 
             wrapper.find('g').trigger('mouseenter');
-            jest.runAllTimers();
+            vi.runAllTimers();
             await Vue.nextTick();
 
             expect(currentTooltip).toStrictEqual({
@@ -256,7 +257,7 @@ describe('NodeState.vue', () => {
             });
             await Vue.nextTick();
 
-            jest.runAllTimers();
+            vi.runAllTimers();
 
             expect(currentTooltip).toStrictEqual({
                 anchorPoint: { x: 123, y: 456 },

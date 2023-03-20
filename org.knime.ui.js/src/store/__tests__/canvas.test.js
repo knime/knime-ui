@@ -1,6 +1,7 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import * as canvasStoreConfig from '../canvas';
 
@@ -26,7 +27,7 @@ describe('canvas store', () => {
             scrollTop: 0,
             clientWidth: 300,
             clientHeight: 300,
-            getBoundingClientRect: jest.fn().mockReturnValue({
+            getBoundingClientRect: vi.fn().mockReturnValue({
                 x: 10,
                 y: 10,
                 width: 300,
@@ -34,15 +35,15 @@ describe('canvas store', () => {
                 bottom: 310,
                 right: 310
             }),
-            scrollTo: jest.fn().mockImplementation(({ top, left, behavior }) => {
+            scrollTo: vi.fn().mockImplementation(({ top, left }) => {
                 scrollContainer.scrollLeft = left;
                 scrollContainer.scrollTop = top;
             })
         };
 
         // put intermediate jest function into toCanvasCoordinates to be able to count how often it is called
-        toCanvasCoordinatesSpy = jest.fn().mockImplementation(canvasStoreConfig.getters.toCanvasCoordinates);
-      
+        toCanvasCoordinatesSpy = vi.fn().mockImplementation(canvasStoreConfig.getters.toCanvasCoordinates);
+
         store = mockVuexStore({
             canvas: {
                 ...canvasStoreConfig,
@@ -57,10 +58,10 @@ describe('canvas store', () => {
                 }
             }
         });
-        dispatchSpy = jest.spyOn(store, 'dispatch');
+        dispatchSpy = vi.spyOn(store, 'dispatch');
     });
 
-    test('setFactor', () => {
+    it('setFactor', () => {
         store.commit('canvas/setFactor', maxZoomFactor + 1);
         expect(store.state.canvas.zoomFactor).toBe(maxZoomFactor);
 
@@ -71,14 +72,14 @@ describe('canvas store', () => {
         expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
     });
 
-    test('setInteractionsEnabled', () => {
+    it('setInteractionsEnabled', () => {
         expect(store.state.canvas.interactionsEnabled).toBe(true);
 
         store.commit('canvas/setInteractionsEnabled', false);
         expect(store.state.canvas.interactionsEnabled).toBe(false);
     });
 
-    test('setIsEmpty', () => {
+    it('setIsEmpty', () => {
         expect(store.state.canvas.isEmpty).toBe(false);
 
         store.commit('canvas/setIsEmpty', true);
@@ -86,21 +87,21 @@ describe('canvas store', () => {
     });
 
     describe('scroll container element', () => {
-        test('set & get ScrollContainerElement', () => {
+        it('set & get ScrollContainerElement', () => {
             store.dispatch('canvas/initScrollContainerElement', scrollContainer);
             expect(store.state.canvas.getScrollContainerElement()).toBe(scrollContainer);
         });
 
-        test('accessing unset scroll container throws error', () => {
+        it('accessing unset scroll container throws error', () => {
             expect(() => store.state.canvas.getScrollContainerElement()).toThrow();
         });
 
-        test('clear scroll container element', () => {
+        it('clear scroll container element', () => {
             store.commit('canvas/clearScrollContainerElement');
             expect(() => store.state.canvas.getScrollContainerElement()).toThrow();
         });
 
-        test('sets initial container size', () => {
+        it('sets initial container size', () => {
             store.dispatch('canvas/initScrollContainerElement', scrollContainer);
             expect(store.state.canvas.containerSize).toStrictEqual({
                 width: 300,
@@ -115,7 +116,7 @@ describe('canvas store', () => {
         });
 
         describe('calculations for rendering', () => {
-            test('content bounds', () => {
+            it('content bounds', () => {
                 expect(store.getters['canvas/contentBounds']).toStrictEqual({
                     left: -padding,
                     top: -padding,
@@ -128,7 +129,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('content padding', () => {
+            it('content padding', () => {
                 store.commit('canvas/setFactor', 2);
 
                 expect(store.getters['canvas/contentPadding']).toStrictEqual({
@@ -139,7 +140,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('canvas size - content larger than container', () => {
+            it('canvas size - content larger than container', () => {
                 workflowBounds = {
                     left: -200,
                     top: -200,
@@ -156,7 +157,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('canvas size - content smaller than container', () => {
+            it('canvas size - content smaller than container', () => {
                 workflowBounds = {
                     left: 0,
                     top: 0,
@@ -172,7 +173,7 @@ describe('canvas store', () => {
                 expect(Math.round(canvasSize.height)).toBe(600);
             });
 
-            test('view box', () => {
+            it('view box', () => {
                 store.commit('canvas/setFactor', 2);
 
                 // content bounds inkl. padding + padding based on container
@@ -221,7 +222,7 @@ describe('canvas store', () => {
                     scrollHeight: 1000,
                     scrollWidth: 1000
                 });
-    
+
                 await store.dispatch('canvas/restoreScrollState', {
                     zoomFactor: 2,
                     scrollLeft: 200,
@@ -230,11 +231,11 @@ describe('canvas store', () => {
                     scrollHeight: 500
                 });
                 expect(store.state.canvas.zoomFactor).toBe(2);
-    
+
                 // proportion:
                 // 200(scrollLeft) is to 500(scrollWidth) as 400(expected) is to 1000(currentScrollWidth)
                 expect(scrollContainer.scrollLeft).toBe(400);
-                
+
                 // proportion:
                 // 100(scrollTop) is to 500(scrollHeight) as 200(expected) is to 1000(currentScrollHeight)
                 expect(scrollContainer.scrollTop).toBe(200);
@@ -242,12 +243,12 @@ describe('canvas store', () => {
 
             it('defaults to `fillScreen` if canvas state is not valid when restoring', async () => {
                 await store.dispatch('canvas/restoreScrollState', {});
-                
+
                 expect(dispatchSpy).toHaveBeenCalledWith('canvas/fillScreen', undefined);
             });
         });
 
-        test('content bounds change', () => {
+        it('content bounds change', () => {
             let oldBounds = { ...workflowBounds };
             let newBounds = { ...oldBounds };
 
@@ -266,7 +267,7 @@ describe('canvas store', () => {
             expect(scrollContainer.scrollTop).toBe(10);
         });
 
-        test.each([100, 200])('change container size at %i% zoom', async (zoomFactor) => {
+        it.each([100, 200])('change container size at %i% zoom', async (zoomFactor) => {
             // demonstrate this works independent of zoom
             store.commit('canvas/setFactor', zoomFactor / 100);
 
@@ -280,7 +281,7 @@ describe('canvas store', () => {
                 width: 200,
                 height: 200
             });
-            
+
             await Vue.nextTick();
 
             // new padding is 200 (screen units) => decreasy by 100 => scroll by 100
@@ -289,7 +290,7 @@ describe('canvas store', () => {
         });
 
         describe('scroll to', () => {
-            test('(0, 0) to upper left corner', () => {
+            it('(0, 0) to upper left corner', () => {
                 store.dispatch('canvas/scroll', { canvasX: 0, canvasY: 0, toScreenX: 0, toScreenY: 0 });
                 expect(scrollContainer.scrollTo).toHaveBeenCalledWith({
                     top: 300 + padding, // includes canvas size + content padding
@@ -298,7 +299,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('(0, 0) to center', () => {
+            it('(0, 0) to center', () => {
                 store.dispatch('canvas/scroll', { canvasX: 0, canvasY: 0, toScreenX: 'center', toScreenY: 'center' });
                 expect(scrollContainer.scrollTo).toHaveBeenCalledWith({
                     top: 150 + padding, // includes canvas size + content padding
@@ -307,7 +308,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('center to center', () => {
+            it('center to center', () => {
                 store.dispatch('canvas/scroll', {
                     canvasX: 'center', canvasY: 'center', toScreenX: 'center', toScreenY: 'center'
                 });
@@ -330,7 +331,7 @@ describe('canvas store', () => {
                 };
             });
 
-            test('fitToScreen zoom factor', () => {
+            it('fitToScreen zoom factor', () => {
                 let fitToZoom = store.getters['canvas/fitToScreenZoomFactor'];
 
                 // x axis fits 6 times
@@ -342,7 +343,7 @@ describe('canvas store', () => {
                 expect(fitToZoom.max).toBe(6);
             });
 
-            test('fit to screen', () => {
+            it('fit to screen', () => {
                 store.dispatch('canvas/fitToScreen');
 
                 expect(store.state.canvas.zoomFactor).toBe(3 * 0.98);
@@ -354,7 +355,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('zoom to fit (both axis fit inside container)', () => {
+            it('zoom to fit (both axis fit inside container)', () => {
                 store.dispatch('canvas/fillScreen');
 
                 // zoom to 100% and center workflow
@@ -367,7 +368,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('zoom to fit (y axis overlaps)', () => {
+            it('zoom to fit (y axis overlaps)', () => {
                 workflowBounds = {
                     left: 0,
                     top: 0,
@@ -388,7 +389,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('zoom to fit (x axis overlaps)', () => {
+            it('zoom to fit (x axis overlaps)', () => {
                 workflowBounds = {
                     left: 0,
                     top: 0,
@@ -409,7 +410,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('zoom to fit (zooms out)', () => {
+            it('zoom to fit (zooms out)', () => {
                 workflowBounds = {
                     left: 0,
                     top: 0,
@@ -425,7 +426,7 @@ describe('canvas store', () => {
         });
 
         describe('zoom around point', () => {
-            test('zoom around center by delta', () => {
+            it('zoom around center by delta', () => {
                 // pass both delta and factor for this test
                 store.dispatch('canvas/zoomCentered', { delta: 1 });
 
@@ -436,7 +437,7 @@ describe('canvas store', () => {
                 });
             });
 
-            test('zoom around center to factor', () => {
+            it('zoom around center to factor', () => {
                 // pass both delta and factor for this test
                 store.dispatch('canvas/zoomCentered', { factor: 2 });
 
@@ -447,21 +448,21 @@ describe('canvas store', () => {
                 });
             });
 
-            test('zoom by delta', () => {
+            it('zoom by delta', () => {
                 expect(store.state.canvas.zoomFactor).toBe(1);
 
                 store.dispatch('canvas/zoomAroundPointer', { delta: 2 });
                 expect(store.state.canvas.zoomFactor).toBe(zoomMultiplier * zoomMultiplier);
             });
 
-            test('zoom to factor', () => {
+            it('zoom to factor', () => {
                 expect(store.state.canvas.zoomFactor).toBe(1);
 
                 store.dispatch('canvas/zoomAroundPointer', { factor: 2 });
                 expect(store.state.canvas.zoomFactor).toBe(2);
             });
 
-            test('throws for incorrect arguments', () => {
+            it('throws for incorrect arguments', () => {
                 expect(() => {
                     store.dispatch('canvas/zoomAroundPointer');
                 }).toThrow();
@@ -471,7 +472,7 @@ describe('canvas store', () => {
                 }).toThrow();
             });
 
-            test.each([
+            it.each([
                 { x: 0, y: 0 },
                 { x: 200, y: 200 }
             ])('scrolls into workflow at point %s', (targetPoint) => {
@@ -535,7 +536,7 @@ describe('canvas store', () => {
         });
 
         describe('coordinate transformation', () => {
-            test('screenFromCanvasCoordinates', () => {
+            it('screenFromCanvasCoordinates', () => {
                 store.dispatch('canvas/initScrollContainerElement', {
                     ...scrollContainer,
                     offsetLeft: 10,
@@ -548,7 +549,7 @@ describe('canvas store', () => {
                     .toStrictEqual({ x: 300, y: 300 });
             });
 
-            test('screenToCanvasCoordinates', () => {
+            it('screenToCanvasCoordinates', () => {
                 store.dispatch('canvas/initScrollContainerElement', {
                     ...scrollContainer,
                     offsetLeft: 10,
@@ -562,7 +563,7 @@ describe('canvas store', () => {
             });
         });
 
-        test('visible frame', () => {
+        it('visible frame', () => {
             store.dispatch('canvas/initScrollContainerElement', {
                 ...scrollContainer,
                 offsetLeft: 10,

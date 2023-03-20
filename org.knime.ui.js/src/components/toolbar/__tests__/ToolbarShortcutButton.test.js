@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
@@ -17,9 +18,9 @@ describe('ToolbarShortcutButton.vue', () => {
     //     };
 
     //     $shortcuts = {
-    //         get: jest.fn().mockImplementation(() => shortcut),
-    //         isEnabled: jest.fn().mockReturnValue(true),
-    //         dispatch: jest.fn()
+    //         get: vi.fn().mockImplementation(() => shortcut),
+    //         isEnabled: vi.fn().mockReturnValue(true),
+    //         dispatch: vi.fn()
     //     };
 
     //     props = {
@@ -31,7 +32,7 @@ describe('ToolbarShortcutButton.vue', () => {
     //     };
     // });
 
-    const doMount = ({ shortcut, isEnabledMock = jest.fn().mockReturnValue(true) } = {}) => {
+    const doMount = ({ shortcut, isEnabledMock = vi.fn().mockReturnValue(true) } = {}) => {
         const defaultShortcut = {
             icon: IconComponent,
             title: 'save workflow',
@@ -40,9 +41,9 @@ describe('ToolbarShortcutButton.vue', () => {
         };
 
         const $shortcuts = {
-            get: jest.fn().mockImplementation(() => shortcut || defaultShortcut),
+            get: vi.fn().mockImplementation(() => shortcut || defaultShortcut),
             isEnabled: isEnabledMock,
-            dispatch: jest.fn()
+            dispatch: vi.fn()
         };
 
         const props = {
@@ -57,12 +58,12 @@ describe('ToolbarShortcutButton.vue', () => {
     };
 
     describe('renders button', () => {
-        test('fetches shortcut', () => {
+        it('fetches shortcut', () => {
             const { $shortcuts } = doMount();
             expect($shortcuts.get).toHaveBeenCalledWith('save');
         });
 
-        test('renders full info', () => {
+        it('renders full info', () => {
             const { wrapper } = doMount();
 
             const toolbarButton = wrapper.getComponent(ToolbarButton);
@@ -75,7 +76,7 @@ describe('ToolbarShortcutButton.vue', () => {
             expect(wrapper.findComponent(IconComponent).exists()).toBe(true);
         });
 
-        test('renders only with title', () => {
+        it('renders only with title', () => {
             const shortcut = {
                 title: 'save workflow'
             };
@@ -89,8 +90,8 @@ describe('ToolbarShortcutButton.vue', () => {
             expect(wrapper.findComponent(IconComponent).exists()).toBe(false);
         });
 
-        test('renders disabled', async () => {
-            const { wrapper, $shortcuts } = doMount({ isEnabledMock: jest.fn(() => false) });
+        it('renders disabled', async () => {
+            const { wrapper, $shortcuts } = doMount({ isEnabledMock: vi.fn(() => false) });
 
             expect($shortcuts.isEnabled).toHaveBeenCalledWith('save');
             await Vue.nextTick();
@@ -99,7 +100,7 @@ describe('ToolbarShortcutButton.vue', () => {
             expect(toolbarButton.attributes('disabled')).toBeDefined();
         });
 
-        test('dispatches shortcut handler', () => {
+        it('dispatches shortcut handler', () => {
             const { wrapper, $shortcuts } = doMount();
 
             wrapper.trigger('click');

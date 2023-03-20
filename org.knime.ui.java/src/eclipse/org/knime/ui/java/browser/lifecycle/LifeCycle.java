@@ -49,14 +49,14 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import java.util.Arrays;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.LazyInitializer;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
-
-import com.equo.chromium.swt.Browser;
 
 /**
  * Represents the life cycle (which is a finite state machine) of the KNIME UI and allows one to step through the
@@ -138,10 +138,11 @@ public final class LifeCycle {
 
     /**
      * Called once at first.
-     * @param browser
+     *
+     * @param apiFunctionConsumer consumer that takes care of registering the API-functions
      */
-    public void create(final Browser browser) {
-        doStateTransition(StateTransition.CREATE, () -> Create.run(browser), StateTransition.STARTUP);
+    public void create(final BiConsumer<String, Function<Object[], Object>> apiFunctionConsumer) {
+        doStateTransition(StateTransition.CREATE, () -> Create.run(apiFunctionConsumer), StateTransition.STARTUP);
     }
 
     /**
@@ -154,7 +155,6 @@ public final class LifeCycle {
     /**
      * Runs the init-state-transition.
      *
-     * @param browser required to initialize browser functions
      * @param checkForUpdates whether to check for updates on initialization
      */
     public void init(final boolean checkForUpdates) {
@@ -164,11 +164,9 @@ public final class LifeCycle {
 
     /**
      * Runs the state transition required once the web app (web page) is loaded.
-     *
-     * @param browser
      */
-    public void webAppLoaded(final Browser browser) {
-        doStateTransition(StateTransition.WEB_APP_LOADED, () -> WebAppLoaded.runPhase(browser), StateTransition.INIT,
+    public void webAppLoaded() {
+        doStateTransition(StateTransition.WEB_APP_LOADED, WebAppLoaded::run, StateTransition.INIT,
             StateTransition.RELOAD);
     }
 
@@ -176,10 +174,10 @@ public final class LifeCycle {
      * Runs the state transition required to reload the web app.
      */
     public void reload() {
-        doStateTransition(StateTransition.RELOAD, () -> {
-            // removed event listeners will be re-added again by the web app
-            DefaultEventService.getInstance().removeAllEventListeners();
-        }, StateTransition.WEB_APP_LOADED);
+        doStateTransition(StateTransition.RELOAD, () ->
+        // removed event listeners will be re-added again by the web app
+        DefaultEventService.getInstance().removeAllEventListeners(), StateTransition.WEB_APP_LOADED);
+        m_lastStateTransition = StateTransition.WEB_APP_LOADED;
     }
 
     /**
@@ -266,7 +264,8 @@ public final class LifeCycle {
      * @return {@code true} if the passed state transition is the next one that will be run
      */
     public boolean isNextStateTransition(final StateTransition stateTransition) {
-        return m_lastStateTransition.rank() + 1 == stateTransition.rank();
+        var lastRank = m_lastStateTransition == null ? -2 : m_lastStateTransition.rank();
+        return lastRank + 1 == stateTransition.rank();
     }
 
     /**
@@ -275,7 +274,7 @@ public final class LifeCycle {
      *         otherwise {@code false}
      */
     public boolean isBeforeStateTransition(final StateTransition stateTransition) {
-        return m_lastStateTransition.rank() < stateTransition.rank();
+        return m_lastStateTransition != null && m_lastStateTransition.rank() < stateTransition.rank();
     }
 
     /**
@@ -285,6 +284,11 @@ public final class LifeCycle {
      */
     public void skipStateTransition(final StateTransition stateTransition) {
         m_lastStateTransition = stateTransition;
+    }
+
+    void resetLifeCycleState() {
+        m_lastStateTransition = null;
+        m_state = null;
     }
 
     private interface StateTransitionRunnable {

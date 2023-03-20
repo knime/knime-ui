@@ -50,6 +50,10 @@ package org.knime.ui.java.api;
 
 import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
+import javax.swing.SwingUtilities;
+
+import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.Node;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.NativeNodeContainer;
@@ -83,7 +87,7 @@ final class NodeAPI {
      */
     @API
     static void openNodeDialog(final String projectId, final String nodeId) {
-        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         NodeContainerEditPart.openNodeDialog(wrap(nc));
     }
@@ -97,23 +101,35 @@ final class NodeAPI {
      */
     @API
     static void openNodeView(final String projectId, final String nodeId) {
-        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         if (nc instanceof SubNodeContainer) {
             // composite view
             OpenSubnodeWebViewAction.openView((SubNodeContainer)nc);
         } else if (NodeViewManager.hasNodeView(nc)) {
             // 'ui-extension' view
-            var nnc = ((NativeNodeContainer)nc);
-            var viewName = "Interactive View: " + nnc.getNodeViewName(0);
+            final var nnc = ((NativeNodeContainer)nc);
+            final var viewName = "Interactive View: " + nnc.getNodeViewName(0);
             OpenNodeViewAction.openNodeView(nnc, OpenNodeViewAction.createNodeView(nnc, false, true), viewName);
         } else if (nc.getInteractiveWebViews().size() > 0 || nc.hasInteractiveView()) {
             // legacy js-view
             OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,
                 nc.getInteractiveWebViews().get(0).getViewName());
+        } else if (nc.getNrNodeViews() > 0) {
+            // swing-based view
+            final var title = nc.getViewName(0) + " - " + nc.getDisplayLabel();
+            final var knimeWindowBounds = getAppBoundsAsAWTRec();
+            SwingUtilities.invokeLater(() -> Node.invokeOpenView(nc.getView(0), title, knimeWindowBounds));
+        } else {
+            NodeLogger.getLogger(NodeAPI.class).warnWithFormat(
+                "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
         }
-        NodeLogger.getLogger(NodeAPI.class).warnWithFormat(
-            "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
+    }
+
+    private static java.awt.Rectangle getAppBoundsAsAWTRec() {
+        final var knimeWindowBounds = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getBounds();
+        return new java.awt.Rectangle(knimeWindowBounds.x, knimeWindowBounds.y, knimeWindowBounds.width,
+            knimeWindowBounds.height);
     }
 
     /**
@@ -121,7 +137,7 @@ final class NodeAPI {
      */
     @API
     static void openLegacyFlowVariableDialog(final String projectId, final String nodeId) {
-        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         NodeContainerEditPart.openDialog(wrap(nc), null);
     }
@@ -136,14 +152,14 @@ final class NodeAPI {
      */
     @API
     static String openLayoutEditor(final String projectId, final String nodeId) {
-        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         if (nc instanceof SubNodeContainer) {
-            var subnode = (SubNodeContainer)nc;
+            final var subnode = (SubNodeContainer)nc;
             SubnodeLayoutAction.openLayoutEditor(subnode);
             return null;
         } else {
-            var message = String.format("There is no layout editor for node '%s'", nc);
+            final var message = String.format("There is no layout editor for node '%s'", nc);
             NodeLogger.getLogger(NodeAPI.class).warn(message);
             return message;
         }

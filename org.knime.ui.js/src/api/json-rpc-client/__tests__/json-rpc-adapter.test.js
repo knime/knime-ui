@@ -1,8 +1,9 @@
-import rpc from '../json-rpc-adapter';
+import { expect, describe, beforeEach, it, vi } from 'vitest';
+import { rpc } from '../json-rpc-adapter';
 
 describe('JSON-RPC adapter', () => {
     beforeEach(() => {
-        window.jsonrpc = jest.fn().mockReturnValue({
+        window.jsonrpc = vi.fn().mockReturnValue({
             jsonrpc: '2.0',
             result: 'dummy result',
             id: 0
@@ -10,24 +11,24 @@ describe('JSON-RPC adapter', () => {
     });
 
     it('performs a JSON-RPC call on window.jsonrpc', async () => {
-        let result = await rpc('method', 'arg1', 'arg2');
+        let result = await rpc('method', { arg1: 'arg1', arg2: 'arg2' });
         expect(window.jsonrpc).toHaveBeenCalledWith({
             jsonrpc: '2.0',
             method: 'method',
-            params: ['arg1', 'arg2'],
+            params: { arg1: 'arg1', arg2: 'arg2' },
             id: 0
         });
         expect(result).toBe('dummy result');
     });
 
     it('handles serialized result', async () => {
-        window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
+        window.jsonrpc = vi.fn().mockReturnValue(JSON.stringify({
             jsonrpc: '2.0',
             result: 'dummy result',
             id: 0
         }));
 
-        let result = await rpc('method', 'arg1', 'arg2');
+        let result = await rpc('method', { arg1: 'arg1', arg2: 'arg2' });
         expect(result).toBe('dummy result');
     });
 
@@ -36,8 +37,8 @@ describe('JSON-RPC adapter', () => {
             throw new Error('internal error');
         });
 
-        await expect(rpc('method', 'arg1', 'arg2')).rejects
-            .toThrow('Error calling JSON-RPC api "method", "["arg1","arg2"]": internal error');
+        await expect(rpc('method', { arg1: 'arg1', arg2: 'arg2' })).rejects
+            .toThrow('Error calling JSON-RPC api "method", "{"arg1":"arg1","arg2":"arg2"}": internal error');
     });
 
     it('handles error response', async () => {
@@ -45,8 +46,8 @@ describe('JSON-RPC adapter', () => {
             error: 'This id is not known'
         });
 
-        await expect(rpc('method', 'arg1', 'arg2')).rejects.toThrow(
-            'Error returned from JSON-RPC API ["method",["arg1","arg2"]]: "This id is not known"'
+        await expect(rpc('method', { arg1: 'arg1', arg2: 'arg2' })).rejects.toThrow(
+            'Error returned from JSON-RPC API ["method",{"arg1":"arg1","arg2":"arg2"}]: "This id is not known"'
         );
     });
 
@@ -55,7 +56,7 @@ describe('JSON-RPC adapter', () => {
             id: 0
         });
 
-        await expect(rpc('method', 'arg1', 'arg2')).rejects.toThrow(
+        await expect(rpc('method', { arg1: 'arg1', arg2: 'arg2' })).rejects.toThrow(
             'Invalid JSON-RPC response: Neither error nor result exist.\n{"id":0}'
         );
     });
@@ -67,8 +68,8 @@ describe('JSON-RPC adapter', () => {
             error: 'nothing is fine'
         });
 
-        await expect(rpc('method', 'arg1', 'arg2')).rejects.toThrow(
-            'Error returned from JSON-RPC API ["method",["arg1","arg2"]]: "nothing is fine"'
+        await expect(rpc('method', { arg1: 'arg1', arg2: 'arg2' })).rejects.toThrow(
+            'Error returned from JSON-RPC API ["method",{"arg1":"arg1","arg2":"arg2"}]: "nothing is fine"'
         );
     });
 });

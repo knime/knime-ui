@@ -239,12 +239,14 @@ public final class AppStatePersistor {
                         "No workflow project found at " + absolutePath);
                     return null;
                 }
-                var wfm = DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(localSpace, itemId).orElse(null);
-                if (wfm == null) {
-                    DesktopAPUtil.showWarning("Failed to load workflow",
-                        "The workflow at '" + absolutePath + "' couldn't be loaded.");
-                }
-                return wfm;
+                return DesktopAPUtil.runWithProgress("Loading workflow", LOGGER, monitor -> {// NOSONAR better than inline class
+                    var wfm = DesktopAPUtil.loadWorkflow(localSpace, itemId, monitor);
+                    if (wfm == null) {
+                        DesktopAPUtil.showWarning("Failed to load workflow",
+                            "The workflow at '" + absolutePath + "' couldn't be loaded.");
+                    }
+                    return wfm;
+                }).orElse(null);
             }
 
         };

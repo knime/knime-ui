@@ -1,6 +1,7 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 import { KnimeMIME } from '@/mixins/dropNode';
@@ -15,24 +16,24 @@ describe('NodeTemplate', () => {
     beforeEach(() => {
         isWritable = true;
         wrapper = null;
-        openDescriptionPanelMock = jest.fn();
-        closeDescriptionPanelMock = jest.fn();
-        setSelectedNodeMock = jest.fn();
-        setDraggingNodeMock = jest.fn();
-        addNodeMock = jest.fn();
+        openDescriptionPanelMock = vi.fn();
+        closeDescriptionPanelMock = vi.fn();
+        setSelectedNodeMock = vi.fn();
+        setDraggingNodeMock = vi.fn();
+        addNodeMock = vi.fn();
 
-        let getBoundingClientRectMock = jest.fn().mockReturnValue({
+        let getBoundingClientRectMock = vi.fn().mockReturnValue({
             width: 70,
             height: 70
         });
-        getElementByIdMock = jest.fn();
+        getElementByIdMock = vi.fn();
         HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
         Document.prototype.getElementById = getElementByIdMock;
 
         testEvent = {
             dataTransfer: {
-                setData: jest.fn(),
-                setDragImage: jest.fn()
+                setData: vi.fn(),
+                setDragImage: vi.fn()
             }
         };
 
@@ -105,7 +106,7 @@ describe('NodeTemplate', () => {
             },
             canvas: {
                 getters: {
-                    toCanvasCoordinates: state => toCanvasCoordinatesMock
+                    toCanvasCoordinates: () => toCanvasCoordinatesMock
                 }
             }
         };
@@ -321,7 +322,7 @@ describe('NodeTemplate', () => {
 
             wrapper.trigger('dragend', { dataTransfer: { dropEffect: '' } });
 
-            expect(node.attributes().style).toBe(undefined);
+            expect(node.attributes().style).toBeUndefined();
         });
 
         it('closes description panel when dragging starts', () => {

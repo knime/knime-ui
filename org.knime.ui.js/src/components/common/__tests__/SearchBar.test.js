@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
@@ -37,7 +38,7 @@ describe('SearchBar', () => {
     it('can be focused via public method', () => {
         doShallowMount();
 
-        let focusMock = jest.fn();
+        let focusMock = vi.fn();
         wrapper.find('input').element.focus = focusMock;
         wrapper.vm.focus();
 

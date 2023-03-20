@@ -1,7 +1,8 @@
+import { expect, describe, it } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import * as selectionStore from '@/store/selection';
 
 import NodeDialogWrapper from '../NodeDialogWrapper.vue';
@@ -65,12 +66,12 @@ describe('NodeDialogWrapper.vue', () => {
 
         // no nodes selected -> not displayed
         expect(wrapper.findComponent(NodeDialogLoader).exists()).toBe(false);
-        
+
         // select node without dialog -> not displayed
         store.commit('selection/addNodesToSelection', [nodeWithoutDialog.id]);
         await Vue.nextTick();
         expect(wrapper.findComponent(NodeDialogLoader).exists()).toBe(false);
-        
+
         // select node with dialog -> not displayed
         store.commit('selection/addNodesToSelection', [nodeWithDialog.id]);
         await Vue.nextTick();
@@ -87,7 +88,7 @@ describe('NodeDialogWrapper.vue', () => {
         const wrapper = doShallowMount(store);
 
         expect(wrapper.find('.placeholder').text()).toMatch('Please select a node');
-        
+
         store.commit('selection/addNodesToSelection', [nodeWithoutDialog.id]);
         await Vue.nextTick();
 

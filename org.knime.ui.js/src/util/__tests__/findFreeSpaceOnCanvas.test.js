@@ -1,10 +1,11 @@
+import { expect, describe, it } from 'vitest';
 import { nodeSize } from '@/style/shapes.mjs';
 
 import findFreeSpaceOnCanvas, { NODE_POSITION_SPACE_FACTOR, findFreeSpace, nodePadding }
     from '../findFreeSpaceOnCanvas';
 
 describe('findFreeSpaceOnCanvas', () => {
-    describe('Algorithm 1', () => {
+    describe('algorithm 1', () => {
         let nodes = {
             'root:1': {
                 position: {
@@ -37,8 +38,8 @@ describe('findFreeSpaceOnCanvas', () => {
         });
     });
 
-    describe('Algorithm 2', () => {
-        test('fill space in-between', () => {
+    describe('algorithm 2', () => {
+        it('fill space in-between', () => {
             expect(findFreeSpace({
                 area: {
                     width: 10,
@@ -62,7 +63,7 @@ describe('findFreeSpaceOnCanvas', () => {
             });
         });
 
-        test('space in-between not sufficient', () => {
+        it('space in-between not sufficient', () => {
             expect(findFreeSpace({
                 area: {
                     width: 12,

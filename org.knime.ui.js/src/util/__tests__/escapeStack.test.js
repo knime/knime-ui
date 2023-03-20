@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { escapePressed, escapeStack } from '@/mixins/escapeStack';
 
 describe('Escape Stack', () => {
@@ -41,7 +42,7 @@ describe('Escape Stack', () => {
         expect(escapeOrder.get()).toBe('');
     });
 
-    test('add and remove components', () => {
+    it('add and remove components', () => {
         const { component1, component2, escapeOrder } = doMount();
         component1.beforeMount();
         component2.beforeMount();
@@ -63,7 +64,7 @@ describe('Escape Stack', () => {
         expect(escapeOrder.get()).toMatch('component2, component1');
     });
 
-    test('top component is removed before escape is pressed', () => {
+    it('top component is removed before escape is pressed', () => {
         const { component1, component2, escapeOrder } = doMount();
         component1.beforeMount();
         component2.beforeMount();
@@ -76,7 +77,7 @@ describe('Escape Stack', () => {
         expect(escapeOrder.get()).toMatch('component1');
     });
 
-    test('calls all handlers of a group stack', () => {
+    it('calls all handlers of a group stack', () => {
         const { component1, component2, escapeOrder } = doMount({
             component1Settings: { group: 'MY_GROUP' },
             component2Settings: { group: 'MY_GROUP' }
@@ -89,7 +90,7 @@ describe('Escape Stack', () => {
         expect(escapeOrder.get()).toMatch('component2, component1');
     });
 
-    test('retains `alwaysActive` handlers', () => {
+    it('retains `alwaysActive` handlers', () => {
         const { component1, component2, escapeOrder } = doMount({
             component1Settings: { group: 'MY_GROUP', alwaysActive: true },
             component2Settings: { group: 'MY_GROUP' }

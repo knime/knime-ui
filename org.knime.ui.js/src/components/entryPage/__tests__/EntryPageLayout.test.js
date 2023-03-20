@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import EntryPageLayout from '@/components/entryPage/EntryPageLayout.vue';
 import PageHeader from '@/components/common/PageHeader.vue';
@@ -5,7 +6,7 @@ import PageHeader from '@/components/common/PageHeader.vue';
 describe('EntryPageLayout.vue', () => {
     const doMount = () => {
         const $router = {
-            push: jest.fn()
+            push: vi.fn()
         };
 
         const $route = {

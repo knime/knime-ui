@@ -1,20 +1,21 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
 import * as Vue from 'vue';
 
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import * as $shapes from '@/style/shapes.mjs';
 import { $bus } from '@/plugins/event-bus';
 
 import ConnectorSnappingProvider from '../ConnectorSnappingProvider.vue';
 
 describe('ConnectorSnappingProvider.vue', () => {
-    Event.prototype.preventDefault = jest.fn();
-    const connectNodesMock = jest.fn();
-    const addNodePortMock = jest.fn();
-    const openPortTypeMenuMock = jest.fn();
-    const closePortTypeMenuMock = jest.fn();
-    const setPortTypeMenuPreviewPortMock = jest.fn();
+    Event.prototype.preventDefault = vi.fn();
+    const connectNodesMock = vi.fn();
+    const addNodePortMock = vi.fn();
+    const openPortTypeMenuMock = vi.fn();
+    const closePortTypeMenuMock = vi.fn();
+    const setPortTypeMenuPreviewPortMock = vi.fn();
     const mockPorts = {
         inPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` })),
         outPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` }))
@@ -107,7 +108,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         return getSlottedChildComponent(wrapper).props('scope')[propName];
     };
 
-    const startConnection = async ({ wrapper, startNodeId = '', validConnectionTargets = [] }) => {
+    const startConnection = async ({ startNodeId = '', validConnectionTargets = [] }) => {
         $bus.emit('connector-start', {
             startNodeId,
             validConnectionTargets: new Set(validConnectionTargets)
@@ -129,7 +130,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         wrapper,
         ports = mockPorts,
         eventDetails = { x: 0, y: 0, targetPortDirection: 'in' },
-        onSnapCallback = jest.fn(() => true)
+        onSnapCallback = vi.fn(() => true)
     }) => {
         getSlottedChildComponent(wrapper).trigger('connector-move', {
             detail: { ...eventDetails, onSnapCallback }
@@ -142,13 +143,13 @@ describe('ConnectorSnappingProvider.vue', () => {
         await Vue.nextTick();
     };
 
-    const connectorEnd = async ({ wrapper }) => {
+    const connectorEnd = async () => {
         $bus.emit('connector-end');
         await Vue.nextTick();
     };
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('connector enter & leave', () => {
@@ -190,7 +191,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         });
     });
 
-    describe('Validates drop targets', () => {
+    describe('validates drop targets', () => {
         it('should not allow connection to self', async () => {
             const myId = 'self';
             const wrapper = doMount({ id: myId });
@@ -225,7 +226,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         });
     });
 
-    describe('Placeholder ports', () => {
+    describe('placeholder ports', () => {
         const validPortGroups = {
             default: {
                 canAddInPort: true,
@@ -233,7 +234,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                 supportedPortTypeIds: ['TYPE_ID']
             }
         };
-        const onSnapCallback = jest.fn(() => ({
+        const onSnapCallback = vi.fn(() => ({
             didSnap: true,
             createPortFromPlaceholder: {
                 validPortGroups
@@ -248,8 +249,8 @@ describe('ConnectorSnappingProvider.vue', () => {
             }
         };
 
-        describe('Add Port', () => {
-            test.each([
+        describe('add Port', () => {
+            it.each([
                 ['input', 'in', 0],
                 ['output', 'out', 30]
             ])('snaps to %s placeholder port ', async (_, direction, x) => {
@@ -285,7 +286,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                 });
             });
 
-            test.each([
+            it.each([
                 ['input', 'in', 0, {
                     destNode: 'root',
                     destPort: 3,
@@ -334,7 +335,7 @@ describe('ConnectorSnappingProvider.vue', () => {
             });
         });
 
-        describe('Port type menu', () => {
+        describe('port type menu', () => {
             const dropForMenu = async (validPortGroups) => {
                 const wrapper = doMount({ portGroups });
 
@@ -345,7 +346,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                         y: 24,
                         targetPortDirection: 'out'
                     },
-                    onSnapCallback: jest.fn(() => ({
+                    onSnapCallback: vi.fn(() => ({
                         didSnap: true,
                         createPortFromPlaceholder: {
                             validPortGroups
@@ -446,7 +447,7 @@ describe('ConnectorSnappingProvider.vue', () => {
             });
         });
 
-        describe('Incompatible and incomplete states', () => {
+        describe('incompatible and incomplete states', () => {
             beforeEach(() => {
                 addNodePortMock.mockReset();
                 connectNodesMock.mockReset();
@@ -509,8 +510,8 @@ describe('ConnectorSnappingProvider.vue', () => {
         });
     });
 
-    describe('Snapping', () => {
-        const onSnapCallback = jest.fn(() => ({ didSnap: true }));
+    describe('snapping', () => {
+        const onSnapCallback = vi.fn(() => ({ didSnap: true }));
 
         it('should not snap when no portPositions are given', async () => {
             const wrapper = doMount({ portPositions: { in: [], out: [] } });
@@ -553,7 +554,7 @@ describe('ConnectorSnappingProvider.vue', () => {
             expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toBeNull();
         });
 
-        describe('Snap to Ports', () => {
+        describe('snap to Ports', () => {
             it.each([
                 ['in', { x: 38, y: 0 }],
                 ['out', { x: -10, y: 5 }]

@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import * as outputValidator from '../output-validator';
 
 describe('output-validator.js', () => {
@@ -29,7 +30,7 @@ describe('output-validator.js', () => {
         }
     };
 
-    describe('Node validation checks', () => {
+    describe('node validation checks', () => {
         const runNodeValidationChecks = (params) => {
             const runMiddleware = outputValidator.buildMiddleware(
                 outputValidator.validateDragging,
@@ -155,7 +156,7 @@ describe('output-validator.js', () => {
     });
 
     // Port validation checks assume that the `selectedNode` is already valid
-    describe('Port validation checks', () => {
+    describe('port validation checks', () => {
         const runPortValidationChecks = (params) => {
             const runMiddleware = outputValidator.buildMiddleware(
                 outputValidator.validatePortSelection,

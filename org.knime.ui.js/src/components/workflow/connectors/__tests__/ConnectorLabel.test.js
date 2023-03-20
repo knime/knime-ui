@@ -1,7 +1,8 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import ConnectorLabel from '../ConnectorLabel.vue';
 
@@ -17,11 +18,11 @@ describe('ConnectorLabel.vue', () => {
         };
     });
 
-    describe('Check label creation', () => {
+    describe('check label creation', () => {
         let doMount, wrapper, isNodeSelectedMock;
 
         beforeEach(() => {
-            isNodeSelectedMock = jest.fn().mockReturnValue(() => false);
+            isNodeSelectedMock = vi.fn().mockReturnValue(() => false);
             $store = mockVuexStore({
                 workflow: {
                     state: {

@@ -1,3 +1,4 @@
+import { expect, describe, beforeAll, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 import { KnimeService } from '@knime/ui-extension-service';
@@ -6,13 +7,13 @@ import { getNodeDialog as getNodeDialogMock, callNodeDataService as callNodeData
 
 import NodeDialogLoader from '../NodeDialogLoader.vue';
 
-jest.mock('@api', () => ({
-    getNodeDialog: jest.fn(),
-    callNodeDataService: jest.fn()
+vi.mock('@api', () => ({
+    getNodeDialog: vi.fn(),
+    callNodeDataService: vi.fn()
 }), { virtual: true });
 
-jest.mock('@knime/ui-extension-service', () => ({
-    KnimeService: jest.fn()
+vi.mock('@knime/ui-extension-service', () => ({
+    KnimeService: vi.fn()
 }));
 
 
@@ -38,7 +39,7 @@ describe('NodeDialogLoader.vue', () => {
     };
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     const doMount = (mockStore = {}) => mount(NodeDialogLoader, {
@@ -46,7 +47,7 @@ describe('NodeDialogLoader.vue', () => {
         // create a mock store instead of a real one via global.plugins
         global: { mocks: { $store: mockStore } }
     });
-    
+
     it('should load nodeDialog on mount', () => {
         doMount();
 
@@ -60,7 +61,7 @@ describe('NodeDialogLoader.vue', () => {
     it('should load the node dialog when the selected node changes and the new node has a dialog', async () => {
         const wrapper = doMount();
         const newNode = { ...dummyNode, id: 'node2' };
-        
+
         wrapper.setProps({ selectedNode: newNode });
 
         await Vue.nextTick();
@@ -70,8 +71,8 @@ describe('NodeDialogLoader.vue', () => {
             nodeId: 'node2'
         }));
     });
-    
-    describe('Knime service callbacks', () => {
+
+    describe('knime service callbacks', () => {
         const mockCallbackRegistry = () => {
             const registeredCallbacks = new Map();
 
@@ -110,7 +111,7 @@ describe('NodeDialogLoader.vue', () => {
             expect(callNodeDataServiceMock).not.toHaveBeenCalled();
             const params = ['NodeService.callNodeDataService', 'mockServiceTypeParam', 'mockRequestParam'];
             await registry.dispatch('data', ...params);
-            
+
             expect(callNodeDataServiceMock).toHaveBeenCalledWith({
                 projectId: props.projectId,
                 workflowId: props.workflowId,
@@ -122,18 +123,18 @@ describe('NodeDialogLoader.vue', () => {
         });
 
         it('should register the notification callback correctly', async () => {
-            const mockDispatch = jest.fn();
+            const mockDispatch = vi.fn();
             const mockStore = {
                 dispatch: mockDispatch
             };
             const wrapper = doMount(mockStore);
             wrapper.vm.initKnimeService({ dummyConfig: true });
-            
+
             const mockNotification = { mock: true };
             expect(callNodeDataServiceMock).not.toHaveBeenCalled();
             const params = [mockNotification];
             await registry.dispatch('notification', ...params);
-            
+
             expect(mockDispatch).toHaveBeenCalledWith('pagebuilder/service/pushNotification', mockNotification);
         });
     });

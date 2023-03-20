@@ -1,17 +1,18 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import applicationShortcuts from '../applicationShortcuts';
 
-jest.mock('@api', () => ({
+vi.mock('@api', () => ({
     __esModule: true,
-    openWorkflow: jest.fn(),
-    createWorkflow: jest.fn()
+    openWorkflow: vi.fn(),
+    createWorkflow: vi.fn()
 }));
 
 describe('applicationShortcuts', () => {
     let mockDispatch, mockCommit, $store;
 
     beforeEach(() => {
-        mockDispatch = jest.fn();
-        mockCommit = jest.fn();
+        mockDispatch = vi.fn();
+        mockCommit = vi.fn();
         $store = {
             dispatch: mockDispatch,
             commit: mockCommit,
@@ -25,18 +26,18 @@ describe('applicationShortcuts', () => {
         };
     });
 
-    test('createWorkflow', () => {
+    it('createWorkflow', () => {
         applicationShortcuts.createWorkflow.execute({ $store });
         expect(mockCommit).toHaveBeenCalledWith('spaces/setIsCreateWorkflowModalOpen', true);
     });
 
-    test('closeWorkflow', () => {
+    it('closeWorkflow', () => {
         applicationShortcuts.closeWorkflow.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('workflow/closeWorkflow', '1');
     });
 
     describe('condition', () => {
-        test('closeWorkflow', () => {
+        it('closeWorkflow', () => {
             expect(applicationShortcuts.closeWorkflow.condition({ $store })).toBe(true);
             $store.state.workflow.activeWorkflow.projectId = null;
             expect(applicationShortcuts.closeWorkflow.condition({ $store })).toBeFalsy();

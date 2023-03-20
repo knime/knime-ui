@@ -1,5 +1,6 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import CategoryResults from '../CategoryResults.vue';
 import ScrollViewContainer from '../ScrollViewContainer.vue';
@@ -12,9 +13,9 @@ describe('CategoryResults', () => {
     beforeEach(() => {
         wrapper = null;
 
-        getAllNodesMock = jest.fn();
-        setSelectedTagsMock = jest.fn();
-        setCategoryScrollPositionMock = jest.fn();
+        getAllNodesMock = vi.fn();
+        setSelectedTagsMock = vi.fn();
+        setCategoryScrollPositionMock = vi.fn();
 
         storeState = {
             nodesPerCategory: [
@@ -41,7 +42,7 @@ describe('CategoryResults', () => {
         };
     });
 
-    describe('Scroller', () => {
+    describe('scroller', () => {
         it('remembers scroll position', () => {
             doShallowMount();
 

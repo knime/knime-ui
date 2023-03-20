@@ -1,5 +1,6 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/metanode.svg';
@@ -23,12 +24,12 @@ describe('WorkflowBreadcrumb.vue', () => {
                         activeWorkflow: workflow
                     },
                     actions: {
-                        loadWorkflow: jest.fn()
+                        loadWorkflow: vi.fn()
                     }
                 },
                 application: {
                     actions: {
-                        switchWorkflow: jest.fn()
+                        switchWorkflow: vi.fn()
                     }
                 }
             };

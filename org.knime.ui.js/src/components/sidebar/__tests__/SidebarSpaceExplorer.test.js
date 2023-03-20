@@ -1,5 +1,6 @@
+import { expect, describe, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 import * as spacesStore from '@/store/spaces';
 
 import SidebarSpaceExplorer from '../SidebarSpaceExplorer.vue';
@@ -47,8 +48,8 @@ describe('SidebarSpaceExplorer.vue', () => {
         };
         $store.state.spaces.lastItemForProject = { ...lastItemForProjectData };
 
-        const dispatchSpy = jest.spyOn($store, 'dispatch');
-        const commitSpy = jest.spyOn($store, 'commit');
+        const dispatchSpy = vi.spyOn($store, 'dispatch');
+        const commitSpy = vi.spyOn($store, 'commit');
         const wrapper = shallowMount(SidebarSpaceExplorer, {
             global: {
                 plugins: [$store]

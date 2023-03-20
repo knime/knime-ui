@@ -1,8 +1,9 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { merge } from 'lodash';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import Button from 'webapps-common/ui/components/Button.vue';
 
@@ -73,7 +74,7 @@ describe('WorkflowPanel', () => {
 
         const $store = mockVuexStore(storeConfig);
 
-        const dispatchSpy = jest.spyOn($store, 'dispatch');
+        const dispatchSpy = vi.spyOn($store, 'dispatch');
 
         const wrapper = shallowMount(WorkflowPanel, {
             props,
@@ -83,7 +84,7 @@ describe('WorkflowPanel', () => {
         return { wrapper, $store, dispatchSpy };
     };
 
-    describe('Linked and Streaming', () => {
+    describe('linked and Streaming', () => {
         it.each(['metanode', 'component'])('write-protects linked %s and shows warning', (containerType) => {
             const { wrapper } = doShallowMount({ workflow: { info: { linked: true, containerType } } });
             expect(wrapper.find('.read-only').exists()).toBe(true);
@@ -124,7 +125,7 @@ describe('WorkflowPanel', () => {
         });
     });
 
-    describe('On the hub', () => {
+    describe('on the hub', () => {
         it('shows banner if workflow is on the hub', async () => {
             const { wrapper, $store } = doShallowMount();
             $store.state.workflow.activeWorkflow.info.onHub = true;
@@ -146,12 +147,12 @@ describe('WorkflowPanel', () => {
         });
     });
 
-    describe('Context menu', () => {
+    describe('context menu', () => {
         const createEvent = (x, y) => ({
             clientX: x,
             clientY: y,
-            preventDefault: jest.fn(),
-            stopPropagation: jest.fn()
+            preventDefault: vi.fn(),
+            stopPropagation: vi.fn()
         });
 
         it('renders context menu', async () => {
@@ -180,22 +181,22 @@ describe('WorkflowPanel', () => {
 
         it('prevents native context menu by default', async () => {
             const { wrapper } = doShallowMount();
-            const preventDefault = jest.fn();
+            const preventDefault = vi.fn();
             await wrapper.trigger('contextmenu', { preventDefault });
             expect(preventDefault).toHaveBeenCalled();
         });
 
         it('allows native context menu if source element allows it', async () => {
             const { wrapper } = doShallowMount();
-            const preventDefault = jest.fn();
+            const preventDefault = vi.fn();
             wrapper.element.classList.add('native-context-menu');
             await wrapper.trigger('contextmenu', { preventDefault });
             expect(preventDefault).not.toHaveBeenCalled();
         });
     });
 
-    describe('Port Type menu', () => {
-        const mountAndOpenMenu = async ({ closeCallback = jest.fn() } = {}) => {
+    describe('port Type menu', () => {
+        const mountAndOpenMenu = async ({ closeCallback = vi.fn() } = {}) => {
             const mountResult = doShallowMount();
             mountResult.$store.state.workflow.portTypeMenu = {
                 isOpen: true,
@@ -210,7 +211,7 @@ describe('WorkflowPanel', () => {
             return { ...mountResult, closeCallback };
         };
 
-        test('renders if open', async () => {
+        it('renders if open', async () => {
             const { wrapper, $store } = doShallowMount();
             expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
 
@@ -227,7 +228,7 @@ describe('WorkflowPanel', () => {
             expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
         });
 
-        test('passes props', async () => {
+        it('passes props', async () => {
             const { wrapper } = await mountAndOpenMenu();
             expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
             let portMenu = wrapper.findComponent(PortTypeMenu);
@@ -235,7 +236,7 @@ describe('WorkflowPanel', () => {
             expect(portMenu.vm.side).toBe('input');
         });
 
-        test('binds events', async () => {
+        it('binds events', async () => {
             const { wrapper, closeCallback } = await mountAndOpenMenu();
             let portMenu = wrapper.findComponent(PortTypeMenu);
             await portMenu.vm.$emit('menuClose');
@@ -243,8 +244,8 @@ describe('WorkflowPanel', () => {
         });
     });
 
-    describe('Quick add node menu', () => {
-        const mountAndOpenMenu = async ({ closeCallback = jest.fn() } = {}) => {
+    describe('quick add node menu', () => {
+        const mountAndOpenMenu = async ({ closeCallback = vi.fn() } = {}) => {
             const mountResult = doShallowMount();
             mountResult.$store.state.workflow.quickAddNodeMenu = {
                 isOpen: true,
@@ -256,7 +257,7 @@ describe('WorkflowPanel', () => {
             return { ...mountResult, closeCallback };
         };
 
-        test('renders menu if open', async () => {
+        it('renders menu if open', async () => {
             const { wrapper, $store } = doShallowMount();
             expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
 
@@ -270,7 +271,7 @@ describe('WorkflowPanel', () => {
             expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
         });
 
-        test('passes props', async () => {
+        it('passes props', async () => {
             const { wrapper } = await mountAndOpenMenu();
             let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
             expect(quickAddNodeMenu.props()).toEqual({
@@ -283,7 +284,7 @@ describe('WorkflowPanel', () => {
             });
         });
 
-        test('binds events', async () => {
+        it('binds events', async () => {
             const { wrapper, closeCallback } = await mountAndOpenMenu();
             let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
             quickAddNodeMenu.vm.$emit('menuClose');

@@ -1,12 +1,13 @@
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import GetStartedPage from '@/components/entryPage/GetStartedPage.vue';
 import Card from '@/components/common/Card.vue';
 
 describe('GettingStartedPage.vue', () => {
     const doMount = ({
-        openWorkflowMock = jest.fn()
+        openWorkflowMock = vi.fn()
     } = {}) => {
         const $store = mockVuexStore({
             application: {
@@ -38,7 +39,7 @@ describe('GettingStartedPage.vue', () => {
         });
 
         const $router = {
-            push: jest.fn()
+            push: vi.fn()
         };
 
         // stubs
@@ -64,7 +65,7 @@ describe('GettingStartedPage.vue', () => {
     });
 
     it('click opens workflow', async () => {
-        const openWorkflowMock = jest.fn();
+        const openWorkflowMock = vi.fn();
         const { wrapper } = doMount({ openWorkflowMock });
         expect(wrapper.findComponent(Card).exists()).toBe(true);
 

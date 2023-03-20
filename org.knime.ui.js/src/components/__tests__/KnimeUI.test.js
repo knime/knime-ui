@@ -1,36 +1,34 @@
+import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockUserAgent } from 'jest-useragent-mock';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import AppHeader from '@/components/application/AppHeader.vue';
 import Error from '@/components/application/Error.vue';
-import { loadPageBuilder as loadPageBuilderMock } from '@/components/embeddedViews/pagebuilderLoader';
 
 import KnimeUI from '../KnimeUI.vue';
 import { APP_ROUTES } from '@/router';
-
-jest.mock('@/components/embeddedViews/pagebuilderLoader');
 
 describe('KnimeUI.vue', () => {
     let $store, doShallowMount, initializeApplication, wrapper, storeConfig, destroyApplication,
         setHasClipboardSupport, $router, $route;
 
     const mockFeatureFlags = {
-        shouldLoadPageBuilder: jest.fn(() => true)
+        shouldLoadPageBuilder: vi.fn(() => true)
     };
 
     beforeEach(() => {
-        initializeApplication = jest.fn().mockResolvedValue();
-        destroyApplication = jest.fn();
-        setHasClipboardSupport = jest.fn();
+        initializeApplication = vi.fn().mockResolvedValue();
+        destroyApplication = vi.fn();
+        setHasClipboardSupport = vi.fn();
         Object.assign(navigator, { permissions: { query: () => ({ state: 'granted' }) } });
-        jest.spyOn(navigator.permissions, 'query');
+        vi.spyOn(navigator.permissions, 'query');
 
         document.fonts = {
-            load: jest.fn(() => Promise.resolve('dummy'))
+            load: vi.fn(() => Promise.resolve('dummy'))
         };
 
         storeConfig = {
@@ -66,7 +64,7 @@ describe('KnimeUI.vue', () => {
         $store = mockVuexStore(storeConfig);
         $router = {
             currentRoute: {},
-            push: jest.fn()
+            push: vi.fn()
         };
 
         $route = {
@@ -86,12 +84,7 @@ describe('KnimeUI.vue', () => {
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('loads the pagebuilder on mount', () => {
-        doShallowMount();
-        expect(loadPageBuilderMock).toHaveBeenCalled();
+        vi.clearAllMocks();
     });
 
     it('renders before loading', () => {
@@ -177,7 +170,7 @@ describe('KnimeUI.vue', () => {
         expect(destroyApplication).toHaveBeenCalled();
     });
 
-    describe('Clipboard support', () => {
+    describe('clipboard support', () => {
         it.each([
             ['granted', true],
             ['prompt', true],
@@ -186,7 +179,7 @@ describe('KnimeUI.vue', () => {
             'when clipboard permission state is %s, sets the clipboard support flag to %s',
             async (state, expectedValue) => {
                 Object.assign(navigator, { permissions: { query: () => ({ state }) } });
-                jest.spyOn(navigator.permissions, 'query');
+                vi.spyOn(navigator.permissions, 'query');
                 await doShallowMount();
                 expect(setHasClipboardSupport).toHaveBeenCalledWith(expect.anything(), expectedValue);
             }
@@ -197,7 +190,7 @@ describe('KnimeUI.vue', () => {
                 throw new Error('This is an error');
             } } });
 
-            jest.spyOn(navigator.permissions, 'query');
+            vi.spyOn(navigator.permissions, 'query');
             Object.assign(navigator, { clipboard: {} });
 
             await doShallowMount();
@@ -210,18 +203,10 @@ describe('KnimeUI.vue', () => {
                 throw new Error('This is an error');
             } } });
             Object.assign(navigator, { clipboard: { readText: () => '{}' } });
-            jest.spyOn(navigator.clipboard, 'readText');
+            vi.spyOn(navigator.clipboard, 'readText');
 
             await doShallowMount();
             expect(setHasClipboardSupport).toHaveBeenCalledWith(expect.anything(), true);
         });
-    });
-
-    it('should not load pagebuilder when the feature flag is set', async () => {
-        mockFeatureFlags.shouldLoadPageBuilder.mockImplementation(() => false);
-
-        await doShallowMount();
-
-        expect(loadPageBuilderMock).not.toHaveBeenCalled();
     });
 });

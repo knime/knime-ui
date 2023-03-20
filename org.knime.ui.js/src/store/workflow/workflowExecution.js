@@ -31,7 +31,7 @@ export const actions = {
             throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
         }
     },
-    changeLoopState({ state, getters }, { action, nodeId }) {
+    changeLoopState({ state }, { action, nodeId }) {
         let { activeWorkflow: { projectId } } = state;
         let { activeWorkflow: { info: { containerId } } } = state;
 

@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
@@ -5,19 +6,14 @@ import * as $shapes from '@/style/shapes.mjs';
 import NodeNameTextarea from '../NodeNameTextarea.vue';
 
 describe('NodeNameTextarea', () => {
-    const mockSizeChangeFn = jest.fn();
-
     const doShallowMount = (opts = { props: { value: '' } }) => {
         const wrapper = shallowMount(NodeNameTextarea, {
             ...opts,
             global: {
-                mocks: {
-                    $shapes,
-                    mockSizeChangeFn
-                },
+                mocks: { $shapes },
                 stubs: {
                     NodeNameText: {
-                        template: '<div id="node-name-stub"><slot :on="{ sizeChange: mockSizeChangeFn }"></slot></div>'
+                        template: '<div id="node-name-stub"><slot></slot></div>'
                     }
                 }
             }
@@ -30,14 +26,6 @@ describe('NodeNameTextarea', () => {
         const modelValue = 'test';
         const wrapper = doShallowMount({ props: { modelValue } });
         expect(wrapper.find('textarea').element.value).toBe(modelValue);
-    });
-
-    it('should call the size change callback provided by the slot of the NodeNameText', () => {
-        const wrapper = doShallowMount();
-
-        wrapper.find('textarea').trigger('input');
-
-        expect(mockSizeChangeFn).toHaveBeenCalled();
     });
 
     it('should emit "save" on enter', () => {
@@ -123,7 +111,7 @@ describe('NodeNameTextarea', () => {
 
         const event = {
             key: '#',
-            preventDefault: jest.fn()
+            preventDefault: vi.fn()
         };
         wrapper.find('textarea').trigger('keydown', event);
 

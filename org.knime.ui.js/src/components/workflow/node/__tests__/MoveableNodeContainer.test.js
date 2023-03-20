@@ -1,20 +1,14 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
 import * as $shapes from '@/style/shapes.mjs';
 import { directiveMove } from '@/plugins/directive-move';
 
 import MoveableNodeContainer from '../MoveableNodeContainer.vue';
-
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
 
 const commonNode = {
     id: 'root:1',
@@ -24,7 +18,7 @@ const commonNode = {
     selected: false
 };
 
-jest.mock('@/mixins/escapeStack', () => {
+vi.mock('@/mixins/escapeStack', () => {
     function escapeStack({ onEscape }) { // eslint-disable-line func-style
         escapeStack.onEscape = onEscape;
         return { /* empty mixin */ };
@@ -35,7 +29,7 @@ jest.mock('@/mixins/escapeStack', () => {
 describe('MoveableNodeContainer', () => {
     const doMount = ({
         props = {},
-        isNodeSelected = jest.fn(() => false),
+        isNodeSelected = vi.fn(() => false),
         screenToCanvasCoordinates = () => [0, 0],
         isDragging = false
     } = {}) => {
@@ -48,7 +42,7 @@ describe('MoveableNodeContainer', () => {
 
         const createMockMoveDirective = () => {
             let handlers = {};
-    
+
             return {
                 mounted(el, bindings) {
                     handlers = bindings.value;
@@ -62,17 +56,17 @@ describe('MoveableNodeContainer', () => {
         const mockMoveDirective = createMockMoveDirective();
 
         const actions = {
-            workflow: { moveObjects: jest.fn() },
+            workflow: { moveObjects: vi.fn() },
             selection: {
-                deselectAllObjects: jest.fn(),
-                selectNode: jest.fn()
+                deselectAllObjects: vi.fn(),
+                selectNode: vi.fn()
             }
         };
 
         const mutations = {
             workflow: {
-                resetMovePreview: jest.fn(),
-                setMovePreview: jest.fn()
+                resetMovePreview: vi.fn(),
+                setMovePreview: vi.fn()
             }
         };
 
@@ -162,7 +156,7 @@ describe('MoveableNodeContainer', () => {
         it('does not deselect nodes when node is already selected', () => {
             const { actions, mockMoveDirective } = doMount({
                 props: { id: 'root:2' },
-                isNodeSelected: jest.fn(() => true)
+                isNodeSelected: vi.fn(() => true)
             });
 
             const moveStartEvent = new CustomEvent('movestart', {
@@ -200,9 +194,9 @@ describe('MoveableNodeContainer', () => {
 
             const { mutations, mockMoveDirective } = doMount({
                 isDragging: true,
-                screenToCanvasCoordinates: jest.fn(() => [positionAfterMove.x, positionAfterMove.y])
+                screenToCanvasCoordinates: vi.fn(() => [positionAfterMove.x, positionAfterMove.y])
             });
-            
+
             const moveStartEvent = new CustomEvent('movestart', {
                 detail: {
                     event: { shiftKey: false }
@@ -238,20 +232,20 @@ describe('MoveableNodeContainer', () => {
         });
 
         it('ends movement of a node', async () => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
             const { wrapper, actions } = doMount();
 
             wrapper.vm.onMoveEnd();
-            
-            jest.advanceTimersByTime(5000);
+
+            vi.advanceTimersByTime(5000);
             await Vue.nextTick();
 
-            jest.runOnlyPendingTimers();
+            vi.runOnlyPendingTimers();
             expect(actions.workflow.moveObjects).toHaveBeenCalledWith(
                 expect.anything(),
                 { nodeId: 'root:1', projectId: 'projectId', startPos: null }
             );
-            jest.useRealTimers();
+            vi.useRealTimers();
         });
     });
 

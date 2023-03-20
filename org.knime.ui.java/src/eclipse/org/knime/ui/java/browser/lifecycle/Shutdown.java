@@ -84,7 +84,7 @@ final class Shutdown {
             NodeLogger.getLogger(Shutdown.class).error(e);
         }
 
-        if (!PerspectiveUtil.isClassicPerspectiveActive()) {
+        if (!PerspectiveUtil.isClassicPerspectiveActive() && PerspectiveUtil.isClassicPerspectiveLoaded()) {
             var workbench = (Workbench)PlatformUI.getWorkbench();
             var window = workbench.getActiveWorkbenchWindow();
             if (window != null) {

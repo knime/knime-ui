@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import * as $shapes from '@/style/shapes.mjs';
 
 import workflowObjectBounds from '../workflowObjectBounds';

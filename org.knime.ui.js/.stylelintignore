@@ -2,3 +2,4 @@ test-results/
 dist/
 webapps-common/
 target/
+knime-js-pagebuilder/

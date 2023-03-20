@@ -1,6 +1,7 @@
+import { expect, describe, beforeAll, afterEach, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import * as $shapes from '@/style/shapes.mjs';
 import ActionBar from '@/components/common/ActionBar.vue';
@@ -29,7 +30,7 @@ describe('NodeLabelEditor', () => {
             global: {
                 plugins: [$store],
                 mocks: { $shapes },
-                stubs: { NodeLabelTextarea: true }
+                stubs: { NodeLabelTextArea: true }
             }
         });
 
@@ -44,8 +45,8 @@ describe('NodeLabelEditor', () => {
 
 
     describe('blocks events to canvas', () => {
-        const mockStopPropagation = jest.fn();
-        const mockPreventDefault = jest.fn();
+        const mockStopPropagation = vi.fn();
+        const mockPreventDefault = vi.fn();
 
         beforeAll(() => {
             MouseEvent.prototype.stopPropagation = mockStopPropagation;
@@ -53,7 +54,7 @@ describe('NodeLabelEditor', () => {
         });
 
         afterEach(() => {
-            jest.clearAllMocks();
+            vi.clearAllMocks();
         });
 
         it('should block click events', () => {
@@ -77,7 +78,20 @@ describe('NodeLabelEditor', () => {
         });
     });
 
-    describe('Action bar', () => {
+    it('should save name when clicking on rect overlay', () => {
+        const { wrapper } = doMount();
+        const rect = wrapper.find('rect');
+
+        wrapper.findComponent(NodeLabelTextArea).vm.$emit('update:modelValue', 'new value');
+        wrapper.findComponent(NodeLabelTextArea).vm.$emit('save');
+        rect.trigger('click');
+
+        expect(wrapper.emitted('save')[0][0]).toEqual(expect.objectContaining({
+            newLabel: 'new value'
+        }));
+    });
+
+    describe('action bar', () => {
         it('should be positioned based on the relevant prop', () => {
             const { wrapper } = doMount();
             const actionBar = wrapper.findComponent(ActionBar);
@@ -98,7 +112,7 @@ describe('NodeLabelEditor', () => {
         it('should emit save when clicking the save button', () => {
             const { wrapper } = doMount();
             wrapper.findComponent(NodeLabelTextArea).vm.$emit('update:modelValue', 'new value');
-            
+
             wrapper.findAll('.action-button').at(0).trigger('click');
 
             expect(wrapper.emitted('save')).toBeDefined();
@@ -114,7 +128,7 @@ describe('NodeLabelEditor', () => {
         });
     });
 
-    describe('Handle textarea events', () => {
+    describe('handle textarea events', () => {
         it('should emit a save event', () => {
             const { wrapper } = doMount();
             wrapper.findComponent(NodeLabelTextArea).vm.$emit('update:modelValue', 'new value');

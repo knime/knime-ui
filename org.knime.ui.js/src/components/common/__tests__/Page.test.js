@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import Page from '../Page.vue';
 

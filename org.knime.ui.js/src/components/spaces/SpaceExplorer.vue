@@ -8,7 +8,7 @@ import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import ITEM_TYPES from '@/util/spaceItemTypes';
-import { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router/appRoutes';
 import SmartLoader from '@/components/common/SmartLoader.vue';
 
 import SpaceExplorerActions from './SpaceExplorerActions.vue';
@@ -359,8 +359,10 @@ export default {
         },
 
         getNodeTemplateId(sourceItem) {
-            const sourceItemNameParts = sourceItem.name.split('.');
-            const sourceFileExtension = `.${sourceItemNameParts[sourceItemNameParts.length - 1]}`;
+            const sourceFileExtension = Object
+                .keys(this.fileExtensionToNodeTemplateId)
+                .find(extension => sourceItem.name.endsWith(extension));
+
             return this.fileExtensionToNodeTemplateId[sourceFileExtension];
         }
     }

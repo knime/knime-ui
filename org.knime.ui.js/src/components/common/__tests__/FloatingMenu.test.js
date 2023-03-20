@@ -1,18 +1,12 @@
+import { expect, describe, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
-
-import FloatingMenu from '../FloatingMenu.vue';
-
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
-jest.mock('@/mixins/escapeStack', () => {
+import FloatingMenu from '../FloatingMenu.vue';
+
+vi.mock('@/mixins/escapeStack', () => {
     function escapeStack({ onEscape }) { // eslint-disable-line func-style
         escapeStack.onEscape = onEscape;
         return { /* empty mixin */ };
@@ -48,7 +42,7 @@ describe('FloatingMenu.vue', () => {
             this.resize = function () {
                 this.callback([{ target: this.element }]);
             };
-            this.disconnect = jest.fn();
+            this.disconnect = vi.fn();
         };
 
         // Mock 'kanvas' element
@@ -63,13 +57,8 @@ describe('FloatingMenu.vue', () => {
         document.body.appendChild(mockKanvas);
 
         // Mock window bounds
-        const originalWindow = { ...window };
-        const windowSpy = jest.spyOn(global, 'window', 'get');
-        windowSpy.mockImplementation(() => ({
-            ...originalWindow,
-            innerWidth: 100,
-            innerHeight: 100
-        }));
+        window.innerWidth = 100;
+        window.innerHeight = 100;
 
         Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
             get: () => contentHeight
@@ -79,13 +68,13 @@ describe('FloatingMenu.vue', () => {
         });
 
         // Mock screenFromCanvasCoordinates
-        const screenFromCanvasCoordinatesMock = jest.fn().mockImplementation(({ zoomFactor }) => ({ x, y }) => ({
+        const screenFromCanvasCoordinatesMock = vi.fn().mockImplementation(({ zoomFactor }) => ({ x, y }) => ({
             x: x * zoomFactor,
             y: y * zoomFactor
         }));
 
         const mutations = {
-            canvas: { setInteractionsEnabled: jest.fn() }
+            canvas: { setInteractionsEnabled: vi.fn() }
         };
 
         const storeConfig = {
@@ -123,7 +112,7 @@ describe('FloatingMenu.vue', () => {
     };
 
     afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
     });
 
     describe('close menu', () => {
@@ -163,7 +152,7 @@ describe('FloatingMenu.vue', () => {
     });
 
     describe('menu position and effects', () => {
-        test('position inside canvas; top-left', async () => {
+        it('position inside canvas; top-left', async () => {
             const { wrapper } = doMount();
             await Vue.nextTick();
 
@@ -172,7 +161,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('opacity: 1;');
         });
 
-        test('position inside canvas; top-right', async () => {
+        it('position inside canvas; top-right', async () => {
             const { wrapper } = doMount({ props: { anchor: 'top-right' } });
 
             await Vue.nextTick();
@@ -182,14 +171,14 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('opacity: 1;');
         });
 
-        test('position outside left border, half threshold', async () => {
+        it('position outside left border, half threshold', async () => {
             const { wrapper } = doMount({ props: { canvasPosition: { x: -5, y: 20 } } });
 
             await Vue.nextTick();
             expect(wrapper.attributes('style')).toMatch('opacity: 0.5;');
         });
 
-        test.each([
+        it.each([
             ['left border', { x: -31, y: 20 }],
             ['top border', { x: 20, y: -31 }],
             ['right border', { x: 151, y: 20 }],
@@ -202,7 +191,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.emitted('menuClose')).toBeTruthy();
         });
 
-        test('prevent window overflow top-left', async () => {
+        it('prevent window overflow top-left', async () => {
             const { wrapper } = doMount({ props: { canvasPosition: { x: -20, y: -20 }, preventOverflow: true } });
             await Vue.nextTick();
 
@@ -210,7 +199,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 0px;');
         });
 
-        test('prevent window overflow bottom-right', async () => {
+        it('prevent window overflow bottom-right', async () => {
             const { wrapper } = doMount({ props: { canvasPosition: { x: 150, y: 150 }, preventOverflow: true } });
             await Vue.nextTick();
 
@@ -218,7 +207,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 90px;');
         });
 
-        test('re-position on position update', async () => {
+        it('re-position on position update', async () => {
             const { wrapper } = doMount();
             await Vue.nextTick();
 
@@ -229,7 +218,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 0px;');
         });
 
-        test('re-position on zoom factor update', async () => {
+        it('re-position on zoom factor update', async () => {
             const { wrapper, $store } = doMount();
             await Vue.nextTick();
 
@@ -240,18 +229,18 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 40px;');
         });
 
-        test('re-position on canvas scroll', async () => {
+        it('re-position on canvas scroll', async () => {
             const { wrapper } = doMount();
             await Vue.nextTick();
 
             // warning: tests internal behavior
-            let setPositionSpy = jest.spyOn(wrapper.vm, 'setAbsolutePosition');
+            let setPositionSpy = vi.spyOn(wrapper.vm, 'setAbsolutePosition');
             document.getElementById('kanvas').dispatchEvent(new CustomEvent('scroll'));
 
             expect(setPositionSpy).toHaveBeenCalled();
         });
 
-        test('re-position on content resize', async () => {
+        it('re-position on content resize', async () => {
             const { wrapper, mockResizeObserver } = doMount({
                 props: { anchor: 'top-right' },
                 contentHeight: 100,
@@ -265,7 +254,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
         });
 
-        test('disable interactions when the prop is set', () => {
+        it('disable interactions when the prop is set', () => {
             const { mutations } = doMount({ props: { disableInteractions: true } });
 
             expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);
@@ -273,12 +262,12 @@ describe('FloatingMenu.vue', () => {
     });
 
     describe('clean up', () => {
-        test('removes scroll listener', async () => {
+        it('removes scroll listener', async () => {
             const { wrapper } = doMount();
             await Vue.nextTick();
 
             // warning: tests internal behavior
-            let setPositionSpy = jest.spyOn(wrapper.vm, 'setAbsolutePosition');
+            let setPositionSpy = vi.spyOn(wrapper.vm, 'setAbsolutePosition');
 
             wrapper.unmount();
 
@@ -287,7 +276,7 @@ describe('FloatingMenu.vue', () => {
             expect(setPositionSpy).not.toHaveBeenCalled();
         });
 
-        test('disconnects resize observer', async () => {
+        it('disconnects resize observer', async () => {
             const { wrapper, mockResizeObserver } = doMount();
             await Vue.nextTick();
 
@@ -296,7 +285,7 @@ describe('FloatingMenu.vue', () => {
             expect(mockResizeObserver.disconnect).toHaveBeenCalled();
         });
 
-        test('enables interactions', () => {
+        it('enables interactions', () => {
             const { wrapper, mutations } = doMount();
             wrapper.unmount();
 

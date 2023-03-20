@@ -51,6 +51,7 @@ package org.knime.ui.java.util;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -91,46 +92,51 @@ public final class DesktopAPUtil {
     }
 
     /**
-     * Loads the workflow referenced by the given path using the {@link LoadWorkflowRunnable} and whose a eclipse-based
-     * progress bar.
+     * Loads the workflow for the given item-id from the given space.
+     *
      * @param space
      * @param itemId
-     *
-     * @return the loaded {@link WorkflowManager} or an empty optional if the loading failed (a warning message dialog
-     *         will be shown in that case)
+     * @param monitor
+     * @return the loaded workflow
      */
-    public static Optional<WorkflowManager> openWorkflowInWebUIPerspectiveOnly(final Space space, final String itemId) {
-        return runWithProgress("Loading workflow", LOGGER, monitor -> { // NOSONAR better than inline class
-            monitor.beginTask("Loading workflow...", IProgressMonitor.UNKNOWN);
-            final var path = space.toLocalAbsolutePath(toExecutionMonitor(monitor), itemId);
-            monitor.done();
+    public static WorkflowManager loadWorkflow(final Space space, final String itemId, final IProgressMonitor monitor) {
+        monitor.beginTask("Loading workflow...", IProgressMonitor.UNKNOWN);
+        final var path = space.toLocalAbsolutePath(DesktopAPUtil.toExecutionMonitor(monitor), itemId);
+        monitor.done();
 
-            final var mountId = space.toKnimeUrl(itemId).getAuthority();
-            final var workflowContext = WorkflowContextV2.builder() //
-                .withAnalyticsPlatformExecutor(builder -> builder //
-                    .withCurrentUserAsUserId() //
-                    .withLocalWorkflowPath(path) //
-                    .withMountpoint(mountId, space.getLocalRootPath())) //
-                .withLocation(space.getLocationInfo(itemId)) //
-                .build();
+        final var workflowContext = createWorkflowContext(space, itemId, path);
+        return loadWorkflow(monitor, path, workflowContext);
+    }
 
-            final var wfFile = path.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile();
-            var wfmRef = new AtomicReference<WorkflowManager>();
-            new LoadWorkflowRunnable((wfm, doSave) -> { // NOSONAR
-                wfmRef.set(wfm);
-                if (Boolean.TRUE.equals(doSave)) {
-                    var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
-                    try {
-                        var exec = DesktopAPUtil.toExecutionMonitor(monitor);
-                        wfm.save(workflowPath.toFile(), exec, true);
-                    } catch (final IOException | CanceledExecutionException | LockFailedException e) {
-                        // should never happen
-                        LOGGER.error(e);
-                    }
+    private static WorkflowManager loadWorkflow(final IProgressMonitor monitor, final Path path,
+        final WorkflowContextV2 workflowContext) {
+        final var wfFile = path.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile();
+        var wfmRef = new AtomicReference<WorkflowManager>();
+        new LoadWorkflowRunnable((wfm, doSave) -> { // NOSONAR
+            wfmRef.set(wfm);
+            if (Boolean.TRUE.equals(doSave)) {
+                var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+                try {
+                    var exec = DesktopAPUtil.toExecutionMonitor(monitor);
+                    wfm.save(workflowPath.toFile(), exec, true);
+                } catch (final IOException | CanceledExecutionException | LockFailedException e) {
+                    // should never happen
+                    LOGGER.error(e);
                 }
-            }, wfFile, workflowContext).run(monitor);
-            return wfmRef.get();
-        });
+            }
+        }, wfFile, workflowContext).run(monitor);
+        return wfmRef.get();
+    }
+
+    private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path) {
+        final var mountId = space.toKnimeUrl(itemId).getAuthority();
+        return WorkflowContextV2.builder() //
+            .withAnalyticsPlatformExecutor(builder -> builder //
+                .withCurrentUserAsUserId() //
+                .withLocalWorkflowPath(path) //
+                .withMountpoint(mountId, space.getLocalRootPath())) //
+            .withLocation(space.getLocationInfo(itemId)) //
+            .build();
     }
 
     /**

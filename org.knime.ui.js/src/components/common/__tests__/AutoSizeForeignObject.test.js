@@ -1,17 +1,15 @@
+import { expect, describe, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 import * as $shapes from '@/style/shapes.mjs';
 
 import AutoSizeForeignObject from '../AutoSizeForeignObject.vue';
 
 const mockBoundingRect = ({ x, y, width, height }) => {
-    const mockFn = jest.fn(() => ({ x, y, width, height }));
+    const mockFn = vi.fn(() => ({ x, y, width, height }));
     HTMLElement.prototype.getBoundingClientRect = mockFn;
 };
 
 describe('AutoSizeForeignObject.vue', () => {
-    let props, doShallowMount, wrapper, $store;
-
     const mockRectWidth = 232;
     const mockRectHeight = 129;
     const mockRectX = 42;
@@ -22,20 +20,33 @@ describe('AutoSizeForeignObject.vue', () => {
     // for this component, which is not very clean
     const flushTaskQueue = () => new Promise(r => setTimeout(r, 10));
 
-    beforeEach(() => {
-        wrapper = null;
-        props = {
-            parentWidth: $shapes.nodeSize,
-            resizeKey: ''
-        };
+    const defaultProps = {
+        parentWidth: $shapes.nodeSize,
+        resizeKey: ''
+    };
 
-        $store = mockVuexStore({
-            canvas: {
-                state: {
-                    zoomFactor: 1
-                }
-            }
-        });
+    const doShallowMount = ({ props = {} } = {}) => {
+        // Mock ResizeObserver Class
+        // eslint-disable-next-line func-style
+        function ResizeObserverMock(callback) {
+            this.callbackRef = callback;
+            this.element = null;
+
+            const disconnect = vi.fn();
+            ResizeObserverMock.__trigger__ = (mockContentRect = { width: mockRectWidth, height: mockRectHeight }) => {
+                this.callbackRef([{ contentRect: mockContentRect }]);
+            };
+
+            ResizeObserverMock.disconnect = disconnect;
+
+            this.observe = function (element) {
+                this.element = element;
+            };
+
+            this.disconnect = disconnect;
+        }
+
+        window.ResizeObserver = ResizeObserverMock;
 
         mockBoundingRect({
             x: mockRectX,
@@ -44,188 +55,73 @@ describe('AutoSizeForeignObject.vue', () => {
             height: mockRectHeight
         });
 
-        doShallowMount = (customProps = {}) => {
-            wrapper = shallowMount(AutoSizeForeignObject, {
-                props: {
-                    ...props,
-                    ...customProps
-                },
-                global: {
-                    plugins: [$store],
-                    mocks: { $shapes }
-                }
-            });
-        };
-    });
+        const wrapper = shallowMount(AutoSizeForeignObject, {
+            props: {
+                ...defaultProps,
+                ...props
+            },
+            global: {
+                mocks: { $shapes }
+            }
+        });
 
-    it('should respect yOffset', () => {
-        doShallowMount();
+        return { wrapper, ResizeObserverMock };
+    };
+
+    it('should respect yOffset', async () => {
+        const { wrapper } = doShallowMount();
 
         expect(wrapper.attributes()).toEqual(expect.objectContaining({
             y: '0'
         }));
 
-        doShallowMount({ yOffset: 12 });
+        await wrapper.setProps({ yOffset: 12 });
+
         expect(wrapper.attributes()).toEqual(expect.objectContaining({
             y: '12'
         }));
     });
 
-    it('shows error on console if wrapper DOM element is missing', async () => {
-        const errorMock = jest.spyOn(global.consola, 'error').mockImplementation(() => {});
-
-        HTMLElement.prototype.getBoundingClientRect = () => null;
-        
-        doShallowMount();
-        await flushTaskQueue();
-
-        expect(errorMock).toBeCalled();
-        expect(wrapper.attributes()).toEqual(
-            expect.objectContaining({ height: '1' })
-        );
-        errorMock.mockRestore();
-    });
-
     it('should emit the proper width and height', async () => {
-        doShallowMount();
+        const { wrapper, ResizeObserverMock } = doShallowMount();
 
         await flushTaskQueue();
+        ResizeObserverMock.__trigger__({
+            width: mockRectWidth,
+            height: mockRectHeight
+        });
 
         expect(wrapper.emitted('widthChange')[0][0]).toBe(mockRectWidth);
         expect(wrapper.emitted('heightChange')[0][0]).toBe(mockRectHeight);
     });
 
-    it('should correctly measure when zoomed', async () => {
-        const mockZoomFactor = 2;
-        const mockRectWidth = 463;
-        const mockRectHeight = 256.4;
-        const mockRectX = 42;
-        const mockRectY = 31;
+    it('should adjust dimensions on mount', async () => {
+        const { wrapper, ResizeObserverMock } = doShallowMount();
 
-        const expectedWidth = Math.ceil(mockRectWidth / mockZoomFactor);
-        const expectedHeight = Math.ceil(mockRectHeight / mockZoomFactor);
-
-        const expectedX = (props.parentWidth - expectedWidth) / 2;
-        $store.state.canvas.zoomFactor = mockZoomFactor;
-
-        mockBoundingRect({
-            x: mockRectX,
-            y: mockRectY,
+        await flushTaskQueue();
+        ResizeObserverMock.__trigger__({
             width: mockRectWidth,
             height: mockRectHeight
         });
-        doShallowMount();
-            
-        // Schedule callback to run after next task in order to let the component render the template
-        // otherwise we'd have to call $nextTick twice for this case, which is not very clean
-        await flushTaskQueue();
-        expect(wrapper.attributes()).toEqual(
-            expect.objectContaining({
-                height: expectedHeight.toString(),
-                width: expectedWidth.toString(),
-                x: expectedX.toString()
-            })
-        );
-    });
-
-    it('should adjust dimensions on mount', async () => {
-        doShallowMount();
-        await flushTaskQueue();
-        expect(wrapper.attributes()).toEqual(expect.objectContaining({
-            height: mockRectHeight.toString(),
-            width: mockRectWidth.toString(),
-            x: ((props.parentWidth - mockRectWidth) / 2).toString()
-        }));
-    });
-
-    it('should adjust dimensions when the "resizeKey" prop changes', async () => {
-        doShallowMount();
-        
         await flushTaskQueue();
 
         expect(wrapper.attributes()).toEqual(expect.objectContaining({
             height: mockRectHeight.toString(),
             width: mockRectWidth.toString(),
-            x: ((props.parentWidth - mockRectWidth) / 2).toString()
+            x: ((defaultProps.parentWidth - mockRectWidth) / 2).toString()
         }));
-
-        const newWidth = 100;
-        const newHeight = 100;
-        mockBoundingRect({
-            x: mockRectX,
-            y: mockRectY,
-            width: newWidth,
-            height: newHeight
-        });
-
-        wrapper.setProps({ resizeKey: 'new-val' });
-
-        await flushTaskQueue();
-
-        expect(wrapper.attributes()).toEqual(expect.objectContaining({
-            height: newWidth.toString(),
-            width: newHeight.toString()
-        }));
-    });
-
-    it('should ignore very small changes', async () => {
-        // render and wait
-        const localWrapper = shallowMount(AutoSizeForeignObject, {
-            props,
-            global: {
-                plugins: [$store],
-                mocks: { $shapes }
-            },
-            slots: {
-                default: `<template #default="props">
-                    <span @mock-event="props.on.sizeChange" class="slot-content"></span>
-                </template>`
-            }
-        });
-        await flushTaskQueue();
-
-        // mock values that represent very small change
-        mockBoundingRect({
-            x: mockRectX,
-            y: mockRectY,
-            width: mockRectWidth - 0.5,
-            height: mockRectHeight + 0.1
-        });
-
-        // trigger resize behavior via slot using a mock event dispatched from slot content
-        localWrapper.find('.slot-content').element.dispatchEvent(new CustomEvent('mock-event'));
-
-        // wait for render again
-        await flushTaskQueue();
-
-        // width and height values should be the same
-        expect(localWrapper.attributes()).toEqual(expect.objectContaining({
-            height: mockRectHeight.toString(),
-            width: mockRectWidth.toString()
-        }));
-    });
-
-    it('adjustDimensions respects initial width and height', async () => {
-        const startWidth = 700;
-        const startHeight = 120;
-        doShallowMount({ startWidth, startHeight });
-
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.attributes()).toEqual(
-            expect.objectContaining({
-                height: startHeight.toString(),
-                width: startWidth.toString()
-            })
-        );
     });
 
     it('should respect offsetByHeight', async () => {
         const yOffset = 10;
         const expectedY = -mockRectHeight + yOffset;
 
-        doShallowMount({ yOffset, offsetByHeight: true });
+        const { wrapper, ResizeObserverMock } = doShallowMount({
+            props: { yOffset, offsetByHeight: true }
+        });
 
+        await flushTaskQueue();
+        ResizeObserverMock.__trigger__();
         await flushTaskQueue();
 
         expect(wrapper.attributes()).toEqual(expect.objectContaining({

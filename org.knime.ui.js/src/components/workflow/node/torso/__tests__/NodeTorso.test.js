@@ -1,6 +1,7 @@
+import { expect, describe, it } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import NodeTorsoNormal from 'webapps-common/ui/components/node/NodeTorsoNormal.vue';
 
@@ -23,7 +24,7 @@ describe('NodeTorso.vue', () => {
                 }
             }
         });
-        
+
         return shallowMount(NodeTorso, {
             props,
             global: {

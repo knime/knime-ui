@@ -1,3 +1,4 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 /* eslint-disable dot-notation */
 /* eslint-disable quote-props */
 import { circleDetection, checkPortCompatibility } from '../compatibleConnections';
@@ -79,13 +80,13 @@ describe('Circle Detection', () => {
         };
     });
 
-    test.each([
+    it.each([
         ['A', ['B', 'C', 'D', 'E']],
         ['B', ['A', 'C', 'D', 'E']],
         ['C', ['D', 'E']],
         ['D', ['E']],
         ['E', ['D']]
-    ])('Downstream Connection from %s', (startNode, result) => {
+    ])('downstream Connection from %s', (startNode, result) => {
         let compatibleNodes = circleDetection({
             startNode,
             downstreamConnection: true,
@@ -94,13 +95,13 @@ describe('Circle Detection', () => {
         expect([...compatibleNodes]).toStrictEqual(result);
     });
 
-    test.each([
+    it.each([
         ['E', ['A', 'B', 'C', 'D']],
         ['D', ['A', 'B', 'C', 'E']],
         ['C', ['A', 'B']],
         ['B', ['A']],
         ['A', ['B']]
-    ])('Upstream Connection from %s', (startNode, result) => {
+    ])('upstream Connection from %s', (startNode, result) => {
         let compatibleNodes = circleDetection({
             startNode,
             downstreamConnection: false,
@@ -109,7 +110,7 @@ describe('Circle Detection', () => {
         expect([...compatibleNodes]).toStrictEqual(result);
     });
 
-    describe('Metanodes', () => {
+    describe('metanodes', () => {
         beforeEach(() => {
             workflow.info.containerType = 'metanode';
             workflow.info.containerId = 'metanode';
@@ -144,7 +145,7 @@ describe('Circle Detection', () => {
             workflow.nodes['D'].outPorts[0].connectedVia.push('D<');
         });
 
-        test.each(['A', 'B', 'C', 'D', 'E'])('Metanode ports not part of Set for %s', (startNode) => {
+        it.each(['A', 'B', 'C', 'D', 'E'])('metanode ports not part of Set for %s', (startNode) => {
             let compatibleNodes = circleDetection({
                 startNode,
                 downstreamConnection: false,
@@ -153,7 +154,7 @@ describe('Circle Detection', () => {
             expect([...compatibleNodes].includes('metanode')).toBe(false);
         });
 
-        test.each(
+        it.each(
             [true, false]
         )('all nodes can connect to metanode bar: downstreamConnection %s', (downstreamConnection) => {
             let compatibleNodes = circleDetection({

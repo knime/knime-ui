@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
@@ -13,8 +14,8 @@ describe('SmarLoader.vue', () => {
         return { wrapper };
     };
 
-    describe('Display modes', () => {
-        describe('Fullscreen', () => {
+    describe('display modes', () => {
+        describe('fullscreen', () => {
             const config = {
                 displayMode: 'fullscreen',
                 loadingMode: 'normal'
@@ -35,7 +36,7 @@ describe('SmarLoader.vue', () => {
             });
         });
 
-        describe('Localized', () => {
+        describe('localized', () => {
             const config = {
                 displayMode: 'localized',
                 loadingMode: 'normal'
@@ -68,7 +69,7 @@ describe('SmarLoader.vue', () => {
             });
         });
 
-        describe('Transparent', () => {
+        describe('transparent', () => {
             const config = {
                 displayMode: 'transparent',
                 loadingMode: 'normal'
@@ -89,7 +90,7 @@ describe('SmarLoader.vue', () => {
             });
         });
 
-        describe('Toast', () => {
+        describe('toast', () => {
             const config = {
                 displayMode: 'toast',
                 loadingMode: 'normal'
@@ -109,8 +110,8 @@ describe('SmarLoader.vue', () => {
         });
     });
 
-    describe('Loading Modes', () => {
-        describe('Normal loading mode', () => {
+    describe('loading Modes', () => {
+        describe('normal loading mode', () => {
             const config = {
                 position: 'fullscreen',
                 loadingMode: 'normal'
@@ -128,20 +129,20 @@ describe('SmarLoader.vue', () => {
             });
         });
 
-        describe('Stagger loading mode', () => {
+        describe('stagger loading mode', () => {
             const config = {
                 loadingMode: 'stagger'
             };
 
             it('should display the loader and its visual elements after a delay', async () => {
-                jest.useFakeTimers();
+                vi.useFakeTimers();
 
                 const { wrapper } = doMount({
                     props: { loading: true, config }
                 });
 
                 const advanceTime = async (timeMs) => {
-                    jest.advanceTimersByTime(timeMs);
+                    vi.advanceTimersByTime(timeMs);
                     await wrapper.vm.$nextTick();
                 };
 
@@ -183,7 +184,7 @@ describe('SmarLoader.vue', () => {
                 expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
                 expect(wrapper.find('.text').exists()).toBe(true);
 
-                jest.useRealTimers();
+                vi.useRealTimers();
             });
         });
     });

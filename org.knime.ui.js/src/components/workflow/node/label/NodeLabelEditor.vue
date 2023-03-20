@@ -101,7 +101,7 @@ export default {
       v-bind="overlayStyles"
       fill="transparent"
       @pointerdown.stop.prevent
-      @click.stop.prevent
+      @click.stop.prevent="onSave"
       @contextmenu.stop.prevent
     />
 

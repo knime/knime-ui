@@ -1,30 +1,23 @@
 /* eslint-disable max-lines */
-import { mockVuexStore } from '@/test/test-utils';
+import { expect, describe, it, vi, afterEach } from 'vitest';
+import { changeLoopState, changeNodeState } from '@api';
+import { mockVuexStore } from '@/test/utils';
+
+vi.mock('@api');
 
 describe('workflow store: Execution', () => {
-    let store, loadStore;
-
-    beforeEach(() => {
-        store = null;
-
-        loadStore = async ({ apiMocks = {} } = {}) => {
-            /**
-             * We have to import the workflow-store dynamically to apply our @api mocks.
-             * Because the module is cached after it is required for the first time,
-             * a reset is needed
-             */
-            jest.resetModules();
-            jest.doMock('@api', () => ({
-                __esModule: true,
-                ...apiMocks
-            }), { virtual: true });
-
-            store = mockVuexStore({
-                workflow: await import('@/store/workflow'),
-                selection: await import('@/store/selection')
-            });
-        };
+    afterEach(() => {
+        vi.clearAllMocks();
     });
+
+    const loadStore = async () => {
+        const store = mockVuexStore({
+            workflow: await import('@/store/workflow'),
+            selection: await import('@/store/selection')
+        });
+
+        return { store };
+    };
 
     describe('actions', () => {
         it.each([
@@ -32,13 +25,11 @@ describe('workflow store: Execution', () => {
             ['cancelNodeExecution', 'cancel'],
             ['resetNodes', 'reset']
         ])('passes %s to API', async (fn, action) => {
-            let mock = jest.fn();
-            let apiMocks = { changeNodeState: mock };
-            await loadStore({ apiMocks });
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
             store.dispatch(`workflow/${fn}`, ['x', 'y']);
 
-            expect(mock).toHaveBeenCalledWith({
+            expect(changeNodeState).toHaveBeenCalledWith({
                 nodeIds: ['x', 'y'], projectId: 'foo', action, workflowId: 'root'
             });
         });
@@ -48,20 +39,21 @@ describe('workflow store: Execution', () => {
             ['resumeLoopExecution', 'resume'],
             ['stepLoopExecution', 'step']
         ])('passes %s to API', async (fn, action) => {
-            let mock = jest.fn();
-            let apiMocks = { changeLoopState: mock };
-            await loadStore({ apiMocks });
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
             store.dispatch(`workflow/${fn}`, 'node x');
 
-            expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo', action, workflowId: 'root' });
+            expect(changeLoopState).toHaveBeenCalledWith({
+                nodeId: 'node x',
+                projectId: 'foo',
+                action,
+                workflowId: 'root'
+            });
         });
 
-        test('overloaded changeNodeState', async () => {
-            let mock = jest.fn();
-            let apiMocks = { changeNodeState: mock };
-            await loadStore({ apiMocks });
+        it('overloaded changeNodeState', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
                 info: { containerId: 'root' },
@@ -72,16 +64,20 @@ describe('workflow store: Execution', () => {
             });
 
             store.dispatch(`workflow/changeNodeState`, { nodes: 'all' });
-            expect(mock).toHaveBeenLastCalledWith({ projectId: 'foo', workflowId: 'root' });
+            expect(changeNodeState).toHaveBeenLastCalledWith({ projectId: 'foo', workflowId: 'root' });
 
             store.dispatch('selection/selectAllNodes');
             store.dispatch(`workflow/changeNodeState`, { nodes: 'selected' });
-            expect(mock).toHaveBeenLastCalledWith({
+            expect(changeNodeState).toHaveBeenLastCalledWith({
                 nodeIds: ['root:1', 'root:2'], projectId: 'foo', workflowId: 'root'
             });
 
             store.dispatch(`workflow/changeNodeState`, { nodes: ['root:2'] });
-            expect(mock).toHaveBeenLastCalledWith({ nodeIds: ['root:2'], projectId: 'foo', workflowId: 'root' });
+            expect(changeNodeState).toHaveBeenLastCalledWith({
+                nodeIds: ['root:2'],
+                projectId: 'foo',
+                workflowId: 'root'
+            });
         });
     });
 });

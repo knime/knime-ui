@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
 import * as Vue from 'vue';
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
@@ -51,7 +52,7 @@ describe('FileExplorer.vue', () => {
         }
     ];
 
-    const doMount = ({ props = {} } = { }, initialStoreState = null) => {
+    const doMount = ({ props = {} } = {}) => {
         const mocks = { $shapes: { nodeSize: 32 } };
         const defaultProps = {
             items: MOCK_DATA,
@@ -117,7 +118,7 @@ describe('FileExplorer.vue', () => {
         expect(wrapper.find('tbody').classes()).toContain('mini');
     });
 
-    describe('Selection', () => {
+    describe('selection', () => {
         it('should select items and emit selected ones', async () => {
             const { wrapper } = doMount();
             await wrapper.findAll('.file-explorer-item').at(1).trigger('click');
@@ -135,7 +136,7 @@ describe('FileExplorer.vue', () => {
         });
     });
 
-    describe('Drag', () => {
+    describe('drag', () => {
         beforeEach(() => {
             document.querySelectorAll('[data-id="drag-ghost"]').forEach(el => {
                 el.parentNode.removeChild(el);
@@ -143,7 +144,7 @@ describe('FileExplorer.vue', () => {
         });
 
         const dragAndDropItem = async (_srcItemWrapper, _tgtItemWrapper) => {
-            const dataTransfer = { setDragImage: jest.fn() };
+            const dataTransfer = { setDragImage: vi.fn() };
             await _srcItemWrapper.trigger('dragstart', { dataTransfer });
             await _tgtItemWrapper.trigger('dragenter');
             await _tgtItemWrapper.trigger('drag');
@@ -152,7 +153,7 @@ describe('FileExplorer.vue', () => {
         };
 
         it('should add the proper classes when handling dragging events', async () => {
-            const dataTransfer = { setDragImage: jest.fn() };
+            const dataTransfer = { setDragImage: vi.fn() };
             const { wrapper } = doMount();
             const firstItem = wrapper.findAll('.file-explorer-item').at(0);
             const secondItem = wrapper.findAll('.file-explorer-item').at(1);
@@ -349,7 +350,7 @@ describe('FileExplorer.vue', () => {
 
             // workflow-group item
             const secondItem = wrapper.findAll('.file-explorer-item').at(1);
-            
+
             await dragAndDropItem(secondItem, firstItem);
             expect(wrapper.emitted('drag')[0][0]).toEqual({
                 event: expect.anything(),
@@ -441,7 +442,7 @@ describe('FileExplorer.vue', () => {
         it('should emit deleteItems on delete option click', async () => {
             const itemIdx = 2;
             const { wrapper } = doMount({
-                props: { items: MOCK_DATA.map((item, index) => ({ ...item, canBeDeleted: true })) }
+                props: { items: MOCK_DATA.map((item) => ({ ...item, canBeDeleted: true })) }
             });
 
             const deleteButton = getDeleteOption(wrapper, itemIdx);
@@ -521,7 +522,7 @@ describe('FileExplorer.vue', () => {
             await input.vm.$emit('keyup', { key: 'Enter' });
 
             expect(wrapper.emitted('renameFile')).toBeTruthy();
-            expect(wrapper.emitted('renameFile')[0][0].newName).toEqual('invalid');
+            expect(wrapper.emitted('renameFile')[0][0].newName).toBe('invalid');
         });
 
         it('should automatically trim new name', async () => {
@@ -535,7 +536,7 @@ describe('FileExplorer.vue', () => {
             await input.vm.$emit('keyup', { key: 'Enter' });
 
             expect(wrapper.emitted('renameFile')).toBeTruthy();
-            expect(wrapper.emitted('renameFile')[0][0].newName).toEqual('New Folder name');
+            expect(wrapper.emitted('renameFile')[0][0].newName).toBe('New Folder name');
         });
 
         it('should not save empty names', async () => {
@@ -561,7 +562,7 @@ describe('FileExplorer.vue', () => {
             await wrapper.setData({ renameValue: newName });
             await input.vm.$emit('keyup', { key: 'Esc' });
 
-            expect(wrapper.vm.activeRenameId).toBe(null);
+            expect(wrapper.vm.activeRenameId).toBeNull();
             expect(wrapper.vm.renameValue).toBe('');
         });
     });

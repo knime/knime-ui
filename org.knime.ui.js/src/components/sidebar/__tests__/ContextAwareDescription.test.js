@@ -1,13 +1,14 @@
+import { expect, describe, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import ContextAwareDescription from '@/components/sidebar/ContextAwareDescription.vue';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeDescription from '@/components/nodeRepository/NodeDescription.vue';
 
 describe('ContextAwareDescription.vue', () => {
     const doMount = ({
-        singleSelectedNodeMock = jest.fn()
+        singleSelectedNodeMock = vi.fn()
     } = {}) => {
         const $store = mockVuexStore({
             selection: {
@@ -45,7 +46,7 @@ describe('ContextAwareDescription.vue', () => {
 
     it('shows node description if a single node is selected', () => {
         const { wrapper } = doMount({
-            singleSelectedNodeMock: jest.fn().mockReturnValue({
+            singleSelectedNodeMock: vi.fn().mockReturnValue({
                 id: 2,
                 kind: 'node'
             })
@@ -65,7 +66,7 @@ describe('ContextAwareDescription.vue', () => {
         'metanode'
     ])('shows workflow description if %s is selected', (kind) => {
         const { wrapper } = doMount({
-            singleSelectedNodeMock: jest.fn().mockReturnValue({
+            singleSelectedNodeMock: vi.fn().mockReturnValue({
                 id: 1,
                 kind
             })

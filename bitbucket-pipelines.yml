@@ -15,7 +15,7 @@ definitions:
           - git submodule update --init --recursive
           - npm ci
           - npm run ci:lint
-          - npm run coverage -- --ci
+          - npm run coverage
           - npm run build
           - npm run audit
         artifacts:

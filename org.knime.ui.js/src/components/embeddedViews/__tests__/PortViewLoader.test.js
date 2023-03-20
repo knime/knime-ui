@@ -1,3 +1,4 @@
+import { expect, describe, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
@@ -5,7 +6,7 @@ import { getPortView as getPortViewMock } from '@api';
 
 import PortViewLoader from '../PortViewLoader.vue';
 
-jest.mock('@api', () => ({ getPortView: jest.fn() }), { virtual: true });
+vi.mock('@api', () => ({ getPortView: vi.fn() }), { virtual: true });
 
 const RESOURCE_TYPES = {
     VUE_COMPONENT_REFERENCE: 'VUE_COMPONENT_REFERENCE',
@@ -57,7 +58,7 @@ describe('PortViewLoader.vue', () => {
             projectId: props.projectId,
             workflowId: props.workflowId,
             nodeId: props.selectedNode.id,
-            portIndex: props.selectedPortIndex
+            portIdx: props.selectedPortIndex
         }));
     });
 
@@ -85,7 +86,7 @@ describe('PortViewLoader.vue', () => {
 
         expect(getPortViewMock).toBeCalledTimes(2);
         expect(getPortViewMock).toBeCalledWith(expect.objectContaining({
-            portIndex: 1
+            portIdx: 1
         }));
     });
 

@@ -1,6 +1,7 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 import * as panelStoreConfig from '@/store/panel';
 import * as nodeRepositoryStoreConfig from '@/store/nodeRepository';
 
@@ -15,7 +16,7 @@ describe('Sidebar', () => {
     let store, workflow, wrapper, doShallowMount;
 
     const mockFeatureFlags = {
-        shouldDisplayEmbeddedDialogs: jest.fn(() => true)
+        shouldDisplayEmbeddedDialogs: vi.fn(() => true)
     };
 
     beforeEach(() => {

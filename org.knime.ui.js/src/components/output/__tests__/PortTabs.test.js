@@ -1,3 +1,4 @@
+import { expect, describe, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
@@ -7,11 +8,11 @@ import TabBar from 'webapps-common/ui/components/TabBar.vue';
 import portIcon from '@/components/common/PortIconRenderer';
 import PortTabs, { portIconSize } from '../PortTabs.vue';
 
-jest.mock('@/components/common/PortIconRenderer', () => jest.fn());
+vi.mock('@/components/common/PortIconRenderer', () => ({ default: vi.fn() }));
 
 describe('PortTabs.vue', () => {
     const mockFeatureFlags = {
-        shouldDisplayEmbeddedViews: jest.fn(() => true)
+        shouldDisplayEmbeddedViews: vi.fn(() => true)
     };
 
     const doShallowMount = (props = {}) => shallowMount(PortTabs, {
@@ -22,7 +23,7 @@ describe('PortTabs.vue', () => {
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('passes "modelValue" through', () => {

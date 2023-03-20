@@ -1,11 +1,12 @@
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import NodeDescriptionOverlay from '../NodeDescriptionOverlay.vue';
 import NodeDescription from '../NodeDescription.vue';
 
 import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
-jest.mock('@/mixins/escapeStack', () => {
+vi.mock('@/mixins/escapeStack', () => {
     function escapeStack({ onEscape }) { // eslint-disable-line func-style
         escapeStack.onEscape = onEscape;
         return { /* empty mixin */ };
@@ -33,7 +34,7 @@ describe('NodeDescription', () => {
             }
         });
 
-        const dispatchSpy = jest.spyOn($store, 'dispatch');
+        const dispatchSpy = vi.spyOn($store, 'dispatch');
 
         const props = {
             selectedNode: {

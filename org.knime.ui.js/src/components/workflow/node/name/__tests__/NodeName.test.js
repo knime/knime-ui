@@ -1,6 +1,7 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import NodeName from '../NodeName.vue';
 import NodeNameText from '../NodeNameText.vue';
@@ -25,7 +26,7 @@ describe('NodeName', () => {
         return wrapper;
     };
 
-    describe('Handles text', () => {
+    describe('handles text', () => {
         let storeConfig, wrapper;
 
         beforeEach(() => {
@@ -35,9 +36,9 @@ describe('NodeName', () => {
                         nameEditorNodeId: 'editNodeId'
                     },
                     actions: {
-                        openNameEditor: jest.fn(),
-                        closeNameEditor: jest.fn(),
-                        renameContainerNode: jest.fn()
+                        openNameEditor: vi.fn(),
+                        closeNameEditor: vi.fn(),
+                        renameContainerNode: vi.fn()
                     }
                 }
             };
@@ -84,7 +85,7 @@ describe('NodeName', () => {
         });
     });
 
-    describe('Handles editor', () => {
+    describe('handles editor', () => {
         let storeConfig, wrapper, $store;
 
         beforeEach(() => {
@@ -94,9 +95,9 @@ describe('NodeName', () => {
                         nameEditorNodeId: defaultProps.nodeId
                     },
                     actions: {
-                        openNameEditor: jest.fn(),
-                        closeNameEditor: jest.fn(),
-                        renameContainerNode: jest.fn()
+                        openNameEditor: vi.fn(),
+                        closeNameEditor: vi.fn(),
+                        renameContainerNode: vi.fn()
                     }
                 }
             };
@@ -135,7 +136,7 @@ describe('NodeName', () => {
         });
 
         it('should handle saving the name', async () => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
             const saveEventPayload = {
                 newName: 'This is new',
                 dimensionsOnClose: {
@@ -150,7 +151,7 @@ describe('NodeName', () => {
                 expect.objectContaining({ nodeId: defaultProps.nodeId, name: saveEventPayload.newName })
             );
 
-            jest.runAllTimers();
+            vi.runAllTimers();
             expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
 
             // emulate editor being closed from store

@@ -1,5 +1,6 @@
+import { expect, describe, beforeEach, it } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import * as $colors from '@/style/colors.mjs';
 import * as $shapes from '@/style/shapes.mjs';
@@ -27,7 +28,7 @@ describe('PortIconRenderer', () => {
         };
         doMount = () => {
             $store = mockVuexStore(storeConfig);
-            
+
             wrapper = mount(portIconRenderer(port, iconSize), {
                 global: {
                     plugins: [$store],
@@ -43,7 +44,7 @@ describe('PortIconRenderer', () => {
             state: 'EXECUTED'
         };
         doMount();
-        
+
         expect(wrapper.element.tagName.toLowerCase()).toBe('svg');
         expect(wrapper.findAll('.scale g').length).toBe(0);
         expect(wrapper.findAll('.scale g *').length).toBe(0);
@@ -70,7 +71,7 @@ describe('PortIconRenderer', () => {
             state: 'EXECUTED'
         };
         doMount();
-        
+
         let { portSize } = $shapes;
         expect(wrapper.attributes().viewBox).toBe(`-${portSize / 2} -${portSize / 2} ${portSize} ${portSize}`);
     });
@@ -81,7 +82,7 @@ describe('PortIconRenderer', () => {
             state: 'EXECUTED'
         };
         doMount();
-        
+
         expect(wrapper.element.style.width).toBe('');
     });
 

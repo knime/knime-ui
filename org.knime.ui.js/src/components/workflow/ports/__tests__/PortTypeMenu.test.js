@@ -1,7 +1,8 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
@@ -52,7 +53,7 @@ describe('PortTypeMenu.vue', () => {
 
         doMount = (customProps = {}) => {
             $store = mockVuexStore(storeConfig);
-            
+
             // attachTo document body so that focus works
             wrapper = mount(PortTypeMenu, {
                 props: { ...props, ...customProps },
@@ -68,7 +69,7 @@ describe('PortTypeMenu.vue', () => {
         };
     });
 
-    describe('Menu', () => {
+    describe('menu', () => {
         it('re-emits menu-close', () => {
             doMount();
 
@@ -79,17 +80,17 @@ describe('PortTypeMenu.vue', () => {
         describe('header', () => {
             it('sets up header for output ports', () => {
                 doMount();
-                
+
                 let header = wrapper.find('.header');
                 expect(header.classes()).toContain('output');
                 expect(header.attributes('style')).toMatch(`--margin: 10px`);
                 expect(header.text()).toBe('Add Output Port');
             });
-            
+
             it('sets up header for input ports', () => {
                 props.side = 'input';
                 doMount();
-                
+
                 let header = wrapper.find('.header');
                 expect(header.classes()).toContain('input');
                 expect(header.attributes('style')).toMatch(`--margin: 10px`);
@@ -114,7 +115,7 @@ describe('PortTypeMenu.vue', () => {
         });
 
         describe('menu position', () => {
-            test('100% zoom and output', () => {
+            it('100% zoom and output', () => {
                 doMount();
 
                 let floatingMenu = wrapper.findComponent(FloatingMenuStub);
@@ -122,7 +123,7 @@ describe('PortTypeMenu.vue', () => {
                 expect(floatingMenu.props('canvasPosition')).toStrictEqual({ x: 10, y: 10 });
             });
 
-            test('100% zoom and input', () => {
+            it('100% zoom and input', () => {
                 props.side = 'input';
                 doMount();
 
@@ -131,7 +132,7 @@ describe('PortTypeMenu.vue', () => {
                 expect(floatingMenu.props('canvasPosition')).toStrictEqual({ x: 10, y: 10 });
             });
 
-            test('50% zoom, no vertical shift', () => {
+            it('50% zoom, no vertical shift', () => {
                 storeConfig.canvas.state.zoomFactor = 0.5;
                 doMount();
 
@@ -139,7 +140,7 @@ describe('PortTypeMenu.vue', () => {
                 expect(floatingMenu.props('canvasPosition')).toStrictEqual({ x: 10, y: 10 });
             });
 
-            test('200% zoom, vertical shift', () => {
+            it('200% zoom, vertical shift', () => {
                 storeConfig.canvas.state.zoomFactor = 2;
                 doMount();
 
@@ -149,39 +150,40 @@ describe('PortTypeMenu.vue', () => {
         });
 
         describe('search bar', () => {
-            test('focus searchbar on mount', () => {
+            it('focus searchbar on mount', () => {
                 doMount();
                 let searchBar = wrapper.findComponent(SearchBar).find('input').element;
                 expect(document.activeElement).toBe(searchBar);
             });
 
-            test('keyboard navigation: down', () => {
+            it('keyboard navigation: down', () => {
                 doMount();
-                let focusFirstMock = jest.fn();
+                let focusFirstMock = vi.fn();
 
                 wrapper.findComponent(MenuItems).vm.focusFirst = focusFirstMock;
                 wrapper.findComponent(SearchBar).trigger('keydown.down');
-                
+
                 expect(focusFirstMock).toHaveBeenCalled();
             });
 
-            test('keyboard navigation: up', () => {
+            it('keyboard navigation: up', () => {
                 doMount();
-                let focusLastMock = jest.fn();
+                let focusLastMock = vi.fn();
                 wrapper.findComponent(MenuItems).vm.focusLast = focusLastMock;
                 wrapper.findComponent(SearchBar).trigger('keydown.up');
-                
+
                 expect(focusLastMock).toHaveBeenCalled();
             });
         });
 
-        describe('Search results', () => {
+        describe('search results', () => {
             const doSearch = async (wrapper, query = '') => {
                 wrapper.findComponent(SearchBar).vm.$emit('update:modelValue', query);
                 await Vue.nextTick();
             };
 
-            describe('No specified Port Groups -> all types allowed)', () => {
+            // eslint-disable-next-line vitest/max-nested-describe
+            describe('no specified Port Groups -> all types allowed)', () => {
                 it('shows all ports on empty search request', async () => {
                     doMount();
                     await doSearch(wrapper, '');
@@ -217,7 +219,7 @@ describe('PortTypeMenu.vue', () => {
                 it('does a fuzzy search', async () => {
                     doMount();
                     await doSearch(wrapper, 'flow');
-                
+
                     // Test that the results are rendered properly
                     expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
                         {
@@ -230,7 +232,8 @@ describe('PortTypeMenu.vue', () => {
                 });
             });
 
-            describe('With specified Port Groups -> only some types allowed)', () => {
+            // eslint-disable-next-line vitest/max-nested-describe
+            describe('with specified Port Groups -> only some types allowed)', () => {
                 beforeEach(() => {
                     props.portGroups = {
                         input: { supportedPortTypeIds: ['table', 'flowVariable'] }
@@ -250,13 +253,13 @@ describe('PortTypeMenu.vue', () => {
                         };
 
                         doMount({ portGroups, side });
-                    
+
                         expect(wrapper.findComponent(MenuItems).props('items')).toEqual(
                             Object.keys(portGroups).map(key => ({ text: key }))
                         );
                     }
                 );
-                
+
                 it('should automatically select the port group when only 1 is given', () => {
                     const portGroups = {
                         group1: { supportedPortTypeIds: ['table', 'flowVariable'], canAddInPort: true },
@@ -286,7 +289,7 @@ describe('PortTypeMenu.vue', () => {
                     };
 
                     doMount({ portGroups });
-                    
+
                     // select a group
                     wrapper.findComponent(MenuItems).vm.$emit('item-click', {}, { text: 'group1' });
                     await Vue.nextTick();
@@ -328,7 +331,7 @@ describe('PortTypeMenu.vue', () => {
                     // select a group
                     wrapper.findComponent(MenuItems).vm.$emit('item-click', {}, { text: 'group1' });
                     await Vue.nextTick();
-                    
+
                     // go back
                     wrapper.find('.return-button').trigger('click');
                     await Vue.nextTick();
@@ -376,8 +379,8 @@ describe('PortTypeMenu.vue', () => {
                 expect(wrapper.emitted('menuClose')).toStrictEqual([[{ typeId: '1', portGroup: null }]]);
             });
 
-            test.each(['top-reached', 'bottom-reached'])('keyboard-navigation top reached', async (event) => {
-                let preventDefaultMock = jest.fn();
+            it.each(['top-reached', 'bottom-reached'])('keyboard-navigation top reached', async (event) => {
+                let preventDefaultMock = vi.fn();
                 doMount();
 
                 wrapper.findComponent(MenuItems).vm.focusFirst();
@@ -386,7 +389,7 @@ describe('PortTypeMenu.vue', () => {
                 expect(document.activeElement).toBe(wrapper.findComponent(SearchBar).find('input').element);
             });
 
-            test('setup menu items', () => {
+            it('setup menu items', () => {
                 doMount();
 
                 expect(wrapper.findComponent(MenuItems).attributes('aria-label')).toBe('Port Type Menu');

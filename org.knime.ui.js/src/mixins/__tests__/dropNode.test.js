@@ -1,13 +1,14 @@
+import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import * as $shapes from '@/style/shapes.mjs';
 
 import { dropNode, KnimeMIME } from '../dropNode';
 
 describe('Drop Node Mixin', () => {
     const doMount = ({ isWritable = true } = {}) => {
-        Event.prototype.preventDefault = jest.fn();
+        Event.prototype.preventDefault = vi.fn();
 
         const dummyEvent = {
             clientX: 0,
@@ -15,11 +16,11 @@ describe('Drop Node Mixin', () => {
             dataTransfer: {
                 dropEffect: '',
                 types: ['text/plain'],
-                getData: jest.fn().mockReturnValue(JSON.stringify({ className: 'sampleClassName' }))
+                getData: vi.fn().mockReturnValue(JSON.stringify({ className: 'sampleClassName' }))
             },
-            preventDefault: jest.fn()
+            preventDefault: vi.fn()
         };
-        const addNodeMock = jest.fn(() => ({ newNodeId: 'mock-new-node' }));
+        const addNodeMock = vi.fn(() => ({ newNodeId: 'mock-new-node' }));
 
         const kanvasElement = {
             scrollLeft: 5,
@@ -27,7 +28,7 @@ describe('Drop Node Mixin', () => {
             offsetLeft: 5,
             offsetTop: 5
         };
-    
+
         const dropNodeTarget = {
             template: `
                 <div
@@ -50,13 +51,13 @@ describe('Drop Node Mixin', () => {
             },
             canvas: {
                 getters: {
-                    screenToCanvasCoordinates: state => ([x, y]) => [x - 10, y - 10]
+                    screenToCanvasCoordinates: () => ([x, y]) => [x - 10, y - 10]
                 }
             }
         });
 
         document.getElementById = (id) => id === 'kanvas' ? kanvasElement : null;
-        
+
         const wrapper = shallowMount(dropNodeTarget, { global: { plugins: [$store], mocks: { $shapes } } });
 
         return { wrapper, dummyEvent, addNodeMock, $store };
@@ -108,7 +109,7 @@ describe('Drop Node Mixin', () => {
             dataTransfer: {
                 dropEffect: '',
                 types: ['text/plain'],
-                getData: jest.fn().mockReturnValue(null)
+                getData: vi.fn().mockReturnValue(null)
             }
         };
 

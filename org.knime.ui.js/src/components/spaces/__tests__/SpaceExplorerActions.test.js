@@ -1,3 +1,4 @@
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
@@ -9,13 +10,13 @@ describe('SpaceExplorerActions.vue', () => {
     const doMount = ({ props = {} } = {}) => {
         const wrapper = mount(SpaceExplorerActions, {
             props,
-            global: { mocks: { $shortcuts: { get: jest.fn(() => ({})) } } }
+            global: { mocks: { $shortcuts: { get: vi.fn(() => ({})) } } }
         });
 
         return { wrapper };
     };
 
-    describe('Normal mode', () => {
+    describe('normal mode', () => {
         it('should render actions for local space', () => {
             const { wrapper } = doMount({
                 props: {
@@ -61,8 +62,7 @@ describe('SpaceExplorerActions.vue', () => {
             expect(wrapper.find('#downloadToLocalSpace').attributes('aria-disabled')).toBeTruthy();
             expect(wrapper.find('#createFolder').attributes('disabled')).toBeFalsy();
             expect(wrapper.find('#importFiles').attributes('disabled')).toBeFalsy();
-
-            expect(wrapper.findComponent(PlusButton).attributes('disabled')).toBeTruthy();
+            expect(wrapper.findComponent(PlusButton).find('button').attributes('disabled')).toBeDefined();
         });
 
         it.each([
@@ -85,7 +85,7 @@ describe('SpaceExplorerActions.vue', () => {
         });
     });
 
-    describe('Mini mode', () => {
+    describe('mini mode', () => {
         it('should render actions for local space', () => {
             const { wrapper } = doMount({
                 props: {

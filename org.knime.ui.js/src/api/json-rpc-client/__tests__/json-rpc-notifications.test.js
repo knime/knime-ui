@@ -1,19 +1,26 @@
-import { registerEventHandlers } from '../json-rpc-notifications';
+import { expect, describe, beforeAll, beforeEach, afterAll, it, vi } from 'vitest';
+import { registerNotificationHandler, initJsonRpcNotifications } from '../json-rpc-notifications';
 
 const origErrorLogger = window.consola.error;
 
 describe('JsonRpcNotifications', () => {
     let eventHandlers;
 
+    beforeAll(() => {
+        initJsonRpcNotifications();
+    });
+
     beforeEach(() => {
         eventHandlers = {
-            WorkingEvent: jest.fn(),
-            ErrorEvent: jest.fn().mockImplementation(() => {
+            WorkingEvent: vi.fn(),
+            ErrorEvent: vi.fn().mockImplementation(() => {
                 throw new Error('boo!');
             }),
             NotFunction: null
         };
-        registerEventHandlers(eventHandlers);
+        Object.entries(eventHandlers).forEach(([eventName, eventHandler]) => {
+            registerNotificationHandler(eventName, eventHandler);
+        });
     });
 
     it('defines a global function', () => {
@@ -28,7 +35,7 @@ describe('JsonRpcNotifications', () => {
 
     describe('error handling', () => {
         beforeAll(() => {
-            window.consola.error = jest.fn();
+            window.consola.error = vi.fn();
         });
 
         afterAll(() => {

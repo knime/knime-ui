@@ -1,6 +1,7 @@
+import { expect, describe, beforeEach, it, vi } from 'vitest';
 import { mount as deepMount, shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/test-utils';
+import { mockVuexStore } from '@/test/utils';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 
 import ZoomMenu from '../ZoomMenu.vue';
@@ -13,8 +14,8 @@ describe('ZoomMenu', () => {
         props = { };
 
         $shortcuts = {
-            get: jest.fn().mockImplementation(shortcut => ({ name: shortcut })),
-            dispatch: jest.fn()
+            get: vi.fn().mockImplementation(shortcut => ({ name: shortcut })),
+            dispatch: vi.fn()
         };
 
         doMount = (mountMethod) => {
@@ -24,7 +25,7 @@ describe('ZoomMenu', () => {
                         zoomFactor
                     },
                     actions: {
-                        zoomCentered({ state }, { delta, factor }) {
+                        zoomCentered({ state }, { factor }) {
                             if (factor) {
                                 state.zoomFactor = factor;
                             }
@@ -69,7 +70,7 @@ describe('ZoomMenu', () => {
             doMount(shallowMount);
 
             let input = wrapper.find('.zoom-input');
-            input.element.select = jest.fn();
+            input.element.select = vi.fn();
             input.trigger('click');
 
             expect(input.element.select).toHaveBeenCalled();
@@ -132,7 +133,7 @@ describe('ZoomMenu', () => {
     it('zooms in and out on mousewheel', async () => {
         zoomFactor = 0.63;
         doMount(deepMount);
-        $store.dispatch = jest.fn();
+        $store.dispatch = vi.fn();
 
         let input = wrapper.find('.zoom-input');
         await input.trigger('wheel', { deltaY: 1 });

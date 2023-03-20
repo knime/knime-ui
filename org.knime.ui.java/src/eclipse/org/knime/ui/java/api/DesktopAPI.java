@@ -147,10 +147,14 @@ public final class DesktopAPI {
      * @param spaceProviders
      * @param updateStateProvider optional, can be {@code null}
      * @param eventConsumer
+     * @throws IllegalStateException if the dependencies have been already injected
      */
     public static void injectDependencies(final WorkflowProjectManager workflowProjectManager,
         final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer) {
+        if (areDependenciesInjected()) {
+            throw new IllegalStateException("Desktop API dependencies are already injected");
+        }
         dependencies = new HashMap<>();
         dependencies.put(WorkflowProjectManager.class, workflowProjectManager);
         dependencies.put(AppStateUpdater.class, appStateUpdater);
@@ -159,6 +163,14 @@ public final class DesktopAPI {
         if (updateStateProvider != null) {
             dependencies.put(UpdateStateProvider.class, updateStateProvider);
         }
+    }
+
+    /**
+     * @return whether dependencies already have been injected via
+     *         {@link #injectDependencies(WorkflowProjectManager, AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer)}
+     */
+    public static boolean areDependenciesInjected() {
+        return dependencies != null && !dependencies.isEmpty();
     }
 
     /**

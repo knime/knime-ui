@@ -48,7 +48,6 @@ package org.knime.ui.java.api;
 
 import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
-import java.net.URI;
 import java.util.Optional;
 
 import org.eclipse.core.filesystem.EFS;
@@ -66,7 +65,6 @@ import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
-import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -98,45 +96,6 @@ final class OpenWorkflow {
 
     private OpenWorkflow() {
        // utility
-    }
-
-    /**
-     * Opens the workflow either in both, the Classic UI and the Modern/Web UI if the classic UI is active (the
-     * WorkflowEditor is used in that case to open the workflow). Or it opens and loads the workflow exclusively in the
-     * Modern UI. Those workflows won't be available in the classic UI when switching to it.
-     *
-     * @param spaceIdd
-     * @param itemId
-     * @param spaceProviderId
-     */
-    static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
-        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            openWorkflowInClassicAndWebUIPerspective(space.toKnimeUrl(itemId));
-        } else {
-            DesktopAPUtil.openWorkflowInWebUIPerspectiveOnly(space, itemId).ifPresent(wfm -> {
-                String relativePath = null;
-                if (wfm.getContextV2().getLocationType() == LocationType.LOCAL) {
-                    relativePath = LocalSpaceUtil
-                        .toRelativePath(wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath()).toString();
-                }
-                registerWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
-                NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm,
-                    space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
-            });
-        }
-        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-    }
-
-    private static void registerWorkflowProject(final WorkflowManager wfm, final String spaceProviderId,
-        final String spaceId, final String itemId, final String relativePath) {
-        var wpm = WorkflowProjectManager.getInstance();
-        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, null);
-        var projectId = wfProj.getID();
-        wpm.addWorkflowProject(projectId, wfProj);
-        wpm.openAndCacheWorkflow(projectId);
-        wpm.setWorkflowProjectActive(projectId);
     }
 
     static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
@@ -185,13 +144,63 @@ final class OpenWorkflow {
         };
     }
 
-    private static void openWorkflowInClassicAndWebUIPerspective(final URI knimeUrl) {
+    /**
+     * Opens the workflow in both, the Classic UI and the Modern/Web UI (the
+     *
+     * @param spaceId
+     * @param itemId
+     * @param spaceProviderId
+     */
+    static void openWorkflowInClassicAndWebUI(final String spaceProviderId, final String spaceId,
+        final String itemId) {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        var knimeUrl = space.toKnimeUrl(itemId);
+
         try {
             openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl));
             hideSharedEditorArea();
             ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors();
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
             LOGGER.warn("Could not open editor", e);
+        }
+    }
+
+    private static void registerWorkflowProject(final WorkflowManager wfm, final String spaceProviderId,
+        final String spaceId, final String itemId, final String relativePath) {
+        var wpm = WorkflowProjectManager.getInstance();
+        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, null);
+        var projectId = wfProj.getID();
+        wpm.addWorkflowProject(projectId, wfProj);
+        wpm.openAndCacheWorkflow(projectId);
+        wpm.setWorkflowProjectActive(projectId);
+    }
+
+    /**
+     * Opens the workflow in the Modern/Web UI. Those workflows won't be available in the classic UI when switching to
+     * it.
+     *
+     * @param spaceId
+     * @param itemId
+     * @param spaceProviderId
+     * @param monitor
+     */
+    static void openWorkflowInWebUIOnly(final String spaceProviderId, final String spaceId,
+        final String itemId, final IProgressMonitor monitor) {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        var wfm = DesktopAPUtil.loadWorkflow(space, itemId, monitor);
+
+        if (wfm != null) {
+            String relativePath = null;
+            if (space instanceof LocalWorkspace localWorkspace) {
+                var wfPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+                relativePath = localWorkspace.getLocalRootPath().relativize(wfPath).toString();
+            }
+            registerWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
+            NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm,
+                space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
+
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
     }
 
