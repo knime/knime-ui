@@ -1,4 +1,4 @@
-import { getNodeRecommendations } from '@api';
+import { API } from '@api';
 import { toNodeWithFullPorts } from '../util/portDataMapper';
 import * as nodeSearch from './common/nodeSearch';
 
@@ -33,7 +33,7 @@ export const actions = {
         const { availablePortTypes } = rootState.application;
 
         // call api
-        const recommendedNodesResult = await getNodeRecommendations({
+        const recommendedNodesResult = await API.noderepository.getNodeRecommendations({
             workflowId,
             projectId,
             nodeId,

@@ -2,7 +2,6 @@
 import { mapGetters, mapState } from 'vuex';
 import { openWorkflowCoachPreferencePage } from '@api';
 
-import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import SearchBar from '@/components/common/SearchBar.vue';
@@ -120,11 +119,13 @@ export default {
         }
     },
     mounted() {
+        this.$store.commit('quickAddNodes/setPortTypeId', this.port.typeId);
         this.$refs.search?.focus();
     },
     beforeUnmount() {
         // reset query on close (in any case!)
         this.searchQuery = '';
+        this.$store.commit('quickAddNodes/setPortTypeId', null);
     },
     methods: {
         openWorkflowCoachPreferencePage,

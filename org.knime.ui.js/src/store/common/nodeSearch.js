@@ -1,4 +1,4 @@
-import { searchNodes } from '@api';
+import { API } from '@api';
 import { toNodeWithFullPorts } from '@/util/portDataMapper';
 
 /**
@@ -10,6 +10,8 @@ const nodeSearchPageSize = 100;
 export const state = {
     query: '',
     selectedTags: [],
+    // filter for compatible port type ids
+    portTypeId: null,
 
     searchScrollPosition: 0,
     isShowingBottomNodes: false,
@@ -71,6 +73,10 @@ export const mutations = {
         state.searchScrollPosition = 0;
     },
 
+    setPortTypeId(state, value) {
+        state.portTypeId = value;
+    },
+
     setQuery(state, value) {
         state.query = value;
         state.searchScrollPosition = 0;
@@ -93,6 +99,7 @@ export const actions = {
      * @param {Boolean} append - if the results should be added to the current nodes (for pagination) or if the state
      *      should be cleared (for a new search).
      * @param {Boolean} bottom - if search should be for additional nodes that are displayed on the bottom
+     * @param {String} [portTypeId] - only results that are compatible with that portTypeId
      * @returns {Promise}
      */
     async searchNodes({
@@ -124,15 +131,15 @@ export const actions = {
             nodes,
             totalNumNodes,
             tags
-        } = await searchNodes({
-            query: state.query,
+        } = await API.noderepository.searchNodes({
+            q: state.query,
             tags: state.selectedTags,
             allTagsMatch: true,
-            nodeOffset: currentPage() * nodeSearchPageSize,
-            nodeLimit: nodeSearchPageSize,
+            offset: currentPage() * nodeSearchPageSize,
+            limit: nodeSearchPageSize,
             fullTemplateInfo: true,
-            // TODO: rename if backend is merged: nodeSubset: 'in_collection'
-            additionalNodes: bottom
+            nodesPartition: bottom ? 'NOT_IN_COLLECTION' : 'IN_COLLECTION',
+            portTypeId: state.portTypeId
         });
 
         const { availablePortTypes } = rootState.application;
