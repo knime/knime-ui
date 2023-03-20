@@ -2,7 +2,7 @@
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 /**
- * Basic NodeTemplate without any drag or insert features.
+ * Basic NodeTemplate without any drag or insert features. This component should stay reusable.
  */
 export default {
     components: {

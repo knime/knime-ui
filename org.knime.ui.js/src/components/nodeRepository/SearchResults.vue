@@ -1,23 +1,67 @@
 <script>
-import { mapState, mapActions, mapMutations } from 'vuex';
 
 import BaseButton from 'webapps-common/ui/components/BaseButton.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
-import DraggableNodeTemplate from '@/components/nodeRepository/DraggableNodeTemplate.vue';
+import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
 
+/**
+ * Reusable search results. Please keep this store free.
+ */
 export default {
     components: {
-        DraggableNodeTemplate,
+        NodeTemplate,
         ScrollViewContainer,
         NodeList,
         ReloadIcon,
         BaseButton,
         DropdownIcon
     },
-    emits: ['focusSearchBar'],
+    props: {
+        topNodes: {
+            type: Object,
+            required: true
+        },
+        totalNumTopNodes:  {
+            type: Number,
+            required: true
+        },
+        bottomNodes: {
+            type: Object,
+            required: true
+        },
+        query: {
+            type: String,
+            required: true
+        },
+        selectedTags: {
+            type: Array,
+            required: true
+        },
+        searchScrollPosition: {
+            type: Number,
+            default: 0
+        },
+        isShowingBottomNodes: {
+            type: Boolean,
+            required: true
+        },
+        selectedNode: {
+            type: Object,
+            required: true
+        },
+        searchActions: {
+            type: Object,
+            required: true
+        },
+        hasNodeCollectionActive: {
+            type: Boolean,
+            required: true
+        }
+    },
+    emits: ['focusSearchBar', 'update:searchScrollPosition', 'update:selectedNode'],
     expose: ['focusFirst'],
     data() {
         return {
@@ -26,16 +70,6 @@ export default {
         };
     },
     computed: {
-        ...mapState('nodeRepository', [
-            'topNodes',
-            'bottomNodes',
-            'query',
-            'selectedTags',
-            'searchScrollPosition',
-            'totalNumTopNodes',
-            'isShowingBottomNodes'
-        ]),
-        ...mapState('application', ['hasNodeCollectionActive']),
         hasNoSearchResults() {
             return this.topNodes.length === 0;
         },
@@ -43,12 +77,12 @@ export default {
             // NB: If bottomNodes is null the results are still loading
             return this.bottomNodes !== null && this.bottomNodes.length === 0;
         },
-        selectedNode: {
+        selectedNodeModel: {
             get() {
-                return this.$store.state.nodeRepository.selectedNode;
+                return this.selectedNode;
             },
             set(value) {
-                this.$store.commit('nodeRepository/setSelectedNode', value);
+                this.$emit('update:selectedNode', value);
             }
         }
     },
@@ -61,13 +95,9 @@ export default {
         }
     },
     methods: {
-        ...mapActions('nodeRepository', [
-            'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
-        ]),
-        ...mapMutations('nodeRepository', ['setSearchScrollPosition']),
         // Also currently the NodeRepository isn't destroyed upon closing
         onSaveScrollPosition(position) {
-            this.setSearchScrollPosition(position);
+            this.$emit('update:searchScrollPosition', position);
         },
         async onSearchChanged() {
             let { scroller } = this.$refs;
@@ -80,19 +110,19 @@ export default {
         },
         loadMoreSearchResults() {
             this.isLoading = true;
-            this.searchTopNodesNextPage().then(() => {
+            this.searchActions.searchTopNodesNextPage().then(() => {
                 this.isLoading = false;
             });
 
             // NB: The store will only load more nodes if isShowingBottomNodes is true
             this.isLoadingMore = true;
-            this.searchBottomNodesNextPage().then(() => {
+            this.searchActions.searchBottomNodesNextPage().then(() => {
                 this.isLoadingMore = false;
             });
         },
         async openBottomNodes() {
             if (!this.isShowingBottomNodes) {
-                await this.toggleShowingBottomNodes();
+                await this.searchActions.toggleShowingBottomNodes();
             }
             await this.$nextTick();
             this.$refs.bottomList?.focusFirst();
@@ -136,13 +166,18 @@ export default {
       >
         <NodeList
           ref="topList"
-          v-model:selected-node="selectedNode"
+          v-model:selected-node="selectedNodeModel"
           :nodes="topNodes"
           @nav-reached-top="$emit('focusSearchBar')"
           @nav-reached-end="openBottomNodes"
         >
           <template #item="slotProps">
-            <DraggableNodeTemplate v-bind="slotProps" />
+            <slot
+              name="topNodeTemplate"
+              v-bind="slotProps"
+            >
+              <NodeTemplate v-bind="slotProps" />
+            </slot>
           </template>
         </NodeList>
         <ReloadIcon
@@ -158,7 +193,7 @@ export default {
       <BaseButton
         class="more-nodes-button"
         :aria-expanded="String(isShowingBottomNodes)"
-        @click.prevent="toggleShowingBottomNodes"
+        @click.prevent="searchActions.toggleShowingBottomNodes"
       >
         <div class="more-nodes-dropdown">
           <DropdownIcon :class="['dropdown-icon', {flip: isShowingBottomNodes}]" />
@@ -178,12 +213,17 @@ export default {
         >
           <NodeList
             ref="bottomList"
-            v-model:selected-node="selectedNode"
+            v-model:selected-node="selectedNodeModel"
             :nodes="bottomNodes"
             @nav-reached-top="bottomListNavReachedTop"
           >
             <template #item="slotProps">
-              <DraggableNodeTemplate v-bind="slotProps" />
+              <slot
+                name="bottomNodeTemplate"
+                v-bind="slotProps"
+              >
+                <NodeTemplate v-bind="slotProps" />
+              </slot>
             </template>
           </NodeList>
           <ReloadIcon

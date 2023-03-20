@@ -6,20 +6,20 @@ import ActionBreadcrumb from '@/components/common/ActionBreadcrumb.vue';
 import SearchBar from '@/components/common/SearchBar.vue';
 import CloseableTagList from './CloseableTagList.vue';
 import CategoryResults from './CategoryResults.vue';
-import SearchResults from './SearchResults.vue';
 import NodeDescriptionOverlay from './NodeDescriptionOverlay.vue';
+import SidebarSearchResults from '@/components/nodeRepository/SidebarSearchResults.vue';
 
 const SEARCH_COOLDOWN = 150; // ms
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
 export default {
     components: {
+        SidebarSearchResults,
         CloseableTagList,
         ActionBreadcrumb,
         SearchBar,
         CategoryResults,
-        NodeDescriptionOverlay,
-        SearchResults
+        NodeDescriptionOverlay
     },
     computed: {
         ...mapState('nodeRepository', ['topNodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
@@ -108,9 +108,9 @@ export default {
       />
       <hr v-if="!topNodes || tags.length">
     </div>
-    <SearchResults
-      ref="searchResults"
+    <SidebarSearchResults
       v-if="showSearchResults"
+      ref="searchResults"
       @focus-search-bar="$refs.serachBar.focus()"
     />
     <CategoryResults v-else />
