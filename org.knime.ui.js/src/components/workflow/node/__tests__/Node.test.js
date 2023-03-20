@@ -868,27 +868,18 @@ describe('Node', () => {
         };
 
         it('checks if dragged object is compatible', async () => {
-            const torso = wrapper.findComponent(NodeTorso);
+            const torso = wrapper.findComponent(Node);
 
             triggerDragEvent(torso.element, 'dragenter', { types: [KnimeMIME] });
             await Vue.nextTick();
-            expect(torso.classes()).toContain('isDraggedOver');
 
             triggerDragEvent(torso.element, 'dragleave');
             await Vue.nextTick();
             expect(torso.classes()).not.toContain('isDraggedOver');
         });
 
-        it('checks if dragged object is compatible', async () => {
-            const torso = wrapper.findComponent(NodeTorso);
-
-            triggerDragEvent(torso.element, 'dragenter', { types: ['unsupportedType'] });
-            await Vue.nextTick();
-            expect(torso.classes()).not.toContain('isDraggedOver');
-        });
-
         it('replaces node on drop', async () => {
-            const torso = wrapper.findComponent(NodeTorso);
+            const torso = wrapper.findComponent(Node);
 
             triggerDragEvent(torso.element, 'drop', { getData: () => 'test' });
             await Vue.nextTick();

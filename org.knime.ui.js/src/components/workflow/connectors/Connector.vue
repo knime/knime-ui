@@ -116,7 +116,6 @@ export default {
     methods: {
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
-        ...mapActions('workflow', ['insertNode']),
 
         onContextMenu(event) {
             // right click should work same as left click
@@ -163,8 +162,9 @@ export default {
         onConnectorDragLeave() {
             this.isDraggedOver = false;
         },
-        onConnectorDragDrop(dragEvent) {
-            this.insertNode({ connectionId: this.id, nodeFactory: dragEvent.dataTransfer.getData(KnimeMIME) });
+        onConnectorDragDrop() {
+            // TODO https://knime-com.atlassian.net/browse/NXT-481
+            // this.insertNode({ connectionId: this.id, nodeFactory: dragEvent.dataTransfer.getData(KnimeMIME) });
             this.isDraggedOver = false;
         }
     }
@@ -237,10 +237,11 @@ path:not(.hover-area) {
     stroke: var(--knime-masala);
   }
 
+  /* TODO in https://knime-com.atlassian.net/browse/NXT-481
   &.isDraggedOver {
     stroke-width: var(--selected-connector-width-shape);
     stroke: var(--knime-hibiscus-dark);
-  }
+  } */
 
   &.dashed {
     stroke-dasharray: 5;
