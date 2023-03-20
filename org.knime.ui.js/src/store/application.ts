@@ -1,4 +1,4 @@
-import { API, fetchApplicationState, loadWorkflow, setProjectActiveAndEnsureItsLoadedInBackend } from '@api';
+import { API } from '@api';
 import { encodeString } from '@/util/encodeString';
 import { APP_ROUTES } from '@/router/appRoutes';
 
@@ -157,7 +157,7 @@ export const actions = {
     async initializeApplication({ dispatch }, { $router }) {
         await API.event.subscribeEvent({ typeId: 'AppStateChangedEventType' });
 
-        const applicationState = await fetchApplicationState();
+        const applicationState = await API.application.getState({});
         await dispatch('replaceApplicationState', applicationState);
         await dispatch('spaces/fetchAllSpaceProviders', {}, { root: true });
 
@@ -320,7 +320,7 @@ export const actions = {
 
         // only continue if the new workflow exists
         if (newWorkflow) {
-            let { projectId, workflowId = 'root' } = newWorkflow;
+            const { projectId, workflowId = 'root' } = newWorkflow;
 
             // check if project is being changed and if there is already active workflow
             if (isChangingProject) {
@@ -337,8 +337,8 @@ export const actions = {
     },
     async loadWorkflow({ dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
         // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
-        setProjectActiveAndEnsureItsLoadedInBackend({ projectId });
-        const project = await loadWorkflow({ projectId, workflowId });
+        API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
+        const project = await API.workflow.getWorkflow({ projectId, workflowId, includeInteractionInfo: true });
         if (project) {
             dispatch('setWorkflow', {
                 projectId,
@@ -370,7 +370,7 @@ export const actions = {
         await dispatch('restoreCanvasState');
     },
     unloadActiveWorkflow({ commit, rootState }, { clearWorkflow }) {
-        let activeWorkflow = rootState.workflow.activeWorkflow;
+        const activeWorkflow = rootState.workflow.activeWorkflow;
 
         // nothing to do (no tabs open)
         if (!activeWorkflow) {
@@ -378,9 +378,9 @@ export const actions = {
         }
 
         // clean up
-        let { projectId } = activeWorkflow;
-        let { activeSnapshotId: snapshotId } = rootState.workflow;
-        let workflowId = rootState.workflow.activeWorkflow.info.containerId;
+        const { projectId } = activeWorkflow;
+        const { activeSnapshotId: snapshotId } = rootState.workflow;
+        const workflowId = rootState.workflow.activeWorkflow.info.containerId;
 
         API.event.unsubscribeEventListener({ typeId: 'WorkflowChangedEventType', projectId, workflowId, snapshotId });
 
@@ -423,6 +423,7 @@ export const actions = {
         // without having changed projects
         const isEnteringSubWorkflow = isCurrentlyOnRoot && newWorkflow && !isChangingProject;
 
+        // eslint-disable-next-line @typescript-eslint/no-extra-parens
         if (isEnteringSubWorkflow || (isChangingProject && isWorkflowUnsaved)) {
             const canvasElement = rootState.canvas.getScrollContainerElement().firstChild;
 

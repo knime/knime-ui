@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { getNodeRecommendations, openWorkflowCoachPreferencePage } from '@api';
+import { API } from '@api';
 
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
@@ -98,13 +98,17 @@ export default {
     },
     methods: {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
-        openWorkflowCoachPreferencePage,
+
+        openWorkflowCoachPreferencePage() {
+            API.desktop.openWorkflowCoachPreferencePage();
+        },
+
         async fetchRecommendedNodes() {
             const workflowId = this.workflow.info.containerId;
             const projectId = this.workflow.projectId;
 
             // call api
-            const recommendedNodesResult = await getNodeRecommendations({
+            const recommendedNodesResult = await API.noderepository.getNodeRecommendations({
                 workflowId,
                 projectId,
                 nodeId: this.nodeId,

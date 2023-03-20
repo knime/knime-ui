@@ -1,4 +1,4 @@
-import { searchNodes, getNodesGroupedByTags, getNodeDescription, getNodeTemplates } from '@api';
+import { API } from '@api';
 import { toNodeWithFullPorts } from '../util/portDataMapper';
 
 /**
@@ -53,8 +53,8 @@ export const mutations = {
     },
 
     addTopNodes(state, topNodes) {
-        let existingNodeIds = state.topNodes.map(node => node.id);
-        let newNodes = topNodes.filter(node => !existingNodeIds.includes(node.id));
+        const existingNodeIds = state.topNodes.map(node => node.id);
+        const newNodes = topNodes.filter(node => !existingNodeIds.includes(node.id));
         state.topNodes.push(...newNodes);
     },
 
@@ -75,8 +75,8 @@ export const mutations = {
     },
 
     addBottomNodes(state, bottomNodes) {
-        let existingNodeIds = state.bottomNodes.map(node => node.id);
-        let newNodes = bottomNodes.filter(node => !existingNodeIds.includes(node.id));
+        const existingNodeIds = state.bottomNodes.map(node => node.id);
+        const newNodes = bottomNodes.filter(node => !existingNodeIds.includes(node.id));
         state.bottomNodes.push(...newNodes);
     },
 
@@ -129,8 +129,8 @@ export const actions = {
         if (state.nodesPerCategory.length === state.totalNumCategories) {
             return;
         }
-        let tagsOffset = append ? firstLoadOffset + state.categoryPage * categoryPageSize : 0;
-        let tagsLimit = append ? categoryPageSize : firstLoadOffset;
+        const tagsOffset = append ? firstLoadOffset + state.categoryPage * categoryPageSize : 0;
+        const tagsLimit = append ? categoryPageSize : firstLoadOffset;
 
         if (append) {
             commit('setCategoryPage', state.categoryPage + 1);
@@ -139,7 +139,7 @@ export const actions = {
             commit('setCategoryPage', 0);
         }
 
-        const { totalNumGroups, groups } = await getNodesGroupedByTags({
+        const { totalNumGroups, groups } = await API.noderepository.getNodesGroupedByTags({
             numNodesPerTag: 6,
             tagsOffset,
             tagsLimit,
@@ -181,14 +181,15 @@ export const actions = {
             commit(`set${prefix}NodeSearchPage`, 0);
         }
 
-        const { nodes, totalNumNodes, tags } = await searchNodes({
-            query: state.query,
+        const { nodes, totalNumNodes, tags } = await API.noderepository.searchNodes({
+            q: state.query,
             tags: state.selectedTags,
             allTagsMatch: true,
             offset: currentPage() * nodeSearchPageSize,
             limit: nodeSearchPageSize,
             fullTemplateInfo: true,
-            nodesPartition: bottom ? 'NOT_IN_COLLECTION' : 'IN_COLLECTION'
+            nodesPartition: bottom ? 'NOT_IN_COLLECTION' : 'IN_COLLECTION',
+            portTypeId: null
         });
 
         const { availablePortTypes } = rootState.application;
@@ -217,7 +218,9 @@ export const actions = {
 
     async getNodeDescription({ rootState }, { selectedNode }) {
         const { className, settings } = selectedNode.nodeFactory;
-        const node = await getNodeDescription({ className, settings });
+        const node = await API.node.getNodeDescription({
+            nodeFactoryKey: { className, settings }
+        });
 
         const { availablePortTypes } = rootState.application;
         return toNodeWithFullPorts(availablePortTypes)(node);
@@ -336,7 +339,7 @@ export const actions = {
         if (state.nodeTemplates?.nodeTemplateId) {
             return state.nodeTemplates?.nodeTemplateId;
         } else {
-            const nodeTemplates = await getNodeTemplates({
+            const nodeTemplates = await API.noderepository.getNodeTemplates({
                 nodeTemplateIds: [nodeTemplateId]
             });
 
@@ -351,9 +354,11 @@ export const getters = {
     hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0,
     searchIsActive: state => Boolean(state.query || state.topNodesTags.length) && state.topNodes !== null,
     searchResultsContainSelectedNode(state) {
-        return Boolean(state.topNodes?.some(node => node.id === state.selectedNode?.id)) ||
-            (state.isShowingBottomNodes &&
-                Boolean(state.bottomNodes?.some(node => node.id === state.selectedNode?.id)));
+        return (
+            Boolean(state.topNodes?.some(node => node.id === state.selectedNode?.id)) ||
+            // eslint-disable-next-line @typescript-eslint/no-extra-parens
+            (state.isShowingBottomNodes && Boolean(state.bottomNodes?.some(node => node.id === state.selectedNode?.id)))
+        );
     },
     nodesPerCategoryContainSelectedNode(state) {
         return state.nodesPerCategory.some(category => category.nodes.some(
@@ -368,7 +373,7 @@ export const getters = {
             ...state.topNodesTags,
             ...state.selectedTags,
             // eslint-disable-next-line no-extra-parens
-            ...(state.isShowingBottomNodes ? state.bottomNodesTags : [])
+            ...state.isShowingBottomNodes ? state.bottomNodesTags : []
         ];
         return [...new Set(allTags)];
     }

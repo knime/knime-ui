@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { getNameCollisionStrategy } from '@api';
+import { API } from '@api';
 
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
@@ -240,11 +240,11 @@ export default {
             }
 
             const destWorkflowGroupItemId = this.pathToItemId(targetItem);
-            const collisionStrategy = await getNameCollisionStrategy({
+            const collisionStrategy = await API.desktop.getNameCollisionStrategy({
                 spaceProviderId: this.activeSpaceProvider.id,
                 spaceId: this.activeSpace.spaceId,
                 itemIds: sourceItems,
-                destWorkflowGroupItemId
+                destinationItemId: destWorkflowGroupItemId
             });
 
             if (collisionStrategy === 'CANCEL') {

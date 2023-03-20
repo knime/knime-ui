@@ -1,6 +1,5 @@
+import { API } from '@api';
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
-import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, closeWorkflow,
-    openLayoutEditor, saveWorkflowAs } from '@api';
 
 /**
  * Determines which project id should be set after closing the active one
@@ -48,7 +47,7 @@ export const actions = {
 
         const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
 
-        saveWorkflow({ projectId, workflowPreviewSvg });
+        API.desktop.saveWorkflow({ projectId, workflowPreviewSvg });
     },
 
     /* Tell the backend to unload this workflow from memory */
@@ -60,7 +59,7 @@ export const actions = {
             closingProjectId
         });
 
-        const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
+        const didClose = await API.desktop.closeWorkflow({ closingProjectId, nextProjectId });
 
         if (!didClose) {
             return;
@@ -73,24 +72,24 @@ export const actions = {
 
     /* Some nodes generate views from their data. A Classic UI dialog opens to present this view */
     openView({ state }, nodeId) {
-        openView({ projectId: state.activeWorkflow.projectId, nodeId });
+        API.desktop.openView({ projectId: state.activeWorkflow.projectId, nodeId });
     },
 
     /* See docs in API */
     openNodeConfiguration({ state }, nodeId) {
-        openNodeDialog({ projectId: state.activeWorkflow.projectId, nodeId });
+        API.desktop.openNodeDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
 
     /* See docs in API */
     openFlowVariableConfiguration({ state }, nodeId) {
-        openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
+        API.desktop.openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
 
     /* See docs in API */
     openLayoutEditor({ state }) {
-        let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflow: { info: { containerId } } } = state;
-        openLayoutEditor({ projectId, workflowId: containerId });
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
+        API.desktop.openLayoutEditor({ projectId, workflowId: containerId });
     },
 
     async saveWorkflowAs({ state, dispatch }) {
@@ -104,7 +103,7 @@ export const actions = {
 
         const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
 
-        saveWorkflowAs({ projectId, workflowPreviewSvg });
+        API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
     }
 };
 
