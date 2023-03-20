@@ -24,10 +24,6 @@ export default {
             type: Object,
             required: true
         },
-        totalNumTopNodes:  {
-            type: Number,
-            required: true
-        },
         bottomNodes: {
             type: Object,
             required: true
@@ -38,7 +34,7 @@ export default {
         },
         selectedTags: {
             type: Array,
-            required: true
+            default: () => []
         },
         searchScrollPosition: {
             type: Number,
@@ -61,7 +57,7 @@ export default {
             required: true
         }
     },
-    emits: ['focusSearchBar', 'update:searchScrollPosition', 'update:selectedNode'],
+    emits: ['navReachedTop', 'update:searchScrollPosition', 'update:selectedNode', 'item-enter-key'],
     expose: ['focusFirst'],
     data() {
         return {
@@ -168,8 +164,9 @@ export default {
           ref="topList"
           v-model:selected-node="selectedNodeModel"
           :nodes="topNodes"
-          @nav-reached-top="$emit('focusSearchBar')"
+          @nav-reached-top="$emit('navReachedTop')"
           @nav-reached-end="openBottomNodes"
+          @enter-key="$emit('item-enter-key', $event)"
         >
           <template #item="slotProps">
             <slot
@@ -216,6 +213,7 @@ export default {
             v-model:selected-node="selectedNodeModel"
             :nodes="bottomNodes"
             @nav-reached-top="bottomListNavReachedTop"
+            @enter-key="$emit('item-enter-key', $event)"
           >
             <template #item="slotProps">
               <slot
@@ -259,6 +257,9 @@ export default {
 }
 
 .results {
+  scrollbar-width: thin;
+  scrollbar-gutter: stable both-edges;
+
   & .content {
     padding: 0 20px 15px;
 

@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import { openWorkflowCoachPreferencePage } from '@api';
 
 import Button from 'webapps-common/ui/components/Button.vue';
@@ -12,6 +12,7 @@ import { portPositions } from '@/util/portShift';
 import { debounce } from 'lodash';
 import NodeList from '@/components/nodeRepository/NodeList.vue';
 import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
+import SearchResults from '@/components/nodeRepository/SearchResults.vue';
 
 const SEARCH_COOLDOWN = 150; // ms
 
@@ -42,8 +43,9 @@ const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) =>
  */
 export default {
     components: {
-        NodeTemplate,
         NodeList,
+        SearchResults,
+        NodeTemplate,
         SearchBar,
         Button,
         FloatingMenu
@@ -70,11 +72,12 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', ['hasNodeRecommendationsEnabled']),
+        ...mapState('application', ['hasNodeRecommendationsEnabled', 'hasNodeCollectionActive']),
         ...mapState('canvas', ['zoomFactor']),
-        ...mapState('quickAddNodes', { searchResult: 'topNodes', recommendedNodes: 'recommendedNodes' }),
+        ...mapState('quickAddNodes', ['topNodes', 'bottomNodes', 'recommendedNodes', 'isShowingBottomNodes']),
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('quickAddNodes', ['searchIsActive']),
+        ...mapState('application', ['hasNodeCollectionActive']),
 
         searchQuery: {
             get() {
@@ -98,14 +101,21 @@ export default {
         ghostSizeZoomed() {
             return this.$shapes.addNodeGhostSize * this.zoomFactor;
         },
-        hasResults() {
-            return this.searchResult?.length > 0 || this.recommendedNodes?.length > 0;
+        hasRecommendationResults() {
+            return this.recommendedNodes?.length > 0;
         },
-        nodes() {
-            if (this.searchIsActive) {
-                return this.searchResult;
-            }
-            return this.recommendedNodes;
+        hasSearchResults() {
+            return this.topNodes?.length > 0 || this.bottomNodes?.length > 0;
+        },
+        hasResults() {
+            return this.hasRecommendationResults || this.hasSearchResults;
+        },
+        searchActions() {
+            return {
+                searchTopNodesNextPage: this.searchTopNodesNextPage,
+                searchBottomNodesNextPage: this.searchBottomNodesNextPage,
+                toggleShowingBottomNodes: this.toggleShowingBottomNodes
+            };
         }
     },
     watch: {
@@ -129,6 +139,10 @@ export default {
     },
     methods: {
         openWorkflowCoachPreferencePage,
+
+        ...mapActions('quickAddNodes', [
+            'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
+        ]),
 
         async fetchNodeRecommendations() {
             await this.$store.dispatch('quickAddNodes/getNodeRecommendations', {
@@ -168,7 +182,8 @@ export default {
             }
         },
         searchDownKey() {
-            this.$refs.list.focusFirst();
+            this.$refs.recommendationResults?.focusFirst();
+            this.$refs.searchResults?.focusFirst();
         }
     }
 };
@@ -180,7 +195,7 @@ export default {
     :canvas-position="canvasPosition"
     :style="`--ghost-size: ${ghostSizeZoomed}; --extra-margin: ${Math.log(ghostSizeZoomed) / 1.1}`"
     aria-label="Quick add node"
-    prevent-overflow
+    :prevent-overflow="true"
     @menu-close="$emit('menuClose')"
   >
     <div class="wrapper">
@@ -219,13 +234,42 @@ export default {
       </div>
       <div
         v-else-if="hasResults"
-        class="results"
       >
-        <div class="content">
-          <NodeList
-            ref="list"
+        <div v-if="searchIsActive">
+          <SearchResults
+            ref="searchResults"
             v-model:selected-node="selectedNode"
-            :nodes="nodes"
+            :top-nodes="topNodes"
+            :bottom-nodes="bottomNodes"
+            :has-node-collection-active="hasNodeCollectionActive"
+            :is-showing-bottom-nodes="isShowingBottomNodes"
+            :search-actions="searchActions"
+            :query="searchQuery"
+            @nav-reached-top="$refs.search.focus()"
+            @item-enter-key="addNode($event)"
+          >
+            <template #topNodeTemplate="itemProps">
+              <NodeTemplate
+                v-bind="itemProps"
+                @click="addNode(itemProps.nodeTemplate)"
+              />
+            </template>
+            <template #bottomNodeTemplate="itemProps">
+              <NodeTemplate
+                v-bind="itemProps"
+                @click="addNode(itemProps.nodeTemplate)"
+              />
+            </template>
+          </SearchResults>
+        </div>
+        <div
+          v-else
+          class="recommendations"
+        >
+          <NodeList
+            ref="recommendationResults"
+            v-model:selected-node="selectedNode"
+            :nodes="recommendedNodes"
             @nav-reached-top="$refs.search.focus()"
             @enter-key="addNode($event)"
           >
@@ -238,25 +282,29 @@ export default {
           </NodeList>
         </div>
       </div>
-      <span
-        v-if="searchIsActive && (!searchResult || searchResult.length === 0)"
-        class="placeholder"
-      >
-        No compatible node matching for:<br>{{ searchQuery }}
-      </span>
-      <span
-        v-if="!searchIsActive && (!recommendedNodes || recommendedNodes.length === 0)"
-        class="placeholder"
-      >
-        The Workflow Coach cannot recommend any nodes to you yet.
-      </span>
+      <template v-else>
+        <span
+          v-if="searchIsActive && !hasSearchResults"
+          class="placeholder"
+        >
+          No compatible node matching for:<br>{{ searchQuery }}
+        </span>
+        <span
+          v-if="!searchIsActive && !hasRecommendationResults"
+          class="placeholder"
+        >
+          The Workflow Coach cannot recommend any nodes to you yet.
+        </span>
+      </template>
     </div>
   </FloatingMenu>
 </template>
 
 <style lang="postcss" scoped>
 .quick-add-node {
-  width: 350px;
+  --quick-add-node-height: 430;
+  --quick-add-node-header-height: 73;
+  width: 340px;
   margin-top: calc(var(--ghost-size) / 2 * 1px + var(--extra-margin) * 1px + 3px);
 
   & .disabled-workflow-coach {
@@ -294,7 +342,7 @@ export default {
   }
 
   & .wrapper {
-    height: 410px;
+    height: calc(var(--quick-add-node-height) * 1px);
     box-shadow: 0 1px 6px 0 var(--knime-gray-dark-semi);
     background: var(--knime-gray-ultra-light);
     display: flex;
@@ -312,6 +360,7 @@ export default {
   }
 
   & .header {
+    height: calc(var(--quick-add-node-header-height) * 1px);
     padding: 15px 15px 5px 15px;
 
     & hr {
@@ -319,13 +368,26 @@ export default {
     }
   }
 
-  & .results {
+  & :deep(.content) {
+    padding: 0;
+  }
+
+  & :deep(.more-nodes-button) {
+    background: transparent;
+  }
+
+  & :deep(.results),
+  & .recommendations {
+    background: transparent;
+    max-height: calc(calc(var(--quick-add-node-height) - var(--quick-add-node-header-height)) * 1px);
+    padding-top: 3px;
+  }
+
+  & .recommendations {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-gutter: stable both-edges;
-    max-height: 352px;
     padding-bottom: 10px;
-    padding-top: 3px;
 
     & .content {
       padding-bottom: 10px;

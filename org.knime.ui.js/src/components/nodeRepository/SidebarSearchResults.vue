@@ -20,7 +20,6 @@ export default {
             'bottomNodes',
             'query',
             'selectedTags',
-            'totalNumTopNodes',
             'isShowingBottomNodes'
         ]),
         ...mapState('application', ['hasNodeCollectionActive']),
@@ -69,11 +68,10 @@ export default {
     :selected-tags="selectedTags"
     :query="query"
     :bottom-nodes="bottomNodes"
-    :total-num-top-nodes="totalNumTopNodes"
     :top-nodes="topNodes"
     :draggable="true"
     :has-node-collection-active="hasNodeCollectionActive"
-    @focus-search-bar="$emit('focusSearchBar', $event)"
+    @nav-reached-top="$emit('focusSearchBar', $event)"
   >
     <template #topNodeTemplate="slotProps">
       <DraggableNodeTemplate v-bind="slotProps" />
