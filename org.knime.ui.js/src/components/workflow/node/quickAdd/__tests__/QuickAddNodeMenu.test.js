@@ -6,7 +6,7 @@ import Button from 'webapps-common/ui/components/Button.vue';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import { mockVuexStore } from '@/test/utils';
 
-import { openWorkflowCoachPreferencePage as openWorkflowCoachPreferencePageMock, getNodeRecommendations } from '@api';
+import { API } from '@api';
 import * as $shapes from '@/style/shapes.mjs';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
@@ -32,12 +32,6 @@ const getNodeRecommendationsResponse = [{
     type: 'Manipulator'
 }];
 
-vi.mock('@api', () => ({
-    __esModule: true,
-    getNodeRecommendations: vi.fn().mockReturnValue([]),
-    openWorkflowCoachPreferencePage: vi.fn()
-}));
-
 describe('QuickAddNodeMenu.vue', () => {
     let FloatingMenuStub = {
         template: `
@@ -48,7 +42,7 @@ describe('QuickAddNodeMenu.vue', () => {
     };
 
     beforeAll(() => {
-        getNodeRecommendations.mockReturnValue(getNodeRecommendationsResponse);
+        API.noderepository.getNodeRecommendations.mockReturnValue(getNodeRecommendationsResponse);
     });
 
     const doMount = ({
@@ -226,11 +220,11 @@ describe('QuickAddNodeMenu.vue', () => {
             await Vue.nextTick();
             await wrapper.findComponent(Button).vm.$emit('click');
 
-            expect(openWorkflowCoachPreferencePageMock).toHaveBeenCalled();
+            expect(API.desktop.openWorkflowCoachPreferencePage).toHaveBeenCalled();
         });
 
         it('displays placeholder message if there are no suggested nodes', async () => {
-            getNodeRecommendations.mockReturnValue([]);
+            API.noderepository.getNodeRecommendations.mockReturnValue([]);
             let { wrapper } = doMount();
             await Vue.nextTick();
 

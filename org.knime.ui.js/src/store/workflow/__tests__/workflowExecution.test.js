@@ -1,9 +1,9 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi, afterEach } from 'vitest';
-import { changeLoopState, changeNodeState } from '@api';
-import { mockVuexStore } from '@/test/utils';
+import { API } from '@api';
+import { deepMocked, mockVuexStore } from '@/test/utils';
 
-vi.mock('@api');
+const mockedAPI = deepMocked(API);
 
 describe('workflow store: Execution', () => {
     afterEach(() => {
@@ -29,9 +29,12 @@ describe('workflow store: Execution', () => {
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
             store.dispatch(`workflow/${fn}`, ['x', 'y']);
 
-            expect(changeNodeState).toHaveBeenCalledWith({
-                nodeIds: ['x', 'y'], projectId: 'foo', action, workflowId: 'root'
-            });
+            expect(mockedAPI.node.changeNodeStates).toHaveBeenCalledWith(expect.objectContaining({
+                nodeIds: ['x', 'y'],
+                projectId: 'foo',
+                action,
+                workflowId: 'root'
+            }));
         });
 
         it.each([
@@ -44,7 +47,7 @@ describe('workflow store: Execution', () => {
 
             store.dispatch(`workflow/${fn}`, 'node x');
 
-            expect(changeLoopState).toHaveBeenCalledWith({
+            expect(mockedAPI.node.changeLoopState).toHaveBeenCalledWith({
                 nodeId: 'node x',
                 projectId: 'foo',
                 action,
@@ -64,19 +67,26 @@ describe('workflow store: Execution', () => {
             });
 
             store.dispatch(`workflow/changeNodeState`, { nodes: 'all' });
-            expect(changeNodeState).toHaveBeenLastCalledWith({ projectId: 'foo', workflowId: 'root' });
+            expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith(expect.objectContaining({
+                projectId: 'foo',
+                workflowId: 'root',
+                nodeIds: []
+            }));
 
             store.dispatch('selection/selectAllNodes');
             store.dispatch(`workflow/changeNodeState`, { nodes: 'selected' });
-            expect(changeNodeState).toHaveBeenLastCalledWith({
-                nodeIds: ['root:1', 'root:2'], projectId: 'foo', workflowId: 'root'
-            });
-
-            store.dispatch(`workflow/changeNodeState`, { nodes: ['root:2'] });
-            expect(changeNodeState).toHaveBeenLastCalledWith({
-                nodeIds: ['root:2'],
+            expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith(expect.objectContaining({
+                nodeIds: ['root:1', 'root:2'],
                 projectId: 'foo',
                 workflowId: 'root'
+            }));
+
+            store.dispatch(`workflow/changeNodeState`, { action: 'action', nodes: ['root:2'] });
+            expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith({
+                nodeIds: ['root:2'],
+                projectId: 'foo',
+                workflowId: 'root',
+                action: 'action'
             });
         });
     });

@@ -1,7 +1,9 @@
-import { expect, describe, afterEach, it, vi } from 'vitest';
+import { expect, describe, afterEach, it, vi, beforeAll } from 'vitest';
 /* eslint-disable new-cap */
 import { notifyPatch } from '@/util/event-syncer';
 import { APP_ROUTES } from '@/router';
+import { deepMocked } from '@/test/utils';
+import { API } from '@api';
 
 import eventsPlugin from '../events';
 
@@ -11,24 +13,19 @@ vi.mock('@/router');
 
 let registeredHandlers = {};
 
-vi.mock('@api', async () => {
-    const actual = await vi.importActual('@api');
-    const registerEventHandlers = (handlers) => {
-        Object.entries(handlers).forEach(([key, value]) => {
-            registeredHandlers[key] = value;
-        });
-    };
-
-    return {
-        ...actual,
-        API: {
-            event: { registerEventHandlers },
-            desktop: { registerEventHandlers }
-        }
-    };
-});
+const mockedAPI = deepMocked(API);
 
 describe('Event Plugin', () => {
+    beforeAll(() => {
+        const registerEventHandlers = (handlers) => {
+            Object.entries(handlers).forEach(([key, value]) => {
+                registeredHandlers[key] = value;
+            });
+        };
+        mockedAPI.event.registerEventHandlers.mockImplementation(registerEventHandlers);
+        mockedAPI.desktop.registerEventHandlers.mockImplementation(registerEventHandlers);
+    });
+
     const loadPlugin = () => {
         const storeMock = {
             state: {

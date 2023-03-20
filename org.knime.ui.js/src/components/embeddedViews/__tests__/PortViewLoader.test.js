@@ -1,12 +1,13 @@
-import { expect, describe, afterEach, it, vi } from 'vitest';
+import { expect, describe, afterEach, it } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { getPortView as getPortViewMock } from '@api';
+import { API } from '@api';
+import { deepMocked } from '@/test/utils';
 
 import PortViewLoader from '../PortViewLoader.vue';
 
-vi.mock('@api', () => ({ getPortView: vi.fn() }), { virtual: true });
+const mockedAPI = deepMocked(API);
 
 const RESOURCE_TYPES = {
     VUE_COMPONENT_REFERENCE: 'VUE_COMPONENT_REFERENCE',
@@ -14,13 +15,14 @@ const RESOURCE_TYPES = {
 };
 
 describe('PortViewLoader.vue', () => {
-    const setupGetPortViewMock = (resourceType, componentId, initialData = {}) => getPortViewMock.mockResolvedValue({
-        resourceInfo: {
-            id: componentId,
-            type: resourceType
-        },
-        initialData: JSON.stringify({ result: initialData })
-    });
+    const setupGetPortViewMock = (resourceType, componentId, initialData = {}) => mockedAPI.port.getPortView
+        .mockResolvedValue({
+            resourceInfo: {
+                id: componentId,
+                type: resourceType
+            },
+            initialData: JSON.stringify({ result: initialData })
+        });
 
     // flush awaited api call
     const flushRender = () => new Promise(r => setTimeout(r, 0));
@@ -46,7 +48,7 @@ describe('PortViewLoader.vue', () => {
     };
 
     afterEach(() => {
-        getPortViewMock.mockReset();
+        mockedAPI.port.getPortView.mockReset();
     });
 
     const doMount = () => mount(PortViewLoader, { props });
@@ -54,7 +56,7 @@ describe('PortViewLoader.vue', () => {
     it('should load port view on mount', () => {
         doMount();
 
-        expect(getPortViewMock).toBeCalledWith(expect.objectContaining({
+        expect(mockedAPI.port.getPortView).toBeCalledWith(expect.objectContaining({
             projectId: props.projectId,
             workflowId: props.workflowId,
             nodeId: props.selectedNode.id,
@@ -70,8 +72,8 @@ describe('PortViewLoader.vue', () => {
 
         await Vue.nextTick();
 
-        expect(getPortViewMock).toBeCalledTimes(2);
-        expect(getPortViewMock).toBeCalledWith(expect.objectContaining({
+        expect(mockedAPI.port.getPortView).toBeCalledTimes(2);
+        expect(mockedAPI.port.getPortView).toBeCalledWith(expect.objectContaining({
             nodeId: 'node2'
         }));
     });
@@ -84,8 +86,8 @@ describe('PortViewLoader.vue', () => {
         await Vue.nextTick();
         await Vue.nextTick();
 
-        expect(getPortViewMock).toBeCalledTimes(2);
-        expect(getPortViewMock).toBeCalledWith(expect.objectContaining({
+        expect(mockedAPI.port.getPortView).toBeCalledTimes(2);
+        expect(mockedAPI.port.getPortView).toBeCalledWith(expect.objectContaining({
             portIdx: 1
         }));
     });

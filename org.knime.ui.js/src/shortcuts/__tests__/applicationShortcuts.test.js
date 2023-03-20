@@ -1,12 +1,6 @@
 import { expect, describe, beforeEach, it, vi } from 'vitest';
 import applicationShortcuts from '../applicationShortcuts';
 
-vi.mock('@api', () => ({
-    __esModule: true,
-    openWorkflow: vi.fn(),
-    createWorkflow: vi.fn()
-}));
-
 describe('applicationShortcuts', () => {
     let mockDispatch, mockCommit, $store;
 

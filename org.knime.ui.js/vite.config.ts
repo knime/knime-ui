@@ -36,6 +36,9 @@ export default defineConfig(({ mode }) => {
             setupFiles: ['src/test/setup'],
             environment: 'jsdom',
             reporters: ['default', 'junit'],
+            alias: {
+                '@api': fileURLToPath(new URL('./src/api/__mocks__/index.ts', import.meta.url))
+            },
             coverage: {
                 all: true,
                 reportsDirectory: 'test-results',

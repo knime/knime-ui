@@ -3,19 +3,16 @@ import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 import { KnimeService } from '@knime/ui-extension-service';
 
-import { getNodeDialog as getNodeDialogMock, callNodeDataService as callNodeDataServiceMock } from '@api';
+import { deepMocked } from '@/test/utils';
+import { API } from '@api';
 
 import NodeDialogLoader from '../NodeDialogLoader.vue';
-
-vi.mock('@api', () => ({
-    getNodeDialog: vi.fn(),
-    callNodeDataService: vi.fn()
-}), { virtual: true });
 
 vi.mock('@knime/ui-extension-service', () => ({
     KnimeService: vi.fn()
 }));
 
+const mockedAPI = deepMocked(API);
 
 describe('NodeDialogLoader.vue', () => {
     const dummyNode = {
@@ -51,7 +48,7 @@ describe('NodeDialogLoader.vue', () => {
     it('should load nodeDialog on mount', () => {
         doMount();
 
-        expect(getNodeDialogMock).toBeCalledWith(expect.objectContaining({
+        expect(mockedAPI.node.getNodeDialog).toBeCalledWith(expect.objectContaining({
             projectId: props.projectId,
             workflowId: props.workflowId,
             nodeId: props.selectedNode.id
@@ -66,8 +63,8 @@ describe('NodeDialogLoader.vue', () => {
 
         await Vue.nextTick();
 
-        expect(getNodeDialogMock).toBeCalledTimes(2);
-        expect(getNodeDialogMock).toBeCalledWith(expect.objectContaining({
+        expect(mockedAPI.node.getNodeDialog).toBeCalledTimes(2);
+        expect(mockedAPI.node.getNodeDialog).toBeCalledWith(expect.objectContaining({
             nodeId: 'node2'
         }));
     });
@@ -108,17 +105,17 @@ describe('NodeDialogLoader.vue', () => {
         it('should register the data callback correctly', async () => {
             const wrapper = doMount();
             wrapper.vm.initKnimeService({ dummyConfig: true });
-            expect(callNodeDataServiceMock).not.toHaveBeenCalled();
+            expect(mockedAPI.node.callNodeDataService).not.toHaveBeenCalled();
             const params = ['NodeService.callNodeDataService', 'mockServiceTypeParam', 'mockRequestParam'];
             await registry.dispatch('data', ...params);
 
-            expect(callNodeDataServiceMock).toHaveBeenCalledWith({
+            expect(mockedAPI.node.callNodeDataService).toHaveBeenCalledWith({
                 projectId: props.projectId,
                 workflowId: props.workflowId,
                 nodeId: props.selectedNode.id,
                 extensionType: 'dialog',
                 serviceType: 'mockServiceTypeParam',
-                request: 'mockRequestParam'
+                dataServiceRequest: 'mockRequestParam'
             });
         });
 
@@ -131,7 +128,7 @@ describe('NodeDialogLoader.vue', () => {
             wrapper.vm.initKnimeService({ dummyConfig: true });
 
             const mockNotification = { mock: true };
-            expect(callNodeDataServiceMock).not.toHaveBeenCalled();
+            expect(mockedAPI.node.callNodeDataService).not.toHaveBeenCalled();
             const params = [mockNotification];
             await registry.dispatch('notification', ...params);
 

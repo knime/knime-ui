@@ -148,14 +148,6 @@ export const actions = {
         });
     },
 
-    // undo: wrapAPI(undo),
-    // redo: wrapAPI(redo),
-    // connectNodes: wrapAPI(connectNodes),
-    // addNodePort: wrapAPI(addNodePort),
-    // removeNodePort: wrapAPI(removeNodePort),
-    // renameContainerNode: wrapAPI(renameContainerNode),
-    // renameNodeLabel: wrapAPI(renameNodeLabel),
-
     undo({ state: { activeWorkflow } }) {
         const projectId = activeWorkflow.projectId;
         const workflowId = activeWorkflow.info.containerId;

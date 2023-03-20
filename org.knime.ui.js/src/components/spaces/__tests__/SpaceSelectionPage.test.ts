@@ -1,15 +1,16 @@
 import { expect, describe, beforeEach, it, vi } from 'vitest';
-import { mockVuexStore } from '@/test/utils';
+import { deepMocked, mockVuexStore } from '@/test/utils';
 import { mount } from '@vue/test-utils';
 
 import * as spacesStore from '@/store/spaces';
 
-import { fetchAllSpaceProviders, fetchWorkflowGroupContent } from '@api';
+import { API } from '@api';
+import { APP_ROUTES } from '@/router/appRoutes';
 import SpaceSelectionPage from '../SpaceSelectionPage.vue';
 import SpaceCard from '../SpaceCard.vue';
-import { APP_ROUTES } from '@/router';
+import type { SpaceProvider, SpaceUser } from '@/api/desktop-api/desktop-api';
 
-const mockSpaceProviders = {
+const mockSpaceProviders: Record<string, SpaceProvider & Partial<{ user: SpaceUser }>> = {
     local: {
         id: 'local',
         connected: true,
@@ -18,12 +19,12 @@ const mockSpaceProviders = {
     }
 };
 
-vi.mock('@api');
+const mockedAPI = deepMocked(API);
 
 describe('SpaceSelectionPage.vue', () => {
     const doMount = ({ mockProvidersResponse = mockSpaceProviders, spacesStoreOverrides = null } = {}) => {
-        fetchAllSpaceProviders.mockResolvedValue(mockProvidersResponse);
-        fetchWorkflowGroupContent.mockResolvedValue({});
+        mockedAPI.desktop.fetchAllSpaceProviders.mockResolvedValue(mockProvidersResponse);
+        mockedAPI.space.listWorkflowGroup.mockResolvedValue({});
 
         const $store = mockVuexStore({
             spaces: spacesStoreOverrides || spacesStore
@@ -44,7 +45,9 @@ describe('SpaceSelectionPage.vue', () => {
         return { wrapper, $store, dispatchSpy, commitSpy, $router: mockRouter };
     };
 
-    beforeEach(() => vi.clearAllMocks());
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
 
     it('should fetch space providers on created', () => {
         const { dispatchSpy } = doMount();

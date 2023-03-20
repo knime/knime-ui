@@ -132,6 +132,10 @@ export const fetchAllSpaceProviders = (): Promise<Record<string, SpaceProvider>>
     }
 };
 
+export interface SpaceUser {
+    name: string;
+}
+
 export const connectSpaceProvider = ({ spaceProviderId }: SpaceProviderId) => {
     try {
         const user = window.connectSpaceProvider(spaceProviderId);

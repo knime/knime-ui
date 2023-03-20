@@ -1,14 +1,7 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi, afterEach } from 'vitest';
-// eslint-disable-next-line object-curly-newline
-import {
-    API,
-    fetchApplicationState,
-    loadWorkflow,
-    setProjectActiveAndEnsureItsLoadedInBackend
-// eslint-disable-next-line object-curly-newline
-} from '@api';
-import { mockVuexStore } from '@/test/utils';
+import { API } from '@api';
+import { deepMocked, mockVuexStore } from '@/test/utils';
 import * as selectionStore from '@/store/selection';
 
 import { APP_ROUTES, router } from '@/router';
@@ -21,7 +14,7 @@ vi.mock('@/util/encodeString', () => ({
     encodeString: vi.fn(value => value)
 }));
 
-vi.mock('@api');
+const mockedAPI = deepMocked(API);
 
 describe('application store', () => {
     const applicationState = {
@@ -33,7 +26,8 @@ describe('application store', () => {
     });
 
     const loadStore = async () => {
-        fetchApplicationState.mockReturnValue(applicationState);
+        mockedAPI.application.getState.mockReturnValue(applicationState);
+        const loadWorkflow = deepMocked(API).workflow.getWorkflow;
         loadWorkflow.mockResolvedValue({ workflow: { info: { containerId: '' } } });
 
         const actions = {
@@ -80,11 +74,9 @@ describe('application store', () => {
             commitSpy,
             mockedGetters: getters,
             mockedActions: actions,
-            fetchApplicationState,
-            subscribeEvent: API.event.subscribeEvent,
-            unsubscribeEventListener: API.event.unsubscribeEventListener,
             loadWorkflow,
-            setProjectActiveAndEnsureItsLoadedInBackend
+            subscribeEvent: API.event.subscribeEvent,
+            unsubscribeEventListener: API.event.unsubscribeEventListener
         };
     };
 
@@ -157,11 +149,11 @@ describe('application store', () => {
 
     describe('application Lifecycle', () => {
         it('initialization', async () => {
-            const { store, dispatchSpy, fetchApplicationState, subscribeEvent } = await loadStore();
+            const { store, dispatchSpy, subscribeEvent } = await loadStore();
             await store.dispatch('application/initializeApplication', { $router: router });
 
             expect(subscribeEvent).toHaveBeenCalled();
-            expect(fetchApplicationState).toHaveBeenCalled();
+            expect(API.application.getState).toHaveBeenCalled();
             expect(dispatchSpy).toHaveBeenCalledWith('application/replaceApplicationState', applicationState);
         });
 
@@ -238,7 +230,7 @@ describe('application store', () => {
             await router.push({
                 name: APP_ROUTES.WorkflowPage,
                 params: { projectId: 'foo', workflowId: 'bar' },
-                query: { skipGuards: true }
+                query: { skipGuards: 'true' }
             });
 
             expect(dispatchSpy).not.toHaveBeenCalledWith('application/switchWorkflow');
@@ -313,8 +305,7 @@ describe('application store', () => {
             const {
                 store,
                 loadWorkflow,
-                subscribeEvent,
-                setProjectActiveAndEnsureItsLoadedInBackend
+                subscribeEvent
             } = await loadStore();
             loadWorkflow.mockResolvedValue({
                 dummy: true,
@@ -324,8 +315,11 @@ describe('application store', () => {
 
             await store.dispatch('application/loadWorkflow', { projectId: 'wf1' });
 
-            expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
-            expect(setProjectActiveAndEnsureItsLoadedInBackend).toHaveBeenCalledWith({ projectId: 'wf1' });
+            expect(loadWorkflow).toHaveBeenCalledWith(
+                expect.objectContaining({ workflowId: 'root', projectId: 'wf1' })
+            );
+            expect(deepMocked(API).desktop.setProjectActiveAndEnsureItsLoaded)
+                .toHaveBeenCalledWith({ projectId: 'wf1' });
             expect(store.state.workflow.activeWorkflow).toStrictEqual({
                 info: { containerId: 'root' },
                 nodes: [],
@@ -345,13 +339,17 @@ describe('application store', () => {
             loadWorkflow.mockResolvedValue({ workflow: { dummy: true, info: { containerId: 'root' }, nodes: [] } });
             await store.dispatch('application/loadWorkflow', { projectId: 'wf2', workflowId: 'root:0:123' });
 
-            expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root:0:123', projectId: 'wf2' });
+            expect(loadWorkflow).toHaveBeenCalledWith(
+                expect.objectContaining({ workflowId: 'root:0:123', projectId: 'wf2' })
+            );
+
             expect(store.state.workflow.activeWorkflow).toStrictEqual({
                 dummy: true,
                 info: { containerId: 'root' },
                 nodes: [],
                 projectId: 'wf2'
             });
+
             expect(subscribeEvent).toHaveBeenCalledWith({
                 typeId: 'WorkflowChangedEventType',
                 projectId: 'wf2',
