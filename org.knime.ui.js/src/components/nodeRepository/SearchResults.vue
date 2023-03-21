@@ -261,7 +261,7 @@ export default {
   scrollbar-gutter: stable both-edges;
 
   & .content {
-    padding: 0 20px 15px;
+    padding: 10px;
 
     & .nodes {
       display: flex;

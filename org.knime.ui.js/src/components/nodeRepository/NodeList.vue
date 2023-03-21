@@ -153,8 +153,7 @@ export default {
     padding: 0;
     display: flex;
     flex-wrap: wrap;
-    margin-right: -5px;
-    margin-left: -5px;
+    margin: 0 -5px;
     list-style-type: none;
 
     &:focus {

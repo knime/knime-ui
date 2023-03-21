@@ -177,8 +177,12 @@ export default {
             this.$emit('menuClose');
         },
         searchEnterKey() {
-            if (this.nodes.length > 0) {
-                this.addNode(this.nodes[0]);
+            if (this.searchIsActive) {
+                if (this.topNodes?.length > 0) {
+                    this.addNode(this.topNodes[0]);
+                }
+            } else if (this.recommendedNodes?.length > 0) {
+                this.addNode(this.recommendedNodes[0]);
             }
         },
         searchDownKey() {
@@ -302,7 +306,7 @@ export default {
 
 <style lang="postcss" scoped>
 .quick-add-node {
-  --quick-add-node-height: 430;
+  --quick-add-node-height: 450;
   --quick-add-node-header-height: 73;
   width: 340px;
   margin-top: calc(var(--ghost-size) / 2 * 1px + var(--extra-margin) * 1px + 3px);
@@ -368,7 +372,7 @@ export default {
     }
   }
 
-  & :deep(.content) {
+  & :deep(.results .content) {
     padding: 0;
   }
 

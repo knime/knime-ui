@@ -26,7 +26,6 @@ export const actions = {
 
     async getNodeRecommendations({
         commit,
-        state,
         rootState
     }, { nodeId, portIdx, nodesLimit = recommendationLimit }) {
         const { projectId, info: { containerId: workflowId } } = rootState.workflow.activeWorkflow;
