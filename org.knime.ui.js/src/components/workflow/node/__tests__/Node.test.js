@@ -868,23 +868,25 @@ describe('Node', () => {
         };
 
         it('checks if dragged object is compatible', async () => {
-            const torso = wrapper.findComponent(Node);
+            const torso = wrapper.findComponent(NodeTorso);
 
             triggerDragEvent(torso.element, 'dragenter', { types: [KnimeMIME] });
             await Vue.nextTick();
-
+            
+            expect(torso.vm.$props.isDraggedOver).toBeTruthy();
             triggerDragEvent(torso.element, 'dragleave');
             await Vue.nextTick();
-            expect(torso.classes()).not.toContain('isDraggedOver');
+            expect(torso.vm.$props.isDraggedOver).toBeFalsy();
         });
 
         it('replaces node on drop', async () => {
-            const torso = wrapper.findComponent(Node);
+            const node = wrapper.findComponent(Node);
 
-            triggerDragEvent(torso.element, 'drop', { getData: () => 'test' });
+            const dropEvent = triggerDragEvent(node.element, 'drop', { getData: () => '{ "className": "test" }' });
+            node.vm.onTorsoDragDrop(dropEvent);
             await Vue.nextTick();
             expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
-                expect.anything(), { nodeFactory: 'test', nodeId: 'root:1' }
+                expect.anything(), { nodeFactory: { className: 'test' }, nodeId: 'root:1' }
             );
         });
     });
