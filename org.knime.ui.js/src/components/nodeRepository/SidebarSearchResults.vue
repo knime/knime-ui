@@ -53,7 +53,7 @@ export default {
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
         ]),
         focusFirst() {
-            this.$ref.searchResults?.focusFirst();
+            this.$refs.searchResults?.focusFirst();
         }
     }
 };
@@ -61,6 +61,7 @@ export default {
 
 <template>
   <SearchResults
+    ref="searchResults"
     v-model:selected-node="selectedNode"
     v-model:search-scroll-position="searchScrollPosition"
     :search-actions="searchActions"
@@ -81,7 +82,3 @@ export default {
     </template>
   </SearchResults>
 </template>
-
-<style lang="postcss" scoped>
-
-</style>

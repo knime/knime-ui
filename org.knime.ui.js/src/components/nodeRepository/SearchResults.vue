@@ -5,14 +5,12 @@ import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg'
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
-import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
 
 /**
  * Reusable search results. Please keep this store free.
  */
 export default {
     components: {
-        NodeTemplate,
         ScrollViewContainer,
         NodeList,
         ReloadIcon,
@@ -134,7 +132,7 @@ export default {
             if (this.topNodes.length > 0) {
                 this.$refs.topList?.focusLast();
             } else {
-                this.$emit('focusSearchBar');
+                this.$emit('navReachedTop');
             }
         }
     }
@@ -162,6 +160,7 @@ export default {
       >
         <NodeList
           ref="topList"
+          class="top-list"
           v-model:selected-node="selectedNodeModel"
           :nodes="topNodes"
           @nav-reached-top="$emit('navReachedTop')"
@@ -172,9 +171,7 @@ export default {
             <slot
               name="topNodeTemplate"
               v-bind="slotProps"
-            >
-              <NodeTemplate v-bind="slotProps" />
-            </slot>
+            />
           </template>
         </NodeList>
         <ReloadIcon
@@ -210,6 +207,7 @@ export default {
         >
           <NodeList
             ref="bottomList"
+            class="bottom-list"
             v-model:selected-node="selectedNodeModel"
             :nodes="bottomNodes"
             @nav-reached-top="bottomListNavReachedTop"
@@ -219,9 +217,7 @@ export default {
               <slot
                 name="bottomNodeTemplate"
                 v-bind="slotProps"
-              >
-                <NodeTemplate v-bind="slotProps" />
-              </slot>
+              />
             </template>
           </NodeList>
           <ReloadIcon
