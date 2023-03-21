@@ -341,12 +341,12 @@ export default {
             await new Promise(r => setTimeout(r, 0));
             this.$refs.renameRef[0]?.$refs?.input?.focus();
         },
-        onRenameSubmit(keyupEvent, isValid, cleanNameFn) {
+        onRenameSubmit(isValid, cleanNameFn, keyupEvent, isClickAway = false) {
             if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
                 this.clearRenameState();
             }
 
-            if (keyupEvent.key === 'Enter' && isValid) {
+            if ((keyupEvent.key === 'Enter' || isClickAway) && isValid) {
                 const newName = cleanNameFn(this.renameValue.trim());
 
                 if (newName === '') {
@@ -462,7 +462,7 @@ export default {
               :workflow-items="items"
             >
               <template #default="{ isValid, cleanNameFn, errorMessage }">
-                <div>
+                <div v-click-away="($event) => onRenameSubmit(isValid, cleanNameFn, $event, true)">
                   <InputField
                     ref="renameRef"
                     v-model="renameValue"
@@ -470,7 +470,7 @@ export default {
                     type="text"
                     title="rename"
                     :is-valid="isValid"
-                    @keyup="onRenameSubmit($event, isValid, cleanNameFn)"
+                    @keyup="onRenameSubmit(isValid, cleanNameFn, $event)"
                   />
                   <div
                     v-if="!isValid"

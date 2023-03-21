@@ -3752,13 +3752,13 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
      */
 	Cut(
 		params: { projectId: string, workflowId: string } & Omit<CutCommand, 'kind'>
-    ): Promise<unknown> {
+    ): Promise<CopyResult> {
     	const { projectId, workflowId, ...commandParams } = params;
 		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Cut }
-		});
+		}) as Promise<CopyResult>;
 		return postProcessCommandResponse(commandResponse);
 	},	
 	 
