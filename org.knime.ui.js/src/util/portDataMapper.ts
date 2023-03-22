@@ -65,20 +65,20 @@ const toPortGroupDescription = (
 ) => (
     portGroupDescription: DynamicPortGroupDescription
 ): PortGroupDescription => {
-        const { identifier, description, supportedPortTypes } = portGroupDescription;
-        const types = supportedPortTypes
-            .map(toPortObject(availablePortTypes))
-            .map(fullPortType => ({
-                ...fullPortType,
-                typeName: (fullPortType.name.substring(0, 20)) + (fullPortType.name.length > 20 ? '...' : '')
-            }));
+    const { identifier, description, supportedPortTypes } = portGroupDescription;
+    const types = supportedPortTypes
+        .map(toPortObject(availablePortTypes))
+        .map(fullPortType => ({
+            ...fullPortType,
+            typeName: fullPortType.name.substring(0, 20) + (fullPortType.name.length > 20 ? '...' : '')
+        }));
 
-        return {
-            groupName: identifier,
-            groupDescription: description,
-            types
-        };
+    return {
+        groupName: identifier,
+        groupDescription: description,
+        types
     };
+};
 
 /**
  * Maps over a collection of ports to add information about their color and kind, extracted from the
