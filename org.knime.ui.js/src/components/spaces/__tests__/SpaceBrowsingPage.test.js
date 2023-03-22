@@ -11,8 +11,6 @@ import SpaceExplorer from '../SpaceExplorer.vue';
 import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 import SpaceBrowsingPage from '../SpaceBrowsingPage.vue';
 
-vi.mock('@api');
-
 describe('SpaceBrowsingPage', () => {
     const doMount = ({ initialStoreState = null } = {}) => {
         const $store = mockVuexStore({

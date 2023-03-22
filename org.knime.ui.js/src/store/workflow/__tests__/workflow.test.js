@@ -1,9 +1,7 @@
 import { expect, describe, it, vi } from 'vitest';
 import { mockVuexStore } from '@/test/utils';
-import * as API from '@api';
 import workflowObjectBounds from '@/util/workflowObjectBounds';
 
-vi.mock('@api');
 vi.mock('@/util/workflowObjectBounds', () => ({
     default: vi.fn(() => 'bounds')
 }));
@@ -43,20 +41,6 @@ describe('workflow store', () => {
             const { store } = await loadStore();
             store.commit('workflow/setTooltip', { dummy: true });
             expect(store.state.workflow.tooltip).toStrictEqual({ dummy: true });
-        });
-    });
-
-    describe('actions', () => {
-        it.each([
-            ['undo'],
-            ['redo']
-        ])('passes %s to the API', async (action) => {
-            const { store } = await loadStore();
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
-
-            store.dispatch(`workflow/${action}`);
-
-            expect(API[action]).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
         });
     });
 

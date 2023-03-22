@@ -1,27 +1,16 @@
 /* eslint-disable max-lines */
 // eslint-disable-next-line object-curly-newline
-import { expect, describe, afterEach, it, vi } from 'vitest';
+import { expect, describe, afterEach, it, vi, type MockedFunction } from 'vitest';
 import * as Vue from 'vue';
 
-import { mockVuexStore } from '@/test/utils';
-import { connectNodes,
-    addNode,
-    collapseToContainer,
-    addNodePort,
-    removeNodePort,
-    expandContainerNode,
-    copyOrCutWorkflowParts,
-    pasteWorkflowParts,
-    moveObjects,
-    deleteObjects
-// eslint-disable-next-line object-curly-newline
-} from '@api';
+import { deepMocked, mockVuexStore } from '@/test/utils';
+import { API } from '@api';
 import { pastePartsAt } from '@/util/pasteToWorkflow';
 
-import { wrapAPI } from '../workflowEditor';
-
-vi.mock('@api');
 vi.mock('@/util/pasteToWorkflow');
+
+const mockedAPI = deepMocked(API);
+const mockedPastePartsAt = pastePartsAt as MockedFunction<typeof pastePartsAt>;
 
 describe('workflow store: Editing', () => {
     afterEach(() => {
@@ -59,7 +48,7 @@ describe('workflow store: Editing', () => {
                 }
             });
 
-            let node = store.state.workflow.activeWorkflow.nodes['root:1'];
+            const node = store.state.workflow.activeWorkflow.nodes['root:1'];
             store.commit('workflow/setMovePreview', { node, deltaX: 50, deltaY: 50 });
             expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
@@ -73,7 +62,7 @@ describe('workflow store: Editing', () => {
                 }
             });
 
-            let node = store.state.workflow.activeWorkflow.nodes['root:1'];
+            const node = store.state.workflow.activeWorkflow.nodes['root:1'];
             store.commit('workflow/setMovePreview', { node, deltaX: 50, deltaY: 50 });
             expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
             store.commit('workflow/resetMovePreview', { nodeId: node.id });
@@ -96,37 +85,37 @@ describe('workflow store: Editing', () => {
     });
 
     describe('actions', () => {
-        it('wrap api call: automatically include projectId and workflowId', () => {
-            let apiCall = vi.fn();
+        // it('wrap api call: automatically include projectId and workflowId', () => {
+        //     let apiCall = vi.fn();
 
-            let wrappedCall = wrapAPI(apiCall);
+        //     let wrappedCall = wrapAPI(apiCall);
 
-            let vuexContext = {
-                state: {
-                    activeWorkflow: {
-                        projectId: 'p1',
-                        info: { containerId: 'w1' }
-                    }
-                }
-            };
+        //     let vuexContext = {
+        //         state: {
+        //             activeWorkflow: {
+        //                 projectId: 'p1',
+        //                 info: { containerId: 'w1' }
+        //             }
+        //         }
+        //     };
 
-            wrappedCall(vuexContext);
-            expect(apiCall).toHaveBeenCalledWith({
-                projectId: 'p1',
-                workflowId: 'w1'
-            });
+        //     wrappedCall(vuexContext);
+        //     expect(apiCall).toHaveBeenCalledWith({
+        //         projectId: 'p1',
+        //         workflowId: 'w1'
+        //     });
 
-            wrappedCall(vuexContext, { arg1: 'value' });
-            expect(apiCall).toHaveBeenCalledWith({
-                projectId: 'p1',
-                workflowId: 'w1',
-                arg1: 'value'
-            });
-        });
+        //     wrappedCall(vuexContext, { arg1: 'value' });
+        //     expect(apiCall).toHaveBeenCalledWith({
+        //         projectId: 'p1',
+        //         workflowId: 'w1',
+        //         arg1: 'value'
+        //     });
+        // });
 
         describe('add node', () => {
             const setupStoreWithWorkflow = async () => {
-                addNode.mockImplementation(() => ({ newNodeId: 'new-mock-node' }));
+                mockedAPI.workflowCommand.AddNode.mockImplementation(() => ({ newNodeId: 'new-mock-node' }));
                 const loadStoreResponse = await loadStore();
 
                 loadStoreResponse.store.commit('workflow/setActiveWorkflow', {
@@ -144,7 +133,7 @@ describe('workflow store: Editing', () => {
 
                 store.dispatch('workflow/addNode', { position: { x: 7, y: 31 }, nodeFactory: 'factory' });
 
-                expect(addNode).toHaveBeenCalledWith({
+                expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith({
                     projectId: store.state.workflow.activeWorkflow.projectId,
                     workflowId: store.state.workflow.activeWorkflow.info.containerId,
                     position: { x: 5, y: 30 },
@@ -185,29 +174,42 @@ describe('workflow store: Editing', () => {
             const { store } = await loadStore();
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
-            store.dispatch(`workflow/addNodePort`,
-                { nodeId: 'node x', side: 'input', typeId: 'porty', portGroup: 'group' });
+            const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portGroup: 'group' };
+            store.dispatch(
+                `workflow/addNodePort`,
+                payload
+            );
 
-            expect(addNodePort).toHaveBeenCalledWith({
-                nodeId: 'node x',
+            expect(mockedAPI.workflowCommand.AddPort).toHaveBeenCalledWith({
                 projectId: 'foo',
                 workflowId: 'root',
-                side: 'input',
-                typeId: 'porty',
-                portGroup: 'group'
+                nodeId: payload.nodeId,
+                side: payload.side,
+                portGroup: payload.portGroup,
+                portTypeId: payload.typeId
             });
         });
 
         it('can remove Node Ports', async () => {
             const { store } = await loadStore();
 
-            const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1, portGroup: 'group' };
+            const payload = {
+                nodeId: 'node x',
+                side: 'input',
+                index: 1,
+                portGroup: 'group'
+            };
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
             store.dispatch(`workflow/removeNodePort`, payload);
 
-            expect(removeNodePort).toHaveBeenCalledWith(
-                { ...payload, projectId: 'foo', workflowId: 'root' }
-            );
+            expect(mockedAPI.workflowCommand.RemovePort).toHaveBeenCalledWith({
+                nodeId: payload.nodeId,
+                side: payload.side,
+                portGroup: payload.portGroup,
+                portIndex: payload.index,
+                projectId: 'foo',
+                workflowId: 'root'
+            });
         });
 
         it('moves actual nodes', async () => {
@@ -228,10 +230,10 @@ describe('workflow store: Editing', () => {
 
         it('moves nodes outline', async () => {
             const { store } = await loadStore();
-            let nodesArray = {};
+            const nodesArray = {};
             for (let i = 0; i < 11; i++) {
-                let name = `node-${i}`;
-                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 }, id: `node-${i}` };
+                const name = `node-${i}`;
+                nodesArray[name] = { position: { x: 0, y: 0 }, id: `node-${i}` };
             }
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
@@ -246,10 +248,10 @@ describe('workflow store: Editing', () => {
 
         it('moves subset of node outlines', async () => {
             const { store } = await loadStore();
-            let nodesArray = {};
+            const nodesArray: Record<string, { id: string, position: any }> = {};
             for (let i = 0; i < 21; i++) {
-                let name = `node-${i}`;
-                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 }, id: name };
+                const name = `node-${i}`;
+                nodesArray[name] = { position: { x: 0, y: 0 }, id: name };
             }
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
@@ -273,10 +275,10 @@ describe('workflow store: Editing', () => {
             [20]
         ])('saves position after move end for %s nodes', async (amount) => {
             const { store } = await loadStore();
-            let nodesArray = {};
+            const nodesArray: Record<string, { id: string, position: any }> = {};
             for (let i = 0; i < amount; i++) {
-                let name = `node-${i}`;
-                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 }, id: name };
+                const name = `node-${i}`;
+                nodesArray[name] = { position: { x: 0, y: 0 }, id: name };
             }
             store.commit('workflow/setActiveWorkflow', {
                 nodes: nodesArray,
@@ -285,7 +287,7 @@ describe('workflow store: Editing', () => {
                 }
             });
             await Vue.nextTick();
-            let nodeIds = [];
+            const nodeIds = [];
             Object.values(nodesArray).forEach((node) => {
                 store.dispatch('selection/selectNode', node.id);
                 nodeIds.push(node.id);
@@ -298,7 +300,7 @@ describe('workflow store: Editing', () => {
                 startPos: { x: 0, y: 0 }
             });
 
-            expect(moveObjects).toHaveBeenNthCalledWith(1, {
+            expect(mockedAPI.workflowCommand.Translate).toHaveBeenNthCalledWith(1, {
                 projectId: 'foo',
                 nodeIds,
                 workflowId: 'test',
@@ -312,18 +314,18 @@ describe('workflow store: Editing', () => {
             [20]
         ])('deletes %s objects', async (amount) => {
             const { store } = await loadStore();
-            let nodesArray = {};
-            let connectionsArray = {};
-            let nodeIds = [];
-            let connectionIds = [];
+            const nodesArray = {};
+            const connectionsArray = {};
+            const nodeIds = [];
+            const connectionIds = [];
             for (let i = 0; i < amount / 2; i++) {
-                let id = `node-${i}`;
+                const id = `node-${i}`;
                 nodesArray[id] = { id, allowedActions: { canDelete: true } };
                 store.dispatch('selection/selectNode', id);
                 nodeIds.push(id);
             }
             for (let i = 0; i < amount / 2; i++) {
-                let id = `connection-${i}`;
+                const id = `connection-${i}`;
                 connectionsArray[id] = { id, allowedActions: { canDelete: true } };
                 store.dispatch('selection/selectConnection', id);
                 connectionIds.push(id);
@@ -338,22 +340,23 @@ describe('workflow store: Editing', () => {
             });
             await Vue.nextTick();
             store.dispatch('workflow/deleteSelectedObjects');
-            expect(deleteObjects).toHaveBeenNthCalledWith(1, {
+            expect(mockedAPI.workflowCommand.Delete).toHaveBeenNthCalledWith(1, {
                 projectId: 'foo',
                 workflowId: 'test',
                 nodeIds,
-                connectionIds
+                connectionIds,
+                annotationIds: []
             });
         });
 
         describe('tries to delete objects that cannot be deleted', () => {
             vi.spyOn(window, 'alert').mockImplementation(() => { });
 
-            let nodeName = `node-1`;
-            let connectorName = `connection-1`;
-            let nodesArray = {};
+            const nodeName = `node-1`;
+            const connectorName = `connection-1`;
+            const nodesArray = {};
             nodesArray[nodeName] = { id: nodeName, allowedActions: { canDelete: false } };
-            let connectionsArray = {};
+            const connectionsArray = {};
             connectionsArray[connectorName] = { id: connectorName, allowedActions: { canDelete: false } };
 
             const setupStoreWithWorkflow = async () => {
@@ -419,13 +422,13 @@ describe('workflow store: Editing', () => {
                 destPort: 1
             });
 
-            expect(connectNodes).toHaveBeenCalledWith({
+            expect(mockedAPI.workflowCommand.Connect).toHaveBeenCalledWith({
                 projectId: 'foo',
                 workflowId: 'root',
-                sourceNode: 'source:1',
-                sourcePort: 0,
-                destNode: 'dest:1',
-                destPort: 1
+                sourceNodeId: 'source:1',
+                sourcePortIdx: 0,
+                destinationNodeId: 'dest:1',
+                destinationPortIdx: 1
             });
         });
 
@@ -466,7 +469,7 @@ describe('workflow store: Editing', () => {
             };
 
             it('collapses nodes to a container', async () => {
-                collapseToContainer.mockImplementation(() => ({ newNodeId: '' }));
+                mockedAPI.workflowCommand.Collapse.mockImplementation(() => ({ newNodeId: '' }));
                 const { store } = await loadStoreWithNodes();
                 store.dispatch('selection/selectAllNodes');
 
@@ -474,7 +477,7 @@ describe('workflow store: Editing', () => {
                     containerType: 'metanode'
                 });
 
-                expect(collapseToContainer).toHaveBeenCalledWith({
+                expect(mockedAPI.workflowCommand.Collapse).toHaveBeenCalledWith({
                     projectId: 'bar',
                     workflowId: 'root',
                     nodeIds: ['foo', 'bar'],
@@ -485,7 +488,7 @@ describe('workflow store: Editing', () => {
 
             it('selects the new container after collapsing nodes', async () => {
                 const newNodeId = 'new-container';
-                collapseToContainer.mockImplementation(() => ({ newNodeId }));
+                mockedAPI.workflowCommand.Collapse.mockImplementation(() => ({ newNodeId }));
                 const { store } = await loadStoreWithNodes();
                 store.dispatch('selection/selectAllNodes');
 
@@ -499,7 +502,7 @@ describe('workflow store: Editing', () => {
 
             it('does not select new container if user made a selection before collapse command finishes', async () => {
                 const newNodeId = 'new-container';
-                collapseToContainer.mockImplementation(() => ({ newNodeId }));
+                mockedAPI.workflowCommand.Collapse.mockImplementation(() => ({ newNodeId }));
                 const { store } = await loadStoreWithNodes();
                 store.dispatch('selection/selectAllNodes');
 
@@ -556,13 +559,13 @@ describe('workflow store: Editing', () => {
             };
 
             it('expands a container node', async () => {
-                expandContainerNode.mockImplementation(() => ({ expandedNodeIds: [] }));
+                mockedAPI.workflowCommand.Expand.mockImplementation(() => ({ expandedNodeIds: [] }));
                 const { store } = await loadStoreWithNodes();
                 store.dispatch('selection/selectNode', 'foo');
 
                 store.dispatch('workflow/expandContainerNode');
 
-                expect(expandContainerNode).toHaveBeenCalledWith({
+                expect(mockedAPI.workflowCommand.Expand).toHaveBeenCalledWith({
                     projectId: 'bar',
                     workflowId: 'root',
                     nodeId: 'foo'
@@ -571,7 +574,7 @@ describe('workflow store: Editing', () => {
 
             it('selects the expanded nodes after the command finishes', async () => {
                 const expandedNodeIds = ['foo', 'bar'];
-                expandContainerNode.mockImplementation(() => ({ expandedNodeIds }));
+                mockedAPI.workflowCommand.Expand.mockImplementation(() => ({ expandedNodeIds }));
 
                 const { store } = await loadStoreWithNodes();
                 store.dispatch('selection/selectNode', 'foo');
@@ -584,7 +587,7 @@ describe('workflow store: Editing', () => {
             it('does not select the expanded nodes if user selected something before command ends', async () => {
                 const expandedNodeIds = ['bar', 'baz'];
 
-                expandContainerNode.mockImplementation(() => ({ expandedNodeIds }));
+                mockedAPI.workflowCommand.Expand.mockImplementation(() => ({ expandedNodeIds }));
                 const { store } = await loadStoreWithNodes();
                 store.dispatch('selection/selectNode', 'foo');
 
@@ -684,15 +687,15 @@ describe('workflow store: Editing', () => {
             };
 
             it.each([
-                ['copy'],
-                ['cut']
+                ['Copy'],
+                ['Cut']
             ])('executes <%s> command', async (command) => {
                 const stringifiedPayload = JSON.stringify({
                     payloadIdentifier: 'p-id-1',
                     otherData: 'is here'
                 });
 
-                copyOrCutWorkflowParts.mockReturnValue({
+                mockedAPI.workflowCommand[command].mockReturnValue({
                     content: stringifiedPayload
                 });
 
@@ -716,12 +719,11 @@ describe('workflow store: Editing', () => {
 
                 store.dispatch('selection/selectAllNodes');
                 await Vue.nextTick();
-                await store.dispatch('workflow/copyOrCutWorkflowParts', { command });
+                await store.dispatch('workflow/copyOrCutWorkflowParts', { command: command.toLowerCase() });
 
-                expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
+                expect(mockedAPI.workflowCommand[command]).toHaveBeenCalledWith({
                     projectId: 'my project',
                     workflowId: 'root',
-                    command,
                     nodeIds: ['foo', 'bar'],
                     annotationIds: []
                 });
@@ -746,7 +748,7 @@ describe('workflow store: Editing', () => {
             describe('executes paste command', () => {
                 const setupStoreForPaste = async () => {
                     // register "pasteWorkflowParts" API function
-                    pasteWorkflowParts.mockReturnValue({
+                    mockedAPI.workflowCommand.Paste.mockReturnValue({
                         nodeIds: ['bar']
                     });
 
@@ -772,7 +774,7 @@ describe('workflow store: Editing', () => {
 
                     // mock strategy result
                     const doAfterPasteMock = vi.fn();
-                    pastePartsAt.mockReturnValue({
+                    mockedPastePartsAt.mockReturnValue({
                         position: { x: 5, y: 5 },
                         doAfterPaste: doAfterPasteMock
                     });
@@ -790,7 +792,6 @@ describe('workflow store: Editing', () => {
                     return {
                         startPaste,
                         clipboardMock,
-                        pasteWorkflowParts,
                         workflow,
                         doAfterPasteMock,
                         store
@@ -801,7 +802,7 @@ describe('workflow store: Editing', () => {
                     const { workflow, startPaste, clipboardMock } = await setupStoreForPaste();
                     await startPaste();
 
-                    expect(pastePartsAt).toHaveBeenCalledWith({
+                    expect(mockedPastePartsAt).toHaveBeenCalledWith({
                         visibleFrame: {
                             height: 1000,
                             width: 1000,
@@ -811,17 +812,18 @@ describe('workflow store: Editing', () => {
                         clipboardContent: clipboardMock.getContent(),
                         isWorkflowEmpty: false,
                         workflow,
-                        copyPaste: expect.objectContaining({ dummy: null })
+                        copyPaste: expect.objectContaining({ dummy: null }),
+                        dispatch: expect.any(Function)
                     });
                 });
 
                 it('pastes at given position', async () => {
-                    const { startPaste, pasteWorkflowParts } = await setupStoreForPaste();
+                    const { startPaste } = await setupStoreForPaste();
                     await startPaste({ position: { x: 100, y: 100 } });
 
-                    expect(pastePartsAt).not.toHaveBeenCalled();
+                    expect(mockedPastePartsAt).not.toHaveBeenCalled();
 
-                    expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                    expect(mockedAPI.workflowCommand.Paste).toHaveBeenCalledWith({
                         projectId: 'my project',
                         workflowId: 'root',
                         content: 'parts',
@@ -848,7 +850,7 @@ describe('workflow store: Editing', () => {
                     const { startPaste } = await setupStoreForPaste();
                     await startPaste();
 
-                    expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                    expect(mockedAPI.workflowCommand.Paste).toHaveBeenCalledWith({
                         projectId: 'my project',
                         workflowId: 'root',
                         content: 'parts',

@@ -1,4 +1,4 @@
-import { expect, describe, it, vi } from 'vitest';
+import { expect, describe, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/utils';
@@ -9,19 +9,6 @@ import { type WorkflowAnnotation, Annotation } from '@/api/gateway-api/generated
 import WorkflowAnnotationComp from '../WorkflowAnnotation.vue';
 import LegacyAnnotationText from '../LegacyAnnotationText.vue';
 import TransformControls from '../TransformControls.vue';
-
-vi.mock('@api', async () => {
-    const actual: typeof API = await vi.importActual('@api');
-
-    return {
-        ...actual,
-        API: {
-            workflowCommand: {
-                TransformWorkflowAnnotation: vi.fn()
-            }
-        }
-    };
-});
 
 describe('Workflow Annotation', () => {
     const defaultProps: {

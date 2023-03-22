@@ -1,7 +1,7 @@
 <script>
 import { KnimeService } from '@knime/ui-extension-service';
 
-import { getNodeDialog, callNodeDataService } from '@api';
+import { API } from '@api';
 import ViewLoader from './ViewLoader.vue';
 
 /**
@@ -50,7 +50,7 @@ export default {
     methods: {
         async viewConfigLoaderFn() {
             try {
-                const nodeDialogView = await getNodeDialog({
+                const nodeDialogView = await API.node.getNodeDialog({
                     projectId: this.projectId,
                     workflowId: this.workflowId,
                     nodeId: this.selectedNode.id
@@ -73,15 +73,15 @@ export default {
                 config,
 
                 // Data Service Callback
-                async (nodeService, serviceType, request) => {
+                async (nodeService, serviceType, dataServiceRequest) => {
                     if (nodeService === 'NodeService.callNodeDataService') {
-                        await callNodeDataService({
+                        await API.node.callNodeDataService({
                             projectId: this.projectId,
                             workflowId: this.workflowId,
                             nodeId: this.selectedNode.id,
                             extensionType: 'dialog',
                             serviceType,
-                            request
+                            dataServiceRequest
                         });
                     }
                 },

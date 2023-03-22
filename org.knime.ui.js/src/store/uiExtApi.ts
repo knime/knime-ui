@@ -1,4 +1,4 @@
-import { callNodeDataService } from '@api';
+import { API } from '@api';
 
 // TODO: NXT-1295 the action / getter names in this store module CANNOT be renamed
 // See other TODOs below
@@ -12,13 +12,13 @@ export const actions = {
         let result;
 
         if (nodeService === 'NodeService.callNodeDataService') {
-            result = await callNodeDataService({
+            result = await API.node.callNodeDataService({
                 projectId,
                 workflowId,
                 nodeId,
                 extensionType,
                 serviceType: serviceRequest,
-                request: requestParams
+                dataServiceRequest: requestParams
             });
         } else if (nodeService === 'NodeService.updateDataPointSelection') {
             // TODO: implement update selection. Also, is this needed for our use case?

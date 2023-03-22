@@ -1,5 +1,5 @@
 import { registerNotificationHandler } from '../json-rpc-client';
-
+import * as desktopAPIMethods from './desktop-api';
 export interface DesktopEventHandlers {
     SaveAndCloseWorkflowsEvent(payload: { projectIds: Array<string>, params: unknown[] }): void;
     ImportURIEvent(payload: { x: number; y: number }): void;
@@ -11,5 +11,6 @@ export const desktop = {
         Object.entries(handlers).forEach(([eventName, eventHandler]) => {
             registerNotificationHandler(eventName, eventHandler);
         });
-    }
+    },
+    ...desktopAPIMethods
 };

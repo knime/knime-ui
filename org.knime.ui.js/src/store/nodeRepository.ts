@@ -1,5 +1,5 @@
-import { getNodesGroupedByTags, getNodeDescription, getNodeTemplates } from '@api';
-import { toNodeWithFullPorts } from '../util/portDataMapper';
+import { API } from '@api';
+import { toNodeWithFullPorts } from '@/util/portDataMapper';
 import * as nodeSearch from './common/nodeSearch';
 
 /**
@@ -69,8 +69,8 @@ export const actions = {
         if (state.nodesPerCategory.length === state.totalNumCategories) {
             return;
         }
-        let tagsOffset = append ? firstLoadOffset + state.categoryPage * categoryPageSize : 0;
-        let tagsLimit = append ? categoryPageSize : firstLoadOffset;
+        const tagsOffset = append ? firstLoadOffset + state.categoryPage * categoryPageSize : 0;
+        const tagsLimit = append ? categoryPageSize : firstLoadOffset;
 
         if (append) {
             commit('setCategoryPage', state.categoryPage + 1);
@@ -79,7 +79,7 @@ export const actions = {
             commit('setCategoryPage', 0);
         }
 
-        const { totalNumGroups, groups } = await getNodesGroupedByTags({
+        const { totalNumGroups, groups } = await API.noderepository.getNodesGroupedByTags({
             numNodesPerTag: 6,
             tagsOffset,
             tagsLimit,
@@ -96,9 +96,11 @@ export const actions = {
         commit('setNodesPerCategories', { groupedNodes: withMappedPorts, append });
     },
 
-    async getNodeDescription({ commit, state, rootState }, { selectedNode }) {
+    async getNodeDescription({ rootState }, { selectedNode }) {
         const { className, settings } = selectedNode.nodeFactory;
-        const node = await getNodeDescription({ className, settings });
+        const node = await API.node.getNodeDescription({
+            nodeFactoryKey: { className, settings }
+        });
 
         const { availablePortTypes } = rootState.application;
         return toNodeWithFullPorts(availablePortTypes)(node);
@@ -133,7 +135,7 @@ export const actions = {
         if (state.nodeTemplates?.nodeTemplateId) {
             return state.nodeTemplates?.nodeTemplateId;
         } else {
-            const nodeTemplates = await getNodeTemplates({
+            const nodeTemplates = await API.noderepository.getNodeTemplates({
                 nodeTemplateIds: [nodeTemplateId]
             });
 

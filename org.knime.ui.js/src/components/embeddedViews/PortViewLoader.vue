@@ -1,7 +1,7 @@
 <script>
 import { KnimeService } from '@knime/ui-extension-service';
 
-import { getPortView, callPortDataService } from '@api';
+import { API } from '@api';
 import ViewLoader from '@/components/embeddedViews/ViewLoader.vue';
 
 /**
@@ -52,7 +52,7 @@ export default {
     methods: {
         async viewConfigLoaderFn() {
             try {
-                const portView = await getPortView({
+                const portView = await API.port.getPortView({
                     projectId: this.projectId,
                     workflowId: this.workflowId,
                     nodeId: this.selectedNode.id,
@@ -78,14 +78,14 @@ export default {
                 config,
 
                 // Data Service Callback
-                async (_, serviceType, request) => {
-                    const response = await callPortDataService({
+                async (_, serviceType, dataServiceRequest) => {
+                    const response = await API.port.callPortDataService({
                         projectId: this.projectId,
                         workflowId: this.workflowId,
                         nodeId: this.selectedNode.id,
                         portIdx: this.selectedPortIndex,
                         serviceType,
-                        request
+                        dataServiceRequest
                     });
 
                     return { result: JSON.parse(response) };

@@ -3,18 +3,18 @@ import { expect, describe, it, vi } from 'vitest';
 import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/utils';
+import { deepMocked, mockVuexStore } from '@/test/utils';
 import * as spacesStore from '@/store/spaces';
 
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
-import { fetchWorkflowGroupContent, createWorkflow, getNameCollisionStrategy } from '@api';
+import { API } from '@api';
 import { APP_ROUTES } from '@/router';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
 import SpaceExplorerActions from '../SpaceExplorerActions.vue';
 import FileExplorer from '../FileExplorer/FileExplorer.vue';
 
-vi.mock('@api');
+const mockedAPI = deepMocked(API);
 
 const fetchWorkflowGroupContentResponse = {
     id: 'root',
@@ -47,12 +47,12 @@ describe('SpaceExplorer.vue', () => {
         fileExtensionToNodeTemplateId = {}
     } = {}) => {
         if (mockGetSpaceItems) {
-            fetchWorkflowGroupContent.mockImplementation(mockGetSpaceItems);
+            mockedAPI.space.listWorkflowGroup.mockImplementation(mockGetSpaceItems);
         } else {
-            fetchWorkflowGroupContent.mockResolvedValue(mockResponse);
+            mockedAPI.space.listWorkflowGroup.mockResolvedValue(mockResponse);
         }
 
-        createWorkflow.mockResolvedValue({ type: 'Workflow' });
+        mockedAPI.space.createWorkflow.mockResolvedValue({ type: 'Workflow' });
 
         const store = mockVuexStore({
             spaces: spacesStore,
@@ -152,14 +152,14 @@ describe('SpaceExplorer.vue', () => {
         const { store } = await doMountAndLoad();
 
         // initial fetch of root has happened
-        fetchWorkflowGroupContent.mockReset();
+        mockedAPI.space.listWorkflowGroup.mockReset();
 
         store.state.spaces.activeSpace.startItemId = 'startItemId';
         store.commit('spaces/setActiveWorkflowGroupData', null);
 
         await new Promise(r => setTimeout(r, 0));
 
-        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+        expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
             spaceProviderId: 'local',
             spaceId: 'local',
             itemId: 'startItemId'
@@ -169,10 +169,10 @@ describe('SpaceExplorer.vue', () => {
     it('should load data when navigating to a directory', async () => {
         const { wrapper } = await doMountAndLoad();
 
-        fetchWorkflowGroupContent.mockReset();
+        mockedAPI.space.listWorkflowGroup.mockReset();
 
         wrapper.findComponent(FileExplorer).vm.$emit('changeDirectory', '1234');
-        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+        expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
             spaceProviderId: 'local',
             spaceId: 'local',
             itemId: '1234'
@@ -194,9 +194,9 @@ describe('SpaceExplorer.vue', () => {
                 }
             });
 
-            fetchWorkflowGroupContent.mockReset();
+            mockedAPI.space.listWorkflowGroup.mockReset();
             wrapper.findComponent(FileExplorer).vm.$emit('changeDirectory', '..');
-            expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+            expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
                 spaceProviderId: 'local',
                 spaceId: 'local',
                 itemId: 'parentId'
@@ -211,9 +211,9 @@ describe('SpaceExplorer.vue', () => {
                 }
             });
 
-            fetchWorkflowGroupContent.mockReset();
+            mockedAPI.space.listWorkflowGroup.mockReset();
             wrapper.findComponent(FileExplorer).vm.$emit('changeDirectory', '..');
-            expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+            expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
                 spaceProviderId: 'local',
                 spaceId: 'local',
                 itemId: 'root'
@@ -233,7 +233,7 @@ describe('SpaceExplorer.vue', () => {
         });
 
         wrapper.findComponent(Breadcrumb).vm.$emit('click-item', { id: 'parentId' });
-        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+        expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
             spaceProviderId: 'local',
             spaceId: 'local',
             itemId: 'parentId'
@@ -547,7 +547,7 @@ describe('SpaceExplorer.vue', () => {
 
     describe('move items', () => {
         it('should move items', async () => {
-            getNameCollisionStrategy.mockReturnValue('OVERWRITE');
+            mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue('OVERWRITE');
             const { wrapper, dispatchSpy } = doMount();
             await new Promise(r => setTimeout(r, 0));
 
@@ -566,7 +566,7 @@ describe('SpaceExplorer.vue', () => {
         });
 
         it('should move items to root', async () => {
-            getNameCollisionStrategy.mockReturnValue('OVERWRITE');
+            mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue('OVERWRITE');
             const { wrapper, dispatchSpy } = doMount({
                 mockResponse: {
                     ...fetchWorkflowGroupContentResponse,
@@ -593,7 +593,7 @@ describe('SpaceExplorer.vue', () => {
         });
 
         it('should move items back to the parent directory', async () => {
-            getNameCollisionStrategy.mockReturnValue('OVERWRITE');
+            mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue('OVERWRITE');
             const { wrapper, dispatchSpy } = await doMount({
                 mockResponse: {
                     ...fetchWorkflowGroupContentResponse,
@@ -620,7 +620,7 @@ describe('SpaceExplorer.vue', () => {
         });
 
         it('should not move items if collision handling returns cancel', async () => {
-            getNameCollisionStrategy.mockReturnValue('CANCEL');
+            mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue('CANCEL');
             const { wrapper, dispatchSpy } = doMount();
             await new Promise(r => setTimeout(r, 0));
 
@@ -701,8 +701,7 @@ describe('SpaceExplorer.vue', () => {
                         type: 'Workflow'
                     }
                 ]
-            },
-            activeWorkflowGroup: 'testWorkflowGroup' }
+            } }
         );
 
         mockRoute.name = APP_ROUTES.WorkflowPage;
@@ -746,8 +745,7 @@ describe('SpaceExplorer.vue', () => {
                         type: 'Workflow'
                     }
                 ]
-            },
-            activeWorkflowGroup: 'testWorkflowGroup' }
+            } }
         );
 
         mockRoute.name = APP_ROUTES.WorkflowPage;

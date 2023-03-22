@@ -12,12 +12,17 @@ export const nodePadding = {
     right: horizontalNodePadding
 };
 
-export default ({ nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts }, { padding = false } = {}) => {
+export default ({
+    nodes = {},
+    workflowAnnotations = [],
+    metaInPorts = null,
+    metaOutPorts = null
+}, { padding = false } = {}) => {
     let left = Infinity;
     let top = Infinity;
     let right = -Infinity;
     let bottom = -Infinity;
-    
+
     // To create the bounds of the workflow:
 
     // 1. Look for the outermost `left`, `top, `right`, and `bottom` values when considering
@@ -64,7 +69,7 @@ export default ({ nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPort
             height: bottom - top
         };
     }
-    
+
     // Consider horizontal position of metanode input / output bars.
     // The logic is as follows:
     // - if a user has moved an input / output bar, then its x-position is taken as saved.
@@ -78,7 +83,7 @@ export default ({ nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPort
     //
     // The vertical dimensions are always equal to the workflow dimensions, unless the workflow is empty,
     // in which case they get a default height.
-    
+
     let defaultBarPosition = defaultMetanodeBarPosition;
     if (metaInPorts?.ports?.length) {
         let leftBorder, rightBorder;
@@ -96,7 +101,7 @@ export default ({ nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPort
             right = rightBorder;
         }
     }
-    
+
     if (metaOutPorts?.ports?.length) {
         let leftBorder, rightBorder;
         if (metaOutPorts.xPos) {
@@ -113,13 +118,13 @@ export default ({ nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPort
             right = rightBorder;
         }
     }
-    
+
     if (metaInPorts?.ports?.length || metaOutPorts?.ports?.length) {
         if (bottom < Math.min(0, top) + defaultMetaNodeBarHeight) {
             bottom = Math.min(0, top) + defaultMetaNodeBarHeight;
         }
     }
-    
+
     return {
         left,
         top,

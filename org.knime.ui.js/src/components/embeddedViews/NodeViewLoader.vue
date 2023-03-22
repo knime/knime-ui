@@ -1,6 +1,6 @@
 <script>
 import { mapGetters, mapState } from 'vuex';
-import { getNodeView } from '@api';
+import { API } from '@api';
 import PageBuilder from 'pagebuilder/src/components/PageBuilder.vue';
 
 import singleViewPage from './singleViewPage.json';
@@ -68,7 +68,7 @@ export default {
                     return;
                 }
 
-                const nodeView = await getNodeView({
+                const nodeView = await API.node.getNodeView({
                     projectId: this.projectId,
                     workflowId: this.workflowId,
                     nodeId: this.selectedNode.id

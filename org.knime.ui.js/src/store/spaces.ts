@@ -1,22 +1,4 @@
-// eslint-disable-next-line object-curly-newline
-import {
-    fetchSpaceProvider,
-    fetchAllSpaceProviders,
-    connectSpaceProvider,
-    disconnectSpaceProvider,
-    fetchWorkflowGroupContent,
-    createWorkflow,
-    createFolder,
-    openWorkflow,
-    importFiles,
-    importWorkflows,
-    deleteItems,
-    moveItems,
-    renameItem,
-    copyBetweenSpaces
-// eslint-disable-next-line object-curly-newline
-} from '@api';
-
+import { API } from '@api';
 import { APP_ROUTES } from '@/router/appRoutes';
 import ITEM_TYPES from '@/util/spaceItemTypes';
 
@@ -94,10 +76,11 @@ export const mutations = {
 };
 
 export const actions = {
-    saveLastItemForProject({ commit, getters, rootState }, { itemId, projectId } = {}) {
-        itemId = itemId || getters.currentWorkflowGroupId;
-        projectId = projectId || rootState.application.activeProjectId;
-        commit('setLastItemForProject', { projectId, itemId });
+    saveLastItemForProject({ commit, getters, rootState }, { itemId, projectId } = { itemId: null, projectId: null }) {
+        commit('setLastItemForProject', {
+            projectId: projectId || rootState.application.activeProjectId,
+            itemId: itemId || getters.currentWorkflowGroupId
+        });
     },
 
     saveSpaceBrowserState({ commit, state }, { itemId = 'root' } = {}) {
@@ -120,7 +103,7 @@ export const actions = {
 
     async fetchAllSpaceProviders({ commit, state, dispatch }) {
         try {
-            let spaceProviders = await fetchAllSpaceProviders();
+            const spaceProviders = await API.desktop.fetchAllSpaceProviders();
 
             commit('setIsLoading', true);
             const connectedProviderIds = Object.values(spaceProviders)
@@ -144,7 +127,7 @@ export const actions = {
 
     async fetchProviderSpaces(_, { id }) {
         try {
-            const providerData = await fetchSpaceProvider({ spaceProviderId: id });
+            const providerData = await API.space.getSpaceProvider({ spaceProviderId: id });
 
             return { ...providerData, connected: true };
         } catch (error) {
@@ -156,7 +139,7 @@ export const actions = {
     async connectProvider({ dispatch, commit, state }, { spaceProviderId }) {
         try {
             commit('setIsLoading', true);
-            const user = await connectSpaceProvider({ spaceProviderId });
+            const user = API.desktop.connectSpaceProvider({ spaceProviderId });
 
             if (user) {
                 // Only fetch spaces when a valid user was returned
@@ -174,9 +157,9 @@ export const actions = {
         }
     },
 
-    async disconnectProvider({ commit, state }, { spaceProviderId }) {
+    disconnectProvider({ commit, state }, { spaceProviderId }) {
         try {
-            await disconnectSpaceProvider({ spaceProviderId });
+            API.desktop.disconnectSpaceProvider({ spaceProviderId });
 
             const { spaceProviders } = state;
             const { name, connectionMode } = spaceProviders[spaceProviderId];
@@ -196,7 +179,7 @@ export const actions = {
             const { activeSpaceProvider, activeSpace } = state;
 
             commit('setIsLoading', true);
-            const data = await fetchWorkflowGroupContent({
+            const data = await API.space.listWorkflowGroup({
                 spaceProviderId: activeSpaceProvider.id,
                 spaceId: activeSpace.spaceId,
                 itemId
@@ -232,7 +215,12 @@ export const actions = {
                 { loading: true, config: { displayMode: 'transparent' } },
                 { root: true }
             );
-            const newWorkflowItem = await createWorkflow({ spaceProviderId, spaceId, itemId, workflowName });
+            const newWorkflowItem = await API.space.createWorkflow({
+                spaceProviderId,
+                spaceId,
+                itemId,
+                itemName: workflowName
+            });
             dispatch(
                 'application/updateGlobalLoader',
                 { loading: false },
@@ -240,7 +228,7 @@ export const actions = {
             );
 
             dispatch('fetchWorkflowGroupContent', { itemId });
-            openWorkflow({ workflowItemId: newWorkflowItem.id, spaceId, spaceProviderId });
+            API.desktop.openWorkflow({ spaceProviderId, spaceId, itemId: newWorkflowItem.id });
 
             return newWorkflowItem;
         } catch (error) {
@@ -262,7 +250,7 @@ export const actions = {
         try {
             // loading will be cleared after fetching the data by fetchWorkflowGroupContent
             commit('setIsLoading', true);
-            const newFolderItem = await createFolder({ spaceId, spaceProviderId, itemId });
+            const newFolderItem = await API.space.createWorkflowGroup({ spaceId, spaceProviderId, itemId });
 
             dispatch('fetchWorkflowGroupContent', { itemId });
 
@@ -284,11 +272,9 @@ export const actions = {
         const { openProjects } = rootState.application;
 
         // eslint-disable-next-line no-extra-parens
-        const foundOpenProject = openProjects.find(project => (
-            project.origin.providerId === spaceProviderId &&
+        const foundOpenProject = openProjects.find(project => project.origin.providerId === spaceProviderId &&
             project.origin.spaceId === spaceId &&
-            project.origin.itemId === workflowItemId
-        ));
+            project.origin.itemId === workflowItemId);
 
         if (foundOpenProject) {
             $router.push({
@@ -306,7 +292,7 @@ export const actions = {
             { loading: true, config: { displayMode: 'transparent' } },
             { root: true }
         );
-        openWorkflow({ spaceId, workflowItemId, spaceProviderId });
+        API.desktop.openWorkflow({ spaceProviderId, spaceId, itemId: workflowItemId });
         dispatch(
             'application/updateGlobalLoader',
             { loading: false },
@@ -314,13 +300,13 @@ export const actions = {
         );
     },
 
-    async importToWorkflowGroup({ state, dispatch, getters }, { importType }) {
+    importToWorkflowGroup({ state, dispatch, getters }, { importType }) {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
         const success = importType === 'FILES'
-            ? await importFiles({ spaceProviderId, spaceId, itemId })
-            : await importWorkflows({ spaceProviderId, spaceId, itemId });
+            ? API.desktop.importFiles({ spaceProviderId, spaceId, itemId })
+            : API.desktop.importWorkflows({ spaceProviderId, spaceId, itemId });
 
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });
@@ -334,7 +320,7 @@ export const actions = {
         try {
             // loading is cleared after data is fetched by fetchWorkflowGroupContent
             commit('setIsLoading', true);
-            await renameItem({ spaceProviderId, spaceId, itemId, newName });
+            await API.space.renameItem({ spaceProviderId, spaceId, itemId, itemName: newName });
 
             const currentWorkflowGroupId = getters.currentWorkflowGroupId;
             await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
@@ -353,7 +339,7 @@ export const actions = {
         try {
             // loading is cleared after data is fetched by fetchWorkflowGroupContent
             commit('setIsLoading', true);
-            await deleteItems({ spaceProviderId, spaceId, itemIds });
+            await API.space.deleteItems({ spaceProviderId, spaceId, itemIds });
             await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
         } catch (error) {
             commit('setIsLoading', false);
@@ -369,7 +355,13 @@ export const actions = {
 
         try {
             commit('setIsLoading', true);
-            await moveItems({ spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, collisionStrategy });
+            await API.space.moveItems({
+                spaceProviderId,
+                spaceId,
+                itemIds,
+                destWorkflowGroupItemId,
+                collisionHandling: collisionStrategy
+            });
             await dispatch('fetchWorkflowGroupContent', { itemId: currentWorkflowGroupId });
         } catch (error) {
             consola.log('Error moving items', { error });
@@ -382,7 +374,7 @@ export const actions = {
     copyBetweenSpaces({ state }, { itemIds }) {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
-        copyBetweenSpaces({ spaceProviderId, spaceId, itemIds });
+        API.desktop.copyBetweenSpaces({ spaceProviderId, spaceId, itemIds });
     }
 };
 

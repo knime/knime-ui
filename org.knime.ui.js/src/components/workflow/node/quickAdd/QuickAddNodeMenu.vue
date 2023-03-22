@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { openWorkflowCoachPreferencePage } from '@api';
+import { API } from '@api';
 
 import Button from 'webapps-common/ui/components/Button.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
@@ -138,18 +138,20 @@ export default {
         this.$store.commit('quickAddNodes/setPortTypeId', null);
     },
     methods: {
-        openWorkflowCoachPreferencePage,
-
+        ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
         ...mapActions('quickAddNodes', [
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
         ]),
-
+        openWorkflowCoachPreferencePage() {
+            API.desktop.openWorkflowCoachPreferencePage();
+        },
         async fetchNodeRecommendations() {
             await this.$store.dispatch('quickAddNodes/getNodeRecommendations', {
                 nodeId: this.nodeId,
                 portIdx: this.port.index
             });
         },
+
         async addNode({ nodeFactory, inPorts }) {
             if (!this.isWritable) {
                 return; // end here

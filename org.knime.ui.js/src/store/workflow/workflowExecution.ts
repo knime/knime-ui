@@ -1,4 +1,4 @@
-import { changeLoopState, changeNodeState } from '@api';
+import { API } from '@api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -10,18 +10,18 @@ export const mutations = {};
 
 export const actions = {
     changeNodeState({ state, rootGetters }, { action, nodes }) {
-        let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflow: { info: { containerId } } } = state;
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
 
         if (Array.isArray(nodes)) {
             // act upon a list of nodes
-            changeNodeState({ projectId, nodeIds: nodes, action, workflowId: containerId });
+            API.node.changeNodeStates({ projectId, nodeIds: nodes, action, workflowId: containerId });
         } else if (nodes === 'all') {
             // act upon entire workflow
-            changeNodeState({ projectId, action, workflowId: containerId });
+            API.node.changeNodeStates({ projectId, action, nodeIds: [], workflowId: containerId });
         } else if (nodes === 'selected') {
             // act upon selected nodes
-            changeNodeState({
+            API.node.changeNodeStates({
                 projectId,
                 nodeIds: rootGetters['selection/selectedNodeIds'],
                 action,
@@ -32,10 +32,10 @@ export const actions = {
         }
     },
     changeLoopState({ state }, { action, nodeId }) {
-        let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflow: { info: { containerId } } } = state;
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
 
-        changeLoopState({
+        API.node.changeLoopState({
             projectId,
             workflowId: containerId,
             nodeId,

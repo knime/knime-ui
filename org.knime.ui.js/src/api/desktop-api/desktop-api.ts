@@ -1,13 +1,7 @@
-/**
- * Open the native (Java) configuration dialog of a node.
- * @param {String} projectId
- * @param {String} nodeId The node for which to open the dialog.
- * @returns {void}
- */
-export const openNodeDialog = ({ projectId, nodeId }) => {
+export const openNodeDialog = ({ projectId, nodeId }: { projectId: string; nodeId: string; }) => {
     try {
         // returns falsy on success
-        let error = window.openNodeDialog(projectId, nodeId);
+        const error = window.openNodeDialog(projectId, nodeId);
         if (error) {
             throw new Error(error);
         }
@@ -16,16 +10,10 @@ export const openNodeDialog = ({ projectId, nodeId }) => {
     }
 };
 
-/**
- * Open the native (Java) legacy flow variable configuration dialog of a node.
- * @param {String} projectId
- * @param {String} nodeId The node for which to open the dialog.
- * @returns {void}
- */
-export const openLegacyFlowVariableDialog = ({ projectId, nodeId }) => {
+export const openLegacyFlowVariableDialog = ({ projectId, nodeId }: { projectId: string; nodeId: string; }) => {
     try {
         // returns falsy on success
-        let error = window.openLegacyFlowVariableDialog(projectId, nodeId);
+        const error = window.openLegacyFlowVariableDialog(projectId, nodeId);
         if (error) {
             throw new Error(error);
         }
@@ -34,16 +22,10 @@ export const openLegacyFlowVariableDialog = ({ projectId, nodeId }) => {
     }
 };
 
-/**
- * Open the native (Java) view window of a node.
- * @param {String} projectId
- * @param {String} nodeId The node for which to open the view.
- * @returns {void}
- */
-export const openView = ({ projectId, nodeId }) => {
+export const openView = ({ projectId, nodeId }: { projectId: string; nodeId: string; }) => {
     try {
         // returns falsy on success
-        let error = window.openNodeView(projectId, nodeId);
+        const error = window.openNodeView(projectId, nodeId);
         if (error) {
             throw new Error(error);
         }
@@ -52,15 +34,10 @@ export const openView = ({ projectId, nodeId }) => {
     }
 };
 
-/**
- * Save a workflow.
- * @param {String} projectId
- * @returns {void}
- */
-export const saveWorkflow = ({ projectId, workflowPreviewSvg }) => {
+export const saveWorkflow = ({ projectId, workflowPreviewSvg }: { projectId: string; workflowPreviewSvg: string; }) => {
     try {
         // returns falsy on success
-        let error = window.saveWorkflow(projectId, workflowPreviewSvg);
+        const error = window.saveWorkflow(projectId, workflowPreviewSvg);
         if (error) {
             throw new Error(error);
         }
@@ -69,17 +46,19 @@ export const saveWorkflow = ({ projectId, workflowPreviewSvg }) => {
     }
 };
 
-/**
- * Open a workflow.
- * @param {Object} param
- * @param {String} [param.spaceId]
- * @param {String} param.workflowItemId
- * @returns {void}
- */
-export const openWorkflow = ({ spaceId = 'local', workflowItemId, spaceProviderId = 'local' }) => {
+export type SpaceProviderId = { spaceProviderId: string; }
+export type SpaceId = { spaceId: string; }
+export type SpaceItemId = { itemId: string; }
+export type FullSpacePath = SpaceProviderId & SpaceId & SpaceItemId;
+
+export const openWorkflow = ({
+    spaceId = 'local',
+    itemId,
+    spaceProviderId = 'local'
+}: FullSpacePath) => {
     try {
         // returns falsy on success
-        const error = window.openWorkflow(spaceId, workflowItemId, spaceProviderId);
+        const error = window.openWorkflow(spaceId, itemId, spaceProviderId);
         if (error) {
             throw new Error(error);
         }
@@ -88,14 +67,13 @@ export const openWorkflow = ({ spaceId = 'local', workflowItemId, spaceProviderI
     }
 };
 
-/**
- * Close a workflow.
- * @param {Object} param projectId to close
- * @param {String} param.closingProjectId projectId to close
- * @param {String | Null} param.nextProjectId projectId that should be set as active after close
- * @returns {void}
- */
-export const closeWorkflow = ({ closingProjectId, nextProjectId }) => {
+export const closeWorkflow = ({
+    closingProjectId,
+    nextProjectId
+}: {
+    closingProjectId: string;
+    nextProjectId: string;
+}) => {
     try {
         // returns true on success
         return window.closeWorkflow(closingProjectId, nextProjectId);
@@ -105,12 +83,7 @@ export const closeWorkflow = ({ closingProjectId, nextProjectId }) => {
     }
 };
 
-/**
- * Ensures that a project-workflow is loaded (and loads it, if not) and set it to be the active one.
- * @param {String} projectId
- * @returns {void}
- */
-export const setProjectActiveAndEnsureItsLoadedInBackend = ({ projectId }) => {
+export const setProjectActiveAndEnsureItsLoaded = ({ projectId }: { projectId: string }) => {
     try {
         window.setProjectActiveAndEnsureItsLoaded(projectId);
     } catch (error) {
@@ -119,16 +92,10 @@ export const setProjectActiveAndEnsureItsLoadedInBackend = ({ projectId }) => {
     }
 };
 
-/**
- * Opens the layout editor for a component.
- * @param {String} projectId
- * @param {String} workflowId
- * @returns {void}
- */
-export const openLayoutEditor = ({ projectId, workflowId }) => {
+export const openLayoutEditor = ({ projectId, workflowId }: { projectId: string; workflowId: string; }) => {
     try {
         // returns falsy on success
-        let error = window.openLayoutEditor(projectId, workflowId);
+        const error = window.openLayoutEditor(projectId, workflowId);
         if (error) {
             throw new Error(error);
         }
@@ -137,14 +104,10 @@ export const openLayoutEditor = ({ projectId, workflowId }) => {
     }
 };
 
-/**
- * Opens workflow coach preference page
- * @returns {void}
- */
 export const openWorkflowCoachPreferencePage = () => {
     try {
         // returns falsy on success
-        let error = window.openWorkflowCoachPreferencePage();
+        const error = window.openWorkflowCoachPreferencePage();
         if (error) {
             throw new Error(error);
         }
@@ -153,18 +116,14 @@ export const openWorkflowCoachPreferencePage = () => {
     }
 };
 
-/**
- * @typedef SpaceProvider
- * @property {String} id
- * @property {String} name
- * @property {Boolean} connected
- * @property {'AUTHENTICATED' | 'ANONYMOUS' | 'AUTOMATIC'} connectionMode
- */
-/**
- * Get all available space providers
- * @returns {Record<string, SpaceProvider>}
- */
-export const fetchAllSpaceProviders = () => {
+export interface SpaceProvider {
+    id: string;
+    name: string;
+    connected: boolean;
+    connectionMode: 'AUTHENTICATED' | 'ANONYMOUS' | 'AUTOMATIC'
+}
+
+export const fetchAllSpaceProviders = (): Promise<Record<string, SpaceProvider>> => {
     try {
         const spaceProviders = window.getSpaceProviders();
         return Promise.resolve(JSON.parse(spaceProviders));
@@ -174,7 +133,11 @@ export const fetchAllSpaceProviders = () => {
     }
 };
 
-export const connectSpaceProvider = ({ spaceProviderId }) => {
+export interface SpaceUser {
+    name: string;
+}
+
+export const connectSpaceProvider = ({ spaceProviderId }: SpaceProviderId) => {
     try {
         const user = window.connectSpaceProvider(spaceProviderId);
         return JSON.parse(user);
@@ -184,7 +147,7 @@ export const connectSpaceProvider = ({ spaceProviderId }) => {
     }
 };
 
-export const disconnectSpaceProvider = ({ spaceProviderId }) => {
+export const disconnectSpaceProvider = ({ spaceProviderId }: SpaceProviderId) => {
     try {
         const user = window.disconnectSpaceProvider(spaceProviderId);
         return Promise.resolve(JSON.parse(user));
@@ -194,7 +157,11 @@ export const disconnectSpaceProvider = ({ spaceProviderId }) => {
     }
 };
 
-export const importFiles = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
+export const importFiles = ({
+    spaceProviderId = 'local',
+    spaceId = 'local',
+    itemId
+}: FullSpacePath) => {
     try {
         // Returns true on success
         return window.importFiles(spaceProviderId, spaceId, itemId);
@@ -204,7 +171,11 @@ export const importFiles = ({ spaceProviderId = 'local', spaceId = 'local', item
     }
 };
 
-export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', itemId }) => {
+export const importWorkflows = ({
+    spaceProviderId = 'local',
+    spaceId = 'local',
+    itemId
+}: FullSpacePath) => {
     try {
         // Returns true on success
         return window.importWorkflows(spaceProviderId, spaceId, itemId);
@@ -214,37 +185,29 @@ export const importWorkflows = ({ spaceProviderId = 'local', spaceId = 'local', 
     }
 };
 
-/**
- * Checks for name collisions and returns a String of an option
- * that the user chose to handle existing conflict
- *
- * @param {Object} arg
- * @param {String} [arg.spaceProviderId]
- * @param {String} [arg.spaceId]
- * @param {Array<String>} arg.itemIds
- * @param {String} arg.destWorkflowGroupItemId
- *
- * @returns {'OVERWRITE' | 'NOOP' | 'AUTORENAME' | 'CANCEL'}
- */
 export const getNameCollisionStrategy = ({
     spaceProviderId = 'local',
     spaceId = 'local',
     itemIds,
-    destWorkflowGroupItemId
-}) => {
+    destinationItemId
+}: SpaceProviderId & SpaceId & { itemIds: string[]; destinationItemId: string }) => {
     try {
         const collisionStrategy = window.getNameCollisionStrategy(
-            spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId
+            spaceProviderId, spaceId, itemIds, destinationItemId
         );
         return collisionStrategy;
     } catch (error) {
         consola.error(`Could not check for collisions`,
-            { spaceProviderId, spaceId, itemIds, destWorkflowGroupItemId, error });
+            { spaceProviderId, spaceId, itemIds, destinationItemId, error });
         throw error;
     }
 };
 
-export const copyBetweenSpaces = ({ spaceProviderId = 'local', spaceId = 'local', itemIds }) => {
+export const copyBetweenSpaces = ({
+    spaceProviderId = 'local',
+    spaceId = 'local',
+    itemIds
+}: SpaceProviderId & SpaceId & { itemIds: string[] }) => {
     try {
         return window.copyBetweenSpaces(spaceProviderId, spaceId, itemIds);
     } catch (error) {
@@ -253,7 +216,13 @@ export const copyBetweenSpaces = ({ spaceProviderId = 'local', spaceId = 'local'
     }
 };
 
-export const saveWorkflowAs = ({ projectId, workflowPreviewSvg }) => {
+export const saveWorkflowAs = ({
+    projectId,
+    workflowPreviewSvg
+}: {
+    projectId: string;
+    workflowPreviewSvg: string
+}) => {
     try {
         window.saveWorkflowAs(projectId, workflowPreviewSvg);
     } catch (error) {
@@ -261,4 +230,3 @@ export const saveWorkflowAs = ({ projectId, workflowPreviewSvg }) => {
         throw error;
     }
 };
-

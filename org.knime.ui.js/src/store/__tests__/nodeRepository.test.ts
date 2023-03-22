@@ -1,6 +1,7 @@
-import { expect, describe, it, vi } from 'vitest';
+import { expect, describe, it, vi, afterEach } from 'vitest';
 /* eslint-disable max-lines */
-import { mockVuexStore } from '@/test/utils';
+import { deepMocked, mockVuexStore } from '@/test/utils';
+import { API } from '@api';
 
 const getNodesGroupedByTagsResponse = {
     groups: [{
@@ -147,6 +148,8 @@ const getNodeTemplatesResponse = { 'org.knime.ext.h2o.nodes.frametotable.H2OFram
     }
 } };
 
+const mockedAPI = deepMocked(API);
+
 describe('Node Repository store', () => {
     const createStore = async () => {
         const availablePortTypes = {
@@ -164,20 +167,10 @@ describe('Node Repository store', () => {
             }
         };
 
-        const searchNodesMock = vi.fn().mockReturnValue(searchNodesResponse);
-        const getNodesGroupedByTagsMock = vi.fn().mockReturnValue(getNodesGroupedByTagsResponse);
-        const getNodeDescriptionMock = vi.fn().mockReturnValue(getNodeDescriptionResponse);
-        const getNodeTemplatesMock = vi.fn().mockReturnValue(getNodeTemplatesResponse);
-
-        // remove any caching on mocks
-        vi.resetModules();
-        vi.doMock('@api', () => ({
-            __esModule: true,
-            searchNodes: searchNodesMock,
-            getNodesGroupedByTags: getNodesGroupedByTagsMock,
-            getNodeDescription: getNodeDescriptionMock,
-            getNodeTemplates: getNodeTemplatesMock
-        }), { virtual: true });
+        mockedAPI.noderepository.searchNodes.mockReturnValue(searchNodesResponse);
+        mockedAPI.noderepository.getNodesGroupedByTags.mockReturnValue(getNodesGroupedByTagsResponse);
+        mockedAPI.node.getNodeDescription.mockReturnValue(getNodeDescriptionResponse);
+        mockedAPI.noderepository.getNodeTemplates.mockReturnValue(getNodeTemplatesResponse);
 
         const store = mockVuexStore({
             nodeRepository: await import('@/store/nodeRepository'),
@@ -193,13 +186,13 @@ describe('Node Repository store', () => {
         return {
             dispatchSpy,
             availablePortTypes,
-            store,
-            searchNodesMock,
-            getNodesGroupedByTagsMock,
-            getNodeDescriptionMock,
-            getNodeTemplatesMock
+            store
         };
     };
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
 
     it('creates an empty store', async () => {
         const { store } = await createStore();
@@ -485,12 +478,12 @@ describe('Node Repository store', () => {
 
         describe('getAllNodes', () => {
             it('gets all nodes', async () => {
-                const { store, getNodesGroupedByTagsMock, availablePortTypes } = await createStore();
+                const { store, availablePortTypes } = await createStore();
 
                 await store.dispatch('nodeRepository/getAllNodes', { append: true });
                 expect(store.state.nodeRepository.categoryPage).toBe(1);
 
-                expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
+                expect(mockedAPI.noderepository.getNodesGroupedByTags).toHaveBeenCalledWith({
                     numNodesPerTag: 6,
                     tagsOffset: 6,
                     tagsLimit: 3,
@@ -509,13 +502,13 @@ describe('Node Repository store', () => {
             });
 
             it('gets all nodes without append and with a bigger tagsLimits', async () => {
-                const { store, getNodesGroupedByTagsMock } = await createStore();
+                const { store } = await createStore();
 
                 await store.dispatch('nodeRepository/getAllNodes', { append: false });
 
                 expect(store.state.nodeRepository.categoryPage).toBe(0);
                 expect(store.state.nodeRepository.topNodeSearchPage).toBe(0);
-                expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
+                expect(mockedAPI.noderepository.getNodesGroupedByTags).toHaveBeenCalledWith({
                     numNodesPerTag: 6,
                     tagsOffset: 0,
                     tagsLimit: 6,
@@ -524,13 +517,13 @@ describe('Node Repository store', () => {
             });
 
             it('skips getting nodes when all categories were loaded', async () => {
-                const { store, getNodesGroupedByTagsMock } = await createStore();
+                const { store } = await createStore();
                 const categories = [{}, {}, {}];
                 store.commit('nodeRepository/setNodesPerCategories', { groupedNodes: categories });
                 store.commit('nodeRepository/setTotalNumCategories', categories.length);
 
                 await store.dispatch('nodeRepository/getAllNodes', { append: true });
-                expect(getNodesGroupedByTagsMock).not.toHaveBeenCalled();
+                expect(API.noderepository.getNodesGroupedByTags).not.toHaveBeenCalled();
             });
         });
 
@@ -545,18 +538,19 @@ describe('Node Repository store', () => {
                 });
 
                 it('searches for topNodes', async () => {
-                    const { store, searchNodesMock, availablePortTypes } = await createStore();
+                    const { store, availablePortTypes } = await createStore();
                     store.commit('nodeRepository/setQuery', 'lookup');
                     await store.dispatch('nodeRepository/searchNodes');
 
                     expect(store.state.nodeRepository.topNodeSearchPage).toBe(0);
-                    expect(searchNodesMock).toHaveBeenCalledWith({
+                    expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
                         limit: 100,
                         offset: 0,
-                        query: 'lookup',
+                        q: 'lookup',
                         tags: [],
+                        portTypeId: null,
                         nodesPartition: 'IN_COLLECTION'
                     });
                     expect(store.state.nodeRepository.totalNumTopNodes).toBe(searchNodesResponse.totalNumNodes);
@@ -567,20 +561,21 @@ describe('Node Repository store', () => {
                 });
 
                 it('searches for topNodes with append=true', async () => {
-                    const { store, searchNodesMock, availablePortTypes } = await createStore();
+                    const { store, availablePortTypes } = await createStore();
                     const dummyNode = { dummy: true };
                     store.commit('nodeRepository/setTopNodes', [dummyNode]);
                     store.commit('nodeRepository/setQuery', 'lookup');
                     await store.dispatch('nodeRepository/searchNodes', { append: true });
 
                     expect(store.state.nodeRepository.topNodeSearchPage).toBe(1);
-                    expect(searchNodesMock).toHaveBeenCalledWith({
+                    expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
                         limit: 100,
                         offset: 100,
-                        query: 'lookup',
+                        q: 'lookup',
                         tags: [],
+                        portTypeId: null,
                         nodesPartition: 'IN_COLLECTION'
                     });
                     expect(store.state.nodeRepository.totalNumTopNodes).toBe(searchNodesResponse.totalNumNodes);
@@ -617,19 +612,20 @@ describe('Node Repository store', () => {
                 });
 
                 it('searches for bottomNodes', async () => {
-                    const { store, searchNodesMock, availablePortTypes } = await createStore();
-                    searchNodesMock.mockReturnValue(searchBottomNodesResponse);
+                    const { store, availablePortTypes } = await createStore();
+                    mockedAPI.noderepository.searchNodes.mockReturnValue(searchBottomNodesResponse);
                     store.commit('nodeRepository/setQuery', 'lookup');
                     await store.dispatch('nodeRepository/searchNodes', { bottom: true });
 
                     expect(store.state.nodeRepository.bottomNodeSearchPage).toBe(0);
-                    expect(searchNodesMock).toHaveBeenCalledWith({
+                    expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
                         limit: 100,
                         offset: 0,
-                        query: 'lookup',
+                        q: 'lookup',
                         tags: [],
+                        portTypeId: null,
                         nodesPartition: 'NOT_IN_COLLECTION'
                     });
                     expect(store.state.nodeRepository.totalNumBottomNodes).toBe(
@@ -642,21 +638,22 @@ describe('Node Repository store', () => {
                 });
 
                 it('searches for bottomNodes with append=true', async () => {
-                    const { store, searchNodesMock, availablePortTypes } = await createStore();
-                    searchNodesMock.mockReturnValue(searchBottomNodesResponse);
+                    const { store, availablePortTypes } = await createStore();
+                    mockedAPI.noderepository.searchNodes.mockReturnValue(searchBottomNodesResponse);
                     const dummyNode = { dummy: true };
                     store.commit('nodeRepository/setBottomNodes', [dummyNode]);
                     store.commit('nodeRepository/setQuery', 'lookup');
                     await store.dispatch('nodeRepository/searchNodes', { append: true, bottom: true });
 
                     // expect(store.state.nodeRepository.bottomNodeSearchPage).toBe(1);
-                    expect(searchNodesMock).toHaveBeenCalledWith({
+                    expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith({
                         allTagsMatch: true,
                         fullTemplateInfo: true,
                         limit: 100,
                         offset: 100,
-                        query: 'lookup',
+                        q: 'lookup',
                         tags: [],
+                        portTypeId: null,
                         nodesPartition: 'NOT_IN_COLLECTION'
                     });
                     expect(store.state.nodeRepository.totalNumBottomNodes).toBe(
@@ -783,7 +780,7 @@ describe('Node Repository store', () => {
 
         describe('node description', () => {
             it('fetches node description', async () => {
-                const { store, getNodeDescriptionMock, availablePortTypes } = await createStore();
+                const { store, availablePortTypes } = await createStore();
                 const selectedNode = {
                     id: 'node1',
                     nodeFactory: {
@@ -794,7 +791,7 @@ describe('Node Repository store', () => {
 
                 const result = await store.dispatch('nodeRepository/getNodeDescription', { selectedNode });
 
-                expect(getNodeDescriptionMock).toHaveBeenCalled();
+                expect(mockedAPI.node.getNodeDescription).toHaveBeenCalled();
                 expect(result).toEqual(withPorts([getNodeDescriptionResponse], availablePortTypes)[0]);
             });
 

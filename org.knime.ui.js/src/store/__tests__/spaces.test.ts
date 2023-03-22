@@ -1,24 +1,13 @@
 import { expect, describe, afterEach, it, vi } from 'vitest';
 /* eslint-disable max-lines */
-import { mockVuexStore } from '@/test/utils';
+import { deepMocked, mockVuexStore } from '@/test/utils';
 
-import { fetchWorkflowGroupContent,
-    openWorkflow,
-    fetchAllSpaceProviders,
-    fetchSpaceProvider,
-    connectSpaceProvider,
-    createWorkflow,
-    createFolder,
-    importFiles,
-    importWorkflows,
-    deleteItems,
-    moveItems,
-    copyBetweenSpaces } from '@api';
+import { API } from '@api';
+import { APP_ROUTES } from '@/router/appRoutes';
 
 import * as spacesConfig from '../spaces';
-import { APP_ROUTES } from '@/router';
 
-vi.mock('@api');
+const mockedAPI = deepMocked(API);
 
 const fetchWorkflowGroupContentResponse = {
     id: 'root',
@@ -66,8 +55,8 @@ describe('spaces store', () => {
             }
         });
 
-        fetchAllSpaceProviders.mockReturnValue(mockFetchAllProvidersResponse);
-        fetchWorkflowGroupContent.mockResolvedValue(mockFetchWorkflowGroupResponse);
+        mockedAPI.desktop.fetchAllSpaceProviders.mockReturnValue(mockFetchAllProvidersResponse);
+        mockedAPI.space.listWorkflowGroup.mockResolvedValue(mockFetchWorkflowGroupResponse);
 
         const dispatchSpy = vi.spyOn(store, 'dispatch');
 
@@ -183,8 +172,8 @@ describe('spaces store', () => {
                 await store.dispatch('spaces/fetchAllSpaceProviders');
 
                 expect(store.state.spaces.spaceProviders).toEqual(mockFetchAllProvidersResponse);
-                expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'local' });
-                expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'local' });
+                expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
             });
 
             it('should keep user data set by connectProvider', async () => {
@@ -224,11 +213,11 @@ describe('spaces store', () => {
                     }
                 };
 
-                fetchSpaceProvider.mockResolvedValue({ spaces: [mockSpace] });
+                mockedAPI.space.getSpaceProvider.mockResolvedValue({ spaces: [mockSpace] });
 
                 const data = await store.dispatch('spaces/fetchProviderSpaces', { id: 'hub1' });
 
-                expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
 
                 expect(data).toEqual(expect.objectContaining({
                     connected: true,
@@ -246,12 +235,12 @@ describe('spaces store', () => {
                 store.state.spaces.spaceProviders = {
                     hub1: {}
                 };
-                fetchSpaceProvider.mockResolvedValue(mockSpaces);
-                connectSpaceProvider.mockResolvedValue(mockUser);
+                mockedAPI.space.getSpaceProvider.mockResolvedValue(mockSpaces);
+                mockedAPI.desktop.connectSpaceProvider.mockReturnValue(mockUser);
                 await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
 
-                expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
-                expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(mockedAPI.desktop.connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
                 expect(store.state.spaces.spaceProviders.hub1.user).toEqual(mockUser);
                 expect(store.state.spaces.spaceProviders.hub1.spaces).toEqual(mockSpaces.spaces);
             });
@@ -263,11 +252,11 @@ describe('spaces store', () => {
                     hub1: {}
                 };
 
-                connectSpaceProvider.mockResolvedValue(null);
+                mockedAPI.desktop.connectSpaceProvider.mockReturnValue(null);
                 await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
 
-                expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
-                expect(fetchSpaceProvider).not.toHaveBeenCalled();
+                expect(mockedAPI.desktop.connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(mockedAPI.space.getSpaceProvider).not.toHaveBeenCalled();
             });
         });
 
@@ -305,7 +294,7 @@ describe('spaces store', () => {
                 const { store } = loadStore();
 
                 await store.dispatch('spaces/fetchWorkflowGroupContent', { itemId: 'bar' });
-                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+                expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
                     spaceProviderId: 'local',
                     spaceId: 'local',
                     itemId: 'bar'
@@ -321,7 +310,7 @@ describe('spaces store', () => {
                 store.state.spaces.activeSpaceProvider = { id: 'mockProviderId' };
                 store.state.spaces.activeSpace.spaceId = 'mockSpaceId';
                 await store.dispatch('spaces/fetchWorkflowGroupContent', { itemId: 'bar' });
-                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+                expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
                     spaceProviderId: 'mockProviderId',
                     spaceId: 'mockSpaceId',
                     itemId: 'bar'
@@ -334,7 +323,7 @@ describe('spaces store', () => {
                 const { store } = loadStore();
 
                 await store.dispatch('spaces/changeDirectory', { pathId: 'baz' });
-                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
+                expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'baz' })
                 );
             });
@@ -349,7 +338,7 @@ describe('spaces store', () => {
                 };
 
                 await store.dispatch('spaces/changeDirectory', { pathId: '..' });
-                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
+                expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level1' })
                 );
             });
@@ -358,7 +347,7 @@ describe('spaces store', () => {
         describe('createWorkflow', () => {
             it('should create a new workflow', async () => {
                 const { store, dispatchSpy } = loadStore();
-                createWorkflow.mockResolvedValue({ id: 'NewFile', type: 'Workflow' });
+                mockedAPI.space.createWorkflow.mockResolvedValue({ id: 'NewFile', type: 'Workflow' });
 
                 store.state.spaces.activeSpace = {
                     spaceId: 'local',
@@ -375,16 +364,21 @@ describe('spaces store', () => {
                     'application/updateGlobalLoader',
                     { loading: true, config: { displayMode: 'transparent' } }
                 );
-                expect(createWorkflow).toHaveBeenCalledWith(
-                    expect.objectContaining({ spaceId: 'local', itemId: 'level2', workflowName })
+                expect(mockedAPI.space.createWorkflow).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        spaceProviderId: 'local',
+                        spaceId: 'local',
+                        itemId: 'level2',
+                        itemName: workflowName
+                    })
                 );
-                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
+                expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level2' })
                 );
-                expect(openWorkflow).toHaveBeenCalledWith({
+                expect(mockedAPI.desktop.openWorkflow).toHaveBeenCalledWith({
                     spaceId: 'local',
                     spaceProviderId: 'local',
-                    workflowItemId: 'NewFile'
+                    itemId: 'NewFile'
                 });
                 expect(dispatchSpy).toHaveBeenCalledWith(
                     'application/updateGlobalLoader',
@@ -396,7 +390,7 @@ describe('spaces store', () => {
         describe('createFolder', () => {
             it('should create a new folder', async () => {
                 const { store } = loadStore();
-                createFolder.mockResolvedValue({ id: 'NewFolder', type: 'WorkflowGroup' });
+                mockedAPI.space.createWorkflowGroup.mockResolvedValue({ id: 'NewFolder', type: 'WorkflowGroup' });
 
                 store.state.spaces.activeSpace = {
                     spaceId: 'local',
@@ -407,10 +401,10 @@ describe('spaces store', () => {
                 };
 
                 await store.dispatch('spaces/createFolder');
-                expect(createFolder).toHaveBeenCalledWith(
+                expect(mockedAPI.space.createWorkflowGroup).toHaveBeenCalledWith(
                     expect.objectContaining({ spaceId: 'local', itemId: 'level2' })
                 );
-                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
+                expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level2' })
                 );
             });
@@ -428,8 +422,8 @@ describe('spaces store', () => {
                     'application/updateGlobalLoader',
                     { loading: true, config: { displayMode: 'transparent' } }
                 );
-                expect(openWorkflow).toHaveBeenCalledWith({
-                    spaceId: 'local', spaceProviderId: 'local', workflowItemId: 'foobar'
+                expect(mockedAPI.desktop.openWorkflow).toHaveBeenCalledWith({
+                    spaceId: 'local', spaceProviderId: 'local', itemId: 'foobar'
                 });
                 expect(dispatchSpy).toHaveBeenCalledWith(
                     'application/updateGlobalLoader',
@@ -448,8 +442,8 @@ describe('spaces store', () => {
                     spaceId: 'remote1',
                     spaceProviderId: 'knime1'
                 });
-                expect(openWorkflow).toHaveBeenCalledWith({
-                    spaceId: 'remote1', spaceProviderId: 'knime1', workflowItemId: 'foobar'
+                expect(mockedAPI.desktop.openWorkflow).toHaveBeenCalledWith({
+                    spaceId: 'remote1', spaceProviderId: 'knime1', itemId: 'foobar'
                 });
             });
 
@@ -466,7 +460,7 @@ describe('spaces store', () => {
                 const mockRouter = { push: vi.fn() };
                 store.dispatch('spaces/openWorkflow', { workflowItemId: 'dummy', $router: mockRouter });
 
-                expect(openWorkflow).not.toHaveBeenCalled();
+                expect(mockedAPI.desktop.openWorkflow).not.toHaveBeenCalled();
                 expect(mockRouter.push).toHaveBeenCalledWith({
                     name: APP_ROUTES.WorkflowPage,
                     params: { projectId: 'dummyProject', workflowId: 'root' }
@@ -486,7 +480,7 @@ describe('spaces store', () => {
                 };
 
                 store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' });
-                expect(importFiles).toHaveBeenCalledWith({
+                expect(mockedAPI.desktop.importFiles).toHaveBeenCalledWith({
                     itemId: 'level1',
                     spaceId: 'local',
                     spaceProviderId: 'local'
@@ -504,7 +498,7 @@ describe('spaces store', () => {
                 };
 
                 store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' });
-                expect(importWorkflows).toHaveBeenCalledWith({
+                expect(mockedAPI.desktop.importWorkflows).toHaveBeenCalledWith({
                     itemId: 'level2',
                     spaceId: 'local',
                     spaceProviderId: 'local'
@@ -521,7 +515,9 @@ describe('spaces store', () => {
                 };
 
                 await store.dispatch('spaces/deleteItems', { itemIds });
-                expect(deleteItems).toHaveBeenCalledWith({ spaceId: 'local', spaceProviderId: 'local', itemIds });
+                expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith(
+                    { spaceId: 'local', spaceProviderId: 'local', itemIds }
+                );
             });
 
             it('should re-fetch workflow group content', async () => {
@@ -551,14 +547,14 @@ describe('spaces store', () => {
                 };
 
                 await store.dispatch('spaces/moveItems', { itemIds, destWorkflowGroupItemId, collisionStrategy });
-                expect(moveItems).toHaveBeenCalledWith({
+                expect(mockedAPI.space.moveItems).toHaveBeenCalledWith({
                     spaceProviderId: 'local',
                     spaceId: 'local',
                     itemIds,
                     destWorkflowGroupItemId,
-                    collisionStrategy
+                    collisionHandling: collisionStrategy
                 });
-                expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
+                expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level2' })
                 );
             });
@@ -576,7 +572,7 @@ describe('spaces store', () => {
                 };
 
                 await store.dispatch('spaces/copyBetweenSpaces', { itemIds });
-                expect(copyBetweenSpaces).toHaveBeenCalledWith({
+                expect(mockedAPI.desktop.copyBetweenSpaces).toHaveBeenCalledWith({
                     spaceId: 'local',
                     spaceProviderId: 'local',
                     itemIds

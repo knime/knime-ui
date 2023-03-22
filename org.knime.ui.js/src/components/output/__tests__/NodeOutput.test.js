@@ -17,8 +17,6 @@ import PortTabs from '../PortTabs.vue';
 import PortViewTabOutput from '../PortViewTabOutput.vue';
 import NodeViewTabOutput from '../NodeViewTabOutput.vue';
 
-vi.mock('@api', () => ({ getPortView: vi.fn() }), { virtual: true });
-
 vi.mock('@knime/ui-extension-service');
 
 describe('NodeOutput.vue', () => {
