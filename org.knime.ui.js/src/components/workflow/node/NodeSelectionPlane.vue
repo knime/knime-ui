@@ -78,7 +78,7 @@ export default {
       :fill="$colors.selection.activeBackground"
       :stroke="$colors.selection.activeBorder"
       :stroke-width="$shapes.selectedNodeStrokeWidth"
-      :rx="$shapes.selectedNodeBorderRadius"
+      :rx="$shapes.selectedItemBorderRadius"
     />
   </g>
 </template>

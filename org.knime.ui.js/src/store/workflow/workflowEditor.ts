@@ -415,6 +415,7 @@ export const actions = {
         const { activeWorkflow: { info: { containerId } } } = state;
         const selectedNodes = rootGetters['selection/selectedNodes'];
         const selectedConnections = rootGetters['selection/selectedConnections'];
+        const selectedAnnotationIds = rootGetters['selection/selectedAnnotationIds'];
         const deletableNodeIds = selectedNodes
             .filter((node) => node.allowedActions.canDelete)
             .map((node) => node.id);
@@ -431,13 +432,13 @@ export const actions = {
             .filter((connection) => !connection.allowedActions.canDelete)
             .map((connection) => connection.id);
 
-        if (deletableNodeIds.length || deletableConnectionIds.length) {
+        if (deletableNodeIds.length || deletableConnectionIds.length || selectedAnnotationIds.length) {
             API.workflowCommand.Delete({
                 projectId,
                 workflowId: containerId,
                 nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
-                connectionIds: deletableConnectionIds ? deletableConnectionIds : [],
-                annotationIds: []
+                connectionIds: deletableConnectionIds.length ? deletableConnectionIds : [],
+                annotationIds: selectedAnnotationIds.length ? selectedAnnotationIds : []
             });
             dispatch('selection/deselectAllObjects', null, { root: true });
         }

@@ -68,8 +68,9 @@ export const defaultMetaNodeBarHeight = 500;
 
 export const gridSize = { x: 5, y: 5 };
 
-export const selectedNodeBorderRadius = 4;
+export const selectedItemBorderRadius = 4;
 export const selectedNodeStrokeWidth = 1;
+export const selectedAnnotationStrokeWidth = 2;
 
 // annotations use a virtual "point" size that needs to be converted to pixels by this factor
 export const annotationsFontSizePointToPixelFactor = 1.0; // used to be: 4/3

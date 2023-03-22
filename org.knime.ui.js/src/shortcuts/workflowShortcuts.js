@@ -120,9 +120,10 @@ export default {
 
             const selectedNodes = $store.getters['selection/selectedNodes'];
             const selectedConnections = $store.getters['selection/selectedConnections'];
+            const selectedAnnotations = $store.getters['selection/selectedAnnotations'];
 
             // disable if nothing selected
-            if (selectedNodes.length === 0 && selectedConnections.length === 0) {
+            if (selectedNodes.length === 0 && selectedConnections.length === 0 && selectedAnnotations.length === 0) {
                 return false;
             }
             const allSelectedDeletable =

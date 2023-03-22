@@ -6,9 +6,9 @@ import { mixin as VueClickAway } from 'vue3-click-away';
 import type { Bounds, WorkflowAnnotation } from '@/api/gateway-api/generated-api';
 import { API } from '@api';
 
+import { getMetaOrCtrlKey } from '@/util/navigator';
 import TransformControls from './TransformControls.vue';
 import LegacyAnnotationText from './LegacyAnnotationText.vue';
-
 /**
  * A workflow annotation, a rectangular box containing text.
  */
@@ -76,8 +76,9 @@ computed: {
     }
 },
 methods: {
-    ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation']),
-    onClick() {
+    ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
+    ...mapActions('application', ['toggleContextMenu']),
+    onLeftClick() {
         this.isEditing = true;
         return this.isSelected
             ? this.deselectAnnotation(this.annotation.id)
@@ -87,8 +88,23 @@ methods: {
         // this.selectAnnotation(annotationId);
         // this.isSelected = true;
     },
-    setSelectionPreview(preview) {
-        this.selectionPreview = preview;
+    onContextMenu(event) {
+        const metaOrCtrlKey = getMetaOrCtrlKey();
+
+        if (event.shiftKey || metaOrCtrlKey) {
+            // Multi select
+            this.selectAnnotation(this.id);
+        } else if (!this.isSelected) {
+            // single select
+            this.deselectAllObjects();
+            this.selectAnnotation(this.id);
+        }
+
+        this.toggleContextMenu({ event });
+        // this.$store.dispatch('application/toggleContextMenu', { event });
+    },
+    setSelectionPreview(type) {
+        this.selectionPreview = type;
     },
     unselect() {
         this.isEditing = false;
@@ -97,10 +113,10 @@ methods: {
 
     moveAnnotation(bounds: Bounds) {
         // rect outside foreignObject
-        //         fill="transparent"
-        //   :stroke="$colors.selection.activeBorder"
-        //   :stroke-width="2"
-        //   :rx="$shapes.selectedNodeBorderRadius"
+    //     fill="transparent"
+    //     :stroke="$colors.selection.activeBorder"
+    //   :stroke-width="$shapes.selectedAnnotationStrokeWidth"
+    //   :rx="$shapes.selectedItemBorderRadius"
         API.workflowCommand.TransformWorkflowAnnotation({
             projectId: this.projectId,
             workflowId: this.activeWorkflowId,
@@ -127,8 +143,9 @@ methods: {
         :width="transformedBounds.width"
         :height="transformedBounds.height"
         :class="['annotation-foreign-object', { selected: isSelected }]"
-        @click="onClick"
+        @click="onLeftClick"
         @dblclick="isSelected ? (isEditing = true) : null"
+        @pointerdown.right.stop="onContextMenu"
       >
         <LegacyAnnotationText
           :text="annotation.text"

@@ -51,7 +51,7 @@ export default {
         visibleItems: []
     }),
     computed: {
-        ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'selectedConnections']),
+        ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'selectedConnections', 'selectedAnnotations']),
 
         // map visible items to menu items and add shortcut information
         menuItems() {
@@ -93,8 +93,9 @@ export default {
         },
         setMenuItems() {
             const areNodesSelected = this.selectedNodes.length > 0;
+            const areAnnotationsSelected = this.selectedAnnotations.length > 0;
             const areConnectionsSelected = this.selectedConnections.length > 0;
-            const isSomethingSelected = areNodesSelected || areConnectionsSelected;
+            const isSomethingSelected = areNodesSelected || areConnectionsSelected || areAnnotationsSelected;
             const isLoopEnd = Boolean(this.singleSelectedNode?.loopInfo?.allowedActions);
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
             const hasLegacyFlowVariableDialog = this.singleSelectedNode &&

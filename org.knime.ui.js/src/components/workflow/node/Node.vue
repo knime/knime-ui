@@ -6,6 +6,7 @@ import { mapActions, mapState, mapGetters } from 'vuex';
 
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
 import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
+import { getMetaOrCtrlKey } from '@/util/navigator';
 
 import NodeTorso from './torso/NodeTorso.vue';
 import NodeDecorators from './decorators/NodeDecorators.vue';
@@ -273,12 +274,14 @@ export default {
          * Left-Click                      => Select only this node
          * Left-Click & Shift or Ctrl/Meta => Add/Remove this node to/from selection
          */
-        onLeftMouseClick(e) {
+        onLeftMouseClick(event) {
             if (this.isDragging) {
                 return;
             }
 
-            if (e.shiftKey || e.ctrlKey || e.metaKey) {
+            const metaOrCtrlKey = getMetaOrCtrlKey();
+
+            if (event.shiftKey || metaOrCtrlKey) {
                 // Multi select
                 if (this.isNodeSelected(this.id)) {
                     this.deselectNode(this.id);
@@ -302,7 +305,9 @@ export default {
                 return;
             }
 
-            if (event.shiftKey || event.ctrlKey || event.metaKey) {
+            const metaOrCtrlKey = getMetaOrCtrlKey();
+
+            if (event.shiftKey || metaOrCtrlKey) {
                 // Multi select
                 this.selectNode(this.id);
             } else if (!this.isNodeSelected(this.id)) {
