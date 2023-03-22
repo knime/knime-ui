@@ -5,8 +5,6 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { portBar, connectorPosition } from '@/mixins';
 import connectorPath from '@/util/connectorPath';
 
-import { KnimeMIME } from '@/mixins/dropNode';
-
 /**
  * A curved line, connecting one node's output with another node's input port.
  * Must be embedded in an `<svg>` element.
@@ -47,8 +45,7 @@ export default {
     },
     data: () => ({
         suggestDelete: false,
-        hover: false,
-        isDraggedOver: false
+        hover: false
     }),
     computed: {
         ...mapState('workflow', {
@@ -153,19 +150,6 @@ export default {
             // lock this connector in place to prevent it from jumping back before being removed
             // TODO: NXT-954 enable locking again if know when the node will be really removed (only backend knows)
             // this.suggestDelete = 'locked';
-        },
-        onConnectorDragEnter(dragEvent) {
-            if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
-                this.isDraggedOver = true;
-            }
-        },
-        onConnectorDragLeave() {
-            this.isDraggedOver = false;
-        },
-        onConnectorDragDrop() {
-            // TODO https://knime-com.atlassian.net/browse/NXT-481
-            // this.insertNode({ connectionId: this.id, nodeFactory: dragEvent.dataTransfer.getData(KnimeMIME) });
-            this.isDraggedOver = false;
         }
     }
 };
@@ -184,9 +168,6 @@ export default {
       @mouseleave="hover = false"
       @click.left="onMouseClick"
       @pointerdown.right="onContextMenu"
-      @dragenter="onConnectorDragEnter"
-      @dragleave="onConnectorDragLeave"
-      @drop.stop="onConnectorDragDrop"
     />
     <path
       ref="visiblePath"
@@ -196,8 +177,7 @@ export default {
         'read-only': !isWorkflowWritable,
         highlighted: isHighlighted,
         dashed: streaming,
-        selected: isConnectionSelected(id) && !isDragging,
-        isDraggedOver
+        selected: isConnectionSelected(id) && !isDragging
       }"
       fill="none"
     />
@@ -236,12 +216,6 @@ path:not(.hover-area) {
     stroke-width: var(--highlighted-connector-width-shape);
     stroke: var(--knime-masala);
   }
-
-  /* TODO in https://knime-com.atlassian.net/browse/NXT-481
-  &.isDraggedOver {
-    stroke-width: var(--selected-connector-width-shape);
-    stroke: var(--knime-hibiscus-dark);
-  } */
 
   &.dashed {
     stroke-dasharray: 5;
