@@ -672,6 +672,23 @@ export interface ComponentNodeDescription extends ComponentNodeAndDescription {
 export namespace ComponentNodeDescription {
 }
 /**
+ *
+ * @export
+ * @interface ComposedEvent
+ */
+export interface ComposedEvent extends Event {
+
+    /**
+     *
+     * @type {Array<Event>}
+     * @memberof ComposedEvent
+     */
+    events?: Array<Event>;
+
+}
+
+
+/**
  * Connects two nodes (and by doing that possibly replacing another connection).
  * @export
  * @interface ConnectCommand
@@ -2363,6 +2380,23 @@ export namespace PortType {
         Other = 'other'
     }
 }
+/**
+ *
+ * @export
+ * @interface ProjectDirtyStateEvent
+ */
+export interface ProjectDirtyStateEvent extends Event {
+
+    /**
+     * Mapping from project id to isDirty flag of workflow.
+     * @type {{ [key: string]: boolean; }}
+     * @memberof ProjectDirtyStateEvent
+     */
+    projectIdToIsDirty?: { [key: string]: boolean; };
+
+}
+
+
 /**
  * The metadata for a workflow project, i.e. for the root-workflow.
  * @export
@@ -4098,6 +4132,8 @@ export type EventParams =
 
 export interface EventHandlers {
     WorkflowChangedEvent?(payload: WorkflowChangedEvent): void;
+    ComposedEvent?(payload: ComposedEvent): void;
+    ProjectDirtyStateEvent?(payload: ProjectDirtyStateEvent): void;
     AppStateChangedEvent?(payload: AppStateChangedEvent): void;
     UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;
 }

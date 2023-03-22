@@ -1,18 +1,37 @@
 <script>
 import CloseIcon from '@/assets/cancel.svg';
+import DotIcon from '@/assets/dot.svg';
 
 export default {
     components: {
-        CloseIcon
+        CloseIcon,
+        DotIcon
     },
-
-    emits: ['close']
+    props: {
+        hasUnsavedChanges: {
+            type: Boolean,
+            default: false
+        }
+    },
+    emits: ['close'],
+    data() {
+        return {
+            isHovered: false
+        };
+    }
 };
 </script>
 
 <template>
   <button @click="$emit('close', $event)">
-    <CloseIcon />
+    <DotIcon
+      v-if="hasUnsavedChanges && !isHovered"
+      @mouseover="isHovered = true"
+    />
+    <CloseIcon
+      v-else
+      @mouseleave="isHovered = false"
+    />
   </button>
 </template>
 

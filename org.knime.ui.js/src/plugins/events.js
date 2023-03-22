@@ -8,6 +8,19 @@ import { nodeSize } from '@/style/shapes.mjs';
 export default ({ $store, $router }) => {
     API.event.registerEventHandlers({
         /**
+         * Is a generic event, that holds multiple events (names separated by ':')
+         * Calls all event handlers with their params
+         */
+        ComposedEvent({ events, params, eventHandlers }) {
+            events.forEach((event, ind) => {
+                const handler = eventHandlers.get(event);
+                if (params[ind]) {
+                    handler(params[ind]);
+                }
+            });
+        },
+
+        /**
          * Is triggered by the backend, whenever a change to the workflow has been made/requested
          * Sends a list of json-patch operations to update the frontend's state
          */
@@ -21,6 +34,14 @@ export default ({ $store, $router }) => {
             if (snapshotId) {
                 notifyPatch(snapshotId);
             }
+        },
+
+        /**
+         * Is triggered by the backend, whenever a change to the workflow has been made/requested or the AppState changes
+         * Sends a map with all open project ids and their dirty flag
+         */
+        ProjectDirtyStateEvent({ projectIdToIsDirty }) {
+            $store.dispatch('application/setProjectIdToIsDirty', projectIdToIsDirty);
         },
 
         /**

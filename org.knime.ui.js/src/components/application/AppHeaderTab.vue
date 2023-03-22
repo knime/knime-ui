@@ -38,6 +38,10 @@ export default {
             type: Boolean,
             default: false
         },
+        hasUnsavedChanges: {
+            type: Boolean,
+            default: false
+        },
         isHoveredOver: {
             type: Boolean,
             default: false
@@ -82,6 +86,7 @@ export default {
     <span class="text">{{ truncatedProjectName }}</span>
     <CloseButton
       class="close-icon"
+      :has-unsaved-changes="hasUnsavedChanges"
       @close.stop="$emit('closeWorkflow', projectId)"
     />
   </li>

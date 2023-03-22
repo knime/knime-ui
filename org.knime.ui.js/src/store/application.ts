@@ -65,7 +65,12 @@ export const state = () => ({
     /**
      * an object that maps supported file extensions to their node template id
      */
-    fileExtensionToNodeTemplateId: []
+    fileExtensionToNodeTemplateId: {},
+
+    /**
+     * an object that maps projectIds to the isDirty flag of the workflow
+     */
+    projectIdToIsDirty: {}
 });
 
 export const mutations = {
@@ -148,6 +153,9 @@ export const mutations = {
     },
     setFileExtensionToNodeTemplateId(state, fileExtensionToNodeTemplateId) {
         state.fileExtensionToNodeTemplateId = fileExtensionToNodeTemplateId;
+    },
+    setProjectIdToIsDirty(state, projectIdToIsDirty) {
+        state.projectIdToIsDirty = projectIdToIsDirty;
     }
 };
 
@@ -545,6 +553,10 @@ export const actions = {
             text,
             config: config || { displayMode: 'fullscreen' }
         };
+    },
+
+    setProjectIdToIsDirty({ commit }, projectIdToIsDirty) {
+        commit('setProjectIdToIsDirty', projectIdToIsDirty);
     }
 };
 

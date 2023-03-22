@@ -35,10 +35,18 @@ export default defineComponent({
         };
     },
     computed: {
-        ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow', 'devMode']),
-
+        ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow', 'devMode',
+            'projectIdToIsDirty']),
+        
         isInfoPageActive() {
             return this.$route.name === APP_ROUTES.InfoPage;
+        },
+
+        appHeaderItems() {
+            return this.activeWorkflowGroup.items.map(item => ({
+                ...item,
+                displayOpenIndicator: this.openedWorkflowItems.includes(item.id)
+            }));
         },
 
         isGetStartedPageActive() {
@@ -59,7 +67,7 @@ export default defineComponent({
     },
     watch: {
         activeProjectId() {
-            // prevent tab color flashing when switching workflows
+        // prevent tab color flashing when switching workflows
             if (this.activeProjectId) {
                 this.activeProjectTab = this.activeProjectId;
             }
@@ -132,6 +140,7 @@ export default defineComponent({
               :project-id="projectId"
               :window-width="windowWidth"
               :is-active="activeProjectTab === projectId"
+              :has-unsaved-changes="Boolean(projectIdToIsDirty[projectId])"
               :is-hovered-over="hoveredTab === projectId"
               @hover="hoveredTab = $event"
               @switch-workflow="onProjectTabChange"

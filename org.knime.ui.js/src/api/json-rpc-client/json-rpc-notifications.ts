@@ -6,6 +6,8 @@ type MaybeValidJSONRPC = { isValid: boolean, response: JSONRPCRequest | JSONRPCE
 
 const GENERIC_ERROR_MESSAGE = 'Argument must be a JSON serialized JSON-RPC object';
 
+const COMPOSED_EVENT_NAME = 'ComposedEvent';
+
 const REGISTERED_HANDLERS = new Map<string, Function>();
 
 const createJSONRPCError = (
@@ -71,6 +73,22 @@ const validateFormat = (data: MaybeValidJSONRPC): MaybeValidJSONRPC => {
     return { isValid, response };
 };
 
+const isComposedEvent = (method) => method.includes(':');
+
+const getComposedEvents = (method) => method.split(':');
+
+const validateComposedEvents = (method) => {
+    const methods = getComposedEvents(method);
+    let isValid = Boolean(REGISTERED_HANDLERS.get(COMPOSED_EVENT_NAME)) &&
+        typeof REGISTERED_HANDLERS.get(COMPOSED_EVENT_NAME) === 'function';
+
+    methods.forEach(method => {
+        isValid = isValid && Boolean(REGISTERED_HANDLERS.get(method)) &&
+            typeof REGISTERED_HANDLERS.get(method) === 'function';
+    });
+    return isValid;
+};
+
 const validateMethod = (data: MaybeValidJSONRPC): MaybeValidJSONRPC => {
     if (!data.isValid) {
         return data;
@@ -78,7 +96,12 @@ const validateMethod = (data: MaybeValidJSONRPC): MaybeValidJSONRPC => {
 
     const { id, method } = data.response as JSONRPCRequest;
 
-    const isValid = Boolean(REGISTERED_HANDLERS.get(method)) && typeof REGISTERED_HANDLERS.get(method) === 'function';
+    let isValid;
+    if (isComposedEvent(method)) {
+        isValid = validateComposedEvents(method);
+    } else {
+        isValid = Boolean(REGISTERED_HANDLERS.get(method)) && typeof REGISTERED_HANDLERS.get(method) === 'function';
+    }
 
     const response = isValid
         ? data.response
@@ -115,16 +138,29 @@ export const jsonrpcNotification = function (json: string, ...other: unknown[]) 
     }
 
     const { id, method, params } = response as JSONRPCRequest;
-
     try {
-        const handler = REGISTERED_HANDLERS.get(method);
-        handler(...params);
+        let handlerName, handlerParams;
+
+        if (isComposedEvent(method)) {
+            handlerName = COMPOSED_EVENT_NAME;
+            // parse the event params for each event of the composed event
+            handlerParams =
+                [{ events: getComposedEvents(method), params: params[0].events, eventHandlers: REGISTERED_HANDLERS }];
+        } else {
+            handlerName = method;
+            handlerParams = params;
+        }
+
+        const handler = REGISTERED_HANDLERS.get(handlerName);
+        handler(...handlerParams);
+        
         return JSON.stringify({
             jsonrpc: JSONRPC,
             id,
             result: 'ok'
         });
     } catch (error) {
+        consola.error('JSON-RPC handler error', error);
         const rpcError = createJSONRPCErrorResponse(
             id,
             ErrorCodes.internalError,
