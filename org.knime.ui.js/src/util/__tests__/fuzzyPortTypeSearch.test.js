@@ -25,15 +25,15 @@ describe('Port Type Search', () => {
 
     it('should sort all non-suggested port types alphabetically', () => {
         expect(doSearch('')).toStrictEqual([
-            { name: 'B-Type', typeId: 'b' },
-            { name: 'C-Type', typeId: 'c' },
-            { name: 'D-Type', typeId: 'd' }
+            { name: 'B-Type', typeId: 'b', description: 'No description available' },
+            { name: 'C-Type', typeId: 'c', description: 'No description available' },
+            { name: 'D-Type', typeId: 'd', description: 'No description available' }
         ]);
     });
 
     it('shoul search and match entries based on input query', () => {
         expect(doSearch('b')).toStrictEqual([
-            { name: 'B-Type', typeId: 'b' }
+            { name: 'B-Type', typeId: 'b', description: 'No description available' }
         ]);
     });
 
@@ -43,11 +43,11 @@ describe('Port Type Search', () => {
 
     it('should place suggested ports at the top of the search results', () => {
         expect(doSearch('', { suggestedTypeIds })).toStrictEqual([
-            { name: 'Suggested 1', typeId: 'suggested-1' },
-            { name: 'Suggested 2', typeId: 'suggested-2' },
-            { name: 'B-Type', typeId: 'b' },
-            { name: 'C-Type', typeId: 'c' },
-            { name: 'D-Type', typeId: 'd' }
+            { name: 'Suggested 1', typeId: 'suggested-1', description: 'No description available' },
+            { name: 'Suggested 2', typeId: 'suggested-2', description: 'No description available' },
+            { name: 'B-Type', typeId: 'b', description: 'No description available' },
+            { name: 'C-Type', typeId: 'c', description: 'No description available' },
+            { name: 'D-Type', typeId: 'd', description: 'No description available' }
         ]);
     });
 });
