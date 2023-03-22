@@ -8,6 +8,11 @@ import type {
 
 type AvailablePortTypes = Record<string, PortType>
 type FullPortType = PortType & { typeId: string; type?: string; }
+type PortGroupDescription = {
+    groupName: string;
+    groupDescription: string;
+    types: Array<FullPortType & { typeName: string }>
+}
 
 /**
  * Maps a port `typeId` string or a object with a `typeId` property to a port object with all the properties of the
@@ -33,6 +38,7 @@ export const toPortObject = (
 
     const result = {
         ...fullPortObject,
+        description: 'No description available', // Default text if no description available
         typeId: isStringInput ? input : input?.typeId
     };
 
@@ -54,14 +60,17 @@ export const toPortObject = (
  * @returns {Function} A function that maps the raw port group description as it was received to the format needed to
  * to render it.
  */
-const toPortGroupDescription =
-    (availablePortTypes: AvailablePortTypes) => (portGroupDescription: DynamicPortGroupDescription) => {
-        const { identifier, description, name, supportedPortTypes } = portGroupDescription;
-        const types: Array<FullPortType & { typeName: string }> = supportedPortTypes
+const toPortGroupDescription = (
+    availablePortTypes: AvailablePortTypes
+) => (
+    portGroupDescription: DynamicPortGroupDescription
+): PortGroupDescription => {
+        const { identifier, description, supportedPortTypes } = portGroupDescription;
+        const types = supportedPortTypes
             .map(toPortObject(availablePortTypes))
-            .map(supportedType => ({
-                ...supportedType,
-                typeName: name
+            .map(fullPortType => ({
+                ...fullPortType,
+                typeName: (fullPortType.name.substring(0, 20)) + (fullPortType.name.length > 20 ? '...' : '')
             }));
 
         return {
