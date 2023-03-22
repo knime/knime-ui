@@ -45,13 +45,13 @@ export const actions = {
             { root: true }
         );
 
-        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
+        const workflowPreviewSvg = generateWorkflowPreview(svgElement, isCanvasEmpty);
 
         API.desktop.saveWorkflow({ projectId, workflowPreviewSvg });
     },
 
     /* Tell the backend to unload this workflow from memory */
-    async closeWorkflow({ dispatch, commit, rootState }, closingProjectId) {
+    closeWorkflow({ dispatch, commit, rootState }, closingProjectId) {
         const { openProjects, activeProjectId } = rootState.application;
         const nextProjectId = getNextProjectId({
             openProjects,
@@ -59,7 +59,7 @@ export const actions = {
             closingProjectId
         });
 
-        const didClose = await API.desktop.closeWorkflow({ closingProjectId, nextProjectId });
+        const didClose = API.desktop.closeWorkflow({ closingProjectId, nextProjectId });
 
         if (!didClose) {
             return;
@@ -101,7 +101,7 @@ export const actions = {
             { root: true }
         );
 
-        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
+        const workflowPreviewSvg = generateWorkflowPreview(svgElement, isCanvasEmpty);
 
         API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
     }

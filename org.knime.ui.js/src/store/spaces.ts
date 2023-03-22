@@ -139,7 +139,7 @@ export const actions = {
     async connectProvider({ dispatch, commit, state }, { spaceProviderId }) {
         try {
             commit('setIsLoading', true);
-            const user = await API.desktop.connectSpaceProvider({ spaceProviderId });
+            const user = API.desktop.connectSpaceProvider({ spaceProviderId });
 
             if (user) {
                 // Only fetch spaces when a valid user was returned
@@ -157,9 +157,9 @@ export const actions = {
         }
     },
 
-    async disconnectProvider({ commit, state }, { spaceProviderId }) {
+    disconnectProvider({ commit, state }, { spaceProviderId }) {
         try {
-            await API.desktop.disconnectSpaceProvider({ spaceProviderId });
+            API.desktop.disconnectSpaceProvider({ spaceProviderId });
 
             const { spaceProviders } = state;
             const { name, connectionMode } = spaceProviders[spaceProviderId];
@@ -300,13 +300,13 @@ export const actions = {
         );
     },
 
-    async importToWorkflowGroup({ state, dispatch, getters }, { importType }) {
+    importToWorkflowGroup({ state, dispatch, getters }, { importType }) {
         const { id: spaceProviderId } = state.activeSpaceProvider;
         const { spaceId } = state.activeSpace;
         const itemId = getters.currentWorkflowGroupId;
         const success = importType === 'FILES'
-            ? await API.desktop.importFiles({ spaceProviderId, spaceId, itemId })
-            : await API.desktop.importWorkflows({ spaceProviderId, spaceId, itemId });
+            ? API.desktop.importFiles({ spaceProviderId, spaceId, itemId })
+            : API.desktop.importWorkflows({ spaceProviderId, spaceId, itemId });
 
         if (success) {
             dispatch('fetchWorkflowGroupContent', { itemId });

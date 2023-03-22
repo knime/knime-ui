@@ -217,7 +217,7 @@ export default {
          * @param {Payload} eventPayload
          * @returns {Void}
          */
-        async onMoveItems({ sourceItems, targetItem, onComplete }) {
+        onMoveItems({ sourceItems, targetItem, onComplete }) {
             const openedWorkflows = this.openProjects.filter(workflow => sourceItems.includes(workflow.origin.itemId));
             const isInsideFolder = this.openProjects.filter(
                 (project) => project.origin.ancestorItemIds
@@ -240,7 +240,7 @@ export default {
             }
 
             const destWorkflowGroupItemId = this.pathToItemId(targetItem);
-            const collisionStrategy = await API.desktop.getNameCollisionStrategy({
+            const collisionStrategy = API.desktop.getNameCollisionStrategy({
                 spaceProviderId: this.activeSpaceProvider.id,
                 spaceId: this.activeSpace.spaceId,
                 itemIds: sourceItems,

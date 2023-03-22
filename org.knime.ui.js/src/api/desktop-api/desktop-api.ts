@@ -49,12 +49,13 @@ export const saveWorkflow = ({ projectId, workflowPreviewSvg }: { projectId: str
 export type SpaceProviderId = { spaceProviderId: string; }
 export type SpaceId = { spaceId: string; }
 export type SpaceItemId = { itemId: string; }
+export type FullSpacePath = SpaceProviderId & SpaceId & SpaceItemId;
 
 export const openWorkflow = ({
     spaceId = 'local',
     itemId,
     spaceProviderId = 'local'
-}: SpaceProviderId & SpaceId & SpaceItemId) => {
+}: FullSpacePath) => {
     try {
         // returns falsy on success
         const error = window.openWorkflow(spaceId, itemId, spaceProviderId);
@@ -160,7 +161,7 @@ export const importFiles = ({
     spaceProviderId = 'local',
     spaceId = 'local',
     itemId
-}: SpaceProviderId & SpaceId & SpaceItemId) => {
+}: FullSpacePath) => {
     try {
         // Returns true on success
         return window.importFiles(spaceProviderId, spaceId, itemId);
@@ -174,7 +175,7 @@ export const importWorkflows = ({
     spaceProviderId = 'local',
     spaceId = 'local',
     itemId
-}: SpaceProviderId & SpaceId & SpaceItemId) => {
+}: FullSpacePath) => {
     try {
         // Returns true on success
         return window.importWorkflows(spaceProviderId, spaceId, itemId);

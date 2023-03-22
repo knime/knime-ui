@@ -236,7 +236,7 @@ describe('spaces store', () => {
                     hub1: {}
                 };
                 mockedAPI.space.getSpaceProvider.mockResolvedValue(mockSpaces);
-                mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(mockUser);
+                mockedAPI.desktop.connectSpaceProvider.mockReturnValue(mockUser);
                 await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
 
                 expect(mockedAPI.desktop.connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
@@ -252,7 +252,7 @@ describe('spaces store', () => {
                     hub1: {}
                 };
 
-                mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(null);
+                mockedAPI.desktop.connectSpaceProvider.mockReturnValue(null);
                 await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
 
                 expect(mockedAPI.desktop.connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
