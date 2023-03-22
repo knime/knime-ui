@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest';
-import { rectangleIntersection, areaCoverage, adjustToGrid } from '../geometry';
+import { rectangleIntersection, areaCoverage, snapToGrid } from '../geometry';
 
 describe('Geometry', () => {
     describe('rectangle intersection', () => {
@@ -52,7 +52,7 @@ describe('Geometry', () => {
         });
     });
 
-    describe('adjustToGrid', () => {
+    describe('snapToGrid', () => {
         it.each([
             // gridSize, initialCoordinates, expectedCoordinates
             [5, { x: 7, y: 32 }, { x: 5, y: 30 }],
@@ -62,10 +62,10 @@ describe('Geometry', () => {
             'returns the correct coordinates for a grid of size %s',
             (gridSize, initialCoordinates, expectedCoordinates) => {
                 expect(
-                    adjustToGrid({
-                        coords: initialCoordinates,
-                        gridSize: { x: gridSize, y: gridSize }
-                    })
+                    {
+                        x: snapToGrid(initialCoordinates.x, gridSize),
+                        y: snapToGrid(initialCoordinates.y, gridSize)
+                    }
                 ).toEqual(expectedCoordinates);
             }
         );

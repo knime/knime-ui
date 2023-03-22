@@ -1,6 +1,6 @@
 import { registerNotificationHandler } from '../json-rpc-client';
 
-interface DesktopEventHandlers {
+export interface DesktopEventHandlers {
     SaveAndCloseWorkflowsEvent(payload: { projectIds: Array<string>, params: unknown[] }): void;
     ImportURIEvent(payload: { x: number; y: number }): void;
     ProgressEvent(payload: { status: 'STARTED' | 'FINISHED'; text: string }): void;

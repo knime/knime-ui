@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
-import { adjustToGrid } from '@/util/geometry';
+import { snapToGrid } from '@/util/geometry';
 
 import { escapeStack } from '@/mixins';
 
@@ -63,7 +63,7 @@ export default {
                 y: this.position.y + this.movePreviewDelta.y
             };
         },
-        
+
         // returns the amount the object should be translated. This is either the position of the objec, or the position + the dragged amount
         translationAmount() {
             return this.isNodeSelected(this.id) ? this.combinedPosition : this.position;
@@ -103,12 +103,12 @@ export default {
                 this.deselectAllObjects();
             }
             this.selectNode(this.id);
-            
-            const gridAdjustedPosition = adjustToGrid({
-                coords: this.position,
-                gridSize: this.$shapes.gridSize
-            });
-            
+
+            const gridAdjustedPosition = {
+                x: snapToGrid(this.position.x),
+                y: snapToGrid(this.position.y)
+            };
+
             // account for any delta between the current position and its grid-adjusted equivalent.
             // this is useful for nodes that might be not aligned to the grid, so that they can be brought back in
             // during the drag operation
@@ -133,21 +133,18 @@ export default {
             }
 
             const { nodeSize } = this.$shapes;
-            const gridSize = altKey ? { x: 1, y: 1 } : this.$shapes.gridSize;
+            const snapSize = altKey ? 1 : this.$shapes.gridSize.x;
 
             // get absolute coordinates
             const [canvasX, canvasY] = this.screenToCanvasCoordinates([clientX, clientY]);
 
             // Adjusted For Grid Snapping
-            const deltas = adjustToGrid({
-                coords: {
-                    // adjust the deltas using `nodeSize` to make sure the reference is from the center of the node
-                    x: canvasX - this.startPos.x - nodeSize / 2,
-                    y: canvasY - this.startPos.y - nodeSize / 2
-                },
-                gridSize
-            });
-            
+            const deltas = {
+                // adjust the deltas using `nodeSize` to make sure the reference is from the center of the node
+                x: snapToGrid(canvasX - this.startPos.x - nodeSize / 2, snapSize),
+                y: snapToGrid(canvasY - this.startPos.y - nodeSize / 2, snapSize)
+            };
+
             // prevent unneeded dispatches if the position hasn't changed
             if (this.movePreviewDelta.x !== deltas.x || this.movePreviewDelta.y !== deltas.y) {
                 this.setMovePreview({

@@ -1,3 +1,7 @@
+import { gsap } from 'gsap';
+import * as shapes from '@/style/shapes.mjs';
+
+
 /**
  * Finds the intersection of A and B
  * @param { Object } A area A
@@ -52,29 +56,18 @@ export const rectangleIntersection = (A, B) => {
  * @returns { Number } coverage of A by B
  */
 export const areaCoverage = (A, B) => {
-    let intersection = rectangleIntersection(A, B);
+    const intersection = rectangleIntersection(A, B);
     if (!intersection) {
         return 0;
     }
 
-    let areaA = A.width * A.height;
-    let areaIntersection = intersection.width * intersection.height;
+    const areaA = A.width * A.height;
+    const areaIntersection = intersection.width * intersection.height;
 
     return areaIntersection / areaA;
 };
 
 /**
- * Adjust a given coordinate point to its closes position on a grid of given size (provided by the gridSize parameter)
- * @typedef {Object} Point
- * @property {number} x - The X Coordinate
- * @property {number} y - The Y Coordinate
- *
- * @param {Object} param
- * @param {Point} param.coords
- * @param {Point} [param.gridSize] grid size. defaults to { x: 1, y: 1 }
- * @returns {Point} the grid adjusted coordinates
+ * Adjust a given coordinate point to its closest position on the grid
  */
-export const adjustToGrid = ({ coords, gridSize = { x: 1, y: 1 } }) => ({
-    x: Math.round(coords.x / gridSize.x) * gridSize.x,
-    y: Math.round(coords.y / gridSize.y) * gridSize.y
-});
+export const snapToGrid = (value: number, snapSize = shapes.gridSize.x): number => gsap.utils.snap(snapSize, value);

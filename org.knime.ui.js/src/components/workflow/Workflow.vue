@@ -52,7 +52,7 @@ export default {
     <WorkflowAnnotation
       v-for="annotation of workflow.workflowAnnotations"
       :key="`annotation-${annotation.id}`"
-      v-bind="annotation"
+      :annotation="annotation"
     />
 
     <!-- Node Selection Plane Layer -->
