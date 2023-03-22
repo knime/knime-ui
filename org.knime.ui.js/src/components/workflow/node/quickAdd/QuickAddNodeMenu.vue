@@ -388,6 +388,21 @@ export default {
     padding-top: 3px;
   }
 
+  .search-bar {
+    font-family: "Roboto Condensed", sans-serif;
+    height: 40px;
+    font-size: 17px;
+
+    &:hover {
+      background-color: var(--knime-silver-sand-semi);
+    }
+
+    &:focus-within {
+      background-color: var(--knime-white);
+      border-color: var(--knime-masala);
+    }
+  }
+
   & .recommendations {
     overflow-y: auto;
     scrollbar-width: thin;
