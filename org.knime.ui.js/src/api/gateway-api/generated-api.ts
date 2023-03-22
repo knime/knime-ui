@@ -2394,19 +2394,13 @@ export namespace RemovePortCommand {
 export interface ReplaceNodeCommand extends WorkflowCommand {
 
     /**
-     * 
-     * @type {XY}
-     * @memberof ReplaceNodeCommand
-     */
-    position: XY;
-    /**
-     * 
+     *
      * @type {NodeFactoryKey}
      * @memberof ReplaceNodeCommand
      */
     nodeFactory: NodeFactoryKey;
     /**
-     * 
+     * the id of the node to be replaced
      * @type {string}
      * @memberof ReplaceNodeCommand
      */
@@ -2660,14 +2654,14 @@ export interface StyleRange {
 
 
 /**
- * Changes the size (widht and height) and position (x, y) of a workflow annotation.
+ * Changes the size (width and height) and position (x, y) of a workflow annotation.
  * @export
  * @interface TransformWorkflowAnnotationCommand
  */
 export interface TransformWorkflowAnnotationCommand extends WorkflowCommand {
 
     /**
-     * the id of the annotation to resize
+     * the id of the annotation to transform
      * @type {string}
      * @memberof TransformWorkflowAnnotationCommand
      */
@@ -3709,17 +3703,18 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 	 
  	/**
-	 * Replace a node with a new one.
-	 */
+     * Replace a node with a new one.
+     */
 	ReplaceNode(
 		params: { projectId: string, workflowId: string } & Omit<ReplaceNodeCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
-		return workflow(rpcClient).executeWorkflowCommand({
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ReplaceNode }
 		});
+		return postProcessCommandResponse(commandResponse);
 	},	
 	 
  	/**
@@ -3858,7 +3853,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 	 
  	/**
-     * Changes the size (widht and height) and position (x, y) of a workflow annotation.
+     * Changes the size (width and height) and position (x, y) of a workflow annotation.
      */
 	TransformWorkflowAnnotation(
 		params: { projectId: string, workflowId: string } & Omit<TransformWorkflowAnnotationCommand, 'kind'>
@@ -3875,14 +3870,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
   }
 }
 
-export type EventParams =
+type EventParams =
     | (WorkflowChangedEventType & { typeId: 'WorkflowChangedEventType' })
     | (AppStateChangedEventType & { typeId: 'AppStateChangedEventType' })
     | (SelectionEventType & { typeId: 'SelectionEventType' })
     | (UpdateAvailableEventType & { typeId: 'UpdateAvailableEventType' })
 ;
 
-export interface EventHandlers {
+interface EventHandlers {
     WorkflowChangedEvent?(payload: WorkflowChangedEvent): void;
     AppStateChangedEvent?(payload: AppStateChangedEvent): void;
     UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;

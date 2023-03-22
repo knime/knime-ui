@@ -228,7 +228,7 @@ export const actions = {
         });
     },
 
-    replaceNode({ state: { activeWorkflow } }, { nodeId, position, nodeFactory }) {
+    replaceNode({ state: { activeWorkflow } }, { nodeId, nodeFactory }) {
         const projectId = activeWorkflow.projectId;
         const workflowId = activeWorkflow.info.containerId;
 
@@ -236,7 +236,6 @@ export const actions = {
             projectId,
             workflowId,
             nodeId,
-            position,
             nodeFactory
         });
     },
