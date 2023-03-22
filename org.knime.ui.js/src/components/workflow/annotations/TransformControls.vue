@@ -16,14 +16,19 @@ import {
 
 export default defineComponent({
     props: {
-        disabled: {
+        isSelected: {
             type: Boolean,
-            default: true
+            default: false
         },
 
         initialValue: {
             type: Object as PropType<Bounds>,
             default: () => ({ x: 0, y: 0, width: 0, height: 0 })
+        },
+
+        showSelection: {
+            type: Boolean,
+            default: false
         }
     },
 
@@ -115,15 +120,18 @@ export default defineComponent({
     <slot :transformed-bounds="innerValue" />
 
     <rect
-      v-if="!disabled"
+      v-if="showSelection"
       :width="innerValue.width"
       :height="innerValue.height"
       :x="innerValue.x"
       :y="innerValue.y"
       class="transform-box"
+      :stroke="$colors.selection.activeBorder"
+      :stroke-width="$shapes.selectedAnnotationStrokeWidth"
+      :rx="$shapes.selectedItemBorderRadius"
     />
 
-    <template v-if="!disabled">
+    <template v-if="isSelected">
       <rect
         v-for="direction in directions"
         :key="direction"
@@ -149,8 +157,6 @@ export default defineComponent({
 
 .transform-box {
     fill: transparent;
-    stroke-width: 1px;
-    stroke: var(--control-color);
     z-index: 1;
 }
 
