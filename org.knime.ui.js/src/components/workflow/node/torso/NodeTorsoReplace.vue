@@ -1,7 +1,10 @@
 <script>
 export default {
     props: {
-        isDraggedOver: { type: Boolean, required: true, default: false }
+        isDraggedOver: {
+            type: Boolean,
+            default: false
+        }
     }
 };
 </script>

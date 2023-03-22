@@ -3870,14 +3870,14 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
   }
 }
 
-type EventParams =
+export type EventParams =
     | (WorkflowChangedEventType & { typeId: 'WorkflowChangedEventType' })
     | (AppStateChangedEventType & { typeId: 'AppStateChangedEventType' })
     | (SelectionEventType & { typeId: 'SelectionEventType' })
     | (UpdateAvailableEventType & { typeId: 'UpdateAvailableEventType' })
 ;
 
-interface EventHandlers {
+export interface EventHandlers {
     WorkflowChangedEvent?(payload: WorkflowChangedEvent): void;
     AppStateChangedEvent?(payload: AppStateChangedEvent): void;
     UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;
