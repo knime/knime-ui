@@ -1,9 +1,11 @@
+import { onBeforeUnmount, onMounted } from 'vue';
+
 // Stack of tuple<VueComponent, { onEscape }>
 let stack = [];
 
 /* Defines the EscapeStack-Mixin for a Vue Component.
    Example usage of mixin:
-   
+
     export default {
         mixins: [
             escapeStack({
@@ -16,7 +18,7 @@ let stack = [];
                 // belong to the same group will execute all their handlers as well
                 // (with their corresponding component instance) when the escape key is pressed
                 group: 'GROUP_NAME',
-                
+
                 // Will keep the stack entry in the stack even after the handler has executed. This is useful for
                 // components that do not destroy after escape is pressed and want to keep the escape handling behavior
                 // for as long as they're mounted. Destroying the component will still remove the entry, even if this
@@ -46,7 +48,13 @@ const runAllEntries = (_stack, predicateFn) => {
         // run the calls backwards (from most recent to oldest)
         .reverse()
         // call handler with the correct context applied
-        .forEach(([context, handler]) => handler.call(context));
+        .forEach(([context, handler]) => {
+            if (typeof context === 'string') {
+                handler();
+            } else {
+                handler.call(context);
+            }
+        });
 };
 
 const handleGroupStackEntries = (_stack) => {
@@ -63,8 +71,12 @@ const handleGroupStackEntries = (_stack) => {
 const handleSingleStackEntry = (_stack) => {
     const [component, { onEscape }] = getLastEntry(_stack);
 
-    // using the component as "this"-argument for onEscape
-    onEscape.call(component);
+    if (typeof component === 'string') {
+        onEscape();
+    } else {
+        // using the component as "this"-argument for onEscape
+        onEscape.call(component);
+    }
 
     return _stack.slice(0, -1);
 };
@@ -95,4 +107,16 @@ export const escapePressed = () => {
             ? handleGroupStackEntries(stack)
             : handleSingleStackEntry(stack);
     }
+};
+
+export const useEscapeStack = ({ onEscape, group = null, alwaysActive = false }) => {
+    const id = window.crypto.randomUUID();
+
+    onMounted(() => {
+        stack.push([id, { onEscape, group, alwaysActive }]);
+    });
+
+    onBeforeUnmount(() => {
+        stack = stack.filter(([component]) => component !== id);
+    });
 };

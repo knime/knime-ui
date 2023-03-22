@@ -1,0 +1,253 @@
+<script setup lang="ts">
+import { inject, computed } from 'vue';
+import { useStore } from 'vuex';
+import { directive as vClickAway } from 'vue3-click-away';
+
+import type { NodePort, XY, PortType } from '@/api/gateway-api/generated-api';
+import { useTooltip, type TooltipDefinition } from '@/composables/useTooltip';
+import * as $shapes from '@/style/shapes.mjs';
+
+import { toPortObject } from '@/util/portDataMapper';
+
+import Port from '@/components/common/Port.vue';
+import NodePortActions from './NodePortActions.vue';
+import NodePortActiveConnector from './NodePortActiveConnector.vue';
+
+import { usePortDragging } from './usePortDragging';
+
+interface Props {
+  direction: 'in' | 'out';
+  nodeId: string | null;
+  relativePosition: [number, number];
+  port: NodePort;
+  targeted?: boolean;
+  selected?: boolean;
+  disableQuickNodeAdd?: boolean;
+}
+
+const store = useStore();
+
+const props = withDefaults(defineProps<Props>(), {
+    relativePosition: () => [0, 0],
+    selected: false,
+    targeted: false,
+    disableQuickNodeAdd: false
+});
+
+// eslint-disable-next-line func-call-spacing
+const emit = defineEmits<{
+    (e: 'click'): void;
+    (e: 'deselect'): void;
+    (e: 'remove'): void;
+}>();
+
+const anchorPoint = inject<XY>('anchorPoint');
+
+const availablePortTypes = computed<Record<string, PortType>>(() => store.state.application.availablePortTypes);
+
+const quickAddNodeMenu = computed(() => store.state.workflow.quickAddNodeMenu);
+const isShowingQuickAddNodeMenu = computed(() =>
+    // eslint-disable-next-line implicit-arrow-linebreak
+    quickAddNodeMenu.value.isOpen &&
+    props.direction === 'out' &&
+    quickAddNodeMenu.value.props.nodeId === props.nodeId &&
+    quickAddNodeMenu.value.props.port.index === props.port.index
+    // eslint-disable-next-line function-paren-newline
+);
+
+const portTemplate = computed(() => {
+    const template = toPortObject(availablePortTypes.value)(props.port.typeId);
+    if (!template) {
+        throw new Error(`port template ${props.port.typeId} not available in application`);
+    }
+    return template;
+});
+
+const isFlowVariable = computed(() => portTemplate.value.kind === 'flowVariable');
+
+const tooltip = computed<TooltipDefinition>(() => {
+    // table ports have less space than other ports, because the triangular shape naturally creates a gap
+    const gap = portTemplate.value.kind === 'table' ? 6 : 8; // eslint-disable-line no-magic-numbers
+    const { portSize } = $shapes;
+
+    return {
+        position: {
+            x: props.relativePosition[0],
+            y: props.relativePosition[1] - portSize / 2
+        },
+        gap,
+        anchorPoint,
+        title: props.port.name,
+        text: props.port.info,
+        orientation: 'top',
+        hoverable: false
+    };
+});
+
+const openQuickAddNodeMenuAction = (payload) => {
+    store.dispatch('workflow/openQuickAddNodeMenu', payload);
+};
+
+const closeQuickAddNodeMenuAction = () => {
+    store.dispatch('workflow/closeQuickAddNodeMenu');
+};
+
+const { elemRef: tooltipRef } = useTooltip({ tooltip });
+const {
+    didMove,
+    didDragToCompatibleTarget,
+    dragConnector,
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onLostPointerCapture
+} = usePortDragging({
+    direction: props.direction,
+    disableQuickNodeAdd: props.disableQuickNodeAdd,
+    isFlowVariable: isFlowVariable.value,
+    nodeId: props.nodeId,
+    port: props.port,
+
+    onEscPressed: () => {
+        if (isShowingQuickAddNodeMenu.value) {
+            return { removeConnector: false };
+        }
+
+        return { removeConnector: true };
+    },
+
+    onCanvasDrop: () => {
+        const position = {
+            x: dragConnector.value.absolutePoint[0],
+            y: dragConnector.value.absolutePoint[1]
+        };
+
+        openQuickAddNodeMenuAction({
+            props: {
+                position,
+                port: props.port,
+                nodeId: props.nodeId
+            },
+            events: {
+                menuClose: () => {
+                    closeQuickAddNodeMenuAction();
+                    // clear the drag connector
+                    dragConnector.value = null;
+                }
+            }
+        });
+
+        return { removeConnector: false };
+    }
+});
+
+const onClick = () => {
+    if (didMove.value) {
+        return;
+    }
+
+    emit('click');
+};
+
+const onClose = () => {
+    if (props.selected) {
+        emit('deselect');
+    }
+};
+</script>
+
+<template>
+  <g
+    ref="tooltipRef"
+    v-click-away="() => onClose()"
+    :transform="`translate(${relativePosition})`"
+    :class="{ 'targeted': targeted }"
+    @pointerdown="onPointerDown"
+    @pointerup="onPointerUp"
+    @pointermove.stop="onPointerMove"
+    @lostpointercapture.stop="onLostPointerCapture"
+  >
+    <!-- regular port shown on the workflow -->
+    <Port
+      :port="port"
+      :class="{ 'hoverable-port': !selected }"
+      @click="onClick"
+    />
+
+    <Portal to="selected-port">
+      <Transition name="fade">
+        <NodePortActions
+          v-if="selected"
+          :key="`${nodeId}-${port.index}-${direction}`"
+          :port="port"
+          :anchor-point="anchorPoint"
+          :relative-position="relativePosition"
+          :direction="direction"
+          @action:remove="$emit('remove')"
+          @close="onClose"
+        />
+      </Transition>
+    </Portal>
+
+    <NodePortActiveConnector
+      :port="port"
+      :targeted="targeted"
+      :direction="direction"
+      :drag-connector="dragConnector"
+      :did-drag-to-compatible-target="didDragToCompatibleTarget"
+    />
+  </g>
+</template>
+
+<style lang="postcss" scoped>
+.targeted :deep(.scale) {
+  transform: scale(1.4);
+}
+
+.hoverable-port {
+  & :deep(.scale) {
+    pointer-events: none;
+    transition: transform 0.1s linear;
+  }
+
+  &:hover :deep(.scale) {
+    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
+    transform: scale(1.2);
+  }
+}
+
+:deep(.action-button) {
+  transition: all 150ms ease-in;
+  transform: scale(1);
+}
+
+:deep(.selected-port) {
+  transition: opacity 150ms ease-out;
+  opacity: 1;
+}
+
+.fade-enter-from {
+  & :deep(.action-button) {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  & :deep(.selected-port) {
+    opacity: 0;
+  }
+}
+
+.fade-leave-to {
+  & :deep(.action-button) {
+    transform: scale(0);
+  }
+
+  & :deep(.selected-port) {
+    opacity: 0;
+  }
+}
+
+.fade-leave-active {
+  transition: opacity 150ms ease-out;
+}
+</style>

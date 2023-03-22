@@ -1,0 +1,88 @@
+<script setup lang="ts">
+import { watch, computed } from 'vue';
+
+import type { NodePort } from '@/api/gateway-api/generated-api';
+
+import Port from '@/components/common/Port.vue';
+import Connector from '@/components/workflow/connectors/Connector.vue';
+import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
+import type { Direction } from '@/util/compatibleConnections';
+
+import type { DragConnector } from './types';
+
+interface Props {
+    port: NodePort;
+    dragConnector: DragConnector;
+    direction: Direction;
+    targeted: boolean;
+    didDragToCompatibleTarget: boolean;
+}
+
+const props = defineProps<Props>();
+
+const showAddNodeGhost = computed(() => props.direction === 'out' && !props.didDragToCompatibleTarget);
+
+/*
+ * only in-Ports replace their current connector if a new one is connected
+ * only in-Ports that are connected need to indicate connector replacement
+ * indicate, if this port is targeted for connection
+ * indicate, if this port is the starting point of a new connector
+ */
+const indicateConnectorReplacement = computed(() => {
+    const isConnected = props.port.connectedVia.length > 0;
+
+    return (
+        props.direction === 'in' &&
+        isConnected &&
+        (props.targeted || Boolean(props.dragConnector))
+    );
+});
+
+watch(indicateConnectorReplacement, (indicateReplacement) => {
+    const [incomingConnection] = props.port.connectedVia;
+    const incomingConnector = document.querySelector(`[data-connector-id="${incomingConnection}"]`);
+
+    incomingConnector.dispatchEvent(
+        new CustomEvent('indicate-replacement', {
+            detail: { state: indicateReplacement }
+        })
+    );
+});
+</script>
+
+<template>
+  <Portal
+    v-if="props.dragConnector"
+    to="drag-connector"
+  >
+    <Connector
+      v-bind="props.dragConnector"
+      class="non-interactive"
+      :interactive="false"
+    />
+
+    <Port
+      class="non-interactive"
+      data-test-id="drag-connector-port"
+      :port="port"
+      :transform="`translate(${props.dragConnector.absolutePoint})`"
+    />
+
+    <QuickAddNodeGhost
+      v-if="showAddNodeGhost"
+      class="non-interactive"
+      :position="props.dragConnector.absolutePoint"
+    />
+  </Portal>
+</template>
+
+<style lang="postcss" scoped>
+.non-interactive {
+  pointer-events: none;
+
+  & :deep(.hover-area) {
+    /* overwrite hover-area of ports */
+    pointer-events: none !important;
+  }
+}
+</style>

@@ -1,64 +1,79 @@
+/* eslint-disable @typescript-eslint/no-extra-parens */
+import type { ComponentNode,
+    Connection,
+    MetaNode,
+    NativeNode,
+    WorkflowInfo,
+    NodePort,
+    PortType,
+    PortGroup } from '@/api/gateway-api/generated-api';
 import { toPortObject } from '@/util/portDataMapper';
 
-/**
- * circleDetection returns all nodes that can be connected to startNode without closing a circle
- * @param {String} startNode id of node in question
- * @param {Boolean} downstreamConnection direction of intended connection
- * @param {Array} nodes nodes
- * @param {Array} connections
- * @param {Object} workflowInfo
- * @returns {Set<String>} returns a Set of nodes that startNode can be connected to
- */
-export const circleDetection =
-    ({
-        startNode,
-        downstreamConnection,
-        workflow: {
-            nodes,
-            connections,
-            info: workflowInfo
-        }
-    }) => {
-        // make a set of all nodeIds
-        let compatibleNodes = new Set(Object.keys(nodes));
+export type Direction = 'in' | 'out';
 
-        // if the start node is a metanode then it means we're inside one, and any node
-        // can be connected to the metanode port bar, so we skip bfs
-        if (workflowInfo.containerType === 'metanode' && workflowInfo.containerId === startNode) {
-            return compatibleNodes;
-        }
+export const detectConnectionCircle = ({
+    startNode,
+    downstreamConnection,
+    workflow: {
+        nodes,
+        connections,
+        info: workflowInfo
+    }
+}: {
+    startNode: string;
+    downstreamConnection: boolean;
+    workflow: {
+        nodes: Array<Record<string, NativeNode | ComponentNode | MetaNode>>;
+        connections: Array<Connection>;
+        info: WorkflowInfo;
+    }
+}) => {
+    // make a set of all nodeIds
+    const compatibleNodes = new Set(Object.keys(nodes));
 
-        // do a breadth-first-search upstream / downstream
-        // downstreamConnection means upstream bfs for circle detection
-        let PORTS = [downstreamConnection ? 'inPorts' : 'outPorts'];
-        let NODE = [downstreamConnection ? 'sourceNode' : 'destNode'];
-
-        // start point for bfs
-        let bfs = [startNode];
-
-        while (bfs.length) {
-            let nodeId = bfs.shift();
-
-            // for each port according to search direction
-            nodes[nodeId][PORTS].forEach(port => {
-                // for all connections to / from that port
-                port.connectedVia.forEach(connectionId => {
-                    // add connected node to bfs
-                    let nodeId = connections[connectionId][NODE];
-                    if (compatibleNodes.has(nodeId)) {
-                        bfs.push(nodeId);
-                    }
-                });
-            });
-
-            // every node that can be reached from startNode must not be connected to
-            compatibleNodes.delete(nodeId);
-        }
-
+    // if the start node is a metanode then it means we're inside one, and any node
+    // can be connected to the metanode port bar, so we skip bfs
+    if (workflowInfo.containerType === 'metanode' && workflowInfo.containerId === startNode) {
         return compatibleNodes;
-    };
+    }
 
-const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
+    // do a breadth-first-search upstream / downstream
+    // downstreamConnection means upstream bfs for circle detection
+    const PORTS = [downstreamConnection ? 'inPorts' : 'outPorts'] as const;
+    const NODE = downstreamConnection ? 'sourceNode' : 'destNode' as const;
+
+    // start point for bfs
+    const bfs = [startNode];
+
+    while (bfs.length) {
+        const nodeId = bfs.shift();
+
+        // for each port according to search direction
+        nodes[nodeId][PORTS].forEach(port => {
+            // for all connections to / from that port
+            port.connectedVia.forEach(connectionId => {
+                // add connected node to bfs
+                const nodeId = connections[connectionId][NODE];
+                if (compatibleNodes.has(nodeId)) {
+                    bfs.push(nodeId);
+                }
+            });
+        });
+
+        // every node that can be reached from startNode must not be connected to
+        compatibleNodes.delete(nodeId);
+    }
+
+    return compatibleNodes;
+};
+
+const checkConnectionSupport = (
+    { toPort, connections, targetPortDirection }: {
+        toPort: NodePort,
+        connections: Array<Connection>,
+        targetPortDirection: Direction
+    }
+) => {
     if (targetPortDirection === 'in') {
         const isPortFree = toPort.connectedVia.length === 0;
 
@@ -78,12 +93,19 @@ const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) =>
 
 /**
  * Checks if two ports are compatible and might be connected
- * @param {Object} fromPort
- * @param {Object} toPort
- * @param {Array} availablePortTypes
- * @returns {boolean} if true the ports can be connected
+ * @returns whether the ports can be connected
  */
-export const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
+export const checkPortCompatibility = (
+    {
+        fromPort,
+        toPort,
+        availablePortTypes
+    }: {
+        fromPort: NodePort,
+        toPort: { typeId: string },
+        availablePortTypes: Record<string, PortType>
+    }
+) => {
     const fromPortObjectInfo = toPortObject(availablePortTypes)(fromPort);
     const toPortObjectInfo = toPortObject(availablePortTypes)(toPort);
     const { compatibleTypes } = toPortObjectInfo;
@@ -111,13 +133,21 @@ export const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes })
     // lastly, if port types ids don't match then they can't be connected
     return fromPort.typeId === toPort.typeId;
 };
-// creates an array of [group, supportedPortTypes] entries even for metanodes and components (where the group is null)
 
-const groupAddablePortTypesByPortGroup = ({
-    targetPortGroups,
-    availablePortTypes,
-    targetPortDirection
-}) => {
+type GroupedPortTypes = Array<[string | null, Array<string>]>
+
+// creates an array of [group, supportedPortTypes] entries even for metanodes and components (where the group is null)
+const groupAddablePortTypesByPortGroup = (
+    {
+        targetPortGroups,
+        availablePortTypes,
+        targetPortDirection
+    }: {
+        targetPortGroups: Record<string, PortGroup>,
+        availablePortTypes: Record<string, PortType>,
+        targetPortDirection: Direction
+    }
+): GroupedPortTypes => {
     // use all port types for metanodes and components (we assume them if portGroups is null!)
     if (!targetPortGroups) {
         return [[null, Object.keys(availablePortTypes)]]; // end here
@@ -138,31 +168,38 @@ const groupAddablePortTypesByPortGroup = ({
  * @param {string} canAddPortKey - either canAddInPort or canAddOutPort
  * @returns {Object.<string, Object>} returns an object with the portGroup as key and an object as value
  */
-const transformToPortGroupObject = (groupArray, canAddPortKey) => Object.assign(
-    ...groupArray.map(([groupName, supportedPortTypeIds]) => ({
+const transformToPortGroupObject = (
+    groupArray: GroupedPortTypes,
+    canAddPortKey: 'canAddInPort' | 'canAddOutPort'
+): Record<string, PortGroup> => {
+    const mapped = groupArray.map(([groupName, supportedPortTypeIds]) => ({
         [groupName]: {
             [canAddPortKey]: true,
             supportedPortTypeIds
         }
-    }))
-);
+    }));
+
+    return Object.assign({}, ...mapped);
+};
 
 /**
  * Checks for port compatibility and if it can be connected to that port (e.g. has this port already a connection)
- * @param {Object} fromPort
- * @param {Object} toPort
- * @param {Array} availablePortTypes
- * @param {('in'|'out')} targetPortDirection
- * @param {Array} connections
- * @returns {boolean}
  */
-export const checkCompatibleConnectionAndPort = ({
-    fromPort,
-    toPort,
-    availablePortTypes,
-    targetPortDirection,
-    connections
-}) => {
+export const checkCompatibleConnectionAndPort = (
+    {
+        fromPort,
+        toPort,
+        availablePortTypes,
+        targetPortDirection,
+        connections
+    }: {
+        fromPort: NodePort;
+        toPort: NodePort;
+        availablePortTypes: Record<string, PortType>,
+        targetPortDirection: Direction,
+        connections: Array<Connection>
+    }
+) => {
     const isSupportedConnection = checkConnectionSupport({
         toPort,
         connections,
@@ -186,12 +223,19 @@ export const checkCompatibleConnectionAndPort = ({
  * @param {('in'|'out')}targetPortDirection
  * @returns {Object<string, Object>|null} returns a validPortGroups object or null if incompatible
  */
-export const generateValidPortGroupsForPlaceholderPort = ({
-    fromPort,
-    availablePortTypes,
-    targetPortGroups,
-    targetPortDirection
-}) => {
+export const generateValidPortGroupsForPlaceholderPort = (
+    {
+        fromPort,
+        availablePortTypes,
+        targetPortGroups,
+        targetPortDirection
+    }: {
+        fromPort: NodePort,
+        availablePortTypes: Record<string, PortType>,
+        targetPortGroups: Record<string, PortGroup>,
+        targetPortDirection: Direction
+    }
+) => {
     const addablePortTypesGrouped = groupAddablePortTypesByPortGroup({
         availablePortTypes,
         targetPortGroups,
@@ -199,7 +243,7 @@ export const generateValidPortGroupsForPlaceholderPort = ({
     });
 
     // only add the direct match in the supportedIds array
-    const directMatches = addablePortTypesGrouped.flatMap(
+    const directMatches: GroupedPortTypes = addablePortTypesGrouped.flatMap(
         ([groupName, supportedIds]) => supportedIds.includes(fromPort.typeId)
             ? [[groupName || 'default', [fromPort.typeId]]]
             : []
@@ -212,7 +256,7 @@ export const generateValidPortGroupsForPlaceholderPort = ({
     }
 
     // case 2: compatible matches
-    const compatibleMatches = addablePortTypesGrouped.flatMap(([group, supportedTypeIds]) => {
+    const compatibleMatches: GroupedPortTypes = addablePortTypesGrouped.flatMap(([group, supportedTypeIds]) => {
         const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
             fromPort,
             toPort: { typeId },

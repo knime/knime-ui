@@ -3,7 +3,7 @@ import { mapGetters, mapActions } from 'vuex';
 import { placeholderPosition, portPositions } from '@/util/portShift';
 
 import AddPortPlaceholder from './AddPortPlaceholder.vue';
-import NodePort from './NodePort.vue';
+import NodePort from './NodePort/NodePort.vue';
 
 /**
  * This component renders and handles interactions with a Node's Ports

@@ -1,4 +1,5 @@
 import mitt, { type Emitter } from 'mitt';
+import type { NodePort } from '@/api/gateway-api/generated-api';
 
 type BusEvents = {
     'selection-pointerdown': MouseEvent;
@@ -9,10 +10,10 @@ type BusEvents = {
     'connector-start': {
         validConnectionTargets: Set<string>;
         startNodeId: string;
-        startPort: string;
+        startPort: NodePort;
     },
-    'connector-dropped': never;
-    'connector-end': never;
+    'connector-dropped': null;
+    'connector-end': null;
 }
 
 const emitter = mitt<BusEvents>();

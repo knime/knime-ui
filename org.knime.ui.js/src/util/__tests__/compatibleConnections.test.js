@@ -1,9 +1,9 @@
 import { expect, describe, beforeEach, it } from 'vitest';
 /* eslint-disable dot-notation */
 /* eslint-disable quote-props */
-import { circleDetection, checkPortCompatibility } from '../compatibleConnections';
+import { detectConnectionCircle, checkPortCompatibility } from '../compatibleConnections';
 
-describe('Circle Detection', () => {
+describe('detectConnectionCircle', () => {
     let workflow;
 
     beforeEach(() => {
@@ -87,7 +87,7 @@ describe('Circle Detection', () => {
         ['D', ['E']],
         ['E', ['D']]
     ])('downstream Connection from %s', (startNode, result) => {
-        let compatibleNodes = circleDetection({
+        let compatibleNodes = detectConnectionCircle({
             startNode,
             downstreamConnection: true,
             workflow
@@ -102,7 +102,7 @@ describe('Circle Detection', () => {
         ['B', ['A']],
         ['A', ['B']]
     ])('upstream Connection from %s', (startNode, result) => {
-        let compatibleNodes = circleDetection({
+        let compatibleNodes = detectConnectionCircle({
             startNode,
             downstreamConnection: false,
             workflow
@@ -146,7 +146,7 @@ describe('Circle Detection', () => {
         });
 
         it.each(['A', 'B', 'C', 'D', 'E'])('metanode ports not part of Set for %s', (startNode) => {
-            let compatibleNodes = circleDetection({
+            let compatibleNodes = detectConnectionCircle({
                 startNode,
                 downstreamConnection: false,
                 workflow
@@ -157,7 +157,7 @@ describe('Circle Detection', () => {
         it.each(
             [true, false]
         )('all nodes can connect to metanode bar: downstreamConnection %s', (downstreamConnection) => {
-            let compatibleNodes = circleDetection({
+            let compatibleNodes = detectConnectionCircle({
                 startNode: 'metanode',
                 downstreamConnection,
                 workflow
