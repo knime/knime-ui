@@ -45,7 +45,7 @@ export const actions = {
             { root: true }
         );
 
-        const workflowPreviewSvg = generateWorkflowPreview(svgElement, isCanvasEmpty);
+        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
 
         API.desktop.saveWorkflow({ projectId, workflowPreviewSvg });
     },
@@ -101,7 +101,7 @@ export const actions = {
             { root: true }
         );
 
-        const workflowPreviewSvg = generateWorkflowPreview(svgElement, isCanvasEmpty);
+        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
 
         API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
     }

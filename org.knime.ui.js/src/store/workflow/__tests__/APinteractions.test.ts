@@ -134,7 +134,7 @@ describe('workflow store: AP Interactions', () => {
                     svgElement: dummyEl
                 });
 
-                mockedGenerateWorkflowPreview.mockImplementation((input) => input.outerHTML);
+                mockedGenerateWorkflowPreview.mockImplementation((input) => Promise.resolve(input.outerHTML));
 
                 store.commit('workflow/setActiveWorkflow', {
                     projectId,

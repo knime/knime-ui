@@ -27,11 +27,11 @@ limitations under the License.
 
 /**
  * Outputs the given SVG Element as a string
- * @param {HTMLElement} svg
- * @param {Boolean} skipLicense whether to add the license for the fonts
- * @returns {String} serialized svg element
+ * @param svg
+ * @param skipLicense whether to add the license for the fonts
+ * @returns serialized svg element
  */
-const getSvgContent = (svg, skipLicense) => {
+const getSvgContent = (svg: HTMLElement | SVGSVGElement, skipLicense: boolean = false) => {
     // Get svg source
     const serializer = new XMLSerializer();
     let source = serializer.serializeToString(svg);
@@ -63,47 +63,53 @@ const getSvgContent = (svg, skipLicense) => {
 
 /**
  * Sets the fill style on a given element
- * @param {HTMLElement} element
- * @param {String} fillStyle can be any valid valid for the CSS `fill` property
- * @returns {void}
+ * @param element
+ * @param fillStyle can be any valid valid for the CSS `fill` property
+ * @returns
  */
-const setElementFill = (element, fillStyle = 'none') => {
+const setElementFill = (element: HTMLElement, fillStyle: string): void => {
     element.style.fill = fillStyle;
 };
 
+type PredicateFn = (el: HTMLElement) => boolean
 /**
  * Removes all elements that fullfil the predicate function.
  * NOTE: The function does not apply the predicate to the children of each elements
  *
- * @param {Array<HTMLElement>} elements
- * @param {Function} predicateFn
+ * @param elements
+ * @param predicateFn
  * @returns {void}
  */
-const removeElements = (elements, predicateFn = () => true) => {
+const removeElements = (
+    elements: ReturnType<typeof document.querySelectorAll>,
+    predicateFn: PredicateFn = () => true
+) => {
     elements.forEach(el => {
-        if (predicateFn(el)) {
+        if (predicateFn(el as HTMLElement)) {
             el.parentNode.removeChild(el);
         }
     });
 };
+
+type WorkflowPreviewReturnType = {
+    /** the SVG element clone */
+    svgClone: HTMLElement;
+    /** a function that can be called to clean up the DOM after we're done using the clone */
+    teardown: () => void;
+}
 
 /**
  * Obtains a clone of the provided SVG element. Adding it to the DOM
  * as a child of a hidden parent. We add it to the DOM so that we can
  * get the browser to calculate computed styles
  *
- * @typedef {Object} ReturnType
- * @property {HTMLElement} svgClone the SVG element clone
- * @property {Function} teardown a function that can be called to clean up the DOM after we're done using the clone
- *
- * @param {HTMLElement} element
- * @returns {ReturnType}
+ * @param element
  */
-const getSVGElementClone = (element) => {
+const getSVGElementClone = (element: HTMLElement): WorkflowPreviewReturnType => {
     const div = document.createElement('div');
     div.id = 'NODE_PREVIEW_CONTAINER';
 
-    const svgClone = element.cloneNode(true);
+    const svgClone = element.cloneNode(true) as HTMLElement;
 
     // in order for `getComputedStyle` to work, we need the clone to be part of the
     // DOM Tree.
@@ -124,11 +130,11 @@ const getSVGElementClone = (element) => {
  * Updates the viewBox property on the SVG element by using the same size as
  * the workflow sheet (actual workspace size)
  *
- * @param {HTMLElement} svgClone
- * @param {HTMLElement} workflowSheet
+ * @param svgClone
+ * @param workflowSheet
  * @returns {void}
  */
-const updateViewBox = (svgClone, workflowSheet) => {
+const updateViewBox = (svgClone: HTMLElement, workflowSheet: HTMLElement) => {
     const minX = workflowSheet.getAttribute('x');
     const minY = workflowSheet.getAttribute('y');
     const width = workflowSheet.getAttribute('width');
@@ -168,24 +174,21 @@ const inheritedCssProperties = [
 ];
 
 /**
- * @callback ElementCallback
- * @param {HTMLElement} element
- * @returns {void}
- */
-/**
  * Returns a callback function that will apply all computed styles to an element. Said callback will set the styles
  * (derived from CSS classes) as directly inlined styles to the element and will override values based on the provided
  * (optional) `styleOverrides` parameter.
  * It will recursively also run the same behavior for all of the element's children
  *
- * @param {CSSStyleDeclaration} [styleOverrides] Style overriders
- * @returns {ElementCallback}
+ * @param [styleOverrides] Style overriders
+ * @returns
  */
-const useCSSfromComputedStyles = (styleOverrides = {}) => (element) => {
+const useCSSfromComputedStyles = (
+    styleOverrides: Partial<CSSStyleDeclaration> = {}
+) => <T extends HTMLElement | SVGElement>(element: T) => {
     // run the same behavior for all the element's children
     element.childNodes.forEach((child) => {
         if (child.nodeType === 1 /* Node.ELEMENT_NODE */) {
-            useCSSfromComputedStyles(styleOverrides)(child);
+            useCSSfromComputedStyles(styleOverrides)(child as HTMLElement);
         }
     });
 
@@ -210,10 +213,10 @@ const useCSSfromComputedStyles = (styleOverrides = {}) => (element) => {
  * Returns the base64 encoded contents of the file that will be fetched from the given
  * filepath
  *
- * @param {String} filepath
- * @returns {Promise}
+ * @param filepath
+ * @returns
  */
-const fileToBase64 = async (filepath) => {
+const fileToBase64 = async (filepath): Promise<string> => {
     const dataUrlDeclarationHeaderRegex = /data:.+\/.+;base64,/g;
 
     const blobContent = await fetch(filepath).then((response) => response.blob());
@@ -225,7 +228,7 @@ const fileToBase64 = async (filepath) => {
         reader.onload = function (event) {
             resolve(
                 // remove data url preceding headers to be left only with the base64 encoded string
-                event.target.result.replace(dataUrlDeclarationHeaderRegex, '')
+                (event.target.result as string).replace(dataUrlDeclarationHeaderRegex, '')
             );
         };
 
@@ -237,7 +240,7 @@ const fileToBase64 = async (filepath) => {
 /**
  * Gets base64 string of the fonts used by the SVG preview. It caches the string for
  * further use
- * @returns {Promise<String>}
+ * @returns
  */
 const getFontData = async () => {
     // TODO: NXT-1493 - This cache is never invalidated (updates to the font files) nor is it ever reset or deleted.
@@ -259,10 +262,10 @@ const getFontData = async () => {
  * Appends a style tag in the SVG defs that will contain the required fonts
  * as a base64 data-url
  *
- * @param {HTMLElement} svgElement
+ * @param svgElement
  * @returns {void}
  */
-const addFontStyles = async (svgElement) => {
+const addFontStyles = async (svgElement: HTMLElement) => {
     const styleTag = document.createElement('style');
 
     const fontBase64 = await getFontData();
@@ -283,12 +286,12 @@ const addFontStyles = async (svgElement) => {
  * Generate the preview of a workflow based on the provided SVG element which
  * represents the rendered workflow content.
  *
- * @param {HTMLElement} svgElement root workflow SVG element
- * @param {Boolean} isEmpty whether the canvas is empty
- * @returns {String | null} The contents of the root workflow as an SVG string or null when no element is provided
+ * @param  svgElement root workflow SVG element
+ * @param  isEmpty whether the canvas is empty
+ * @returns  The contents of the root workflow as an SVG string or null when no element is provided
  * as a parameter
  */
-export const generateWorkflowPreview = async (svgElement, isEmpty) => {
+export const generateWorkflowPreview = async (svgElement: HTMLElement, isEmpty: boolean) => {
     if (!svgElement) {
         return null;
     }
@@ -302,7 +305,7 @@ export const generateWorkflowPreview = async (svgElement, isEmpty) => {
     // clone the element so that the original one does not get modified
     const { svgClone, teardown } = getSVGElementClone(svgElement);
 
-    const workflowSheet = svgClone.querySelector('.workflow-sheet');
+    const workflowSheet = svgClone.querySelector('.workflow-sheet') as HTMLElement;
 
     // inline custom fonts to the svg element clone
     await addFontStyles(svgClone);
