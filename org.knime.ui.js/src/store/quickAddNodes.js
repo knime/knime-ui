@@ -9,7 +9,7 @@ import * as nodeSearch from './common/nodeSearch';
 const recommendationLimit = 12;
 
 export const state = () => ({
-    ...nodeSearch.state,
+    ...nodeSearch.state(),
     recommendedNodes: null
 });
 

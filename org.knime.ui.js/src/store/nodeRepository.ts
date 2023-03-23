@@ -11,7 +11,7 @@ const categoryPageSize = 3;
 const firstLoadOffset = 6;
 
 export const state = () => ({
-    ...nodeSearch.state,
+    ...nodeSearch.state(),
 
     /* categories */
     nodesPerCategory: [],
@@ -155,6 +155,6 @@ export const getters = {
         ));
     },
     isSelectedNodeVisible: (state, getters) => getters.searchIsActive
-        ? getters.searchResultsContainSelectedNode
+        ? getters.searchResultsContainNodeId(state.selectedNode?.id)
         : getters.nodesPerCategoryContainSelectedNode
 };

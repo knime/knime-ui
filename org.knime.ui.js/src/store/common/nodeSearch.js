@@ -7,27 +7,29 @@ import { toNodeWithFullPorts } from '@/util/portDataMapper';
 
 const nodeSearchPageSize = 100;
 
-export const state = {
+export const state = () => ({
+    /* basic search params */
     query: '',
     selectedTags: [],
-    // filter for compatible port type ids
+    /* filter for compatible port type ids */
     portTypeId: null,
-
-    searchScrollPosition: 0,
+    /* local state of the bottom nodes */
     isShowingBottomNodes: false,
+    /* ui scroll state */
+    searchScrollPosition: 0,
 
-    // nodes always visible
+    /* nodes always visible */
     topNodes: null,
     totalNumTopNodes: 0,
     topNodeSearchPage: 0,
     topNodesTags: [],
 
-    // nodes that might be hidden if a nodeCollection is active (see application state for that)
+    /* nodes that might be hidden if a nodeCollection is active (see application state for that) */
     bottomNodes: null,
     totalNumBottomNodes: 0,
     bottomNodeSearchPage: 0,
     bottomNodesTags: []
-};
+});
 
 export const mutations = {
     setTopNodeSearchPage(state, pageNumber) {
@@ -42,6 +44,12 @@ export const mutations = {
         let existingNodeIds = state.topNodes.map(node => node.id);
         let newNodes = topNodes.filter(node => !existingNodeIds.includes(node.id));
         state.topNodes.push(...newNodes);
+    },
+
+    addBottomNodes(state, bottomNodes) {
+        let existingNodeIds = state.bottomNodes.map(node => node.id);
+        let newNodes = bottomNodes.filter(node => !existingNodeIds.includes(node.id));
+        state.bottomNodes.push(...newNodes);
     },
 
     setTopNodes(state, topNodes) {
@@ -256,10 +264,9 @@ export const actions = {
 export const getters = {
     hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0,
     searchIsActive: state => Boolean(state.query || state.topNodesTags.length) && state.topNodes !== null,
-    searchResultsContainSelectedNode(state) {
-        return Boolean(state.topNodes?.some(node => node.id === state.selectedNode?.id)) ||
-            (state.isShowingBottomNodes &&
-                Boolean(state.bottomNodes?.some(node => node.id === state.selectedNode?.id)));
+    searchResultsContainNodeId(state) {
+        return (selectedNodeId) => Boolean(state.topNodes?.some(node => node.id === selectedNodeId)) ||
+                (state.isShowingBottomNodes && Boolean(state.bottomNodes?.some(node => node.id === selectedNodeId)));
     },
     tagsOfVisibleNodes: state => {
         const allTags = [
