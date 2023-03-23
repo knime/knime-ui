@@ -5,6 +5,7 @@ import NodeTorsoNormal from 'webapps-common/ui/components/node/NodeTorsoNormal.v
 import NodeTorsoMissing from './NodeTorsoMissing.vue';
 import NodeTorsoUnknown from './NodeTorsoUnknown.vue';
 import NodeTorsoMetanode from './NodeTorsoMetanode.vue';
+import NodeTorsoReplace from './NodeTorsoReplace.vue';
 
 /**
  * Main part of the node icon.
@@ -16,7 +17,8 @@ export default {
         NodeTorsoMissing,
         NodeTorsoMetanode,
         NodeTorsoUnknown,
-        NodeTorsoNormal
+        NodeTorsoNormal,
+        NodeTorsoReplace
     },
     props: {
         /**
@@ -48,6 +50,10 @@ export default {
         executionState: {
             type: String,
             default: null
+        },
+        isDraggedOver: {
+            type: Boolean,
+            defaut: false
         }
     },
     computed: {
@@ -66,26 +72,32 @@ export default {
 </script>
 
 <template>
-  <NodeTorsoMissing
-    v-if="type === 'Missing'"
-    :class="{ 'grabbable': isWritable }"
-  />
-  <NodeTorsoMetanode
-    v-else-if="kind === 'metanode'"
-    :class="{ 'grabbable': isWritable }"
-    :execution-state="executionState"
-  />
-  <NodeTorsoNormal
-    v-else-if="isKnownNode"
-    :is-component="kind === 'component'"
-    :icon="icon"
-    :type="type"
-    :class="{ 'grabbable': isWritable }"
-  />
-  <NodeTorsoUnknown
-    v-else
-    :class="{ 'grabbable': isWritable }"
-  />
+  <g>
+    <NodeTorsoMissing
+      v-if="type === 'Missing'"
+      :class="{ 'grabbable': isWritable }"
+    />
+    <NodeTorsoMetanode
+      v-else-if="kind === 'metanode'"
+      :class="{ 'grabbable': isWritable }"
+      :execution-state="executionState"
+    />
+    <NodeTorsoNormal
+      v-else-if="isKnownNode"
+      :is-component="kind === 'component'"
+      :icon="icon"
+      :type="type"
+      :class="{ 'grabbable': isWritable }"
+    />
+    <NodeTorsoUnknown
+      v-else
+      :class="{ 'grabbable': isWritable }"
+    />
+    <!-- Not using conditional rendering, DOM modifications will trigger DragLeave event -->
+    <NodeTorsoReplace
+      :is-dragged-over="isDraggedOver"
+    />
+  </g>
 </template>
 
 <style lang="postcss" scoped>

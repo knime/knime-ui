@@ -21,6 +21,8 @@ import NodeState from '../NodeState.vue';
 import NodeSelectionPlane from '../NodeSelectionPlane.vue';
 import Node from '../Node.vue';
 
+import { KnimeMIME } from '@/mixins/dropNode';
+
 import '@/plugins/directive-move';
 
 import * as $shapes from '@/style/shapes.mjs';
@@ -97,6 +99,7 @@ describe('Node', () => {
                     cancelNodeExecution: vi.fn(),
                     resetNodes: vi.fn(),
                     openNodeConfiguration: vi.fn(),
+                    replaceNode: vi.fn(),
                     openView: vi.fn(),
                     removeContainerNodePort: vi.fn()
                 },
@@ -176,7 +179,7 @@ describe('Node', () => {
 
         it('renders ports', () => {
             doMount();
-            let nodePorts = wrapper.findComponent(NodePorts);
+            const nodePorts = wrapper.findComponent(NodePorts);
 
             expect(nodePorts.props('nodeId')).toBe(commonNode.id);
             expect(nodePorts.props('inPorts')).toStrictEqual(commonNode.inPorts);
@@ -193,14 +196,14 @@ describe('Node', () => {
         it('renders decorators', () => {
             doMount();
 
-            let decoratorProps = wrapper.findComponent(NodeDecorators).props();
+            const decoratorProps = wrapper.findComponent(NodeDecorators).props();
             expect(props).toMatchObject(decoratorProps);
         });
 
         it('renders ports for metanodes', () => {
             props = { ...metaNode };
             doMount();
-            let nodePorts = wrapper.findComponent(NodePorts);
+            const nodePorts = wrapper.findComponent(NodePorts);
 
             expect(nodePorts.props('isEditable')).toBe(true);
             expect(nodePorts.props('nodeKind')).toBe('metanode');
@@ -209,7 +212,7 @@ describe('Node', () => {
         it('renders ports for components', () => {
             props = { ...componentNode };
             doMount();
-            let nodePorts = wrapper.findComponent(NodePorts);
+            const nodePorts = wrapper.findComponent(NodePorts);
 
             expect(nodePorts.props('isEditable')).toBe(true);
             expect(nodePorts.props('nodeKind')).toBe('component');
@@ -475,13 +478,13 @@ describe('Node', () => {
 
         it('fits the hover-area to the node name', async () => {
             triggerHover(wrapper, true);
-            let { y: oldY, height: oldHeight } = wrapper.find('.hover-area').attributes();
+            const { y: oldY, height: oldHeight } = wrapper.find('.hover-area').attributes();
 
             // increase from 20 to 40 (by 20)
             wrapper.findComponent(NodeName).vm.$emit('height-change', 40);
             await Vue.nextTick();
 
-            let { y, height } = wrapper.find('.hover-area').attributes();
+            const { y, height } = wrapper.find('.hover-area').attributes();
             expect(oldY - y).toBe(20);
             expect(height - oldHeight).toBe(20);
         });
@@ -848,6 +851,43 @@ describe('Node', () => {
             await Vue.nextTick();
 
             expect(wrapper.findComponent(NodeSelectionPlane).props('extraHeight')).toBe(mockHeight);
+        });
+    });
+
+    describe('inserts node when drag and dropped', () => {
+        beforeEach(() => {
+            props = { ...commonNode };
+            doMount();
+        });
+
+        const triggerDragEvent = (element, type, dataTransfer = {}) => {
+            const event = new CustomEvent(type);
+            Object.assign(event, { dataTransfer });
+            element.dispatchEvent(event);
+            return event;
+        };
+
+        it('checks if dragged object is compatible', async () => {
+            const torso = wrapper.findComponent(NodeTorso);
+
+            triggerDragEvent(torso.element, 'dragenter', { types: [KnimeMIME] });
+            await Vue.nextTick();
+            
+            expect(torso.vm.$props.isDraggedOver).toBeTruthy();
+            triggerDragEvent(torso.element, 'dragleave');
+            await Vue.nextTick();
+            expect(torso.vm.$props.isDraggedOver).toBeFalsy();
+        });
+
+        it('replaces node on drop', async () => {
+            const node = wrapper.findComponent(Node);
+
+            const dropEvent = triggerDragEvent(node.element, 'drop', { getData: () => '{ "className": "test" }' });
+            node.vm.onTorsoDragDrop(dropEvent);
+            await Vue.nextTick();
+            expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
+                expect.anything(), { nodeFactory: { className: 'test' }, nodeId: 'root:1' }
+            );
         });
     });
 });

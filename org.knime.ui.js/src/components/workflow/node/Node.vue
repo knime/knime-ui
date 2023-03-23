@@ -17,6 +17,7 @@ import NodeState from './NodeState.vue';
 import NodeSelectionPlane from './NodeSelectionPlane.vue';
 import NodeHoverSizeProvider from './NodeHoverSizeProvider.vue';
 
+import { KnimeMIME } from '@/mixins/dropNode';
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
  * Must be embedded in an `<svg>` element.
@@ -176,7 +177,9 @@ export default {
                 width: 0,
                 height: 20
             },
-            portPositions: { in: [], out: [] }
+            portPositions: { in: [], out: [] },
+            isDraggedOver: false,
+            dragTarget: null
         };
     },
     computed: {
@@ -238,7 +241,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['openNodeConfiguration']),
+        ...mapActions('workflow', ['openNodeConfiguration', 'replaceNode']),
         ...mapActions('application', ['switchWorkflow']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
 
@@ -309,6 +312,27 @@ export default {
             }
 
             this.$store.dispatch('application/toggleContextMenu', { event });
+        },
+
+        onTorsoDragEnter(dragEvent) {
+            if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
+                this.isDraggedOver = true;
+                this.dragTarget = dragEvent.target;
+            }
+        },
+
+        onTorsoDragLeave(dragEvent) {
+            if (this.dragTarget === dragEvent.target) {
+                this.isDraggedOver = false;
+                this.dragTarget = null;
+            }
+        },
+
+        onTorsoDragDrop(dragEvent) {
+            const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
+            this.replaceNode({ nodeId: this.id, nodeFactory });
+            this.isDraggedOver = false;
+            this.dragTarget = null;
         },
 
         // public
@@ -414,10 +438,14 @@ export default {
                   :type="type"
                   :kind="kind"
                   :icon="icon"
+                  :is-dragged-over="isDraggedOver"
                   :execution-state="state && state.executionState"
                   :class="['node-torso', { hover: isHovering }]"
                   :filter="isHovering && 'url(#node-torso-shadow)'"
                   @dblclick.left="onLeftDoubleClick"
+                  @dragenter="onTorsoDragEnter"
+                  @dragleave="onTorsoDragLeave"
+                  @drop.stop="onTorsoDragDrop"
                 />
 
                 <NodeDecorators v-bind="$props" />

@@ -228,6 +228,18 @@ export const actions = {
         });
     },
 
+    replaceNode({ state: { activeWorkflow } }, { nodeId, nodeFactory }) {
+        const projectId = activeWorkflow.projectId;
+        const workflowId = activeWorkflow.info.containerId;
+
+        return API.workflowCommand.ReplaceNode({
+            projectId,
+            workflowId,
+            nodeId,
+            nodeFactory
+        });
+    },
+
     async addNode(
         { state, dispatch },
         {
