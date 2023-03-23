@@ -1,6 +1,6 @@
 import { expect, describe, it, vi, afterEach } from 'vitest';
 /* eslint-disable max-lines */
-import { deepMocked, mockVuexStore } from '@/test/utils';
+import { deepMocked, mockVuexStore, withPorts } from '@/test/utils';
 import { API } from '@api';
 
 export const searchNodesResponse = {
@@ -308,21 +308,6 @@ describe('Node search partial store', () => {
     });
 
     describe('actions', () => {
-        const withPorts = (nodes, availablePortTypes) => nodes.map(node => ({
-            ...node,
-            inPorts: node.inPorts.map(port => ({
-                ...port,
-                ...availablePortTypes[port.typeId],
-                type: availablePortTypes[port.typeId].kind
-            })),
-            outPorts: node.outPorts.map(port => ({
-                ...port,
-                ...availablePortTypes[port.typeId],
-                type: availablePortTypes[port.typeId].kind
-            })),
-            dynInPorts: [],
-            dynOutPorts: []
-        }));
 
         describe('search', () => {
             // eslint-disable-next-line vitest/max-nested-describe

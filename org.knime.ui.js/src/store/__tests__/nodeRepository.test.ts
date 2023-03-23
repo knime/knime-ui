@@ -1,6 +1,6 @@
 import { expect, describe, it, vi, afterEach } from 'vitest';
 /* eslint-disable max-lines */
-import { deepMocked, mockVuexStore } from '@/test/utils';
+import { deepMocked, mockVuexStore, withPorts, withoutKeys } from '@/test/utils';
 import { API } from '@api';
 import { searchNodesResponse } from '../common/__tests__/nodeSearch.test';
 import { state as nodeSearchState } from '../common/nodeSearch';
@@ -120,11 +120,8 @@ describe('Node Repository store', () => {
     it('creates an empty store', async () => {
         const { store } = await createStore();
         const nodeSearchStateKeys = Object.keys(nodeSearchState());
-        // keep only keys that are not defined in search state
-        const nodeRepoState = Object.fromEntries(
-            Object.entries(store.state.nodeRepository).filter(([prop]) => !nodeSearchStateKeys.includes(prop))
-        );
-        expect(nodeRepoState).toStrictEqual({
+
+        expect(withoutKeys(store.state.nodeRepository, nodeSearchStateKeys)).toStrictEqual({
             nodesPerCategory: [],
             totalNumCategories: null,
             categoryPage: 0,
@@ -225,21 +222,6 @@ describe('Node Repository store', () => {
     });
 
     describe('actions', () => {
-        const withPorts = (nodes, availablePortTypes) => nodes.map(node => ({
-            ...node,
-            inPorts: node.inPorts.map(port => ({
-                ...port,
-                ...availablePortTypes[port.typeId],
-                type: availablePortTypes[port.typeId].kind
-            })),
-            outPorts: node.outPorts.map(port => ({
-                ...port,
-                ...availablePortTypes[port.typeId],
-                type: availablePortTypes[port.typeId].kind
-            })),
-            dynInPorts: [],
-            dynOutPorts: []
-        }));
 
         describe('getAllNodes', () => {
             it('gets all nodes', async () => {
