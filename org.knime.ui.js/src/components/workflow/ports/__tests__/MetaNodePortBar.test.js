@@ -10,7 +10,7 @@ import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
 
 import NodeConnectorDetection from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
-import NodePort from '../NodePort.vue';
+import NodePort from '../NodePort/NodePort.vue';
 import MetaNodePortBar from '../MetaNodePortBar.vue';
 
 describe('MetaNodePortBar.vue', () => {

@@ -1,7 +1,7 @@
 <script>
 import { portBar } from '@/mixins';
 import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
-import NodePort from './NodePort.vue';
+import NodePort from './NodePort/NodePort.vue';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.

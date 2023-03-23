@@ -8,7 +8,7 @@ import { mockVuexStore } from '@/test/utils';
 
 import { $bus } from '@/plugins/event-bus';
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
-import NodePort from '@/components/workflow/ports/NodePort.vue';
+import NodePort from '@/components/workflow/ports/NodePort/NodePort.vue';
 import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 
 import NodeTorso from '../torso/NodeTorso.vue';

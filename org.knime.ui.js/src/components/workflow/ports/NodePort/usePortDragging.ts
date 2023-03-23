@@ -15,7 +15,6 @@ type Params = {
     direction: Direction,
     nodeId: string;
     port: NodePort;
-    disableQuickNodeAdd: boolean;
     isFlowVariable: boolean;
     onCanvasDrop?: (dragConnector: DragConnector) => { removeConnector: boolean };
     onEscPressed?: () => { removeConnector: boolean }
@@ -172,16 +171,9 @@ export const usePortDragging = (params: Params) => {
                     // and needs to provide data for the to be added port for placeholder snaps
                     return {
                         didSnap: isCompatible,
-                        // eslint-disable-next-line no-extra-parens
-                        ...validPortGroups && { createPortFromPlaceholder: { validPortGroups } }
+                        // eslint-disable-next-line @typescript-eslint/no-extra-parens
+                        ...(validPortGroups && { createPortFromPlaceholder: { validPortGroups } })
                     };
-
-                    // FIXME remove these static lines that guarantee connection and snapping
-                    // didDragToCompatibleTarget.value = true;
-                    // setDragConnectorCoords(x, y);
-                    // return {
-                    //     didSnap: true
-                    // };
                 }
             },
             bubbles: true

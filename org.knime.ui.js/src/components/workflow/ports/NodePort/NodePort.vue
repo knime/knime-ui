@@ -103,7 +103,6 @@ const {
     onLostPointerCapture
 } = usePortDragging({
     direction: props.direction,
-    disableQuickNodeAdd: props.disableQuickNodeAdd,
     isFlowVariable: isFlowVariable.value,
     nodeId: props.nodeId,
     port: props.port,
@@ -195,6 +194,7 @@ const onClose = () => {
       :direction="direction"
       :drag-connector="dragConnector"
       :did-drag-to-compatible-target="didDragToCompatibleTarget"
+      :disable-quick-node-add="disableQuickNodeAdd"
     />
   </g>
 </template>

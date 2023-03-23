@@ -16,11 +16,17 @@ interface Props {
     direction: Direction;
     targeted: boolean;
     didDragToCompatibleTarget: boolean;
+    disableQuickNodeAdd: boolean;
 }
 
 const props = defineProps<Props>();
 
-const showAddNodeGhost = computed(() => props.direction === 'out' && !props.didDragToCompatibleTarget);
+// eslint-disable-next-line no-extra-parens
+const showAddNodeGhost = computed(() => (
+    props.direction === 'out' &&
+    !props.didDragToCompatibleTarget &&
+    !props.disableQuickNodeAdd
+));
 
 /*
  * only in-Ports replace their current connector if a new one is connected
@@ -34,6 +40,8 @@ const indicateConnectorReplacement = computed(() => {
     return (
         props.direction === 'in' &&
         isConnected &&
+        // either the Port is being targeted or a connection is being
+        // drawn out of it
         (props.targeted || Boolean(props.dragConnector))
     );
 });

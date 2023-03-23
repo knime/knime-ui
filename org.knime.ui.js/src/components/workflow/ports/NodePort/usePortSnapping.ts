@@ -48,7 +48,6 @@ export const usePortSnapping = () => {
             validPortGroups = generateValidPortGroupsForPlaceholderPort({
                 fromPort: sourcePort,
                 availablePortTypes: availablePortTypes.value,
-                // availablePortTypes,
                 targetPortDirection,
                 targetPortGroups
             });
@@ -57,10 +56,8 @@ export const usePortSnapping = () => {
             isCompatible = checkCompatibleConnectionAndPort({
                 fromPort: sourcePort,
                 toPort: targetPort,
-                // availablePortTypes,
                 availablePortTypes: availablePortTypes.value,
                 targetPortDirection,
-                // connections
                 connections: connections.value
             });
         }

@@ -7,7 +7,7 @@ import * as $shapes from '@/style/shapes.mjs';
 
 import AddPortPlaceholder from '../AddPortPlaceholder.vue';
 import NodePorts from '../NodePorts.vue';
-import NodePort from '../NodePort.vue';
+import NodePort from '../NodePort/NodePort.vue';
 
 const mockPort = ({ index, connectedVia = [], portGroupId = null }) => ({
     inactive: false,
