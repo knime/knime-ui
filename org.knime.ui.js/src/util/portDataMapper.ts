@@ -7,11 +7,11 @@ import type {
 } from '@/api/gateway-api/generated-api';
 
 type AvailablePortTypes = Record<string, PortType>
-type FullPortType = PortType & { typeId: string; type?: string; }
+type FullPortType = PortType & { typeId: string; type?: string; description: string; }
 type PortGroupDescription = {
     groupName: string;
     groupDescription: string;
-    types: Array<FullPortType & { typeName: string }>
+    types: Array<FullPortType & { typeName: string; }>
 }
 
 /**
@@ -36,9 +36,9 @@ export const toPortObject = (
         ? availablePortTypes[input]
         : availablePortTypes[input.typeId];
 
-    const result = {
+    const result: FullPortType = {
         ...fullPortObject,
-        description: 'No description available', // Default text if no description available
+        description: 'No description available',
         typeId: isStringInput ? input : input?.typeId
     };
 
@@ -62,15 +62,18 @@ export const toPortObject = (
  */
 const toPortGroupDescription = (
     availablePortTypes: AvailablePortTypes
-) => (
-    portGroupDescription: DynamicPortGroupDescription
-): PortGroupDescription => {
-    const { identifier, description, supportedPortTypes } = portGroupDescription;
-    const types = supportedPortTypes
+) => (portGroupDescription: DynamicPortGroupDescription): PortGroupDescription => {
+    const {
+        identifier,
+        description = 'No description available',
+        supportedPortTypes = []
+    } = portGroupDescription;
+
+    const types: PortGroupDescription['types'] = supportedPortTypes
         .map(toPortObject(availablePortTypes))
         .map(fullPortType => ({
             ...fullPortType,
-            typeName: fullPortType.name.substring(0, 20) + (fullPortType.name.length > 20 ? '...' : '')
+            typeName: fullPortType.name
         }));
 
     return {
