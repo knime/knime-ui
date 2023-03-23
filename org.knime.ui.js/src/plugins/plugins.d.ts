@@ -1,3 +1,4 @@
+import type { ShortcutsService } from '@/shortcuts/types';
 import * as colors from '@/style/colors.mjs';
 import * as shapes from '@/style/shapes.mjs';
 import type { EventBus } from './event-bus';
@@ -9,7 +10,7 @@ declare module '@vue/runtime-core' {
         $shapes: typeof shapes;
         $colors: typeof colors;
         $features: Features;
-
+        $shortcuts: ShortcutsService;
         // TODO: add typing for $shortcuts
     }
 }

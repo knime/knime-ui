@@ -1,5 +1,3 @@
-import executionShortcuts from './executionShortcuts';
-
 import RedoIcon from 'webapps-common/ui/assets/img/icons/redo.svg';
 import UndoIcon from 'webapps-common/ui/assets/img/icons/undo.svg';
 import DeleteIcon from '@/assets/delete.svg';
@@ -10,7 +8,35 @@ import CreateMetanode from 'webapps-common/ui/assets/img/icons/metanode-add.svg'
 import CreateComponent from 'webapps-common/ui/assets/img/icons/component.svg';
 import LayoutIcon from 'webapps-common/ui/assets/img/icons/layout-editor.svg';
 
-const canExpand = (kind) => ({ $store }) => {
+import type { ShortcutConditionContext, UnionToShortcutRegistry } from './types';
+
+type WorkflowShortcuts = UnionToShortcutRegistry<
+    | 'save'
+    | 'undo'
+    | 'redo'
+    | 'configureNode'
+    | 'configureFlowVariables'
+    | 'openView'
+    | 'editName'
+    | 'editNodeLabel'
+    | 'deleteSelected'
+    | 'createMetanode'
+    | 'createComponent'
+    | 'openComponent'
+    | 'expandMetanode'
+    | 'expandComponent'
+    | 'openLayoutEditor'
+    | 'copy'
+    | 'cut'
+    | 'paste'
+    | 'sendAnnotationBack'
+>
+
+declare module './index' {
+    interface ShortcutsRegistry extends WorkflowShortcuts {}
+}
+
+const canExpand = (kind: 'metanode' | 'component') => ({ $store }: ShortcutConditionContext) => {
     const selectedNode = $store.getters['selection/singleSelectedNode'];
 
     if (!$store.getters['workflow/isWritable'] || selectedNode?.link) {
@@ -20,8 +46,7 @@ const canExpand = (kind) => ({ $store }) => {
     return selectedNode?.kind === kind && selectedNode?.allowedActions.canExpand !== 'false';
 };
 
-export default {
-    ...executionShortcuts,
+const workflowShortcuts: WorkflowShortcuts = {
     save: {
         title: 'Save workflow',
         hotkey: ['Ctrl', 'S'],
@@ -263,5 +288,11 @@ export default {
             },
         condition:
             ({ $store }) => $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
+    },
+    sendAnnotationBack: {
+        text: 'Send annotation back',
+        execute: () => {}
     }
 };
+
+export default workflowShortcuts;

@@ -1,9 +1,11 @@
 import shortcuts from '@/shortcuts';
+import type { ShortcutsService, FormattedShortcut } from '@/shortcuts/types';
 import { isMac } from '@/util/navigator';
+import type { PluginInitFunction } from '.';
 
 // Returns a string representation of a hotkey
 // Replaces some special key names with symbols on macs
-const formatHotkeys = hotkeys => {
+const formatHotkeys = (hotkeys: Array<string>) => {
     if (isMac()) {
         const MacOSkeyMap = {
             Shift: '⇧',
@@ -30,30 +32,30 @@ Object.entries(shortcuts).forEach(([name, shortcut]) => {
 Object.freeze(shortcuts);
 
 // define plugin
-export default ({ app, $store, $router }) => {
+const init: PluginInitFunction = ({ app, $store, $router }) => {
     // get the whole shortcut by name
-    const get = shortcutName => ({ ...shortcuts[shortcutName] });
+    const get: ShortcutsService['get'] = shortcutName => ({ ...shortcuts[shortcutName] } as FormattedShortcut);
 
     // find the name of the matching shortcut
     // currently only the first match is returned, assuming no two shortcuts share the same hotkey
-    const findByHotkey = ({ key, metaKey, ctrlKey, shiftKey, altKey }) => {
-        for (let [shortcutName, { hotkey }] of Object.entries(shortcuts)) {
+    const findByHotkey: ShortcutsService['findByHotkey'] = ({ key, metaKey, ctrlKey, shiftKey, altKey }) => {
+        for (const [shortcutName, { hotkey }] of Object.entries(shortcuts)) {
             if (!hotkey) {
                 continue;
             }
 
-            let modifiers = [...hotkey];
-            let character = modifiers.pop();
+            const modifiers = [...hotkey];
+            const character = modifiers.pop();
 
             // Ctrl-modifier has to match "Command ⌘" (metaKey) on Mac, and Ctrl-Key on other systems
-            let ctrlMatches = modifiers.includes('Ctrl') === (isMac() ? metaKey : ctrlKey);
-            let shiftMatches = Boolean(shiftKey) === modifiers.includes('Shift');
-            let altMatches = Boolean(altKey) === modifiers.includes('Alt');
+            const ctrlMatches = modifiers.includes('Ctrl') === (isMac() ? metaKey : ctrlKey);
+            const shiftMatches = Boolean(shiftKey) === modifiers.includes('Shift');
+            const altMatches = Boolean(altKey) === modifiers.includes('Alt');
 
             // keys are matched case insensitively
-            let keysMatch = key.toUpperCase() === character.toUpperCase() ||
+            const keysMatch = key.toUpperCase() === character.toUpperCase() ||
                 // on mac 'backspace' can be used instead of delete
-                (isMac() && character === 'Delete' && key === 'Backspace');
+                isMac() && character === 'Delete' && key === 'Backspace';
 
             if (ctrlMatches && shiftMatches && altMatches && keysMatch) {
                 consola.trace('Shortcut', hotkey, shortcutName);
@@ -64,8 +66,8 @@ export default ({ app, $store, $router }) => {
     };
 
     // find out whether a specific shortcut is currently enabled
-    const isEnabled = (shortcutName) => {
-        let shortcut = shortcuts[shortcutName];
+    const isEnabled: ShortcutsService['isEnabled'] = (shortcutName) => {
+        const shortcut = shortcuts[shortcutName];
         if (!shortcut) {
             throw new Error(`Shortcut ${shortcutName} doesn't exist`);
         }
@@ -77,8 +79,8 @@ export default ({ app, $store, $router }) => {
         return shortcut.condition({ $store });
     };
 
-    const preventDefault = (shortcutName) => {
-        let shortcut = shortcuts[shortcutName];
+    const preventDefault: ShortcutsService['preventDefault'] = (shortcutName) => {
+        const shortcut = shortcuts[shortcutName];
         if (!shortcut) {
             throw new Error(`Shortcut ${shortcutName} doesn't exist`);
         }
@@ -87,8 +89,8 @@ export default ({ app, $store, $router }) => {
     };
 
     // execute a shortcut
-    const dispatch = (shortcutName, eventDetail = null) => {
-        let shortcut = shortcuts[shortcutName];
+    const dispatch: ShortcutsService['dispatch'] = (shortcutName, eventDetail = null) => {
+        const shortcut = shortcuts[shortcutName];
         if (!shortcut) {
             throw new Error(`Shortcut ${shortcutName} doesn't exist`);
         }
@@ -100,12 +102,16 @@ export default ({ app, $store, $router }) => {
         });
     };
 
-    // define global $shortcuts property
-    app.config.globalProperties.$shortcuts = {
+    const $shortcuts: ShortcutsService = {
         isEnabled,
         dispatch,
         preventDefault,
         findByHotkey,
         get
     };
+
+    // define global $shortcuts property
+    app.config.globalProperties.$shortcuts = $shortcuts;
 };
+
+export default init;

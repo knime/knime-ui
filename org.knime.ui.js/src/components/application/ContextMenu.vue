@@ -1,16 +1,25 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue';
 import { mapGetters } from 'vuex';
 
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
+import type { XY } from '@/api/gateway-api/generated-api';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
+import type { FormattedShortcut, ShortcutName } from '@/shortcuts';
+
+type ContextMenuActionsGroup = {
+    name: ShortcutName;
+    isVisible: boolean;
+    text?: string;
+}
 
 const menuGroups = function () {
-    let currItems = [];
+    let currItems: Array<ContextMenuActionsGroup & { separator?: boolean }> = [];
 
     const onlyVisible = ({ isVisible }) => isVisible;
 
     return {
-        append(groupItems) {
+        append(groupItems: Array<ContextMenuActionsGroup>) {
             const newItems = groupItems.filter(onlyVisible);
 
             if (currItems.length !== 0 && newItems.length > 0) {
@@ -31,7 +40,7 @@ const menuGroups = function () {
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.
  */
-export default {
+export default defineComponent({
     components: {
         FloatingMenu,
         MenuItems
@@ -41,9 +50,9 @@ export default {
          * Position of the menu in canvas coordinates.
          */
         position: {
-            type: Object,
+            type: Object as PropType<XY>,
             required: true,
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+            validator: (position: Partial<XY>) => typeof position.x === 'number' && typeof position.y === 'number'
         }
     },
     emits: ['menuClose'],
@@ -77,7 +86,8 @@ export default {
             handler() {
                 this.setMenuItems();
                 this.$nextTick(() => {
-                    this.$refs.menuItems.$el.focus();
+                    // eslint-disable-next-line no-extra-parens
+                    (this.$refs.menuItems as { $el: HTMLElement }).$el.focus();
                 });
             }
         }
@@ -87,7 +97,7 @@ export default {
         window?.getSelection().removeAllRanges();
     },
     methods: {
-        onItemClick(event, shortcut) {
+        onItemClick(event: MouseEvent, shortcut: FormattedShortcut) {
             this.$emit('menuClose');
             this.$shortcuts.dispatch(shortcut.name, event);
         },
@@ -101,7 +111,7 @@ export default {
             const isComponent = this.singleSelectedNode?.kind === 'component';
             const isMetanodeOrComponent = isMetanode || isComponent;
 
-            const basicOperationsGroup = [
+            const basicOperationsGroup: Array<ContextMenuActionsGroup> = [
                 { name: 'configureNode', isVisible: this.singleSelectedNode },
                 { name: 'executeSelected', isVisible: this.selectedNodes.length },
                 { name: 'executeAndOpenView', isVisible: isView },
@@ -121,21 +131,25 @@ export default {
                 { name: 'resetAll', isVisible: this.isSelectionEmpty }
             ];
 
-            const clipboardOperationsGroup = [
+            const clipboardOperationsGroup: Array<ContextMenuActionsGroup> = [
                 { name: 'cut', isVisible: areNodesSelected },
                 { name: 'copy', isVisible: areNodesSelected },
                 { name: 'paste', isVisible: this.isSelectionEmpty },
                 { name: 'deleteSelected', isVisible: !this.isSelectionEmpty }
             ];
 
-            const metanodeOperationsGroup = [
+            const annotationArrangementGroup: Array<ContextMenuActionsGroup> = [
+                { name: 'sendAnnotationBack', isVisible: true }
+            ];
+
+            const metanodeOperationsGroup: Array<ContextMenuActionsGroup> = [
                 { name: 'createMetanode', isVisible: this.selectedNodes.length },
                 { name: 'expandMetanode', isVisible: isMetanode },
                 { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename metanode' },
                 { name: 'createComponent', isVisible: this.selectedNodes.length }
             ];
 
-            const componentOperationsGroup = [
+            const componentOperationsGroup: Array<ContextMenuActionsGroup> = [
                 { name: 'createMetanode', isVisible: this.selectedNodes.length },
                 { name: 'createComponent', isVisible: this.selectedNodes.length },
                 { name: 'expandComponent', isVisible: isComponent },
@@ -146,13 +160,14 @@ export default {
             const items = menuGroups()
                 .append(basicOperationsGroup)
                 .append(clipboardOperationsGroup)
+                .append(annotationArrangementGroup)
                 .append(isMetanode ? metanodeOperationsGroup : componentOperationsGroup)
                 .value();
 
             this.visibleItems = items;
         }
     }
-};
+});
 </script>
 
 <template>

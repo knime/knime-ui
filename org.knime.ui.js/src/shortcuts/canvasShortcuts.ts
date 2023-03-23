@@ -1,7 +1,24 @@
 /* eslint-disable no-magic-numbers */
 import throttle from 'raf-throttle';
 
-export default {
+import type { UnionToShortcutRegistry } from './types';
+
+type CanvasShortcuts = UnionToShortcutRegistry<
+    | 'fitToScreen'
+    | 'fillScreen'
+    | 'zoomIn'
+    | 'zoomOut'
+    | 'zoomTo75'
+    | 'zoomTo100'
+    | 'zoomTo125'
+    | 'zoomTo150'
+>
+
+declare module './index' {
+    interface ShortcutsRegistry extends CanvasShortcuts {}
+}
+
+const canvasShortcuts: CanvasShortcuts = {
     fitToScreen: {
         text: 'Fit to screen',
         hotkey: ['Ctrl', '2'],
@@ -48,3 +65,5 @@ export default {
         execute: ({ $store }) => $store.dispatch('canvas/zoomCentered', { factor: 1.5 })
     }
 };
+
+export default canvasShortcuts;

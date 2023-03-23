@@ -10,7 +10,26 @@ import ResumeLoopIcon from '@/assets/resume-execution.svg';
 import PauseLoopIcon from '@/assets/pause-execution.svg';
 import StepLoopIcon from '@/assets/step-execution.svg';
 
-export default {
+import type { UnionToShortcutRegistry } from './types';
+
+type ExecutionShortcuts = UnionToShortcutRegistry<
+    | 'executeAll'
+    | 'cancelAll'
+    | 'resetAll'
+    | 'executeSelected'
+    | 'executeAndOpenView'
+    | 'cancelSelected'
+    | 'resetSelected'
+    | 'resumeLoopExecution'
+    | 'pauseLoopExecution'
+    | 'stepLoopExecution'
+>
+
+declare module './index' {
+    interface ShortcutsRegistry extends ExecutionShortcuts {}
+}
+
+const executionShortcuts: ExecutionShortcuts = {
     executeAll: {
         text: 'Execute all',
         title: 'Execute workflow',
@@ -123,3 +142,5 @@ export default {
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.loopInfo?.allowedActions?.canStep
     }
 };
+
+export default executionShortcuts;
