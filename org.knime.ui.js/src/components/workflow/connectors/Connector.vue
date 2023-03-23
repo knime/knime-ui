@@ -6,6 +6,8 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { portBar, connectorPosition } from '@/mixins';
 import connectorPath from '@/util/connectorPath';
 
+import { KnimeMIME } from '@/mixins/dropNode';
+
 /**
  * A curved line, connecting one node's output with another node's input port.
  * Must be embedded in an `<svg>` element.
@@ -46,7 +48,8 @@ export default defineComponent({
     },
     data: () => ({
         suggestDelete: false,
-        hover: false
+        hover: false,
+        isDraggedOver: false
     }),
     computed: {
         ...mapState('workflow', {
@@ -113,6 +116,7 @@ export default defineComponent({
         }
     },
     methods: {
+        ...mapActions('workflow', ['insertNode']),
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
 
@@ -137,6 +141,20 @@ export default defineComponent({
         },
         onIndicateReplacement({ detail: { state } }) {
             this.suggestDelete = state;
+        },
+        onConnectorDragEnter(dragEvent) {
+            if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
+                this.isDraggedOver = true;
+            }
+        },
+        onConnectorDragLeave() {
+            this.isDraggedOver = false;
+        },
+        onConnectorDragDrop(dragEvent) {
+            // TODO check if the dragged node is a new node or an existing one
+            const [x, y] = [dragEvent.clientX, dragEvent.clientY];
+            this.insertNode({ connectionId: this.id, position: { x, y }, nodeFactory: dragEvent.dataTransfer.getData(KnimeMIME) });
+            this.isDraggedOver = false;
         }
     }
 });
@@ -155,6 +173,9 @@ export default defineComponent({
       @mouseleave="hover = false"
       @click.left="onMouseClick"
       @pointerdown.right="onContextMenu"
+      @dragenter="onConnectorDragEnter"
+      @dragleave="onConnectorDragLeave"
+      @drop.stop="onConnectorDragDrop"
     />
     <path
       ref="visiblePath"
@@ -164,7 +185,8 @@ export default defineComponent({
         'read-only': !isWorkflowWritable,
         highlighted: isHighlighted,
         dashed: streaming,
-        selected: isConnectionSelected(id) && !isDragging
+        selected: isConnectionSelected(id) && !isDragging,
+        isDraggedOver
       }"
       fill="none"
     />
@@ -202,6 +224,11 @@ path:not(.hover-area) {
   &.highlighted {
     stroke-width: v-bind("$shapes.highlightedConnectorWidth");
     stroke: var(--knime-masala);
+  }
+
+  &.isDraggedOver {
+    stroke-width: var(--selected-connector-width-shape);
+    stroke: var(--knime-hibiscus-dark);
   }
 
   &.dashed {

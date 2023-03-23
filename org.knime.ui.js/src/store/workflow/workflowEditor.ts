@@ -223,6 +223,20 @@ export const actions = {
         });
     },
 
+    insertNode({ state: { activeWorkflow } }, { connectionId, position, nodeFactory, nodeId }) {
+        const projectId = activeWorkflow.projectId;
+        const workflowId = activeWorkflow.info.containerId;
+
+        return API.workflowCommand.InsertNode({
+            projectId,
+            workflowId,
+            connectionId,
+            position,
+            nodeFactory,
+            nodeId
+        });
+    },
+
     async addNode(
         { state, dispatch },
         {
