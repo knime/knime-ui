@@ -1,14 +1,20 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue';
 import { difference } from 'lodash';
 import Tag from 'webapps-common/ui/components/Tag.vue';
 
 export const defaultInitialTagCount = 5;
 
+type ShownTag = {
+  text: string;
+  selected: boolean
+}
+
 /**
  * TagList where Tags can be selected. It has a `tags` prop with all tags and a `modelValue` which contains the
  * selected tags. Implements the v-model pattern and thus emits @modelValue with the new value (array of selected tags)
  */
-export default {
+export default defineComponent({
     components: {
         Tag
     },
@@ -25,14 +31,14 @@ export default {
          * List of tags (strings) to display. Including selected ones.
          */
         tags: {
-            type: Array,
+            type: Array as PropType<Array<string>>,
             default: () => []
         },
         /**
          * List of selected tags as strings.
          */
         modelValue: {
-            type: Array,
+            type: Array as PropType<Array<string>>,
             default: () => []
         },
         /**
@@ -45,27 +51,30 @@ export default {
     },
     emits: ['update:modelValue', 'showMore'],
     computed: {
-        sortedTags() {
+        sortedTags(): Array<ShownTag> {
             // the tags should keep their "natural" order but the selected ones need to be at the head of the list
             // transform to an object based list with text and selected attribute
             return [
-                ...this.modelValue
-                    .map(text => ({ text, selected: true })),
-                ...difference(this.tags, this.modelValue)
-                    .map(text => ({ text, selected: false }))
+                ...this.modelValue.map(text => ({ text, selected: true })),
+
+                ...difference(this.tags, this.modelValue).map(text => ({ text, selected: false }))
             ];
         },
+
         shownTags() {
             return this.showAll
                 ? this.sortedTags
                 : this.sortedTags.slice(0, this.numberOfInitialTags);
         },
+
         hasMoreTags() {
             return !this.showAll && this.tags.length > this.numberOfInitialTags;
         },
+
         allVisibleAreSelected() {
             return !this.showAll && this.modelValue.length > this.numberOfInitialTags;
         },
+
         moreDisplayText() {
             let hiddenTags = this.tags.length - this.numberOfInitialTags;
             if (this.allVisibleAreSelected) {
@@ -77,18 +86,19 @@ export default {
         }
     },
     methods: {
-        onClick(tag) {
+        onClick(tag: ShownTag) {
             if (tag.selected) {
                 this.$emit('update:modelValue', this.modelValue.filter(x => x !== tag.text));
             } else {
                 this.$emit('update:modelValue', [...this.modelValue, tag.text]);
             }
         },
+
         onShowMore() {
             this.$emit('showMore');
         }
     }
-};
+});
 </script>
 
 <template>
@@ -109,7 +119,7 @@ export default {
     <Tag
       v-if="hasMoreTags"
       class="more-tags clickable"
-      @click.prevent="onShowMore"
+      @click.prevent.stop="onShowMore"
     >
       {{ moreDisplayText }}
     </Tag>

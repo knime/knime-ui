@@ -83,6 +83,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.knime.js.cef.commservice.CEFCommService;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseWorkflows;
 import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
@@ -94,7 +95,6 @@ import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.NodeCollectionUtil;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
-import com.equo.comm.api.CommServiceProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -251,18 +251,15 @@ final class Init {
 
     private static EventConsumer initializeJavaBrowserCommunication(final String jsonRpcActionId,
         final String jsonRpcNotificationActionId) {
-        var commService = CommServiceProvider.getCommService()
-            .orElseThrow(() -> new IllegalStateException("No CEF communication service available!"));
-
         JsonRpcRequestHandler jsonRpcHandler = new DefaultJsonRpcRequestHandler();
-        commService.on(jsonRpcActionId, message -> { // NOSONAR
+        CEFCommService.invoke(cs -> cs.on(jsonRpcActionId, message -> { // NOSONAR
             return new String(jsonRpcHandler.handle(message.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-        });
+        }));
 
         final var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
         return (name, event) -> {
             var message = createJsonRpcNotification(mapper, name, event);
-            commService.send(jsonRpcNotificationActionId, message);
+            CEFCommService.invoke(cs -> cs.send(jsonRpcNotificationActionId, message));
         };
     }
 

@@ -247,6 +247,8 @@ export default {
     /* Style refinement for Ports */
     & :deep(.ports-list) {
       & .content {
+        max-width: 100%;
+
         & ol {
           margin-left: 28px;
           margin-top: 22px;
@@ -254,6 +256,12 @@ export default {
 
         & .dyn-ports-description {
           margin-top: 10px;
+        }
+
+        & .port-type {
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
         }
       }
     }

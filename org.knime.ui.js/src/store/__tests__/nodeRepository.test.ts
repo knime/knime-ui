@@ -222,7 +222,6 @@ describe('Node Repository store', () => {
     });
 
     describe('actions', () => {
-
         describe('getAllNodes', () => {
             it('gets all nodes', async () => {
                 const { store, availablePortTypes } = await createStore();

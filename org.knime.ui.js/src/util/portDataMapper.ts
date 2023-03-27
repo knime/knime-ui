@@ -7,7 +7,12 @@ import type {
 } from '@/api/gateway-api/generated-api';
 
 type AvailablePortTypes = Record<string, PortType>
-type FullPortType = PortType & { typeId: string; type?: string; }
+type FullPortType = PortType & { typeId: string; type?: string; description: string; }
+type PortGroupDescription = {
+    groupName: string;
+    groupDescription: string;
+    types: Array<FullPortType & { typeName: string; }>
+}
 
 /**
  * Maps a port `typeId` string or a object with a `typeId` property to a port object with all the properties of the
@@ -31,8 +36,9 @@ export const toPortObject = (
         ? availablePortTypes[input]
         : availablePortTypes[input.typeId];
 
-    const result = {
+    const result: FullPortType = {
         ...fullPortObject,
+        description: 'No description available',
         typeId: isStringInput ? input : input?.typeId
     };
 
@@ -54,22 +60,28 @@ export const toPortObject = (
  * @returns {Function} A function that maps the raw port group description as it was received to the format needed to
  * to render it.
  */
-const toPortGroupDescription =
-    (availablePortTypes: AvailablePortTypes) => (portGroupDescription: DynamicPortGroupDescription) => {
-        const { identifier, description, name, supportedPortTypes } = portGroupDescription;
-        const types: Array<FullPortType & { typeName: string }> = supportedPortTypes
-            .map(toPortObject(availablePortTypes))
-            .map(supportedType => ({
-                ...supportedType,
-                typeName: name
-            }));
+const toPortGroupDescription = (
+    availablePortTypes: AvailablePortTypes
+) => (portGroupDescription: DynamicPortGroupDescription): PortGroupDescription => {
+    const {
+        identifier,
+        description = 'No description available',
+        supportedPortTypes = []
+    } = portGroupDescription;
 
-        return {
-            groupName: identifier,
-            groupDescription: description,
-            types
-        };
+    const types: PortGroupDescription['types'] = supportedPortTypes
+        .map(toPortObject(availablePortTypes))
+        .map(fullPortType => ({
+            ...fullPortType,
+            typeName: fullPortType.name
+        }));
+
+    return {
+        groupName: identifier,
+        groupDescription: description,
+        types
     };
+};
 
 /**
  * Maps over a collection of ports to add information about their color and kind, extracted from the
