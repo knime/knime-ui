@@ -17,6 +17,7 @@ export const searchNodesResponse = {
             name: 'GroupBy Bar Chart (JFreeChart)',
             id: 'org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory',
             type: 'Visualizer',
+            nodeFactory: { className: 'org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory' },
             inPorts: [
                 { typeId: 'org.knime.core.node.BufferedDataTable' }
             ],
@@ -27,6 +28,9 @@ export const searchNodesResponse = {
             icon: 'data:image/png;base64,xxx',
             name: 'Decision Tree Learner',
             id: 'org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3',
+            nodeFactory: {
+                className: 'org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3'
+            },
             type: 'Learner',
             inPorts: [],
             outPorts: [

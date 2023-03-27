@@ -107,9 +107,6 @@ export default {
         hasSearchResults() {
             return this.topNodes?.length > 0 || this.bottomNodes?.length > 0;
         },
-        hasResults() {
-            return this.hasRecommendationResults || this.hasSearchResults;
-        },
         searchActions() {
             return {
                 searchTopNodesNextPage: this.searchTopNodesNextPage,
@@ -201,7 +198,7 @@ export default {
     :canvas-position="canvasPosition"
     :style="`--ghost-size: ${ghostSizeZoomed}; --extra-margin: ${Math.log(ghostSizeZoomed) / 1.1}`"
     aria-label="Quick add node"
-    :prevent-overflow="true"
+    :prevent-oveflow="true"
     @menu-close="$emit('menuClose')"
   >
     <div class="wrapper">
@@ -238,8 +235,8 @@ export default {
           Open Preferences
         </Button>
       </div>
-      <div
-        v-else-if="hasResults"
+      <template
+        v-else
       >
         <div v-if="searchIsActive">
           <SearchResults
@@ -273,9 +270,10 @@ export default {
           class="recommendations"
         >
           <NodeList
+            v-if="hasRecommendationResults"
             ref="recommendationResults"
-            class="top-list"
             v-model:selected-node="selectedNode"
+            class="top-list"
             :nodes="recommendedNodes"
             @nav-reached-top="$refs.search.focus()"
             @enter-key="addNode($event)"
@@ -287,21 +285,13 @@ export default {
               />
             </template>
           </NodeList>
+          <span
+            v-else
+            class="placeholder no-recommendations"
+          >
+            The Workflow Coach cannot recommend any nodes to you yet.
+          </span>
         </div>
-      </div>
-      <template v-else>
-        <span
-          v-if="searchIsActive && !hasSearchResults"
-          class="placeholder"
-        >
-          No compatible node matching for:<br>{{ searchQuery }}
-        </span>
-        <span
-          v-if="!searchIsActive && !hasRecommendationResults"
-          class="placeholder"
-        >
-          The Workflow Coach cannot recommend any nodes to you yet.
-        </span>
       </template>
     </div>
   </FloatingMenu>
@@ -418,16 +408,15 @@ export default {
 
   & .placeholder {
     flex: 1;
-    flex-direction: column;
-    justify-content: center;
-    font-family: "Roboto Condensed", sans-serif;
-    font-style: italic;
-    font-size: 16px;
-    line-height: 19px;
     display: flex;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    padding: 10px 30px;
+    font-style: italic;
+    color: var(--knime-dove-gray);
+    flex-direction: column;
+    margin-top: 30px;
+    margin-bottom: 15px;
   }
 
   /* marks the default item (first one); gets inserted on enter while still in the search box */

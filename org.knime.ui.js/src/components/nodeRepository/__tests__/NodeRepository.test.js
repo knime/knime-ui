@@ -11,21 +11,6 @@ import CategoryResults from '../CategoryResults.vue';
 import SearchResults from '../SearchResults.vue';
 import NodeDescriptionOverlay from '../NodeDescriptionOverlay.vue';
 
-vi.mock('lodash', () => ({
-    debounce(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    },
-    throttle(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    }
-}));
-
 describe('NodeRepository', () => {
     let doShallowMount, wrapper, $store, searchNodesMock, searchTopNodesNextPageMock, setSelectedTagsMock,
         getAllNodesMock, clearSearchParamsMock, setScrollPositionMock,

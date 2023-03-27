@@ -1,15 +1,24 @@
-<script>
-
+<script lang="ts">
+import { defineComponent } from 'vue';
+import type { PropType } from 'vue';
 import BaseButton from 'webapps-common/ui/components/BaseButton.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
+import type { ComponentNode, MetaNode, NativeNode, NodeTemplate } from '@/api/gateway-api/generated-api';
 
+export type SearchActions = {
+    searchTopNodesNextPage: () => Promise<any>,
+    searchBottomNodesNextPage: () => Promise<any>,
+    toggleShowingBottomNodes: () => Promise<any>
+}
+
+// noinspection TypeScriptValidateTypes
 /**
  * Reusable search results. Please keep this store free.
  */
-export default {
+export default defineComponent({
     components: {
         ScrollViewContainer,
         NodeList,
@@ -19,11 +28,11 @@ export default {
     },
     props: {
         topNodes: {
-            type: Object,
+            type: [Array, null] as PropType<Array<NodeTemplate> | null>,
             required: true
         },
         bottomNodes: {
-            type: Object,
+            type: [Array, null] as PropType<Array<NodeTemplate> | null>,
             required: true
         },
         query: {
@@ -31,27 +40,27 @@ export default {
             required: true
         },
         selectedTags: {
-            type: Array,
+            type: Array as PropType<Array<string>>,
             default: () => []
         },
         searchScrollPosition: {
-            type: Number,
+            type: Number as PropType<number>,
             default: 0
         },
         isShowingBottomNodes: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         },
         selectedNode: {
-            type: Object,
+            type: [Object, null] as PropType<NativeNode | ComponentNode | MetaNode | null>,
             required: true
         },
         searchActions: {
-            type: Object,
+            type: Object as PropType<SearchActions>,
             required: true
         },
         hasNodeCollectionActive: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         }
     },
@@ -136,7 +145,7 @@ export default {
             }
         }
     }
-};
+});
 </script>
 
 <template>
@@ -160,8 +169,8 @@ export default {
       >
         <NodeList
           ref="topList"
-          class="top-list"
           v-model:selected-node="selectedNodeModel"
+          class="top-list"
           :nodes="topNodes"
           @nav-reached-top="$emit('navReachedTop')"
           @nav-reached-end="openBottomNodes"
@@ -207,8 +216,8 @@ export default {
         >
           <NodeList
             ref="bottomList"
-            class="bottom-list"
             v-model:selected-node="selectedNodeModel"
+            class="bottom-list"
             :nodes="bottomNodes"
             @nav-reached-top="bottomListNavReachedTop"
             @enter-key="$emit('item-enter-key', $event)"
