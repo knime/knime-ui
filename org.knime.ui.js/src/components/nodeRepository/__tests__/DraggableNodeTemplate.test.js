@@ -1,14 +1,14 @@
 import { expect, describe, beforeEach, afterEach, it, vi } from 'vitest';
 import * as Vue from 'vue';
-import { shallowMount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/utils';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 import { KnimeMIME } from '@/mixins/dropNode';
 import { nodeSize } from '@/style/shapes.mjs';
-import NodeTemplate, { WORKFLOW_ADD_START_MIN } from '../NodeTemplate.vue';
+import DraggableNodeTemplate, { WORKFLOW_ADD_START_MIN } from '../DraggableNodeTemplate.vue';
 
-describe('NodeTemplate', () => {
+describe('DraggableNodeTemplate', () => {
     let props, doMount, wrapper, testEvent, isWritable, openDescriptionPanelMock, closeDescriptionPanelMock,
         setSelectedNodeMock, $store, storeConfig, setDraggingNodeMock, addNodeMock, getElementByIdMock, activeWorkflow,
         toCanvasCoordinatesMock;
@@ -27,7 +27,7 @@ describe('NodeTemplate', () => {
             height: 70
         });
         getElementByIdMock = vi.fn();
-        HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
+        SVGElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
         Document.prototype.getElementById = getElementByIdMock;
 
         testEvent = {
@@ -100,7 +100,6 @@ describe('NodeTemplate', () => {
                     closeDescriptionPanel: closeDescriptionPanelMock
                 },
                 state: {
-                    selectedNode: null,
                     isDescriptionPanelOpen: false
                 }
             },
@@ -114,7 +113,7 @@ describe('NodeTemplate', () => {
         $store = mockVuexStore(storeConfig);
 
         doMount = () => {
-            wrapper = shallowMount(NodeTemplate, {
+            wrapper = mount(DraggableNodeTemplate, {
                 props,
                 global: {
                     plugins: [$store],
@@ -152,9 +151,7 @@ describe('NodeTemplate', () => {
     });
 
     it('never deselects a selected item via click', () => {
-        storeConfig.nodeRepository.state.selectedNode = {
-            id: 'node-id'
-        };
+        props.isSelected = true;
         storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
         doMount();
 
@@ -166,10 +163,7 @@ describe('NodeTemplate', () => {
     });
 
     it('adds style if node is selected', () => {
-        storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
-        storeConfig.nodeRepository.state.selectedNode = {
-            id: 'node-id'
-        };
+        props.isSelected = true;
         doMount();
 
         const node = wrapper.find('.node');
@@ -334,9 +328,7 @@ describe('NodeTemplate', () => {
 
         it('re-opens description panel, when dragging is aborted', () => {
             storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
-            storeConfig.nodeRepository.state.selectedNode = {
-                id: 'node-id'
-            };
+            props.isSelected = true;
             doMount();
 
             // start dragging while node is selected
@@ -359,9 +351,7 @@ describe('NodeTemplate', () => {
 
         it('description panel stays closed, when dragging is completed succesfully', () => {
             storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
-            storeConfig.nodeRepository.state.selectedNode = {
-                id: 'node-id'
-            };
+            props.isSelected = true;
             doMount();
 
             // start dragging while node is selected
