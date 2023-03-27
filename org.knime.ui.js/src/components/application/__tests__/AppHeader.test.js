@@ -22,13 +22,19 @@ describe('AppHeader.vue', () => {
             { projectId: '2', name: 'Test2' },
             { projectId: '3', name: 'Test3' }
         ];
+        const projectIdToIsDirty = {
+            '1': false,
+            '2': true,
+            '3': false
+        };
         const storeConfig = {
             application: {
                 state: {
                     openProjects,
                     activeProjectId: '1',
                     devMode: false,
-                    isLoadingWorkflow
+                    isLoadingWorkflow,
+                    projectIdToIsDirty
                 },
                 actions: { switchWorkflow: vi.fn() }
             },
