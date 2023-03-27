@@ -1,7 +1,6 @@
 import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 import SearchResults from '../SearchResults.vue';
@@ -9,108 +8,46 @@ import ScrollViewContainer from '../ScrollViewContainer.vue';
 import NodeList from '../NodeList.vue';
 
 describe('SearchResults', () => {
-    // let doShallowMount, doMount, wrapper, $store, storeState, applicationStoreState, searchTopNodesNextPageMock,
-    //     searchBottomNodesNextPageMock, setSearchScrollPositionMock, toggleShowingBottomNodesMock;
 
-    // beforeEach(() => {
-    //     wrapper = null;
+    const doMount = ({ propsOverrides = {} } = {}) => {
 
-    //     searchTopNodesNextPageMock = vi.fn();
-    //     searchBottomNodesNextPageMock = vi.fn();
-    //     setSearchScrollPositionMock = vi.fn();
-    //     toggleShowingBottomNodesMock = vi.fn();
+        const searchActions = {
+            searchTopNodesNextPage: vi.fn().mockImplementation(() => new Promise(r => setTimeout(r, 10))),
+            searchBottomNodesNextPage: vi.fn().mockImplementation(() => new Promise(r => setTimeout(r, 20))),
+            toggleShowingBottomNodes: vi.fn().mockResolvedValue({})
+        };
 
-    //     storeState = {
-    //         query: '',
-    //         topNodes: [{
-    //             id: 'node1',
-    //             name: 'Node 1'
-    //         }, {
-    //             id: 'node2',
-    //             name: 'Node 2'
-    //         }],
-    //         totalNumTopNodes: 2,
-    //         searchScrollPosition: 100,
-    //         bottomNodes: null,
-    //         isShowingBottomNodes: false
-    //     };
+        const props = {
+            topNodes: [{
+                id: 'node1',
+                name: 'Node 1'
+            }, {
+                id: 'node2',
+                name: 'Node 2'
+            }],
+            bottomNodes: null,
+            query: '',
+            selectedTags: [],
+            searchScrollPosition: 100,
+            isShowingBottomNodes: false,
+            selectedNode: { id: 'some-node' },
+            searchActions,
+            hasNodeCollectionActive: false,
+            ...propsOverrides
+        };
 
-    //     applicationStoreState = {
-    //         hasNodeCollectionActive: false
-    //     };
+        const wrapper = mount(SearchResults, { props });
 
-    //     $store = mockVuexStore({
-    //         nodeRepository: {
-    //             state: storeState,
-    //             actions: {
-    //                 searchTopNodesNextPage: searchTopNodesNextPageMock,
-    //                 searchBottomNodesNextPage: searchBottomNodesNextPageMock,
-    //                 toggleShowingBottomNodes: toggleShowingBottomNodesMock
-    //             },
-    //             mutations: {
-    //                 setSearchScrollPosition: setSearchScrollPositionMock
-    //             }
-    //         },
-    //         application: {
-    //             state: applicationStoreState
-    //         }
-    //     });
-
-    //     doMount = () => {
-    //         wrapper = mount(SearchResults, { global: { plugins: [$store] } });
-    //     };
-    // });
-
-    const doMount = () => {
-        // const searchTopNodesNextPageMock = vi.fn();
-        // const searchBottomNodesNextPageMock = vi.fn();
-        // const setSearchScrollPositionMock = vi.fn();
-        // const toggleShowingBottomNodesMock = vi.fn();
-
-        const $store = mockVuexStore({
-            nodeRepository: {
-                state: {
-                    query: '',
-                    topNodes: [{
-                        id: 'node1',
-                        name: 'Node 1'
-                    }, {
-                        id: 'node2',
-                        name: 'Node 2'
-                    }],
-                    totalNumTopNodes: 2,
-                    searchScrollPosition: 100,
-                    bottomNodes: null,
-                    isShowingBottomNodes: false
-                },
-                actions: {
-                    searchTopNodesNextPage: () => {},
-                    searchBottomNodesNextPage: () => {},
-                    toggleShowingBottomNodes: () => {}
-                },
-                mutations: {
-                    setSearchScrollPosition: () => {}
-                }
-            },
-            application: {
-                state: {
-                    hasNodeCollectionActive: false
-                }
-            }
-        });
-
-        const dispatchSpy = vi.spyOn($store, 'dispatch');
-
-        const wrapper = mount(SearchResults, { global: { plugins: [$store] } });
-
-        return { wrapper, $store, dispatchSpy };
+        return { wrapper, searchActions, props };
     };
 
-    it('shows placeholder for empty result', async () => {
-        const { wrapper, $store } = doMount();
-        $store.state.nodeRepository.query = 'xxx';
-        $store.state.nodeRepository.topNodes = [];
-        await Vue.nextTick();
+    it('shows placeholder for empty result', () => {
+        const { wrapper } = doMount({
+            propsOverrides: {
+                query: 'xxx',
+                topNodes: []
+            }
+        });
 
         expect(wrapper.text()).toMatch('No node matching for: xxx');
         expect(wrapper.findComponent(NodeList).exists()).toBe(false);
@@ -118,17 +55,17 @@ describe('SearchResults', () => {
 
     it('displays icon if loading is true', async () => {
         const { wrapper } = doMount();
-        await wrapper.setData({ isLoading: true });
 
+        await wrapper.setData({ isLoading: true });
         const loadingIcon = wrapper.findComponent(ReloadIcon);
         expect(loadingIcon.exists()).toBe(true);
     });
 
     it('renders topNodes', () => {
-        const { wrapper, $store } = doMount();
+        const { wrapper, props } = doMount();
 
         let nodeList = wrapper.findComponent(NodeList);
-        expect(nodeList.props('nodes')).toStrictEqual($store.state.nodeRepository.topNodes);
+        expect(nodeList.props('nodes')).toStrictEqual(props.topNodes);
     });
 
     describe('scroll', () => {
@@ -143,7 +80,7 @@ describe('SearchResults', () => {
             const { wrapper } = doMount();
             wrapper.vm.$refs.scroller.$el.scrollTop = 100;
 
-            wrapper.vm.$options.watch.query.call(wrapper.vm);
+            await wrapper.setProps({ query: 'query' });
             await Vue.nextTick();
 
             expect(wrapper.vm.$refs.scroller.$el.scrollTop).toBe(0);
@@ -153,28 +90,39 @@ describe('SearchResults', () => {
             const { wrapper } = doMount();
             wrapper.vm.$refs.scroller.$el.scrollTop = 100;
 
-            wrapper.vm.$options.watch.selectedTags.call(wrapper.vm);
+            await wrapper.setProps({ selectedTags: ['1', '2'] });
             await Vue.nextTick();
 
             expect(wrapper.vm.$refs.scroller.$el.scrollTop).toBe(0);
         });
 
-        it('scrolling to bottom load more results', () => {
-            const { wrapper, dispatchSpy } = doMount();
+        it('scrolling to bottom load more results', async () => {
+            const { wrapper, searchActions } = doMount();
+
+            vi.useFakeTimers();
 
             let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
-            scrollViewContainer.vm.$emit('scrollBottom');
 
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchTopNodesNextPage', undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchBottomNodesNextPage', undefined);
-            expect(wrapper.vm.isLoading).toBe(true);
+            expect(wrapper.findComponent(ReloadIcon).exists()).toBe(false);
+
+            scrollViewContainer.vm.$emit('scrollBottom');
+            await Vue.nextTick();
+
+            expect(searchActions.searchTopNodesNextPage).toHaveBeenCalled();
+            expect(searchActions.searchBottomNodesNextPage).toHaveBeenCalled();
+
+            expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
+            await vi.runAllTimersAsync();
+            await Vue.nextTick();
+            expect(wrapper.findComponent(ReloadIcon).exists()).toBe(false);
         });
     });
 
-    describe('more advanced nodes', () => {
+    describe('more advanced (bottom) nodes', () => {
         it('shows "More advanced nodes" button', async () => {
-            const { wrapper, $store } = doMount();
-            $store.state.application.hasNodeCollectionActive = true;
+            const { wrapper } = doMount({
+                propsOverrides: { hasNodeCollectionActive: true }
+            });
             await Vue.nextTick();
 
             const moreNodesButton = wrapper.find('.more-nodes-button');
@@ -182,35 +130,43 @@ describe('SearchResults', () => {
         });
 
         it('clicking show more should toggleShowingBottomNodes', async () => {
-            const { wrapper, $store, dispatchSpy } = doMount();
-            $store.state.application.hasNodeCollectionActive = true;
+            const { wrapper, searchActions } = doMount({
+                propsOverrides: {
+                    hasNodeCollectionActive: true
+                }
+            });
             await Vue.nextTick();
 
             await wrapper.find('.more-nodes-button').trigger('click');
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/toggleShowingBottomNodes', expect.anything());
+            expect(searchActions.toggleShowingBottomNodes).toHaveBeenCalled();
         });
 
-        it('should show more advanced nodes', async () => {
-            const { wrapper, $store } = doMount();
-            $store.state.application.hasNodeCollectionActive = true;
-            $store.state.application.isShowingBottomNodes = true;
-            $store.state.application.isShowbottomNodesingBottomNodes = [
-                { id: 'node_1', name: 'Node 1' },
-                { id: 'node_2', name: 'Node 2' }
-            ];
-            await Vue.nextTick();
+        it('should show more advanced nodes', () => {
+            const propsOverrides = {
+                hasNodeCollectionActive: true,
+                isShowingBottomNodes: true,
+                bottomNodes: [{
+                    id: 'node_1',
+                    name: 'Node 1'
+                }, {
+                    id: 'node_2',
+                    name: 'Node 2'
+                }]
+            };
+            const { wrapper } = doMount({ propsOverrides });
 
             const moreNodesList = wrapper.findAllComponents(NodeList).at(1);
-            expect(moreNodesList.props('nodes')).toStrictEqual($store.state.nodeRepository.bottomNodes);
+            expect(moreNodesList.props('nodes')).toStrictEqual(propsOverrides.bottomNodes);
         });
 
-        it('should show placeholder for empty more nodes', async () => {
-            const { wrapper, $store } = doMount();
-            $store.state.application.hasNodeCollectionActive = true;
-            $store.state.nodeRepository.query = 'xxx';
-            $store.state.nodeRepository.isShowingBottomNodes = true;
-            $store.state.nodeRepository.bottomNodes = [];
-            await Vue.nextTick();
+        it('should show placeholder for empty more nodes', () => {
+            const propsOverrides = {
+                hasNodeCollectionActive: true,
+                query: 'xxx',
+                isShowingBottomNodes: true,
+                bottomNodes: []
+            };
+            const { wrapper } = doMount({ propsOverrides });
 
             expect(wrapper.findAllComponents(NodeList).length).toBe(1);
             expect(wrapper.text()).toMatch('No additional node matching for: xxx');
