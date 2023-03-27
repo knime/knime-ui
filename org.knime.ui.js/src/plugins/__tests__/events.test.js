@@ -47,7 +47,9 @@ describe('Event Plugin', () => {
     it('fixed Events', () => {
         loadPlugin();
         expect(Object.keys(registeredHandlers)).toStrictEqual([
+            'ComposedEvent',
             'WorkflowChangedEvent',
+            'ProjectDirtyStateEvent',
             'AppStateChangedEvent',
             'UpdateAvailableEvent',
             'SaveAndCloseWorkflowsEvent',
@@ -95,6 +97,44 @@ describe('Event Plugin', () => {
                 { patch: { ops: [{ dummy: true, path: '/foo/bar' }] } }
             );
             expect(notifyPatch).not.toHaveBeenCalled();
+        });
+
+        it('handles ProjectDirtyStateEvent', () => {
+            const { storeMock } = loadPlugin();
+            const projectIdToIsDirty = { '1': false, '2': false, '3': true };
+
+            registeredHandlers.ProjectDirtyStateEvent({ projectIdToIsDirty });
+
+            expect(storeMock.dispatch).toHaveBeenCalledWith(
+                'application/setProjectIdToIsDirty',
+                projectIdToIsDirty
+            );
+        });
+
+        it('handles ComposedEvents', () => {
+            const eventHandlers = new Map();
+            const wfcSpy = vi.spyOn(registeredHandlers, 'WorkflowChangedEvent');
+            const pdsSpy = vi.spyOn(registeredHandlers, 'ProjectDirtyStateEvent');
+            eventHandlers.set('WorkflowChangedEvent', registeredHandlers.WorkflowChangedEvent);
+            eventHandlers.set('ProjectDirtyStateEvent', registeredHandlers.ProjectDirtyStateEvent);
+            const projectIdToIsDirty = { '1': false, '2': false, '3': true };
+
+            registeredHandlers.ComposedEvent(
+                { events: ['WorkflowChangedEvent', 'ProjectDirtyStateEvent'],
+                    params: [
+                        { patch: { ops: [{ dummy: true, path: '/foo/bar' }] } },
+                        { projectIdToIsDirty }
+                    ],
+                    eventHandlers }
+            );
+
+            expect(wfcSpy).toHaveBeenCalledWith(
+                { patch: { ops: [{ dummy: true, path: '/activeWorkflow/foo/bar' }] } }
+            );
+
+            expect(pdsSpy).toHaveBeenCalledWith(
+                { projectIdToIsDirty }
+            );
         });
 
         describe('appState event', () => {
