@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest';
+import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/utils';
@@ -28,7 +28,8 @@ describe('Workflow Annotation', () => {
 
     const doMount = ({
         props = {},
-        mocks = {}
+        mocks = {},
+        isAnnotationSelectedMock = vi.fn().mockReturnValue(() => false)
     } = {}) => {
         const defaultMocks = { $shapes };
 
@@ -39,6 +40,11 @@ describe('Workflow Annotation', () => {
                         projectId: 'project1',
                         info: { containerId: 'root' }
                     }
+                }
+            },
+            selection: {
+                getters: {
+                    isAnnotationSelected: isAnnotationSelectedMock
                 }
             }
         });

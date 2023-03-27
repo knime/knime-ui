@@ -204,6 +204,8 @@ export const getters = {
     isConnectionSelected: (state) => (connectionId) => Reflect.has(state.selectedConnections, connectionId),
 
     isSelectionEmpty(_, getters) {
-        return getters.selectedNodeIds.length === 0 && getters.selectedConnections.length === 0;
+        return getters.selectedNodeIds.length === 0 &&
+        getters.selectedConnections.length === 0 &&
+        getters.selectedAnnotationIds.length === 0;
     }
 };

@@ -16,7 +16,7 @@ import {
 
 export default defineComponent({
     props: {
-        isSelected: {
+        showTransformControls: {
             type: Boolean,
             default: false
         },
@@ -131,7 +131,7 @@ export default defineComponent({
       :rx="$shapes.selectedItemBorderRadius"
     />
 
-    <template v-if="isSelected">
+    <template v-if="showTransformControls">
       <rect
         v-for="direction in directions"
         :key="direction"

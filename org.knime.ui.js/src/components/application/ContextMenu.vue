@@ -51,7 +51,7 @@ export default {
         visibleItems: []
     }),
     computed: {
-        ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'selectedConnections', 'selectedAnnotations']),
+        ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'isSelectionEmpty']),
 
         // map visible items to menu items and add shortcut information
         menuItems() {
@@ -93,9 +93,6 @@ export default {
         },
         setMenuItems() {
             const areNodesSelected = this.selectedNodes.length > 0;
-            const areAnnotationsSelected = this.selectedAnnotations.length > 0;
-            const areConnectionsSelected = this.selectedConnections.length > 0;
-            const isSomethingSelected = areNodesSelected || areConnectionsSelected || areAnnotationsSelected;
             const isLoopEnd = Boolean(this.singleSelectedNode?.loopInfo?.allowedActions);
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
             const hasLegacyFlowVariableDialog = this.singleSelectedNode &&
@@ -119,16 +116,16 @@ export default {
                 { name: 'openView', isVisible: isView },
                 { name: 'configureFlowVariables', isVisible: hasLegacyFlowVariableDialog },
                 // no nodes selected
-                { name: 'executeAll', isVisible: !isSomethingSelected },
-                { name: 'cancelAll', isVisible: !isSomethingSelected },
-                { name: 'resetAll', isVisible: !isSomethingSelected }
+                { name: 'executeAll', isVisible: this.isSelectionEmpty },
+                { name: 'cancelAll', isVisible: this.isSelectionEmpty },
+                { name: 'resetAll', isVisible: this.isSelectionEmpty }
             ];
 
             const clipboardOperationsGroup = [
                 { name: 'cut', isVisible: areNodesSelected },
                 { name: 'copy', isVisible: areNodesSelected },
-                { name: 'paste', isVisible: !isSomethingSelected },
-                { name: 'deleteSelected', isVisible: isSomethingSelected }
+                { name: 'paste', isVisible: this.isSelectionEmpty },
+                { name: 'deleteSelected', isVisible: !this.isSelectionEmpty }
             ];
 
             const metanodeOperationsGroup = [

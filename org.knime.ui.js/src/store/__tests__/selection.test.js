@@ -21,7 +21,11 @@ describe('workflow store', () => {
                         connections: {
                             'root:2_1': { allowedActions: { canDelete: true }, id: 'root:2_1' },
                             'root:2_2': { allowedActions: { canDelete: true }, id: 'root:2_2' }
-                        }
+                        },
+                        workflowAnnotations: [
+                            { id: 'root:3_1', text: 'Annotation text' },
+                            { id: 'root:3_2', text: 'Annotation text 2' }
+                        ]
                     }
                 }
             }
@@ -60,11 +64,26 @@ describe('workflow store', () => {
         it('clear selection doesnt override state, if nothing to clear', () => {
             let selectedNodes = $store.state.selection.selectedNodes;
             let selectedConnections = $store.state.selection.selectedConnections;
+            let selectedAnnotations = $store.state.selection.selectedAnnotations;
 
             $store.commit('selection/clearSelection');
 
             expect($store.state.selection.selectedNodes).toBe(selectedNodes);
             expect($store.state.selection.selectedConnections).toBe(selectedConnections);
+            expect($store.state.selection.selectedAnnotations).toBe(selectedAnnotations);
+        });
+
+        it('adding annotations to selection', () => {
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(0);
+            $store.commit('selection/addAnnotationToSelection', ['root:1']);
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(1);
+        });
+
+        it('removes annotations from selection', () => {
+            $store.commit('selection/addAnnotationToSelection', ['root:1']);
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(1);
+            $store.commit('selection/removeAnnotationFromSelection', ['root:1']);
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(0);
         });
     });
 
@@ -79,6 +98,9 @@ describe('workflow store', () => {
                         },
                         selectedConnections: {
                             'root:1_1': true
+                        },
+                        selectedAnnotations: {
+                            'root:2_1': true
                         }
                     }
                 },
@@ -101,6 +123,7 @@ describe('workflow store', () => {
             $store.dispatch('selection/deselectAllObjects');
             expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
             expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(0);
         });
 
         it('selects all nodes', () => {
@@ -149,12 +172,41 @@ describe('workflow store', () => {
             expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
             expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
         });
+
+        it('selects a specific annotation', () => {
+            $store.dispatch('selection/deselectAllObjects');
+            $store.dispatch('selection/selectAnnotation', 'root:3_1');
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(1);
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
+        });
+
+        it('selects multiple annotation', () => {
+            $store.dispatch('selection/deselectAllObjects');
+            $store.dispatch('selection/selectAnnotations', ['root:3_1', 'root:3_2']);
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(2);
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
+        });
+
+        it('deselects a specific annotation', () => {
+            $store.dispatch('selection/deselectAnnotation', 'root:2_1');
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(0);
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
+        });
+
+        it('deselects multiple annotation', () => {
+            storeConfig.selection.state.selectedAnnotations['root:3_1'] = true;
+            $store = mockVuexStore(storeConfig);
+            $store.dispatch('selection/deselectAnnotations', ['root:2_1', 'root:3_1']);
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(0);
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
+        });
     });
 
     describe('getters', () => {
         beforeEach(() => {
             $store.commit('selection/addNodesToSelection', ['root:1', 'root:2']);
             $store.commit('selection/addConnectionsToSelection', ['root:2_1', 'root:2_2']);
+            $store.commit('selection/addAnnotationToSelection', ['root:3_1', 'root:3_2']);
 
             $store.commit('selection/addNodesToSelection', ['unknown node']);
             $store.commit('selection/addConnectionsToSelection', ['unknown connection']);
@@ -206,6 +258,28 @@ describe('workflow store', () => {
         it('test if connection is selected', () => {
             expect($store.getters['selection/isConnectionSelected']('root:2_2')).toBe(true);
             expect($store.getters['selection/isConnectionSelected']('root:2_3')).toBe(false);
+        });
+
+        it('get all selected annotations', () => {
+            expect($store.getters['selection/selectedAnnotations']).toStrictEqual([
+                { id: 'root:3_1', text: 'Annotation text' },
+                { id: 'root:3_2', text: 'Annotation text 2' }
+            ]);
+        });
+
+        it('get all selected annotations ids', () => {
+            expect($store.getters['selection/selectedAnnotationIds']).toStrictEqual(['root:3_1', 'root:3_2']);
+        });
+
+        it('test if annotations is selected', () => {
+            expect($store.getters['selection/isAnnotationSelected']('root:3_2')).toBe(true);
+            expect($store.getters['selection/isAnnotationSelected']('root:3_3')).toBe(false);
+        });
+
+        it('get all selected annotations without a active workflow', () => {
+            storeConfig.workflow.state.activeWorkflow = null;
+            $store = mockVuexStore(storeConfig);
+            expect($store.getters['selection/selectedAnnotations']).toStrictEqual([]);
         });
 
         it('selection is empty', () => {

@@ -17,7 +17,12 @@ describe('ContextMenu.vue', () => {
         isEnabled: vi.fn().mockReturnValue(false)
     };
 
-    const doMount = ({ props = {}, selectedNodes, singleSelectedNode, selectedConnections } = {}) => {
+    const doMount = ({
+        props = {},
+        selectedNodes,
+        singleSelectedNode,
+        isSelectionEmpty
+    } = {}) => {
         const defaultProps = {
             position: {
                 x: 10,
@@ -33,7 +38,7 @@ describe('ContextMenu.vue', () => {
                 getters: {
                     selectedNodes: selectedNodes || ((state) => state._selectedNodes),
                     singleSelectedNode: singleSelectedNode || (() => null),
-                    selectedConnections: selectedConnections || (() => [])
+                    isSelectionEmpty: isSelectionEmpty || (() => false)
                 }
             }
         };
@@ -82,7 +87,7 @@ describe('ContextMenu.vue', () => {
     });
 
     it('sets items on mounted', () => {
-        const { wrapper } = doMount();
+        const { wrapper } = doMount({ isSelectionEmpty: () => true });
 
         expect(renderedMenuItems(wrapper).length).toBe(4);
     });
@@ -100,7 +105,7 @@ describe('ContextMenu.vue', () => {
     });
 
     it('items are not set reactively', async () => {
-        const { wrapper, $store } = doMount();
+        const { wrapper, $store } = doMount({ isSelectionEmpty: () => true });
 
         $store.state.selection._selectedNodes = ['a node'];
         expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
@@ -110,7 +115,7 @@ describe('ContextMenu.vue', () => {
     });
 
     it('uses right format for MenuItems', async () => {
-        const { wrapper } = doMount();
+        const { wrapper } = doMount({ isSelectionEmpty: () => true });
 
         await Vue.nextTick();
 
@@ -142,7 +147,7 @@ describe('ContextMenu.vue', () => {
         const assertItems = (items) => items.map(item => expect.objectContaining(item));
 
         it('shows correct menu items if nothing is selected', async () => {
-            const { wrapper } = doMount();
+            const { wrapper } = doMount({ isSelectionEmpty: () => true });
 
             await Vue.nextTick();
 

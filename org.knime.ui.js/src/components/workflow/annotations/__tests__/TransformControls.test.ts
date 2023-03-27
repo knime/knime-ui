@@ -4,6 +4,9 @@ import { h as createElement } from 'vue';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
 
+import * as $shapes from '@/style/shapes.mjs';
+import * as $colors from '@/style/colors.mjs';
+
 import TransformControls from '../TransformControls.vue';
 import { transformBounds,
     DIRECTIONS,
@@ -22,14 +25,15 @@ vi.mock('../transform-control-utils', async () => {
 });
 
 describe('TransformControls.vue', () => {
-    const defaultProps: { initialValue: Bounds, disabled: boolean } = {
+    const defaultProps: { initialValue: Bounds, showTransformControls: boolean, showSelection: boolean} = {
         initialValue: {
             x: 10,
             y: 10,
             width: 100,
             height: 100
         },
-        disabled: false
+        showTransformControls: false,
+        showSelection: false
     };
 
     const mockedTransformBounds = vi.mocked(transformBounds).mockReturnValue({
@@ -81,7 +85,7 @@ describe('TransformControls.vue', () => {
             slots: {
                 default: (props) => createElement(getScopedComponent, { scope: props })
             },
-            global: { plugins: [$store] }
+            global: { plugins: [$store], mocks: { $shapes, $colors } }
         });
 
         return { wrapper };
@@ -89,8 +93,8 @@ describe('TransformControls.vue', () => {
 
     const getSlottedChildComponent = (wrapper: VueWrapper<any>) => wrapper.findComponent({ name: 'SlottedChild' });
 
-    it('should render the transform boxshould render the transform controls correctly', () => {
-        const { wrapper } = doMount();
+    it('should render the transform box', () => {
+        const { wrapper } = doMount({ props: { showSelection: true } });
 
         const transformBox = wrapper.find('rect.transform-box');
         expect(transformBox.attributes('x')).toBe(defaultProps.initialValue.x.toString());
@@ -100,7 +104,7 @@ describe('TransformControls.vue', () => {
     });
 
     it('should render the transform controls correctly', () => {
-        const { wrapper } = doMount();
+        const { wrapper } = doMount({ props: { showTransformControls: true } });
 
         const { initialValue: bounds } = defaultProps;
         expect(wrapper.findAll('.transform-control').length).toBe(DIRECTIONS.length);
@@ -133,7 +137,8 @@ describe('TransformControls.vue', () => {
 
     it.each(DIRECTIONS)('should transform direction "%s" correctly', (direction) => {
         const { wrapper } = doMount({
-            screenToCanvasCoordinatesMock: vi.fn(() => () => [20, 20])
+            screenToCanvasCoordinatesMock: vi.fn(() => () => [20, 20]),
+            props: { showTransformControls: true }
         });
         const { initialValue: bounds } = defaultProps;
 
@@ -153,7 +158,7 @@ describe('TransformControls.vue', () => {
     });
 
     it('should emit a transformEnd event', () => {
-        const { wrapper } = doMount();
+        const { wrapper } = doMount({ props: { showTransformControls: true } });
 
         const { initialValue: bounds } = defaultProps;
 
@@ -162,7 +167,7 @@ describe('TransformControls.vue', () => {
     });
 
     it('should clean up event listeners', () => {
-        const { wrapper } = doMount();
+        const { wrapper } = doMount({ props: { showTransformControls: true } });
 
         wrapper.find('.transform-control-n').trigger('pointerdown');
 

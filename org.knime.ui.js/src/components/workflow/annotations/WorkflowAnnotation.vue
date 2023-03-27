@@ -38,7 +38,12 @@ export default defineComponent({
             activeWorkflowId: state => state.activeWorkflow.info.containerId
         }),
         ...mapState('selection', ['selectedAnnotations']),
-        ...mapGetters('selection', ['isAnnotationSelected']),
+        ...mapGetters('selection', [
+            'isAnnotationSelected',
+            'selectedNodeIds',
+            'selectedConnections',
+            'selectedAnnotationIds'
+        ]),
         annotationWrapperStyle() {
             const {
                 backgroundColor,
@@ -72,6 +77,15 @@ export default defineComponent({
             }
 
             return this.selectionPreview === 'show' || this.isSelected;
+        },
+        showTransformControls() {
+            const isMoreThanOneAnnotationSelected = this.selectedAnnotationIds.length > 1;
+            const isOneOrMoreNodesSelected = this.selectedNodeIds.length >= 1;
+            const isOneOrMoreConnectionsSelected = this.selectedConnections.length >= 1;
+            let isMoreThanOneItemSelected =
+            isMoreThanOneAnnotationSelected || isOneOrMoreNodesSelected || isOneOrMoreConnectionsSelected;
+            
+            return this.isSelected && !isMoreThanOneItemSelected;
         }
     },
     methods: {
@@ -114,7 +128,7 @@ export default defineComponent({
 
 <template>
   <TransformControls
-    :is-selected="isSelected"
+    :show-transform-controls="showTransformControls"
     :show-selection="showSelectionPlane"
     :initial-value="annotation.bounds"
     @transform-end="moveAnnotation($event.bounds)"
