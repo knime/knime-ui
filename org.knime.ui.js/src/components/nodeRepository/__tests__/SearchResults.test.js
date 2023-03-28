@@ -8,9 +8,7 @@ import ScrollViewContainer from '../ScrollViewContainer.vue';
 import NodeList from '../NodeList.vue';
 
 describe('SearchResults', () => {
-
     const doMount = ({ propsOverrides = {} } = {}) => {
-
         const searchActions = {
             searchTopNodesNextPage: vi.fn().mockImplementation(() => new Promise(r => setTimeout(r, 10))),
             searchBottomNodesNextPage: vi.fn().mockImplementation(() => new Promise(r => setTimeout(r, 20))),

@@ -254,7 +254,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('displays placeholder message if there are no suggested nodes', async () => {
-            let { wrapper } = await doMount({ nodeRecommendationsResponse: []});
+            let { wrapper } = await doMount({ nodeRecommendationsResponse: [] });
             await Vue.nextTick();
 
             expect(wrapper.find('.no-recommendations').exists()).toBe(true);

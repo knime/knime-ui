@@ -6,7 +6,6 @@ import SidebarSearchResults from '../SidebarSearchResults.vue';
 import SearchResults from '@/components/nodeRepository/SearchResults.vue';
 
 describe('SidebarSearchResults', () => {
-
     const doMount = () => {
         const $store = mockVuexStore({
             nodeRepository: {

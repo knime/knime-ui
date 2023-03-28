@@ -301,6 +301,7 @@ export default {
 .quick-add-node {
   --quick-add-node-height: 450;
   --quick-add-node-header-height: 73;
+
   width: 340px;
   margin-top: calc(var(--ghost-size) / 2 * 1px + var(--extra-margin) * 1px + 3px);
 
@@ -358,7 +359,7 @@ export default {
 
   & .header {
     height: calc(var(--quick-add-node-header-height) * 1px);
-    padding: 15px 15px 5px 15px;
+    padding: 15px 15px 5px;
 
     & hr {
       margin: 10px 0;
@@ -380,7 +381,7 @@ export default {
     padding-top: 3px;
   }
 
-  .search-bar {
+  & .search-bar {
     font-family: "Roboto Condensed", sans-serif;
     height: 40px;
     font-size: 17px;

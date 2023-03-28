@@ -312,7 +312,6 @@ describe('Node search partial store', () => {
     });
 
     describe('actions', () => {
-
         describe('search', () => {
             // eslint-disable-next-line vitest/max-nested-describe
             describe('searchNodes', () => {
