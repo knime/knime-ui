@@ -28,4 +28,7 @@ describe('NodeList', () => {
         expect(nodeTemplates.at(0).props('nodeTemplate')).toStrictEqual({ id: 'node1' });
         expect(nodeTemplates.at(1).props('nodeTemplate')).toStrictEqual({ id: 'node2' });
     });
+
+    // TODO: test keyboard nav
+
 });

@@ -4,16 +4,14 @@ import { mount } from '@vue/test-utils';
 
 import Button from 'webapps-common/ui/components/Button.vue';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
-import { mockVuexStore } from '@/test/utils';
+import { mockLodashThrottleAndDebounce, mockVuexStore } from '@/test/utils';
 
 import { API } from '@api';
 import * as $shapes from '@/style/shapes.mjs';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
 import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
-import {
-    searchNodesResponse as defaultSearchNodesResponse, searchNodesResponse
-} from '@/store/common/__tests__/nodeSearch.test';
+import { searchNodesResponse } from '@/store/common/__tests__/nodeSearch.test';
 
 const defaultNodeRecommendationsResponse = [{
     inPorts: [{ typeId: 'org.knime.core.node.BufferedDataTable' }],
@@ -49,6 +47,8 @@ const notInCollectionSearchResult = {
         outPorts: []
     }]
 };
+
+mockLodashThrottleAndDebounce();
 
 describe('QuickAddNodeMenu.vue', () => {
     let FloatingMenuStub = {

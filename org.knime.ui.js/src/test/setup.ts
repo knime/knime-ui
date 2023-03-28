@@ -18,27 +18,3 @@ vi.mock('raf-throttle', () => ({
         };
     }
 }));
-
-vi.mock('lodash', async () => {
-    const actual = await vi.importActual('lodash');
-
-    const debounce = function (func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    };
-
-    const throttle = function (func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    };
-
-    return {
-        ...actual,
-        debounce,
-        throttle
-    };
-});

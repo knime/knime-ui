@@ -10,6 +10,9 @@ import CloseableTagList from '../CloseableTagList.vue';
 import CategoryResults from '../CategoryResults.vue';
 import SearchResults from '../SearchResults.vue';
 import NodeDescriptionOverlay from '../NodeDescriptionOverlay.vue';
+import { mockLodashThrottleAndDebounce } from '@/test/utils';
+
+mockLodashThrottleAndDebounce();
 
 describe('NodeRepository', () => {
     let doShallowMount, wrapper, $store, searchNodesMock, searchTopNodesNextPageMock, setSelectedTagsMock,

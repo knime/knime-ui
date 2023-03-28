@@ -17,7 +17,10 @@ describe('NodeCategory', () => {
                 { id: 'node:3' },
                 { id: 'node:4' },
                 { id: 'node:5' }
-            ]
+            ],
+            selectedNode: {
+                id: 'some-node'
+            }
         };
         doShallowMount = () => {
             wrapper = shallowMount(NodeCategory, { props });

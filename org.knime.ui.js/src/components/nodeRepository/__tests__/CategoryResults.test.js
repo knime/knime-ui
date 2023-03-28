@@ -22,7 +22,8 @@ describe('CategoryResults', () => {
                 { tag: 'tag:1', nodes: ['node:1'] },
                 { tag: 'tag:2', nodes: ['node:1'] }
             ],
-            categoryScrollPosition: 100
+            categoryScrollPosition: 100,
+            selectedNode: { id: 'selected-node-id' }
         };
 
         doShallowMount = () => {
@@ -75,10 +76,12 @@ describe('CategoryResults', () => {
         let nodeCategory = wrapper.findAllComponents(NodeCategory);
         expect(nodeCategory.at(0).props()).toStrictEqual({
             tag: 'tag:1',
+            selectedNode: { id: 'selected-node-id' },
             nodes: ['node:1']
         });
         expect(nodeCategory.at(1).props()).toStrictEqual({
             tag: 'tag:2',
+            selectedNode: { id: 'selected-node-id' },
             nodes: ['node:1']
         });
     });
