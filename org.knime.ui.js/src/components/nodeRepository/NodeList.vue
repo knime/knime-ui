@@ -24,6 +24,20 @@ export default {
         }
     },
     emits: ['enter-key', 'showMore', 'update:selectedNode', 'navReachedTop', 'navReachedEnd'],
+    watch: {
+        selectedNode: {
+            immediate: false,
+            handler(newSelectedNode) {
+                if (!newSelectedNode || !this.nodes) {
+                    return;
+                }
+                const nodeIndex = this.nodes.findIndex(node => node.id === newSelectedNode?.id);
+                if (nodeIndex >= 0) {
+                    this.domFocusNode(nodeIndex);
+                }
+            }
+        }
+    },
     expose: ['focusFirst', 'focusLast'],
     methods: {
         nodeTemplateProps(node) {
@@ -33,18 +47,20 @@ export default {
             };
         },
         focusLast() {
-            this.focusItem(this.nodes[this.nodes.length - 1]);
+            this.focusItem(this.nodes.at(-1));
         },
         focusFirst() {
-            this.focusItem(this.nodes[0]);
+            this.focusItem(this.nodes.at(0));
         },
         focusItem(node) {
-            // focus for nav to work
-            this.$refs.list.focus();
             // select the item if the current selection is not in our list
             if (!this.nodes.find(node => node.id === this.selectedNode?.id)) {
                 this.$emit('update:selectedNode', node);
             }
+        },
+        domFocusNode(nodeIndex) {
+            const nodeListElement = this.$el.querySelector(`[data-index="${nodeIndex}"]`);
+            nodeListElement?.focus();
         },
         onKeyDown(key) {
             // no navigation for empty nodes
@@ -52,7 +68,7 @@ export default {
                 return;
             }
 
-            const activeItemIndex = this.nodes.findIndex(x => x.id === this.selectedNode?.id);
+            const activeItemIndex = this.nodes.findIndex(node => node.id === this.selectedNode?.id);
 
             // switch from items to upper input elements (e.g. search box) on the first row
             if (activeItemIndex < NODES_PER_ROW && key === 'up') {
@@ -60,12 +76,13 @@ export default {
                 return;
             }
 
+            // switch to next list on down key
             if (activeItemIndex + NODES_PER_ROW > this.nodes.length && key === 'down') {
                 this.$emit('navReachedEnd');
                 return;
             }
 
-            const focusNext = (indexOffset) => {
+            const selectNextNode = (indexOffset) => {
                 const nextIndex = activeItemIndex + indexOffset;
                 if (nextIndex >= this.nodes.length) {
                     this.$emit('navReachedEnd');
@@ -75,29 +92,26 @@ export default {
                 if (node) {
                     this.$emit('update:selectedNode', node);
                 }
-                // use a DOM query as refs are not soreted and we would need to sort them every time
-                const nodeListElement = this.$refs.list.querySelector(`[data-index="${nextIndex}"]`);
-                nodeListElement?.focus();
             };
 
             // items navigation
             if (key === 'up') {
-                focusNext(-NODES_PER_ROW);
+                selectNextNode(-NODES_PER_ROW);
                 return;
             }
 
             if (key === 'down') {
-                focusNext(NODES_PER_ROW);
+                selectNextNode(NODES_PER_ROW);
                 return;
             }
 
             if (key === 'left') {
-                focusNext(-1);
+                selectNextNode(-1);
                 return;
             }
 
             if (key === 'right') {
-                focusNext(+1);
+                selectNextNode(+1);
             }
         }
     }
@@ -127,9 +141,7 @@ export default {
           name="item"
           v-bind="nodeTemplateProps(node)"
         >
-          <NodeTemplate
-            v-bind="nodeTemplateProps(node)"
-          />
+          <NodeTemplate v-bind="nodeTemplateProps(node)" />
         </slot>
       </li>
     </ul>
@@ -147,38 +159,38 @@ export default {
 
 <style lang="postcss" scoped>
 .nodes-container {
-  margin-bottom: 13px;
+    margin-bottom: 13px;
 
-  & .nodes {
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0 -5px;
-    list-style-type: none;
+    & .nodes {
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -5px;
+        list-style-type: none;
 
-    &:focus {
-      outline: none;
+        &:focus {
+            outline: none;
+        }
+
+        & li {
+            /* fixes the scrolling to top selected border cut off problem */
+            padding: 3px 0;
+
+            &:focus {
+                outline: none;
+            }
+        }
     }
-
-    & li {
-      /* fixes the scrolling to top selected border cut off problem */
-      padding: 3px 0;
-
-      &:focus {
-        outline: none;
-      }
-    }
-  }
 }
 
 .show-more {
-  color: var(--knime-masala);
-  font-weight: 400;
-  margin: 0 auto 10px;
-  display: block;
+    color: var(--knime-masala);
+    font-weight: 400;
+    margin: 0 auto 10px;
+    display: block;
 
-  &:active {
-    background-color: var(--knime-black);
-  }
+    &:active {
+        background-color: var(--knime-black);
+    }
 }
 </style>

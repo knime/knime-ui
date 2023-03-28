@@ -1,5 +1,5 @@
-import { expect, describe, it } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { expect, describe, it, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
 
 import NodeTemplate from '../NodeTemplate.vue';
 import NodeList from '../NodeList.vue';
@@ -7,10 +7,11 @@ import NodeList from '../NodeList.vue';
 describe('NodeList', () => {
     const defaultProps = {
         hasMoreNodes: false,
-        nodes: [{ id: 'node1' }, { id: 'node2' }]
+        nodes: [{ id: 'node1' }, { id: 'node2' }, { id: 'node3' }, { id: 'node4' }, { id: 'node5' }, { id: 'node6' }],
+        selectedNode: { id: 'node1' }
     };
 
-    const doShallowMount = (props = {}) => shallowMount(NodeList, { props: { ...defaultProps, ...props } });
+    const doShallowMount = (props = {}) => mount(NodeList, { props: { ...defaultProps, ...props } });
 
     it('show-more button', async () => {
         const wrapper = doShallowMount({ hasMoreNodes: true });
@@ -29,6 +30,98 @@ describe('NodeList', () => {
         expect(nodeTemplates.at(1).props('nodeTemplate')).toStrictEqual({ id: 'node2' });
     });
 
-    // TODO: test keyboard nav
+    it('emits enter event for nodes', async () => {
+        const wrapper = doShallowMount();
 
+        await wrapper.findAll('li').at(2).trigger('keydown.enter');
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.emitted('enter-key')).toStrictEqual([[{ id: 'node3' }]]);
+    });
+
+    it('sets dom focus if selected node changes and is in our list', async () => {
+        const wrapper = doShallowMount();
+            
+        const listItems = wrapper.findAll('li');
+        expect(listItems.length).toBe(6);
+
+        const focusMock = vi.fn();
+        listItems.at(3).element.focus = focusMock;
+
+        const wrongFocusMock = vi.fn();
+        [0, 1, 2, 4, 5].forEach((index) => {
+            listItems.at(index).element.focusMock = wrongFocusMock;
+        });
+
+        await wrapper.setProps({ selectedNode: { id: 'node4' } });
+        await wrapper.vm.$nextTick();
+
+        expect(focusMock).toBeCalled();
+        expect(wrongFocusMock).toBeCalledTimes(0);
+    });
+
+    describe('keyboard navigation', () => {
+        it('navigates down', async () => {
+            const wrapper = doShallowMount();
+
+            await wrapper.find('ul').trigger('keydown.down');
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.emitted('update:selectedNode')).toStrictEqual([[{ id: 'node4' }]]);
+        });
+
+        it('navigates up', async () => {
+            const wrapper = doShallowMount({ selectedNode: { id: 'node6' } });
+
+            await wrapper.find('ul').trigger('keydown.up');
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.emitted('update:selectedNode')).toStrictEqual([[{ id: 'node3' }]]);
+        });
+
+        it('navigates left', async () => {
+            const wrapper = doShallowMount({ selectedNode: { id: 'node5' } });
+
+            await wrapper.find('ul').trigger('keydown.left');
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.emitted('update:selectedNode')).toStrictEqual([[{ id: 'node4' }]]);
+        });
+
+        it('navigates right', async () => {
+            const wrapper = doShallowMount({ selectedNode: { id: 'node3' } });
+
+            await wrapper.find('ul').trigger('keydown.left');
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.emitted('update:selectedNode')).toStrictEqual([[{ id: 'node2' }]]);
+        });
+
+        it('emits event if nav reached top for up key', async () => {
+            const wrapper = doShallowMount({ selectedNode: { id: 'node2' } });
+
+            await wrapper.find('ul').trigger('keydown.up');
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.emitted('navReachedTop')).toBeTruthy();
+        });
+
+        it('emits event if nav reached bottom for down key', async () => {
+            const wrapper = doShallowMount({ selectedNode: { id: 'node4' } });
+
+            await wrapper.find('ul').trigger('keydown.down');
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.emitted('navReachedEnd')).toBeTruthy();
+        });
+
+        it('emits event if nav reached bottom for right key', async () => {
+            const wrapper = doShallowMount({ selectedNode: { id: 'node6' } });
+
+            await wrapper.find('ul').trigger('keydown.right');
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.emitted('navReachedEnd')).toBeTruthy();
+        });
+    });
 });
