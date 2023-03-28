@@ -72,7 +72,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', ['hasNodeRecommendationsEnabled', 'hasNodeCollectionActive']),
+        ...mapState('application', ['hasNodeRecommendationsEnabled', 'hasNodeCollectionActive', 'availablePortTypes']),
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('quickAddNodes', ['topNodes', 'bottomNodes', 'recommendedNodes', 'isShowingBottomNodes']),
         ...mapGetters('workflow', ['isWritable']),
@@ -154,11 +154,10 @@ export default {
                 return; // end here
             }
 
-            const { availablePortTypes } = this.$store.state.application;
             const [offsetX, offsetY] = calculatePortOffset({
                 targetPorts: inPorts,
                 sourcePort: this.port,
-                availablePortTypes
+                availablePortTypes: this.availablePortTypes
             });
 
             // add node

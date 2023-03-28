@@ -94,7 +94,6 @@ export default {
         />
         <hr>
         <SearchBar
-          ref="serachBar"
           v-model="searchQuery"
           placeholder="Search Nodes"
           class="search-bar"

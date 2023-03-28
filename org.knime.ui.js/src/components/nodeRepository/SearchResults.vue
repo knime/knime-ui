@@ -14,7 +14,6 @@ export type SearchActions = {
     toggleShowingBottomNodes: () => Promise<any>
 }
 
-// noinspection TypeScriptValidateTypes
 /**
  * Reusable search results. Please keep this store free.
  */
@@ -266,6 +265,7 @@ export default defineComponent({
 }
 
 .results {
+  /* this two rules fix the jumping of the collapsible */
   scrollbar-width: thin;
   scrollbar-gutter: stable both-edges;
 
