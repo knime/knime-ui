@@ -58,18 +58,6 @@ describe('SidebarSearchResults', () => {
         expect(results.props('query')).toStrictEqual($store.state.nodeRepository.query);
     });
 
-    it('updates selectedNode', async () => {
-        const { wrapper, commitSpy, $store } = doMount();
-
-        let results = wrapper.findComponent(SearchResults);
-        expect(results.props('selectedNode')).toBe($store.state.nodeRepository.selectedNode);
-
-        results.vm.$emit('update:selectedNode', { id: 'another-node' });
-        await wrapper.vm.$nextTick();
-
-        expect(commitSpy).toBeCalledWith('nodeRepository/setSelectedNode', { id: 'another-node' });
-    });
-
     it('updates scroll position', async () => {
         const { wrapper, commitSpy, $store } = doMount();
 
