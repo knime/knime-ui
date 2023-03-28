@@ -49,7 +49,8 @@ export default defineComponent({
             handler() {
                 this.innerValue = getGridAdjustedBounds(this.initialValue);
             },
-            immediate: true
+            immediate: true,
+            deep: true
         }
     },
 
