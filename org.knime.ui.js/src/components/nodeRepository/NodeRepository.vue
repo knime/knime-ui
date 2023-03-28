@@ -98,7 +98,6 @@ export default {
           v-model="searchQuery"
           placeholder="Search Nodes"
           class="search-bar"
-          @keydown.down.prevent.stop="$refs.searchResults.focusFirst()"
         />
       </div>
       <CloseableTagList
@@ -111,7 +110,6 @@ export default {
     <SidebarSearchResults
       v-if="showSearchResults"
       ref="searchResults"
-      @focus-search-bar="$refs.serachBar.focus()"
     />
     <CategoryResults v-else />
     <Portal to="extension-panel">

@@ -12,26 +12,17 @@ export default {
         DraggableNodeTemplate,
         SearchResults
     },
-    emits: ['focusSearchBar'],
-    expose: ['focusFirst'],
     computed: {
         ...mapState('nodeRepository', [
             'topNodes',
             'bottomNodes',
             'query',
             'selectedTags',
+            'selectedNode',
             'isShowingBottomNodes'
         ]),
         ...mapState('application', ['hasNodeCollectionActive']),
 
-        selectedNode: {
-            get() {
-                return this.$store.state.nodeRepository.selectedNode;
-            },
-            set(value) {
-                this.$store.commit('nodeRepository/setSelectedNode', value);
-            }
-        },
         searchScrollPosition: {
             get() {
                 return this.$store.state.nodeRepository.searchScrollPosition;
@@ -51,10 +42,7 @@ export default {
     methods: {
         ...mapActions('nodeRepository', [
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
-        ]),
-        focusFirst() {
-            this.$refs.searchResults?.focusFirst();
-        }
+        ])
     }
 };
 </script>
@@ -62,8 +50,8 @@ export default {
 <template>
   <SearchResults
     ref="searchResults"
-    v-model:selected-node="selectedNode"
     v-model:search-scroll-position="searchScrollPosition"
+    :selected-node="selectedNode"
     :search-actions="searchActions"
     :is-showing-bottom-nodes="isShowingBottomNodes"
     :selected-tags="selectedTags"
@@ -72,7 +60,6 @@ export default {
     :top-nodes="topNodes"
     :draggable="true"
     :has-node-collection-active="hasNodeCollectionActive"
-    @nav-reached-top="$emit('focusSearchBar', $event)"
   >
     <template #topNodeTemplate="slotProps">
       <DraggableNodeTemplate v-bind="slotProps" />
