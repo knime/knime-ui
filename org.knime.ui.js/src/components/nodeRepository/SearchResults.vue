@@ -99,11 +99,11 @@ export default defineComponent({
     },
     methods: {
         // Also currently the NodeRepository isn't destroyed upon closing
-        onSaveScrollPosition(position) {
+        onSaveScrollPosition(position: number) {
             this.$emit('update:searchScrollPosition', position);
         },
         async onSearchChanged() {
-            let { scroller } = this.$refs;
+            let scroller = this.$refs.scroller as InstanceType<typeof ScrollViewContainer>;
 
             // wait for new content to be displayed, then scroll to top
             await this.$nextTick();
@@ -128,18 +128,22 @@ export default defineComponent({
                 await this.searchActions.toggleShowingBottomNodes();
             }
             await this.$nextTick();
-            this.$refs.bottomList?.focusFirst();
+            const bottomList = this.$refs.bottomList as InstanceType<typeof NodeList>;
+            bottomList?.focusFirst();
         },
         focusFirst() {
+            const bottomList = this.$refs.bottomList as InstanceType<typeof NodeList>;
+            const topList = this.$refs.topList as InstanceType<typeof NodeList>;
             if (this.topNodes.length > 0) {
-                this.$refs.topList?.focusFirst();
+                topList?.focusFirst();
             } else {
-                this.$refs.bottomList?.focusFirst();
+                bottomList?.focusFirst();
             }
         },
         bottomListNavReachedTop() {
+            const topList = this.$refs.topList as InstanceType<typeof NodeList>;
             if (this.topNodes.length > 0) {
-                this.$refs.topList?.focusLast();
+                topList?.focusLast();
             } else {
                 this.$emit('navReachedTop');
             }
