@@ -85,34 +85,6 @@ describe('workflow store: Editing', () => {
     });
 
     describe('actions', () => {
-        // it('wrap api call: automatically include projectId and workflowId', () => {
-        //     let apiCall = vi.fn();
-
-        //     let wrappedCall = wrapAPI(apiCall);
-
-        //     let vuexContext = {
-        //         state: {
-        //             activeWorkflow: {
-        //                 projectId: 'p1',
-        //                 info: { containerId: 'w1' }
-        //             }
-        //         }
-        //     };
-
-        //     wrappedCall(vuexContext);
-        //     expect(apiCall).toHaveBeenCalledWith({
-        //         projectId: 'p1',
-        //         workflowId: 'w1'
-        //     });
-
-        //     wrappedCall(vuexContext, { arg1: 'value' });
-        //     expect(apiCall).toHaveBeenCalledWith({
-        //         projectId: 'p1',
-        //         workflowId: 'w1',
-        //         arg1: 'value'
-        //     });
-        // });
-
         describe('add node', () => {
             const setupStoreWithWorkflow = async () => {
                 mockedAPI.workflowCommand.AddNode.mockImplementation(() => ({ newNodeId: 'new-mock-node' }));
@@ -316,8 +288,10 @@ describe('workflow store: Editing', () => {
             const { store } = await loadStore();
             const nodesArray = {};
             const connectionsArray = {};
+            const annotationsArray = [];
             const nodeIds = [];
             const connectionIds = [];
+            const annotationIds = [];
             for (let i = 0; i < amount / 2; i++) {
                 const id = `node-${i}`;
                 nodesArray[id] = { id, allowedActions: { canDelete: true } };
@@ -330,9 +304,17 @@ describe('workflow store: Editing', () => {
                 store.dispatch('selection/selectConnection', id);
                 connectionIds.push(id);
             }
+            for (let i = 0; i < amount / 2; i++) {
+                const id = `annotation-${i}`;
+                annotationsArray[i] = { id };
+                store.dispatch('selection/selectAnnotation', id);
+                annotationIds.push(id);
+            }
+            
             store.commit('workflow/setActiveWorkflow', {
                 nodes: nodesArray,
                 connections: connectionsArray,
+                workflowAnnotations: annotationsArray,
                 projectId: 'foo',
                 info: {
                     containerId: 'test'
@@ -345,7 +327,7 @@ describe('workflow store: Editing', () => {
                 workflowId: 'test',
                 nodeIds,
                 connectionIds,
-                annotationIds: []
+                annotationIds
             });
         });
 
@@ -358,12 +340,14 @@ describe('workflow store: Editing', () => {
             nodesArray[nodeName] = { id: nodeName, allowedActions: { canDelete: false } };
             const connectionsArray = {};
             connectionsArray[connectorName] = { id: connectorName, allowedActions: { canDelete: false } };
+            const annotationsArray = [];
 
             const setupStoreWithWorkflow = async () => {
                 const loadStoreResponse = await loadStore();
                 loadStoreResponse.store.commit('workflow/setActiveWorkflow', {
                     nodes: nodesArray,
                     connections: connectionsArray,
+                    workflowAnnotations: annotationsArray,
                     projectId: 'foo',
                     info: {
                         containerId: 'test'
@@ -463,7 +447,8 @@ describe('workflow store: Editing', () => {
                                 canReset: false
                             }
                         }
-                    }
+                    },
+                    workflowAnnotations: []
                 });
                 return result;
             };
@@ -552,7 +537,8 @@ describe('workflow store: Editing', () => {
                                 canReset: false
                             }
                         }
-                    }
+                    },
+                    workflowAnnotations: []
                 });
 
                 return result;

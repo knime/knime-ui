@@ -7,11 +7,11 @@ import { $bus } from '@/plugins/event-bus';
 import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
 
-import { findNodesInsideOfRectangle as findNodesInsideOfRectangleMock } from '@/util/rectangleSelection';
+import { findItemsInsideOfRectangle as findItemsInsideOfRectangleMock } from '@/util/rectangleSelection';
 import SelectionRectangle from '../SelectionRectangle.vue';
 
 vi.mock('@/util/rectangleSelection', () => ({
-    findNodesInsideOfRectangle: vi.fn()
+    findItemsInsideOfRectangle: vi.fn()
 }));
 
 describe('SelectionRectangle', () => {
@@ -24,9 +24,11 @@ describe('SelectionRectangle', () => {
             nodes: {}
         };
 
-        findNodesInsideOfRectangleMock.mockReturnValue({
-            inside: ['inside-1', 'inside-2'],
-            outside: ['outside-1', 'outside-2']
+        findItemsInsideOfRectangleMock.mockReturnValue({
+            nodesInside: ['inside-1', 'inside-2'],
+            nodesOutside: ['outside-1', 'outside-2'],
+            annotationsInside: ['ann-inside-1', 'ann-inside-2'],
+            annotationsOutside: ['ann-outside-1', 'ann-outside-2']
         });
 
         storeConfig = {
@@ -42,12 +44,15 @@ describe('SelectionRectangle', () => {
             },
             selection: {
                 getters: {
-                    selectedNodeIds: vi.fn().mockReturnValue([])
+                    selectedNodeIds: vi.fn().mockReturnValue([]),
+                    selectedAnnotationIds: vi.fn().mockReturnValue([])
                 },
                 actions: {
                     selectNodes: vi.fn(),
                     deselectNodes: vi.fn(),
-                    deselectAllObjects: vi.fn()
+                    deselectAllObjects: vi.fn(),
+                    selectAnnotations: vi.fn(),
+                    deselectAnnotations: vi.fn()
                 }
             }
         };
@@ -132,6 +137,8 @@ describe('SelectionRectangle', () => {
         storeConfig.selection.actions.selectNodes.mockClear();
         storeConfig.selection.actions.deselectNodes.mockClear();
         storeConfig.selection.actions.deselectAllObjects.mockClear();
+        storeConfig.selection.actions.selectAnnotations.mockClear();
+        storeConfig.selection.actions.deselectAnnotations.mockClear();
     });
 
     it('all object are deselected on start', async () => {
@@ -167,8 +174,8 @@ describe('SelectionRectangle', () => {
             await Vue.nextTick();
         });
 
-        it('correctly uses algorithm to find included and excluded nodes', () => {
-            expect(findNodesInsideOfRectangleMock).toHaveBeenCalledWith({
+        it('correctly uses algorithm to find included and excluded items', () => {
+            expect(findItemsInsideOfRectangleMock).toHaveBeenCalledWith({
                 startPos: { x: 10, y: 10 },
                 endPos: { x: 300, y: 300 },
                 workflow
@@ -187,9 +194,11 @@ describe('SelectionRectangle', () => {
 
         it('removes selection preview of previously selected nodes', async () => {
             // move those nodes out of selection
-            findNodesInsideOfRectangleMock.mockReturnValue({
-                inside: [],
-                outside: ['inside-1', 'inside-2']
+            findItemsInsideOfRectangleMock.mockReturnValue({
+                nodesInside: [],
+                nodesOutside: ['inside-1', 'inside-2'],
+                annotationsInside: [],
+                annotationsOutside: []
             });
             pointerMove({ clientX: 0, clientY: 0 });
             await Vue.nextTick();
@@ -215,6 +224,48 @@ describe('SelectionRectangle', () => {
                 expect.anything(), ['inside-1', 'inside-2']
             );
         });
+
+        it('shows selection preview for included annotations', () => {
+            expect(wrapper.emitted('annotationSelectionPreview')).toStrictEqual([[{
+                annotationId: 'ann-inside-1',
+                type: 'show'
+            }], [{
+                annotationId: 'ann-inside-2',
+                type: 'show'
+            }]]);
+        });
+
+        it('removes selection preview of previously selected annotations', async () => {
+            findItemsInsideOfRectangleMock.mockReturnValue({
+                nodesInside: [],
+                nodesOutside: [],
+                annotationsInside: [],
+                annotationsOutside: ['ann-inside-1', 'ann-inside-2']
+            });
+            pointerMove({ clientX: 0, clientY: 0 });
+            await Vue.nextTick();
+
+            const selectionPreviewEvents = wrapper.emitted('annotationSelectionPreview');
+
+            expect(selectionPreviewEvents.slice(2)).toStrictEqual([
+                [{
+                    annotationId: 'ann-inside-1',
+                    type: null
+                }],
+                [{
+                    annotationId: 'ann-inside-2',
+                    type: null
+                }]
+            ]);
+        });
+
+        it('selects annotations on pointer up', () => {
+            pointerUp();
+
+            expect(storeConfig.selection.actions.selectAnnotations).toHaveBeenCalledWith(
+                expect.anything(), ['ann-inside-1', 'ann-inside-2']
+            );
+        });
     });
 
     describe('de-Selection with Shift', () => {
@@ -222,6 +273,10 @@ describe('SelectionRectangle', () => {
             storeConfig.selection.getters.selectedNodeIds = vi.fn().mockReturnValue([
                 'inside-1',
                 'inside-2'
+            ]);
+            storeConfig.selection.getters.selectedAnnotationIds = vi.fn().mockReturnValue([
+                'ann-inside-1',
+                'ann-inside-2'
             ]);
             doShallowMount();
 
@@ -247,7 +302,7 @@ describe('SelectionRectangle', () => {
             ]);
         });
 
-        it('pointerup clears selection preview', () => {
+        it('pointerup clears selection preview for nodes', () => {
             pointerUp();
 
             expect(wrapper.emitted('nodeSelectionPreview').slice(2)).toStrictEqual([
@@ -269,10 +324,46 @@ describe('SelectionRectangle', () => {
                 expect.anything(), ['inside-1', 'inside-2']
             );
         });
+
+        it('deselects already selected annotations with preview', () => {
+            expect(wrapper.emitted('annotationSelectionPreview')).toStrictEqual([
+                [{
+                    annotationId: 'ann-inside-1',
+                    type: 'hide'
+                }],
+                [{
+                    annotationId: 'ann-inside-2',
+                    type: 'hide'
+                }]
+            ]);
+        });
+
+        it('pointerup clears selection preview for annotations', () => {
+            pointerUp();
+
+            expect(wrapper.emitted('annotationSelectionPreview').slice(2)).toStrictEqual([
+                [{
+                    annotationId: 'ann-inside-1',
+                    type: null
+                }], [{
+                    annotationId: 'ann-inside-2',
+                    type: null
+                }]
+            ]);
+        });
+
+        it('pointerup deselects annotations', () => {
+            pointerUp();
+
+            expect(storeConfig.selection.actions.selectAnnotations).not.toHaveBeenCalled();
+            expect(storeConfig.selection.actions.deselectAnnotations).toHaveBeenCalledWith(
+                expect.anything(), ['ann-inside-1', 'ann-inside-2']
+            );
+        });
     });
 
     describe('selection with shift', () => {
-        it('adds to selection with shift', async () => {
+        it('adds nodes to selection with shift', async () => {
             storeConfig.selection.getters.selectedNodeIds = vi.fn().mockReturnValue([
                 'root:1'
             ]);
@@ -298,10 +389,37 @@ describe('SelectionRectangle', () => {
                 expect.anything(), ['inside-1', 'inside-2']
             );
         });
+
+        it('adds annotations to selection with shift', async () => {
+            storeConfig.selection.getters.selectedAnnotationIds = vi.fn().mockReturnValue([
+                'root:1'
+            ]);
+            doShallowMount();
+
+            pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
+            pointerMove({ clientX: 36, clientY: 36 });
+            await Vue.nextTick();
+
+            expect(wrapper.emitted('annotationSelectionPreview')).toStrictEqual([
+                [{
+                    annotationId: 'ann-inside-1',
+                    type: 'show'
+                }],
+                [{
+                    annotationId: 'ann-inside-2',
+                    type: 'show'
+                }]
+            ]);
+
+            pointerUp();
+            expect(storeConfig.selection.actions.selectAnnotations).toHaveBeenCalledWith(
+                expect.anything(), ['ann-inside-1', 'ann-inside-2']
+            );
+        });
     });
 
     describe('non actions', () => {
-        it('unregisters events on beforeUnmount', () => {
+        it('unregister events on beforeUnmount', () => {
             vi.spyOn($bus, 'off');
             doShallowMount();
             wrapper.vm.$parent.$off = vi.fn();
@@ -316,7 +434,9 @@ describe('SelectionRectangle', () => {
             await Vue.nextTick();
             pointerUp();
             expect(wrapper.emitted('nodeSelectionPreview')).toBeFalsy();
+            expect(wrapper.emitted('annotationSelectionPreview')).toBeFalsy();
             expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(0);
+            expect(storeConfig.selection.actions.selectAnnotations).toHaveBeenCalledTimes(0);
         });
 
         it('does nothing if pointerId is different', async () => {
@@ -328,7 +448,9 @@ describe('SelectionRectangle', () => {
             await Vue.nextTick();
             pointerUp();
             expect(wrapper.emitted('nodeSelectionPreview')).toBeFalsy();
+            expect(wrapper.emitted('annotationSelectionPreview')).toBeFalsy();
             expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(0);
+            expect(storeConfig.selection.actions.selectAnnotations).toHaveBeenCalledTimes(0);
         });
     });
 });

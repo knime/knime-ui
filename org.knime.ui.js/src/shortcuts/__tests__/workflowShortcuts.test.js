@@ -10,6 +10,7 @@ describe('workflowShortcuts', () => {
         containerType = 'project',
         selectedNodes = [],
         selectedConnections = [],
+        selectedAnnotations = [],
         singleSelectedNode = mockSelectedNode,
         isWorkflowWritable = true,
         getScrollContainerElement = vi.fn()
@@ -38,6 +39,7 @@ describe('workflowShortcuts', () => {
                 'selection/selectedNodes': selectedNodes,
                 'selection/selectedConnections': selectedConnections,
                 'selection/singleSelectedNode': singleSelectedNode,
+                'selection/selectedAnnotations': selectedAnnotations,
                 'workflow/isWritable': isWorkflowWritable
             }
         };

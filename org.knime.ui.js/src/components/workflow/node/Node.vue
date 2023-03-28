@@ -281,7 +281,7 @@ export default {
 
             const metaOrCtrlKey = getMetaOrCtrlKey();
 
-            if (event.shiftKey || metaOrCtrlKey) {
+            if (event.shiftKey || event[metaOrCtrlKey]) {
                 // Multi select
                 if (this.isNodeSelected(this.id)) {
                     this.deselectNode(this.id);
@@ -307,7 +307,7 @@ export default {
 
             const metaOrCtrlKey = getMetaOrCtrlKey();
 
-            if (event.shiftKey || metaOrCtrlKey) {
+            if (event.shiftKey || event[metaOrCtrlKey]) {
                 // Multi select
                 this.selectNode(this.id);
             } else if (!this.isNodeSelected(this.id)) {

@@ -1,7 +1,7 @@
 import { expect, describe, beforeEach, it } from 'vitest';
-import { findNodesInsideOfRectangle } from '../rectangleSelection';
+import { findItemsInsideOfRectangle } from '../rectangleSelection';
 
-describe('findNodesInsideOfRectangle', () => {
+describe('findItemsInsideOfRectangle', () => {
     let workflow;
 
     beforeEach(() => {
@@ -35,7 +35,36 @@ describe('findNodesInsideOfRectangle', () => {
                         y: 0
                     }
                 }
-            }
+            },
+            workflowAnnotations: [
+                {
+                    id: 'ann1',
+                    bounds: {
+                        x: 50,
+                        y: 0,
+                        width: 10,
+                        height: 10
+                    }
+                },
+                {
+                    id: 'ann2',
+                    bounds: {
+                        x: 0,
+                        y: 50,
+                        width: 10,
+                        height: 10
+                    }
+                },
+                {
+                    id: 'ann3',
+                    bounds: {
+                        x: 50,
+                        y: 50,
+                        width: 10,
+                        height: 10
+                    }
+                }
+            ]
         };
     });
 
@@ -44,15 +73,19 @@ describe('findNodesInsideOfRectangle', () => {
         let p2 = { x: 75, y: 75 }; // node position - 1 off
 
         // forwards
-        expect(findNodesInsideOfRectangle({ startPos: p1, endPos: p2, workflow })).toStrictEqual({
-            inside: ['up-left', 'down-left', 'down-right', 'up-right'],
-            outside: []
+        expect(findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow })).toStrictEqual({
+            nodesInside: ['up-left', 'down-left', 'down-right', 'up-right'],
+            nodesOutside: [],
+            annotationsInside: ['ann1', 'ann2', 'ann3'],
+            annotationsOutside: []
         });
 
         // backwards
-        expect(findNodesInsideOfRectangle({ startPos: p2, endPos: p1, workflow })).toStrictEqual({
-            inside: ['up-left', 'down-left', 'down-right', 'up-right'],
-            outside: []
+        expect(findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow })).toStrictEqual({
+            nodesInside: ['up-left', 'down-left', 'down-right', 'up-right'],
+            nodesOutside: [],
+            annotationsInside: ['ann1', 'ann2', 'ann3'],
+            annotationsOutside: []
         });
     });
 
@@ -61,15 +94,19 @@ describe('findNodesInsideOfRectangle', () => {
         let p2 = { x: 49, y: 49 }; // node position - 1 off
 
         // forwards
-        expect(findNodesInsideOfRectangle({ startPos: p1, endPos: p2, workflow })).toStrictEqual({
-            inside: [],
-            outside: ['up-left', 'down-left', 'down-right', 'up-right']
+        expect(findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow })).toStrictEqual({
+            nodesInside: [],
+            nodesOutside: ['up-left', 'down-left', 'down-right', 'up-right'],
+            annotationsInside: [],
+            annotationsOutside: ['ann1', 'ann2', 'ann3']
         });
 
         // backwards
-        expect(findNodesInsideOfRectangle({ startPos: p2, endPos: p1, workflow })).toStrictEqual({
-            inside: [],
-            outside: ['up-left', 'down-left', 'down-right', 'up-right']
+        expect(findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow })).toStrictEqual({
+            nodesInside: [],
+            nodesOutside: ['up-left', 'down-left', 'down-right', 'up-right'],
+            annotationsInside: [],
+            annotationsOutside: ['ann1', 'ann2', 'ann3']
         });
     });
 
@@ -78,15 +115,19 @@ describe('findNodesInsideOfRectangle', () => {
         let p2 = { x: 50, y: 50 }; // node position - 1 off
 
         // forwards
-        expect(findNodesInsideOfRectangle({ startPos: p1, endPos: p2, workflow })).toStrictEqual({
-            inside: ['up-left', 'down-left', 'down-right', 'up-right'],
-            outside: []
+        expect(findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow })).toStrictEqual({
+            nodesInside: ['up-left', 'down-left', 'down-right', 'up-right'],
+            nodesOutside: [],
+            annotationsInside: ['ann3'],
+            annotationsOutside: ['ann1', 'ann2']
         });
 
         // backwards
-        expect(findNodesInsideOfRectangle({ startPos: p2, endPos: p1, workflow })).toStrictEqual({
-            inside: ['up-left', 'down-left', 'down-right', 'up-right'],
-            outside: []
+        expect(findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow })).toStrictEqual({
+            nodesInside: ['up-left', 'down-left', 'down-right', 'up-right'],
+            nodesOutside: [],
+            annotationsInside: ['ann3'],
+            annotationsOutside: ['ann1', 'ann2']
         });
     });
 });

@@ -5,6 +5,7 @@ import * as Vue from 'vue';
 import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/utils';
+import { mockUserAgent } from 'jest-useragent-mock';
 
 import { $bus } from '@/plugins/event-bus';
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
@@ -374,7 +375,6 @@ describe('Node', () => {
 
         it('click to select', async () => {
             doMount();
-
             await wrapper.find('.mouse-clickable').trigger('click', { button: 0 });
 
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
@@ -384,7 +384,8 @@ describe('Node', () => {
             );
         });
 
-        it.each(['shift', 'ctrl', 'meta'])('%ss-click adds to selection', async (mod) => {
+        it.each(['shift', 'ctrl'])('%ss-click adds to selection', async (mod) => {
+            mockUserAgent('windows');
             storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValueOnce(true);
             doMount();
 
@@ -396,11 +397,37 @@ describe('Node', () => {
             );
         });
 
-        it.each(['shift', 'ctrl', 'meta'])('%ss-click removes from selection', async (mod) => {
+        it('meta click adds to selection', async () => {
+            mockUserAgent('mac');
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValueOnce(true);
+            doMount();
+
+            await wrapper.find('.mouse-clickable').trigger('click', { button: 0, metaKey: true });
+
+            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:1')
+            );
+        });
+
+        it.each(['shift', 'ctrl'])('%ss-click removes from selection', async (mod) => {
+            mockUserAgent('windows');
             storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValue(true);
             doMount();
 
             await wrapper.find('.mouse-clickable').trigger('click', { button: 0, [`${mod}Key`]: true });
+            expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:1')
+            );
+        });
+
+        it('meta click removes to selection', async () => {
+            mockUserAgent('mac');
+            storeConfig.selection.getters.isNodeSelected = () => vi.fn().mockReturnValue(true);
+            doMount();
+
+            await wrapper.find('.mouse-clickable').trigger('click', { button: 0, metaKey: true });
             expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')

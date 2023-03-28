@@ -155,6 +155,29 @@ describe('Workflow', () => {
             expect(node.vm.setSelectionPreview).toHaveBeenLastCalledWith('show');
         });
 
+        it('forwards annotationSelectionPreview calls to the correct annotation', () => {
+            const store = getStore({
+                customWorkflow: {
+                    workflowAnnotations: [
+                        {
+                            bounds: { x: 0, y: 0, width: 42, height: 42 },
+                            backgroundColor: '#fff',
+                            borderColor: '#000',
+                            id: 'id1'
+                        }
+                    ]
+                }
+            });
+            const wrapper = doShallowMount({ store });
+    
+            const annotation =
+            wrapper.findAllComponents(WorkflowAnnotation).find(c => c.props('annotation').id === 'id1');
+            annotation.vm.setSelectionPreview = vi.fn();
+            wrapper.vm.applyAnnotationSelectionPreview({ type: 'show', annotationId: 'id1' });
+
+            expect(annotation.vm.setSelectionPreview).toHaveBeenLastCalledWith('show');
+        });
+
         it('renders nodes', () => {
             const wrapper = doShallowMount();
 

@@ -91,15 +91,26 @@ export default defineComponent({
     methods: {
         ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
-        onLeftClick() {
-            return this.isSelected
-                ? this.deselectAnnotation(this.annotation.id)
-                : this.selectAnnotation(this.annotation.id);
+        onLeftClick(event: PointerEvent) {
+            const metaOrCtrlKey = getMetaOrCtrlKey();
+
+            if (event.shiftKey || event[metaOrCtrlKey]) {
+                // Multi select
+                if (this.isSelected) {
+                    this.deselectAnnotation(this.annotation.id);
+                } else {
+                    this.selectAnnotation(this.annotation.id);
+                }
+            } else {
+                // Single select
+                this.deselectAllObjects();
+                this.selectAnnotation(this.annotation.id);
+            }
         },
         onContextMenu(event: PointerEvent) {
             const metaOrCtrlKey = getMetaOrCtrlKey();
 
-            if (event.shiftKey || metaOrCtrlKey) {
+            if (event.shiftKey || event[metaOrCtrlKey]) {
             // Multi select
                 this.selectAnnotation(this.annotation.id);
             } else if (!this.isSelected) {
@@ -132,6 +143,8 @@ export default defineComponent({
     :show-selection="showSelectionPlane"
     :initial-value="annotation.bounds"
     @transform-end="moveAnnotation($event.bounds)"
+    @click="onLeftClick"
+    @pointerdown.right.stop="onContextMenu"
   >
     <template #default="{ transformedBounds }">
       <foreignObject
@@ -139,8 +152,6 @@ export default defineComponent({
         :y="transformedBounds.y"
         :width="transformedBounds.width"
         :height="transformedBounds.height"
-        @click="onLeftClick"
-        @pointerdown.right.stop="onContextMenu"
       >
         <LegacyAnnotationText
           :text="annotation.text"
