@@ -143,7 +143,7 @@ describe('Workflow Annotation', () => {
             projectId,
             workflowId,
             bounds,
-            id: defaultProps.annotation.id
+            annotationId: defaultProps.annotation.id
         });
     });
 

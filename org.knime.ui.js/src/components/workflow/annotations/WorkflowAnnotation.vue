@@ -128,7 +128,7 @@ export default defineComponent({
             API.workflowCommand.TransformWorkflowAnnotation({
                 projectId: this.projectId,
                 workflowId: this.activeWorkflowId,
-                id: this.annotation.id,
+                annotationId: this.annotation.id,
                 bounds
             });
         }

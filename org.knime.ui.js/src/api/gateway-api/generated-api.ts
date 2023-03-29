@@ -2387,6 +2387,39 @@ export interface RemovePortCommand extends PortCommand {
 export namespace RemovePortCommand {
 }
 /**
+ * Alters the z-order of a workflow annotation.
+ * @export
+ * @interface ReorderWorkflowAnnotationCommand
+ */
+export interface ReorderWorkflowAnnotationCommand extends WorkflowAnnotationCommand {
+
+    /**
+     * The specific reorder action to perform, can be one of four: &#39;bring_forward&#39; brings the selected  annotation forward by one relative-to-other-annotations position; &#39;bring_to_front&#39; moves the  selected annotation in front of all other annotations; &#39;send_backward&#39; sends the selected  annotation backward by one relative-to-other-annotations position; &#39;send_to_back&#39; sends the  selected annotation back of all other annotations.
+     * @type {string}
+     * @memberof ReorderWorkflowAnnotationCommand
+     */
+    action: ReorderWorkflowAnnotationCommand.ActionEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace ReorderWorkflowAnnotationCommand
+ */
+export namespace ReorderWorkflowAnnotationCommand {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ActionEnum {
+        BringForward = 'bring_forward',
+        BringToFront = 'bring_to_front',
+        SendBackward = 'send_backward',
+        SendToBack = 'send_to_back'
+    }
+}
+/**
  * Replace a node with a new one.
  * @export
  * @interface ReplaceNodeCommand
@@ -2658,14 +2691,8 @@ export interface StyleRange {
  * @export
  * @interface TransformWorkflowAnnotationCommand
  */
-export interface TransformWorkflowAnnotationCommand extends WorkflowCommand {
+export interface TransformWorkflowAnnotationCommand extends WorkflowAnnotationCommand {
 
-    /**
-     * the id of the annotation to transform
-     * @type {string}
-     * @memberof TransformWorkflowAnnotationCommand
-     */
-    id: string;
     /**
      *
      * @type {Bounds}
@@ -2951,6 +2978,29 @@ export interface WorkflowAnnotation extends Annotation {
 export namespace WorkflowAnnotation {
 }
 /**
+ * A command that does something to a specific workflow annotation.
+ * @export
+ * @interface WorkflowAnnotationCommand
+ */
+export interface WorkflowAnnotationCommand extends WorkflowCommand {
+
+    /**
+     * the id of the annotation to transform
+     * @type {string}
+     * @memberof WorkflowAnnotationCommand
+     */
+    annotationId: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace WorkflowAnnotationCommand
+ */
+export namespace WorkflowAnnotationCommand {
+}
+/**
  * Event for all kind of workflow changes.
  * @export
  * @interface WorkflowChangedEvent
@@ -3043,7 +3093,8 @@ export namespace WorkflowCommand {
         Copy = 'copy',
         Cut = 'cut',
         Paste = 'paste',
-        TransformWorkflowAnnotation = 'transform_workflow_annotation'
+        TransformWorkflowAnnotation = 'transform_workflow_annotation',
+        ReorderWorkflowAnnotation = 'reorder_workflow_annotation'
     }
 }
 /**
@@ -3968,6 +4019,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.TransformWorkflowAnnotation }
+		});
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Alters the z-order of a workflow annotation.
+     */
+	ReorderWorkflowAnnotation(
+		params: { projectId: string, workflowId: string } & Omit<ReorderWorkflowAnnotationCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ReorderWorkflowAnnotation }
 		});
 		return postProcessCommandResponse(commandResponse);
 	},	
