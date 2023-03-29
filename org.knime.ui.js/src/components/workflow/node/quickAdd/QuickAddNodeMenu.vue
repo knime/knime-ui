@@ -403,6 +403,10 @@ export default {
     & .content {
       padding-bottom: 10px;
     }
+    
+    & .nodes {
+      justify-content: center;
+    }
   }
 
   & .placeholder {
