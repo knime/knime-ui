@@ -3,7 +3,7 @@ import { toNodeWithFullPorts } from '../util/portDataMapper';
 import * as nodeSearch from './common/nodeSearch';
 
 /**
- * Store that manages quick add nodes menu states. Shares the search with nodeRepository
+ * Store that manages quick add nodes menu states.
  */
 
 const recommendationLimit = 12;
