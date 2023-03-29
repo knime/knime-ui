@@ -53,6 +53,7 @@ org.knime.base.views.node.densityplot.DensityPlotNodeFactory
 org.knime.base.views.node.heatmap.HeatmapNodeFactory
 org.knime.base.views.node.histogram.HistogramNodeFactory
 org.knime.base.views.node.lineplot.LinePlotNodeFactory
+org.knime.base.views.node.parallelcoordinatesplot.ParallelCoordinatesPlotNodeFactory
 org.knime.base.views.node.piechart.PieChartNodeFactory
 org.knime.base.views.node.scatterplot.ScatterPlotNodeFactory
 org.knime.base.views.node.stackedareachart.StackedAreaChartNodeFactory
