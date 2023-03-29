@@ -11,10 +11,10 @@ describe('NodeList', () => {
         selectedNode: { id: 'node1' }
     };
 
-    const doShallowMount = (props = {}) => mount(NodeList, { props: { ...defaultProps, ...props } });
+    const doMount = (props = {}) => mount(NodeList, { props: { ...defaultProps, ...props } });
 
     it('show-more button', async () => {
-        const wrapper = doShallowMount({ hasMoreNodes: true });
+        const wrapper = doMount({ hasMoreNodes: true });
 
         const showMoreButton = wrapper.find('.show-more');
         expect(showMoreButton.isVisible()).toBe(true);
@@ -24,14 +24,14 @@ describe('NodeList', () => {
     });
 
     it('renders nodes', () => {
-        const wrapper = doShallowMount();
+        const wrapper = doMount();
         let nodeTemplates = wrapper.findAllComponents(NodeTemplate);
         expect(nodeTemplates.at(0).props('nodeTemplate')).toStrictEqual({ id: 'node1' });
         expect(nodeTemplates.at(1).props('nodeTemplate')).toStrictEqual({ id: 'node2' });
     });
 
     it('emits enter event for nodes', async () => {
-        const wrapper = doShallowMount();
+        const wrapper = doMount();
 
         await wrapper.findAll('li').at(2).trigger('keydown.enter');
         await wrapper.vm.$nextTick();
@@ -40,7 +40,7 @@ describe('NodeList', () => {
     });
 
     it('sets dom focus if selected node changes and is in our list', async () => {
-        const wrapper = doShallowMount();
+        const wrapper = doMount();
             
         const listItems = wrapper.findAll('li');
         expect(listItems.length).toBe(6);
@@ -62,7 +62,7 @@ describe('NodeList', () => {
 
     describe('keyboard navigation', () => {
         it('navigates down', async () => {
-            const wrapper = doShallowMount();
+            const wrapper = doMount();
 
             await wrapper.find('ul').trigger('keydown.down');
             await wrapper.vm.$nextTick();
@@ -71,7 +71,7 @@ describe('NodeList', () => {
         });
 
         it('navigates up', async () => {
-            const wrapper = doShallowMount({ selectedNode: { id: 'node6' } });
+            const wrapper = doMount({ selectedNode: { id: 'node6' } });
 
             await wrapper.find('ul').trigger('keydown.up');
             await wrapper.vm.$nextTick();
@@ -80,7 +80,7 @@ describe('NodeList', () => {
         });
 
         it('navigates left', async () => {
-            const wrapper = doShallowMount({ selectedNode: { id: 'node5' } });
+            const wrapper = doMount({ selectedNode: { id: 'node5' } });
 
             await wrapper.find('ul').trigger('keydown.left');
             await wrapper.vm.$nextTick();
@@ -89,7 +89,7 @@ describe('NodeList', () => {
         });
 
         it('navigates right', async () => {
-            const wrapper = doShallowMount({ selectedNode: { id: 'node3' } });
+            const wrapper = doMount({ selectedNode: { id: 'node3' } });
 
             await wrapper.find('ul').trigger('keydown.left');
             await wrapper.vm.$nextTick();
@@ -98,7 +98,7 @@ describe('NodeList', () => {
         });
 
         it('emits event if nav reached top for up key', async () => {
-            const wrapper = doShallowMount({ selectedNode: { id: 'node2' } });
+            const wrapper = doMount({ selectedNode: { id: 'node2' } });
 
             await wrapper.find('ul').trigger('keydown.up');
             await wrapper.vm.$nextTick();
@@ -107,7 +107,7 @@ describe('NodeList', () => {
         });
 
         it('emits event if nav reached bottom for down key', async () => {
-            const wrapper = doShallowMount({ selectedNode: { id: 'node4' } });
+            const wrapper = doMount({ selectedNode: { id: 'node4' } });
 
             await wrapper.find('ul').trigger('keydown.down');
             await wrapper.vm.$nextTick();
@@ -116,7 +116,7 @@ describe('NodeList', () => {
         });
 
         it('emits event if nav reached bottom for right key', async () => {
-            const wrapper = doShallowMount({ selectedNode: { id: 'node6' } });
+            const wrapper = doMount({ selectedNode: { id: 'node6' } });
 
             await wrapper.find('ul').trigger('keydown.right');
             await wrapper.vm.$nextTick();
