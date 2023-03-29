@@ -233,6 +233,7 @@ describe('ContextMenu.vue', () => {
                 assertItems([
                     { text: 'configureNode' },
                     { text: 'executeSelected' },
+                    { text: 'executeAndOpenView' },
                     { text: 'cancelSelected' },
                     { text: 'resetSelected' },
                     { text: 'editNodeLabel' },

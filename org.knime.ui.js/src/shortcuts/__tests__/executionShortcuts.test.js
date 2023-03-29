@@ -46,6 +46,15 @@ describe('executionShortcuts', () => {
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/executeNodes', 'selected');
             });
 
+            it('executeAndOpenView', async () => {
+                $store.getters['selection/singleSelectedNode'] = {
+                    id: 'root:0'
+                };
+                await executionShortcuts.executeAndOpenView.execute({ $store });
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/executeNodes', 'selected');
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/openView', 'root:0');
+            });
+
             it('cancelSelected', () => {
                 executionShortcuts.cancelSelected.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/cancelNodeExecution', 'selected');
