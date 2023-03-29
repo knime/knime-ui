@@ -53,6 +53,18 @@ export default {
         condition:
             ({ $store }) => $store.getters['selection/selectedNodes'].some(node => node.allowedActions.canExecute)
     },
+    executeAndOpenView: {
+        text: 'Execute and open view',
+        hotkey: ['Shift', 'F10'],
+        icon: ExecuteSelectedIcon,
+        execute:
+            async ({ $store }) => {
+                await $store.dispatch('workflow/executeNodes', 'selected');
+                $store.dispatch('workflow/openView', $store.getters['selection/singleSelectedNode'].id);
+            },
+        condition:
+            ({ $store }) => $store.getters['selection/selectedNodes'].some(node => node.allowedActions.canExecute)
+    },
     cancelSelected: {
         text: 'Cancel',
         title: 'Cancel selected nodes',

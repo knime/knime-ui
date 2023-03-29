@@ -15,13 +15,13 @@ export const actions = {
 
         if (Array.isArray(nodes)) {
             // act upon a list of nodes
-            API.node.changeNodeStates({ projectId, nodeIds: nodes, action, workflowId: containerId });
+            return API.node.changeNodeStates({ projectId, nodeIds: nodes, action, workflowId: containerId });
         } else if (nodes === 'all') {
             // act upon entire workflow
-            API.node.changeNodeStates({ projectId, action, nodeIds: [], workflowId: containerId });
+            return API.node.changeNodeStates({ projectId, action, nodeIds: [], workflowId: containerId });
         } else if (nodes === 'selected') {
             // act upon selected nodes
-            API.node.changeNodeStates({
+            return API.node.changeNodeStates({
                 projectId,
                 nodeIds: rootGetters['selection/selectedNodeIds'],
                 action,
@@ -43,7 +43,7 @@ export const actions = {
         });
     },
     executeNodes({ dispatch }, nodes) {
-        dispatch('changeNodeState', { action: 'execute', nodes });
+        return dispatch('changeNodeState', { action: 'execute', nodes });
     },
     resetNodes({ dispatch }, nodes) {
         dispatch('changeNodeState', { action: 'reset', nodes });

@@ -106,6 +106,7 @@ export default {
             const basicOperationsGroup = [
                 { name: 'configureNode', isVisible: this.singleSelectedNode },
                 { name: 'executeSelected', isVisible: this.selectedNodes.length },
+                { name: 'executeAndOpenView', isVisible: isView },
                 // Loop nodes
                 { name: 'resumeLoopExecution', isVisible: isLoopEnd },
                 { name: 'pauseLoopExecution', isVisible: isLoopEnd },
