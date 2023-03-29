@@ -2,6 +2,9 @@ import { expect, describe, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/utils';
+import { mockUserAgent } from 'jest-useragent-mock';
+
+import * as $colors from '@/style/colors.mjs';
 import * as $shapes from '@/style/shapes.mjs';
 import { API } from '@api';
 import { type WorkflowAnnotation, Annotation } from '@/api/gateway-api/generated-api';
@@ -15,7 +18,7 @@ describe('Workflow Annotation', () => {
         annotation: WorkflowAnnotation
     } = {
         annotation: {
-            id: '',
+            id: 'id1',
             textAlign: Annotation.TextAlignEnum.Right,
             borderWidth: 4,
             borderColor: '#000',
@@ -29,9 +32,12 @@ describe('Workflow Annotation', () => {
     const doMount = ({
         props = {},
         mocks = {},
-        isAnnotationSelectedMock = vi.fn().mockReturnValue(() => false)
+        isAnnotationSelectedMock = vi.fn().mockReturnValue(() => false),
+        selectedAnnotationIdsMock = vi.fn().mockReturnValue(() => []),
+        selectedNodeIdsMock = vi.fn().mockReturnValue(() => []),
+        selectedConnectionsMock = vi.fn().mockReturnValue(() => [])
     } = {}) => {
-        const defaultMocks = { $shapes };
+        const defaultMocks = { $shapes, $colors };
 
         const $store = mockVuexStore({
             workflow: {
@@ -44,10 +50,25 @@ describe('Workflow Annotation', () => {
             },
             selection: {
                 getters: {
-                    isAnnotationSelected: isAnnotationSelectedMock
+                    isAnnotationSelected: isAnnotationSelectedMock,
+                    selectedAnnotationIds: selectedAnnotationIdsMock,
+                    selectedNodeIds: selectedNodeIdsMock,
+                    selectedConnections: selectedConnectionsMock
+                },
+                actions: {
+                    deselectAllObjects: vi.fn(),
+                    selectAnnotation: vi.fn(),
+                    deselectAnnotation: vi.fn()
+                }
+            },
+            application: {
+                actions: {
+                    toggleContextMenu: vi.fn()
                 }
             }
         });
+
+        const dispatchSpy = vi.spyOn($store, 'dispatch');
 
         const wrapper = mount(WorkflowAnnotationComp, {
             props: { ...defaultProps, ...props },
@@ -57,7 +78,7 @@ describe('Workflow Annotation', () => {
             }
         });
 
-        return { wrapper, $store };
+        return { wrapper, $store, dispatchSpy };
     };
 
     it('should apply styles to legacy annotation', async () => {
@@ -123,6 +144,86 @@ describe('Workflow Annotation', () => {
             workflowId,
             bounds,
             id: defaultProps.annotation.id
+        });
+    });
+
+    describe('left click', () => {
+        it('click to select', async () => {
+            const { wrapper, dispatchSpy } = doMount();
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0 });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAllObjects', undefined);
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
+        });
+
+        it.each(['shift', 'ctrl'])('%ss-click adds to selection', async (mod) => {
+            mockUserAgent('windows');
+            const { wrapper, dispatchSpy } = doMount();
+
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0, [`${mod}Key`]: true });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
+        });
+
+        it('meta click adds to selection', async () => {
+            mockUserAgent('mac');
+            const { wrapper, dispatchSpy } = doMount();
+
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0, metaKey: true });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
+        });
+
+        it.each(['shift', 'ctrl'])('%ss-click removes from selection', async (mod) => {
+            mockUserAgent('windows');
+            const { wrapper, dispatchSpy } = doMount({
+                isAnnotationSelectedMock: vi.fn().mockReturnValue(() => true)
+            });
+
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0, [`${mod}Key`]: true });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAnnotation', 'id1');
+        });
+
+        it('meta click removes to selection', async () => {
+            mockUserAgent('mac');
+            const { wrapper, dispatchSpy } = doMount({
+                isAnnotationSelectedMock: vi.fn().mockReturnValue(() => true)
+            });
+
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0, metaKey: true });
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAnnotation', 'id1');
+        });
+    });
+
+    describe('context menu', () => {
+        it('click to select clicked annotation and deselect other items', async () => {
+            const { wrapper, dispatchSpy } = doMount();
+            await wrapper.findComponent(TransformControls).trigger('pointerdown', { button: 2 });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAllObjects', undefined);
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
+            expect(dispatchSpy).toHaveBeenCalledWith('application/toggleContextMenu', expect.anything());
+        });
+
+        it.each(['shift', 'ctrl'])('%ss-click adds to selection', async (mod) => {
+            mockUserAgent('windows');
+            const { wrapper, dispatchSpy } = doMount();
+
+            await wrapper.findComponent(TransformControls).trigger('pointerdown', { button: 2, [`${mod}Key`]: true });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
+            expect(dispatchSpy).toHaveBeenCalledWith('application/toggleContextMenu', expect.anything());
+        });
+
+        it('meta click adds to selection', async () => {
+            mockUserAgent('mac');
+            const { wrapper, dispatchSpy } = doMount();
+
+            await wrapper.findComponent(TransformControls).trigger('pointerdown', { button: 2, metaKey: true });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
+            expect(dispatchSpy).toHaveBeenCalledWith('application/toggleContextMenu', expect.anything());
         });
     });
 });

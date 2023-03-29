@@ -181,7 +181,7 @@ describe('TransformControls.vue', () => {
     });
 
     it('should hide the controls if the disabled prop is true', () => {
-        const { wrapper } = doMount({ props: { disabled: true } });
+        const { wrapper } = doMount({ props: { showTransformControls: false } });
 
         expect(wrapper.find('.transform-box').exists()).toBe(false);
         wrapper.findAll('.transform-control').forEach(_wrapper => {
