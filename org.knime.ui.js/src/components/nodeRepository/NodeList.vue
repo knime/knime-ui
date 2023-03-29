@@ -19,7 +19,7 @@ export default {
             default: false
         },
         selectedNode: {
-            type: Object,
+            type: [Object, null],
             default: null
         }
     },

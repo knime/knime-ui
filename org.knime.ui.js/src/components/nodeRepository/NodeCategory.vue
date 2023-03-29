@@ -19,7 +19,7 @@ export default {
             default: () => []
         },
         selectedNode: {
-            type: Object,
+            type: [Object, null],
             required: true
         }
     },
