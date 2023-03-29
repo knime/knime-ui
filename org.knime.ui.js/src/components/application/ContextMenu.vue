@@ -141,6 +141,7 @@ export default {
                 { name: 'createMetanode', isVisible: this.selectedNodes.length },
                 { name: 'createComponent', isVisible: this.selectedNodes.length },
                 { name: 'expandComponent', isVisible: isComponent },
+                { name: 'openComponent', isVisible: isComponent },
                 { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename component' }
             ];
 

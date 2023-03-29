@@ -170,6 +170,19 @@ export default {
             return $store.getters['selection/selectedNodes'].every(node => node.allowedActions.canCollapse !== 'false');
         }
     },
+    openComponent: {
+        text: 'Open component',
+        title: 'Open component',
+        hotkey: ['Ctrl', 'Double Click'],
+        execute:
+            ({ $store }) => {
+                const projectId = $store.state.application.activeProjectId;
+                const componentId = $store.getters['selection/singleSelectedNode'].id;
+                $store.dispatch('application/switchWorkflow', {
+                    newWorkflow: { workflowId: componentId, projectId }
+                });
+            }
+    },
     expandMetanode: {
         text: 'Expand metanode',
         title: 'Expand metanode',

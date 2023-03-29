@@ -372,6 +372,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'createMetanode' },
                     { text: 'createComponent' },
                     { text: 'expandComponent' },
+                    { text: 'openComponent' },
                     { text: 'Rename component' }
                 ])
             );

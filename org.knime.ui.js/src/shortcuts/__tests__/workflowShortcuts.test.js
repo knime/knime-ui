@@ -19,6 +19,7 @@ describe('workflowShortcuts', () => {
             dispatch: mockDispatch,
             state: {
                 application: {
+                    activeProjectId: 'activeTestProjectId',
                     hasClipboardSupport: true
                 },
                 workflow: {
@@ -109,6 +110,13 @@ describe('workflowShortcuts', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.createComponent.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'component' });
+        });
+
+        it('open component', () => {
+            const { $store, mockDispatch } = createStore();
+            workflowShortcuts.openComponent.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('application/switchWorkflow',
+                { newWorkflow: { workflowId: 'root:0', projectId: 'activeTestProjectId' } });
         });
 
         it('expand container node', () => {
