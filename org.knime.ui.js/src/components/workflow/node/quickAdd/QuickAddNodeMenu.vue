@@ -77,7 +77,6 @@ export default {
         ...mapState('quickAddNodes', ['topNodes', 'bottomNodes', 'recommendedNodes', 'isShowingBottomNodes']),
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('quickAddNodes', ['searchIsActive']),
-        ...mapState('application', ['hasNodeCollectionActive']),
 
         searchQuery: {
             get() {
