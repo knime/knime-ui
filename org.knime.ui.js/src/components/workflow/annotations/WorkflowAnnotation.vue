@@ -3,7 +3,6 @@ import { defineComponent, type PropType } from 'vue';
 import { mapState, mapActions, mapGetters } from 'vuex';
 
 import type { Bounds, WorkflowAnnotation } from '@/api/gateway-api/generated-api';
-import { API } from '@api';
 
 import { getMetaOrCtrlKey } from '@/util/navigator';
 import TransformControls from './TransformControls.vue';
@@ -84,7 +83,7 @@ export default defineComponent({
             const isOneOrMoreConnectionsSelected = this.selectedConnections.length >= 1;
             let isMoreThanOneItemSelected =
             isMoreThanOneAnnotationSelected || isOneOrMoreNodesSelected || isOneOrMoreConnectionsSelected;
-            
+
             return this.isSelected && !isMoreThanOneItemSelected;
         }
     },
@@ -125,11 +124,9 @@ export default defineComponent({
             this.selectionPreview = type;
         },
         moveAnnotation(bounds: Bounds) {
-            API.workflowCommand.TransformWorkflowAnnotation({
-                projectId: this.projectId,
-                workflowId: this.activeWorkflowId,
-                annotationId: this.annotation.id,
-                bounds
+            this.$store.dispatch('workflow/transformWorkflowAnnotation', {
+                bounds,
+                annotationId: this.annotation.id
             });
         }
     }

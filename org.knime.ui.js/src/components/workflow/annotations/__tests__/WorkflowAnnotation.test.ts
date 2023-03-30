@@ -7,6 +7,7 @@ import { mockUserAgent } from 'jest-useragent-mock';
 import * as $colors from '@/style/colors.mjs';
 import * as $shapes from '@/style/shapes.mjs';
 import { API } from '@api';
+import * as workflowStore from '@/store/workflow';
 import { type WorkflowAnnotation, Annotation } from '@/api/gateway-api/generated-api';
 
 import WorkflowAnnotationComp from '../WorkflowAnnotation.vue';
@@ -46,7 +47,8 @@ describe('Workflow Annotation', () => {
                         projectId: 'project1',
                         info: { containerId: 'root' }
                     }
-                }
+                },
+                actions: workflowStore.actions
             },
             selection: {
                 getters: {

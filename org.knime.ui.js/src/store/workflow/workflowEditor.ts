@@ -607,6 +607,18 @@ export const actions = {
         doAfterPaste?.();
         dispatch('selection/deselectAllObjects', null, { root: true });
         dispatch('selection/selectNodes', nodeIds, { root: true });
+    },
+
+    transformWorkflowAnnotation({ state }, { bounds, annotationId }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
+
+        API.workflowCommand.TransformWorkflowAnnotation({
+            projectId,
+            workflowId: containerId,
+            id: annotationId,
+            bounds
+        });
     }
 };
 
