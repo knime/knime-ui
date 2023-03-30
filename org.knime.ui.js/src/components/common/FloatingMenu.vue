@@ -63,10 +63,10 @@ export default {
         absolutePosition: { left: 0, top: 0 }
     }),
     computed: {
-        ...mapGetters('workflow', { isDraggingNodeInCanvas: 'isDragging' }),
         ...mapGetters('canvas', ['screenFromCanvasCoordinates']),
         ...mapState('canvas', ['zoomFactor']),
-        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' })
+        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' }),
+        ...mapState('workflow', { isDraggingNodeInCanvas: 'isDragging' })
     },
     watch: {
         canvasPosition() {
@@ -94,7 +94,7 @@ export default {
         if (this.disableInteractions) {
             this.setInteractionsEnabled(false);
         }
-        
+
         let kanvas = document.getElementById('kanvas');
         kanvas.addEventListener('scroll', this.onCanvasScroll);
 

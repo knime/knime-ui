@@ -77,19 +77,19 @@ describe('MoveableNodeContainer', () => {
                     ...mutations.workflow,
                     setHasAbortedNodeDrag(state, val) {
                         state.hasAbortedNodeDrag = val;
+                    },
+                    setIsDragging(state, val) {
+                        state.isDragging = val;
                     }
                 },
                 getters: {
                     isWritable() {
                         return true;
-                    },
-                    isDragging(state) {
-                        return state._isDragging;
                     }
                 },
                 actions: actions.workflow,
                 state: {
-                    _isDragging: isDragging,
+                    isDragging,
                     movePreviewDelta: { x: 250, y: 250 },
                     activeWorkflow: { nodes: { 'root:1': { id: 'root:1' }, 'root:2': { id: 'root:2' } } },
                     hasAbortedNodeDrag: false

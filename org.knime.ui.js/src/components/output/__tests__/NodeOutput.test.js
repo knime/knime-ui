@@ -47,7 +47,7 @@ describe('NodeOutput.vue', () => {
     const createStore = ({
         nodes = dummyNodes,
         selectedNodeIds = ['node1'],
-        isDragging = vi.fn().mockReturnValue(false),
+        isDragging = false,
         executeNodes = vi.fn()
     } = {}) => {
         const workflow = {
@@ -63,9 +63,9 @@ describe('NodeOutput.vue', () => {
                     info: {
                         containerId: 'workflowId'
                     }
-                }
+                },
+                isDragging
             },
-            getters: { isDragging },
             actions: { executeNodes }
         };
 
@@ -195,7 +195,7 @@ describe('NodeOutput.vue', () => {
     });
 
     it('should display placeholder when node is dragging', () => {
-        const store = createStore({ isDragging: vi.fn(() => true) });
+        const store = createStore({ isDragging: true });
         const wrapper = doMount(store);
 
         expect(placeholderMessage(wrapper)).toBe('Node output will be loaded after moving is completed');

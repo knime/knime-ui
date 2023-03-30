@@ -94,10 +94,7 @@ describe('FloatingMenu.vue', () => {
             },
             workflow: {
                 state: {
-                    _isDragging: isDraggingNodeInCanvas
-                },
-                getters: {
-                    isDragging: (state) => state._isDragging
+                    isDragging: isDraggingNodeInCanvas
                 }
             }
         };
@@ -144,7 +141,7 @@ describe('FloatingMenu.vue', () => {
 
         it('closes menu when a node is dragged in the canvas', async () => {
             const { wrapper, $store } = doMount();
-            $store.state.workflow._isDragging = true;
+            $store.state.workflow.isDragging = true;
 
             await Vue.nextTick();
             expect(wrapper.emitted('menuClose')).toBeDefined();

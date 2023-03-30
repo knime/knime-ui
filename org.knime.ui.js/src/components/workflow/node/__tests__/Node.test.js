@@ -94,6 +94,9 @@ describe('Node', () => {
         wrapper = null;
         storeConfig = {
             workflow: {
+                state: {
+                    isDragging: false
+                },
                 actions: {
                     loadWorkflow: vi.fn(),
                     executeNodes: vi.fn(),
@@ -105,8 +108,7 @@ describe('Node', () => {
                     removeContainerNodePort: vi.fn()
                 },
                 getters: {
-                    isWritable: () => true,
-                    isDragging: () => false
+                    isWritable: () => true
                 }
             },
             application: {
@@ -899,7 +901,7 @@ describe('Node', () => {
 
             triggerDragEvent(torso.element, 'dragenter', { types: [KnimeMIME] });
             await Vue.nextTick();
-            
+
             expect(torso.vm.$props.isDraggedOver).toBeTruthy();
             triggerDragEvent(torso.element, 'dragleave');
             await Vue.nextTick();

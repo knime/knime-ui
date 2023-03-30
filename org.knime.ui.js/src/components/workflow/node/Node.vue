@@ -185,8 +185,9 @@ export default {
     },
     computed: {
         ...mapState('application', { projectId: 'activeProjectId' }),
+        ...mapState('workflow', ['isDragging']),
         ...mapGetters('selection', ['isNodeSelected', 'singleSelectedNode']),
-        ...mapGetters('workflow', ['isWritable', 'isDragging']),
+        ...mapGetters('workflow', ['isWritable']),
         /**
          * Width of the node selection plane. It accounts not only for the node margins
          * but also for the width of the name as it changes

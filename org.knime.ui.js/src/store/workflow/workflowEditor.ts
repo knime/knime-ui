@@ -27,7 +27,8 @@ export const state = {
         nodeId: null,
         props: {},
         events: {}
-    }
+    },
+    isDragging: false
 };
 
 export const mutations = {
@@ -74,6 +75,10 @@ export const mutations = {
 
     setPortTypeMenuPreviewPort(state, previewPort) {
         state.portTypeMenu = { ...state.portTypeMenu, previewPort };
+    },
+
+    setIsDragging(state, value) {
+        state.isDragging = value;
     }
 };
 
@@ -606,8 +611,4 @@ export const actions = {
 };
 
 export const getters = {
-    // TODO: this getter is wrong and seems to take too much computation time while moving compared to before
-    isDragging({ movePreviewDelta }) {
-        return movePreviewDelta.x !== 0 || movePreviewDelta.y !== 0;
-    }
 };

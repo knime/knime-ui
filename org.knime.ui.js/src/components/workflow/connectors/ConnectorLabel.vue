@@ -26,8 +26,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('workflow', ['movePreviewDelta']),
-        ...mapGetters('workflow', ['isDragging']),
+        ...mapState('workflow', ['movePreviewDelta', 'isDragging']),
         ...mapGetters('selection', ['isNodeSelected']),
         /**
          * Find the position between two connectors and add some offset to let the label

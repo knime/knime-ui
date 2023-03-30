@@ -47,11 +47,8 @@ describe('NodePorts.vue', () => {
         let storeConfig = {
             workflow: {
                 state: () => ({
-                    __isDragging: false
+                    isDragging: false
                 }),
-                getters: {
-                    isDragging: (state) => state.__isDragging
-                },
                 actions: {
                     addNodePort: addNodePortMock,
                     removeNodePort: removeNodePortMock
@@ -237,8 +234,7 @@ describe('NodePorts.vue', () => {
 
             expect(normalPort.props('selected')).toBe(true);
 
-            // set custom state, to re-evaluate "isDragging"-Getter
-            $store.state.workflow.__isDragging = true;
+            $store.state.workflow.isDragging = true;
             await Vue.nextTick();
 
             expect(normalPort.props('selected')).toBe(false);

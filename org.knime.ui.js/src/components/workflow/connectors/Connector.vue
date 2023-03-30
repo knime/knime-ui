@@ -50,11 +50,11 @@ export default {
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
-            movePreviewDelta: 'movePreviewDelta'
+            movePreviewDelta: 'movePreviewDelta',
+            isDragging: 'isDragging'
         }),
         ...mapGetters('workflow', {
-            isWorkflowWritable: 'isWritable',
-            isDragging: 'isDragging'
+            isWorkflowWritable: 'isWritable'
         }),
         ...mapGetters('selection', [
             'isConnectionSelected',

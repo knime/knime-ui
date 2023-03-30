@@ -78,14 +78,12 @@ describe('Connector.vue', () => {
                                 inPorts: [portMock, portMock, portMock]
                             }
                         }
-                    }
+                    },
+                    isDragging: false
                 },
                 getters: {
                     isWritable() {
                         return true;
-                    },
-                    isDragging() {
-                        return false;
                     }
                 }
             },

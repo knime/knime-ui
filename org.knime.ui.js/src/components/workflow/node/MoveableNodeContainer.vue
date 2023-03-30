@@ -49,11 +49,11 @@ export default {
         nodeSelectionExtraHeight: 20
     }),
     computed: {
-        ...mapGetters('workflow', ['isWritable', 'isDragging']),
+        ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('application', ['activeProjectId']),
-        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedNodeDrag']),
+        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedNodeDrag', 'isDragging']),
         ...mapState('canvas', ['zoomFactor']),
 
         // Combined position of original position + the dragged amount
@@ -90,6 +90,7 @@ export default {
         handleMoveFromStore() {
             if (this.isDragging) {
                 this.$store.commit('workflow/resetMovePreview');
+                this.$store.commit('workflow/setIsDragging', false);
             }
         },
 
@@ -119,6 +120,7 @@ export default {
                     y: gridAdjustedPosition.y - this.position.y
                 }
             };
+            this.$store.commit('workflow/setIsDragging', true);
         },
 
         /**

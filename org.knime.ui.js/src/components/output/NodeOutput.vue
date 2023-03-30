@@ -45,9 +45,11 @@ export default {
     },
     computed: {
         ...mapState('application', { projectId: 'activeProjectId', availablePortTypes: 'availablePortTypes' }),
-        ...mapState('workflow', { workflowId: state => state.activeWorkflow.info.containerId }),
+        ...mapState('workflow', {
+            workflowId: state => state.activeWorkflow.info.containerId,
+            isDragging: state => state.isDragging
+        }),
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode']),
-        ...mapGetters('workflow', { isDragging: 'isDragging' }),
 
         canSelectTabs() {
             // allow selecting tabs when:
