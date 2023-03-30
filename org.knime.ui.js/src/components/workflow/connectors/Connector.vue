@@ -66,6 +66,7 @@ export default defineComponent({
             'singleSelectedNode',
             'selectedConnections'
         ]),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // Update position of source or destination node is being moved
@@ -152,8 +153,16 @@ export default defineComponent({
         },
         onConnectorDragDrop(dragEvent) {
             // TODO check if the dragged node is a new node or an existing one
-            const [x, y] = [dragEvent.clientX, dragEvent.clientY];
-            this.insertNode({ connectionId: this.id, position: { x, y }, nodeFactory: dragEvent.dataTransfer.getData(KnimeMIME) });
+            const [x, y] = this.screenToCanvasCoordinates([
+                dragEvent.clientX - this.$shapes.nodeSize / 2,
+                dragEvent.clientY - this.$shapes.nodeSize / 2
+            ]);
+            const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
+            if (this.allowedActions.canDelete) {
+                this.insertNode({ connectionId: this.id, position: { x, y }, nodeFactory });
+            } else {
+                window.alert('Cannot delete connection at this point. Insert node operation aborted.');
+            }
             this.isDraggedOver = false;
         }
     }
