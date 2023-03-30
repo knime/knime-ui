@@ -152,14 +152,27 @@ export default defineComponent({
             this.isDraggedOver = false;
         },
         onConnectorDragDrop(dragEvent) {
-            // TODO check if the dragged node is a new node or an existing one
-            const [x, y] = this.screenToCanvasCoordinates([
-                dragEvent.clientX - this.$shapes.nodeSize / 2,
-                dragEvent.clientY - this.$shapes.nodeSize / 2
-            ]);
             const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
+            this.onInsertNode(dragEvent.clientX, dragEvent.clientY, nodeFactory, null);
+        },
+        onNodeDragggingEnter() {
+            // TODO check if the node is valid (does not have connections) if valid, then call prevent default
+            this.isDraggedOver = true;
+        },
+        onNodeDragggingLeave() {
+            this.isDraggedOver = false;
+        },
+        onNodeDragggingEnd({ detail: { id, clientX, clientY } }) {
+            // TODO fix position
+            this.onInsertNode(clientX, clientY, null, id);
+        },
+        onInsertNode(clientX, clientY, nodeFactory, nodeId) {
+            const [x, y] = this.screenToCanvasCoordinates([
+                clientX - this.$shapes.nodeSize / 2,
+                clientY - this.$shapes.nodeSize / 2
+            ]);
             if (this.allowedActions.canDelete) {
-                this.insertNode({ connectionId: this.id, position: { x, y }, nodeFactory });
+                this.insertNode({ connectionId: this.id, position: { x, y }, nodeFactory, nodeId });
             } else {
                 window.alert('Cannot delete connection at this point. Insert node operation aborted.');
             }
@@ -185,6 +198,9 @@ export default defineComponent({
       @dragenter="onConnectorDragEnter"
       @dragleave="onConnectorDragLeave"
       @drop.stop="onConnectorDragDrop"
+      @node-dragging-enter.prevent="onNodeDragggingEnter"
+      @node-dragging-leave.prevent="onNodeDragggingLeave"
+      @node-dragging-end.prevent="onNodeDragggingEnd"
     />
     <path
       ref="visiblePath"

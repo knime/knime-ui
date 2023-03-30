@@ -46,7 +46,8 @@ export default {
         // Start position of the dragging
         startPos: null,
         nodeSelectionWidth: 0,
-        nodeSelectionExtraHeight: 20
+        nodeSelectionExtraHeight: 20,
+        lastHitTarget: null
     }),
     computed: {
         ...mapGetters('workflow', ['isWritable']),
@@ -133,6 +134,9 @@ export default {
                 return;
             }
 
+            // Notify elements under the cursor
+            this.notifyNodeDraggingListeners(clientX, clientY);
+
             const { nodeSize } = this.$shapes;
             const snapSize = altKey ? 1 : this.$shapes.gridSize.x;
 
@@ -165,16 +169,56 @@ export default {
          * function to guarantee order of event handling
          *
          */
-        onMoveEnd: throttle(function () {
+        onMoveEnd: throttle(function ({ detail: { endX, endY } }) {
             /* eslint-disable no-invalid-this */
             if (this.hasAbortedNodeDrag) {
                 this.setHasAbortedNodeDrag(false);
                 return;
             }
+            
+            if (this.lastHitTarget) {
+                this.lastHitTarget.dispatchEvent(
+                    new CustomEvent('node-dragging-end', {
+                        bubbles: true,
+                        cancelable: true,
+                        detail: {
+                            id: this.id,
+                            clientX: endX,
+                            clientY: endY
+                        }
+                    })
+                );
+                return;
+            }
 
             this.$store.dispatch('workflow/moveObjects');
             /* eslint-enable no-invalid-this */
-        })
+        }),
+
+        notifyNodeDraggingListeners(posX, posY) {
+            const hitTarget = document.elementFromPoint(posX, posY);
+
+            const isSameTarget = hitTarget && this.lastHitTarget === hitTarget;
+
+            if (!isSameTarget && this.lastHitTarget) {
+                this.lastHitTarget.dispatchEvent(
+                    new CustomEvent('node-dragging-leave', {
+                        bubbles: true,
+                        cancelable: true
+                    })
+                );
+            }
+
+            if (!isSameTarget && hitTarget) {
+                const notCancelled = hitTarget.dispatchEvent(
+                    new CustomEvent('node-dragging-enter', {
+                        bubbles: true,
+                        cancelable: true
+                    })
+                );
+                this.lastHitTarget = notCancelled ? null : hitTarget;
+            }
+        }
     }
 };
 </script>
@@ -184,7 +228,7 @@ export default {
     v-move="{ onMove, onMoveStart, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
     :data-node-id="id"
-    :class="[{ dragging: isDragging && isNodeSelected(id) }]"
+    :class="[{ dragging: isDragging && isNodeSelected(id) }, 'test-class']"
   >
     <slot :position="translationAmount" />
   </g>
@@ -193,6 +237,7 @@ export default {
 <style lang="postcss" scoped>
 .dragging {
   cursor: grabbing;
+  pointer-events: none;
 
   & :deep(.port) {
     pointer-events: none;
