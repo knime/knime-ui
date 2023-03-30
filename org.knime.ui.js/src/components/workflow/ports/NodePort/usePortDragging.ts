@@ -2,8 +2,9 @@ import { computed, ref } from 'vue';
 import { useStore } from 'vuex';
 import throttle from 'raf-throttle';
 
-import type { NodePort } from '@/api/gateway-api/generated-api';
+import type { NodePort, XY } from '@/api/gateway-api/generated-api';
 import { $bus } from '@/plugins/event-bus';
+import * as shapes from '@/style/shapes.mjs';
 
 import { detectConnectionCircle, type Direction } from '@/util/compatibleConnections';
 import { useEscapeStack } from '@/mixins/escapeStack';
@@ -39,6 +40,14 @@ const createConnectorFromEvent = (params: Params, absolutePoint: [number, number
         [relatedNode]: params.nodeId,
         [relatedPort]: params.port.index
     };
+};
+
+const MOVE_THRESHOLD = Math.ceil(shapes.portSize / 2);
+const isSignificantMove = (startPosition: XY, newPosition: XY) => {
+    const deltaX = Math.abs(newPosition.x - startPosition.x);
+    const deltaY = Math.abs(newPosition.y - startPosition.y);
+
+    return deltaX >= MOVE_THRESHOLD || deltaY >= MOVE_THRESHOLD;
 };
 
 export const usePortDragging = (params: Params) => {
@@ -81,6 +90,7 @@ export const usePortDragging = (params: Params) => {
     const screenToCanvasCoordinates = computed(() => store.getters['canvas/screenToCanvasCoordinates']);
     const isWorkflowWritable = computed(() => store.getters['workflow/isWritable']);
 
+    let startPosition: XY | null = null;
     const onPointerDown = (event: PointerEvent) => {
         if (!isWorkflowWritable.value || event.button !== 0 || event.shiftKey || event.ctrlKey) {
             return;
@@ -90,6 +100,7 @@ export const usePortDragging = (params: Params) => {
         pointerDown.value = true;
         // eslint-disable-next-line no-extra-parens
         (event.target as HTMLElement).setPointerCapture(event.pointerId);
+        startPosition = { x: event.clientX, y: event.clientY };
     };
 
     /**
@@ -98,6 +109,10 @@ export const usePortDragging = (params: Params) => {
      * and it triggers the circle detection logic to highlight compatible target nodes
      * */
     const initialPointerMove = (event: PointerEvent) => {
+        if (!isSignificantMove(startPosition, { x: event.clientX, y: event.clientY })) {
+            return;
+        }
+
         didMove.value = true;
 
         // set up connector
@@ -281,7 +296,7 @@ export const usePortDragging = (params: Params) => {
         }
 
         const isDroppedOnCanvas = !didDragToCompatibleTarget.value && params.direction === 'out';
-        const { removeConnector } = isDroppedOnCanvas
+        const { removeConnector } = isDroppedOnCanvas && dragConnector.value
             ? params.onCanvasDrop(dragConnector.value)
             : { removeConnector: true };
 

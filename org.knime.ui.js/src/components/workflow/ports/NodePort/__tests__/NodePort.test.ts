@@ -181,8 +181,8 @@ describe('NodePort', () => {
         wrapper.element.releasePointerCapture = vi.fn();
 
         // Start dragging
-        await wrapper.trigger('pointerdown', { pointerId: -1, x, y, button: 0 });
-        await wrapper.trigger('pointermove', { pointerId: -1, x, y, button: 0 });
+        await wrapper.trigger('pointerdown', { pointerId: -1, x, y, button: 0, clientX: x, clientY: y });
+        await wrapper.trigger('pointermove', { pointerId: -1, x, y, button: 0, clientX: x, clientY: y });
     };
 
     const dragAboveTarget = async ({
@@ -194,36 +194,36 @@ describe('NodePort', () => {
         const hitTarget = targetElement || document.createElement('div');
         document.elementFromPoint = vi.fn().mockReturnValueOnce(hitTarget);
 
-            type MockHitTarget = {
-                _connectorEnterEvent: CustomEvent;
-                _connectorMoveEvent: CustomEvent;
-                _connectorLeaveEvent: CustomEvent;
-                _connectorDropEvent: CustomEvent;
-            }
+        type MockHitTarget = {
+            _connectorEnterEvent: CustomEvent;
+            _connectorMoveEvent: CustomEvent;
+            _connectorLeaveEvent: CustomEvent;
+            _connectorDropEvent: CustomEvent;
+        }
 
-            if (hitTarget) {
-                hitTarget.addEventListener('connector-enter', e => {
-                    hitTarget._connectorEnterEvent = e;
-                    if (enableDropTarget) {
-                        e.preventDefault();
-                    }
-                });
-                hitTarget.addEventListener('connector-move', e => {
-                    hitTarget._connectorMoveEvent = e;
-                });
-                hitTarget.addEventListener('connector-leave', e => {
-                    hitTarget._connectorLeaveEvent = e;
-                });
-                hitTarget.addEventListener('connector-drop', e => {
-                    hitTarget._connectorDropEvent = e;
-                });
-            }
+        if (hitTarget) {
+            hitTarget.addEventListener('connector-enter', e => {
+                hitTarget._connectorEnterEvent = e;
+                if (enableDropTarget) {
+                    e.preventDefault();
+                }
+            });
+            hitTarget.addEventListener('connector-move', e => {
+                hitTarget._connectorMoveEvent = e;
+            });
+            hitTarget.addEventListener('connector-leave', e => {
+                hitTarget._connectorLeaveEvent = e;
+            });
+            hitTarget.addEventListener('connector-drop', e => {
+                hitTarget._connectorDropEvent = e;
+            });
+        }
 
-            const [x, y] = position;
+        const [x, y] = position;
 
-            await wrapper.trigger('pointermove', { x, y });
+        await wrapper.trigger('pointermove', { x, y, clientX: x + 8, clientY: y + 8 });
 
-            return hitTarget as Element & MockHitTarget;
+        return hitTarget as Element & MockHitTarget;
     };
 
     const dropOnTarget = async ({
@@ -371,6 +371,7 @@ describe('NodePort', () => {
             const { wrapper } = doMount({ props });
 
             await startDragging({ wrapper });
+            await dragAboveTarget({ wrapper });
 
             expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
                 state: true
@@ -452,6 +453,7 @@ describe('NodePort', () => {
                 });
 
                 await startDragging({ wrapper });
+                await dragAboveTarget({ wrapper });
 
                 expect(detectConnectionCircleSpy).toHaveBeenCalledWith({
                     downstreamConnection: portDirection === 'out',
@@ -503,6 +505,10 @@ describe('NodePort', () => {
                         wrapper,
                         position: [8, 8]
                     });
+                    await dragAboveTarget({
+                        wrapper,
+                        position: [8, 8]
+                    });
 
                     expect(wrapper.vm.dragConnector).toStrictEqual({
                         id: 'drag-connector',
@@ -522,6 +528,10 @@ describe('NodePort', () => {
                 it('sets connector for in-port', async () => {
                     const { wrapper } = doMount({ props: { direction: 'in' } });
                     await startDragging({
+                        wrapper,
+                        position: [8, 8]
+                    });
+                    await dragAboveTarget({
                         wrapper,
                         position: [8, 8]
                     });
@@ -547,7 +557,7 @@ describe('NodePort', () => {
             it('move onto nothing', async () => {
                 const { wrapper } = doMount();
                 await startDragging({ wrapper });
-                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
+                expect(wrapper.vm.dragConnector).toBeNull();
 
                 await dragAboveTarget({
                     wrapper,
@@ -633,6 +643,7 @@ describe('NodePort', () => {
             it('move sets connector and port', async () => {
                 const { wrapper } = doMount();
                 await startDragging({ wrapper });
+                await dragAboveTarget({ wrapper });
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
 
                 await dragAboveTarget({
@@ -966,6 +977,7 @@ describe('NodePort', () => {
         it('releases pointer', async () => {
             const { wrapper } = doMount();
             await startDragging({ wrapper });
+            await dragAboveTarget({ wrapper });
             await wrapper.trigger('pointerup', { pointerId: -1 });
 
             expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
@@ -974,6 +986,7 @@ describe('NodePort', () => {
         it('clicking a port after a connector was drawn doesnt emit to parent', async () => {
             const { wrapper } = doMount();
             await startDragging({ wrapper });
+            await dragAboveTarget({ wrapper });
             await wrapper.findComponent(Port).trigger('click');
 
             expect(wrapper.emitted('click')).toBeFalsy();
@@ -1099,6 +1112,7 @@ describe('NodePort', () => {
                 it('shows quick add node ghost', async () => {
                     const { wrapper } = doMount({ props: { direction: 'out' } });
                     await startDragging({ wrapper });
+                    await dragAboveTarget({ wrapper });
 
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                 });
@@ -1123,6 +1137,7 @@ describe('NodePort', () => {
                         }
                     });
                     await startDragging({ wrapper });
+                    await dragAboveTarget({ wrapper });
 
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                 });
@@ -1130,6 +1145,7 @@ describe('NodePort', () => {
                 it('opens quick add node menu', async () => {
                     const { wrapper, $store } = doMount({ props: { direction: 'out' } });
                     await startDragging({ wrapper });
+                    await dragAboveTarget({ wrapper });
 
                     // connector and QuickAddNodeGhost should be visible
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
@@ -1153,6 +1169,7 @@ describe('NodePort', () => {
                 it('keeps connector and ghost visible on pointer release if menu is open', async () => {
                     const { wrapper, $store } = doMount({ props: { direction: 'out' } });
                     await startDragging({ wrapper });
+                    await dragAboveTarget({ wrapper });
 
                     // connector and QuickAddNodeGhost should be visible
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
@@ -1178,6 +1195,7 @@ describe('NodePort', () => {
                 it('closes the quick add node menu', async () => {
                     const { wrapper, $store } = doMount({ props: { direction: 'out' } });
                     await startDragging({ wrapper });
+                    await dragAboveTarget({ wrapper });
 
                     // open so we can close it again
                     await wrapper.trigger('lostpointercapture');
@@ -1203,6 +1221,7 @@ describe('NodePort', () => {
                 it('does not show quick add node menu', async () => {
                     const { wrapper } = doMount({ props: { direction: 'in' } });
                     await startDragging({ wrapper });
+                    await dragAboveTarget({ wrapper });
 
                     // we cannot mock dispatchEvent as it is required to be the real function for wrapper.trigger calls!
                     const dispatchEventSpy = vi.spyOn(wrapper.element, 'dispatchEvent');
