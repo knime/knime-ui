@@ -1,7 +1,14 @@
-import { onBeforeUnmount, onMounted } from 'vue';
+import { onBeforeUnmount, onMounted, type Component } from 'vue';
 
-// Stack of tuple<VueComponent, { onEscape }>
-let stack = [];
+type StackItemConfig = {
+    onEscape: () => void;
+    group?: string;
+    alwaysActive?: boolean;
+}
+
+type StackItem = [Component | string, StackItemConfig]
+type Stack = Array<StackItem>;
+let stack: Stack = [];
 
 /* Defines the EscapeStack-Mixin for a Vue Component.
    Example usage of mixin:
@@ -28,10 +35,10 @@ let stack = [];
         ]
     };
 */
-export const escapeStack = ({ onEscape, group = null, alwaysActive = false }) => ({
+export const escapeStack = ({ onEscape, group = null, alwaysActive = false }: StackItemConfig) => ({
     beforeMount() {
         // Rendering the component automatically pushes it onto the stack
-        stack.push([this, { onEscape, group, alwaysActive }]);
+        stack.push([this as any, { onEscape, group, alwaysActive }]);
     },
     beforeUnmount() {
         // Destroying the component removes it from the stack
@@ -39,12 +46,12 @@ export const escapeStack = ({ onEscape, group = null, alwaysActive = false }) =>
     }
 });
 
-const getLastEntry = (_stack) => stack[stack.length - 1];
+const getLastEntry = (_stack: Stack) => stack[stack.length - 1];
 
-const runAllEntries = (_stack, predicateFn) => {
+const runAllEntries = (_stack: Stack, predicateFn: (stackItem: StackItem) => boolean) => {
     stack
         .filter(predicateFn)
-        .map(([context, { onEscape }]) => [context, onEscape])
+        .map(([context, { onEscape }]) => [context, onEscape] as const)
         // run the calls backwards (from most recent to oldest)
         .reverse()
         // call handler with the correct context applied
@@ -57,7 +64,7 @@ const runAllEntries = (_stack, predicateFn) => {
         });
 };
 
-const handleGroupStackEntries = (_stack) => {
+const handleGroupStackEntries = (_stack: Stack): Stack => {
     // eslint-disable-next-line no-unused-vars
     const [_, lastEntryData] = getLastEntry(_stack);
 
@@ -68,7 +75,7 @@ const handleGroupStackEntries = (_stack) => {
     return _stack.filter(([_, entryData]) => entryData.group !== lastEntryData.group || entryData.alwaysActive);
 };
 
-const handleSingleStackEntry = (_stack) => {
+const handleSingleStackEntry = (_stack: Stack): Stack => {
     const [component, { onEscape }] = getLastEntry(_stack);
 
     if (typeof component === 'string') {
@@ -109,7 +116,10 @@ export const escapePressed = () => {
     }
 };
 
-export const useEscapeStack = ({ onEscape, group = null, alwaysActive = false }) => {
+export const useEscapeStack = ({ onEscape, group = null, alwaysActive = false }: StackItemConfig) => {
+    // mixin uses a component instance (`this`) to identify each stack item because it also needs to trigger
+    // the callback using the component context
+    // but the composable version does not need to do the same so instead we create a unique id for each item
     const id = window.crypto.randomUUID();
 
     onMounted(() => {
