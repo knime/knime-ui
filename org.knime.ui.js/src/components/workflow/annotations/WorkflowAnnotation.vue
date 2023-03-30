@@ -121,7 +121,7 @@ export default defineComponent({
 
             this.toggleContextMenu({ event });
         },
-        setSelectionPreview(type: String) {
+        setSelectionPreview(type: string) {
             this.selectionPreview = type;
         },
         moveAnnotation(bounds: Bounds) {
