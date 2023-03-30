@@ -63,7 +63,9 @@ export default {
                 $store.dispatch('workflow/openView', $store.getters['selection/singleSelectedNode'].id);
             },
         condition:
-            ({ $store }) => $store.getters['selection/selectedNodes'].some(node => node.allowedActions.canExecute)
+            ({ $store }) => $store.getters['selection/singleSelectedNode'] &&
+                $store.getters['selection/singleSelectedNode'].allowedActions.canExecute
+
     },
     cancelSelected: {
         text: 'Cancel',
