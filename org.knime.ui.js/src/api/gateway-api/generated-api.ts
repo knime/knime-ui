@@ -2387,27 +2387,33 @@ export interface RemovePortCommand extends PortCommand {
 export namespace RemovePortCommand {
 }
 /**
- * Alters the z-order of a workflow annotation.
+ * Alters the z-order of a list of workflow annotations.
  * @export
- * @interface ReorderWorkflowAnnotationCommand
+ * @interface ReorderWorkflowAnnotationsCommand
  */
-export interface ReorderWorkflowAnnotationCommand extends WorkflowAnnotationCommand {
+export interface ReorderWorkflowAnnotationsCommand extends WorkflowCommand {
 
+    /**
+     * The IDs of the annotations to reorder
+     * @type {Array<string>}
+     * @memberof ReorderWorkflowAnnotationsCommand
+     */
+    annotationIds: Array<string>;
     /**
      * The specific reorder action to perform, can be one of four: &#39;bring_forward&#39; brings the selected  annotation forward by one relative-to-other-annotations position; &#39;bring_to_front&#39; moves the  selected annotation in front of all other annotations; &#39;send_backward&#39; sends the selected  annotation backward by one relative-to-other-annotations position; &#39;send_to_back&#39; sends the  selected annotation back of all other annotations.
      * @type {string}
-     * @memberof ReorderWorkflowAnnotationCommand
+     * @memberof ReorderWorkflowAnnotationsCommand
      */
-    action: ReorderWorkflowAnnotationCommand.ActionEnum;
+    action: ReorderWorkflowAnnotationsCommand.ActionEnum;
 
 }
 
 
 /**
  * @export
- * @namespace ReorderWorkflowAnnotationCommand
+ * @namespace ReorderWorkflowAnnotationsCommand
  */
-export namespace ReorderWorkflowAnnotationCommand {
+export namespace ReorderWorkflowAnnotationsCommand {
     /**
      * @export
      * @enum {string}
@@ -2691,8 +2697,14 @@ export interface StyleRange {
  * @export
  * @interface TransformWorkflowAnnotationCommand
  */
-export interface TransformWorkflowAnnotationCommand extends WorkflowAnnotationCommand {
+export interface TransformWorkflowAnnotationCommand extends WorkflowCommand {
 
+    /**
+     * the id of the annotation to transform
+     * @type {string}
+     * @memberof TransformWorkflowAnnotationCommand
+     */
+    annotationId: string;
     /**
      *
      * @type {Bounds}
@@ -2978,29 +2990,6 @@ export interface WorkflowAnnotation extends Annotation {
 export namespace WorkflowAnnotation {
 }
 /**
- * A command that does something to a specific workflow annotation.
- * @export
- * @interface WorkflowAnnotationCommand
- */
-export interface WorkflowAnnotationCommand extends WorkflowCommand {
-
-    /**
-     * the id of the annotation to transform
-     * @type {string}
-     * @memberof WorkflowAnnotationCommand
-     */
-    annotationId: string;
-
-}
-
-
-/**
- * @export
- * @namespace WorkflowAnnotationCommand
- */
-export namespace WorkflowAnnotationCommand {
-}
-/**
  * Event for all kind of workflow changes.
  * @export
  * @interface WorkflowChangedEvent
@@ -3094,7 +3083,7 @@ export namespace WorkflowCommand {
         Cut = 'cut',
         Paste = 'paste',
         TransformWorkflowAnnotation = 'transform_workflow_annotation',
-        ReorderWorkflowAnnotation = 'reorder_workflow_annotation'
+        ReorderWorkflowAnnotations = 'reorder_workflow_annotations'
     }
 }
 /**
@@ -4024,16 +4013,16 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
-     * Alters the z-order of a workflow annotation.
+     * Alters the z-order of a list of workflow annotations.
      */
-	ReorderWorkflowAnnotation(
-		params: { projectId: string, workflowId: string } & Omit<ReorderWorkflowAnnotationCommand, 'kind'>
+	ReorderWorkflowAnnotations(
+		params: { projectId: string, workflowId: string } & Omit<ReorderWorkflowAnnotationsCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
 		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
-            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ReorderWorkflowAnnotation }
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ReorderWorkflowAnnotations }
 		});
 		return postProcessCommandResponse(commandResponse);
 	},	
