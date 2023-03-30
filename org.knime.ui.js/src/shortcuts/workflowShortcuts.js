@@ -173,7 +173,6 @@ export default {
     openComponent: {
         text: 'Open component',
         title: 'Open component',
-        hotkey: ['Ctrl', 'Double Click'],
         execute:
             ({ $store }) => {
                 const projectId = $store.state.application.activeProjectId;
