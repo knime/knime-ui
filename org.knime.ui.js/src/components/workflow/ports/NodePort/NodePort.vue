@@ -45,16 +45,6 @@ const anchorPoint = inject<XY>('anchorPoint');
 
 const availablePortTypes = computed<Record<string, PortType>>(() => store.state.application.availablePortTypes);
 
-const quickAddNodeMenu = computed(() => store.state.workflow.quickAddNodeMenu);
-const isShowingQuickAddNodeMenu = computed(() =>
-    // eslint-disable-next-line implicit-arrow-linebreak
-    quickAddNodeMenu.value.isOpen &&
-    props.direction === 'out' &&
-    quickAddNodeMenu.value.props.nodeId === props.nodeId &&
-    quickAddNodeMenu.value.props.port.index === props.port.index
-    // eslint-disable-next-line function-paren-newline
-);
-
 const portTemplate = computed(() => {
     const template = toPortObject(availablePortTypes.value)(props.port.typeId);
     if (!template) {

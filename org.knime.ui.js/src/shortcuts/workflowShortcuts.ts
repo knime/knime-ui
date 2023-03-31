@@ -334,6 +334,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         title: 'Add new node',
         hotkey: ['Ctrl', ' '], // Ctrl + Space TODO: discuss if key is really a good idea or we should switch to code?
         execute: ({ $store }) => {
+            // descruct current state
             const {
                 isOpen,
                 props: { nodeId: lastNodeId, port: { index: lastPortIndex } = { index: -1 }, position: lastPosition }
@@ -354,14 +355,13 @@ const workflowShortcuts: WorkflowShortcuts = {
                     visibleFrame: $store.getters['canvas/getVisibleFrame'](),
                     nodes: $store.state.workflow.activeWorkflow.nodes
                 });
-
                 $store.dispatch('workflow/openQuickAddNodeMenu', { props: { position } });
                 return;
             }
 
+            // shuffle between port indices
             const startIndex = 0;
             let portIndex = startIndex;
-            // shuffle between port indices
             if (lastNodeId && lastNodeId === node.id) {
                 const nextIndex = lastPortIndex + 1;
                 portIndex = nextIndex < node.outPorts.length ? nextIndex : startIndex;
@@ -369,6 +369,7 @@ const workflowShortcuts: WorkflowShortcuts = {
 
             const port = node.outPorts[portIndex];
 
+            // TODO: move this to a more siple helper just providing node (and also replace it in NodePorts ?)
             const outPortPositions = portPositions({
                 portCount: node.outPorts.length,
                 isMetanode: node.kind === 'metanode',
@@ -377,6 +378,7 @@ const workflowShortcuts: WorkflowShortcuts = {
             const position = isOpen
                 ? lastPosition
                 : {
+                    // eslint-disable-next-line no-magic-numbers
                     x: node.position.x + outPortPositions[portIndex][0] + nodeSize * 5,
                     y: node.position.y + outPortPositions[portIndex][1]
                 };

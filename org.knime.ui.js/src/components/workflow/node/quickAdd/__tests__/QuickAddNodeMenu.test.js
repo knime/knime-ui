@@ -11,6 +11,7 @@ import * as $shapes from '@/style/shapes.mjs';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
 import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
+// eslint-disable-next-line import/extensions
 import { searchNodesResponse } from '@/store/common/__tests__/nodeSearch.test';
 
 const defaultNodeRecommendationsResponse = [{
