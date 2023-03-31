@@ -151,7 +151,12 @@ export default defineComponent({
         },
         port(newPort, oldPort) {
             if (newPort?.index !== oldPort?.index) {
+                // reset search on index toggle and fetch recommended
+                this.searchQuery = '';
                 this.fetchNodeRecommendations();
+            }
+            if (newPort?.typeId !== oldPort?.typeId) {
+                this.$store.commit('quickAddNodes/setPortTypeId', newPort.typeId);
             }
         }
     },
