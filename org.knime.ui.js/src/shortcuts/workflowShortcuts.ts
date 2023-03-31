@@ -12,7 +12,8 @@ import type { ShortcutConditionContext, UnionToShortcutRegistry } from './types'
 import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 import { portPositions } from '@/util/portShift';
 import { nodeSize } from '@/style/shapes.mjs';
-import { findFreeSpaceAroundCenterWithFallback } from '@/util/findFreeSpaceOnCanvas';
+import { findFreeSpaceAroundCenterWithFallback,
+    findFreeSpaceAroundPointWithFallback } from '@/util/findFreeSpaceOnCanvas';
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'save'
@@ -368,20 +369,27 @@ const workflowShortcuts: WorkflowShortcuts = {
             }
 
             const port = node.outPorts[portIndex];
+            let position = lastPosition;
 
-            // TODO: move this to a more siple helper just providing node (and also replace it in NodePorts ?)
-            const outPortPositions = portPositions({
-                portCount: node.outPorts.length,
-                isMetanode: node.kind === 'metanode',
-                isOutports: true
-            });
-            const position = isOpen
-                ? lastPosition
-                : {
-                    // eslint-disable-next-line no-magic-numbers
+            // if its not open we need to find a proper position to put the menu
+            if (!isOpen) {
+                // TODO: move this to a more siple helper just providing node (and also replace it in NodePorts ?)
+                const outPortPositions = portPositions({
+                    portCount: node.outPorts.length,
+                    isMetanode: node.kind === 'metanode',
+                    isOutports: true
+                });
+                const startPoint = {
+                // eslint-disable-next-line no-magic-numbers
                     x: node.position.x + outPortPositions[portIndex][0] + nodeSize * 5,
                     y: node.position.y + outPortPositions[portIndex][1]
                 };
+                position = findFreeSpaceAroundPointWithFallback({
+                    startPoint,
+                    visibleFrame: $store.getters['canvas/getVisibleFrame'](),
+                    nodes: $store.state.workflow.activeWorkflow.nodes
+                });
+            }
 
             $store.dispatch('workflow/openQuickAddNodeMenu', { props: { nodeId: node.id, port, position } });
         },

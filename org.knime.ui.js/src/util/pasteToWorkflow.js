@@ -37,7 +37,7 @@ const originStrategy = ({ clipboardContent, nodes, visibleFrame }) => {
 */
 export const pastePartsAt = ({ visibleFrame, clipboardContent, workflow, isWorkflowEmpty, copyPaste, dispatch }) => {
     const { nodes, projectId, info: { containerId } } = workflow;
-    
+
     // Area the user can see, in workflow coordinates
     const isAreaVisible = (area) => areaCoverage(area, visibleFrame) < visibilityThreshold;
 
@@ -73,7 +73,7 @@ export const pastePartsAt = ({ visibleFrame, clipboardContent, workflow, isWorkf
 
     /* Content comes from another application or workflow and is pasted for the first time */
     let copiedFromAnotherApp = !copyPaste || copyPaste.payloadIdentifier !== clipboardContent.payloadIdentifier;
-    
+
     let copiedFromAnotherWorkflow = clipboardContent.workflowId !== containerId ||
                                     clipboardContent.projectId !== projectId;
 
@@ -83,7 +83,7 @@ export const pastePartsAt = ({ visibleFrame, clipboardContent, workflow, isWorkf
             position: centerStrategy({ visibleFrame, nodes, clipboardContent })
         };
     }
-    
+
     /* Content comes from this application and workflow and is pasted for the first time */
     if (isAreaVisible(clipboardContent.objectBounds)) {
         consola.info(`less than ${visibilityThreshold * 100}% of copied content visible: paste to center`);

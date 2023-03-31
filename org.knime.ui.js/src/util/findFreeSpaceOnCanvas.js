@@ -58,7 +58,7 @@ const findFreeSpace = ({ area, workflow: { nodes }, startPosition = { x: 0, y: 0
         // otherwise shift the area by [step] and repeat
         currentBounds.left += step.x;
         currentBounds.top += step.y;
-    
+
     // the loop will terminate, because the workflow is theoretically limitless
     // eslint-disable-next-line no-constant-condition
     } while (true);
@@ -86,7 +86,7 @@ export const findFreeSpaceFrom = ({ objectBounds, nodes, visibleFrame }) => ({ l
             y: 120
         }
     });
-    
+
     let visibility = areaCoverage({
         left: position.x,
         top: position.y,
@@ -100,14 +100,17 @@ export const findFreeSpaceFrom = ({ objectBounds, nodes, visibleFrame }) => ({ l
     };
 };
 
-const findFreeSpaceAroundPointWithFallback = ({ startPoint: { x, y }, visibleFrame, objectBounds, nodes }) => {
+export const findFreeSpaceAroundPointWithFallback = ({ startPoint: { x, y },
+    visibleFrame,
+    objectBounds = { width: nodeSize, height: nodeSize },
+    nodes }) => {
     let offsetX = 0;
     do {
         let fromCenter = findFreeSpaceFrom({ visibleFrame, objectBounds, nodes })({
             left: x + offsetX,
             top: y
         });
-    
+
         if (fromCenter.visibility >= visibilityThreshold) {
             consola.info('found free space around center');
             return fromCenter;
@@ -138,7 +141,7 @@ export const findFreeSpaceAroundCenterWithFallback = ({ visibleFrame,
     nodes }) => {
     const centerX = (visibleFrame.left + visibleFrame.width / 2) -
         (objectBounds.width / 2);
-    
+
     const eyePleasingVerticalOffset = 0.75;
     const centerY = visibleFrame.top + (visibleFrame.height / 2 * eyePleasingVerticalOffset) -
         (objectBounds.height / 2);
