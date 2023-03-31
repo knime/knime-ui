@@ -169,10 +169,19 @@ export default {
          * function to guarantee order of event handling
          *
          */
-        onMoveEnd: throttle(function ({ detail: { endX, endY } }) {
+        onMoveEnd: throttle(function ({ detail: { event: { clientX, clientY } } }) {
             /* eslint-disable no-invalid-this */
             if (this.hasAbortedNodeDrag) {
                 this.setHasAbortedNodeDrag(false);
+
+                if (this.lastHitTarget) {
+                    this.lastHitTarget.dispatchEvent(
+                        new CustomEvent('node-dragging-leave', {
+                            bubbles: true,
+                            cancelable: true
+                        })
+                    );
+                }
                 return;
             }
             
@@ -183,8 +192,8 @@ export default {
                         cancelable: true,
                         detail: {
                             id: this.id,
-                            clientX: endX,
-                            clientY: endY
+                            clientX,
+                            clientY
                         }
                     })
                 );

@@ -484,7 +484,7 @@ export default {
               <NodeName
                 :node-id="id"
                 :node-position="position"
-                :value="name"
+                :value="name + ' ' + position.x + ' ' + position.y"
                 :editable="isEditable && isContainerNode"
                 @click.left="onLeftMouseClick"
                 @pointerdown.right="onContextMenu"
@@ -513,7 +513,6 @@ export default {
 
 .hover-area {
   fill: none;
-  pointer-events: fill;
 }
 
 .node-torso:hover,

@@ -163,7 +163,6 @@ export default defineComponent({
             this.isDraggedOver = false;
         },
         onNodeDragggingEnd({ detail: { id, clientX, clientY } }) {
-            // TODO fix position
             this.onInsertNode(clientX, clientY, null, id);
         },
         onInsertNode(clientX, clientY, nodeFactory, nodeId) {
