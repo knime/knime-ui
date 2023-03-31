@@ -1,7 +1,9 @@
+/* eslint-disable max-lines */
 import { API } from '@api';
 import workflowObjectBounds from '@/util/workflowObjectBounds';
 import { pastePartsAt, pasteURI } from '@/util/pasteToWorkflow';
 import { snapToGrid } from '@/util/geometry';
+import type { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -82,27 +84,11 @@ export const mutations = {
     }
 };
 
-/* automatically includes projectId and workflowId */
-export const wrapAPI = (apiCall) =>
-// eslint-disable-next-line semi, implicit-arrow-linebreak
-    function ({ state: { activeWorkflow } }, apiArgs = {}) {
-        const projectId = activeWorkflow.projectId;
-        const workflowId = activeWorkflow.info.containerId;
-
-        return apiCall({ projectId, workflowId, ...apiArgs });
-    };
-
-// const withBaseParams = <T extends keyof typeof API.workflowCommand>(command: T) => {
-//     // eslint-disable-next-line func-style
-//     function wrapped({ state: { activeWorkflow } }, apiArgs = {}) {
-//         const projectId = activeWorkflow.projectId;
-//         const workflowId = activeWorkflow.info.containerId;
-
-//         return command({ projectId, workflowId, ...apiArgs });
-//     }
-
-//     return wrapped;
-// };
+const getProjectAndWorkflowIds = (state) => {
+    const { activeWorkflow: { projectId } } = state;
+    const { activeWorkflow: { info: { containerId } } } = state;
+    return { projectId, workflowId: containerId };
+};
 
 export const actions = {
     openNameEditor({ commit }, nodeId) {
@@ -153,22 +139,19 @@ export const actions = {
         });
     },
 
-    undo({ state: { activeWorkflow } }) {
-        const projectId = activeWorkflow.projectId;
-        const workflowId = activeWorkflow.info.containerId;
+    undo({ state }) {
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         return API.workflow.undoWorkflowCommand({ projectId, workflowId });
     },
-    redo({ state: { activeWorkflow } }) {
-        const projectId = activeWorkflow.projectId;
-        const workflowId = activeWorkflow.info.containerId;
+    redo({ state }) {
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         return API.workflow.redoWorkflowCommand({ projectId, workflowId });
     },
     connectNodes(
-        { state: { activeWorkflow } },
+        { state },
         { sourceNode, sourcePort, destNode, destPort }
     ) {
-        const projectId = activeWorkflow.projectId;
-        const workflowId = activeWorkflow.info.containerId;
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         return API.workflowCommand.Connect({
             projectId,
             workflowId,
@@ -179,11 +162,10 @@ export const actions = {
         });
     },
     addNodePort(
-        { state: { activeWorkflow } },
+        { state },
         { nodeId, side, portGroup, typeId }
     ) {
-        const projectId = activeWorkflow.projectId;
-        const workflowId = activeWorkflow.info.containerId;
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         return API.workflowCommand.AddPort({
             projectId,
@@ -195,11 +177,10 @@ export const actions = {
         });
     },
     removeNodePort(
-        { state: { activeWorkflow } },
+        { state },
         { nodeId, side, index, portGroup }
     ) {
-        const projectId = activeWorkflow.projectId;
-        const workflowId = activeWorkflow.info.containerId;
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         return API.workflowCommand.RemovePort({
             projectId,
@@ -210,9 +191,8 @@ export const actions = {
             portIndex: index
         });
     },
-    renameContainerNode({ state: { activeWorkflow } }, { nodeId, name }) {
-        const projectId = activeWorkflow.projectId;
-        const workflowId = activeWorkflow.info.containerId;
+    renameContainerNode({ state }, { nodeId, name }) {
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         return API.workflowCommand.UpdateComponentOrMetanodeName({
             projectId,
@@ -221,9 +201,8 @@ export const actions = {
             name
         });
     },
-    renameNodeLabel({ state: { activeWorkflow } }, { nodeId, label }) {
-        const projectId = activeWorkflow.projectId;
-        const workflowId = activeWorkflow.info.containerId;
+    renameNodeLabel({ state }, { nodeId, label }) {
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         return API.workflowCommand.UpdateNodeLabel({
             projectId,
@@ -233,9 +212,8 @@ export const actions = {
         });
     },
 
-    replaceNode({ state: { activeWorkflow } }, { nodeId, nodeFactory }) {
-        const projectId = activeWorkflow.projectId;
-        const workflowId = activeWorkflow.info.containerId;
+    replaceNode({ state }, { nodeId, nodeFactory }) {
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         return API.workflowCommand.ReplaceNode({
             projectId,
@@ -261,11 +239,7 @@ export const actions = {
             selectionMode = 'new-only'
         }
     ) {
-        const { activeWorkflow } = state;
-        const { projectId } = activeWorkflow;
-        const {
-            info: { containerId: workflowId }
-        } = activeWorkflow;
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         // Adjusted For Grid Snapping
         const gridAdjustedPosition = {
@@ -295,16 +269,11 @@ export const actions = {
     },
 
     /**
-   * Calls the API to save the position of the nodes after the move is over
-   * @param {Object} context - store context
-   * @param {Object} params
-   * @param {string} params.projectId - id of the project
-   * @param {string} params.nodeId - id of the node
-   * @param {Object} params.startPos - start position {x: , y: } of the move event
-   * @returns {void} - nothing to return
-   */
-    async moveObjects({ state, commit, rootGetters }, { projectId }) {
+     * Calls the API to save the position of the nodes after the move is over
+    */
+    async moveObjects({ state, commit, rootGetters }) {
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         const translation = {
             x: state.movePreviewDelta.x,
@@ -314,7 +283,7 @@ export const actions = {
         try {
             await API.workflowCommand.Translate({
                 projectId,
-                workflowId: state.activeWorkflow.info.containerId,
+                workflowId,
                 nodeIds: selectedNodes,
                 translation,
                 annotationIds: []
@@ -329,27 +298,14 @@ export const actions = {
         { state, rootGetters, dispatch },
         { containerType }
     ) {
-        const {
-            activeWorkflow: { projectId }
-        } = state;
-        const {
-            activeWorkflow: {
-                info: { containerId }
-            }
-        } = state;
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         const selectedNodeIds = rootGetters['selection/selectedNodeIds'];
         const selectedNodes = rootGetters['selection/selectedNodes'];
 
-        if (
-            selectedNodes.some(
-                (node) => node.allowedActions.canCollapse === 'resetRequired'
-            )
-        ) {
-            if (
-                !window.confirm(
-                    `Creating this ${containerType} will reset executed nodes.`
-                )
-            ) {
+        const isResetRequired = selectedNodes.some((node) => node.allowedActions.canCollapse === 'resetRequired');
+
+        if (isResetRequired) {
+            if (!window.confirm(`Creating this ${containerType} will reset executed nodes.`)) {
                 return;
             }
         }
@@ -361,7 +317,7 @@ export const actions = {
         const { newNodeId } = await API.workflowCommand.Collapse({
             containerType,
             projectId,
-            workflowId: containerId,
+            workflowId,
             nodeIds: selectedNodeIds,
             annotationIds: []
         });
@@ -374,14 +330,7 @@ export const actions = {
     },
 
     async expandContainerNode({ state, rootGetters, dispatch }) {
-        const {
-            activeWorkflow: { projectId }
-        } = state;
-        const {
-            activeWorkflow: {
-                info: { containerId }
-            }
-        } = state;
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         const selectedNode = rootGetters['selection/singleSelectedNode'];
 
         if (selectedNode.allowedActions.canExpand === 'resetRequired') {
@@ -399,7 +348,7 @@ export const actions = {
         // 2. send request
         const { expandedNodeIds } = await API.workflowCommand.Expand({
             projectId,
-            workflowId: containerId,
+            workflowId,
             nodeId: selectedNode.id
         });
 
@@ -416,8 +365,7 @@ export const actions = {
    * @returns {void} - nothing to return
    */
     deleteSelectedObjects({ state, rootGetters, dispatch }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         const selectedNodes = rootGetters['selection/selectedNodes'];
         const selectedConnections = rootGetters['selection/selectedConnections'];
         const selectedAnnotationIds = rootGetters['selection/selectedAnnotationIds'];
@@ -440,7 +388,7 @@ export const actions = {
         if (deletableNodeIds.length || deletableConnectionIds.length || selectedAnnotationIds.length) {
             API.workflowCommand.Delete({
                 projectId,
-                workflowId: containerId,
+                workflowId,
                 nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
                 connectionIds: deletableConnectionIds.length ? deletableConnectionIds : [],
                 annotationIds: selectedAnnotationIds.length ? selectedAnnotationIds : []
@@ -476,14 +424,7 @@ export const actions = {
             throw new Error("command has to be 'copy' or 'cut'");
         }
 
-        const {
-            activeWorkflow: { projectId }
-        } = state;
-        const {
-            activeWorkflow: {
-                info: { containerId }
-            }
-        } = state;
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
         const selectedAnnotations = []; // Annotations cannot be selected yet
 
@@ -505,7 +446,7 @@ export const actions = {
 
         const response = await workflowCommand({
             projectId,
-            workflowId: containerId,
+            workflowId,
             nodeIds: selectedNodes,
             annotationIds: selectedAnnotations
         });
@@ -516,7 +457,7 @@ export const actions = {
         const clipboardContent = {
             payloadIdentifier: payload.payloadIdentifier,
             projectId,
-            workflowId: containerId,
+            workflowId,
             // @ts-ignore TODO: fix this
             data: response.content,
             objectBounds
@@ -537,7 +478,7 @@ export const actions = {
 
     async pasteWorkflowParts(
         {
-            state: { activeWorkflow, copyPaste },
+            state,
             getters: { isWorkflowEmpty },
             dispatch,
             rootGetters,
@@ -545,6 +486,7 @@ export const actions = {
         },
         { position: customPosition } = { position: null }
     ) {
+        const { activeWorkflow, copyPaste } = state;
         let clipboardContent, clipboardText;
         try {
             // TODO: NXT-1168 Put a limit on the clipboard content size
@@ -595,10 +537,12 @@ export const actions = {
             height: clipboardContent.objectBounds.height
         });
 
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+
         // 3. Do actual pasting
         const { nodeIds } = await API.workflowCommand.Paste({
-            projectId: activeWorkflow.projectId,
-            workflowId: activeWorkflow.info.containerId,
+            projectId,
+            workflowId,
             content: clipboardContent.data,
             position
         });
@@ -610,14 +554,28 @@ export const actions = {
     },
 
     transformWorkflowAnnotation({ state }, { bounds, annotationId }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         API.workflowCommand.TransformWorkflowAnnotation({
             projectId,
-            workflowId: containerId,
-            id: annotationId,
+            workflowId,
+            annotationId,
             bounds
+        });
+    },
+
+    reorderWorkflowAnnotation({
+        state,
+        rootGetters
+    }, { action }: { action: ReorderWorkflowAnnotationsCommand.ActionEnum }) {
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+        const annotationIds = rootGetters['selection/selectedAnnotationIds'];
+
+        API.workflowCommand.ReorderWorkflowAnnotations({
+            projectId,
+            workflowId,
+            action,
+            annotationIds
         });
     }
 };

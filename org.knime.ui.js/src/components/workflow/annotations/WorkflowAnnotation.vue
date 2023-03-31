@@ -123,7 +123,7 @@ export default defineComponent({
         setSelectionPreview(type: string) {
             this.selectionPreview = type;
         },
-        moveAnnotation(bounds: Bounds) {
+        transformAnnotation(bounds: Bounds) {
             this.$store.dispatch('workflow/transformWorkflowAnnotation', {
                 bounds,
                 annotationId: this.annotation.id
@@ -139,7 +139,7 @@ export default defineComponent({
     :show-transform-controls="showTransformControls"
     :show-selection="showSelectionPlane"
     :initial-value="annotation.bounds"
-    @transform-end="moveAnnotation($event.bounds)"
+    @transform-end="transformAnnotation($event.bounds)"
     @click="onLeftClick"
     @pointerdown.right.stop="onContextMenu"
   >

@@ -52,7 +52,6 @@ export default {
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapState('application', ['activeProjectId']),
         ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedNodeDrag', 'isDragging']),
         ...mapState('canvas', ['zoomFactor']),
 
@@ -173,11 +172,7 @@ export default {
                 return;
             }
 
-            this.$store.dispatch('workflow/moveObjects', {
-                projectId: this.activeProjectId,
-                startPos: this.startPos,
-                nodeId: this.id
-            });
+            this.$store.dispatch('workflow/moveObjects');
             /* eslint-enable no-invalid-this */
         })
     }

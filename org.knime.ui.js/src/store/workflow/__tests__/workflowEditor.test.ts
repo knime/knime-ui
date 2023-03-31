@@ -253,6 +253,7 @@ describe('workflow store: Editing', () => {
                 nodesArray[name] = { position: { x: 0, y: 0 }, id: name };
             }
             store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
                 nodes: nodesArray,
                 info: {
                     containerId: 'test'
@@ -266,11 +267,7 @@ describe('workflow store: Editing', () => {
             });
 
             store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
-            await store.dispatch('workflow/moveObjects', {
-                projectId: 'foo',
-                nodeId: 'node-0',
-                startPos: { x: 0, y: 0 }
-            });
+            await store.dispatch('workflow/moveObjects');
 
             expect(mockedAPI.workflowCommand.Translate).toHaveBeenNthCalledWith(1, {
                 projectId: 'foo',
@@ -310,7 +307,7 @@ describe('workflow store: Editing', () => {
                 store.dispatch('selection/selectAnnotation', id);
                 annotationIds.push(id);
             }
-            
+
             store.commit('workflow/setActiveWorkflow', {
                 nodes: nodesArray,
                 connections: connectionsArray,
