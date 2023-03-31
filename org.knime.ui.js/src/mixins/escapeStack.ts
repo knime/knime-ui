@@ -1,4 +1,5 @@
 import { onBeforeUnmount, onMounted, type Component } from 'vue';
+import { getId } from '@/util/getRandomId';
 
 type StackItemConfig = {
     onEscape: () => void;
@@ -120,7 +121,7 @@ export const useEscapeStack = ({ onEscape, group = null, alwaysActive = false }:
     // mixin uses a component instance (`this`) to identify each stack item because it also needs to trigger
     // the callback using the component context
     // but the composable version does not need to do the same so instead we create a unique id for each item
-    const id = window.crypto.randomUUID();
+    const id = getId();
 
     onMounted(() => {
         stack.push([id, { onEscape, group, alwaysActive }]);
