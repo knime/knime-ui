@@ -9,6 +9,7 @@ import CreateComponent from 'webapps-common/ui/assets/img/icons/component.svg';
 import LayoutIcon from 'webapps-common/ui/assets/img/icons/layout-editor.svg';
 
 import type { ShortcutConditionContext, UnionToShortcutRegistry } from './types';
+import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'save'
@@ -29,7 +30,10 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'copy'
     | 'cut'
     | 'paste'
-    | 'sendAnnotationBack'
+    | 'bringAnnotationToFront'
+    | 'bringAnnotationForward'
+    | 'sendAnnotationBackward'
+    | 'sendAnnotationToBack'
 >
 
 declare module './index' {
@@ -274,11 +278,11 @@ const workflowShortcuts: WorkflowShortcuts = {
         title: 'Paste from clipboard',
         hotkey: ['Ctrl', 'V'],
         execute:
-            ({ $store, eventDetail }) => {
+            ({ $store, payload }) => {
                 let customPosition = null;
 
-                if (eventDetail) {
-                    const { clientX, clientY } = eventDetail;
+                if (payload.event) {
+                    const { clientX, clientY } = payload.event as MouseEvent;
 
                     const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([clientX, clientY]);
                     customPosition = { x, y };
@@ -289,9 +293,37 @@ const workflowShortcuts: WorkflowShortcuts = {
         condition:
             ({ $store }) => $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
     },
-    sendAnnotationBack: {
-        text: 'Send annotation back',
-        execute: () => {}
+    bringAnnotationToFront: {
+        text: 'Bring annotation to front',
+        hotkey: ['Ctrl', 'Shift', 'ArrowUp'],
+        execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
+            action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront
+        }),
+        condition: ({ $store }) => $store.getters['selection/selectedAnnotations'].length > 0
+    },
+    bringAnnotationForward: {
+        hotkey: ['Ctrl', 'ArrowUp'],
+        text: 'Bring annotation forward',
+        execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
+            action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward
+        }),
+        condition: ({ $store }) => $store.getters['selection/selectedAnnotations'].length > 0
+    },
+    sendAnnotationBackward: {
+        hotkey: ['Ctrl', 'ArrowDown'],
+        text: 'Send annotation backward',
+        execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
+            action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward
+        }),
+        condition: ({ $store }) => $store.getters['selection/selectedAnnotations'].length > 0
+    },
+    sendAnnotationToBack: {
+        hotkey: ['Ctrl', 'Shift', 'ArrowDown'],
+        text: 'Send annotation to back',
+        execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
+            action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack
+        }),
+        condition: ({ $store }) => $store.getters['selection/selectedAnnotations'].length > 0
     }
 };
 

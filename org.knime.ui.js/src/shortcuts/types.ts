@@ -17,21 +17,28 @@ type Keys =
   | 'F10'
   | 'F11'
   | 'F12'
+  | 'ArrowUp'
+  | 'ArrowRight'
+  | 'ArrowDown'
+  | 'ArrowLeft'
   | 'Delete'
   | 'Enter'
   | 'Backspace'
 
 type Modifiers = 'Ctrl' | 'Alt' | 'Shift'
 
-// creates loose autocomplete by using a union of the declared types
-// and the entire `string` set *except* the declared types
-type Hotkey = Array<Keys | Modifiers | Omit<string, Keys | Modifiers>>
+// creates loose autocomplete by using a union of the passed-in type
+// and the entire `string` set *except* the passed-in type
+type LooseAutoComplete<T extends string> = T | Omit<string, T>
+
+export type Hotkey = Keys | Modifiers;
+type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers>>;
 
 export type ShortcutExecuteContext = {
     // TODO type the store once the types are available
     $store: Store<any>;
     $router: Router;
-    eventDetail: MouseEvent
+    payload: { event?: Event }
 }
 
 export type ShortcutConditionContext = Pick<ShortcutExecuteContext, '$store'>
@@ -60,7 +67,7 @@ export type Shortcut = {
      * bound to them. The reason for this is to enable using all the registered shortcuts to dynamically
      * populate to menus, etc.
      */
-    hotkey?: Hotkey;
+    hotkey?: Hotkeys;
 
     /**
      * Text to display for the shortcut
@@ -91,7 +98,7 @@ export type FormattedShortcut = Shortcut & { name: ShortcutName; hotkeyText: str
 
 export type ShortcutsService = {
     isEnabled: (shortcutName: ShortcutName) => boolean;
-    dispatch: (shortcutName: ShortcutName, eventDetail?: MouseEvent) => void
+    dispatch: (shortcutName: ShortcutName, payload?: ShortcutExecuteContext['payload']) => void
     preventDefault: (shortcutName: ShortcutName) => boolean;
     findByHotkey: (params: {
         key: string;

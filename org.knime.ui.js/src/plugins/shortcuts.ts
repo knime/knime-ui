@@ -1,22 +1,34 @@
+/* eslint-disable @typescript-eslint/no-extra-parens */
 import shortcuts from '@/shortcuts';
-import type { ShortcutsService, FormattedShortcut } from '@/shortcuts/types';
+import type { ShortcutsService, FormattedShortcut, Hotkey } from '@/shortcuts/types';
 import { isMac } from '@/util/navigator';
 import type { PluginInitFunction } from '.';
 
 // Returns a string representation of a hotkey
-// Replaces some special key names with symbols on macs
+// Replaces some special key names with symbols
 const formatHotkeys = (hotkeys: Array<string>) => {
-    if (isMac()) {
-        const MacOSkeyMap = {
-            Shift: '⇧',
-            Delete: '⌫',
-            Ctrl: '⌘',
-            Alt: '⌥'
-        };
-        return hotkeys.map(key => MacOSkeyMap[key] || key).join(' ');
-    } else {
-        return hotkeys.join(' ');
-    }
+    type KeyFormatMap = Partial<Record<Hotkey, string>>
+    const globalKeyMap: KeyFormatMap = {
+        ArrowUp: '↑',
+        ArrowDown: '↓'
+    };
+
+    const MacOSkeyMap: KeyFormatMap = {
+        Shift: '⇧',
+        Delete: '⌫',
+        Ctrl: '⌘',
+        Alt: '⌥'
+    };
+
+    const mapSymbols = (formatMap: KeyFormatMap) => (key: Hotkey) => formatMap[key] || key;
+    const identity = (value) => value;
+
+    return hotkeys
+        // map all keys that should be displayed differently
+        .map(mapSymbols(globalKeyMap))
+        // map only for mac the symbols that should be displayed differently
+        .map(isMac() ? mapSymbols(MacOSkeyMap) : identity)
+        .join(' ');
 };
 
 // Shortcut setup:
@@ -52,10 +64,11 @@ const init: PluginInitFunction = ({ app, $store, $router }) => {
             const shiftMatches = Boolean(shiftKey) === modifiers.includes('Shift');
             const altMatches = Boolean(altKey) === modifiers.includes('Alt');
 
-            // keys are matched case insensitively
-            const keysMatch = key.toUpperCase() === character.toUpperCase() ||
+            const keysMatch =
+                // keys are matched case insensitively
+                (key.toUpperCase() === character.toUpperCase()) ||
                 // on mac 'backspace' can be used instead of delete
-                isMac() && character === 'Delete' && key === 'Backspace';
+                (isMac() && character === 'Delete' && key === 'Backspace');
 
             if (ctrlMatches && shiftMatches && altMatches && keysMatch) {
                 consola.trace('Shortcut', hotkey, shortcutName);
@@ -89,7 +102,7 @@ const init: PluginInitFunction = ({ app, $store, $router }) => {
     };
 
     // execute a shortcut
-    const dispatch: ShortcutsService['dispatch'] = (shortcutName, eventDetail = null) => {
+    const dispatch: ShortcutsService['dispatch'] = (shortcutName, payload = {}) => {
         const shortcut = shortcuts[shortcutName];
         if (!shortcut) {
             throw new Error(`Shortcut ${shortcutName} doesn't exist`);
@@ -98,7 +111,7 @@ const init: PluginInitFunction = ({ app, $store, $router }) => {
         shortcut.execute({
             $store,
             $router,
-            eventDetail
+            payload
         });
     };
 

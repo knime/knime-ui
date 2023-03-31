@@ -3,23 +3,37 @@ import { defineComponent, type PropType } from 'vue';
 import { mapGetters } from 'vuex';
 
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
-import type { XY } from '@/api/gateway-api/generated-api';
-import FloatingMenu from '@/components/common/FloatingMenu.vue';
-import type { FormattedShortcut, ShortcutName } from '@/shortcuts';
 
-type ContextMenuActionsGroup = {
+import type { XY } from '@/api/gateway-api/generated-api';
+import type { FormattedShortcut, ShortcutName } from '@/shortcuts';
+import FloatingMenu from '@/components/common/FloatingMenu.vue';
+
+type ContextMenuActionsGroupItem = {
     name: ShortcutName;
     isVisible: boolean;
     text?: string;
 }
 
+type MenuItem = Pick<FormattedShortcut, 'name' | 'hotkeyText' | 'text'> & {
+    disabled: boolean;
+    separator: boolean;
+};
+
+type ComponentData = {
+    visibleItems: Array<ContextMenuActionsGroupItem & { separator?: boolean }>
+}
+
+// eslint-disable-next-line valid-jsdoc
+/**
+ * Helper fn that enables easily creating separators between the different context menu action groups
+ */
 const menuGroups = function () {
-    let currItems: Array<ContextMenuActionsGroup & { separator?: boolean }> = [];
+    let currItems: Array<ContextMenuActionsGroupItem & { separator?: boolean }> = [];
 
     const onlyVisible = ({ isVisible }) => isVisible;
 
     return {
-        append(groupItems: Array<ContextMenuActionsGroup>) {
+        append(groupItems: Array<ContextMenuActionsGroupItem>) {
             const newItems = groupItems.filter(onlyVisible);
 
             if (currItems.length !== 0 && newItems.length > 0) {
@@ -56,14 +70,19 @@ export default defineComponent({
         }
     },
     emits: ['menuClose'],
-    data: () => ({
+    data: (): ComponentData => ({
         visibleItems: []
     }),
     computed: {
-        ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'isSelectionEmpty']),
+        ...mapGetters('selection', [
+            'selectedNodes',
+            'selectedAnnotations',
+            'singleSelectedNode',
+            'isSelectionEmpty'
+        ]),
 
         // map visible items to menu items and add shortcut information
-        menuItems() {
+        menuItems(): Array<MenuItem> {
             return this.visibleItems
                 .map((item) => {
                     const shortcut = this.$shortcuts.get(item.name);
@@ -97,12 +116,14 @@ export default defineComponent({
         window?.getSelection().removeAllRanges();
     },
     methods: {
-        onItemClick(event: MouseEvent, shortcut: FormattedShortcut) {
+        onItemClick(event: MouseEvent, item: MenuItem) {
             this.$emit('menuClose');
-            this.$shortcuts.dispatch(shortcut.name, event);
+            this.$shortcuts.dispatch(item.name, { event });
         },
         setMenuItems() {
             const areNodesSelected = this.selectedNodes.length > 0;
+            const areAnotationsSelected = this.selectedAnnotations.length > 0;
+
             const isLoopEnd = Boolean(this.singleSelectedNode?.loopInfo?.allowedActions);
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
             const hasLegacyFlowVariableDialog = this.singleSelectedNode &&
@@ -111,7 +132,7 @@ export default defineComponent({
             const isComponent = this.singleSelectedNode?.kind === 'component';
             const isMetanodeOrComponent = isMetanode || isComponent;
 
-            const basicOperationsGroup: Array<ContextMenuActionsGroup> = [
+            const basicOperationsGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'configureNode', isVisible: this.singleSelectedNode },
                 { name: 'executeSelected', isVisible: this.selectedNodes.length },
                 { name: 'executeAndOpenView', isVisible: isView },
@@ -131,25 +152,28 @@ export default defineComponent({
                 { name: 'resetAll', isVisible: this.isSelectionEmpty }
             ];
 
-            const clipboardOperationsGroup: Array<ContextMenuActionsGroup> = [
+            const clipboardOperationsGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'cut', isVisible: areNodesSelected },
                 { name: 'copy', isVisible: areNodesSelected },
                 { name: 'paste', isVisible: this.isSelectionEmpty },
                 { name: 'deleteSelected', isVisible: !this.isSelectionEmpty }
             ];
 
-            const annotationArrangementGroup: Array<ContextMenuActionsGroup> = [
-                { name: 'sendAnnotationBack', isVisible: true }
+            const annotationArrangementGroup: Array<ContextMenuActionsGroupItem> = [
+                { name: 'bringAnnotationToFront', isVisible: true },
+                { name: 'bringAnnotationForward', isVisible: true },
+                { name: 'sendAnnotationBackward', isVisible: true },
+                { name: 'sendAnnotationToBack', isVisible: true }
             ];
 
-            const metanodeOperationsGroup: Array<ContextMenuActionsGroup> = [
+            const metanodeOperationsGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'createMetanode', isVisible: this.selectedNodes.length },
                 { name: 'expandMetanode', isVisible: isMetanode },
                 { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename metanode' },
                 { name: 'createComponent', isVisible: this.selectedNodes.length }
             ];
 
-            const componentOperationsGroup: Array<ContextMenuActionsGroup> = [
+            const componentOperationsGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'createMetanode', isVisible: this.selectedNodes.length },
                 { name: 'createComponent', isVisible: this.selectedNodes.length },
                 { name: 'expandComponent', isVisible: isComponent },
@@ -160,7 +184,7 @@ export default defineComponent({
             const items = menuGroups()
                 .append(basicOperationsGroup)
                 .append(clipboardOperationsGroup)
-                .append(annotationArrangementGroup)
+                .append(areAnotationsSelected ? annotationArrangementGroup : [])
                 .append(isMetanode ? metanodeOperationsGroup : componentOperationsGroup)
                 .value();
 
