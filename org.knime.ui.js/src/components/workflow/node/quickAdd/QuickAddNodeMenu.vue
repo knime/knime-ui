@@ -14,6 +14,7 @@ import { debounce } from 'lodash';
 import NodeList from '@/components/nodeRepository/NodeList.vue';
 import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
 import SearchResults from '@/components/nodeRepository/SearchResults.vue';
+import NodePortActiveConnector from '@/components/workflow/ports/NodePort/NodePortActiveConnector.vue';
 
 const SEARCH_COOLDOWN = 150; // ms
 
@@ -49,6 +50,7 @@ export default defineComponent({
         NodeTemplate,
         SearchBar,
         Button,
+        NodePortActiveConnector,
         FloatingMenu
     },
     props: {
@@ -98,6 +100,17 @@ export default defineComponent({
             pos.x += halfPort;
 
             return pos;
+        },
+        fakePortConnector() {
+            return {
+                id: `${this.nodeId}-${this.port?.index}`,
+                flowVariableConnection: this.port?.index === 0, // TODO: this should be more clear? helper?
+                absolutePoint: [this.position.x, this.position.y],
+                allowedActions: { canDelete: false },
+                interactive: false,
+                sourceNode: this.nodeId,
+                sourcePort: this.port?.index
+            };
         },
         ghostSizeZoomed() {
             return this.$shapes.addNodeGhostSize * this.zoomFactor;
@@ -215,6 +228,8 @@ export default defineComponent({
             let shortcut = this.$shortcuts.findByHotkey(e);
             if (shortcut === 'quickAddNode' && this.$shortcuts.isEnabled(shortcut)) {
                 this.$shortcuts.dispatch(shortcut);
+                e.preventDefault();
+                e.stopPropagation();
             }
         }
     }
@@ -230,6 +245,16 @@ export default defineComponent({
     :prevent-oveflow="true"
     @menu-close="$emit('menuClose')"
   >
+    <!-- this will be portaled to the canvas -->
+    <NodePortActiveConnector
+      :port="port"
+      :targeted="false"
+      direction="out"
+      :drag-connector="fakePortConnector"
+      :did-drag-to-compatible-target="false"
+      :disable-quick-node-add="false"
+    />
+
     <div class="wrapper">
       <div class="header">
         <SearchBar

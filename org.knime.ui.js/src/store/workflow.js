@@ -102,6 +102,8 @@ export const getters = {
         return workflowObjectBounds(activeWorkflow || {}, { padding: true });
     },
 
+    getNodeById: ({ activeWorkflow }) => nodeId => activeWorkflow?.nodes[nodeId] || null,
+
     getNodeIcon: ({ activeWorkflow }) => nodeId => {
         let node = activeWorkflow.nodes[nodeId];
         let { templateId } = node;

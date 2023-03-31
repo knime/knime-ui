@@ -333,10 +333,19 @@ const workflowShortcuts: WorkflowShortcuts = {
         title: 'Add new node',
         hotkey: ['Ctrl', ' '], // Ctrl + Space TODO: discuss if key is really a good idea or we should switch to code?
         execute: ({ $store }) => {
-            const node = $store.getters['selection/singleSelectedNode'];
+            const {
+                isOpen,
+                props: { nodeId: lastNodeId, port: { index: lastPortIndex } = { index: -1 }, position: lastPosition }
+            } = $store.state.workflow.quickAddNodeMenu;
+
+            // use the node of the currently open dialog because the node might not be selected in that case
+            const node = isOpen
+                ? $store.getters['workflow/getNodeById'](lastNodeId)
+                : $store.getters['selection/singleSelectedNode'];
 
             // global menu without predecessor node
             if (node === null) {
+                // center on canvas TODO: move to canvas store? getCenter()
                 const kanvas = $store.state.canvas.getScrollContainerElement();
                 const { top, left, width, height } = kanvas.getBoundingClientRect();
                 const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([left + width / 2, top + height / 2]);
@@ -344,11 +353,6 @@ const workflowShortcuts: WorkflowShortcuts = {
                 $store.dispatch('workflow/openQuickAddNodeMenu', { props: { position: { x, y } } });
                 return;
             }
-
-            const {
-                isOpen,
-                props: { nodeId: lastNodeId, port: { index: lastPortIndex } = { index: -1 }, position: lastPosition }
-            } = $store.state.workflow.quickAddNodeMenu;
 
             const startIndex = 0;
             let portIndex = startIndex;

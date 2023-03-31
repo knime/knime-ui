@@ -88,10 +88,6 @@ const openQuickAddNodeMenuAction = (payload) => {
     store.dispatch('workflow/openQuickAddNodeMenu', payload);
 };
 
-const closeQuickAddNodeMenuAction = () => {
-    store.dispatch('workflow/closeQuickAddNodeMenu');
-};
-
 const { elemRef: tooltipRef } = useTooltip({ tooltip });
 const {
     didMove,
@@ -107,13 +103,7 @@ const {
     nodeId: props.nodeId,
     port: props.port,
 
-    onEscPressed: () => {
-        if (isShowingQuickAddNodeMenu.value) {
-            return { removeConnector: false };
-        }
-
-        return { removeConnector: true };
-    },
+    onEscPressed: () => ({ removeConnector: true }),
 
     onCanvasDrop: () => {
         const position = {
@@ -126,17 +116,10 @@ const {
                 position,
                 port: props.port,
                 nodeId: props.nodeId
-            },
-            events: {
-                menuClose: () => {
-                    closeQuickAddNodeMenuAction();
-                    // clear the drag connector
-                    dragConnector.value = null;
-                }
             }
         });
 
-        return { removeConnector: false };
+        return { removeConnector: true };
     }
 });
 

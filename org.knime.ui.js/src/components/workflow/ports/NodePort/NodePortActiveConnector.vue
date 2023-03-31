@@ -11,7 +11,7 @@ import type { Direction } from '@/util/compatibleConnections';
 import type { DragConnector } from './types';
 
 interface Props {
-    port: NodePort;
+    port?: NodePort;
     dragConnector: DragConnector;
     direction: Direction;
     targeted: boolean;
@@ -35,7 +35,7 @@ const showAddNodeGhost = computed(() => (
  * indicate, if this port is the starting point of a new connector
  */
 const indicateConnectorReplacement = computed(() => {
-    const isConnected = props.port.connectedVia.length > 0;
+    const isConnected = props.port?.connectedVia.length > 0;
 
     return (
         props.direction === 'in' &&
@@ -47,6 +47,9 @@ const indicateConnectorReplacement = computed(() => {
 });
 
 watch(indicateConnectorReplacement, (indicateReplacement) => {
+    if (!props.port) {
+        return;
+    }
     const [incomingConnection] = props.port.connectedVia;
     const incomingConnector = document.querySelector(`[data-connector-id="${incomingConnection}"]`);
 
@@ -64,12 +67,14 @@ watch(indicateConnectorReplacement, (indicateReplacement) => {
     to="drag-connector"
   >
     <Connector
+      v-if="props.port"
       v-bind="props.dragConnector"
       class="non-interactive"
       :interactive="false"
     />
 
     <Port
+      v-if="props.port"
       class="non-interactive"
       data-test-id="drag-connector-port"
       :port="port"
