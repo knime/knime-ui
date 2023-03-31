@@ -1,12 +1,8 @@
 <script>
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import { KnimeMIME } from '@/mixins/dropNode';
-import findFreeSpaceOnCanvas from '@/util/findFreeSpaceOnCanvas';
 import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
-
-const WORKFLOW_ADD_START_PERCENT_X = 0.3; // 0, 0 means top left corner
-const WORKFLOW_ADD_START_PERCENT_Y = 0.2; // 0.5, 0.5 means center of canvas
-export const WORKFLOW_ADD_START_MIN = 390; // px keep in sync with size of NodeDescription (360 + margin)
+import { findFreeSpaceAroundCenterWithFallback } from '@/util/findFreeSpaceOnCanvas';
 
 /**
  * This component was ripped out of NodeTemplate to make NodeTemplate re-useable. This makes still heavy use of the
@@ -109,18 +105,13 @@ export default {
             }
 
             // canvas start position
-            const halfNodeSize = this.$shapes.nodeSize / 2;
-            const { clientWidth, clientHeight, scrollLeft, scrollTop } = document.getElementById('kanvas');
-            const positionX = Math.max(clientWidth * WORKFLOW_ADD_START_PERCENT_X, WORKFLOW_ADD_START_MIN);
-            const position = this.toCanvasCoordinates([
-                positionX + scrollLeft - halfNodeSize,
-                clientHeight * WORKFLOW_ADD_START_PERCENT_Y + scrollTop - halfNodeSize
-            ]);
-
-            const [x, y] = findFreeSpaceOnCanvas(position, this.workflow.nodes);
+            const position = findFreeSpaceAroundCenterWithFallback({
+                visibleFrame: this.$store.getters['canvas/getVisibleFrame'](),
+                nodes: this.workflow.nodes
+            });
 
             const nodeFactory = this.nodeTemplate.nodeFactory;
-            this.addNodeToWorkflow({ position: { x, y }, nodeFactory });
+            this.addNodeToWorkflow({ position, nodeFactory });
         },
         onDrag(e) {
             if (!this.isWritable) {

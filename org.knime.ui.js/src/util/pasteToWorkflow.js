@@ -1,76 +1,18 @@
 import { areaCoverage } from '@/util/geometry';
-import { findFreeSpace } from '@/util/findFreeSpaceOnCanvas';
+import { findFreeSpaceFrom,
+    findFreeSpaceAroundCenterWithFallback,
+    visibilityThreshold } from '@/util/findFreeSpaceOnCanvas';
 import { nodeSize } from '@/style/shapes.mjs';
 
-const visibilityThreshold = 0.7;
-
-/**
- * find free space for clipboard objects
- * @param { Number } position.left x position to start looking from
- * @param { Number } position.left y position to start looking from
- * @returns { Object } free space position and visibility of the area, if pasted there
- */
-const findFreeSpaceFrom = ({ clipboardContent, nodes, visibleFrame }) => ({ left, top }) => {
-    let position = findFreeSpace({ // eslint-disable-line implicit-arrow-linebreak
-        area: clipboardContent.objectBounds,
-        workflow: { nodes },
-        startPosition: {
-            x: left,
-            y: top
-        },
-        step: {
-            x: 120,
-            y: 120
-        }
-    });
-    
-    let visibility = areaCoverage({
-        left: position.x,
-        top: position.y,
-        width: clipboardContent.objectBounds.width,
-        height: clipboardContent.objectBounds.height
-    }, visibleFrame);
-
-    return {
-        ...position,
-        visibility
-    };
-};
 
 /**
  * Tries to fit clipboard objects beginning at the screen's center
  * If no free space is found within the canvas's border, it will be pasted directly at center
  * @returns { Object } x and y position
  */
-const centerStrategy = ({ visibleFrame, clipboardContent, nodes }) => {
-    const centerX = (visibleFrame.left + visibleFrame.width / 2) -
-        (clipboardContent.objectBounds.width / 2);
-    
-    const eyePleasingVerticalOffset = 0.75;
-    const centerY = visibleFrame.top + (visibleFrame.height / 2 * eyePleasingVerticalOffset) -
-        (clipboardContent.objectBounds.height / 2);
-
-    let offsetX = 0;
-    do {
-        let fromCenter = findFreeSpaceFrom({ visibleFrame, clipboardContent, nodes })({
-            left: centerX + offsetX,
-            top: centerY
-        });
-    
-        if (fromCenter.visibility >= visibilityThreshold) {
-            consola.info('found free space around center');
-            return fromCenter;
-        }
-
-        // eslint-disable-next-line no-magic-numbers
-        offsetX += 120;
-    } while (offsetX < visibleFrame.right);
-
-    consola.info('no free space found around center');
-    return {
-        x: centerX + Math.random() * clipboardContent.objectBounds.width,
-        y: centerY + Math.random() * clipboardContent.objectBounds.height
-    };
+export const centerStrategy = ({ visibleFrame, clipboardContent, nodes }) => {
+    const { objectBounds } = clipboardContent;
+    return findFreeSpaceAroundCenterWithFallback({ visibleFrame, nodes, objectBounds });
 };
 
 /**
@@ -79,7 +21,8 @@ const centerStrategy = ({ visibleFrame, clipboardContent, nodes }) => {
  * @returns { Object | null } x and y position
  */
 const originStrategy = ({ clipboardContent, nodes, visibleFrame }) => {
-    let fromOrigin = findFreeSpaceFrom({ clipboardContent, nodes, visibleFrame })(clipboardContent.objectBounds);
+    const { objectBounds } = clipboardContent;
+    let fromOrigin = findFreeSpaceFrom({ objectBounds, nodes, visibleFrame })(clipboardContent.objectBounds);
 
     if (fromOrigin.visibility >= visibilityThreshold) {
         consola.info('found free space with origin strategy');

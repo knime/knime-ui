@@ -12,6 +12,7 @@ import type { ShortcutConditionContext, UnionToShortcutRegistry } from './types'
 import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 import { portPositions } from '@/util/portShift';
 import { nodeSize } from '@/style/shapes.mjs';
+import { findFreeSpaceAroundCenterWithFallback } from '@/util/findFreeSpaceOnCanvas';
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'save'
@@ -345,12 +346,16 @@ const workflowShortcuts: WorkflowShortcuts = {
 
             // global menu without predecessor node
             if (node === null) {
-                // center on canvas TODO: move to canvas store? getCenter()
-                const kanvas = $store.state.canvas.getScrollContainerElement();
-                const { top, left, width, height } = kanvas.getBoundingClientRect();
-                const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([left + width / 2, top + height / 2]);
+                // const kanvas = $store.state.canvas.getScrollContainerElement();
+                // const { top, left, width, height } = kanvas.getBoundingClientRect();
+                // const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([left + width / 2, top + height / 2]);
 
-                $store.dispatch('workflow/openQuickAddNodeMenu', { props: { position: { x, y } } });
+                const position = findFreeSpaceAroundCenterWithFallback({
+                    visibleFrame: $store.getters['canvas/getVisibleFrame'](),
+                    nodes: $store.state.workflow.activeWorkflow.nodes
+                });
+
+                $store.dispatch('workflow/openQuickAddNodeMenu', { props: { position } });
                 return;
             }
 
