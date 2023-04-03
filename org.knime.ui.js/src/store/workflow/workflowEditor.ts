@@ -595,4 +595,14 @@ export const actions = {
 };
 
 export const getters = {
+    isNodeConnected: ({ activeWorkflow }) => (nodeId) => {
+        let connection;
+        for (const connectionID in activeWorkflow.connections) {
+            connection = activeWorkflow.connections[connectionID];
+            if (connection.destNode === nodeId || connection.sourceNode === nodeId) {
+                return true;
+            }
+        }
+        return false;
+    }
 };

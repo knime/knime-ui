@@ -50,7 +50,7 @@ export default {
         lastHitTarget: null
     }),
     computed: {
-        ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('workflow', ['isWritable', 'isNodeConnected']),
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedNodeDrag', 'isDragging']),
@@ -169,7 +169,7 @@ export default {
          * function to guarantee order of event handling
          *
          */
-        onMoveEnd: throttle(function ({ detail: { event: { clientX, clientY } } }) {
+        onMoveEnd: throttle(function ({ detail: { endX, endY } }) {
             /* eslint-disable no-invalid-this */
             if (this.hasAbortedNodeDrag) {
                 this.setHasAbortedNodeDrag(false);
@@ -192,8 +192,8 @@ export default {
                         cancelable: true,
                         detail: {
                             id: this.id,
-                            clientX,
-                            clientY
+                            clientX: endX,
+                            clientY: endY
                         }
                     })
                 );
@@ -222,7 +222,10 @@ export default {
                 const notCancelled = hitTarget.dispatchEvent(
                     new CustomEvent('node-dragging-enter', {
                         bubbles: true,
-                        cancelable: true
+                        cancelable: true,
+                        detail: {
+                            isNodeConnected: this.isNodeConnected(this.id)
+                        }
                     })
                 );
                 this.lastHitTarget = notCancelled ? null : hitTarget;
@@ -237,7 +240,7 @@ export default {
     v-move="{ onMove, onMoveStart, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
     :data-node-id="id"
-    :class="[{ dragging: isDragging && isNodeSelected(id) }, 'test-class']"
+    :class="[{ dragging: isDragging && isNodeSelected(id) }]"
   >
     <slot :position="translationAmount" />
   </g>

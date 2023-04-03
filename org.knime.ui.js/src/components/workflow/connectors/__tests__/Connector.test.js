@@ -104,6 +104,11 @@ describe('Connector.vue', () => {
                     deselectConnection: vi.fn(),
                     deselectAllObjects: vi.fn()
                 }
+            },
+            canvas: {
+                getters: {
+                    screenToCanvasCoordinates: vi.fn().mockReturnValue(() => [5, 5])
+                }
             }
         }, customStoreConfig);
     };
@@ -649,11 +654,11 @@ describe('Connector.vue', () => {
 
             triggerDragEvent(paths.at(0).element, 'dragenter', { types: [KnimeMIME] });
             await Vue.nextTick();
-            expect(paths.at(1).classes()).toContain('isDraggedOver');
+            expect(paths.at(1).classes()).toContain('is-dragged-over');
 
             triggerDragEvent(paths.at(0).element, 'dragleave');
             await Vue.nextTick();
-            expect(paths.at(1).classes()).not.toContain('isDraggedOver');
+            expect(paths.at(1).classes()).not.toContain('is-dragged-over');
         });
 
         it('inserts node on drop', async () => {
@@ -661,13 +666,57 @@ describe('Connector.vue', () => {
             const wrapper = doShallowMount({ storeConfig });
             const paths = wrapper.findAll('path');
 
-            triggerDragEvent(paths.at(0).element, 'drop', { getData: () => 'test' });
+            triggerDragEvent(paths.at(0).element, 'drop', { getData: () => '{ "className": "test" }' });
             await Vue.nextTick();
 
-            // TODO https://knime-com.atlassian.net/browse/NXT-481
-            // expect(storeConfig.workflow.actions.insertNode).toHaveBeenCalledWith(
-            //     expect.anything(), { nodeFactory: 'test', connectionId: 'root:2_2' }
-            // );
+            expect(storeConfig.workflow.actions.insertNode).toHaveBeenCalledWith(
+                expect.anything(),
+                { nodeFactory: { className: 'test' }, connectionId: 'root:2_2', position: { x: 5, y: 5 }, nodeId: null }
+            );
+        });
+
+        it('ignores dragged node with connections', () => {
+            const storeConfig = getStoreConfig();
+            const wrapper = doShallowMount({ storeConfig });
+
+            const paths = wrapper.findAll('path');
+            paths.at(0).trigger('node-dragging-enter', { detail: { isNodeConnected: true } });
+
+            expect(paths.at(1).classes()).not.toContain('is-dragged-over');
+        });
+
+        it('inserts existing dragged node', async () => {
+            const storeConfig = getStoreConfig();
+            const wrapper = doShallowMount({ storeConfig });
+
+            const paths = wrapper.findAll('path');
+            paths.at(0).trigger('node-dragging-enter', { detail: { isNodeConnected: false } });
+            await Vue.nextTick();
+            expect(paths.at(1).classes()).toContain('is-dragged-over');
+
+            paths.at(0).trigger('node-dragging-end', { detail: { id: 'test', clientX: 0, clientY: 0 } });
+
+            expect(storeConfig.workflow.actions.insertNode).toHaveBeenCalledWith(
+                expect.anything(),
+                { nodeFactory: null, connectionId: 'root:2_2', position: { x: 5, y: 5 }, nodeId: 'test' }
+            );
+        });
+
+        it('notifies user insert new node is not possible', async () => {
+            const storeConfig = getStoreConfig();
+            const props = { allowedActions: {
+                canDelete: false
+            } };
+            const wrapper = doShallowMount({ storeConfig, props });
+
+            const paths = wrapper.findAll('path');
+            paths.at(0).trigger('node-dragging-enter', { detail: { isNodeConnected: false } });
+            await Vue.nextTick();
+            expect(paths.at(1).classes()).toContain('is-dragged-over');
+
+            paths.at(0).trigger('node-dragging-end', { detail: { id: 'test', clientX: 0, clientY: 0 } });
+
+            expect(storeConfig.workflow.actions.insertNode).not.toHaveBeenCalled();
         });
     });
 });

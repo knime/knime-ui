@@ -484,7 +484,7 @@ export default {
               <NodeName
                 :node-id="id"
                 :node-position="position"
-                :value="name + ' ' + position.x + ' ' + position.y"
+                :value="name"
                 :editable="isEditable && isContainerNode"
                 @click.left="onLeftMouseClick"
                 @pointerdown.right="onContextMenu"

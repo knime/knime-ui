@@ -1,4 +1,4 @@
-import { expect, describe, it, vi } from 'vitest';
+import { expect, describe, it, vi, beforeEach } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
@@ -39,7 +39,7 @@ describe('MoveableNodeContainer', () => {
             allowedActions: { canExecute: true, canOpenDialog: true, canOpenView: false },
             state: { executionState: 'IDLE' }
         };
-
+        
         const createMockMoveDirective = () => {
             let handlers = {};
 
@@ -85,7 +85,8 @@ describe('MoveableNodeContainer', () => {
                 getters: {
                     isWritable() {
                         return true;
-                    }
+                    },
+                    isNodeConnected: (_state) => (_id) => true
                 },
                 actions: actions.workflow,
                 state: {
@@ -125,6 +126,10 @@ describe('MoveableNodeContainer', () => {
     };
 
     describe('moving', () => {
+        beforeEach(() => {
+            document.elementFromPoint = vi.fn().mockReturnValue(null);
+        });
+
         it('renders at right position', () => {
             const { wrapper } = doMount();
             const transform = wrapper.find('g').attributes().transform;
@@ -235,7 +240,7 @@ describe('MoveableNodeContainer', () => {
             vi.useFakeTimers();
             const { wrapper, actions } = doMount();
 
-            wrapper.vm.onMoveEnd();
+            wrapper.vm.onMoveEnd({ detail: { endX: 0, endY: 0 } });
 
             vi.advanceTimersByTime(5000);
             await Vue.nextTick();
@@ -270,8 +275,94 @@ describe('MoveableNodeContainer', () => {
         // drag was aborted, so the move preview must have only been reset, but moving node is now cancelled
         expect(mutations.workflow.setMovePreview).not.toHaveBeenCalledTimes(2);
 
-        mockMoveDirective.trigger('onMoveEnd', {});
+        mockMoveDirective.trigger('onMoveEnd', { detail: { endX: 0, endY: 0 } });
 
         expect($store.state.workflow.hasAbortedNodeDrag).toBe(false);
+    });
+
+    describe('node dragging notification', () => {
+        let mockTarget, mockMoveDirective, wrapper;
+
+        beforeEach(() => {
+            mockTarget = { dispatchEvent: vi.fn() };
+            window.document.elementFromPoint = vi.fn().mockReturnValue(mockTarget);
+
+            ({ mockMoveDirective, wrapper } = doMount({
+                isDragging: true
+            }));
+
+            const moveStartEvent = new CustomEvent('movestart', {
+                detail: {
+                    startX: 199,
+                    startY: 199,
+                    event: {
+                        shiftKey: false
+                    }
+                }
+            });
+
+            mockMoveDirective.trigger('onMoveStart', moveStartEvent);
+
+            let moveEvent = new CustomEvent('moving', {
+                detail: {
+                    clientX: 250,
+                    clientY: 250,
+                    e: { detail: { event: { shiftKey: false } } }
+                }
+            });
+            mockMoveDirective.trigger('onMove', moveEvent);
+        });
+
+        it('changes dragging target', () => {
+            const otherTarget = { dispatchEvent: vi.fn() };
+            window.document.elementFromPoint.mockReturnValue(otherTarget);
+
+            const moveEvent = new CustomEvent('moving', {
+                detail: {
+                    clientX: 260,
+                    clientY: 260,
+                    e: { detail: { event: { shiftKey: false } } }
+                }
+            });
+            mockMoveDirective.trigger('onMove', moveEvent);
+
+            expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
+            expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'node-dragging-enter' })
+            );
+            expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'node-dragging-leave' })
+            );
+
+            expect(otherTarget.dispatchEvent).toHaveBeenCalledTimes(1);
+            expect(otherTarget.dispatchEvent).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'node-dragging-enter' })
+            );
+        });
+
+        it('triggers dragging drop', () => {
+            mockMoveDirective.trigger('onMoveEnd', { detail: { endX: 0, endY: 0 } });
+
+            expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
+            expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'node-dragging-enter' })
+            );
+            expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'node-dragging-end' })
+            );
+        });
+
+        it('aborts dragging', () => {
+            escapeStackMock.onEscape.call(wrapper.vm);
+            mockMoveDirective.trigger('onMoveEnd', { detail: { endX: 0, endY: 0 } });
+
+            expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
+            expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'node-dragging-enter' })
+            );
+            expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'node-dragging-leave' })
+            );
+        });
     });
 });

@@ -155,12 +155,12 @@ export default defineComponent({
             const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
             this.onInsertNode(dragEvent.clientX, dragEvent.clientY, nodeFactory, null);
         },
-        onNodeDragggingEnter() {
-            // TODO check if the node is valid (does not have connections) if valid, then call prevent default
+        onNodeDragggingEnter(event) {
+            if (event.detail.isNodeConnected) {
+                return;
+            }
+            event.preventDefault();
             this.isDraggedOver = true;
-        },
-        onNodeDragggingLeave() {
-            this.isDraggedOver = false;
         },
         onNodeDragggingEnd({ detail: { id, clientX, clientY } }) {
             this.onInsertNode(clientX, clientY, null, id);
@@ -197,8 +197,8 @@ export default defineComponent({
       @dragenter="onConnectorDragEnter"
       @dragleave="onConnectorDragLeave"
       @drop.stop="onConnectorDragDrop"
-      @node-dragging-enter.prevent="onNodeDragggingEnter"
-      @node-dragging-leave.prevent="onNodeDragggingLeave"
+      @node-dragging-enter="onNodeDragggingEnter"
+      @node-dragging-leave.prevent="onConnectorDragLeave"
       @node-dragging-end.prevent="onNodeDragggingEnd"
     />
     <path
@@ -210,7 +210,7 @@ export default defineComponent({
         highlighted: isHighlighted,
         dashed: streaming,
         selected: isConnectionSelected(id) && !isDragging,
-        isDraggedOver
+        'is-dragged-over': isDraggedOver
       }"
       fill="none"
     />
@@ -250,9 +250,9 @@ path:not(.hover-area) {
     stroke: var(--knime-masala);
   }
 
-  &.isDraggedOver {
+  &.is-dragged-over {
     stroke-width: var(--selected-connector-width-shape);
-    stroke: var(--knime-hibiscus-dark);
+    stroke: var(--knime-meadow-dark);
   }
 
   &.dashed {
