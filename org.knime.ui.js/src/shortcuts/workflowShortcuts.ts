@@ -346,6 +346,10 @@ const workflowShortcuts: WorkflowShortcuts = {
                 ? $store.getters['workflow/getNodeById'](lastNodeId)
                 : $store.getters['selection/singleSelectedNode'];
 
+            if (['metanode', 'component'].includes(node.kind)) {
+                return;
+            }
+
             // global menu without predecessor node
             if (node === null) {
                 // const kanvas = $store.state.canvas.getScrollContainerElement();
