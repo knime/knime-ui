@@ -105,7 +105,7 @@ export default {
 
 .selected {
   outline: calc(var(--selected-node-stroke-width-shape) * 1px) solid var(--selection-active-border-color);
-  border-radius: calc(var(--selected-node-border-radius-shape) * 1px);
+  border-radius: calc(var(--selected-item-border-radius-shape) * 1px);
   background-color: var(--selection-active-background-color);
 }
 </style>

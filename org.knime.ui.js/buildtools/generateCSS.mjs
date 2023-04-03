@@ -21,7 +21,7 @@ const colorNames = [
 
 // shapes.js -> shapes.css (postfix shape, someVariableName will become `--some-variable-name-shape`)
 const shapeNames = [
-    'selectedNodeBorderRadius',
+    'selectedItemBorderRadius',
     'selectedNodeStrokeWidth',
     'selectedConnectorWidth',
     'connectorWidth',
@@ -41,7 +41,13 @@ const camelToSnake = str => str.replace(
 const dotToDash = str => str.replace(/\./g, '-');
 
 // access objects with a json path like syntax 'obj.x.y'
-const getVal = (object, path) => path.split('.').reduce((res, prop) => res[prop], object);
+const getVal = (object, path) => {
+    const value = path.split('.').reduce((res, prop) => res[prop], object);
+    if (!value) {
+        throw new Error(`could not find data for path ${path}`);
+    }
+    return value;
+};
 
 const generateCssData = (names, data, postfix, sourceFile) => {
     let rules = names.map(name => `--${camelToSnake(dotToDash(name))}-${postfix}: ${getVal(data, name)};`);
