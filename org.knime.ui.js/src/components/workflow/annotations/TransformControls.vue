@@ -119,34 +119,36 @@ export default defineComponent({
   <g class="transform">
     <slot :transformed-bounds="innerValue" />
 
-    <rect
-      v-if="showSelection"
-      :width="innerValue.width"
-      :height="innerValue.height"
-      :x="innerValue.x"
-      :y="innerValue.y"
-      class="transform-box"
-      :stroke="$colors.selection.activeBorder"
-      :stroke-width="$shapes.selectedAnnotationStrokeWidth"
-      :rx="$shapes.selectedItemBorderRadius"
-    />
-
-    <template v-if="showTransformControls">
+    <Portal to="annotation-transform">
       <rect
-        v-for="direction in directions"
-        :key="direction"
-        :x="getControlPosition(direction).x"
-        :y="getControlPosition(direction).y"
-        :width="CONTROL_SIZE"
-        :height="CONTROL_SIZE"
-        class="transform-control"
-        :class="`transform-control-${direction}`"
-        :style="getCursorStyle(direction)"
-        @click.stop
-        @pointerdown.self.stop="onStart({ event: $event, direction })"
-        @pointerup="onStop"
+        v-if="showSelection"
+        :width="innerValue.width"
+        :height="innerValue.height"
+        :x="innerValue.x"
+        :y="innerValue.y"
+        class="transform-box"
+        :stroke="$colors.selection.activeBorder"
+        :stroke-width="$shapes.selectedAnnotationStrokeWidth"
+        :rx="$shapes.selectedItemBorderRadius"
       />
-    </template>
+
+      <template v-if="showTransformControls">
+        <rect
+          v-for="direction in directions"
+          :key="direction"
+          :x="getControlPosition(direction).x"
+          :y="getControlPosition(direction).y"
+          :width="CONTROL_SIZE"
+          :height="CONTROL_SIZE"
+          class="transform-control"
+          :class="`transform-control-${direction}`"
+          :style="getCursorStyle(direction)"
+          @click.stop
+          @pointerdown.self.stop="onStart({ event: $event, direction })"
+          @pointerup="onStop"
+        />
+      </template>
+    </Portal>
   </g>
 </template>
 

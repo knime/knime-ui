@@ -110,11 +110,11 @@ describe('Shortcuts Plugin', () => {
         it('dispatch name to shortcut', () => {
             let shortcut = $shortcuts.get('crazyHotkey');
 
-            $shortcuts.dispatch('crazyHotkey', { mockExtraPayload: true });
+            $shortcuts.dispatch('crazyHotkey', { event: { mockExtraPayload: true } });
 
             expect(shortcut.execute).toHaveBeenCalledWith({
                 $store: mockStore,
-                eventDetail: { mockExtraPayload: true },
+                payload: { event: { mockExtraPayload: true } },
                 $router: mockRouter
             });
         });

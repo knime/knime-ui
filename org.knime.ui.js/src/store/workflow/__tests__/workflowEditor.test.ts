@@ -6,6 +6,7 @@ import * as Vue from 'vue';
 import { deepMocked, mockVuexStore } from '@/test/utils';
 import { API } from '@api';
 import { pastePartsAt } from '@/util/pasteToWorkflow';
+import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 
 vi.mock('@/util/pasteToWorkflow');
 
@@ -410,6 +411,55 @@ describe('workflow store: Editing', () => {
                 sourcePortIdx: 0,
                 destinationNodeId: 'dest:1',
                 destinationPortIdx: 1
+            });
+        });
+
+        it('transforms annotations', async () => {
+            const { store } = await loadStore();
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
+
+            const bounds = { x: 1, y: 2, width: 3, height: 4 };
+            const annotationId = 'mock-annotation-id';
+            store.dispatch('workflow/transformWorkflowAnnotation', {
+                bounds,
+                annotationId
+            });
+
+            expect(mockedAPI.workflowCommand.TransformWorkflowAnnotation).toHaveBeenCalledWith({
+                projectId: 'foo',
+                workflowId: 'root',
+                bounds,
+                annotationId
+            });
+        });
+
+        it.each([
+            [ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront],
+            [ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward],
+            [ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward],
+            [ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack]
+        ])('reorders annotations (z-index)', async (action) => {
+            const { store } = await loadStore();
+
+            const mockAnnotation1 = { id: 'mock-annotation1' };
+            const mockAnnotation2 = { id: 'mock-annotation2' };
+            store.commit('workflow/setActiveWorkflow', {
+                workflowAnnotations: [mockAnnotation1, mockAnnotation2],
+                projectId: 'foo',
+                info: {
+                    containerId: 'root'
+                }
+            });
+            await store.dispatch('selection/selectAnnotation', mockAnnotation1.id);
+            await store.dispatch('selection/selectAnnotation', mockAnnotation2.id);
+
+            store.dispatch('workflow/reorderWorkflowAnnotation', { action });
+
+            expect(mockedAPI.workflowCommand.ReorderWorkflowAnnotations).toHaveBeenCalledWith({
+                projectId: 'foo',
+                workflowId: 'root',
+                action,
+                annotationIds: [mockAnnotation1.id, mockAnnotation2.id]
             });
         });
 

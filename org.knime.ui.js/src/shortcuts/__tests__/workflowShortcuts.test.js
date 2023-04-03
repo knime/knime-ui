@@ -1,3 +1,4 @@
+import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 import { expect, describe, it, vi } from 'vitest';
 import workflowShortcuts from '../workflowShortcuts';
 
@@ -147,8 +148,28 @@ describe('workflowShortcuts', () => {
 
         it('paste', () => {
             const { $store, mockDispatch } = createStore();
-            workflowShortcuts.paste.execute({ $store });
+            workflowShortcuts.paste.execute({ $store, payload: {} });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/pasteWorkflowParts', expect.anything());
+        });
+
+        it.each([
+            ['bringAnnotationToFront'],
+            ['bringAnnotationForward'],
+            ['sendAnnotationBackward'],
+            ['sendAnnotationToBack']
+        ])('should dispatch %s to reorder annotation', (shortcutName) => {
+            const { $store, mockDispatch } = createStore();
+
+            const actions = {
+                bringAnnotationToFront: ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront,
+                bringAnnotationForward: ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward,
+                sendAnnotationBackward: ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward,
+                sendAnnotationToBack: ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack
+            };
+            const action = actions[shortcutName];
+
+            workflowShortcuts[shortcutName].execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/reorderWorkflowAnnotation', { action });
         });
     });
 
@@ -505,6 +526,20 @@ describe('workflowShortcuts', () => {
 
             $store.state.application.hasClipboardSupport = false;
             expect(workflowShortcuts.paste.condition({ $store })).toBeFalsy();
+        });
+
+        it.each([
+            ['bringAnnotationToFront'],
+            ['bringAnnotationForward'],
+            ['sendAnnotationBackward'],
+            ['sendAnnotationToBack']
+        ])('should check selected annotations when trying to %s', (shortcutName) => {
+            const { $store } = createStore();
+
+            expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(false);
+
+            $store.getters['selection/selectedAnnotations'] = [{ id: 'mock-annotation' }];
+            expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(true);
         });
     });
 });

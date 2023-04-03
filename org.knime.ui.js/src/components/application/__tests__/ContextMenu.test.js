@@ -20,6 +20,7 @@ describe('ContextMenu.vue', () => {
     const doMount = ({
         props = {},
         selectedNodes,
+        selectedAnnotations,
         singleSelectedNode,
         isSelectionEmpty
     } = {}) => {
@@ -33,10 +34,12 @@ describe('ContextMenu.vue', () => {
         const storeConfig = {
             selection: {
                 state: () => ({
-                    _selectedNodes: []
+                    _selectedNodes: [],
+                    _selectedAnnotations: []
                 }),
                 getters: {
                     selectedNodes: selectedNodes || ((state) => state._selectedNodes),
+                    selectedAnnotations: selectedAnnotations || ((state) => state._selectedAnnotations),
                     singleSelectedNode: singleSelectedNode || (() => null),
                     isSelectionEmpty: isSelectionEmpty || (() => false)
                 }
@@ -130,9 +133,9 @@ describe('ContextMenu.vue', () => {
 
     it('fires correct action based on store data and passes optional event detail', () => {
         const { wrapper } = doMount();
-        const mockEventDetails = { mock: true };
-        wrapper.findComponent(MenuItems).vm.$emit('item-click', mockEventDetails, { name: 'shortcut' });
-        expect($shortcuts.dispatch).toHaveBeenCalledWith('shortcut', mockEventDetails);
+        const mockEvent = { mock: true };
+        wrapper.findComponent(MenuItems).vm.$emit('item-click', mockEvent, { name: 'shortcut' });
+        expect($shortcuts.dispatch).toHaveBeenCalledWith('shortcut', { event: mockEvent });
     });
 
     it('closes menu after item has been clicked', () => {
@@ -379,6 +382,26 @@ describe('ContextMenu.vue', () => {
                     { text: 'expandComponent' },
                     { text: 'openComponent' },
                     { text: 'Rename component' }
+                ])
+            );
+        });
+
+        it('shows correct menu items if one annotation is selected', async () => {
+            const annotation = { id: 'mock-annotation', text: '' };
+
+            const { wrapper } = doMount({
+                selectedAnnotations: () => [annotation]
+            });
+
+            await Vue.nextTick();
+
+            expect(renderedMenuItems(wrapper)).toEqual(
+                assertItems([
+                    { text: 'deleteSelected', separator: true },
+                    { text: 'bringAnnotationToFront' },
+                    { text: 'bringAnnotationForward' },
+                    { text: 'sendAnnotationBackward' },
+                    { text: 'sendAnnotationToBack' }
                 ])
             );
         });

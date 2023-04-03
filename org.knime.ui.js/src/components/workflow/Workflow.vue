@@ -59,6 +59,11 @@ export default {
       :annotation="annotation"
     />
 
+    <PortalTarget
+      tag="g"
+      name="annotation-transform"
+    />
+
     <!-- Node Selection Plane Layer -->
     <PortalTarget
       tag="g"

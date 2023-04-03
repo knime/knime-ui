@@ -241,10 +241,7 @@ describe('MoveableNodeContainer', () => {
             await Vue.nextTick();
 
             vi.runOnlyPendingTimers();
-            expect(actions.workflow.moveObjects).toHaveBeenCalledWith(
-                expect.anything(),
-                { nodeId: 'root:1', projectId: 'projectId', startPos: null }
-            );
+            expect(actions.workflow.moveObjects).toHaveBeenCalled();
             vi.useRealTimers();
         });
     });

@@ -94,19 +94,13 @@ export type Shortcut = {
 
 export type ShortcutName = keyof ShortcutsRegistry;
 
-export type FormattedShortcut = Shortcut & { name: ShortcutName; hotkeyText: string }
+export type FormattedShortcut = Shortcut & { name: ShortcutName; hotkeyText?: string }
 
 export type ShortcutsService = {
     isEnabled: (shortcutName: ShortcutName) => boolean;
     dispatch: (shortcutName: ShortcutName, payload?: ShortcutExecuteContext['payload']) => void
     preventDefault: (shortcutName: ShortcutName) => boolean;
-    findByHotkey: (params: {
-        key: string;
-        metaKey: boolean;
-        ctrlKey: boolean;
-        shiftKey: boolean;
-        altKey: boolean;
-    }) => string | null;
+    findByHotkey: (event: KeyboardEvent) => string | null;
     get: (shortcutName: ShortcutName) => FormattedShortcut;
 }
 
