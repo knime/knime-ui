@@ -18,7 +18,8 @@ describe('NodeLabelText.vue', () => {
                 textAlign: 'center',
                 backgroundColor: 'rgb(255, 216, 0)',
                 styleRanges: [{ fontSize: 22, color: '#000000' }]
-            }
+            },
+            numberOfPorts: 0
         };
 
         const wrapper = shallowMount(NodeLabelText, {
@@ -27,7 +28,10 @@ describe('NodeLabelText.vue', () => {
                 mocks: { $shapes },
                 stubs: {
                     AutoSizeForeignObject: {
-                        template: `<div><slot :on="{}" /></div>`
+                        template: `<div><slot :on="{}" /></div>`,
+                        props: {
+                            yOffset: 0
+                        }
                     }
                 }
             }
@@ -117,5 +121,28 @@ describe('NodeLabelText.vue', () => {
         expect(texts.at(5).attributes().style)
             .toBe('font-size: 13px; font-weight: bold; font-style: italic; line-height: 1.1;');
         expect(texts.at(6).attributes().style).toBeUndefined();
+    });
+
+    it('calculates offset based on ports', () => {
+        const props = {
+            numberOfPorts: 6
+        };
+        let { wrapper } = doShallowMount({ props });
+        expect(wrapper.findComponent(AutoSizeForeignObject).props().yOffset)
+            .toBe(69);
+    });
+
+    it('has no offset when number of ports is below 5', async () => {
+        const expectedDefaultYOffset = 60;
+        const props = {
+            numberOfPorts: 4
+        };
+        const { wrapper } = doShallowMount({ props });
+        expect(wrapper.findComponent(AutoSizeForeignObject).props().yOffset)
+            .toBe(expectedDefaultYOffset);
+
+        await wrapper.setProps({ numberOfPorts: 2 });
+        expect(wrapper.findComponent(AutoSizeForeignObject).props().yOffset)
+            .toBe(expectedDefaultYOffset);
     });
 });

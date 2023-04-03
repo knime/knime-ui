@@ -228,6 +228,7 @@ describe('Node', () => {
                 editable: true,
                 nodeId: commonNode.id,
                 nodePosition: commonNode.position,
+                numberOfPorts: 0,
                 annotation: props.annotation
             });
         });

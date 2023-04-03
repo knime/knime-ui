@@ -33,6 +33,11 @@ export default {
             type: Object,
             required: false,
             default: () => {}
+        },
+        numberOfPorts: {
+            type: Number,
+            required: false,
+            default: 0
         }
     },
     emits: ['editStart', 'widthChange', 'heightChange', 'mouseleave', 'mouseenter'],
@@ -78,6 +83,7 @@ export default {
           :value="value"
           :kind="kind"
           :node-position="nodePosition"
+          :number-of-ports="numberOfPorts"
           @save="onSave"
           @cancel="onCancel"
         />
@@ -91,6 +97,7 @@ export default {
         :annotation="annotation"
         :editable="editable"
         :is-selected="isSelected"
+        :number-of-ports="numberOfPorts"
         @request-edit="onRequestEdit"
       />
     </template>

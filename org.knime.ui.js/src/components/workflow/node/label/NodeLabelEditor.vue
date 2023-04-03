@@ -29,6 +29,11 @@ export default {
             type: Object,
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+        },
+        numberOfPorts: {
+            type: Number,
+            required: false,
+            default: 0
         }
     },
     emits: ['save', 'cancel'],
@@ -66,10 +71,18 @@ export default {
         actionBarPosition() {
             return [
                 this.nodePosition.x + this.$shapes.nodeSize / 2,
-                this.kind === 'metanode'
-                    ? this.nodePosition.y + this.$shapes.metanodeLabelActionBarOffset
-                    : this.nodePosition.y + this.$shapes.nodeLabelActionBarOffset
+                this.nodePosition.y + this.yOffset
             ];
+        },
+        yOffset() {
+            const maxSupportedNumberOfPorts = 5; // max port number that works without offset
+            let portOffset = 0;
+            if (this.numberOfPorts > maxSupportedNumberOfPorts) {
+                portOffset = (this.numberOfPorts - maxSupportedNumberOfPorts) * this.$shapes.portSize;
+            }
+            return (this.kind === 'metanode'
+                ? this.$shapes.metanodeLabelActionBarOffset
+                : this.$shapes.nodeLabelActionBarOffset) + portOffset;
         }
     },
     watch: {
@@ -118,6 +131,7 @@ export default {
       :transform="`translate(${nodePosition.x}, ${nodePosition.y})`"
       :kind="kind"
       :parent-width="$shapes.nodeSize"
+      :number-of-ports="numberOfPorts"
       @save="onSave"
       @cancel="onCancel"
     />

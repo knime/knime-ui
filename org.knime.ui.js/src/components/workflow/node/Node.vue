@@ -405,6 +405,7 @@ export default {
           :kind="kind"
           :node-id="id"
           :node-position="position"
+          :number-of-ports="Math.max(inPorts.length, outPorts.length)"
           @contextmenu.prevent="onContextMenu"
         />
 

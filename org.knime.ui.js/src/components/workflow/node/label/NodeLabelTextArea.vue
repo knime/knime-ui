@@ -12,6 +12,11 @@ export default {
         kind: {
             type: String,
             default: ''
+        },
+        numberOfPorts: {
+            type: Number,
+            required: false,
+            default: 0
         }
     },
     emits: ['update:modelValue', 'save', 'cancel', 'invalidInput'],
@@ -63,6 +68,7 @@ export default {
   <NodeLabelText
     class="editor"
     :kind="kind"
+    :number-of-ports="numberOfPorts"
   >
     <span
       ref="ghost"
