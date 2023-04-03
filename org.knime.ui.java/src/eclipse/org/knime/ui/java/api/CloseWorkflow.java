@@ -46,13 +46,17 @@
  */
 package org.knime.ui.java.api;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.service.util.EventConsumer;
@@ -85,15 +89,16 @@ final class CloseWorkflow {
      */
     static boolean closeWorkflow(final String projectIdToClose, final String nextProjectId) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            return closeWorkflowViaClassicUI(projectIdToClose, nextProjectId);
+            return closeWorkflowViaClassicUI(projectIdToClose, nextProjectId, true);
         } else {
             if (nextProjectId != null) {
-                var wpm = WorkflowProjectManager.getInstance();
+                var wpm = DesktopAPI.getDeps(WorkflowProjectManager.class);
                 wpm.openAndCacheWorkflow(nextProjectId);
                 wpm.setWorkflowProjectActive(nextProjectId);
             }
-            var success = SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(Collections.singleton(projectIdToClose),
-                DesktopAPI.getDeps(EventConsumer.class), PostWorkflowCloseAction.UPDATE_APP_STATE) == 1;
+            var success =
+                SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(Collections.singleton(projectIdToClose),
+                    DesktopAPI.getDeps(EventConsumer.class), PostWorkflowCloseAction.UPDATE_APP_STATE) == 1;
             if (success) {
                 DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             }
@@ -101,12 +106,54 @@ final class CloseWorkflow {
         }
     }
 
-    private static boolean closeWorkflowViaClassicUI(final String projectIdToClose, final String nextProjectId) {
+    /**
+     * @param projectIdsToClose
+     */
+    static boolean forceCloseWorkflows(final List<String> projectIdsToClose) {
+        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            var success = true;
+            for (var id : projectIdsToClose) {
+                success &= closeWorkflowViaClassicUI(id, null, false);
+            }
+            return success;
+        } else {
+            var success = closeWorkflows(projectIdsToClose);
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            return success;
+        }
+    }
+
+    static boolean closeWorkflows(final Collection<String> projectIds) {
+        var success = true;
+        for (var projectId : projectIds) {
+            success &= closeWorkflow(projectId);
+        }
+        return success;
+    }
+
+    static boolean closeWorkflow(final String projectId) {
+        var wpm = WorkflowProjectManager.getInstance();
+        var wfm = wpm.getCachedWorkflow(projectId).orElse(null);
+        try {
+            if (wfm != null) {
+                CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
+            }
+            wpm.removeWorkflowProject(projectId);
+            return true;
+        } catch (InterruptedException e) { // NOSONAR
+            NodeLogger.getLogger(SaveAndCloseWorkflows.class)
+                .warn("Problem while waiting for the workflow '" + projectId + "' to be cancelled", e);
+            return false;
+        }
+    }
+
+    private static boolean closeWorkflowViaClassicUI(final String projectIdToClose, final String nextProjectId,
+        final boolean save) {
         var editorToClose = getEditor(projectIdToClose);
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         // Since we are closing the editor of the root workflow manager, this will also close any editors
         //  of child workflow managers.
-        var wasClosed = page.closeEditor(editorToClose, true);
+        var wasClosed = page.closeEditor(editorToClose, save);
         if (wasClosed) {
             var wpm = WorkflowProjectManager.getInstance();
             wpm.removeWorkflowProject(projectIdToClose);

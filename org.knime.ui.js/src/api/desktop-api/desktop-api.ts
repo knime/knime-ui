@@ -83,6 +83,20 @@ export const closeWorkflow = ({
     }
 };
 
+export const forceCloseWorkflows = ({
+    projectIds
+}: {
+    projectIds: Array<string>;
+}) => {
+    try {
+        // returns true on success
+        return window.forceCloseWorkflows(...projectIds);
+    } catch (e) {
+        consola.error(`Could not close workflow`, e);
+        return false;
+    }
+};
+
 export const setProjectActiveAndEnsureItsLoaded = ({ projectId }: { projectId: string }) => {
     try {
         window.setProjectActiveAndEnsureItsLoaded(projectId);

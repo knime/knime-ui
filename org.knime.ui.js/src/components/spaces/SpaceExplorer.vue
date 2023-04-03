@@ -167,7 +167,7 @@ export default {
 
     methods: {
         ...mapActions('nodeRepository', ['getNodeTemplate']),
-        ...mapActions('application', ['closeProjects']),
+        ...mapActions('application', ['forceCloseProjects']),
         async fetchWorkflowGroupContent(itemId) {
             await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
         },
@@ -225,7 +225,7 @@ export default {
             const projectIds = relevantProjects.map(({ projectId }) => projectId);
             let nextProjectId;
             if (projectIds.length) {
-                nextProjectId = await this.closeProjects({ projectIds, force: true });
+                nextProjectId = await this.forceCloseProjects({ projectIds });
             }
 
             await this.$store.dispatch('spaces/deleteItems', { itemIds });

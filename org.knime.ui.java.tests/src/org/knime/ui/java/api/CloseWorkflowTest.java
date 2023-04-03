@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.InvalidSettingsException;
@@ -78,22 +79,23 @@ class CloseWorkflowTest {
 
     private List<WorkflowManager> m_wfms;
 
-    @Test
-    void testCloseWorkflow() throws IOException, InvalidSettingsException, CanceledExecutionException,
+    private Runnable m_appStateUpdateListener;
+
+    @BeforeEach
+    void setup() throws IOException, InvalidSettingsException, CanceledExecutionException,
         UnsupportedWorkflowVersionException, LockFailedException {
         var eventConsumer = mock(EventConsumer.class);
         var appStateUpdater = new AppStateUpdater();
-        var appStateUpdateListener = mock(Runnable.class);
-        appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
-        DesktopAPI.injectDependencies(null, appStateUpdater, null, null, eventConsumer);
+        m_appStateUpdateListener = mock(Runnable.class);
+        appStateUpdater.addAppStateChangedListener(m_appStateUpdateListener);
+        var wpm = WorkflowProjectManager.getInstance();
+        DesktopAPI.injectDependencies(wpm, appStateUpdater, null, null, eventConsumer);
 
         var workflowDir = CoreUtil.resolveToFile("/files/test_workspace/simple", OpenWorkflowTest.class);
 
         var wfm1 = WorkflowManagerUtil.loadWorkflow(workflowDir);
         var wfm2 = WorkflowManagerUtil.loadWorkflow(workflowDir);
-        m_wfms = List.of(wfm1, wfm2);
 
-        var wpm = WorkflowProjectManager.getInstance();
         wpm.addWorkflowProject("projectId1",
             OpenWorkflow.createWorkflowProject(wfm1, "providerId", "spaceId", "itemId", "relativePath", "projectId1"));
         wpm.addWorkflowProject("projectId2",
@@ -102,14 +104,44 @@ class CloseWorkflowTest {
         wpm.setWorkflowProjectActive("projectId1");
         assertThat(wpm.getWorkflowProjectsIds()).hasSize(2);
 
+        m_wfms = List.of(wfm1, wfm2);
+    }
+
+    @Test
+    void testCloseWorkflow() {
         assertThat(CloseWorkflow.closeWorkflow("projectId1", "projectId2")).isTrue();
 
+        var wfm1 = m_wfms.get(0);
+        var wfm2 = m_wfms.get(1);
         assertThatThrownBy(() -> WorkflowManager.ROOT.getNodeContainer(wfm1.getID())) // NOSONAR
             .isInstanceOf(IllegalArgumentException.class);
         assertThat(WorkflowManager.ROOT.getNodeContainer(wfm2.getID()).getName()).isEqualTo("simple");
+        var wpm = WorkflowProjectManager.getInstance();
         assertThat(wpm.getWorkflowProjectsIds()).hasSize(1);
         assertThat(wpm.isActiveWorkflowProject("projectId2")).isTrue();
-        verify(appStateUpdateListener).run();
+        verify(m_appStateUpdateListener).run();
+    }
+
+    @Test
+    void testForceCloseWorkflow() {
+        // make sure that a workflow is dirty
+        var wfm1 = m_wfms.get(0);
+        wfm1.setDirty();
+        assertThat(wfm1.isDirty()).isTrue();
+        var wfm2 = m_wfms.get(1);
+        wfm2.setDirty();
+        assertThat(wfm2.isDirty()).isTrue();
+        WorkflowProjectManager.getInstance().openAndCacheWorkflow("projectId2");
+
+        CloseWorkflow.forceCloseWorkflows(List.of("projectId1", "projectId2", "non-existing-id"));
+
+        assertThatThrownBy(() -> WorkflowManager.ROOT.getNodeContainer(wfm1.getID())) // NOSONAR
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> WorkflowManager.ROOT.getNodeContainer(wfm2.getID())) // NOSONAR
+            .isInstanceOf(IllegalArgumentException.class);
+        var wpm = WorkflowProjectManager.getInstance();
+        assertThat(wpm.getWorkflowProjectsIds()).isEmpty();
+        verify(m_appStateUpdateListener).run();
     }
 
     @AfterEach

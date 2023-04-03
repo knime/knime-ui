@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
@@ -106,6 +107,16 @@ final class WorkflowAPI {
         return CloseWorkflow.closeWorkflow(projectIdToClose, nextProjectId);
     }
 
+    /**
+     * Closes (i.e. removes from memory) all the workflows for the given projects ids without saving any pending
+     * changes.
+     *
+     * @return whether all the workflows have been successfully been closed
+     */
+    @API
+    static boolean forceCloseWorkflows(final Object[] projectIdsToClose) {
+        return CloseWorkflow.forceCloseWorkflows(Arrays.stream(projectIdsToClose).map(String.class::cast).toList());
+    }
 
     /**
      * Save the project workflow manager identified by a given project ID.

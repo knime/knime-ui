@@ -64,7 +64,7 @@ describe('SpaceExplorer.vue', () => {
                 },
                 actions: {
                     updateGlobalLoader: vi.fn(),
-                    closeProjects: vi.fn()
+                    forceCloseProjects: vi.fn()
                 }
             },
             workflow: {
@@ -331,8 +331,8 @@ describe('SpaceExplorer.vue', () => {
         await wrapper.vm.deleteItems();
 
         expect(dispatchSpy).toHaveBeenNthCalledWith(2,
-            'application/closeProjects',
-            { projectIds: [openProjects[0].projectId], force: true });
+            'application/forceCloseProjects',
+            { projectIds: [openProjects[0].projectId] });
 
         expect(dispatchSpy).toHaveBeenNthCalledWith(3,
             'spaces/deleteItems',

@@ -202,14 +202,14 @@ export const actions = {
         dispatch('unloadActiveWorkflow', { clearWorkflow: true });
     },
 
-    async closeProjects({ state }, { projectIds, force = false }) {
+    async forceCloseProjects({ state }, { projectIds }) {
         const { openProjects, activeProjectId } = state;
         const nextProjectId = getNextProjectId({
             openProjects,
             activeProjectId,
             closingProjectIds: projectIds
         });
-        await API.application.closeProjects({ projectIds, force });
+        await API.desktop.forceCloseWorkflows({ projectIds });
         
         return nextProjectId;
     },

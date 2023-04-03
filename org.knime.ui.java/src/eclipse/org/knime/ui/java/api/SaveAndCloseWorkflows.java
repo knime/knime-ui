@@ -65,7 +65,6 @@ import org.eclipse.ui.progress.IProgressService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -157,7 +156,7 @@ public final class SaveAndCloseWorkflows {
                 }
                 return 2;
             case 1: // NO
-                return closeWorkflows(projectIds) ? 1 : 0;
+                return CloseWorkflow.closeWorkflows(projectIds) ? 1 : 0;
             default: // CANCEL button or window 'x'
                 return 0;
         }
@@ -196,7 +195,7 @@ public final class SaveAndCloseWorkflows {
         if (projectWfm != null) { // workflow not loaded -> nothing to save
             SaveWorkflow.saveWorkflow(monitor, projectWfm, projectSVG, false);
         }
-        var success = closeWorkflow(projectId);
+        var success = CloseWorkflow.closeWorkflow(projectId);
         monitor.worked(1);
         return success;
     }
@@ -257,30 +256,6 @@ public final class SaveAndCloseWorkflows {
             message.append("\nExecuting nodes are not saved! Close anyway?");
         }
         return MessageDialog.openQuestion(SWTUtilities.getActiveShell(), title, message.toString());
-    }
-
-    private static boolean closeWorkflows(final Set<String> projectIds) {
-        var success = true;
-        for (var projectId : projectIds) {
-            success &= closeWorkflow(projectId);
-        }
-        return success;
-    }
-
-    private static boolean closeWorkflow(final String projectId) {
-        var wpm = WorkflowProjectManager.getInstance();
-        var wfm = wpm.getCachedWorkflow(projectId).orElse(null);
-        try {
-            if (wfm != null) {
-                CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
-            }
-            wpm.removeWorkflowProject(projectId);
-            return true;
-        } catch (InterruptedException e) { // NOSONAR
-            NodeLogger.getLogger(SaveAndCloseWorkflows.class)
-                .warn("Problem while waiting for the workflow '" + projectId + "' to be cancelled", e);
-            return false;
-        }
     }
 
 }

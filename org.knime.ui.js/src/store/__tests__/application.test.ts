@@ -388,11 +388,10 @@ describe('application store', () => {
 
         it('force closes projects on call', async () => {
             const { store } = await loadStore();
-            await store.dispatch('application/closeProjects', { projectIds: ['projectTest1'], force: true });
+            await store.dispatch('application/forceCloseProjects', { projectIds: ['projectTest1'], force: true });
 
-            expect(mockedAPI.application.closeProjects).toHaveBeenCalledWith({
-                projectIds: ['projectTest1'],
-                force: true
+            expect(mockedAPI.desktop.forceCloseWorkflows).toHaveBeenCalledWith({
+                projectIds: ['projectTest1']
             });
         });
     });

@@ -9,6 +9,7 @@ declare function openNodeView(...args: unknown[]): string | undefined;
 declare function saveWorkflow(...args: unknown[]): string | undefined;
 declare function openWorkflow(...args: unknown[]): string | undefined;
 declare function closeWorkflow(...args: unknown[]): unknown;
+declare function forceCloseWorkflows(...args: unknown[]): unknown;
 declare function setProjectActiveAndEnsureItsLoaded(...args: unknown[]): unknown;
 declare function openLayoutEditor(...args: unknown[]): string | undefined;
 declare function openWorkflowCoachPreferencePage(...args: unknown[]): string | undefined;
