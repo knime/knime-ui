@@ -199,7 +199,7 @@ export default {
 
   /* full size but avoid blurring of the borders */
   width: calc(100% - 4px);
-  border-radius: var(--selected-node-border-radius-shape);
+  border-radius: var(--selected-item-border-radius-shape);
   font-family: "Roboto Condensed", sans-serif;
   font-size: 10px;
   backdrop-filter: blur(5px);
