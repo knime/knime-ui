@@ -1,7 +1,10 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, type PropType } from 'vue';
 import { mapActions, mapGetters, mapState } from 'vuex';
+
 import { API } from '@api';
+import type { NodePort, XY } from '@/api/gateway-api/generated-api';
+import type { DragConnector } from '@/components/workflow/ports/NodePort/types';
 
 import Button from 'webapps-common/ui/components/Button.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
@@ -55,16 +58,15 @@ export default defineComponent({
     },
     props: {
         nodeId: {
-            type: [String, null],
+            type: [String, null] as PropType<string | null>,
             default: null
         },
         position: {
-            type: Object,
-            required: true,
-            validator: ({ x, y }) => typeof x === 'number' && typeof y === 'number'
+            type: Object as PropType<XY>,
+            required: true
         },
         port: {
-            type: [Object, null],
+            type: [Object, null] as PropType<NodePort | null>,
             default: null
         }
     },
@@ -85,8 +87,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.quickAddNodes.query;
             },
-            set: debounce(function (value) {
-                // @ts-ignore
+            set: debounce(function (this: any, value) {
                 this.$store.dispatch('quickAddNodes/updateQuery', value); // eslint-disable-line no-invalid-this
             },
             SEARCH_COOLDOWN, { leading: true, trailing: true })
@@ -101,15 +102,15 @@ export default defineComponent({
 
             return pos;
         },
-        fakePortConnector() {
+        fakePortConnector() : DragConnector {
             return {
-                id: `${this.nodeId}-${this.port?.index}`,
-                flowVariableConnection: this.port?.index === 0, // TODO: this should be more clear? helper?
+                id: `${this.nodeId}-${this.portIndex}`,
+                flowVariableConnection: this.portIndex === 0,
                 absolutePoint: [this.position.x, this.position.y],
                 allowedActions: { canDelete: false },
                 interactive: false,
                 sourceNode: this.nodeId,
-                sourcePort: this.port?.index
+                sourcePort: this.portIndex
             };
         },
         ghostSizeZoomed() {
@@ -131,10 +132,7 @@ export default defineComponent({
         portIndex() {
             // we need this to be explicit null if no port is given for the api to work
             // falsy will not work as the index can be 0 (which is falsy)
-            if (this.port !== null) {
-                return this.port.index;
-            }
-            return null;
+            return this.port ? this.port.index : null;
         }
     },
     watch: {
@@ -164,7 +162,8 @@ export default defineComponent({
         if (this.port) {
             this.$store.commit('quickAddNodes/setPortTypeId', this.port.typeId);
         }
-        this.$refs.search?.focus();
+        // eslint-disable-next-line no-extra-parens
+        (this.$refs.search as HTMLElement)?.focus();
     },
     beforeUnmount() {
         // reset query on close (in any case!)
@@ -230,8 +229,11 @@ export default defineComponent({
         },
         searchHandleShortcuts(e) {
             // bypass disabled shortcuts for <input> elements only for the quick add node
+            // @ts-expect-error
             let shortcut = this.$shortcuts.findByHotkey(e);
+            // @ts-expect-error
             if (shortcut === 'quickAddNode' && this.$shortcuts.isEnabled(shortcut)) {
+                // @ts-expect-error
                 this.$shortcuts.dispatch(shortcut);
                 e.preventDefault();
                 e.stopPropagation();
