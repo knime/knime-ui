@@ -157,6 +157,13 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
+        isShowingQuickAddNodeMenu(portIndex, direction) {
+            const menu = this.$store.state.workflow.quickAddNodeMenu;
+            return menu.isOpen &&
+                direction === 'out' &&
+                menu.props.nodeId === this.nodeId &&
+                menu.props.port.index === portIndex;
+        },
         onPortClick({ index, portGroupId }, side) {
             if (!this.isEditable) {
                 return;
@@ -184,17 +191,19 @@ export default {
             this.selectedPort = null;
         },
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
-        portAnimationClasses(port) {
-            let isMickeyMousePort = !this.isMetanode && port.index === 0;
+        portAnimationClasses(port, direction) {
+            const isMickeyMousePort = !this.isMetanode && port.index === 0;
 
             if (!isMickeyMousePort) {
                 return {};
             }
 
+            const isShowingQuickAddNodeMenu = this.isShowingQuickAddNodeMenu(port.index, direction);
+
             return {
                 'mickey-mouse': true,
                 'connector-hover': this.connectorHover,
-                'connected': port.connectedVia.length, // eslint-disable-line quote-props
+                'connected': isShowingQuickAddNodeMenu || port.connectedVia.length, // eslint-disable-line quote-props
                 'node-hover': this.hover
             };
         },
@@ -232,7 +241,7 @@ export default {
     <NodePort
       v-for="port of inPorts"
       :key="`input-${port.index}`"
-      :class="['port', portAnimationClasses(port)]"
+      :class="['port', portAnimationClasses(port, 'in')]"
       direction="in"
       :node-id="nodeId"
       :node-kind="nodeKind"
@@ -249,7 +258,7 @@ export default {
     <NodePort
       v-for="port of outPorts"
       :key="`output-${port.index}`"
-      :class="['port', portAnimationClasses(port)]"
+      :class="['port', portAnimationClasses(port, 'out')]"
       direction="out"
       :node-id="nodeId"
       :node-kind="nodeKind"

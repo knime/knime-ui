@@ -268,7 +268,6 @@ export default defineComponent({
           placeholder="Search all compatible nodes"
           class="search-bar"
           tabindex="-1"
-          data-allow-shortcut="quickAddNode"
           @focusin="selectedNode = null"
           @keydown.enter.prevent.stop="searchEnterKey"
           @keydown.down.prevent.stop="searchDownKey"
