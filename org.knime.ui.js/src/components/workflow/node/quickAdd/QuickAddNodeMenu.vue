@@ -403,7 +403,7 @@ export default {
     & .content {
       padding-bottom: 10px;
     }
-    
+
     & .nodes {
       justify-content: center;
     }
@@ -424,7 +424,8 @@ export default {
 
   /* marks the default item (first one); gets inserted on enter while still in the search box */
   & :deep(.top-list li.no-selection[data-index="0"] > div) {
-    outline: calc(var(--selected-node-stroke-width-shape) * 1px) solid var(--knime-dove-gray);
+    /* outline with border-radius is not working properly in Safari and CEF */
+    box-shadow: 0 0 0 calc(var(--selected-node-stroke-width-shape) * 1px) var(--knime-dove-gray);
     border-radius: calc(var(--selected-node-border-radius-shape) * 1px);
     background-color: var(--knime-porcelain);
   }

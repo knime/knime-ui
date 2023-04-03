@@ -104,7 +104,8 @@ export default {
 }
 
 .selected {
-  outline: calc(var(--selected-node-stroke-width-shape) * 1px) solid var(--selection-active-border-color);
+  /* outline with border-radius is not working properly in Safari and CEF */
+  box-shadow: 0 0 0 calc(var(--selected-node-stroke-width-shape) * 1px) var(--selection-active-border-color);
   border-radius: calc(var(--selected-node-border-radius-shape) * 1px);
   background-color: var(--selection-active-background-color);
 }
