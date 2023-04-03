@@ -1,5 +1,5 @@
 import { onBeforeUnmount, onMounted, type Component } from 'vue';
-import { getId } from '@/util/getRandomId';
+import { getId } from '@/util/getUniqueId';
 
 type StackItemConfig = {
     onEscape: () => void;
