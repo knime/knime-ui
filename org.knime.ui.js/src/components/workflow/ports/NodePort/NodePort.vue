@@ -75,6 +75,9 @@ const tooltip = computed<TooltipDefinition>(() => {
 });
 
 const openQuickAddNodeMenuAction = (payload) => {
+    if (props.disableQuickNodeAdd) {
+        return;
+    }
     store.dispatch('workflow/openQuickAddNodeMenu', payload);
 };
 
