@@ -75,9 +75,6 @@ const tooltip = computed<TooltipDefinition>(() => {
 });
 
 const openQuickAddNodeMenuAction = (payload) => {
-    if (props.disableQuickNodeAdd) {
-        return;
-    }
     store.dispatch('workflow/openQuickAddNodeMenu', payload);
 };
 
@@ -96,17 +93,17 @@ const {
     nodeId: props.nodeId,
     port: props.port,
 
-    onEscPressed: () => ({ removeConnector: true }),
-
     onCanvasDrop: () => {
-        const position = {
-            x: dragConnector.value.absolutePoint[0],
-            y: dragConnector.value.absolutePoint[1]
-        };
+        // ignore drop if quick add menu is disabled (e.g. for metanode or component)
+        if (props.disableQuickNodeAdd) {
+            return { removeConnector: true };
+        }
+
+        const [x, y] = dragConnector.value.absolutePoint;
 
         openQuickAddNodeMenuAction({
             props: {
-                position,
+                position: { x, y },
                 port: props.port,
                 nodeId: props.nodeId
             }
