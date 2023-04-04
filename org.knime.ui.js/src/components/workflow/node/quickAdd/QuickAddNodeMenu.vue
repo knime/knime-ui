@@ -251,6 +251,7 @@ export default defineComponent({
   >
     <!-- this will be portaled to the canvas -->
     <NodePortActiveConnector
+      v-if="nodeId"
       :port="port"
       :targeted="false"
       direction="out"
@@ -423,6 +424,12 @@ export default defineComponent({
     & hr {
       margin: 10px 0;
     }
+  }
+
+  /* remove default negative margin that is required for all other instances of NodeList */
+  & :deep(.nodes) {
+    margin-left: 0;
+    margin-right: 0;
   }
 
   & :deep(.results .content) {
