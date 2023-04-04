@@ -3494,20 +3494,22 @@ const node = function(rpcClient: RPCClient) {
 const noderepository = function(rpcClient: RPCClient) {
     return {
         /**
-         * Given a node in a workflow, it recommends a certain number of likely successor nodes the user might want to add next to its workflow.
+         * Given a node and a port, it recommends a certain number of compatible successor nodes the user might want to add next to its workflow. If queried with no node and no port, it recommends the  most relevant source nodes, that naturally have no predecessor.
          * @param {string} projectId ID of the workflow-project.
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {number} portIdx The port index to be used.
+         * @param {string} [nodeId] The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {number} [portIdx] The port index to be used.
          * @param {number} [nodesLimit] The maximum number of node recommendations to return.
          * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getNodeRecommendations(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  nodesLimit?: number,  fullTemplateInfo?: boolean  }
+        	params: { projectId: string,  workflowId: string,  nodeId?: string,  portIdx?: number,  nodesLimit?: number,  fullTemplateInfo?: boolean  }
         ): Promise<Array<NodeTemplate>> {
            const defaultParams = { 
+                nodeId: null,
+                portIdx: null,
                 nodesLimit: null,
                 fullTemplateInfo: null,
            }
@@ -3530,7 +3532,7 @@ const noderepository = function(rpcClient: RPCClient) {
            return rpcClient.call('NodeRepositoryService.getNodeTemplates', { ...defaultParams, ...params });
         },
         /**
-         * Returns a pre-defined set of groups (defined by tags) and nodes per group (the most frequently used ones in that group).
+         * Returns a pre-defined set of groups (defined by tags) and nodes per group (the most frequently used  ones in that group).
          * @param {number} [numNodesPerTag] The number of nodes per tag/group to be returned.
          * @param {number} [tagsOffset] The number of tags to be skipped (for pagination).
          * @param {number} [tagsLimit] The maximum number of tags to be returned (mainly for pagination).
