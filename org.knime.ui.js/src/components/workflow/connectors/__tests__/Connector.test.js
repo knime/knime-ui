@@ -671,7 +671,7 @@ describe('Connector.vue', () => {
 
             expect(storeConfig.workflow.actions.insertNode).toHaveBeenCalledWith(
                 expect.anything(),
-                { nodeFactory: { className: 'test' }, connectionId: 'root:2_2', position: { x: 5, y: 5 }, nodeId: null }
+                { nodeFactory: { className: 'test' }, connectionId: 'root:2_2', position: { x: 5, y: 5 } }
             );
         });
 
@@ -698,7 +698,7 @@ describe('Connector.vue', () => {
 
             expect(storeConfig.workflow.actions.insertNode).toHaveBeenCalledWith(
                 expect.anything(),
-                { nodeFactory: null, connectionId: 'root:2_2', position: { x: 5, y: 5 }, nodeId: 'test' }
+                { connectionId: 'root:2_2', position: { x: 5, y: 5 }, nodeId: 'test' }
             );
         });
 
@@ -713,9 +713,14 @@ describe('Connector.vue', () => {
             paths.at(0).trigger('node-dragging-enter', { detail: { isNodeConnected: false } });
             await Vue.nextTick();
             expect(paths.at(1).classes()).toContain('is-dragged-over');
-
-            paths.at(0).trigger('node-dragging-end', { detail: { id: 'test', clientX: 0, clientY: 0 } });
-
+            
+            const errorCallback = vi.fn();
+            paths.at(0).trigger('node-dragging-end', { detail: { id: 'test',
+                clientX: 0,
+                clientY: 0,
+                onError: errorCallback } });
+            expect(errorCallback).toBeCalled();
+            
             expect(storeConfig.workflow.actions.insertNode).not.toHaveBeenCalled();
         });
     });

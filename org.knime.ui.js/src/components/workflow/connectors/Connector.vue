@@ -117,17 +117,16 @@ export default defineComponent({
         }
     },
     methods: {
-        ...mapActions('workflow', ['insertNode']),
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
 
-        onContextMenu(event) {
+        onContextMenu(event: MouseEvent) {
             // right click should work same as left click
             this.onMouseClick(event);
             this.toggleContextMenu({ event });
         },
-        onMouseClick(e) {
-            if (e.shiftKey) {
+        onMouseClick(event: MouseEvent) {
+            if (event.shiftKey) {
                 // Multi select
                 if (this.isConnectionSelected(this.id)) {
                     this.deselectConnection(this.id);
@@ -143,7 +142,7 @@ export default defineComponent({
         onIndicateReplacement({ detail: { state } }) {
             this.suggestDelete = state;
         },
-        onConnectorDragEnter(dragEvent) {
+        onConnectorDragEnter(dragEvent: DragEvent) {
             if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
                 this.isDraggedOver = true;
             }
@@ -151,29 +150,43 @@ export default defineComponent({
         onConnectorDragLeave() {
             this.isDraggedOver = false;
         },
-        onConnectorDrop(dragEvent) {
+        onConnectorDrop(dragEvent: DragEvent) {
             const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
-            this.onInsertNode(dragEvent.clientX, dragEvent.clientY, nodeFactory, null);
+            this.insertNode({
+                clientX: dragEvent.clientX,
+                clientY: dragEvent.clientY,
+                nodeFactory,
+                event: dragEvent
+            });
         },
-        onNodeDragggingEnter(event) {
+        onNodeDragggingEnter(event: CustomEvent) {
             if (event.detail.isNodeConnected) {
                 return;
             }
             event.preventDefault();
             this.isDraggedOver = true;
         },
-        onNodeDragggingEnd({ detail: { id, clientX, clientY } }) {
-            this.onInsertNode(clientX, clientY, null, id);
+        onNodeDragggingEnd(dragEvent: CustomEvent) {
+            this.insertNode({
+                clientX: dragEvent.detail.clientX,
+                clientY: dragEvent.detail.clientY,
+                nodeId: dragEvent.detail.id,
+                event: dragEvent
+            });
         },
-        onInsertNode(clientX, clientY, nodeFactory, nodeId) {
+        insertNode({ clientX, clientY, event, nodeId = null, nodeFactory = null }) {
             const [x, y] = this.screenToCanvasCoordinates([
                 clientX - this.$shapes.nodeSize / 2,
                 clientY - this.$shapes.nodeSize / 2
             ]);
             if (this.allowedActions.canDelete) {
-                this.insertNode({ connectionId: this.id, position: { x, y }, nodeFactory, nodeId });
+                this.$store.dispatch(
+                    'workflow/insertNode',
+                    { connectionId: this.id, position: { x, y }, nodeFactory, nodeId }
+                );
             } else {
                 window.alert('Cannot delete connection at this point. Insert node operation aborted.');
+                event.detail.onError();
             }
             this.isDraggedOver = false;
         }

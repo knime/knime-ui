@@ -193,14 +193,15 @@ export default {
                         detail: {
                             id: this.id,
                             clientX: endX,
-                            clientY: endY
+                            clientY: endY,
+                            onError: this.moveNode
                         }
                     })
                 );
                 return;
             }
 
-            this.$store.dispatch('workflow/moveObjects');
+            this.moveNode();
             /* eslint-enable no-invalid-this */
         }),
 
@@ -219,7 +220,7 @@ export default {
             }
 
             if (!isSameTarget && hitTarget) {
-                const notCancelled = hitTarget.dispatchEvent(
+                const isEventIgnored = hitTarget.dispatchEvent(
                     new CustomEvent('node-dragging-enter', {
                         bubbles: true,
                         cancelable: true,
@@ -228,8 +229,16 @@ export default {
                         }
                     })
                 );
-                this.lastHitTarget = notCancelled ? null : hitTarget;
+                this.lastHitTarget = isEventIgnored ? null : hitTarget;
             }
+        },
+        
+        moveNode() {
+            this.$store.dispatch('workflow/moveObjects', {
+                projectId: this.activeProjectId,
+                startPos: this.startPos,
+                nodeId: this.id
+            });
         }
     }
 };
