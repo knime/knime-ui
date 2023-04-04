@@ -104,7 +104,7 @@ export default defineComponent({
         },
         fakePortConnector() : DragConnector {
             return {
-                id: `${this.nodeId}-${this.portIndex}`,
+                id: `quick-add-${this.nodeId}-${this.portIndex}`,
                 flowVariableConnection: this.portIndex === 0,
                 absolutePoint: [this.position.x, this.position.y],
                 allowedActions: { canDelete: false },
@@ -227,13 +227,10 @@ export default defineComponent({
             // @ts-ignore
             this.$refs.searchResults?.focusFirst();
         },
-        searchHandleShortcuts(e) {
+        searchHandleShortcuts(e : KeyboardEvent) {
             // bypass disabled shortcuts for <input> elements only for the quick add node
-            // @ts-expect-error
             let shortcut = this.$shortcuts.findByHotkey(e);
-            // @ts-expect-error
             if (shortcut === 'quickAddNode' && this.$shortcuts.isEnabled(shortcut)) {
-                // @ts-expect-error
                 this.$shortcuts.dispatch(shortcut);
                 e.preventDefault();
                 e.stopPropagation();

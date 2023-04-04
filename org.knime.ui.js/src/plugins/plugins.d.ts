@@ -11,7 +11,6 @@ declare module '@vue/runtime-core' {
         $colors: typeof colors;
         $features: Features;
         $shortcuts: ShortcutsService;
-        // TODO: add typing for $shortcuts
     }
 }
 
