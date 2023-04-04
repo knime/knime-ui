@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { mapActions, mapState } from 'vuex';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
@@ -15,7 +16,7 @@ import AppHeaderTab from './AppHeaderTab.vue';
 /**
  * Header Bar containing Logo, Open project tabs, and switch to Info page Button
  */
-export default {
+export default defineComponent({
     components: {
         AppHeaderTab,
         KnimeIcon,
@@ -104,7 +105,7 @@ export default {
             });
         }
     }
-};
+});
 </script>
 
 <template>
@@ -189,7 +190,7 @@ header {
     bottom: -4px;
     width: 100%;
     height: 1px;
-    background: var(--darkening-mask-color);
+    background: v-bind("$colors.darkeningMask");
   }
 
   & .toolbar {

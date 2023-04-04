@@ -206,7 +206,7 @@ export default defineComponent({
   font-size: 10px;
   backdrop-filter: blur(5px);
   padding: 5px;
-  color: var(--error-color);
+  color: v-bind("$colors.error");
   text-align: center;
 
   & .chars {

@@ -1,8 +1,15 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue';
+
+const TOOLTIP_TYPES = ['error', 'warning', 'default'] as const;
+const TOOLTIP_ORIENTATIONS = ['bottom', 'top'] as const;
+
+type TooltipType = typeof TOOLTIP_TYPES[number];
+type TooltipOrientation = typeof TOOLTIP_ORIENTATIONS[number];
 /**
  * A tooltip displaying text and an optional headline
  */
-export default {
+export default defineComponent({
     props: {
         /**
          * The text to display
@@ -23,7 +30,7 @@ export default {
             default: null
         },
         resolutions: {
-            type: Array,
+            type: Array as PropType<Array<string>>,
             default: () => []
         },
         /**
@@ -44,17 +51,17 @@ export default {
          * Type of tooltip. Affects styling
          */
         type: {
-            type: String,
+            type: String as PropType<TooltipType>,
             default: 'default',
-            validator: type => ['error', 'warning', 'default'].includes(type)
+            validator: (type: TooltipType) => TOOLTIP_TYPES.includes(type)
         },
         /**
          * `top` to render the tooltip above the target, `bottom` to render below.
          */
         orientation: {
-            type: String,
+            type: String as PropType<TooltipOrientation>,
             default: 'bottom',
-            validator: orientation => ['bottom', 'top'].includes(orientation)
+            validator: (orientation: TooltipOrientation) => TOOLTIP_ORIENTATIONS.includes(orientation)
         },
         /**
          * spacing between the invisible hoverable boundaries of the tooltip and the visible part
@@ -75,7 +82,7 @@ export default {
             return this.gap + this.$shapes.tooltipArrowSize * Math.SQRT1_2;
         }
     }
-};
+});
 </script>
 
 <template>
@@ -234,11 +241,11 @@ export default {
 
     & .wrap-arrow {
       border-radius: 1px;
-      border-color: var(--warning-color);
+      border-color: v-bind("$colors.warning");
 
       &::after,
       &::before {
-        border-color: var(--warning-color);
+        border-color: v-bind("$colors.warning");
         background-color: white;
       }
     }
@@ -253,11 +260,11 @@ export default {
 
     & .wrap-arrow {
       border-radius: 1px;
-      border-color: var(--error-color);
+      border-color: v-bind("$colors.error");
 
       &::after,
       &::before {
-        border-color: var(--error-color);
+        border-color: v-bind("$colors.error");
         background-color: white;
       }
     }

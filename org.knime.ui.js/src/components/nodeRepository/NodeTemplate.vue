@@ -105,8 +105,8 @@ export default defineComponent({
 }
 
 .selected {
-  outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid var(--selection-active-border-color);
+  outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid v-bind("$colors.selection.activeBorder");
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
-  background-color: var(--selection-active-background-color);
+  background-color:  v-bind("$colors.selection.activeBackground");
 }
 </style>

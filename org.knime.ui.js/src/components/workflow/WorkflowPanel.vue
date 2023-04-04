@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { mapState, mapGetters } from 'vuex';
 import Button from 'webapps-common/ui/components/Button.vue';
 import StreamingIcon from 'webapps-common/ui/assets/img/icons/nodes-connect.svg';
@@ -6,8 +7,9 @@ import ContextMenu from '@/components/application/ContextMenu.vue';
 import WorkflowCanvas from '@/components/workflow/WorkflowCanvas.vue';
 import PortTypeMenu from '@/components/workflow/ports/PortTypeMenu.vue';
 import QuickAddNodeMenu from '@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue';
+import type { Workflow } from '@/api/gateway-api/generated-api';
 
-export default {
+export default defineComponent({
     components: {
         StreamingIcon,
         ContextMenu,
@@ -18,8 +20,8 @@ export default {
     },
     computed: {
         ...mapState('workflow', {
-            workflow: 'activeWorkflow',
-            activeWorkflowId: state => state.activeWorkflow.info.containerId
+            workflow: state => state.activeWorkflow as Workflow & { projectId: string },
+            activeWorkflowId: state => state.activeWorkflow.info.containerId as string
         }),
         ...mapState('workflow', [
             'portTypeMenu',
@@ -61,7 +63,7 @@ export default {
             this.$store.dispatch('workflow/saveWorkflowAs');
         }
     }
-};
+});
 </script>
 
 <template>
@@ -154,7 +156,7 @@ export default {
   z-index: 1;
 
   /* appearance */
-  background-color: var(--notification-background-color);
+  background-color: v-bind("$colors.notificationBackground");
   pointer-events: none;
   user-select: none;
 
