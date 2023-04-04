@@ -5,9 +5,9 @@
   "author": "KNIME AG",
   "scripts": {
     "dev": "vite",
-    "build": "npm run generate-css && npm run type-check && vite build",
+    "build": "npm run type-check && vite build",
     "serve": "vite preview",
-    "postinstall": "npm run opensourcecredits -- --no-overwrite && npm run generate-css",
+    "postinstall": "npm run opensourcecredits -- --no-overwrite",
     "lint": "run-p 'lint:* -- --fix'",
     "lint:js": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.json",
     "lint:css": "stylelint '**/*.{css,vue}'",
@@ -19,8 +19,7 @@
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
     "test:unit": "vitest",
     "coverage": "vitest run --coverage",
-    "opensourcecredits": "npm run --prefix webapps-common opensourcecredits",
-    "generate-css": "node ./buildtools/generateCSS.mjs"
+    "opensourcecredits": "npm run --prefix webapps-common opensourcecredits"
   },
   "dependencies": {
     "@fontsource/roboto-condensed": "4.5.9",
