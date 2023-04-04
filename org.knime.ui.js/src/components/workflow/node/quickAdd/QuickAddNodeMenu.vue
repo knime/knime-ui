@@ -467,10 +467,6 @@ export default defineComponent({
     & .content {
       padding-bottom: 10px;
     }
-
-    & .nodes {
-      justify-content: center;
-    }
   }
 
   & .placeholder {

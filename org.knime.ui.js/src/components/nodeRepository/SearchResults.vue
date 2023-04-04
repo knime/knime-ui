@@ -168,7 +168,7 @@ export default defineComponent({
       </div>
       <div
         v-else
-        class="nodes"
+        class="node-list-wrapper"
       >
         <NodeList
           ref="topList"
@@ -272,11 +272,10 @@ export default defineComponent({
   & .content {
     padding: 10px;
 
-    & .nodes {
+    & .node-list-wrapper {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      justify-content: center;
     }
 
     & .loading-indicator {
