@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import gsap from 'gsap';
 import { mapState, mapGetters, mapActions } from 'vuex';
 
@@ -10,7 +11,7 @@ import connectorPath from '@/util/connectorPath';
  * Must be embedded in an `<svg>` element.
  * Uses the connectorPosition mixin to get the start and end position of the connector.
  */
-export default {
+export default defineComponent({
     mixins: [portBar, connectorPosition],
     inheritAttrs: false,
     props: {
@@ -90,19 +91,20 @@ export default {
          * if suggestDelete changes back to 'false' the connector will move back
          */
         suggestDelete(newValue, oldValue) {
+            const visiblePath = this.$refs.visiblePath as HTMLElement;
             if (newValue && !oldValue) {
                 const shiftX = -12;
                 const shiftY = -6;
                 let { start: [x1, y1], end: [x2, y2] } = this;
                 let newPath = connectorPath(x1, y1, x2 + shiftX, y2 + shiftY);
 
-                gsap.to(this.$refs.visiblePath, {
+                gsap.to(visiblePath, {
                     attr: { d: newPath },
                     duration: 0.2,
                     ease: 'power2.out'
                 });
             } else if (!newValue && oldValue) {
-                gsap.to(this.$refs.visiblePath, {
+                gsap.to(visiblePath, {
                     attr: { d: this.path },
                     duration: 0.2,
                     ease: 'power2.out'
@@ -134,25 +136,10 @@ export default {
             }
         },
         onIndicateReplacement({ detail: { state } }) {
-            if (this.suggestDelete !== 'locked') {
-                // update state according to event if not already 'locked'
-                // this is used to make sure the connector doesn't snap back to its port after 'connecting phase' is over
-                this.suggestDelete = state;
-            }
-
-            if (state) {
-                this.$bus.on('connector-dropped', this.onConnectorDropped);
-            } else {
-                this.$bus.off('connector-dropped', this.onConnectorDropped);
-            }
-        },
-        onConnectorDropped() {
-            // lock this connector in place to prevent it from jumping back before being removed
-            // TODO: NXT-954 enable locking again if know when the node will be really removed (only backend knows)
-            // this.suggestDelete = 'locked';
+            this.suggestDelete = state;
         }
     }
-};
+});
 </script>
 
 <template>
@@ -197,7 +184,7 @@ export default {
 
 path:not(.hover-area) {
   pointer-events: none;
-  stroke-width: var(--connector-width-shape);
+  stroke-width: v-bind("$shapes.connectorWidth");
   stroke: var(--knime-stone-gray);
   transition:
     stroke-width 0.1s ease-in,
@@ -208,12 +195,12 @@ path:not(.hover-area) {
   }
 
   &.selected {
-    stroke-width: var(--selected-connector-width-shape);
+    stroke-width: v-bind("$shapes.selectedConnectorWidth");
     stroke: var(--knime-cornflower);
   }
 
   &.highlighted {
-    stroke-width: var(--highlighted-connector-width-shape);
+    stroke-width: v-bind("$shapes.highlightedConnectorWidth");
     stroke: var(--knime-masala);
   }
 
@@ -238,7 +225,7 @@ path:not(.hover-area) {
   fill: none;
 
   &:hover + path {
-    stroke-width: var(--selected-connector-width-shape);
+    stroke-width: v-bind("$shapes.selectedConnectorWidth");
   }
 }
 </style>

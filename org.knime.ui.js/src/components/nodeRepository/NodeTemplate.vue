@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 /**
  * Basic NodeTemplate without any drag or insert features. This component should stay reusable.
  */
-export default {
+export default defineComponent({
     components: {
         NodePreview
     },
@@ -28,7 +29,7 @@ export default {
             return this.$refs.nodePreview;
         }
     }
-};
+});
 </script>
 
 <template>
@@ -104,8 +105,8 @@ export default {
 }
 
 .selected {
-  outline: calc(var(--selected-node-stroke-width-shape) * 1px) solid var(--selection-active-border-color);
-  border-radius: calc(var(--selected-item-border-radius-shape) * 1px);
+  outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid var(--selection-active-border-color);
+  border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
   background-color: var(--selection-active-background-color);
 }
 </style>

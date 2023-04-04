@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { API } from '@api';
 
@@ -41,7 +42,7 @@ const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) =>
  * Quick Add Node Menu: Shows a menu with recommended nodes that are provided by the api (based on usage statistics).
  * This component fetches, displays and adds them to the workflow.
  */
-export default {
+export default defineComponent({
     components: {
         NodeList,
         SearchResults,
@@ -83,6 +84,7 @@ export default {
                 return this.$store.state.quickAddNodes.query;
             },
             set: debounce(function (value) {
+                // @ts-ignore
                 this.$store.dispatch('quickAddNodes/updateQuery', value); // eslint-disable-line no-invalid-this
             },
             SEARCH_COOLDOWN, { leading: true, trailing: true })
@@ -126,6 +128,7 @@ export default {
     },
     mounted() {
         this.$store.commit('quickAddNodes/setPortTypeId', this.port.typeId);
+        // @ts-ignore
         this.$refs.search?.focus();
     },
     beforeUnmount() {
@@ -183,11 +186,13 @@ export default {
             }
         },
         searchDownKey() {
+            // @ts-ignore
             this.$refs.recommendationResults?.focusFirst();
+            // @ts-ignore
             this.$refs.searchResults?.focusFirst();
         }
     }
-};
+});
 </script>
 
 <template>
@@ -246,7 +251,7 @@ export default {
             :is-showing-bottom-nodes="isShowingBottomNodes"
             :search-actions="searchActions"
             :query="searchQuery"
-            @nav-reached-top="$refs.search.focus()"
+            @nav-reached-top="($refs.search as any).focus()"
             @item-enter-key="addNode($event)"
           >
             <template #topNodeTemplate="itemProps">
@@ -273,7 +278,7 @@ export default {
             v-model:selected-node="selectedNode"
             class="top-list"
             :nodes="recommendedNodes"
-            @nav-reached-top="$refs.search.focus()"
+            @nav-reached-top="($refs.search as any).focus()"
             @enter-key="addNode($event)"
           >
             <template #item="itemProps">
@@ -424,8 +429,8 @@ export default {
 
   /* marks the default item (first one); gets inserted on enter while still in the search box */
   & :deep(.top-list li.no-selection[data-index="0"] > div) {
-    outline: calc(var(--selected-node-stroke-width-shape) * 1px) solid var(--knime-dove-gray);
-    border-radius: calc(var(--selected-item-border-radius-shape) * 1px);
+    outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid var(--knime-dove-gray);
+    border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
     background-color: var(--knime-porcelain);
   }
 

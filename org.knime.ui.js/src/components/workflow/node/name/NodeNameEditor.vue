@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue';
 import { mapGetters } from 'vuex';
 
 import SaveIcon from '@/assets/ok.svg';
 import CancelIcon from '@/assets/cancel.svg';
+import type { XY } from '@/api/gateway-api/generated-api';
 import ActionBar from '@/components/common/ActionBar.vue';
 
 import NodeNameTextarea from './NodeNameTextarea.vue';
@@ -13,7 +15,7 @@ const invalidCharsErrorVisibleTime = 4000; // ms
  * Node Name Editor. Component wraps inline textarea and editor action bar (cancel, save). It overlays the whole
  * canvas (via the portal) with a rect that avoids changes to the canvas.
  */
-export default {
+export default defineComponent({
     components: {
         ActionBar,
         NodeNameTextarea
@@ -28,9 +30,9 @@ export default {
             required: true
         },
         nodePosition: {
-            type: Object,
+            type: Object as PropType<XY>,
             required: true,
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+            validator: (position: XY) => typeof position.x === 'number' && typeof position.y === 'number'
         },
         /* start width to initialize the editor with */
         startWidth: {
@@ -108,7 +110,7 @@ export default {
         }
     },
     methods: {
-        handleDimensionChange(dimensionName, dimensionValue) {
+        handleDimensionChange(dimensionName: 'width' | 'height', dimensionValue: number) {
             // keep a reference of the dimensions so that we can emit the most recent
             // value upon saving. These values can be later provided so that the editor
             // can be reinitialized using them as a starting point
@@ -144,7 +146,7 @@ export default {
             }, invalidCharsErrorVisibleTime);
         }
     }
-};
+});
 </script>
 
 <template>
@@ -199,7 +201,7 @@ export default {
 
   /* full size but avoid blurring of the borders */
   width: calc(100% - 4px);
-  border-radius: var(--selected-item-border-radius-shape);
+  border-radius: v-bind("$shapes.selectedItemBorderRadius");
   font-family: "Roboto Condensed", sans-serif;
   font-size: 10px;
   backdrop-filter: blur(5px);

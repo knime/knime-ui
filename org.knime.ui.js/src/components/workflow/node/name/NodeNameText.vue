@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue';
 
 /**
@@ -6,7 +7,7 @@ import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue
  * It wraps around AutoSizeForeignObject to render custom elements inside svg and forwards its events
  * and slot props
  */
-export default {
+export default defineComponent({
     components: { AutoSizeForeignObject },
     props: {
         /**
@@ -47,7 +48,7 @@ export default {
         }
     },
     emits: ['widthChange', 'heightChange', 'click', 'requestEdit', 'mouseenter', 'mouseleave']
-};
+});
 </script>
 
 <template>
@@ -95,7 +96,7 @@ export default {
     font-family: "Roboto Condensed", sans-serif;
     font-style: normal;
     font-weight: 700;
-    font-size: calc(var(--node-name-font-size-shape) * 1px);
+    font-size: calc(v-bind("$shapes.nodeNameFontSize") * 1px);
     margin: 0;
     text-align: inherit;
   }
@@ -108,15 +109,15 @@ export default {
     /* stylelint-disable-next-line value-no-vendor-prefix */
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--node-name-max-lines-shape);
+    -webkit-line-clamp: v-bind("$shapes.nodeNameMaxLines");
     overflow: hidden;
   }
 
   & .node-name {
     text-align: center;
-    padding: calc(var(--node-name-padding-shape) * 1px);
+    padding: calc(v-bind("$shapes.nodeNamePadding") * 1px);
     overflow: hidden;
-    line-height: calc(var(--node-name-line-height-shape) * 1px);
+    line-height: calc(v-bind("$shapes.nodeNameLineHeight") * 1px);
   }
 }
 </style>

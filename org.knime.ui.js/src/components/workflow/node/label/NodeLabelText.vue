@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType, type StyleValue } from 'vue';
 import { applyStyleRanges } from '@/util/styleRanges';
 import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue';
+import { type NodeAnnotation, type StyleRange, Node } from '@/api/gateway-api/generated-api';
 
-export default {
+export default defineComponent({
     components: { AutoSizeForeignObject },
     props: {
         value: {
@@ -18,7 +20,7 @@ export default {
             default: false
         },
         kind: {
-            type: String,
+            type: String as PropType<Node.KindEnum>,
             default: ''
         },
         nodeId: {
@@ -26,7 +28,7 @@ export default {
             default: ''
         },
         annotation: {
-            type: Object,
+            type: Object as PropType<NodeAnnotation>,
             required: false,
             default: () => ({
                 textAlign: 'center',
@@ -45,7 +47,7 @@ export default {
     },
     computed: {
         isMetanode() {
-            return this.kind === 'metanode';
+            return this.kind === Node.KindEnum.Metanode;
         },
         styledText() {
             const styleRanges = this.annotation ? this.annotation.styleRanges : [];
@@ -59,8 +61,9 @@ export default {
         }
     },
     methods: {
-        getTextStyles(styledTextPart) {
+        getTextStyles(styledTextPart: StyleRange): StyleValue {
             const lineHeight = 1.1;
+
             return {
                 fontSize: styledTextPart.fontSize
                     ? `${styledTextPart.fontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`
@@ -72,7 +75,7 @@ export default {
             };
         }
     }
-};
+});
 </script>
 
 <template>
@@ -118,14 +121,14 @@ export default {
   }
 
   & .node-label {
-    padding: calc(var(--node-name-padding-shape) * 1px);
-    line-height: calc(var(--node-name-line-height-shape) * 1px);
+    padding: calc(v-bind("$shapes.nodeNamePadding") * 1px);
+    line-height: calc(v-bind("$shapes.nodeNameLineHeight") * 1px);
   }
 
   & .text {
     font-family: "Roboto Condensed", sans-serif;
     font-style: normal;
-    font-size: calc(var(--node-name-font-size-shape) * 1px);
+    font-size: calc(v-bind("$shapes.nodeNameFontSize") * 1px);
     white-space: pre;
   }
 
