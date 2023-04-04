@@ -167,6 +167,7 @@ export default {
         flex-wrap: wrap;
         margin: 0 -5px;
         list-style-type: none;
+        justify-content: center;
 
         &:focus {
             outline: none;
