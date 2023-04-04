@@ -333,7 +333,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     quickAddNode: {
         text: 'Quick add node',
         title: 'Add new node',
-        hotkey: ['Ctrl', ' '], // Ctrl + Space TODO: discuss if key is really a good idea or we should switch to code?
+        hotkey: ['Ctrl', '.'],
         execute: ({ $store }) => {
             // descruct current state
             const {
@@ -383,7 +383,7 @@ const workflowShortcuts: WorkflowShortcuts = {
                 });
                 const startPoint = {
                 // eslint-disable-next-line no-magic-numbers
-                    x: node.position.x + outPortPositions[portIndex][0] + nodeSize * 5,
+                    x: node.position.x + outPortPositions[portIndex][0] + nodeSize * 3,
                     y: node.position.y + outPortPositions[portIndex][1]
                 };
                 position = findFreeSpaceAroundPointWithFallback({

@@ -364,7 +364,7 @@ export default defineComponent({
   --quick-add-node-height: 450;
   --quick-add-node-header-height: 73;
 
-  width: 340px;
+  width: 345px;
   margin-top: calc(var(--ghost-size) / 2 * 1px + var(--extra-margin) * 1px + 3px);
 
   & .disabled-workflow-coach {
