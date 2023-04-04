@@ -346,21 +346,18 @@ const workflowShortcuts: WorkflowShortcuts = {
                 ? $store.getters['workflow/getNodeById'](lastNodeId)
                 : $store.getters['selection/singleSelectedNode'];
 
-            if (['metanode', 'component'].includes(node.kind)) {
-                return;
-            }
-
             // global menu without predecessor node
             if (node === null) {
-                // const kanvas = $store.state.canvas.getScrollContainerElement();
-                // const { top, left, width, height } = kanvas.getBoundingClientRect();
-                // const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([left + width / 2, top + height / 2]);
-
                 const position = findFreeSpaceAroundCenterWithFallback({
                     visibleFrame: $store.getters['canvas/getVisibleFrame'](),
                     nodes: $store.state.workflow.activeWorkflow.nodes
                 });
                 $store.dispatch('workflow/openQuickAddNodeMenu', { props: { position } });
+                return;
+            }
+
+            // disable menu for metanode and component
+            if (['metanode', 'component'].includes(node.kind)) {
                 return;
             }
 
