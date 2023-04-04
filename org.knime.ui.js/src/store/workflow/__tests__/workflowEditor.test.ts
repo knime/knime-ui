@@ -916,4 +916,17 @@ describe('workflow store: Editing', () => {
             expect(store.state.workflow.labelEditorNodeId).toBeNull();
         });
     });
+
+    describe('getters', () => {
+        it('retunrs if a node is connected', async () => {
+            const { store } = await loadStore();
+            store.commit('workflow/setActiveWorkflow', { connections: {
+                'connector-1': { destNode: 'node1', sourceNode: 'node2' },
+                'connector-2': { destNode: 'node2', sourceNode: 'node3' },
+                'connector-3': { destNode: 'node3', sourceNode: 'node4' }
+            } });
+            expect(store.getters['workflow/isNodeConnected']('node1')).toBeTruthy();
+            expect(store.getters['workflow/isNodeConnected']('node5')).toBeFalsy();
+        });
+    });
 });

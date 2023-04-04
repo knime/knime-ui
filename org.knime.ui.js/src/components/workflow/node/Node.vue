@@ -434,7 +434,7 @@ export default {
               >
                 <!-- Hover Area, larger than the node torso -->
                 <rect
-                  class="hover-area"
+                  :class="['hover-area', {'is-dragging': isDragging}]"
                   :width="hoverSize.width"
                   :height="hoverSize.height"
                   :x="hoverSize.x"
@@ -513,6 +513,11 @@ export default {
 
 .hover-area {
   fill: none;
+  pointer-events: fill;
+
+  &.is-dragging {
+    pointer-events: none;
+  }
 }
 
 .node-torso:hover,

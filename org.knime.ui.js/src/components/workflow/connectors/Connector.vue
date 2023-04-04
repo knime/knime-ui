@@ -151,7 +151,7 @@ export default defineComponent({
         onConnectorDragLeave() {
             this.isDraggedOver = false;
         },
-        onConnectorDragDrop(dragEvent) {
+        onConnectorDrop(dragEvent) {
             const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
             this.onInsertNode(dragEvent.clientX, dragEvent.clientY, nodeFactory, null);
         },
@@ -196,7 +196,7 @@ export default defineComponent({
       @pointerdown.right="onContextMenu"
       @dragenter="onConnectorDragEnter"
       @dragleave="onConnectorDragLeave"
-      @drop.stop="onConnectorDragDrop"
+      @drop.stop="onConnectorDrop"
       @node-dragging-enter="onNodeDragggingEnter"
       @node-dragging-leave.prevent="onConnectorDragLeave"
       @node-dragging-end.prevent="onNodeDragggingEnd"
