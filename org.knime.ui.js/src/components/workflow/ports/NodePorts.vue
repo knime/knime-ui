@@ -75,7 +75,7 @@ export default {
         selectedPort: null
     }),
     computed: {
-        ...mapState('workflow', ['isDragging']),
+        ...mapState('workflow', ['isDragging', 'quickAddNodeMenu']),
 
         isMetanode() {
             return this.nodeKind === 'metanode';
@@ -158,11 +158,10 @@ export default {
     methods: {
         ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
         isShowingQuickAddNodeMenu(portIndex, direction) {
-            const menu = this.$store.state.workflow.quickAddNodeMenu;
-            return menu.isOpen &&
+            return this.quickAddNodeMenu.isOpen &&
                 direction === 'out' &&
-                menu.props.nodeId === this.nodeId &&
-                menu.props.port.index === portIndex;
+                this.quickAddNodeMenu.props.nodeId === this.nodeId &&
+                this.quickAddNodeMenu.props.port.index === portIndex;
         },
         onPortClick({ index, portGroupId }, side) {
             if (!this.isEditable) {
