@@ -1,6 +1,6 @@
 import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
-import { shallowMount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import * as $shapes from '@/style/shapes.mjs';
@@ -117,12 +117,14 @@ describe('Workflow', () => {
     } = {}) => {
         const positions = getNodesPositions(store);
 
-        return shallowMount(Workflow, {
+        return mount(Workflow, {
             props,
+            shallow: true,
             global: {
                 mocks: { $shapes },
                 plugins: [store],
                 stubs: {
+                    WorkflowPortalLayers: false,
                     MoveableNodeContainer: {
                         props: { id: { type: String, default: '' } },
                         render(_props) {
@@ -169,7 +171,7 @@ describe('Workflow', () => {
                 }
             });
             const wrapper = doShallowMount({ store });
-    
+
             const annotation =
             wrapper.findAllComponents(WorkflowAnnotation).find(c => c.props('annotation').id === 'id1');
             annotation.vm.setSelectionPreview = vi.fn();
