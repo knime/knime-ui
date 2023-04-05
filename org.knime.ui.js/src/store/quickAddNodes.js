@@ -42,6 +42,11 @@ export const actions = {
         });
 
         commit('setRecommendedNodes', recommendedNodesResult.map(toNodeWithFullPorts(availablePortTypes)));
+    },
+
+    async clearRecommendedNodesAndSearchParams({ commit, dispatch }) {
+        commit('setRecommendedNodes', null);
+        await dispatch('clearSearchParams');
     }
 };
 

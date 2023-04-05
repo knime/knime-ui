@@ -257,6 +257,7 @@ export const actions = {
     async clearSearchParams({ commit, dispatch }) {
         commit('setSelectedTags', []);
         commit('setQuery', '');
+        commit('setPortTypeId', null);
         await dispatch('clearSearchResults');
     }
 };

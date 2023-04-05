@@ -116,6 +116,9 @@ export default defineComponent({
         ghostSizeZoomed() {
             return this.$shapes.addNodeGhostSize * this.zoomFactor;
         },
+        extraMargin() {
+            return Math.log(this.ghostSizeZoomed) / 1.1;
+        },
         hasRecommendationResults() {
             return this.recommendedNodes?.length > 0;
         },
@@ -166,11 +169,7 @@ export default defineComponent({
         (this.$refs.search as HTMLElement)?.focus();
     },
     beforeUnmount() {
-        // reset query on close (in any case!)
-        this.searchQuery = '';
-        this.$store.commit('quickAddNodes/setPortTypeId', null);
-        // reset recommended nodes to prevent flashing of old nodes
-        this.$store.commit('quickAddNodes/setRecommendedNodes', null);
+        this.$store.dispatch('quickAddNodes/clearRecommendedNodesAndSearchParams');
     },
     methods: {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
@@ -244,7 +243,6 @@ export default defineComponent({
   <FloatingMenu
     class="quick-add-node"
     :canvas-position="canvasPosition"
-    :style="`--ghost-size: ${ghostSizeZoomed}; --extra-margin: ${Math.log(ghostSizeZoomed) / 1.1}`"
     aria-label="Quick add node"
     :prevent-oveflow="true"
     @menu-close="$emit('menuClose')"
@@ -258,7 +256,6 @@ export default defineComponent({
       :did-drag-to-compatible-target="false"
       :disable-quick-node-add="false"
     />
-
     <div class="wrapper">
       <div class="header">
         <SearchBar
@@ -362,7 +359,7 @@ export default defineComponent({
   --quick-add-node-header-height: 73;
 
   width: 345px;
-  margin-top: calc(var(--ghost-size) / 2 * 1px + var(--extra-margin) * 1px + 3px);
+  margin-top: calc(v-bind("ghostSizeZoomed") / 2 * 1px + v-bind("extraMargin") * 1px + 3px);
 
   & .disabled-workflow-coach {
     display: flex;
