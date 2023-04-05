@@ -32,7 +32,7 @@ export default {
         ...mapState('nodeRepository', ['isDescriptionPanelOpen']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('workflow', ['isWritable']),
-        ...mapGetters('canvas', ['toCanvasCoordinates'])
+        ...mapGetters('canvas', ['getVisibleFrame'])
     },
     methods: {
         ...mapMutations('nodeRepository', ['setSelectedNode', 'setDraggingNode']),
@@ -106,7 +106,7 @@ export default {
 
             // canvas start position
             const position = findFreeSpaceAroundCenterWithFallback({
-                visibleFrame: this.$store.getters['canvas/getVisibleFrame'](),
+                visibleFrame: this.getVisibleFrame(),
                 nodes: this.workflow.nodes
             });
 

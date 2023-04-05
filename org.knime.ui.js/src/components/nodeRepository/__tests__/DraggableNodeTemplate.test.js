@@ -10,8 +10,7 @@ import DraggableNodeTemplate, { WORKFLOW_ADD_START_MIN } from '../DraggableNodeT
 
 describe('DraggableNodeTemplate', () => {
     let props, doMount, wrapper, testEvent, isWritable, openDescriptionPanelMock, closeDescriptionPanelMock,
-        setSelectedNodeMock, $store, storeConfig, setDraggingNodeMock, addNodeMock, getElementByIdMock, activeWorkflow,
-        toCanvasCoordinatesMock;
+        setSelectedNodeMock, $store, storeConfig, setDraggingNodeMock, addNodeMock, getElementByIdMock, activeWorkflow;
 
     beforeEach(() => {
         isWritable = true;
@@ -64,8 +63,6 @@ describe('DraggableNodeTemplate', () => {
             }
         };
 
-        toCanvasCoordinatesMock = ([x, y]) => [x - 10, y - 10];
-
         storeConfig = {
             application: {
                 state: {
@@ -105,7 +102,12 @@ describe('DraggableNodeTemplate', () => {
             },
             canvas: {
                 getters: {
-                    toCanvasCoordinates: () => toCanvasCoordinatesMock
+                    getVisibleFrame: () => vi.fn().mockReturnValue({
+                        left: 0,
+                        top: 0,
+                        width: 500,
+                        height: 500
+                    })
                 }
             }
         };
@@ -189,7 +191,25 @@ describe('DraggableNodeTemplate', () => {
 
             expect(addNodeMock).toHaveBeenCalledWith(
                 expect.anything(),
-                expect.objectContaining({ position: { x: 560, y: 200 } })
+                expect.objectContaining({ position: { x: 234, y: 171.5 } })
+            );
+        });
+
+        it('looks for free space to position node if there is already a node', async () => {
+            activeWorkflow.nodes['root:2'] = {
+                position: {
+                    x: 234,
+                    y: 171.5
+                }
+            };
+            doMount();
+
+            wrapper.find('.node').trigger('dblclick');
+            await Vue.nextTick();
+
+            expect(addNodeMock).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ position: { x: 354, y: 291.5 } })
             );
         });
 
@@ -201,45 +221,6 @@ describe('DraggableNodeTemplate', () => {
             await Vue.nextTick();
 
             expect(addNodeMock).not.toHaveBeenCalled();
-        });
-
-        it('looks for free space to position node if there is already a node', async () => {
-            activeWorkflow.nodes['root:2'] = {
-                position: {
-                    x: 560,
-                    y: 200
-                }
-            };
-            doMount();
-
-            wrapper.find('.node').trigger('dblclick');
-            await Vue.nextTick();
-
-            expect(addNodeMock).toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({ position: { x: 649.6, y: 200 } })
-            );
-        });
-
-        it('avoids to insert behind overlay panel by using min x position', async () => {
-            getElementByIdMock.mockImplementation(() => ({
-                clientWidth: 100,
-                clientHeight: 100,
-                scrollLeft: 10,
-                scrollTop: 10
-            }));
-            doMount();
-
-            wrapper.find('.node').trigger('dblclick');
-            await Vue.nextTick();
-
-            const { scrollLeft } = getElementByIdMock();
-            const [x] = toCanvasCoordinatesMock([WORKFLOW_ADD_START_MIN + scrollLeft - (nodeSize / 2), 0]);
-
-            expect(addNodeMock).toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({ position: { x, y: 4 } })
-            );
         });
     });
 

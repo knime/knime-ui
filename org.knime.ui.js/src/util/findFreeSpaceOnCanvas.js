@@ -113,7 +113,8 @@ export const findFreeSpaceAroundPointWithFallback = ({ startPoint: { x, y },
 
         if (fromCenter.visibility >= visibilityThreshold) {
             consola.info('found free space around center');
-            return fromCenter;
+            const { x, y } = fromCenter;
+            return { x, y };
         }
 
         // eslint-disable-next-line no-magic-numbers
