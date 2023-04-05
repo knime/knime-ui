@@ -12,9 +12,10 @@ describe('NodeActionBar', () => {
         get: vi.fn(() => ({}))
     };
 
-    const doMount = ({ props, isNodeSelected = () => () => false } = {}) => {
+    const doMount = ({ props } = {}) => {
         const defaultProps = {
-            nodeId: 'root:1'
+            nodeId: 'root:1',
+            isNodeSelected: false
         };
         const storeConfig = {
             workflow: {
@@ -28,11 +29,6 @@ describe('NodeActionBar', () => {
                     openView: vi.fn(),
                     openNodeConfiguration: vi.fn()
                 }
-            },
-            selection: {
-                getters: {
-                    isNodeSelected
-                }
             }
         };
 
@@ -45,7 +41,7 @@ describe('NodeActionBar', () => {
             },
             global: {
                 plugins: [$store],
-                mocks: { $shapes, $shortcuts }
+                mocks: { $shapes, $shortcuts } // FIXME maybe don't mock here
             }
         });
 
@@ -170,8 +166,7 @@ describe('NodeActionBar', () => {
         $shortcuts.get = vi.fn(() => ({ hotkeyText: 'MOCK HOTKEY TEXT' }));
 
         const { wrapper } = doMount({
-            props: { canReset: true },
-            isNodeSelected: () => () => true
+            props: { canReset: true, isNodeSelected: true }
         });
 
         const buttons = wrapper.findAllComponents(ActionButton);

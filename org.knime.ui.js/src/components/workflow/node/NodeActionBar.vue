@@ -1,6 +1,4 @@
 <script lang="ts">
-import { mapActions, mapGetters } from 'vuex';
-
 import ExecuteIcon from '@/assets/execute.svg';
 import ResumeIcon from '@/assets/resume-execution.svg';
 import ResetIcon from '@/assets/reset-all.svg';
@@ -24,6 +22,10 @@ export default defineComponent({
         nodeId: {
             type: String,
             default: 'NODE ID MISSING'
+        },
+        isNodeSelected: {
+            type: Boolean,
+            default: false
         },
         canExecute: {
             type: Boolean,
@@ -63,7 +65,6 @@ export default defineComponent({
         }
     },
     computed: {
-        ...mapGetters('selection', ['isNodeSelected']),
         // all possible actions
         actions() {
             return {
@@ -143,22 +144,12 @@ export default defineComponent({
         }
     },
     methods: {
-        ...mapActions('workflow', [
-            'executeNodes',
-            'cancelNodeExecution',
-            'resetNodes',
-            'pauseLoopExecution',
-            'resumeLoopExecution',
-            'stepLoopExecution',
-            'openView',
-            'openNodeConfiguration'
-        ]),
         /*
         * If this node is selected, hoverTitle appends the hotkey to the title
         * otherwise the title is returned
         */
         hoverTitle(title, hotkeyText) {
-            return this.isNodeSelected(this.nodeId) && hotkeyText
+            return this.isNodeSelected && hotkeyText
                 ? `${title} - ${hotkeyText}`
                 : title;
         },
