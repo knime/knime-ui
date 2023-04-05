@@ -1,0 +1,54 @@
+<script>
+/**
+ * Defines the order of workflow content and portals, this is used to paint stuff ontop of other things
+ * as svg has no z-index.
+ */
+</script>
+
+<template>
+  <!-- Workflow Annotation Layer. Background -->
+  <slot name="workflowAnnotation" />
+
+  <PortalTarget
+    tag="g"
+    name="annotation-transform"
+  />
+
+  <!-- Node Selection Plane Layer -->
+  <PortalTarget
+    tag="g"
+    name="node-select"
+  />
+
+  <!-- Connectors Layer -->
+  <slot name="connector" />
+
+  <!-- Metanode Port Bars (Inside of Metanodes) -->
+  <slot name="metaNodePortBars" />
+
+  <slot name="nodes" />
+
+  <!-- Editor Layer; only one editor is open at a time -->
+  <PortalTarget
+    tag="g"
+    name="node-text-editor"
+  />
+
+  <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
+  <PortalTarget
+    tag="g"
+    name="node-actions"
+  />
+
+  <slot name="connectorLabel" />
+
+  <PortalTarget
+    tag="g"
+    name="selected-port"
+  />
+
+  <PortalTarget
+    tag="g"
+    name="drag-connector"
+  />
+</template>

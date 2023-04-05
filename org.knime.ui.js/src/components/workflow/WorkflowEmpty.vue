@@ -1,10 +1,12 @@
 <script>
 import { mapState } from 'vuex';
 import ArrowDown from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
+import WorkflowPortalLayers from './WorkflowPortalLayers.vue';
 
 export default {
     components: {
-        ArrowDown
+        ArrowDown,
+        WorkflowPortalLayers
     },
     computed: {
         ...mapState('canvas', ['containerSize']),
@@ -49,6 +51,9 @@ export default {
     />
     <text y="-9">Start building your workflow by dropping</text>
     <text y="27"> your data or nodes here.</text>
+
+    <!-- Define all Portals also for the empty workflow because some features relay on them -->
+    <WorkflowPortalLayers />
   </g>
 </template>
 

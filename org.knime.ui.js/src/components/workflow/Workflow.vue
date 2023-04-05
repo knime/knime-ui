@@ -6,9 +6,11 @@ import Connector from '@/components/workflow/connectors/Connector.vue';
 import WorkflowAnnotation from '@/components/workflow/annotations/WorkflowAnnotation.vue';
 import MetaNodePortBars from '@/components/workflow/ports/MetaNodePortBars.vue';
 import ConnectorLabel from '@/components/workflow/connectors/ConnectorLabel.vue';
+import WorkflowPortalLayers from './WorkflowPortalLayers.vue';
 
 export default {
     components: {
+        WorkflowPortalLayers,
         Node,
         Connector,
         WorkflowAnnotation,
@@ -51,83 +53,59 @@ export default {
 
 <template>
   <g class="workflow">
-    <!-- Workflow Annotation Layer. Background -->
-    <WorkflowAnnotation
-      v-for="annotation of workflow.workflowAnnotations"
-      :ref="`annotation-${annotation.id}`"
-      :key="`annotation-${annotation.id}`"
-      :annotation="annotation"
-    />
-
-    <PortalTarget
-      tag="g"
-      name="annotation-transform"
-    />
-
-    <!-- Node Selection Plane Layer -->
-    <PortalTarget
-      tag="g"
-      name="node-select"
-    />
-
-    <!-- Connectors Layer -->
-    <!-- connector.id is NOT unique. Hence we use a custom key -->
-    <Connector
-      v-for="connector of workflow.connections"
-      :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
-      v-bind="connector"
-    />
-
-    <!-- Metanode Port Bars (Inside of Metanodes) -->
-    <MetaNodePortBars
-      v-if="workflow.info.containerType === 'metanode'"
-    />
-
-    <MoveableNodeContainer
-      v-for="node of sortedNodes"
-      :id="node.id"
-      :key="`node-${node.id}`"
-      :position="node.position"
-      :kind="node.kind"
-    >
-      <template #default="{ position }">
-        <Node
-          :ref="`node-${node.id}`"
-          v-bind="node"
-          :icon="$store.getters['workflow/getNodeIcon'](node.id)"
-          :name="$store.getters['workflow/getNodeName'](node.id)"
-          :type="$store.getters['workflow/getNodeType'](node.id)"
-          :position="position"
+    <WorkflowPortalLayers>
+      <template #workflowAnnotation>
+        <WorkflowAnnotation
+          v-for="annotation of workflow.workflowAnnotations"
+          :ref="`annotation-${annotation.id}`"
+          :key="`annotation-${annotation.id}`"
+          :annotation="annotation"
         />
       </template>
-    </MoveableNodeContainer>
 
-    <!-- Editor Layer; only one editor is open at a time -->
-    <PortalTarget
-      tag="g"
-      name="node-text-editor"
-    />
+      <template #connector>
+        <!-- connector.id is NOT unique. Hence we use a custom key -->
+        <Connector
+          v-for="connector of workflow.connections"
+          :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
+          v-bind="connector"
+        />
+      </template>
 
-    <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
-    <PortalTarget
-      tag="g"
-      name="node-actions"
-    />
+      <template #metaNodePortBars>
+        <MetaNodePortBars
+          v-if="workflow.info.containerType === 'metanode'"
+        />
+      </template>
 
-    <ConnectorLabel
-      v-for="(connector, id) of workflow.connections"
-      :key="`connector-label-${id}`"
-      v-bind="connector"
-    />
+      <template #nodes>
+        <MoveableNodeContainer
+          v-for="node of sortedNodes"
+          :id="node.id"
+          :key="`node-${node.id}`"
+          :position="node.position"
+          :kind="node.kind"
+        >
+          <template #default="{ position }">
+            <Node
+              :ref="`node-${node.id}`"
+              v-bind="node"
+              :icon="$store.getters['workflow/getNodeIcon'](node.id)"
+              :name="$store.getters['workflow/getNodeName'](node.id)"
+              :type="$store.getters['workflow/getNodeType'](node.id)"
+              :position="position"
+            />
+          </template>
+        </MoveableNodeContainer>
+      </template>
 
-    <PortalTarget
-      tag="g"
-      name="selected-port"
-    />
-
-    <PortalTarget
-      tag="g"
-      name="drag-connector"
-    />
+      <template #connectorLabel>
+        <ConnectorLabel
+          v-for="(connector, id) of workflow.connections"
+          :key="`connector-label-${id}`"
+          v-bind="connector"
+        />
+      </template>
+    </WorkflowPortalLayers>
   </g>
 </template>

@@ -251,7 +251,6 @@ export default defineComponent({
   >
     <!-- this will be portaled to the canvas -->
     <NodePortActiveConnector
-      v-if="nodeId"
       :port="port"
       :targeted="false"
       direction="out"
