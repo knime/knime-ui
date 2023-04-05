@@ -20,7 +20,7 @@ export const visibilityThreshold = 0.7;
  * @param { Number } step.y
  * @returns { Object } x and y, for where the area fits on the workflow
  */
-const findFreeSpace = ({ area, workflow: { nodes }, startPosition = { x: 0, y: 0 }, step }) => {
+export const findFreeSpace = ({ area, workflow: { nodes }, startPosition = { x: 0, y: 0 }, step }) => {
     let estimatedNodeBounds = node => ({
         left: node.position.x - nodePadding,
         top: node.position.y - nodePadding,
