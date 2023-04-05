@@ -5,6 +5,7 @@ import Node from '@/components/workflow/node/Node.vue';
 import MoveableNodeContainer from '@/components/workflow/node/MoveableNodeContainer.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
 import WorkflowAnnotation from '@/components/workflow/annotations/WorkflowAnnotation.vue';
+import MoveableAnnotationContainer from '@/components/workflow/annotations/MoveableAnnotationContainer.vue';
 import MetaNodePortBars from '@/components/workflow/ports/MetaNodePortBars.vue';
 import ConnectorLabel from '@/components/workflow/connectors/ConnectorLabel.vue';
 import WorkflowPortalLayers from './WorkflowPortalLayers.vue';
@@ -17,7 +18,8 @@ export default defineComponent({
         WorkflowAnnotation,
         MetaNodePortBars,
         ConnectorLabel,
-        MoveableNodeContainer
+        MoveableNodeContainer,
+        MoveableAnnotationContainer
     },
 
     expose: ['applyNodeSelectionPreview', 'applyAnnotationSelectionPreview'],
@@ -62,9 +64,11 @@ export default defineComponent({
   <g class="workflow">
     <WorkflowPortalLayers>
       <template #workflowAnnotation>
-        <template
+        <MoveableAnnotationContainer
           v-for="annotation of workflow.workflowAnnotations"
+          :id="annotation.id"
           :key="`annotation-${annotation.id}`"
+          :position="annotation.bounds"
         >
           <WorkflowAnnotation
             v-if="editableAnnotationId !== annotation.id"
@@ -81,7 +85,7 @@ export default defineComponent({
               :annotation="annotation"
             />
           </Portal>
-        </template>
+        </MoveableAnnotationContainer>
       </template>
 
       <template #connector>

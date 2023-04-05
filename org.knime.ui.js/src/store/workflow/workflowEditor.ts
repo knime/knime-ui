@@ -304,8 +304,9 @@ export const actions = {
      * Calls the API to save the position of the nodes after the move is over
     */
     async moveObjects({ state, commit, rootGetters }) {
-        const selectedNodes = rootGetters['selection/selectedNodeIds'];
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+        const selectedNodes = rootGetters['selection/selectedNodeIds'];
+        const selectedAnnotations = rootGetters['selection/selectedAnnotationIds'];
 
         const translation = {
             x: state.movePreviewDelta.x,
@@ -317,8 +318,8 @@ export const actions = {
                 projectId,
                 workflowId,
                 nodeIds: selectedNodes,
-                translation,
-                annotationIds: []
+                annotationIds: selectedAnnotations,
+                translation
             });
         } catch (e) {
             consola.log('The following error occured: ', e);
