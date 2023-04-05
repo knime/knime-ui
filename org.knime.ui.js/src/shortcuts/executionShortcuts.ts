@@ -1,6 +1,7 @@
 import ExecuteAllIcon from 'webapps-common/ui/assets/img/icons/execute-all.svg';
 import CancelAllIcon from 'webapps-common/ui/assets/img/icons/cancel-execution.svg';
 import ResetAllIcon from 'webapps-common/ui/assets/img/icons/reset-all.svg';
+import OpenViewIcon from '@/assets/open-view.svg';
 
 import ExecuteSelectedIcon from 'webapps-common/ui/assets/img/icons/selected-execute.svg';
 import CancelSelectedIcon from 'webapps-common/ui/assets/img/icons/selected-cancel.svg';
@@ -73,17 +74,42 @@ const executionShortcuts: ExecutionShortcuts = {
             ({ $store }) => $store.getters['selection/selectedNodes'].some(node => node.allowedActions.canExecute)
     },
     executeAndOpenView: {
-        text: 'Execute and open view',
+        getText: ({ $store }) => $store.getters['selection/singleSelectedNode'].allowedActions.canExecute
+            ? 'Execute and open view'
+            : 'Open view',
         hotkey: ['Shift', 'F10'],
-        icon: ExecuteSelectedIcon,
+        icon: OpenViewIcon,
         execute:
             async ({ $store }) => {
-                await $store.dispatch('workflow/executeNodes', 'selected');
+                if ($store.getters['selection/singleSelectedNode'].allowedActions.canExecute) {
+                    await $store.dispatch('workflow/executeNodes', 'selected');
+                }
                 $store.dispatch('workflow/openView', $store.getters['selection/singleSelectedNode'].id);
             },
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode'] &&
-                $store.getters['selection/singleSelectedNode'].allowedActions.canExecute
+            ($store.getters['selection/singleSelectedNode'].allowedActions.canExecute ||
+            $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenView)
+
+    },
+    /**
+     * (This shortcut should not be used anywhere, see executeAndOpenView)
+     *
+     * The only purpose of this is to add the second hotkey for executeAndOpenView.
+     */
+    executeAndOpenViewShortcutAlternative: {
+        hotkey: ['F12'],
+        execute:
+            async ({ $store }) => {
+                if ($store.getters['selection/singleSelectedNode'].allowedActions.canExecute) {
+                    await $store.dispatch('workflow/executeNodes', 'selected');
+                }
+                $store.dispatch('workflow/openView', $store.getters['selection/singleSelectedNode'].id);
+            },
+        condition:
+            ({ $store }) => $store.getters['selection/singleSelectedNode'] &&
+            ($store.getters['selection/singleSelectedNode'].allowedActions.canExecute ||
+            $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenView)
 
     },
     cancelSelected: {

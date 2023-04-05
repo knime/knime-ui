@@ -84,10 +84,14 @@ export default defineComponent({
             return this.visibleItems
                 .map((item) => {
                     const shortcut = this.$shortcuts.get(item.name);
+                    let shortcutText = shortcut.text;
+                    if (!shortcut.text && typeof shortcut.getText === 'function') {
+                        shortcutText = shortcut.getText({ $store: this.$store });
+                    }
 
                     return {
                         name: item.name,
-                        text: item.text || shortcut.text,
+                        text: item.text || shortcutText,
                         hotkeyText: shortcut.hotkeyText,
                         disabled: !this.$shortcuts.isEnabled(item.name),
                         separator: item.separator
@@ -133,7 +137,6 @@ export default defineComponent({
             const basicOperationsGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'configureNode', isVisible: this.singleSelectedNode },
                 { name: 'executeSelected', isVisible: this.selectedNodes.length },
-                { name: 'executeAndOpenView', isVisible: isView },
                 // Loop nodes
                 { name: 'resumeLoopExecution', isVisible: isLoopEnd },
                 { name: 'pauseLoopExecution', isVisible: isLoopEnd },
@@ -142,7 +145,7 @@ export default defineComponent({
                 { name: 'resetSelected', isVisible: this.selectedNodes.length },
                 { name: 'editNodeLabel', isVisible: this.singleSelectedNode },
                 // misc
-                { name: 'openView', isVisible: isView },
+                { name: 'executeAndOpenView', isVisible: isView },
                 { name: 'configureFlowVariables', isVisible: hasLegacyFlowVariableDialog },
                 // no nodes selected
                 { name: 'executeAll', isVisible: this.isSelectionEmpty },
