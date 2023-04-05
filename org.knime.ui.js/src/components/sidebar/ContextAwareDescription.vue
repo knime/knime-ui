@@ -31,12 +31,14 @@ export default {
 </script>
 
 <template>
-  <NodeDescription
-    v-if="showNodeDescription"
-    :selected-node="selectedNode"
-  />
-  <WorkflowMetadata
-    v-else
-    key="workflow-metadata"
-  />
+  <div>
+    <NodeDescription
+      v-if="showNodeDescription"
+      :selected-node="selectedNode"
+    />
+    <WorkflowMetadata
+      v-else
+      key="workflow-metadata"
+    />
+  </div>
 </template>

@@ -131,7 +131,7 @@ export default {
           :port="port"
           :direction="portDirection"
           :node-id="containerId"
-          :targeted="targetPort && targetPort.index === port.index"
+          :targeted="targetPort ? targetPort.index === port.index : false"
           :disable-quick-node-add="true"
         />
       </g>

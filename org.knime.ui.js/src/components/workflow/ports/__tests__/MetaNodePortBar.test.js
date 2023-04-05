@@ -113,7 +113,7 @@ describe('MetaNodePortBar.vue', () => {
                     $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
                     549 / (ports.length + 1)
                 ],
-                targeted: null
+                targeted: false
             }));
 
             expect(port1.props()).toStrictEqual(expect.objectContaining({
@@ -124,7 +124,7 @@ describe('MetaNodePortBar.vue', () => {
                     $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
                     2 * 549 / (ports.length + 1)
                 ],
-                targeted: null
+                targeted: false
             }));
         });
 
