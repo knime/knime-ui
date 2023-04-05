@@ -1,7 +1,6 @@
 import RedoIcon from 'webapps-common/ui/assets/img/icons/redo.svg';
 import UndoIcon from 'webapps-common/ui/assets/img/icons/undo.svg';
 import DeleteIcon from '@/assets/delete.svg';
-import OpenViewIcon from '@/assets/open-view.svg';
 import OpenDialogIcon from '@/assets/configure-node.svg';
 import SaveIcon from 'webapps-common/ui/assets/img/icons/save.svg';
 import CreateMetanode from 'webapps-common/ui/assets/img/icons/metanode-add.svg';
@@ -21,7 +20,6 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'redo'
     | 'configureNode'
     | 'configureFlowVariables'
-    | 'openView'
     | 'editName'
     | 'editNodeLabel'
     | 'deleteSelected'
@@ -87,9 +85,10 @@ const workflowShortcuts: WorkflowShortcuts = {
         text: 'Configure',
         hotkey: ['F6'],
         icon: OpenDialogIcon,
-        execute:
-            ({ $store }) => $store.dispatch('workflow/openNodeConfiguration',
-                $store.getters['selection/singleSelectedNode'].id),
+        execute: ({ $store, payload = null }) => {
+            const selectedNodeId = payload?.metadata?.nodeId || $store.getters['selection/singleSelectedNode'].id;
+            $store.dispatch('workflow/openNodeConfiguration', selectedNodeId);
+        },
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenDialog
     },
@@ -102,15 +101,6 @@ const workflowShortcuts: WorkflowShortcuts = {
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions
                 .canOpenLegacyFlowVariableDialog
-    },
-    openView: {
-        text: 'Open view',
-        hotkey: ['F12'],
-        icon: OpenViewIcon,
-        execute:
-            ({ $store }) => $store.dispatch('workflow/openView', $store.getters['selection/singleSelectedNode'].id),
-        condition:
-            ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenView
     },
     editName: {
         text: 'Rename',

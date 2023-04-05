@@ -38,7 +38,7 @@ export type ShortcutExecuteContext = {
     // TODO type the store once the types are available
     $store: Store<any>;
     $router: Router;
-    payload: { event?: Event }
+    payload: { event?: Event, metadata?: any }
 }
 
 export type ShortcutConditionContext = Pick<ShortcutExecuteContext, '$store'>
@@ -60,6 +60,13 @@ export type Shortcut = {
      * @returns
      */
     condition?: (payload: ShortcutConditionContext) => boolean;
+
+    /**
+     * Returns dynamic text based on the condition of the shortcut.
+     * @param payload
+     * @returns
+     */
+    getText?: (payload: ShortcutConditionContext) => string;
 
     /**
      * Key combination that triggers the shortcut.

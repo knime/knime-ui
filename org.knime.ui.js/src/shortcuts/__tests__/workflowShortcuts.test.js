@@ -97,12 +97,6 @@ describe('workflowShortcuts', () => {
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openFlowVariableConfiguration', 'root:0');
         });
 
-        it('openView', () => {
-            const { $store, mockDispatch } = createStore();
-            workflowShortcuts.openView.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/openView', 'root:0');
-        });
-
         it('editName', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.editName.execute({ $store });
@@ -227,15 +221,6 @@ describe('workflowShortcuts', () => {
                 canOpenLegacyFlowVariableDialog: true
             };
             expect(workflowShortcuts.configureFlowVariables.condition({ $store })).toBe(true);
-        });
-
-        it('openView', () => {
-            const { $store } = createStore();
-            expect(workflowShortcuts.openView.condition({ $store })).toBeFalsy();
-            $store.getters['selection/singleSelectedNode'].allowedActions = {
-                canOpenView: true
-            };
-            expect(workflowShortcuts.openView.condition({ $store })).toBe(true);
         });
 
         describe('editName', () => {

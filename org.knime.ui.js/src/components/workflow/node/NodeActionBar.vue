@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { mapActions, mapGetters } from 'vuex';
 
 import ExecuteIcon from '@/assets/execute.svg';
@@ -11,11 +11,12 @@ import OpenViewIcon from '@/assets/open-view.svg';
 import OpenDialogIcon from '@/assets/configure-node.svg';
 
 import ActionBar from '@/components/common/ActionBar.vue';
+import { defineComponent } from 'vue';
 
 /**
  *  Displays a bar of action buttons above nodes
  */
-export default {
+export default defineComponent({
     components: {
         ActionBar
     },
@@ -37,9 +38,9 @@ export default {
             default: false
         },
         /*
-         * The props below can either be true, false or unset.
-         * In case they are unset, Vue defaults them to null
-         */
+        * The props below can either be true, false or unset.
+        * In case they are unset, Vue defaults them to null
+        */
         canStep: {
             type: Boolean,
             default: null
@@ -70,49 +71,50 @@ export default {
                     title: () => this.hoverTitle('Configure', this.$shortcuts.get('configureNode').hotkeyText),
                     disabled: !this.canOpenDialog,
                     icon: OpenDialogIcon,
-                    onClick: () => this.openNodeConfiguration(this.nodeId)
+                    onClick: () => this.dispatchShortcut('configureNode')
                 },
                 pauseLoopExecution: {
                     title: () => this.hoverTitle('Pause', this.$shortcuts.get('pauseLoopExecution').hotkeyText),
                     disabled: false,
                     icon: PauseIcon,
-                    onClick: () => this.pauseLoopExecution(this.nodeId)
+                    onClick: () => this.dispatchShortcut('pauseLoopExecution')
                 },
                 resumeLoopExecution: {
                     title: () => this.hoverTitle('Resume', this.$shortcuts.get('resumeLoopExecution').hotkeyText),
                     disabled: false,
                     icon: ResumeIcon,
-                    onClick: () => this.resumeLoopExecution(this.nodeId)
+                    onClick: () => this.dispatchShortcut('resumeLoopExecution')
                 },
                 execute: {
                     title: () => this.hoverTitle('Execute', this.$shortcuts.get('executeSelected').hotkeyText),
                     disabled: !this.canExecute,
                     icon: ExecuteIcon,
-                    onClick: () => this.executeNodes([this.nodeId])
+                    onClick: () => this.dispatchShortcut('executeSelected')
                 },
                 stepLoopExecution: {
                     title: () => this.hoverTitle('Step', this.$shortcuts.get('stepLoopExecution').hotkeyText),
                     disabled: !this.canStep,
                     icon: StepIcon,
-                    onClick: () => this.stepLoopExecution(this.nodeId)
+                    onClick: () => this.dispatchShortcut('stepLoopExecution')
                 },
                 cancelExecution: {
                     title: () => this.hoverTitle('Cancel', this.$shortcuts.get('cancelSelected').hotkeyText),
                     disabled: !this.canCancel,
                     icon: CancelIcon,
-                    onClick: () => this.cancelNodeExecution([this.nodeId])
+                    onClick: () => this.dispatchShortcut('cancelSelected')
                 },
                 reset: {
                     title: () => this.hoverTitle('Reset', this.$shortcuts.get('resetSelected').hotkeyText),
                     disabled: !this.canReset,
                     icon: ResetIcon,
-                    onClick: () => this.resetNodes([this.nodeId])
+                    onClick: () => this.dispatchShortcut('resetSelected')
                 },
                 openView: {
-                    title: () => this.hoverTitle('Open View', this.$shortcuts.get('openView').hotkeyText),
-                    disabled: !this.canOpenView,
+                    title: () => this.hoverTitle(this.canExecute ? 'Execute and open view' : 'Open View',
+                        this.$shortcuts.get('executeAndOpenView').hotkeyText),
+                    disabled: !this.canOpenView && !this.canExecute,
                     icon: OpenViewIcon,
-                    onClick: () => this.openView(this.nodeId)
+                    onClick: () => this.dispatchShortcut('executeAndOpenView', { canExecute: this.canExecute })
                 }
             };
         },
@@ -152,16 +154,19 @@ export default {
             'openNodeConfiguration'
         ]),
         /*
-         * If this node is selected, hoverTitle appends the hotkey to the title
-         * otherwise the title is returned
-         */
+        * If this node is selected, hoverTitle appends the hotkey to the title
+        * otherwise the title is returned
+        */
         hoverTitle(title, hotkeyText) {
             return this.isNodeSelected(this.nodeId) && hotkeyText
                 ? `${title} - ${hotkeyText}`
                 : title;
+        },
+        dispatchShortcut(shortcut, additionalMetadata = {}) {
+            this.$shortcuts.dispatch(shortcut, { metadata: { nodeId: this.nodeId, ...additionalMetadata } });
         }
     }
-};
+});
 </script>
 
 <template>
