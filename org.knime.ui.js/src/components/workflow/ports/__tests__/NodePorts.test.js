@@ -22,6 +22,7 @@ describe('NodePorts.vue', () => {
     const doMount = ({
         addNodePortMock = vi.fn(),
         removeNodePortMock = vi.fn(),
+        quickAddNodeMenu = {},
         customProps = {}
     } = {}) => {
         let defaultProps = {
@@ -47,7 +48,8 @@ describe('NodePorts.vue', () => {
         let storeConfig = {
             workflow: {
                 state: () => ({
-                    isDragging: false
+                    isDragging: false,
+                    quickAddNodeMenu
                 }),
                 actions: {
                     addNodePort: addNodePortMock,
@@ -295,6 +297,35 @@ describe('NodePorts.vue', () => {
             // flowVariable ports fades out
             expect(ports.at(0).classes()).not.toContain('node-hover');
             expect(ports.at(2).classes()).not.toContain('node-hover');
+        });
+
+        it('keep output mickey-mouse port visible if quick add menu is open', () => {
+            const customProps = {
+                isMetanode: 'false',
+                hover: false,
+                nodeId: 'root:3',
+                port: {
+                    index: 0
+                },
+                outPorts: [
+                    mockPort({ index: 0, outgoing: true }),
+                    mockPort({ index: 1, outgoing: true }),
+                    mockPort({ index: 2, outgoing: true, connectedVia: ['outB'] })
+                ]
+            };
+            const quickAddNodeMenu = {
+                isOpen: true,
+                props: {
+                    nodeId: customProps.nodeId,
+                    port: customProps.port
+                }
+            };
+            let { wrapper } = doMount({ customProps, quickAddNodeMenu });
+            let ports = wrapper.findAllComponents(NodePort);
+
+            // flowVariable ports are connected to quick node add (start at 2 as inPorts are 0 and 1)
+            expect(ports.at(2).classes()).toContain('connected');
+            expect(ports.at(3).classes()).toStrictEqual(['port']);
         });
     });
 

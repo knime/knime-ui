@@ -1166,7 +1166,7 @@ describe('NodePort', () => {
                     }));
                 });
 
-                it('keeps connector and ghost visible on pointer release if menu is open', async () => {
+                it('remove connector and ghost on pointer release even if menu is open', async () => {
                     const { wrapper, $store } = doMount({ props: { direction: 'out' } });
                     await startDragging({ wrapper });
                     await dragAboveTarget({ wrapper });
@@ -1188,8 +1188,8 @@ describe('NodePort', () => {
 
                     await wrapper.trigger('lostpointercapture');
 
-                    expect(wrapper.findComponent(Connector).exists()).toBe(true);
-                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
+                    expect(wrapper.findComponent(Connector).exists()).toBe(false);
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
                 });
 
                 it('closes the quick add node menu', async () => {
