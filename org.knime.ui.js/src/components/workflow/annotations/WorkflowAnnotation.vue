@@ -1,12 +1,14 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import { mapState, mapActions, mapGetters } from 'vuex';
+import { mixin as VueClickAway } from 'vue3-click-away';
 
 import type { Bounds, WorkflowAnnotation } from '@/api/gateway-api/generated-api';
 
 import { getMetaOrCtrlKey } from '@/util/navigator';
 import TransformControls from './TransformControls.vue';
-import LegacyAnnotationText from './LegacyAnnotationText.vue';
+import LegacyAnnotation from './LegacyAnnotation.vue';
+import RichTextEditor from './RichTextEditor.vue';
 
 /**
  * A workflow annotation, a rectangular box containing text.
@@ -14,20 +16,33 @@ import LegacyAnnotationText from './LegacyAnnotationText.vue';
 export default defineComponent({
     components: {
         LegacyAnnotation,
+        RichTextEditor,
         TransformControls
     },
+    mixins: [VueClickAway],
     inheritAttrs: false,
 
     props: {
         annotation: {
             type: Object as PropType<WorkflowAnnotation>,
             required: true
+        },
+
+        isEditing: {
+            type: Boolean,
+            default: false
         }
     },
 
+    emits: ['toggleEdit'],
+
+    expose: ['setSelectionPreview'],
+
     data() {
         return {
-            selectionPreview: null
+            selectionPreview: null,
+            hasEdited: false,
+            formattedText: ''
         };
     },
 
@@ -47,6 +62,7 @@ export default defineComponent({
         isSelected() {
             return this.isAnnotationSelected(this.annotation.id);
         },
+
         showSelectionPlane() {
             if (this.selectionPreview === null) {
                 return this.isSelected;
@@ -58,6 +74,7 @@ export default defineComponent({
 
             return this.selectionPreview === 'show' || this.isSelected;
         },
+
         showTransformControls() {
             const isMoreThanOneAnnotationSelected = this.selectedAnnotationIds.length > 1;
             const isOneOrMoreNodesSelected = this.selectedNodeIds.length >= 1;
@@ -65,9 +82,15 @@ export default defineComponent({
             let isMoreThanOneItemSelected =
             isMoreThanOneAnnotationSelected || isOneOrMoreNodesSelected || isOneOrMoreConnectionsSelected;
 
-            return this.isSelected && !isMoreThanOneItemSelected;
+            return this.isSelected && !isMoreThanOneItemSelected && this.showSelectionPlane;
+        },
+
+        isLegacyAnnotation() {
+            // return false;
+            return !this.annotation.formattedText;
         }
     },
+
     methods: {
         ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
@@ -104,6 +127,25 @@ export default defineComponent({
                 bounds,
                 annotationId: this.annotation.id
             });
+        },
+
+        toggleEdit() {
+            this.$emit('toggleEdit', this.isEditing ? null : this.annotation.id);
+        },
+
+        onClickAway() {
+            if (!this.isEditing) {
+                return;
+            }
+
+            if (this.hasEdited) {
+                this.$store.dispatch('workflow/updateAnnotationText', {
+                    annotationId: this.annotation.id,
+                    formattedText: this.formattedText
+                });
+            }
+
+            this.toggleEdit();
         }
     }
 });
@@ -112,6 +154,7 @@ export default defineComponent({
 
 <template>
   <TransformControls
+    v-click-away="onClickAway"
     :show-transform-controls="showTransformControls"
     :show-selection="showSelectionPlane"
     :initial-value="annotation.bounds"
@@ -131,6 +174,14 @@ export default defineComponent({
           :annotation="annotation"
           @edit-start="toggleEdit"
         />
+
+        <RichTextEditor
+          v-if="!isLegacyAnnotation || isEditing"
+          v-model="formattedText"
+          :initial-value="annotation.formattedText || annotation.text"
+          :editable="isEditing"
+          @change="hasEdited = true"
+          @edit-start="toggleEdit"
         />
       </foreignObject>
     </template>

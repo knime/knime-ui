@@ -80,6 +80,15 @@ export const mutations = {
 
     setIsDragging(state, value) {
         state.isDragging = value;
+    },
+
+    setAnnotationText(state, { annotationId, formattedText }) {
+        const { activeWorkflow: { workflowAnnotations } } = state;
+        const mapped = workflowAnnotations.map(annotation => annotation.id === annotationId
+            ? { ...annotation, formattedText }
+            : annotation);
+
+        state.activeWorkflow.workflowAnnotations = mapped;
     }
 };
 
@@ -594,6 +603,11 @@ export const actions = {
             action,
             annotationIds
         });
+    },
+
+    async updateAnnotationText({ commit }, { annotationId, formattedText }) {
+        await new Promise(r => setTimeout(r, 500));
+        commit('setAnnotationText', { annotationId, formattedText });
     }
 };
 

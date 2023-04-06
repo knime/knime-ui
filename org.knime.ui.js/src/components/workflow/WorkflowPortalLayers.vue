@@ -51,4 +51,9 @@
     tag="g"
     name="drag-connector"
   />
+
+  <PortalTarget
+    tag="g"
+    name="top-layer"
+  />
 </template>

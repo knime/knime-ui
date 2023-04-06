@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { mapState, mapGetters } from 'vuex';
 import Node from '@/components/workflow/node/Node.vue';
 import MoveableNodeContainer from '@/components/workflow/node/MoveableNodeContainer.vue';
@@ -8,7 +9,7 @@ import MetaNodePortBars from '@/components/workflow/ports/MetaNodePortBars.vue';
 import ConnectorLabel from '@/components/workflow/connectors/ConnectorLabel.vue';
 import WorkflowPortalLayers from './WorkflowPortalLayers.vue';
 
-export default {
+export default defineComponent({
     components: {
         WorkflowPortalLayers,
         Node,
@@ -18,10 +19,20 @@ export default {
         ConnectorLabel,
         MoveableNodeContainer
     },
+
+    expose: ['applyNodeSelectionPreview', 'applyAnnotationSelectionPreview'],
+
+    data() {
+        return {
+            editingAnnotation: null
+        };
+    },
+
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
+
         ...mapGetters('selection', ['isNodeSelected']),
         // Sort nodes so that selected nodes are rendered in front
         // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
@@ -39,28 +50,50 @@ export default {
             return [...unselected, ...selected];
         }
     },
+
     methods: {
-        // public
         applyNodeSelectionPreview({ nodeId, type }) {
             this.$refs[`node-${nodeId}`][0].setSelectionPreview(type);
         },
+
         applyAnnotationSelectionPreview({ annotationId, type }) {
             this.$refs[`annotation-${annotationId}`][0].setSelectionPreview(type);
+        },
+
+        setAnnotationBeingEdited(annotationId: string) {
+            this.editingAnnotation = annotationId;
         }
     }
-};
+});
 </script>
 
 <template>
   <g class="workflow">
     <WorkflowPortalLayers>
       <template #workflowAnnotation>
-        <WorkflowAnnotation
+        <template
           v-for="annotation of workflow.workflowAnnotations"
-          :ref="`annotation-${annotation.id}`"
           :key="`annotation-${annotation.id}`"
-          :annotation="annotation"
-        />
+        >
+          <WorkflowAnnotation
+            v-if="editingAnnotation !== annotation.id"
+            :ref="`annotation-${annotation.id}`"
+            :annotation="annotation"
+            @toggle-edit="setAnnotationBeingEdited"
+          />
+
+          <Portal
+            v-else
+            to="top-layer"
+          >
+            <WorkflowAnnotation
+              :ref="`annotation-${annotation.id}`"
+              is-editing
+              :annotation="annotation"
+              @toggle-edit="setAnnotationBeingEdited"
+            />
+          </Portal>
+        </template>
       </template>
 
       <template #connector>
