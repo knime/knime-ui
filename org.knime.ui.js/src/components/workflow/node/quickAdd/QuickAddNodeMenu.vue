@@ -321,10 +321,6 @@ export default defineComponent({
   }
 
   /* remove default styles of search results */
-  & :deep(.results .content) {
-    padding: 0;
-  }
-
   & :deep(.more-nodes-button) {
     background: transparent;
   }
@@ -332,7 +328,10 @@ export default defineComponent({
   & :deep(.results) {
     background: transparent;
     max-height: calc(calc(var(--quick-add-node-height) - var(--quick-add-node-header-height)) * 1px);
-    padding-top: 3px;
+
+    & .content {
+      padding: 0;
+    }
   }
 
   & .search-bar {
@@ -349,7 +348,6 @@ export default defineComponent({
       border-color: var(--knime-masala);
     }
   }
-
 
   /* marks the default item (first one); gets inserted on enter while still in the search box */
   & :deep(.top-list li.no-selection[data-index="0"] > div),
