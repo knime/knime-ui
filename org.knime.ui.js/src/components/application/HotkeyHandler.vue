@@ -1,7 +1,6 @@
 <script>
 import { escapePressed } from '@/mixins/escapeStack';
-
-const blacklistTagNames = /^(input|textarea|select)$/i;
+import { isInputElement } from '@/util/isInputElement';
 
 /**
  * This Component handles keyboard shortcuts by listening to keydown/up-Events
@@ -28,8 +27,7 @@ export default {
                 escapePressed();
             }
 
-            // getAttribute?.() is conditionally called, because jsdom doesn't provide this function while testing.
-            if (blacklistTagNames.test(e.target.tagName) || e.target.getAttribute?.('contenteditable') === 'true') {
+            if (isInputElement(e)) {
                 return;
             }
 

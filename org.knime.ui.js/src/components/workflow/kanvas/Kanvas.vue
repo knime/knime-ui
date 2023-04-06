@@ -1,11 +1,12 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import { debounce } from 'lodash';
-import { getMetaOrCtrlKey, isMac } from '@/util/navigator';
 import throttle from 'raf-throttle';
 
+import { getMetaOrCtrlKey, isMac } from '@/util/navigator';
+import { isInputElement } from '@/util/isInputElement';
+
 export const RESIZE_DEBOUNCE = 100;
-const blacklistTagNames = /^(input|textarea|select)$/i;
 
 export default {
     emits: ['containerSizeChanged'],
@@ -143,7 +144,7 @@ export default {
         Panning
         */
         onPressSpace(e) {
-            if (blacklistTagNames.test(e.target.tagName)) {
+            if (isInputElement(e)) {
                 return;
             }
 
