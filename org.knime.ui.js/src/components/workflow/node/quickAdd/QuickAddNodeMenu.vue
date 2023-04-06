@@ -422,10 +422,10 @@ export default defineComponent({
     }
   }
 
-  /* remove default negative margin that is required for all other instances of NodeList */
-  & :deep(.nodes) {
-    margin-left: 0;
-    margin-right: 0;
+  /* set margin on list of nodes */
+  & :deep(ul.nodes) {
+    margin-left: 15px;
+    margin-right: 15px;
   }
 
   & :deep(.results .content) {
@@ -460,8 +460,6 @@ export default defineComponent({
 
   & .recommendations {
     overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-gutter: stable both-edges;
     padding-bottom: 10px;
 
     & .content {

@@ -215,7 +215,7 @@ export default defineComponent({
         </div>
         <div
           v-else
-          class="nodes"
+          class="node-list-wrapper"
         >
           <NodeList
             ref="bottomList"
@@ -265,9 +265,11 @@ export default defineComponent({
 }
 
 .results {
-  /* this two rules fix the jumping of the collapsible */
-  scrollbar-width: thin;
-  scrollbar-gutter: stable both-edges;
+
+  & :deep(ul.nodes) {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
 
   & .content {
     padding: 10px;

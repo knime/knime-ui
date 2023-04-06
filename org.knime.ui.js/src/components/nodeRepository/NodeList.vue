@@ -162,12 +162,13 @@ export default {
     margin-bottom: 13px;
 
     & .nodes {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+
+        /* kill list default styles */
         padding: 0;
-        display: flex;
-        flex-wrap: wrap;
-        margin: 0 -5px;
+        margin: 0;
         list-style-type: none;
-        justify-items: center;
 
         &:focus {
             outline: none;
