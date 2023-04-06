@@ -16,8 +16,8 @@ import { portPositions } from '@/util/portShift';
 import { debounce } from 'lodash';
 import NodeList from '@/components/nodeRepository/NodeList.vue';
 import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
-import SearchResults from '@/components/nodeRepository/SearchResults.vue';
 import NodePortActiveConnector from '@/components/workflow/ports/NodePort/NodePortActiveConnector.vue';
+import QuickAddNodeSearchResults from "@/components/workflow/node/quickAdd/QuickAddNodeSearchResults.vue";
 
 const SEARCH_COOLDOWN = 150; // ms
 
@@ -48,8 +48,8 @@ const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) =>
  */
 export default defineComponent({
     components: {
+        QuickAddNodeSearchResults,
         NodeList,
-        SearchResults,
         NodeTemplate,
         SearchBar,
         Button,
@@ -79,9 +79,9 @@ export default defineComponent({
     computed: {
         ...mapState('application', ['hasNodeRecommendationsEnabled', 'hasNodeCollectionActive', 'availablePortTypes']),
         ...mapState('canvas', ['zoomFactor']),
-        ...mapState('quickAddNodes', ['topNodes', 'bottomNodes', 'recommendedNodes', 'isShowingBottomNodes']),
+        ...mapState('quickAddNodes', ['recommendedNodes']),
         ...mapGetters('workflow', ['isWritable']),
-        ...mapGetters('quickAddNodes', ['searchIsActive']),
+        ...mapGetters('quickAddNodes', ['searchIsActive', 'getFirstResult', 'hasRecommendations']),
 
         searchQuery: {
             get() {
@@ -117,13 +117,8 @@ export default defineComponent({
             return this.$shapes.addNodeGhostSize * this.zoomFactor;
         },
         extraMargin() {
+            // eslint-disable-next-line no-magic-numbers
             return Math.log(this.ghostSizeZoomed) / 1.1;
-        },
-        hasRecommendationResults() {
-            return this.recommendedNodes?.length > 0;
-        },
-        hasSearchResults() {
-            return this.topNodes?.length > 0 || this.bottomNodes?.length > 0;
         },
         searchActions() {
             return {
@@ -184,10 +179,12 @@ export default defineComponent({
             await this.$store.dispatch('quickAddNodes/getNodeRecommendations', { nodeId, portIdx });
         },
 
-        async addNode({ nodeFactory, inPorts }) {
-            if (!this.isWritable) {
-                return; // end here
+        async addNode(nodeTemplate) {
+            if (!this.isWritable || nodeTemplate === null) {
+                return;
             }
+
+            const { nodeFactory, inPorts } = nodeTemplate;
 
             const [offsetX, offsetY] = this.port
                 ? calculatePortOffset({
@@ -212,13 +209,7 @@ export default defineComponent({
             this.$emit('menuClose');
         },
         searchEnterKey() {
-            if (this.searchIsActive) {
-                if (this.topNodes?.length > 0) {
-                    this.addNode(this.topNodes[0]);
-                }
-            } else if (this.recommendedNodes?.length > 0) {
-                this.addNode(this.recommendedNodes[0]);
-            }
+            this.addNode(this.getFirstResult());
         },
         searchDownKey() {
             // @ts-ignore
@@ -295,38 +286,19 @@ export default defineComponent({
         v-else
       >
         <div v-if="searchIsActive">
-          <SearchResults
+          <QuickAddNodeSearchResults
             ref="searchResults"
             v-model:selected-node="selectedNode"
-            :top-nodes="topNodes"
-            :bottom-nodes="bottomNodes"
-            :has-node-collection-active="hasNodeCollectionActive"
-            :is-showing-bottom-nodes="isShowingBottomNodes"
-            :search-actions="searchActions"
-            :query="searchQuery"
             @nav-reached-top="($refs.search as any).focus()"
-            @item-enter-key="addNode($event)"
-          >
-            <template #topNodeTemplate="itemProps">
-              <NodeTemplate
-                v-bind="itemProps"
-                @click="addNode(itemProps.nodeTemplate)"
-              />
-            </template>
-            <template #bottomNodeTemplate="itemProps">
-              <NodeTemplate
-                v-bind="itemProps"
-                @click="addNode(itemProps.nodeTemplate)"
-              />
-            </template>
-          </SearchResults>
+            @add-node="addNode($event)"
+          />
         </div>
         <div
           v-else
           class="recommendations"
         >
           <NodeList
-            v-if="hasRecommendationResults"
+            v-if="hasRecommendations"
             ref="recommendationResults"
             v-model:selected-node="selectedNode"
             class="top-list"
@@ -481,7 +453,8 @@ export default defineComponent({
   }
 
   /* marks the default item (first one); gets inserted on enter while still in the search box */
-  & :deep(.top-list li.no-selection[data-index="0"] > div) {
+  & :deep(.top-list li.no-selection[data-index="0"] > div),
+  & :deep(.top-list-is-empty .bottom-list li.no-selection[data-index="0"] > div){
     outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid var(--knime-dove-gray);
     border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
     background-color: var(--knime-porcelain);

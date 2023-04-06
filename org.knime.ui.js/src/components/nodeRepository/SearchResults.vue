@@ -35,7 +35,7 @@ export default defineComponent({
             required: true
         },
         query: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         },
         selectedTags: {
@@ -72,8 +72,8 @@ export default defineComponent({
         };
     },
     computed: {
-        hasNoSearchResults() {
-            return this.topNodes.length === 0;
+        topListHasNoSearchResults() {
+            return this.topNodes?.length === 0;
         },
         hasNoMoreSearchResults() {
             // NB: If bottomNodes is null the results are still loading
@@ -155,13 +155,14 @@ export default defineComponent({
   <ScrollViewContainer
     ref="scroller"
     class="results"
+    :class="{'top-list-is-empty': topListHasNoSearchResults }"
     :initial-position="searchScrollPosition"
     @save-position="onSaveScrollPosition"
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
       <div
-        v-if="hasNoSearchResults"
+        v-if="topListHasNoSearchResults"
         class="no-matching-search"
       >
         No node matching for: {{ query }}

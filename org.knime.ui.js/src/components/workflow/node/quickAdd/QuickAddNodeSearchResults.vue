@@ -1,0 +1,80 @@
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue';
+import { mapActions, mapState } from 'vuex';
+
+import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
+import SearchResults from '@/components/nodeRepository/SearchResults.vue';
+import type { ComponentNode, MetaNode, NativeNode } from "@/api/gateway-api/generated-api";
+
+export default defineComponent({
+    components: {
+        SearchResults,
+        NodeTemplate
+    },
+    props: {
+        selectedNode: {
+            type: [Object, null] as PropType<NativeNode | ComponentNode | MetaNode | null>,
+            required: true
+        }
+    },
+    emits: ['update:selectedNode', 'addNode'],
+    expose: ['focusFirst'],
+    computed: {
+        ...mapState('application', ['hasNodeCollectionActive']),
+        ...mapState('quickAddNodes', ['topNodes', 'bottomNodes', 'recommendedNodes', 'isShowingBottomNodes', 'query']),
+
+        searchActions() {
+            return {
+                searchTopNodesNextPage: this.searchTopNodesNextPage,
+                searchBottomNodesNextPage: this.searchBottomNodesNextPage,
+                toggleShowingBottomNodes: this.toggleShowingBottomNodes
+            };
+        }
+    },
+    methods: {
+        ...mapActions('quickAddNodes', [
+            'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
+        ]),
+        searchHandleShortcuts(e: KeyboardEvent) {
+            // bypass disabled shortcuts for <input> elements only for the quick add node
+            let shortcut = this.$shortcuts.findByHotkey(e);
+            if (shortcut === 'quickAddNode' && this.$shortcuts.isEnabled(shortcut)) {
+                this.$shortcuts.dispatch(shortcut);
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        },
+        focusFirst() {
+            return this.$refs.searchResults?.focusFirst();
+        }
+    }
+});
+</script>
+
+<template>
+  <SearchResults
+    ref="searchResults"
+    :bottom-nodes="bottomNodes"
+    :has-node-collection-active="hasNodeCollectionActive"
+    :is-showing-bottom-nodes="isShowingBottomNodes"
+    :query="query"
+    :search-actions="searchActions"
+    :selected-node="selectedNode"
+    :top-nodes="topNodes"
+    @update:selected-node="$emit('update:selectedNode', $event)"
+    @item-enter-key="$emit('addNode', $event)"
+  >
+    <template #topNodeTemplate="itemProps">
+      <NodeTemplate
+        v-bind="itemProps"
+        @click="$emit('addNode', itemProps.nodeTemplate)"
+      />
+    </template>
+    <template #bottomNodeTemplate="itemProps">
+      <NodeTemplate
+        v-bind="itemProps"
+        @click="$emit('addNode', itemProps.nodeTemplate)"
+      />
+    </template>
+  </SearchResults>
+</template>
