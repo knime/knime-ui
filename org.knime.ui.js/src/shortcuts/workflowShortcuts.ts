@@ -361,23 +361,27 @@ const workflowShortcuts: WorkflowShortcuts = {
                 return;
             }
 
+            const outPortCount = node.outPorts.length;
+
             // shuffle between port indices, start with the first non mickey-mouse (flowvar) port
-            let portIndex = 1;
+            // if there is one, if not use the mickey-mouse port (index 0)
+            let portIndex = outPortCount === 1 ? 0 : 1;
             if (lastNodeId && lastNodeId === node.id) {
                 const nextIndex = lastPortIndex + 1;
-                portIndex = nextIndex < node.outPorts.length ? nextIndex : 0;
+                portIndex = nextIndex < outPortCount ? nextIndex : 0;
             }
 
             const port = node.outPorts[portIndex];
             let position = lastPosition;
 
-            // if its not open we need to find a proper position to put the menu
+            // if it's not open we need to find a proper position to put the menu
             if (!isOpen) {
                 const outPortPositions = portPositions({
-                    portCount: node.outPorts.length,
+                    portCount: outPortCount,
                     isMetanode: node.kind === 'metanode',
                     isOutports: true
                 });
+
                 const startPoint = {
                 // eslint-disable-next-line no-magic-numbers
                     x: node.position.x + outPortPositions[portIndex][0] + nodeSize * 3,
