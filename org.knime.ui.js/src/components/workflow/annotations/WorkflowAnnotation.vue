@@ -42,8 +42,7 @@ export default defineComponent({
         return {
             selectionPreview: null,
             hasEdited: false,
-            richTextContent: '',
-            topOffset: 60
+            richTextContent: ''
         };
     },
 
@@ -165,22 +164,37 @@ export default defineComponent({
   >
     <template #default="{ transformedBounds }">
       <foreignObject
+        :x="transformedBounds.x - $shapes.annotationToolbarContainerWidth / 2 + transformedBounds.width / 2"
+        :y="transformedBounds.y - $shapes.annotationToolbarContainerHeight"
+        :width="$shapes.annotationToolbarContainerWidth"
+        :height="$shapes.annotationToolbarContainerHeight"
+        :class="{ hidden: !isEditing }"
+        @pointerdown.stop
+        @pointerup.stop
+      >
+        <PortalTarget
+          :name="`editor-toolbar-${annotation.id}`"
+          tag="div"
+          class="toolbar-portal"
+        />
+      </foreignObject>
+
+      <foreignObject
         :x="transformedBounds.x"
-        :y="transformedBounds.y - topOffset"
+        :y="transformedBounds.y"
         :width="transformedBounds.width"
-        :height="transformedBounds.height + topOffset"
+        :height="transformedBounds.height"
       >
         <LegacyAnnotation
           v-if="isLegacyAnnotation && !isEditing"
           :annotation="annotation"
-          :top-offset="topOffset"
           @edit-start="toggleEdit"
         />
 
         <RichTextAnnotation
           v-if="!isLegacyAnnotation || isEditing"
+          :id="annotation.id"
           v-model="richTextContent"
-          :top-offset="topOffset"
           :initial-value="annotation.content || annotation.text"
           :editable="isEditing"
           @change="hasEdited = true"
@@ -197,5 +211,14 @@ div {
   border-radius: 2px;
   cursor: pointer;
   user-select: none;
+}
+
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toolbar-portal {
+    height: 100%;
 }
 </style>

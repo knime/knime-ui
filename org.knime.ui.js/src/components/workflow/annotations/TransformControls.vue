@@ -60,11 +60,13 @@ export default defineComponent({
     },
 
     methods: {
-        onStart({ direction }: { event: PointerEvent, direction: Directions }) {
+        onStart({ direction, event }: { event: PointerEvent, direction: Directions }) {
             const startX = this.innerValue.x;
             const startY = this.innerValue.y;
             const origWidth = this.innerValue.width;
             const origHeight = this.innerValue.height;
+            // eslint-disable-next-line no-extra-parens
+            (event.target as HTMLElement).setPointerCapture(event.pointerId);
 
             const transformHandler = (_event: MouseEvent) => {
                 _event.stopPropagation();
@@ -95,7 +97,9 @@ export default defineComponent({
             window.addEventListener('mouseup', mouseUpHandler);
         },
 
-        onStop() {
+        onStop(event: PointerEvent) {
+            // eslint-disable-next-line no-extra-parens
+            (event.target as HTMLElement).releasePointerCapture(event.pointerId);
             this.$emit('transformEnd', { bounds: this.innerValue });
         },
 
@@ -145,7 +149,7 @@ export default defineComponent({
           :style="getCursorStyle(direction)"
           @click.stop
           @pointerdown.self.stop="onStart({ event: $event, direction })"
-          @pointerup="onStop"
+          @pointerup.self.stop="onStop"
         />
       </template>
     </Portal>

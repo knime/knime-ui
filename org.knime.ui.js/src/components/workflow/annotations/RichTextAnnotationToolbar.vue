@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, type FunctionalComponent, type SVGAttributes } from 'vue';
+import type { FunctionalComponent, SVGAttributes } from 'vue';
 import type { Editor } from '@tiptap/vue-3';
 
-import ToolbarButton from 'webapps-common/ui/components/FunctionButton.vue';
-// import ToolbarButton from '@/components/common/ToolbarButton.vue';
+import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import LinkIcon from '@/assets/link.svg';
 import BoldIcon from '@/assets/bold.svg';
 import ItalicIcon from '@/assets/italic.svg';
@@ -15,7 +14,6 @@ import AlignCenterIcon from '@/assets/align-center.svg';
 import AlignRightIcon from '@/assets/align-right.svg';
 
 interface Props {
-    topOffset: number;
     editor: Editor;
 }
 
@@ -27,9 +25,6 @@ interface ToolbarItem {
 }
 
 const props = defineProps<Props>();
-
-const toolbarHeight = 40;
-const toolbarMargin = computed(() => (props.topOffset - toolbarHeight) / 2);
 
 const setLink = () => {
     const url = 'https://google.com';
@@ -104,7 +99,7 @@ const tools: Array<ToolbarItem> = [
 
 <template>
   <div class="editor-toolbar">
-    <ToolbarButton
+    <FunctionButton
       v-for="tool of tools"
       :key="tool.icon"
       :active="tool.active ? tool.active() : false"
@@ -112,7 +107,7 @@ const tools: Array<ToolbarItem> = [
       @click="tool.onClick"
     >
       <Component :is="tool.icon" />
-    </ToolbarButton>
+    </FunctionButton>
   </div>
 </template>
 
@@ -121,8 +116,7 @@ const tools: Array<ToolbarItem> = [
 
 .editor-toolbar {
     background: var(--knime-white);
-    margin: calc(v-bind(toolbarMargin) * 1px) auto;
-    height: calc(v-bind(toolbarHeight) * 1px);
+    height: 40px;
     width: 250px;
     box-shadow: 0px 0px 10px rgba(62, 58, 57, 0.3);
     border-radius: 20px;
@@ -141,9 +135,6 @@ const tools: Array<ToolbarItem> = [
 
         & svg {
             background: transparent !important;
-
-            /* stroke: white; */
-            /* @mixin svg-icon-size 14; */
         }
     }
 }

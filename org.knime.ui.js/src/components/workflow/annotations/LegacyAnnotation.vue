@@ -8,10 +8,6 @@ export default defineComponent({
         annotation: {
             type: Object as PropType<WorkflowAnnotation>,
             required: true
-        },
-        topOffset: {
-            type: Number,
-            default: 0
         }
     },
     emits: ['editStart'],
@@ -42,7 +38,7 @@ export default defineComponent({
                 textAlign,
                 padding: `${this.$shapes.workflowAnnotationPadding}px`,
                 width: '100%',
-                height: `calc(100% - calc(${this.topOffset} * 1px))`
+                height: '100%'
             };
         }
     }
@@ -71,7 +67,6 @@ export default defineComponent({
 div {
   overflow: hidden;
   line-height: 1.1;
-  margin-top: calc(v-bind(topOffset) * 1px);
 }
 
 span {

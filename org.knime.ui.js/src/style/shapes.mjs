@@ -74,3 +74,6 @@ export const selectedAnnotationStrokeWidth = 2;
 
 // annotations use a virtual "point" size that needs to be converted to pixels by this factor
 export const annotationsFontSizePointToPixelFactor = 1.0; // used to be: 4/3
+
+export const annotationToolbarContainerWidth = 300;
+export const annotationToolbarContainerHeight = 60;

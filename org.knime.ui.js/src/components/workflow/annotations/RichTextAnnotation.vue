@@ -9,10 +9,10 @@ import StarterKit from '@tiptap/starter-kit';
 import RichTextAnnotationToolbar from './RichTextAnnotationToolbar.vue';
 
 interface Props {
+    id: string;
     editable: boolean;
     initialValue: string;
     modelValue: string;
-    topOffset: number;
 }
 
 const props = defineProps<Props>();
@@ -55,7 +55,7 @@ onMounted(() => {
 
     if (props.editable) {
         nextTick(() => {
-            editor.value.commands.focus('end');
+            editor.value.commands.focus();
         });
     }
 });
@@ -66,11 +66,14 @@ onMounted(() => {
     class="editor-wrapper"
     @pointerdown.stop
   >
-    <RichTextAnnotationToolbar
+    <Portal
       v-if="editable && editor"
-      :top-offset="topOffset"
-      :editor="editor"
-    />
+      :to="`editor-toolbar-${id}`"
+    >
+      <div class="toolbar-wrapper">
+        <RichTextAnnotationToolbar :editor="editor" />
+      </div>
+    </Portal>
     <EditorContent
       class="editor"
       :editor="editor"
@@ -85,15 +88,22 @@ onMounted(() => {
     height: 100%;
 }
 
+.toolbar-wrapper {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .editor {
     background: var(--knime-white);
-    margin-top: calc(v-bind(topOffset) * 1px);
-    height: calc(100% - calc(v-bind(topOffset) * 1px));
+    height: 100%;
     overflow-y: auto;
     border: 1px solid var(--knime-cornflower);
+    border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
 
     &.editable {
-        /* border-color: transparent; */
         margin-top: 0;
         cursor: text;
     }
