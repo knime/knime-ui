@@ -101,6 +101,8 @@ final class ClassicAPCopyMoveLogic {
 
     private final List<AbstractExplorerFileStore> m_sources;
 
+    private final boolean m_excludeData;
+
     private final SpaceProvider m_targetSpaceProvider;
 
     private final AbstractExplorerFileStore m_target;
@@ -113,15 +115,18 @@ final class ClassicAPCopyMoveLogic {
      *
      * @param shell parent shell
      * @param sources the file stores to copy
+     * @param excludeData flag indicating whether source data should be excluded
      * @param target the file store to copy/move the files to
      * @param performMove true to move the files, false to copy them
      */
     private ClassicAPCopyMoveLogic(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
-            final List<AbstractExplorerFileStore> sources, final SpaceProvider targetSpaceProvider,
-            final AbstractExplorerFileStore target, final boolean performMove) {
+            final List<AbstractExplorerFileStore> sources, final boolean excludeData,
+            final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore target,
+            final boolean performMove) {
         m_shellProvider = shellProvider;
         m_sourceSpaceProvider = sourceSpaceProvider;
         m_sources = CheckUtils.checkArgumentNotNull(sources);
+        m_excludeData = excludeData;
         m_targetSpaceProvider = targetSpaceProvider;
         m_target = target.fetchInfo().isWorkflowGroup() ? target : target.getParent();
         m_performMove = performMove;
@@ -129,19 +134,20 @@ final class ClassicAPCopyMoveLogic {
 
     public static boolean copy(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
             final List<AbstractExplorerFileStore> sources, final SpaceProvider targetSpaceProvider,
-            final AbstractExplorerFileStore target) {
-        return copyOrMove(shellProvider, sourceSpaceProvider, sources, targetSpaceProvider, target, false);
+            final AbstractExplorerFileStore target, final boolean excludeData) {
+        return copyOrMove(shellProvider, sourceSpaceProvider, sources, excludeData, targetSpaceProvider, target, false);
     }
 
     public static boolean move(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
             final List<AbstractExplorerFileStore> sources, final SpaceProvider targetSpaceProvider,
-            final AbstractExplorerFileStore target) {
-        return copyOrMove(shellProvider, sourceSpaceProvider, sources, targetSpaceProvider, target, true);
+            final AbstractExplorerFileStore target, final boolean excludeData) {
+        return copyOrMove(shellProvider, sourceSpaceProvider, sources, excludeData, targetSpaceProvider, target, true);
     }
 
     private static boolean copyOrMove(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
-            final List<AbstractExplorerFileStore> sources, final SpaceProvider targetSpaceProvider,
-            final AbstractExplorerFileStore target, final boolean performMove) {
+            final List<AbstractExplorerFileStore> sources, final boolean excludeData,
+            final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore target,
+            final boolean performMove) {
         if (!target.fetchInfo().isWriteable() || !isCopyOrMovePossible(sources, performMove)) {
             return false;
         }
@@ -163,7 +169,7 @@ final class ClassicAPCopyMoveLogic {
         }
 
         final var actualTarget = newTarget.fetchInfo().isWorkflowGroup() ? newTarget : newTarget.getParent();
-        final var instance = new ClassicAPCopyMoveLogic(shellProvider, sourceSpaceProvider, sources,
+        final var instance = new ClassicAPCopyMoveLogic(shellProvider, sourceSpaceProvider, sources, excludeData,
             targetSpaceProvider, actualTarget, performMove);
         if (instance.run()) {
             LOGGER.debug((performMove ? "Moving" : "Copying") + " to \"" + target.getFullName() + "\" failed.");
@@ -232,7 +238,8 @@ final class ClassicAPCopyMoveLogic {
                 // If uploading, check for reset preference
                 if (!m_sources.isEmpty() && !(m_sources.get(0) instanceof RemoteExplorerFileStore)
                         && m_target instanceof RemoteExplorerFileStore) {
-                    copyMove.setExcludeDataInWorkflows(m_target.getContentProvider().isForceResetOnUpload());
+                    copyMove.setExcludeDataInWorkflows(m_excludeData
+                        || m_target.getContentProvider().isForceResetOnUpload());
                 }
                 copyMove.setNotOverwritableDest(notOverwritableDest);
                 final var copyMoveResult = copyMove.run(monitor);

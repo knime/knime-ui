@@ -205,6 +205,7 @@ final class SpaceAPI {
 
         final var destInfo = destInfoOptional.get();
         final var destinationStore = destInfo.getDestination();
+        final var excludeData = destInfo.isExcludeData();
         final var targetMountId = destinationStore.getMountID();
         final SpaceProvider targetSpaceProvider;
         if (targetMountId.equalsIgnoreCase(LocalWorkspace.LOCAL_WORKSPACE_ID)) {
@@ -215,6 +216,6 @@ final class SpaceAPI {
         }
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
         return ClassicAPCopyMoveLogic.copy(shellProvider, sourceSpaceProvider, selection, targetSpaceProvider,
-            destinationStore);
+            destinationStore, excludeData);
     }
 }
