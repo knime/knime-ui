@@ -139,18 +139,15 @@ export default defineComponent({
                 }
             }
         },
-        nodeId() {
-            this.fetchNodeRecommendations();
-        },
         async port(newPort, oldPort) {
             if (newPort?.index !== oldPort?.index) {
-                // reset search on index switch and fetch recommended
-                await this.$store.dispatch('quickAddNodes/clearRecommendedNodesAndSearchParams');
-                await this.fetchNodeRecommendations();
-            }
-            // update type id for next search (if one was active it got reset by index change)
-            if (newPort?.typeId !== oldPort?.typeId) {
+                // reset search on index switch (this is a common operation via the keyboard shortcut CTRL+.)
+                await this.$store.dispatch('quickAddNodes/clearSearchParams');
+                // update type id for next search (if one was active it got reset by index change)
+                // this needs to be done in all cases as clearSearchParams resets it
                 this.$store.commit('quickAddNodes/setPortTypeId', newPort.typeId);
+                // fetch new recommendations
+                await this.fetchNodeRecommendations();
             }
         }
     },
@@ -323,7 +320,7 @@ export default defineComponent({
     margin-right: 15px;
   }
 
-  /* remove default styles of search results*/
+  /* remove default styles of search results */
   & :deep(.results .content) {
     padding: 0;
   }

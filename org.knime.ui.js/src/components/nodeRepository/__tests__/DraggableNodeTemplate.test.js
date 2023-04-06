@@ -5,8 +5,7 @@ import { mockVuexStore } from '@/test/utils';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 import { KnimeMIME } from '@/mixins/dropNode';
-import { nodeSize } from '@/style/shapes.mjs';
-import DraggableNodeTemplate, { WORKFLOW_ADD_START_MIN } from '../DraggableNodeTemplate.vue';
+import DraggableNodeTemplate from '../DraggableNodeTemplate.vue';
 
 describe('DraggableNodeTemplate', () => {
     let props, doMount, wrapper, testEvent, isWritable, openDescriptionPanelMock, closeDescriptionPanelMock,

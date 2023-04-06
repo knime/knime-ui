@@ -266,7 +266,6 @@ export default defineComponent({
 }
 
 .results {
-
   & :deep(ul.nodes) {
     margin-left: 8px;
     margin-right: 8px;
