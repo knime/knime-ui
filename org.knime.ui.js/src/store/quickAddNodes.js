@@ -53,8 +53,6 @@ export const actions = {
 export const getters = {
     ...nodeSearch.getters,
 
-    hasRecommendations: (state) => state.recommendedNodes?.length > 0,
-
     getFirstResult: (state, getters) => () => {
         if (getters.searchIsActive) {
             return getters.getFirstSearchResult();

@@ -2,11 +2,9 @@
 import { defineComponent, type PropType } from 'vue';
 import { mapActions, mapGetters, mapState } from 'vuex';
 
-import { API } from '@api';
 import type { NodePort, XY } from '@/api/gateway-api/generated-api';
 import type { DragConnector } from '@/components/workflow/ports/NodePort/types';
 
-import Button from 'webapps-common/ui/components/Button.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import SearchBar from '@/components/common/SearchBar.vue';
 
@@ -14,10 +12,10 @@ import { checkPortCompatibility } from '@/util/compatibleConnections';
 import { portPositions } from '@/util/portShift';
 
 import { debounce } from 'lodash';
-import NodeList from '@/components/nodeRepository/NodeList.vue';
-import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
 import NodePortActiveConnector from '@/components/workflow/ports/NodePort/NodePortActiveConnector.vue';
-import QuickAddNodeSearchResults from "@/components/workflow/node/quickAdd/QuickAddNodeSearchResults.vue";
+import QuickAddNodeSearchResults from './QuickAddNodeSearchResults.vue';
+import QuickAddNodeRecommendations from './QuickAddNodeRecommendations.vue';
+import QuickAddNodeDisabledWorkflowCoach from './QuickAddNodeDisabledWorkflowCoach.vue';
 
 const SEARCH_COOLDOWN = 150; // ms
 
@@ -48,11 +46,10 @@ const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) =>
  */
 export default defineComponent({
     components: {
+        QuickAddNodeDisabledWorkflowCoach,
+        QuickAddNodeRecommendations,
         QuickAddNodeSearchResults,
-        NodeList,
-        NodeTemplate,
         SearchBar,
-        Button,
         NodePortActiveConnector,
         FloatingMenu
     },
@@ -81,7 +78,7 @@ export default defineComponent({
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('quickAddNodes', ['recommendedNodes']),
         ...mapGetters('workflow', ['isWritable']),
-        ...mapGetters('quickAddNodes', ['searchIsActive', 'getFirstResult', 'hasRecommendations']),
+        ...mapGetters('quickAddNodes', ['searchIsActive', 'getFirstResult']),
 
         searchQuery: {
             get() {
@@ -145,12 +142,13 @@ export default defineComponent({
         nodeId() {
             this.fetchNodeRecommendations();
         },
-        port(newPort, oldPort) {
+        async port(newPort, oldPort) {
             if (newPort?.index !== oldPort?.index) {
-                // reset search on index toggle and fetch recommended
-                this.searchQuery = '';
-                this.fetchNodeRecommendations();
+                // reset search on index switch and fetch recommended
+                await this.$store.dispatch('quickAddNodes/clearRecommendedNodesAndSearchParams');
+                await this.fetchNodeRecommendations();
             }
+            // update type id for next search (if one was active it got reset by index change)
             if (newPort?.typeId !== oldPort?.typeId) {
                 this.$store.commit('quickAddNodes/setPortTypeId', newPort.typeId);
             }
@@ -171,9 +169,6 @@ export default defineComponent({
         ...mapActions('quickAddNodes', [
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
         ]),
-        openWorkflowCoachPreferencePage() {
-            API.desktop.openWorkflowCoachPreferencePage();
-        },
         async fetchNodeRecommendations() {
             const { nodeId, portIndex: portIdx } = this;
             await this.$store.dispatch('quickAddNodes/getNodeRecommendations', { nodeId, portIdx });
@@ -238,7 +233,7 @@ export default defineComponent({
     :prevent-oveflow="true"
     @menu-close="$emit('menuClose')"
   >
-    <!-- this will be portaled to the canvas -->
+    <!-- this will be portalled to the canvas -->
     <NodePortActiveConnector
       :port="port"
       :targeted="false"
@@ -262,64 +257,26 @@ export default defineComponent({
         />
         <hr>
       </div>
-      <div
+      <QuickAddNodeDisabledWorkflowCoach
         v-if="!hasNodeRecommendationsEnabled && !searchIsActive"
-        class="disabled-workflow-coach"
-      >
-        <h2>Workflow coach</h2>
-        <span>
-          The workflow coach will help you build workflows more efficiently by suggesting the next node for your
-          workflow.
-        </span>
-        <span>
-          To activate this function you need to change the settings inside the preference page.
-        </span>
-        <Button
-          primary
-          class="button"
-          @click="openWorkflowCoachPreferencePage"
-        >
-          Open Preferences
-        </Button>
-      </div>
+      />
       <template
         v-else
       >
-        <div v-if="searchIsActive">
-          <QuickAddNodeSearchResults
-            ref="searchResults"
-            v-model:selected-node="selectedNode"
-            @nav-reached-top="($refs.search as any).focus()"
-            @add-node="addNode($event)"
-          />
-        </div>
-        <div
+        <QuickAddNodeSearchResults
+          v-if="searchIsActive"
+          ref="searchResults"
+          v-model:selected-node="selectedNode"
+          @nav-reached-top="($refs.search as any).focus()"
+          @add-node="addNode($event)"
+        />
+        <QuickAddNodeRecommendations
           v-else
-          class="recommendations"
-        >
-          <NodeList
-            v-if="hasRecommendations"
-            ref="recommendationResults"
-            v-model:selected-node="selectedNode"
-            class="top-list"
-            :nodes="recommendedNodes"
-            @nav-reached-top="($refs.search as any).focus()"
-            @enter-key="addNode($event)"
-          >
-            <template #item="itemProps">
-              <NodeTemplate
-                v-bind="itemProps"
-                @click="addNode(itemProps.nodeTemplate)"
-              />
-            </template>
-          </NodeList>
-          <span
-            v-else
-            class="placeholder no-recommendations"
-          >
-            The Workflow Coach cannot recommend any nodes to you yet.
-          </span>
-        </div>
+          ref="recommendationResults"
+          v-model:selected-node="selectedNode"
+          @nav-reached-top="($refs.search as any).focus()"
+          @add-node="addNode($event)"
+        />
       </template>
     </div>
   </FloatingMenu>
@@ -332,40 +289,6 @@ export default defineComponent({
 
   width: 345px;
   margin-top: calc(v-bind("ghostSizeZoomed") / 2 * 1px + v-bind("extraMargin") * 1px + 3px);
-
-  & .disabled-workflow-coach {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    align-content: center;
-    justify-content: center;
-    width: 100%;
-    flex: 1;
-    padding: 20px;
-    background: var(--knime-black-semi);
-    color: var(--knime-white);
-    font-family: "Roboto Condensed", sans-serif;
-
-    & h2 {
-      font-size: 18px;
-      line-height: 21px;
-      font-weight: 400;
-    }
-
-    & span {
-      font-size: 13px;
-      line-height: 15px;
-      padding: 5px 0 10px;
-    }
-
-    & .button {
-      padding: 6px 15px;
-      height: 30px;
-      font-size: 13px;
-      font-family: "Roboto Condensed", sans-serif;
-      margin-top: 20px;
-    }
-  }
 
   & .wrapper {
     height: calc(var(--quick-add-node-height) * 1px);
@@ -394,12 +317,13 @@ export default defineComponent({
     }
   }
 
-  /* set margin on list of nodes */
+  /* set margin on all three lists of nodes (2x search, 1x recommendation) */
   & :deep(ul.nodes) {
     margin-left: 15px;
     margin-right: 15px;
   }
 
+  /* remove default styles of search results*/
   & :deep(.results .content) {
     padding: 0;
   }
@@ -408,8 +332,7 @@ export default defineComponent({
     background: transparent;
   }
 
-  & :deep(.results),
-  & .recommendations {
+  & :deep(.results) {
     background: transparent;
     max-height: calc(calc(var(--quick-add-node-height) - var(--quick-add-node-header-height)) * 1px);
     padding-top: 3px;
@@ -430,27 +353,6 @@ export default defineComponent({
     }
   }
 
-  & .recommendations {
-    overflow-y: auto;
-    padding-bottom: 10px;
-
-    & .content {
-      padding-bottom: 10px;
-    }
-  }
-
-  & .placeholder {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-style: italic;
-    color: var(--knime-dove-gray);
-    flex-direction: column;
-    margin-top: 30px;
-    margin-bottom: 15px;
-  }
 
   /* marks the default item (first one); gets inserted on enter while still in the search box */
   & :deep(.top-list li.no-selection[data-index="0"] > div),

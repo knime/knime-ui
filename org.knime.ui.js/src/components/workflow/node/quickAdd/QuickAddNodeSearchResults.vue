@@ -4,7 +4,7 @@ import { mapActions, mapState } from 'vuex';
 
 import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
 import SearchResults from '@/components/nodeRepository/SearchResults.vue';
-import type { ComponentNode, MetaNode, NativeNode } from "@/api/gateway-api/generated-api";
+import type { ComponentNode, MetaNode, NativeNode } from '@/api/gateway-api/generated-api';
 
 export default defineComponent({
     components: {
@@ -21,7 +21,7 @@ export default defineComponent({
     expose: ['focusFirst'],
     computed: {
         ...mapState('application', ['hasNodeCollectionActive']),
-        ...mapState('quickAddNodes', ['topNodes', 'bottomNodes', 'recommendedNodes', 'isShowingBottomNodes', 'query']),
+        ...mapState('quickAddNodes', ['topNodes', 'bottomNodes', 'isShowingBottomNodes', 'query']),
 
         searchActions() {
             return {
@@ -35,15 +35,6 @@ export default defineComponent({
         ...mapActions('quickAddNodes', [
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
         ]),
-        searchHandleShortcuts(e: KeyboardEvent) {
-            // bypass disabled shortcuts for <input> elements only for the quick add node
-            let shortcut = this.$shortcuts.findByHotkey(e);
-            if (shortcut === 'quickAddNode' && this.$shortcuts.isEnabled(shortcut)) {
-                this.$shortcuts.dispatch(shortcut);
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        },
         focusFirst() {
             return this.$refs.searchResults?.focusFirst();
         }
