@@ -13,7 +13,7 @@ import LegacyAnnotationText from './LegacyAnnotationText.vue';
  */
 export default defineComponent({
     components: {
-        LegacyAnnotationText,
+        LegacyAnnotation,
         TransformControls
     },
     inheritAttrs: false,
@@ -43,26 +43,7 @@ export default defineComponent({
             'selectedConnections',
             'selectedAnnotationIds'
         ]),
-        annotationWrapperStyle() {
-            const {
-                backgroundColor,
-                borderColor,
-                // eslint-disable-next-line no-magic-numbers
-                defaultFontSize = 12,
-                borderWidth = 2,
-                textAlign = 'left'
-            } = this.annotation;
 
-            return {
-                fontSize: `${defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`,
-                border: `${borderWidth}px solid ${borderColor}`,
-                background: backgroundColor,
-                textAlign,
-                padding: `${this.$shapes.workflowAnnotationPadding}px`,
-                width: '100%',
-                height: '100%'
-            };
-        },
         isSelected() {
             return this.isAnnotationSelected(this.annotation.id);
         },
@@ -90,39 +71,34 @@ export default defineComponent({
     methods: {
         ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
-        onLeftClick(event: PointerEvent) {
-            const metaOrCtrlKey = getMetaOrCtrlKey();
 
-            if (event.shiftKey || event[metaOrCtrlKey]) {
-                // Multi select
-                if (this.isSelected) {
-                    this.deselectAnnotation(this.annotation.id);
-                } else {
-                    this.selectAnnotation(this.annotation.id);
-                }
-            } else {
-                // Single select
-                this.deselectAllObjects();
-                this.selectAnnotation(this.annotation.id);
-            }
+        onLeftClick(event: MouseEvent) {
+            const metaOrCtrlKey = getMetaOrCtrlKey();
+            const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
+
+            const action = isMultiselect && this.isSelected
+                ? this.deselectAnnotation
+                : this.selectAnnotation;
+
+            action(this.annotation.id);
         },
+
         onContextMenu(event: PointerEvent) {
             const metaOrCtrlKey = getMetaOrCtrlKey();
+            const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
-            if (event.shiftKey || event[metaOrCtrlKey]) {
-            // Multi select
-                this.selectAnnotation(this.annotation.id);
-            } else if (!this.isSelected) {
-            // single select
+            if (!isMultiselect && !this.isSelected) {
                 this.deselectAllObjects();
-                this.selectAnnotation(this.annotation.id);
             }
 
+            this.selectAnnotation(this.annotation.id);
             this.toggleContextMenu({ event });
         },
+
         setSelectionPreview(type: string) {
             this.selectionPreview = type;
         },
+
         transformAnnotation(bounds: Bounds) {
             this.$store.dispatch('workflow/transformWorkflowAnnotation', {
                 bounds,
@@ -150,10 +126,11 @@ export default defineComponent({
         :width="transformedBounds.width"
         :height="transformedBounds.height"
       >
-        <LegacyAnnotationText
-          :text="annotation.text"
-          :style="annotationWrapperStyle"
-          :style-ranges="annotation.styleRanges"
+        <LegacyAnnotation
+          v-if="isLegacyAnnotation && !isEditing"
+          :annotation="annotation"
+          @edit-start="toggleEdit"
+        />
         />
       </foreignObject>
     </template>

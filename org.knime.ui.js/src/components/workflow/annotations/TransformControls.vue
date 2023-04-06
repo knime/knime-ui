@@ -34,15 +34,7 @@ export default defineComponent({
 
     emits: {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        transformEnd: (_payload: { bounds: Bounds }) => true,
-
-        // We declare and manually emit pointerdown because we need to open the context
-        // menu via this event. But because the transform rect is portalled then using the native event alone
-        // won't work. Native events are bound to the root element but once the transform rect is portalled
-        // it won't be a child element of the root anymore and the native event won't bubble to the element
-        // where the native event listener is registered
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        pointerdown: (_payload: PointerEvent) => true
+        transformEnd: (_payload: { bounds: Bounds }) => true
     },
 
     data() {
@@ -124,10 +116,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <g
-    class="transform"
-    @pointerdown.right="$emit('pointerdown', $event)"
-  >
+  <g class="transform">
     <slot :transformed-bounds="innerValue" />
 
     <Portal to="annotation-transform">
@@ -141,7 +130,6 @@ export default defineComponent({
         :stroke="$colors.selection.activeBorder"
         :stroke-width="$shapes.selectedAnnotationStrokeWidth"
         :rx="$shapes.selectedItemBorderRadius"
-        @pointerdown.right="$emit('pointerdown', $event)"
       />
 
       <template v-if="showTransformControls">
@@ -165,17 +153,14 @@ export default defineComponent({
 </template>
 
 <style lang="postcss" scoped>
-.transform {
-    --control-color: var(--knime-cornflower);
-}
-
 .transform-box {
     fill: transparent;
     z-index: 1;
+    pointer-events: none;
 }
 
 .transform-control {
-    fill: var(--control-color);
+    fill: var(--knime-cornflower);
     stroke: var(--knime-white);
     stroke-width: 1px;
 }
