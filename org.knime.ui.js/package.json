@@ -24,6 +24,9 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "4.5.9",
     "@knime/ui-extension-service": "0.5.0",
+    "@tiptap/pm": "^2.0.2",
+    "@tiptap/starter-kit": "^2.0.2",
+    "@tiptap/vue-3": "^2.0.2",
     "fuse.js": "6.6.2",
     "gsap": "3.11.4",
     "lodash": "4.17.21",
