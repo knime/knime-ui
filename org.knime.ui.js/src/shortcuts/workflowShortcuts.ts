@@ -10,6 +10,8 @@ import LayoutIcon from 'webapps-common/ui/assets/img/icons/layout-editor.svg';
 
 import type { ShortcutConditionContext, UnionToShortcutRegistry } from './types';
 import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
+import { portPositions } from '@/util/portShift';
+import { nodeSize } from '@/style/shapes.mjs';
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'save'
@@ -34,6 +36,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'bringAnnotationForward'
     | 'sendAnnotationBackward'
     | 'sendAnnotationToBack'
+    | 'quickAddNode'
 >
 
 declare module './index' {
@@ -324,6 +327,54 @@ const workflowShortcuts: WorkflowShortcuts = {
             action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack
         }),
         condition: ({ $store }) => $store.getters['selection/selectedAnnotations'].length > 0
+    },
+    quickAddNode: {
+        text: 'Quick add node',
+        title: 'Add new node',
+        hotkey: ['Ctrl', ' '], // Ctrl + Space TODO: discuss if key is really a good idea or we should switch to code?
+        execute: ({ $store }) => {
+            const node = $store.getters['selection/singleSelectedNode'];
+
+            // global menu without predecessor node
+            if (node === null) {
+                const kanvas = $store.state.canvas.getScrollContainerElement();
+                const { top, left, width, height } = kanvas.getBoundingClientRect();
+                const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([left + width / 2, top + height / 2]);
+
+                $store.dispatch('workflow/openQuickAddNodeMenu', { props: { position: { x, y } } });
+                return;
+            }
+
+            const {
+                isOpen,
+                props: { nodeId: lastNodeId, port: { index: lastPortIndex } = { index: -1 }, position: lastPosition }
+            } = $store.state.workflow.quickAddNodeMenu;
+
+            const startIndex = 0;
+            let portIndex = startIndex;
+            // shuffle between port indices
+            if (lastNodeId && lastNodeId === node.id) {
+                const nextIndex = lastPortIndex + 1;
+                portIndex = nextIndex < node.outPorts.length ? nextIndex : startIndex;
+            }
+
+            const port = node.outPorts[portIndex];
+
+            const outPortPositions = portPositions({
+                portCount: node.outPorts.length,
+                isMetanode: node.kind === 'metanode',
+                isOutports: true
+            });
+            const position = isOpen
+                ? lastPosition
+                : {
+                    x: node.position.x + outPortPositions[portIndex][0] + nodeSize * 5,
+                    y: node.position.y + outPortPositions[portIndex][1]
+                };
+
+            $store.dispatch('workflow/openQuickAddNodeMenu', { props: { nodeId: node.id, port, position } });
+        },
+        condition: ({ $store }) => $store.getters['workflow/isWritable']
     }
 };
 

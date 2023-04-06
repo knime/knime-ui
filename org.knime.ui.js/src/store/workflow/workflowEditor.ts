@@ -26,7 +26,6 @@ export const state = {
     },
     quickAddNodeMenu: {
         isOpen: false,
-        nodeId: null,
         props: {},
         events: {}
     },
@@ -124,11 +123,11 @@ export const actions = {
         });
     },
 
-    openQuickAddNodeMenu({ commit }, { props, events }) {
+    openQuickAddNodeMenu({ commit, dispatch }, { props, events }) {
         commit('setQuickAddNodeMenu', {
             isOpen: true,
             props,
-            events
+            events: events ? events : { menuClose: () => dispatch('closeQuickAddNodeMenu') }
         });
     },
     closeQuickAddNodeMenu({ commit }) {

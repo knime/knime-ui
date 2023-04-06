@@ -53,8 +53,8 @@ export default defineComponent({
     },
     props: {
         nodeId: {
-            type: String,
-            required: true
+            type: [String, null],
+            default: null
         },
         position: {
             type: Object,
@@ -62,8 +62,8 @@ export default defineComponent({
             validator: ({ x, y }) => typeof x === 'number' && typeof y === 'number'
         },
         port: {
-            type: Object,
-            required: true
+            type: [Object, null],
+            default: null
         }
     },
     emits: ['menuClose'],
@@ -114,6 +114,14 @@ export default defineComponent({
                 searchBottomNodesNextPage: this.searchBottomNodesNextPage,
                 toggleShowingBottomNodes: this.toggleShowingBottomNodes
             };
+        },
+        portIndex() {
+            // we need this to be explicit null if no port is given for the api to work
+            // falsy will not work as the index can be 0 (which is falsy)
+            if (this.port !== null) {
+                return this.port.index;
+            }
+            return null;
         }
     },
     watch: {
@@ -124,17 +132,28 @@ export default defineComponent({
                     this.fetchNodeRecommendations();
                 }
             }
+        },
+        nodeId() {
+            this.fetchNodeRecommendations();
+        },
+        port(newPort, oldPort) {
+            if (newPort?.index !== oldPort?.index) {
+                this.fetchNodeRecommendations();
+            }
         }
     },
     mounted() {
-        this.$store.commit('quickAddNodes/setPortTypeId', this.port.typeId);
-        // @ts-ignore
+        if (this.port) {
+            this.$store.commit('quickAddNodes/setPortTypeId', this.port.typeId);
+        }
         this.$refs.search?.focus();
     },
     beforeUnmount() {
         // reset query on close (in any case!)
         this.searchQuery = '';
         this.$store.commit('quickAddNodes/setPortTypeId', null);
+        // reset recommended nodes to prevent flashing of old nodes
+        this.$store.commit('quickAddNodes/setRecommendedNodes', null);
     },
     methods: {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
@@ -145,10 +164,8 @@ export default defineComponent({
             API.desktop.openWorkflowCoachPreferencePage();
         },
         async fetchNodeRecommendations() {
-            await this.$store.dispatch('quickAddNodes/getNodeRecommendations', {
-                nodeId: this.nodeId,
-                portIdx: this.port.index
-            });
+            const { nodeId, portIndex: portIdx } = this;
+            await this.$store.dispatch('quickAddNodes/getNodeRecommendations', { nodeId, portIdx });
         },
 
         async addNode({ nodeFactory, inPorts }) {
@@ -156,11 +173,13 @@ export default defineComponent({
                 return; // end here
             }
 
-            const [offsetX, offsetY] = calculatePortOffset({
-                targetPorts: inPorts,
-                sourcePort: this.port,
-                availablePortTypes: this.availablePortTypes
-            });
+            const [offsetX, offsetY] = this.port
+                ? calculatePortOffset({
+                    targetPorts: inPorts,
+                    sourcePort: this.port,
+                    availablePortTypes: this.availablePortTypes
+                })
+                : [0, 0];
 
             // add node
             const { canvasPosition: { x, y } } = this;
@@ -171,7 +190,7 @@ export default defineComponent({
                 },
                 nodeFactory,
                 sourceNodeId: this.nodeId,
-                sourcePortIdx: this.port.index
+                sourcePortIdx: this.portIndex
             });
 
             this.$emit('menuClose');
@@ -190,6 +209,13 @@ export default defineComponent({
             this.$refs.recommendationResults?.focusFirst();
             // @ts-ignore
             this.$refs.searchResults?.focusFirst();
+        },
+        searchHandleShortcuts(e) {
+            // bypass disabled shortcuts for <input> elements only for the quick add node
+            let shortcut = this.$shortcuts.findByHotkey(e);
+            if (shortcut === 'quickAddNode' && this.$shortcuts.isEnabled(shortcut)) {
+                this.$shortcuts.dispatch(shortcut);
+            }
         }
     }
 });
@@ -212,9 +238,11 @@ export default defineComponent({
           placeholder="Search all compatible nodes"
           class="search-bar"
           tabindex="-1"
+          data-allow-shortcut="quickAddNode"
           @focusin="selectedNode = null"
           @keydown.enter.prevent.stop="searchEnterKey"
           @keydown.down.prevent.stop="searchDownKey"
+          @keydown="searchHandleShortcuts"
         />
         <hr>
       </div>
