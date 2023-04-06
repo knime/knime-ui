@@ -82,10 +82,10 @@ export const mutations = {
         state.isDragging = value;
     },
 
-    setAnnotationText(state, { annotationId, formattedText }) {
+    setAnnotationText(state, { annotationId, richTextContent }) {
         const { activeWorkflow: { workflowAnnotations } } = state;
         const mapped = workflowAnnotations.map(annotation => annotation.id === annotationId
-            ? { ...annotation, formattedText }
+            ? { ...annotation, content: richTextContent }
             : annotation);
 
         state.activeWorkflow.workflowAnnotations = mapped;
@@ -605,9 +605,9 @@ export const actions = {
         });
     },
 
-    async updateAnnotationText({ commit }, { annotationId, formattedText }) {
+    async updateAnnotationText({ commit }, { annotationId, richTextContent }) {
         await new Promise(r => setTimeout(r, 500));
-        commit('setAnnotationText', { annotationId, formattedText });
+        commit('setAnnotationText', { annotationId, richTextContent });
     }
 };
 

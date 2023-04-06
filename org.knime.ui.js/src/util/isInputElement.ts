@@ -5,8 +5,6 @@ export const isInputElement = (e: KeyboardEvent): boolean => {
     if (!target) {
         return false;
     }
-    console.log('target', target);
-    console.log(target.getAttribute?.('contenteditable'));
 
     const isBlacklistedTag = blacklistTagNames.test(target.tagName);
 

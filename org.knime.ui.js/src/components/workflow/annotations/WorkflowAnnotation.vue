@@ -8,7 +8,7 @@ import type { Bounds, WorkflowAnnotation } from '@/api/gateway-api/generated-api
 import { getMetaOrCtrlKey } from '@/util/navigator';
 import TransformControls from './TransformControls.vue';
 import LegacyAnnotation from './LegacyAnnotation.vue';
-import RichTextEditor from './RichTextEditor.vue';
+import RichTextAnnotation from './RichTextAnnotation.vue';
 
 /**
  * A workflow annotation, a rectangular box containing text.
@@ -16,7 +16,7 @@ import RichTextEditor from './RichTextEditor.vue';
 export default defineComponent({
     components: {
         LegacyAnnotation,
-        RichTextEditor,
+        RichTextAnnotation,
         TransformControls
     },
     mixins: [VueClickAway],
@@ -42,7 +42,8 @@ export default defineComponent({
         return {
             selectionPreview: null,
             hasEdited: false,
-            formattedText: ''
+            richTextContent: '',
+            topOffset: 60
         };
     },
 
@@ -87,7 +88,7 @@ export default defineComponent({
 
         isLegacyAnnotation() {
             // return false;
-            return !this.annotation.formattedText;
+            return !this.annotation.content;
         }
     },
 
@@ -141,7 +142,7 @@ export default defineComponent({
             if (this.hasEdited) {
                 this.$store.dispatch('workflow/updateAnnotationText', {
                     annotationId: this.annotation.id,
-                    formattedText: this.formattedText
+                    richTextContent: this.richTextContent
                 });
             }
 
@@ -165,20 +166,22 @@ export default defineComponent({
     <template #default="{ transformedBounds }">
       <foreignObject
         :x="transformedBounds.x"
-        :y="transformedBounds.y"
+        :y="transformedBounds.y - topOffset"
         :width="transformedBounds.width"
-        :height="transformedBounds.height"
+        :height="transformedBounds.height + topOffset"
       >
         <LegacyAnnotation
           v-if="isLegacyAnnotation && !isEditing"
           :annotation="annotation"
+          :top-offset="topOffset"
           @edit-start="toggleEdit"
         />
 
-        <RichTextEditor
+        <RichTextAnnotation
           v-if="!isLegacyAnnotation || isEditing"
-          v-model="formattedText"
-          :initial-value="annotation.formattedText || annotation.text"
+          v-model="richTextContent"
+          :top-offset="topOffset"
+          :initial-value="annotation.content || annotation.text"
           :editable="isEditing"
           @change="hasEdited = true"
           @edit-start="toggleEdit"
