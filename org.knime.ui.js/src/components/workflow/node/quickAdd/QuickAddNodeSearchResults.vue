@@ -36,6 +36,7 @@ export default defineComponent({
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
         ]),
         focusFirst() {
+            // @ts-ignore
             return this.$refs.searchResults?.focusFirst();
         }
     }

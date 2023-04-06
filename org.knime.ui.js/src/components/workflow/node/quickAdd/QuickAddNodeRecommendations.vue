@@ -28,6 +28,7 @@ export default defineComponent({
     },
     methods: {
         focusFirst() {
+            // @ts-ignore
             return this.$refs.recommendationResults?.focusFirst();
         }
     }
