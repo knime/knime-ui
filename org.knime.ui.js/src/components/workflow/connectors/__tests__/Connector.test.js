@@ -28,6 +28,7 @@ describe('Connector.vue', () => {
 
     beforeAll(() => {
         portShiftMock = vi.spyOn(portShift, 'default');
+        window.alert = vi.fn();
     });
 
     const defaultProps = {
@@ -671,7 +672,12 @@ describe('Connector.vue', () => {
 
             expect(storeConfig.workflow.actions.insertNode).toHaveBeenCalledWith(
                 expect.anything(),
-                { nodeFactory: { className: 'test' }, connectionId: 'root:2_2', position: { x: 5, y: 5 } }
+                {
+                    nodeFactory: { className: 'test' },
+                    connectionId: 'root:2_2',
+                    position: { x: 5, y: 5 },
+                    nodeId: null
+                }
             );
         });
 
@@ -698,29 +704,37 @@ describe('Connector.vue', () => {
 
             expect(storeConfig.workflow.actions.insertNode).toHaveBeenCalledWith(
                 expect.anything(),
-                { connectionId: 'root:2_2', position: { x: 5, y: 5 }, nodeId: 'test' }
+                {
+                    connectionId: 'root:2_2',
+                    position: { x: 5, y: 5 },
+                    nodeId: 'test',
+                    nodeFactory: null
+                }
             );
         });
 
         it('notifies user insert new node is not possible', async () => {
             const storeConfig = getStoreConfig();
-            const props = { allowedActions: {
-                canDelete: false
-            } };
+            const props = {
+                id: '',
+                allowedActions: {
+                    canDelete: false
+                }
+            };
             const wrapper = doShallowMount({ storeConfig, props });
 
             const paths = wrapper.findAll('path');
             paths.at(0).trigger('node-dragging-enter', { detail: { isNodeConnected: false } });
             await Vue.nextTick();
             expect(paths.at(1).classes()).toContain('is-dragged-over');
-            
+
             const errorCallback = vi.fn();
             paths.at(0).trigger('node-dragging-end', { detail: { id: 'test',
                 clientX: 0,
                 clientY: 0,
                 onError: errorCallback } });
             expect(errorCallback).toBeCalled();
-            
+
             expect(storeConfig.workflow.actions.insertNode).not.toHaveBeenCalled();
         });
     });
