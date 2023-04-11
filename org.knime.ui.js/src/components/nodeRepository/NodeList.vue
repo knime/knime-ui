@@ -21,6 +21,10 @@ export default {
         selectedNode: {
             type: [Object, null],
             default: null
+        },
+        highlightFirst: {
+            type: Boolean,
+            default: false
         }
     },
     emits: ['enter-key', 'showMore', 'update:selectedNode', 'navReachedTop', 'navReachedEnd'],
@@ -40,9 +44,10 @@ export default {
     },
     expose: ['focusFirst', 'focusLast'],
     methods: {
-        nodeTemplateProps(node) {
+        nodeTemplateProps(node, index) {
             return {
                 nodeTemplate: node,
+                isHighlighted: this.selectedNode === null && index === 0 && this.highlightFirst,
                 isSelected: this.selectedNode?.id === node.id
             };
         },
@@ -133,15 +138,14 @@ export default {
         v-for="(node, index) in nodes"
         :key="node.id"
         tabindex="-1"
-        :class="{ 'no-selection': selectedNode === null }"
         :data-index="index"
         @keydown.enter.stop.prevent="$emit('enter-key', node)"
       >
         <slot
           name="item"
-          v-bind="nodeTemplateProps(node)"
+          v-bind="nodeTemplateProps(node, index)"
         >
-          <NodeTemplate v-bind="nodeTemplateProps(node)" />
+          <NodeTemplate v-bind="nodeTemplateProps(node, index)" />
         </slot>
       </li>
     </ul>
@@ -159,40 +163,40 @@ export default {
 
 <style lang="postcss" scoped>
 .nodes-container {
-    margin-bottom: 13px;
+  margin-bottom: 13px;
 
-    & .nodes {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+  & .nodes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
 
-        /* kill list default styles */
-        padding: 0;
-        margin: 0;
-        list-style-type: none;
+    /* kill list default styles */
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
 
-        &:focus {
-            outline: none;
-        }
-
-        & li {
-            /* fixes the scrolling to top selected border cut off problem */
-            padding: 3px 0;
-
-            &:focus {
-                outline: none;
-            }
-        }
+    &:focus {
+      outline: none;
     }
+
+    & li {
+      /* fixes the scrolling to top selected border cut off problem */
+      padding: 3px 0;
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
 }
 
 .show-more {
-    color: var(--knime-masala);
-    font-weight: 400;
-    margin: 0 auto 10px;
-    display: block;
+  color: var(--knime-masala);
+  font-weight: 400;
+  margin: 0 auto 10px;
+  display: block;
 
-    &:active {
-        background-color: var(--knime-black);
-    }
+  &:active {
+    background-color: var(--knime-black);
+  }
 }
 </style>

@@ -22,6 +22,10 @@ export default defineComponent({
         isSelected: {
             type: Boolean,
             default: false
+        },
+        isHighlighted: {
+            type: Boolean,
+            default: false
         }
     },
     methods: {
@@ -35,7 +39,7 @@ export default defineComponent({
 <template>
   <div
     class="node"
-    :class="{ 'selected': isSelected }"
+    :class="{ 'selected': isSelected, 'highlighted': isHighlighted }"
   >
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview
@@ -104,6 +108,13 @@ export default defineComponent({
   }
 }
 
+.highlighted {
+  outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid var(--knime-dove-gray);
+  border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
+  background-color: var(--knime-porcelain);
+}
+
+/* selected needs to come after highlighted */
 .selected {
   outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid v-bind("$colors.selection.activeBorder");
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);

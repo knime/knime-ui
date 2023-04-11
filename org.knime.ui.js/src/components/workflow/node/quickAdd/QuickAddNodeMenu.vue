@@ -343,14 +343,5 @@ export default defineComponent({
       border-color: var(--knime-masala);
     }
   }
-
-  /* marks the default item (first one); gets inserted on enter while still in the search box */
-  & :deep(.top-list li.no-selection[data-index="0"] > div),
-  & :deep(.is-top-list-empty .bottom-list li.no-selection[data-index="0"] > div){
-    outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid var(--knime-dove-gray);
-    border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
-    background-color: var(--knime-porcelain);
-  }
-
 }
 </style>

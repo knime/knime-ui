@@ -52,7 +52,7 @@ export default {
     <text y="-9">Start building your workflow by dropping</text>
     <text y="27"> your data or nodes here.</text>
 
-    <!-- Define all Portals also for the empty workflow because some features relay on them -->
+    <!-- Define all Portals also for the empty workflow because some features rely on them -->
     <WorkflowPortalLayers />
   </g>
 </template>

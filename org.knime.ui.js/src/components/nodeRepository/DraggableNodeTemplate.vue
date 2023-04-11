@@ -20,6 +20,10 @@ export default {
         isSelected: {
             type: Boolean,
             default: false
+        },
+        isHighlighted: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -128,6 +132,7 @@ export default {
     draggable="true"
     :node-template="nodeTemplate"
     :is-selected="isSelected"
+    :is-highlighted="isHighlighted"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @click="onClick"

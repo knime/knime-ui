@@ -61,6 +61,10 @@ export default defineComponent({
         hasNodeCollectionActive: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+        highlightFirst: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
     emits: ['navReachedTop', 'update:searchScrollPosition', 'update:selectedNode', 'item-enter-key'],
@@ -155,7 +159,6 @@ export default defineComponent({
   <ScrollViewContainer
     ref="scroller"
     class="results"
-    :class="{'is-top-list-empty': isTopListEmpty }"
     :initial-position="searchScrollPosition"
     @save-position="onSaveScrollPosition"
     @scroll-bottom="loadMoreSearchResults"
@@ -174,8 +177,8 @@ export default defineComponent({
         <NodeList
           ref="topList"
           v-model:selected-node="selectedNodeModel"
-          class="top-list"
           :nodes="topNodes"
+          :highlight-first="highlightFirst"
           @nav-reached-top="$emit('navReachedTop')"
           @nav-reached-end="openBottomNodes"
           @enter-key="$emit('item-enter-key', $event)"
@@ -221,7 +224,7 @@ export default defineComponent({
           <NodeList
             ref="bottomList"
             v-model:selected-node="selectedNodeModel"
-            class="bottom-list"
+            :highlight-first="isTopListEmpty ? highlightFirst : false"
             :nodes="bottomNodes"
             @nav-reached-top="bottomListNavReachedTop"
             @enter-key="$emit('item-enter-key', $event)"

@@ -51,6 +51,7 @@ export default defineComponent({
     :is-showing-bottom-nodes="isShowingBottomNodes"
     :query="query"
     :search-actions="searchActions"
+    :highlight-first="true"
     :selected-node="selectedNode"
     :top-nodes="topNodes"
     @update:selected-node="$emit('update:selectedNode', $event)"
