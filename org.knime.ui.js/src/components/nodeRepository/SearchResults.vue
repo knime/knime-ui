@@ -72,7 +72,7 @@ export default defineComponent({
         };
     },
     computed: {
-        topListHasNoSearchResults() {
+        isTopListEmpty() {
             return this.topNodes?.length === 0;
         },
         hasNoMoreSearchResults() {
@@ -155,14 +155,14 @@ export default defineComponent({
   <ScrollViewContainer
     ref="scroller"
     class="results"
-    :class="{'top-list-is-empty': topListHasNoSearchResults }"
+    :class="{'is-top-list-empty': isTopListEmpty }"
     :initial-position="searchScrollPosition"
     @save-position="onSaveScrollPosition"
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
       <div
-        v-if="topListHasNoSearchResults"
+        v-if="isTopListEmpty"
         class="no-matching-search"
       >
         No node matching for: {{ query }}

@@ -110,12 +110,14 @@ export default defineComponent({
                 sourcePort: this.portIndex
             };
         },
-        ghostSizeZoomed() {
-            return this.$shapes.addNodeGhostSize * this.zoomFactor;
-        },
-        extraMargin() {
+        marginTop() {
+            const ghostSizeZoomed = this.$shapes.addNodeGhostSize * this.zoomFactor;
             // eslint-disable-next-line no-magic-numbers
-            return Math.log(this.ghostSizeZoomed) / 1.1;
+            const extraMargin = Math.log(ghostSizeZoomed) / 1.1;
+            // eslint-disable-next-line no-magic-numbers
+            const marginTop = ghostSizeZoomed / 2 + extraMargin + 3;
+
+            return `${marginTop}px`;
         },
         portIndex() {
             // we need this to be explicit null if no port is given for the api to work
@@ -278,7 +280,7 @@ export default defineComponent({
   --quick-add-node-header-height: 73;
 
   width: 345px;
-  margin-top: calc(v-bind("ghostSizeZoomed") / 2 * 1px + v-bind("extraMargin") * 1px + 3px);
+  margin-top: v-bind('marginTop');
 
   & .wrapper {
     height: calc(var(--quick-add-node-height) * 1px);
@@ -344,7 +346,7 @@ export default defineComponent({
 
   /* marks the default item (first one); gets inserted on enter while still in the search box */
   & :deep(.top-list li.no-selection[data-index="0"] > div),
-  & :deep(.top-list-is-empty .bottom-list li.no-selection[data-index="0"] > div){
+  & :deep(.is-top-list-empty .bottom-list li.no-selection[data-index="0"] > div){
     outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid var(--knime-dove-gray);
     border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
     background-color: var(--knime-porcelain);
