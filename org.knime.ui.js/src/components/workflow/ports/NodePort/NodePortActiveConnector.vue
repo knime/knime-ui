@@ -63,28 +63,28 @@ watch(indicateConnectorReplacement, (indicateReplacement) => {
 
 <template>
   <Portal
-    v-if="props.dragConnector"
+    v-if="dragConnector"
     to="drag-connector"
   >
     <Connector
-      v-if="props.port"
-      v-bind="props.dragConnector"
+      v-if="port"
+      v-bind="dragConnector"
       class="non-interactive"
       :interactive="false"
     />
 
     <Port
-      v-if="props.port"
+      v-if="port"
       class="non-interactive"
       data-test-id="drag-connector-port"
       :port="port"
-      :transform="`translate(${props.dragConnector.absolutePoint})`"
+      :transform="`translate(${dragConnector.absolutePoint})`"
     />
 
     <QuickAddNodeGhost
       v-if="showAddNodeGhost"
       class="non-interactive"
-      :position="props.dragConnector.absolutePoint"
+      :position="dragConnector.absolutePoint"
     />
   </Portal>
 </template>

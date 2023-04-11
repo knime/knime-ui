@@ -8,6 +8,11 @@ import { mockLodashThrottleAndDebounce, mockVuexStore } from '@/test/utils';
 
 import { API } from '@api';
 import * as $shapes from '@/style/shapes.mjs';
+import * as $colors from '@/style/colors.mjs';
+
+import * as quickAddNodesStore from '@/store/quickAddNodes';
+import * as selectionStore from '@/store/selection';
+
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
 import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
@@ -49,6 +54,11 @@ const notInCollectionSearchResult = {
     }]
 };
 
+const defaultPortMock = {
+    type: 'table',
+    connectedVia: []
+};
+
 mockLodashThrottleAndDebounce();
 
 describe('QuickAddNodeMenu.vue', () => {
@@ -60,7 +70,7 @@ describe('QuickAddNodeMenu.vue', () => {
         props: FloatingMenu.props
     };
 
-    const doMount = async ({
+    const doMount = ({
         addNodeMock = vi.fn(),
         nodeRecommendationsResponse = defaultNodeRecommendationsResponse,
         isWriteableMock = vi.fn().mockReturnValue(true)
@@ -74,7 +84,8 @@ describe('QuickAddNodeMenu.vue', () => {
             port: {
                 index: 1,
                 typeId: 'org.knime.core.node.BufferedDataTable',
-                kind: 'table'
+                kind: 'table',
+                connectedVia: []
             }
         };
 
@@ -89,9 +100,17 @@ describe('QuickAddNodeMenu.vue', () => {
             canvas: {
                 state: () => ({
                     zoomFactor: 1
-                })
+                }),
+                getters: {
+                    contentBounds() {
+                        return {
+                            top: 33,
+                            height: 1236
+                        };
+                    }
+                }
             },
-            quickAddNodes: await import('@/store/quickAddNodes'),
+            quickAddNodes: quickAddNodesStore,
             application: {
                 state: {
                     availablePortTypes: {
@@ -108,13 +127,23 @@ describe('QuickAddNodeMenu.vue', () => {
                     hasNodeRecommendationsEnabled: true
                 }
             },
+            selection: selectionStore,
             workflow: {
                 state: {
                     activeWorkflow: {
                         info: {
                             containerId: 'container0'
                         },
-                        projectId: 'project0'
+                        projectId: 'project0',
+                        nodes: {},
+                        metaInPorts: {
+                            xPos: 100,
+                            ports: [defaultPortMock]
+                        },
+                        metaOutPorts: {
+                            xPos: 702,
+                            ports: [defaultPortMock, defaultPortMock, defaultPortMock]
+                        }
                     }
                 },
                 actions: {
@@ -136,6 +165,12 @@ describe('QuickAddNodeMenu.vue', () => {
                         ...$shapes,
                         // set port size to a fixed value so test will not fail if we change it.
                         portSize: 10
+                    },
+                    $colors,
+                    $shortcuts: {
+                        isEnabled: vi.fn().mockReturnValue(true),
+                        findByHotkey: vi.fn(),
+                        dispatch: vi.fn()
                     }
                 },
                 stubs: {
@@ -153,15 +188,15 @@ describe('QuickAddNodeMenu.vue', () => {
     });
 
     describe('visuals', () => {
-        it('re-emits menuClose', async () => {
-            let { wrapper } = await doMount();
+        it('re-emits menuClose', () => {
+            let { wrapper } = doMount();
             wrapper.findComponent(FloatingMenuStub).vm.$emit('menuClose');
 
             expect(wrapper.emitted('menuClose')).toBeTruthy();
         });
 
-        it('centers to port', async () => {
-            let { wrapper } = await doMount();
+        it('centers to port', () => {
+            let { wrapper } = doMount();
 
             expect(wrapper.findComponent(FloatingMenuStub).props('canvasPosition')).toStrictEqual({
                 x: 15,
@@ -172,7 +207,7 @@ describe('QuickAddNodeMenu.vue', () => {
 
     describe('recommendations', () => {
         it('should display the nodes recommended', async () => {
-            let { wrapper } = await doMount();
+            let { wrapper } = doMount();
             await Vue.nextTick();
             const labels = wrapper.findAll('.node > label');
 
@@ -186,7 +221,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('adds node on click', async () => {
-            let { wrapper, addNodeMock } = await doMount();
+            let { wrapper, addNodeMock } = doMount();
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
@@ -203,7 +238,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('adds node on pressing enter key', async () => {
-            let { wrapper, addNodeMock } = await doMount();
+            let { wrapper, addNodeMock } = doMount();
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('keydown.enter');
@@ -220,7 +255,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('does not add node if workflow is not writeable', async () => {
-            let { wrapper, addNodeMock } = await doMount({
+            let { wrapper, addNodeMock } = doMount({
                 isWriteableMock: vi.fn(() => false)
             });
             await Vue.nextTick();
@@ -231,7 +266,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('does display overlay if workflow coach is disabled', async () => {
-            let { wrapper, $store } = await doMount();
+            let { wrapper, $store } = doMount();
             $store.state.application.hasNodeRecommendationsEnabled = false;
             await Vue.nextTick();
 
@@ -239,14 +274,14 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('does not display overlay if workflow coach is enabled', async () => {
-            let { wrapper } = await doMount();
+            let { wrapper } = doMount();
             await Vue.nextTick();
 
             expect(wrapper.find('.disabled-workflow-coach').exists()).toBe(false);
         });
 
         it('opens workflow coach preferences page when button is clicked', async () => {
-            let { wrapper, $store } = await doMount();
+            let { wrapper, $store } = doMount();
             $store.state.application.hasNodeRecommendationsEnabled = false;
             await Vue.nextTick();
             await wrapper.findComponent(Button).vm.$emit('click');
@@ -255,16 +290,16 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('displays placeholder message if there are no suggested nodes', async () => {
-            let { wrapper } = await doMount({ nodeRecommendationsResponse: [] });
+            let { wrapper } = doMount({ nodeRecommendationsResponse: [] });
             await Vue.nextTick();
 
-            expect(wrapper.find('.no-recommendations').exists()).toBe(true);
+            expect(wrapper.find('.no-recommendations-message').exists()).toBe(true);
         });
     });
 
     describe('search', () => {
         it('display search results if query was entered', async () => {
-            let { wrapper } = await doMount();
+            let { wrapper } = doMount();
             await wrapper.find('.search-bar input').setValue('search');
 
             const labels = wrapper.findAll('.node > label');
@@ -279,7 +314,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('displays more nodes if button is pressed', async () => {
-            let { wrapper } = await doMount();
+            let { wrapper } = doMount();
             await wrapper.find('.search-bar input').setValue('search');
 
             await wrapper.find('.more-nodes-button').trigger('click');
@@ -290,7 +325,7 @@ describe('QuickAddNodeMenu.vue', () => {
 
         describe('add node', () => {
             it('adds the first search result via enter in the search box to the workflow', async () => {
-                let { wrapper, addNodeMock } = await doMount();
+                let { wrapper, addNodeMock } = doMount();
                 const input = wrapper.find('.search-bar input');
 
                 // trigger search
@@ -314,7 +349,7 @@ describe('QuickAddNodeMenu.vue', () => {
             });
 
             it.each(['click', 'keydown.enter'])('adds search results via %s to workflow', async (event) => {
-                let { wrapper, addNodeMock } = await doMount();
+                let { wrapper, addNodeMock } = doMount();
 
                 const input = wrapper.find('.search-bar input');
                 await input.setValue(`some-input-for-${event}`);
@@ -335,7 +370,7 @@ describe('QuickAddNodeMenu.vue', () => {
             });
 
             it.each(['click', 'keydown.enter'])('adds bottom search results via %s to workflow', async (event) => {
-                let { wrapper, addNodeMock } = await doMount();
+                let { wrapper, addNodeMock } = doMount();
 
                 const input = wrapper.find('.search-bar input');
                 await input.setValue(`some-input-for-${event}`);
