@@ -57,7 +57,7 @@ onMounted(() => {
 <template>
   <div
     class="editor-wrapper"
-    @pointerdown.stop
+    @pointerdown="editable && $event.stopPropagation()"
   >
     <Portal
       v-if="editable && editor"
