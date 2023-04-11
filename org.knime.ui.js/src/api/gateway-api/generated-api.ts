@@ -2369,7 +2369,7 @@ export interface PortType {
      */
     hidden?: boolean;
     /**
-     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included. 
+     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included.
      * @type {boolean}
      * @memberof PortType
      */
@@ -3091,6 +3091,12 @@ export interface WorkflowAnnotation extends Annotation {
      * @memberof WorkflowAnnotation
      */
     borderColor: string;
+    /**
+     * The formatted text, only present if the annotation was updated with the Modern UI.
+     * @type {string}
+     * @memberof WorkflowAnnotation
+     */
+    formattedText?: string;
 
 }
 
@@ -3404,7 +3410,7 @@ const application = function(rpcClient: RPCClient) {
         getState(
         	params: {  }
         ): Promise<AppState> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('ApplicationService.getState', { ...defaultParams, ...params });
@@ -3420,14 +3426,14 @@ const event = function(rpcClient: RPCClient) {
     return {
         /**
          * Adds a new event listener for a certain type of event.
-         * @param {EventType} [eventType] 
+         * @param {EventType} [eventType]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         addEventListener(
         	params: { eventType?: EventType  }
         ): Promise<Response> {
-           const defaultParams = { 
+           const defaultParams = {
                 eventType: null,
            }
 
@@ -3435,14 +3441,14 @@ const event = function(rpcClient: RPCClient) {
         },
         /**
          * Unregisters event listeners.
-         * @param {EventType} [eventType] 
+         * @param {EventType} [eventType]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         removeEventListener(
         	params: { eventType?: EventType  }
         ): Promise<Response> {
-           const defaultParams = { 
+           const defaultParams = {
                 eventType: null,
            }
 
@@ -3463,15 +3469,15 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {'dialog' | 'view'} extensionType The node ui-extension-type, i.e. dialog or view.
-         * @param {'initial_data' | 'data' | 'apply_data'} serviceType 
-         * @param {string} [dataServiceRequest] 
+         * @param {'initial_data' | 'data' | 'apply_data'} serviceType
+         * @param {string} [dataServiceRequest]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         callNodeDataService(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  extensionType: 'dialog' | 'view',  serviceType: 'initial_data' | 'data' | 'apply_data',  dataServiceRequest?: string  }
         ): Promise<string> {
-           const defaultParams = { 
+           const defaultParams = {
                 dataServiceRequest: null,
            }
 
@@ -3489,7 +3495,7 @@ const node = function(rpcClient: RPCClient) {
         changeLoopState(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  action?: 'pause' | 'resume' | 'step'  }
         ): Promise<Response> {
-           const defaultParams = { 
+           const defaultParams = {
                 action: null,
            }
 
@@ -3507,7 +3513,7 @@ const node = function(rpcClient: RPCClient) {
         changeNodeStates(
         	params: { projectId: string,  workflowId: string,  nodeIds?: Array<string>,  action?: 'reset' | 'cancel' | 'execute'  }
         ): Promise<Response> {
-           const defaultParams = { 
+           const defaultParams = {
                 nodeIds: null,
                 action: null,
            }
@@ -3523,7 +3529,7 @@ const node = function(rpcClient: RPCClient) {
         getNodeDescription(
         	params: { nodeFactoryKey: NodeFactoryKey  }
         ): Promise<NativeNodeDescription> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('NodeService.getNodeDescription', { ...defaultParams, ...params });
@@ -3539,7 +3545,7 @@ const node = function(rpcClient: RPCClient) {
         getNodeDialog(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<any> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('NodeService.getNodeDialog', { ...defaultParams, ...params });
@@ -3555,7 +3561,7 @@ const node = function(rpcClient: RPCClient) {
         getNodeView(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<any> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('NodeService.getNodeView', { ...defaultParams, ...params });
@@ -3573,7 +3579,7 @@ const node = function(rpcClient: RPCClient) {
         updateDataPointSelection(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  mode: 'add' | 'remove' | 'replace',  selections?: Array<string>  }
         ): Promise<Response> {
-           const defaultParams = { 
+           const defaultParams = {
                 selections: null,
            }
 
@@ -3602,7 +3608,7 @@ const noderepository = function(rpcClient: RPCClient) {
         getNodeRecommendations(
         	params: { projectId: string,  workflowId: string,  nodeId?: string,  portIdx?: number,  nodesLimit?: number,  fullTemplateInfo?: boolean  }
         ): Promise<Array<NodeTemplate>> {
-           const defaultParams = { 
+           const defaultParams = {
                 nodeId: null,
                 portIdx: null,
                 nodesLimit: null,
@@ -3620,7 +3626,7 @@ const noderepository = function(rpcClient: RPCClient) {
         getNodeTemplates(
         	params: { nodeTemplateIds?: Array<string>  }
         ): Promise<{ [key: string]: NodeTemplate; }> {
-           const defaultParams = { 
+           const defaultParams = {
                 nodeTemplateIds: null,
            }
 
@@ -3638,7 +3644,7 @@ const noderepository = function(rpcClient: RPCClient) {
         getNodesGroupedByTags(
         	params: { numNodesPerTag?: number,  tagsOffset?: number,  tagsLimit?: number,  fullTemplateInfo?: boolean  }
         ): Promise<NodeGroups> {
-           const defaultParams = { 
+           const defaultParams = {
                 numNodesPerTag: null,
                 tagsOffset: null,
                 tagsLimit: null,
@@ -3663,7 +3669,7 @@ const noderepository = function(rpcClient: RPCClient) {
         searchNodes(
         	params: { q?: string,  tags?: Array<string>,  allTagsMatch?: boolean,  offset?: number,  limit?: number,  fullTemplateInfo?: boolean,  nodesPartition?: 'IN_COLLECTION' | 'NOT_IN_COLLECTION' | 'ALL',  portTypeId?: string  }
         ): Promise<NodeSearchResult> {
-           const defaultParams = { 
+           const defaultParams = {
                 q: null,
                 tags: null,
                 allTagsMatch: null,
@@ -3691,15 +3697,15 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} portIdx The port index to be used.
-         * @param {'initial_data' | 'data'} serviceType 
-         * @param {string} [dataServiceRequest] 
+         * @param {'initial_data' | 'data'} serviceType
+         * @param {string} [dataServiceRequest]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         callPortDataService(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
         ): Promise<string> {
-           const defaultParams = { 
+           const defaultParams = {
                 dataServiceRequest: null,
            }
 
@@ -3717,7 +3723,7 @@ const port = function(rpcClient: RPCClient) {
         getPortView(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number  }
         ): Promise<any> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('PortService.getPortView', { ...defaultParams, ...params });
@@ -3743,7 +3749,7 @@ const space = function(rpcClient: RPCClient) {
         createWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  itemName: string  }
         ): Promise<SpaceItem> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('SpaceService.createWorkflow', { ...defaultParams, ...params });
@@ -3759,7 +3765,7 @@ const space = function(rpcClient: RPCClient) {
         createWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<SpaceItem> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('SpaceService.createWorkflowGroup', { ...defaultParams, ...params });
@@ -3775,7 +3781,7 @@ const space = function(rpcClient: RPCClient) {
         deleteItems(
         	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>  }
         ): Promise<Response> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('SpaceService.deleteItems', { ...defaultParams, ...params });
@@ -3789,7 +3795,7 @@ const space = function(rpcClient: RPCClient) {
         getSpaceProvider(
         	params: { spaceProviderId: string  }
         ): Promise<SpaceProvider> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('SpaceService.getSpaceProvider', { ...defaultParams, ...params });
@@ -3805,7 +3811,7 @@ const space = function(rpcClient: RPCClient) {
         listWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<WorkflowGroupContent> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('SpaceService.listWorkflowGroup', { ...defaultParams, ...params });
@@ -3823,7 +3829,7 @@ const space = function(rpcClient: RPCClient) {
         moveItems(
         	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  destWorkflowGroupItemId: string,  collisionHandling: 'noop' | 'autorename' | 'overwrite'  }
         ): Promise<Response> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('SpaceService.moveItems', { ...defaultParams, ...params });
@@ -3840,7 +3846,7 @@ const space = function(rpcClient: RPCClient) {
         renameItem(
         	params: { spaceProviderId: string,  spaceId: string,  itemId: string,  itemName: string  }
         ): Promise<SpaceItem> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('SpaceService.renameItem', { ...defaultParams, ...params });
@@ -3865,7 +3871,7 @@ const workflow = function(rpcClient: RPCClient) {
         executeWorkflowCommand(
         	params: { projectId: string,  workflowId: string,  workflowCommand: WorkflowCommand  }
         ): Promise<CommandResult> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('WorkflowService.executeWorkflowCommand', { ...defaultParams, ...params });
@@ -3881,7 +3887,7 @@ const workflow = function(rpcClient: RPCClient) {
         getWorkflow(
         	params: { projectId: string,  workflowId: string,  includeInteractionInfo?: boolean  }
         ): Promise<WorkflowSnapshot> {
-           const defaultParams = { 
+           const defaultParams = {
                 includeInteractionInfo: null,
            }
 
@@ -3897,7 +3903,7 @@ const workflow = function(rpcClient: RPCClient) {
         redoWorkflowCommand(
         	params: { projectId: string,  workflowId: string  }
         ): Promise<Response> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('WorkflowService.redoWorkflowCommand', { ...defaultParams, ...params });
@@ -3912,7 +3918,7 @@ const workflow = function(rpcClient: RPCClient) {
         undoWorkflowCommand(
         	params: { projectId: string,  workflowId: string  }
         ): Promise<Response> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('WorkflowService.undoWorkflowCommand', { ...defaultParams, ...params });
@@ -3939,7 +3945,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Translate }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Deletes the specified nodes, workflow annotations or connections. Note that there are potentially more connections deleted than specified, i.e. those connected to a node that is to be deleted. If any of the elements can&#39;t be deleted (because it doesn&#39;t exist or the deletion is not allowed) the entire delete operation is aborted (i.e. nothing is deleted).
@@ -3954,7 +3960,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Delete }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Connects two nodes (and by doing that possibly replacing another connection).
@@ -3969,7 +3975,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Connect }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Adds a new node to the workflow.
@@ -3984,7 +3990,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddNode }
 		}) as Promise<AddNodeResult>;
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Replace a node with a new one.
@@ -3999,7 +4005,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ReplaceNode }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Inserts a node on top of an existing connection
@@ -4014,7 +4020,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.InsertNode }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Updates the name of a component or metanode
@@ -4029,7 +4035,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentOrMetanodeName }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Updates the label of a native node, component or metanode.
@@ -4044,7 +4050,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateNodeLabel }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Resets nodes contained in the metanode or container and expands it.
@@ -4059,7 +4065,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Expand }
 		}) as Promise<ExpandResult>;
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Resets selected nodes and collapses selected nodes and annotations into a metanode or component.
@@ -4074,7 +4080,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Collapse }
 		}) as Promise<CollapseResult>;
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Add a port to a node. In case of native nodes, the port will be appended to the given port group. In case of container nodes, port will be added as last port.
@@ -4089,7 +4095,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddPort }
 		}) as Promise<AddPortResult>;
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Remove a port from a node
@@ -4104,7 +4110,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.RemovePort }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Copy selected workflow parts and serialize to workflow definition format.  This command only returns the serialized workflow parts.
@@ -4119,7 +4125,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Copy }
 		}) as Promise<CopyResult>;
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Cut selected workflow parts and serialize to workflow definition format. This command returns the serialized workflow parts and deletes the selected nodes and annotations.
@@ -4134,7 +4140,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Cut }
 		}) as Promise<CopyResult>;
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Paste workflow parts in workflow definition format into the active workflow.
@@ -4149,7 +4155,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Paste }
 		}) as Promise<PasteResult>;
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Changes the size (width and height) and position (x, y) of a workflow annotation.
@@ -4164,7 +4170,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.TransformWorkflowAnnotation }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Updates the text of a workflow annotation
@@ -4179,7 +4185,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateWorkflowAnnotationText }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Alters the z-order of a list of workflow annotations.
@@ -4194,7 +4200,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ReorderWorkflowAnnotations }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
   }
 }
@@ -4235,7 +4241,7 @@ const EventApiWrapper = function (rpcClient: RPCClient) {
 export const createAPI = (configuration: Configuration) => {
     const rpcClient = createRPCClient(configuration);
 
-    const api = { 
+    const api = {
         application: application(rpcClient),
         event: event(rpcClient),
         node: node(rpcClient),

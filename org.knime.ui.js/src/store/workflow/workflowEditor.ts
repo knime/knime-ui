@@ -605,9 +605,16 @@ export const actions = {
         });
     },
 
-    async updateAnnotationText({ commit }, { annotationId, richTextContent }) {
-        await new Promise(r => setTimeout(r, 500));
-        commit('setAnnotationText', { annotationId, richTextContent });
+    updateAnnotationText({ state }, { annotationId, richTextContent }) {
+        // await new Promise(r => setTimeout(r, 500));
+        // commit('setAnnotationText', { annotationId, richTextContent });
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+        API.workflowCommand.UpdateWorkflowAnnotationText({
+            projectId,
+            workflowId,
+            annotationId,
+            formattedText: richTextContent
+        });
     }
 };
 

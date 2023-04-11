@@ -86,8 +86,7 @@ export default defineComponent({
         },
 
         isLegacyAnnotation() {
-            // return false;
-            return !this.annotation.content;
+            return !this.annotation.formattedText;
         }
     },
 
@@ -195,7 +194,7 @@ export default defineComponent({
           v-if="!isLegacyAnnotation || isEditing"
           :id="annotation.id"
           v-model="richTextContent"
-          :initial-value="annotation.content || annotation.text"
+          :initial-value="annotation.formattedText || annotation.text"
           :editable="isEditing"
           @change="hasEdited = true"
           @edit-start="toggleEdit"
