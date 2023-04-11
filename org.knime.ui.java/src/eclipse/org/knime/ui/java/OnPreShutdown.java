@@ -48,14 +48,14 @@
  */
 package org.knime.ui.java;
 
-import org.knime.product.rcp.shutdown.PreShutdown;
+import org.knime.core.util.IPreShutdown;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class OnPreShutdown implements PreShutdown {
+public class OnPreShutdown implements IPreShutdown {
 
     @Override
     public boolean onPreShutdown() {
