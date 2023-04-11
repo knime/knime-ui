@@ -3,10 +3,9 @@ import { onMounted, nextTick, toRefs, watch } from 'vue';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import TextAlign from '@tiptap/extension-text-align';
 import UnderLine from '@tiptap/extension-underline';
-import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 
-import RichTextAnnotationToolbar from './RichTextAnnotationToolbar.vue';
+import RichTextEditorToolbar from './RichTextEditorToolbar.vue';
 
 interface Props {
     id: string;
@@ -30,12 +29,6 @@ const editor = useEditor({
     editable: props.editable,
     extensions: [
         StarterKit,
-        Link.configure({
-            HTMLAttributes: {
-                rel: 'noreferrer',
-                target: null
-            }
-        }),
         UnderLine,
         TextAlign.configure({
             types: ['heading', 'paragraph']
@@ -71,7 +64,7 @@ onMounted(() => {
       :to="`editor-toolbar-${id}`"
     >
       <div class="toolbar-wrapper">
-        <RichTextAnnotationToolbar :editor="editor" />
+        <RichTextEditorToolbar :editor="editor" />
       </div>
     </Portal>
     <EditorContent

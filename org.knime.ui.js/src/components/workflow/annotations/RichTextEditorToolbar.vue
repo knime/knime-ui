@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { FunctionalComponent, SVGAttributes } from 'vue';
+import { computed, type FunctionalComponent, type SVGAttributes } from 'vue';
 import type { Editor } from '@tiptap/vue-3';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import LinkIcon from '@/assets/link.svg';
 import BoldIcon from '@/assets/bold.svg';
 import ItalicIcon from '@/assets/italic.svg';
 import UnderlineIcon from '@/assets/underline.svg';
@@ -25,18 +24,6 @@ interface ToolbarItem {
 }
 
 const props = defineProps<Props>();
-
-const setLink = () => {
-    const url = 'https://google.com';
-
-    // update link
-    props.editor
-        .chain()
-        .focus()
-        .extendMarkRange('link')
-        .setLink({ href: url })
-        .run();
-};
 
 const tools: Array<ToolbarItem> = [
     {
@@ -86,15 +73,10 @@ const tools: Array<ToolbarItem> = [
         icon: AlignRightIcon,
         active: () => props.editor.isActive({ textAlign: 'right' }),
         onClick: () => props.editor.chain().focus().setTextAlign('right').run()
-    },
-    {
-        id: 'link',
-        icon: LinkIcon,
-        active: () => props.editor.isActive('link'),
-        onClick: () => setLink()
     }
 ];
 
+const totalTools = computed(() => tools.length);
 </script>
 
 <template>
@@ -115,25 +97,40 @@ const tools: Array<ToolbarItem> = [
 @import url("@/assets/mixins.css");
 
 .editor-toolbar {
+    --padding: 8;
+    --item-gap: 2;
+    --item-size: 24;
+
+    display: flex;
+    gap: calc(var(--item-gap) * 1px);
+    justify-content: center;
+
     background: var(--knime-white);
+    padding: calc(var(--padding) * 1px);
+    width: calc(
+        calc(
+            /* account for padding on both ends */
+            var(--padding) * 2 +
+            /* account for all items */
+            v-bind(totalTools) * var(--item-size) +
+            /* include gaps (total gaps = total items - 1) */
+            var(--item-gap) * calc(v-bind(totalTools) - 1)
+        )
+        * 1px /* convert to px */
+    );
     height: 40px;
-    width: 250px;
     box-shadow: 0px 0px 10px rgba(62, 58, 57, 0.3);
     border-radius: 20px;
 
-    padding: 8px;
-    display: flex;
-    gap: 2px;
-    justify-content: center;
-
     & .toolbar-button {
-        width: 24px;
-        height: 24px;
+        width: calc(var(--item-size) * 1px);
+        height: calc(var(--item-size) * 1px);
         padding: 0;
         justify-content: center;
         align-items: center;
 
         & svg {
+            /* overwrite style that sets a background for the svg canvas */
             background: transparent !important;
         }
     }
