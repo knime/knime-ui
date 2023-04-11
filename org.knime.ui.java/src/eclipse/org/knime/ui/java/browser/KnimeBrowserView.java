@@ -15,6 +15,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.webui.WebUIUtil;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.AppStatePersistor;
@@ -111,6 +112,17 @@ public class KnimeBrowserView {
 
         browser = new Browser(parent, SWT.NONE); // NOSONAR
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
+        browser.addOpenWindowListener(e -> {
+            // cancels the navigation
+            e.required = true;
+            e.browser = null;
+
+            if (e.data instanceof String url) {
+                WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, getClass());
+            } else {
+                LOGGER.warnWithFormat("Browser window for '%s' couldn't be opened", e.data);
+            }
+        });
         browser.setMenu(new Menu(browser.getShell()));
 
         LifeCycle.get().create((name, function) -> new KnimeBrowserFunction(browser, name, function));
