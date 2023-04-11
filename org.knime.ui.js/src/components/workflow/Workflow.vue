@@ -88,49 +88,77 @@ export default defineComponent({
         </MoveableAnnotationContainer>
       </template>
 
-      <template #connector>
-        <!-- connector.id is NOT unique. Hence we use a custom key -->
-        <Connector
-          v-for="connector of workflow.connections"
-          :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
-          v-bind="connector"
-        />
-      </template>
+      <!-- Node Selection Plane Layer -->
+      <PortalTarget
+        tag="g"
+        name="node-select"
+      />
 
-      <template #metaNodePortBars>
-        <MetaNodePortBars
-          v-if="workflow.info.containerType === 'metanode'"
-        />
-      </template>
+      <!-- Connectors Layer -->
+      <!-- connector.id is NOT unique. Hence we use a custom key -->
+      <Connector
+        v-for="connector of workflow.connections"
+        :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
+        v-bind="connector"
+      />
 
-      <template #nodes>
-        <MoveableNodeContainer
-          v-for="node of sortedNodes"
-          :id="node.id"
-          :key="`node-${node.id}`"
-          :position="node.position"
-          :kind="node.kind"
-        >
-          <template #default="{ position }">
-            <Node
-              :ref="`node-${node.id}`"
-              v-bind="node"
-              :icon="$store.getters['workflow/getNodeIcon'](node.id)"
-              :name="$store.getters['workflow/getNodeName'](node.id)"
-              :type="$store.getters['workflow/getNodeType'](node.id)"
-              :position="position"
-            />
-          </template>
-        </MoveableNodeContainer>
-      </template>
+      <!-- Metanode Port Bars (Inside of Metanodes) -->
+      <MetaNodePortBars
+        v-if="workflow.info.containerType === 'metanode'"
+      />
 
-      <template #connectorLabel>
-        <ConnectorLabel
-          v-for="(connector, id) of workflow.connections"
-          :key="`connector-label-${id}`"
-          v-bind="connector"
-        />
-      </template>
+      <MoveableNodeContainer
+        v-for="node of sortedNodes"
+        :id="node.id"
+        :key="`node-${node.id}`"
+        :position="node.position"
+      >
+        <template #default="{ position }">
+          <Node
+            :ref="`node-${node.id}`"
+            v-bind="node"
+            :icon="$store.getters['workflow/getNodeIcon'](node.id)"
+            :name="$store.getters['workflow/getNodeName'](node.id)"
+            :type="$store.getters['workflow/getNodeType'](node.id)"
+            :position="position"
+          />
+        </template>
+
+        <template #metaNodePortBars>
+          <MetaNodePortBars
+            v-if="workflow.info.containerType === 'metanode'"
+          />
+        </template>
+
+        <template #nodes>
+          <MoveableNodeContainer
+            v-for="node of sortedNodes"
+            :id="node.id"
+            :key="`node-${node.id}`"
+            :position="node.position"
+            :kind="node.kind"
+          >
+            <template #default="{ position }">
+              <Node
+                :ref="`node-${node.id}`"
+                v-bind="node"
+                :icon="$store.getters['workflow/getNodeIcon'](node.id)"
+                :name="$store.getters['workflow/getNodeName'](node.id)"
+                :type="$store.getters['workflow/getNodeType'](node.id)"
+                :position="position"
+              />
+            </template>
+          </MoveableNodeContainer>
+        </template>
+
+        <template #connectorLabel>
+          <ConnectorLabel
+            v-for="(connector, id) of workflow.connections"
+            :key="`connector-label-${id}`"
+            v-bind="connector"
+          />
+        </template>
+      </moveablenodecontainer>
     </WorkflowPortalLayers>
   </g>
 </template>

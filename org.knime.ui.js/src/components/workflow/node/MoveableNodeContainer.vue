@@ -31,22 +31,11 @@ export default {
             type: Object,
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
-        },
-        /**
-         * Node variation.
-         * @values 'node', 'metanode', 'component'
-         */
-        kind: {
-            type: String,
-            required: true,
-            validator: kind => ['node', 'metanode', 'component'].includes(kind)
         }
     },
     data: () => ({
         // Start position of the dragging
         startPos: null,
-        nodeSelectionWidth: 0,
-        nodeSelectionExtraHeight: 20,
         lastHitTarget: null
     }),
     computed: {

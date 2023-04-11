@@ -182,6 +182,7 @@ export default defineComponent({
     interactions go to the actual annotation instead of this rect
     */
     pointer-events: none;
+    user-select: none;
 }
 
 .transform-control {

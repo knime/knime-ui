@@ -46,7 +46,8 @@ export default defineComponent({
         ...mapState('workflow', {
             projectId: state => state.activeWorkflow.projectId,
             activeWorkflowId: state => state.activeWorkflow.info.containerId,
-            editableAnnotationId: state => state.editableAnnotationId
+            editableAnnotationId: state => state.editableAnnotationId,
+            isDragging: state => state.isDragging
         }),
         ...mapState('selection', ['selectedAnnotations']),
         ...mapGetters('selection', [
@@ -65,6 +66,10 @@ export default defineComponent({
         },
 
         showSelectionPlane() {
+            if (this.isDragging) {
+                return;
+            }
+
             if (this.selectionPreview === null) {
                 return this.isSelected;
             }
@@ -77,6 +82,10 @@ export default defineComponent({
         },
 
         showTransformControls() {
+            if (this.isDragging) {
+                return;
+            }
+            
             const isMoreThanOneAnnotationSelected = this.selectedAnnotationIds.length > 1;
             const isOneOrMoreNodesSelected = this.selectedNodeIds.length >= 1;
             const isOneOrMoreConnectionsSelected = this.selectedConnections.length >= 1;
@@ -196,7 +205,7 @@ export default defineComponent({
     :show-selection="showSelectionPlane"
     :initial-value="annotation.bounds"
     @transform-end="transformAnnotation($event.bounds)"
-    @click="onLeftClick"
+    @click.left="onLeftClick"
     @pointerdown.right.stop="onContextMenu"
   >
     <template #default="{ transformedBounds }">
