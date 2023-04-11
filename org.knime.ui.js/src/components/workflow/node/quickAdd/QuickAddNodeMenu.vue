@@ -117,13 +117,6 @@ export default defineComponent({
             // eslint-disable-next-line no-magic-numbers
             return Math.log(this.ghostSizeZoomed) / 1.1;
         },
-        searchActions() {
-            return {
-                searchTopNodesNextPage: this.searchTopNodesNextPage,
-                searchBottomNodesNextPage: this.searchBottomNodesNextPage,
-                toggleShowingBottomNodes: this.toggleShowingBottomNodes
-            };
-        },
         portIndex() {
             // we need this to be explicit null if no port is given for the api to work
             // falsy will not work as the index can be 0 (which is falsy)

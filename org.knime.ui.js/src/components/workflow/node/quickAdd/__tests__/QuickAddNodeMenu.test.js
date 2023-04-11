@@ -72,10 +72,11 @@ describe('QuickAddNodeMenu.vue', () => {
 
     const doMount = ({
         addNodeMock = vi.fn(),
+        props = {},
         nodeRecommendationsResponse = defaultNodeRecommendationsResponse,
         isWriteableMock = vi.fn().mockReturnValue(true)
     } = {}) => {
-        const props = {
+        const defaultProps = {
             nodeId: 'node-id',
             position: {
                 x: 10,
@@ -154,10 +155,17 @@ describe('QuickAddNodeMenu.vue', () => {
                 }
             }
         };
+
+        const $shortcuts = {
+            isEnabled: vi.fn().mockReturnValue(true),
+            findByHotkey: vi.fn().mockReturnValue('quickAddNode'),
+            dispatch: vi.fn()
+        };
+
         const $store = mockVuexStore(storeConfig);
 
         const wrapper = mount(QuickAddNodeMenu, {
-            props,
+            props: { ...defaultProps, ...props },
             global: {
                 plugins: [$store],
                 mocks: {
@@ -167,11 +175,7 @@ describe('QuickAddNodeMenu.vue', () => {
                         portSize: 10
                     },
                     $colors,
-                    $shortcuts: {
-                        isEnabled: vi.fn().mockReturnValue(true),
-                        findByHotkey: vi.fn(),
-                        dispatch: vi.fn()
-                    }
+                    $shortcuts
                 },
                 stubs: {
                     FloatingMenu: FloatingMenuStub
@@ -180,7 +184,7 @@ describe('QuickAddNodeMenu.vue', () => {
             attachTo: document.body
         });
 
-        return { wrapper, $store, addNodeMock };
+        return { wrapper, $store, addNodeMock, $shortcuts };
     };
 
     beforeEach(() => {
@@ -236,6 +240,56 @@ describe('QuickAddNodeMenu.vue', () => {
                 sourcePortIdx: 1
             });
         });
+
+        it('allows dynamic updates of the port', async () => {
+            let { wrapper, $store } = doMount();
+            await Vue.nextTick();
+            expect($store.state.quickAddNodes.portTypeId).toBe('org.knime.core.node.BufferedDataTable');
+
+            // update props
+            await wrapper.setProps({
+                port: {
+                    index: 2,
+                    typeId: 'org.some.otherPorType',
+                    kind: 'table',
+                    connectedVia: []
+                }
+            });
+            await new Promise(r => setTimeout(r, 0));
+
+            expect($store.state.quickAddNodes.portTypeId).toBe('org.some.otherPorType');
+            expect(API.noderepository.getNodeRecommendations).toHaveBeenCalledTimes(2);
+        });
+
+        it('adds node in global mode where no source port exists', async () => {
+            const props = {
+                nodeId: null,
+                port: null
+            };
+            let { wrapper, addNodeMock, $store } = doMount({ props });
+
+            await Vue.nextTick();
+
+            const node1 = wrapper.findAll('.node').at(0);
+            await node1.trigger('click');
+
+            expect($store.state.quickAddNodes.portTypeId).toBeNull();
+            expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+                nodeFactory: { className: 'org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory' },
+                sourceNodeId: null,
+                sourcePortIdx: null
+            }));
+        });
+
+        it('triggers shortcut hotkey in search field to switch between ports', async () => {
+            let { wrapper, $shortcuts } = doMount();
+            await Vue.nextTick();
+            const input = wrapper.find('.search-bar input');
+            await input.trigger('keydown'); // key doesn't matter as its mocked
+
+            expect($shortcuts.dispatch).toHaveBeenCalledWith('quickAddNode');
+        });
+
 
         it('adds node on pressing enter key', async () => {
             let { wrapper, addNodeMock } = doMount();
