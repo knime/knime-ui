@@ -181,7 +181,7 @@ final class ClassicAPCopyMoveLogic {
         }
     }
 
-    private final String getCommand() {
+    private String getCommand() {
         return m_performMove ? "Move" : "Copy";
     }
 
@@ -205,8 +205,7 @@ final class ClassicAPCopyMoveLogic {
             if (!info.isWorkflow()) {
                 continue;
             }
-            if (toBeOverwritten instanceof LocalExplorerFileStore) {
-                final var localStore = (LocalExplorerFileStore) toBeOverwritten;
+            if (toBeOverwritten instanceof LocalExplorerFileStore localStore) {
                 if (ExplorerFileSystemUtils.lockWorkflow(localStore)) {
                     lockedDest.add(localStore);
                     // Flows opened in an editor cannot be overwritten
@@ -292,11 +291,11 @@ final class ClassicAPCopyMoveLogic {
             .flatMap(isGroup -> partitioned.getOrDefault(isGroup, List.of()).stream()) //
             .iterator();
         while (groupsFirst.hasNext()) {
-            final var srcFS = groupsFirst.next();
             if (destChecker.isAbort()) {
                 LOGGER.info(getCommand() + " operation was aborted.");
                 return false;
             }
+            final var srcFS = groupsFirst.next();
             if (destChecker.getAndCheckDestinationFlow(srcFS, m_target) == null) {
                 // the user skipped the operation or it is not allowed
                 LOGGER.info(getCommand() + " operation of " + srcFS.getMountIDWithFullPath() + " was skipped.");
@@ -372,7 +371,7 @@ final class ClassicAPCopyMoveLogic {
 
         private final DestinationChecker<AbstractExplorerFileStore, AbstractExplorerFileStore> m_destChecker;
 
-        private boolean m_excludeDataInWorkflows = false;
+        private boolean m_excludeDataInWorkflows;
 
         private Set<LocalExplorerFileStore> m_notOverwritableDest = Collections.emptySet();
 
@@ -466,12 +465,12 @@ final class ClassicAPCopyMoveLogic {
                 final var isSrcRemote = srcFS instanceof RemoteExplorerFileStore;
                 final var isDstRemote = destFS instanceof RemoteExplorerFileStore;
                 if (!isSrcRemote && isDstRemote) { // upload
-                    final var localSource = (LocalExplorerFileStore) srcFS;
                     final var remoteDest = (RemoteExplorerFileStore) destFS;
                     if (!checkPublicUploadOK(destProvider, remoteDest)) {
                         // user aborted when asked if upload to a public Hub space is OK
                         return false;
                     }
+                    final var localSource = (LocalExplorerFileStore) srcFS;
                     m_targetSpaceProvider.syncUploadWorkflow(localSource.toLocalFile().toPath(), remoteDest.toIdURI(),
                         m_performMove, m_excludeDataInWorkflows, monitor);
                 } else if (isSrcRemote && !isDstRemote) { // download
