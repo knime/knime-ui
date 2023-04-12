@@ -1,6 +1,5 @@
 import { expect, describe, afterEach, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/utils';
 
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -9,7 +8,8 @@ import NodeActionBar from '../NodeActionBar.vue';
 
 describe('NodeActionBar', () => {
     const $shortcuts = {
-        get: vi.fn(() => ({}))
+        get: vi.fn(() => ({})),
+        dispatch: vi.fn(() => ({}))
     };
 
     const doMount = ({ props } = {}) => {
@@ -17,22 +17,6 @@ describe('NodeActionBar', () => {
             nodeId: 'root:1',
             isNodeSelected: false
         };
-        const storeConfig = {
-            workflow: {
-                actions: {
-                    executeNodes: vi.fn(),
-                    cancelNodeExecution: vi.fn(),
-                    resetNodes: vi.fn(),
-                    pauseLoopExecution: vi.fn(),
-                    resumeLoopExecution: vi.fn(),
-                    stepLoopExecution: vi.fn(),
-                    openView: vi.fn(),
-                    openNodeConfiguration: vi.fn()
-                }
-            }
-        };
-
-        const $store = mockVuexStore(storeConfig);
 
         const wrapper = mount(NodeActionBar, {
             props: {
@@ -40,12 +24,11 @@ describe('NodeActionBar', () => {
                 ...props
             },
             global: {
-                plugins: [$store],
-                mocks: { $shapes, $shortcuts } // FIXME maybe don't mock here
+                mocks: { $shapes, $shortcuts }
             }
         });
 
-        return { wrapper, storeConfig };
+        return { wrapper };
     };
 
     afterEach(() => {
@@ -88,7 +71,7 @@ describe('NodeActionBar', () => {
     });
 
     it('renders enabled action buttons', () => {
-        const { wrapper, storeConfig } = doMount({
+        const { wrapper } = doMount({
             props: {
                 canOpenDialog: true,
                 canExecute: true,
@@ -104,16 +87,43 @@ describe('NodeActionBar', () => {
         buttons.forEach(button => {
             button.vm.$emit('click');
         });
-        expect(storeConfig.workflow.actions.openNodeConfiguration).toHaveBeenCalled();
-        expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalled();
-        expect(storeConfig.workflow.actions.cancelNodeExecution).toHaveBeenCalled();
-        expect(storeConfig.workflow.actions.resetNodes).toHaveBeenCalled();
-        expect(storeConfig.workflow.actions.openView).toHaveBeenCalled();
+
+        expect($shortcuts.dispatch).toHaveBeenNthCalledWith(1,
+            'configureNode', {
+                metadata: {
+                    nodeId: 'root:1'
+                }
+            });
+        expect($shortcuts.dispatch).toHaveBeenNthCalledWith(2,
+            'executeSelected', {
+                metadata: {
+                    nodeId: 'root:1'
+                }
+            });
+        expect($shortcuts.dispatch).toHaveBeenNthCalledWith(3,
+            'cancelSelected', {
+                metadata: {
+                    nodeId: 'root:1'
+                }
+            });
+        expect($shortcuts.dispatch).toHaveBeenNthCalledWith(4,
+            'resetSelected', {
+                metadata: {
+                    nodeId: 'root:1'
+                }
+            });
+        expect($shortcuts.dispatch).toHaveBeenNthCalledWith(5,
+            'executeAndOpenView', {
+                metadata: {
+                    canExecute: true,
+                    nodeId: 'root:1'
+                }
+            });
     });
 
     describe('loop action buttons', () => {
         it('should step and pause', () => {
-            const { wrapper, storeConfig } = doMount({
+            const { wrapper } = doMount({
                 props: { canStep: true, canPause: true, canResume: false }
             });
 
@@ -123,12 +133,22 @@ describe('NodeActionBar', () => {
                 button.vm.$emit('click');
             });
 
-            expect(storeConfig.workflow.actions.pauseLoopExecution).toHaveBeenCalled();
-            expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
+            expect($shortcuts.dispatch).toHaveBeenNthCalledWith(1,
+                'pauseLoopExecution', {
+                    metadata: {
+                        nodeId: 'root:1'
+                    }
+                });
+            expect($shortcuts.dispatch).toHaveBeenNthCalledWith(2,
+                'stepLoopExecution', {
+                    metadata: {
+                        nodeId: 'root:1'
+                    }
+                });
         });
 
         it('should step and resume', () => {
-            const { wrapper, storeConfig } = doMount({
+            const { wrapper } = doMount({
                 props: { canStep: true, canPause: false, canResume: true }
             });
 
@@ -136,13 +156,24 @@ describe('NodeActionBar', () => {
             buttons.forEach(button => {
                 button.vm.$emit('click');
             });
-            expect(storeConfig.workflow.actions.resumeLoopExecution).toHaveBeenCalled();
-            expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
+
+            expect($shortcuts.dispatch).toHaveBeenNthCalledWith(1,
+                'resumeLoopExecution', {
+                    metadata: {
+                        nodeId: 'root:1'
+                    }
+                });
+            expect($shortcuts.dispatch).toHaveBeenNthCalledWith(2,
+                'stepLoopExecution', {
+                    metadata: {
+                        nodeId: 'root:1'
+                    }
+                });
         });
 
         it('should step, pause, resume', () => {
             // ensure only two of the three loop options are rendered at a time
-            const { wrapper, storeConfig } = doMount({
+            const { wrapper } = doMount({
                 props: { canStep: true, canPause: true, canResume: true }
             });
 
@@ -150,9 +181,26 @@ describe('NodeActionBar', () => {
             buttons.forEach(button => {
                 button.vm.$emit('click');
             });
-            expect(storeConfig.workflow.actions.pauseLoopExecution).toHaveBeenCalled();
-            expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
-            expect(storeConfig.workflow.actions.resumeLoopExecution).not.toHaveBeenCalled();
+
+            expect($shortcuts.dispatch).toHaveBeenNthCalledWith(1,
+                'pauseLoopExecution', {
+                    metadata: {
+                        nodeId: 'root:1'
+                    }
+                });
+            expect($shortcuts.dispatch).toHaveBeenNthCalledWith(2,
+                'stepLoopExecution', {
+                    metadata: {
+                        nodeId: 'root:1'
+                    }
+                });
+            expect($shortcuts.dispatch).not.toHaveBeenCalledWith(
+                'resumeLoopExecution', {
+                    metadata: {
+                        nodeId: 'root:1'
+                    }
+                }
+            );
         });
     });
 

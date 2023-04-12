@@ -55,8 +55,35 @@ describe('executionShortcuts', () => {
                     }
                 };
                 await executionShortcuts.executeAndOpenView.execute({ $store });
-                expect(mockDispatch).toHaveBeenCalledWith('workflow/executeNodes', 'selected');
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/executeNodes', ['root:0']);
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/openView', 'root:0');
+            });
+
+            it('executeAndOpenView alternate shortcut', async () => {
+                $store.getters['selection/singleSelectedNode'] = {
+                    id: 'root:0',
+                    allowedActions: {
+                        canExecute: true,
+                        canOpenView: true
+                    }
+                };
+                await executionShortcuts.executeAndOpenViewShortcutAlternative.execute({ $store });
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/executeNodes', ['root:0']);
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/openView', 'root:0');
+            });
+
+            it('executeAndOpenView with passed nodeId', async () => {
+                $store.getters['selection/singleSelectedNode'] = {
+                    id: 'root:0',
+                    allowedActions: {
+                        canExecute: true,
+                        canOpenView: true
+                    }
+                };
+                await executionShortcuts.executeAndOpenView.execute({ $store },
+                    { nodeId: 'test:id', canExecute: true });
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/executeNodes', ['test:id']);
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/openView', 'test:id');
             });
 
             it('executeAndOpenView only opens view when node already executed', async () => {

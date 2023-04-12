@@ -370,6 +370,7 @@ describe('Node', () => {
                 canPause: null,
                 canResume: null,
                 canStep: null,
+                isNodeSelected: false,
                 canOpenDialog: true,
                 canOpenView: true
             });
@@ -533,6 +534,7 @@ describe('Node', () => {
                 canPause: null,
                 canResume: null,
                 canStep: null,
+                isNodeSelected: false,
                 canOpenDialog: true,
                 canOpenView: true,
                 nodeId: 'root:1'
