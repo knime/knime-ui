@@ -1,13 +1,15 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue';
 import { KnimeService } from '@knime/ui-extension-service';
 
 import { API } from '@api';
+import type { ComponentNode, MetaNode, NativeNode } from '@/api/gateway-api/generated-api';
 import ViewLoader from '@/components/embeddedViews/ViewLoader.vue';
 
 /**
  * Dynamically loads a component that will render a Port's output view
  */
-export default {
+export default defineComponent({
     components: {
         ViewLoader
     },
@@ -22,7 +24,7 @@ export default {
             required: true
         },
         selectedNode: {
-            type: Object,
+            type: Object as PropType<NativeNode | MetaNode | ComponentNode>,
             required: true
         },
         selectedPortIndex: {
@@ -40,28 +42,28 @@ export default {
             // port object version changes whenever a port state has updated.
             // "ABA"-Changes on the port will always trigger a re-render.
 
+            const { portObjectVersion } = this.selectedNode.outPorts[this.selectedPortIndex];
+
             return [
                 this.projectId,
                 this.workflowId,
                 this.selectedNode.id,
-                this.selectedPortIndex
+                this.selectedPortIndex,
+                portObjectVersion
             ].join('/');
         }
     },
 
     methods: {
         async viewConfigLoaderFn() {
-            try {
-                const portView = await API.port.getPortView({
-                    projectId: this.projectId,
-                    workflowId: this.workflowId,
-                    nodeId: this.selectedNode.id,
-                    portIdx: this.selectedPortIndex
-                });
-                return portView;
-            } catch (error) {
-                throw error;
-            }
+            const portView = await API.port.getPortView({
+                projectId: this.projectId,
+                workflowId: this.workflowId,
+                nodeId: this.selectedNode.id,
+                portIdx: this.selectedPortIndex
+            });
+
+            return portView;
         },
 
         resourceLocationResolver({ resourceInfo }) {
@@ -95,11 +97,12 @@ export default {
                 () => {
                     // TODO: NXT-1211 implement follow-up ticket for selection/hightlighting in the knime-ui-table
                     consola.warn('Notifications not yet implemented');
+                    return Promise.resolve('');
                 }
             );
         }
     }
-};
+});
 </script>
 
 <template>
