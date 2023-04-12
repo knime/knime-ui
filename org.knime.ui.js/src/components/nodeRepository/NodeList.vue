@@ -57,10 +57,10 @@ export default {
         focusFirst() {
             this.focusItem(this.nodes?.at(0));
         },
-        focusItem(node) {
+        focusItem(focusNode) {
             // select the item if the current selection is not in our list
-            if (node && !this.nodes.find(n => n.id === this.selectedNode?.id)) {
-                this.$emit('update:selectedNode', node);
+            if (focusNode && !this.nodes.find(someNode => someNode.id === this.selectedNode?.id)) {
+                this.$emit('update:selectedNode', focusNode);
             }
         },
         domFocusNode(nodeIndex) {
