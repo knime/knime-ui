@@ -173,7 +173,7 @@ export default {
             this.selectedPort = null;
 
             this.$emit('addPort', { typeId, portGroup });
-            
+
             this.$nextTick(() => {
                 this.transitionEnabled = true;
             });

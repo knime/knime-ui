@@ -21,12 +21,12 @@ const removeDuplicates = (array, compareKey = 'name') => {
         if (isDuplicate) {
             return false;
         }
-      
+
         uniqueIds.push(item[compareKey]);
-  
+
         return true;
     });
-    
+
     return out;
 };
 
@@ -37,7 +37,7 @@ const removeDuplicates = (array, compareKey = 'name') => {
  * @param {Record<string, Object>} options.availablePortTypes A dictionary object containing all the possible port types
  * @param {Array<String>} options.suggestedTypeIds A dictionary object containing all the possible port types
  * @param {Array<String>} options.typeIds A list of port type ids that will be used for the search
- * @param {Boolean} options.showHidden Whether hidden ports should be included in the search
+ * @param {Boolean} [options.showHidden] Whether hidden ports should be included in the search
  */
 export const makeTypeSearch = ({ availablePortTypes, typeIds, suggestedTypeIds = [], showHidden = false }) => {
     const includeType = false;
@@ -54,12 +54,12 @@ export const makeTypeSearch = ({ availablePortTypes, typeIds, suggestedTypeIds =
             // decide whether to hidden ports
             .filter((portType) => showHidden || !portType.hidden)
     );
-        
+
     const searchEngine = new Fuse(allPortTypes, {
         keys: ['name'],
         ...fuseOptions
     });
-    
+
     // displays all items for an empty search
     return function search(input = '', options) {
         const results = input === ''

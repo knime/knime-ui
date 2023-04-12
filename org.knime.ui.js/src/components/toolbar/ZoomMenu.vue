@@ -73,6 +73,7 @@ export default {
   <SubMenu
     ref="subMenu"
     class="zoom"
+    :teleport-to-body="false"
     :items="zoomMenuItems"
     :disabled="disabled"
     @item-click="onZoomItemClick"

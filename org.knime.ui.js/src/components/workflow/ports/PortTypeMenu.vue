@@ -1,17 +1,27 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue';
 import { mapState } from 'vuex';
+
+import type { MenuItem } from 'webapps-common/ui/components/MenuItemsBase.vue';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import ReturnIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 
+import type { PortGroup, XY } from '@/api/gateway-api/generated-api';
 import { makeTypeSearch } from '@/util/fuzzyPortTypeSearch';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import portIcon from '@/components/common/PortIconRenderer';
 import SearchBar from '@/components/common/SearchBar.vue';
 
-const isPortGroupWithSinglePort = (portGroups, groupName) => portGroups[groupName].supportedPortTypeIds.length === 1;
+const isPortGroupWithSinglePort = (
+    portGroups: Record<string, PortGroup>,
+    groupName: string
+) => portGroups[groupName].supportedPortTypeIds.length === 1;
+
 const portNameSizeThreshold = 20;
 
-export default {
+type MenuItemWithPort = MenuItem & { port?: { typeId: string } }
+
+export default defineComponent({
     components: {
         FloatingMenu,
         MenuItems,
@@ -23,25 +33,29 @@ export default {
          * Absolute position of the menu. It's relative to the next absolute/relative positioned parent.
          */
         position: {
-            type: Object,
+            type: Object as PropType<XY>,
             required: true,
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+            validator: (position: XY) => typeof position.x === 'number' && typeof position.y === 'number'
         },
         side: {
-            type: String,
+            type: String as PropType<'input' | 'output'>,
             required: true,
-            validator: side => ['input', 'output'].includes(side)
+            validator: (side: 'input' | 'output') => ['input', 'output'].includes(side)
         },
         portGroups: {
-            type: Object,
+            type: Object as PropType<Record<string, PortGroup>>,
             default: null
         }
     },
+
     emits: ['itemClick', 'itemActive', 'menuClose'],
+
     data: () => ({
         searchQuery: '',
-        selectedPortGroup: null
+        selectedPortGroup: null,
+        ariaActiveDescendant: null
     }),
+
     computed: {
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('application', ['availablePortTypes', 'suggestedPortTypes']),
@@ -60,7 +74,7 @@ export default {
             return `Add ${this.side === 'input' ? 'Input' : 'Output'} Port`;
         },
 
-        adjustedPosition() {
+        adjustedPosition(): XY {
             // for zoom > 100%, the y-position of the menu has to be adjusted for the growing add-port-button
             const verticalShift = this.zoomFactor > 1
                 ? this.$shapes.portSize / 2 * Math.log(this.zoomFactor) / 1.2 // eslint-disable-line no-magic-numbers
@@ -95,13 +109,14 @@ export default {
         sidePortGroups() {
             if (this.portGroups) {
                 return Object.entries(this.portGroups)
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     .filter(([_, group]) => this.side === 'input' ? group.canAddInPort : group.canAddOutPort);
             }
 
             return null;
         },
 
-        menuItems() {
+        menuItems(): Array<MenuItemWithPort> {
             if (this.portGroups && !this.selectedPortGroup) {
                 return this.sidePortGroups.map(([groupName]) => ({ text: groupName }));
             }
@@ -139,7 +154,8 @@ export default {
         }
     },
     mounted() {
-        this.$refs.searchBar?.focus();
+        // eslint-disable-next-line no-extra-parens
+        (this.$refs.searchBar as HTMLElement)?.focus();
     },
     methods: {
         emitPortClick({ typeId, portGroup }) {
@@ -147,7 +163,7 @@ export default {
             this.$emit('menuClose', { typeId, portGroup });
         },
 
-        onMenuItemClick(e, item) {
+        onMenuItemClick(_, item: MenuItemWithPort) {
             if (item.port) {
                 const { typeId } = item.port;
                 this.emitPortClick({ typeId, portGroup: this.selectedPortGroup });
@@ -165,20 +181,23 @@ export default {
             }
         },
 
-        onSearchBarDown() {
-            this.$refs.searchResults.focusFirst();
+        onSearchBarKeyDown(event: KeyboardEvent) {
+            const searchResults = this.$refs.searchResults as InstanceType<typeof MenuItems>;
+            if (searchResults) {
+                searchResults.onKeydown(event);
+            }
         },
 
-        onSearchBarUp() {
-            this.$refs.searchResults.focusLast();
-        },
+        setActiveDescendant(id: string | null, item: MenuItemWithPort) {
+            this.ariaActiveDescendant = id === null
+                // eslint-disable-next-line no-undefined
+                ? undefined // needs to be `undefined` to get accepted corrected for tha aria attribute
+                : id;
 
-        onSearchResultsWrapAround(e) {
-            e.preventDefault();
-            this.$refs.searchBar?.focus();
+            this.$emit('itemActive', item);
         }
     }
-};
+});
 </script>
 
 <template>
@@ -210,28 +229,27 @@ export default {
         v-model="searchQuery"
         placeholder="Search port type"
         class="search-bar"
-        @keydown.down.exact="onSearchBarDown"
-        @keydown.up.exact="onSearchBarUp"
+        :aria-owns="ariaActiveDescendant"
+        :aria-activedescendant="ariaActiveDescendant"
+        @keydown="onSearchBarKeyDown"
       />
 
-      <div class="scroll-container">
-        <MenuItems
-          v-if="searchResults.length"
-          ref="searchResults"
-          :items="menuItems"
-          class="search-results"
-          aria-label="Port Type Menu"
-          @item-click="onMenuItemClick"
-          @item-active="$emit('itemActive', $event)"
-          @top-reached="onSearchResultsWrapAround"
-          @bottom-reached="onSearchResultsWrapAround"
-        />
-        <div
-          v-else
-          class="placeholder"
-        >
-          No port matching
-        </div>
+      <MenuItems
+        v-if="searchResults.length"
+        ref="searchResults"
+        :items="menuItems"
+        class="search-results"
+        menu-aria-label="Port Type Menu"
+        disable-space-to-click
+        @item-click="onMenuItemClick"
+        @item-hovered="$emit('itemActive', $event)"
+        @item-focused="setActiveDescendant"
+      />
+      <div
+        v-else
+        class="placeholder"
+      >
+        No port matching
       </div>
     </div>
   </FloatingMenu>
@@ -284,14 +302,6 @@ export default {
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 }
 
-.scroll-container {
-  overflow-y: auto;
-  overflow-x: hidden;
-  text-align: left;
-  height: 100%;
-  max-height: 160px;
-}
-
 .placeholder {
   font-style: italic;
   text-align: center;
@@ -326,6 +336,9 @@ export default {
 
 .search-results {
   margin: 0;
+  max-height: 160px;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   & :deep(.label) {
     font-size: 13px;

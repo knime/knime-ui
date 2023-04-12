@@ -490,6 +490,7 @@ export default {
         >
           <SubMenu
             button-title="Options"
+            :teleport-to-body="false"
             :items="getMenuOptions(item)"
             @item-click="(e, option) => onMenuClick(option.id, item)"
           >

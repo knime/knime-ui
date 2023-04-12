@@ -2,6 +2,7 @@
 import { defineComponent, type PropType } from 'vue';
 import { mapGetters } from 'vuex';
 
+import type { MenuItem } from 'webapps-common/ui/components/MenuItemsBase.vue';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 
 import type { XY } from '@/api/gateway-api/generated-api';
@@ -14,10 +15,7 @@ type ContextMenuActionsGroupItem = {
     text?: string;
 }
 
-type MenuItem = Pick<FormattedShortcut, 'name' | 'hotkeyText' | 'text'> & {
-    disabled: boolean;
-    separator: boolean;
-};
+type MenuItemWithName = Pick<FormattedShortcut, 'name'> & MenuItem
 
 type ComponentData = {
     visibleItems: Array<ContextMenuActionsGroupItem & { separator?: boolean }>
@@ -82,7 +80,7 @@ export default defineComponent({
         ]),
 
         // map visible items to menu items and add shortcut information
-        menuItems(): Array<MenuItem> {
+        menuItems(): Array<MenuItemWithName> {
             return this.visibleItems
                 .map((item) => {
                     const shortcut = this.$shortcuts.get(item.name);
@@ -116,7 +114,7 @@ export default defineComponent({
         window?.getSelection().removeAllRanges();
     },
     methods: {
-        onItemClick(event: MouseEvent, item: MenuItem) {
+        onItemClick(event: MouseEvent, item: MenuItemWithName) {
             this.$emit('menuClose');
             this.$shortcuts.dispatch(item.name, { event });
         },
@@ -207,7 +205,7 @@ export default defineComponent({
       ref="menuItems"
       class="menu-items"
       :items="menuItems"
-      aria-label="Context Menu"
+      menu-aria-label="Context Menu"
       @item-click="onItemClick"
     />
   </FloatingMenu>
