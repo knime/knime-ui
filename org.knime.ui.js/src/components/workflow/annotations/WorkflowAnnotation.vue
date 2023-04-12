@@ -67,7 +67,7 @@ export default defineComponent({
 
         showSelectionPlane() {
             if (this.isDragging) {
-                return;
+                return false;
             }
 
             if (this.selectionPreview === null) {
@@ -83,7 +83,7 @@ export default defineComponent({
 
         showTransformControls() {
             if (this.isDragging) {
-                return;
+                return false;
             }
             
             const isMoreThanOneAnnotationSelected = this.selectedAnnotationIds.length > 1;

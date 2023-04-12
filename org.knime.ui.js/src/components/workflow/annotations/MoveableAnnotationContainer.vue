@@ -11,9 +11,6 @@ import { getGridAdjustedBounds } from './transform-control-utils';
 
 export default defineComponent({
     props: {
-        /**
-         * annotation id, unique to the containing workflow
-         */
         id: { type: String, required: true },
 
         position: {
@@ -24,7 +21,6 @@ export default defineComponent({
     },
     data() {
         return {
-            // Start position of the dragging
             startPos: null,
             gridBounds: getGridAdjustedBounds(this.position),
             cursorPosition: null
@@ -37,13 +33,6 @@ export default defineComponent({
         ...mapState('workflow', ['movePreviewDelta', 'isDragging']),
         ...mapState('canvas', ['zoomFactor']),
 
-        // adjustedBounds() {
-        //     return {
-        //         x: this.gridBounds.x * 0,
-        //         y: this.gridBounds.y * 0
-        //     };
-        // },
-
         combinedPosition() {
             return {
                 x: 0 + this.movePreviewDelta.x,
@@ -52,8 +41,6 @@ export default defineComponent({
         },
 
         translationAmount() {
-            // this.gridBounds * 0.01
-            // return this.isAnnotationSelected(this.id) ? this.combinedPosition : { x: this.position.x * 0.01, y: this.position.y * 0.01 };
             return this.isAnnotationSelected(this.id) ? this.combinedPosition : { x: 0, y: 0 };
         }
     },
@@ -69,12 +56,12 @@ export default defineComponent({
     methods: {
         ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
         ...mapActions('workflow', ['moveObjects']),
-        ...mapMutations('workflow', ['setMovePreview', 'resetMovePreview']),
+        ...mapMutations('workflow', ['setMovePreview', 'resetMovePreview', 'setIsDragging']),
 
         handleMoveFromStore() {
             if (this.isDragging) {
-                this.$store.commit('workflow/resetMovePreview');
-                this.$store.commit('workflow/setIsDragging', false);
+                this.resetMovePreview();
+                this.setIsDragging(false);
             }
         },
         
@@ -82,14 +69,8 @@ export default defineComponent({
             if (!detail.event.shiftKey && !this.isAnnotationSelected(this.id)) {
                 this.deselectAllObjects();
             }
-            this.selectAnnotation(this.id);
-
-            // let annotations = this.$refs.moveableAnnotation;
-            // const { top, left, height, width, x, y } = annotation.getBoundingClientRect();
-            // this.cursorPosition = annotations.getBoundingClientRect();
-            // console.log(this.cursorPosition);
             
-
+            this.selectAnnotation(this.id);
             this.startPos = {
                 x: this.gridBounds.x,
                 y: this.gridBounds.y,
@@ -102,25 +83,14 @@ export default defineComponent({
             this.$store.commit('workflow/setIsDragging', true);
         },
 
-        onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
-            // const annotation = this.$refs.moveableAnnotation;
-            // // console.log(annotation.getBoundingClientRect());
-            // const { top, left, height, width, x, y } = annotation.getBoundingClientRect();
-            
+        onMove: throttle(function (this:any, { detail: { clientX, clientY, altKey } }) {
+            /* eslint-disable no-invalid-this */
             const snapSize = altKey ? 1 : this.$shapes.gridSize.x;
-            // console.log(detail);
-
-            // get absolute coordinates
             const [canvasX, canvasY] = this.screenToCanvasCoordinates([clientX, clientY]);
 
-            // Adjusted For Grid Snapping
-            // console.log('this.gridBounds.width', this.gridBounds.width);
-            // console.log('this.gridBounds.height', this.gridBounds.height);
             const deltas = {
-                // x: snapToGrid(canvasX - this.startPos.x - this.gridBounds.width / 2, snapSize),
-                // y: snapToGrid(canvasY - this.startPos.y - this.gridBounds.height / 2, snapSize)
-                x: snapToGrid(canvasX - this.startPos.x - this.gridBounds.width / 2, snapSize),
-                y: snapToGrid(canvasY - this.startPos.y - this.gridBounds.height / 2, snapSize)
+                x: snapToGrid(canvasX - this.startPos.x - this.cursorPosition.x, snapSize),
+                y: snapToGrid(canvasY - this.startPos.y - this.cursorPosition.y, snapSize)
             };
 
             if (this.movePreviewDelta.x !== deltas.x || this.movePreviewDelta.y !== deltas.y) {
@@ -129,16 +99,18 @@ export default defineComponent({
                     deltaY: deltas.y + this.startPos.positionDelta.y
                 });
             }
+            /* eslint-enable no-invalid-this */
         }),
 
-        onMoveEnd: throttle(function () {
+        onMoveEnd: throttle(function (this:any) {
+            // eslint-disable-next-line no-invalid-this
             this.moveObjects();
-        })
-    }
-    // :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
+        }),
 
-    // :transform-x="translationAmount.x"
-    // :transform-y="translationAmount.y"
+        onPointerDown(event) {
+            this.cursorPosition = { x: event.offsetX, y: event.offsetY };
+        }
+    }
 });
 </script>
 
@@ -147,8 +119,9 @@ export default defineComponent({
     v-move="{ onMoveStart, onMove, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
     :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
+    @pointerdown.left.stop="onPointerDown"
   >
-    <slot ref="moveableAnnotation" />
+    <slot />
   </g>
 </template>
 
