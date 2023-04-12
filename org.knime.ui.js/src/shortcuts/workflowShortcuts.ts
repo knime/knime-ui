@@ -367,8 +367,7 @@ const workflowShortcuts: WorkflowShortcuts = {
             // if there is one, if not use the mickey-mouse port (index 0)
             let portIndex = outPortCount === 1 ? 0 : 1;
             if (lastNodeId && lastNodeId === node.id) {
-                const nextIndex = lastPortIndex + 1;
-                portIndex = nextIndex < outPortCount ? nextIndex : 0;
+                portIndex = (lastPortIndex + 1) % outPortCount;
             }
 
             const port = node.outPorts[portIndex];
@@ -382,9 +381,11 @@ const workflowShortcuts: WorkflowShortcuts = {
                     isOutports: true
                 });
 
-                const startPoint = {
                 // eslint-disable-next-line no-magic-numbers
-                    x: node.position.x + outPortPositions[portIndex][0] + nodeSize * 3,
+                const xOffset = nodeSize * 3;
+
+                const startPoint = {
+                    x: node.position.x + outPortPositions[portIndex][0] + xOffset,
                     y: node.position.y + outPortPositions[portIndex][1]
                 };
                 position = findFreeSpaceAroundPointWithFallback({

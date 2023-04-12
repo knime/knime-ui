@@ -269,15 +269,7 @@ export const getters = {
         return (selectedNodeId) => Boolean(state.topNodes?.some(node => node.id === selectedNodeId)) ||
                 (state.isShowingBottomNodes && Boolean(state.bottomNodes?.some(node => node.id === selectedNodeId)));
     },
-    getFirstSearchResult: state => () => {
-        if (state.topNodes.length > 0) {
-            return state.topNodes[0];
-        }
-        if (state.bottomNodes.length > 0) {
-            return state.bottomNodes[0];
-        }
-        return null;
-    },
+    getFirstSearchResult: state => () => state.topNodes.at(0) || state.bottomNodes.at(0) || null,
     tagsOfVisibleNodes: state => {
         const allTags = [
             ...state.topNodesTags,

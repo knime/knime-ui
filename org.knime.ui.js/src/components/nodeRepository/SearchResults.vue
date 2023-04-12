@@ -35,7 +35,7 @@ export default defineComponent({
             required: true
         },
         query: {
-            type: String as PropType<string>,
+            type: String,
             required: true
         },
         selectedTags: {
@@ -43,11 +43,11 @@ export default defineComponent({
             default: () => []
         },
         searchScrollPosition: {
-            type: Number as PropType<number>,
+            type: Number,
             default: 0
         },
         isShowingBottomNodes: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             required: true
         },
         selectedNode: {
@@ -59,11 +59,11 @@ export default defineComponent({
             required: true
         },
         hasNodeCollectionActive: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             required: true
         },
         highlightFirst: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: false
         }
     },
