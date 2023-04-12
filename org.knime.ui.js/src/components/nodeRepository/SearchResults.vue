@@ -134,12 +134,15 @@ export default defineComponent({
             const bottomList = this.$refs.bottomList as InstanceType<typeof NodeList>;
             bottomList?.focusFirst();
         },
-        focusFirst() {
+        async focusFirst() {
             const bottomList = this.$refs.bottomList as InstanceType<typeof NodeList>;
             const topList = this.$refs.topList as InstanceType<typeof NodeList>;
             if (this.topNodes.length > 0) {
                 topList?.focusFirst();
             } else {
+                if (!this.isShowingBottomNodes) {
+                    await this.searchActions.toggleShowingBottomNodes();
+                }
                 bottomList?.focusFirst();
             }
         },
