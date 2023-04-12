@@ -557,6 +557,17 @@ export const actions = {
 
     setProjectIdToIsDirty({ commit }, projectIdToIsDirty) {
         commit('setProjectIdToIsDirty', projectIdToIsDirty);
+    },
+
+    updateProjectIdToIsDirty({ state, commit }, projectIdToIsDirty) {
+        const updatedProjectDirtyMap = { ...state.projectIdToIsDirty, ...projectIdToIsDirty };
+        commit('setProjectIdToIsDirty', updatedProjectDirtyMap);
+    },
+
+    removeFromProjectDirtyMap({ state, commit }, projectId) {
+        const updatedProjectDirtyMap = state.projectIdToIsDirty;
+        delete updatedProjectDirtyMap[projectId];
+        commit('setProjectIdToIsDirty', updatedProjectDirtyMap);
     }
 };
 

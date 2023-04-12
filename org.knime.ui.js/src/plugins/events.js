@@ -41,7 +41,7 @@ export default ({ $store, $router }) => {
          * Sends a map with all open project ids and their dirty flag
          */
         ProjectDirtyStateEvent({ projectIdToIsDirty }) {
-            $store.dispatch('application/setProjectIdToIsDirty', projectIdToIsDirty);
+            $store.dispatch('application/updateProjectIdToIsDirty', projectIdToIsDirty);
         },
 
         /**
