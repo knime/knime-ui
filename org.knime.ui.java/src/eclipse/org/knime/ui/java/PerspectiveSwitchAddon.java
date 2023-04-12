@@ -63,8 +63,6 @@ import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.keys.IBindingService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
@@ -160,7 +158,7 @@ public final class PerspectiveSwitchAddon {
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors(m_modelService, m_app);
         KnimeBrowserView.activateViewInitializer(false);
-        toggleJavaUIKeyBindings(false);
+        PerspectiveUtil.toggleClassicPerspectiveKeyBindings(false);
         switchToWebUITheme();
         ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
     }
@@ -179,7 +177,7 @@ public final class PerspectiveSwitchAddon {
             lifeCycle.suspend();
         }
         setTrimsAndMenuVisible(true, m_modelService, m_app);
-        toggleJavaUIKeyBindings(true);
+        PerspectiveUtil.toggleClassicPerspectiveKeyBindings(true);
         switchToJavaUITheme();
         PerspectiveUtil.setClassicPerspectiveActive(true);
         OpenKnimeUrlAction.setEventHandlingActive(true);
@@ -247,12 +245,4 @@ public final class PerspectiveSwitchAddon {
         return java.util.Optional.ofNullable(previousPerspectiveId);
     }
 
-    /**
-     * Enable or disable all Java UI key bindings
-     * @param isEnableKeyBindings Whether to enable (or disable) all the key bindings
-     */
-    private static void toggleJavaUIKeyBindings(final boolean isEnableKeyBindings) {
-        var bindingService = PlatformUI.getWorkbench().getAdapter(IBindingService.class);
-        bindingService.setKeyFilterEnabled(isEnableKeyBindings);
-    }
 }

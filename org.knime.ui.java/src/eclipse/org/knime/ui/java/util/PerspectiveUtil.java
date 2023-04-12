@@ -59,6 +59,8 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainerElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.keys.IBindingService;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.ExplorerMountTable;
@@ -244,6 +246,15 @@ public final class PerspectiveUtil {
         Optional.ofNullable(ExplorerMountTable.getMountedContent().get(LOCAL_CONTENT_PROVIDER_ID))//
             .map(LocalWorkspaceContentProvider.class::cast)//
             .ifPresent(LocalWorkspaceContentProvider::refresh);
+    }
+
+    /**
+     * Enable or disable all classic UI key bindings
+     * @param isEnableKeyBindings Whether to enable (or disable) all the key bindings
+     */
+    public static void toggleClassicPerspectiveKeyBindings(final boolean isEnableKeyBindings) {
+        var bindingService = PlatformUI.getWorkbench().getAdapter(IBindingService.class);
+        bindingService.setKeyFilterEnabled(isEnableKeyBindings);
     }
 
 }

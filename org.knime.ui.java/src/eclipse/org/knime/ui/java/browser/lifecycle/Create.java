@@ -124,6 +124,8 @@ final class Create {
 
         // initialize the workflow manager class -> mainly helps to indirectly trigger IEarlyStartup.executeEarlyStartup
         WorkflowManager.ROOT.getClass();
+
+        PerspectiveUtil.toggleClassicPerspectiveKeyBindings(false);
     }
 
     private static void callWelcomeAPEndpoint() {
