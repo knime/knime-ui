@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 import { expect, describe, it, vi } from 'vitest';
 import workflowShortcuts from '../workflowShortcuts';
@@ -14,7 +15,9 @@ describe('workflowShortcuts', () => {
         selectedAnnotations = [],
         singleSelectedNode = mockSelectedNode,
         isWorkflowWritable = true,
-        getScrollContainerElement = vi.fn()
+        getScrollContainerElement = vi.fn(),
+        getNodeById = vi.fn(),
+        getVisibleFrame = vi.fn().mockReturnValue({ left: -500, top: -500, width: 1000, height: 1000 })
     } = {}) => {
         const mockDispatch = vi.fn();
         const $store = {
@@ -29,7 +32,20 @@ describe('workflowShortcuts', () => {
                         allowedActions: {},
                         info: {
                             containerType
+                        },
+                        nodes: {
+                            node1: {
+                                position: {
+                                    x: 300,
+                                    y: 200
+                                }
+                            }
                         }
+                    },
+                    quickAddNodeMenu: {
+                        isOpen: false,
+                        props: {},
+                        events: {}
                     }
                 },
                 canvas: {
@@ -41,7 +57,9 @@ describe('workflowShortcuts', () => {
                 'selection/selectedConnections': selectedConnections,
                 'selection/singleSelectedNode': singleSelectedNode,
                 'selection/selectedAnnotations': selectedAnnotations,
-                'workflow/isWritable': isWorkflowWritable
+                'workflow/isWritable': isWorkflowWritable,
+                'workflow/getNodeById': getNodeById,
+                'canvas/getVisibleFrame': getVisibleFrame
             }
         };
 
@@ -540,6 +558,100 @@ describe('workflowShortcuts', () => {
 
             $store.getters['selection/selectedAnnotations'] = [{ id: 'mock-annotation' }];
             expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(true);
+        });
+
+        describe('quickAddNode', () => {
+            it.each([['enables', true], ['disables', false]])('%s menu if workflow is writeable or not', (_, cond) => {
+                const { $store } = createStore({
+                    isWorkflowWritable: cond,
+                    singleSelectedNode: null
+                });
+                expect(workflowShortcuts.quickAddNode.condition({ $store })).toBe(cond);
+            });
+
+            it('opens quick add node menu in global mode if no node is selected', () => {
+                const { $store, mockDispatch } = createStore({
+                    isWorkflowWritable: true,
+                    singleSelectedNode: null
+                });
+                workflowShortcuts.quickAddNode.execute({ $store });
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/openQuickAddNodeMenu', {
+                    props: {
+                        position: expect.anything()
+                    }
+                });
+            });
+
+            it.each(['metanode', 'component'])('does not open for %s', (nodeKind) => {
+                const { $store } = createStore({
+                    isWorkflowWritable: true,
+                    singleSelectedNode: { id: 'root:3', kind: nodeKind }
+                });
+                expect(workflowShortcuts.quickAddNode.condition({ $store })).toBe(false);
+            });
+
+            const mockNodeTemplate = (length) => ({
+                id: 'root:4',
+                position: { x: 120, y: 53 },
+                kind: 'node',
+                outPorts: Array.from({ length }, (_, index) => ({ index, typeId: 'some.type' }))
+            });
+
+            it('opens quick add node menu on the mickey mouse ports if no others are available', () => {
+                const { $store, mockDispatch } = createStore({
+                    isWorkflowWritable: true,
+                    singleSelectedNode: mockNodeTemplate(1)
+                });
+                workflowShortcuts.quickAddNode.execute({ $store });
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/openQuickAddNodeMenu', {
+                    props: {
+                        nodeId: 'root:4',
+                        port: { index: 0, typeId: 'some.type' },
+                        position: expect.anything()
+                    }
+                });
+            });
+
+            it('opens quick add node menu on first none mickey mouse ports', () => {
+                const { $store, mockDispatch } = createStore({
+                    isWorkflowWritable: true,
+                    singleSelectedNode: mockNodeTemplate(3)
+                });
+                workflowShortcuts.quickAddNode.execute({ $store });
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/openQuickAddNodeMenu', {
+                    props: {
+                        nodeId: 'root:4',
+                        port: { index: 1, typeId: 'some.type' },
+                        position: expect.anything()
+                    }
+                });
+            });
+
+            it('switch to the next port and reuse current position if menu was already open', () => {
+                const { $store, mockDispatch } = createStore({
+                    isWorkflowWritable: true,
+                    getNodeById: vi.fn().mockReturnValue(mockNodeTemplate(3)),
+                    singleSelectedNode: mockNodeTemplate(3)
+                });
+                $store.state.workflow.quickAddNodeMenu = {
+                    isOpen: true,
+                    props: {
+                        nodeId: 'root:4',
+                        port: {
+                            index: 1
+                        },
+                        position: { x: 5, y: 8 }
+                    }
+                };
+                workflowShortcuts.quickAddNode.execute({ $store });
+                expect(mockDispatch).toHaveBeenCalledWith('workflow/openQuickAddNodeMenu', {
+                    props: {
+                        nodeId: 'root:4',
+                        port: { index: 2, typeId: 'some.type' },
+                        position: { x: 5, y: 8 }
+                    }
+                });
+            });
         });
     });
 });

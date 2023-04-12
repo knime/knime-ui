@@ -335,7 +335,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         title: 'Add new node',
         hotkey: ['Ctrl', '.'],
         execute: ({ $store }) => {
-            // descruct current state
+            // destruct current state
             const {
                 isOpen,
                 props: { nodeId: lastNodeId, port: { index: lastPortIndex } = { index: -1 }, position: lastPosition }
@@ -356,27 +356,19 @@ const workflowShortcuts: WorkflowShortcuts = {
                 return;
             }
 
-            // disable menu for metanode and component
-            if (['metanode', 'component'].includes(node.kind)) {
-                return;
-            }
-
+            const nodeId = node.id;
             const outPortCount = node.outPorts.length;
 
             // shuffle between port indices, start with the first non mickey-mouse (flowvar) port
             // if there is one, if not use the mickey-mouse port (index 0)
-            let portIndex = outPortCount === 1 ? 0 : 1;
-            if (lastNodeId && lastNodeId === node.id) {
-                portIndex = (lastPortIndex + 1) % outPortCount;
-            }
-
-            const port = node.outPorts[portIndex];
-            let position = lastPosition;
+            const startIndex = outPortCount === 1 ? 0 : 1;
+            const nextIndex = (lastPortIndex + 1) % outPortCount;
+            const portIndex = lastNodeId === nodeId ? nextIndex : startIndex;
 
             // if it's not open we need to find a proper position to put the menu
-            if (!isOpen) {
+            const calculatePosition = (node, portIndex, portCount, $store) => {
                 const outPortPositions = portPositions({
-                    portCount: outPortCount,
+                    portCount,
                     isMetanode: node.kind === 'metanode',
                     isOutports: true
                 });
@@ -388,16 +380,24 @@ const workflowShortcuts: WorkflowShortcuts = {
                     x: node.position.x + outPortPositions[portIndex][0] + xOffset,
                     y: node.position.y + outPortPositions[portIndex][1]
                 };
-                position = findFreeSpaceAroundPointWithFallback({
+                return findFreeSpaceAroundPointWithFallback({
                     startPoint,
                     visibleFrame: $store.getters['canvas/getVisibleFrame'](),
                     nodes: $store.state.workflow.activeWorkflow.nodes
                 });
-            }
+            };
 
-            $store.dispatch('workflow/openQuickAddNodeMenu', { props: { nodeId: node.id, port, position } });
+            const port = node.outPorts[portIndex];
+            const position = isOpen ? lastPosition : calculatePosition(node, portIndex, outPortCount, $store);
+
+            $store.dispatch('workflow/openQuickAddNodeMenu', { props: { nodeId, port, position } });
         },
-        condition: ({ $store }) => $store.getters['workflow/isWritable']
+        condition: ({ $store }) => {
+            const node = $store.getters['selection/singleSelectedNode'];
+            const isWriteable = $store.getters['workflow/isWritable'];
+            const isNativeNode = !['metanode', 'component'].includes(node?.kind);
+            return isNativeNode && isWriteable;
+        }
     }
 };
 
