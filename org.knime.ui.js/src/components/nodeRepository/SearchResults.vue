@@ -126,7 +126,7 @@ export default defineComponent({
                 this.isLoadingMore = false;
             });
         },
-        async openBottomNodes() {
+        async openBottomNodesAndFocusFirst() {
             if (!this.isShowingBottomNodes) {
                 await this.searchActions.toggleShowingBottomNodes();
             }
@@ -134,17 +134,13 @@ export default defineComponent({
             const bottomList = this.$refs.bottomList as InstanceType<typeof NodeList>;
             bottomList?.focusFirst();
         },
-        async focusFirst() {
-            const bottomList = this.$refs.bottomList as InstanceType<typeof NodeList>;
+        focusFirst() {
             const topList = this.$refs.topList as InstanceType<typeof NodeList>;
             if (this.topNodes.length > 0) {
                 topList?.focusFirst();
-            } else {
-                if (!this.isShowingBottomNodes) {
-                    await this.searchActions.toggleShowingBottomNodes();
-                }
-                bottomList?.focusFirst();
+                return;
             }
+            this.openBottomNodesAndFocusFirst();
         },
         bottomListNavReachedTop() {
             const topList = this.$refs.topList as InstanceType<typeof NodeList>;
@@ -183,7 +179,7 @@ export default defineComponent({
           :nodes="topNodes"
           :highlight-first="highlightFirst"
           @nav-reached-top="$emit('navReachedTop')"
-          @nav-reached-end="openBottomNodes"
+          @nav-reached-end="openBottomNodesAndFocusFirst"
           @enter-key="$emit('item-enter-key', $event)"
         >
           <template #item="slotProps">
