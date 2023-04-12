@@ -70,7 +70,7 @@ export const state = () => ({
     /**
      * an object that maps projectIds to the isDirty flag of the workflow
      */
-    projectIdToIsDirty: {}
+    projectDirtyMap: {}
 });
 
 export const mutations = {
@@ -154,8 +154,8 @@ export const mutations = {
     setFileExtensionToNodeTemplateId(state, fileExtensionToNodeTemplateId) {
         state.fileExtensionToNodeTemplateId = fileExtensionToNodeTemplateId;
     },
-    setProjectIdToIsDirty(state, projectIdToIsDirty) {
-        state.projectIdToIsDirty = projectIdToIsDirty;
+    setProjectDirtyMap(state, projectDirtyMap) {
+        state.projectDirtyMap = projectDirtyMap;
     }
 };
 
@@ -555,19 +555,19 @@ export const actions = {
         };
     },
 
-    setProjectIdToIsDirty({ commit }, projectIdToIsDirty) {
-        commit('setProjectIdToIsDirty', projectIdToIsDirty);
+    setProjectDirtyMap({ commit }, projectDirtyMap) {
+        commit('setProjectDirtyMap', projectDirtyMap);
     },
 
-    updateProjectIdToIsDirty({ state, commit }, projectIdToIsDirty) {
-        const updatedProjectDirtyMap = { ...state.projectIdToIsDirty, ...projectIdToIsDirty };
-        commit('setProjectIdToIsDirty', updatedProjectDirtyMap);
+    updateProjectDirtyMap({ state, commit }, projectDirtyMap) {
+        const updatedProjectDirtyMap = { ...state.projectDirtyMap, ...projectDirtyMap };
+        commit('setProjectDirtyMap', updatedProjectDirtyMap);
     },
 
     removeFromProjectDirtyMap({ state, commit }, projectId) {
-        const updatedProjectDirtyMap = state.projectIdToIsDirty;
+        const updatedProjectDirtyMap = state.projectDirtyMap;
         delete updatedProjectDirtyMap[projectId];
-        commit('setProjectIdToIsDirty', updatedProjectDirtyMap);
+        commit('setProjectDirtyMap', updatedProjectDirtyMap);
     }
 };
 

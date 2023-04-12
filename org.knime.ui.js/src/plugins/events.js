@@ -12,10 +12,10 @@ export default ({ $store, $router }) => {
          * Calls all event handlers with their params
          */
         ComposedEvent({ events, params, eventHandlers }) {
-            events.forEach((event, ind) => {
+            events.forEach((event, index) => {
                 const handler = eventHandlers.get(event);
-                if (params[ind]) {
-                    handler(params[ind]);
+                if (params[index]) {
+                    handler(params[index]);
                 }
             });
         },
@@ -41,7 +41,7 @@ export default ({ $store, $router }) => {
          * Sends a map with all open project ids and their dirty flag
          */
         ProjectDirtyStateEvent({ projectIdToIsDirty }) {
-            $store.dispatch('application/updateProjectIdToIsDirty', projectIdToIsDirty);
+            $store.dispatch('application/updateProjectDirtyMap', projectIdToIsDirty);
         },
 
         /**

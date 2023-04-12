@@ -22,7 +22,7 @@ describe('AppHeader.vue', () => {
             { projectId: '2', name: 'Test2' },
             { projectId: '3', name: 'Test3' }
         ];
-        const projectIdToIsDirty = {
+        const projectDirtyMap = {
             '1': false,
             '2': true,
             '3': false
@@ -34,7 +34,7 @@ describe('AppHeader.vue', () => {
                     activeProjectId: '1',
                     devMode: false,
                     isLoadingWorkflow,
-                    projectIdToIsDirty
+                    projectDirtyMap
                 },
                 actions: { switchWorkflow: vi.fn() }
             },

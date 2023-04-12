@@ -106,7 +106,7 @@ describe('Event Plugin', () => {
             registeredHandlers.ProjectDirtyStateEvent({ projectIdToIsDirty });
 
             expect(storeMock.dispatch).toHaveBeenCalledWith(
-                'application/setProjectIdToIsDirty',
+                'application/updateProjectDirtyMap',
                 projectIdToIsDirty
             );
         });
