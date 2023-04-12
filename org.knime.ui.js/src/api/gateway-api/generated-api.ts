@@ -349,8 +349,13 @@ export namespace Annotation {
      * @enum {string}
      */
     export enum ContentTypeEnum {
+<<<<<<< HEAD
         Plain = 'text/plain',
         Html = 'text/html'
+=======
+        Textplain = 'textplain',
+        Texthtml = 'texthtml'
+>>>>>>> 18ae7829 (NXT-238: Update generated API, update method calls.)
     }
     /**
      * @export
@@ -3091,12 +3096,6 @@ export interface WorkflowAnnotation extends Annotation {
      * @memberof WorkflowAnnotation
      */
     borderColor: string;
-    /**
-     * The formatted text, only present if the annotation was updated with the Modern UI.
-     * @type {string}
-     * @memberof WorkflowAnnotation
-     */
-    formattedText?: string;
 
 }
 

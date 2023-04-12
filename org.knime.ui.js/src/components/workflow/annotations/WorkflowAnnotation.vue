@@ -4,6 +4,7 @@ import { mapState, mapActions, mapGetters } from 'vuex';
 import { mixin as VueClickAway } from 'vue3-click-away';
 
 import type { Bounds, WorkflowAnnotation } from '@/api/gateway-api/generated-api';
+import { Annotation } from '@/api/gateway-api/generated-api';
 
 import { getMetaOrCtrlKey } from '@/util/navigator';
 import TransformControls from './TransformControls.vue';
@@ -86,7 +87,7 @@ export default defineComponent({
         },
 
         isLegacyAnnotation() {
-            return !this.annotation.formattedText;
+            return this.annotation.contentType === Annotation.ContentTypeEnum.Textplain;
         }
     },
 
@@ -194,7 +195,7 @@ export default defineComponent({
           v-if="!isLegacyAnnotation || isEditing"
           :id="annotation.id"
           v-model="richTextContent"
-          :initial-value="annotation.formattedText || annotation.text"
+          :initial-value="annotation.text"
           :editable="isEditing"
           @change="hasEdited = true"
           @edit-start="toggleEdit"
