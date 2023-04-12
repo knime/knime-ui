@@ -47,7 +47,7 @@ describe('Event Plugin', () => {
     it('fixed Events', () => {
         loadPlugin();
         expect(Object.keys(registeredHandlers)).toStrictEqual([
-            'ComposedEvent',
+            'CompositeEvent',
             'WorkflowChangedEvent',
             'ProjectDirtyStateEvent',
             'AppStateChangedEvent',
@@ -111,7 +111,7 @@ describe('Event Plugin', () => {
             );
         });
 
-        it('handles ComposedEvents', () => {
+        it('handles CompositeEvents', () => {
             const eventHandlers = new Map();
             const wfcSpy = vi.spyOn(registeredHandlers, 'WorkflowChangedEvent');
             const pdsSpy = vi.spyOn(registeredHandlers, 'ProjectDirtyStateEvent');
@@ -119,7 +119,7 @@ describe('Event Plugin', () => {
             eventHandlers.set('ProjectDirtyStateEvent', registeredHandlers.ProjectDirtyStateEvent);
             const projectIdToIsDirty = { '1': false, '2': false, '3': true };
 
-            registeredHandlers.ComposedEvent(
+            registeredHandlers.CompositeEvent(
                 { events: ['WorkflowChangedEvent', 'ProjectDirtyStateEvent'],
                     params: [
                         { patch: { ops: [{ dummy: true, path: '/foo/bar' }] } },

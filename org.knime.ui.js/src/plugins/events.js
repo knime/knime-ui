@@ -11,7 +11,7 @@ export default ({ $store, $router }) => {
          * Is a generic event, that holds multiple events (names separated by ':')
          * Calls all event handlers with their params
          */
-        ComposedEvent({ events, params, eventHandlers }) {
+        CompositeEvent({ events, params, eventHandlers }) {
             events.forEach((event, index) => {
                 const handler = eventHandlers.get(event);
                 if (params[index]) {

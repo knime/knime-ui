@@ -13,7 +13,7 @@ describe('JsonRpcNotifications', () => {
     beforeEach(() => {
         eventHandlers = {
             WorkingEvent: vi.fn(),
-            ComposedEvent: vi.fn(),
+            CompositeEvent: vi.fn(),
             ErrorEvent: vi.fn().mockImplementation(() => {
                 throw new Error('boo!');
             }),
@@ -38,7 +38,7 @@ describe('JsonRpcNotifications', () => {
         let result = window.jsonrpcNotification(
             '{"jsonrpc":"2.0","method":"WorkingEvent:WorkingEvent","params":[{"events":[null,null]}]}'
         );
-        expect(eventHandlers.ComposedEvent).toHaveBeenCalledWith({ eventHandlers: expect.anything(),
+        expect(eventHandlers.CompositeEvent).toHaveBeenCalledWith({ eventHandlers: expect.anything(),
             events: ['WorkingEvent', 'WorkingEvent'],
             params: [null, null] });
         expect(result).toBe('{"jsonrpc":"2.0","result":"ok"}');
@@ -48,7 +48,7 @@ describe('JsonRpcNotifications', () => {
         let result = window.jsonrpcNotification(
             '{"jsonrpc":"2.0","method":"WorkingEvent:NotWorkingEvent","params":[{"events":[null,null]}]}'
         );
-        expect(eventHandlers.ComposedEvent).not.toHaveBeenCalled();
+        expect(eventHandlers.CompositeEvent).not.toHaveBeenCalled();
         expect(result).not.toBe('{"jsonrpc":"2.0","result":"ok"}');
     });
 

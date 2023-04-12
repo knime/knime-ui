@@ -672,16 +672,16 @@ export interface ComponentNodeDescription extends ComponentNodeAndDescription {
 export namespace ComponentNodeDescription {
 }
 /**
- *
+ * Event that can consist of multiple generic events.
  * @export
- * @interface ComposedEvent
+ * @interface CompositeEvent
  */
-export interface ComposedEvent extends Event {
+export interface CompositeEvent extends Event {
 
     /**
      *
      * @type {Array<Event>}
-     * @memberof ComposedEvent
+     * @memberof CompositeEvent
      */
     events?: Array<Event>;
 
@@ -2381,7 +2381,7 @@ export namespace PortType {
     }
 }
 /**
- *
+ * Event for changes to the dirtyState of a project/workflow.
  * @export
  * @interface ProjectDirtyStateEvent
  */
@@ -4132,7 +4132,7 @@ export type EventParams =
 
 export interface EventHandlers {
     WorkflowChangedEvent?(payload: WorkflowChangedEvent): void;
-    ComposedEvent?(payload: ComposedEvent): void;
+    CompositeEvent?(payload: CompositeEvent): void;
     ProjectDirtyStateEvent?(payload: ProjectDirtyStateEvent): void;
     AppStateChangedEvent?(payload: AppStateChangedEvent): void;
     UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;

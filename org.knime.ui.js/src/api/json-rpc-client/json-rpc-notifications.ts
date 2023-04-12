@@ -6,7 +6,7 @@ type MaybeValidJSONRPC = { isValid: boolean, response: JSONRPCRequest | JSONRPCE
 
 const GENERIC_ERROR_MESSAGE = 'Argument must be a JSON serialized JSON-RPC object';
 
-const COMPOSED_EVENT_NAME = 'ComposedEvent';
+const COMPOSITE_EVENT_NAME = 'CompositeEvent';
 
 const REGISTERED_HANDLERS = new Map<string, Function>();
 
@@ -73,14 +73,14 @@ const validateFormat = (data: MaybeValidJSONRPC): MaybeValidJSONRPC => {
     return { isValid, response };
 };
 
-const isComposedEvent = (method) => method.includes(':');
+const isCompositeEvent = (method) => method.includes(':');
 
-const getComposedEvents = (method) => method.split(':');
+const getCompositeEvents = (method) => method.split(':');
 
-const validateComposedEvents = (method) => {
-    const methods = getComposedEvents(method);
-    let isValid = Boolean(REGISTERED_HANDLERS.get(COMPOSED_EVENT_NAME)) &&
-        typeof REGISTERED_HANDLERS.get(COMPOSED_EVENT_NAME) === 'function';
+const validateCompositeEvents = (method) => {
+    const methods = getCompositeEvents(method);
+    let isValid = Boolean(REGISTERED_HANDLERS.get(COMPOSITE_EVENT_NAME)) &&
+        typeof REGISTERED_HANDLERS.get(COMPOSITE_EVENT_NAME) === 'function';
 
     methods.forEach(method => {
         isValid = isValid && Boolean(REGISTERED_HANDLERS.get(method)) &&
@@ -97,8 +97,8 @@ const validateMethod = (data: MaybeValidJSONRPC): MaybeValidJSONRPC => {
     const { id, method } = data.response as JSONRPCRequest;
 
     let isValid;
-    if (isComposedEvent(method)) {
-        isValid = validateComposedEvents(method);
+    if (isCompositeEvent(method)) {
+        isValid = validateCompositeEvents(method);
     } else {
         isValid = Boolean(REGISTERED_HANDLERS.get(method)) && typeof REGISTERED_HANDLERS.get(method) === 'function';
     }
@@ -141,11 +141,11 @@ export const jsonrpcNotification = function (json: string, ...other: unknown[]) 
     try {
         let handlerName, handlerParams;
 
-        if (isComposedEvent(method)) {
-            handlerName = COMPOSED_EVENT_NAME;
+        if (isCompositeEvent(method)) {
+            handlerName = COMPOSITE_EVENT_NAME;
             // parse the event params for each event of the composed event
             handlerParams =
-                [{ events: getComposedEvents(method), params: params[0].events, eventHandlers: REGISTERED_HANDLERS }];
+                [{ events: getCompositeEvents(method), params: params[0].events, eventHandlers: REGISTERED_HANDLERS }];
         } else {
             handlerName = method;
             handlerParams = params;
