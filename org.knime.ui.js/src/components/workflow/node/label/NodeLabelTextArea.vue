@@ -13,7 +13,7 @@ export default {
             type: String,
             default: ''
         },
-        numberOfPorts: {
+        portOffset: {
             type: Number,
             required: false,
             default: 0
@@ -68,7 +68,7 @@ export default {
   <NodeLabelText
     class="editor"
     :kind="kind"
-    :number-of-ports="numberOfPorts"
+    :port-offset="portOffset"
   >
     <span
       ref="ghost"

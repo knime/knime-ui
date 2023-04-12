@@ -36,7 +36,7 @@ export default defineComponent({
                 styleRanges: []
             })
         },
-        numberOfPorts: {
+        portOffset: {
             type: Number,
             required: false,
             default: 0
@@ -65,12 +65,8 @@ export default defineComponent({
             return textRanges;
         },
         yOffset() {
-            const maxSupportedNumberOfPorts = 5; // max port number that works without offset
-            let portOffset = 0;
-            if (this.numberOfPorts > maxSupportedNumberOfPorts) {
-                portOffset = (this.numberOfPorts - maxSupportedNumberOfPorts) * this.$shapes.portSize;
-            }
-            return (this.isMetanode ? this.$shapes.metanodeLabelOffsetY : this.$shapes.nodeLabelOffsetY) + portOffset;
+            return (this.isMetanode ? this.$shapes.metanodeLabelOffsetY : this.$shapes.nodeLabelOffsetY) +
+            this.portOffset;
         }
     },
     methods: {

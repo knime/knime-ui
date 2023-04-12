@@ -4,6 +4,7 @@ import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/utils';
 
 import * as selectionStore from '@/store/selection';
+import * as $shapes from '@/style/shapes.mjs';
 
 import NodeLabel from '../NodeLabel.vue';
 import NodeLabelText from '../NodeLabelText.vue';
@@ -27,7 +28,8 @@ describe('NodeLabel', () => {
         const wrapper = shallowMount(NodeLabel, {
             props: { ...defaultProps, ...props },
             global: {
-                plugins: [$store]
+                plugins: [$store],
+                mocks: { $shapes }
             }
         });
 
@@ -76,6 +78,23 @@ describe('NodeLabel', () => {
         it('should handle a name change request', () => {
             wrapper.findComponent(NodeLabelText).vm.$emit('request-edit');
             expect(storeConfig.workflow.actions.openLabelEditor).toHaveBeenCalled();
+        });
+
+        it('should pass correct port offset based on number of ports', async () => {
+            await wrapper.setProps({ numberOfPorts: 2 });
+            expect(wrapper.vm.portOffset).toBe(0);
+    
+            await wrapper.setProps({ numberOfPorts: 5 }); // threshold for max number of ports without offset
+            expect(wrapper.vm.portOffset).toBe(27);
+        });
+
+        it('should pass correct port offset for metanode based on number of ports', async () => {
+            await wrapper.setProps({ kind: 'metanode' });
+            await wrapper.setProps({ numberOfPorts: 2 });
+            expect(wrapper.vm.portOffset).toBe(0);
+    
+            await wrapper.setProps({ numberOfPorts: 3 }); // threshold for max number of ports without offset
+            expect(wrapper.vm.portOffset).toBe(9);
         });
     });
 

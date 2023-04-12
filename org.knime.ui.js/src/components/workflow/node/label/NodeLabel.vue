@@ -51,6 +51,17 @@ export default {
 
         isSelected() {
             return this.nodeId === this.singleSelectedNode?.id;
+        },
+        portOffset() {
+            // max port number that works without offset
+            const metanodeMaxSupportedPorts = 2;
+            const nodeMaxSupportedPorts = 5;
+
+            const maxSupportedNumberOfPorts = this.kind === 'metanode'
+                ? metanodeMaxSupportedPorts
+                : nodeMaxSupportedPorts;
+
+            return Math.max(this.numberOfPorts - maxSupportedNumberOfPorts, 0) * this.$shapes.portSize;
         }
     },
     methods: {
@@ -83,7 +94,7 @@ export default {
           :value="value"
           :kind="kind"
           :node-position="nodePosition"
-          :number-of-ports="numberOfPorts"
+          :port-offset="portOffset"
           @save="onSave"
           @cancel="onCancel"
         />
@@ -97,7 +108,7 @@ export default {
         :annotation="annotation"
         :editable="editable"
         :is-selected="isSelected"
-        :number-of-ports="numberOfPorts"
+        :port-offset="portOffset"
         @request-edit="onRequestEdit"
       />
     </template>

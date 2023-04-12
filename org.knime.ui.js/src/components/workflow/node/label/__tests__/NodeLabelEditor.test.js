@@ -109,19 +109,12 @@ describe('NodeLabelEditor', () => {
             expect(actionBar.attributes('transform')).toBe(expectedPosition);
         });
 
-        it('should be positioned differently for when exceeding the maximum number of ports', async () => {
+        it('should be positioned differently for when there is a portOffset', async () => {
             const { wrapper } = doMount();
-            await wrapper.setProps({ numberOfPorts: 2 });
+            await wrapper.setProps({ portOffset: 9 });
             const actionBar = wrapper.findComponent(ActionBar);
-            const expectedPosition = 'translate(31,61)';
-
+            const expectedPosition = 'translate(31,70)';
             expect(actionBar.attributes('transform')).toBe(expectedPosition);
-
-            await wrapper.setProps({ numberOfPorts: 4 });
-            expect(actionBar.attributes('transform')).toBe(expectedPosition);
-
-            await wrapper.setProps({ numberOfPorts: 7 });
-            expect(actionBar.attributes('transform')).toBe('translate(31,79)');
         });
 
         it('should emit save when clicking the save button', () => {
