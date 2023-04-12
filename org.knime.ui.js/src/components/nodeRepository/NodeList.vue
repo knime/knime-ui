@@ -52,14 +52,14 @@ export default {
             };
         },
         focusLast() {
-            this.focusItem(this.nodes.at(-1));
+            this.focusItem(this.nodes?.at(-1));
         },
         focusFirst() {
-            this.focusItem(this.nodes.at(0));
+            this.focusItem(this.nodes?.at(0));
         },
         focusItem(node) {
             // select the item if the current selection is not in our list
-            if (!this.nodes.find(node => node.id === this.selectedNode?.id)) {
+            if (node && !this.nodes.find(n => n.id === this.selectedNode?.id)) {
                 this.$emit('update:selectedNode', node);
             }
         },
