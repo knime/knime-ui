@@ -222,13 +222,14 @@ export const actions = {
         });
     },
 
-    replaceNode({ state }, { nodeId, nodeFactory }) {
+    replaceNode({ state }, { targetNodeId, replacementNodeId, nodeFactory }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         return API.workflowCommand.ReplaceNode({
             projectId,
             workflowId,
-            nodeId,
+            targetNodeId,
+            replacementNodeId,
             nodeFactory
         });
     },

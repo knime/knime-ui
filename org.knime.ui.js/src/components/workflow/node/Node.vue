@@ -336,9 +336,29 @@ export default {
 
         onTorsoDragDrop(dragEvent) {
             const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
-            this.replaceNode({ nodeId: this.id, nodeFactory });
+            this.replaceNode({ targetNodeId: this.id, nodeFactory });
             this.isDraggedOver = false;
             this.dragTarget = null;
+        },
+
+        onNodeDragggingEnter(event) {
+            if (event.detail.isNodeConnected) {
+                return;
+            }
+            event.preventDefault();
+            this.isDraggedOver = true;
+        },
+
+        onNodeDragggingLeave() {
+            this.isDraggedOver = false;
+        },
+        
+        onNodeDragggingEnd(dragEvent) {
+            this.replaceNode({
+                targetNodeId: this.id,
+                replacementNodeId: dragEvent.detail.id
+            });
+            this.isDraggedOver = false;
         },
 
         // public
@@ -454,6 +474,9 @@ export default {
                   @dragenter="onTorsoDragEnter"
                   @dragleave="onTorsoDragLeave"
                   @drop.stop="onTorsoDragDrop"
+                  @node-dragging-enter="onNodeDragggingEnter"
+                  @node-dragging-leave.prevent="onNodeDragggingLeave"
+                  @node-dragging-end.prevent="onNodeDragggingEnd"
                 />
 
                 <NodeDecorators v-bind="$props" />
