@@ -31,9 +31,10 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="context-aware-description">
     <NodeDescription
       v-if="showNodeDescription"
+      class="node-description"
       :selected-node="selectedNode"
     />
     <WorkflowMetadata
@@ -42,3 +43,15 @@ export default {
     />
   </div>
 </template>
+
+<style lang="postcss">
+.context-aware-description {
+  /* required for the scrollbar of NodeDescription to work proper */
+  height: 100%;
+}
+
+.node-description {
+  /* required for sticky header in NodeDescrioption to have a background to inherit */
+  background-color: var(--knime-porcelain);
+}
+</style>

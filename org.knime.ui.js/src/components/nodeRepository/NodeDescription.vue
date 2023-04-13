@@ -81,54 +81,52 @@ export default {
 <template>
   <div class="node-description">
     <div class="header">
-      <h2>{{ title }}</h2>
-      <slot name="header-action" />
+      <div class="header-content">
+        <h2>{{ title }}</h2>
+        <slot name="header-action" />
+      </div>
+      <hr>
     </div>
-
-    <hr>
-
-    <div class="scroll-container">
-      <div class="node-info">
-        <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
+    <div class="node-info">
+      <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
              have some data as the selection is not cleared. -->
-        <template v-if="selectedNode">
-          <template v-if="descriptionData">
-            <Description
-              v-if="descriptionData.description"
-              id="node-description-html"
-              :text="descriptionData.description"
-              render-as-html
-            />
+      <template v-if="selectedNode">
+        <template v-if="descriptionData">
+          <Description
+            v-if="descriptionData.description"
+            id="node-description-html"
+            :text="descriptionData.description"
+            render-as-html
+          />
 
-            <span
-              v-else
-              class="placeholder"
-            >
-              There is no description for this node.
-            </span>
+          <span
+            v-else
+            class="placeholder"
+          >
+            There is no description for this node.
+          </span>
 
-            <ExternalResourcesList
-              v-if="descriptionData.links"
-              :links="descriptionData.links"
-            />
+          <ExternalResourcesList
+            v-if="descriptionData.links"
+            :links="descriptionData.links"
+          />
 
-            <NodeFeatureList
-              :in-ports="descriptionData.inPorts"
-              :dyn-in-ports="descriptionData.dynInPorts"
-              :out-ports="descriptionData.outPorts"
-              :dyn-out-ports="descriptionData.dynOutPorts"
-              :views="descriptionData.views"
-              :options="descriptionData.options"
-              class="node-feature-list"
-            />
-          </template>
+          <NodeFeatureList
+            :in-ports="descriptionData.inPorts"
+            :dyn-in-ports="descriptionData.dynInPorts"
+            :out-ports="descriptionData.outPorts"
+            :dyn-out-ports="descriptionData.dynOutPorts"
+            :views="descriptionData.views"
+            :options="descriptionData.options"
+            class="node-feature-list"
+          />
         </template>
-        <div
-          v-else
-          class="placeholder no-node"
-        >
-          Please select a node
-        </div>
+      </template>
+      <div
+        v-else
+        class="placeholder no-node"
+      >
+        Please select a node
       </div>
     </div>
   </div>
@@ -137,20 +135,30 @@ export default {
 <style lang="postcss" scoped>
 .node-description {
   height: 100%;
-  padding: 8px 0;
+  padding-right: 8px;
+  padding-bottom: 8px;
   font-family: "Roboto Condensed", sans-serif;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   & .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 0 20px 5px;
+    position: sticky;
+    z-index: 1;
+    top: 0;
+    background-color: inherit;
 
-    & h2 {
-      margin: 0;
-      font-weight: 400;
-      font-size: 18px;
-      line-height: 36px;
+    & .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 8px 20px 5px;
+
+      & h2 {
+        margin: 0;
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 36px;
+      }
     }
   }
 
@@ -158,12 +166,6 @@ export default {
     border: none;
     border-top: 1px solid var(--knime-silver-sand);
     margin: 0 20px;
-  }
-
-  & .scroll-container {
-    overflow-x: hidden;
-    text-align: left;
-    height: 100%;
   }
 
   & .node-info {
