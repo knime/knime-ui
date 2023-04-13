@@ -110,7 +110,11 @@ describe('workflow store', () => {
                             nodes: {
                                 'root:1': { id: 'root:1' },
                                 'root:2': { id: 'root:2' }
-                            }
+                            },
+                            workflowAnnotations: [
+                                { id: 'root:2_1', text: 'Test' },
+                                { id: 'root:2_2', text: 'Test1' }
+                            ]
                         }
                     }
                 }
@@ -126,9 +130,10 @@ describe('workflow store', () => {
             expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(0);
         });
 
-        it('selects all nodes', () => {
-            $store.dispatch('selection/selectAllNodes');
+        it('selects all objects', () => {
+            $store.dispatch('selection/selectAllObjects');
             expect(Object.keys($store.state.selection.selectedNodes).length).toBe(2);
+            expect(Object.keys($store.state.selection.selectedAnnotations).length).toBe(2);
             expect(Object.keys($store.state.selection.selectedConnections).length).toBe(1);
         });
 

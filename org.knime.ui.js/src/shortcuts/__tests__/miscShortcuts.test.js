@@ -21,9 +21,9 @@ describe('miscShortcuts', () => {
     });
 
     describe('selectionShortcuts', () => {
-        it('execute selectAllNodes', () => {
-            selectionShortcuts.selectAllNodes.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('selection/selectAllNodes');
+        it('execute selectAll', () => {
+            selectionShortcuts.selectAll.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('selection/selectAllObjects');
         });
 
         it('execute deselectAll', () => {

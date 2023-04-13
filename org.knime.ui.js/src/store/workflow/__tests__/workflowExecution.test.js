@@ -63,7 +63,8 @@ describe('workflow store: Execution', () => {
                 nodes: {
                     'root:1': { id: 'root:1' },
                     'root:2': { id: 'root:2' }
-                }
+                },
+                workflowAnnotations: []
             });
 
             store.dispatch(`workflow/changeNodeState`, { nodes: 'all' });
@@ -73,7 +74,7 @@ describe('workflow store: Execution', () => {
                 nodeIds: []
             }));
 
-            store.dispatch('selection/selectAllNodes');
+            store.dispatch('selection/selectAllObjects');
             store.dispatch(`workflow/changeNodeState`, { nodes: 'selected' });
             expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith(expect.objectContaining({
                 nodeIds: ['root:1', 'root:2'],

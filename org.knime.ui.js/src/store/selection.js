@@ -94,9 +94,11 @@ export const actions = {
         commit('clearSelection');
     },
 
-    // Selects all nodes that are present in the current workflow store.
-    selectAllNodes({ commit, rootState }) {
+    // Selects all nodes and annotations that are present in the current workflow store.
+    selectAllObjects({ commit, rootState }) {
         commit('addNodesToSelection', Object.keys(rootState.workflow.activeWorkflow.nodes));
+        commit('addAnnotationToSelection',
+            rootState.workflow.activeWorkflow.workflowAnnotations.map(annotation => annotation.id));
     },
 
     // Selects the given node.

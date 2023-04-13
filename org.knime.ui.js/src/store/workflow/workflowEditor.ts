@@ -314,6 +314,7 @@ export const actions = {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         const selectedNodeIds = rootGetters['selection/selectedNodeIds'];
         const selectedNodes = rootGetters['selection/selectedNodes'];
+        const selectedAnnotationIds = rootGetters['selection/selectedAnnotationIds'];
 
         const isResetRequired = selectedNodes.some((node) => node.allowedActions.canCollapse === 'resetRequired');
 
@@ -332,7 +333,7 @@ export const actions = {
             projectId,
             workflowId,
             nodeIds: selectedNodeIds,
-            annotationIds: []
+            annotationIds: selectedAnnotationIds
         });
 
         // 3. select new container node, if user hasn't selected something else in the meantime
@@ -359,7 +360,7 @@ export const actions = {
         dispatch('selection/deselectAllObjects', null, { root: true });
 
         // 2. send request
-        const { expandedNodeIds } = await API.workflowCommand.Expand({
+        const { expandedNodeIds, expandedAnnotationIds } = await API.workflowCommand.Expand({
             projectId,
             workflowId,
             nodeId: selectedNode.id
@@ -368,6 +369,7 @@ export const actions = {
         // 3. select expanded nodes, if user hasn't selected something else in the meantime
         if (rootGetters['selection/isSelectionEmpty']) {
             dispatch('selection/selectNodes', expandedNodeIds, { root: true });
+            dispatch('selection/selectAnnotations', expandedAnnotationIds, { root: true });
         }
     },
 
@@ -439,14 +441,15 @@ export const actions = {
 
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
-        const selectedAnnotations = []; // Annotations cannot be selected yet
+        const selectedAnnotations = rootGetters['selection/selectedAnnotationIds'];
 
         if (rootGetters['selection/isSelectionEmpty']) {
             return;
         }
 
         const objectBounds = workflowObjectBounds({
-            nodes: rootGetters['selection/selectedNodes']
+            nodes: rootGetters['selection/selectedNodes'],
+            workflowAnnotations: rootGetters['selection/selectedAnnotations']
         });
 
         if (command === 'cut') {
@@ -553,7 +556,7 @@ export const actions = {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         // 3. Do actual pasting
-        const { nodeIds } = await API.workflowCommand.Paste({
+        const { nodeIds, annotationIds } = await API.workflowCommand.Paste({
             projectId,
             workflowId,
             content: clipboardContent.data,
@@ -564,6 +567,7 @@ export const actions = {
         doAfterPaste?.();
         dispatch('selection/deselectAllObjects', null, { root: true });
         dispatch('selection/selectNodes', nodeIds, { root: true });
+        dispatch('selection/selectAnnotations', annotationIds, { root: true });
     },
 
     transformWorkflowAnnotation({ state }, { bounds, annotationId }) {

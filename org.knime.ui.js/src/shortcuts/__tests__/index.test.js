@@ -114,7 +114,7 @@ describe('Shortcuts', () => {
             const resultNoInteractions = Object.keys(selectionShortcuts).filter(
                 c => selectionShortcuts[c].condition({ $store })
             );
-            expect(resultNoInteractions).not.toStrictEqual(expect.arrayContaining(['selectAllNodes', 'deselectAll']));
+            expect(resultNoInteractions).not.toStrictEqual(expect.arrayContaining(['selectAll', 'deselectAll']));
 
             $store.state.canvas.interactionsEnabled = true;
 
@@ -122,7 +122,7 @@ describe('Shortcuts', () => {
                 .keys(selectionShortcuts)
                 .filter(c => selectionShortcuts[c].condition({ $store }));
 
-            expect(resultInteractions).toStrictEqual(expect.arrayContaining(['selectAllNodes', 'deselectAll']));
+            expect(resultInteractions).toStrictEqual(expect.arrayContaining(['selectAll', 'deselectAll']));
         });
     });
 });

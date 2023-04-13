@@ -1,6 +1,6 @@
 import type { UnionToShortcutRegistry } from './types';
 
-type SelectionShortcuts = UnionToShortcutRegistry<'selectAllNodes' | 'deselectAll'>;
+type SelectionShortcuts = UnionToShortcutRegistry<'selectAll' | 'deselectAll'>;
 
 type SidePanelShortcuts = UnionToShortcutRegistry<'toggleSidePanel'>;
 
@@ -9,9 +9,9 @@ declare module './index' {
 }
 
 export const selectionShortcuts: SelectionShortcuts = {
-    selectAllNodes: {
+    selectAll: {
         hotkey: ['Ctrl', 'A'],
-        execute: ({ $store }) => $store.dispatch('selection/selectAllNodes')
+        execute: ({ $store }) => $store.dispatch('selection/selectAllObjects')
     },
     deselectAll: {
         hotkey: ['Ctrl', 'Shift', 'A'],

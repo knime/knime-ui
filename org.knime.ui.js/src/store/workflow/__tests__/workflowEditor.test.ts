@@ -192,9 +192,10 @@ describe('workflow store: Editing', () => {
                 nodes: {
                     foo: { bla: 1, position: { x: 0, y: 0 } },
                     bar: { qux: 2, position: { x: 50, y: 50 } }
-                }
+                },
+                workflowAnnotations: []
             });
-            store.dispatch('selection/selectAllNodes');
+            store.dispatch('selection/selectAllObjects');
             await Vue.nextTick();
 
             store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
@@ -210,9 +211,10 @@ describe('workflow store: Editing', () => {
             }
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
-                nodes: nodesArray
+                nodes: nodesArray,
+                workflowAnnotations: []
             });
-            store.dispatch('selection/selectAllNodes');
+            store.dispatch('selection/selectAllObjects');
             await Vue.nextTick();
             store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
 
@@ -495,15 +497,18 @@ describe('workflow store: Editing', () => {
                             }
                         }
                     },
-                    workflowAnnotations: []
+                    workflowAnnotations: [
+                        { id: 'root:2_1', text: 'Test' },
+                        { id: 'root:2_2', text: 'Test1' }
+                    ]
                 });
                 return result;
             };
 
-            it('collapses nodes to a container', async () => {
+            it('collapses objects to a container', async () => {
                 mockedAPI.workflowCommand.Collapse.mockImplementation(() => ({ newNodeId: '' }));
                 const { store } = await loadStoreWithNodes();
-                store.dispatch('selection/selectAllNodes');
+                store.dispatch('selection/selectAllObjects');
 
                 store.dispatch('workflow/collapseToContainer', {
                     containerType: 'metanode'
@@ -514,7 +519,7 @@ describe('workflow store: Editing', () => {
                     workflowId: 'root',
                     nodeIds: ['foo', 'bar'],
                     containerType: 'metanode',
-                    annotationIds: []
+                    annotationIds: ['root:2_1', 'root:2_2']
                 });
             });
 
@@ -522,7 +527,7 @@ describe('workflow store: Editing', () => {
                 const newNodeId = 'new-container';
                 mockedAPI.workflowCommand.Collapse.mockImplementation(() => ({ newNodeId }));
                 const { store } = await loadStoreWithNodes();
-                store.dispatch('selection/selectAllNodes');
+                store.dispatch('selection/selectAllObjects');
 
                 await store.dispatch('workflow/collapseToContainer', {
                     containerType: 'metanode'
@@ -536,7 +541,7 @@ describe('workflow store: Editing', () => {
                 const newNodeId = 'new-container';
                 mockedAPI.workflowCommand.Collapse.mockImplementation(() => ({ newNodeId }));
                 const { store } = await loadStoreWithNodes();
-                store.dispatch('selection/selectAllNodes');
+                store.dispatch('selection/selectAllObjects');
 
                 const commandCall = store.dispatch('workflow/collapseToContainer', {
                     containerType: 'metanode'
@@ -592,7 +597,9 @@ describe('workflow store: Editing', () => {
             };
 
             it('expands a container node', async () => {
-                mockedAPI.workflowCommand.Expand.mockImplementation(() => ({ expandedNodeIds: [] }));
+                mockedAPI.workflowCommand.Expand.mockImplementation(() => (
+                    { expandedNodeIds: [], expandedAnnotationIds: [] }
+                ));
                 const { store } = await loadStoreWithNodes();
                 store.dispatch('selection/selectNode', 'foo');
 
@@ -607,7 +614,8 @@ describe('workflow store: Editing', () => {
 
             it('selects the expanded nodes after the command finishes', async () => {
                 const expandedNodeIds = ['foo', 'bar'];
-                mockedAPI.workflowCommand.Expand.mockImplementation(() => ({ expandedNodeIds }));
+                const expandedAnnotationIds = ['id1'];
+                mockedAPI.workflowCommand.Expand.mockImplementation(() => ({ expandedNodeIds, expandedAnnotationIds }));
 
                 const { store } = await loadStoreWithNodes();
                 store.dispatch('selection/selectNode', 'foo');
@@ -615,6 +623,7 @@ describe('workflow store: Editing', () => {
                 await store.dispatch('workflow/expandContainerNode');
 
                 expect(store.state.selection.selectedNodes).toEqual({ foo: true, bar: true });
+                expect(store.state.selection.selectedAnnotations).toEqual({ id1: true });
             });
 
             it('does not select the expanded nodes if user selected something before command ends', async () => {
@@ -747,10 +756,14 @@ describe('workflow store: Editing', () => {
                             id: 'bar',
                             position: { x: 50, y: 50 }
                         }
-                    }
+                    },
+                    workflowAnnotations: [
+                        { id: 'root:2_1', text: 'Test', bounds: { x: 10, y: 10, height: 10, width: 10 } },
+                        { id: 'root:2_2', text: 'Test1', bounds: { x: 20, y: 20, height: 20, width: 20 } }
+                    ]
                 });
 
-                store.dispatch('selection/selectAllNodes');
+                store.dispatch('selection/selectAllObjects');
                 await Vue.nextTick();
                 await store.dispatch('workflow/copyOrCutWorkflowParts', { command: command.toLowerCase() });
 
@@ -758,7 +771,7 @@ describe('workflow store: Editing', () => {
                     projectId: 'my project',
                     workflowId: 'root',
                     nodeIds: ['foo', 'bar'],
-                    annotationIds: []
+                    annotationIds: ['root:2_1', 'root:2_2']
                 });
 
                 expect(clipboardMock.getContent()).toStrictEqual({
@@ -782,7 +795,8 @@ describe('workflow store: Editing', () => {
                 const setupStoreForPaste = async () => {
                     // register "pasteWorkflowParts" API function
                     mockedAPI.workflowCommand.Paste.mockReturnValue({
-                        nodeIds: ['bar']
+                        nodeIds: ['bar'],
+                        annotationIds: ['root:2_1']
                     });
 
                     const { store } = await loadStore();
@@ -792,7 +806,7 @@ describe('workflow store: Editing', () => {
                         projectId: 'my project',
                         info: { containerId: 'root' },
                         nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
-                        workflowAnnotations: []
+                        workflowAnnotations: ['root:2_1', 'root:2_2']
                     };
                     store.commit('workflow/setActiveWorkflow', workflow);
 
