@@ -11,6 +11,7 @@ export const text = {
 
 export const portColors = {
     ...portColorsCommon,
+    generic: 'hsl(0, 0%, 61%)',
     inactive: 'hsl(0, 100%, 50%)', // "×"
     inactiveOutline: 'hsla(0, 100%, 100%, 66%)' // outline around "×"
 };
