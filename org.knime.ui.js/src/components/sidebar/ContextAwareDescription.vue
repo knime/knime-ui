@@ -51,7 +51,7 @@ export default {
 }
 
 .node-description {
-  /* required for sticky header in NodeDescrioption to have a background to inherit */
+  /* required for sticky header in NodeDescription to have a background to inherit */
   background-color: var(--knime-porcelain);
 }
 </style>
