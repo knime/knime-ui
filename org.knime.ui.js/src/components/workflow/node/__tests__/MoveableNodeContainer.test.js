@@ -86,7 +86,8 @@ describe('MoveableNodeContainer', () => {
                     isWritable() {
                         return true;
                     },
-                    isNodeConnected: (_state) => (_id) => true
+                    isNodeConnected: (_state) => (_id) => true,
+                    getNodeById: (_state) => (_id) => ({ inPorts: [], outPorts: [] })
                 },
                 actions: actions.workflow,
                 state: {

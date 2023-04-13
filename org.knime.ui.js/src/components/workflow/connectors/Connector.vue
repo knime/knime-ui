@@ -161,8 +161,13 @@ export default defineComponent({
         },
         onNodeDragggingEnter(event: CustomEvent) {
             const { inPortsKind, outPortsKind, isNodeConnected } = event.detail;
-            if (this.sourceNodeObject.inPorts[this.sourcePort].typeId !== inPortsKind[this.sourcePort] &&
-             this.destNodeObject.inPorts[this.destPort].typeId !== outPortsKind[this.destPort]) {
+            const hasCompatibleSrcPort = inPortsKind && this.sourceNodeObject?.outPorts
+                ? inPortsKind.includes(this.sourceNodeObject.outPorts[this.sourcePort].typeId)
+                : false;
+            const hasCompatibleDestPort = outPortsKind && this.destNodeObject?.inPorts
+                ? outPortsKind.includes(this.destNodeObject.inPorts[this.destPort].typeId)
+                : false;
+            if (!hasCompatibleSrcPort && !hasCompatibleDestPort) {
                 return;
             }
 

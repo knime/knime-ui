@@ -691,12 +691,24 @@ describe('Connector.vue', () => {
             expect(paths.at(1).classes()).not.toContain('is-dragged-over');
         });
 
-        it('inserts existing dragged node', async () => {
-            const storeConfig = getStoreConfig();
+        it('ignores dragged node without compatible ports', () => {
+            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'DataTable' } });
             const wrapper = doShallowMount({ storeConfig });
 
             const paths = wrapper.findAll('path');
-            paths.at(0).trigger('node-dragging-enter', { detail: { isNodeConnected: false } });
+            paths.at(0).trigger('node-dragging-enter',
+                { detail: { isNodeConnected: true, inPortsKind: ['Credentials'], outPortsKind: ['Credentials'] } });
+
+            expect(paths.at(1).classes()).not.toContain('is-dragged-over');
+        });
+
+        it('inserts existing dragged node', async () => {
+            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'DataTable' } });
+            const wrapper = doShallowMount({ storeConfig });
+
+            const paths = wrapper.findAll('path');
+            paths.at(0).trigger('node-dragging-enter',
+                { detail: { isNodeConnected: false, inPortsKind: ['DataTable'], outPortsKind: ['DataTable'] } });
             await Vue.nextTick();
             expect(paths.at(1).classes()).toContain('is-dragged-over');
 
@@ -713,8 +725,8 @@ describe('Connector.vue', () => {
             );
         });
 
-        it('notifies user insert new node is not possible', async () => {
-            const storeConfig = getStoreConfig();
+        it('notifies user insert new node is not possible', () => {
+            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'DataTable' } });
             const props = {
                 id: '',
                 allowedActions: {
@@ -724,9 +736,8 @@ describe('Connector.vue', () => {
             const wrapper = doShallowMount({ storeConfig, props });
 
             const paths = wrapper.findAll('path');
-            paths.at(0).trigger('node-dragging-enter', { detail: { isNodeConnected: false } });
-            await Vue.nextTick();
-            expect(paths.at(1).classes()).toContain('is-dragged-over');
+            paths.at(0).trigger('node-dragging-enter',
+                { detail: { isNodeConnected: false, inPortsKind: ['DataTable'], outPortsKind: ['DataTable'] } });
 
             const errorCallback = vi.fn();
             paths.at(0).trigger('node-dragging-end', { detail: { id: 'test',
