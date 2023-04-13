@@ -160,7 +160,13 @@ export default defineComponent({
             });
         },
         onNodeDragggingEnter(event: CustomEvent) {
-            if (event.detail.isNodeConnected) {
+            const { inPortsKind, outPortsKind, isNodeConnected } = event.detail;
+            if (this.sourceNodeObject.inPorts[this.sourcePort].typeId !== inPortsKind[this.sourcePort] &&
+             this.destNodeObject.inPorts[this.destPort].typeId !== outPortsKind[this.destPort]) {
+                return;
+            }
+
+            if (isNodeConnected) {
                 return;
             }
             event.preventDefault();

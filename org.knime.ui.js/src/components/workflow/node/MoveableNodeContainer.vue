@@ -50,7 +50,7 @@ export default {
         lastHitTarget: null
     }),
     computed: {
-        ...mapGetters('workflow', ['isWritable', 'isNodeConnected']),
+        ...mapGetters('workflow', ['isWritable', 'isNodeConnected', 'getNodeById']),
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedNodeDrag', 'isDragging']),
@@ -220,12 +220,15 @@ export default {
             }
 
             if (!isSameTarget && hitTarget) {
+                const { inPorts, outPorts } = this.getNodeById(this.id);
                 const isEventIgnored = hitTarget.dispatchEvent(
                     new CustomEvent('node-dragging-enter', {
                         bubbles: true,
                         cancelable: true,
                         detail: {
-                            isNodeConnected: this.isNodeConnected(this.id)
+                            isNodeConnected: this.isNodeConnected(this.id),
+                            inPortsKind: inPorts.map(port => port.typeId),
+                            outPortsKind: outPorts.map(port => port.typeId)
                         }
                     })
                 );
