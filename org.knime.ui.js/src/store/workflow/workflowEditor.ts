@@ -605,13 +605,13 @@ export const actions = {
         });
     },
 
-    updateAnnotationText({ state }, { annotationId, richTextContent }) {
+    updateAnnotationText({ state }, { annotationId, text }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         API.workflowCommand.UpdateWorkflowAnnotationText({
             projectId,
             workflowId,
             annotationId,
-            text: richTextContent
+            text
         });
     }
 };

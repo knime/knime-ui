@@ -86,8 +86,8 @@ export default defineComponent({
             return this.isSelected && !isMoreThanOneItemSelected && this.showSelectionPlane;
         },
 
-        isLegacyAnnotation() {
-            return this.annotation.contentType === Annotation.ContentTypeEnum.Textplain;
+        isRichTextAnnotation() {
+            return this.annotation.contentType === Annotation.ContentTypeEnum.Texthtml;
         }
     },
 
@@ -141,7 +141,7 @@ export default defineComponent({
             if (this.hasEdited) {
                 this.$store.dispatch('workflow/updateAnnotationText', {
                     annotationId: this.annotation.id,
-                    richTextContent: this.richTextContent
+                    text: this.richTextContent
                 });
             }
 
@@ -186,13 +186,13 @@ export default defineComponent({
         :height="transformedBounds.height"
       >
         <LegacyAnnotation
-          v-if="isLegacyAnnotation && !isEditing"
+          v-if="!isRichTextAnnotation && !isEditing"
           :annotation="annotation"
           @edit-start="toggleEdit"
         />
 
         <RichTextEditor
-          v-if="!isLegacyAnnotation || isEditing"
+          v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
           v-model="richTextContent"
           :initial-value="annotation.text"

@@ -1,10 +1,7 @@
-<script>
-/**
- * Defines the order of workflow content and portals, this is used to paint stuff ontop of other things
- * as svg has no z-index.
- */
-</script>
-
+<!--
+  Defines the order of workflow content and portals, this is used to paint stuff ontop of other things
+  as svg has no z-index.
+-->
 <template>
   <!-- Workflow Annotation Layer. Background -->
   <slot name="workflowAnnotation" />
