@@ -127,8 +127,7 @@ public final class DesktopAPI {
                     LOGGER.debug("Desktop API function successfully called: " + name);
                     return res;
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    final var ex = e instanceof InvocationTargetException
-                        ? ((InvocationTargetException)e).getTargetException() : e;
+                    final var ex = e instanceof InvocationTargetException invE ? invE.getTargetException() : e;
                     // must never happen
                     var message = "Desktop API function '" + name
                         + "' couldn't be called. Most likely an implementation problem.";

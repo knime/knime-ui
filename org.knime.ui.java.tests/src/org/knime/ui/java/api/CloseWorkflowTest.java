@@ -65,6 +65,7 @@ import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.util.CoreUtil;
+import org.knime.gateway.impl.project.WorkflowProject.Origin;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -96,10 +97,9 @@ class CloseWorkflowTest {
         var wfm1 = WorkflowManagerUtil.loadWorkflow(workflowDir);
         var wfm2 = WorkflowManagerUtil.loadWorkflow(workflowDir);
 
-        wpm.addWorkflowProject("projectId1",
-            OpenWorkflow.createWorkflowProject(wfm1, "providerId", "spaceId", "itemId", "relativePath", "projectId1"));
-        wpm.addWorkflowProject("projectId2",
-            OpenWorkflow.createWorkflowProject(wfm2, "providerId", "spaceId", "itemId", "relativePath", "projectId2"));
+        var origin = Origin.create("providerId", "spaceId", "itemId", "relativePath");
+        wpm.addWorkflowProject("projectId1", OpenWorkflow.createWorkflowProject(wfm1, origin, "projectId1"));
+        wpm.addWorkflowProject("projectId2", OpenWorkflow.createWorkflowProject(wfm2, origin, "projectId2"));
         wpm.openAndCacheWorkflow("projectId1");
         wpm.setWorkflowProjectActive("projectId1");
         assertThat(wpm.getWorkflowProjectsIds()).hasSize(2);

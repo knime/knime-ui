@@ -63,6 +63,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.util.CoreUtil;
+import org.knime.gateway.impl.project.WorkflowProject.Origin;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -108,18 +109,18 @@ class OpenWorkflowTest {
         assertThat(m_wfm).isNotNull();
         assertThat(m_wfm.getName()).startsWith("simple");
 
-        verify(appStateUpdateListener).run();;
+        verify(appStateUpdateListener).run();
     }
 
     @Test
     void testCreateWorkflowProject() throws IOException {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        var project =
-            OpenWorkflow.createWorkflowProject(m_wfm, "providerId", "spaceId", "itemId", "relativePath", "projectId");
+        final var project = OpenWorkflow.createWorkflowProject(m_wfm,
+            Origin.create("providerId", "spaceId", "itemId", "relativePath"), "projectId");
         assertThat(project.getName()).isEqualTo("workflow");
         assertThat(project.getID()).isEqualTo("projectId");
         assertThat(project.openProject()).isSameAs(m_wfm);
-        var origin = project.getOrigin().orElseThrow();
+        final var origin = project.getOrigin().orElseThrow();
         assertThat(origin.getItemId()).isEqualTo("itemId");
         assertThat(origin.getSpaceId()).isEqualTo("spaceId");
         assertThat(origin.getProviderId()).isEqualTo("providerId");

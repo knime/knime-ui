@@ -60,9 +60,9 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
  */
 final class ImportAPI {
 
-    private static final ImportWorkflows IMPORT_WORKFLOWS = new ImportWorkflows();
+    static final ImportWorkflows IMPORT_WORKFLOWS = new ImportWorkflows();
 
-    private static final ImportFiles IMPORT_FILES = new ImportFiles();
+    static final ImportFiles IMPORT_FILES = new ImportFiles();
 
     private ImportAPI() {
         // stateless

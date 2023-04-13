@@ -48,28 +48,44 @@ package org.knime.ui.java.api;
 
 import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.text.ParseException;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+
+import javax.xml.xpath.XPathExpressionException;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
+import org.knime.core.util.workflowalizer.Workflowalizer;
+import org.knime.core.util.workflowalizer.WorkflowalizerConfiguration;
 import org.knime.gateway.impl.project.WorkflowProject;
+import org.knime.gateway.impl.project.WorkflowProject.Origin;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -83,6 +99,7 @@ import org.knime.workbench.explorer.filesystem.LocalExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 import org.knime.workbench.explorer.view.actions.DownloadAndOpenWorkflowAction;
 import org.knime.workbench.explorer.view.actions.WorkflowDownload;
+import org.xml.sax.SAXException;
 
 /**
  * Opens a workflow.
@@ -90,7 +107,7 @@ import org.knime.workbench.explorer.view.actions.WorkflowDownload;
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class OpenWorkflow {
+public final class OpenWorkflow {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenWorkflow.class);
 
@@ -98,8 +115,104 @@ final class OpenWorkflow {
        // utility
     }
 
-    static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
-        final String spaceId, final String itemId, final String relativePath, final String oldProjectId) {
+    public static void openArchives(final List<File> archives) {
+        for (final var archive : archives) {
+            final var fileName = archive.getName();
+            if (fileName.toLowerCase(Locale.ROOT).endsWith(".knwf")) {
+                final var name0 = fileName.substring(0, fileName.length() - 5);
+                try {
+                    final var workflowInfo = Workflowalizer.readWorkflow(archive.toPath(),
+                        WorkflowalizerConfiguration.builder().readWorkflowMeta().build());
+                    final var name1 = workflowInfo.getName();
+                    final var name2 = workflowInfo.getWorkflowSetMetadata().get().getTitle().get();
+                } catch (final XPathExpressionException | IOException | InvalidSettingsException | ParseException
+                        | SAXException e) {
+                    // TODO Auto-generated catch block
+                }
+            }
+            // import KNAR contents
+            final var location = pickImportLocation();
+            if (location.isPresent()) {
+                Display.getDefault().syncExec(() -> {
+                    DesktopAPUtil.runWithProgress("Import KNIME Workflow Archive", LOGGER, monitor -> {
+                        ImportAPI.IMPORT_WORKFLOWS.importItems(monitor, LocalSpaceUtil.getLocalWorkspace(),
+                            location.get().getItemId(), List.of(archive.toPath()), NameCollisionHandling.AUTORENAME);
+                        return null;
+                    });
+                });
+            }
+//            final var name = archive.getName();
+//            if (name.toLowerCase(Locale.ROOT).endsWith(".knwf")) {
+//                final var prefix = name.substring(0, name.length() - 5);
+//                final var dir = DesktopAPUtil.runWithProgress("Import KNIME Workflow Archive", LOGGER, monitor -> {
+//                    try {
+//                        final var tempDir = ExplorerMountTable.createExplorerTempDir(prefix);
+//                        new TempExtractArchive(archive, tempDir, false, null, monitor).runSync(monitor);
+//                        return tempDir.toLocalFile().toPath();
+//                    } catch (CoreException e) {
+//                        LOGGER.warn("Opening archive '" + archive + "' as temporary workflow failed.", e);
+//                    }
+//                    return null;
+//                });
+//                if (dir.isPresent()) {
+//                    if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+//                        OpenWorkflow.openWorkflowInClassicAndWebUI(spaceProviderId, spaceId, itemId);
+//                    } else {
+//                        DesktopAPUtil.runWithProgress("Loading workflow", LOGGER, monitor -> {
+//                            OpenWorkflow.openWorkflowInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
+//                            return null;
+//                        });
+//                    }
+//                }
+//            } else {
+//            }
+        }
+    }
+
+    private static Optional<Origin> pickImportLocation() {
+        final var target = SpaceDestinationPicker.promptForTargetLocation(new String[] { "LOCAL" }, Operation.SAVE);
+        if (target.isEmpty()) {
+            return Optional.empty();
+        }
+
+        final var destination = target.get().getDestination();
+        try {
+            final var localPath = destination.toLocalFile().toPath();
+            return Optional.of(LocalSpaceUtil.getLocalOrigin(localPath));
+        } catch (CoreException e) {
+            LOGGER.warn("Local target '" + destination + "' can't be opened.", e);
+            return Optional.empty();
+        }
+    }
+
+    public static void openURLs(final List<URI> urls) {
+        for (final var url : urls) {
+            final var fileStore = ExplorerFileSystem.INSTANCE.getStore(url);
+            final var info = fileStore.fetchInfo();
+            if (!(info.exists() && info.isWorkflow())) {
+                // not a workflow, skip
+                continue;
+            }
+
+            final var mountId = fileStore.getMountID();
+            if (fileStore instanceof LocalExplorerFileStore localStore) {
+                try {
+                    final var workflowPath = localStore.toLocalFile().toPath();
+                    final var origin = LocalSpaceUtil.getLocalOrigin(workflowPath);
+                    WorkflowAPI.openWorkflow(origin.getSpaceId(), origin.getItemId(), origin.getProviderId());
+                } catch (CoreException e) {
+                    LOGGER.warn("Local workflow '" + url + "' can't be opened.", e);
+                }
+            }
+
+            if (fileStore.locationInfo().orElseThrow() instanceof HubSpaceLocationInfo hubLocation) {
+                WorkflowAPI.openWorkflow(hubLocation.getSpaceItemId(), hubLocation.getWorkflowItemId(), mountId);
+            }
+        }
+    }
+
+    static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final Origin origin,
+            final String oldProjectId) {
         var projectId = oldProjectId == null ? LocalSpaceUtil.getUniqueProjectId(wfm.getName()) : oldProjectId;
         return new WorkflowProject() { // NOSONAR
             @Override
@@ -119,27 +232,7 @@ final class OpenWorkflow {
 
             @Override
             public Optional<Origin> getOrigin() {
-                return Optional.of(new Origin() {
-                    @Override
-                    public String getProviderId() {
-                        return providerId;
-                    }
-
-                    @Override
-                    public String getSpaceId() {
-                        return spaceId;
-                    }
-
-                    @Override
-                    public String getItemId() {
-                        return itemId;
-                    }
-
-                    @Override
-                    public Optional<String> getRelativePath() {
-                        return Optional.ofNullable(relativePath);
-                    }
-                });
+                return Optional.ofNullable(origin);
             }
         };
     }
@@ -151,8 +244,7 @@ final class OpenWorkflow {
      * @param itemId
      * @param spaceProviderId
      */
-    static void openWorkflowInClassicAndWebUI(final String spaceProviderId, final String spaceId,
-        final String itemId) {
+    static void openWorkflowInClassicAndWebUI(final String spaceProviderId, final String spaceId, final String itemId) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         var knimeUrl = space.toKnimeUrl(itemId);
 
@@ -166,10 +258,9 @@ final class OpenWorkflow {
         }
     }
 
-    private static void registerWorkflowProject(final WorkflowManager wfm, final String spaceProviderId,
-        final String spaceId, final String itemId, final String relativePath) {
+    static void registerWorkflowProject(final WorkflowManager wfm, final Origin origin) {
         var wpm = WorkflowProjectManager.getInstance();
-        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, null);
+        var wfProj = createWorkflowProject(wfm, origin, null);
         var projectId = wfProj.getID();
         wpm.addWorkflowProject(projectId, wfProj);
         wpm.openAndCacheWorkflow(projectId);
@@ -192,13 +283,15 @@ final class OpenWorkflow {
 
         if (wfm != null) {
             String relativePath = null;
+            var workflowType = WorkflowType.REMOTE;
             if (space instanceof LocalWorkspace localWorkspace) {
+                workflowType = WorkflowType.LOCAL;
                 var wfPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
                 relativePath = localWorkspace.getLocalRootPath().relativize(wfPath).toString();
             }
-            registerWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
-            NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm,
-                space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
+
+            registerWorkflowProject(wfm, Origin.create(spaceProviderId, spaceId, itemId, relativePath));
+            NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, workflowType);
 
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
@@ -211,11 +304,10 @@ final class OpenWorkflow {
      * @throws PartInitException If the editor part could not be initialized.
      */
     private static void openEditor(final AbstractExplorerFileStore fileStore) throws PartInitException {
-        var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         final IEditorInput input;
-        if (fileStore instanceof RemoteExplorerFileStore) {
+        if (fileStore instanceof RemoteExplorerFileStore remoteStore) {
             final var tempInput = DesktopAPUtil.runWithProgress("Download workflow", LOGGER,
-                progress -> downloadWorkflowFromMountpoint(progress, (RemoteExplorerFileStore)fileStore));
+                progress -> downloadWorkflowFromMountpoint(progress, remoteStore));
             if (tempInput.isEmpty()) {
                 return;
             }
@@ -223,6 +315,7 @@ final class OpenWorkflow {
         } else {
             input = new FileStoreEditorInput(fileStore.getChild(WorkflowPersistor.WORKFLOW_FILE));
         }
+        final var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         page.openEditor(input, WorkflowEditor.ID, false);
     }
 
@@ -233,7 +326,7 @@ final class OpenWorkflow {
      * @param source source file store
      * @return
      */
-    private static final RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
+    private static RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
             final RemoteExplorerFileStore source) {
         final LocalExplorerFileStore tmpDestDir;
         try {
@@ -256,7 +349,6 @@ final class OpenWorkflow {
             }
         } catch (CoreException e) {
             throw new IllegalStateException(e);
-
         }
 
         // it is weird if the length is not 1 (because we downloaded one item)

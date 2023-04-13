@@ -55,7 +55,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.FileDialog;
@@ -86,7 +85,7 @@ abstract class AbstractImportItems {
         }
         var baseDir = Path.of(pathString).getParent();
         var fileNames = dialog.getFileNames();
-        var srcPaths = Arrays.stream(fileNames).map(baseDir::resolve).collect(Collectors.toList());
+        var srcPaths = Arrays.stream(fileNames).map(baseDir::resolve).toList();
 
         // Check for name collisions and solve them
         var collisionHandling = checkForNameCollisionsAndSuggestSolution(space, itemId, srcPaths).orElse(null);

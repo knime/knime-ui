@@ -288,6 +288,12 @@ export interface AllowedWorkflowActions extends AllowedActions {
      * @memberof AllowedWorkflowActions
      */
     canRedo: boolean;
+    /**
+     * Whether the surrounding workflow/component/metanode can be saved back to its original location.
+     * @type {boolean}
+     * @memberof AllowedWorkflowActions
+     */
+    canSave: boolean;
 
 }
 

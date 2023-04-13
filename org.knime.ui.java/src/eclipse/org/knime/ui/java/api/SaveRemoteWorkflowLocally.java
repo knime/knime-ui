@@ -63,6 +63,7 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
 import org.knime.core.util.LockFailedException;
+import org.knime.gateway.impl.project.WorkflowProject.Origin;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
@@ -139,9 +140,9 @@ final class SaveRemoteWorkflowLocally {
             // update the `WorkflowProject` origin
             final var localItemId = localWorkspace.getItemId(newPath);
             final var relativePath = localWorkspace.getLocalRootPath().relativize(newPath).toString();
-            final var project = OpenWorkflow.createWorkflowProject(workflowManager,
-                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID, localItemId, relativePath,
-                projectId);
+            final var origin = Origin.create(LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID,
+                localItemId, relativePath);
+            final var project = OpenWorkflow.createWorkflowProject(workflowManager, origin, projectId);
             projectManager.addWorkflowProject(projectId, project);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
