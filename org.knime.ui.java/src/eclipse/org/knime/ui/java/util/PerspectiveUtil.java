@@ -250,11 +250,14 @@ public final class PerspectiveUtil {
 
     /**
      * Enable or disable all classic UI key bindings
+     *
      * @param isEnableKeyBindings Whether to enable (or disable) all the key bindings
      */
     public static void toggleClassicPerspectiveKeyBindings(final boolean isEnableKeyBindings) {
-        var bindingService = PlatformUI.getWorkbench().getAdapter(IBindingService.class);
-        bindingService.setKeyFilterEnabled(isEnableKeyBindings);
+        if (PlatformUI.isWorkbenchRunning()) {
+            var bindingService = PlatformUI.getWorkbench().getAdapter(IBindingService.class);
+            bindingService.setKeyFilterEnabled(isEnableKeyBindings);
+        }
     }
 
 }
