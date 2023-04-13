@@ -11,7 +11,8 @@ import * as workflowStore from '@/store/workflow';
 import { type WorkflowAnnotation, Annotation } from '@/api/gateway-api/generated-api';
 
 import WorkflowAnnotationComp from '../WorkflowAnnotation.vue';
-import LegacyAnnotationText from '../LegacyAnnotationText.vue';
+import LegacyAnnotation from '../LegacyAnnotation.vue';
+import RichTextEditor from '../RichTextEditor.vue';
 import TransformControls from '../TransformControls.vue';
 
 describe('Workflow Annotation', () => {
@@ -26,7 +27,8 @@ describe('Workflow Annotation', () => {
             backgroundColor: '#000',
             bounds: { x: 0, y: 0, width: 100, height: 50 },
             text: 'hallo',
-            styleRanges: [{ start: 0, length: 2, fontSize: 14 }]
+            styleRanges: [{ start: 0, length: 2, fontSize: 14 }],
+            contentType: Annotation.ContentTypeEnum.Plain
         }
     };
 
@@ -76,85 +78,90 @@ describe('Workflow Annotation', () => {
             props: { ...defaultProps, ...props },
             global: {
                 mocks: { ...defaultMocks, ...mocks },
-                plugins: [$store]
+                plugins: [$store],
+                stubs: {
+                    RichTextEditor: true
+                }
             }
         });
 
         return { wrapper, $store, dispatchSpy };
     };
 
-    it('should apply styles to legacy annotation', async () => {
-        const bounds = {
-            height: '0',
-            width: '100',
-            x: '5',
-            y: '5'
-        };
+    it('should render LegacyAnnotation', () => {
+        const { wrapper } = doMount();
+
+        expect(wrapper.findComponent(LegacyAnnotation).props('annotation')).toEqual(defaultProps.annotation);
+        expect(wrapper.findComponent(RichTextEditor).exists()).toBe(false);
+    });
+
+    it('should render RichTextEditor', () => {
         const { wrapper } = doMount({
             props: {
-                annotation: { ...defaultProps.annotation, bounds }
+                annotation: { ...defaultProps.annotation, contentType: Annotation.ContentTypeEnum.Html }
             }
         });
 
-        await new Promise(r => setTimeout(r, 0));
-        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining(bounds));
-
-        const legacyAnnotationStyles = wrapper.findComponent(LegacyAnnotationText).attributes('style');
-        expect(legacyAnnotationStyles).toMatch('font-size: 12px;');
-        expect(legacyAnnotationStyles).toMatch('border: 4px solid #000;');
-        expect(legacyAnnotationStyles).toMatch('background: rgb(0, 0, 0);');
-        expect(legacyAnnotationStyles).toMatch('width: 100%;');
-        expect(legacyAnnotationStyles).toMatch('height: 100%;');
-        expect(legacyAnnotationStyles).toMatch('text-align: right;');
-        expect(legacyAnnotationStyles).toMatch('padding: 3px;');
+        expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
+        expect(wrapper.findComponent(RichTextEditor).props('id')).toEqual(defaultProps.annotation.id);
+        expect(wrapper.findComponent(RichTextEditor).props('initialValue')).toEqual(defaultProps.annotation.text);
     });
 
-    it('should pass props to LegacyAnnotationText', () => {
-        const { wrapper } = doMount();
+    describe('transform', () => {
+        it('should transform annotation', () => {
+            const { wrapper, $store } = doMount();
+            const bounds = { x: 15, y: 15, width: 100, height: 100 };
 
-        expect(wrapper.findComponent(LegacyAnnotationText).props('text')).toBe('hallo');
+            wrapper.findComponent(TransformControls).vm.$emit('transformEnd', { bounds });
+            const projectId = $store.state.workflow.activeWorkflow.projectId;
+            const workflowId = $store.state.workflow.activeWorkflow.info.containerId;
 
-        expect(wrapper.findComponent(LegacyAnnotationText).props('styleRanges')).toEqual(
-            [{ start: 0, length: 2, fontSize: 14 }]
-        );
-    });
-
-    it('should honor annotationsFontSizePointToPixelFactor', () => {
-        const shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2 };
-        const { wrapper } = doMount({
-            props: {
-                annotation: { ...defaultProps.annotation, defaultFontSize: 18 }
-            },
-            mocks: { $shapes: shapes }
-        });
-
-        expect(wrapper.findComponent(LegacyAnnotationText).attributes('style')).toMatch(
-            'font-size: 36px;'
-        );
-    });
-
-    it('should transform annotation', () => {
-        const { wrapper, $store } = doMount();
-        const bounds = { x: 15, y: 15, width: 100, height: 100 };
-
-        wrapper.findComponent(TransformControls).vm.$emit('transformEnd', { bounds });
-        const projectId = $store.state.workflow.activeWorkflow.projectId;
-        const workflowId = $store.state.workflow.activeWorkflow.info.containerId;
-
-        expect(API.workflowCommand.TransformWorkflowAnnotation).toHaveBeenCalledWith({
-            projectId,
-            workflowId,
-            bounds,
-            annotationId: defaultProps.annotation.id
+            expect(API.workflowCommand.TransformWorkflowAnnotation).toHaveBeenCalledWith({
+                projectId,
+                workflowId,
+                bounds,
+                annotationId: defaultProps.annotation.id
+            });
         });
     });
 
-    describe('left click', () => {
-        it('click to select', async () => {
+    describe('edit', () => {
+        it('should emit `toggleEdit` event to start editing (LegacyAnnotation)', () => {
+            const { wrapper } = doMount();
+
+            wrapper.findComponent(LegacyAnnotation).trigger('dblclick');
+            expect(wrapper.emitted('toggleEdit')[0][0]).toBe(defaultProps.annotation.id);
+        });
+
+        it('should emit `toggleEdit` event to start editing (RichTextEditor)', () => {
+            const { wrapper } = doMount({
+                props: {
+                    annotation: { ...defaultProps.annotation, contentType: Annotation.ContentTypeEnum.Html }
+                }
+            });
+
+            wrapper.findComponent(RichTextEditor).vm.$emit('editStart');
+            expect(wrapper.emitted('toggleEdit')[0][0]).toBe(defaultProps.annotation.id);
+        });
+
+        it('should render RichTextEditor when annotation is editable', () => {
+            const { wrapper } = doMount({
+                props: {
+                    isEditing: true
+                }
+            });
+
+            expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
+            expect(wrapper.findComponent(RichTextEditor).exists()).toBe(true);
+            expect(wrapper.findComponent(RichTextEditor).props('editable')).toBe(true);
+        });
+    });
+
+    describe('selection', () => {
+        it('should select with left click', async () => {
             const { wrapper, dispatchSpy } = doMount();
             await wrapper.findComponent(TransformControls).trigger('click', { button: 0 });
 
-            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAllObjects', undefined);
             expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
         });
 
@@ -167,7 +174,7 @@ describe('Workflow Annotation', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
         });
 
-        it('meta click adds to selection', async () => {
+        it('should add to selection with meta + left click', async () => {
             mockUserAgent('mac');
             const { wrapper, dispatchSpy } = doMount();
 
@@ -187,7 +194,7 @@ describe('Workflow Annotation', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAnnotation', 'id1');
         });
 
-        it('meta click removes to selection', async () => {
+        it('should remove from selection with meta + left click', async () => {
             mockUserAgent('mac');
             const { wrapper, dispatchSpy } = doMount({
                 isAnnotationSelectedMock: vi.fn().mockReturnValue(() => true)

@@ -87,7 +87,7 @@ export default defineComponent({
         },
 
         isRichTextAnnotation() {
-            return this.annotation.contentType === Annotation.ContentTypeEnum.Texthtml;
+            return this.annotation.contentType === Annotation.ContentTypeEnum.Html;
         }
     },
 

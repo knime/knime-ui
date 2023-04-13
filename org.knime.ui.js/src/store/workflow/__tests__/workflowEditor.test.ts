@@ -6,7 +6,7 @@ import * as Vue from 'vue';
 import { deepMocked, mockVuexStore } from '@/test/utils';
 import { API } from '@api';
 import { pastePartsAt } from '@/util/pasteToWorkflow';
-import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
+import { Annotation, ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 
 vi.mock('@/util/pasteToWorkflow');
 
@@ -462,6 +462,76 @@ describe('workflow store: Editing', () => {
                 workflowId: 'root',
                 action,
                 annotationIds: [mockAnnotation1.id, mockAnnotation2.id]
+            });
+        });
+
+        describe('update annotation text', () => {
+            it('success', async () => {
+                const { store } = await loadStore();
+
+                const annotationId = 'mock-annotation-id';
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    info: { containerId: 'root' },
+                    workflowAnnotations: [
+                        {
+                            id: annotationId,
+                            text: 'legacy plain text',
+                            contentType: Annotation.ContentTypeEnum.Plain
+                        }
+                    ]
+                });
+
+                const newText = '<p>new annotation text</p>';
+
+                store.dispatch('workflow/updateAnnotationText', {
+                    text: '<p>new annotation text</p>',
+                    annotationId
+                });
+
+                expect(mockedAPI.workflowCommand.UpdateWorkflowAnnotationText).toHaveBeenCalledWith({
+                    projectId: 'foo',
+                    workflowId: 'root',
+                    text: newText,
+                    annotationId
+                });
+
+                const updatedAnnotation = store.state.workflow.activeWorkflow.workflowAnnotations.find(
+                    annotation => annotation.id === annotationId
+                );
+                expect(updatedAnnotation.text).toEqual(newText);
+                expect(updatedAnnotation.contentType).toEqual(Annotation.ContentTypeEnum.Html);
+            });
+
+
+            it('failure', async () => {
+                const { store } = await loadStore();
+                mockedAPI.workflowCommand.UpdateWorkflowAnnotationText.mockRejectedValueOnce(new Error('random error'));
+
+                const annotationId = 'mock-annotation-id';
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    info: { containerId: 'root' },
+                    workflowAnnotations: [
+                        {
+                            id: annotationId,
+                            text: 'legacy plain text',
+                            contentType: Annotation.ContentTypeEnum.Plain
+                        }
+                    ]
+                });
+
+                await expect(() => store.dispatch('workflow/updateAnnotationText', {
+                    text: '<p>new annotation text</p>',
+                    annotationId
+                })).rejects.toThrowError('random error');
+
+                const updatedAnnotation = store.state.workflow.activeWorkflow.workflowAnnotations.find(
+                    annotation => annotation.id === annotationId
+                );
+
+                expect(updatedAnnotation.text).toBe('legacy plain text');
+                expect(updatedAnnotation.contentType).toEqual(Annotation.ContentTypeEnum.Plain);
             });
         });
 
@@ -932,7 +1002,7 @@ describe('workflow store: Editing', () => {
     });
 
     describe('getters', () => {
-        it('retunrs if a node is connected', async () => {
+        it('returns if a node is connected', async () => {
             const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', { connections: {
                 'connector-1': { destNode: 'node1', sourceNode: 'node2' },

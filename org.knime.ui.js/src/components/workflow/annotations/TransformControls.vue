@@ -65,6 +65,7 @@ export default defineComponent({
             const startY = this.innerValue.y;
             const origWidth = this.innerValue.width;
             const origHeight = this.innerValue.height;
+
             // eslint-disable-next-line no-extra-parens
             (event.target as HTMLElement).setPointerCapture(event.pointerId);
 

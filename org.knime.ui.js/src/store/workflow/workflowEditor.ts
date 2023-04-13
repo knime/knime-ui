@@ -3,7 +3,7 @@ import { API } from '@api';
 import workflowObjectBounds from '@/util/workflowObjectBounds';
 import { pastePartsAt, pasteURI } from '@/util/pasteToWorkflow';
 import { snapToGrid } from '@/util/geometry';
-import type { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
+import { Annotation, type ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -82,11 +82,13 @@ export const mutations = {
         state.isDragging = value;
     },
 
-    setAnnotationText(state, { annotationId, richTextContent }) {
+    setAnnotationText(state, { annotationId, text, contentType }) {
         const { activeWorkflow: { workflowAnnotations } } = state;
-        const mapped = workflowAnnotations.map(annotation => annotation.id === annotationId
-            ? { ...annotation, content: richTextContent }
-            : annotation);
+        const mapped = workflowAnnotations.map(
+            annotation => annotation.id === annotationId
+                ? { ...annotation, text, contentType }
+                : annotation
+        );
 
         state.activeWorkflow.workflowAnnotations = mapped;
     }
@@ -605,14 +607,37 @@ export const actions = {
         });
     },
 
-    updateAnnotationText({ state }, { annotationId, text }) {
+    async updateAnnotationText({ state, commit }, { annotationId, text }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-        API.workflowCommand.UpdateWorkflowAnnotationText({
-            projectId,
-            workflowId,
-            annotationId,
-            text
-        });
+
+        const { text: originalText } = state
+            .activeWorkflow
+            .workflowAnnotations
+            .find(annotation => annotation.id === annotationId);
+
+        try {
+            // do small optimistic update to prevent annotation from flashing between legacy and new
+            commit('setAnnotationText', {
+                annotationId,
+                text,
+                contentType: Annotation.ContentTypeEnum.Html
+            });
+
+            return await API.workflowCommand.UpdateWorkflowAnnotationText({
+                projectId,
+                workflowId,
+                annotationId,
+                text
+            });
+        } catch (error) {
+            commit('setAnnotationText', {
+                annotationId,
+                text: originalText,
+                contentType: Annotation.ContentTypeEnum.Plain
+            });
+
+            throw error;
+        }
     }
 };
 

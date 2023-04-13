@@ -11,7 +11,8 @@ import TransformControls from '../TransformControls.vue';
 import { transformBounds,
     DIRECTIONS,
     getTransformControlPosition,
-    getGridAdjustedBounds } from '../transform-control-utils';
+    getGridAdjustedBounds,
+    type Directions } from '../transform-control-utils';
 import { mockVuexStore } from '@/test/utils';
 
 vi.mock('../transform-control-utils', async () => {
@@ -93,6 +94,18 @@ describe('TransformControls.vue', () => {
 
     const getSlottedChildComponent = (wrapper: VueWrapper<any>) => wrapper.findComponent({ name: 'SlottedChild' });
 
+    const startDraggingControl = (wrapper: VueWrapper<any>, controlDirection: Directions) => {
+        const control = wrapper.find(`.transform-control-${controlDirection}`);
+        control.element.setPointerCapture = vi.fn();
+        control.trigger('pointerdown');
+    };
+
+    const stopDraggingControl = (wrapper: VueWrapper<any>, controlDirection: Directions) => {
+        const control = wrapper.find(`.transform-control-${controlDirection}`);
+        control.element.releasePointerCapture = vi.fn();
+        return control.trigger('pointerup');
+    };
+
     it('should render the transform box', () => {
         const { wrapper } = doMount({ props: { showSelection: true } });
 
@@ -142,7 +155,7 @@ describe('TransformControls.vue', () => {
         });
         const { initialValue: bounds } = defaultProps;
 
-        wrapper.find(`.transform-control-${direction}`).trigger('pointerdown');
+        startDraggingControl(wrapper, direction);
         const mouseMove = new Event('mousemove');
         window.dispatchEvent(mouseMove);
 
@@ -162,14 +175,16 @@ describe('TransformControls.vue', () => {
 
         const { initialValue: bounds } = defaultProps;
 
-        wrapper.find(`.transform-control-n`).trigger('pointerup');
+        stopDraggingControl(wrapper, 'n');
+
         expect(wrapper.emitted('transformEnd')[0][0]).toEqual({ bounds });
+        expect(wrapper.find(`.transform-control-n`).element.releasePointerCapture).toHaveBeenCalled();
     });
 
     it('should clean up event listeners', () => {
         const { wrapper } = doMount({ props: { showTransformControls: true } });
 
-        wrapper.find('.transform-control-n').trigger('pointerdown');
+        startDraggingControl(wrapper, 'n');
 
         const windowSpy = vi.spyOn(window, 'removeEventListener');
 
