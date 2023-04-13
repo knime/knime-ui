@@ -91,7 +91,7 @@ sw.*
 
 # IDE
 /.idea/**
-.vscode/
+launch.json
 .scannerwork/
 **/target/
 **/bin/

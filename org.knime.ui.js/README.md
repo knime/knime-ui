@@ -32,6 +32,12 @@ code changes will be visible in the browser immediately.
 npm run dev
 ```
 
+### Git hooks
+
+When committing your changes, a couple of commit hooks will run via [husky].
+- A `pre-commit` hook to lint and format the changes in your stage zone (via [lintstaged])
+- A `prepare-commit-msg` hook to format the message of your commit. The message is formatted to conform with the required format by KNIME (see [here](https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/400228362/Git+Workflow#%5BinlineExtension%5DCommitting)). In order for this hook to work correctly you must set environment variables for your Attlassian account email and API token so that the JIRA integration works correctly and the ticket information can be injected into the commit message. Alternatively, you can store the password using a secure storage tool. Refer to the `prepare-commit-msg` script for more information
+
 ### Testing
 
 #### Running unit tests
@@ -105,3 +111,5 @@ to install that package to your local maven repository directly.
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
 [Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file
+[husky]: https://www.npmjs.com/package/husky
+[lintstaged]: https://github.com/okonet/lint-staged
