@@ -187,6 +187,11 @@ export default defineComponent({
                 .value();
 
             this.visibleItems = items;
+        },
+
+        onKeyDown(event: KeyboardEvent) {
+            // eslint-disable-next-line no-extra-parens
+            (this.$refs.menuItems as InstanceType<typeof MenuItems>).onKeydown(event);
         }
     }
 });
@@ -199,7 +204,9 @@ export default defineComponent({
     class="context-menu"
     aria-label="Context Menu"
     prevent-overflow
+    tabindex="-1"
     @menu-close="$emit('menuClose')"
+    @keydown="onKeyDown"
   >
     <MenuItems
       ref="menuItems"
