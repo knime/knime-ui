@@ -146,6 +146,25 @@ export default defineComponent({
             }
 
             this.toggleEdit();
+        },
+
+        getAnnotationToolbarContainerBounds(transformedBounds: Bounds): Bounds {
+            const x =
+                // start from same X as annotation
+                transformedBounds.x -
+                // center by substracting half the toolbar width + half the annotation width
+                this.$shapes.annotationToolbarContainerWidth / 2 +
+                transformedBounds.width / 2;
+
+            // use same Y as annoation and add a negative Y offset equal to the toolbar height
+            const y = transformedBounds.y - this.$shapes.annotationToolbarContainerHeight;
+
+            return {
+                x,
+                y,
+                width: this.$shapes.annotationToolbarContainerWidth,
+                height: this.$shapes.annotationToolbarContainerHeight
+            };
         }
     }
 });
@@ -164,10 +183,7 @@ export default defineComponent({
   >
     <template #default="{ transformedBounds }">
       <foreignObject
-        :x="transformedBounds.x - $shapes.annotationToolbarContainerWidth / 2 + transformedBounds.width / 2"
-        :y="transformedBounds.y - $shapes.annotationToolbarContainerHeight"
-        :width="$shapes.annotationToolbarContainerWidth"
-        :height="$shapes.annotationToolbarContainerHeight"
+        v-bind="getAnnotationToolbarContainerBounds(transformedBounds)"
         :class="{ hidden: !isEditing }"
         @pointerdown.stop
         @pointerup.stop

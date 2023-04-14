@@ -1,4 +1,5 @@
 import { expect, describe, it, vi } from 'vitest';
+import { h } from 'vue';
 import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/utils';
@@ -8,7 +9,7 @@ import * as $colors from '@/style/colors.mjs';
 import * as $shapes from '@/style/shapes.mjs';
 import { API } from '@api';
 import * as workflowStore from '@/store/workflow';
-import { type WorkflowAnnotation, Annotation } from '@/api/gateway-api/generated-api';
+import { type WorkflowAnnotation, Annotation, type Bounds } from '@/api/gateway-api/generated-api';
 
 import WorkflowAnnotationComp from '../WorkflowAnnotation.vue';
 import LegacyAnnotation from '../LegacyAnnotation.vue';
@@ -38,7 +39,8 @@ describe('Workflow Annotation', () => {
         isAnnotationSelectedMock = vi.fn().mockReturnValue(() => false),
         selectedAnnotationIdsMock = vi.fn().mockReturnValue(() => []),
         selectedNodeIdsMock = vi.fn().mockReturnValue(() => []),
-        selectedConnectionsMock = vi.fn().mockReturnValue(() => [])
+        selectedConnectionsMock = vi.fn().mockReturnValue(() => []),
+        transformControlStub = null
     } = {}) => {
         const defaultMocks = { $shapes, $colors };
 
@@ -80,7 +82,8 @@ describe('Workflow Annotation', () => {
                 mocks: { ...defaultMocks, ...mocks },
                 plugins: [$store],
                 stubs: {
-                    RichTextEditor: true
+                    RichTextEditor: true,
+                    TransformControls: transformControlStub || false
                 }
             }
         });
@@ -108,7 +111,16 @@ describe('Workflow Annotation', () => {
     });
 
     describe('transform', () => {
-        it('should transform annotation', () => {
+        const getTransformControlsStub = (transformedBounds: Bounds) => ({
+            render() {
+                // @ts-ignore
+                return h('g', this.$slots.default({
+                    transformedBounds
+                }));
+            }
+        });
+
+        it('should trigger call to transform annotation', () => {
             const { wrapper, $store } = doMount();
             const bounds = { x: 15, y: 15, width: 100, height: 100 };
 
@@ -122,6 +134,32 @@ describe('Workflow Annotation', () => {
                 bounds,
                 annotationId: defaultProps.annotation.id
             });
+        });
+
+        it('should set the transformed annotation bounds', () => {
+            const bounds = { x: 15, y: 15, width: 100, height: 100 };
+            const transformControlStub = getTransformControlsStub(bounds);
+            const { wrapper } = doMount({ transformControlStub });
+
+            expect(wrapper.findAll('foreignObject').at(1).attributes('x')).toEqual(bounds.x.toString());
+            expect(wrapper.findAll('foreignObject').at(1).attributes('y')).toEqual(bounds.y.toString());
+            expect(wrapper.findAll('foreignObject').at(1).attributes('width')).toEqual(bounds.width.toString());
+            expect(wrapper.findAll('foreignObject').at(1).attributes('height')).toEqual(bounds.height.toString());
+        });
+
+        it('should set the correct bounds for the annotation toolbar', () => {
+            const bounds = { x: 15, y: 15, width: 100, height: 100 };
+            const transformControlStub = getTransformControlsStub(bounds);
+            const { wrapper } = doMount({ transformControlStub });
+
+            const expectedX = bounds.x - $shapes.annotationToolbarContainerWidth / 2 + bounds.width / 2;
+            const expectedY = bounds.y - $shapes.annotationToolbarContainerHeight;
+
+            const toolbarContainer = wrapper.findAll('foreignObject').at(0);
+            expect(toolbarContainer.attributes('x')).toEqual(expectedX.toString());
+            expect(toolbarContainer.attributes('y')).toEqual(expectedY.toString());
+            expect(toolbarContainer.attributes('width')).toEqual($shapes.annotationToolbarContainerWidth.toString());
+            expect(toolbarContainer.attributes('height')).toEqual($shapes.annotationToolbarContainerHeight.toString());
         });
     });
 

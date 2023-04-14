@@ -144,7 +144,7 @@ export default {
         Panning
         */
         onPressSpace(e) {
-            if (isInputElement(e)) {
+            if (isInputElement(e.target)) {
                 return;
             }
 

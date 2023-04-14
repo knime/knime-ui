@@ -27,7 +27,7 @@ export default {
                 escapePressed();
             }
 
-            if (isInputElement(e)) {
+            if (isInputElement(e.target)) {
                 return;
             }
 

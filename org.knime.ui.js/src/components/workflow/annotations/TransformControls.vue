@@ -161,6 +161,11 @@ export default defineComponent({
 .transform-box {
     fill: transparent;
     z-index: 1;
+    /*
+    Because the transform box is portaled to be on top of annotations we need to
+    prevent pointer events on the transform-box rect so that
+    interactions go to the actual annotation instead of this rect
+    */
     pointer-events: none;
 }
 

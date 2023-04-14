@@ -1,12 +1,11 @@
-const blacklistTagNames = /^(input|textarea|select)$/i;
+const inputElementTagNames = /^(input|textarea|select)$/i;
 
-export const isInputElement = (e: KeyboardEvent): boolean => {
-    const target = e.target as HTMLElement;
+export const isInputElement = (target?: HTMLElement): boolean => {
     if (!target) {
         return false;
     }
 
-    const isBlacklistedTag = blacklistTagNames.test(target.tagName);
+    const isBlacklistedTag = inputElementTagNames.test(target.tagName);
 
     if (isBlacklistedTag || target.getAttribute?.('contenteditable') === 'true') {
         return true;
