@@ -65,11 +65,8 @@ export default {
         /* Navigation */
         onBreadcrumbClick(e) {
             if (e.id === 'clear') {
-                this.clearSearchParams();
+                this.$store.dispatch('nodeRepository/clearSearchParams');
             }
-        },
-        async clearSearchParams() {
-            await this.$store.dispatch('nodeRepository/clearSearchParams');
         }
     }
 };
