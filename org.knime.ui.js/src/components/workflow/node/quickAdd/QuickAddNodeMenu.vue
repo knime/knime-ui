@@ -70,6 +70,7 @@ export default defineComponent({
     emits: ['menuClose'],
     data() {
         return {
+            searchQuery: '',
             selectedNode: null
         };
     },
@@ -80,15 +81,6 @@ export default defineComponent({
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('quickAddNodes', ['searchIsActive', 'getFirstResult']),
 
-        searchQuery: {
-            get() {
-                return this.$store.state.quickAddNodes.query;
-            },
-            set: debounce(function (this: any, value) {
-                this.$store.dispatch('quickAddNodes/updateQuery', value); // eslint-disable-line no-invalid-this
-            },
-            SEARCH_COOLDOWN, { leading: true, trailing: true })
-        },
         canvasPosition() {
             let pos = { ...this.position };
             const halfPort = this.$shapes.portSize / 2;
@@ -126,6 +118,10 @@ export default defineComponent({
         }
     },
     watch: {
+        searchQuery: debounce(function (this: any, newQuery) {
+            // eslint-disable-next-line no-invalid-this
+            this.$store.dispatch('quickAddNodes/updateQuery', newQuery);
+        }, SEARCH_COOLDOWN, { leading: true, trailing: true }),
         hasNodeRecommendationsEnabled: {
             immediate: true,
             handler() {
@@ -137,6 +133,7 @@ export default defineComponent({
         async port(newPort, oldPort) {
             if (newPort?.index !== oldPort?.index) {
                 // reset search on index switch (this is a common operation via the keyboard shortcut CTRL+.)
+                this.searchQuery = '';
                 await this.$store.dispatch('quickAddNodes/clearSearchParams');
                 // update type id for next search (if one was active it got reset by index change)
                 // this needs to be done in all cases as clearSearchParams resets it
