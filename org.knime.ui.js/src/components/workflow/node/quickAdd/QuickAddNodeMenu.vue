@@ -67,8 +67,6 @@ export default defineComponent({
     emits: ['menuClose'],
     data() {
         return {
-            // we keep the query local to debounce the update in the store, see watcher
-            searchQuery: '',
             selectedNode: null
         };
     },
@@ -116,9 +114,6 @@ export default defineComponent({
         }
     },
     watch: {
-        searchQuery(newQuery) {
-            this.$store.dispatch('quickAddNodes/updateQuery', newQuery);
-        },
         hasNodeRecommendationsEnabled: {
             immediate: true,
             handler() {
@@ -155,7 +150,6 @@ export default defineComponent({
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
         ]),
         async clearSearchParams() {
-            this.searchQuery = '';
             await this.$store.dispatch('quickAddNodes/clearSearchParams');
         },
         async fetchNodeRecommendations() {
@@ -235,10 +229,11 @@ export default defineComponent({
       <div class="header">
         <SearchBar
           ref="search"
-          v-model="searchQuery"
+          :model-value="$store.state.quickAddNodes.query"
           placeholder="Search all compatible nodes"
           class="search-bar"
           tabindex="-1"
+          @update:model-value="$store.dispatch('quickAddNodes/updateQuery', $event)"
           @focusin="selectedNode = null"
           @keydown.enter.prevent.stop="searchEnterKey"
           @keydown.down.prevent.stop="searchDownKey"

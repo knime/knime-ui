@@ -19,12 +19,6 @@ export default {
         CategoryResults,
         NodeDescriptionOverlay
     },
-    data() {
-        return {
-            // we keep the query local to debounce the update in the store, see watcher
-            searchQuery: ''
-        };
-    },
     computed: {
         ...mapState('nodeRepository', ['topNodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
         ...mapGetters('nodeRepository', {
@@ -59,9 +53,6 @@ export default {
                     this.setSelectedNode(null);
                 }, DESELECT_NODE_DELAY);
             }
-        },
-        searchQuery(value) {
-            this.$store.dispatch('nodeRepository/updateQuery', value);
         }
     },
     mounted() {
@@ -78,7 +69,6 @@ export default {
             }
         },
         async clearSearchParams() {
-            this.searchQuery = '';
             await this.$store.dispatch('nodeRepository/clearSearchParams');
         }
     }
@@ -96,9 +86,10 @@ export default {
         />
         <hr>
         <SearchBar
-          v-model="searchQuery"
+          :model-value="$store.state.nodeRepository.query"
           placeholder="Search Nodes"
           class="search-bar"
+          @update:model-value="$store.dispatch('nodeRepository/updateQuery', $event)"
         />
       </div>
       <CloseableTagList
