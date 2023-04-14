@@ -1,11 +1,13 @@
 import { API } from '@api';
 import { toNodeWithFullPorts } from '@/util/portDataMapper';
+import { debounce } from 'lodash';
 
 /**
  * This store is not instantiated by Vuex but used by other stores.
  */
 
 const nodeSearchPageSize = 100;
+const updateQueryDebounceWait = 150; // ms
 
 export const state = () => ({
     /* basic search params */
@@ -243,10 +245,10 @@ export const actions = {
      * @param {String} value - Search query value
      * @returns {undefined}
      */
-    async updateQuery({ commit, dispatch }, value) {
+    updateQuery: debounce(({ commit, dispatch }, value) => {
         commit('setQuery', value);
-        await dispatch('searchTopAndBottomNodes');
-    },
+        dispatch('searchTopAndBottomNodes');
+    }, updateQueryDebounceWait, { leading: true, trailing: true }),
 
     /**
      * Clear search parameter (query and selectedTags) and results

@@ -1,6 +1,5 @@
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex';
-import { debounce } from 'lodash';
 
 import ActionBreadcrumb from '@/components/common/ActionBreadcrumb.vue';
 import SearchBar from '@/components/common/SearchBar.vue';
@@ -9,7 +8,6 @@ import CategoryResults from './CategoryResults.vue';
 import NodeDescriptionOverlay from './NodeDescriptionOverlay.vue';
 import SidebarSearchResults from '@/components/nodeRepository/SidebarSearchResults.vue';
 
-const SEARCH_COOLDOWN = 150; // ms
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
 export default {
@@ -62,10 +60,9 @@ export default {
                 }, DESELECT_NODE_DELAY);
             }
         },
-        searchQuery: debounce(function (value) {
-            this.$store.dispatch('nodeRepository/updateQuery', value); // eslint-disable-line no-invalid-this
-        },
-        SEARCH_COOLDOWN, { leading: true, trailing: true })
+        searchQuery(value) {
+            this.$store.dispatch('nodeRepository/updateQuery', value);
+        }
     },
     mounted() {
         if (!this.nodesPerCategory.length) {

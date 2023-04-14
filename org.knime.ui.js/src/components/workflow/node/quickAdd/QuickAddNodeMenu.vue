@@ -11,13 +11,10 @@ import SearchBar from '@/components/common/SearchBar.vue';
 import { checkPortCompatibility } from '@/util/compatibleConnections';
 import { portPositions } from '@/util/portShift';
 
-import { debounce } from 'lodash';
 import NodePortActiveConnector from '@/components/workflow/ports/NodePort/NodePortActiveConnector.vue';
 import QuickAddNodeSearchResults from './QuickAddNodeSearchResults.vue';
 import QuickAddNodeRecommendations from './QuickAddNodeRecommendations.vue';
 import QuickAddNodeDisabledWorkflowCoach from './QuickAddNodeDisabledWorkflowCoach.vue';
-
-const SEARCH_COOLDOWN = 150; // ms
 
 const calculatePortOffset = ({ targetPorts, sourcePort, availablePortTypes }) => {
     const targetPortIndex = targetPorts.findIndex(toPort => checkPortCompatibility({
@@ -119,10 +116,9 @@ export default defineComponent({
         }
     },
     watch: {
-        searchQuery: debounce(function (this: any, newQuery) {
-            // eslint-disable-next-line no-invalid-this
+        searchQuery(newQuery) {
             this.$store.dispatch('quickAddNodes/updateQuery', newQuery);
-        }, SEARCH_COOLDOWN, { leading: true, trailing: true }),
+        },
         hasNodeRecommendationsEnabled: {
             immediate: true,
             handler() {
