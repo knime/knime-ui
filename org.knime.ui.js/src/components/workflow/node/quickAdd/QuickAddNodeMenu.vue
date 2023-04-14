@@ -70,6 +70,7 @@ export default defineComponent({
     emits: ['menuClose'],
     data() {
         return {
+            // we keep the query local to debounce the update in the store, see watcher
             searchQuery: '',
             selectedNode: null
         };
@@ -133,8 +134,7 @@ export default defineComponent({
         async port(newPort, oldPort) {
             if (newPort?.index !== oldPort?.index) {
                 // reset search on index switch (this is a common operation via the keyboard shortcut CTRL+.)
-                this.searchQuery = '';
-                await this.$store.dispatch('quickAddNodes/clearSearchParams');
+                this.clearSearchParams();
                 // update type id for next search (if one was active it got reset by index change)
                 // this needs to be done in all cases as clearSearchParams resets it
                 this.$store.commit('quickAddNodes/setPortTypeId', newPort.typeId);
@@ -158,6 +158,10 @@ export default defineComponent({
         ...mapActions('quickAddNodes', [
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
         ]),
+        async clearSearchParams() {
+            this.searchQuery = '';
+            await this.$store.dispatch('quickAddNodes/clearSearchParams');
+        },
         async fetchNodeRecommendations() {
             const { nodeId, portIndex: portIdx } = this;
             await this.$store.dispatch('quickAddNodes/getNodeRecommendations', { nodeId, portIdx });

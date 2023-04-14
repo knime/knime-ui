@@ -21,6 +21,12 @@ export default {
         CategoryResults,
         NodeDescriptionOverlay
     },
+    data() {
+        return {
+            // we keep the query local to debounce the update in the store, see watcher
+            searchQuery: ''
+        };
+    },
     computed: {
         ...mapState('nodeRepository', ['topNodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
         ...mapGetters('nodeRepository', {
@@ -37,15 +43,6 @@ export default {
             set(value) {
                 this.$store.dispatch('nodeRepository/setSelectedTags', value);
             }
-        },
-        searchQuery: {
-            get() {
-                return this.$store.state.nodeRepository.query;
-            },
-            set: debounce(function (value) {
-                this.$store.dispatch('nodeRepository/updateQuery', value); // eslint-disable-line no-invalid-this
-            },
-            SEARCH_COOLDOWN, { leading: true, trailing: true })
         },
 
         /* Navigation */
@@ -64,7 +61,11 @@ export default {
                     this.setSelectedNode(null);
                 }, DESELECT_NODE_DELAY);
             }
-        }
+        },
+        searchQuery: debounce(function (value) {
+            this.$store.dispatch('nodeRepository/updateQuery', value); // eslint-disable-line no-invalid-this
+        },
+        SEARCH_COOLDOWN, { leading: true, trailing: true })
     },
     mounted() {
         if (!this.nodesPerCategory.length) {
@@ -76,8 +77,12 @@ export default {
         /* Navigation */
         onBreadcrumbClick(e) {
             if (e.id === 'clear') {
-                this.$store.dispatch('nodeRepository/clearSearchParams');
+                this.clearSearchParams();
             }
+        },
+        async clearSearchParams() {
+            this.searchQuery = '';
+            await this.$store.dispatch('nodeRepository/clearSearchParams');
         }
     }
 };

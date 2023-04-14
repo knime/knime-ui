@@ -167,9 +167,10 @@ describe('NodeRepository', () => {
     });
 
     describe('search for nodes', () => {
-        it('updates query on SearchBar input', () => {
+        it('updates query on SearchBar input', async () => {
             doShallowMount();
             wrapper.findComponent(SearchBar).vm.$emit('update:modelValue', 'myquery');
+            await wrapper.vm.$nextTick();
             expect(updateQueryMock).toHaveBeenCalledWith(expect.anything(), 'myquery');
         });
 
