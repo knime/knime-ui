@@ -7,7 +7,7 @@ import { debounce } from 'lodash';
  */
 
 const nodeSearchPageSize = 100;
-const searchNodeDebounceWait = 150; // ms
+const searchTopAndBottomNodesDebounceWait = 150; // ms
 
 export const state = () => ({
     /* basic search params */
@@ -112,7 +112,7 @@ export const actions = {
      * @param {String} [portTypeId] - only results that are compatible with that portTypeId
      * @returns {Promise}
      */
-    searchNodes: debounce(async ({
+    async searchNodes({
         commit,
         state,
         dispatch,
@@ -121,7 +121,7 @@ export const actions = {
     }, {
         append = false,
         bottom = false
-    } = {}) => {
+    } = {}) {
         // only do request if we search for something
         if (!getters.hasSearchParams) {
             // clear old results
@@ -158,7 +158,7 @@ export const actions = {
         commit(`setTotalNum${prefix}Nodes`, totalNumNodes);
         commit(append ? `add${prefix}Nodes` : `set${prefix}Nodes`, withMappedPorts);
         commit(`set${prefix}NodesTags`, tags);
-    }, searchNodeDebounceWait, { leading: true, trailing: true }),
+    },
 
     /**
      * Dispatches the search of nodes. If isShowingBottomNodes is true also a search for more nodes is dispatched.
@@ -167,14 +167,14 @@ export const actions = {
      * @param {*} context - Vuex context.
      * @returns {Promise<void>}
      */
-    async searchTopAndBottomNodes({ dispatch, state }) {
+    searchTopAndBottomNodes: debounce(async ({ dispatch, state }) => {
         await Promise.all([
             dispatch('searchNodes'),
             state.isShowingBottomNodes
                 ? dispatch('searchNodes', { bottom: true })
                 : dispatch('clearSearchResultsForBottomNodes')
         ]);
-    },
+    }, searchTopAndBottomNodesDebounceWait, { leading: true, trailing: true }),
 
     /**
      * Clear search results (nodes and tags)
