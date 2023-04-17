@@ -312,11 +312,17 @@ export interface Annotation {
      */
     backgroundColor?: string;
     /**
+     * The content type of the annotation.
+     * @type {string}
+     * @memberof Annotation
+     */
+    contentType: Annotation.ContentTypeEnum;
+    /**
      *
      * @type {string}
      * @memberof Annotation
      */
-    textAlign: Annotation.TextAlignEnum;
+    textAlign?: Annotation.TextAlignEnum;
     /**
      * The default font size (in pt) for parts of the text where no style range is defined.
      * @type {number}
@@ -328,7 +334,7 @@ export interface Annotation {
      * @type {Array<StyleRange>}
      * @memberof Annotation
      */
-    styleRanges: Array<StyleRange>;
+    styleRanges?: Array<StyleRange>;
 
 }
 
@@ -338,6 +344,14 @@ export interface Annotation {
  * @namespace Annotation
  */
 export namespace Annotation {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ContentTypeEnum {
+        Plain = 'text/plain',
+        Html = 'text/html'
+    }
     /**
      * @export
      * @enum {string}
@@ -2392,7 +2406,7 @@ export interface ProjectDirtyStateEvent extends Event {
      * @type {{ [key: string]: boolean; }}
      * @memberof ProjectDirtyStateEvent
      */
-    projectIdToIsDirty?: { [key: string]: boolean; };
+    dirtyProjectsMap?: { [key: string]: boolean; };
 
 }
 
@@ -2772,14 +2786,8 @@ export interface StyleRange {
  * @export
  * @interface TransformWorkflowAnnotationCommand
  */
-export interface TransformWorkflowAnnotationCommand extends WorkflowCommand {
+export interface TransformWorkflowAnnotationCommand extends WorkflowAnnotationCommand {
 
-    /**
-     * the id of the annotation to transform
-     * @type {string}
-     * @memberof TransformWorkflowAnnotationCommand
-     */
-    annotationId: string;
     /**
      *
      * @type {Bounds}
@@ -2941,6 +2949,29 @@ export interface UpdateNodeLabelCommand extends WorkflowCommand {
 export namespace UpdateNodeLabelCommand {
 }
 /**
+ * Updates the text of a workflow annotation
+ * @export
+ * @interface UpdateWorkflowAnnotationTextCommand
+ */
+export interface UpdateWorkflowAnnotationTextCommand extends WorkflowAnnotationCommand {
+
+    /**
+     * The new formatted text to update the annotation with
+     * @type {string}
+     * @memberof UpdateWorkflowAnnotationTextCommand
+     */
+    text: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace UpdateWorkflowAnnotationTextCommand
+ */
+export namespace UpdateWorkflowAnnotationTextCommand {
+}
+/**
  * The structure of a workflow.
  * @export
  * @interface Workflow
@@ -3065,6 +3096,29 @@ export interface WorkflowAnnotation extends Annotation {
 export namespace WorkflowAnnotation {
 }
 /**
+ * Abstract schema for commands manipulating individual workflow annotations
+ * @export
+ * @interface WorkflowAnnotationCommand
+ */
+export interface WorkflowAnnotationCommand extends WorkflowCommand {
+
+    /**
+     * The ID of the annotation to manipulate
+     * @type {string}
+     * @memberof WorkflowAnnotationCommand
+     */
+    annotationId: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace WorkflowAnnotationCommand
+ */
+export namespace WorkflowAnnotationCommand {
+}
+/**
  * Event for all kind of workflow changes.
  * @export
  * @interface WorkflowChangedEvent
@@ -3159,6 +3213,7 @@ export namespace WorkflowCommand {
         Cut = 'cut',
         Paste = 'paste',
         TransformWorkflowAnnotation = 'transform_workflow_annotation',
+        UpdateWorkflowAnnotationText = 'update_workflow_annotation_text',
         ReorderWorkflowAnnotations = 'reorder_workflow_annotations'
     }
 }
@@ -4101,6 +4156,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.TransformWorkflowAnnotation }
+		});
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Updates the text of a workflow annotation
+     */
+	UpdateWorkflowAnnotationText(
+		params: { projectId: string, workflowId: string } & Omit<UpdateWorkflowAnnotationTextCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateWorkflowAnnotationText }
 		});
 		return postProcessCommandResponse(commandResponse);
 	},	

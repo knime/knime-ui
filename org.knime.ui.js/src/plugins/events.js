@@ -40,8 +40,8 @@ export default ({ $store, $router }) => {
          * Is triggered by the backend, whenever a change to the workflow has been made/requested or the AppState changes
          * Sends a map with all open project ids and their dirty flag
          */
-        ProjectDirtyStateEvent({ projectIdToIsDirty }) {
-            $store.dispatch('application/updateProjectDirtyMap', projectIdToIsDirty);
+        ProjectDirtyStateEvent({ dirtyProjectsMap }) {
+            $store.dispatch('application/updateDirtyProjectsMap', dirtyProjectsMap);
         },
 
         /**

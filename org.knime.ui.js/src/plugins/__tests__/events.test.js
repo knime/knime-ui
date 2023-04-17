@@ -101,13 +101,13 @@ describe('Event Plugin', () => {
 
         it('handles ProjectDirtyStateEvent', () => {
             const { storeMock } = loadPlugin();
-            const projectIdToIsDirty = { '1': false, '2': false, '3': true };
+            const dirtyProjectsMap = { '1': false, '2': false, '3': true };
 
-            registeredHandlers.ProjectDirtyStateEvent({ projectIdToIsDirty });
+            registeredHandlers.ProjectDirtyStateEvent({ dirtyProjectsMap });
 
             expect(storeMock.dispatch).toHaveBeenCalledWith(
-                'application/updateProjectDirtyMap',
-                projectIdToIsDirty
+                'application/updateDirtyProjectsMap',
+                dirtyProjectsMap
             );
         });
 
@@ -117,13 +117,13 @@ describe('Event Plugin', () => {
             const pdsSpy = vi.spyOn(registeredHandlers, 'ProjectDirtyStateEvent');
             eventHandlers.set('WorkflowChangedEvent', registeredHandlers.WorkflowChangedEvent);
             eventHandlers.set('ProjectDirtyStateEvent', registeredHandlers.ProjectDirtyStateEvent);
-            const projectIdToIsDirty = { '1': false, '2': false, '3': true };
+            const dirtyProjectsMap = { '1': false, '2': false, '3': true };
 
             registeredHandlers.CompositeEvent(
                 { events: ['WorkflowChangedEvent', 'ProjectDirtyStateEvent'],
                     params: [
                         { patch: { ops: [{ dummy: true, path: '/foo/bar' }] } },
-                        { projectIdToIsDirty }
+                        { dirtyProjectsMap }
                     ],
                     eventHandlers }
             );
@@ -133,7 +133,7 @@ describe('Event Plugin', () => {
             );
 
             expect(pdsSpy).toHaveBeenCalledWith(
-                { projectIdToIsDirty }
+                { dirtyProjectsMap }
             );
         });
 

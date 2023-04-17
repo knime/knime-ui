@@ -71,7 +71,6 @@ export const actions = {
 
         dispatch('application/removeCanvasState', closingProjectId, { root: true });
         dispatch('application/removeFromRootWorkflowSnapshots', { projectId: closingProjectId }, { root: true });
-        dispatch('application/removeFromProjectDirtyMap', closingProjectId, { root: true });
         commit('spaces/clearLastItemForProject', { projectId: closingProjectId }, { root: true });
     },
 

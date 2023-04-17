@@ -36,7 +36,7 @@ export default defineComponent({
     },
     computed: {
         ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow', 'devMode',
-            'projectDirtyMap']),
+            'dirtyProjectsMap']),
         
         isInfoPageActive() {
             return this.$route.name === APP_ROUTES.InfoPage;
@@ -133,7 +133,7 @@ export default defineComponent({
               :project-id="projectId"
               :window-width="windowWidth"
               :is-active="activeProjectTab === projectId"
-              :has-unsaved-changes="Boolean(projectDirtyMap[projectId])"
+              :has-unsaved-changes="Boolean(dirtyProjectsMap[projectId])"
               :is-hovered-over="hoveredTab === projectId"
               @hover="hoveredTab = $event"
               @switch-workflow="onProjectTabChange"
