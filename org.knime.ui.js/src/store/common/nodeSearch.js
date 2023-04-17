@@ -174,7 +174,7 @@ export const actions = {
                 ? dispatch('searchNodes', { bottom: true })
                 : dispatch('clearSearchResultsForBottomNodes')
         ]);
-    }, searchTopAndBottomNodesDebounceWait, { leading: true, trailing: true }),
+    }, searchTopAndBottomNodesDebounceWait),
 
     /**
      * Clear search results (nodes and tags)
