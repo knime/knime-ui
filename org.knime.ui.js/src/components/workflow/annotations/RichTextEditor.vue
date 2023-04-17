@@ -76,7 +76,7 @@ onMounted(() => {
   </div>
 </template>
 
-<style lang="postcss">
+<style lang="postcss" scoped>
 .editor-wrapper {
     height: 100%;
 }
@@ -101,7 +101,7 @@ onMounted(() => {
         cursor: text;
     }
 
-    & .ProseMirror {
+    & :deep(.ProseMirror) {
         height: 100%;
         font-size: 10px;
         padding: 10px;
