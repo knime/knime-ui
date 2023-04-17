@@ -175,6 +175,7 @@ export default {
           :items="actions"
           class="more-actions"
           button-title="More actions"
+          @toggle.stop
           @item-click="(_, { id }) => $emit(`action:${id}`)"
         >
           <MenuOptionsIcon class="open-icon" />
