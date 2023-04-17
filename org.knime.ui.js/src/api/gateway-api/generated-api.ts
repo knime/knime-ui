@@ -2407,6 +2407,12 @@ export interface ProjectDirtyStateEvent extends Event {
      * @memberof ProjectDirtyStateEvent
      */
     dirtyProjectsMap?: { [key: string]: boolean; };
+    /**
+     * Whether to replace the entire map or just to updated the set values.
+     * @type {boolean}
+     * @memberof ProjectDirtyStateEvent
+     */
+    shouldReplace?: boolean;
 
 }
 

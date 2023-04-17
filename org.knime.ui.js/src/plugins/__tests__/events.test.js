@@ -109,6 +109,13 @@ describe('Event Plugin', () => {
                 'application/updateDirtyProjectsMap',
                 dirtyProjectsMap
             );
+
+            registeredHandlers.ProjectDirtyStateEvent({ dirtyProjectsMap, shouldReplace: true });
+
+            expect(storeMock.dispatch).toHaveBeenCalledWith(
+                'application/setDirtyProjectsMap',
+                dirtyProjectsMap
+            );
         });
 
         it('handles CompositeEvents', () => {

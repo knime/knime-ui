@@ -562,12 +562,6 @@ export const actions = {
     updateDirtyProjectsMap({ state, commit }, dirtyProjectsMap) {
         const updatedDirtyProjectsMap = { ...state.dirtyProjectsMap, ...dirtyProjectsMap };
         commit('setDirtyProjectsMap', updatedDirtyProjectsMap);
-    },
-
-    removeFromUpdatedDirtyProjectsMap({ state, commit }, projectId) {
-        const updatedDirtyProjectsMap = state.dirtyProjectsMap;
-        delete updatedDirtyProjectsMap[projectId];
-        commit('setDirtyProjectsMap', updatedDirtyProjectsMap);
     }
 };
 
