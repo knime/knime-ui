@@ -13,6 +13,23 @@ import StepLoopIcon from '@/assets/step-execution.svg';
 
 import type { UnionToShortcutRegistry } from './types';
 
+const executeAndOpenViewHelper = async ({ $store, payload = {} as any }) => {
+    const { nodeId, canExecute } = payload.metadata || {};
+    const selectedNodeId = nodeId || $store.getters['selection/singleSelectedNode'].id;
+    const selectedCanExecute = nodeId
+        ? canExecute
+        : $store.getters['selection/singleSelectedNode'].allowedActions.canExecute;
+
+    if (selectedCanExecute) {
+        await $store.dispatch('workflow/executeNodes', [selectedNodeId]);
+    }
+    $store.dispatch('workflow/openView', selectedNodeId);
+};
+
+const canExecuteAndOpenView = ({ $store }) => $store.getters['selection/singleSelectedNode'] &&
+    ($store.getters['selection/singleSelectedNode'].allowedActions.canExecute ||
+    $store.getters['selection/singleSelectedNode'].allowedActions.canOpenView);
+
 type ExecutionShortcuts = UnionToShortcutRegistry<
     | 'executeAll'
     | 'cancelAll'
@@ -69,7 +86,7 @@ const executionShortcuts: ExecutionShortcuts = {
         title: 'Execute selected nodes',
         hotkey: ['F7'],
         icon: ExecuteSelectedIcon,
-        execute: ({ $store, payload = null }) => {
+        execute: ({ $store, payload = {} }) => {
             const selectedNodeId = payload?.metadata?.nodeId ? [payload?.metadata?.nodeId] : 'selected';
             $store.dispatch('workflow/executeNodes', selectedNodeId);
         },
@@ -77,28 +94,13 @@ const executionShortcuts: ExecutionShortcuts = {
             ({ $store }) => $store.getters['selection/selectedNodes'].some(node => node.allowedActions.canExecute)
     },
     executeAndOpenView: {
-        getText: ({ $store }) => $store.getters['selection/singleSelectedNode'].allowedActions.canExecute
+        text: ({ $store }) => $store.getters['selection/singleSelectedNode'].allowedActions.canExecute
             ? 'Execute and open view'
             : 'Open view',
         hotkey: ['Shift', 'F10'],
         icon: OpenViewIcon,
-        execute:
-            async ({ $store }, { nodeId = null, canExecute = false } = {}) => {
-                const selectedNodeId = nodeId || $store.getters['selection/singleSelectedNode'].id;
-                const selectedCanExecute = nodeId
-                    ? canExecute
-                    : $store.getters['selection/singleSelectedNode'].allowedActions.canExecute;
-
-                if (selectedCanExecute) {
-                    await $store.dispatch('workflow/executeNodes', [selectedNodeId]);
-                }
-                $store.dispatch('workflow/openView', selectedNodeId);
-            },
-        condition:
-            ({ $store }) => $store.getters['selection/singleSelectedNode'] &&
-            ($store.getters['selection/singleSelectedNode'].allowedActions.canExecute ||
-            $store.getters['selection/singleSelectedNode'].allowedActions.canOpenView)
-
+        execute: executeAndOpenViewHelper,
+        condition: canExecuteAndOpenView
     },
     /**
      * (This shortcut should not be used anywhere, see executeAndOpenView)
@@ -107,30 +109,15 @@ const executionShortcuts: ExecutionShortcuts = {
      */
     executeAndOpenViewShortcutAlternative: {
         hotkey: ['F12'],
-        execute:
-            async ({ $store }, { nodeId = null, canExecute = false } = {}) => {
-                const selectedNodeId = nodeId || $store.getters['selection/singleSelectedNode'].id;
-                const selectedCanExecute = nodeId
-                    ? canExecute
-                    : $store.getters['selection/singleSelectedNode'].allowedActions.canExecute;
-
-                if (selectedCanExecute) {
-                    await $store.dispatch('workflow/executeNodes', [selectedNodeId]);
-                }
-                $store.dispatch('workflow/openView', selectedNodeId);
-            },
-        condition:
-            ({ $store }) => $store.getters['selection/singleSelectedNode'] &&
-            ($store.getters['selection/singleSelectedNode'].allowedActions.canExecute ||
-            $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenView)
-
+        execute: executeAndOpenViewHelper,
+        condition: canExecuteAndOpenView
     },
     cancelSelected: {
         text: 'Cancel',
         title: 'Cancel selected nodes',
         hotkey: ['F9'],
         icon: CancelSelectedIcon,
-        execute: ({ $store, payload = null }) => {
+        execute: ({ $store, payload = {} }) => {
             const selectedNodeId = payload?.metadata?.nodeId ? [payload?.metadata?.nodeId] : 'selected';
             $store.dispatch('workflow/cancelNodeExecution', selectedNodeId);
         },
@@ -142,7 +129,7 @@ const executionShortcuts: ExecutionShortcuts = {
         title: 'Reset selected nodes',
         hotkey: ['F8'],
         icon: ResetSelectedIcon,
-        execute: ({ $store, payload = null }) => {
+        execute: ({ $store, payload = {} }) => {
             const selectedNodeId = payload?.metadata?.nodeId ? [payload?.metadata?.nodeId] : 'selected';
             $store.dispatch('workflow/resetNodes', selectedNodeId);
         },
@@ -156,7 +143,7 @@ const executionShortcuts: ExecutionShortcuts = {
         title: 'Resume loop execution',
         hotkey: ['Ctrl', 'Alt', 'F8'],
         icon: ResumeLoopIcon,
-        execute: ({ $store, payload = null }) => {
+        execute: ({ $store, payload = {} }) => {
             const selectedNodeId = payload?.metadata?.nodeId || $store.getters['selection/singleSelectedNode'].id;
             $store.dispatch('workflow/resumeLoopExecution', selectedNodeId);
         },
@@ -169,8 +156,8 @@ const executionShortcuts: ExecutionShortcuts = {
         hotkey: ['Ctrl', 'Alt', 'F7'],
         icon: PauseLoopIcon,
         execute:
-            ({ $store }, { nodeId = null } = {}) => {
-                const selectedNodeId = nodeId || $store.getters['selection/singleSelectedNode'].id;
+            ({ $store, payload = {} }) => {
+                const selectedNodeId = payload?.metadata?.nodeId || $store.getters['selection/singleSelectedNode'].id;
                 $store.dispatch('workflow/pauseLoopExecution', selectedNodeId);
             },
         condition:
@@ -181,7 +168,7 @@ const executionShortcuts: ExecutionShortcuts = {
         title: 'Execute one loop step',
         hotkey: ['Ctrl', 'Alt', 'F6'],
         icon: StepLoopIcon,
-        execute: ({ $store, payload = null }) => {
+        execute: ({ $store, payload = {} }) => {
             const selectedNodeId = payload?.metadata?.nodeId || $store.getters['selection/singleSelectedNode'].id;
             $store.dispatch('workflow/stepLoopExecution', selectedNodeId);
         },

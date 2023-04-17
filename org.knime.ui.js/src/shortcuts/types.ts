@@ -62,13 +62,6 @@ export type Shortcut = {
     condition?: (payload: ShortcutConditionContext) => boolean;
 
     /**
-     * Returns dynamic text based on the condition of the shortcut.
-     * @param payload
-     * @returns
-     */
-    getText?: (payload: ShortcutConditionContext) => string;
-
-    /**
      * Key combination that triggers the shortcut.
      * It's optional because some actions can be registered as shortcuts without having a key combination
      * bound to them. The reason for this is to enable using all the registered shortcuts to dynamically
@@ -77,9 +70,10 @@ export type Shortcut = {
     hotkey?: Hotkeys;
 
     /**
-     * Text to display for the shortcut
+     * Text to display for the shortcut or a function that returns dynamic text based on the condition of the shortcut
+     * @param payload
      */
-    text?: string;
+    text?: string | ((payload: ShortcutConditionContext) => string);
 
     /**
      * Tooltip to display for the shortcut (on mouse hover)

@@ -84,10 +84,10 @@ export default defineComponent({
             return this.visibleItems
                 .map((item) => {
                     const shortcut = this.$shortcuts.get(item.name);
-                    let shortcutText = shortcut.text;
-                    if (!shortcut.text && typeof shortcut.getText === 'function') {
-                        shortcutText = shortcut.getText({ $store: this.$store });
-                    }
+
+                    const shortcutText = typeof shortcut.text === 'function'
+                        ? shortcut.text({ $store: this.$store })
+                        : shortcut.text;
 
                     return {
                         name: item.name,

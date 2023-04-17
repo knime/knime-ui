@@ -80,8 +80,8 @@ describe('executionShortcuts', () => {
                         canOpenView: true
                     }
                 };
-                await executionShortcuts.executeAndOpenView.execute({ $store },
-                    { nodeId: 'test:id', canExecute: true });
+                await executionShortcuts.executeAndOpenView.execute({ $store,
+                    payload: { metadata: { nodeId: 'test:id', canExecute: true } } });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/executeNodes', ['test:id']);
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/openView', 'test:id');
             });
