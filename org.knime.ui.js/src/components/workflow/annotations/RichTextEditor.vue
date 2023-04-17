@@ -7,11 +7,13 @@ import StarterKit from '@tiptap/starter-kit';
 
 import RichTextEditorToolbar from './RichTextEditorToolbar.vue';
 
+const parseLegacyContent = (content: string) => content.replaceAll('\r\n', '<br />');
+
 interface Props {
     id: string;
     editable: boolean;
     initialValue: string;
-    modelValue: string;
+    isFirstEdit: boolean;
 }
 
 const props = defineProps<Props>();
@@ -19,13 +21,16 @@ const { initialValue } = toRefs(props);
 
 // eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
-    (e: 'change'): void;
     (e: 'editStart'): void;
-    (e: 'update:modelValue', content: string): void;
+    (e: 'change', content: string): void;
 }>();
 
+const content = props.isFirstEdit
+    ? parseLegacyContent(props.initialValue)
+    : props.initialValue;
+
 const editor = useEditor({
-    content: props.initialValue,
+    content,
     editable: props.editable,
     extensions: [
         StarterKit,
@@ -34,7 +39,7 @@ const editor = useEditor({
             types: ['heading', 'paragraph']
         })
     ],
-    onUpdate: () => emit('update:modelValue', editor.value.getHTML())
+    onUpdate: () => emit('change', editor.value.getHTML())
 });
 
 watch(initialValue, () => {
@@ -42,10 +47,6 @@ watch(initialValue, () => {
 });
 
 onMounted(() => {
-    editor.value.on('update', () => {
-        emit('change');
-    });
-
     if (props.editable) {
         nextTick(() => {
             editor.value.commands.focus();

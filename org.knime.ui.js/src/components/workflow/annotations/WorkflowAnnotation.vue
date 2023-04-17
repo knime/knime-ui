@@ -148,6 +148,14 @@ export default defineComponent({
             this.toggleEdit();
         },
 
+        onAnnotationChange(content: string) {
+            if (!this.hasEdited) {
+                this.hasEdited = true;
+            }
+
+            this.richTextContent = content;
+        },
+
         getAnnotationToolbarContainerBounds(transformedBounds: Bounds): Bounds {
             const x =
                 // start from same X as annotation
@@ -210,10 +218,10 @@ export default defineComponent({
         <RichTextEditor
           v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
-          v-model="richTextContent"
           :initial-value="annotation.text"
           :editable="isEditing"
-          @change="hasEdited = true"
+          :is-first-edit="isEditing && !isRichTextAnnotation"
+          @change="onAnnotationChange"
           @edit-start="toggleEdit"
         />
       </foreignObject>

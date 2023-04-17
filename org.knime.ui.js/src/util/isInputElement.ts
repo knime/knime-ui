@@ -5,9 +5,9 @@ export const isInputElement = (target?: HTMLElement): boolean => {
         return false;
     }
 
-    const isBlacklistedTag = inputElementTagNames.test(target.tagName);
+    const isInputTag = inputElementTagNames.test(target.tagName);
 
-    if (isBlacklistedTag || target.getAttribute?.('contenteditable') === 'true') {
+    if (isInputTag || target.getAttribute?.('contenteditable') === 'true') {
         return true;
     }
 
