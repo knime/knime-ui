@@ -52,12 +52,15 @@ import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
 import javax.swing.SwingUtilities;
 
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.Node;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
+import org.knime.core.node.workflow.NodeStateChangeListener;
+import org.knime.core.node.workflow.NodeStateEvent;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
@@ -93,7 +96,32 @@ final class NodeAPI {
     }
 
     /**
+     * Executes the node and opens the node view as soon as the node is executed.
      *
+     * @param projectId
+     * @param nodeId
+     */
+    @API
+    static void executeNodeAndOpenView(final String projectId, final String nodeId) {
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        checkIsNotNull(nc, projectId, nodeId);
+        nc.addNodeStateChangeListener(new NodeStateChangeListener() {
+
+            @Override
+            public void stateChanged(final NodeStateEvent event) {
+                var state = nc.getNodeContainerState();
+                if (event.getSource().equals(nc.getID()) && state.isExecuted()) {
+                    Display.getDefault().asyncExec(() -> openNodeView(projectId, nodeId));
+                }
+                if (!state.isExecutionInProgress()) {
+                    nc.removeNodeStateChangeListener(this);
+                }
+            }
+        });
+        nc.getParent().executeUpToHere(nc.getID());
+    }
+
+    /**
      * Opens the node's js-view, if available, in an extra browser window.
      *
      * @param projectId
@@ -103,9 +131,9 @@ final class NodeAPI {
     static void openNodeView(final String projectId, final String nodeId) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
-        if (nc instanceof SubNodeContainer) {
+        if (nc instanceof SubNodeContainer snc) {
             // composite view
-            OpenSubnodeWebViewAction.openView((SubNodeContainer)nc);
+            OpenSubnodeWebViewAction.openView(snc);
         } else if (NodeViewManager.hasNodeView(nc)) {
             // 'ui-extension' view
             final var nnc = ((NativeNodeContainer)nc);
