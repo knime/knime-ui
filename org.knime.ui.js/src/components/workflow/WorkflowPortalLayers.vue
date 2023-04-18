@@ -6,11 +6,6 @@
   <!-- Workflow Annotation Layer. Background -->
   <slot name="workflowAnnotation" />
 
-  <PortalTarget
-    tag="g"
-    name="annotation-transform"
-  />
-
   <!-- Node Selection Plane Layer -->
   <PortalTarget
     tag="g"
@@ -46,11 +41,16 @@
 
   <PortalTarget
     tag="g"
-    name="drag-connector"
+    name="editable-annotation"
   />
 
   <PortalTarget
     tag="g"
-    name="top-layer"
+    name="annotation-transform"
+  />
+
+  <PortalTarget
+    tag="g"
+    name="drag-connector"
   />
 </template>

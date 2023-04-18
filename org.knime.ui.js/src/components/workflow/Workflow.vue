@@ -84,7 +84,7 @@ export default defineComponent({
 
           <Portal
             v-else
-            to="top-layer"
+            to="editable-annotation"
           >
             <WorkflowAnnotation
               :ref="`annotation-${annotation.id}`"
