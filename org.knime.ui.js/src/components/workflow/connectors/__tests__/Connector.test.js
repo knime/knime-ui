@@ -63,6 +63,22 @@ describe('Connector.vue', () => {
             application: {
                 actions: {
                     toggleContextMenu: vi.fn()
+                },
+                state: {
+                    availablePortTypes: {
+                        portType1: {
+                            color: '#9B9B9B',
+                            compatibleTypes: ['portType1'],
+                            kind: 'other',
+                            name: 'name 1'
+                        },
+                        portType2: {
+                            color: '#9B9B9B',
+                            compatibleTypes: ['portType2'],
+                            kind: 'other',
+                            name: 'name 2'
+                        }
+                    }
                 }
             },
             workflow: {
@@ -649,6 +665,14 @@ describe('Connector.vue', () => {
             return event;
         };
 
+        const portMock = {
+            canRemove: false,
+            connectedVia: ['root:11_1'],
+            index: 1,
+            name: 'Spark Context',
+            typeId: 'portType1'
+        };
+
         it('check if dragged object is compatible', async () => {
             const wrapper = doShallowMount({ storeConfig: getStoreConfig() });
             const paths = wrapper.findAll('path');
@@ -682,33 +706,35 @@ describe('Connector.vue', () => {
         });
 
         it('ignores dragged node with connections', () => {
-            const storeConfig = getStoreConfig();
+            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'portType1' } });
             const wrapper = doShallowMount({ storeConfig });
 
             const paths = wrapper.findAll('path');
-            paths.at(0).trigger('node-dragging-enter', { detail: { isNodeConnected: true } });
+            paths.at(0).trigger('node-dragging-enter', { detail: { isNodeConnected: true,
+                inPorts: [portMock],
+                outPorts: [portMock] } });
 
             expect(paths.at(1).classes()).not.toContain('is-dragged-over');
         });
 
         it('ignores dragged node without compatible ports', () => {
-            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'DataTable' } });
+            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'portType2' } });
             const wrapper = doShallowMount({ storeConfig });
 
             const paths = wrapper.findAll('path');
             paths.at(0).trigger('node-dragging-enter',
-                { detail: { isNodeConnected: true, inPortsKind: ['Credentials'], outPortsKind: ['Credentials'] } });
+                { detail: { isNodeConnected: true, inPorts: [portMock], outPorts: [portMock] } });
 
             expect(paths.at(1).classes()).not.toContain('is-dragged-over');
         });
 
         it('inserts existing dragged node', async () => {
-            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'DataTable' } });
+            const storeConfig = getStoreConfig({ customPortMock: portMock });
             const wrapper = doShallowMount({ storeConfig });
 
             const paths = wrapper.findAll('path');
             paths.at(0).trigger('node-dragging-enter',
-                { detail: { isNodeConnected: false, inPortsKind: ['DataTable'], outPortsKind: ['DataTable'] } });
+                { detail: { isNodeConnected: false, inPorts: [portMock], outPorts: [portMock] } });
             await Vue.nextTick();
             expect(paths.at(1).classes()).toContain('is-dragged-over');
 
@@ -726,7 +752,7 @@ describe('Connector.vue', () => {
         });
 
         it('notifies user insert new node is not possible', () => {
-            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'DataTable' } });
+            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'portType1' } });
             const props = {
                 id: '',
                 allowedActions: {
@@ -737,7 +763,7 @@ describe('Connector.vue', () => {
 
             const paths = wrapper.findAll('path');
             paths.at(0).trigger('node-dragging-enter',
-                { detail: { isNodeConnected: false, inPortsKind: ['DataTable'], outPortsKind: ['DataTable'] } });
+                { detail: { isNodeConnected: false, inPorts: [portMock], outPorts: [portMock] } });
 
             const errorCallback = vi.fn();
             paths.at(0).trigger('node-dragging-end', { detail: { id: 'test',

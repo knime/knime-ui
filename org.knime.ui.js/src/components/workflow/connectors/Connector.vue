@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { mapState, mapGetters, mapActions } from 'vuex';
 
 import { portBar, connectorPosition } from '@/mixins';
+import { checkPortCompatibility } from '@/util/compatibleConnections';
 import connectorPath from '@/util/connectorPath';
 
 import { KnimeMIME } from '@/mixins/dropNode';
@@ -67,6 +68,7 @@ export default defineComponent({
             'selectedConnections'
         ]),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
+        ...mapState('application', ['availablePortTypes']),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // Update position of source or destination node is being moved
@@ -160,13 +162,20 @@ export default defineComponent({
             });
         },
         onNodeDragggingEnter(event: CustomEvent) {
-            const { inPortsKind, outPortsKind, isNodeConnected } = event.detail;
-            const hasCompatibleSrcPort = inPortsKind && this.sourceNodeObject?.outPorts
-                ? inPortsKind.includes(this.sourceNodeObject.outPorts[this.sourcePort].typeId)
-                : false;
-            const hasCompatibleDestPort = outPortsKind && this.destNodeObject?.inPorts
-                ? outPortsKind.includes(this.destNodeObject.inPorts[this.destPort].typeId)
-                : false;
+            const { isNodeConnected, inPorts, outPorts } = event.detail;
+            
+            const hasCompatibleSrcPort = this.sourceNodeObject &&
+                inPorts.some(toPort => checkPortCompatibility(
+                    { fromPort: this.sourceNodeObject.outPorts[this.sourcePort],
+                        toPort,
+                        availablePortTypes: this.availablePortTypes }
+                ));
+            const hasCompatibleDestPort = this.destNodeObject &&
+                outPorts.some(fromPort => checkPortCompatibility(
+                    { fromPort,
+                        toPort: this.destNodeObject.inPorts[this.destPort],
+                        availablePortTypes: this.availablePortTypes }
+                ));
             if (!hasCompatibleSrcPort && !hasCompatibleDestPort) {
                 return;
             }

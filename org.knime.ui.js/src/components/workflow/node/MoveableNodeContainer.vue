@@ -220,16 +220,12 @@ export default {
             }
 
             if (!isSameTarget && hitTarget) {
-                const { inPorts, outPorts } = this.getNodeById(this.id);
+                const { inPorts = [], outPorts = [] } = this.getNodeById(this.id);
                 const isEventIgnored = hitTarget.dispatchEvent(
                     new CustomEvent('node-dragging-enter', {
                         bubbles: true,
                         cancelable: true,
-                        detail: {
-                            isNodeConnected: this.isNodeConnected(this.id),
-                            inPortsKind: inPorts.map(port => port.typeId),
-                            outPortsKind: outPorts.map(port => port.typeId)
-                        }
+                        detail: { isNodeConnected: this.isNodeConnected(this.id), inPorts, outPorts }
                     })
                 );
                 this.lastHitTarget = isEventIgnored ? null : hitTarget;
