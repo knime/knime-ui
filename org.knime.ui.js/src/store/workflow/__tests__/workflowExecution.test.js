@@ -90,5 +90,15 @@ describe('workflow store: Execution', () => {
                 action: 'action'
             });
         });
+
+        it('executeNodeAndOpenView', async () => {
+            const { store } = await loadStore();
+
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.dispatch('workflow/executeNodeAndOpenView', 'root:0');
+
+            expect(mockedAPI.desktop.executeNodeAndOpenView)
+                .toHaveBeenCalledWith({ nodeId: 'root:0', projectId: 'foo' });
+        });
     });
 });

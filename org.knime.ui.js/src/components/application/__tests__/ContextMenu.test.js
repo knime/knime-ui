@@ -190,6 +190,39 @@ describe('ContextMenu.vue', () => {
             );
         });
 
+        it('shows executeAndOpenView if one node with a view is selected', async () => {
+            const node = {
+                id: 'root:0',
+                allowedActions: {
+                    canExecute: true,
+                    canOpenView: true
+                }
+            };
+
+            const { wrapper } = doMount({
+                selectedNodes: () => [node],
+                singleSelectedNode: () => node
+            });
+
+            await Vue.nextTick();
+
+            expect(renderedMenuItems(wrapper)).toEqual(
+                assertItems([
+                    { text: 'configureNode' },
+                    { text: 'executeSelected' },
+                    { text: 'cancelSelected' },
+                    { text: 'resetSelected' },
+                    { text: 'editNodeLabel' },
+                    { text: 'executeAndOpenView', separator: true },
+                    { text: 'cut' },
+                    { text: 'copy' },
+                    { text: 'deleteSelected', separator: true },
+                    { text: 'createMetanode' },
+                    { text: 'createComponent' }
+                ])
+            );
+        });
+
         it('shows correct menu items if selected node has loopInfo', async () => {
             const node = {
                 id: 'root:0',

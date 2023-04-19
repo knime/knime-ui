@@ -62,13 +62,6 @@ describe('workflow store: AP Interactions', () => {
 
         it('calls executeNodeAndOpenView from API', async () => {
             const { store } = await loadStore();
-            store.getters['selection/singleSelectedNode'] = {
-                id: 'root:0',
-                allowedActions: {
-                    canExecute: true,
-                    canOpenView: true
-                }
-            };
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
             store.dispatch('workflow/executeNodeAndOpenView', 'root:0');
 
