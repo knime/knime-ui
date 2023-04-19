@@ -208,7 +208,7 @@ export default {
 
         onDeleteItems({ items }) {
             const itemNameList = items
-                .map((item) => `${ITEM_TYPES_TEXTS[item.type]} ${item.name}`)
+                .map((item) => `${ITEM_TYPES_TEXTS[item.type]} “${item.name}”`)
                 .join(', ');
 
             this.deleteModal.modalMessage = `Do you want to delete the ${itemNameList}?`;
