@@ -163,7 +163,7 @@ export default defineComponent({
         },
         onNodeDragggingEnter(event: CustomEvent) {
             const { isNodeConnected, inPorts, outPorts } = event.detail;
-            
+
             const hasCompatibleSrcPort = this.sourceNodeObject &&
                 inPorts.some(toPort => checkPortCompatibility(
                     { fromPort: this.sourceNodeObject.outPorts[this.sourcePort],
@@ -284,7 +284,7 @@ path:not(.hover-area) {
   }
 
   &.is-dragged-over {
-    stroke-width: var(--selected-connector-width-shape);
+    stroke-width: v-bind("$shapes.selectedConnectorWidth");
     stroke: var(--knime-meadow-dark);
   }
 
