@@ -886,40 +886,78 @@ describe('Node', () => {
         });
     });
 
-    describe('inserts node when drag and dropped', () => {
+    describe('replace node', () => {
         beforeEach(() => {
             props = { ...commonNode };
             doMount();
         });
 
-        const triggerDragEvent = (element, type, dataTransfer = {}) => {
-            const event = new CustomEvent(type);
-            Object.assign(event, { dataTransfer });
-            element.dispatchEvent(event);
-            return event;
-        };
+        describe('when node is dragged from repository', () => {
+            const triggerDragEvent = (element, type, dataTransfer = {}) => {
+                const event = new CustomEvent(type);
+                Object.assign(event, { dataTransfer });
+                element.dispatchEvent(event);
+                return event;
+            };
 
-        it('checks if dragged object is compatible', async () => {
-            const torso = wrapper.findComponent(NodeTorso);
-
-            triggerDragEvent(torso.element, 'dragenter', { types: [KnimeMIME] });
-            await Vue.nextTick();
-
-            expect(torso.vm.$props.isDraggedOver).toBeTruthy();
-            triggerDragEvent(torso.element, 'dragleave');
-            await Vue.nextTick();
-            expect(torso.vm.$props.isDraggedOver).toBeFalsy();
+            it('checks if dragged object is compatible', async () => {
+                const torso = wrapper.findComponent(NodeTorso);
+    
+                triggerDragEvent(torso.element, 'dragenter', { types: [KnimeMIME] });
+                await Vue.nextTick();
+    
+                expect(torso.vm.$props.isDraggedOver).toBeTruthy();
+                triggerDragEvent(torso.element, 'dragleave');
+                await Vue.nextTick();
+                expect(torso.vm.$props.isDraggedOver).toBeFalsy();
+            });
+    
+            it('replaces node on drop', async () => {
+                const node = wrapper.findComponent(Node);
+    
+                const dropEvent = triggerDragEvent(node.element, 'drop', { getData: () => '{ "className": "test" }' });
+                node.vm.onTorsoDragDrop(dropEvent);
+                await Vue.nextTick();
+                expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
+                    expect.anything(), { nodeFactory: { className: 'test' }, targetNodeId: 'root:1' }
+                );
+            });
         });
 
-        it('replaces node on drop', async () => {
-            const node = wrapper.findComponent(Node);
+        describe('when node is dragged from the workflow', () => {
+            it('gives visual indication when node is hovered', async () => {
+                const torso = wrapper.findComponent(NodeTorso);
+   
+                await torso.trigger('node-dragging-enter', { detail: { isNodeConnected: false } });
+                expect(torso.vm.$props.isDraggedOver).toBeTruthy();
 
-            const dropEvent = triggerDragEvent(node.element, 'drop', { getData: () => '{ "className": "test" }' });
-            node.vm.onTorsoDragDrop(dropEvent);
-            await Vue.nextTick();
-            expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
-                expect.anything(), { nodeFactory: { className: 'test' }, nodeId: 'root:1' }
-            );
+                await torso.trigger('node-dragging-leave');
+
+                expect(torso.vm.$props.isDraggedOver).toBeFalsy();
+            });
+
+            it('ignores already connected nodes', () => {
+                const torso = wrapper.findComponent(NodeTorso);
+   
+                torso.trigger('node-dragging-enter', { detail: { isNodeConnected: true } });
+                expect(torso.vm.$props.isDraggedOver).toBeFalsy();
+            });
+    
+            it('replaces node on drop', async () => {
+                const torso = wrapper.findComponent(NodeTorso);
+    
+                await torso.trigger('node-dragging-enter', { detail: { isNodeConnected: false } });
+                expect(torso.vm.$props.isDraggedOver).toBeTruthy();
+
+                await torso.trigger('node-dragging-end', { detail: { id: 'test', clientX: 0, clientY: 0 } });
+                expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
+                    expect.anything(),
+                    {
+                        targetNodeId: 'root:1',
+                        replacementNodeId: 'test'
+                    }
+                );
+            });
         });
     });
 });
