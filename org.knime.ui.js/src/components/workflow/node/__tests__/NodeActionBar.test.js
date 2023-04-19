@@ -115,7 +115,6 @@ describe('NodeActionBar', () => {
         expect($shortcuts.dispatch).toHaveBeenNthCalledWith(5,
             'executeAndOpenView', {
                 metadata: {
-                    canExecute: true,
                     nodeId: 'root:1'
                 }
             });

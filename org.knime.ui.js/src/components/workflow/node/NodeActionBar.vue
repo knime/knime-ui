@@ -115,7 +115,7 @@ export default defineComponent({
                         this.$shortcuts.get('executeAndOpenView').hotkeyText),
                     disabled: !this.canOpenView && !this.canExecute,
                     icon: OpenViewIcon,
-                    onClick: () => this.dispatchShortcut('executeAndOpenView', { canExecute: this.canExecute })
+                    onClick: () => this.dispatchShortcut('executeAndOpenView')
                 }
             };
         },

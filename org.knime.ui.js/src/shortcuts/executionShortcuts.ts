@@ -13,17 +13,10 @@ import StepLoopIcon from '@/assets/step-execution.svg';
 
 import type { UnionToShortcutRegistry } from './types';
 
-const executeAndOpenViewHelper = async ({ $store, payload = {} as any }) => {
-    const { nodeId, canExecute } = payload.metadata || {};
+const executeAndOpenViewHelper = ({ $store, payload = {} as any }) => {
+    const { nodeId } = payload.metadata || {};
     const selectedNodeId = nodeId || $store.getters['selection/singleSelectedNode'].id;
-    const selectedCanExecute = nodeId
-        ? canExecute
-        : $store.getters['selection/singleSelectedNode'].allowedActions.canExecute;
-
-    if (selectedCanExecute) {
-        await $store.dispatch('workflow/executeNodes', [selectedNodeId]);
-    }
-    $store.dispatch('workflow/openView', selectedNodeId);
+    $store.dispatch('workflow/executeNodeAndOpenView', selectedNodeId);
 };
 
 const canExecuteAndOpenView = ({ $store }) => $store.getters['selection/singleSelectedNode'] &&

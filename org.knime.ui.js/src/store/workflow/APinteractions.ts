@@ -79,6 +79,11 @@ export const actions = {
         API.desktop.openView({ projectId: state.activeWorkflow.projectId, nodeId });
     },
 
+    /* Some nodes generate views from their data. The node gets executed and a Classic UI dialog opens to present this view */
+    executeNodeAndOpenView({ state }, nodeId) {
+        API.desktop.executeNodeAndOpenView({ projectId: state.activeWorkflow.projectId, nodeId });
+    },
+
     /* See docs in API */
     openNodeConfiguration({ state }, nodeId) {
         API.desktop.openNodeDialog({ projectId: state.activeWorkflow.projectId, nodeId });

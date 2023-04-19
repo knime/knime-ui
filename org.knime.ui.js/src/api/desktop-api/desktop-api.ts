@@ -34,6 +34,14 @@ export const openView = ({ projectId, nodeId }: { projectId: string; nodeId: str
     }
 };
 
+export const executeNodeAndOpenView = ({ projectId, nodeId }: { projectId: string; nodeId: string; }) => {
+    try {
+        window.executeNodeAndOpenView(projectId, nodeId);
+    } catch (e) {
+        consola.error(`Could not execute and open view of node ${nodeId}`, e);
+    }
+};
+
 export const saveWorkflow = ({ projectId, workflowPreviewSvg }: { projectId: string; workflowPreviewSvg: string; }) => {
     try {
         // returns falsy on success

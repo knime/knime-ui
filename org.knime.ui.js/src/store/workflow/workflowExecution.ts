@@ -45,6 +45,9 @@ export const actions = {
     executeNodes({ dispatch }, nodes) {
         return dispatch('changeNodeState', { action: 'execute', nodes });
     },
+    executeNodeAndOpenView({ state }, nodeId) {
+        API.desktop.executeNodeAndOpenView({ projectId: state.activeWorkflow.projectId, nodeId });
+    },
     resetNodes({ dispatch }, nodes) {
         dispatch('changeNodeState', { action: 'reset', nodes });
     },
