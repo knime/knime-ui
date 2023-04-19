@@ -80,6 +80,7 @@ onMounted(() => {
 <style lang="postcss" scoped>
 .editor-wrapper {
     height: 100%;
+    background: var(--knime-white);
 }
 
 .toolbar-wrapper {
@@ -92,11 +93,9 @@ onMounted(() => {
 }
 
 .editor {
-    background: var(--knime-white);
     height: 100%;
     overflow-y: auto;
     border: 1px solid var(--knime-masala);
-    border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
 
     &.editable {
         margin-top: 0;
