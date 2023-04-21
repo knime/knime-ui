@@ -22,3 +22,11 @@ declare function importWorkflows(...args: unknown[]): unknown;
 declare function getNameCollisionStrategy(...args: unknown[]): 'OVERWRITE' | 'NOOP' | 'AUTORENAME' | 'CANCEL';
 declare function copyBetweenSpaces(...args: unknown[]): unknown;
 declare function saveWorkflowAs(...args: unknown[]): unknown;
+declare function saveAndCloseWorkflows(totalProjects: number, ...args: unknown[]): unknown;
+declare function importURIAtWorkflowCanvas(
+    uri: string | null,
+    projectId: string,
+    worflowId: string,
+    x: number,
+    y: number,
+): unknown;

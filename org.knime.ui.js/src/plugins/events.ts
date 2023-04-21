@@ -1,6 +1,5 @@
 /* eslint-disable valid-jsdoc */
 import { API } from '@api';
-import { APP_ROUTES } from '@/router/appRoutes';
 import { notifyPatch } from '@/util/event-syncer';
 import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { nodeSize } from '@/style/shapes.mjs';
@@ -11,6 +10,7 @@ export default ({ $store, $router }) => {
          * Is a generic event, that holds multiple events (names separated by ':')
          * Calls all event handlers with their params
          */
+        // @ts-expect-error
         CompositeEvent({ events, params, eventHandlers }) {
             events.forEach((event, index) => {
                 const handler = eventHandlers.get(event);
@@ -52,29 +52,9 @@ export default ({ $store, $router }) => {
          * Is triggered by the backend, whenever the application state changes
          * sends the new state
          */
-        async AppStateChangedEvent({ appState }) {
-            const { openProjects } = appState;
-            const currentProjectId = $store.state.application.activeProjectId;
-            const nextActiveProject = openProjects?.find(item => item.activeWorkflowId);
-
-            // Navigate to GetStarted page when no projects are open
-            if (openProjects && openProjects.length === 0) {
-                await $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
-            }
-
-            // When a new project is set as active, navigate to the corresponding workflow
-            if (nextActiveProject && currentProjectId !== nextActiveProject.projectId) {
-                await $router.push({
-                    name: APP_ROUTES.WorkflowPage,
-                    params: {
-                        projectId: nextActiveProject.projectId,
-                        workflowId: 'root'
-                    },
-                    query: { skipGuards: true }
-                });
-            }
-
+        AppStateChangedEvent({ appState }) {
             $store.dispatch('application/replaceApplicationState', appState);
+            $store.dispatch('application/setActiveProject', { $router });
 
             // In case a `SaveAndCloseWorkflowsEvent` was received before, which might've triggered
             // an `AppStateChangedEvent` later, then we make sure to clean up the busy state here
@@ -120,7 +100,7 @@ export default ({ $store, $router }) => {
             const el = document.elementFromPoint(x, y);
             const kanvas = $store.state.canvas.getScrollContainerElement();
             if (kanvas.contains(el)) {
-                let [canvasX, canvasY] = $store.getters['canvas/screenToCanvasCoordinates']([x, y]);
+                const [canvasX, canvasY] = $store.getters['canvas/screenToCanvasCoordinates']([x, y]);
                 const workflow = $store.state.workflow.activeWorkflow;
                 window.importURIAtWorkflowCanvas(
                     null,

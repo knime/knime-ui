@@ -382,7 +382,7 @@ export default {
             v-bind="allNodeActions"
             :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y})`"
             :node-id="id"
-            :is-node-selected="isNodeSelected(nodeId)"
+            :is-node-selected="isNodeSelected(id)"
             @mouseleave="onLeaveHoverArea"
           />
         </Portal>

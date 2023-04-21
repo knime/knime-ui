@@ -166,16 +166,7 @@ export const actions = {
     async initializeApplication({ dispatch }, { $router }) {
         await API.event.subscribeEvent({ typeId: 'AppStateChangedEventType' });
 
-        const applicationState = await API.application.getState({});
-        await dispatch('replaceApplicationState', applicationState);
-        await dispatch('spaces/fetchAllSpaceProviders', {}, { root: true });
-
         $router.beforeEach(async (to, from, next) => {
-            if (to.query.skipGuards === 'true') {
-                next();
-                return;
-            }
-
             const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;
             const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
 
@@ -185,25 +176,28 @@ export const actions = {
             }
 
             if (isLeavingWorkflow && !isEnteringWorkflow) {
+                // when leaving workflow we should dispatch to the store to run the switching logic
+                // before destroying the route (aka navigating away)
                 await dispatch('switchWorkflow', { newWorkflow: null });
                 next();
                 return;
             }
 
             if (isEnteringWorkflow) {
-                // wrap next in a promise to make sure navigation happens at the right time and the workflow
-                // route page is rendered before the dispatch to the store (switchWorkflow) finishes, not after
-                const navigateToWorkflow = () => new Promise(resolve => {
-                    next();
-                    setTimeout(resolve, 0);
-                });
-                // switchWorkflow will call `next` on its own via the `navigateToWorkflow` parameter
-                await dispatch('switchWorkflow', { newWorkflow: to.params, navigateToWorkflow });
+                // when entering workflow, we must navigate to the route before we dispatch
+                // to the store and load all the relevant workflow state
+                next();
+                await dispatch('switchWorkflow', { newWorkflow: to.params });
                 return;
             }
 
             next();
         });
+
+        const applicationState = await API.application.getState({});
+        await dispatch('replaceApplicationState', applicationState);
+        await dispatch('setActiveProject', { $router });
+        await dispatch('spaces/fetchAllSpaceProviders', {}, { root: true });
     },
     destroyApplication({ dispatch }) {
         API.event.unsubscribeEventListener({ typeId: 'AppStateChangedEventType' });
@@ -218,13 +212,13 @@ export const actions = {
             closingProjectIds: projectIds
         });
         await API.desktop.forceCloseWorkflows({ projectIds });
-        
+
         return nextProjectId;
     },
 
     // ----------------------------------------------------------------------------------------- //
 
-    async replaceApplicationState({ commit, dispatch, state }, applicationState) {
+    replaceApplicationState({ commit, dispatch, state }, applicationState) {
         // Only set application state properties present in the received object
         if (applicationState.availablePortTypes) {
             commit('setAvailablePortTypes', applicationState.availablePortTypes);
@@ -245,7 +239,6 @@ export const actions = {
 
         if (applicationState.openProjects) {
             commit('setOpenProjects', applicationState.openProjects);
-            await dispatch('setActiveProject', applicationState.openProjects);
         }
 
         if (applicationState.exampleProjects) {
@@ -279,10 +272,12 @@ export const actions = {
             commit('setFileExtensionToNodeTemplateId', applicationState.fileExtensionToNodeTemplateId);
         }
     },
-    async setActiveProject({ dispatch, state }, openProjects) {
+
+    async setActiveProject({ state }, { $router }) {
+        const { openProjects } = state;
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
-            await dispatch('switchWorkflow', { newWorkflow: null });
+            await $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
             return;
         }
 
@@ -290,48 +285,36 @@ export const actions = {
 
         // No active project is set -> stay on entry page (aka: null project)
         if (!activeProject) {
+            await $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
             return;
         }
 
         const isSameActiveProject = state?.activeProjectId === activeProject.projectId;
         if (isSameActiveProject) {
-            // don't set the workflow if already on it. e.g another tab was closed
+            // don't set navigate to project/workflow if already on it. e.g another tab was closed
             // and we receive an update for `openProjects`
             return;
         }
 
-        const stateKey = getCanvasStateKey(`${activeProject.projectId}--${'root'}`);
-        const hasSavedState = Boolean(state.savedCanvasStates[stateKey]);
-        const lastActiveWorkflow = state.savedCanvasStates[stateKey]?.lastActive;
-        if (hasSavedState && lastActiveWorkflow !== 'root') {
-            dispatch('loadWorkflow', { projectId: activeProject.projectId, workflowId: lastActiveWorkflow });
-            return;
-        }
-
-        // Before opening a new workflow we need to make sure we update the preview snapshot of the one
-        // we're leaving
-        await dispatch('updatePreviewSnapshot', {
-            isChangingProject: true,
-            newWorkflow: {
+        await $router.push({
+            name: APP_ROUTES.WorkflowPage,
+            params: {
                 projectId: activeProject.projectId,
-                workflowId: 'root'
+                workflowId: activeProject.activeWorkflowId
             }
         });
-
-        await dispatch('loadWorkflow',
-            { projectId: activeProject.projectId, workflowId: activeProject.activeWorkflowId });
     },
 
     /*
      *   W O R K F L O W   L I F E C Y C L E
      */
 
-    async switchWorkflow({ commit, dispatch, rootState, state }, { newWorkflow = null, navigateToWorkflow }) {
+    async switchWorkflow({ commit, dispatch, rootState, state }, { newWorkflow = null }) {
         const isChangingProject = rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
         await dispatch('updatePreviewSnapshot', { isChangingProject, newWorkflow });
 
+        commit('setIsLoadingWorkflow', true);
         if (rootState.workflow?.activeWorkflow) {
-            commit('setIsLoadingWorkflow', true);
             dispatch('saveCanvasState');
 
             // unload current workflow
@@ -348,15 +331,15 @@ export const actions = {
                 const stateKey = getCanvasStateKey(`${projectId}--${workflowId}`);
                 const newWorkflowId = state.savedCanvasStates[stateKey]?.lastActive;
 
-                await dispatch('loadWorkflow', { projectId, workflowId: newWorkflowId, navigateToWorkflow });
+                await dispatch('loadWorkflow', { projectId, workflowId: newWorkflowId });
             } else {
-                await dispatch('loadWorkflow', { projectId, workflowId, navigateToWorkflow });
+                await dispatch('loadWorkflow', { projectId, workflowId });
             }
         }
 
         commit('setIsLoadingWorkflow', false);
     },
-    async loadWorkflow({ dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
+    async loadWorkflow({ dispatch }, { projectId, workflowId = 'root' }) {
         // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
         API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
         const project = await API.workflow.getWorkflow({ projectId, workflowId, includeInteractionInfo: true });
@@ -364,14 +347,13 @@ export const actions = {
             dispatch('setWorkflow', {
                 projectId,
                 workflow: project.workflow,
-                snapshotId: project.snapshotId,
-                navigateToWorkflow
+                snapshotId: project.snapshotId
             });
         } else {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    async setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId, navigateToWorkflow }) {
+    async setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId }) {
         commit('setActiveProjectId', projectId);
         commit('workflow/setActiveWorkflow', {
             ...workflow,
@@ -383,9 +365,6 @@ export const actions = {
         // TODO: remove this 'root' fallback after mocks have been adjusted
         const workflowId = workflow.info.containerId || 'root';
         API.event.subscribeEvent({ typeId: 'WorkflowChangedEventType', projectId, workflowId, snapshotId });
-
-        // Call navigate to workflow function (if provided) before restoring the canvas state
-        await navigateToWorkflow?.();
 
         // restore scroll and zoom if saved before
         await dispatch('restoreCanvasState');
