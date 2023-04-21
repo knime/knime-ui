@@ -11,17 +11,22 @@ import ResumeLoopIcon from '@/assets/resume-execution.svg';
 import PauseLoopIcon from '@/assets/pause-execution.svg';
 import StepLoopIcon from '@/assets/step-execution.svg';
 
-import type { UnionToShortcutRegistry } from './types';
+import type { ShortcutConditionContext, ShortcutExecuteContext, UnionToShortcutRegistry } from './types';
 
-const executeAndOpenViewHelper = ({ $store, payload = {} as any }) => {
+const executeAndOpenViewHelper = ({ $store, payload = {} }: ShortcutExecuteContext) => {
     const { nodeId } = payload.metadata || {};
     const selectedNodeId = nodeId || $store.getters['selection/singleSelectedNode'].id;
     $store.dispatch('workflow/executeNodeAndOpenView', selectedNodeId);
 };
 
-const canExecuteAndOpenView = ({ $store }) => $store.getters['selection/singleSelectedNode'] &&
-    ($store.getters['selection/singleSelectedNode'].allowedActions.canExecute ||
-    $store.getters['selection/singleSelectedNode'].allowedActions.canOpenView);
+// eslint-disable-next-line @typescript-eslint/no-extra-parens
+const canExecuteAndOpenView = ({ $store }: ShortcutConditionContext) => (
+    $store.getters['selection/singleSelectedNode'] &&
+    (
+        $store.getters['selection/singleSelectedNode'].allowedActions.canExecute ||
+        $store.getters['selection/singleSelectedNode'].allowedActions.canOpenView
+    )
+);
 
 type ExecutionShortcuts = UnionToShortcutRegistry<
     | 'executeAll'
