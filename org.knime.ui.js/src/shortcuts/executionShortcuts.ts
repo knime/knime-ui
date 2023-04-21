@@ -90,7 +90,7 @@ const executionShortcuts: ExecutionShortcuts = {
         text: ({ $store }) => $store.getters['selection/singleSelectedNode'].allowedActions.canExecute
             ? 'Execute and open view'
             : 'Open view',
-        hotkey: ['Shift', 'F10'],
+        hotkey: ['F10'],
         icon: OpenViewIcon,
         execute: executeAndOpenViewHelper,
         condition: canExecuteAndOpenView
@@ -101,7 +101,7 @@ const executionShortcuts: ExecutionShortcuts = {
      * The only purpose of this is to add the second hotkey for executeAndOpenView.
      */
     executeAndOpenViewShortcutAlternative: {
-        hotkey: ['F12'],
+        hotkey: ['Shift', 'F10'],
         execute: executeAndOpenViewHelper,
         condition: canExecuteAndOpenView
     },
