@@ -222,7 +222,7 @@ export const actions = {
         });
     },
 
-    replaceNode({ state }, { targetNodeId, replacementNodeId, nodeFactory }) {
+    replaceNode({ state }, { targetNodeId, replacementNodeId = null, nodeFactory = null }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
         return API.workflowCommand.ReplaceNode({
