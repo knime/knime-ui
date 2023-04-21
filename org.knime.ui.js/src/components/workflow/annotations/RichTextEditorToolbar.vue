@@ -104,7 +104,6 @@ const totalTools = computed(() => tools.length);
     display: flex;
     gap: calc(var(--item-gap) * 1px);
     justify-content: center;
-
     background: var(--knime-white);
     padding: calc(var(--padding) * 1px);
     width: calc(
@@ -119,7 +118,7 @@ const totalTools = computed(() => tools.length);
         * 1px /* convert to px */
     );
     height: 40px;
-    box-shadow: 0px 0px 10px rgba(62, 58, 57, 0.3);
+    box-shadow: 0 0 10px rgb(62 58 57 / 30%);
     border-radius: 20px;
 
     & .toolbar-button {

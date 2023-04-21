@@ -96,6 +96,7 @@ onMounted(() => {
         cursor: text;
     }
 
+    /* stylelint-disable-next-line selector-class-pattern */
     & :deep(.ProseMirror) {
         height: 100%;
         font-size: 10px;
