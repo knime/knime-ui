@@ -88,6 +88,16 @@ export default defineComponent({
 
         isRichTextAnnotation() {
             return this.annotation.contentType === Annotation.ContentTypeEnum.Html;
+        },
+
+        initialRichTextAnnotationValue() {
+            if (this.isRichTextAnnotation) {
+                return this.annotation.text;
+            }
+
+            const recreateLinebreaks = (content: string) => content.replaceAll('\r\n', '<br />');
+
+            return recreateLinebreaks(this.annotation.text);
         }
     },
 
@@ -218,9 +228,8 @@ export default defineComponent({
         <RichTextEditor
           v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
-          :initial-value="annotation.text"
+          :initial-value="initialRichTextAnnotationValue"
           :editable="isEditing"
-          :is-first-edit="isEditing && !isRichTextAnnotation"
           @change="onAnnotationChange"
           @edit-start="toggleEdit"
         />

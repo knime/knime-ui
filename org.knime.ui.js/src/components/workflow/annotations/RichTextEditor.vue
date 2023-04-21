@@ -7,13 +7,10 @@ import StarterKit from '@tiptap/starter-kit';
 
 import RichTextEditorToolbar from './RichTextEditorToolbar.vue';
 
-const parseLegacyContent = (content: string) => content.replaceAll('\r\n', '<br />');
-
 interface Props {
     id: string;
     editable: boolean;
     initialValue: string;
-    isFirstEdit: boolean;
 }
 
 const props = defineProps<Props>();
@@ -25,12 +22,8 @@ const emit = defineEmits<{
     (e: 'change', content: string): void;
 }>();
 
-const content = props.isFirstEdit
-    ? parseLegacyContent(props.initialValue)
-    : props.initialValue;
-
 const editor = useEditor({
-    content,
+    content: props.initialValue,
     editable: props.editable,
     extensions: [
         StarterKit,
