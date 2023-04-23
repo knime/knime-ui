@@ -68,10 +68,15 @@ describe('application store', () => {
         const dispatchSpy = vi.spyOn(store, 'dispatch');
         const commitSpy = vi.spyOn(store, 'commit');
 
+        const mockRouter = {
+            push: vi.fn()
+        };
+
         return {
             store,
             dispatchSpy,
             commitSpy,
+            mockRouter,
             mockedGetters: getters,
             mockedActions: actions,
             loadWorkflow,
@@ -214,8 +219,7 @@ describe('application store', () => {
             });
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', {
-                newWorkflow: { projectId: 'foo', workflowId: 'bar' },
-                navigateToWorkflow: expect.anything()
+                newWorkflow: { projectId: 'foo', workflowId: 'bar' }
             });
 
             expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
@@ -240,13 +244,10 @@ describe('application store', () => {
 
     describe('replace application State', () => {
         it('replaces application state', async () => {
-            const { store, dispatchSpy } = await loadStore();
+            const { store } = await loadStore();
             await store.dispatch('application/replaceApplicationState', applicationState);
 
             expect(store.state.application.openProjects).toStrictEqual([
-                { projectId: 'foo', name: 'bar' }
-            ]);
-            expect(dispatchSpy).toHaveBeenCalledWith('application/setActiveProject', [
                 { projectId: 'foo', name: 'bar' }
             ]);
         });
@@ -279,7 +280,9 @@ describe('application store', () => {
                 project: 'baz'
             });
 
+            await store.dispatch('application/initializeApplication', { $router: router });
             await store.dispatch('application/replaceApplicationState', applicationState);
+            await store.dispatch('application/setActiveProject', { $router: router });
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow', {
                 projectId: 'baz',
@@ -408,21 +411,26 @@ describe('application store', () => {
                     }
                 ]
             };
-            const { store, dispatchSpy } = await loadStore();
+            const { store, mockRouter } = await loadStore();
             await store.dispatch('application/replaceApplicationState', state);
+            await store.dispatch('application/setActiveProject', { $router: mockRouter });
 
-            expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow', {
-                projectId: 'bee',
-                workflowId: 'root'
+            expect(mockRouter.push).toHaveBeenCalledWith({
+                name: APP_ROUTES.WorkflowPage,
+                params: {
+                    projectId: 'bee',
+                    workflowId: 'root'
+                }
             });
         });
 
-        it('does not set active project if there are no open workflows', async () => {
+        it('does not set active project and navigates to entry page if there are no open workflows', async () => {
             const state = { openProjects: [] };
-            const { store, dispatchSpy } = await loadStore();
+            const { store, mockRouter } = await loadStore();
             await store.dispatch('application/replaceApplicationState', state);
+            await store.dispatch('application/setActiveProject', { $router: mockRouter });
 
-            expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', { newWorkflow: null });
+            expect(mockRouter.push).toHaveBeenCalledWith({ name: APP_ROUTES.EntryPage.GetStartedPage });
         });
     });
 

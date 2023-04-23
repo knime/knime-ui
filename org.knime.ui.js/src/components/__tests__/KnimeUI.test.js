@@ -134,8 +134,7 @@ describe('KnimeUI.vue', () => {
 
         expect($router.push).toHaveBeenCalledWith({
             name: APP_ROUTES.WorkflowPage,
-            params: { projectId: 'project', workflowId: 'root' },
-            query: { skipGuards: true }
+            params: { projectId: 'project', workflowId: 'root' }
         });
     });
 

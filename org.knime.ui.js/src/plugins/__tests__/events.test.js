@@ -1,7 +1,6 @@
 import { expect, describe, afterEach, it, vi, beforeAll } from 'vitest';
 /* eslint-disable new-cap */
 import { notifyPatch } from '@/util/event-syncer';
-import { APP_ROUTES } from '@/router';
 import { deepMocked } from '@/test/utils';
 import { API } from '@api';
 
@@ -145,51 +144,8 @@ describe('Event Plugin', () => {
         });
 
         describe('appState event', () => {
-            it('navigates to entry page when no projects are open', async () => {
-                const { storeMock, routerMock } = loadPlugin();
-
-                await registeredHandlers.AppStateChangedEvent(
-                    { appState: { openProjects: [] } }
-                );
-
-                expect(routerMock.push).toHaveBeenCalledWith({
-                    name: APP_ROUTES.EntryPage.GetStartedPage
-                });
-
-                expect(storeMock.dispatch).toHaveBeenCalledWith(
-                    'application/replaceApplicationState',
-                    { openProjects: [] }
-                );
-            });
-
-            it('navigates to the corresponding project when it is set as active', async () => {
-                const { storeMock, routerMock } = loadPlugin();
-
-                storeMock.state.application.activeProjectId = 'project1';
-
-                const openProjects = [
-                    { projectId: 'project1' },
-                    { projectId: 'project2', activeWorkflowId: 'root' }
-                ];
-
-                await registeredHandlers.AppStateChangedEvent({
-                    appState: { openProjects }
-                });
-
-                expect(routerMock.push).toHaveBeenCalledWith({
-                    name: APP_ROUTES.WorkflowPage,
-                    params: { projectId: 'project2', workflowId: 'root' },
-                    query: { skipGuards: true }
-                });
-
-                expect(storeMock.dispatch).toHaveBeenCalledWith(
-                    'application/replaceApplicationState',
-                    { openProjects }
-                );
-            });
-
             it('replaces application state', async () => {
-                const { storeMock } = loadPlugin();
+                const { storeMock, routerMock } = loadPlugin();
 
                 await registeredHandlers.AppStateChangedEvent(
                     { appState: { openProjects: [{ id: 'mock' }] } }
@@ -198,6 +154,10 @@ describe('Event Plugin', () => {
                 expect(storeMock.dispatch).toHaveBeenCalledWith(
                     'application/replaceApplicationState',
                     { openProjects: [{ id: 'mock' }] }
+                );
+                expect(storeMock.dispatch).toHaveBeenCalledWith(
+                    'application/setActiveProject',
+                    { $router: routerMock }
                 );
             });
 
