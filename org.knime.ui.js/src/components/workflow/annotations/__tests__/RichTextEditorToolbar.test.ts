@@ -3,6 +3,8 @@ import { mount } from '@vue/test-utils';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import RichTextEditorToolbar from '../RichTextEditorToolbar.vue';
+import type { Bounds } from '@/api/gateway-api/generated-api';
+import { mockVuexStore } from '@/test/utils';
 
 const createMockEditor = () => {
     const actionNames = [
@@ -37,12 +39,25 @@ const createMockEditor = () => {
 const mockEditor = createMockEditor();
 
 describe('RichTextEditorToolbar.vue', () => {
+    const annotationBounds: Bounds = { x: 0, y: 0, width: 100, height: 50 };
     const doMount = () => {
-        const wrapper = mount(RichTextEditorToolbar, {
-            props: { editor: mockEditor }
+        const $store = mockVuexStore({
+            canvas: {
+                state: {
+                    zoomFactor: 1
+                }
+            }
         });
 
-        return { wrapper };
+        const wrapper = mount(RichTextEditorToolbar, {
+            props: { editor: mockEditor, annotationBounds },
+            global: {
+                plugins: [$store],
+                stubs: { FloatingMenu: true }
+            }
+        });
+
+        return { wrapper, $store };
     };
 
     it('should render all options', () => {
@@ -62,7 +77,7 @@ describe('RichTextEditorToolbar.vue', () => {
     it('should execute the toolbar action', () => {
         const { wrapper } = doMount();
 
-        wrapper.findAllComponents(FunctionButton).at(0).vm.$emit('click');
+        wrapper.findAllComponents(FunctionButton).at(0).vm.$emit('click', { stopPropagation: vi.fn() });
         expect(mockEditor.chain().focus().toggleBold).toHaveBeenCalled();
         expect(mockEditor.chain().focus().toggleBulletList).not.toHaveBeenCalled();
     });

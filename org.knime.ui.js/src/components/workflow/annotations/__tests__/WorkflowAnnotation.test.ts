@@ -50,8 +50,10 @@ describe('Workflow Annotation', () => {
                     activeWorkflow: {
                         projectId: 'project1',
                         info: { containerId: 'root' }
-                    }
+                    },
+                    editableAnnotationId: 'id1'
                 },
+                mutations: workflowStore.mutations,
                 actions: workflowStore.actions
             },
             selection: {
@@ -92,9 +94,16 @@ describe('Workflow Annotation', () => {
     };
 
     it('should render LegacyAnnotation', () => {
-        const { wrapper } = doMount();
+        const { wrapper } = doMount({
+            props: {
+                annotation: { ...defaultProps.annotation, id: 'id2' }
+            }
+        });
 
-        expect(wrapper.findComponent(LegacyAnnotation).props('annotation')).toEqual(defaultProps.annotation);
+        expect(wrapper.findComponent(LegacyAnnotation).props('annotation')).toEqual({
+            ...defaultProps.annotation,
+            id: 'id2'
+        });
         expect(wrapper.findComponent(RichTextEditor).exists()).toBe(false);
     });
 
@@ -141,45 +150,38 @@ describe('Workflow Annotation', () => {
             const transformControlStub = getTransformControlsStub(bounds);
             const { wrapper } = doMount({ transformControlStub });
 
-            expect(wrapper.findAll('foreignObject').at(1).attributes('x')).toEqual(bounds.x.toString());
-            expect(wrapper.findAll('foreignObject').at(1).attributes('y')).toEqual(bounds.y.toString());
-            expect(wrapper.findAll('foreignObject').at(1).attributes('width')).toEqual(bounds.width.toString());
-            expect(wrapper.findAll('foreignObject').at(1).attributes('height')).toEqual(bounds.height.toString());
-        });
-
-        it('should set the correct bounds for the annotation toolbar', () => {
-            const bounds = { x: 15, y: 15, width: 100, height: 100 };
-            const transformControlStub = getTransformControlsStub(bounds);
-            const { wrapper } = doMount({ transformControlStub });
-
-            const expectedX = bounds.x - $shapes.annotationToolbarContainerWidth / 2 + bounds.width / 2;
-            const expectedY = bounds.y - $shapes.annotationToolbarContainerHeight;
-
-            const toolbarContainer = wrapper.findAll('foreignObject').at(0);
-            expect(toolbarContainer.attributes('x')).toEqual(expectedX.toString());
-            expect(toolbarContainer.attributes('y')).toEqual(expectedY.toString());
-            expect(toolbarContainer.attributes('width')).toEqual($shapes.annotationToolbarContainerWidth.toString());
-            expect(toolbarContainer.attributes('height')).toEqual($shapes.annotationToolbarContainerHeight.toString());
+            expect(wrapper.find('foreignObject').attributes('x')).toEqual(bounds.x.toString());
+            expect(wrapper.find('foreignObject').attributes('y')).toEqual(bounds.y.toString());
+            expect(wrapper.find('foreignObject').attributes('width')).toEqual(bounds.width.toString());
+            expect(wrapper.find('foreignObject').attributes('height')).toEqual(bounds.height.toString());
         });
     });
 
     describe('edit', () => {
-        it('should emit `toggleEdit` event to start editing (LegacyAnnotation)', () => {
-            const { wrapper } = doMount();
+        it('should start editing when dblclicking on LegacyAnnotation', () => {
+            const { wrapper, $store } = doMount({
+                props: {
+                    annotation: { ...defaultProps.annotation, id: 'another-id' }
+                }
+            });
 
             wrapper.findComponent(LegacyAnnotation).trigger('dblclick');
-            expect(wrapper.emitted('toggleEdit')[0][0]).toBe(defaultProps.annotation.id);
+            expect($store.state.workflow.editableAnnotationId).toBe('another-id');
         });
 
-        it('should emit `toggleEdit` event to start editing (RichTextEditor)', () => {
-            const { wrapper } = doMount({
+        it('should start editing when dblclicking on RichTextEditor', () => {
+            const { wrapper, $store } = doMount({
                 props: {
-                    annotation: { ...defaultProps.annotation, contentType: Annotation.ContentTypeEnum.Html }
+                    annotation: {
+                        ...defaultProps.annotation,
+                        id: 'another-id',
+                        contentType: Annotation.ContentTypeEnum.Html
+                    }
                 }
             });
 
             wrapper.findComponent(RichTextEditor).vm.$emit('editStart');
-            expect(wrapper.emitted('toggleEdit')[0][0]).toBe(defaultProps.annotation.id);
+            expect($store.state.workflow.editableAnnotationId).toBe('another-id');
         });
 
         it('should render RichTextEditor when annotation is editable', () => {
