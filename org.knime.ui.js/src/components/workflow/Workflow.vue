@@ -22,15 +22,10 @@ export default defineComponent({
 
     expose: ['applyNodeSelectionPreview', 'applyAnnotationSelectionPreview'],
 
-    data() {
-        return {
-            editingAnnotation: null
-        };
-    },
-
     computed: {
         ...mapState('workflow', {
-            workflow: 'activeWorkflow'
+            workflow: 'activeWorkflow',
+            editableAnnotationId: 'editableAnnotationId'
         }),
 
         ...mapGetters('selection', ['isNodeSelected']),
@@ -58,10 +53,6 @@ export default defineComponent({
 
         applyAnnotationSelectionPreview({ annotationId, type }) {
             this.$refs[`annotation-${annotationId}`][0].setSelectionPreview(type);
-        },
-
-        setAnnotationBeingEdited(annotationId: string) {
-            this.editingAnnotation = annotationId;
         }
     }
 });
@@ -76,10 +67,9 @@ export default defineComponent({
           :key="`annotation-${annotation.id}`"
         >
           <WorkflowAnnotation
-            v-if="editingAnnotation !== annotation.id"
+            v-if="editableAnnotationId !== annotation.id"
             :ref="`annotation-${annotation.id}`"
             :annotation="annotation"
-            @toggle-edit="setAnnotationBeingEdited"
           />
 
           <Portal
@@ -88,9 +78,7 @@ export default defineComponent({
           >
             <WorkflowAnnotation
               :ref="`annotation-${annotation.id}`"
-              is-editing
               :annotation="annotation"
-              @toggle-edit="setAnnotationBeingEdited"
             />
           </Portal>
         </template>

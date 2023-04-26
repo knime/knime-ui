@@ -90,6 +90,11 @@ export default defineComponent({
       v-on="quickAddNodeMenu.events"
     />
 
+    <PortalTarget
+      name="annotation-editor-toolbar"
+      tag="div"
+    />
+
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming || isInsideLinked || isOnHub"

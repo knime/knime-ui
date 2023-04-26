@@ -5,12 +5,14 @@ import TextAlign from '@tiptap/extension-text-align';
 import UnderLine from '@tiptap/extension-underline';
 import StarterKit from '@tiptap/starter-kit';
 
+import type { Bounds } from '@/api/gateway-api/generated-api';
 import RichTextEditorToolbar from './RichTextEditorToolbar.vue';
 
 interface Props {
     id: string;
     editable: boolean;
     initialValue: string;
+    annotationBounds: Bounds;
 }
 
 const props = defineProps<Props>();
@@ -55,11 +57,12 @@ onMounted(() => {
   >
     <Portal
       v-if="editable && editor"
-      :to="`editor-toolbar-${id}`"
+      to="annotation-editor-toolbar"
     >
-      <div class="toolbar-wrapper">
-        <RichTextEditorToolbar :editor="editor" />
-      </div>
+      <RichTextEditorToolbar
+        :editor="editor"
+        :annotation-bounds="annotationBounds"
+      />
     </Portal>
     <EditorContent
       class="editor"

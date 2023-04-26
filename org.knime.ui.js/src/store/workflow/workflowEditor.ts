@@ -29,7 +29,8 @@ export const state = {
         props: {},
         events: {}
     },
-    isDragging: false
+    isDragging: false,
+    editableAnnotationId: null
 };
 
 export const mutations = {
@@ -91,6 +92,9 @@ export const mutations = {
         );
 
         state.activeWorkflow.workflowAnnotations = mapped;
+    },
+    setEditableAnnotationId(state, annotationId) {
+        state.editableAnnotationId = annotationId;
     }
 };
 

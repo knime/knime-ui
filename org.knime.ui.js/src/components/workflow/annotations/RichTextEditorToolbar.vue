@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, type FunctionalComponent, type SVGAttributes } from 'vue';
+import { useStore } from 'vuex';
 import type { Editor } from '@tiptap/vue-3';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
@@ -12,8 +13,14 @@ import AlignLeftIcon from '@/assets/align-left.svg';
 import AlignCenterIcon from '@/assets/align-center.svg';
 import AlignRightIcon from '@/assets/align-right.svg';
 
+import type { Bounds } from '@/api/gateway-api/generated-api';
+import FloatingMenu from '@/components/common/FloatingMenu.vue';
+
+import * as $shapes from '@/style/shapes.mjs';
+
 interface Props {
     editor: Editor;
+    annotationBounds: Bounds;
 }
 
 interface ToolbarItem {
@@ -22,6 +29,8 @@ interface ToolbarItem {
     onClick: () => void;
     active?: () => boolean;
 }
+
+const store = useStore();
 
 const props = defineProps<Props>();
 
@@ -77,53 +86,76 @@ const tools: Array<ToolbarItem> = [
 ];
 
 const totalTools = computed(() => tools.length);
+
+const zoomFactor = computed(() => store.state.canvas.zoomFactor);
+
+const toolbarItemPadding = 8;
+const toolbarItemGap = 4;
+const toolbarItemSize = 32;
+
+const toolbarWidth =
+    /* account for padding on both ends */
+    toolbarItemPadding * 2 +
+    /* account for all items */
+    totalTools.value * toolbarItemSize +
+    /* include gaps (total gaps = total items - 1) */
+    toolbarItemGap * (totalTools.value - 1);
+
+const adjustedPosition = computed(() => {
+    // center X -> shift toolbar forward based on annotation width and then substract
+    // half the width (accounting for the zoomfactor)
+    const xOffset = props.annotationBounds.width / 2 - Math.ceil((toolbarWidth / 2) / zoomFactor.value);
+    const x = props.annotationBounds.x + xOffset;
+
+    // use same Y as annoation and add a negative Y offset equal to the toolbar height
+    const y = props.annotationBounds.y - $shapes.annotationToolbarContainerHeight / zoomFactor.value;
+
+    return {
+        x,
+        y
+    };
+});
 </script>
 
 <template>
-  <div class="editor-toolbar">
-    <FunctionButton
-      v-for="tool of tools"
-      :key="tool.icon"
-      :active="tool.active ? tool.active() : false"
-      class="toolbar-button"
-      @click="tool.onClick"
-    >
-      <Component :is="tool.icon" />
-    </FunctionButton>
-  </div>
+  <FloatingMenu
+    :canvas-position="adjustedPosition"
+    aria-label="Annotation toolbar"
+    :prevent-oveflow="true"
+  >
+    <div class="editor-toolbar">
+      <FunctionButton
+        v-for="tool of tools"
+        :key="tool.icon"
+        :active="tool.active ? tool.active() : false"
+        class="toolbar-button"
+        @click.stop="tool.onClick"
+      >
+        <Component :is="tool.icon" />
+      </FunctionButton>
+    </div>
+  </FloatingMenu>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
 .editor-toolbar {
-    --padding: 8;
-    --item-gap: 2;
-    --item-size: 24;
-
     display: flex;
-    gap: calc(var(--item-gap) * 1px);
     justify-content: center;
     background: var(--knime-white);
-    padding: calc(var(--padding) * 1px);
-    width: calc(
-        calc(
-            /* account for padding on both ends */
-            var(--padding) * 2 +
-            /* account for all items */
-            v-bind(totalTools) * var(--item-size) +
-            /* include gaps (total gaps = total items - 1) */
-            var(--item-gap) * calc(v-bind(totalTools) - 1)
-        )
-        * 1px /* convert to px */
-    );
-    height: 40px;
+
+    gap: calc(v-bind(toolbarItemGap) * 1px);
+    padding: calc(v-bind(toolbarItemPadding) * 1px);
+    width: calc(v-bind(toolbarWidth) * 1px);
+
+    height: 48px;
     box-shadow: 0 0 10px rgb(62 58 57 / 30%);
-    border-radius: 20px;
+    border-radius: 30px;
 
     & .toolbar-button {
-        width: calc(var(--item-size) * 1px);
-        height: calc(var(--item-size) * 1px);
+        width: calc(v-bind(toolbarItemSize) * 1px);
+        height: calc(v-bind(toolbarItemSize) * 1px);
         padding: 0;
         justify-content: center;
         align-items: center;
@@ -131,6 +163,9 @@ const totalTools = computed(() => tools.length);
         & svg {
             /* overwrite style that sets a background for the svg canvas */
             background: transparent !important;
+
+            width: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
+            height: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
         }
     }
 }

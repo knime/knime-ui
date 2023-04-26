@@ -27,11 +27,6 @@ export default defineComponent({
         annotation: {
             type: Object as PropType<WorkflowAnnotation>,
             required: true
-        },
-
-        isEditing: {
-            type: Boolean,
-            default: false
         }
     },
 
@@ -50,7 +45,8 @@ export default defineComponent({
     computed: {
         ...mapState('workflow', {
             projectId: state => state.activeWorkflow.projectId,
-            activeWorkflowId: state => state.activeWorkflow.info.containerId
+            activeWorkflowId: state => state.activeWorkflow.info.containerId,
+            editableAnnotationId: state => state.editableAnnotationId
         }),
         ...mapState('selection', ['selectedAnnotations']),
         ...mapGetters('selection', [
@@ -62,6 +58,10 @@ export default defineComponent({
 
         isSelected() {
             return this.isAnnotationSelected(this.annotation.id);
+        },
+
+        isEditing() {
+            return this.annotation.id === this.editableAnnotationId;
         },
 
         showSelectionPlane() {
@@ -140,7 +140,7 @@ export default defineComponent({
         },
 
         toggleEdit() {
-            this.$emit('toggleEdit', this.isEditing ? null : this.annotation.id);
+            this.$store.commit('workflow/setEditableAnnotationId', this.isEditing ? null : this.annotation.id);
         },
 
         onClickAway() {
@@ -201,19 +201,6 @@ export default defineComponent({
   >
     <template #default="{ transformedBounds }">
       <foreignObject
-        v-bind="getAnnotationToolbarContainerBounds(transformedBounds)"
-        :class="{ hidden: !isEditing }"
-        @pointerdown.stop
-        @pointerup.stop
-      >
-        <PortalTarget
-          :name="`editor-toolbar-${annotation.id}`"
-          tag="div"
-          class="toolbar-portal"
-        />
-      </foreignObject>
-
-      <foreignObject
         :x="transformedBounds.x"
         :y="transformedBounds.y"
         :width="transformedBounds.width"
@@ -230,6 +217,7 @@ export default defineComponent({
           :id="annotation.id"
           :initial-value="initialRichTextAnnotationValue"
           :editable="isEditing"
+          :annotation-bounds="transformedBounds"
           @change="onAnnotationChange"
           @edit-start="toggleEdit"
         />
