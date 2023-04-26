@@ -32,6 +32,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'copy'
     | 'cut'
     | 'paste'
+    | 'createWorkflowAnnotation'
     | 'bringAnnotationToFront'
     | 'bringAnnotationForward'
     | 'sendAnnotationBackward'
@@ -278,19 +279,28 @@ const workflowShortcuts: WorkflowShortcuts = {
         hotkey: ['Ctrl', 'V'],
         execute:
             ({ $store, payload }) => {
-                let customPosition = null;
-
-                if (payload.event) {
-                    const { clientX, clientY } = payload.event as MouseEvent;
-
-                    const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([clientX, clientY]);
-                    customPosition = { x, y };
-                }
+                const customPosition = payload?.metadata?.position;
 
                 $store.dispatch('workflow/pasteWorkflowParts', { position: customPosition });
             },
         condition:
             ({ $store }) => $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
+    },
+    createWorkflowAnnotation: {
+        text: 'Create annotation',
+        execute: ({ $store, payload }) => {
+            const { metadata } = payload;
+            if (metadata && metadata.position) {
+                $store.dispatch('workflow/createWorkflowAnnotation', {
+                    bounds: {
+                        x: metadata.position.x,
+                        y: metadata.position.y,
+                        width: 200,
+                        height: 180
+                    }
+                });
+            }
+        }
     },
     bringAnnotationToFront: {
         text: 'Bring annotation to front',

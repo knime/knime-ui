@@ -120,7 +120,10 @@ export default defineComponent({
     methods: {
         onItemClick(event: MouseEvent, item: MenuItemWithName) {
             this.$emit('menuClose');
-            this.$shortcuts.dispatch(item.name, { event });
+            this.$shortcuts.dispatch(item.name, {
+                event,
+                metadata: { position: this.position }
+            });
         },
         setMenuItems() {
             const areNodesSelected = this.selectedNodes.length > 0;
@@ -161,10 +164,11 @@ export default defineComponent({
             ];
 
             const annotationArrangementGroup: Array<ContextMenuActionsGroupItem> = [
-                { name: 'bringAnnotationToFront', isVisible: true },
-                { name: 'bringAnnotationForward', isVisible: true },
-                { name: 'sendAnnotationBackward', isVisible: true },
-                { name: 'sendAnnotationToBack', isVisible: true }
+                { name: 'createWorkflowAnnotation', isVisible: true },
+                { name: 'bringAnnotationToFront', isVisible: areAnnotationsSelected },
+                { name: 'bringAnnotationForward', isVisible: areAnnotationsSelected },
+                { name: 'sendAnnotationBackward', isVisible: areAnnotationsSelected },
+                { name: 'sendAnnotationToBack', isVisible: areAnnotationsSelected }
             ];
 
             const metanodeOperationsGroup: Array<ContextMenuActionsGroupItem> = [
@@ -185,7 +189,7 @@ export default defineComponent({
             const items = menuGroups()
                 .append(basicOperationsGroup)
                 .append(clipboardOperationsGroup)
-                .append(areAnnotationsSelected ? annotationArrangementGroup : [])
+                .append(annotationArrangementGroup)
                 .append(isMetanode ? metanodeOperationsGroup : componentOperationsGroup)
                 .value();
 
