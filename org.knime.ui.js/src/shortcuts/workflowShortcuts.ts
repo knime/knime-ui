@@ -243,10 +243,12 @@ const workflowShortcuts: WorkflowShortcuts = {
             ({ $store }) => {
                 const kanvas = $store.state.canvas.getScrollContainerElement();
                 const selectedNodes = Object.keys($store.getters['selection/selectedNodes']);
+                const selectedAnnotations = $store.getters['selection/selectedAnnotations'];
                 const textSelectionIsEmpty = window?.getSelection().toString() === '';
                 const kanvasIsActiveElement = document.activeElement === kanvas;
+                const isSomethingSelected = selectedNodes.length !== 0 || selectedAnnotations.length !== 0;
                 return (
-                    selectedNodes.length !== 0 &&
+                    isSomethingSelected &&
                     $store.state.application.hasClipboardSupport &&
                     (textSelectionIsEmpty || kanvasIsActiveElement)
                 );
@@ -261,8 +263,10 @@ const workflowShortcuts: WorkflowShortcuts = {
         condition:
             ({ $store }) => {
                 const selectedNodes = Object.keys($store.getters['selection/selectedNodes']);
+                const selectedAnnotations = $store.getters['selection/selectedAnnotations'];
+                const isSomethingSelected = selectedNodes.length !== 0 || selectedAnnotations.length !== 0;
                 return (
-                    selectedNodes.length !== 0 &&
+                    isSomethingSelected &&
                     $store.getters['workflow/isWritable'] &&
                     $store.state.application.hasClipboardSupport
                 );

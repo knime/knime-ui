@@ -124,7 +124,7 @@ export default defineComponent({
         },
         setMenuItems() {
             const areNodesSelected = this.selectedNodes.length > 0;
-            const areAnotationsSelected = this.selectedAnnotations.length > 0;
+            const areAnnotationsSelected = this.selectedAnnotations.length > 0;
 
             const isLoopEnd = Boolean(this.singleSelectedNode?.loopInfo?.allowedActions);
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
@@ -154,8 +154,8 @@ export default defineComponent({
             ];
 
             const clipboardOperationsGroup: Array<ContextMenuActionsGroupItem> = [
-                { name: 'cut', isVisible: areNodesSelected },
-                { name: 'copy', isVisible: areNodesSelected },
+                { name: 'cut', isVisible: areNodesSelected || areAnnotationsSelected },
+                { name: 'copy', isVisible: areNodesSelected || areAnnotationsSelected },
                 { name: 'paste', isVisible: this.isSelectionEmpty },
                 { name: 'deleteSelected', isVisible: !this.isSelectionEmpty }
             ];
@@ -185,7 +185,7 @@ export default defineComponent({
             const items = menuGroups()
                 .append(basicOperationsGroup)
                 .append(clipboardOperationsGroup)
-                .append(areAnotationsSelected ? annotationArrangementGroup : [])
+                .append(areAnnotationsSelected ? annotationArrangementGroup : [])
                 .append(isMetanode ? metanodeOperationsGroup : componentOperationsGroup)
                 .value();
 

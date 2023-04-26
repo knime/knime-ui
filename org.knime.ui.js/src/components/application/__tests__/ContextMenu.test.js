@@ -429,6 +429,8 @@ describe('ContextMenu.vue', () => {
 
             expect(renderedMenuItems(wrapper)).toEqual(
                 assertItems([
+                    { text: 'cut' },
+                    { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
                     { text: 'bringAnnotationToFront' },
                     { text: 'bringAnnotationForward' },
