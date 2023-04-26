@@ -105,6 +105,11 @@ final class NodeAPI {
     static void executeNodeAndOpenView(final String projectId, final String nodeId) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
+
+        if (nc.getNodeContainerState().isExecuted()) {
+            Display.getDefault().asyncExec(() -> openNodeView(projectId, nodeId));
+            return;
+        }
         nc.addNodeStateChangeListener(new NodeStateChangeListener() {
 
             @Override
