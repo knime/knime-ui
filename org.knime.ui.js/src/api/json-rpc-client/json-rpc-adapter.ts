@@ -3,7 +3,6 @@ import {
     JSONRPC,
     type JSONRPCRequest,
     type JSONRPCResponse,
-    type JSONRPCSuccessResponse,
     type JSONRPCParams
 // eslint-disable-next-line object-curly-newline
 } from './types';
@@ -37,7 +36,7 @@ const validateResponse = (
 
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
     if ((!originalError && result) || result === null) {
-        return maybeResponse as JSONRPCSuccessResponse;
+        return maybeResponse as JSONRPCResponse;
     }
 
     if (result) {

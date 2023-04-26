@@ -1,22 +1,20 @@
 import { rpc } from './json-rpc-adapter';
 // eslint-disable-next-line object-curly-newline
 import {
-    initJsonRpcNotifications,
     getRegisteredNotificationHandler,
-    registerNotificationHandler
+    registerNotificationHandler,
+    serverEventHandler
 // eslint-disable-next-line object-curly-newline
-} from './json-rpc-notifications';
+} from './server-events';
 
 const JSON_RPC_ACTION_ID = 'org.knime.ui.java.jsonrpc';
-const JSON_RPC_NOTIFICATION_ACTION_ID = 'org.knime.ui.java.jsonrpcNotification';
+const JAVA_EVENT_ACTION_ID = 'org.knime.ui.java.event';
 
 const initJsonRpcClient = () => {
-    initJsonRpcNotifications();
-
     if (window.EquoCommService) {
         window.EquoCommService.on(
-            JSON_RPC_NOTIFICATION_ACTION_ID,
-            (jsonrpcNotification) => window.jsonrpcNotification(jsonrpcNotification),
+            JAVA_EVENT_ACTION_ID,
+            (event) => serverEventHandler(event),
             // eslint-disable-next-line no-console
             error => console.error(error)
         );

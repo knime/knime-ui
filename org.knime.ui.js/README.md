@@ -55,7 +55,6 @@ npm run coverage
 The output can be found in the `test-results` folder. It contains a browseable html report as well as raw coverage data in
 [LCOV] and [Clover] format, which can be used in analysis software (SonarQube, Jenkins, …).
 
-
 ### Running security audit
 
 npm provides a check against known security issues of used dependencies. In most cases it is sufficient to only check
@@ -99,15 +98,6 @@ mvn install
 ```
 
 to install that package to your local maven repository directly.
-
-## API
-
-This app expects a global function called `jsonrpc` that it can use to call Java code. Such function is injected into
-the global namespace by the AP (or by the dev app). See `json-rpc-adapter.js` for details.
-
-In turn, this app provides a global function called `jsonrpcNotification` that can be used by Java to call JS functions.
-See `json-rpc-notification.js` for details.
-
 
 [vue.js]: https://vuejs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
