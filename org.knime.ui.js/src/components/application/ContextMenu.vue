@@ -75,6 +75,7 @@ export default defineComponent({
         ...mapGetters('selection', [
             'selectedNodes',
             'selectedAnnotations',
+            'selectedConnections',
             'singleSelectedNode',
             'isSelectionEmpty'
         ]),
