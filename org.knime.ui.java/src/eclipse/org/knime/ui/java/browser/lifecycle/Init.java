@@ -180,7 +180,7 @@ final class Init {
      */
     private static EventConsumer createEventConsumer() {
         return initializeJavaBrowserCommunication(SharedConstants.JSON_RPC_ACTION_ID,
-            SharedConstants.JSON_RPC_NOTIFICATION_ACTION_ID);
+            SharedConstants.EVENT_ACTION_ID);
     }
 
     private static SpaceProviders createSpaceProviders() {
@@ -250,7 +250,7 @@ final class Init {
     }
 
     private static EventConsumer initializeJavaBrowserCommunication(final String jsonRpcActionId,
-        final String jsonRpcNotificationActionId) {
+        final String eventActionId) {
         JsonRpcRequestHandler jsonRpcHandler = new DefaultJsonRpcRequestHandler();
         CEFCommService.invoke(cs -> cs.on(jsonRpcActionId, message -> { // NOSONAR
             return new String(jsonRpcHandler.handle(message.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
@@ -258,20 +258,18 @@ final class Init {
 
         final var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
         return (name, event) -> {
-            var message = createJsonRpcNotification(mapper, name, event);
-            CEFCommService.invoke(cs -> cs.send(jsonRpcNotificationActionId, message));
+            var message = createEventMessage(mapper, name, event);
+            CEFCommService.invoke(cs -> cs.send(eventActionId, message));
         };
     }
 
-    private static String createJsonRpcNotification(final ObjectMapper mapper, final String name, final Object event) {
-        // wrap event into a jsonrpc notification (method == event-name) and serialize
-        var jsonrpc = mapper.createObjectNode();
-        var params = jsonrpc.arrayNode();
-        params.addPOJO(event);
+    private static String createEventMessage(final ObjectMapper mapper, final String name,
+        final Object payload) {
+        var event = mapper.createObjectNode();
         try {
-            return mapper.writeValueAsString(jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params));
+            return mapper.writeValueAsString(event.put("eventType", name).set("payload", mapper.valueToTree(payload)));
         } catch (JsonProcessingException ex) {
-            throw new IllegalStateException("Problem creating a json-rpc notification in order to send an event", ex);
+            throw new IllegalStateException("Problem creating the event-message in order to send an event", ex);
         }
     }
 

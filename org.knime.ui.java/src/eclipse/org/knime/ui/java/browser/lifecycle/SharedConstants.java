@@ -61,7 +61,7 @@ final class SharedConstants {
 
     static final String JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
 
-    static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
+    static final String EVENT_ACTION_ID = "org.knime.ui.java.event";
 
     static final String PREFERENCE_NODE_QUALIFIER = "org.knime.ui.java";
 
