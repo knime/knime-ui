@@ -872,6 +872,29 @@ export interface CopyResult extends CommandResult {
 export namespace CopyResult {
 }
 /**
+ * Creates a new workflow annotation at a given position.
+ * @export
+ * @interface CreateWorkflowAnnotationCommand
+ */
+export interface CreateWorkflowAnnotationCommand extends WorkflowCommand {
+
+    /**
+     *
+     * @type {XY}
+     * @memberof CreateWorkflowAnnotationCommand
+     */
+    position: XY;
+
+}
+
+
+/**
+ * @export
+ * @namespace CreateWorkflowAnnotationCommand
+ */
+export namespace CreateWorkflowAnnotationCommand {
+}
+/**
  * Details about a custom job manager provided by a third party.
  * @export
  * @interface CustomJobManager
@@ -3226,7 +3249,8 @@ export namespace WorkflowCommand {
         Paste = 'paste',
         TransformWorkflowAnnotation = 'transform_workflow_annotation',
         UpdateWorkflowAnnotationText = 'update_workflow_annotation_text',
-        ReorderWorkflowAnnotations = 'reorder_workflow_annotations'
+        ReorderWorkflowAnnotations = 'reorder_workflow_annotations',
+        CreateWorkflowAnnotation = 'create_workflow_annotation'
     }
 }
 /**
@@ -4198,6 +4222,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ReorderWorkflowAnnotations }
+		});
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Creates a new workflow annotation at a given position.
+     */
+	CreateWorkflowAnnotation(
+		params: { projectId: string, workflowId: string } & Omit<CreateWorkflowAnnotationCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.CreateWorkflowAnnotation }
 		});
 		return postProcessCommandResponse(commandResponse);
 	},	

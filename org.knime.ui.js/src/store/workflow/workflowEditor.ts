@@ -4,7 +4,6 @@ import workflowObjectBounds from '@/util/workflowObjectBounds';
 import { pastePartsAt, pasteURI } from '@/util/pasteToWorkflow';
 import { snapToGrid } from '@/util/geometry';
 import { Annotation, type ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
-import { uniqueId } from 'lodash';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -583,7 +582,7 @@ export const actions = {
             position
         });
 
-        // 4. Execute hook and select pasted content
+        // 4. Excecute hook and select pasted content
         doAfterPaste?.();
         dispatch('selection/deselectAllObjects', null, { root: true });
         dispatch('selection/selectNodes', nodeIds, { root: true });
@@ -591,11 +590,15 @@ export const actions = {
     },
 
     createWorkflowAnnotation({ state }, { bounds }) {
-        state.activeWorkflow.workflowAnnotations = state.activeWorkflow.workflowAnnotations.concat({
-            id: uniqueId(),
-            bounds,
-            text: '',
-            contentType: Annotation.ContentTypeEnum.Html
+        const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+        
+        API.workflowCommand.CreateWorkflowAnnotation({
+            projectId,
+            workflowId,
+            position: {
+                x: bounds.x,
+                y: bounds.y
+            }
         });
     },
 
