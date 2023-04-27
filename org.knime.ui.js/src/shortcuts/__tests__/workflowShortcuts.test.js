@@ -567,14 +567,6 @@ describe('workflowShortcuts', () => {
                 });
             });
 
-            it.each(['metanode', 'component'])('does not open for %s', (nodeKind) => {
-                const { $store } = createStore({
-                    isWorkflowWritable: true,
-                    singleSelectedNode: { id: 'root:3', kind: nodeKind }
-                });
-                expect(workflowShortcuts.quickAddNode.condition({ $store })).toBe(false);
-            });
-
             const mockNodeTemplate = (length) => ({
                 id: 'root:4',
                 position: { x: 120, y: 53 },

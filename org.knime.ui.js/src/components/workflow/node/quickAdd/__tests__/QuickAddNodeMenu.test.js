@@ -18,6 +18,7 @@ import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
 // eslint-disable-next-line import/extensions
 import { searchNodesResponse } from '@/store/common/__tests__/nodeSearch.test';
+import QuickAddNodeRecommendations from '@/components/workflow/node/quickAdd/QuickAddNodeRecommendations.vue';
 
 const defaultNodeRecommendationsResponse = [{
     inPorts: [{ typeId: 'org.knime.core.node.BufferedDataTable' }],
@@ -74,7 +75,8 @@ describe('QuickAddNodeMenu.vue', () => {
         addNodeMock = vi.fn(),
         props = {},
         nodeRecommendationsResponse = defaultNodeRecommendationsResponse,
-        isWriteableMock = vi.fn().mockReturnValue(true)
+        isWriteableMock = vi.fn().mockReturnValue(true),
+        getNodeByIdMock = vi.fn()
     } = {}) => {
         const defaultProps = {
             nodeId: 'node-id',
@@ -151,7 +153,8 @@ describe('QuickAddNodeMenu.vue', () => {
                     addNode: addNodeMock
                 },
                 getters: {
-                    isWritable: isWriteableMock
+                    isWritable: isWriteableMock,
+                    getNodeById: () => getNodeByIdMock
                 }
             }
         };
@@ -348,6 +351,17 @@ describe('QuickAddNodeMenu.vue', () => {
             await Vue.nextTick();
 
             expect(wrapper.find('.no-recommendations-message').exists()).toBe(true);
+        });
+
+        it.each([
+            ['metanode'],
+            ['component']
+        ])('disable recommendations if node kind is %s', async (nodeKind) => {
+            const { wrapper } = doMount({ getNodeByIdMock: vi.fn().mockReturnValue({ kind: nodeKind }) });
+            const recommendations = wrapper.findComponent(QuickAddNodeRecommendations);
+            expect(recommendations.props('disableRecommendations')).toBe(true);
+            await Vue.nextTick();
+            expect(API.noderepository.getNodeRecommendations).toHaveBeenCalledTimes(0);
         });
     });
 
