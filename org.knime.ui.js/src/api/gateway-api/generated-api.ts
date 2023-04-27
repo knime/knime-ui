@@ -2,6 +2,29 @@ import type { Configuration } from './configuration';
 import { createRPCClient, type RPCClient } from './rpc-client';
 
 /**
+ *
+ * @export
+ * @interface AddAnnotationResult
+ */
+export interface AddAnnotationResult extends CommandResult {
+
+    /**
+     * The ID of the annotation to manipulate
+     * @type {string}
+     * @memberof AddAnnotationResult
+     */
+    newAnnotationId: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace AddAnnotationResult
+ */
+export namespace AddAnnotationResult {
+}
+/**
  * Adds a new node to the workflow.
  * @export
  * @interface AddNodeCommand
@@ -122,6 +145,29 @@ export interface AddPortResult extends CommandResult {
  * @namespace AddPortResult
  */
 export namespace AddPortResult {
+}
+/**
+ * Creates a new workflow annotation at a given position.
+ * @export
+ * @interface AddWorkflowAnnotationCommand
+ */
+export interface AddWorkflowAnnotationCommand extends WorkflowCommand {
+
+    /**
+     *
+     * @type {Bounds}
+     * @memberof AddWorkflowAnnotationCommand
+     */
+    bounds: Bounds;
+
+}
+
+
+/**
+ * @export
+ * @namespace AddWorkflowAnnotationCommand
+ */
+export namespace AddWorkflowAnnotationCommand {
 }
 /**
  * Mainly provides information on what actions are allowed on a node or an entire workflow.
@@ -589,7 +635,8 @@ export namespace CommandResult {
         CopyResult = 'copyResult',
         PasteResult = 'pasteResult',
         AddNodeResult = 'addNodeResult',
-        AddPortResult = 'addPortResult'
+        AddPortResult = 'addPortResult',
+        AddAnnotationResult = 'addAnnotationResult'
     }
 }
 /**
@@ -870,29 +917,6 @@ export interface CopyResult extends CommandResult {
  * @namespace CopyResult
  */
 export namespace CopyResult {
-}
-/**
- * Creates a new workflow annotation at a given position.
- * @export
- * @interface CreateWorkflowAnnotationCommand
- */
-export interface CreateWorkflowAnnotationCommand extends WorkflowCommand {
-
-    /**
-     *
-     * @type {Bounds}
-     * @memberof CreateWorkflowAnnotationCommand
-     */
-    bounds: Bounds;
-
-}
-
-
-/**
- * @export
- * @namespace CreateWorkflowAnnotationCommand
- */
-export namespace CreateWorkflowAnnotationCommand {
 }
 /**
  * Details about a custom job manager provided by a third party.
@@ -3250,7 +3274,7 @@ export namespace WorkflowCommand {
         TransformWorkflowAnnotation = 'transform_workflow_annotation',
         UpdateWorkflowAnnotationText = 'update_workflow_annotation_text',
         ReorderWorkflowAnnotations = 'reorder_workflow_annotations',
-        CreateWorkflowAnnotation = 'create_workflow_annotation'
+        AddWorkflowAnnotation = 'add_workflow_annotation'
     }
 }
 /**
@@ -4229,15 +4253,15 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
  	/**
      * Creates a new workflow annotation at a given position.
      */
-	CreateWorkflowAnnotation(
-		params: { projectId: string, workflowId: string } & Omit<CreateWorkflowAnnotationCommand, 'kind'>
-    ): Promise<unknown> {
+	AddWorkflowAnnotation(
+		params: { projectId: string, workflowId: string } & Omit<AddWorkflowAnnotationCommand, 'kind'>
+    ): Promise<AddAnnotationResult> {
     	const { projectId, workflowId, ...commandParams } = params;
 		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
-            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.CreateWorkflowAnnotation }
-		});
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddWorkflowAnnotation }
+		}) as Promise<AddAnnotationResult>;
 		return postProcessCommandResponse(commandResponse);
 	},	
 

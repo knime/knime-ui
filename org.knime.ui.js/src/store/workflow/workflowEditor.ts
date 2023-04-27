@@ -589,14 +589,17 @@ export const actions = {
         dispatch('selection/selectAnnotations', annotationIds, { root: true });
     },
 
-    createWorkflowAnnotation({ state }, { bounds }) {
+    async createWorkflowAnnotation({ state }, { bounds }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         
-        API.workflowCommand.CreateWorkflowAnnotation({
+        const { newAnnotationId } = await API.workflowCommand.AddWorkflowAnnotation({
             projectId,
             workflowId,
             bounds
         });
+
+        // TODO: Do something no crappy with the new annotation id
+        window.alert(`Your new annotation id: <${newAnnotationId}>`);
     },
 
     transformWorkflowAnnotation({ state }, { bounds, annotationId }) {
