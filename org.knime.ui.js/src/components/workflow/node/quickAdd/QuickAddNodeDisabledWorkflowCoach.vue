@@ -2,11 +2,13 @@
 import { defineComponent } from 'vue';
 
 import { API } from '@api';
+import DummyNodes from '@/assets/workflow-coach-dummy-nodes.svg';
 import Button from 'webapps-common/ui/components/Button.vue';
 
 export default defineComponent({
     components: {
-        Button
+        Button,
+        DummyNodes
     },
     methods: {
         openWorkflowCoachPreferencePage() {
@@ -20,13 +22,10 @@ export default defineComponent({
   <div
     class="disabled-workflow-coach"
   >
-    <h2>Workflow coach</h2>
+    <DummyNodes class="dummy-nodes" />
     <span>
-      The workflow coach will help you build workflows more efficiently by suggesting the next node for your
-      workflow.
-    </span>
-    <span>
-      To activate this function you need to change the settings inside the preference page.
+      The <strong>workflow coach</strong> will help you build workflows by suggesting nodes.
+      To activate this function change the settings in the preference page.
     </span>
     <Button
       primary
@@ -44,30 +43,24 @@ export default defineComponent({
   flex-direction: column;
   align-items: flex-start;
   align-content: center;
-  justify-content: center;
   width: 100%;
   flex: 1;
-  padding: 20px;
-  background: var(--knime-black-semi);
-  color: var(--knime-white);
+  padding: 0 20px;
   font-family: "Roboto Condensed", sans-serif;
 
-  & h2 {
-    font-size: 18px;
-    line-height: 21px;
-    font-weight: 400;
+  .dummy-nodes {
+    margin: 24px 0 ;
+    filter: blur(2px);
+    align-self: center;
   }
 
   & span {
-    font-size: 13px;
-    line-height: 15px;
     padding: 5px 0 10px;
   }
 
   & .button {
     padding: 6px 15px;
     height: 30px;
-    font-size: 13px;
     font-family: "Roboto Condensed", sans-serif;
     margin-top: 20px;
   }

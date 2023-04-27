@@ -64,7 +64,7 @@ export default defineComponent({
       v-else-if="disableRecommendations"
       class="no-recommendations-message"
     >
-      There are no recommendations. Search to add compatible nodes.
+      There are no recommendations.<br> Search to add compatible nodes.
     </span>
     <span
       v-else

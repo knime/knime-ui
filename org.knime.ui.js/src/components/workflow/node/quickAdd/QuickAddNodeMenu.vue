@@ -241,10 +241,10 @@ export default defineComponent({
           @keydown.down.prevent.stop="searchDownKey"
           @keydown="searchHandleShortcuts"
         />
-        <hr>
       </div>
+      <hr>
       <QuickAddNodeDisabledWorkflowCoach
-        v-if="!hasNodeRecommendationsEnabled && !searchIsActive"
+        v-if="!hasNodeRecommendationsEnabled && !searchIsActive && !isNonNativeNode"
       />
       <template
         v-else
@@ -296,18 +296,14 @@ export default defineComponent({
   }
 
   & .header {
-    height: calc(var(--quick-add-node-header-height) * 1px);
-    padding: 15px 15px 5px;
-
-    & hr {
-      margin: 10px 0;
-    }
+    padding: 10px;
   }
 
   /* set margin on all three lists of nodes (2x search, 1x recommendation) */
   & :deep(ul.nodes) {
-    margin-left: 15px;
-    margin-right: 15px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
   }
 
   /* remove default styles of search results */
