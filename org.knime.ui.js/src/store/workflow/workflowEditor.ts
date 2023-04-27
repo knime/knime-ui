@@ -591,14 +591,14 @@ export const actions = {
 
     createWorkflowAnnotation({ state }, { bounds }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-
+        const { x, y, width, height } = bounds;
+        
         API.workflowCommand.CreateWorkflowAnnotation({
             projectId,
             workflowId,
-            position: {
-                x: bounds.x,
-                y: bounds.y
-            }
+            position: { x, y },
+            width,
+            height
         });
     },
 
