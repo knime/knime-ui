@@ -107,7 +107,7 @@ final class NodeAPI {
         checkIsNotNull(nc, projectId, nodeId);
 
         if (nc.getNodeContainerState().isExecuted()) {
-            Display.getDefault().asyncExec(() -> openNodeView(projectId, nodeId));
+            openNodeView(projectId, nodeId);
             return;
         }
         nc.addNodeStateChangeListener(new NodeStateChangeListener() {
