@@ -117,6 +117,9 @@ export const actions = {
     closeLabelEditor({ commit }) {
         commit('setLabelEditorNodeId', null);
     },
+    setEditableAnnotationId({ commit }, annotationId) {
+        commit('setEditableAnnotationId', annotationId);
+    },
 
     openPortTypeMenu({ commit }, { nodeId, startNodeId, props, events }) {
         commit('setPortTypeMenu', {

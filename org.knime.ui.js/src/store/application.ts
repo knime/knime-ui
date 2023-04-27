@@ -171,8 +171,10 @@ export const actions = {
             const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
 
             if (isLeavingWorkflow) {
+                // TODO: move all this logic to a specific action
                 // clear any open menus when leaving a workflow
                 await dispatch('toggleContextMenu');
+                dispatch('workflow/setEditableAnnotationId', null, { root: true });
             }
 
             if (isLeavingWorkflow && !isEnteringWorkflow) {

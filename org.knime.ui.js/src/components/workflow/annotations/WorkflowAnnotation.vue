@@ -140,7 +140,7 @@ export default defineComponent({
         },
 
         toggleEdit() {
-            this.$store.commit('workflow/setEditableAnnotationId', this.isEditing ? null : this.annotation.id);
+            this.$store.dispatch('workflow/setEditableAnnotationId', this.isEditing ? null : this.annotation.id);
         },
 
         onClickAway() {
