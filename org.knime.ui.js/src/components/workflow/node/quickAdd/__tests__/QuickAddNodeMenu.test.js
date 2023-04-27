@@ -360,6 +360,7 @@ describe('QuickAddNodeMenu.vue', () => {
             const { wrapper } = doMount({ getNodeByIdMock: vi.fn().mockReturnValue({ kind: nodeKind }) });
             const recommendations = wrapper.findComponent(QuickAddNodeRecommendations);
             expect(recommendations.props('disableRecommendations')).toBe(true);
+            expect(wrapper.find('.no-recommendations-message').exists()).toBe(true);
             await Vue.nextTick();
             expect(API.noderepository.getNodeRecommendations).toHaveBeenCalledTimes(0);
         });
