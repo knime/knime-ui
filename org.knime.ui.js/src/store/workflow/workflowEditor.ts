@@ -582,7 +582,7 @@ export const actions = {
             position
         });
 
-        // 4. Excecute hook and select pasted content
+        // 4. Execute hook and select pasted content
         doAfterPaste?.();
         dispatch('selection/deselectAllObjects', null, { root: true });
         dispatch('selection/selectNodes', nodeIds, { root: true });
@@ -591,7 +591,7 @@ export const actions = {
 
     createWorkflowAnnotation({ state }, { bounds }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-        
+
         API.workflowCommand.CreateWorkflowAnnotation({
             projectId,
             workflowId,
