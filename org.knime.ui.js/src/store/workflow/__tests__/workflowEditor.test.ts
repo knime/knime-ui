@@ -435,6 +435,36 @@ describe('workflow store: Editing', () => {
             });
         });
 
+        it('should add annotation', async () => {
+            mockedAPI.workflowCommand.AddWorkflowAnnotation.mockResolvedValueOnce({
+                newAnnotationId: 'mock-annotation2'
+            });
+
+            const { store } = await loadStore();
+
+            const mockAnnotation1 = { id: 'mock-annotation1' };
+            store.commit('workflow/setActiveWorkflow', {
+                workflowAnnotations: [mockAnnotation1],
+                projectId: 'foo',
+                info: {
+                    containerId: 'root'
+                }
+            });
+            await store.dispatch('selection/selectAnnotation', mockAnnotation1.id);
+
+            const bounds = { x: 10, y: 10, width: 80, height: 80 };
+            await store.dispatch('workflow/addWorkflowAnnotation', { bounds });
+
+            expect(mockedAPI.workflowCommand.AddWorkflowAnnotation).toHaveBeenCalledWith({
+                projectId: 'foo',
+                workflowId: 'root',
+                bounds
+            });
+
+            expect(store.state.selection.selectedAnnotations).toEqual({ 'mock-annotation2': true });
+            expect(store.state.workflow.editableAnnotationId).toBe('mock-annotation2');
+        });
+
         it.each([
             [ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront],
             [ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward],

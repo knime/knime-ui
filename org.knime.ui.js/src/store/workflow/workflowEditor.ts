@@ -589,17 +589,18 @@ export const actions = {
         dispatch('selection/selectAnnotations', annotationIds, { root: true });
     },
 
-    async createWorkflowAnnotation({ state }, { bounds }) {
+    async addWorkflowAnnotation({ state, dispatch }, { bounds }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-        
+
         const { newAnnotationId } = await API.workflowCommand.AddWorkflowAnnotation({
             projectId,
             workflowId,
             bounds
         });
 
-        // TODO: Do something no crappy with the new annotation id
-        window.alert(`Your new annotation id: <${newAnnotationId}>`);
+        dispatch('selection/deselectAllObjects', null, { root: true });
+        dispatch('selection/selectAnnotations', [newAnnotationId], { root: true });
+        dispatch('setEditableAnnotationId', newAnnotationId);
     },
 
     transformWorkflowAnnotation({ state }, { bounds, annotationId }) {

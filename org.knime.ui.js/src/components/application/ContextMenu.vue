@@ -75,7 +75,6 @@ export default defineComponent({
         ...mapGetters('selection', [
             'selectedNodes',
             'selectedAnnotations',
-            'selectedConnections',
             'singleSelectedNode',
             'isSelectionEmpty'
         ]),
@@ -165,7 +164,7 @@ export default defineComponent({
             ];
 
             const annotationArrangementGroup: Array<ContextMenuActionsGroupItem> = [
-                { name: 'createWorkflowAnnotation', isVisible: true },
+                { name: 'addWorkflowAnnotation', isVisible: true },
                 { name: 'bringAnnotationToFront', isVisible: areAnnotationsSelected },
                 { name: 'bringAnnotationForward', isVisible: areAnnotationsSelected },
                 { name: 'sendAnnotationBackward', isVisible: areAnnotationsSelected },

@@ -6,6 +6,7 @@ import { mockVuexStore } from '@/test/utils/mockVuexStore';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import ContextMenu from '../ContextMenu.vue';
+import type { ShortcutName } from '@/shortcuts';
 
 describe('ContextMenu.vue', () => {
     const $shortcuts = {
@@ -19,11 +20,11 @@ describe('ContextMenu.vue', () => {
 
     const doMount = ({
         props = {},
-        selectedNodes,
-        selectedAnnotations,
-        selectedConnections,
-        singleSelectedNode,
-        isSelectionEmpty
+        selectedNodes = null,
+        selectedAnnotations = null,
+        selectedConnections = null,
+        singleSelectedNode = null,
+        isSelectionEmpty = null
     } = {}) => {
         const defaultProps = {
             position: {
@@ -107,7 +108,7 @@ describe('ContextMenu.vue', () => {
         wrapper.setProps({ position: { x: 2, y: 3 } });
         await Vue.nextTick();
 
-        expect(renderedMenuItems(wrapper).length).toBe(8);
+        expect(renderedMenuItems(wrapper).length).toBe(9);
     });
 
     it('items are not set reactively', async () => {
@@ -151,7 +152,12 @@ describe('ContextMenu.vue', () => {
     });
 
     describe('visibility of menu items', () => {
-        const assertItems = (items) => items.map(item => expect.objectContaining(item));
+        const assertItems = (
+            items: Array<{
+                text: ShortcutName | Omit<string, ShortcutName>,
+                separator?: boolean
+            }>
+        ) => items.map(item => expect.objectContaining(item));
 
         it('shows correct menu items if nothing is selected', async () => {
             const { wrapper } = doMount({ isSelectionEmpty: () => true });
@@ -164,7 +170,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cancelAll' },
                     { text: 'resetAll', separator: true },
                     { text: 'paste', separator: true },
-                    { text: 'createWorkflowAnnotation' }
+                    { text: 'addWorkflowAnnotation' }
                 ])
             );
         });
@@ -189,6 +195,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
+                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
@@ -222,6 +229,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
+                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
@@ -254,6 +262,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
+                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
@@ -287,6 +296,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
+                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
@@ -329,6 +339,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
+                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
@@ -345,7 +356,8 @@ describe('ContextMenu.vue', () => {
 
             expect(renderedMenuItems(wrapper)).toEqual(
                 assertItems([
-                    { text: 'deleteSelected' }
+                    { text: 'deleteSelected' },
+                    { text: 'addWorkflowAnnotation' }
                 ])
             );
         });
@@ -359,7 +371,8 @@ describe('ContextMenu.vue', () => {
 
             expect(renderedMenuItems(wrapper)).toEqual(
                 assertItems([
-                    { text: 'deleteSelected' }
+                    { text: 'deleteSelected', separator: true },
+                    { text: 'addWorkflowAnnotation' }
                 ])
             );
         });
@@ -385,6 +398,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
+                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'expandMetanode' },
                     { text: 'Rename metanode' },
@@ -414,6 +428,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
+                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' },
                     { text: 'expandComponent' },
@@ -437,6 +452,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
+                    { text: 'addWorkflowAnnotation' },
                     { text: 'bringAnnotationToFront' },
                     { text: 'bringAnnotationForward' },
                     { text: 'sendAnnotationBackward' },

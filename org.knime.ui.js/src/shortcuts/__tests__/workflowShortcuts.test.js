@@ -164,6 +164,21 @@ describe('workflowShortcuts', () => {
             expect(mockDispatch).toHaveBeenCalledWith('workflow/pasteWorkflowParts', expect.anything());
         });
 
+        it('should dispatch action to add annotation', () => {
+            const { $store, mockDispatch } = createStore();
+
+            const position = { x: 10, y: 10 };
+            workflowShortcuts.addWorkflowAnnotation.execute({ $store, payload: { metadata: { position } } });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/addWorkflowAnnotation', {
+                bounds: {
+                    x: 10,
+                    y: 10,
+                    width: 80,
+                    height: 80
+                }
+            });
+        });
+
         it.each([
             ['bringAnnotationToFront'],
             ['bringAnnotationForward'],
