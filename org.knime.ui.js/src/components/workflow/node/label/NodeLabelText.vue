@@ -111,6 +111,7 @@ export default defineComponent({
       <span
         v-if="!value && editable"
         class="text placeholder"
+        data-hide-in-workflow-preview
       >
         <slot>Add comment</slot>
       </span>

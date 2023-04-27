@@ -461,6 +461,7 @@ export default {
                   :height="hoverSize.height"
                   :x="hoverSize.x"
                   :y="hoverSize.y"
+                  data-hide-in-workflow-preview
                 />
                 <NodeTorso
                   :type="type"

@@ -223,6 +223,7 @@ export default defineComponent({
       v-if="interactive"
       :d="path"
       class="hover-area"
+      data-hide-in-workflow-preview
       @mouseenter="hover = true"
       @mouseleave="hover = false"
       @click.left="onMouseClick"

@@ -9,6 +9,7 @@ describe('generateWorkflowPreview', () => {
     }));
 
     beforeAll(() => {
+        // @ts-ignore
         window.fetch = mockFetch;
     });
 
@@ -31,7 +32,10 @@ describe('generateWorkflowPreview', () => {
         const defs = document.createElementNS(svgNS, 'defs');
         const styleTag = document.createElement('style');
         styleTag.appendChild(
-            document.createTextNode(`.dummy-class { stroke: rgb(123, 123, 123); }`)
+            document.createTextNode(`
+            .dummy-class { stroke: rgb(123, 123, 123); }
+            .annotation-editor { border: rgb(123, 123, 123); overflow-x: scroll; overflow-y: scroll; }
+            `)
         );
         defs.appendChild(styleTag);
         svg.appendChild(defs);
@@ -51,16 +55,19 @@ describe('generateWorkflowPreview', () => {
         // add 1 dummy hover-area
         const hoverArea = document.createElementNS(svgNS, 'rect');
         hoverArea.classList.add('hover-area');
+        hoverArea.setAttribute('data-hide-in-workflow-preview', 'true');
         svg.appendChild(hoverArea);
 
         // add mock portal elements
         const vPortalTarget = document.createElement('div');
         vPortalTarget.dataset.portalTarget = 'mock-portal';
+        vPortalTarget.setAttribute('data-hide-in-workflow-preview', 'true');
         svg.appendChild(vPortalTarget);
 
         // add dynamic port icon
         const portIcon = document.createElementNS(svgNS, 'rect');
         portIcon.classList.add('add-port');
+        portIcon.setAttribute('data-hide-in-workflow-preview', 'true');
         svg.appendChild(portIcon);
 
         // add empty g element
@@ -83,6 +90,12 @@ describe('generateWorkflowPreview', () => {
         foreignObject.classList.add('dummy-class');
         svg.appendChild(foreignObject);
 
+        const foreignObject2 = document.createElementNS(svgNS, 'foreignObject');
+        const annotation = document.createElement('div');
+        annotation.classList.add('annotation-editor');
+        foreignObject2.appendChild(annotation);
+        svg.appendChild(foreignObject2);
+
         document.body.appendChild(svg);
 
         return { svg };
@@ -90,7 +103,7 @@ describe('generateWorkflowPreview', () => {
 
     it('should add fonts', async () => {
         const { svg } = setup();
-        const output = await generateWorkflowPreview(svg);
+        const output = await generateWorkflowPreview(svg, false);
 
         expect(output).toMatch(/url\("data:application\/font-woff;charset=utf-8;base64,.+/g);
     });
@@ -98,9 +111,10 @@ describe('generateWorkflowPreview', () => {
     it('should set transparency on the workflow sheet', async () => {
         const { svg } = setup();
 
-        const output = await generateWorkflowPreview(svg);
+        const output = await generateWorkflowPreview(svg, false);
         const outputEl = createElementFromOutput(output);
-        expect(outputEl.querySelector('.workflow-sheet').style.fill).toBe('transparent');
+        const workflowSheet = outputEl.querySelector('.workflow-sheet') as HTMLElement;
+        expect(workflowSheet.style.fill).toBe('transparent');
     });
 
     it('should set the correct viewbox', async () => {
@@ -112,42 +126,25 @@ describe('generateWorkflowPreview', () => {
         };
         const { svg } = setup({ workflowSheetDimensions });
 
-        const output = await generateWorkflowPreview(svg);
+        const output = await generateWorkflowPreview(svg, false);
 
         const outputEl = createElementFromOutput(output);
         expect(outputEl.getAttribute('viewBox')).toBe('10 20 100 200');
     });
 
-    it('should remove hover areas', async () => {
+    it('should remove all elements with the attribute "data-hide-in-workflow-preview"', async () => {
         const { svg } = setup();
 
-        const output = await generateWorkflowPreview(svg);
+        const output = await generateWorkflowPreview(svg, false);
         const outputEl = createElementFromOutput(output);
 
-        expect(outputEl.querySelectorAll('.hover-area').length).toBe(0);
-    });
-
-    it('should remove portal elements', async () => {
-        const { svg } = setup();
-
-        const output = await generateWorkflowPreview(svg);
-        const outputEl = createElementFromOutput(output);
-
-        expect(outputEl.querySelectorAll('[data-portal-target]').length).toBe(0);
-    });
-
-    it('should remove dynamic port icons', async () => {
-        const { svg } = setup();
-
-        const output = await generateWorkflowPreview(svg);
-        const outputEl = createElementFromOutput(output);
-        expect(outputEl.querySelectorAll('.add-port').length).toBe(0);
+        expect(outputEl.querySelectorAll('[data-hide-in-workflow-preview]').length).toBe(0);
     });
 
     it('should remove empty and hidden elements', async () => {
         const { svg } = setup();
 
-        const output = await generateWorkflowPreview(svg);
+        const output = await generateWorkflowPreview(svg, false);
         const outputEl = createElementFromOutput(output);
         const emptyGTags = Array.from(outputEl.querySelectorAll('g')).filter(el => el.hasChildNodes);
         expect(emptyGTags).toEqual([]);
@@ -157,17 +154,29 @@ describe('generateWorkflowPreview', () => {
     it('should inline the styles of the connectors', async () => {
         const { svg } = setup();
 
-        const output = await generateWorkflowPreview(svg);
+        const output = await generateWorkflowPreview(svg, false);
         const outputEl = createElementFromOutput(output);
-        expect(outputEl.querySelector('[data-connector-id]').style.stroke).toBe('rgb(123, 123, 123)');
+        const connectorEl = outputEl.querySelector('[data-connector-id]') as HTMLElement;
+        expect(connectorEl.style.stroke).toBe('rgb(123, 123, 123)');
     });
 
     it('should inline the styles of the foreignObjects', async () => {
         const { svg } = setup();
 
-        const output = await generateWorkflowPreview(svg);
+        const output = await generateWorkflowPreview(svg, false);
         const outputEl = createElementFromOutput(output);
         expect(outputEl.querySelector('foreignObject').style.stroke).toBe('rgb(123, 123, 123)');
+    });
+
+    it('should inline the styles of the workflow annotations', async () => {
+        const { svg } = setup();
+
+        const output = await generateWorkflowPreview(svg, false);
+        const outputEl = createElementFromOutput(output);
+        const annotationEl = outputEl.querySelector('.annotation-editor') as HTMLElement;
+        expect(annotationEl.style.border).toBe('rgb(123, 123, 123)');
+        expect(annotationEl.style.overflowX).toBe('hidden');
+        expect(annotationEl.style.overflowY).toBe('hidden');
     });
 
     it('caches the fonts for continued usage', async () => {
@@ -176,11 +185,11 @@ describe('generateWorkflowPreview', () => {
         vi.spyOn(Storage.prototype, 'setItem');
         vi.spyOn(Storage.prototype, 'getItem');
 
-        await generateWorkflowPreview(svg);
+        await generateWorkflowPreview(svg, false);
 
         expect(localStorage.setItem).toHaveBeenCalledTimes(1);
 
-        await generateWorkflowPreview(svg);
+        await generateWorkflowPreview(svg, false);
 
         expect(localStorage.getItem).toHaveBeenCalled();
         expect(localStorage.setItem).toHaveBeenCalledTimes(1);

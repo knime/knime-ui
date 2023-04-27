@@ -116,6 +116,7 @@ export default {
           :width="$shapes.metaNodeBarWidth + $shapes.metaNodeBarHorizontalPadding * 2"
           :height="portBarHeight"
           :x="barPosition - $shapes.metaNodeBarHorizontalPadding"
+          data-hide-in-workflow-preview
         />
         <rect
           class="port-bar"

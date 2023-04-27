@@ -189,11 +189,12 @@ export default {
         onDeselectPort() {
             this.selectedPort = null;
         },
+        isMickeyMousePort(port) {
+            return !this.isMetanode && port.index === 0;
+        },
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
         portAnimationClasses(port, direction) {
-            const isMickeyMousePort = !this.isMetanode && port.index === 0;
-
-            if (!isMickeyMousePort) {
+            if (!this.isMickeyMousePort(port)) {
                 return {};
             }
 
@@ -248,6 +249,7 @@ export default {
       :relative-position="portPositions.in[port.index]"
       :selected="selectedPort === `input-${port.index}`"
       :targeted="isPortTargeted(port, 'in')"
+      :data-hide-in-workflow-preview="(isMickeyMousePort(port) && !port.connectedVia.length) || null"
       @click="onPortClick(port, 'input')"
       @remove="removePort(port, 'input')"
       @deselect="onDeselectPort"
@@ -264,6 +266,7 @@ export default {
       :relative-position="portPositions.out[port.index]"
       :selected="selectedPort === `output-${port.index}`"
       :targeted="isPortTargeted(port, 'out')"
+      :data-hide-in-workflow-preview="(isMickeyMousePort(port) && !port.connectedVia.length) || null"
       @click="onPortClick(port, 'output')"
       @remove="removePort(port, 'output')"
       @deselect="onDeselectPort"
@@ -284,6 +287,7 @@ export default {
           'connector-hover': connectorHover,
           'node-selected': isSingleSelected,
         }]"
+        data-hide-in-workflow-preview
         @add-port="addPort({ side, typeId: $event.typeId, portGroup: $event.portGroup })"
       />
     </template>

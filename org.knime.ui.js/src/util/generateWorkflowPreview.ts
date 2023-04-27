@@ -31,7 +31,7 @@ limitations under the License.
  * @param skipLicense whether to add the license for the fonts
  * @returns serialized svg element
  */
-const getSvgContent = (svg: HTMLElement | SVGSVGElement, skipLicense: boolean = false) => {
+const getSvgContent = (svg: SVGElement, skipLicense: boolean = false) => {
     // Get svg source
     const serializer = new XMLSerializer();
     let source = serializer.serializeToString(svg);
@@ -93,7 +93,7 @@ const removeElements = (
 
 type WorkflowPreviewReturnType = {
     /** the SVG element clone */
-    svgClone: HTMLElement;
+    svgClone: SVGSVGElement;
     /** a function that can be called to clean up the DOM after we're done using the clone */
     teardown: () => void;
 }
@@ -105,11 +105,11 @@ type WorkflowPreviewReturnType = {
  *
  * @param element
  */
-const getSVGElementClone = (element: HTMLElement): WorkflowPreviewReturnType => {
+const getSVGElementClone = (element: SVGSVGElement): WorkflowPreviewReturnType => {
     const div = document.createElement('div');
     div.id = 'NODE_PREVIEW_CONTAINER';
 
-    const svgClone = element.cloneNode(true) as HTMLElement;
+    const svgClone = element.cloneNode(true) as SVGSVGElement;
 
     // in order for `getComputedStyle` to work, we need the clone to be part of the
     // DOM Tree.
@@ -134,7 +134,7 @@ const getSVGElementClone = (element: HTMLElement): WorkflowPreviewReturnType => 
  * @param workflowSheet
  * @returns {void}
  */
-const updateViewBox = (svgClone: HTMLElement, workflowSheet: HTMLElement) => {
+const updateViewBox = (svgClone: SVGSVGElement, workflowSheet: HTMLElement) => {
     const minX = workflowSheet.getAttribute('x');
     const minY = workflowSheet.getAttribute('y');
     const width = workflowSheet.getAttribute('width');
@@ -161,6 +161,8 @@ const inheritedCssProperties = [
     'line-height',
     'font-size',
     'text-align',
+    'border',
+    'padding',
 
     // properties needed for correct text clipping on node names
     'display',
@@ -195,17 +197,13 @@ const useCSSfromComputedStyles = (
     const compStyles = getComputedStyle(element);
 
     if (compStyles.length > 0) {
-        for (let i = 0; i < compStyles.length; i++) {
-            const compStyle = compStyles[i];
+        inheritedCssProperties.forEach(property => {
+            const value = styleOverrides[camelCase(property)]
+                ? styleOverrides[camelCase(property)]
+                : compStyles.getPropertyValue(property);
 
-            if (inheritedCssProperties.includes(compStyle)) {
-                const value = styleOverrides[camelCase(compStyle)]
-                    ? styleOverrides[camelCase(compStyle)]
-                    : compStyles.getPropertyValue(compStyle);
-
-                element.style.setProperty(compStyle, value);
-            }
-        }
+            element.style.setProperty(property, value);
+        });
     }
 };
 
@@ -265,7 +263,7 @@ const getFontData = async () => {
  * @param svgElement
  * @returns {void}
  */
-const addFontStyles = async (svgElement: HTMLElement) => {
+const addFontStyles = async (svgElement: SVGElement) => {
     const styleTag = document.createElement('style');
 
     const fontBase64 = await getFontData();
@@ -291,7 +289,7 @@ const addFontStyles = async (svgElement: HTMLElement) => {
  * @returns  The contents of the root workflow as an SVG string or null when no element is provided
  * as a parameter
  */
-export const generateWorkflowPreview = async (svgElement: HTMLElement, isEmpty: boolean) => {
+export const generateWorkflowPreview = async (svgElement: SVGSVGElement, isEmpty: boolean) => {
     if (!svgElement) {
         return null;
     }
@@ -316,20 +314,11 @@ export const generateWorkflowPreview = async (svgElement: HTMLElement, isEmpty: 
     // Set the viewbox to only the visible content
     updateViewBox(svgClone, workflowSheet);
 
-    // remove all hover areas elements which are only used for interactivity
-    removeElements(svgClone.querySelectorAll('.hover-area'));
-
     // remove all portal-targets
     removeElements(svgClone.querySelectorAll('[data-portal-target]'));
 
-    // remove dynamic port icons
-    removeElements(svgClone.querySelectorAll('.add-port'));
-
-    // remove non-connected flow variable port icons
-    removeElements(svgClone.querySelectorAll('.mickey-mouse:not(.connected)'));
-
-    // remove empty node labels
-    removeElements(svgClone.querySelectorAll('.node-label > .placeholder'));
+    // remove all elements that should be hidden in the preview
+    removeElements(svgClone.querySelectorAll('[data-hide-in-workflow-preview]'));
 
     // remove all empty g elements
     removeElements(svgClone.querySelectorAll('g'), (node) => !node.hasChildNodes());
@@ -345,6 +334,12 @@ export const generateWorkflowPreview = async (svgElement: HTMLElement, isEmpty: 
 
     // select `foreignObject`s and inline all styles that may be only available from classes
     svgClone.querySelectorAll('foreignObject').forEach(useCSSfromComputedStyles());
+
+    // select `foreignObject`s and inline all styles that may be only available from classes
+    svgClone.querySelectorAll('.annotation-editor').forEach(useCSSfromComputedStyles({
+        overflowX: 'hidden',
+        overflowY: 'hidden'
+    }));
 
     const output = getSvgContent(svgClone);
 

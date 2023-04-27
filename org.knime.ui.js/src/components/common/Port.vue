@@ -87,6 +87,7 @@ export default {
       :width="$shapes.portSize"
       :height="$shapes.portSize + 2"
       class="hover-area"
+      data-hide-in-workflow-preview
     />
     <g class="scale">
       <PortIcon

@@ -234,13 +234,4 @@ div {
   cursor: pointer;
   user-select: none;
 }
-
-.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.toolbar-portal {
-    height: 100%;
-}
 </style>

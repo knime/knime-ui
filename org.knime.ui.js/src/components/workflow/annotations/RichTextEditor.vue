@@ -53,7 +53,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="editor-wrapper"
+    class="annotation-editor-wrapper"
     @pointerdown="editable && $event.stopPropagation()"
   >
     <Portal
@@ -66,7 +66,7 @@ onMounted(() => {
       />
     </Portal>
     <EditorContent
-      class="editor"
+      class="annotation-editor"
       :editor="editor"
       :class="{ editable, selected: isSelected }"
       @dblclick="!editable && emit('editStart')"
@@ -75,7 +75,7 @@ onMounted(() => {
 </template>
 
 <style lang="postcss" scoped>
-.editor-wrapper {
+.annotation-editor-wrapper {
     height: 100%;
     background: var(--knime-white);
 }
@@ -89,7 +89,7 @@ onMounted(() => {
     cursor: initial;
 }
 
-.editor {
+.annotation-editor {
     height: 100%;
     overflow-y: auto;
     border: 1px solid var(--knime-masala);
