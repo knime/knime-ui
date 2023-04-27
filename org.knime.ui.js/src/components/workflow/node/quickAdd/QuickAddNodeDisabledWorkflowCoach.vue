@@ -48,7 +48,7 @@ export default defineComponent({
   padding: 0 20px;
   font-family: "Roboto Condensed", sans-serif;
 
-  .dummy-nodes {
+  & .dummy-nodes {
     margin: 24px 0 ;
     filter: blur(2px);
     align-self: center;
