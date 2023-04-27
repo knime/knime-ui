@@ -51,15 +51,6 @@ describe('workflow store: AP Interactions', () => {
     };
 
     describe('actions', () => {
-        it('calls openView from API', async () => {
-            const { store } = await loadStore();
-
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-            store.dispatch('workflow/openView', 'node x');
-
-            expect(mockedAPI.desktop.openView).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
-        });
-
         it('calls executeNodeAndOpenView from API', async () => {
             const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });

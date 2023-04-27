@@ -132,8 +132,7 @@ final class NodeAPI {
      * @param projectId
      * @param nodeId
      */
-    @API
-    static void openNodeView(final String projectId, final String nodeId) {
+    private static void openNodeView(final String projectId, final String nodeId) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         if (nc instanceof SubNodeContainer snc) {

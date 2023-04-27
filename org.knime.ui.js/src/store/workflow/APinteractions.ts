@@ -74,11 +74,6 @@ export const actions = {
         commit('spaces/clearLastItemForProject', { projectId: closingProjectId }, { root: true });
     },
 
-    /* Some nodes generate views from their data. A Classic UI dialog opens to present this view */
-    openView({ state }, nodeId) {
-        API.desktop.openView({ projectId: state.activeWorkflow.projectId, nodeId });
-    },
-
     /* Some nodes generate views from their data. The node gets executed and a Classic UI dialog opens to present this view */
     executeNodeAndOpenView({ state }, nodeId) {
         API.desktop.executeNodeAndOpenView({ projectId: state.activeWorkflow.projectId, nodeId });

@@ -22,18 +22,6 @@ export const openLegacyFlowVariableDialog = ({ projectId, nodeId }: { projectId:
     }
 };
 
-export const openView = ({ projectId, nodeId }: { projectId: string; nodeId: string; }) => {
-    try {
-        // returns falsy on success
-        const error = window.openNodeView(projectId, nodeId);
-        if (error) {
-            throw new Error(error);
-        }
-    } catch (e) {
-        consola.error(`Could not open view of node ${nodeId}`, e);
-    }
-};
-
 export const executeNodeAndOpenView = ({ projectId, nodeId }: { projectId: string; nodeId: string; }) => {
     try {
         window.executeNodeAndOpenView(projectId, nodeId);

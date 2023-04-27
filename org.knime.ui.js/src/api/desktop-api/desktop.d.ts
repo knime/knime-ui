@@ -5,7 +5,6 @@ declare function openInstallExtensionsDialog(): void;
 declare function openWebUIPreferencePage(): void;
 declare function openNodeDialog(projectId: string, nodeId: string): string | undefined;
 declare function openLegacyFlowVariableDialog(...args: unknown[]): string | undefined;
-declare function openNodeView(...args: unknown[]): string | undefined;
 declare function executeNodeAndOpenView(projectId: string, nodeId: string): void;
 declare function saveWorkflow(...args: unknown[]): string | undefined;
 declare function openWorkflow(...args: unknown[]): string | undefined;
