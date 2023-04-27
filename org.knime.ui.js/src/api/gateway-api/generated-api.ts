@@ -880,22 +880,10 @@ export interface CreateWorkflowAnnotationCommand extends WorkflowCommand {
 
     /**
      *
-     * @type {XY}
+     * @type {Bounds}
      * @memberof CreateWorkflowAnnotationCommand
      */
-    position: XY;
-    /**
-     * The desired width of the new workflow annotation
-     * @type {number}
-     * @memberof CreateWorkflowAnnotationCommand
-     */
-    width: number;
-    /**
-     * The desired height of the new workflow annotation
-     * @type {number}
-     * @memberof CreateWorkflowAnnotationCommand
-     */
-    height: number;
+    bounds: Bounds;
 
 }
 
