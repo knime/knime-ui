@@ -218,6 +218,7 @@ export default defineComponent({
           :initial-value="initialRichTextAnnotationValue"
           :editable="isEditing"
           :annotation-bounds="transformedBounds"
+          :is-selected="isSelected"
           @change="onAnnotationChange"
           @edit-start="toggleEdit"
         />

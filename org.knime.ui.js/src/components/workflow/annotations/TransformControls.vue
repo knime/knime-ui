@@ -48,9 +48,10 @@ export default defineComponent({
         ...mapState('canvas', ['zoomFactor']),
 
         controlSize() {
-            const CONTROL_SIZE = 10;
+            const CONTROL_SIZE = 6;
+            const MAX_FACTOR = 1.4;
 
-            return Math.max(CONTROL_SIZE / 2, CONTROL_SIZE / this.zoomFactor);
+            return Math.max(CONTROL_SIZE / MAX_FACTOR, CONTROL_SIZE / this.zoomFactor);
         },
 
         transformRectStrokeWidth() {

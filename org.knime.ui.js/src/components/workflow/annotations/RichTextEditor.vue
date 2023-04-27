@@ -13,6 +13,7 @@ interface Props {
     editable: boolean;
     initialValue: string;
     annotationBounds: Bounds;
+    isSelected: boolean;
 }
 
 const props = defineProps<Props>();
@@ -67,7 +68,7 @@ onMounted(() => {
     <EditorContent
       class="editor"
       :editor="editor"
-      :class="{ editable: props.editable }"
+      :class="{ editable, selected: isSelected }"
       @dblclick="!editable && emit('editStart')"
     />
   </div>
@@ -97,6 +98,10 @@ onMounted(() => {
         margin-top: 0;
         border: 1px solid var(--knime-cornflower);
         cursor: text;
+    }
+
+    &.selected {
+        border-color: transparent;
     }
 
     /* stylelint-disable-next-line selector-class-pattern */

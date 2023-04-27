@@ -132,7 +132,7 @@ describe('TransformControls.vue', () => {
             expect(mockGetTransformControlPosition).toHaveBeenCalledWith({
                 bounds,
                 direction,
-                controlSize: 10
+                controlSize: 6
             });
 
             // output of the mock function

@@ -144,11 +144,9 @@ const adjustedPosition = computed(() => {
     display: flex;
     justify-content: center;
     background: var(--knime-white);
-
     gap: calc(v-bind(toolbarItemGap) * 1px);
     padding: calc(v-bind(toolbarItemPadding) * 1px);
     width: calc(v-bind(toolbarWidth) * 1px);
-
     height: 48px;
     box-shadow: 0 0 10px rgb(62 58 57 / 30%);
     border-radius: 30px;
@@ -161,9 +159,6 @@ const adjustedPosition = computed(() => {
         align-items: center;
 
         & svg {
-            /* overwrite style that sets a background for the svg canvas */
-            background: transparent !important;
-
             width: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
             height: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
         }
