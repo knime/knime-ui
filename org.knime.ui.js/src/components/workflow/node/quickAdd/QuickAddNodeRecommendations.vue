@@ -15,6 +15,10 @@ export default defineComponent({
         selectedNode: {
             type: [Object, null] as PropType<NativeNode | ComponentNode | MetaNode | null>,
             required: true
+        },
+        disableRecommendations: {
+            type: Boolean,
+            default: false
         }
     },
     emits: ['update:selectedNode', 'addNode', 'navReachedTop'],
@@ -56,6 +60,12 @@ export default defineComponent({
         />
       </template>
     </NodeList>
+    <span
+      v-else-if="disableRecommendations"
+      class="no-recommendations-message"
+    >
+      There are no recommendations. Search to add compatible nodes.
+    </span>
     <span
       v-else
       class="no-recommendations-message"

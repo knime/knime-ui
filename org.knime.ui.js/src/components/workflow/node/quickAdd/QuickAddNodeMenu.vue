@@ -74,7 +74,7 @@ export default defineComponent({
         ...mapState('application', ['hasNodeRecommendationsEnabled', 'hasNodeCollectionActive', 'availablePortTypes']),
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('quickAddNodes', ['recommendedNodes']),
-        ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('workflow', ['isWritable', 'getNodeById']),
         ...mapGetters('quickAddNodes', ['searchIsActive', 'getFirstResult']),
 
         canvasPosition() {
@@ -86,6 +86,9 @@ export default defineComponent({
             pos.x += halfPort;
 
             return pos;
+        },
+        isNonNativeNode() {
+            return ['metanode', 'component'].includes(this.getNodeById(this.nodeId)?.kind);
         },
         fakePortConnector() : DragConnector {
             return {
@@ -150,6 +153,9 @@ export default defineComponent({
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
         ]),
         async fetchNodeRecommendations() {
+            if (this.isNonNativeNode) {
+                return;
+            }
             const { nodeId, portIndex: portIdx } = this;
             await this.$store.dispatch('quickAddNodes/getNodeRecommendations', { nodeId, portIdx });
         },
@@ -254,6 +260,7 @@ export default defineComponent({
           v-else
           ref="recommendationResults"
           v-model:selected-node="selectedNode"
+          :disable-recommendations="isNonNativeNode"
           @nav-reached-top="($refs.search as any).focus()"
           @add-node="addNode($event)"
         />

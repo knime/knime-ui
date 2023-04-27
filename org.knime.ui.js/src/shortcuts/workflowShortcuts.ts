@@ -382,12 +382,7 @@ const workflowShortcuts: WorkflowShortcuts = {
 
             $store.dispatch('workflow/openQuickAddNodeMenu', { props: { nodeId, port, position } });
         },
-        condition: ({ $store }) => {
-            const node = $store.getters['selection/singleSelectedNode'];
-            const isWriteable = $store.getters['workflow/isWritable'];
-            const isNativeNode = !['metanode', 'component'].includes(node?.kind);
-            return isNativeNode && isWriteable;
-        }
+        condition: ({ $store }) => $store.getters['workflow/isWritable']
     }
 };
 
