@@ -10,7 +10,6 @@ import AppHeader from '@/components/application/AppHeader.vue';
 import Error from '@/components/application/Error.vue';
 
 import KnimeUI from '../KnimeUI.vue';
-import { APP_ROUTES } from '@/router';
 
 describe('KnimeUI.vue', () => {
     let $store, doShallowMount, initializeApplication, wrapper, storeConfig, destroyApplication,
@@ -116,46 +115,10 @@ describe('KnimeUI.vue', () => {
         });
     });
 
-    it('renders after loading with existing workflow', async () => {
-        storeConfig.workflow.state.activeWorkflow = {
-            info: {
-                containerId: 'root'
-            },
-            projectId: 'project'
-        };
-
-        await doShallowMount();
-
-        // await fetch hook
-        await Vue.nextTick();
-
-        // await rendering
-        await Vue.nextTick();
-
-        expect($router.push).toHaveBeenCalledWith({
-            name: APP_ROUTES.WorkflowPage,
-            params: { projectId: 'project', workflowId: 'root' }
-        });
-    });
-
-    it('renders after loading without a workflow', async () => {
-        await doShallowMount();
-
-        // await fetch hook
-        await Vue.nextTick();
-
-        // await rendering
-        await Vue.nextTick();
-
-        expect($router.push).toHaveBeenCalledWith({
-            name: APP_ROUTES.EntryPage.GetStartedPage
-        });
-    });
-
     it('initiates', async () => {
         await doShallowMount();
 
-        expect(initializeApplication).toHaveBeenCalled();
+        expect(initializeApplication).toHaveBeenCalledWith(expect.anything(), { $router });
         expect(document.fonts.load).toHaveBeenCalledWith('400 1em Roboto');
         expect(document.fonts.load).toHaveBeenCalledWith('400 1em Roboto Condensed');
         expect(document.fonts.load).toHaveBeenCalledWith('700 1em Roboto Condensed');

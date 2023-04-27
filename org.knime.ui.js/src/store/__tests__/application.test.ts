@@ -420,7 +420,8 @@ describe('application store', () => {
                 params: {
                     projectId: 'bee',
                     workflowId: 'root'
-                }
+                },
+                force: true
             });
         });
 

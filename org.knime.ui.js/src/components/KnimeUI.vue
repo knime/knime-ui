@@ -8,8 +8,6 @@ import Error from '@/components/application/Error.vue';
 import SmartLoader from '@/components/common/SmartLoader.vue';
 import CreateWorkflowModal from '@/components/application/CreateWorkflowModal.vue';
 
-import { APP_ROUTES } from '@/router/appRoutes';
-
 
 /**
  * Main page and entry point of KNIME Next
@@ -81,18 +79,6 @@ export default {
             } catch ({ message, stack }) {
                 this.error = { message, stack };
             }
-
-            if (!this.workflow) {
-                await this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
-                return;
-            }
-
-            const { info: { containerId: workflowId }, projectId } = this.workflow;
-
-            await this.$router.push({
-                name: APP_ROUTES.WorkflowPage,
-                params: { workflowId, projectId }
-            });
         },
 
         async checkClipboardSupport() {

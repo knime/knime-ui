@@ -303,7 +303,8 @@ export const actions = {
             params: {
                 projectId: activeProject.projectId,
                 workflowId: activeProject.activeWorkflowId
-            }
+            },
+            force: true
         });
     },
 
