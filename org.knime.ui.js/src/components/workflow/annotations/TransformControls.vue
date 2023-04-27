@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { mapGetters } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
 // eslint-disable-next-line object-curly-newline
@@ -9,8 +9,7 @@ import {
     DIRECTIONS,
     transformBounds,
     getGridAdjustedBounds,
-    getTransformControlPosition,
-    CONTROL_SIZE
+    getTransformControlPosition
 // eslint-disable-next-line object-curly-newline
 } from './transform-control-utils';
 
@@ -40,13 +39,26 @@ export default defineComponent({
     data() {
         return {
             directions: DIRECTIONS,
-            CONTROL_SIZE,
             innerValue: getGridAdjustedBounds(this.initialValue)
         };
     },
 
     computed: {
-        ...mapGetters('canvas', ['screenToCanvasCoordinates'])
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
+        ...mapState('canvas', ['zoomFactor']),
+
+        controlSize() {
+            const CONTROL_SIZE = 10;
+
+            return Math.max(CONTROL_SIZE / 2, CONTROL_SIZE / this.zoomFactor);
+        },
+
+        transformRectStrokeWidth() {
+            return Math.max(
+                this.$shapes.selectedAnnotationStrokeWidth / 2,
+                this.$shapes.selectedAnnotationStrokeWidth / this.zoomFactor
+            );
+        }
     },
 
     watch: {
@@ -107,7 +119,8 @@ export default defineComponent({
         getControlPosition(direction: Directions) {
             return getTransformControlPosition({
                 bounds: this.innerValue,
-                direction
+                direction,
+                controlSize: this.controlSize
             });
         },
 
@@ -133,7 +146,7 @@ export default defineComponent({
         :y="innerValue.y"
         class="transform-box"
         :stroke="$colors.selection.activeBorder"
-        :stroke-width="$shapes.selectedAnnotationStrokeWidth"
+        :stroke-width="transformRectStrokeWidth"
         :rx="$shapes.selectedItemBorderRadius"
       />
 
@@ -143,8 +156,8 @@ export default defineComponent({
           :key="direction"
           :x="getControlPosition(direction).x"
           :y="getControlPosition(direction).y"
-          :width="CONTROL_SIZE"
-          :height="CONTROL_SIZE"
+          :width="controlSize"
+          :height="controlSize"
           class="transform-control"
           :class="`transform-control-${direction}`"
           :style="getCursorStyle(direction)"

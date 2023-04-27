@@ -77,6 +77,9 @@ describe('TransformControls.vue', () => {
             canvas: {
                 getters: {
                     screenToCanvasCoordinates: screenToCanvasCoordinatesMock
+                },
+                state: {
+                    zoomFactor: 1
                 }
             }
         });
@@ -128,7 +131,8 @@ describe('TransformControls.vue', () => {
 
             expect(mockGetTransformControlPosition).toHaveBeenCalledWith({
                 bounds,
-                direction
+                direction,
+                controlSize: 10
             });
 
             // output of the mock function

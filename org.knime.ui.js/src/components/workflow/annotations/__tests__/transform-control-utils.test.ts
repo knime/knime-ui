@@ -51,18 +51,19 @@ describe('transform-control-utils', () => {
     });
 
     it.each([
-        ['n', { x: 106, y: 6 }],
-        ['ne', { x: 208, y: 6 }],
-        ['e', { x: 208, y: 56 }],
-        ['se', { x: 208, y: 108 }],
-        ['s', { x: 106, y: 108 }],
-        ['sw', { x: 6, y: 108 }],
-        ['w', { x: 6, y: 56 }],
-        ['nw', { x: 6, y: 6 }]
+        ['n', { x: 107, y: 7 }],
+        ['ne', { x: 207, y: 7 }],
+        ['e', { x: 207, y: 57 }],
+        ['se', { x: 207, y: 107 }],
+        ['s', { x: 107, y: 107 }],
+        ['sw', { x: 7, y: 107 }],
+        ['w', { x: 7, y: 57 }],
+        ['nw', { x: 7, y: 7 }]
     ])('should return a control position', (direction: Directions, expectedPosition) => {
         const position = getTransformControlPosition({
             bounds,
-            direction
+            direction,
+            controlSize: 6
         });
 
         expect(position).toStrictEqual(expectedPosition);

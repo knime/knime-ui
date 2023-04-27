@@ -9,7 +9,6 @@ type YTransform = { startY: number; moveY: number; origHeight: number; }
 type TransformParams = XTransform & YTransform;
 type DirectionHandler = (currentBounds: Bounds, params: TransformParams) => Bounds
 
-export const CONTROL_SIZE = 6;
 const MIN_DIMENSIONS = { width: 0, height: 0 };
 
 const isValidHeight = (value: number) => value > MIN_DIMENSIONS.height;
@@ -190,9 +189,10 @@ export const transformBounds = (
 export const getTransformControlPosition = (params: {
     bounds: Bounds
     direction: Directions;
+    controlSize: number;
 }) => {
     const { bounds, direction } = params;
-    const OFFSET = CONTROL_SIZE / 2 + 1;
+    const OFFSET = params.controlSize / 2;
 
     const { x, y, width, height } = bounds;
     const offset = (pos: number, delta: -1 | 1 = 1) => pos - OFFSET * delta;
@@ -200,8 +200,8 @@ export const getTransformControlPosition = (params: {
     const centerX = () => offset(x + width / 2);
     const centerY = () => offset(y + height / 2);
 
-    const flushX = () => offset(x + width - CONTROL_SIZE, -1);
-    const flushY = () => offset(y + height - CONTROL_SIZE, -1);
+    const flushX = () => offset(x + width - params.controlSize, -1);
+    const flushY = () => offset(y + height - params.controlSize, -1);
 
     const positionMap: Record<Directions, { x: number; y: number }> = {
         nw: { x: offset(x), y: offset(y) },
