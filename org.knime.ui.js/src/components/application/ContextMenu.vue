@@ -75,6 +75,7 @@ export default defineComponent({
         ...mapGetters('selection', [
             'selectedNodes',
             'selectedAnnotations',
+            'selectedConnections',
             'singleSelectedNode',
             'isSelectionEmpty'
         ]),
@@ -128,6 +129,8 @@ export default defineComponent({
         setMenuItems() {
             const areNodesSelected = this.selectedNodes.length > 0;
             const areAnnotationsSelected = this.selectedAnnotations.length > 0;
+            const areConnectionsSelected = this.selectedConnections.length > 0;
+            const isAnythingSelected = areNodesSelected || areAnnotationsSelected || areConnectionsSelected;
 
             const isLoopEnd = Boolean(this.singleSelectedNode?.loopInfo?.allowedActions);
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
@@ -164,7 +167,7 @@ export default defineComponent({
             ];
 
             const annotationArrangementGroup: Array<ContextMenuActionsGroupItem> = [
-                { name: 'addWorkflowAnnotation', isVisible: true },
+                { name: 'addWorkflowAnnotation', isVisible: !isAnythingSelected },
                 { name: 'bringAnnotationToFront', isVisible: areAnnotationsSelected },
                 { name: 'bringAnnotationForward', isVisible: areAnnotationsSelected },
                 { name: 'sendAnnotationBackward', isVisible: areAnnotationsSelected },

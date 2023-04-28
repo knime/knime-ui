@@ -108,7 +108,7 @@ describe('ContextMenu.vue', () => {
         wrapper.setProps({ position: { x: 2, y: 3 } });
         await Vue.nextTick();
 
-        expect(renderedMenuItems(wrapper).length).toBe(9);
+        expect(renderedMenuItems(wrapper).length).toBe(8);
     });
 
     it('items are not set reactively', async () => {
@@ -135,13 +135,15 @@ describe('ContextMenu.vue', () => {
         }]));
     });
 
-    // TODO: Fix this test
-    // it('fires correct action based on store data and passes optional event detail', () => {
-    //     const { wrapper } = doMount();
-    //     const mockEvent = { mock: true };
-    //     wrapper.findComponent(MenuItems).vm.$emit('item-click', mockEvent, { name: 'shortcut' });
-    //     expect($shortcuts.dispatch).toHaveBeenCalledWith('shortcut', { event: mockEvent });
-    // });
+    it('fires correct action based on store data and passes optional event detail and metadata', () => {
+        const { wrapper } = doMount();
+        const mockEvent = { mock: true };
+        wrapper.findComponent(MenuItems).vm.$emit('item-click', mockEvent, { name: 'shortcut' });
+        expect($shortcuts.dispatch).toHaveBeenCalledWith('shortcut', {
+            event: mockEvent,
+            metadata: { position: { x: 10, y: 10 } }
+        });
+    });
 
     it('closes menu after item has been clicked', () => {
         const { wrapper } = doMount();
@@ -195,41 +197,6 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'addWorkflowAnnotation', separator: true },
-                    { text: 'createMetanode' },
-                    { text: 'createComponent' }
-                ])
-            );
-        });
-
-        it('shows executeAndOpenView if one node with a view is selected', async () => {
-            const node = {
-                id: 'root:0',
-                allowedActions: {
-                    canExecute: true,
-                    canOpenView: true
-                }
-            };
-
-            const { wrapper } = doMount({
-                selectedNodes: () => [node],
-                singleSelectedNode: () => node
-            });
-
-            await Vue.nextTick();
-
-            expect(renderedMenuItems(wrapper)).toEqual(
-                assertItems([
-                    { text: 'configureNode' },
-                    { text: 'executeSelected' },
-                    { text: 'cancelSelected' },
-                    { text: 'resetSelected' },
-                    { text: 'editNodeLabel' },
-                    { text: 'executeAndOpenView', separator: true },
-                    { text: 'cut' },
-                    { text: 'copy' },
-                    { text: 'deleteSelected', separator: true },
-                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
@@ -262,7 +229,39 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'addWorkflowAnnotation', separator: true },
+                    { text: 'createMetanode' },
+                    { text: 'createComponent' }
+                ])
+            );
+        });
+
+        it('shows correct menu items if selected node can be executed and has view', async () => {
+            const node = {
+                id: 'root:0',
+                allowedActions: {
+                    canExecute: true,
+                    canOpenView: true
+                }
+            };
+
+            const { wrapper } = doMount({
+                selectedNodes: () => [node],
+                singleSelectedNode: () => node
+            });
+
+            await Vue.nextTick();
+
+            expect(renderedMenuItems(wrapper)).toEqual(
+                assertItems([
+                    { text: 'configureNode' },
+                    { text: 'executeSelected' },
+                    { text: 'cancelSelected' },
+                    { text: 'resetSelected' },
+                    { text: 'editNodeLabel' },
+                    { text: 'executeAndOpenView', separator: true },
+                    { text: 'cut' },
+                    { text: 'copy' },
+                    { text: 'deleteSelected', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
@@ -296,7 +295,6 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
@@ -339,7 +337,6 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
@@ -356,8 +353,7 @@ describe('ContextMenu.vue', () => {
 
             expect(renderedMenuItems(wrapper)).toEqual(
                 assertItems([
-                    { text: 'deleteSelected' },
-                    { text: 'addWorkflowAnnotation' }
+                    { text: 'deleteSelected' }
                 ])
             );
         });
@@ -371,8 +367,7 @@ describe('ContextMenu.vue', () => {
 
             expect(renderedMenuItems(wrapper)).toEqual(
                 assertItems([
-                    { text: 'deleteSelected', separator: true },
-                    { text: 'addWorkflowAnnotation' }
+                    { text: 'deleteSelected' }
                 ])
             );
         });
@@ -398,7 +393,6 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'expandMetanode' },
                     { text: 'Rename metanode' },
@@ -428,7 +422,6 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'addWorkflowAnnotation', separator: true },
                     { text: 'createMetanode' },
                     { text: 'createComponent' },
                     { text: 'expandComponent' },
@@ -452,11 +445,58 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'addWorkflowAnnotation' },
                     { text: 'bringAnnotationToFront' },
                     { text: 'bringAnnotationForward' },
                     { text: 'sendAnnotationBackward' },
                     { text: 'sendAnnotationToBack' }
+                ])
+            );
+        });
+
+        it('shows correct menu items if different object types are selected', async () => {
+            const annotation = { id: 'mock-annotation', text: '' };
+            const metanode = {
+                id: 'root:0',
+                kind: 'metanode',
+                allowedActions: {}
+            };
+            const component = {
+                id: 'root:0',
+                kind: 'component',
+                allowedActions: {}
+            };
+            const node = {
+                id: 'root:0',
+                allowedActions: {
+                    canOpenLegacyFlowVariableDialog: true,
+                    canOpenView: true,
+                    loopInfo: { allowedActions: {} }
+                }
+            };
+            const conn = { id: 'conn1' };
+
+            const { wrapper } = doMount({
+                selectedNodes: () => [node, metanode, component],
+                selectedAnnotations: () => [annotation],
+                selectedConnections: () => [conn]
+            });
+
+            await Vue.nextTick();
+
+            expect(renderedMenuItems(wrapper)).toEqual(
+                assertItems([
+                    { text: 'executeSelected' },
+                    { text: 'cancelSelected' },
+                    { text: 'resetSelected', separator: true },
+                    { text: 'cut' },
+                    { text: 'copy' },
+                    { text: 'deleteSelected', separator: true },
+                    { text: 'bringAnnotationToFront' },
+                    { text: 'bringAnnotationForward' },
+                    { text: 'sendAnnotationBackward' },
+                    { text: 'sendAnnotationToBack', separator: true },
+                    { text: 'createMetanode' },
+                    { text: 'createComponent' }
                 ])
             );
         });
