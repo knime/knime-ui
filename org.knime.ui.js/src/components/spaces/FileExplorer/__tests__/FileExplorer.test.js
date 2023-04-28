@@ -10,7 +10,7 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
 
-import FileExplorer from '../FileExplorer.vue';
+import FileExplorer from '../FileExplorerComp.vue';
 
 describe('FileExplorer.vue', () => {
     const MOCK_DATA = [

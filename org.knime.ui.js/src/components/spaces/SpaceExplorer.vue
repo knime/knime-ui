@@ -8,6 +8,7 @@ import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.s
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import Modal from 'webapps-common/ui/components/Modal.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
+import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import ITEM_TYPES from '@/util/spaceItemTypes';
@@ -15,7 +16,7 @@ import { APP_ROUTES } from '@/router/appRoutes';
 import SmartLoader from '@/components/common/SmartLoader.vue';
 
 import SpaceExplorerActions from './SpaceExplorerActions.vue';
-import FileExplorer from './FileExplorer/FileExplorer.vue';
+import FileExplorer from './FileExplorer/FileExplorerComp.vue';
 
 const ITEM_TYPES_TEXTS = {
     [ITEM_TYPES.WorkflowGroup]: 'folder',
@@ -29,6 +30,7 @@ export default {
     components: {
         SpaceExplorerActions,
         FileExplorer,
+        MenuItems,
         Breadcrumb,
         SmartLoader,
         Modal,
@@ -81,13 +83,16 @@ export default {
         ]),
 
         fileExplorerItems() {
-            return this.activeWorkflowGroup.items.map(item => ({
-                ...item,
-                displayOpenIndicator:
-                  this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id),
+            return this.activeWorkflowGroup.items.map(item => {
+                const isOpen = this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id);
 
-                canBeDeleted: !this.openedFolderItems.includes(item.id)
-            }));
+                return {
+                    ...item,
+                    isOpen,
+                    canBeRenamed: !isOpen,
+                    canBeDeleted: !this.openedFolderItems.includes(item.id)
+                };
+            });
         },
 
         isLocal() {
@@ -394,6 +399,18 @@ export default {
                 .find(extension => sourceItem.name.endsWith(extension));
 
             return this.fileExtensionToNodeTemplateId[sourceFileExtension];
+        },
+
+        fileExplorerContextMenuItems(getDefaultItems, anchorItem) {
+            return [
+                {
+                    id: 'another option',
+                    text: 'Export',
+                    title: 'Export',
+                    disabled: false
+                },
+                ...getDefaultItems(anchorItem)
+            ];
         }
     }
 };
@@ -447,7 +464,15 @@ export default {
         @move-items="onMoveItems"
         @drag="onDrag"
         @dragend="onDragEnd"
-      />
+      >
+        <template #context-menu="{ getDefaultItems, anchorItem, onItemClick }">
+          <MenuItems
+            menu-aria-label="Space explorer context menu"
+            :items="fileExplorerContextMenuItems(getDefaultItems, anchorItem)"
+            @item-click="(_, item) => onItemClick(item)"
+          />
+        </template>
+      </FileExplorer>
     </SmartLoader>
     <div>
       <Modal

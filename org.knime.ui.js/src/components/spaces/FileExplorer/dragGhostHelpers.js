@@ -201,7 +201,7 @@ const showCustomGhostPreviewElement = () => {
  *
  * @typedef CreateDragGhostsReturnType
  * @property {Array<HTMLElement>} ghosts the added ghosts
- * @property {(animateOut: boolean) => void} removeGhosts a function to remove the ghost when needed. It receives a
+ * @property {(animateOut?: boolean) => void} removeGhosts a function to remove the ghost when needed. It receives a
  * parameter to determine whether to animate the removal of the ghosts (true by default)
  * @property {(params: {
  *  shouldUseCustomPreview: boolean;

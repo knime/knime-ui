@@ -1,21 +1,18 @@
-/**
- * @typedef SelectionRange
- * @property {Number} from
- * @property {Number} to
- */
+export type SelectionRange = {
+    from: number;
+    to: number
+}
 
-/**
- * @typedef MultiSelectionState
- * @property {Array<Number>} anchorHistory
- * @property {Array<Number>} anchorExceptions
- * @property {Array<SelectionRange>} selectionRanges
- */
+export type MultiSelectionState = {
+    anchorHistory: Array<number>;
+    anchorExceptions: Array<number>;
+    selectionRanges: Array<SelectionRange>;
+}
 
 /**
  * Initalize the state of the multi selection service
- * @returns {MultiSelectionState}
  */
-export const getInitialState = () => ({
+export const getInitialState = (): MultiSelectionState => ({
     anchorHistory: [],
     anchorExceptions: [],
     selectionRanges: []
@@ -23,19 +20,16 @@ export const getInitialState = () => ({
 
 /**
  * Merges an initial state and a partial state together
- * @param {MultiSelectionState} initialState
- * @param {Partial<MultiSelectionState>} newState
- * @returns {MultiSelectionState}
  */
-const mergeStates = (initialState, newState) => ({ ...initialState, ...newState });
+const mergeStates = (
+    initialState: MultiSelectionState,
+    newState: Partial<MultiSelectionState>
+): MultiSelectionState => ({ ...initialState, ...newState });
 
 /**
  * Determines whether there is any active selection in the provided state
- * @param {MultiSelectionState} state
- * @param {Number} initialElement
- * @returns {Boolean}
  */
-export const isMultipleSelectionActive = (state, initialElement) => {
+export const isMultipleSelectionActive = (state: MultiSelectionState, initialElement: number) => {
     const { selectionRanges } = state;
 
     if (selectionRanges.length === 1) {
@@ -55,12 +49,8 @@ export const isMultipleSelectionActive = (state, initialElement) => {
 /**
  * Determines whether the provided item is selected considering the given selection state
  * by trying to find it inside the selection ranges, bounded by the from and to properties
- *
- * @param {MultiSelectionState} state
- * @param {Number} item
- * @returns {Boolean}
  */
-export const isItemSelected = (state, item) => {
+export const isItemSelected = (state: MultiSelectionState, item: number) => {
     const { selectionRanges, anchorExceptions } = state;
     const isInRange = selectionRanges.find(
         range => range.from <= item && range.to >= item
@@ -74,12 +64,8 @@ export const isItemSelected = (state, item) => {
  * updating it accordingly.
  *
  * e.g: New items will be added, existing items will be removed
- *
- * @param {MultiSelectionState} state
- * @param {Number} clickedItem
- * @returns {MultiSelectionState}
  */
-export const ctrlClick = (state, clickedItem) => {
+export const ctrlClick = (state: MultiSelectionState, clickedItem: number): MultiSelectionState => {
     const { anchorHistory, selectionRanges, anchorExceptions } = state;
 
     // Update the anchor history whenever ctrl + click is used
@@ -135,12 +121,8 @@ export const ctrlClick = (state, clickedItem) => {
 /**
  * Executes the Shift+Click logic. Will set (or unset) the clicked item into the selection state
  * updating it accordingly and also updating any possible selection ranges.
- *
- * @param {MultiSelectionState} state
- * @param {Number} clickedItem
- * @returns {MultiSelectionState}
  */
-export const shiftClick = (state, clickedItem) => {
+export const shiftClick = (state: MultiSelectionState, clickedItem: number): MultiSelectionState => {
     const { anchorHistory, selectionRanges, anchorExceptions } = state;
 
     if (selectionRanges.length === 0) {
@@ -221,11 +203,8 @@ export const shiftClick = (state, clickedItem) => {
 
 /**
  * Executes the "Click" logic. Will reset any selection state, since click alone would unselect
- *
- * @param {Number} clickedItem
- * @returns {MultiSelectionState}
  */
-export const click = (clickedItem) => {
+export const click = (clickedItem: number): MultiSelectionState => {
     // regular clicks reset the multiselection state
     // and sets the anchor to be the clicked item
     const state = {
@@ -245,11 +224,8 @@ export const click = (clickedItem) => {
  * e.g: Given a state with ranges: [(1-5), (7-10)], and anchorExceptions: [2, 8]
  *     The output for this example should be these ranges: [(1-1), (3-5), (7-7), (9-10)]. Since these ranges do not
  *     include items 2 and 8
- *
- * @param {MultiSelectionState} state
- * @returns {Array<SelectionRange>}
  */
-const sliceOnExceptions = (state) => {
+const sliceOnExceptions = (state: MultiSelectionState): Array<SelectionRange> => {
     const { anchorExceptions, selectionRanges } = state;
 
     const rawOutput = anchorExceptions.reduce((ranges, exception) => {
@@ -313,21 +289,19 @@ const sliceOnExceptions = (state) => {
  * inside the input.
  *
  * e.g: Given two ranges: (1-6) and (2-4), the latter would be "included" in the first one
- *
- * @param {Array<SelectionRange>} ranges
- * @returns {Array<SelectionRange>}
  */
-const removeSubRanges = (ranges) => ranges.reduce((acc, range, _, arr) => {
-    const isIncluded = arr.find((subRange) => {
-        const isContained = subRange.from < range.from && range.to < subRange.to;
-        const hasSameStart = subRange.from <= range.from && range.to < subRange.to;
-        const hasSameEnd = subRange.from < range.from && range.to <= subRange.to;
+const removeSubRanges =
+    (ranges: Array<SelectionRange>): Array<SelectionRange> => ranges.reduce((acc, range, _, arr) => {
+        const isIncluded = arr.find((subRange) => {
+            const isContained = subRange.from < range.from && range.to < subRange.to;
+            const hasSameStart = subRange.from <= range.from && range.to < subRange.to;
+            const hasSameEnd = subRange.from < range.from && range.to <= subRange.to;
 
-        return isContained || hasSameStart || hasSameEnd;
-    });
+            return isContained || hasSameStart || hasSameEnd;
+        });
 
-    return isIncluded ? acc : acc.concat(range);
-}, []);
+        return isIncluded ? acc : acc.concat(range);
+    }, []);
 
 /**
  * Removes any ranges that could be overlapping inside the input joining them as required.
@@ -338,14 +312,14 @@ const removeSubRanges = (ranges) => ranges.reduce((acc, range, _, arr) => {
  * e.g - 2: Given two ranges: (1-5) and (4-9), the latter would be "overlapping" (the right side) of the first one
  *      The correct output range for this example should be: (1-9)
  *
- * @param {Array<SelectionRange>} ranges
- * @returns {Array<SelectionRange>} contiguous ranges without overlap
+ * @returns contiguous ranges without overlap
  */
-const removeOverlappingRanges = (ranges) => {
+const removeOverlappingRanges = (ranges: Array<SelectionRange>): Array<SelectionRange> => {
     if (ranges.length <= 1) {
         return ranges;
     }
 
+    // eslint-disable-next-line prefer-const
     let [firstRange, ...sortedRanges] = ranges.slice().sort((a, b) => a.from - b.from);
     let latestTo = firstRange.to;
     let resultingRanges = [firstRange];
@@ -382,11 +356,12 @@ const removeOverlappingRanges = (ranges) => {
 };
 
 /**
- *
- * @param {MultiSelectionState} state
- * @returns {Array<SelectionRange>}
+ * Normalizes a multiselection state into an array of selection ranges that contain:
+ * - no repeated ranges
+ * - no overlapping ranges
+ * - no subranges
  */
-export const normalizeRanges = (state) => {
+export const normalizeRanges = (state: MultiSelectionState): Array<SelectionRange> => {
     const slicedByExceptions = sliceOnExceptions(state);
     const withoutSubRanges = removeSubRanges(slicedByExceptions);
     const withoutOverlap = removeOverlappingRanges(withoutSubRanges);
@@ -395,15 +370,13 @@ export const normalizeRanges = (state) => {
 
 /**
  * Returns the selection size for the given state
- * @param {MultiSelectionState} state
- * @returns {Number}
  */
-export const selectionSize = (state) => {
+export const selectionSize = (state: MultiSelectionState): number => {
     const normalized = normalizeRanges(state);
 
     const selectionSize = normalized.reduce((total, range) => {
         const { from, to } = range;
-        const size = (to + 1) - from;
+        const size = to + 1 - from;
         return total + size;
     }, 0);
 
@@ -412,10 +385,9 @@ export const selectionSize = (state) => {
 
 /**
  * Returns an array of all the indexes that are selected in the given state
- * @param {MultiSelectionState} state
- * @returns {Array<Number>} selected indexes
+ * @returns selected indexes
  */
-export const getSelectedIndexes = (state) => {
+export const getSelectedIndexes = (state: MultiSelectionState): Array<number> => {
     const selectionRanges = normalizeRanges(state);
 
     return selectionRanges.reduce((acc, range) => {
