@@ -168,6 +168,11 @@ export default {
         portGroups: {
             type: Object,
             default: null
+        },
+
+        isReexecuting: {
+            type: Boolean,
+            default: false
         }
     },
     data() {

@@ -1457,6 +1457,12 @@ export interface NativeNode extends Node {
      * @memberof NativeNode
      */
     hasView?: boolean;
+    /**
+     * Indicates whether the node re-executes on its own. 
+     * @type {boolean}
+     * @memberof NativeNode
+     */
+    isReexecuting?: boolean;
 
 }
 

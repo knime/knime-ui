@@ -2,13 +2,15 @@
 import LinkDecorator from './LinkDecorator.vue';
 import StreamingDecorator from './StreamingDecorator.vue';
 import LoopDecorator from './LoopDecorator.vue';
+import ReexecutionDecorator from './ReexecutionDecorator.vue';
 
 /** A component used to render all different decorators a node can show */
 export default {
     components: {
         LinkDecorator,
         StreamingDecorator,
-        LoopDecorator
+        LoopDecorator,
+        ReexecutionDecorator
     },
     inheritAttrs: false,
     props: {
@@ -65,6 +67,11 @@ export default {
             default: () => ({
                 allowedActions: {}
             })
+        },
+
+        isReexecuting: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
@@ -92,6 +99,11 @@ export default {
       v-if="executionInfo"
       :background-type="decoratorBackgroundType"
       :execution-info="executionInfo"
+      transform="translate(21, 21)"
+    />
+
+    <ReexecutionDecorator
+      v-if="isReexecuting"
       transform="translate(21, 21)"
     />
 
