@@ -87,7 +87,7 @@ export default defineComponent({
 
             return pos;
         },
-        isNodeContainer() {
+        isContainerNode() {
             return ['metanode', 'component'].includes(this.getNodeById(this.nodeId)?.kind);
         },
         fakePortConnector() : DragConnector {
@@ -244,7 +244,7 @@ export default defineComponent({
       </div>
       <hr>
       <QuickAddNodeDisabledWorkflowCoach
-        v-if="!hasNodeRecommendationsEnabled && !searchIsActive && !isNodeContainer"
+        v-if="!hasNodeRecommendationsEnabled && !searchIsActive && !isContainerNode"
       />
       <template
         v-else
@@ -260,7 +260,7 @@ export default defineComponent({
           v-else
           ref="recommendationResults"
           v-model:selected-node="selectedNode"
-          :disable-recommendations="isNodeContainer"
+          :disable-recommendations="isContainerNode"
           @nav-reached-top="($refs.search as any).focus()"
           @add-node="addNode($event)"
         />
