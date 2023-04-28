@@ -153,7 +153,7 @@ export default defineComponent({
             'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
         ]),
         async fetchNodeRecommendations() {
-            if (this.sourceNodeIsContainer) {
+            if (this.isContainerNode) {
                 return;
             }
             const { nodeId, portIndex: portIdx } = this;
