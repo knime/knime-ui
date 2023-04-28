@@ -5,6 +5,7 @@ import NodeDecorators from '../NodeDecorators.vue';
 import LinkDecorator from '../LinkDecorator.vue';
 import StreamingDecorator from '../StreamingDecorator.vue';
 import LoopDecorator from '../LoopDecorator.vue';
+import ReexecutionDecorator from '../ReexecutionDecorator.vue';
 
 describe('NodeDecorators.vue', () => {
     const defaultProps = {
@@ -20,6 +21,7 @@ describe('NodeDecorators.vue', () => {
         expect(wrapper.findComponent(LinkDecorator).exists()).toBe(false);
         expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(false);
         expect(wrapper.findComponent(LoopDecorator).exists()).toBe(false);
+        expect(wrapper.findComponent(ReexecutionDecorator).exists()).toBe(false);
     });
 
     it('shows/hides LinkDecorator', () => {
@@ -37,6 +39,18 @@ describe('NodeDecorators.vue', () => {
         expect(streamingDecorator.props('executionInfo')).toStrictEqual({
             jobManager: 'sampleJobManager'
         });
+    });
+
+    it('shows/hides ReexecutionDecorator', async () => {
+        const wrapper = doMount({ ...defaultProps, isReexecuting: true });
+
+        let reexecutionDecorator = wrapper.findComponent(ReexecutionDecorator);
+        expect(reexecutionDecorator.attributes('transform')).toBe('translate(21, 21)');
+
+        wrapper.setProps({ isReexecuting: false });
+        await wrapper.vm.$nextTick();
+        reexecutionDecorator = wrapper.findComponent(ReexecutionDecorator);
+        expect(wrapper.findComponent(ReexecutionDecorator).exists()).toBe(false);
     });
 
     it.each(['LoopStart', 'LoopEnd'])('shows/hides LoopDecorator', (type) => {
