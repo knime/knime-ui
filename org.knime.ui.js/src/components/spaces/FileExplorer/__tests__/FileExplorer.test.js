@@ -337,8 +337,7 @@ describe('FileExplorer.vue', () => {
 
             expect(wrapper.emitted('drag')[0][0]).toEqual({
                 event: expect.anything(),
-                item: MOCK_DATA[0], // second item
-                onUpdate: expect.any(Function)
+                item: MOCK_DATA[0] // second item
             });
         });
 
@@ -354,8 +353,7 @@ describe('FileExplorer.vue', () => {
             await dragAndDropItem(secondItem, firstItem);
             expect(wrapper.emitted('drag')[0][0]).toEqual({
                 event: expect.anything(),
-                item: MOCK_DATA[0], // second item
-                onUpdate: expect.any(Function)
+                item: MOCK_DATA[0] // second item
             });
         });
     });
@@ -381,7 +379,7 @@ describe('FileExplorer.vue', () => {
             props: {
                 items: MOCK_DATA.map((item, index) => ({
                     ...item,
-                    displayOpenIndicator: index === indexOfItemWithIndicator
+                    isOpen: index === indexOfItemWithIndicator
                 }))
             }
         });

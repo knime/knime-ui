@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable max-lines */
 import { nextTick, ref, type Ref, toRefs, computed, watch } from 'vue';
 import { directive as vClickAway } from 'vue3-click-away';
 
@@ -9,11 +10,10 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 import InputField from 'webapps-common/ui/components/forms/InputField.vue';
-import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
-import { SpaceItem, type NodeTemplate } from '@/api/gateway-api/generated-api';
+import { SpaceItem } from '@/api/gateway-api/generated-api';
 
-import { useItemRename } from './useItemRename';
+import { useItemRename, type UseRenameReturn } from './useItemRename';
 import { createDragGhosts } from './dragGhostHelpers';
 import { useMultiSelection } from './useMultiSelection';
 import FileExplorerContextMenu, { type ItemClickPayload } from './FileExplorerContextMenu.vue';
@@ -36,20 +36,28 @@ const props = withDefaults(defineProps<Props>(), {
     fullPath: ''
 });
 
-const emit = defineEmits([
-    'changeSelection',
-    'changeDirectory',
-    'openFile',
-    'deleteItems',
-    'moveItems',
-    'dragend',
-    'renameFile',
-    'drag'
-]);
+// eslint-disable-next-line func-call-spacing
+const emit = defineEmits<{
+    (e: 'changeSelection', selectedItemIds: Array<string>): void
+    (e: 'changeDirectory', pathId: string): void
+    (e: 'openFile', item: FileExplorerItem): void
+    (e: 'deleteItems', payload: { items: Array<FileExplorerItem> }): void
+    (e: 'moveItems', payload: {
+      sourceItems: Array<string>;
+      targetItem: string;
+      onComplete: (isSuccessfulMove: boolean) => void;
+    }): void
+    (e: 'dragend', payload: {
+      event: DragEvent;
+      sourceItem: FileExplorerItem;
+      onComplete: (isSuccessfulMove: boolean) => void;
+    }): void
+    (e: 'drag', payload: { event: DragEvent; item: FileExplorerItem }): void;
+    (e: 'renameFile', payload: ReturnType<UseRenameReturn['onRenameSubmit']>): void;
+}>();
 
 const isDragging = ref(false);
 const startDragItemIndex = ref<number | null>(null);
-const nodeTemplate = ref<NodeTemplate | null>(null);
 
 /** MULTISELECTION */
 const {
@@ -120,7 +128,6 @@ let __replaceGhostPreview: ReturnType<typeof createDragGhosts>['replaceGhostPrev
 
 const itemBACK = ref<HTMLElement | null>(null);
 const itemRefs = ref<HTMLElement[]>([]);
-const nodePreview = ref<InstanceType<typeof NodePreview> | null>(null);
 
 const getItemElementByRefIndex = (index: number, isGoBackItem = false): HTMLElement => isGoBackItem
     ? itemBACK.value
@@ -174,21 +181,23 @@ const onDragEnter = (index: number, isGoBackItem = false) => {
     }
 };
 
-const onDrag = (event: DragEvent, item: FileExplorerItem) => {
-    const onUpdate = async (isAboveCanvas: boolean, _nodeTemplate: NodeTemplate) => {
-        nodeTemplate.value = _nodeTemplate;
-        if (nodeTemplate.value) {
-            await nextTick();
-            const nodePreviewEl = nodePreview.value.$el;
+const customPreviewContainer = ref<HTMLElement | null>(null);
+const placeholder = ref<HTMLElement | null>(null);
 
-            __replaceGhostPreview?.({
-                shouldUseCustomPreview: isAboveCanvas,
-                ghostPreviewEl: nodePreviewEl,
-                opts: { leftOffset: 35, topOffset: 35 }
-            });
-        }
-    };
-    emit('drag', { event, item, onUpdate });
+watch(placeholder, () => {
+    if (isDragging.value) {
+        __replaceGhostPreview?.({
+            // when default slot element (placeholder ref) is not present, then
+            // it means the slot has an element inside, so we should use a custom preview
+            shouldUseCustomPreview: !placeholder.value,
+            ghostPreviewEl: document.querySelector('.custom-preview'),
+            opts: { leftOffset: 35, topOffset: 35 }
+        });
+    }
+});
+
+const onDrag = (event: DragEvent, item: FileExplorerItem) => {
+    emit('drag', { event, item });
 };
 
 const onDragLeave = (index: number, isGoBackItem = false) => {
@@ -316,6 +325,12 @@ const onItemDoubleClick = (item: FileExplorerItem) => {
         emit('openFile', item);
     }
 };
+
+const emitRename = (payload: ReturnType<UseRenameReturn['onRenameSubmit']>) => {
+    if (payload) {
+        emit('renameFile', payload);
+    }
+};
 </script>
 
 <template>
@@ -394,7 +409,7 @@ const onItemDoubleClick = (item: FileExplorerItem) => {
         >
           <span v-if="!isActiveRenameItem(item)">{{ item.name }}</span>
           <template v-else>
-            <div v-click-away="($event) => onRenameSubmit($event, true)">
+            <div v-click-away="($event) => emitRename(onRenameSubmit($event, true))">
               <InputField
                 ref="renameInput"
                 v-model="renameValue"
@@ -402,7 +417,7 @@ const onItemDoubleClick = (item: FileExplorerItem) => {
                 type="text"
                 title="rename"
                 :is-valid="isValid"
-                @keyup="onRenameSubmit($event)"
+                @keyup="emitRename(onRenameSubmit($event))"
               />
               <div
                 v-if="!isValid"
@@ -424,16 +439,18 @@ const onItemDoubleClick = (item: FileExplorerItem) => {
         </td>
       </tr>
     </tbody>
-    <NodePreview
-      v-if="nodeTemplate"
-      v-show="false"
-      ref="nodePreview"
-      class="node-preview"
-      :type="nodeTemplate.type"
-      :in-ports="nodeTemplate.inPorts"
-      :out-ports="nodeTemplate.outPorts"
-      :icon="nodeTemplate.icon"
-    />
+
+    <div
+      ref="customPreviewContainer"
+      class="custom-preview"
+    >
+      <slot name="customDragItemPreview">
+        <div
+          ref="placeholder"
+          data-placeholder
+        />
+      </slot>
+    </div>
 
     <FileExplorerContextMenu
       v-if="isContextMenuVisible"
@@ -445,7 +462,7 @@ const onItemDoubleClick = (item: FileExplorerItem) => {
     >
       <template #default="slotProps">
         <slot
-          name="context-menu"
+          name="contextMenu"
           :is-context-menu-visible="isContextMenuVisible"
           :position="contextMenuPos"
           :anchor-item="contextMenuAnchor"
@@ -655,15 +672,6 @@ tbody.mini {
     }
   }
 }
-
-.node-preview {
-  position: fixed;
-  height: 70px;
-  width: 70px;
-  pointer-events: none;
-  z-index: 9;
-}
-
 .empty {
   display: flex;
   justify-content: center;
@@ -674,5 +682,15 @@ tbody.mini {
 
 tbody:not(.mini) .empty {
   background: var(--knime-gray-ultra-light);
+}
+
+.custom-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 70px;
+  width: 70px;
+  pointer-events: none;
+  z-index: 9;
 }
 </style>

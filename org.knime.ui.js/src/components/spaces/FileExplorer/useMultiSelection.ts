@@ -2,7 +2,7 @@ import { computed, ref, type ComputedRef, type Ref } from 'vue';
 import * as multiSelectionService from './multiSelectionStateService';
 import { getMetaOrCtrlKey } from '@/util/navigator';
 
-type UseMultiSelectionReturn = {
+export type UseMultiSelectionReturn = {
     multiSelectionState: Ref<multiSelectionService.MultiSelectionState>;
     isSelected: (index: number) => boolean;
     selectedIndexes: ComputedRef<Array<number>>;

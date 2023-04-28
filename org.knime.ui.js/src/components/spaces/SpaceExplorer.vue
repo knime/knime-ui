@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { API } from '@api';
 
@@ -9,28 +10,32 @@ import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import Modal from 'webapps-common/ui/components/Modal.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
+import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
+import { SpaceItem, type WorkflowGroupContent } from '@/api/gateway-api/generated-api';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
-import ITEM_TYPES from '@/util/spaceItemTypes';
 import { APP_ROUTES } from '@/router/appRoutes';
 import SmartLoader from '@/components/common/SmartLoader.vue';
 
 import SpaceExplorerActions from './SpaceExplorerActions.vue';
 import FileExplorer from './FileExplorer/FileExplorerComp.vue';
+import type { FileExplorerItem } from './FileExplorer/types';
+import type { MenuItem } from 'webapps-common/ui/components/MenuItemsBase.vue';
 
 const ITEM_TYPES_TEXTS = {
-    [ITEM_TYPES.WorkflowGroup]: 'folder',
-    [ITEM_TYPES.Workflow]: 'workflow',
-    [ITEM_TYPES.Component]: 'component',
-    [ITEM_TYPES.Metanode]: 'metanode',
-    [ITEM_TYPES.Data]: 'data file'
-};
+    [SpaceItem.TypeEnum.WorkflowGroup]: 'folder',
+    [SpaceItem.TypeEnum.Workflow]: 'workflow',
+    [SpaceItem.TypeEnum.Component]: 'component',
+    [SpaceItem.TypeEnum.WorkflowTemplate]: 'metanode',
+    [SpaceItem.TypeEnum.Data]: 'data file'
+} as const;
 
-export default {
+export default defineComponent({
     components: {
         SpaceExplorerActions,
         FileExplorer,
         MenuItems,
+        NodePreview,
         Breadcrumb,
         SmartLoader,
         Modal,
@@ -40,9 +45,9 @@ export default {
 
     props: {
         mode: {
-            type: String,
+            type: String as PropType<'normal' | 'mini'>,
             default: 'normal',
-            validator: (value) => ['normal', 'mini'].includes(value)
+            validator: (value: string) => ['normal', 'mini'].includes(value)
         }
     },
 
@@ -57,7 +62,9 @@ export default {
                 deleteModalActive: false,
                 modalMessage: null,
                 items: []
-            }
+            },
+            nodeTemplate: null,
+            shouldShowPreview: false
         };
     },
 
@@ -68,10 +75,10 @@ export default {
         ...mapState('spaces', {
             activeSpace: state => state.activeSpace,
             activeSpaceProvider: state => state.activeSpaceProvider,
-            startItemId: state => state.activeSpace?.startItemId,
-            activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
-            spaceId: state => state.activeSpace?.spaceId,
-            isLoading: state => state.isLoading
+            startItemId: state => state.activeSpace?.startItemId as string,
+            activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup as WorkflowGroupContent,
+            spaceId: state => state.activeSpace?.spaceId as string,
+            isLoading: state => state.isLoading as boolean
         }),
         ...mapState('nodeRepository', ['nodesPerCategory']),
         ...mapGetters('spaces', [
@@ -82,7 +89,7 @@ export default {
             'activeSpaceInfo'
         ]),
 
-        fileExplorerItems() {
+        fileExplorerItems(): Array<FileExplorerItem> {
             return this.activeWorkflowGroup.items.map(item => {
                 const isOpen = this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id);
 
@@ -311,7 +318,7 @@ export default {
          * @param {Payload} eventPayload
          * @returns {Void}
          */
-        async onDrag({ event, item, onUpdate }) {
+        async onDrag({ event, item }) {
             const nodeTemplateId = this.getNodeTemplateId(item);
             if (!nodeTemplateId) {
                 return;
@@ -329,10 +336,7 @@ export default {
                 this.nodeTemplate = await this.getNodeTemplate(nodeTemplateId);
             }
 
-            if (this.isAboveCanvas !== kanvas.contains(el) && el) {
-                this.isAboveCanvas = kanvas.contains(el);
-                onUpdate(this.isAboveCanvas, this.nodeTemplate);
-            }
+            this.isAboveCanvas = kanvas.contains(el);
         },
 
         /**
@@ -393,7 +397,7 @@ export default {
             }
         },
 
-        getNodeTemplateId(sourceItem) {
+        getNodeTemplateId(sourceItem: FileExplorerItem) {
             const sourceFileExtension = Object
                 .keys(this.fileExtensionToNodeTemplateId)
                 .find(extension => sourceItem.name.endsWith(extension));
@@ -401,7 +405,7 @@ export default {
             return this.fileExtensionToNodeTemplateId[sourceFileExtension];
         },
 
-        fileExplorerContextMenuItems(getDefaultItems, anchorItem) {
+        fileExplorerContextMenuItems(getRenameOption, getDeleteOption, anchorItem): MenuItem[] {
             return [
                 {
                     id: 'another option',
@@ -409,11 +413,15 @@ export default {
                     title: 'Export',
                     disabled: false
                 },
-                ...getDefaultItems(anchorItem)
+                {
+                    ...getRenameOption(anchorItem),
+                    title: anchorItem.isOpen ? 'Open workflows cannot be renamed' : ''
+                },
+                getDeleteOption(anchorItem)
             ];
         }
     }
-};
+});
 </script>
 
 <template>
@@ -465,10 +473,22 @@ export default {
         @drag="onDrag"
         @dragend="onDragEnd"
       >
-        <template #context-menu="{ getDefaultItems, anchorItem, onItemClick }">
+        <template
+          v-if="nodeTemplate && isAboveCanvas"
+          #customDragItemPreview
+        >
+          <NodePreview
+            :type="nodeTemplate.type"
+            :in-ports="nodeTemplate.inPorts"
+            :out-ports="nodeTemplate.outPorts"
+            :icon="nodeTemplate.icon"
+          />
+        </template>
+
+        <template #contextMenu="{ getRenameOption, getDeleteOption, anchorItem, onItemClick }">
           <MenuItems
             menu-aria-label="Space explorer context menu"
-            :items="fileExplorerContextMenuItems(getDefaultItems, anchorItem)"
+            :items="fileExplorerContextMenuItems(getRenameOption, getDeleteOption, anchorItem.item)"
             @item-click="(_, item) => onItemClick(item)"
           />
         </template>

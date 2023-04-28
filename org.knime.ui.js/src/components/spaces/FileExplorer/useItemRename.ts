@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, type ComputedRef, type Ref } from 'vue';
 
 import { useWorkflowNameValidator } from '@/composables/useWorkflowNameValidator';
 import type { FileExplorerItem } from './types';
@@ -8,7 +8,20 @@ type UseItemRenameOptions = {
     focusInput?: () => void;
 }
 
-export const useItemRename = (options: UseItemRenameOptions) => {
+export type UseRenameReturn = {
+    name: Ref<string>;
+    isValid: Ref<boolean>;
+    errorMessage: ComputedRef<string>;
+    isActiveRenameItem: (item: FileExplorerItem) => boolean;
+    setupRenameInput: (id: string, _name: string) => void;
+    onRenameSubmit: (keyupEvent: KeyboardEvent, isClickAway?: boolean) => {
+        itemId: string;
+        newName: string;
+    } | null;
+    clearRenameState: () => void;
+}
+
+export const useItemRename = (options: UseItemRenameOptions): UseRenameReturn => {
     const activeRenameId = ref<string | null>(null);
 
     const { name, isValid, cleanName, errorMessage } = useWorkflowNameValidator({
@@ -22,10 +35,6 @@ export const useItemRename = (options: UseItemRenameOptions) => {
         activeRenameId.value = id;
         name.value = _name;
 
-        // await nextTick();
-        // // wait to next event loop to properly steal focus
-        // await new Promise(r => setTimeout(r, 0));
-        // // this.$renameRef[0]?.$refs?.input?.focus();
         options.focusInput?.();
     };
 
@@ -50,10 +59,10 @@ export const useItemRename = (options: UseItemRenameOptions) => {
                 return null;
             }
 
-            // emit('renameFile', { itemId: activeRenameId.value, newName });
+            const id = activeRenameId.value;
             clearRenameState();
 
-            return { itemId: activeRenameId.value, newName };
+            return { itemId: id, newName };
         }
 
         return null;

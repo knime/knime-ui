@@ -7,9 +7,15 @@ import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import usePopper from 'webapps-common/ui/composables/usePopper';
 
 import type { XY } from '@/api/gateway-api/generated-api';
+import { useEscapeStack } from '@/mixins/escapeStack';
+
 import type { FileExplorerItem } from './types';
 
-type ContextMenuItem = MenuItem & { id: 'rename' | 'delete' | Omit<string, 'rename' | 'delete'> }
+type DefaultOptions = 'rename' | 'delete';
+type ContextMenuItem = MenuItem & {
+    id: DefaultOptions | Omit<string, DefaultOptions>
+}
+
 interface Props {
     position: XY;
     anchor: {
@@ -36,7 +42,15 @@ const wrapperHeight = computed(() => {
 });
 
 const offsetX = props.position.x - referenceRect.left;
-const offsetY = computed(() => ((props.position.y - referenceRect.top) + wrapperHeight.value) * -1);
+const offsetY = computed(() => {
+    const clickPosition = props.position.y - referenceRect.top;
+    const distanceToBottom = window.innerHeight - props.position.y;
+    const isClipped = distanceToBottom < wrapperHeight.value;
+
+    return isClipped
+        ? clickPosition * -1
+        : (clickPosition + wrapperHeight.value) * -1;
+});
 
 const popperOffsetModifier = computed(() => ({
     name: 'offset',
@@ -49,12 +63,11 @@ const { popperInstance } = usePopper({
 }, {
     placement: 'top-start',
     strategy: 'fixed',
-    modifiers: [
-        { name: 'offset', options: { offset: [offsetX, offsetY.value] } }
-    ]
+    modifiers: [popperOffsetModifier.value]
 });
 
 watch(wrapperHeight, () => {
+    // by re-setting the modifiers we update the offset which will reposition the popper
     popperInstance.value.setOptions({
         modifiers: [popperOffsetModifier.value]
     });
@@ -76,14 +89,12 @@ const emit = defineEmits<{
 const getRenameOption: (item: FileExplorerItem) => ContextMenuItem = (item: FileExplorerItem) => ({
     id: 'rename',
     text: 'Rename',
-    title: item.isOpen ? 'Open workflows cannot be renamed' : '',
     disabled: !item.canBeRenamed || props.isMultipleSelectionActive
 });
 
 const getDeleteOption: (item: FileExplorerItem) => ContextMenuItem = (item: FileExplorerItem) => ({
     id: 'delete',
     text: 'Delete',
-    title: item.canBeDeleted ? '' : 'Open workflows cannot be deleted',
     disabled: !item.canBeDeleted
 });
 
@@ -103,6 +114,8 @@ const closeMenu = () => {
     popperInstance.value.destroy();
     emit('close');
 };
+
+useEscapeStack({ onEscape: closeMenu });
 </script>
 
 <template>

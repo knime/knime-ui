@@ -11,15 +11,12 @@ const COLORS = {
         background: knimeColors.Masala,
         font: knimeColors.White
     }
-};
+} as const;
 
 /**
  * Apply styles to given element
- * @param {HTMLElement} element
- * @param {CSSStyleDeclaration} styles
- * @returns {void}
  */
-const applyStyles = (element, styles) => {
+const applyStyles = (element: HTMLElement, styles: Partial<CSSStyleDeclaration>): void => {
     Object.entries(styles).forEach(([property, value]) => {
         element.style[property] = value;
     });
@@ -28,20 +25,15 @@ const applyStyles = (element, styles) => {
 /**
  * Creates the element that will be used to display the badge with the count of the total
  * selected items
- * @param {Object} param
  * @param {Number} count number to display in the badge
- * @returns {HTMLElement}
  */
-const createGhostBadgeElement = ({ count }) => {
+const createGhostBadgeElement = ({ count }: { count: number }): HTMLElement => {
     const badge = document.createElement('div');
-    // eslint-disable-next-line no-magic-numbers
-    badge.innerText = count <= 99 ? count : '99+';
+    const MAX_COUNT = 99;
+    badge.innerText = count <= MAX_COUNT ? count.toString() : '99+';
     badge.id = 'drag-ghost-badge';
 
-    /**
-     * @type {CSSStyleDeclaration}
-     */
-    const badgeStyles = {
+    const badgeStyles: Partial<CSSStyleDeclaration> = {
         background: COLORS.dragGhostBadge.background,
         color: COLORS.dragGhostBadge.font,
         fontSize: '13px',
@@ -67,16 +59,15 @@ const createGhostBadgeElement = ({ count }) => {
 /**
  * Uses an existing svg icon on the `target` element to use as icon for
  * the generated ghost. Returns null if no svg icon can be found in the target
- * @param {HTMLElement} target
- * @returns {HTMLElement | null} The icon element to add to the ghost
+ * @returns  The icon element to add to the ghost
  */
-const createGhostIcon = (target) => {
+const createGhostIcon = (target: HTMLElement): HTMLElement | null => {
     const originalIcon = target.querySelector('svg');
     if (!originalIcon) {
         return null;
     }
 
-    const iconEl = originalIcon.cloneNode(true);
+    const iconEl = originalIcon.cloneNode(true) as HTMLElement;
     iconEl.style.width = '20px';
     iconEl.style.height = '20px';
     iconEl.style.marginRight = '10px';
@@ -84,21 +75,31 @@ const createGhostIcon = (target) => {
     return iconEl;
 };
 
-/**
- * @typedef CreateGhostElementReturnType
- * @property {HTMLElement} ghost
- */
-/**
- * Creates the element of the ghost
- * @param {Object} param
- * @param {String} param.textContent text to display in the ghost
- * @param {HTMLElement} param.target the element being ghosted. it's used to initally position the ghost on the same
- * coordinates
- * @param {Boolean} [param.addShadow] whether to add boxShadow styles to the ghost
- * @param {Number} [param.badgeCount] if specified, will add the badge with this value as a count
- * @returns {CreateGhostElementReturnType}
- */
-const createGhostElement = ({ badgeCount, textContent, target, addShadow = false }) => {
+type CreateGhostElementParams = {
+    /**
+     * text to display in the ghost
+     */
+    textContent: string;
+    /**
+     * the element being ghosted. it's used to initally position the ghost on the same coordinates
+     */
+    target: HTMLElement;
+    /**
+     * whether to add boxShadow styles to the ghost
+     */
+    addShadow?: boolean;
+    /**
+     * if specified, will add the badge with this value as a count
+     */
+    badgeCount?: number;
+}
+
+const createGhostElement = ({
+    textContent,
+    target,
+    badgeCount,
+    addShadow = false
+}: CreateGhostElementParams): { ghost: HTMLElement, badge?: HTMLElement } => {
     const TEXT_SIZE_THRESHOLD = 15;
     const ghost = document.createElement('div');
     ghost.innerText = textContent.length > TEXT_SIZE_THRESHOLD
@@ -108,10 +109,7 @@ const createGhostElement = ({ badgeCount, textContent, target, addShadow = false
 
     const { x, y, width, height } = target.getBoundingClientRect();
 
-    /**
-     * @type {CSSStyleDeclaration}
-     */
-    const ghostStyles = {
+    const ghostStyles: Partial<CSSStyleDeclaration> = {
         background: COLORS.dragGhostContainer.background,
         color: COLORS.dragGhostContainer.font,
 
@@ -121,7 +119,7 @@ const createGhostElement = ({ badgeCount, textContent, target, addShadow = false
         left: `${x}px`,
         width: `${width}px`,
         height: `${height}px`,
-        zIndex: 9,
+        zIndex: '9',
 
         // make sure the ghost doesn't interfere with the drag
         pointerEvents: 'none',
@@ -131,7 +129,7 @@ const createGhostElement = ({ badgeCount, textContent, target, addShadow = false
         alignItems: 'center',
         padding: '0 12px',
         borderRadius: '4px',
-        opacity: 1,
+        opacity: '1',
         boxShadow: addShadow && '0px 2px 10px rgba(130, 133, 134, 0.4)'
     };
 
@@ -151,10 +149,8 @@ const createGhostElement = ({ badgeCount, textContent, target, addShadow = false
 
 /**
  * Removes the browser native drag ghost by replacing it with a transparent image
- * @param {DragEvent} dragEvent
- * @returns {void}
  */
-const removeNativeDragGhost = (dragEvent) => {
+const removeNativeDragGhost = (dragEvent: DragEvent) => {
     const img = new Image();
     img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
     dragEvent.dataTransfer.dropEffect = 'move';
@@ -164,10 +160,8 @@ const removeNativeDragGhost = (dragEvent) => {
 
 /**
  * Returns a function to serve as an event handler to update the ghost's position
- * @param {Array<HTMLElement>} ghosts
- * @returns {Function}
  */
-const createGhostPositionUpdateHandler = (ghosts) => ({ clientX, clientY }) => {
+const createGhostPositionUpdateHandler = (ghosts: Array<HTMLElement>) => ({ clientX, clientY }: DragEvent) => {
     if (clientX === 0 && clientY === 0) {
         return;
     }
@@ -182,7 +176,7 @@ const createGhostPositionUpdateHandler = (ghosts) => ({ clientX, clientY }) => {
     });
 };
 
-let customGhostPreviewElement = null;
+let customGhostPreviewElement: HTMLElement | null = null;
 
 const hideCustomGhostPreviewElement = () => {
     if (customGhostPreviewElement) {
@@ -196,37 +190,59 @@ const showCustomGhostPreviewElement = () => {
     }
 };
 
+type CreateDragGhostsParams = {
+    /**
+     * The DragStart event that originated the drag
+     */
+    dragStartEvent: DragEvent;
+    /**
+     * Whether to display a badge with a count next to the ghost
+     */
+    badgeCount: number | null;
+    /**
+     * targets that are selected and for whom ghosts will be created
+     */
+    selectedTargets: Array<{
+        /**
+         * Element itself
+         */
+        textContent: string;
+        /**
+         * Text content to display in each ghost
+         */
+        targetEl: HTMLElement;
+    }>;
+
+}
+
+type CreateDragGhostsReturnType = {
+    /**
+     * The added ghosts
+     */
+    ghosts: Array<HTMLElement>;
+    /**
+     * A function to remove the ghost when needed. It receives a
+     * parameter to determine whether to animate the removal of the ghosts (true by default)
+     */
+    removeGhosts: (animateOut?: boolean) => void;
+    /**
+     * A function to replace the ghost element when needed.
+     */
+    replaceGhostPreview: (params: {
+        shouldUseCustomPreview: boolean;
+        ghostPreviewEl: HTMLElement;
+        opts?: { leftOffset?: number; topOffset?: number }
+    }) => void;
+}
 
 /**
- *
- * @typedef CreateDragGhostsReturnType
- * @property {Array<HTMLElement>} ghosts the added ghosts
- * @property {(animateOut?: boolean) => void} removeGhosts a function to remove the ghost when needed. It receives a
- * parameter to determine whether to animate the removal of the ghosts (true by default)
- * @property {(params: {
- *  shouldUseCustomPreview: boolean;
- *  ghostPreviewEl: HTMLElement;
- *  opts?: { leftOffset?: number; topOffset?: number }
- * }) => void} replaceGhostPreview
- * a function to replace the ghost element when needed.
- */
-/**
- *  Creates the drag ghosts for the FileExplorer drag operations
- *
- * @param {Object} param
- * @param {DragEvent} param.dragStartEvent The DragStart event that originated the drag
- * @param {Number | Null} param.badgeCount Whether to display a badge with a count next to the ghost
- * @param {Array<{ textContent: String, targetEl: HTMLElement }>} param.selectedTargets targets that are selected
- * and for whom ghosts will be created
- * @param {HTMLElement} param.selectedTargets.targetEl element itself
- * @param {String} param.selectedTargets.textContent Text content to display in each ghost
- * @returns {CreateDragGhostsReturnType}
+ * Creates the drag ghosts for the FileExplorer drag operations
  */
 export const createDragGhosts = ({
     dragStartEvent,
     badgeCount = null,
     selectedTargets
-}) => {
+}: CreateDragGhostsParams): CreateDragGhostsReturnType => {
     removeNativeDragGhost(dragStartEvent);
 
     // separate the first target and use it to create the badge
@@ -263,12 +279,12 @@ export const createDragGhosts = ({
 
     document.addEventListener('drag', updatePosition);
 
-    const setGhostDisplay = (display) => ({ ghost }) => {
+    const setGhostDisplay = (display: string) => ({ ghost }: { ghost: HTMLElement }) => {
         ghost.style.display = display;
     };
 
-    const removeGhosts = (animateOut = true) => {
-        const removeGhost = ({ ghost }) => {
+    const removeGhosts: CreateDragGhostsReturnType['removeGhosts'] = (animateOut = true) => {
+        const removeGhost = ({ ghost }: { ghost: HTMLElement }) => {
             if (!animateOut) {
                 ghost.style.display = 'none';
             }
@@ -310,7 +326,7 @@ export const createDragGhosts = ({
         });
     };
 
-    const replaceGhostPreview = ({
+    const replaceGhostPreview: CreateDragGhostsReturnType['replaceGhostPreview'] = ({
         shouldUseCustomPreview,
         ghostPreviewEl,
         opts = {}
@@ -323,8 +339,8 @@ export const createDragGhosts = ({
             showCustomGhostPreviewElement();
 
             document.addEventListener('drag', (event) => {
-                customGhostPreviewElement.style.left = event.clientX - (opts.leftOffset || 0);
-                customGhostPreviewElement.style.top = event.clientY - (opts.topOffset || 0);
+                customGhostPreviewElement.style.left = `${event.clientX - (opts.leftOffset || 0)}px`;
+                customGhostPreviewElement.style.top = `${event.clientY - (opts.topOffset || 0)}px`;
             });
 
             allGhosts.forEach(setGhostDisplay('none'));
