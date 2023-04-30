@@ -4,7 +4,7 @@ import { directive as vClickAway } from 'vue3-click-away';
 
 import { SpaceItem } from '@/api/gateway-api/generated-api';
 
-import { createDragGhosts } from './dragGhostHelpers';
+import { useItemDragging } from './useItemDragging';
 import { useMultiSelection } from './useMultiSelection';
 import FileExplorerContextMenu, { type ItemClickPayload } from './FileExplorerContextMenu.vue';
 import FileExplorerItemComponent from './FileExplorerItem.vue';
@@ -48,10 +48,13 @@ const emit = defineEmits<{
     (e: 'renameFile', payload: { itemId: string; newName: string }): void;
 }>();
 
-const isDragging = ref(false);
-const startDragItemIndex = ref<number | null>(null);
+const isDirectory = (item: FileExplorerItem) => item.type === SpaceItem.TypeEnum.WorkflowGroup;
+const canOpenFile = (item: FileExplorerItem) => item.type === SpaceItem.TypeEnum.Workflow;
+
+const changeDirectory = (pathId: string) => emit('changeDirectory', pathId);
 
 /** MULTISELECTION */
+const multiSelection = useMultiSelection();
 const {
     multiSelectionState,
     handleSelectionClick,
@@ -59,7 +62,7 @@ const {
     selectedIndexes,
     isMultipleSelectionActive,
     resetSelection
-} = useMultiSelection();
+} = multiSelection;
 
 const selectedItems = computed(() => selectedIndexes.value.map(index => props.items[index]));
 const selectedItemIds = computed(() => selectedItems.value.map(item => item.id));
@@ -85,146 +88,47 @@ const blacklistedNames = computed(
 );
 /** RENAME */
 
-const isDirectory = (item: FileExplorerItem) => item.type === SpaceItem.TypeEnum.WorkflowGroup;
-const canOpenFile = (item: FileExplorerItem) => item.type === SpaceItem.TypeEnum.Workflow;
 
-const changeDirectory = (pathId: string) => emit('changeDirectory', pathId);
-
-let __removeGhosts: ReturnType<typeof createDragGhosts>['removeGhosts'] = null;
-let __replaceGhostPreview: ReturnType<typeof createDragGhosts>['replaceGhostPreview'] = null;
-
+/** DRAGGING */
 const itemBACK = ref<{ $el: HTMLElement } | null>(null);
 const itemRefs = ref<{ $el: HTMLElement }[]>([]);
-
-const getItemElementByRefIndex = (index: number, isGoBackItem = false): HTMLElement => isGoBackItem
-    ? itemBACK.value.$el
-    // except for the "Go back" item, all others are present within a v-for
-    // so the refs are returned in a collection
-    : itemRefs.value[index].$el;
-
-const onDragStart = (event: DragEvent, index: number) => {
-    isDragging.value = true;
-    startDragItemIndex.value = index;
-
-    if (!isSelected(index)) {
-        resetSelection();
-        handleSelectionClick(index);
-    }
-
-    // get all items that are selected, except the one that initiated the drag
-    const otherSelectedIndexes = selectedIndexes
-        .value
-        .filter(selectedIndex => index !== selectedIndex);
-
-    // map an index to an object that will be used to generate the ghost
-    const toGhostTarget = (_index: number) => ({
-        targetEl: getItemElementByRefIndex(_index),
-        textContent: props.items[_index].name
-    });
-
-    const selectedTargets = []
-        // add the item that initiated the drag at the beginning of the array
-        .concat(toGhostTarget(index))
-        .concat(otherSelectedIndexes.map(toGhostTarget));
-
-    const dragGhostHelpers = createDragGhosts({
-        dragStartEvent: event,
-        badgeCount: isMultipleSelectionActive(index) ? otherSelectedIndexes.length + 1 : null,
-        selectedTargets
-    });
-
-    __removeGhosts = dragGhostHelpers.removeGhosts;
-    __replaceGhostPreview = dragGhostHelpers.replaceGhostPreview;
-};
-
-const onDragEnter = (index: number, isGoBackItem = false) => {
-    if (isSelected(index) && !isGoBackItem) {
-        return;
-    }
-
-    if (index !== startDragItemIndex.value) {
-        const draggedOverEl = getItemElementByRefIndex(index, isGoBackItem);
-        draggedOverEl.classList.add('dragging-over');
-    }
-};
-
 const customPreviewContainer = ref<HTMLElement | null>(null);
-const placeholder = ref<HTMLElement | null>(null);
+const customDragPreviewPlaceholder = ref<HTMLElement | null>(null);
 
-watch(placeholder, () => {
-    if (isDragging.value) {
-        __replaceGhostPreview?.({
-            // when default slot element (placeholder ref) is not present, then
-            // it means the slot has an element inside, so we should use a custom preview
-            shouldUseCustomPreview: !placeholder.value,
-            ghostPreviewEl: document.querySelector('.custom-preview'),
-            opts: { leftOffset: 35, topOffset: 35 }
-        });
-    }
+const {
+    isDragging,
+    onDragStart,
+    onDragEnter,
+    onDrag,
+    onDragLeave,
+    onDragEnd,
+    onDrop
+} = useItemDragging({
+    itemBACK: computed(() => itemBACK.value ? itemBACK.value.$el : null),
+    itemRefs: computed(() => itemRefs.value ? itemRefs.value.map(({ $el }) => $el) : null),
+    isDirectory,
+    items: toRefs(props).items,
+    multiSelection,
+    // when default slot element (customDragPreviewPlaceholder ref) is not present, then
+    // it means the slot has an element inside, so we should use a custom preview
+    shouldUseCustomDragPreview: computed(() => !customDragPreviewPlaceholder.value),
+    // we then can obtain the element by using the container
+    getCustomPreviewEl: () => document.querySelector('.custom-preview') as HTMLElement
 });
 
-const onDrag = (event: DragEvent, item: FileExplorerItem) => {
-    emit('drag', { event, item });
-};
-
-const onDragLeave = (index: number, isGoBackItem = false) => {
-    const draggedOverEl = getItemElementByRefIndex(index, isGoBackItem);
-    draggedOverEl.classList.remove('dragging-over');
-};
-
-const onDragEnd = (event: DragEvent, item: FileExplorerItem) => {
-    isDragging.value = false;
-
-    if (event.dataTransfer.dropEffect === 'none') {
-        __removeGhosts?.();
+// eslint-disable-next-line valid-jsdoc
+/**
+ * This helper simply forwards the emission of the given event name, provided the payload is not null.
+ * It's needed because the `useItemDragging` composable doesn't have access to the component emits
+ */
+const forwardEmit = (eventName: any, eventPayload: any) => {
+    if (!eventPayload) {
         return;
     }
 
-    const onComplete = (isSuccessfulDrop: boolean) => {
-        if (isSuccessfulDrop) {
-            resetSelection();
-        }
-
-        // animate ghosts back if drop was unsuccessful
-        __removeGhosts?.(!isSuccessfulDrop);
-        __removeGhosts = null;
-    };
-
-    emit('dragend', { event, sourceItem: item, onComplete });
+    emit(eventName, eventPayload);
 };
-
-const onDrop = (index: number, isGoBackItem = false) => {
-    const droppedEl = getItemElementByRefIndex(index, isGoBackItem);
-    droppedEl.classList.remove('dragging-over');
-
-    if (!isGoBackItem && !isDirectory(props.items[index])) {
-        return;
-    }
-
-    const targetItem = isGoBackItem ? '..' : props.items[index].id;
-
-    const isTargetSelected = selectedItemIds.value.includes(targetItem);
-
-    if (isTargetSelected) {
-        return;
-    }
-
-    const onComplete = (isSuccessfulMove: boolean) => {
-        if (isSuccessfulMove) {
-            resetSelection();
-        }
-
-        // animate ghosts back if move was unsuccessful
-        __removeGhosts?.(!isSuccessfulMove);
-        __removeGhosts = null;
-    };
-
-    emit('moveItems', {
-        sourceItems: selectedItemIds.value,
-        targetItem,
-        onComplete
-    });
-};
+/** DRAGGING */
 
 const isContextMenuVisible = ref(false);
 const contextMenuPos = ref({ x: 0, y: 0 });
@@ -316,7 +220,7 @@ const onItemDoubleClick = (item: FileExplorerItem) => {
         @dragenter="onDragEnter(null, true)"
         @dragleave="onDragLeave(null, true)"
         @dragover.prevent
-        @drop.prevent="onDrop(null, true)"
+        @drop.prevent="forwardEmit('moveItems', onDrop(null, true))"
         @click="changeDirectory('..')"
       />
 
@@ -333,11 +237,11 @@ const onItemDoubleClick = (item: FileExplorerItem) => {
         @dragstart="onDragStart($event, index)"
         @dragenter="onDragEnter(index)"
         @dragleave="onDragLeave(index)"
-        @dragend="onDragEnd($event, item)"
-        @drag="onDrag($event, item)"
+        @dragend="forwardEmit('dragend', onDragEnd($event, item))"
+        @drag="forwardEmit('drag', onDrag($event, item))"
         @click="onItemClick(item, $event, index)"
         @contextmenu="openContextMenu($event, item, index)"
-        @drop="onDrop(index)"
+        @drop="forwardEmit('moveItems', onDrop(index))"
         @dblclick="onItemDoubleClick(item)"
         @rename:submit="emit('renameFile', $event)"
         @rename:clear="activeRenameItemId = null"
@@ -357,11 +261,8 @@ const onItemDoubleClick = (item: FileExplorerItem) => {
       ref="customPreviewContainer"
       class="custom-preview"
     >
-      <slot name="customDragItemPreview">
-        <div
-          ref="placeholder"
-          data-placeholder
-        />
+      <slot name="customDragPreview">
+        <div ref="customDragPreviewPlaceholder" />
       </slot>
     </div>
 

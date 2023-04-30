@@ -1,16 +1,17 @@
-import { computed, ref, type Ref } from 'vue';
+import { computed, ref, watch, type Ref } from 'vue';
 
 import type { UseMultiSelectionReturn } from './useMultiSelection';
 import { createDragGhosts } from './dragGhostHelpers';
 import type { FileExplorerItem } from './types';
 
 type UseItemDraggingOptions = {
-    items: Array<FileExplorerItem>;
+    items: Ref<Array<FileExplorerItem>>;
     itemRefs: Ref<HTMLElement[] | null>;
     itemBACK: Ref<HTMLElement | null>;
     multiSelection: UseMultiSelectionReturn;
+    shouldUseCustomDragPreview: Ref<boolean>;
+    getCustomPreviewEl: () => HTMLElement;
     isDirectory: (item: FileExplorerItem) => boolean;
-    emit: (...args: any[]) => any;
 }
 
 let __removeGhosts: ReturnType<typeof createDragGhosts>['removeGhosts'] = null;
@@ -21,15 +22,16 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
         items,
         itemBACK,
         itemRefs,
+        shouldUseCustomDragPreview,
+        getCustomPreviewEl,
         multiSelection,
-        isDirectory,
-        emit
+        isDirectory
     } = options;
 
     const isDragging = ref(false);
     const startDragItemIndex = ref<number | null>(null);
 
-    const selectedItems = computed(() => multiSelection.selectedIndexes.value.map(index => items[index]));
+    const selectedItems = computed(() => multiSelection.selectedIndexes.value.map(index => items.value[index]));
     const selectedItemIds = computed(() => selectedItems.value.map(item => item.id));
 
     const getItemElementByRefIndex = (index: number, isGoBackItem = false): HTMLElement => isGoBackItem
@@ -55,7 +57,7 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
         // map an index to an object that will be used to generate the ghost
         const toGhostTarget = (_index: number) => ({
             targetEl: getItemElementByRefIndex(_index),
-            textContent: items[_index].name
+            textContent: items.value[_index].name
         });
 
         const selectedTargets = []
@@ -84,21 +86,35 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
         }
     };
 
-    const onDrag = (event: DragEvent, item: FileExplorerItem) => {
-        emit('drag', { event, item });
-    };
+    const onDrag = (
+        event: DragEvent,
+        item: FileExplorerItem
+    ): { event: DragEvent, item: FileExplorerItem } => ({ event, item });
+
+    watch(shouldUseCustomDragPreview, () => {
+        if (isDragging.value) {
+            __replaceGhostPreview?.({
+                shouldUseCustomPreview: shouldUseCustomDragPreview.value,
+                ghostPreviewEl: getCustomPreviewEl(),
+                opts: { leftOffset: 35, topOffset: 35 }
+            });
+        }
+    });
 
     const onDragLeave = (index: number, isGoBackItem = false) => {
         const draggedOverEl = getItemElementByRefIndex(index, isGoBackItem);
         draggedOverEl.classList.remove('dragging-over');
     };
 
-    const onDragEnd = (event: DragEvent, item: FileExplorerItem) => {
+    const onDragEnd = (
+        event: DragEvent,
+        item: FileExplorerItem
+    ): { event: DragEvent, sourceItem: FileExplorerItem, onComplete: (isSuccess: boolean) => void } | null => {
         isDragging.value = false;
 
         if (event.dataTransfer.dropEffect === 'none') {
             __removeGhosts?.();
-            return;
+            return null;
         }
 
         const onComplete = (isSuccessfulDrop: boolean) => {
@@ -111,23 +127,26 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
             __removeGhosts = null;
         };
 
-        emit('dragend', { event, sourceItem: item, onComplete });
+        return { event, sourceItem: item, onComplete };
     };
 
-    const onDrop = (index: number, isGoBackItem = false) => {
+    const onDrop = (
+        index: number,
+        isGoBackItem = false
+    ): { sourceItems: Array<string>, targetItem: string, onComplete: (isSuccess: boolean) => void } | null => {
         const droppedEl = getItemElementByRefIndex(index, isGoBackItem);
         droppedEl.classList.remove('dragging-over');
 
-        if (!isGoBackItem && !isDirectory(items[index])) {
-            return;
+        if (!isGoBackItem && !isDirectory(items.value[index])) {
+            return null;
         }
 
-        const targetItem = isGoBackItem ? '..' : items[index].id;
+        const targetItem = isGoBackItem ? '..' : items.value[index].id;
 
         const isTargetSelected = selectedItemIds.value.includes(targetItem);
 
         if (isTargetSelected) {
-            return;
+            return null;
         }
 
         const onComplete = (isSuccessfulMove: boolean) => {
@@ -140,11 +159,11 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
             __removeGhosts = null;
         };
 
-        emit('moveItems', {
+        return {
             sourceItems: selectedItemIds.value,
             targetItem,
             onComplete
-        });
+        };
     };
 
     return {

@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import * as Vue from 'vue';
 import { expect, describe, beforeEach, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { DOMWrapper, mount, VueWrapper } from '@vue/test-utils';
 
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
 import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
@@ -10,6 +10,15 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 
 import FileExplorer from '../FileExplorerComp.vue';
+
+vi.mock('gsap', () => ({
+    gsap: {
+        to: (_, { onComplete }) => {
+            onComplete();
+        },
+        killTweensOf: vi.fn()
+    }
+}));
 
 describe('FileExplorer.vue', () => {
     const MOCK_DATA = [
@@ -66,6 +75,8 @@ describe('FileExplorer.vue', () => {
 
         return { wrapper };
     };
+
+    const getItems = (_wrapper: VueWrapper<any>) => _wrapper.findAll('.file-explorer-item');
 
     it('should display all files and directories correctly', () => {
         const { wrapper } = doMount();
@@ -142,13 +153,20 @@ describe('FileExplorer.vue', () => {
             });
         });
 
-        const dragAndDropItem = async (_srcItemWrapper, _tgtItemWrapper) => {
+        const dragAndDropItem = async (
+            _srcItemWrapper: DOMWrapper<Element>,
+            _tgtItemWrapper: DOMWrapper<Element>,
+            dropEffect: 'move' | 'none' = 'move',
+            skipDrop = false
+        ) => {
             const dataTransfer = { setDragImage: vi.fn() };
             await _srcItemWrapper.trigger('dragstart', { dataTransfer });
             await _tgtItemWrapper.trigger('dragenter');
             await _tgtItemWrapper.trigger('drag');
-            await _tgtItemWrapper.trigger('drop');
-            await _srcItemWrapper.trigger('dragend', { dataTransfer: { dropEffect: 'move' } });
+            if (!skipDrop) {
+                await _tgtItemWrapper.trigger('drop');
+            }
+            await _srcItemWrapper.trigger('dragend', { dataTransfer: { dropEffect } });
         };
 
         it('should add the proper classes when handling dragging events', async () => {
@@ -217,7 +235,7 @@ describe('FileExplorer.vue', () => {
             expect(wrapper.emitted('moveItems')).toBeUndefined();
         });
 
-        it('should emit a "move" event when dropping on a "WorkflowGroup"', async () => {
+        it('should emit a "moveItems" event when dropping on a "WorkflowGroup"', async () => {
             const { wrapper } = doMount();
 
             // workflow-group item
@@ -252,6 +270,7 @@ describe('FileExplorer.vue', () => {
                 expect.objectContaining({ onComplete: expect.any(Function) })
             );
 
+            // @ts-ignore
             const { onComplete } = wrapper.emitted('moveItems')[0][0];
 
             // mimic callback being triggered from outside listener
@@ -267,18 +286,15 @@ describe('FileExplorer.vue', () => {
             });
         });
 
-        it('should not emit a "move" event when the target item is among the selected items', async () => {
+        it('should not emit a "moveItems" event when the target item is among the selected items', async () => {
             const { wrapper } = doMount();
 
             // workflow-group item
             const firstItem = wrapper.findAll('.file-explorer-item').at(0);
             // workflow-group item
             const secondItem = wrapper.findAll('.file-explorer-item').at(1);
-            // workflow-group item
-            // const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
 
             await wrapper.findAll('.file-explorer-item').at(0).trigger('click');
-            // await wrapper.findAll('.file-explorer-item').at(2).trigger('click', { shiftKey: true });
             await wrapper.findAll('.file-explorer-item').at(1).trigger('click', { ctrlKey: true });
 
             await dragAndDropItem(firstItem, secondItem);
@@ -326,13 +342,12 @@ describe('FileExplorer.vue', () => {
             // workflow-group item
             const firstItem = wrapper.findAll('.file-explorer-item').at(0);
 
-            await firstItem.trigger('dragend', { dataTransfer: { dropEffect: 'none' } });
-
-            expect(wrapper.emitted('dragend')).toBeUndefined();
             // workflow-group item
             const secondItem = wrapper.findAll('.file-explorer-item').at(1);
 
-            await dragAndDropItem(secondItem, firstItem);
+            await dragAndDropItem(secondItem, firstItem, 'none', true);
+
+            expect(wrapper.emitted('dragend')).toBeUndefined();
 
             expect(wrapper.emitted('drag')[0][0]).toEqual({
                 event: expect.anything(),

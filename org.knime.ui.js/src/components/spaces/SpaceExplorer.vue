@@ -475,7 +475,7 @@ export default defineComponent({
       >
         <template
           v-if="nodeTemplate && isAboveCanvas"
-          #customDragItemPreview
+          #customDragPreview
         >
           <NodePreview
             :type="nodeTemplate.type"
