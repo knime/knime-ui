@@ -56,7 +56,7 @@ export const isItemSelected = (state: MultiSelectionState, item: number) => {
         range => range.from <= item && range.to >= item
     );
 
-    return isInRange && !anchorExceptions.includes(item);
+    return Boolean(isInRange) && !anchorExceptions.includes(item);
 };
 
 /**

@@ -1,4 +1,4 @@
-import { computed, ref, type Ref } from 'vue';
+import { computed, type Ref } from 'vue';
 
 const INVALID_NAME_CHARACTERS = /[*?#:"<>%~|/\\]/;
 /**
@@ -12,28 +12,23 @@ const INVALID_SUFFIX = /(\.)+$|(\\)+$|(\/)+$/;
 
 const NAME_CHAR_LIMIT = 255;
 
+const UNAVAILABLE_NAME_DEFAULT_MSG = 'Name is already taken by another workflow in the active space';
+
 type UseWorkflowNameValidatorOptions = {
-    currentItemId: Ref<string | null>;
-    workflowItems: any[];
+    name: Ref<string>;
+    blacklistedNames: Ref<Array<string>>;
+    unavailableNameMessage?: string
 }
 
 export const useWorkflowNameValidator = (options: UseWorkflowNameValidatorOptions) => {
-    const name = ref<string>('');
-
     const cleanName = (value: string) => value.replace(INVALID_PREFIX, '').replace(INVALID_SUFFIX, '');
 
     const isValidName = computed(() => {
-        const newValue = cleanName(name.value);
+        const newValue = cleanName(options.name.value);
         return !INVALID_NAME_CHARACTERS.test(newValue) && newValue.length <= NAME_CHAR_LIMIT;
     });
 
-    const isNameAvailable = computed(() => {
-        const itemsWithNameCollision = options.workflowItems.filter(
-            (workflow) => workflow.name === name.value && workflow.id !== options.currentItemId.value
-        );
-
-        return itemsWithNameCollision.length === 0;
-    });
+    const isNameAvailable = computed(() => !options.blacklistedNames.value.includes(options.name.value));
 
     const isValid = computed(() => isValidName.value && isNameAvailable.value);
 
@@ -43,14 +38,13 @@ export const useWorkflowNameValidator = (options: UseWorkflowNameValidatorOption
         }
 
         if (!isNameAvailable.value) {
-            return `Name is already taken by another workflow in the active space`;
+            return options.unavailableNameMessage || UNAVAILABLE_NAME_DEFAULT_MSG;
         }
 
         return '';
     });
 
     return {
-        name,
         isValid,
         errorMessage,
         cleanName
