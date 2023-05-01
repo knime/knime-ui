@@ -23,7 +23,7 @@ export default defineComponent({
   <FileExplorerItemBase
     :is-dragging="isDragging"
     :is-selected="false"
-    class="file-explorer-item file-explorer-item-back"
+    class="file-explorer-item-back"
     title="Go back"
   >
     <template #icon>

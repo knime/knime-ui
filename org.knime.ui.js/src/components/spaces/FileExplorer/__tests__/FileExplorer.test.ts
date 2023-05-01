@@ -10,6 +10,8 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 
 import FileExplorer from '../FileExplorerComp.vue';
+import FileExplorerItemComp from '../FileExplorerItem.vue';
+import FileExplorerContextMenu from '../FileExplorerContextMenu.vue';
 
 vi.mock('gsap', () => ({
     gsap: {
@@ -26,62 +28,83 @@ describe('FileExplorer.vue', () => {
             id: '0',
             name: 'Folder 1',
             type: 'WorkflowGroup',
-            icon: WorkflowGroupIcon
+            icon: WorkflowGroupIcon,
+            canBeRenamed: true,
+            canBeDeleted: true
         },
         {
             id: '1',
             name: 'Folder 2',
             type: 'WorkflowGroup',
-            icon: WorkflowGroupIcon
+            icon: WorkflowGroupIcon,
+            canBeRenamed: true,
+            canBeDeleted: true
         },
         {
             id: '2',
             name: 'File 1',
             type: 'Data',
-            icon: DataIcon
+            icon: DataIcon,
+            canBeRenamed: true,
+            canBeDeleted: true
         },
         {
             id: '3',
             name: 'File 2',
             type: 'Workflow',
-            icon: WorkflowIcon
+            icon: WorkflowIcon,
+            canBeRenamed: true,
+            canBeDeleted: true
         },
         {
             id: '4',
             name: 'File 3',
             type: 'Component',
-            icon: ComponentIcon
+            icon: ComponentIcon,
+            canBeRenamed: true,
+            canBeDeleted: true
         },
         {
             id: '5',
             name: 'File 3',
             type: 'WorkflowTemplate',
-            icon: MetaNodeIcon
+            icon: MetaNodeIcon,
+            canBeRenamed: true,
+            canBeDeleted: true
         }
     ];
 
-    const doMount = ({ props = {} } = {}) => {
-        const mocks = { $shapes: { nodeSize: 32 } };
+    const doMount = ({
+        props = {},
+        customSlots = {
+            contextMenu: null
+        }
+    } = {}) => {
         const defaultProps = {
             items: MOCK_DATA,
             isRootFolder: true,
             mode: 'normal'
         };
 
+        const slots = {
+            // eslint-disable-next-line @typescript-eslint/no-extra-parens
+            ...(customSlots.contextMenu ? { contextMenu: customSlots.contextMenu } : {})
+        };
+
         const wrapper = mount(FileExplorer, {
-            propsData: { ...defaultProps, ...props },
-            mocks
+            props: { ...defaultProps, ...props },
+            slots
         });
 
         return { wrapper };
     };
 
-    const getItems = (_wrapper: VueWrapper<any>) => _wrapper.findAll('.file-explorer-item');
+    const getRenderedItems = (_wrapper: VueWrapper<any>) => _wrapper.findAll('[data-test-id="file-explorer-item"]');
 
     it('should display all files and directories correctly', () => {
         const { wrapper } = doMount();
 
-        const allItems = wrapper.findAll('.file-explorer-item');
+        const allItems = getRenderedItems(wrapper);
 
         expect(allItems.length).toBe(MOCK_DATA.length);
 
@@ -94,7 +117,7 @@ describe('FileExplorer.vue', () => {
     it('should only allow navigating into directories', () => {
         const { wrapper } = doMount();
 
-        const allItems = wrapper.findAll('.file-explorer-item');
+        const allItems = getRenderedItems(wrapper);
         allItems.at(0).trigger('dblclick');
 
         expect(wrapper.emitted('changeDirectory')[0][0]).toBe(MOCK_DATA.at(0).id);
@@ -106,7 +129,7 @@ describe('FileExplorer.vue', () => {
     it('should navigate back to parent', () => {
         const { wrapper } = doMount({ props: { isRootFolder: false } });
 
-        const allItems = wrapper.findAll('.file-explorer-item');
+        const allItems = getRenderedItems(wrapper);
 
         // includes go back button
         expect(allItems.length).toBe(MOCK_DATA.length + 1);
@@ -118,7 +141,7 @@ describe('FileExplorer.vue', () => {
     it('should render placeholder for empty directories', () => {
         const { wrapper } = doMount({ props: { items: [] } });
 
-        expect(wrapper.findAll('.file-explorer-item').length).toBe(0);
+        expect(getRenderedItems(wrapper).length).toBe(0);
         expect(wrapper.find('.empty').exists()).toBe(true);
     });
 
@@ -131,14 +154,14 @@ describe('FileExplorer.vue', () => {
     describe('selection', () => {
         it('should select items and emit selected ones', async () => {
             const { wrapper } = doMount();
-            await wrapper.findAll('.file-explorer-item').at(1).trigger('click');
-            await wrapper.findAll('.file-explorer-item').at(3).trigger('click', { shiftKey: true });
-            await wrapper.findAll('.file-explorer-item').at(5).trigger('click', { ctrlKey: true });
+            await getRenderedItems(wrapper).at(1).trigger('click');
+            await getRenderedItems(wrapper).at(3).trigger('click', { shiftKey: true });
+            await getRenderedItems(wrapper).at(5).trigger('click', { ctrlKey: true });
 
-            expect(wrapper.findAll('.file-explorer-item').at(1).classes()).toContain('selected');
-            expect(wrapper.findAll('.file-explorer-item').at(2).classes()).toContain('selected');
-            expect(wrapper.findAll('.file-explorer-item').at(3).classes()).toContain('selected');
-            expect(wrapper.findAll('.file-explorer-item').at(5).classes()).toContain('selected');
+            expect(getRenderedItems(wrapper).at(1).classes()).toContain('selected');
+            expect(getRenderedItems(wrapper).at(2).classes()).toContain('selected');
+            expect(getRenderedItems(wrapper).at(3).classes()).toContain('selected');
+            expect(getRenderedItems(wrapper).at(5).classes()).toContain('selected');
 
             expect(wrapper.emitted('changeSelection')[0][0]).toEqual(['1']);
             expect(wrapper.emitted('changeSelection')[1][0]).toEqual(['1', '2', '3']);
@@ -172,9 +195,9 @@ describe('FileExplorer.vue', () => {
         it('should add the proper classes when handling dragging events', async () => {
             const dataTransfer = { setDragImage: vi.fn() };
             const { wrapper } = doMount();
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
-            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
-            const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
+            const firstItem = getRenderedItems(wrapper).at(0);
+            const secondItem = getRenderedItems(wrapper).at(1);
+            const thirdItem = getRenderedItems(wrapper).at(2);
 
             // select items 1 and 2
             await firstItem.trigger('click');
@@ -205,9 +228,9 @@ describe('FileExplorer.vue', () => {
 
         it('should create drag ghosts when dragging items', async () => {
             const { wrapper } = doMount();
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
-            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
-            const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
+            const firstItem = getRenderedItems(wrapper).at(0);
+            const secondItem = getRenderedItems(wrapper).at(1);
+            const thirdItem = getRenderedItems(wrapper).at(2);
 
             // select 2nd and 3rd item
             await secondItem.trigger('click');
@@ -223,11 +246,11 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
 
             // workflow-group item
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const firstItem = getRenderedItems(wrapper).at(0);
             // non workflow-group items
-            const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
-            const fourthItem = wrapper.findAll('.file-explorer-item').at(3);
-            const fifthItem = wrapper.findAll('.file-explorer-item').at(4);
+            const thirdItem = getRenderedItems(wrapper).at(2);
+            const fourthItem = getRenderedItems(wrapper).at(3);
+            const fifthItem = getRenderedItems(wrapper).at(4);
 
             await dragAndDropItem(firstItem, thirdItem);
             await dragAndDropItem(firstItem, fourthItem);
@@ -239,9 +262,9 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
 
             // workflow-group item
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const firstItem = getRenderedItems(wrapper).at(0);
             // workflow-group item
-            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            const secondItem = getRenderedItems(wrapper).at(1);
 
             await dragAndDropItem(firstItem, secondItem);
 
@@ -255,9 +278,9 @@ describe('FileExplorer.vue', () => {
         it('should remove drag ghosts and reset selection after a successful move', async () => {
             const { wrapper } = doMount();
 
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
-            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
-            const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
+            const firstItem = getRenderedItems(wrapper).at(0);
+            const secondItem = getRenderedItems(wrapper).at(1);
+            const thirdItem = getRenderedItems(wrapper).at(2);
 
             // select 2nd and 3rd item
             await secondItem.trigger('click');
@@ -281,7 +304,7 @@ describe('FileExplorer.vue', () => {
             // ghosts are removed
             expect(document.body.querySelectorAll('[data-id="drag-ghost"]').length).toBe(0);
 
-            wrapper.findAll('.file-explorer-item').forEach(item => {
+            getRenderedItems(wrapper).forEach(item => {
                 expect(item.classes()).not.toContain('selected');
             });
         });
@@ -290,12 +313,12 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
 
             // workflow-group item
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const firstItem = getRenderedItems(wrapper).at(0);
             // workflow-group item
-            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            const secondItem = getRenderedItems(wrapper).at(1);
 
-            await wrapper.findAll('.file-explorer-item').at(0).trigger('click');
-            await wrapper.findAll('.file-explorer-item').at(1).trigger('click', { ctrlKey: true });
+            await getRenderedItems(wrapper).at(0).trigger('click');
+            await getRenderedItems(wrapper).at(1).trigger('click', { ctrlKey: true });
 
             await dragAndDropItem(firstItem, secondItem);
 
@@ -306,9 +329,9 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount({ props: { isRootFolder: false } });
 
             // workflow-group item
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const firstItem = getRenderedItems(wrapper).at(0);
             // workflow-group item
-            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            const secondItem = getRenderedItems(wrapper).at(1);
 
             await dragAndDropItem(secondItem, firstItem);
 
@@ -323,9 +346,9 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
 
             // workflow-group item
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const firstItem = getRenderedItems(wrapper).at(0);
             // workflow-group item
-            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            const secondItem = getRenderedItems(wrapper).at(1);
 
             await dragAndDropItem(secondItem, firstItem);
 
@@ -340,10 +363,10 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
 
             // workflow-group item
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const firstItem = getRenderedItems(wrapper).at(0);
 
             // workflow-group item
-            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            const secondItem = getRenderedItems(wrapper).at(1);
 
             await dragAndDropItem(secondItem, firstItem, 'none', true);
 
@@ -359,10 +382,10 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount();
 
             // workflow-group item
-            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const firstItem = getRenderedItems(wrapper).at(0);
 
             // workflow-group item
-            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            const secondItem = getRenderedItems(wrapper).at(1);
 
             await dragAndDropItem(secondItem, firstItem);
             expect(wrapper.emitted('drag')[0][0]).toEqual({
@@ -376,14 +399,14 @@ describe('FileExplorer.vue', () => {
         const { wrapper } = doMount();
 
         // workflow-group
-        wrapper.findAll('.file-explorer-item').at(0).trigger('dblclick');
+        getRenderedItems(wrapper).at(0).trigger('dblclick');
         // component
-        wrapper.findAll('.file-explorer-item').at(4).trigger('dblclick');
+        getRenderedItems(wrapper).at(4).trigger('dblclick');
 
         expect(wrapper.emitted('openFile')).toBeUndefined();
 
         // workflow
-        wrapper.findAll('.file-explorer-item').at(3).trigger('dblclick');
+        getRenderedItems(wrapper).at(3).trigger('dblclick');
         expect(wrapper.emitted('openFile')[0][0]).toEqual(MOCK_DATA[3]);
     });
 
@@ -398,184 +421,293 @@ describe('FileExplorer.vue', () => {
             }
         });
 
-        const items = wrapper.findAll('.file-explorer-item');
+        const items = getRenderedItems(wrapper);
         expect(items.at(0).find('.open-indicator').exists()).toBe(false);
         expect(items.at(indexOfItemWithIndicator).find('.open-indicator').exists()).toBe(true);
     });
 
-    // describe('options menu', () => {
-    //     const RENAME_OPTION_IDX = 0;
-    //     const DELETE_OPTION_IDX = 1;
+    describe('context menu', () => {
+        const openContextMenu = (
+            _wrapper: VueWrapper<any>,
+            itemIndex: number,
+            position = { clientX: 100, clientY: 100 }
+        ) => {
+            const item = getRenderedItems(_wrapper).at(itemIndex);
 
-    //     const getOptionsItem = (optionsMenu, index) => optionsMenu.findAll('.clickable-item').at(index);
+            return item.trigger('contextmenu', position);
+        };
 
-    //     const getRenameOption = (wrapper, itemIndex) => {
-    //         const optionsMenu = wrapper.findAll('.submenu').at(itemIndex);
-    //         return getOptionsItem(optionsMenu, RENAME_OPTION_IDX);
-    //     };
+        it('should open menu', async () => {
+            const { wrapper } = doMount();
 
-    //     const getDeleteOption = (wrapper, itemIndex) => {
-    //         const optionsMenu = wrapper.findAll('.submenu').at(itemIndex);
-    //         return getOptionsItem(optionsMenu, DELETE_OPTION_IDX);
-    //     };
+            const firstItem = getRenderedItems(wrapper).at(0);
+            const secondItem = getRenderedItems(wrapper).at(1);
 
-    //     it('should show the item option button', () => {
-    //         const { wrapper } = doMount();
-    //         expect(wrapper.find('.submenu').find('.submenu-toggle').exists()).toBe(true);
-    //     });
+            await firstItem.trigger('click');
+            await secondItem.trigger('click', { ctrlKey: true });
 
-    //     it('should have the delete option', () => {
-    //         const { wrapper } = doMount();
+            await openContextMenu(wrapper, 0);
 
-    //         const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
-    //         expect(menuItem.findAll('li').at(DELETE_OPTION_IDX).element.innerHTML).toContain('Delete');
-    //     });
+            expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(true);
+            expect(wrapper.findComponent(FileExplorerContextMenu).props('position')).toEqual({
+                x: 100,
+                y: 100
+            });
+            expect(wrapper.findComponent(FileExplorerContextMenu).props('isMultipleSelectionActive')).toBe(true);
+            expect(wrapper.findComponent(FileExplorerContextMenu).props('anchor')).toEqual({
+                element: firstItem.element,
+                index: 0,
+                item: MOCK_DATA.at(0)
+            });
+        });
 
-    //     it('should enable the delete option for items that specify it', () => {
-    //         const indexWithDeletable = 3;
-    //         const { wrapper } = doMount({
-    //             props: {
-    //                 items: MOCK_DATA.map((item, index) => ({
-    //                     ...item,
-    //                     canBeDeleted: index === indexWithDeletable
-    //                 }))
-    //             }
-    //         });
+        it('should close context menu', async () => {
+            const { wrapper } = doMount();
 
-    //         const items = wrapper.findAll('.submenu');
-    //         const itemDisabledDelete = items.at(0).find('.menu-wrapper').findAll('li').at(DELETE_OPTION_IDX);
-    //         const itemEnabledDelete = items.at(DELETE_OPTION_IDX).find('.menu-wrapper').findAll('li')
-    //             .at(DELETE_OPTION_IDX);
-    //         expect(itemDisabledDelete.find('.disabled').exists()).toBe(true);
-    //         expect(itemDisabledDelete.element.title).toBe('Open workflows cannot be deleted');
-    //         expect(itemEnabledDelete.find('.disabled').exists()).toBe(true);
-    //     });
+            await openContextMenu(wrapper, 0);
 
-    //     it('should emit deleteItems on delete option click', async () => {
-    //         const itemIdx = 2;
-    //         const { wrapper } = doMount({
-    //             props: { items: MOCK_DATA.map((item) => ({ ...item, canBeDeleted: true })) }
-    //         });
+            wrapper.findComponent(FileExplorerContextMenu).vm.$emit('close');
+            await Vue.nextTick();
+            expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(false);
+        });
 
-    //         const deleteButton = getDeleteOption(wrapper, itemIdx);
-    //         await deleteButton.trigger('click');
-    //         expect(wrapper.emitted('deleteItems')[0][0]).toMatchObject({ items: [{ id: `${itemIdx}` }] });
-    //     });
+        it('should reset selection when opening context menu from an unselected item', async () => {
+            const { wrapper } = doMount();
 
-    //     it('should have rename enabled when item is not open', () => {
-    //         const { wrapper } = doMount();
+            const firstItem = getRenderedItems(wrapper).at(0);
+            const secondItem = getRenderedItems(wrapper).at(1);
 
-    //         const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
-    //         expect(menuItem.findAll('li').at(0).element.innerHTML).toContain('Rename');
-    //     });
+            await secondItem.trigger('click');
 
-    //     it('should have rename disabled when item is open', () => {
-    //         const indexOpenedItem = 0;
-    //         const { wrapper } = doMount({
-    //             props: {
-    //                 items: MOCK_DATA.map((item, index) => ({
-    //                     ...item,
-    //                     displayOpenIndicator: index === indexOpenedItem
-    //                 }))
-    //             }
-    //         });
+            await openContextMenu(wrapper, 0);
 
-    //         const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
-    //         expect(menuItem.findAll('li').at(0).element.outerHTML).toContain('Open workflows cannot be renamed');
-    //     });
+            expect(wrapper.findComponent(FileExplorerContextMenu).props('isMultipleSelectionActive')).toBe(false);
+            expect(wrapper.findComponent(FileExplorerContextMenu).props('anchor')).toEqual({
+                element: firstItem.element,
+                index: 0,
+                item: MOCK_DATA.at(0)
+            });
+        });
 
-    //     it('should render TextInput when users wants to rename', async () => {
-    //         const { wrapper } = doMount();
-    //         const renameButton = getRenameOption(wrapper, 0);
-    //         await renameButton.trigger('click');
+        describe('rename option', () => {
+            const getRenameOptionElement = (
+                _wrapper: VueWrapper<any>
+            ) => _wrapper.findComponent(FileExplorerContextMenu).findAll('li').at(0);
 
-    //         expect(wrapper.vm.activeRenameId).toBe(MOCK_DATA[0].id);
-    //         expect(wrapper.vm.renameValue).toBe(MOCK_DATA[0].name);
-    //         expect(wrapper.findAll('input').at(0).exists()).toBe(true);
-    //     });
+            const triggerRename = async (_wrapper: VueWrapper<any>, itemIndex: number) => {
+                await openContextMenu(_wrapper, itemIndex);
 
-    //     it('should show verification message in case of error during renaming', async () => {
-    //         const { wrapper } = doMount();
-    //         const renameButton = getRenameOption(wrapper, 0);
-    //         await renameButton.trigger('click');
+                const renameOption = getRenameOptionElement(_wrapper);
+                renameOption.trigger('click');
+            };
 
-    //         const inputValue = wrapper.findAll('input').at(0);
-    //         inputValue.element.value = 'invalid [*?#:"<>%~|.] string';
-    //         await inputValue.trigger('input');
-    //         expect(wrapper.find('.item-error').exists()).toBe(true);
 
-    //         inputValue.element.value = 'valid string';
-    //         await inputValue.trigger('input');
-    //         expect(wrapper.find('.item-error').exists()).toBe(false);
-    //     });
+            it('should handle event from contextmenu and activate rename option on item', async () => {
+                const { wrapper } = doMount();
 
-    //     it('should submit renaming event', async () => {
-    //         const { wrapper } = doMount();
-    //         const renameButton = getRenameOption(wrapper, 0);
-    //         await renameButton.trigger('click');
+                const renamedItemIndex = 0;
+                await triggerRename(wrapper, renamedItemIndex);
 
-    //         const input = wrapper.findComponent(InputField);
-    //         const newName = 'New Folder name';
-    //         await wrapper.setData({ renameValue: newName });
-    //         await input.vm.$emit('keyup', { key: 'Enter' });
+                // all items' names except the first one, whose rename has been activated
+                const expectedBlacklistedNames = MOCK_DATA.slice(1).map(({ name }) => name);
 
-    //         expect(wrapper.emitted('renameFile')).toBeTruthy();
-    //         expect(wrapper.emitted('renameFile')[0][0].newName).toEqual(newName);
-    //     });
+                const firstItemComponent = wrapper.findAllComponents(FileExplorerItemComp).at(renamedItemIndex);
+                expect(firstItemComponent.props('isRenameActive')).toBe(true);
+                expect(firstItemComponent.props('blacklistedNames')).toEqual(expectedBlacklistedNames);
+            });
 
-    //     it('should submit renaming event without invalid pre/suffix', async () => {
-    //         const { wrapper } = doMount();
-    //         const renameButton = getRenameOption(wrapper, 0);
-    //         await renameButton.trigger('click');
+            it('should handle rename submit', async () => {
+                const { wrapper } = doMount();
 
-    //         const input = wrapper.findComponent(InputField);
-    //         const newName = '...invalid...';
-    //         await wrapper.setData({ renameValue: newName });
-    //         await input.vm.$emit('keyup', { key: 'Enter' });
+                const renamedItemIndex = 0;
+                await triggerRename(wrapper, renamedItemIndex);
 
-    //         expect(wrapper.emitted('renameFile')).toBeTruthy();
-    //         expect(wrapper.emitted('renameFile')[0][0].newName).toBe('invalid');
-    //     });
+                const newName = 'this is the new name';
+                const itemElement = getRenderedItems(wrapper).at(renamedItemIndex);
+                itemElement.find('input').setValue(newName);
+                itemElement.find('input').trigger('keyup', { key: 'Enter' });
 
-    //     it('should automatically trim new name', async () => {
-    //         const { wrapper } = doMount();
-    //         const renameButton = getRenameOption(wrapper, 0);
-    //         await renameButton.trigger('click');
+                expect(wrapper.emitted('renameFile')[0][0]).toEqual({
+                    itemId: MOCK_DATA.at(0).id,
+                    newName
+                });
+            });
 
-    //         const input = wrapper.findComponent(InputField);
-    //         const newName = '    New Folder name    ';
-    //         await wrapper.setData({ renameValue: newName });
-    //         await input.vm.$emit('keyup', { key: 'Enter' });
+            it('should handle rename clear', async () => {
+                const { wrapper } = doMount();
 
-    //         expect(wrapper.emitted('renameFile')).toBeTruthy();
-    //         expect(wrapper.emitted('renameFile')[0][0].newName).toBe('New Folder name');
-    //     });
+                const renamedItemIndex = 0;
+                await triggerRename(wrapper, renamedItemIndex);
 
-    //     it('should not save empty names', async () => {
-    //         const { wrapper } = doMount();
-    //         const renameButton = getRenameOption(wrapper, 0);
-    //         await renameButton.trigger('click');
+                const itemElement = getRenderedItems(wrapper).at(renamedItemIndex);
+                await itemElement.find('input').trigger('keyup', { key: 'Esc' });
 
-    //         const input = wrapper.findComponent(InputField);
-    //         const newName = '      ';
-    //         await wrapper.setData({ renameValue: newName });
-    //         await input.vm.$emit('keyup', { key: 'Enter' });
+                const firstItemComponent = wrapper.findAllComponents(FileExplorerItemComp).at(renamedItemIndex);
+                expect(firstItemComponent.props('isRenameActive')).toBe(false);
+            });
 
-    //         expect(wrapper.emitted('renameFile')).toBeUndefined();
-    //     });
+            it('should be disabled if anchor item cannot be renamed', async () => {
+                const indexOfItemWithRenameDisabled = 0;
+                const { wrapper } = doMount({
+                    props: {
+                        items: MOCK_DATA.map((item, index) => ({
+                            ...item,
+                            canBeRenamed: index !== indexOfItemWithRenameDisabled
+                        }))
+                    }
+                });
 
-    //     it('should cancel renaming event', async () => {
-    //         const { wrapper } = doMount();
-    //         const renameButton = getRenameOption(wrapper, 0);
-    //         await renameButton.trigger('click');
+                await openContextMenu(wrapper, indexOfItemWithRenameDisabled);
 
-    //         const input = wrapper.findComponent(InputField);
-    //         const newName = 'New Folder name';
-    //         await wrapper.setData({ renameValue: newName });
-    //         await input.vm.$emit('keyup', { key: 'Esc' });
+                const renameOption = getRenameOptionElement(wrapper);
+                // option is disabled (cannot check attr because MenuItems component doesn't set it)
+                expect(renameOption.find('button').classes()).toContain('disabled');
 
-    //         expect(wrapper.vm.activeRenameId).toBeNull();
-    //         expect(wrapper.vm.renameValue).toBe('');
-    //     });
-    // });
+                // attempt clicking it
+                await renameOption.trigger('click');
+
+                // rename did not activate
+                const itemComponent = wrapper.findAllComponents(FileExplorerItemComp).at(indexOfItemWithRenameDisabled);
+                expect(itemComponent.props('isRenameActive')).toBe(false);
+
+                // close menu
+                wrapper.findComponent(FileExplorerContextMenu).vm.$emit('close');
+                await Vue.nextTick();
+
+                // open different item
+                await openContextMenu(wrapper, 1);
+
+                // this one is not disabled
+                expect(getRenameOptionElement(wrapper).find('button').classes()).not.toContain('disabled');
+            });
+        });
+
+        describe('delete option', () => {
+            const getDeleteOptionElement = (
+                _wrapper: VueWrapper<any>
+            ) => _wrapper.findComponent(FileExplorerContextMenu).findAll('li').at(1);
+
+            it('should handle delete event', async () => {
+                const { wrapper } = doMount();
+
+                const firstItem = getRenderedItems(wrapper).at(0);
+                const secondItem = getRenderedItems(wrapper).at(1);
+                await firstItem.trigger('click');
+                await secondItem.trigger('click', { ctrlKey: true });
+
+                await openContextMenu(wrapper, 0);
+
+                const deleteOption = getDeleteOptionElement(wrapper);
+                deleteOption.trigger('click');
+
+                expect(wrapper.emitted('deleteItems')[0][0]).toEqual({
+                    items: [MOCK_DATA.at(0), MOCK_DATA.at(1)]
+                });
+            });
+
+            it('should be disabled if anchor item cannot be deleted', async () => {
+                const indexOfItemWithDeleteDisabled = 0;
+                const { wrapper } = doMount({
+                    props: {
+                        items: MOCK_DATA.map((item, index) => ({
+                            ...item,
+                            canBeDeleted: index !== indexOfItemWithDeleteDisabled
+                        }))
+                    }
+                });
+
+                await openContextMenu(wrapper, indexOfItemWithDeleteDisabled);
+
+                const deleteOption = getDeleteOptionElement(wrapper);
+                // option is disabled (cannot check attr because MenuItems component doesn't set it)
+                expect(deleteOption.find('button').classes()).toContain('disabled');
+
+                // attempt clicking it
+                await deleteOption.trigger('click');
+
+                // rename did not activate
+                expect(wrapper.emitted('deleteItems')).toBeUndefined();
+
+                // close menu
+                wrapper.findComponent(FileExplorerContextMenu).vm.$emit('close');
+                await Vue.nextTick();
+
+                // open different item
+                await openContextMenu(wrapper, 1);
+
+                // this one is not disabled
+                expect(getDeleteOptionElement(wrapper).find('button').classes()).not.toContain('disabled');
+            });
+        });
+
+        describe('slot', () => {
+            const componentInSlot = `<div
+                id="slotted-component"
+                v-bind="scope"
+            ></div>`;
+
+            const getScopedComponent = {
+                name: 'SlottedChild',
+                template: componentInSlot,
+                props: {
+                    scope: {
+                        type: Object,
+                        required: true
+                    }
+                }
+            };
+            const getSlottedChildComponent = (
+                wrapper: VueWrapper<any>
+            ) => wrapper.findComponent({ name: 'SlottedChild' });
+
+            // eslint-disable-next-line arrow-body-style
+            const getSlottedStubProp = ({ wrapper, propName }: { wrapper: VueWrapper<any>, propName: string }) => {
+                // access the `scope` prop of the dummy slotted component and get value that was injected
+                // via the slot props
+                return getSlottedChildComponent(wrapper).props('scope')[propName];
+            };
+
+            const doMountCustomWithSlots = ({ props = {} } = {}) => {
+                const contextMenu = (props) => Vue.h(getScopedComponent, { scope: props });
+                return doMount({ props, customSlots: { contextMenu } });
+            };
+
+            it('should render a custom component on the contextmenu slot', async () => {
+                const { wrapper } = doMountCustomWithSlots();
+
+                await openContextMenu(wrapper, 0);
+                expect(getSlottedChildComponent(wrapper).exists()).toBe(true);
+            });
+
+            it('should provide contextmenu-related values on the slot as props', async () => {
+                const { wrapper } = doMountCustomWithSlots();
+
+                const firstItem = getRenderedItems(wrapper).at(0);
+                await openContextMenu(wrapper, 0, { clientX: 200, clientY: 200 });
+
+                expect(getSlottedStubProp({ wrapper, propName: 'items' })).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            id: 'rename',
+                            disabled: false
+                        }),
+                        expect.objectContaining({
+                            id: 'delete',
+                            disabled: false
+                        })
+                    ])
+                );
+                expect(getSlottedStubProp({ wrapper, propName: 'anchorItem' })).toEqual({
+                    item: MOCK_DATA.at(0),
+                    element: firstItem.element,
+                    index: 0
+                });
+                expect(getSlottedStubProp({ wrapper, propName: 'isContextMenuVisible' })).toBe(true);
+                expect(getSlottedStubProp({ wrapper, propName: 'position' })).toEqual({
+                    x: 200,
+                    y: 200
+                });
+            });
+        });
+    });
 });

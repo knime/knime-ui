@@ -29,7 +29,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const element = ref(props.anchor.element);
-
 const referenceRect = element.value.getBoundingClientRect();
 const menuWrapper = ref<HTMLElement | null>(null);
 
@@ -86,28 +85,39 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const getRenameOption: (item: FileExplorerItem) => ContextMenuItem = (item: FileExplorerItem) => ({
+type GetDefaultOption = (item: FileExplorerItem, customProps?: Partial<MenuItem>) => ContextMenuItem;
+
+const getRenameOption: GetDefaultOption = (item, customProps = {}) => ({
     id: 'rename',
     text: 'Rename',
-    disabled: !item.canBeRenamed || props.isMultipleSelectionActive
+    ...customProps,
+    disabled: !item.canBeRenamed || props.isMultipleSelectionActive || customProps.disabled || false
 });
 
-const getDeleteOption: (item: FileExplorerItem) => ContextMenuItem = (item: FileExplorerItem) => ({
+const getDeleteOption: GetDefaultOption = (item, customProps = {}) => ({
     id: 'delete',
     text: 'Delete',
-    disabled: !item.canBeDeleted
+    ...customProps,
+    disabled: !item.canBeDeleted || customProps.disabled || false
 });
 
 const onItemClick = (contextMenuItem: ContextMenuItem) => {
     const isRename = contextMenuItem.id === 'rename';
     const isDelete = contextMenuItem.id === 'delete';
 
+    if (
+        (isRename && !props.anchor.item.canBeRenamed) ||
+        (isDelete && !props.anchor.item.canBeDeleted)
+    ) {
+        return;
+    }
+
     emit('itemClick', { contextMenuItem, anchorItem: props.anchor.item, isDelete, isRename });
 };
 
-const getDefaultItems = (item: FileExplorerItem) => [
-    getRenameOption(item),
-    getDeleteOption(item)
+const items: Array<ContextMenuItem> = [
+    getRenameOption(props.anchor.item),
+    getDeleteOption(props.anchor.item)
 ];
 
 const closeMenu = () => {
@@ -125,14 +135,15 @@ useEscapeStack({ onEscape: closeMenu });
     class="menu-wrapper"
   >
     <slot
+      :items="items"
       :get-rename-option="getRenameOption"
       :get-delete-option="getDeleteOption"
-      :get-default-items="getDefaultItems"
       :on-item-click="onItemClick"
     >
       <MenuItems
         menu-aria-label="File explorer context menu"
-        :items="getDefaultItems(anchor.item)"
+        :items="items"
+        @item-click="(_, item) => onItemClick(item)"
       />
     </slot>
   </div>

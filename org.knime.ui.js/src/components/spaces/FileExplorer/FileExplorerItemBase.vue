@@ -23,6 +23,7 @@ export default defineComponent({
       selected: !isDragging && isSelected,
       dragging: isDragging && isSelected
     }"
+    data-test-id="file-explorer-item"
   >
     <td class="item-icon">
       <slot name="icon" />

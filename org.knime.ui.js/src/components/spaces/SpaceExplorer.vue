@@ -413,10 +413,9 @@ export default defineComponent({
                     title: 'Export',
                     disabled: false
                 },
-                {
-                    ...getRenameOption(anchorItem),
+                getRenameOption(anchorItem, {
                     title: anchorItem.isOpen ? 'Open workflows cannot be renamed' : ''
-                },
+                }),
                 getDeleteOption(anchorItem)
             ];
         }
