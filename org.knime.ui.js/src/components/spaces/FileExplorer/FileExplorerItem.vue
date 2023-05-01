@@ -110,7 +110,7 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
     @dragend="!isRenameActive && emit('dragend', $event)"
     @drag="emit('drag', $event)"
     @click="emit('click', $event)"
-    @contextmenu.prevent="emit('contextmenu', $event)"
+    @contextmenu.prevent="!isRenameActive && emit('contextmenu', $event)"
     @drop.prevent="!isRenameActive && emit('drop', $event)"
     @dblclick="!isRenameActive && emit('dblclick', $event)"
   >

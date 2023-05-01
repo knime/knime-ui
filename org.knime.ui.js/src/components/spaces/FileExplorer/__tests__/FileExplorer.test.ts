@@ -437,6 +437,11 @@ describe('FileExplorer.vue', () => {
             return item.trigger('contextmenu', position);
         };
 
+        const closeContextMenu = (_wrapper: VueWrapper<any>) => {
+            _wrapper.findComponent(FileExplorerContextMenu).vm.$emit('close');
+            return Vue.nextTick();
+        };
+
         it('should open menu', async () => {
             const { wrapper } = doMount();
 
@@ -466,8 +471,7 @@ describe('FileExplorer.vue', () => {
 
             await openContextMenu(wrapper, 0);
 
-            wrapper.findComponent(FileExplorerContextMenu).vm.$emit('close');
-            await Vue.nextTick();
+            await closeContextMenu(wrapper);
             expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(false);
         });
 
@@ -570,9 +574,7 @@ describe('FileExplorer.vue', () => {
                 const itemComponent = wrapper.findAllComponents(FileExplorerItemComp).at(indexOfItemWithRenameDisabled);
                 expect(itemComponent.props('isRenameActive')).toBe(false);
 
-                // close menu
-                wrapper.findComponent(FileExplorerContextMenu).vm.$emit('close');
-                await Vue.nextTick();
+                await closeContextMenu(wrapper);
 
                 // open different item
                 await openContextMenu(wrapper, 1);
@@ -629,8 +631,7 @@ describe('FileExplorer.vue', () => {
                 expect(wrapper.emitted('deleteItems')).toBeUndefined();
 
                 // close menu
-                wrapper.findComponent(FileExplorerContextMenu).vm.$emit('close');
-                await Vue.nextTick();
+                await closeContextMenu(wrapper);
 
                 // open different item
                 await openContextMenu(wrapper, 1);
@@ -707,6 +708,102 @@ describe('FileExplorer.vue', () => {
                     x: 200,
                     y: 200
                 });
+            });
+
+            it.each([
+                ['getRenameOption', { id: 'rename', text: 'Rename', disabled: false }],
+                ['getDeleteOption', { id: 'delete', text: 'Delete', disabled: false }]
+            ])('should provide a "%s" function on the slot', async (expectedFunctionName, expectedReturnValue) => {
+                const { wrapper } = doMountCustomWithSlots();
+
+                await openContextMenu(wrapper, 0);
+
+                const getOptionFn = getSlottedStubProp({ wrapper, propName: expectedFunctionName });
+                expect(typeof getOptionFn === 'function').toBe(true);
+                const optionValue = getOptionFn(MOCK_DATA.at(0));
+                expect(optionValue).toEqual(expectedReturnValue);
+            });
+
+            it('should set the correct `disabled` value to the rename option', async () => {
+                const indexOfItemWithRenameDisabled = 0;
+                const items = MOCK_DATA.map((item, index) => ({
+                    ...item,
+                    canBeRenamed: index !== indexOfItemWithRenameDisabled
+                }));
+
+                const { wrapper } = doMountCustomWithSlots({
+                    props: { items }
+                });
+
+                await openContextMenu(wrapper, indexOfItemWithRenameDisabled);
+
+                const assertRenameOptionIsDisabled = () => {
+                    const getRenameOptionFn = getSlottedStubProp({ wrapper, propName: 'getRenameOption' });
+                    expect(getRenameOptionFn(items.at(0)).disabled).toBe(true);
+                };
+
+                // disabled based on item's `canBeRenamed` property
+                assertRenameOptionIsDisabled();
+
+                // START OVER
+                await closeContextMenu(wrapper);
+
+                const secondItem = getRenderedItems(wrapper).at(1);
+                const thirdItem = getRenderedItems(wrapper).at(2);
+
+                await secondItem.trigger('click');
+                await thirdItem.trigger('click', { ctrlKey: true });
+
+                await openContextMenu(wrapper, 1);
+
+                // disabled because multiple selection is active
+                assertRenameOptionIsDisabled();
+            });
+
+            it('should set the correct `disabled` value to the delete option', async () => {
+                const indexOfItemWithDeleteDisabled = 0;
+                const items = MOCK_DATA.map((item, index) => ({
+                    ...item,
+                    canBeDeleted: index !== indexOfItemWithDeleteDisabled
+                }));
+
+                const { wrapper } = doMountCustomWithSlots({
+                    props: { items }
+                });
+
+                await openContextMenu(wrapper, indexOfItemWithDeleteDisabled);
+
+                // disabled based on item's `canBeDeleted` property
+                const getDeleteOptionFn = getSlottedStubProp({ wrapper, propName: 'getDeleteOption' });
+                expect(getDeleteOptionFn(items.at(0)).disabled).toBe(true);
+            });
+
+            it.each([
+                ['getRenameOption', { id: 'rename' }],
+                ['getDeleteOption', { id: 'delete' }]
+            ])('should allow sending custom values to the default options', async (getOptionFnName, baseValue) => {
+                const { wrapper } = doMountCustomWithSlots();
+
+                await openContextMenu(wrapper, 0);
+                const getOptionFn = getSlottedStubProp({ wrapper, propName: getOptionFnName });
+                const option = getOptionFn(
+                    MOCK_DATA.at(0),
+                    { text: 'custom text', title: 'custom title', disabled: true }
+                );
+                expect(option).toEqual({
+                    ...baseValue,
+                    text: 'custom text',
+                    title: 'custom title',
+                    disabled: true
+                });
+            });
+
+            it('should expose an "onItemClick" function on the slot', async () => {
+                const { wrapper } = doMountCustomWithSlots();
+
+                await openContextMenu(wrapper, 0);
+                const onItemClick = getSlottedStubProp({ wrapper, propName: 'onItemClick' });
+                expect(typeof onItemClick === 'function').toBe(true);
             });
         });
     });
