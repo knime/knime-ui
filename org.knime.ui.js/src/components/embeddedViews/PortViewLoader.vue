@@ -3,7 +3,7 @@ import { defineComponent, type PropType } from 'vue';
 import { KnimeService } from '@knime/ui-extension-service';
 
 import { API } from '@api';
-import type { ComponentNode, MetaNode, NativeNode } from '@/api/gateway-api/generated-api';
+import type { KnimeNode } from '@/api/gateway-api/custom-types';
 import ViewLoader from '@/components/embeddedViews/ViewLoader.vue';
 
 /**
@@ -24,7 +24,7 @@ export default defineComponent({
             required: true
         },
         selectedNode: {
-            type: Object as PropType<NativeNode | MetaNode | ComponentNode>,
+            type: Object as PropType<KnimeNode>,
             required: true
         },
         selectedPortIndex: {

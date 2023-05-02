@@ -1,7 +1,8 @@
 import { computed } from 'vue';
 import { useStore } from 'vuex';
 
-import type { NodePort, PortGroup, PortType } from '@/api/gateway-api/generated-api';
+import type { NodePort, PortGroup } from '@/api/gateway-api/generated-api';
+import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
 
 import { checkCompatibleConnectionAndPort,
     generateValidPortGroupsForPlaceholderPort,
@@ -28,7 +29,7 @@ const isPlaceholderPort = (
 export const usePortSnapping = () => {
     const store = useStore();
     const connections = computed(() => store.state.workflow.activeWorkflow.connections);
-    const availablePortTypes = computed<Record<string, PortType>>(() => store.state.application.availablePortTypes);
+    const availablePortTypes = computed<AvailablePortTypes>(() => store.state.application.availablePortTypes);
 
     const shouldPortSnap = ({
         sourcePort,

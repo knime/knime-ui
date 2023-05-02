@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-extra-parens */
-import type { ComponentNode,
-    Connection,
-    MetaNode,
-    NativeNode,
+import type { AvailablePortTypes, KnimeNode } from '@/api/gateway-api/custom-types';
+import type { Connection,
     WorkflowInfo,
     NodePort,
-    PortType,
     PortGroup } from '@/api/gateway-api/generated-api';
 import { toPortObject } from '@/util/portDataMapper';
 
@@ -23,7 +20,7 @@ export const detectConnectionCircle = ({
     startNode: string;
     downstreamConnection: boolean;
     workflow: {
-        nodes: Array<Record<string, NativeNode | ComponentNode | MetaNode>>;
+        nodes: Record<string, KnimeNode>;
         connections: Array<Connection>;
         info: WorkflowInfo;
     }
@@ -39,7 +36,7 @@ export const detectConnectionCircle = ({
 
     // do a breadth-first-search upstream / downstream
     // downstreamConnection means upstream bfs for circle detection
-    const PORTS = [downstreamConnection ? 'inPorts' : 'outPorts'] as const;
+    const PORTS = downstreamConnection ? 'inPorts' : 'outPorts' as const;
     const NODE = downstreamConnection ? 'sourceNode' : 'destNode' as const;
 
     // start point for bfs
@@ -103,7 +100,7 @@ export const checkPortCompatibility = (
     }: {
         fromPort: NodePort,
         toPort: { typeId: string },
-        availablePortTypes: Record<string, PortType>
+        availablePortTypes: AvailablePortTypes
     }
 ) => {
     const fromPortObjectInfo = toPortObject(availablePortTypes)(fromPort);
@@ -144,7 +141,7 @@ const groupAddablePortTypesByPortGroup = (
         targetPortDirection
     }: {
         targetPortGroups: Record<string, PortGroup>,
-        availablePortTypes: Record<string, PortType>,
+        availablePortTypes: AvailablePortTypes,
         targetPortDirection: Direction
     }
 ): GroupedPortTypes => {
@@ -195,7 +192,7 @@ export const checkCompatibleConnectionAndPort = (
     }: {
         fromPort: NodePort;
         toPort: NodePort;
-        availablePortTypes: Record<string, PortType>,
+        availablePortTypes: AvailablePortTypes,
         targetPortDirection: Direction,
         connections: Array<Connection>
     }
@@ -231,7 +228,7 @@ export const generateValidPortGroupsForPlaceholderPort = (
         targetPortDirection
     }: {
         fromPort: NodePort,
-        availablePortTypes: Record<string, PortType>,
+        availablePortTypes: AvailablePortTypes,
         targetPortGroups: Record<string, PortGroup>,
         targetPortDirection: Direction
     }
