@@ -673,8 +673,16 @@ describe('Connector.vue', () => {
             typeId: 'portType1'
         };
 
-        it('check if dragged object is compatible', async () => {
-            const wrapper = doShallowMount({ storeConfig: getStoreConfig() });
+        it('highlights if dragged object is type and port compatible', async () => {
+            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'portType1' },
+                customStoreConfig: {
+                    nodeRepository: { state: { isDraggingNode: true,
+                        draggedNodeData: {
+                            inPorts: [portMock],
+                            outPorts: [portMock]
+                        } } }
+                } });
+            const wrapper = doShallowMount({ storeConfig });
             const paths = wrapper.findAll('path');
 
             triggerDragEvent(paths.at(0).element, 'dragenter', { types: [KnimeMIME] });
@@ -682,6 +690,23 @@ describe('Connector.vue', () => {
             expect(paths.at(1).classes()).toContain('is-dragged-over');
 
             triggerDragEvent(paths.at(0).element, 'dragleave');
+            await Vue.nextTick();
+            expect(paths.at(1).classes()).not.toContain('is-dragged-over');
+        });
+
+        it('ignores dragged repository node without compatible ports', async () => {
+            const storeConfig = getStoreConfig({ customPortMock: { typeId: 'portType2' },
+                customStoreConfig: {
+                    nodeRepository: { state: { isDraggingNode: true,
+                        draggedNodeData: {
+                            inPorts: [portMock],
+                            outPorts: [portMock]
+                        } } }
+                } });
+            const wrapper = doShallowMount({ storeConfig });
+            const paths = wrapper.findAll('path');
+
+            triggerDragEvent(paths.at(0).element, 'dragenter', { types: [KnimeMIME] });
             await Vue.nextTick();
             expect(paths.at(1).classes()).not.toContain('is-dragged-over');
         });
@@ -717,7 +742,7 @@ describe('Connector.vue', () => {
             expect(paths.at(1).classes()).not.toContain('is-dragged-over');
         });
 
-        it('ignores dragged node without compatible ports', () => {
+        it('ignores dragged workflow node without compatible ports', () => {
             const storeConfig = getStoreConfig({ customPortMock: { typeId: 'portType2' } });
             const wrapper = doShallowMount({ storeConfig });
 

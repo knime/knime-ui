@@ -9,7 +9,8 @@ import DraggableNodeTemplate from '../DraggableNodeTemplate.vue';
 
 describe('DraggableNodeTemplate', () => {
     let props, doMount, wrapper, testEvent, isWritable, openDescriptionPanelMock, closeDescriptionPanelMock,
-        setSelectedNodeMock, $store, storeConfig, setDraggingNodeMock, addNodeMock, getElementByIdMock, activeWorkflow;
+        setSelectedNodeMock, $store, storeConfig, setDraggingNodeTemplateMock, addNodeMock, getElementByIdMock,
+        activeWorkflow;
 
     beforeEach(() => {
         isWritable = true;
@@ -17,7 +18,7 @@ describe('DraggableNodeTemplate', () => {
         openDescriptionPanelMock = vi.fn();
         closeDescriptionPanelMock = vi.fn();
         setSelectedNodeMock = vi.fn();
-        setDraggingNodeMock = vi.fn();
+        setDraggingNodeTemplateMock = vi.fn();
         addNodeMock = vi.fn();
 
         let getBoundingClientRectMock = vi.fn().mockReturnValue({
@@ -88,12 +89,12 @@ describe('DraggableNodeTemplate', () => {
             },
             nodeRepository: {
                 mutations: {
-                    setSelectedNode: setSelectedNodeMock,
-                    setDraggingNode: setDraggingNodeMock
+                    setSelectedNode: setSelectedNodeMock
                 },
                 actions: {
                     openDescriptionPanel: openDescriptionPanelMock,
-                    closeDescriptionPanel: closeDescriptionPanelMock
+                    closeDescriptionPanel: closeDescriptionPanelMock,
+                    setDraggingNodeTemplate: setDraggingNodeTemplateMock
                 },
                 state: {
                     isDescriptionPanelOpen: false
@@ -356,14 +357,14 @@ describe('DraggableNodeTemplate', () => {
             doMount();
             wrapper.trigger('dragstart', testEvent);
 
-            expect(setDraggingNodeMock).toHaveBeenCalledWith(expect.anything(), true);
+            expect(setDraggingNodeTemplateMock).toHaveBeenCalledWith(expect.anything(), expect.anything());
         });
 
         it('sets isDraggingNode as false when dragging ends', () => {
             doMount();
             wrapper.trigger('dragend', { dataTransfer: { dropEffect: '' } });
 
-            expect(setDraggingNodeMock).toHaveBeenCalledWith(expect.anything(), false);
+            expect(setDraggingNodeTemplateMock).toHaveBeenCalledWith(expect.anything(), null);
         });
     });
 });

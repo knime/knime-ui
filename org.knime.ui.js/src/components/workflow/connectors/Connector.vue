@@ -58,6 +58,9 @@ export default defineComponent({
             movePreviewDelta: 'movePreviewDelta',
             isDragging: 'isDragging'
         }),
+        ...mapState('nodeRepository', {
+            draggedNodeTemplate: 'draggedNodeData'
+        }),
         ...mapGetters('workflow', {
             isWorkflowWritable: 'isWritable'
         }),
@@ -144,39 +147,34 @@ export default defineComponent({
         onIndicateReplacement({ detail: { state } }) {
             this.suggestDelete = state;
         },
-        onConnectorDragEnter(dragEvent: DragEvent) {
-            if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
-                this.isDraggedOver = true;
-            }
-        },
-        onConnectorDragLeave() {
-            this.isDraggedOver = false;
-        },
-        onConnectorDrop(dragEvent: DragEvent) {
-            const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
-            this.insertNode({
-                clientX: dragEvent.clientX,
-                clientY: dragEvent.clientY,
-                nodeFactory,
-                event: dragEvent
-            });
-        },
-        onNodeDragggingEnter(event: CustomEvent) {
-            const { isNodeConnected, inPorts, outPorts } = event.detail;
-
+        hasCompatiblePorts(replacementInPorts, replacementOutPorts) {
             const hasCompatibleSrcPort = this.sourceNodeObject &&
-                inPorts.some(toPort => checkPortCompatibility(
+                replacementInPorts.some(toPort => checkPortCompatibility(
                     { fromPort: this.sourceNodeObject.outPorts[this.sourcePort],
                         toPort,
                         availablePortTypes: this.availablePortTypes }
                 ));
             const hasCompatibleDestPort = this.destNodeObject &&
-                outPorts.some(fromPort => checkPortCompatibility(
+                replacementOutPorts.some(fromPort => checkPortCompatibility(
                     { fromPort,
                         toPort: this.destNodeObject.inPorts[this.destPort],
                         availablePortTypes: this.availablePortTypes }
                 ));
-            if (!hasCompatibleSrcPort && !hasCompatibleDestPort) {
+            return hasCompatibleSrcPort || hasCompatibleDestPort;
+        },
+        onRepositoryNodeDragEnter(dragEvent: DragEvent) {
+            if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
+                const { inPorts, outPorts } = this.draggedNodeTemplate;
+
+                if (this.hasCompatiblePorts(inPorts, outPorts)) {
+                    this.isDraggedOver = true;
+                }
+            }
+        },
+        onWorkflowNodeDragEnter(event: CustomEvent) {
+            const { isNodeConnected, inPorts, outPorts } = event.detail;
+
+            if (!this.hasCompatiblePorts(inPorts, outPorts)) {
                 return;
             }
 
@@ -186,7 +184,19 @@ export default defineComponent({
             event.preventDefault();
             this.isDraggedOver = true;
         },
-        onNodeDragggingEnd(dragEvent: CustomEvent) {
+        onNodeDragLeave() {
+            this.isDraggedOver = false;
+        },
+        onRepositoryNodeDrop(dragEvent: DragEvent) {
+            const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
+            this.insertNode({
+                clientX: dragEvent.clientX,
+                clientY: dragEvent.clientY,
+                nodeFactory,
+                event: dragEvent
+            });
+        },
+        onWorkflowNodeDragLeave(dragEvent: CustomEvent) {
             this.insertNode({
                 clientX: dragEvent.detail.clientX,
                 clientY: dragEvent.detail.clientY,
@@ -228,12 +238,12 @@ export default defineComponent({
       @mouseleave="hover = false"
       @click.left="onMouseClick"
       @pointerdown.right="onContextMenu"
-      @dragenter="onConnectorDragEnter"
-      @dragleave="onConnectorDragLeave"
-      @drop.stop="onConnectorDrop"
-      @node-dragging-enter="onNodeDragggingEnter"
-      @node-dragging-leave.prevent="onConnectorDragLeave"
-      @node-dragging-end.prevent="onNodeDragggingEnd"
+      @dragenter="onRepositoryNodeDragEnter"
+      @dragleave="onNodeDragLeave"
+      @drop.stop="onRepositoryNodeDrop"
+      @node-dragging-enter="onWorkflowNodeDragEnter"
+      @node-dragging-leave.prevent="onNodeDragLeave"
+      @node-dragging-end.prevent="onWorkflowNodeDragLeave"
     />
     <path
       ref="visiblePath"

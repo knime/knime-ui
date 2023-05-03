@@ -22,6 +22,7 @@ export const state = () => ({
     /* node interaction */
     selectedNode: null,
     isDraggingNode: false,
+    draggedNodeData: null,
     isDescriptionPanelOpen: false,
 
     /* node templates */
@@ -55,6 +56,10 @@ export const mutations = {
 
     setDraggingNode(state, value) {
         state.isDraggingNode = value;
+    },
+
+    setDraggedNodeData(state, value) {
+        state.draggedNodeData = value;
     },
 
     setDescriptionPanel(state, value) {
@@ -143,6 +148,11 @@ export const actions = {
             state.nodeTemplates[nodeTemplateId] = nodeTemplates[nodeTemplateId];
             return nodeTemplates[nodeTemplateId];
         }
+    },
+
+    setDraggingNodeTemplate({ commit }, nodeTemplate) {
+        commit('setDraggingNode', Boolean(nodeTemplate));
+        commit('setDraggedNodeData', nodeTemplate);
     }
 };
 

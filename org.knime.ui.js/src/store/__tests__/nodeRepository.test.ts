@@ -128,6 +128,7 @@ describe('Node Repository store', () => {
             categoryScrollPosition: 0,
             selectedNode: null,
             isDraggingNode: false,
+            draggedNodeData: null,
             isDescriptionPanelOpen: false,
             nodeTemplates: {}
         });
@@ -350,6 +351,24 @@ describe('Node Repository store', () => {
             expect(nodeTemplate)
                 .toEqual(getNodeTemplatesResponse['org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory']);
             expect(store.state.nodeRepository.nodeTemplates).toEqual(getNodeTemplatesResponse);
+        });
+
+        it('updates the current dragged repository node', async () => {
+            const { store } = await createStore();
+            const mockNodeTemplate = { factory: 'testFactory' };
+            await store.dispatch(
+                'nodeRepository/setDraggingNodeTemplate', mockNodeTemplate
+            );
+
+            expect(store.state.nodeRepository.isDraggingNode).toBeTruthy();
+            expect(store.state.nodeRepository.draggedNodeData).toEqual(mockNodeTemplate);
+
+            await store.dispatch(
+                'nodeRepository/setDraggingNodeTemplate', null
+            );
+
+            expect(store.state.nodeRepository.isDraggingNode).toBeFalsy();
+            expect(store.state.nodeRepository.draggedNodeData).toBeNull();
         });
     });
 });

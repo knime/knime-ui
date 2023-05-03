@@ -39,15 +39,15 @@ export default {
         ...mapGetters('canvas', ['getVisibleFrame'])
     },
     methods: {
-        ...mapMutations('nodeRepository', ['setSelectedNode', 'setDraggingNode']),
-        ...mapActions('nodeRepository', ['openDescriptionPanel', 'closeDescriptionPanel']),
+        ...mapMutations('nodeRepository', ['setSelectedNode']),
+        ...mapActions('nodeRepository', ['openDescriptionPanel', 'closeDescriptionPanel', 'setDraggingNodeTemplate']),
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
 
         onDragStart(e) {
             // close description panel
             this.shouldSelectOnAbort = this.isSelected && this.isDescriptionPanelOpen;
             this.closeDescriptionPanel();
-            this.setDraggingNode(true);
+            this.setDraggingNodeTemplate(this.nodeTemplate);
 
             // Fix for cursor style for Firefox
             if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
@@ -75,7 +75,7 @@ export default {
         },
         onDragEnd(e) {
             e.target.removeAttribute('style');
-            this.setDraggingNode(false);
+            this.setDraggingNodeTemplate(null);
 
             // remove cloned node preview
             if (this.dragGhost) {
