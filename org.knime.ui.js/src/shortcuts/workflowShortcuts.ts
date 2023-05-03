@@ -277,14 +277,10 @@ const workflowShortcuts: WorkflowShortcuts = {
         text: 'Paste',
         title: 'Paste from clipboard',
         hotkey: ['Ctrl', 'V'],
-        execute:
-            ({ $store, payload }) => {
-                const customPosition = payload?.metadata?.position;
-
-                $store.dispatch('workflow/pasteWorkflowParts', { position: customPosition });
-            },
-        condition:
-            ({ $store }) => $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
+        execute: ({ $store, payload }) => $store.dispatch('workflow/pasteWorkflowParts', {
+            position: payload?.metadata?.position
+        }),
+        condition: ({ $store }) => $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
     },
     addWorkflowAnnotation: {
         text: 'New workflow annotation',
