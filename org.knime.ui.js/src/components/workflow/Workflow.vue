@@ -68,7 +68,7 @@ export default defineComponent({
           v-for="annotation of workflow.workflowAnnotations"
           :id="annotation.id"
           :key="`annotation-${annotation.id}`"
-          :position="annotation.bounds"
+          :bounds="annotation.bounds"
         >
           <WorkflowAnnotation
             v-if="editableAnnotationId !== annotation.id"

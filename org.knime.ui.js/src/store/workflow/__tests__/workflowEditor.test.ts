@@ -185,7 +185,7 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        it('moves actual nodes', async () => {
+        it('moves nodes and annotations', async () => {
             const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
@@ -193,7 +193,10 @@ describe('workflow store: Editing', () => {
                     foo: { bla: 1, position: { x: 0, y: 0 } },
                     bar: { qux: 2, position: { x: 50, y: 50 } }
                 },
-                workflowAnnotations: []
+                workflowAnnotations: [
+                    { id: 'id1', bounds: { x: 10, y: 10, width: 10, height: 10 } },
+                    { id: 'id2', bounds: { x: 20, y: 20, width: 20, height: 20 } }
+                ]
             });
             store.dispatch('selection/selectAllObjects');
             await Vue.nextTick();
@@ -248,25 +251,37 @@ describe('workflow store: Editing', () => {
         it.each([
             [1],
             [20]
-        ])('saves position after move end for %s nodes', async (amount) => {
+        ])('saves position after move end for %s nodes and annotations', async (amount) => {
             const { store } = await loadStore();
             const nodesArray: Record<string, { id: string, position: any }> = {};
             for (let i = 0; i < amount; i++) {
                 const name = `node-${i}`;
                 nodesArray[name] = { position: { x: 0, y: 0 }, id: name };
             }
+            const annotationsArray: Array< {id: string, bounds: any}> = [];
+            for (let i = 0; i < amount; i++) {
+                const name = `annotation-${i}`;
+                annotationsArray.push({ bounds: { x: 10, y: 10, width: 10, height: 10 }, id: name });
+            }
+            
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
                 nodes: nodesArray,
                 info: {
                     containerId: 'test'
-                }
+                },
+                workflowAnnotations: annotationsArray
             });
             await Vue.nextTick();
             const nodeIds = [];
+            const annotationIds = [];
             Object.values(nodesArray).forEach((node) => {
                 store.dispatch('selection/selectNode', node.id);
                 nodeIds.push(node.id);
+            });
+            Object.values(annotationsArray).forEach((annotation) => {
+                store.dispatch('selection/selectAnnotation', annotation.id);
+                annotationIds.push(annotation.id);
             });
 
             store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
@@ -277,7 +292,7 @@ describe('workflow store: Editing', () => {
                 nodeIds,
                 workflowId: 'test',
                 translation: { x: 50, y: 50 },
-                annotationIds: []
+                annotationIds
             });
         });
 

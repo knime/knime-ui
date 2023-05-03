@@ -7,13 +7,12 @@ import throttle from 'raf-throttle';
 import { snapToGrid } from '@/util/geometry';
 
 import { getGridAdjustedBounds } from './transform-control-utils';
-// import { escapeStack } from '@/mixins';
 
 export default defineComponent({
     props: {
         id: { type: String, required: true },
 
-        position: {
+        bounds: {
             type: Object as PropType<Bounds>,
             default: () => ({ x: 0, y: 0, width: 0, height: 0 }),
             required: true
@@ -22,7 +21,7 @@ export default defineComponent({
     data() {
         return {
             startPos: null,
-            gridBounds: getGridAdjustedBounds(this.position),
+            gridBounds: getGridAdjustedBounds(this.bounds),
             cursorPosition: null
         };
     },
@@ -31,7 +30,6 @@ export default defineComponent({
         ...mapGetters('selection', ['isAnnotationSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('workflow', ['movePreviewDelta', 'isDragging']),
-        ...mapState('canvas', ['zoomFactor']),
 
         combinedPosition() {
             return {
@@ -45,16 +43,16 @@ export default defineComponent({
         }
     },
     watch: {
-        position: {
+        bounds: {
             deep: true,
             handler() {
-                this.gridBounds = getGridAdjustedBounds(this.position);
+                this.gridBounds = getGridAdjustedBounds(this.bounds);
                 this.handleMoveFromStore();
             }
         }
     },
     methods: {
-        ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
+        ...mapActions('selection', ['selectAnnotation', 'deselectAllObjects']),
         ...mapActions('workflow', ['moveObjects']),
         ...mapMutations('workflow', ['setMovePreview', 'resetMovePreview', 'setIsDragging']),
 
@@ -75,12 +73,12 @@ export default defineComponent({
                 x: this.gridBounds.x,
                 y: this.gridBounds.y,
                 positionDelta: {
-                    x: this.gridBounds.x - this.position.x,
-                    y: this.gridBounds.y - this.position.y
+                    x: this.gridBounds.x - this.bounds.x,
+                    y: this.gridBounds.y - this.bounds.y
                 }
             };
 
-            this.$store.commit('workflow/setIsDragging', true);
+            this.setIsDragging(true);
         },
 
         onMove: throttle(function (this:any, { detail: { clientX, clientY, altKey } }) {
@@ -107,7 +105,7 @@ export default defineComponent({
             this.moveObjects();
         }),
 
-        onPointerDown(event) {
+        onPointerDown(event: PointerEvent) {
             this.cursorPosition = { x: event.offsetX, y: event.offsetY };
         }
     }

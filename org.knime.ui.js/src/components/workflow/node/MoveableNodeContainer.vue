@@ -43,7 +43,6 @@ export default {
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedNodeDrag', 'isDragging']),
-        ...mapState('canvas', ['zoomFactor']),
 
         // Combined position of original position + the dragged amount
         combinedPosition() {

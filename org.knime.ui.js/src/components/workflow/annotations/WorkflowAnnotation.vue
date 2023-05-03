@@ -179,11 +179,11 @@ export default defineComponent({
             const x =
                 // start from same X as annotation
                 transformedBounds.x -
-                // center by substracting half the toolbar width + half the annotation width
+                // center by subtracting half the toolbar width + half the annotation width
                 this.$shapes.annotationToolbarContainerWidth / 2 +
                 transformedBounds.width / 2;
 
-            // use same Y as annoation and add a negative Y offset equal to the toolbar height
+            // use same Y as annotation and add a negative Y offset equal to the toolbar height
             const y = transformedBounds.y - this.$shapes.annotationToolbarContainerHeight;
 
             return {
