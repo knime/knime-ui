@@ -1,5 +1,5 @@
-<script>
-/* eslint-disable brace-style */
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { mapState, mapGetters } from 'vuex';
 
 import Button from 'webapps-common/ui/components/Button.vue';
@@ -11,6 +11,7 @@ import PortViewTabOutput from './PortViewTabOutput.vue';
 import NodeViewTabOutput from './NodeViewTabOutput.vue';
 
 import { buildMiddleware, validateDragging, validateSelection } from './output-validator';
+import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
 
 export const runValidationChecks = ({ selectedNodes, isDragging }) => {
     const validationMiddleware = buildMiddleware(
@@ -27,7 +28,7 @@ export const runValidationChecks = ({ selectedNodes, isDragging }) => {
  * Node output panel, displaying output port selection bar and port view if possible.
  * Port view will be rendered dynamically based on the port type
  */
-export default {
+export default defineComponent({
     components: {
         PortTabs,
         Button,
@@ -44,10 +45,13 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', { projectId: 'activeProjectId', availablePortTypes: 'availablePortTypes' }),
+        ...mapState('application', {
+            projectId: state => state.activeProjectId as string | null,
+            availablePortTypes: state => state.availablePortTypes as AvailablePortTypes
+        }),
         ...mapState('workflow', {
-            workflowId: state => state.activeWorkflow.info.containerId,
-            isDragging: state => state.isDragging
+            workflowId: state => state.activeWorkflow.info.containerId as string,
+            isDragging: state => state.isDragging as boolean
         }),
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode']),
 
@@ -127,7 +131,7 @@ export default {
             this.$store.dispatch('workflow/executeNodes', [this.singleSelectedNode.id]);
         }
     }
-};
+});
 </script>
 
 <template>

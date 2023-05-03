@@ -3,7 +3,7 @@ import { defineComponent, type PropType } from 'vue';
 import { KnimeService } from '@knime/ui-extension-service';
 
 import { API } from '@api';
-import type { KnimeNode } from '@/api/gateway-api/custom-types';
+import type { KnimeNode, ViewConfig } from '@/api/gateway-api/custom-types';
 import ViewLoader from '@/components/embeddedViews/ViewLoader.vue';
 
 /**
@@ -30,6 +30,10 @@ export default defineComponent({
         selectedPortIndex: {
             type: Number,
             required: true
+        },
+        selectedViewIndex: {
+            type: Number,
+            required: true
         }
     },
 
@@ -49,6 +53,7 @@ export default defineComponent({
                 this.workflowId,
                 this.selectedNode.id,
                 this.selectedPortIndex,
+                this.selectedViewIndex,
                 portObjectVersion
             ].join('/');
         }
@@ -60,7 +65,8 @@ export default defineComponent({
                 projectId: this.projectId,
                 workflowId: this.workflowId,
                 nodeId: this.selectedNode.id,
-                portIdx: this.selectedPortIndex
+                portIdx: this.selectedPortIndex,
+                viewIdx: this.selectedViewIndex
             });
 
             return portView;
@@ -75,8 +81,9 @@ export default defineComponent({
         },
 
         /* Required by dynamically loaded view components */
-        initKnimeService(config) {
+        initKnimeService(config: ViewConfig) {
             return new KnimeService(
+                // @ts-expect-error
                 config,
 
                 // Data Service Callback
@@ -86,6 +93,7 @@ export default defineComponent({
                         workflowId: this.workflowId,
                         nodeId: this.selectedNode.id,
                         portIdx: this.selectedPortIndex,
+                        viewIdx: this.selectedViewIndex,
                         serviceType,
                         dataServiceRequest
                     });

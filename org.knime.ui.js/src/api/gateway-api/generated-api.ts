@@ -2357,13 +2357,13 @@ export interface PortGroup {
      */
     outputRange?: Array<number>;
     /**
-     * Can you add another input port or not. Either this or the &#39;canAddOutPort&#39; is required for a port group.
+     * Whether an additional input port can be added. Either this or &#x60;canAddOutPort&#x60; is required.
      * @type {boolean}
      * @memberof PortGroup
      */
     canAddInPort?: boolean;
     /**
-     * Can you add another output port or not. Either this or the &#39;canAddInPort&#39; is required for a port group.
+     * Whether an additional input port can be added. Either this or &#x60;canAddInPort&#x60; is required.
      * @type {boolean}
      * @memberof PortGroup
      */
@@ -2379,7 +2379,7 @@ export interface PortGroup {
 
 
 /**
- * Decribes the type of a port.
+ * Describes the type of a port.
  * @export
  * @interface PortType
  */
@@ -2416,11 +2416,11 @@ export interface PortType {
      */
     hidden?: boolean;
     /**
-     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included. 
-     * @type {boolean}
+     *
+     * @type {PortViews}
      * @memberof PortType
      */
-    hasView?: boolean;
+    views?: PortViews;
 
 }
 
@@ -2441,6 +2441,75 @@ export namespace PortType {
         Other = 'other'
     }
 }
+/**
+ * Metadata about a port view.
+ * @export
+ * @interface PortViewDescriptor
+ */
+export interface PortViewDescriptor {
+
+    /**
+     * The display name of the port view.
+     * @type {string}
+     * @memberof PortViewDescriptor
+     */
+    label: string;
+    /**
+     * Whether the view is a port object spec view. Assumed to be false if omitted.
+     * @type {boolean}
+     * @memberof PortViewDescriptor
+     */
+    isSpecView?: boolean;
+
+}
+
+
+/**
+ * Mapping of node execution state to list of view IDs to be displayed.
+ * @export
+ * @interface PortViewDescriptorMapping
+ */
+export interface PortViewDescriptorMapping {
+
+    /**
+     * IDs of views to be displayed when the node is in &#x60;configured&#x60; state.
+     * @type {Array<number>}
+     * @memberof PortViewDescriptorMapping
+     */
+    configured?: Array<number>;
+    /**
+     * IDs of views to be available when the node is in &#x60;executed&#x60; state.
+     * @type {Array<number>}
+     * @memberof PortViewDescriptorMapping
+     */
+    executed?: Array<number>;
+
+}
+
+
+/**
+ * Provides information about views available for a port type.
+ * @export
+ * @interface PortViews
+ */
+export interface PortViews {
+
+    /**
+     *
+     * @type {Array<PortViewDescriptor>}
+     * @memberof PortViews
+     */
+    descriptors: Array<PortViewDescriptor>;
+    /**
+     *
+     * @type {PortViewDescriptorMapping}
+     * @memberof PortViews
+     */
+    descriptorMapping: PortViewDescriptorMapping;
+
+}
+
+
 /**
  * Event for changes to the dirtyState of a project/workflow.
  * @export
@@ -3745,13 +3814,14 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} portIdx The port index to be used.
+         * @param {number} viewIdx The index of the specific port view to obtain
          * @param {'initial_data' | 'data'} serviceType 
          * @param {string} [dataServiceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         callPortDataService(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
         ): Promise<string> {
            const defaultParams = { 
                 dataServiceRequest: null,
@@ -3765,11 +3835,12 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} portIdx The port index to be used.
+         * @param {number} viewIdx The index of the specific port view to obtain
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getPortView(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number  }
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
         ): Promise<any> {
            const defaultParams = { 
            }
