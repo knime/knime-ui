@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/utils';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
@@ -97,7 +97,7 @@ describe('MoveableAnnotationContainer.vue', () => {
             expect(transform).toBe('translate(0, 0)');
         });
 
-        it('deselects all objects on movement of unselected annotation', () => {
+        it('deselects all objects on movement of unselected annotation', async () => {
             const { dispatchSpy, mockMoveDirective } = doMount();
 
             const moveStartEvent = new CustomEvent('movestart', {
@@ -111,6 +111,7 @@ describe('MoveableAnnotationContainer.vue', () => {
             });
 
             mockMoveDirective.trigger('onMoveStart', moveStartEvent);
+            await flushPromises();
 
             expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAllObjects', undefined);
             expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
@@ -140,7 +141,7 @@ describe('MoveableAnnotationContainer.vue', () => {
         it.each([
             ['without grid', { x: 1, y: 1 }, true],
             ['with grid', $shapes.gridSize, false]
-        ])('moves an annotation %s', (_, gridSize, altKey) => {
+        ])('moves an annotation %s', async (_, gridSize, altKey) => {
             const kanvasMock = document.createElement('div');
             kanvasMock.id = 'kanvas';
             document.body.appendChild(kanvasMock);
@@ -162,6 +163,7 @@ describe('MoveableAnnotationContainer.vue', () => {
                 }
             });
             mockMoveDirective.trigger('onMoveStart', moveStartEvent);
+            await flushPromises();
             expect(commitSpy).toHaveBeenCalledWith('workflow/setIsDragging', true, undefined);
 
             wrapper.find('g').trigger('pointerdown', {

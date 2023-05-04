@@ -201,6 +201,7 @@ describe('Workflow Annotation', () => {
         it('should select with left click', async () => {
             const { wrapper, dispatchSpy } = doMount();
             await wrapper.findComponent(TransformControls).trigger('click', { button: 0 });
+            await wrapper.vm.$nextTick();
 
             expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAllObjects', undefined);
             expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
