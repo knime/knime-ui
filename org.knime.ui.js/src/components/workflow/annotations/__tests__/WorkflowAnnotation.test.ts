@@ -202,6 +202,7 @@ describe('Workflow Annotation', () => {
             const { wrapper, dispatchSpy } = doMount();
             await wrapper.findComponent(TransformControls).trigger('click', { button: 0 });
 
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAllObjects', undefined);
             expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
         });
 

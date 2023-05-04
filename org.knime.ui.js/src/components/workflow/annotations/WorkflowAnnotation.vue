@@ -118,11 +118,18 @@ export default defineComponent({
             const metaOrCtrlKey = getMetaOrCtrlKey();
             const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
-            const action = isMultiselect && this.isSelected
-                ? this.deselectAnnotation
-                : this.selectAnnotation;
+            if (isMultiselect) {
+                // Multi select
+                const action = this.isSelected
+                    ? this.deselectAnnotation
+                    : this.selectAnnotation;
 
-            action(this.annotation.id);
+                action(this.annotation.id);
+            } else {
+                // Single select
+                this.deselectAllObjects();
+                this.selectAnnotation(this.annotation.id);
+            }
         },
 
         onContextMenu(event: PointerEvent) {
@@ -205,7 +212,7 @@ export default defineComponent({
     :show-selection="showSelectionPlane"
     :initial-value="annotation.bounds"
     @transform-end="transformAnnotation($event.bounds)"
-    @click.left="onLeftClick"
+    @click="onLeftClick"
     @pointerdown.right.stop="onContextMenu"
   >
     <template #default="{ transformedBounds }">
