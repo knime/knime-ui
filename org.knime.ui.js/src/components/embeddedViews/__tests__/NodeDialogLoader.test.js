@@ -127,12 +127,12 @@ describe('NodeDialogLoader.vue', () => {
             const wrapper = doMount(mockStore);
             wrapper.vm.initKnimeService({ dummyConfig: true });
 
-            const mockNotification = { mock: true };
+            const mockEvent = { mock: true };
             expect(mockedAPI.node.callNodeDataService).not.toHaveBeenCalled();
-            const params = [mockNotification];
+            const params = [mockEvent];
             await registry.dispatch('notification', ...params);
 
-            expect(mockDispatch).toHaveBeenCalledWith('pagebuilder/service/pushNotification', mockNotification);
+            expect(mockDispatch).toHaveBeenCalledWith('pagebuilder/service/pushEvent', mockEvent);
         });
     });
 });

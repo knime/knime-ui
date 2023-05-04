@@ -87,12 +87,12 @@ export default {
                 },
 
                 // Notification Callback
-                (notification) => {
-                    // Dispatch a notification to the page builder so that it updates the corresponding view
+                (event) => {
+                    // Dispatch an event to the page builder so that it updates the corresponding view
                     // of the active node, whose settings are controlled by THIS dialog
                     // TODO: NXT-1295 this should be reworked in the pagebuilder somehow, so that the NodeDialog and
                     // the pagebuilder are not coupled to each other like this
-                    this.$store.dispatch('pagebuilder/service/pushNotification', notification);
+                    this.$store.dispatch('pagebuilder/service/pushEvent', event);
                 }
             );
         }
