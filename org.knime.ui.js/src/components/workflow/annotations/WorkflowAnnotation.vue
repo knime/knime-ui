@@ -114,7 +114,7 @@ export default defineComponent({
         ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
 
-        onLeftClick(event: MouseEvent) {
+        async onLeftClick(event: MouseEvent) {
             const metaOrCtrlKey = getMetaOrCtrlKey();
             const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
@@ -127,8 +127,8 @@ export default defineComponent({
                 action(this.annotation.id);
             } else {
                 // Single select
-                this.deselectAllObjects();
-                this.selectAnnotation(this.annotation.id);
+                await this.deselectAllObjects();
+                await this.selectAnnotation(this.annotation.id);
             }
         },
 

@@ -63,12 +63,12 @@ export default defineComponent({
             }
         },
         
-        onMoveStart({ detail }) {
+        async onMoveStart({ detail }) {
             if (!detail.event.shiftKey && !this.isAnnotationSelected(this.id)) {
-                this.deselectAllObjects();
+                await this.deselectAllObjects();
             }
             
-            this.selectAnnotation(this.id);
+            await this.selectAnnotation(this.id);
             this.startPos = {
                 x: this.gridBounds.x,
                 y: this.gridBounds.y,
