@@ -89,7 +89,7 @@ describe('dragGhostHelpers', () => {
             ];
             const { ghosts } = setup({ selectedTargets, badgeCount: 10 });
 
-            expect(getBadgeElement(ghosts[0]).innerText).toBe(10);
+            expect(getBadgeElement(ghosts[0]).innerText).toBe('10');
         });
 
         it('should display the proper badge count (>99)', () => {

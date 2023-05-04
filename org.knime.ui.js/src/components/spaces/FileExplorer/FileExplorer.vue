@@ -1,385 +1,198 @@
-<script>
-/* eslint-disable max-lines */
-import { mixin as VueClickAway } from 'vue3-click-away';
+<script setup lang="ts">
+import { ref, toRefs, computed, watch } from 'vue';
+import { directive as vClickAway } from 'vue3-click-away';
 
-import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
-import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
-import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
-import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
-import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
-import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
-import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
-import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
-import InputField from 'webapps-common/ui/components/forms/InputField.vue';
-import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
+import { SpaceItem } from '@/api/gateway-api/generated-api';
 
-import { getMetaOrCtrlKey } from '@/util/navigator';
-import ITEM_TYPES from '@/util/spaceItemTypes';
-import WorkflowNameValidator from '@/components/common/WorkflowNameValidator.vue';
-
-import * as multiSelectionService from './multiSelectionStateService';
-import { createDragGhosts } from './dragGhostHelpers';
+import { useItemDragging } from './useItemDragging';
+import { useMultiSelection } from './useMultiSelection';
+import FileExplorerContextMenu from './FileExplorerContextMenu.vue';
+import FileExplorerItem from './FileExplorerItem.vue';
+import FileExplorerItemBack from './FileExplorerItemBack.vue';
+import type { FileExplorerItem as FileExplorerItemType,
+    FileExplorerContextMenu as FileExplorerContextMenuNamespace } from './types';
 
 /**
  * Component that handles FileExplorer interactions.
  *
  * NOTE: Do not add store bindings to component to keep it as reusable as possible
  */
-export default {
-    components: {
-        SubMenu,
-        MenuOptionsIcon,
-        WorkflowGroupIcon,
-        WorkflowIcon,
-        ComponentIcon,
-        DataIcon,
-        MetaNodeIcon,
-        ArrowIcon,
-        WorkflowNameValidator,
-        InputField,
-        NodePreview
-    },
+interface Props {
+    mode?: 'normal' | 'mini';
+    fullPath?: string;
+    isRootFolder: boolean;
+    items: Array<FileExplorerItemType>;
+}
 
-    mixins: [VueClickAway],
+const props = withDefaults(defineProps<Props>(), {
+    mode: 'normal',
+    fullPath: ''
+});
 
-    props: {
-        mode: {
-            type: String,
-            default: 'normal',
-            validator: (value) => ['normal', 'mini'].includes(value)
-        },
+// eslint-disable-next-line func-call-spacing
+const emit = defineEmits<{
+    (e: 'changeSelection', selectedItemIds: Array<string>): void
+    (e: 'changeDirectory', pathId: string): void
+    (e: 'openFile', item: FileExplorerItemType): void
+    (e: 'deleteItems', payload: { items: Array<FileExplorerItemType> }): void
+    (e: 'moveItems', payload: {
+      sourceItems: Array<string>;
+      targetItem: string;
+      onComplete: (isSuccessfulMove: boolean) => void;
+    }): void
+    (e: 'dragend', payload: {
+      event: DragEvent;
+      sourceItem: FileExplorerItemType;
+      onComplete: (isSuccessfulMove: boolean) => void;
+    }): void
+    (e: 'drag', payload: { event: DragEvent; item: FileExplorerItemType }): void;
+    (e: 'renameFile', payload: { itemId: string; newName: string }): void;
+}>();
 
-        isRootFolder: {
-            type: Boolean,
-            required: true
-        },
+const isDirectory = (item: FileExplorerItemType) => item.type === SpaceItem.TypeEnum.WorkflowGroup;
+const canOpenFile = (item: FileExplorerItemType) => item.type === SpaceItem.TypeEnum.Workflow;
 
-        items: {
-            type: Array,
-            required: true
-        },
+const changeDirectory = (pathId: string) => emit('changeDirectory', pathId);
 
-        fullPath: {
-            type: String,
-            default: ''
-        }
-    },
+/** MULTISELECTION */
+const multiSelection = useMultiSelection();
+const {
+    multiSelectionState,
+    handleSelectionClick,
+    isSelected,
+    selectedIndexes,
+    isMultipleSelectionActive,
+    resetSelection
+} = multiSelection;
 
-    emits: [
-        'changeSelection',
-        'changeDirectory',
-        'openFile',
-        'deleteItems',
-        'moveItems',
-        'dragend',
-        'renameFile',
-        'drag'
-    ],
+const selectedItems = computed(() => selectedIndexes.value.map(index => props.items[index]));
+const selectedItemIds = computed(() => selectedItems.value.map(item => item.id));
 
-    data() {
-        return {
-            ITEM_TYPES,
-            multiSelectionState: multiSelectionService.getInitialState(),
-            isDragging: false,
-            startDragItemIndex: null,
-            activeRenameId: null,
-            renameValue: '',
-            nodeTemplate: null
-        };
-    },
+watch(multiSelectionState, () => {
+    emit('changeSelection', selectedItemIds.value);
+});
 
-    watch: {
-        fullPath() {
-            this.resetSelection();
-        },
+const { fullPath } = toRefs(props);
+watch(fullPath, () => {
+    resetSelection();
+});
+/** MULTISELECTION */
 
-        multiSelectionState() {
-            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
 
-            this.$emit('changeSelection', selectedIndexes.map(index => this.items[index].id));
-        }
-    },
+/** RENAME */
+const activeRenameItemId = ref<string | null>(null);
+const blacklistedNames = computed(
+    () => props
+        .items
+        .filter(item => item.id !== activeRenameItemId.value)
+        .map(({ name }) => name)
+);
+/** RENAME */
 
-    methods: {
-        resetSelection() {
-            this.multiSelectionState = multiSelectionService.getInitialState();
-        },
 
-        isDirectory(item) {
-            return item.type === ITEM_TYPES.WorkflowGroup;
-        },
+/** DRAGGING */
+const itemBACK = ref<{ $el: HTMLElement } | null>(null);
+const itemRefs = ref<{ $el: HTMLElement }[]>([]);
+const customPreviewContainer = ref<HTMLElement | null>(null);
+const customDragPreviewPlaceholder = ref<HTMLElement | null>(null);
 
-        canOpenFile(item) {
-            return item.type === ITEM_TYPES.Workflow;
-        },
+const {
+    isDragging,
+    onDragStart,
+    onDragEnter,
+    onDrag,
+    onDragLeave,
+    onDragEnd,
+    onDrop
+} = useItemDragging({
+    itemBACK: computed(() => itemBACK.value ? itemBACK.value.$el : null),
+    itemRefs: computed(() => itemRefs.value ? itemRefs.value.map(({ $el }) => $el) : null),
+    isDirectory,
+    items: toRefs(props).items,
+    multiSelection,
+    // when default slot element (customDragPreviewPlaceholder ref) is not present, then
+    // it means the slot has an element inside, so we should use a custom preview
+    shouldUseCustomDragPreview: computed(() => !customDragPreviewPlaceholder.value),
+    // we then can obtain the element by using the container
+    getCustomPreviewEl: () => document.querySelector('.custom-preview') as HTMLElement
+});
 
-        getTypeIcon(item) {
-            const typeIcons = {
-                [ITEM_TYPES.WorkflowGroup]: WorkflowGroupIcon,
-                [ITEM_TYPES.Workflow]: WorkflowIcon,
-                [ITEM_TYPES.Component]: ComponentIcon,
-                [ITEM_TYPES.Metanode]: MetaNodeIcon,
-                [ITEM_TYPES.Data]: DataIcon
-            };
+// eslint-disable-next-line valid-jsdoc
+/**
+ * This helper simply forwards the emission of the given event name, provided the payload is not null.
+ * It's needed because the `useItemDragging` composable doesn't have access to the component emits
+ */
+const forwardEmit = (eventName: any, eventPayload: any) => {
+    if (!eventPayload) {
+        return;
+    }
 
-            return typeIcons[item.type];
-        },
+    emit(eventName, eventPayload);
+};
+/** DRAGGING */
 
-        isActiveRenameItem(item) {
-            return item.id === this.activeRenameId;
-        },
+const isContextMenuVisible = ref(false);
+const contextMenuPos = ref({ x: 0, y: 0 });
+const contextMenuAnchor = ref<{
+  item: FileExplorerItemType;
+  index: number;
+  element: HTMLElement;
+} | null>(null);
 
-        isSelected(index) {
-            return multiSelectionService.isItemSelected(this.multiSelectionState, index);
-        },
-        /**
-         * @param {MouseEvent} event
-         * @param {Number} index
-         * @returns {void}
-         */
-        handleClick(event, index) {
-            const metaOrCtrlKey = getMetaOrCtrlKey();
+const closeContextMenu = () => {
+    isContextMenuVisible.value = false;
+    contextMenuAnchor.value = null;
+};
 
-            if (event.shiftKey) {
-                this.shiftClickItem(index);
-                return;
-            }
+const openContextMenu = (event: MouseEvent, clickedItem: FileExplorerItemType, index: number) => {
+    if (isContextMenuVisible.value) {
+        closeContextMenu();
+        return;
+    }
 
-            if (event[metaOrCtrlKey]) {
-                this.ctrlClickItem(index);
-                return;
-            }
+    const element = itemRefs.value[index].$el;
+    contextMenuPos.value.x = event.clientX;
+    contextMenuPos.value.y = event.clientY;
+    contextMenuAnchor.value = { item: clickedItem, index, element };
 
-            this.clickItem(index);
-        },
+    if (!isSelected(index)) {
+        handleSelectionClick(index);
+    }
 
-        clickItem(index) {
-            this.multiSelectionState = multiSelectionService.click(index);
-        },
+    isContextMenuVisible.value = true;
+};
 
-        ctrlClickItem(index) {
-            this.multiSelectionState = multiSelectionService.ctrlClick(
-                this.multiSelectionState,
-                index
-            );
-        },
+const onContextMenuItemClick = (payload: FileExplorerContextMenuNamespace.ItemClickPayload) => {
+    const { isDelete, isRename, anchorItem } = payload;
 
-        shiftClickItem(index) {
-            this.multiSelectionState = multiSelectionService.shiftClick(
-                this.multiSelectionState,
-                index
-            );
-        },
+    if (isDelete) {
+        emit('deleteItems', { items: selectedItems.value });
+    }
 
-        changeDirectory(pathId) {
-            this.$emit('changeDirectory', pathId);
-        },
+    if (isRename) {
+        activeRenameItemId.value = anchorItem.id;
+    }
 
-        onItemDoubleClick(item) {
-            if (this.isDirectory(item)) {
-                this.changeDirectory(item.id);
-                return;
-            }
+    resetSelection();
+    closeContextMenu();
+};
 
-            if (this.canOpenFile(item)) {
-                this.$emit('openFile', item);
-            }
-        },
+const onItemClick = (item: FileExplorerItemType, event: MouseEvent, index: number) => {
+    if (activeRenameItemId.value !== item.id) {
+        handleSelectionClick(index, event);
+    }
 
-        onDragStart(e, index) {
-            this.isDragging = true;
-            this.startDragItemIndex = index;
+    closeContextMenu();
+};
 
-            if (!this.isSelected(index)) {
-                this.resetSelection();
-                this.clickItem(index);
-            }
+const onItemDoubleClick = (item: FileExplorerItemType) => {
+    if (isDirectory(item)) {
+        changeDirectory(item.id);
+        return;
+    }
 
-            const isMultipleSelectionActive = multiSelectionService.isMultipleSelectionActive(
-                this.multiSelectionState,
-                index
-            );
-
-            // get all items that are selected, except the one that initiated the drag
-            const selectedIndexes = multiSelectionService
-                .getSelectedIndexes(this.multiSelectionState)
-                .filter(selectedIndex => index !== selectedIndex);
-
-            // map an index to an object that will be used to generate the ghost
-            const toGhostTarget = (_index) => ({
-                targetEl: this.getItemElementByRefIndex(_index),
-                textContent: this.items[_index].name
-            });
-
-            const selectedTargets = []
-                // add the item that initiated the drag at the beginning of the array
-                .concat(toGhostTarget(index))
-                .concat(selectedIndexes.map(toGhostTarget));
-
-            const { removeGhosts, replaceGhostPreview } = createDragGhosts({
-                dragStartEvent: e,
-                badgeCount: isMultipleSelectionActive ? selectedIndexes.length + 1 : null,
-                selectedTargets
-            });
-
-            this.removeGhosts = removeGhosts;
-            this.replaceGhostPreview = replaceGhostPreview;
-        },
-
-        onDragEnter(index, isGoBackItem = false) {
-            if (this.isSelected(index) && !isGoBackItem) {
-                return;
-            }
-
-            if (index !== this.startDragItemIndex) {
-                const draggedOverEl = this.getItemElementByRefIndex(index, isGoBackItem);
-                draggedOverEl.classList.add('dragging-over');
-            }
-        },
-
-        onDragLeave(index, isGoBackItem = false) {
-            const draggedOverEl = this.getItemElementByRefIndex(index, isGoBackItem);
-            draggedOverEl.classList.remove('dragging-over');
-        },
-
-        onDragEnd(event, item) {
-            this.isDragging = false;
-
-            if (event.dataTransfer.dropEffect === 'none') {
-                this.removeGhosts?.();
-                return;
-            }
-
-            const onComplete = (isSuccessfulDrop) => {
-                if (isSuccessfulDrop) {
-                    this.resetSelection();
-                }
-
-                // animate ghosts back if drop was unsuccessful
-                this.removeGhosts?.(!isSuccessfulDrop);
-                this.removeGhosts = null;
-            };
-
-            this.$emit('dragend', { event, sourceItem: item, onComplete });
-        },
-
-        onDrop(index, isGoBackItem = false) {
-            const droppedEl = this.getItemElementByRefIndex(index, isGoBackItem);
-            droppedEl.classList.remove('dragging-over');
-
-            if (!isGoBackItem && !this.isDirectory(this.items[index])) {
-                return;
-            }
-
-            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
-            const sourceItems = selectedIndexes.map(index => this.items[index].id);
-            const targetItem = isGoBackItem ? '..' : this.items[index].id;
-
-            const isTargetSelected = sourceItems.includes(targetItem);
-
-            if (isTargetSelected) {
-                return;
-            }
-
-            const onComplete = (isSuccessfulMove) => {
-                if (isSuccessfulMove) {
-                    this.resetSelection();
-                }
-
-                // animate ghosts back if move was unsuccessful
-                this.removeGhosts?.(!isSuccessfulMove);
-                this.removeGhosts = null;
-            };
-
-            this.$emit('moveItems', { sourceItems, targetItem, onComplete });
-        },
-
-        getItemElementByRefIndex(index, isGoBackItem = false) {
-            return isGoBackItem
-                ? this.$refs[`item--BACK`]
-                // except for the "Go back" item, all others are present within a v-for
-                // so the refs are returned in a collection, but we only need the 1st item
-                : this.$refs[`item--${index}`][0];
-        },
-
-        getMenuOptions(item) {
-            return [
-                {
-                    id: 'rename',
-                    text: 'Rename',
-                    title: item.displayOpenIndicator ? 'Open workflows cannot be renamed' : '',
-                    disabled: item.displayOpenIndicator
-                },
-                {
-                    id: 'delete',
-                    text: 'Delete',
-                    title: item.canBeDeleted ? '' : 'Open workflows cannot be deleted',
-                    disabled: !item.canBeDeleted
-                }
-            ];
-        },
-
-        onMenuClick(optionId, item) {
-            this.clearRenameState();
-            if (optionId === 'delete') {
-                this.$emit('deleteItems', { items: [item] });
-            }
-
-            if (optionId === 'rename') {
-                this.setupRenameInput(item.id, item.name);
-            }
-
-            this.resetSelection();
-        },
-
-        async setupRenameInput(id, name) {
-            this.activeRenameId = id;
-            this.renameValue = name;
-
-            await this.$nextTick();
-            // wait to next event loop to properly steal focus
-            await new Promise(r => setTimeout(r, 0));
-            this.$refs.renameRef[0]?.$refs?.input?.focus();
-        },
-        onRenameSubmit(isValid, cleanNameFn, keyupEvent, isClickAway = false) {
-            if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
-                this.clearRenameState();
-            }
-
-            if ((keyupEvent.key === 'Enter' || isClickAway) && isValid) {
-                const newName = cleanNameFn(this.renameValue.trim());
-
-                if (newName === '') {
-                    this.clearRenameState();
-                    return;
-                }
-
-                this.$emit('renameFile', { itemId: this.activeRenameId, newName });
-                this.clearRenameState();
-            }
-        },
-
-        clearRenameState() {
-            this.activeRenameId = null;
-            this.renameValue = '';
-        },
-
-        onDrag(event, item) {
-            const onUpdate = async (isAboveCanvas, nodeTemplate) => {
-                this.nodeTemplate = nodeTemplate;
-                if (this.nodeTemplate) {
-                    await this.$nextTick();
-                    const nodePreview = this.$refs.nodePreview.$el;
-
-                    this.replaceGhostPreview({
-                        shouldUseCustomPreview: isAboveCanvas,
-                        ghostPreviewEl: nodePreview,
-                        opts: { leftOffset: 35, topOffset: 35 }
-                    });
-                }
-            };
-            this.$emit('drag', { event, item, onUpdate });
-        }
+    if (canOpenFile(item)) {
+        emit('openFile', item);
     }
 };
 </script>
@@ -401,103 +214,39 @@ export default {
       </tr>
     </thead>
     <tbody :class="mode">
-      <tr
+      <FileExplorerItemBack
         v-if="!isRootFolder"
-        ref="item--BACK"
-        class="file-explorer-item file-explorer-back-item"
-        title="Go back"
+        ref="itemBACK"
+        :is-dragging="isDragging"
         @dragenter="onDragEnter(null, true)"
         @dragleave="onDragLeave(null, true)"
         @dragover.prevent
-        @drop.prevent="onDrop(null, true)"
+        @drop.prevent="forwardEmit('moveItems', onDrop(null, true))"
         @click="changeDirectory('..')"
-      >
-        <td
-          class="item-icon"
-          colspan="3"
-        >
-          <ArrowIcon
-            class="arrow-icon"
-          />
-        </td>
-        <td class="item-name hidden">
-          Go back to parent directory
-        </td>
-      </tr>
-      <tr
+      />
+
+      <FileExplorerItem
         v-for="(item, index) in items"
         :key="index"
-        :ref="`item--${index}`"
-        class="file-explorer-item"
-        :class="[item.type, { selected: !isDragging && isSelected(index), dragging: isDragging && isSelected(index) }]"
-        :draggable="!isActiveRenameItem(item)"
-        @dragstart="!isActiveRenameItem(item) && onDragStart($event, index)"
-        @dragenter="!isActiveRenameItem(item) && onDragEnter(index)"
-        @dragover.prevent
-        @dragleave="!isActiveRenameItem(item) && onDragLeave(index)"
-        @dragend="!isActiveRenameItem(item) && onDragEnd($event, item)"
-        @drag="onDrag($event, item)"
-        @click="!isActiveRenameItem(item) && handleClick($event, index)"
-        @drop.prevent="!isActiveRenameItem(item) && onDrop(index)"
-        @dblclick="!isActiveRenameItem(item) && onItemDoubleClick(item)"
-      >
-        <td class="item-icon">
-          <span
-            v-if="item.displayOpenIndicator"
-            class="open-indicator"
-          />
-          <Component :is="getTypeIcon(item)" />
-        </td>
-
-        <td
-          class="item-content"
-          :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup, 'is-renamed': isActiveRenameItem(item) }"
-          :title="item.name"
-        >
-          <span v-if="!isActiveRenameItem(item)">{{ item.name }}</span>
-          <template v-else>
-            <WorkflowNameValidator
-              :name="renameValue"
-              :current-item-id="item.id"
-              :workflow-items="items"
-            >
-              <template #default="{ isValid, cleanNameFn, errorMessage }">
-                <div v-click-away="($event) => onRenameSubmit(isValid, cleanNameFn, $event, true)">
-                  <InputField
-                    ref="renameRef"
-                    v-model="renameValue"
-                    :class="['is-renamed', mode]"
-                    type="text"
-                    title="rename"
-                    :is-valid="isValid"
-                    @keyup="onRenameSubmit(isValid, cleanNameFn, $event)"
-                  />
-                  <div
-                    v-if="!isValid"
-                    class="item-error"
-                  >
-                    <span>{{ errorMessage }}</span>
-                  </div>
-                </div>
-              </template>
-            </WorkflowNameValidator>
-          </template>
-        </td>
-
-        <td
-          class="item-option"
-          @dblclick.stop
-        >
-          <SubMenu
-            button-title="Options"
-            :teleport-to-body="false"
-            :items="getMenuOptions(item)"
-            @item-click="(e, option) => onMenuClick(option.id, item)"
-          >
-            <MenuOptionsIcon />
-          </SubMenu>
-        </td>
-      </tr>
+        ref="itemRefs"
+        :mode="mode"
+        :item="item"
+        :is-dragging="isDragging"
+        :is-selected="isSelected(index)"
+        :is-rename-active="item.id === activeRenameItemId"
+        :blacklisted-names="blacklistedNames"
+        @dragstart="onDragStart($event, index)"
+        @dragenter="onDragEnter(index)"
+        @dragleave="onDragLeave(index)"
+        @dragend="forwardEmit('dragend', onDragEnd($event, item))"
+        @drag="forwardEmit('drag', onDrag($event, item))"
+        @click="onItemClick(item, $event, index)"
+        @contextmenu="openContextMenu($event, item, index)"
+        @drop="forwardEmit('moveItems', onDrop(index))"
+        @dblclick="onItemDoubleClick(item)"
+        @rename:submit="emit('renameFile', $event)"
+        @rename:clear="activeRenameItemId = null"
+      />
 
       <tr
         v-if="items.length === 0"
@@ -508,26 +257,38 @@ export default {
         </td>
       </tr>
     </tbody>
-    <NodePreview
-      v-if="nodeTemplate"
-      v-show="false"
-      ref="nodePreview"
-      class="node-preview"
-      :type="nodeTemplate.type"
-      :in-ports="nodeTemplate.inPorts"
-      :out-ports="nodeTemplate.outPorts"
-      :icon="nodeTemplate.icon"
-    />
+
+    <div
+      ref="customPreviewContainer"
+      class="custom-preview"
+    >
+      <slot name="customDragPreview">
+        <div ref="customDragPreviewPlaceholder" />
+      </slot>
+    </div>
+
+    <FileExplorerContextMenu
+      v-if="isContextMenuVisible"
+      :position="contextMenuPos"
+      :anchor="contextMenuAnchor"
+      :is-multiple-selection-active="isMultipleSelectionActive(contextMenuAnchor.index)"
+      @item-click="onContextMenuItemClick"
+      @close="closeContextMenu"
+    >
+      <template #default="slotProps">
+        <slot
+          name="contextMenu"
+          :is-context-menu-visible="isContextMenuVisible"
+          :position="contextMenuPos"
+          :anchor-item="contextMenuAnchor"
+          v-bind="slotProps"
+        />
+      </template>
+    </FileExplorerContextMenu>
   </table>
 </template>
 
 <style lang="postcss" scoped>
-@import url("@/assets/mixins.css");
-
-.hidden {
-  display: none;
-}
-
 thead {
   /* Hide table head for better readability but keeping it for a11y reasons */
   position: absolute;
@@ -555,179 +316,6 @@ tbody.mini {
   font-size: 16px;
 }
 
-.file-explorer-item {
-  --icon-size: 20;
-  --item-padding: 8px;
-  --selection-color: hsl(206deg 74% 90%/100%);
-
-  user-select: none;
-  background: var(--knime-gray-ultra-light);
-  transition: box-shadow 0.15s;
-  display: flex;
-  flex-flow: row nowrap;
-  width: 100%;
-  margin-bottom: 2px;
-  align-items: center;
-
-  /* add transparent border to prevent jumping when the dragging-over styles add a border */
-  border: 1px solid transparent;
-
-  &:hover {
-    box-shadow: 0 1px 5px 0 var(--knime-gray-dark-semi);
-  }
-
-  &.selected {
-    background: var(--selection-color);
-  }
-
-  &.dragging {
-    background: var(--selection-color);
-    color: var(--knime-masala);
-  }
-
-  &.dragging-over {
-    background: var(--knime-porcelain);
-    border: 1px solid var(--knime-dove-gray);
-  }
-
-  & .item-content {
-    width: 100%;
-    height: 100%;
-    flex: 2 1 auto;
-    color: var(--knime-masala);
-    padding: var(--item-padding);
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  &:not(.selected, .dragging, .dragging-over) .item-content {
-    &.light {
-      background-color: var(--knime-white);
-    }
-  }
-
-  & td.is-renamed {
-    padding: 0;
-  }
-
-  & td {
-    & .is-renamed {
-      pointer-events: auto;
-      height: 30px;
-      padding: 0;
-
-      & :deep(input) {
-        font-size: 18px;
-        font-weight: 700;
-        padding: 0 7px 1px;
-      }
-
-      &.mini :deep(input) {
-        font-size: 16px;
-        font-weight: 400;
-      }
-    }
-
-    /* Prevent children from interfering with drag events */
-    pointer-events: none;
-  }
-
-  & .item-error {
-    font-size: 13px;
-    line-height: 1.5;
-    backdrop-filter: blur(10px);
-    font-weight: 300;
-    position: absolute;
-    color: var(--theme-color-error);
-    padding: 7px 5px;
-    margin-top: 5px;
-    white-space: normal;
-  }
-
-  & .item-icon,
-  & .item-option {
-    pointer-events: auto;
-
-    & svg {
-      display: flex;
-
-      @mixin svg-icon-size var(--icon-size);
-
-      stroke: var(--knime-masala);
-    }
-
-    /*
-     * The MenuItems set the svg size to 18px x 18px
-     * but this is too big here and causes misalignment
-     */
-    & :deep(.menu-wrapper) {
-      & svg {
-        @mixin svg-icon-size 14px;
-      }
-    }
-  }
-
-  & .item-icon {
-    padding: var(--item-padding);
-    position: relative;
-
-    & .open-indicator {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: var(--knime-dove-gray);
-      border-radius: 50%;
-      bottom: 4px;
-      right: 4px;
-    }
-  }
-
-  & .item-option {
-    width: 25px;
-    pointer-events: auto;
-    padding: 0;
-    display: flex;
-
-    & .submenu-toggle.active > svg {
-      stroke: var(--theme-button-function-foreground-color-active);
-    }
-
-    & :deep(.submenu-toggle) {
-      border-radius: 0;
-      display: flex;
-      height: 100%;
-      padding: var(--item-padding) 3px;
-    }
-  }
-
-  &.file-explorer-back-item {
-    cursor: pointer;
-
-    & > .item-icon {
-      & > .arrow-icon {
-        stroke: var(--knime-dove-gray);
-      }
-    }
-
-    &:hover {
-      & > .item-icon {
-        & > .arrow-icon {
-          stroke: var(--knime-masala);
-        }
-      }
-    }
-  }
-}
-
-.node-preview {
-  position: fixed;
-  height: 70px;
-  width: 70px;
-  pointer-events: none;
-  z-index: 9;
-}
-
 .empty {
   display: flex;
   justify-content: center;
@@ -738,5 +326,15 @@ tbody.mini {
 
 tbody:not(.mini) .empty {
   background: var(--knime-gray-ultra-light);
+}
+
+.custom-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 70px;
+  width: 70px;
+  pointer-events: none;
+  z-index: 9;
 }
 </style>

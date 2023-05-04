@@ -2,19 +2,13 @@
 import { computed, ref, watch } from 'vue';
 import { directive as vClickAway } from 'vue3-click-away';
 
-import type { MenuItem } from 'webapps-common/ui/components/MenuItemsBase.vue';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import usePopper from 'webapps-common/ui/composables/usePopper';
 
 import type { XY } from '@/api/gateway-api/generated-api';
 import { useEscapeStack } from '@/mixins/escapeStack';
 
-import type { FileExplorerItem } from './types';
-
-type DefaultOptions = 'rename' | 'delete';
-type ContextMenuItem = MenuItem & {
-    id: DefaultOptions | Omit<string, DefaultOptions>
-}
+import type { FileExplorerItem, FileExplorerContextMenu } from './types';
 
 interface Props {
     position: XY;
@@ -72,36 +66,27 @@ watch(wrapperHeight, () => {
     });
 });
 
-export type ItemClickPayload = {
-    contextMenuItem: ContextMenuItem;
-    anchorItem: FileExplorerItem;
-    isDelete: boolean;
-    isRename: boolean;
-}
-
 // eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
-    (e: 'itemClick', payload: ItemClickPayload): void;
+    (e: 'itemClick', payload: FileExplorerContextMenu.ItemClickPayload): void;
     (e: 'close'): void;
 }>();
 
-type GetDefaultOption = (item: FileExplorerItem, customProps?: Partial<MenuItem>) => ContextMenuItem;
-
-const getRenameOption: GetDefaultOption = (item, customProps = {}) => ({
+const getRenameOption: FileExplorerContextMenu.GetDefaultMenuOption = (item, customProps = {}) => ({
     id: 'rename',
     text: 'Rename',
     ...customProps,
     disabled: !item.canBeRenamed || props.isMultipleSelectionActive || customProps.disabled || false
 });
 
-const getDeleteOption: GetDefaultOption = (item, customProps = {}) => ({
+const getDeleteOption: FileExplorerContextMenu.GetDefaultMenuOption = (item, customProps = {}) => ({
     id: 'delete',
     text: 'Delete',
     ...customProps,
     disabled: !item.canBeDeleted || customProps.disabled || false
 });
 
-const onItemClick = (contextMenuItem: ContextMenuItem) => {
+const onItemClick = (contextMenuItem: FileExplorerContextMenu.MenuItem) => {
     const isRename = contextMenuItem.id === 'rename';
     const isDelete = contextMenuItem.id === 'delete';
 
@@ -115,7 +100,7 @@ const onItemClick = (contextMenuItem: ContextMenuItem) => {
     emit('itemClick', { contextMenuItem, anchorItem: props.anchor.item, isDelete, isRename });
 };
 
-const items: Array<ContextMenuItem> = [
+const items: Array<FileExplorerContextMenu.MenuItem> = [
     getRenameOption(props.anchor.item),
     getDeleteOption(props.anchor.item)
 ];

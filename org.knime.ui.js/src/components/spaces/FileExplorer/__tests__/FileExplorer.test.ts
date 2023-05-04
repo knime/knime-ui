@@ -9,7 +9,7 @@ import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg'
 import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 
-import FileExplorer from '../FileExplorerComp.vue';
+import FileExplorer from '../FileExplorer.vue';
 import FileExplorerItemComp from '../FileExplorerItem.vue';
 import FileExplorerContextMenu from '../FileExplorerContextMenu.vue';
 

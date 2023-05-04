@@ -11,6 +11,7 @@ import Modal from 'webapps-common/ui/components/Modal.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
+import type { MenuItem } from 'webapps-common/ui/components/MenuItemsBase.vue';
 
 import { SpaceItem, type WorkflowGroupContent } from '@/api/gateway-api/generated-api';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
@@ -18,9 +19,8 @@ import { APP_ROUTES } from '@/router/appRoutes';
 import SmartLoader from '@/components/common/SmartLoader.vue';
 
 import SpaceExplorerActions from './SpaceExplorerActions.vue';
-import FileExplorer from './FileExplorer/FileExplorerComp.vue';
-import type { FileExplorerItem } from './FileExplorer/types';
-import type { MenuItem } from 'webapps-common/ui/components/MenuItemsBase.vue';
+import FileExplorer from './FileExplorer/FileExplorer.vue';
+import type { FileExplorerItem, FileExplorerContextMenu } from './FileExplorer/types';
 
 const ITEM_TYPES_TEXTS = {
     [SpaceItem.TypeEnum.WorkflowGroup]: 'folder',
@@ -405,7 +405,19 @@ export default defineComponent({
             return this.fileExtensionToNodeTemplateId[sourceFileExtension];
         },
 
-        fileExplorerContextMenuItems(getRenameOption, getDeleteOption, anchorItem): MenuItem[] {
+        fileExplorerContextMenuItems(
+            getRenameOption: FileExplorerContextMenu.GetDefaultMenuOption,
+            getDeleteOption: FileExplorerContextMenu.GetDefaultMenuOption,
+            anchorItem: FileExplorerItem
+        ): MenuItem[] {
+            const openFileType = anchorItem.type === SpaceItem.TypeEnum.Workflow
+                ? 'workflows'
+                : 'folders';
+
+            const renameOptionTitle = anchorItem.isOpen
+                ? `Open ${openFileType} cannot be renamed`
+                : '';
+
             return [
                 {
                     id: 'another option',
@@ -413,10 +425,10 @@ export default defineComponent({
                     title: 'Export',
                     disabled: false
                 },
-                getRenameOption(anchorItem, {
-                    title: anchorItem.isOpen ? 'Open workflows cannot be renamed' : ''
-                }),
-                getDeleteOption(anchorItem)
+                getRenameOption(anchorItem, { title: renameOptionTitle }),
+                getDeleteOption(anchorItem, {
+                    title: anchorItem.canBeDeleted ? '' : 'Open folders cannot be deleted'
+                })
             ];
         }
     }
