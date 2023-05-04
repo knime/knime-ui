@@ -190,6 +190,7 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
 
   & td.rename-active {
     padding: 0;
+
     & .rename-input {
       pointer-events: auto;
       height: 30px;

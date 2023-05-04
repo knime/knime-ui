@@ -91,10 +91,7 @@ export default defineComponent({
 
   & .add-action-button {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50px;
-    right: 0;
+    inset: 0 0 0 50px;
     overflow: visible;
     width: auto;
   }

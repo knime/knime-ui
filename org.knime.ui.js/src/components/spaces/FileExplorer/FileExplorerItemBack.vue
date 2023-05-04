@@ -43,6 +43,7 @@ export default defineComponent({
 
 .file-explorer-item-back {
   cursor: pointer;
+
   & .arrow-icon {
     stroke: var(--knime-dove-gray);
   }
