@@ -30,7 +30,7 @@ import PortViewTabToggles from './PortViewTabToggles.vue';
  * @returns object containing an `error` property. If not null then it means the port is invalid. Additionally
  * more details about the error can be read from the `error` object
  */
-const runPortValidationChecks = (
+const runValidationChecks = (
     {
         selectedNode,
         portTypes,
@@ -49,7 +49,6 @@ const runPortValidationChecks = (
         validatePortSelection,
         validatePortSupport,
         validateNodeConfigurationState,
-        // TODO fetch view data for spec views
         validateNodeExecutionState
     );
 
@@ -62,7 +61,6 @@ const isMetaNode = (node: KnimeNode): node is MetaNode => node.kind === Node.Kin
 
 interface ComponentData {
     portViewState: ViewStateChangeEvent | null;
-    activeView: { index: number; isSpec: boolean } | null;
 }
 
 /**
@@ -115,29 +113,40 @@ export default defineComponent({
 
     data(): ComponentData {
         return {
-            portViewState: null,
-            activeView: null
+            portViewState: null
         };
     },
 
     computed: {
-        uniquePortViewId() {
-            return `${this.selectedNode.id}--${this.selectedPortIndex}`;
+        uniquePortKey() {
+            // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
+            // is created upon switching ports
+            // port object version changes whenever a port state has updated.
+            // "ABA"-Changes on the port will always trigger a re-render.
+
+            const { portObjectVersion } = this.selectedNode.outPorts[this.selectedPortIndex];
+
+            return [
+                this.projectId,
+                this.workflowId,
+                this.selectedNode.id,
+                this.selectedPortIndex,
+                portObjectVersion
+            ].join('/');
         },
 
-        portErrors(): ValidationResult['error'] {
-            const { error } = runPortValidationChecks({
+        validationErrors(): ValidationResult['error'] | null {
+            const { error } = runValidationChecks({
                 selectedNode: this.selectedNode,
                 portTypes: this.availablePortTypes,
                 selectedPortIndex: this.selectedPortIndex
             });
 
-            return error;
+            return error || null;
         },
 
         selectedPort() {
-            if (this.portErrors) {
-                console.log('this.portErrors', this.portErrors);
+            if (this.validationErrors) {
                 return null;
             }
 
@@ -146,21 +155,6 @@ export default defineComponent({
 
         portViews() {
             return toPortObject(this.availablePortTypes)(this.selectedPort.typeId).views;
-        },
-
-        shouldShowPortViewTabToggles() {
-            if (this.portErrors) {
-                return false;
-            }
-
-            return this.portErrors
-                ? this.portErrors.code === 'NODE_UNEXECUTED'
-                : true;
-        },
-
-        validationErrors(): ValidationResult['error'] | null {
-            return this.portErrors || null;
-            // return this.nodeErrors || this.portErrors || null;
         },
 
         currentNodeState(): 'configured' | 'executed' {
@@ -193,15 +187,7 @@ export default defineComponent({
                     this.$emit('outputStateChange', null);
                 }
             }
-        },
-
-        uniquePortViewId() {
-            this.resetActiveView();
         }
-    },
-
-    mounted() {
-        // console.log('this.selectedPortIndex', this.selectedPortIndex);
     },
 
     methods: {
@@ -221,33 +207,31 @@ export default defineComponent({
                     this.$emit('outputStateChange', null);
                 }
             }
-        },
-
-        resetActiveView() {
-            this.activeView = null;
         }
-
     }
 });
 </script>
 
 <template>
   <PortViewTabToggles
-    v-if="shouldShowPortViewTabToggles"
-    v-model="activeView"
+    v-if="!validationErrors"
     :current-node-state="currentNodeState"
+    :unique-port-key="uniquePortKey"
     :view-descriptors="portViews.descriptors"
     :view-descriptor-mapping="portViews.descriptorMapping"
-  />
-
-  <PortViewLoader
-    v-if="!portErrors && activeView"
-    v-bind="$attrs"
-    :project-id="projectId"
-    :workflow-id="workflowId"
-    :selected-node="selectedNode"
-    :selected-port-index="selectedPortIndex"
-    :selected-view-index="activeView.index"
-    @state-change="onPortViewLoaderStateChange"
-  />
+  >
+    <template #default="{ activeView }">
+      <PortViewLoader
+        v-if="!validationErrors && activeView !== null"
+        v-bind="$attrs"
+        :unique-port-key="uniquePortKey"
+        :project-id="projectId"
+        :workflow-id="workflowId"
+        :selected-node="selectedNode"
+        :selected-port-index="selectedPortIndex"
+        :selected-view-index="activeView"
+        @state-change="onPortViewLoaderStateChange"
+      />
+    </template>
+  </PortViewTabToggles>
 </template>

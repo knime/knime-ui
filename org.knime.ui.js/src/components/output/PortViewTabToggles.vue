@@ -29,9 +29,8 @@ const getTabTogglesFromViewDescriptors = (
         }));
 };
 
-type ViewData = {
-    index: number;
-    isSpec: boolean;
+interface ComponentData {
+    activeView: number | null;
 }
 
 export default defineComponent({
@@ -40,9 +39,9 @@ export default defineComponent({
     },
 
     props: {
-        modelValue: {
-            type: [Object, null] as PropType<ViewData | null>,
-            default: null
+        uniquePortKey: {
+            type: String,
+            required: true
         },
 
         viewDescriptors: {
@@ -61,9 +60,10 @@ export default defineComponent({
         }
     },
 
-    emits: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        'update:modelValue': (_payload: ViewData) => true
+    data(): ComponentData {
+        return {
+            activeView: null
+        };
     },
 
     computed: {
@@ -84,44 +84,35 @@ export default defineComponent({
         },
 
         tabToggles() {
-            const tabToggles = getTabTogglesFromViewDescriptors(
+            return getTabTogglesFromViewDescriptors(
                 {
                     viewDescriptors: this.viewDescriptors,
                     viewDescriptorMapping: this.viewDescriptorMapping
                 },
                 this.currentNodeState
             );
-            console.log('tabToggles', tabToggles);
-            return tabToggles;
         }
     },
 
     watch: {
-        modelValue: {
-            handler() {
-                if (this.modelValue === null) {
-                    this.emitUpdate(this.tabToggles.at(0).id);
-                }
-            },
-            immediate: true
+        uniquePortKey() {
+            this.setFirstTab();
         }
     },
 
+    mounted() {
+        this.setFirstTab();
+    },
+
     methods: {
-        getViewDescriptorFromTabId(tabId: string) {
-            return {
-                index: Number(tabId),
-                descriptor: this.viewDescriptors.at(Number(tabId))
-            };
+        setFirstTab() {
+            this.activeView = this.tabToggles.at(0)
+                ? Number(this.tabToggles.at(0).id)
+                : null;
         },
 
-        emitUpdate(tabId: string) {
-            const {
-                index,
-                descriptor: { isSpecView }
-            } = this.getViewDescriptorFromTabId(tabId);
-
-            this.$emit('update:modelValue', { index, isSpec: isSpecView });
+        resetActiveView() {
+            this.activeView = null;
         }
     }
 });
@@ -133,10 +124,11 @@ export default defineComponent({
     ref="tabToggles"
     class="tab-toggles"
     compact
+    :model-value="activeView === null ? null : activeView.toString()"
     :possible-values="tabToggles"
-    :model-value="modelValue && modelValue.index.toString()"
-    @update:model-value="emitUpdate"
+    @update:model-value="activeView = Number($event)"
   />
+  <slot :active-view="activeView" />
 </template>
 
 <style lang="postcss" scoped>

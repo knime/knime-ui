@@ -34,30 +34,14 @@ export default defineComponent({
         selectedViewIndex: {
             type: Number,
             required: true
+        },
+        uniquePortKey: {
+            type: String,
+            required: true
         }
     },
 
     emits: ['stateChange'],
-
-    computed: {
-        uniquePortKey() {
-            // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
-            // is created upon switching ports
-            // port object version changes whenever a port state has updated.
-            // "ABA"-Changes on the port will always trigger a re-render.
-
-            const { portObjectVersion } = this.selectedNode.outPorts[this.selectedPortIndex];
-
-            return [
-                this.projectId,
-                this.workflowId,
-                this.selectedNode.id,
-                this.selectedPortIndex,
-                this.selectedViewIndex,
-                portObjectVersion
-            ].join('/');
-        }
-    },
 
     methods: {
         async viewConfigLoaderFn() {
