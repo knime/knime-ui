@@ -161,6 +161,7 @@ export default {
             /* eslint-disable no-invalid-this */
             if (this.hasAbortedNodeDrag) {
                 this.setHasAbortedNodeDrag(false);
+                this.$store.commit('workflow/setIsDragging', false);
 
                 if (this.lastHitTarget) {
                     this.lastHitTarget.dispatchEvent(
@@ -172,7 +173,7 @@ export default {
                 }
                 return;
             }
-            
+
             if (this.lastHitTarget) {
                 this.lastHitTarget.dispatchEvent(
                     new CustomEvent('node-dragging-end', {
@@ -219,7 +220,7 @@ export default {
                 this.lastHitTarget = isEventIgnored ? null : hitTarget;
             }
         },
-        
+
         moveNode() {
             this.$store.dispatch('workflow/moveObjects', {
                 projectId: this.activeProjectId,

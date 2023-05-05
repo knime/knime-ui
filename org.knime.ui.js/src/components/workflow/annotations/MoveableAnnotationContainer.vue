@@ -1,16 +1,19 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
+import throttle from 'raf-throttle';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
-import throttle from 'raf-throttle';
 import { snapToGrid } from '@/util/geometry';
 
 import { getGridAdjustedBounds } from './transform-control-utils';
 
 export default defineComponent({
     props: {
-        id: { type: String, required: true },
+        id: {
+            type: String,
+            required: true
+        },
 
         bounds: {
             type: Object as PropType<Bounds>,
@@ -29,7 +32,7 @@ export default defineComponent({
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('selection', ['isAnnotationSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapState('workflow', ['movePreviewDelta', 'isDragging']),
+        ...mapState('workflow', ['movePreviewDelta', 'isDragging', 'hasAbortedNodeDrag']),
 
         combinedPosition() {
             return {
@@ -43,6 +46,8 @@ export default defineComponent({
         }
     },
     watch: {
+        // If change occurs, position has been updated from the store.
+        // Note that the position is not updated while the node is being dragged, only after it's dropped.
         bounds: {
             deep: true,
             handler() {
@@ -54,7 +59,12 @@ export default defineComponent({
     methods: {
         ...mapActions('selection', ['selectAnnotation', 'deselectAllObjects']),
         ...mapActions('workflow', ['moveObjects']),
-        ...mapMutations('workflow', ['setMovePreview', 'resetMovePreview', 'setIsDragging']),
+        ...mapMutations('workflow', [
+            'setMovePreview',
+            'resetMovePreview',
+            'setIsDragging',
+            'setHasAbortedNodeDrag'
+        ]),
 
         handleMoveFromStore() {
             if (this.isDragging) {
@@ -62,13 +72,18 @@ export default defineComponent({
                 this.setIsDragging(false);
             }
         },
-        
+
         async onMoveStart({ detail }) {
             if (!detail.event.shiftKey && !this.isAnnotationSelected(this.id)) {
                 await this.deselectAllObjects();
             }
-            
+
             await this.selectAnnotation(this.id);
+            this.cursorPosition = {
+                x: detail.event.offsetX,
+                y: detail.event.offsetY
+            };
+
             this.startPos = {
                 x: this.gridBounds.x,
                 y: this.gridBounds.y,
@@ -81,8 +96,12 @@ export default defineComponent({
             this.setIsDragging(true);
         },
 
-        onMove: throttle(function (this:any, { detail: { clientX, clientY, altKey } }) {
+        onMove: throttle(function (this: any, { detail: { clientX, clientY, altKey } }) {
             /* eslint-disable no-invalid-this */
+            if (this.hasAbortedNodeDrag) {
+                return;
+            }
+
             const snapSize = altKey ? 1 : this.$shapes.gridSize.x;
             const [canvasX, canvasY] = this.screenToCanvasCoordinates([clientX, clientY]);
 
@@ -100,14 +119,17 @@ export default defineComponent({
             /* eslint-enable no-invalid-this */
         }),
 
-        onMoveEnd: throttle(function (this:any) {
-            // eslint-disable-next-line no-invalid-this
-            this.moveObjects();
-        }),
+        onMoveEnd: throttle(function (this: any) {
+            /* eslint-disable no-invalid-this */
+            if (this.hasAbortedNodeDrag) {
+                this.setHasAbortedNodeDrag(false);
+                this.$store.commit('workflow/setIsDragging', false);
+                return;
+            }
 
-        onPointerDown(event: PointerEvent) {
-            this.cursorPosition = { x: event.offsetX, y: event.offsetY };
-        }
+            this.moveObjects();
+            /* eslint-enable no-invalid-this */
+        })
     }
 });
 </script>
@@ -117,7 +139,6 @@ export default defineComponent({
     v-move="{ onMoveStart, onMove, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
     :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
-    @pointerdown.left.stop="onPointerDown"
   >
     <slot />
   </g>

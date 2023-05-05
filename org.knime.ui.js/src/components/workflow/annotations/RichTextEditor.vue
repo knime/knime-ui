@@ -14,6 +14,7 @@ interface Props {
     initialValue: string;
     annotationBounds: Bounds;
     isSelected: boolean;
+    isDragging: boolean;
 }
 
 const props = defineProps<Props>();
@@ -68,7 +69,7 @@ onMounted(() => {
     <EditorContent
       class="annotation-editor"
       :editor="editor"
-      :class="{ editable, selected: isSelected }"
+      :class="{ editable, selected: isSelected, 'is-dragging': isDragging }"
       @dblclick="!editable && emit('editStart')"
     />
   </div>
@@ -100,7 +101,7 @@ onMounted(() => {
         cursor: text;
     }
 
-    &.selected {
+    &.selected:not(.is-dragging) {
         border-color: transparent;
     }
 

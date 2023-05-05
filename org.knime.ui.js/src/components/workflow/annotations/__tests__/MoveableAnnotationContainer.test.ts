@@ -8,7 +8,7 @@ import * as $shapes from '@/style/shapes.mjs';
 import MoveableAnnotationContainer from '../MoveableAnnotationContainer.vue';
 
 describe('MoveableAnnotationContainer.vue', () => {
-    const defaultProps: { id: String, bounds: Bounds} = {
+    const defaultProps: { id: String, bounds: Bounds } = {
         id: 'id1',
         bounds: { x: 500, y: 200, width: 100, height: 100 }
     };
@@ -159,7 +159,7 @@ describe('MoveableAnnotationContainer.vue', () => {
 
             const moveStartEvent = new CustomEvent('movestart', {
                 detail: {
-                    event: { shiftKey: false }
+                    event: { shiftKey: false, offsetX: 0, offsetY: 0 }
                 }
             });
             mockMoveDirective.trigger('onMoveStart', moveStartEvent);
@@ -199,7 +199,7 @@ describe('MoveableAnnotationContainer.vue', () => {
             vi.useFakeTimers();
             const { wrapper, dispatchSpy } = doMount();
 
-            wrapper.vm.onMoveEnd({ detail: { endX: 0, endY: 0 } });
+            wrapper.vm.onMoveEnd();
 
             vi.advanceTimersByTime(5000);
 

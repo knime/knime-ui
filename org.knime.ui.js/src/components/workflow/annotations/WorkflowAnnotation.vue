@@ -85,7 +85,7 @@ export default defineComponent({
             if (this.isDragging) {
                 return false;
             }
-            
+
             const isMoreThanOneAnnotationSelected = this.selectedAnnotationIds.length > 1;
             const isOneOrMoreNodesSelected = this.selectedNodeIds.length >= 1;
             const isOneOrMoreConnectionsSelected = this.selectedConnections.length >= 1;
@@ -118,18 +118,17 @@ export default defineComponent({
             const metaOrCtrlKey = getMetaOrCtrlKey();
             const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
-            if (isMultiselect) {
-                // Multi select
-                const action = this.isSelected
-                    ? this.deselectAnnotation
-                    : this.selectAnnotation;
-
-                action(this.annotation.id);
-            } else {
-                // Single select
+            if (!isMultiselect) {
                 await this.deselectAllObjects();
                 await this.selectAnnotation(this.annotation.id);
+                return;
             }
+
+            const action = this.isSelected
+                ? this.deselectAnnotation
+                : this.selectAnnotation;
+
+            action(this.annotation.id);
         },
 
         onContextMenu(event: PointerEvent) {
@@ -233,6 +232,7 @@ export default defineComponent({
           :id="annotation.id"
           :initial-value="initialRichTextAnnotationValue"
           :editable="isEditing"
+          :is-dragging="isDragging"
           :annotation-bounds="transformedBounds"
           :is-selected="isSelected"
           @change="onAnnotationChange"
