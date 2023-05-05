@@ -113,6 +113,14 @@ export default {
         },
 
         /**
+         * The status of the link of a component (UpToDate, HasUpdate, Error)
+         */
+        linkStatus: {
+            type: String,
+            default: null
+        },
+
+        /**
          * Node Execution State
          */
         state: {

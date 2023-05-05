@@ -12,6 +12,14 @@ export default {
         backgroundType: {
             type: String,
             default: null
+        },
+        
+        /**
+         * The status of the link of a component (UpToDate, HasUpdate, Error)
+         */
+        linkStatus: {
+            type: String,
+            default: null
         }
     },
     computed: {
@@ -36,11 +44,34 @@ export default {
     />
     <!-- Arrow -->
     <path
+      v-if="linkStatus === 'UpToDate'"
       d="M2.43 8.57L9.5 1.5M5 1.5L9.5 1.5L9.5 6"
       fill="none"
       stroke-linejoin="round"
       :stroke="$colors.linkDecorator"
     />
+
+    <!-- Dotted Arrow -->
+    <path
+      v-if="linkStatus === 'HasUpdate'"
+      d="M2.43 8.57L9.5 1.5M5 1.5L9.5 1.5L9.5 6"
+      fill="none"
+      stroke-linejoin="round"
+      :stroke="$colors.linkDecorator"
+      stroke-dasharray="1 1"
+    />
+
+    <!-- Cross -->
+    <g v-else-if="linkStatus === 'Error'">
+      <path
+        d="M2.4304 8.56863L9.50146 1.49756"
+        :stroke="$colors.linkDecorator"
+      />
+      <path
+        d="M9.50124 8.56863L2.43018 1.49756"
+        :stroke="$colors.linkDecorator"
+      />
+    </g>
   </g>
 </template>
 

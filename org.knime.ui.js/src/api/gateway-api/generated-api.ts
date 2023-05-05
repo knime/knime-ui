@@ -664,6 +664,12 @@ export interface ComponentNode extends Node {
      * @memberof ComponentNode
      */
     link?: string;
+    /**
+     * The status of the link of this component (UpToDate, HasUpdate, Error)
+     * @type {string}
+     * @memberof ComponentNode
+     */
+    linkStatus?: string;
 
 }
 
@@ -1326,6 +1332,12 @@ export interface MetaNode extends Node {
      * @memberof MetaNode
      */
     link?: string;
+    /**
+     * The status of the link of this component (UpToDate, HasUpdate, Error)
+     * @type {string}
+     * @memberof MetaNode
+     */
+    linkStatus?: string;
 
 }
 

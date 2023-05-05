@@ -31,6 +31,14 @@ export default {
         },
 
         /**
+         * The status of the link of a component (UpToDate, HasUpdate, Error)
+         */
+        linkStatus: {
+            type: String,
+            default: null
+        },
+
+        /**
          * Node variation.
          * @values 'node', 'metanode', 'component'
          */
@@ -88,6 +96,7 @@ export default {
     <LinkDecorator
       v-if="link"
       :background-type="decoratorBackgroundType"
+      :link-status="linkStatus"
       transform="translate(0, 21)"
     />
 
