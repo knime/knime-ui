@@ -24,8 +24,8 @@ describe('NodeDecorators.vue', () => {
         expect(wrapper.findComponent(ReexecutionDecorator).exists()).toBe(false);
     });
 
-    it('shows/hides LinkDecorator', () => {
-        const wrapper = doMount({ ...defaultProps, link: 'linkylinky' });
+    it('shows/hides default LinkDecorator', () => {
+        const wrapper = doMount({ ...defaultProps, link: 'linkylinky', linkStatus: 'UpToDate' });
 
         let linkDecorator = wrapper.findComponent(LinkDecorator);
         expect(linkDecorator.attributes('transform')).toBe('translate(0, 21)');

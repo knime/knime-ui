@@ -44,7 +44,7 @@ export default {
     />
     <!-- Arrow -->
     <path
-      v-if="linkStatus === 'UpToDate'"
+      v-if="!linkStatus || linkStatus === 'UpToDate'"
       d="M2.43 8.57L9.5 1.5M5 1.5L9.5 1.5L9.5 6"
       fill="none"
       stroke-linejoin="round"
