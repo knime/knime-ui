@@ -1,6 +1,5 @@
 import { areaCoverage } from '@/util/geometry';
-import { findFreeSpaceFrom,
-    findFreeSpaceAroundCenterWithFallback,
+import { findFreeSpaceAroundCenterWithFallback,
     visibilityThreshold } from '@/util/findFreeSpaceOnCanvas';
 import { nodeSize } from '@/style/shapes.mjs';
 
@@ -15,20 +14,30 @@ export const centerStrategy = ({ visibleFrame, clipboardContent, nodes }) => {
     return findFreeSpaceAroundCenterWithFallback({ visibleFrame, nodes, objectBounds });
 };
 
+// eslint-disable-next-line no-magic-numbers
+const getRandomNoise = () => (Math.random() * 2 - 1) * 10;
+
 /**
- * Tries to fit clipboard objects beginning at it's original position
- * If no free space is found within the canvas' borders, it returns null
+ * Tries to fit clipboard objects beginning at a fixed positive offset with random noise from the original position
+ * If the offsetted position is not visible within the canvas' borders, it returns null
  * @returns { Object | null } x and y position
  */
-const originStrategy = ({ clipboardContent, nodes, visibleFrame }) => {
+export const offsetStrategy = ({ clipboardContent, visibleFrame }) => {
     const { objectBounds } = clipboardContent;
-    let fromOrigin = findFreeSpaceFrom({ objectBounds, nodes, visibleFrame })(clipboardContent.objectBounds);
+    const meanOffset = 120;
 
-    if (fromOrigin.visibility >= visibilityThreshold) {
-        consola.info('found free space with origin strategy');
-        return fromOrigin;
+    const offsetPosition: { left: number, top: number } = {
+        left: objectBounds.left + meanOffset + getRandomNoise(),
+        top: objectBounds.top + meanOffset + getRandomNoise()
+    };
+
+    const visibility = areaCoverage({
+        ...offsetPosition, width: objectBounds.width, height: objectBounds.height
+    }, visibleFrame);
+
+    if (visibility >= visibilityThreshold) {
+        return { x: offsetPosition.left, y: offsetPosition.top };
     }
-    consola.info('no free space found with origin strategy');
     return null;
 };
 
@@ -66,16 +75,16 @@ export const pastePartsAt = ({ visibleFrame, clipboardContent, workflow, isWorkf
     } else if (copyPaste?.lastPasteBounds) {
         consola.info('paste again, last paste visible: paste shifted');
         return {
-            position: originStrategy({ visibleFrame, nodes, clipboardContent }) ||
-                      centerStrategy({ visibleFrame, nodes, clipboardContent })
+            position: offsetStrategy({ visibleFrame, clipboardContent }) ||
+                centerStrategy({ visibleFrame, nodes, clipboardContent })
         };
     }
 
     /* Content comes from another application or workflow and is pasted for the first time */
-    let copiedFromAnotherApp = !copyPaste || copyPaste.payloadIdentifier !== clipboardContent.payloadIdentifier;
+    const copiedFromAnotherApp = !copyPaste || copyPaste.payloadIdentifier !== clipboardContent.payloadIdentifier;
 
-    let copiedFromAnotherWorkflow = clipboardContent.workflowId !== containerId ||
-                                    clipboardContent.projectId !== projectId;
+    const copiedFromAnotherWorkflow = clipboardContent.workflowId !== containerId ||
+        clipboardContent.projectId !== projectId;
 
     if (copiedFromAnotherApp || copiedFromAnotherWorkflow) {
         consola.info('content comes from another app or workflow: paste to center');
@@ -93,8 +102,8 @@ export const pastePartsAt = ({ visibleFrame, clipboardContent, workflow, isWorkf
     } else {
         consola.info(`${visibilityThreshold * 100}% or more of copied content visible: paste with origin`);
         return {
-            position: originStrategy({ visibleFrame, nodes, clipboardContent }) ||
-                      centerStrategy({ visibleFrame, nodes, clipboardContent })
+            position: offsetStrategy({ visibleFrame, clipboardContent }) ||
+                centerStrategy({ visibleFrame, nodes, clipboardContent })
         };
     }
 };
@@ -108,9 +117,11 @@ export const pasteURI = (string, activeWorkflow, position, visibleFrame) => {
             x = position.x - nodeSize / 2;
             y = position.y - nodeSize / 2;
         } else {
-            const center = centerStrategy({ visibleFrame,
+            const center = centerStrategy({
+                visibleFrame,
                 nodes,
-                clipboardContent: { objectBounds: { width: nodeSize, height: nodeSize } } });
+                clipboardContent: { objectBounds: { width: nodeSize, height: nodeSize } }
+            });
             x = center.x;
             y = center.y;
         }
