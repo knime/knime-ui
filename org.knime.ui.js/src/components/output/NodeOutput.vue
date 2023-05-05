@@ -2,16 +2,14 @@
 import { defineComponent } from 'vue';
 import { mapState, mapGetters } from 'vuex';
 
-import Button from 'webapps-common/ui/components/Button.vue';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
-import PlayIcon from '@/assets/execute.svg';
+import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
 
 import PortTabs from './PortTabs.vue';
 import PortViewTabOutput from './PortViewTabOutput.vue';
 import NodeViewTabOutput from './NodeViewTabOutput.vue';
 
 import { buildMiddleware, validateDragging, validateSelection } from './output-validator';
-import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
 
 export const runValidationChecks = ({ selectedNodes, isDragging }) => {
     const validationMiddleware = buildMiddleware(
@@ -31,9 +29,7 @@ export const runValidationChecks = ({ selectedNodes, isDragging }) => {
 export default defineComponent({
     components: {
         PortTabs,
-        Button,
         ReloadIcon,
-        PlayIcon,
         PortViewTabOutput,
         NodeViewTabOutput
     },
@@ -126,9 +122,6 @@ export default defineComponent({
             // node is component or native node
             // select mickey-mouse port, if it is the only one, otherwise the first regular port
             this.selectedTab = outPorts.length > 1 ? '1' : '0';
-        },
-        executeNode() {
-            this.$store.dispatch('workflow/executeNodes', [this.singleSelectedNode.id]);
         }
     }
 });
@@ -156,16 +149,6 @@ export default defineComponent({
         />
         {{ outputState.message }}
       </span>
-      <Button
-        v-if="outputState.error && outputState.error.code === 'NODE_UNEXECUTED'"
-        class="action-button"
-        primary
-        compact
-        @click="executeNode"
-      >
-        <PlayIcon />
-        Execute
-      </Button>
     </div>
 
     <template v-if="!validationErrors">
@@ -188,6 +171,7 @@ export default defineComponent({
         :available-port-types="availablePortTypes"
         class="output"
         @output-state-change="outputState = $event"
+        @execute-node="$store.dispatch('workflow/executeNodes', [singleSelectedNode.id])"
       />
     </template>
   </div>

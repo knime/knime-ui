@@ -17,20 +17,21 @@ const getTabTogglesFromViewDescriptors = (
     const isDisabled = (item: PortViewDescriptor) => !item.isSpecView && currentNodeState === 'configured';
 
     return descriptorIndexes
-        .map((index) => ({
-            // tab id will be the descriptor index
-            id: index.toString(),
-            descriptor: data.viewDescriptors.at(index)
-        }))
-        .map(({ descriptor, id }) => ({
-            id,
-            text: descriptor.label,
-            disabled: isDisabled(descriptor)
-        }));
+        .map((index) => {
+            const descriptor = data.viewDescriptors.at(index);
+
+            return {
+                // tab id will be the descriptor index
+                id: index.toString(),
+                text: descriptor.label,
+                disabled: isDisabled(descriptor)
+            };
+        });
 };
 
 interface ComponentData {
     activeView: number | null;
+    position: { top: string; left: string; }
 }
 
 export default defineComponent({
@@ -62,27 +63,15 @@ export default defineComponent({
 
     data(): ComponentData {
         return {
-            activeView: null
+            activeView: null,
+            position: {
+                top: '0',
+                left: '0'
+            }
         };
     },
 
     computed: {
-        tabTogglePosition() {
-            const top = '50px';
-
-            if (!this.$refs.tabToggles) {
-                return { top, left: 0 };
-            }
-
-            // eslint-disable-next-line no-extra-parens
-            const { width } = (this.$refs.tabToggles as { $el: HTMLElement }).$el.getBoundingClientRect();
-
-            return {
-                top,
-                left: `calc(50% - ${width / 2}px)`
-            };
-        },
-
         tabToggles() {
             return getTabTogglesFromViewDescriptors(
                 {
@@ -96,11 +85,13 @@ export default defineComponent({
 
     watch: {
         uniquePortKey() {
+            this.calculatePosition();
             this.setFirstTab();
         }
     },
 
     mounted() {
+        this.calculatePosition();
         this.setFirstTab();
     },
 
@@ -113,6 +104,23 @@ export default defineComponent({
 
         resetActiveView() {
             this.activeView = null;
+        },
+
+        async calculatePosition() {
+            const top = '50px';
+            await this.$nextTick();
+
+            if (!this.$refs.tabToggles) {
+                this.position = { top, left: '0' };
+            }
+
+            // eslint-disable-next-line no-extra-parens
+            const { width } = (this.$refs.tabToggles as { $el: HTMLElement }).$el.getBoundingClientRect();
+
+            this.position = {
+                top,
+                left: `calc(50% - ${width / 2}px)`
+            };
         }
     }
 });
@@ -134,8 +142,8 @@ export default defineComponent({
 <style lang="postcss" scoped>
 .tab-toggles {
   position: absolute;
-  left: v-bind("tabTogglePosition.left");
-  top: v-bind("tabTogglePosition.top");
+  left: v-bind("position.left");
+  top: v-bind("position.top");
   z-index: 3;
 }
 </style>

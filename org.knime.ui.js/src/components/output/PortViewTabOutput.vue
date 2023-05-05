@@ -3,6 +3,9 @@
 /* eslint-disable object-curly-newline  */
 import { defineComponent, type PropType } from 'vue';
 
+import Button from 'webapps-common/ui/components/Button.vue';
+import PlayIcon from '@/assets/execute.svg';
+
 import type {
     AvailablePortTypes,
     KnimeNode
@@ -71,7 +74,9 @@ interface ComponentData {
 export default defineComponent({
     components: {
         PortViewLoader,
-        PortViewTabToggles
+        PortViewTabToggles,
+        Button,
+        PlayIcon
     },
 
     inheritAttrs: false,
@@ -108,7 +113,8 @@ export default defineComponent({
                 type: string;
                 code: string;
             }
-        }) => true
+        }) => true,
+        executeNode: () => true
     },
 
     data(): ComponentData {
@@ -170,6 +176,25 @@ export default defineComponent({
             return this.selectedNode.state.executionState === NodeState.ExecutionStateEnum.CONFIGURED
                 ? 'configured'
                 : 'executed';
+        },
+
+        shouldShowExecuteAction() {
+            return this.selectedNode.allowedActions.canExecute;
+        },
+
+        executeActionStyles() {
+            const ACTION_ELEMENT_WIDTH = 400;
+            const ACTION_ELEMENT_HEIGHT = 70;
+
+            const top = `calc(50% - ${ACTION_ELEMENT_HEIGHT / 2}px)`;
+            const left = `calc(50% - ${ACTION_ELEMENT_WIDTH / 2}px)`;
+
+            return {
+                top,
+                left,
+                width: `${ACTION_ELEMENT_WIDTH}px`,
+                height: `${ACTION_ELEMENT_HEIGHT}px`
+            };
         }
     },
 
@@ -224,7 +249,7 @@ export default defineComponent({
       <PortViewLoader
         v-if="!validationErrors && activeView !== null"
         v-bind="$attrs"
-        :unique-port-key="uniquePortKey"
+        :unique-port-key="`${uniquePortKey}/${activeView}`"
         :project-id="projectId"
         :workflow-id="workflowId"
         :selected-node="selectedNode"
@@ -232,6 +257,48 @@ export default defineComponent({
         :selected-view-index="activeView"
         @state-change="onPortViewLoaderStateChange"
       />
+
+      <div
+        v-if="shouldShowExecuteAction"
+        class="execute-node-action"
+      >
+        <span>To show the output, please execute the selected node.</span>
+        <Button
+          class="action-button"
+          primary
+          compact
+          @click="$emit('executeNode')"
+        >
+          <PlayIcon />
+          Execute
+        </Button>
+      </div>
     </template>
   </PortViewTabToggles>
 </template>
+
+<style lang="postcss" scoped>
+.execute-node-action {
+    position: absolute;
+    bottom: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: v-bind("executeActionStyles.width");
+    height: v-bind("executeActionStyles.height");
+    top: v-bind("executeActionStyles.top");
+    left: v-bind("executeActionStyles.left");
+}
+
+.action-button {
+  margin-top: 20px;
+
+  & svg {
+    border-radius: 12px;
+    background: var(--knime-white);
+    border: 1px solid var(--knime-masala);
+    stroke: var(--knime-masala) !important;
+  }
+}
+</style>

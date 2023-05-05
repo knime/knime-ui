@@ -48,7 +48,6 @@ type ErrorCodes =
     | 'NO_SUPPORTED_VIEW'
     | 'PORT_INACTIVE'
     | 'NODE_UNCONFIGURED'
-    | 'NODE_UNEXECUTED'
     | 'NODE_BUSY';
 
 
@@ -253,7 +252,6 @@ export const validateNodeConfigurationState: ValidationFn<{
 
 /**
  * Validation middleware function. Asserts that:
- * - The selected node is executed
  * - The selected node is not in a busy state (QUEUE || EXECUTING)
  */
 export const validateNodeExecutionState: ValidationFn<{
@@ -267,16 +265,6 @@ export const validateNodeExecutionState: ValidationFn<{
     if (isFlowVariablePort({ portTypes, port: selectedPort })) {
         return next(context);
     }
-
-    // if (selectedNode.allowedActions.canExecute) {
-    //     return {
-    //         error: {
-    //             type: 'NODE',
-    //             code: 'NODE_UNEXECUTED',
-    //             message: 'To show the output, please execute the selected node.'
-    //         }
-    //     };
-    // }
 
     const state = selectedNode.state.executionState;
     if (state === 'QUEUED' || state === 'EXECUTING') {
