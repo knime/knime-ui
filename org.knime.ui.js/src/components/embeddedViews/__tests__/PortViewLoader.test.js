@@ -44,7 +44,9 @@ describe('PortViewLoader.vue', () => {
         projectId: 'project-id',
         workflowId: 'workflow-id',
         selectedNode: dummyNode,
-        selectedPortIndex: 0
+        selectedPortIndex: 0,
+        selectedViewIndex: 0,
+        uniquePortKey: ''
     };
 
     afterEach(() => {
@@ -64,32 +66,48 @@ describe('PortViewLoader.vue', () => {
         }));
     });
 
-    it('should load port view when the selected node changes', async () => {
-        const wrapper = doMount();
-        const newNode = { ...dummyNode, id: 'node2' };
+    describe('load data on uniquePortKeyChange', () => {
+        it('should load port view when the selected node changes', async () => {
+            const wrapper = doMount();
+            const newNode = { ...dummyNode, id: 'node2' };
 
-        wrapper.setProps({ selectedNode: newNode });
+            wrapper.setProps({ selectedNode: newNode, uniquePortKey: 'key-that-changed' });
 
-        await Vue.nextTick();
+            await Vue.nextTick();
 
-        expect(mockedAPI.port.getPortView).toBeCalledTimes(2);
-        expect(mockedAPI.port.getPortView).toBeCalledWith(expect.objectContaining({
-            nodeId: 'node2'
-        }));
-    });
+            expect(mockedAPI.port.getPortView).toBeCalledTimes(2);
+            expect(mockedAPI.port.getPortView).toBeCalledWith(expect.objectContaining({
+                nodeId: 'node2'
+            }));
+        });
 
-    it('should load port view when the selected port index changes', async () => {
-        const wrapper = doMount();
+        it('should load port view when the selected port index changes', async () => {
+            const wrapper = doMount();
 
-        wrapper.setProps({ selectedPortIndex: 1 });
+            wrapper.setProps({ selectedPortIndex: 1, uniquePortKey: 'key-that-changed' });
 
-        await Vue.nextTick();
-        await Vue.nextTick();
+            await Vue.nextTick();
+            await Vue.nextTick();
 
-        expect(mockedAPI.port.getPortView).toBeCalledTimes(2);
-        expect(mockedAPI.port.getPortView).toBeCalledWith(expect.objectContaining({
-            portIdx: 1
-        }));
+            expect(mockedAPI.port.getPortView).toBeCalledTimes(2);
+            expect(mockedAPI.port.getPortView).toBeCalledWith(expect.objectContaining({
+                portIdx: 1
+            }));
+        });
+
+        it('should load port view when the selected view index changes', async () => {
+            const wrapper = doMount();
+
+            wrapper.setProps({ selectedViewIndex: 2, uniquePortKey: 'key-that-changed' });
+
+            await Vue.nextTick();
+            await Vue.nextTick();
+
+            expect(mockedAPI.port.getPortView).toBeCalledTimes(2);
+            expect(mockedAPI.port.getPortView).toBeCalledWith(expect.objectContaining({
+                viewIdx: 2
+            }));
+        });
     });
 
     it('should emit the port view state', async () => {

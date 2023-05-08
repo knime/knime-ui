@@ -13,6 +13,7 @@ import type {
 import { MetaNodePort, Node, NodeState, type MetaNode } from '@/api/gateway-api/generated-api';
 import PortViewLoader from '@/components/embeddedViews/PortViewLoader.vue';
 import type { ViewStateChangeEvent } from '@/components/embeddedViews/ViewLoader.vue';
+import { toPortObject } from '@/util/portDataMapper';
 
 import {
     buildMiddleware,
@@ -23,7 +24,6 @@ import {
     validatePortSupport,
     type ValidationResult
 } from './output-validator';
-import { toPortObject } from '@/util/portDataMapper';
 
 import PortViewTabToggles from './PortViewTabToggles.vue';
 
@@ -109,11 +109,8 @@ export default defineComponent({
         outputStateChange: (_payload: {
             message: string;
             loading?: boolean;
-            error?: {
-                type: string;
-                code: string;
-            }
-        }) => true,
+            error?: ValidationResult['error']
+        } | null) => true,
         executeNode: () => true
     },
 
@@ -159,8 +156,12 @@ export default defineComponent({
             return this.selectedNode.outPorts[this.selectedPortIndex];
         },
 
+        fullPortObject() {
+            return toPortObject(this.availablePortTypes)(this.selectedPort.typeId);
+        },
+
         portViews() {
-            return toPortObject(this.availablePortTypes)(this.selectedPort.typeId).views;
+            return this.fullPortObject.views;
         },
 
         currentNodeState(): 'configured' | 'executed' {
@@ -179,22 +180,9 @@ export default defineComponent({
         },
 
         shouldShowExecuteAction() {
-            return this.selectedNode.allowedActions.canExecute;
-        },
+            const isFlowVariable = this.fullPortObject.kind === 'flowVariable';
 
-        executeActionStyles() {
-            const ACTION_ELEMENT_WIDTH = 400;
-            const ACTION_ELEMENT_HEIGHT = 70;
-
-            const top = `calc(50% - ${ACTION_ELEMENT_HEIGHT / 2}px)`;
-            const left = `calc(50% - ${ACTION_ELEMENT_WIDTH / 2}px)`;
-
-            return {
-                top,
-                left,
-                width: `${ACTION_ELEMENT_WIDTH}px`,
-                height: `${ACTION_ELEMENT_HEIGHT}px`
-            };
+            return this.selectedNode.allowedActions.canExecute && !isFlowVariable;
         }
     },
 
@@ -280,15 +268,17 @@ export default defineComponent({
 <style lang="postcss" scoped>
 .execute-node-action {
     position: absolute;
-    bottom: 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: v-bind("executeActionStyles.width");
-    height: v-bind("executeActionStyles.height");
-    top: v-bind("executeActionStyles.top");
-    left: v-bind("executeActionStyles.left");
+    padding: 20px;
+    width: 440px;
+    height: 110px;
+    inset: 130px 0 0 0;
+    margin: auto;
+    background: rgba(255 255 255 / 0.3);
+    backdrop-filter: blur(10px);
 }
 
 .action-button {

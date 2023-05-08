@@ -67,7 +67,7 @@ export default defineComponent({
         /* Required by dynamically loaded view components */
         initKnimeService(config: ViewConfig) {
             return new KnimeService(
-                // @ts-expect-error
+                // @ts-expect-error -- Because types are not generated from the API atm (UIEXT-932)
                 config,
 
                 // Data Service Callback

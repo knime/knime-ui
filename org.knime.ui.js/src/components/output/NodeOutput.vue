@@ -9,7 +9,7 @@ import PortTabs from './PortTabs.vue';
 import PortViewTabOutput from './PortViewTabOutput.vue';
 import NodeViewTabOutput from './NodeViewTabOutput.vue';
 
-import { buildMiddleware, validateDragging, validateSelection } from './output-validator';
+import { buildMiddleware, validateDragging, validateSelection, type ValidationResult } from './output-validator';
 
 export const runValidationChecks = ({ selectedNodes, isDragging }) => {
     const validationMiddleware = buildMiddleware(
@@ -22,6 +22,17 @@ export const runValidationChecks = ({ selectedNodes, isDragging }) => {
     return Object.freeze(result);
 };
 
+interface ComponentData {
+  // either 'view' or the number of the port as string
+  selectedTab: 'view' | Omit<string, 'view'> | null;
+
+  outputState: {
+    loading?: boolean;
+    message?: string;
+    error?: ValidationResult['error'];
+  } | null;
+}
+
 /**
  * Node output panel, displaying output port selection bar and port view if possible.
  * Port view will be rendered dynamically based on the port type
@@ -33,10 +44,9 @@ export default defineComponent({
         PortViewTabOutput,
         NodeViewTabOutput
     },
-    data() {
+    data(): ComponentData {
         return {
-            // string: either 'view' or the number of the port as string
-            selectedTab: '',
+            selectedTab: null,
             outputState: null
         };
     },

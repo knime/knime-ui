@@ -110,10 +110,6 @@ export default defineComponent({
             const top = '50px';
             await this.$nextTick();
 
-            if (!this.$refs.tabToggles) {
-                this.position = { top, left: '0' };
-            }
-
             // eslint-disable-next-line no-extra-parens
             const { width } = (this.$refs.tabToggles as { $el: HTMLElement }).$el.getBoundingClientRect();
 
