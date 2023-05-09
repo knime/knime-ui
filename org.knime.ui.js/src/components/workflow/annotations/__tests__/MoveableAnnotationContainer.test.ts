@@ -1,23 +1,28 @@
-import { describe, it, expect, vi } from 'vitest';
-import { flushPromises, mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/utils';
+import { describe, expect, it, vi } from 'vitest';
+import { flushPromises, mount, VueWrapper } from '@vue/test-utils';
+import { deepMocked, mockVuexStore } from '@/test/utils';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
 import { directiveMove } from '@/plugins/directive-move';
 import * as $shapes from '@/style/shapes.mjs';
+
+import { API } from '@api';
+import * as selectionStore from '@/store/selection';
+import * as workflowStore from '@/store/workflow';
+
 import MoveableAnnotationContainer from '../MoveableAnnotationContainer.vue';
+
+const mockedAPI = deepMocked(API);
 
 describe('MoveableAnnotationContainer.vue', () => {
     const defaultProps: { id: String, bounds: Bounds } = {
-        id: 'id1',
+        id: 'annotation:1',
         bounds: { x: 500, y: 200, width: 100, height: 100 }
     };
 
     const doMount = ({
         props = {},
         mocks = {},
-        isDraggingMock = vi.fn().mockReturnValue(false),
-        isAnnotationSelectedMock = vi.fn().mockReturnValue(() => false),
         screenToCanvasCoordinatesMock = vi.fn().mockReturnValue(() => [0, 0])
     } = {}) => {
         const createMockMoveDirective = () => {
@@ -36,41 +41,21 @@ describe('MoveableAnnotationContainer.vue', () => {
         const mockMoveDirective = createMockMoveDirective();
 
         const $store = mockVuexStore({
-            workflow: {
-                state: {
-                    activeWorkflow: {
-                        projectId: 'project1',
-                        info: { containerId: 'root' }
-                    },
-                    isDragging: isDraggingMock,
-                    movePreviewDelta: { x: 250, y: 250 }
-                },
-                getters: {
-                    isWritable: vi.fn().mockReturnValue(() => false)
-                },
-                actions: {
-                    moveObjects: vi.fn()
-                },
-                mutations: {
-                    setMovePreview: vi.fn(),
-                    resetMovePreview: vi.fn(),
-                    setIsDragging: vi.fn()
-                }
-            },
-            selection: {
-                getters: {
-                    isAnnotationSelected: isAnnotationSelectedMock
-                },
-                actions: {
-                    selectAnnotation: vi.fn(),
-                    deselectAllObjects: vi.fn()
-                }
-            },
+            workflow: workflowStore,
+            selection: selectionStore,
             canvas: {
+                state: { zoomFactor: 1 },
                 getters: {
                     screenToCanvasCoordinates: screenToCanvasCoordinatesMock
                 }
             }
+        });
+
+        $store.commit('workflow/setActiveWorkflow', {
+            info: { containerId: 'root' },
+            nodes: { 'root:1': { id: 'root:1' } },
+            connections: {},
+            workflowAnnotations: [{ id: 'annotation:1' }, { id: 'annotation:2' }]
         });
 
         const dispatchSpy = vi.spyOn($store, 'dispatch');
@@ -90,6 +75,44 @@ describe('MoveableAnnotationContainer.vue', () => {
         return { wrapper, $store, mockMoveDirective, dispatchSpy, commitSpy };
     };
 
+    const mockClientRect = (rect = { top: 0, left: 0 }) => {
+        // @ts-expect-error
+        HTMLElement.prototype.getBoundingClientRect = vi.fn(() => rect);
+    };
+
+    const startAnnotationDrag = (
+        wrapper: VueWrapper<any>,
+        moveDirective,
+        { clientX, clientY, shiftKey = false }
+    ) => {
+        const moveStartEvent = new CustomEvent('movestart', {
+            detail: { event: { shiftKey } }
+        });
+
+        wrapper.find('g').trigger('pointerdown', { clientX, clientY });
+
+        moveDirective.trigger('onMoveStart', moveStartEvent);
+    };
+
+    const moveTo = (moveDirective, { clientX, clientY, altKey = false }) => {
+        const moveEvent = new CustomEvent('moving', {
+            detail: {
+                altKey,
+                event: { clientX, clientY }
+            }
+        });
+
+        moveDirective.trigger('onMove', moveEvent);
+    };
+
+    const endAnnotationDrag = (moveDirective) => {
+        const moveEndEvent = new CustomEvent('moveend', {
+            detail: { event: {} }
+        });
+
+        moveDirective.trigger('onMoveEnd', moveEndEvent);
+    };
+
     describe('moving', () => {
         it('renders at right position', () => {
             const { wrapper } = doMount();
@@ -98,113 +121,90 @@ describe('MoveableAnnotationContainer.vue', () => {
         });
 
         it('deselects all objects on movement of unselected annotation', async () => {
-            const { dispatchSpy, mockMoveDirective } = doMount();
+            const { wrapper, $store, mockMoveDirective } = doMount();
 
-            const moveStartEvent = new CustomEvent('movestart', {
-                detail: {
-                    startX: 199,
-                    startY: 199,
-                    event: {
-                        shiftKey: false
-                    }
-                }
-            });
+            // add something to selection
+            $store.dispatch('selection/selectNode', 'root:1');
 
-            mockMoveDirective.trigger('onMoveStart', moveStartEvent);
+            startAnnotationDrag(
+                wrapper,
+                mockMoveDirective,
+                { clientX: 199, clientY: 199, shiftKey: false }
+            );
             await flushPromises();
 
-            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAllObjects', undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
+            // node was unselected
+            expect($store.state.selection.selectedNodes).toEqual({});
+            expect($store.state.selection.selectedAnnotations).toEqual({ 'annotation:1': true });
         });
 
         it('does not deselect annotation when annotation is already selected', () => {
-            const { dispatchSpy, mockMoveDirective } = doMount({
-                isAnnotationSelectedMock: vi.fn().mockReturnValue(() => true)
-            });
+            const { wrapper, $store, mockMoveDirective } = doMount();
 
-            const moveStartEvent = new CustomEvent('movestart', {
-                detail: {
-                    startX: 199,
-                    startY: 199,
-                    event: {
-                        shiftKey: false
-                    }
-                }
-            });
+            $store.dispatch('selection/selectAnnotation', 'annotation:1');
+            expect($store.state.selection.selectedAnnotations).toEqual({ 'annotation:1': true });
 
-            mockMoveDirective.trigger('onMoveStart', moveStartEvent);
+            startAnnotationDrag(
+                wrapper,
+                mockMoveDirective,
+                { clientX: 199, clientY: 199, shiftKey: false }
+            );
 
-            expect(dispatchSpy).not.toHaveBeenCalledWith('selection/deselectAllObjects', undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
+            expect($store.state.selection.selectedAnnotations).toEqual({ 'annotation:1': true });
         });
 
         it.each([
-            ['without grid', { x: 1, y: 1 }, true],
-            ['with grid', $shapes.gridSize, false]
-        ])('moves an annotation %s', async (_, gridSize, altKey) => {
-            const kanvasMock = document.createElement('div');
-            kanvasMock.id = 'kanvas';
-            document.body.appendChild(kanvasMock);
-
-            const initialNodePosition = { x: 500, y: 200 };
-            const positionAfterMove = {
-                x: initialNodePosition.x + 100,
-                y: initialNodePosition.y + 100
+            ['without grid', true, { x: 128, y: 128 }],
+            ['with grid', false, { x: 130, y: 130 }]
+        ])('moves an annotation %s', async (_, altKey, expectedDelta) => {
+            const bounds: Bounds = {
+                x: 10,
+                y: 10,
+                width: 100,
+                height: 100
             };
 
-            const { commitSpy, mockMoveDirective, wrapper } = doMount({
-                isDraggingMock: vi.fn().mockReturnValue(true),
-                screenToCanvasCoordinatesMock: vi.fn().mockReturnValue(() => [positionAfterMove.x, positionAfterMove.y])
+            mockClientRect({ left: bounds.x, top: bounds.y });
+
+            const { mockMoveDirective, wrapper, $store } = doMount({
+                props: { bounds },
+                screenToCanvasCoordinatesMock: vi.fn(() => ([x, y]) => [x, y])
             });
 
-            const moveStartEvent = new CustomEvent('movestart', {
-                detail: {
-                    event: { shiftKey: false, offsetX: 0, offsetY: 0 }
-                }
-            });
-            mockMoveDirective.trigger('onMoveStart', moveStartEvent);
+            const clickPosition = { clientX: 85, clientY: 85 };
+            const movePosition = { clientX: 213, clientY: 213 };
+
+            startAnnotationDrag(wrapper, mockMoveDirective, clickPosition);
             await flushPromises();
-            expect(commitSpy).toHaveBeenCalledWith('workflow/setIsDragging', true, undefined);
 
-            wrapper.find('g').trigger('pointerdown', {
-                offsetX: 0,
-                offsetY: 0
-            });
+            expect($store.state.workflow.isDragging).toBe(true);
 
-            const moveEvent = new CustomEvent('moving', {
-                detail: {
-                    clientX: 250,
-                    clientY: 250,
-                    altKey,
-                    e: { detail: { event: { shiftKey: false } } }
-                }
-            });
+            moveTo(mockMoveDirective, { ...movePosition, altKey });
 
-            mockMoveDirective.trigger('onMove', moveEvent);
-
-            const initialDelta = {
-                x: positionAfterMove.x - initialNodePosition.x,
-                y: positionAfterMove.y - initialNodePosition.y
-            };
-
-            const expectedDelta = {
-                deltaX: Math.round(initialDelta.x / gridSize.x) * gridSize.x,
-                deltaY: Math.round(initialDelta.y / gridSize.y) * gridSize.y
-            };
-
-            expect(commitSpy).toHaveBeenCalledWith('workflow/setMovePreview', expectedDelta, undefined);
+            expect($store.state.workflow.movePreviewDelta).toEqual(expectedDelta);
         });
 
-        it('ends movement of an annotation', () => {
+        it('ends movement of an annotation', async () => {
             vi.useFakeTimers();
-            const { wrapper, dispatchSpy } = doMount();
+            const { wrapper, mockMoveDirective } = doMount();
 
-            wrapper.vm.onMoveEnd();
+            startAnnotationDrag(
+                wrapper,
+                mockMoveDirective,
+                { clientX: 10, clientY: 10, shiftKey: false }
+            );
+            await flushPromises();
+
+            moveTo(mockMoveDirective, { clientX: 50, clientY: 50 });
+
+            endAnnotationDrag(mockMoveDirective);
 
             vi.advanceTimersByTime(5000);
 
             vi.runOnlyPendingTimers();
-            expect(dispatchSpy).toHaveBeenCalledWith('workflow/moveObjects', undefined);
+
+            expect(mockedAPI.workflowCommand.Translate).toHaveBeenCalled();
+
             vi.useRealTimers();
         });
     });

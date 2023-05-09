@@ -159,7 +159,6 @@ export default {
         onMoveEnd: throttle(function ({ detail: { endX, endY } }) {
             /* eslint-disable no-invalid-this */
             if (this.hasAbortedDrag) {
-                this.$store.dispatch('workflow/resetDragState');
                 this.$store.dispatch('workflow/resetAbortDrag');
 
                 if (this.lastHitTarget) {
