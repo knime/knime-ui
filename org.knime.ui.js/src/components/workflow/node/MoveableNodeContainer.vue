@@ -98,11 +98,12 @@ export default {
                 y: snapToGrid(this.position.y)
             };
 
-            // account for any delta between the current position and its grid-adjusted equivalent.
-            // this is useful for nodes that might be not aligned to the grid, so that they can be brought back in
-            // during the drag operation
             this.startPos = {
                 ...gridAdjustedPosition,
+
+                // account for any delta between the current position and its grid-adjusted equivalent.
+                // this is useful for nodes that might be not aligned to the grid, so that they can be brought back in
+                // during the drag operation
                 positionDelta: {
                     x: gridAdjustedPosition.x - this.position.x,
                     y: gridAdjustedPosition.y - this.position.y
