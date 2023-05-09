@@ -12,8 +12,7 @@ export default {
             alwaysActive: true,
             onEscape() {
                 if (this.isDragging) {
-                    this.setMovePreview({ deltaX: 0, deltaY: 0 });
-                    this.setHasAbortedNodeDrag(true);
+                    this.$store.dispatch('workflow/abortDrag');
                 }
             }
         })
@@ -42,7 +41,7 @@ export default {
         ...mapGetters('workflow', ['isWritable', 'isNodeConnected', 'getNodeById']),
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedNodeDrag', 'isDragging']),
+        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedDrag', 'isDragging']),
 
         // Combined position of original position + the dragged amount
         combinedPosition() {
@@ -69,7 +68,7 @@ export default {
     },
     methods: {
         ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
-        ...mapMutations('workflow', ['setMovePreview', 'setHasAbortedNodeDrag']),
+        ...mapMutations('workflow', ['setMovePreview']),
         /**
          * Resets the drag position in the store. This can only happen here, as otherwise the node
          * will be reset to its position before the actual movement of the store happened.
@@ -77,8 +76,7 @@ export default {
          */
         handleMoveFromStore() {
             if (this.isDragging) {
-                this.$store.commit('workflow/resetMovePreview');
-                this.$store.commit('workflow/setIsDragging', false);
+                this.$store.dispatch('workflow/resetDragState');
             }
         },
 
@@ -119,7 +117,7 @@ export default {
          */
         onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
             /* eslint-disable no-invalid-this */
-            if (!this.startPos || this.hasAbortedNodeDrag) {
+            if (!this.startPos || this.hasAbortedDrag) {
                 return;
             }
 
@@ -160,9 +158,9 @@ export default {
          */
         onMoveEnd: throttle(function ({ detail: { endX, endY } }) {
             /* eslint-disable no-invalid-this */
-            if (this.hasAbortedNodeDrag) {
-                this.setHasAbortedNodeDrag(false);
-                this.$store.commit('workflow/setIsDragging', false);
+            if (this.hasAbortedDrag) {
+                this.$store.dispatch('workflow/resetDragState');
+                this.$store.dispatch('workflow/resetAbortDrag');
 
                 if (this.lastHitTarget) {
                     this.lastHitTarget.dispatchEvent(

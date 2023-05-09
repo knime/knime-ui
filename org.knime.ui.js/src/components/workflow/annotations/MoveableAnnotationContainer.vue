@@ -27,7 +27,7 @@ export default defineComponent({
         };
     },
     computed: {
-        ...mapState('workflow', ['movePreviewDelta', 'isDragging', 'hasAbortedNodeDrag']),
+        ...mapState('workflow', ['movePreviewDelta', 'isDragging', 'hasAbortedDrag']),
         ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
@@ -57,17 +57,11 @@ export default defineComponent({
     methods: {
         ...mapActions('selection', ['selectAnnotation', 'deselectAllObjects']),
         ...mapActions('workflow', ['moveObjects']),
-        ...mapMutations('workflow', [
-            'setMovePreview',
-            'resetMovePreview',
-            'setIsDragging',
-            'setHasAbortedNodeDrag'
-        ]),
+        ...mapMutations('workflow', ['setMovePreview', 'setIsDragging']),
 
         handleMoveFromStore() {
             if (this.isDragging) {
-                this.resetMovePreview();
-                this.setIsDragging(false);
+                this.$store.dispatch('workflow/resetDragState');
             }
         },
 
@@ -108,7 +102,7 @@ export default defineComponent({
 
         onMove: throttle(function (this: any, { detail: { event, altKey } }) {
             /* eslint-disable no-invalid-this */
-            if (this.hasAbortedNodeDrag) {
+            if (this.hasAbortedDrag) {
                 return;
             }
 
@@ -135,9 +129,9 @@ export default defineComponent({
 
         onMoveEnd: throttle(function (this: any) {
             /* eslint-disable no-invalid-this */
-            if (this.hasAbortedNodeDrag) {
-                this.setHasAbortedNodeDrag(false);
-                this.$store.commit('workflow/setIsDragging', false);
+            if (this.hasAbortedDrag) {
+                this.$store.dispatch('workflow/resetDragState');
+                this.$store.dispatch('workflow/resetAbortDrag');
                 return;
             }
 

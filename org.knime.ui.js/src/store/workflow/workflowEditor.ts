@@ -15,7 +15,6 @@ export const state = {
     nameEditorNodeId: null,
     labelEditorNodeId: null,
     copyPaste: null,
-    hasAbortedNodeDrag: false,
     portTypeMenu: {
         isOpen: false,
         nodeId: null,
@@ -29,8 +28,10 @@ export const state = {
         props: {},
         events: {}
     },
-    isDragging: false,
-    editableAnnotationId: null
+    editableAnnotationId: null,
+
+    hasAbortedDrag: false,
+    isDragging: false
 };
 
 export const mutations = {
@@ -63,8 +64,8 @@ export const mutations = {
         state.copyPaste.lastPasteBounds = bounds;
     },
 
-    setHasAbortedNodeDrag(state, value) {
-        state.hasAbortedNodeDrag = value;
+    setHasAbortedDrag(state, value) {
+        state.hasAbortedDrag = value;
     },
 
     setPortTypeMenu(state, value) {
@@ -119,6 +120,21 @@ export const actions = {
     },
     setEditableAnnotationId({ commit }, annotationId) {
         commit('setEditableAnnotationId', annotationId);
+    },
+
+    abortDrag({ commit }) {
+        commit('setHasAbortedDrag', true);
+        commit('setMovePreview', { deltaX: 0, deltaY: 0 });
+        commit('setIsDragging', false);
+    },
+
+    resetAbortDrag({ commit }) {
+        commit('setHasAbortedDrag', false);
+    },
+
+    resetDragState({ commit }) {
+        commit('setMovePreview', { deltaX: 0, deltaY: 0 });
+        commit('setIsDragging', false);
     },
 
     openPortTypeMenu({ commit }, { nodeId, startNodeId, props, events }) {
@@ -303,7 +319,7 @@ export const actions = {
     /**
      * Calls the API to save the position of the nodes after the move is over
     */
-    async moveObjects({ state, commit, rootGetters }) {
+    async moveObjects({ state, commit, rootGetters, dispatch }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
         const selectedAnnotations = rootGetters['selection/selectedAnnotationIds'];
@@ -312,6 +328,11 @@ export const actions = {
             x: state.movePreviewDelta.x,
             y: state.movePreviewDelta.y
         };
+
+        if (translation.x === 0 && translation.y === 0) {
+            await dispatch('resetDragState');
+            return;
+        }
 
         try {
             await API.workflowCommand.Translate({
