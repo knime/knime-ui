@@ -71,9 +71,9 @@ const setupRenameInput = async () => {
     renameInput.value.focus();
 };
 
-watch(isRenameActive, (isActive) => {
+watch(isRenameActive, async (isActive) => {
     if (isActive) {
-        setupRenameInput();
+        await setupRenameInput();
     }
 });
 

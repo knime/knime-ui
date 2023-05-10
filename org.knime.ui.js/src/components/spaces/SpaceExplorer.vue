@@ -213,8 +213,8 @@ export default defineComponent({
                 });
         },
 
-        onBreadcrumbClick({ id }) {
-            this.fetchWorkflowGroupContent(id);
+        async onBreadcrumbClick({ id }) {
+            await this.fetchWorkflowGroupContent(id);
             this.$emit('itemChanged', id);
         },
 
@@ -242,7 +242,7 @@ export default defineComponent({
 
             await this.$store.dispatch('spaces/deleteItems', { itemIds });
             if (nextProjectId) {
-                this.$router.push({
+                await this.$router.push({
                     name: APP_ROUTES.WorkflowPage,
                     params: { projectId: nextProjectId, workflowId: 'root' }
                 });
@@ -259,7 +259,7 @@ export default defineComponent({
          * @param {Payload} eventPayload
          * @returns {Void}
          */
-        onMoveItems({ sourceItems, targetItem, onComplete }) {
+        async onMoveItems({ sourceItems, targetItem, onComplete }) {
             const openedWorkflows = this.openProjects.filter(workflow => sourceItems.includes(workflow.origin.itemId));
             const isInsideFolder = this.openProjects.filter(
                 (project) => project.origin.ancestorItemIds
@@ -296,7 +296,7 @@ export default defineComponent({
             }
 
             try {
-                this.$store.dispatch(
+                await this.$store.dispatch(
                     'spaces/moveItems',
                     { itemIds: sourceItems, destWorkflowGroupItemId, collisionStrategy }
                 );

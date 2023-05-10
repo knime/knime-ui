@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
 import { deepMocked, mockVuexStore } from '@/test/utils';
@@ -213,6 +213,7 @@ describe('SpaceExplorer.vue', () => {
                 spaceId: 'local',
                 itemId: 'parentId'
             });
+            await flushPromises();
             expect(wrapper.emitted('itemChanged')[0][0]).toBe('parentId');
         });
 
@@ -639,6 +640,7 @@ describe('SpaceExplorer.vue', () => {
                 'spaces/moveItems',
                 { itemIds: sourceItems, destWorkflowGroupItemId: targetItem, collisionStrategy: 'OVERWRITE' }
             );
+            await flushPromises();
 
             expect(onComplete).toHaveBeenCalledWith(true);
         });
@@ -667,6 +669,7 @@ describe('SpaceExplorer.vue', () => {
                 'spaces/moveItems',
                 { itemIds: sourceItems, destWorkflowGroupItemId: 'root', collisionStrategy: 'OVERWRITE' }
             );
+            await flushPromises();
             expect(onComplete).toHaveBeenCalledWith(true);
         });
 
@@ -694,6 +697,7 @@ describe('SpaceExplorer.vue', () => {
                 'spaces/moveItems',
                 { itemIds: sourceItems, destWorkflowGroupItemId: 'parentId', collisionStrategy: 'OVERWRITE' }
             );
+            await flushPromises();
             expect(onComplete).toHaveBeenCalledWith(true);
         });
 

@@ -59,9 +59,9 @@ const { popperInstance } = usePopper({
     modifiers: [popperOffsetModifier.value]
 });
 
-watch(wrapperHeight, () => {
+watch(wrapperHeight, async () => {
     // by re-setting the modifiers we update the offset which will reposition the popper
-    popperInstance.value.setOptions({
+    await popperInstance.value.setOptions({
         modifiers: [popperOffsetModifier.value]
     });
 });
