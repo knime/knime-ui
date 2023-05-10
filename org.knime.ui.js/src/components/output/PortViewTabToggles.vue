@@ -85,13 +85,11 @@ export default defineComponent({
 
     watch: {
         uniquePortKey() {
-            this.calculatePosition();
             this.setFirstTab();
         }
     },
 
     mounted() {
-        this.calculatePosition();
         this.setFirstTab();
     },
 
@@ -104,19 +102,6 @@ export default defineComponent({
 
         resetActiveView() {
             this.activeView = null;
-        },
-
-        async calculatePosition() {
-            const top = '50px';
-            await this.$nextTick();
-
-            // eslint-disable-next-line no-extra-parens
-            const { width } = (this.$refs.tabToggles as { $el: HTMLElement }).$el.getBoundingClientRect();
-
-            this.position = {
-                top,
-                left: `calc(50% - ${width / 2}px)`
-            };
         }
     }
 });
@@ -138,8 +123,8 @@ export default defineComponent({
 <style lang="postcss" scoped>
 .tab-toggles {
   position: absolute;
-  left: v-bind("position.left");
-  top: v-bind("position.top");
+  inset: 50px 0 0 0;
+  margin: 0 auto;
   z-index: 3;
 }
 </style>

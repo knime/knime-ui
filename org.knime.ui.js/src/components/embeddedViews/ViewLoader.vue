@@ -102,14 +102,14 @@ export default defineComponent({
                 throw new Error(`Component ${componentName} hasn't been loaded properly`);
             }
         },
-        renderKey() {
-            this.loadView();
+        async renderKey() {
+            await this.loadView();
         }
     },
 
-    mounted() {
+    async mounted() {
         if (this.loadOnMount) {
-            this.loadView();
+            await this.loadView();
         }
     },
 

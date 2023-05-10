@@ -1,13 +1,14 @@
 import { expect, describe, it } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
+
+import type { DeepPartial } from '@/test/utils';
 
 import type { AvailablePortTypes, KnimeNode } from '@/api/gateway-api/custom-types';
 import { NodeState, PortType } from '@/api/gateway-api/generated-api';
 import PortViewLoader from '@/components/embeddedViews/PortViewLoader.vue';
 
-import type { DeepPartial } from '@/util/types';
 import PortViewTabOutput from '../PortViewTabOutput.vue';
-import { nextTick } from 'vue';
 
 describe('PortViewTabOutput.vue', () => {
     const dummyNode: DeepPartial<KnimeNode> = {

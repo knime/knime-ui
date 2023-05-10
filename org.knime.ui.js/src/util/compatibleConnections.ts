@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-extra-parens */
-import type { AvailablePortTypes, KnimeNode } from '@/api/gateway-api/custom-types';
+import type { AvailablePortTypes, KnimeNode, NodePortGroups } from '@/api/gateway-api/custom-types';
 import type { Connection,
     WorkflowInfo,
-    NodePort,
-    PortGroup } from '@/api/gateway-api/generated-api';
+    NodePort } from '@/api/gateway-api/generated-api';
 import { toPortObject } from '@/util/portDataMapper';
 
 export type Direction = 'in' | 'out';
@@ -140,7 +139,7 @@ const groupAddablePortTypesByPortGroup = (
         availablePortTypes,
         targetPortDirection
     }: {
-        targetPortGroups: Record<string, PortGroup>,
+        targetPortGroups: NodePortGroups,
         availablePortTypes: AvailablePortTypes,
         targetPortDirection: Direction
     }
@@ -168,7 +167,7 @@ const groupAddablePortTypesByPortGroup = (
 const transformToPortGroupObject = (
     groupArray: GroupedPortTypes,
     canAddPortKey: 'canAddInPort' | 'canAddOutPort'
-): Record<string, PortGroup> => {
+): NodePortGroups => {
     const mapped = groupArray.map(([groupName, supportedPortTypeIds]) => ({
         [groupName]: {
             [canAddPortKey]: true,
@@ -229,7 +228,7 @@ export const generateValidPortGroupsForPlaceholderPort = (
     }: {
         fromPort: NodePort,
         availablePortTypes: AvailablePortTypes,
-        targetPortGroups: Record<string, PortGroup>,
+        targetPortGroups: NodePortGroups,
         targetPortDirection: Direction
     }
 ) => {

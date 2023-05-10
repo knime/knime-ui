@@ -6,14 +6,15 @@ import type { MenuItem } from 'webapps-common/ui/components/MenuItemsBase.vue';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import ReturnIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 
-import type { PortGroup, XY } from '@/api/gateway-api/generated-api';
+import type { XY } from '@/api/gateway-api/generated-api';
+import type { NodePortGroups } from '@/api/gateway-api/custom-types';
 import { makeTypeSearch } from '@/util/fuzzyPortTypeSearch';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import portIcon from '@/components/common/PortIconRenderer';
 import SearchBar from '@/components/common/SearchBar.vue';
 
 const isPortGroupWithSinglePort = (
-    portGroups: Record<string, PortGroup>,
+    portGroups: NodePortGroups,
     groupName: string
 ) => portGroups[groupName].supportedPortTypeIds.length === 1;
 
@@ -43,7 +44,7 @@ export default defineComponent({
             validator: (side: 'input' | 'output') => ['input', 'output'].includes(side)
         },
         portGroups: {
-            type: Object as PropType<Record<string, PortGroup>>,
+            type: Object as PropType<NodePortGroups>,
             default: null
         }
     },

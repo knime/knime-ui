@@ -1,8 +1,8 @@
 import { computed } from 'vue';
 import { useStore } from 'vuex';
 
-import type { NodePort, PortGroup } from '@/api/gateway-api/generated-api';
-import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
+import type { NodePort } from '@/api/gateway-api/generated-api';
+import type { AvailablePortTypes, NodePortGroups } from '@/api/gateway-api/custom-types';
 
 import { checkCompatibleConnectionAndPort,
     generateValidPortGroupsForPlaceholderPort,
@@ -15,10 +15,10 @@ type PlaceholderPort = {
 export type PortSnapCallback = (params: {
     snapPosition: [number, number];
     targetPort: NodePort | PlaceholderPort;
-    targetPortGroups: Record<string, PortGroup>;
+    targetPortGroups: NodePortGroups;
 }) => {
     didSnap: boolean;
-    createPortFromPlaceholder: { validPortGroups: Record<string, PortGroup> } | null
+    createPortFromPlaceholder: { validPortGroups: NodePortGroups } | null
 }
 
 const isPlaceholderPort = (
@@ -40,10 +40,10 @@ export const usePortSnapping = () => {
         sourcePort: NodePort;
         targetPort: NodePort | PlaceholderPort;
         targetPortDirection: Direction;
-        targetPortGroups: Record<string, PortGroup>;
+        targetPortGroups: NodePortGroups;
     }) => {
         let isCompatible: boolean = false;
-        let validPortGroups: Record<string, PortGroup> | null = null;
+        let validPortGroups: NodePortGroups | null = null;
 
         if (isPlaceholderPort(targetPort)) {
             validPortGroups = generateValidPortGroupsForPlaceholderPort({

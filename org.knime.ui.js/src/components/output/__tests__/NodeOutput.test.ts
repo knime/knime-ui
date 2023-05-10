@@ -2,6 +2,7 @@ import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-params */
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
+import type { DeepPartial } from '@/test/utils';
 import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import * as selectionStore from '@/store/selection';
@@ -16,7 +17,6 @@ import PortTabs from '../PortTabs.vue';
 
 import PortViewTabOutput from '../PortViewTabOutput.vue';
 import NodeViewTabOutput from '../NodeViewTabOutput.vue';
-import type { DeepPartial } from '@/util/types';
 import type { KnimeNode } from '@/api/gateway-api/custom-types';
 import { NodeState } from '@/api/gateway-api/generated-api';
 
