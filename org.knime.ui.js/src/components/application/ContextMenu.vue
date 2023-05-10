@@ -17,7 +17,8 @@ type ContextMenuActionsGroupItem = {
 type MenuItemWithName = Pick<FormattedShortcut, 'name'> & MenuItem
 
 type ComponentData = {
-    visibleItems: Array<ContextMenuActionsGroupItem & { separator?: boolean }>
+    visibleItems: Array<ContextMenuActionsGroupItem & { separator?: boolean }>;
+    activeDescendant: string|null;
 }
 
 // eslint-disable-next-line valid-jsdoc
@@ -68,7 +69,8 @@ export default defineComponent({
     },
     emits: ['menuClose'],
     data: (): ComponentData => ({
-        visibleItems: []
+        visibleItems: [],
+        activeDescendant: null
     }),
     computed: {
         ...mapGetters('selection', [
@@ -139,6 +141,9 @@ export default defineComponent({
                 event,
                 metadata: { position: this.position }
             });
+        },
+        setActiveDescendant(itemId: string|null) {
+            this.activeDescendant = itemId;
         },
         setMenuItems() {
             const areNodesSelected = this.selectedNodes.length > 0;
@@ -237,6 +242,7 @@ export default defineComponent({
     :disable-interactions="true"
     class="context-menu"
     aria-label="Context Menu"
+    :aria-activedescendant="activeDescendant"
     prevent-overflow
     @menu-close="$emit('menuClose')"
   >
@@ -248,6 +254,7 @@ export default defineComponent({
       :items="menuItems"
       menu-aria-label="Context Menu"
       @item-click="onItemClick"
+      @item-focused="setActiveDescendant"
     />
   </FloatingMenu>
 </template>
