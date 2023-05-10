@@ -185,51 +185,50 @@ export default defineComponent({
                 { name: 'deleteSelected', isVisible: !this.isSelectionEmpty }
             ];
 
-            const arrangeAnnotationSubMenu: Array<ContextMenuActionsGroupItem> = [{
-                text: 'Arrange annotations',
-                isVisible: true,
-                children: [
-                    { name: 'addWorkflowAnnotation', isVisible: !isAnythingSelected },
-                    { name: 'bringAnnotationToFront', isVisible: areAnnotationsSelected },
-                    { name: 'bringAnnotationForward', isVisible: areAnnotationsSelected },
-                    { name: 'sendAnnotationBackward', isVisible: areAnnotationsSelected },
-                    { name: 'sendAnnotationToBack', isVisible: areAnnotationsSelected }
-                ]
-            }];
+            const annotationsGroup: Array<ContextMenuActionsGroupItem> = [
+                { name: 'addWorkflowAnnotation', isVisible: !isAnythingSelected },
+                {
+                    text: 'Arrange annotations',
+                    isVisible: areAnnotationsSelected,
+                    children: [
+                        { name: 'bringAnnotationToFront', isVisible: areAnnotationsSelected },
+                        { name: 'bringAnnotationForward', isVisible: areAnnotationsSelected },
+                        { name: 'sendAnnotationBackward', isVisible: areAnnotationsSelected },
+                        { name: 'sendAnnotationToBack', isVisible: areAnnotationsSelected }
+                    ]
+                }
+            ];
 
             const metanodeGroup: Array<ContextMenuActionsGroupItem> = [
-                { name: 'createMetanode', isVisible: this.selectedNodes.length }
+                { name: 'createMetanode', isVisible: this.selectedNodes.length },
+                {
+                    text: 'Metanode',
+                    isVisible: isMetanode,
+                    children: [
+                        { name: 'expandMetanode', isVisible: true },
+                        { name: 'editName', isVisible: true }
+                    ]
+                }
             ];
-
-            const metanodeOperationsSubMenu: Array<ContextMenuActionsGroupItem> = [{
-                text: 'Metanode',
-                isVisible: true,
-                children: [
-                    { name: 'expandMetanode', isVisible: isMetanode },
-                    { name: 'editName', isVisible: isMetanodeOrComponent }
-                ]
-            }];
-
             const componentGroup: Array<ContextMenuActionsGroupItem> = [
-                { name: 'createComponent', isVisible: this.selectedNodes.length }
+                { name: 'createComponent', isVisible: this.selectedNodes.length },
+                {
+                    text: 'Component',
+                    isVisible: isComponent,
+                    children: [
+                        { name: 'expandComponent', isVisible: true },
+                        { name: 'openComponent', isVisible: true },
+                        { name: 'editName', isVisible: true }
+                    ]
+                }
             ];
-
-            const componentOperationsSubMenu: Array<ContextMenuActionsGroupItem> = [{
-                text: 'Component',
-                isVisible: true,
-                children: [
-                    { name: 'expandComponent', isVisible: isComponent },
-                    { name: 'openComponent', isVisible: isComponent },
-                    { name: 'editName', isVisible: isMetanodeOrComponent }
-                ]
-            }];
 
             this.visibleItems = menuGroups()
                 .append(basicOperationsGroup)
                 .append(clipboardOperationsGroup)
-                .append(areAnnotationsSelected ? arrangeAnnotationSubMenu : [])
-                .append(metanodeGroup.concat(isMetanode ? metanodeOperationsSubMenu : []))
-                .append(componentGroup.concat(isComponent ? componentOperationsSubMenu : []))
+                .append(annotationsGroup)
+                .append(metanodeGroup)
+                .append(componentGroup)
                 .value();
         }
     }
