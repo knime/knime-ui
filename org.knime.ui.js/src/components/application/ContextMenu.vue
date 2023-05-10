@@ -9,10 +9,11 @@ import type { XY } from '@/api/gateway-api/generated-api';
 import type { FormattedShortcut, ShortcutName } from '@/shortcuts';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
-type ContextMenuActionsGroupItem = {
-    isVisible: boolean;
-} & ({ name: ShortcutName, text?: string; children?: never } |
-     { name?: never, text: string; children: Array<ContextMenuActionsGroupItem> });
+type Base = { isVisible: boolean; }
+
+type ContextMenuActionsGroupItem =
+    | Base & { name: ShortcutName; text?: string }
+    | Base & { children: ContextMenuActionsGroupItem[]; text: string }
 
 type MenuItemWithName = Pick<FormattedShortcut, 'name'> & MenuItem
 
