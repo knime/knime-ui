@@ -118,7 +118,13 @@ describe('ContextMenu.vue', () => {
         expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
         await Vue.nextTick();
 
-        expect(renderedMenuItems(wrapper).length).toBe(5);
+        expect(renderedMenuItems(wrapper).map(item => item.name)).toStrictEqual([
+            'executeAll',
+            'cancelAll',
+            'resetAll',
+            'paste',
+            'addWorkflowAnnotation'
+        ]);
     });
 
     it('uses right format for MenuItems', async () => {
@@ -394,8 +400,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
                     { text: 'createMetanode' },
-                    { text: 'expandMetanode' },
-                    { text: 'Rename metanode' },
+                    { text: 'Metanode' },
                     { text: 'createComponent' }
                 ])
             );
@@ -422,11 +427,9 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'createMetanode' },
+                    { text: 'createMetanode', separator: true },
                     { text: 'createComponent' },
-                    { text: 'expandComponent' },
-                    { text: 'openComponent' },
-                    { text: 'Rename component' }
+                    { text: 'Component' }
                 ])
             );
         });
@@ -445,10 +448,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'bringAnnotationToFront' },
-                    { text: 'bringAnnotationForward' },
-                    { text: 'sendAnnotationBackward' },
-                    { text: 'sendAnnotationToBack' }
+                    { text: 'Arrange annotations' }
                 ])
             );
         });
@@ -491,11 +491,8 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'bringAnnotationToFront' },
-                    { text: 'bringAnnotationForward' },
-                    { text: 'sendAnnotationBackward' },
-                    { text: 'sendAnnotationToBack', separator: true },
-                    { text: 'createMetanode' },
+                    { text: 'Arrange annotations', separator: true },
+                    { text: 'createMetanode', separator: true },
                     { text: 'createComponent' }
                 ])
             );
