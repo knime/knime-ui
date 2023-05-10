@@ -2,7 +2,7 @@
 import { defineComponent, type PropType } from 'vue';
 import { mapState } from 'vuex';
 
-import type { MenuItem } from 'webapps-common/ui/components/MenuItemsBase.vue';
+import type { MenuItem } from 'webapps-common/ui/components/MenuItems.vue';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import ReturnIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 

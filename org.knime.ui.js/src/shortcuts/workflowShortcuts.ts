@@ -302,7 +302,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         }
     },
     bringAnnotationToFront: {
-        text: 'Bring annotation to front',
+        text: 'Bring to front',
         hotkey: ['Ctrl', 'Shift', 'ArrowUp'],
         execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
             action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront
@@ -311,7 +311,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     bringAnnotationForward: {
         hotkey: ['Ctrl', 'ArrowUp'],
-        text: 'Bring annotation forward',
+        text: 'Bring forward',
         execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
             action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward
         }),
@@ -319,7 +319,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     sendAnnotationBackward: {
         hotkey: ['Ctrl', 'ArrowDown'],
-        text: 'Send annotation backward',
+        text: 'Send backward',
         execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
             action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward
         }),
@@ -327,7 +327,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     sendAnnotationToBack: {
         hotkey: ['Ctrl', 'Shift', 'ArrowDown'],
-        text: 'Send annotation to back',
+        text: 'Send to back',
         execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
             action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack
         }),
