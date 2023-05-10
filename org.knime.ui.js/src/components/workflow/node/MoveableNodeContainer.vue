@@ -74,9 +74,9 @@ export default {
          * will be reset to its position before the actual movement of the store happened.
          * @returns {void} nothing to return
          */
-        handleMoveFromStore() {
+        async handleMoveFromStore() {
             if (this.isDragging) {
-                this.$store.dispatch('workflow/resetDragState');
+                await this.$store.dispatch('workflow/resetDragState');
             }
         },
 

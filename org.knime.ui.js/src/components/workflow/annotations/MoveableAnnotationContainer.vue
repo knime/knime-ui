@@ -49,8 +49,8 @@ export default defineComponent({
         // Note that the position is not updated while the node is being dragged, only after it's dropped.
         bounds: {
             deep: true,
-            handler() {
-                this.handleMoveFromStore();
+            async handler() {
+                await this.handleMoveFromStore();
             }
         }
     },
@@ -59,9 +59,9 @@ export default defineComponent({
         ...mapActions('workflow', ['moveObjects']),
         ...mapMutations('workflow', ['setMovePreview', 'setIsDragging']),
 
-        handleMoveFromStore() {
+        async handleMoveFromStore() {
             if (this.isDragging) {
-                this.$store.dispatch('workflow/resetDragState');
+                await this.$store.dispatch('workflow/resetDragState');
             }
         },
 

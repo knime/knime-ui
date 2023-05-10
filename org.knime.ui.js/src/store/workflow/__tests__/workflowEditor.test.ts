@@ -263,7 +263,7 @@ describe('workflow store: Editing', () => {
                 const name = `annotation-${i}`;
                 annotationsArray.push({ bounds: { x: 10, y: 10, width: 10, height: 10 }, id: name });
             }
-            
+
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
                 nodes: nodesArray,
@@ -294,6 +294,26 @@ describe('workflow store: Editing', () => {
                 translation: { x: 50, y: 50 },
                 annotationIds
             });
+        });
+
+        it('skips moving objects if translation is 0', async () => {
+            const { store } = await loadStore();
+
+            store.commit('workflow/setIsDragging', true);
+            store.commit('workflow/setMovePreview', { deltaX: 0, deltaY: 0 });
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                nodes: {},
+                info: {
+                    containerId: 'test'
+                },
+                workflowAnnotations: []
+            });
+
+            await store.dispatch('workflow/moveObjects');
+
+            expect(store.state.workflow.isDragging).toBe(false);
+            expect(mockedAPI.workflowCommand.Translate).not.toHaveBeenCalled();
         });
 
         it.each([
