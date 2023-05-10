@@ -395,6 +395,10 @@ describe('FileExplorer.vue', () => {
         const RENAME_OPTION_IDX = 0;
         const DELETE_OPTION_IDX = 1;
 
+        const openSubMenu = async (wrapper, fileItemIndex) => {
+            await wrapper.findAll('.file-explorer-item').at(fileItemIndex).find('.submenu-toggle').trigger('click');
+        };
+
         const getOptionsItem = (optionsMenu, index) => optionsMenu.findAll('.clickable-item').at(index);
 
         const getRenameOption = (wrapper, itemIndex) => {
@@ -412,14 +416,15 @@ describe('FileExplorer.vue', () => {
             expect(wrapper.find('.submenu').find('.submenu-toggle').exists()).toBe(true);
         });
 
-        it('should have the delete option', () => {
+        it('should have the delete option', async () => {
             const { wrapper } = doMount();
+            await openSubMenu(wrapper, 0);
 
             const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
             expect(menuItem.findAll('li').at(DELETE_OPTION_IDX).element.innerHTML).toContain('Delete');
         });
 
-        it('should enable the delete option for items that specify it', () => {
+        it('should enable the delete option for items that specify it', async () => {
             const indexWithDeletable = 3;
             const { wrapper } = doMount({
                 props: {
@@ -430,13 +435,20 @@ describe('FileExplorer.vue', () => {
                 }
             });
 
-            const items = wrapper.findAll('.submenu');
-            const itemDisabledDelete = items.at(0).find('.menu-wrapper').findAll('li').at(DELETE_OPTION_IDX);
-            const itemEnabledDelete = items.at(DELETE_OPTION_IDX).find('.menu-wrapper').findAll('li')
-                .at(DELETE_OPTION_IDX);
-            expect(itemDisabledDelete.find('.disabled').exists()).toBe(true);
-            expect(itemDisabledDelete.element.title).toBe('Open workflows cannot be deleted');
-            expect(itemEnabledDelete.find('.disabled').exists()).toBe(true);
+            const firstFileItem = wrapper.findAll('.file-explorer-item').at(0);
+            const secondFileItem = wrapper.findAll('.file-explorer-item').at(indexWithDeletable);
+
+            await openSubMenu(wrapper, 0);
+
+            const notDeletableMenuItem = firstFileItem.find('.menu-wrapper').findAll('li').at(1);
+            expect(notDeletableMenuItem.find('.disabled').exists()).toBe(true);
+            expect(notDeletableMenuItem.element.title).toBe('Open workflows cannot be deleted');
+
+            // open submenu
+            await openSubMenu(wrapper, indexWithDeletable);
+
+            const deletableMenuItem = secondFileItem.find('.menu-wrapper').findAll('li').at(1);
+            expect(deletableMenuItem.find('.disabled').exists()).toBe(false);
         });
 
         it('should emit deleteItems on delete option click', async () => {
@@ -444,20 +456,22 @@ describe('FileExplorer.vue', () => {
             const { wrapper } = doMount({
                 props: { items: MOCK_DATA.map((item) => ({ ...item, canBeDeleted: true })) }
             });
+            await openSubMenu(wrapper, itemIdx);
 
             const deleteButton = getDeleteOption(wrapper, itemIdx);
             await deleteButton.trigger('click');
             expect(wrapper.emitted('deleteItems')[0][0]).toMatchObject({ items: [{ id: `${itemIdx}` }] });
         });
 
-        it('should have rename enabled when item is not open', () => {
+        it('should have rename enabled when item is not open', async () => {
             const { wrapper } = doMount();
+            await openSubMenu(wrapper, 0);
 
             const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
             expect(menuItem.findAll('li').at(0).element.innerHTML).toContain('Rename');
         });
 
-        it('should have rename disabled when item is open', () => {
+        it('should have rename disabled when item is open', async () => {
             const indexOpenedItem = 0;
             const { wrapper } = doMount({
                 props: {
@@ -467,14 +481,17 @@ describe('FileExplorer.vue', () => {
                     }))
                 }
             });
+            await openSubMenu(wrapper, indexOpenedItem);
 
             const menuItem = wrapper.find('.submenu').find('.menu-wrapper');
             expect(menuItem.findAll('li').at(0).element.outerHTML).toContain('Open workflows cannot be renamed');
         });
 
         it('should render TextInput when users wants to rename', async () => {
+            const fileItemIndex = 0;
             const { wrapper } = doMount();
-            const renameButton = getRenameOption(wrapper, 0);
+            await openSubMenu(wrapper, fileItemIndex);
+            const renameButton = getRenameOption(wrapper, fileItemIndex);
             await renameButton.trigger('click');
 
             expect(wrapper.vm.activeRenameId).toBe(MOCK_DATA[0].id);
@@ -483,8 +500,10 @@ describe('FileExplorer.vue', () => {
         });
 
         it('should show verification message in case of error during renaming', async () => {
+            const fileItemIndex = 0;
             const { wrapper } = doMount();
-            const renameButton = getRenameOption(wrapper, 0);
+            await openSubMenu(wrapper, fileItemIndex);
+            const renameButton = getRenameOption(wrapper, fileItemIndex);
             await renameButton.trigger('click');
 
             const inputValue = wrapper.findAll('input').at(0);
@@ -498,8 +517,10 @@ describe('FileExplorer.vue', () => {
         });
 
         it('should submit renaming event', async () => {
+            const fileItemIndex = 0;
             const { wrapper } = doMount();
-            const renameButton = getRenameOption(wrapper, 0);
+            await openSubMenu(wrapper, fileItemIndex);
+            const renameButton = getRenameOption(wrapper, fileItemIndex);
             await renameButton.trigger('click');
 
             const input = wrapper.findComponent(InputField);
@@ -512,8 +533,10 @@ describe('FileExplorer.vue', () => {
         });
 
         it('should submit renaming event without invalid pre/suffix', async () => {
+            const fileItemIndex = 0;
             const { wrapper } = doMount();
-            const renameButton = getRenameOption(wrapper, 0);
+            await openSubMenu(wrapper, fileItemIndex);
+            const renameButton = getRenameOption(wrapper, fileItemIndex);
             await renameButton.trigger('click');
 
             const input = wrapper.findComponent(InputField);
@@ -526,8 +549,10 @@ describe('FileExplorer.vue', () => {
         });
 
         it('should automatically trim new name', async () => {
+            const fileItemIndex = 0;
             const { wrapper } = doMount();
-            const renameButton = getRenameOption(wrapper, 0);
+            await openSubMenu(wrapper, fileItemIndex);
+            const renameButton = getRenameOption(wrapper, fileItemIndex);
             await renameButton.trigger('click');
 
             const input = wrapper.findComponent(InputField);
@@ -540,8 +565,10 @@ describe('FileExplorer.vue', () => {
         });
 
         it('should not save empty names', async () => {
+            const fileItemIndex = 0;
             const { wrapper } = doMount();
-            const renameButton = getRenameOption(wrapper, 0);
+            await openSubMenu(wrapper, fileItemIndex);
+            const renameButton = getRenameOption(wrapper, fileItemIndex);
             await renameButton.trigger('click');
 
             const input = wrapper.findComponent(InputField);
@@ -553,7 +580,9 @@ describe('FileExplorer.vue', () => {
         });
 
         it('should cancel renaming event', async () => {
+            const fileItemIndex = 0;
             const { wrapper } = doMount();
+            await openSubMenu(wrapper, fileItemIndex);
             const renameButton = getRenameOption(wrapper, 0);
             await renameButton.trigger('click');
 
