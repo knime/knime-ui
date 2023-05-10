@@ -30,7 +30,7 @@ describe('PortViewLoader.vue', () => {
     const dummyNode = {
         id: 'node1',
         selected: true,
-        outPorts: [{ portObjectVersion: 'dummy' }, { portObjectVersion: 'dummy2' }],
+        outPorts: [{ portContentVersion: 'dummy' }, { portContentVersion: 'dummy2' }],
         isLoaded: false,
         state: {
             executionState: 'UNSET'

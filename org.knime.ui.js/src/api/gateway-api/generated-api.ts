@@ -1901,11 +1901,11 @@ export interface NodePort extends NodePortTemplate {
      */
     inactive?: boolean;
     /**
-     * A port object version which allows one to detect port object changes. Will be absent if there is no data, i.e. no port object or if it&#39;s an input port. Will also be absent if there is no &#39;interaction info&#39; supposed to be included.
+     * A port content version which allows one to detect port content changes (port data and spec). Will be absent if there is no data, i.e. no port content at all or if it&#39;s an input port. Will also be absent if there is no &#39;interaction info&#39; supposed to be included.
      * @type {number}
      * @memberof NodePort
      */
-    portObjectVersion?: number;
+    portContentVersion?: number;
     /**
      * The port group this port belongs to. Only available for native nodes.
      * @type {string}

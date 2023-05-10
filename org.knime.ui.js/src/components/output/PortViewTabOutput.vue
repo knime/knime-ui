@@ -127,14 +127,14 @@ export default defineComponent({
             // port object version changes whenever a port state has updated.
             // "ABA"-Changes on the port will always trigger a re-render.
 
-            const { portObjectVersion } = this.selectedNode.outPorts[this.selectedPortIndex];
+            const { portContentVersion } = this.selectedNode.outPorts[this.selectedPortIndex];
 
             return [
                 this.projectId,
                 this.workflowId,
                 this.selectedNode.id,
                 this.selectedPortIndex,
-                portObjectVersion
+                portContentVersion
             ].join('/');
         },
 
