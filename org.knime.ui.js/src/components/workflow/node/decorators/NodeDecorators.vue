@@ -104,7 +104,8 @@ export default {
 
     <ReexecutionDecorator
       v-if="isReexecuting"
-      transform="translate(21, 21)"
+      :background-type="decoratorBackgroundType"
+      transform="translate(20, 0)"
     />
 
     <LoopDecorator
