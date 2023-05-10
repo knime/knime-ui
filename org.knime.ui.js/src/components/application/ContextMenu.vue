@@ -157,7 +157,6 @@ export default defineComponent({
                 'canOpenLegacyFlowVariableDialog' in this.singleSelectedNode.allowedActions;
             const isMetanode = this.singleSelectedNode?.kind === 'metanode';
             const isComponent = this.singleSelectedNode?.kind === 'component';
-            const isMetanodeOrComponent = isMetanode || isComponent;
 
             const basicOperationsGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'configureNode', isVisible: this.singleSelectedNode },
