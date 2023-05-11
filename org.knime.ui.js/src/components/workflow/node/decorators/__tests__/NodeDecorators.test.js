@@ -42,12 +42,12 @@ describe('NodeDecorators.vue', () => {
     });
 
     it('shows/hides ReexecutionDecorator', async () => {
-        const wrapper = doMount({ ...defaultProps, isReexecuting: true });
+        const wrapper = doMount({ ...defaultProps, isReexecutable: true });
 
         let reexecutionDecorator = wrapper.findComponent(ReexecutionDecorator);
         expect(reexecutionDecorator.attributes('transform')).toBe('translate(20, 0)');
 
-        wrapper.setProps({ isReexecuting: false });
+        wrapper.setProps({ isReexecutable: false });
         await wrapper.vm.$nextTick();
         reexecutionDecorator = wrapper.findComponent(ReexecutionDecorator);
         expect(wrapper.findComponent(ReexecutionDecorator).exists()).toBe(false);

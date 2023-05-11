@@ -1458,11 +1458,11 @@ export interface NativeNode extends Node {
      */
     hasView?: boolean;
     /**
-     * Indicates whether the node re-executes on its own. 
-     * @type {boolean}
+     * Indicates whether the node can re-execute itself (e.g. within a page of a data app).
+     * @type {any}
      * @memberof NativeNode
      */
-    isReexecuting?: boolean;
+    isReexecutable?: any;
 
 }
 

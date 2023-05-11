@@ -69,7 +69,7 @@ export default {
             })
         },
 
-        isReexecuting: {
+        isReexecutable: {
             type: Boolean,
             default: false
         }
@@ -103,7 +103,7 @@ export default {
     />
 
     <ReexecutionDecorator
-      v-if="isReexecuting"
+      v-if="isReexecutable"
       :background-type="decoratorBackgroundType"
       transform="translate(20, 0)"
     />

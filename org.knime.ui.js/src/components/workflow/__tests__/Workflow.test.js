@@ -194,7 +194,7 @@ describe('Workflow', () => {
                     link: null,
                     allowedActions: {},
                     executionInfo: null,
-                    isReexecuting: false,
+                    isReexecutable: false,
                     loopInfo: {
                         allowedActions: {}
                     },

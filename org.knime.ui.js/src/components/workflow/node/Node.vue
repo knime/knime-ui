@@ -170,7 +170,7 @@ export default {
             default: null
         },
 
-        isReexecuting: {
+        isReexecutable: {
             type: Boolean,
             default: false
         }
