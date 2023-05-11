@@ -4,6 +4,9 @@ import { useStore } from 'vuex';
 import type { Editor } from '@tiptap/vue-3';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
+import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
+import type { Level } from '@tiptap/extension-heading';
+import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 import BoldIcon from '@/assets/bold.svg';
 import ItalicIcon from '@/assets/italic.svg';
 import UnderlineIcon from '@/assets/underline.svg';
@@ -17,6 +20,7 @@ import type { Bounds } from '@/api/gateway-api/generated-api';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
 import * as $shapes from '@/style/shapes.mjs';
+import { formatHotkeys } from '@/util/formatHotkeys';
 
 interface Props {
     editor: Editor;
@@ -87,17 +91,43 @@ const tools: Array<ToolbarItem> = [
 
 const totalTools = computed(() => tools.length);
 
+const formatTemplates = computed(() => {
+    const levels: Level[] = [1, 2, 3, 4, 5, 6];
+
+    const getCurrentLevel = () => levels.find(level => props.editor.isActive('heading', { level }));
+
+    const base = [{
+        text: 'Normal text',
+        selected: !props.editor.isActive('heading'),
+        hotkeyText: formatHotkeys(['Ctrl', '0']),
+        onClick: () => props.editor.chain().focus().toggleHeading({ level: getCurrentLevel() }).run()
+    }];
+
+    // eslint-disable-next-line no-magic-numbers
+    const headings = levels.map(level => ({
+        text: `Heading ${level}`,
+        selected: props.editor.isActive('heading', { level }),
+        hotkeyText: formatHotkeys(['Ctrl', String(level)]),
+        onClick: () => props.editor.chain().focus().setHeading({ level }).run()
+    }));
+
+    return base.concat(headings);
+});
+
 const zoomFactor = computed(() => store.state.canvas.zoomFactor);
 
 const toolbarItemPadding = 8;
 const toolbarItemGap = 4;
 const toolbarItemSize = 32;
+const formatDropdownWidth = 110;
 
 const toolbarWidth =
     /* account for padding on both ends */
     toolbarItemPadding * 2 +
     /* account for all items */
     totalTools.value * toolbarItemSize +
+    /* add space for format dropdown */
+    formatDropdownWidth + toolbarItemGap +
     /* include gaps (total gaps = total items - 1) */
     toolbarItemGap * (totalTools.value - 1);
 
@@ -124,6 +154,17 @@ const adjustedPosition = computed(() => {
     :prevent-oveflow="true"
   >
     <div class="editor-toolbar">
+      <SubMenu
+        :items="formatTemplates"
+        orientation="right"
+        :teleport-to-body="false"
+        floating-strategy="absolute"
+        class="format-menu"
+        @item-click="(e, item) => item.onClick()"
+      >
+        <span class="current-format-text">{{ formatTemplates.find(tpl => tpl.selected)?.text }}</span>
+        <DropdownIcon />
+      </SubMenu>
       <FunctionButton
         v-for="tool of tools"
         :key="tool.icon"
@@ -161,6 +202,25 @@ const adjustedPosition = computed(() => {
         & svg {
             width: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
             height: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
+        }
+    }
+
+    & .format-menu {
+        width: calc(v-bind("formatDropdownWidth") * 1px);
+
+        & .current-format-text {
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        & :deep(.submenu-toggle) {
+            width: 100%;
+            padding: 0 10px;
+            height: calc(v-bind(toolbarItemSize) * 1px);
+            justify-content: center;
+            align-items: center;
         }
     }
 }
