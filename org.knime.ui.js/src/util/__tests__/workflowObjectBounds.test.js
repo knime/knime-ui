@@ -1,7 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import * as $shapes from '@/style/shapes.mjs';
 
-import workflowObjectBounds from '../workflowObjectBounds';
+import { geometry } from '@/util/geometry';
 
 describe('Workflow-Objects Bounds', () => {
     const {
@@ -10,7 +10,7 @@ describe('Workflow-Objects Bounds', () => {
     } = $shapes;
 
     it('calculates dimensions of empty workflow', () => {
-        expect(workflowObjectBounds(
+        expect(geometry.getWorkflowObjectBounds(
             {
                 projectId: 'foo',
                 nodes: {},
@@ -28,7 +28,7 @@ describe('Workflow-Objects Bounds', () => {
     });
 
     it('calculates dimensions of workflow containing one node away from the top left corner', () => {
-        expect(workflowObjectBounds(
+        expect(geometry.getWorkflowObjectBounds(
             {
                 projectId: 'foo',
                 nodes: {
@@ -50,7 +50,7 @@ describe('Workflow-Objects Bounds', () => {
     });
 
     it('calculates dimensions of workflow containing annotations only', () => {
-        expect(workflowObjectBounds(
+        expect(geometry.getWorkflowObjectBounds(
             {
                 projectId: 'foo',
                 nodes: {},
@@ -94,7 +94,7 @@ describe('Workflow-Objects Bounds', () => {
     });
 
     it('calculates dimensions of workflow containing overlapping node + annotation', () => {
-        expect(workflowObjectBounds({
+        expect(geometry.getWorkflowObjectBounds({
             projectId: 'foo',
             nodes: { 'root:0': { position: { x: 10, y: 10 } } },
             workflowAnnotations: [{
@@ -117,7 +117,7 @@ describe('Workflow-Objects Bounds', () => {
     });
 
     it('calculates dimensions of workflow containing multiple nodes %s', () => {
-        expect(workflowObjectBounds({
+        expect(geometry.getWorkflowObjectBounds({
             projectId: 'foo',
             nodes: {
                 'root:0': { position: { x: 10, y: 10 } },
@@ -137,7 +137,7 @@ describe('Workflow-Objects Bounds', () => {
     });
 
     it('without padding:', () => {
-        expect(workflowObjectBounds({
+        expect(geometry.getWorkflowObjectBounds({
             projectId: 'foo',
             nodes: {
                 'root:0': { position: { x: 10, y: 10 } },

@@ -1,8 +1,16 @@
 import { nodeSize } from '@/style/shapes.mjs';
 import { areaCoverage } from './geometry';
+import type { GeometryArea, GeometryBounds, XYPosition } from './types';
 
-export const nodePadding = 50;
-export const visibilityThreshold = 0.7;
+export const NODE_PADDING = 50;
+export const VISIBILITY_THRESHOLD = 0.7;
+
+type findFreeSpaceOptions = {
+    area: GeometryArea;
+    workflow: {nodes: any};
+    startPosition: XYPosition;
+    step: XYPosition;
+}
 /**
  * Simple and inefficient algorithm to find free space on the workflow canvas,
  * based on the rectangular area around workflow objects
@@ -20,26 +28,28 @@ export const visibilityThreshold = 0.7;
  * @param { Number } step.y
  * @returns { Object } x and y, for where the area fits on the workflow
  */
-export const findFreeSpace = ({ area, workflow: { nodes }, startPosition = { x: 0, y: 0 }, step }) => {
-    let estimatedNodeBounds = node => ({
-        left: node.position.x - nodePadding,
-        top: node.position.y - nodePadding,
-        width: nodeSize + nodePadding + nodePadding,
-        height: nodeSize + nodePadding + nodePadding
+export const findFreeSpace = (
+    { area, workflow: { nodes }, startPosition = { x: 0, y: 0 }, step }: findFreeSpaceOptions
+) => {
+    const estimatedNodeBounds = (node): GeometryBounds => ({
+        top: node.position.y - NODE_PADDING,
+        left: node.position.x - NODE_PADDING,
+        width: nodeSize + NODE_PADDING + NODE_PADDING,
+        height: nodeSize + NODE_PADDING + NODE_PADDING
     });
 
     // draw a spacious rectangle around every node
-    let nodeBounds = Object.values(nodes).map(estimatedNodeBounds);
+    const nodeBounds = Object.values(nodes).map(estimatedNodeBounds);
 
     // shift the area to the start position
-    let currentBounds = {
-        left: startPosition.x,
+    const currentBounds: GeometryBounds = {
         top: startPosition.y,
+        left: startPosition.x,
         width: area.width,
         height: area.height
     };
 
-    let overlap;
+    let overlap: number;
     do {
         // check how much the area at the current position overlaps with workflow objects
         overlap = 0;
@@ -64,6 +74,12 @@ export const findFreeSpace = ({ area, workflow: { nodes }, startPosition = { x: 
     } while (true);
 };
 
+type FindFreeSpaceFromOptions = {
+    objectBounds: GeometryArea;
+    nodes: Array<Object>;
+    visibleFrame: GeometryBounds;
+}
+
 /**
  * find free space for objects (e.g. clipboard)
  *
@@ -73,8 +89,10 @@ export const findFreeSpace = ({ area, workflow: { nodes }, startPosition = { x: 
  *
  * @returns {{x: Number, y: Number, visibility: Number}} free space position and visibility of the area, if pasted there
  */
-export const findFreeSpaceFrom = ({ objectBounds, nodes, visibleFrame }) => ({ left, top }) => {
-    let position = findFreeSpace({ // eslint-disable-line implicit-arrow-linebreak
+export const findFreeSpaceFrom = (
+    { objectBounds, nodes, visibleFrame }: FindFreeSpaceFromOptions
+) => ({ left, top }) => {
+    const position = findFreeSpace({ // eslint-disable-line implicit-arrow-linebreak
         area: objectBounds,
         workflow: { nodes },
         startPosition: {
@@ -87,7 +105,7 @@ export const findFreeSpaceFrom = ({ objectBounds, nodes, visibleFrame }) => ({ l
         }
     });
 
-    let visibility = areaCoverage({
+    const visibility = areaCoverage({
         left: position.x,
         top: position.y,
         width: objectBounds.width,
@@ -100,18 +118,23 @@ export const findFreeSpaceFrom = ({ objectBounds, nodes, visibleFrame }) => ({ l
     };
 };
 
+type findFreeSpaceAroundPointWithFallbackOptions = Omit<FindFreeSpaceFromOptions, 'objectBounds'> & {
+    objectBounds?: GeometryArea;
+    startPoint: XYPosition;
+}
+
 export const findFreeSpaceAroundPointWithFallback = ({ startPoint: { x, y },
     visibleFrame,
     objectBounds = { width: nodeSize, height: nodeSize },
-    nodes }) => {
+    nodes }: findFreeSpaceAroundPointWithFallbackOptions) => {
     let offsetX = 0;
     do {
-        let fromCenter = findFreeSpaceFrom({ visibleFrame, objectBounds, nodes })({
+        const fromCenter = findFreeSpaceFrom({ visibleFrame, objectBounds, nodes })({
             left: x + offsetX,
             top: y
         });
 
-        if (fromCenter.visibility >= visibilityThreshold) {
+        if (fromCenter.visibility >= VISIBILITY_THRESHOLD) {
             consola.info('found free space around center');
             const { x, y } = fromCenter;
             return { x, y };
@@ -140,12 +163,12 @@ export const findFreeSpaceAroundPointWithFallback = ({ startPoint: { x, y },
 export const findFreeSpaceAroundCenterWithFallback = ({ visibleFrame,
     objectBounds = { width: nodeSize, height: nodeSize },
     nodes }) => {
-    const centerX = (visibleFrame.left + visibleFrame.width / 2) -
-        (objectBounds.width / 2);
+    const centerX = visibleFrame.left + visibleFrame.width / 2 -
+        objectBounds.width / 2;
 
     const eyePleasingVerticalOffset = 0.75;
-    const centerY = visibleFrame.top + (visibleFrame.height / 2 * eyePleasingVerticalOffset) -
-        (objectBounds.height / 2);
+    const centerY = visibleFrame.top + visibleFrame.height / 2 * eyePleasingVerticalOffset -
+        objectBounds.height / 2;
     const startPoint = { x: centerX, y: centerY };
     return findFreeSpaceAroundPointWithFallback({ startPoint, visibleFrame, objectBounds, nodes });
 };

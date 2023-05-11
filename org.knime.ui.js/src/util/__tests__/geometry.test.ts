@@ -1,17 +1,17 @@
 import { expect, describe, it } from 'vitest';
-import { rectangleIntersection, areaCoverage, snapToGrid } from '../geometry';
+import { geometry } from '../geometry';
 
 describe('Geometry', () => {
     describe('rectangle intersection', () => {
         it('returns null for non-intersecting, touching rectangles', () => {
-            expect(rectangleIntersection(
+            expect(geometry.utils.rectangleIntersection(
                 { left: 0, top: 0, width: 10, height: 10 },
                 { left: 10, top: 10, width: 10, height: 10 }
             )).toBeNull();
         });
 
         it('intersecting rectangles', () => {
-            expect(rectangleIntersection(
+            expect(geometry.utils.rectangleIntersection(
                 { left: 0, top: 0, width: 10, height: 10 },
                 { left: 9, top: 9, width: 10, height: 10 }
             )).toStrictEqual(
@@ -20,7 +20,7 @@ describe('Geometry', () => {
         });
 
         it('concentric rectangles', () => {
-            expect(rectangleIntersection(
+            expect(geometry.utils.rectangleIntersection(
                 { left: -5, top: -5, width: 10, height: 10 },
                 { left: -10, top: -10, width: 20, height: 20 }
             )).toStrictEqual(
@@ -31,21 +31,21 @@ describe('Geometry', () => {
 
     describe('area coverage', () => {
         it('returns null for non-intersecting, touching rectangles', () => {
-            expect(areaCoverage(
+            expect(geometry.utils.areaCoverage(
                 { left: 0, top: 0, width: 10, height: 10 },
                 { left: 10, top: 10, width: 10, height: 10 }
             )).toBe(0);
         });
 
         it('intersecting rectangles', () => {
-            expect(areaCoverage(
+            expect(geometry.utils.areaCoverage(
                 { left: 0, top: 0, width: 10, height: 10 },
                 { left: 9, top: 9, width: 10, height: 10 }
             )).toBe(1 / 100);
         });
 
         it('concentric rectangles', () => {
-            expect(areaCoverage(
+            expect(geometry.utils.areaCoverage(
                 { left: -5, top: -5, width: 10, height: 10 },
                 { left: -10, top: -10, width: 20, height: 20 }
             )).toBe(1);
@@ -63,8 +63,8 @@ describe('Geometry', () => {
             (gridSize, initialCoordinates, expectedCoordinates) => {
                 expect(
                     {
-                        x: snapToGrid(initialCoordinates.x, gridSize),
-                        y: snapToGrid(initialCoordinates.y, gridSize)
+                        x: geometry.utils.snapToGrid(initialCoordinates.x, gridSize),
+                        y: geometry.utils.snapToGrid(initialCoordinates.y, gridSize)
                     }
                 ).toEqual(expectedCoordinates);
             }

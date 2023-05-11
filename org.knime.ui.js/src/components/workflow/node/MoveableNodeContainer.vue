@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
-import { snapToGrid } from '@/util/geometry';
+import { geometry } from '@/util/geometry';
 
 import { escapeStack } from '@/mixins';
 
@@ -92,8 +92,8 @@ export default {
             this.selectNode(this.id);
 
             const gridAdjustedPosition = {
-                x: snapToGrid(this.position.x),
-                y: snapToGrid(this.position.y)
+                x: geometry.utils.snapToGrid(this.position.x),
+                y: geometry.utils.snapToGrid(this.position.y)
             };
 
             this.startPos = {
@@ -133,8 +133,8 @@ export default {
             // Adjusted For Grid Snapping
             const deltas = {
                 // adjust the deltas using `nodeSize` to make sure the reference is from the center of the node
-                x: snapToGrid(canvasX - this.startPos.x - nodeSize / 2, snapSize),
-                y: snapToGrid(canvasY - this.startPos.y - nodeSize / 2, snapSize)
+                x: geometry.utils.snapToGrid(canvasX - this.startPos.x - nodeSize / 2, snapSize),
+                y: geometry.utils.snapToGrid(canvasY - this.startPos.y - nodeSize / 2, snapSize)
             };
 
             // prevent unneeded dispatches if the position hasn't changed

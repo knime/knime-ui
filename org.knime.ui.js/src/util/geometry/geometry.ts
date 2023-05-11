@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
 import * as shapes from '@/style/shapes.mjs';
-
+import type { GeometryBounds } from './types';
 
 /**
  * Finds the intersection of A and B
@@ -18,7 +18,7 @@ import * as shapes from '@/style/shapes.mjs';
  *
  * @returns { Object | null } returns the intersection rectangle between A and B or null
  */
-export const rectangleIntersection = (A, B) => {
+export const rectangleIntersection = (A: GeometryBounds, B: GeometryBounds): GeometryBounds => {
     const intersectionX1 = Math.max(A.left, B.left);
     const intersectionX2 = Math.min(A.left + A.width, B.left + B.width);
     if (intersectionX2 <= intersectionX1) {
@@ -55,7 +55,7 @@ export const rectangleIntersection = (A, B) => {
  *
  * @returns { Number } coverage of A by B
  */
-export const areaCoverage = (A, B) => {
+export const areaCoverage = (A: GeometryBounds, B: GeometryBounds) => {
     const intersection = rectangleIntersection(A, B);
     if (!intersection) {
         return 0;

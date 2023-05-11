@@ -4,8 +4,7 @@ import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
-
-import { snapToGrid } from '@/util/geometry';
+import { geometry } from '@/util/geometry';
 
 export default defineComponent({
     props: {
@@ -83,8 +82,8 @@ export default defineComponent({
             await this.selectAnnotation(this.id);
 
             const gridAdjustedPosition = {
-                x: snapToGrid(this.bounds.x),
-                y: snapToGrid(this.bounds.y)
+                x: geometry.utils.snapToGrid(this.bounds.x),
+                y: geometry.utils.snapToGrid(this.bounds.y)
             };
 
             this.startPos = {
@@ -114,8 +113,8 @@ export default defineComponent({
             const snapSize = altKey ? 1 : this.$shapes.gridSize.x;
 
             const deltas = {
-                x: snapToGrid(canvasX - this.startPos.x - this.cursorPosition.x, snapSize),
-                y: snapToGrid(canvasY - this.startPos.y - this.cursorPosition.y, snapSize)
+                x: geometry.utils.snapToGrid(canvasX - this.startPos.x - this.cursorPosition.x, snapSize),
+                y: geometry.utils.snapToGrid(canvasY - this.startPos.y - this.cursorPosition.y, snapSize)
             };
 
             if (this.movePreviewDelta.x !== deltas.x || this.movePreviewDelta.y !== deltas.y) {

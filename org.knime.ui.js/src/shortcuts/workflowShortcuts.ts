@@ -11,8 +11,8 @@ import type { ShortcutConditionContext, UnionToShortcutRegistry } from './types'
 import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 import { portPositions } from '@/util/portShift';
 import { nodeSize } from '@/style/shapes.mjs';
-import { findFreeSpaceAroundCenterWithFallback,
-    findFreeSpaceAroundPointWithFallback } from '@/util/findFreeSpaceOnCanvas';
+import type { XYPosition } from '@/util/geometry/types';
+import { geometry } from '@/util/geometry';
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'save'
@@ -351,7 +351,7 @@ const workflowShortcuts: WorkflowShortcuts = {
 
             // global menu without predecessor node
             if (node === null) {
-                const position = findFreeSpaceAroundCenterWithFallback({
+                const position = geometry.findFreeSpaceAroundCenterWithFallback({
                     visibleFrame: $store.getters['canvas/getVisibleFrame'](),
                     nodes: $store.state.workflow.activeWorkflow.nodes
                 });
@@ -379,11 +379,11 @@ const workflowShortcuts: WorkflowShortcuts = {
                 // eslint-disable-next-line no-magic-numbers
                 const xOffset = nodeSize * 3;
 
-                const startPoint = {
+                const startPoint: XYPosition = {
                     x: node.position.x + outPortPositions[portIndex][0] + xOffset,
                     y: node.position.y + outPortPositions[portIndex][1]
                 };
-                return findFreeSpaceAroundPointWithFallback({
+                return geometry.findFreeSpaceAroundPointWithFallback({
                     startPoint,
                     visibleFrame: $store.getters['canvas/getVisibleFrame'](),
                     nodes: $store.state.workflow.activeWorkflow.nodes

@@ -1,9 +1,8 @@
 /* eslint-disable max-lines */
 import { API } from '@api';
-import workflowObjectBounds from '@/util/workflowObjectBounds';
 import { pastePartsAt, pasteURI } from '@/util/pasteToWorkflow';
-import { snapToGrid } from '@/util/geometry';
 import { Annotation, type ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
+import { geometry } from '@/util/geometry';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -291,8 +290,8 @@ export const actions = {
 
         // Adjusted For Grid Snapping
         const gridAdjustedPosition = {
-            x: snapToGrid(position.x),
-            y: snapToGrid(position.y)
+            x: geometry.utils.snapToGrid(position.x),
+            y: geometry.utils.snapToGrid(position.y)
         };
 
         const response = await API.workflowCommand.AddNode({
@@ -488,7 +487,7 @@ export const actions = {
             return;
         }
 
-        const objectBounds = workflowObjectBounds({
+        const objectBounds = geometry.getWorkflowObjectBounds({
             nodes: rootGetters['selection/selectedNodes'],
             workflowAnnotations: rootGetters['selection/selectedAnnotations']
         });

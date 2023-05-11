@@ -2,7 +2,7 @@
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import { KnimeMIME } from '@/mixins/dropNode';
 import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
-import { findFreeSpaceAroundCenterWithFallback } from '@/util/findFreeSpaceOnCanvas';
+import { geometry } from '@/util/geometry';
 
 /**
  * This component was ripped out of NodeTemplate to make NodeTemplate re-useable. This makes still heavy use of the
@@ -109,7 +109,7 @@ export default {
             }
 
             // canvas start position
-            const position = findFreeSpaceAroundCenterWithFallback({
+            const position = geometry.findFreeSpaceAroundCenterWithFallback({
                 visibleFrame: this.getVisibleFrame(),
                 nodes: this.workflow.nodes
             });

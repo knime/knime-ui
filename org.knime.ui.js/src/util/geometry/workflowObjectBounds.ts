@@ -84,7 +84,7 @@ export default ({
     // The vertical dimensions are always equal to the workflow dimensions, unless the workflow is empty,
     // in which case they get a default height.
 
-    let defaultBarPosition = defaultMetanodeBarPosition;
+    const defaultBarPosition = defaultMetanodeBarPosition;
     if (metaInPorts?.ports?.length) {
         let leftBorder, rightBorder;
         if (metaInPorts.xPos) {
