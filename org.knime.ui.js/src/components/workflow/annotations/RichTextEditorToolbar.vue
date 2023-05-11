@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, type FunctionalComponent, type SVGAttributes } from 'vue';
+import { computed, ref, type FunctionalComponent, type SVGAttributes } from 'vue';
 import { useStore } from 'vuex';
 import type { Editor } from '@tiptap/vue-3';
 
+import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import type { Level } from '@tiptap/extension-heading';
@@ -18,10 +19,13 @@ import AlignRightIcon from '@/assets/align-right.svg';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
-
 import * as $shapes from '@/style/shapes.mjs';
 import { formatHotkeys } from '@/util/formatHotkeys';
 import type { Hotkeys } from '@/shortcuts';
+
+import ColorIcon from './ColorIcon.vue';
+import RichTextEditorToolbarDialog from './RichTextEditorToolbarDialog.vue';
+import ColorSelectionDialog from './ColorSelectionDialog.vue';
 
 interface Props {
     editor: Editor;
@@ -41,7 +45,7 @@ const store = useStore();
 
 const props = defineProps<Props>();
 
-const tools: Array<ToolbarItem> = [
+const editorTools: Array<ToolbarItem> = [
     {
         id: 'bold',
         name: 'Bold',
@@ -108,7 +112,7 @@ const tools: Array<ToolbarItem> = [
     }
 ];
 
-const totalTools = computed(() => tools.length);
+const totalEditorTools = computed(() => editorTools.length + 1);
 
 const headingPresets = computed(() => {
     // eslint-disable-next-line no-magic-numbers
@@ -146,11 +150,11 @@ const toolbarWidth =
     /* account for padding on both ends */
     toolbarItemPadding * 2 +
     /* account for all items */
-    totalTools.value * toolbarItemSize +
-    /* add space for format dropdown */
+    totalEditorTools.value * toolbarItemSize +
+    /* add space for heading dropdown */
     headingDropdownWidth + toolbarItemGap +
     /* include gaps (total gaps = total items - 1) */
-    toolbarItemGap * (totalTools.value - 1);
+    toolbarItemGap * (totalEditorTools.value - 1);
 
 const adjustedPosition = computed(() => {
     // center X -> shift toolbar forward based on annotation width and then subtract
@@ -166,6 +170,17 @@ const adjustedPosition = computed(() => {
         y
     };
 });
+
+const isBorderColorSelectionOpen = ref(false);
+const activeBorderColor = ref<string | null>(knimeColors.Yellow);
+const hoveredColor = ref<string | null>(null);
+
+const setBorderColor = (color: string) => {
+    isBorderColorSelectionOpen.value = false;
+    activeBorderColor.value = color;
+    hoveredColor.value = null;
+};
+
 </script>
 
 <template>
@@ -187,7 +202,7 @@ const adjustedPosition = computed(() => {
         <DropdownIcon />
       </SubMenu>
       <FunctionButton
-        v-for="tool of tools"
+        v-for="tool of editorTools"
         :key="tool.icon"
         :active="tool.active ? tool.active() : false"
         :title="`${tool.name} – ${formatHotkeys(tool.hotkey)}`"
@@ -196,6 +211,25 @@ const adjustedPosition = computed(() => {
       >
         <Component :is="tool.icon" />
       </FunctionButton>
+
+      <RichTextEditorToolbarDialog :is-open="isBorderColorSelectionOpen">
+        <template #toggle>
+          <FunctionButton
+            class="border-color-tool"
+            @click.stop="isBorderColorSelectionOpen = !isBorderColorSelectionOpen"
+          >
+            <ColorIcon :color="hoveredColor || activeBorderColor" />
+          </FunctionButton>
+        </template>
+
+        <template #content>
+          <ColorSelectionDialog
+            :active-color="activeBorderColor"
+            @hover-color="hoveredColor = $event"
+            @select-color="setBorderColor"
+          />
+        </template>
+      </RichTextEditorToolbarDialog>
     </div>
   </FloatingMenu>
 </template>
@@ -204,50 +238,59 @@ const adjustedPosition = computed(() => {
 @import url("@/assets/mixins.css");
 
 .editor-toolbar {
-    display: flex;
+  display: flex;
+  justify-content: center;
+  background: var(--knime-white);
+  gap: calc(v-bind(toolbarItemGap) * 1px);
+  padding: calc(v-bind(toolbarItemPadding) * 1px);
+  width: calc(v-bind(toolbarWidth) * 1px);
+  height: 48px;
+  box-shadow: 0 0 10px rgb(62 58 57 / 30%);
+  border-radius: 30px;
+
+  & .toolbar-button,
+  & .border-color-tool {
+    width: calc(v-bind(toolbarItemSize) * 1px);
+    height: calc(v-bind(toolbarItemSize) * 1px);
+    padding: 0;
     justify-content: center;
-    background: var(--knime-white);
-    gap: calc(v-bind(toolbarItemGap) * 1px);
-    padding: calc(v-bind(toolbarItemPadding) * 1px);
-    width: calc(v-bind(toolbarWidth) * 1px);
-    height: 48px;
-    box-shadow: 0 0 10px rgb(62 58 57 / 30%);
-    border-radius: 30px;
+    align-items: center;
+  }
 
-    & .toolbar-button {
-        width: calc(v-bind(toolbarItemSize) * 1px);
-        height: calc(v-bind(toolbarItemSize) * 1px);
-        padding: 0;
-        justify-content: center;
-        align-items: center;
-
-        & svg {
-            width: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
-            height: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
-        }
+  & .toolbar-button {
+    & svg {
+      width: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
+      height: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
     }
 
     & .heading-menu {
-        width: calc(v-bind(headingDropdownWidth) * 1px);
+      width: calc(v-bind(headingDropdownWidth) * 1px);
 
-        & .heading-current-text {
-            max-width: 100%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+      & .heading-current-text {
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
-        & :deep(.submenu-toggle) {
-            width: 100%;
-            padding: 0 10px;
-            height: calc(v-bind(toolbarItemSize) * 1px);
-            justify-content: center;
-            align-items: center;
-        }
+      & :deep(.submenu-toggle) {
+        width: 100%;
+        padding: 0 10px;
+        height: calc(v-bind(toolbarItemSize) * 1px);
+        justify-content: center;
+        align-items: center;
+      }
 
-        & :deep(.submenu-toggle.expanded) svg {
-            transform: scaleY(-1);
-        }
+      & :deep(.submenu-toggle.expanded) svg {
+        transform: scaleY(-1);
+      }
     }
+  }
+
+  & .border-color-tool:hover {
+    & svg {
+      fill: white;
+    }
+  }
 }
 </style>
