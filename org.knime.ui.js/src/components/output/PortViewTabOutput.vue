@@ -140,10 +140,10 @@ export default defineComponent({
         },
 
         hasNoDataValidationError() {
-            return this.validationErrors && this.validationErrors.code === 'NO_DATA';
+            return this.validationError && this.validationError.code === 'NO_DATA';
         },
 
-        validationErrors(): ValidationResult['error'] | null {
+        validationError(): ValidationResult['error'] | null {
             const { error } = runValidationChecks({
                 selectedNode: this.selectedNode,
                 portTypes: this.availablePortTypes,
@@ -154,7 +154,7 @@ export default defineComponent({
         },
 
         selectedPort() {
-            if (this.validationErrors) {
+            if (this.validationError) {
                 return null;
             }
 
@@ -190,7 +190,7 @@ export default defineComponent({
                 return canExecute;
             }
 
-            if (this.validationErrors) {
+            if (this.validationError) {
                 return false;
             }
 
@@ -200,14 +200,14 @@ export default defineComponent({
     },
 
     watch: {
-        validationErrors: {
+        validationError: {
             immediate: true,
             handler() {
-                if (this.validationErrors) {
+                if (this.validationError) {
                     this.$emit('outputStateChange', {
-                        loading: this.validationErrors.code === 'NODE_BUSY',
-                        message: this.validationErrors.message,
-                        error: this.validationErrors
+                        loading: this.validationError.code === 'NODE_BUSY',
+                        message: this.validationError.message,
+                        error: this.validationError
                     });
                 } else {
                     this.$emit('outputStateChange', null);
@@ -240,7 +240,7 @@ export default defineComponent({
 
 <template>
   <PortViewTabToggles
-    v-if="!validationErrors"
+    v-if="!validationError"
     :current-node-state="currentNodeState"
     :unique-port-key="uniquePortKey"
     :view-descriptors="portViews.descriptors"
@@ -248,7 +248,7 @@ export default defineComponent({
   >
     <template #default="{ activeView }">
       <PortViewLoader
-        v-if="!validationErrors && activeView !== null"
+        v-if="!validationError && activeView !== null"
         v-bind="$attrs"
         :unique-port-key="`${uniquePortKey}/${activeView}`"
         :project-id="projectId"
