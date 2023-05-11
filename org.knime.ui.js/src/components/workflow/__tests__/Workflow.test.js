@@ -192,7 +192,6 @@ describe('Workflow', () => {
                     name: `name-${nodeId}`,
                     type: `type-${nodeId}`,
                     link: null,
-                    linkStatus: null,
                     allowedActions: {},
                     executionInfo: null,
                     isReexecutable: false,

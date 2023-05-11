@@ -105,18 +105,10 @@ export default {
         },
 
         /**
-         * Path to the origin of a linked component or metanode
+         * MetaNodeLink object containing the link URL and linkStatus
          */
         link: {
-            type: String,
-            default: null
-        },
-
-        /**
-         * The status of the link of a component (UpToDate, HasUpdate, Error)
-         */
-        linkStatus: {
-            type: String,
+            type: Object,
             default: null
         },
 

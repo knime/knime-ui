@@ -659,17 +659,11 @@ export interface ComponentNode extends Node {
      */
     state?: NodeState;
     /**
-     * A URL, if the component is linked.
-     * @type {string}
+     *
+     * @type {MetaNodeLink}
      * @memberof ComponentNode
      */
-    link?: string;
-    /**
-     * The status of the link of this component (UpToDate, HasUpdate, Error)
-     * @type {string}
-     * @memberof ComponentNode
-     */
-    linkStatus?: string;
+    link?: MetaNodeLink;
 
 }
 
@@ -1327,17 +1321,11 @@ export interface MetaNode extends Node {
      */
     outPorts: Array<MetaNodePort>;
     /**
-     * A URL, if the metanode is linked.
-     * @type {string}
+     *
+     * @type {MetaNodeLink}
      * @memberof MetaNode
      */
-    link?: string;
-    /**
-     * The status of the link of this component (UpToDate, HasUpdate, Error)
-     * @type {string}
-     * @memberof MetaNode
-     */
-    linkStatus?: string;
+    link?: MetaNodeLink;
 
 }
 
@@ -1347,6 +1335,44 @@ export interface MetaNode extends Node {
  * @namespace MetaNode
  */
 export namespace MetaNode {
+}
+/**
+ * The link of a metanode.
+ * @export
+ * @interface MetaNodeLink
+ */
+export interface MetaNodeLink {
+
+    /**
+     * A URL, if the metanode is linked.
+     * @type {string}
+     * @memberof MetaNodeLink
+     */
+    url?: string;
+    /**
+     * The status of the link of this component (UpToDate, HasUpdate, Error)
+     * @type {string}
+     * @memberof MetaNodeLink
+     */
+    linkStatus?: MetaNodeLink.LinkStatusEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace MetaNodeLink
+ */
+export namespace MetaNodeLink {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum LinkStatusEnum {
+        UPTODATE = 'UP_TO_DATE',
+        HASUPDATE = 'HAS_UPDATE',
+        ERROR = 'ERROR'
+    }
 }
 /**
  * Extension of a node port with extra properties as required to characterise a metanode port.

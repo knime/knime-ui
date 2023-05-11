@@ -15,13 +15,13 @@ describe('LinkDecorator.vue', () => {
         const wrapper = doShallowMount('Manipulator');
         expect(wrapper.find('path').attributes()['data-testid']).toBe('arrow');
 
-        await wrapper.setProps({ linkStatus: 'UpToDate' });
+        await wrapper.setProps({ linkStatus: 'UP_TO_DATE' });
         expect(wrapper.find('path').attributes()['data-testid']).toBe('arrow');
 
-        await wrapper.setProps({ linkStatus: 'HasUpdate' });
+        await wrapper.setProps({ linkStatus: 'HAS_UPDATE' });
         expect(wrapper.find('path').attributes()['data-testid']).toBe('dotted-arrow');
 
-        await wrapper.setProps({ linkStatus: 'Error' });
+        await wrapper.setProps({ linkStatus: 'ERROR' });
         expect(wrapper.find('path').attributes()['data-testid']).toBe('cross');
 
         await wrapper.setProps({ linkStatus: 'InvalidLinkStatus' });

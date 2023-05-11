@@ -44,7 +44,7 @@ export default {
     />
     <!-- Arrow -->
     <path
-      v-if="!linkStatus || linkStatus === 'UpToDate'"
+      v-if="!linkStatus || linkStatus === 'UP_TO_DATE'"
       d="M2.43 8.57L9.5 1.5M5 1.5L9.5 1.5L9.5 6"
       fill="none"
       stroke-linejoin="round"
@@ -54,7 +54,7 @@ export default {
 
     <!-- Dotted Arrow -->
     <path
-      v-if="linkStatus === 'HasUpdate'"
+      v-if="linkStatus === 'HAS_UPDATE'"
       d="M2.43 8.57L9.5 1.5M5 1.5L9.5 1.5L9.5 6"
       fill="none"
       stroke-linejoin="round"
@@ -64,7 +64,7 @@ export default {
     />
 
     <!-- Cross -->
-    <g v-else-if="linkStatus === 'Error'">
+    <g v-else-if="linkStatus === 'ERROR'">
       <path
         d="M2.4304 8.56863L9.50146 1.49756"
         :stroke="$colors.linkDecorator"

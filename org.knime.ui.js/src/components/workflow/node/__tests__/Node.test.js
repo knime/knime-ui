@@ -61,7 +61,6 @@ const commonNode = {
     },
 
     link: null,
-    linkStatus: null,
     executionInfo: null,
     isReexecutable: false,
     loopState: null,
