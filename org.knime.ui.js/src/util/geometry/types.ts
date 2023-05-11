@@ -10,5 +10,7 @@ export type XYPosition = {
 
 export type GeometryBounds = {
     top: number;
+    right: number;
+    bottom: number;
     left: number;
 } & GeometryArea

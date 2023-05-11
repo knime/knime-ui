@@ -981,7 +981,7 @@ describe('workflow store: Editing', () => {
                 };
 
                 it('calls partePartsAt', async () => {
-                    const { workflow, startPaste, clipboardMock } = await setupStoreForPaste();
+                    const { startPaste, clipboardMock } = await setupStoreForPaste();
                     await startPaste();
 
                     expect(mockedPastePartsAt).toHaveBeenCalledWith({
@@ -993,8 +993,6 @@ describe('workflow store: Editing', () => {
                         },
                         clipboardContent: clipboardMock.getContent(),
                         isWorkflowEmpty: false,
-                        workflow,
-                        copyPaste: expect.objectContaining({ dummy: null }),
                         dispatch: expect.any(Function)
                     });
                 });

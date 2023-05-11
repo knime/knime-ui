@@ -542,7 +542,7 @@ export const actions = {
         },
         { position: customPosition } = { position: null }
     ) {
-        const { activeWorkflow, copyPaste } = state;
+        const { activeWorkflow } = state;
         let clipboardContent, clipboardText;
         try {
             // TODO: NXT-1168 Put a limit on the clipboard content size
@@ -580,8 +580,6 @@ export const actions = {
                 visibleFrame: rootGetters['canvas/getVisibleFrame'](),
                 clipboardContent,
                 isWorkflowEmpty,
-                workflow: activeWorkflow,
-                copyPaste,
                 dispatch
             });
 

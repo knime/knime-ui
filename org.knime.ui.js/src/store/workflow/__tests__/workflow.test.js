@@ -2,8 +2,8 @@ import { expect, describe, it, vi } from 'vitest';
 import { mockVuexStore } from '@/test/utils';
 import { geometry } from '@/util/geometry';
 
-vi.mock('@/util/workflowObjectBounds', () => ({
-    default: vi.fn(() => 'bounds')
+vi.mock('@/util/geometry', () => ({
+    geometry: { getWorkflowObjectBounds: vi.fn(() => 'bounds') }
 }));
 
 describe('workflow store', () => {
