@@ -49,6 +49,7 @@ export default {
       fill="none"
       stroke-linejoin="round"
       :stroke="$colors.linkDecorator"
+      data-testid="arrow"
     />
 
     <!-- Dotted Arrow -->
@@ -59,6 +60,7 @@ export default {
       stroke-linejoin="round"
       :stroke="$colors.linkDecorator"
       stroke-dasharray="1 1"
+      data-testid="dotted-arrow"
     />
 
     <!-- Cross -->
@@ -66,10 +68,12 @@ export default {
       <path
         d="M2.4304 8.56863L9.50146 1.49756"
         :stroke="$colors.linkDecorator"
+        data-testid="cross"
       />
       <path
         d="M9.50124 8.56863L2.43018 1.49756"
         :stroke="$colors.linkDecorator"
+        data-testid="cross"
       />
     </g>
   </g>
