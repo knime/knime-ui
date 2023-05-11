@@ -127,6 +127,7 @@ export default defineComponent({
             // port object version changes whenever a port state has updated.
             // "ABA"-Changes on the port will always trigger a re-render.
 
+
             const { portContentVersion } = this.selectedNode.outPorts[this.selectedPortIndex];
 
             return [
@@ -136,6 +137,10 @@ export default defineComponent({
                 this.selectedPortIndex,
                 portContentVersion
             ].join('/');
+        },
+
+        hasNoDataValidationError() {
+            return this.validationErrors && this.validationErrors.code === 'NO_DATA';
         },
 
         validationErrors(): ValidationResult['error'] | null {
@@ -180,9 +185,17 @@ export default defineComponent({
         },
 
         shouldShowExecuteAction() {
-            const isFlowVariable = this.fullPortObject.kind === 'flowVariable';
+            const { canExecute } = this.selectedNode.allowedActions;
+            if (this.hasNoDataValidationError) {
+                return canExecute;
+            }
 
-            return this.selectedNode.allowedActions.canExecute && !isFlowVariable;
+            if (this.validationErrors) {
+                return false;
+            }
+
+            const isFlowVariable = this.fullPortObject.kind === 'flowVariable';
+            return canExecute && !isFlowVariable;
         }
     },
 
@@ -245,24 +258,24 @@ export default defineComponent({
         :selected-view-index="activeView"
         @state-change="onPortViewLoaderStateChange"
       />
-
-      <div
-        v-if="shouldShowExecuteAction"
-        class="execute-node-action"
-      >
-        <span>To show the output, please execute the selected node.</span>
-        <Button
-          class="action-button"
-          primary
-          compact
-          @click="$emit('executeNode')"
-        >
-          <PlayIcon />
-          Execute
-        </Button>
-      </div>
     </template>
   </PortViewTabToggles>
+
+  <div
+    v-if="shouldShowExecuteAction"
+    class="execute-node-action"
+  >
+    <span>To show the output, please execute the selected node.</span>
+    <Button
+      class="action-button"
+      primary
+      compact
+      @click="$emit('executeNode')"
+    >
+      <PlayIcon />
+      Execute
+    </Button>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
@@ -275,7 +288,7 @@ export default defineComponent({
     padding: 20px;
     width: 440px;
     height: 110px;
-    inset: 130px 0 0 0;
+    inset: v-bind("hasNoDataValidationError ? 0 : '130px'") 0 0 0;
     margin: auto;
     background: rgba(255 255 255 / 30%);
     backdrop-filter: blur(10px);

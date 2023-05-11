@@ -47,6 +47,7 @@ type ErrorCodes =
     | 'NO_PORT_SELECTED'
     | 'NO_SUPPORTED_VIEW'
     | 'PORT_INACTIVE'
+    | 'NO_DATA'
     | 'NODE_UNCONFIGURED'
     | 'NODE_BUSY';
 
@@ -213,6 +214,17 @@ export const validatePortSupport: ValidationFn<{
                 type: 'PORT',
                 code: 'PORT_INACTIVE',
                 message: 'This output port is inactive and therefore no output data is available for display.'
+            }
+        };
+    }
+
+    // eslint-disable-next-line no-undefined
+    if (selectedPort.portContentVersion === undefined) {
+        return {
+            error: {
+                type: 'PORT',
+                code: 'NO_DATA',
+                message: 'This output port has no data to display'
             }
         };
     }

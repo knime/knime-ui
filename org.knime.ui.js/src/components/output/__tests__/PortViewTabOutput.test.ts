@@ -9,11 +9,12 @@ import { NodeState, PortType } from '@/api/gateway-api/generated-api';
 import PortViewLoader from '@/components/embeddedViews/PortViewLoader.vue';
 
 import PortViewTabOutput from '../PortViewTabOutput.vue';
+import PortViewTabToggles from '../PortViewTabToggles.vue';
 
 describe('PortViewTabOutput.vue', () => {
     const dummyNode: DeepPartial<KnimeNode> = {
         id: 'node1',
-        outPorts: [{ typeId: 'flowVariable' }, { typeId: 'table' }],
+        outPorts: [{ typeId: 'flowVariable', portContentVersion: 456 }, { typeId: 'table', portContentVersion: 123 }],
         state: {
             executionState: NodeState.ExecutionStateEnum.IDLE
         },
@@ -186,6 +187,26 @@ describe('PortViewTabOutput.vue', () => {
 
             expect(wrapper.find('.execute-node-action').exists()).toBe(true);
         });
+
+        it('should handle port without content', async () => {
+            const { wrapper } = doMount({
+                props: {
+                    selectedNode: {
+                        ...dummyNode,
+                        state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
+                        allowedActions: { canExecute: true },
+                        outPorts: dummyNode.outPorts.concat({ typeId: 'table' })
+                    },
+                    selectedPortIndex: 2
+                }
+            });
+
+            await nextTick();
+
+            expect(wrapper.findComponent(PortViewTabToggles).exists()).toBe(false);
+            expect(wrapper.find('.execute-node-action').exists()).toBe(true);
+        });
+
 
         it('should emit event to execute node', async () => {
             const { wrapper } = doMount({
