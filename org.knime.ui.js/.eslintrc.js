@@ -1,38 +1,24 @@
-require('@rushstack/eslint-patch/modern-module-resolution');
+require("@rushstack/eslint-patch/modern-module-resolution");
 
 module.exports = {
-    extends: [
-        '@knime/eslint-config/vue3-typescript',
-        '@knime/eslint-config/typescript',
-        '@knime/eslint-config/vitest',
-        'prettier',
-    ],
-    globals: {
-        consola: false
+  extends: [
+    "@knime/eslint-config/vue3-typescript",
+    "@knime/eslint-config/typescript",
+    "@knime/eslint-config/vitest",
+  ],
+  globals: {
+    consola: false,
+  },
+  ignorePatterns: ["generated-api.ts", "knime-js-pagebuilder/"],
+  env: { browser: true, node: true },
+  settings: {
+    "import/resolver": {
+      alias: {
+        map: [["@", "./src"]],
+      },
     },
-    ignorePatterns: [
-        'generated-api.ts',
-        'knime-js-pagebuilder/'
-    ],
-    env: { browser: true, node: true },
-    settings: {
-        'import/resolver': {
-            alias: {
-                map: [
-                    ['@', './src']
-                ]
-            }
-        }
-    },
-    rules: {
-        'new-cap': ['warn', { capIsNewExceptionPattern: '^API\\..' }]
-    },
-    overrides: [
-        {
-            files: ['**/*.ts'],
-            rules: {
-                'valid-jsdoc': 'off'
-            }
-        }
-    ]
+  },
+  rules: {
+    "new-cap": ["warn", { capIsNewExceptionPattern: "^API\\.." }],
+  },
 };
