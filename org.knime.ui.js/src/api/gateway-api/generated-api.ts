@@ -712,7 +712,8 @@ export namespace ComponentNodeAndDescription {
         Learner = 'Learner',
         Predictor = 'Predictor',
         Manipulator = 'Manipulator',
-        Visualizer = 'Visualizer'
+        Visualizer = 'Visualizer',
+        Other = 'Other'
     }
 }
 /**
