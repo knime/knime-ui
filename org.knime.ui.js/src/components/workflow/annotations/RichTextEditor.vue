@@ -108,8 +108,9 @@ onMounted(() => {
     /* stylelint-disable-next-line selector-class-pattern */
     & :deep(.ProseMirror) {
         height: 100%;
-        font-size: 10px;
+        font-size: 12px;
         padding: 10px;
+        color: var(--knime-black);
 
         &:focus-visible,
         &:focus {
@@ -119,6 +120,89 @@ onMounted(() => {
         & p {
             margin: 0;
             padding-bottom: 6px;
+            line-height: 1.44;
+        }
+
+        & blockquote {
+            margin: 0 0 6px 12px;
+            position: relative;
+
+            &:before {
+                position: absolute;
+                content: '';
+                left: -12px;
+                height: 100%;
+                width: 4px;
+                background-color: var(--knime-silver-sand);
+                border-radius: 4px;
+            }
+
+            & p:last-child {
+                padding-bottom: 0;
+            }
+        }
+
+        & h1 {
+            font-size: 48px;
+        }
+
+        & h2 {
+            font-size: 36px;
+        }
+
+        & h3 {
+            font-size: 30px;
+        }
+
+        & h4 {
+            font-size: 24px;
+        }
+
+        & h5 {
+            font-size: 18px;
+        }
+
+        & h6 {
+            font-size: 15px;
+        }
+
+        & h1:first-of-type,
+        & h2:first-of-type,
+        & h3:first-of-type,
+        & h4:first-of-type,
+        & h5:first-of-type,
+        & h6:first-of-type
+        {
+            margin-top: 0;
+        }
+
+        & hr {
+            border: none;
+            border-top: 1px solid var(--knime-silver-sand);
+            margin: 6px 0;
+        }
+
+        & :not(pre) > code {
+            padding: 0 2px;
+            font-family: 'Roboto Mono', monospace;
+            border: 1px solid var(--knime-silver-sand);
+            border-radius: 0px;
+            background: var(--knime-gray-light-semi);
+            box-decoration-break: clone;
+        }
+
+        & pre {
+            background: var(--knime-gray-light-semi);
+            border: 1px solid var(--knime-silver-sand);
+            font-family: 'Roboto Mono', monospace;
+            padding: 8px 12px;
+            line-height: 1.44;
+
+            & > code {
+                color: inherit;
+                padding: 0;
+                background: none;
+            }
         }
 
         & ul,
