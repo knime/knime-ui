@@ -1,53 +1,53 @@
 <script setup lang="ts">
-import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
-import ColorIcon from './ColorIcon.vue';
+import { annotationColorPresets } from '@/style/colors.mjs';
 
-const colors = [
-    'none',
-    knimeColors.Avocado,
-    knimeColors.Carrot,
-    knimeColors.Coral,
-    knimeColors.Meadow,
-    knimeColors.Petrol,
-    knimeColors.CornflowerLight,
-    knimeColors.Cornflower,
-    knimeColors.CornflowerDark,
-    knimeColors.LavenderLight,
-    knimeColors.Lavender,
-    knimeColors.HibiscusLight,
-    knimeColors.Hibiscus,
-    knimeColors.Wood,
-    knimeColors.SilverSand
-];
+import ColorIcon from './ColorIcon.vue';
 
 interface Props {
     activeColor: string | null;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 interface Emits {
-    (e: 'hover-color', color: string): void;
-    (e: 'select-color', color: string): void;
+    (e: 'hoverColor', color: string): void;
+    (e: 'selectColor', color: string): void;
 }
 
 const emit = defineEmits<Emits>();
+
+const totalColors = Object.keys(annotationColorPresets).length;
+
+const isNone = (color: string) => color === annotationColorPresets.None;
+
+const onSelectColor = (color: string) => {
+    emit('selectColor', color);
+};
+
+const isActive = (color: string) => {
+    if (!props.activeColor) {
+        return false;
+    }
+
+    return props.activeColor === color;
+};
 
 </script>
 
 <template>
   <div class="color-selection-container">
     <FunctionButton
-      v-for="(color, index) of colors"
+      v-for="(color, name, index) of annotationColorPresets"
       :key="index"
       class="color-button"
-      :class="{ none: color === 'none' }"
-      :active="activeColor === color"
-      @mouseenter.stop="emit('hover-color', color)"
-      @mouseleave.stop="emit('hover-color', null)"
-      @click.stop="emit('select-color', color)"
+      :class="{ none: isNone(color) }"
+      :active="isActive(color)"
+      :title="isNone(color) ? 'None' : name"
+      @mouseenter.stop="emit('hoverColor', color)"
+      @mouseleave.stop="emit('hoverColor', null)"
+      @click.stop="onSelectColor(color)"
     >
       <ColorIcon
         :color="color"
@@ -62,7 +62,7 @@ const emit = defineEmits<Emits>();
 
 .color-selection-container {
   display: grid;
-  grid-template-columns: repeat(calc(v-bind("colors.length") / 3), 1fr);
+  grid-template-columns: repeat(calc(v-bind("totalColors") / 3), 1fr);
   height: 100%;
   padding: 10px;
   gap: 4px;

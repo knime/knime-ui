@@ -3,7 +3,6 @@ import { computed, ref, type FunctionalComponent, type SVGAttributes } from 'vue
 import { useStore } from 'vuex';
 import type { Editor } from '@tiptap/vue-3';
 
-import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import type { Level } from '@tiptap/extension-heading';
@@ -30,6 +29,7 @@ import ColorSelectionDialog from './ColorSelectionDialog.vue';
 interface Props {
     editor: Editor;
     annotationBounds: Bounds;
+    activeBorderColor: string;
 }
 
 interface ToolbarItem {
@@ -44,6 +44,12 @@ interface ToolbarItem {
 const store = useStore();
 
 const props = defineProps<Props>();
+
+// eslint-disable-next-line func-call-spacing
+const emit = defineEmits<{
+    (e: 'previewBorderColor', color: string): void;
+    (e: 'changeBorderColor', color: string): void;
+}>();
 
 const editorTools: Array<ToolbarItem> = [
     {
@@ -112,6 +118,7 @@ const editorTools: Array<ToolbarItem> = [
     }
 ];
 
+// +1 to include the border color tool
 const totalEditorTools = computed(() => editorTools.length + 1);
 
 const headingPresets = computed(() => {
@@ -172,13 +179,17 @@ const adjustedPosition = computed(() => {
 });
 
 const isBorderColorSelectionOpen = ref(false);
-const activeBorderColor = ref<string | null>(knimeColors.Yellow);
 const hoveredColor = ref<string | null>(null);
 
-const setBorderColor = (color: string) => {
+const previewBorderColor = (color: string | null) => {
+    hoveredColor.value = color;
+    emit('previewBorderColor', color);
+};
+
+const changeBorderColor = (color: string) => {
     isBorderColorSelectionOpen.value = false;
-    activeBorderColor.value = color;
     hoveredColor.value = null;
+    emit('changeBorderColor', color);
 };
 
 </script>
@@ -225,8 +236,8 @@ const setBorderColor = (color: string) => {
         <template #content>
           <ColorSelectionDialog
             :active-color="activeBorderColor"
-            @hover-color="hoveredColor = $event"
-            @select-color="setBorderColor"
+            @hover-color="previewBorderColor"
+            @select-color="changeBorderColor"
           />
         </template>
       </RichTextEditorToolbarDialog>

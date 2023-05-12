@@ -39,7 +39,8 @@ export default defineComponent({
     data() {
         return {
             directions: DIRECTIONS,
-            innerValue: getGridAdjustedBounds(this.initialValue)
+            innerValue: getGridAdjustedBounds(this.initialValue),
+            OFFSET: 1
         };
     },
 
@@ -59,6 +60,15 @@ export default defineComponent({
                 this.$shapes.selectedAnnotationStrokeWidth / 2,
                 this.$shapes.selectedAnnotationStrokeWidth / this.zoomFactor
             );
+        },
+
+        valueWithOffset(): Bounds {
+            return {
+                width: this.innerValue.width + this.OFFSET * 2,
+                height: this.innerValue.height + this.OFFSET * 2,
+                x: this.innerValue.x - this.OFFSET,
+                y: this.innerValue.y - this.OFFSET
+            };
         }
     },
 
@@ -119,7 +129,7 @@ export default defineComponent({
 
         getControlPosition(direction: Directions) {
             return getTransformControlPosition({
-                bounds: this.innerValue,
+                bounds: this.valueWithOffset,
                 direction,
                 controlSize: this.controlSize
             });
@@ -141,10 +151,10 @@ export default defineComponent({
     <Portal to="annotation-transform">
       <rect
         v-if="showSelection"
-        :width="innerValue.width"
-        :height="innerValue.height"
-        :x="innerValue.x"
-        :y="innerValue.y"
+        :width="valueWithOffset.width"
+        :height="valueWithOffset.height"
+        :x="valueWithOffset.x"
+        :y="valueWithOffset.y"
         class="transform-box"
         :stroke="$colors.selection.activeBorder"
         :stroke-width="transformRectStrokeWidth"

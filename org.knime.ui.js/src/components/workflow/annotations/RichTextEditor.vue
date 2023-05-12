@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, nextTick, toRefs, watch } from 'vue';
+import { onMounted, nextTick, toRefs, watch, ref } from 'vue';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import TextAlign from '@tiptap/extension-text-align';
 import UnderLine from '@tiptap/extension-underline';
 import StarterKit from '@tiptap/starter-kit';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
+
 import RichTextEditorToolbar from './RichTextEditorToolbar.vue';
 
 interface Props {
@@ -15,15 +16,18 @@ interface Props {
     annotationBounds: Bounds;
     isSelected: boolean;
     isDragging: boolean;
+    borderColor: string;
 }
 
 const props = defineProps<Props>();
 const { initialValue } = toRefs(props);
+const borderPreview = ref<string | null>(null);
 
 // eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
     (e: 'editStart'): void;
     (e: 'change', content: string): void;
+    (e: 'changeBorderColor', color: string): void;
 }>();
 
 const editor = useEditor({
@@ -62,14 +66,22 @@ onMounted(() => {
       to="annotation-editor-toolbar"
     >
       <RichTextEditorToolbar
+        :active-border-color="borderColor"
         :editor="editor"
         :annotation-bounds="annotationBounds"
+        @change-border-color="emit('changeBorderColor', $event)"
+        @preview-border-color="borderPreview = $event"
       />
     </Portal>
     <EditorContent
       class="annotation-editor"
       :editor="editor"
-      :class="{ editable, selected: isSelected, 'is-dragging': isDragging }"
+      :class="{
+        editable,
+        selected: isSelected,
+        'is-dragging': isDragging,
+        'border-preview': Boolean(borderPreview)
+      }"
       @dblclick="!editable && emit('editStart')"
     />
   </div>
@@ -91,18 +103,20 @@ onMounted(() => {
 }
 
 .annotation-editor {
+    --border-width: 2px;
+    --border-color: v-bind("props.borderColor");
+
     height: 100%;
     overflow-y: auto;
-    border: 1px solid var(--knime-masala);
+    border: var(--border-width) solid var(--border-color);
 
     &.editable {
-        margin-top: 0;
-        border: 1px solid var(--knime-cornflower);
         cursor: text;
     }
 
-    &.selected:not(.is-dragging) {
-        border-color: transparent;
+    &.border-preview,
+    &.editable.border-preview {
+        --border-color: v-bind("borderPreview");
     }
 
     /* stylelint-disable-next-line selector-class-pattern */

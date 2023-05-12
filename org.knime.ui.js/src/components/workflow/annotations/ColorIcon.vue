@@ -2,15 +2,16 @@
 import { computed } from 'vue';
 
 import CircleStopIcon from 'webapps-common/ui/assets/img/icons/circle-stop.svg';
+import { annotationColorPresets } from '@/style/colors.mjs';
 
 interface Props {
     color: string;
-    filled?: boolean
+    filled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), { filled: false });
 
-const isNone = computed(() => props.color === 'none');
+const isNone = computed(() => props.color === annotationColorPresets.None);
 </script>
 
 <template>

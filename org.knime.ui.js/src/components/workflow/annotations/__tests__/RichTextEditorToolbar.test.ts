@@ -1,10 +1,14 @@
 import { describe, expect, it, vi, type Mock } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, VueWrapper } from '@vue/test-utils';
+import { mockVuexStore } from '@/test/utils';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import RichTextEditorToolbar from '../RichTextEditorToolbar.vue';
 import type { Bounds } from '@/api/gateway-api/generated-api';
-import { mockVuexStore } from '@/test/utils';
+import * as $colors from '@/style/colors.mjs';
+
+import RichTextEditorToolbar from '../RichTextEditorToolbar.vue';
+import ColorSelectionDialog from '../ColorSelectionDialog.vue';
+import ColorIcon from '../ColorIcon.vue';
 
 const createMockEditor = () => {
     const actionNames = [
@@ -41,7 +45,8 @@ const mockEditor = createMockEditor();
 
 describe('RichTextEditorToolbar.vue', () => {
     const annotationBounds: Bounds = { x: 0, y: 0, width: 100, height: 50 };
-    const doMount = () => {
+
+    const doMount = ({ props = {} } = {}) => {
         const $store = mockVuexStore({
             canvas: {
                 state: {
@@ -50,8 +55,14 @@ describe('RichTextEditorToolbar.vue', () => {
             }
         });
 
+        const defaulProps = {
+            editor: mockEditor,
+            annotationBounds,
+            activeBorderColor: $colors.defaultAnnotationBorderColor
+        };
+
         const wrapper = mount(RichTextEditorToolbar, {
-            props: { editor: mockEditor, annotationBounds },
+            props: { ...defaulProps, ...props },
             global: {
                 plugins: [$store],
                 stubs: { FloatingMenu: true }
@@ -107,6 +118,52 @@ describe('RichTextEditorToolbar.vue', () => {
 
             expect(mockEditor.chain().focus().setHeading).toHaveBeenCalled();
             expect(mockEditor.chain().focus().toggleBulletList).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('border color selection dialog', () => {
+        const getDialogToggle = (wrapper: VueWrapper<any>) => wrapper.find('.border-color-tool');
+        const openDialog = (wrapper: VueWrapper<any>) => getDialogToggle(wrapper).trigger('click');
+
+        it('should open the border color selection dialog', async () => {
+            const { wrapper } = doMount({
+                props: { activeBorderColor: $colors.Aquamarine }
+            });
+
+            expect(wrapper.findComponent(ColorSelectionDialog).exists()).toBe(false);
+
+            await openDialog(wrapper);
+            expect(wrapper.findComponent(ColorSelectionDialog).exists()).toBe(true);
+            expect(wrapper.findComponent(ColorSelectionDialog).props('activeColor')).toBe($colors.Aquamarine);
+        });
+
+        it('should set the preview border color', async () => {
+            const { wrapper } = doMount({
+                props: { activeBorderColor: $colors.Aquamarine }
+            });
+
+            await openDialog(wrapper);
+            const someColorButton = wrapper.findComponent(ColorSelectionDialog).findAll('button').at(3);
+            const someColor = someColorButton.find('circle').attributes('stroke');
+
+            await someColorButton.trigger('mouseenter');
+
+            expect(getDialogToggle(wrapper).findComponent(ColorIcon).props('color')).toBe(someColor);
+            expect(wrapper.emitted('previewBorderColor')[0][0]).toEqual(someColor);
+        });
+
+        it('should close the border color selection dialog after a color is selected', async () => {
+            const { wrapper } = doMount({
+                props: { activeBorderColor: $colors.Aquamarine }
+            });
+
+            await openDialog(wrapper);
+            const someColorButton = wrapper.findComponent(ColorSelectionDialog).findAll('button').at(3);
+            const someColor = someColorButton.find('circle').attributes('stroke');
+
+            await someColorButton.trigger('click');
+
+            expect(wrapper.emitted('changeBorderColor')[0][0]).toEqual(someColor);
         });
     });
 });

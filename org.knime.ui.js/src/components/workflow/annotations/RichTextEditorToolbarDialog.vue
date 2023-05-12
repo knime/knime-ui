@@ -48,10 +48,7 @@ watch(isOpen, async () => {
 
 <template>
   <div ref="toolbarElement">
-    <slot
-      name="toggle"
-      :is-open="isOpen"
-    />
+    <slot name="toggle" />
   </div>
 
   <div

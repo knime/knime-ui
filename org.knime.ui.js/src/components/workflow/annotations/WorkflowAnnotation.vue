@@ -38,7 +38,9 @@ export default defineComponent({
         return {
             selectionPreview: null,
             hasEdited: false,
-            richTextContent: ''
+            richTextContent: '',
+            hasChangedBorderColor: false,
+            borderColor: null
         };
     },
 
@@ -107,6 +109,18 @@ export default defineComponent({
             const recreateLinebreaks = (content: string) => content.replaceAll('\r\n', '<br />');
 
             return recreateLinebreaks(this.annotation.text);
+        },
+
+        activeBorderColor() {
+            if (this.hasChangedBorderColor) {
+                return this.borderColor;
+            }
+
+            const isEditingLegacyAnnotation = !this.isRichTextAnnotation && this.isEditing;
+
+            return isEditingLegacyAnnotation
+                ? this.$colors.defaultAnnotationBorderColor
+                : this.annotation.borderColor;
         }
     },
 
@@ -163,10 +177,11 @@ export default defineComponent({
                 return;
             }
 
-            if (this.hasEdited) {
-                this.$store.dispatch('workflow/updateAnnotationText', {
+            if (this.hasEdited || this.hasChangedBorderColor) {
+                this.$store.dispatch('workflow/updateAnnotation', {
                     annotationId: this.annotation.id,
-                    text: this.richTextContent
+                    text: this.hasEdited ? this.richTextContent : this.annotation.text,
+                    borderColor: this.hasChangedBorderColor ? this.borderColor : this.annotation.borderColor
                 });
             }
 
@@ -174,30 +189,19 @@ export default defineComponent({
         },
 
         onAnnotationChange(content: string) {
-            if (!this.hasEdited) {
-                this.hasEdited = true;
-            }
-
+            this.hasEdited = true;
             this.richTextContent = content;
+
+            // for a first-time edit of a legacy annotation
+            if (!this.isRichTextAnnotation) {
+                // we also say that the border changed, so that the new default color gets sent on the request
+                this.setColor(this.$colors.defaultAnnotationBorderColor);
+            }
         },
 
-        getAnnotationToolbarContainerBounds(transformedBounds: Bounds): Bounds {
-            const x =
-                // start from same X as annotation
-                transformedBounds.x -
-                // center by subtracting half the toolbar width + half the annotation width
-                this.$shapes.annotationToolbarContainerWidth / 2 +
-                transformedBounds.width / 2;
-
-            // use same Y as annotation and add a negative Y offset equal to the toolbar height
-            const y = transformedBounds.y - this.$shapes.annotationToolbarContainerHeight;
-
-            return {
-                x,
-                y,
-                width: this.$shapes.annotationToolbarContainerWidth,
-                height: this.$shapes.annotationToolbarContainerHeight
-            };
+        setColor(color: string) {
+            this.hasChangedBorderColor = true;
+            this.borderColor = color;
         }
     }
 });
@@ -231,11 +235,13 @@ export default defineComponent({
           v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
           :initial-value="initialRichTextAnnotationValue"
+          :border-color="activeBorderColor"
           :editable="isEditing"
           :is-dragging="isDragging"
           :annotation-bounds="transformedBounds"
           :is-selected="isSelected"
           @change="onAnnotationChange"
+          @change-border-color="setColor"
           @edit-start="toggleEdit"
         />
       </foreignObject>

@@ -159,6 +159,12 @@ export interface AddWorkflowAnnotationCommand extends WorkflowCommand {
      * @memberof AddWorkflowAnnotationCommand
      */
     bounds: Bounds;
+    /**
+     * The new border color
+     * @type {string}
+     * @memberof AddWorkflowAnnotationCommand
+     */
+    borderColor: string;
 
 }
 
@@ -3084,27 +3090,33 @@ export interface UpdateNodeLabelCommand extends WorkflowCommand {
 export namespace UpdateNodeLabelCommand {
 }
 /**
- * Updates the text of a workflow annotation
+ * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;,  but never both of them.
  * @export
- * @interface UpdateWorkflowAnnotationTextCommand
+ * @interface UpdateWorkflowAnnotationCommand
  */
-export interface UpdateWorkflowAnnotationTextCommand extends WorkflowAnnotationCommand {
+export interface UpdateWorkflowAnnotationCommand extends WorkflowAnnotationCommand {
 
     /**
      * The new formatted text to update the annotation with
      * @type {string}
-     * @memberof UpdateWorkflowAnnotationTextCommand
+     * @memberof UpdateWorkflowAnnotationCommand
      */
-    text: string;
+    text?: string;
+    /**
+     * The new border color
+     * @type {string}
+     * @memberof UpdateWorkflowAnnotationCommand
+     */
+    borderColor?: string;
 
 }
 
 
 /**
  * @export
- * @namespace UpdateWorkflowAnnotationTextCommand
+ * @namespace UpdateWorkflowAnnotationCommand
  */
-export namespace UpdateWorkflowAnnotationTextCommand {
+export namespace UpdateWorkflowAnnotationCommand {
 }
 /**
  * The structure of a workflow.
@@ -3348,7 +3360,7 @@ export namespace WorkflowCommand {
         Cut = 'cut',
         Paste = 'paste',
         TransformWorkflowAnnotation = 'transform_workflow_annotation',
-        UpdateWorkflowAnnotationText = 'update_workflow_annotation_text',
+        UpdateWorkflowAnnotation = 'update_workflow_annotation',
         ReorderWorkflowAnnotations = 'reorder_workflow_annotations',
         AddWorkflowAnnotation = 'add_workflow_annotation'
     }
@@ -4299,16 +4311,16 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
-     * Updates the text of a workflow annotation
+     * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;,  but never both of them.
      */
-	UpdateWorkflowAnnotationText(
-		params: { projectId: string, workflowId: string } & Omit<UpdateWorkflowAnnotationTextCommand, 'kind'>
+	UpdateWorkflowAnnotation(
+		params: { projectId: string, workflowId: string } & Omit<UpdateWorkflowAnnotationCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
 		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
-            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateWorkflowAnnotationText }
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateWorkflowAnnotation }
 		});
 		return postProcessCommandResponse(commandResponse);
 	},	
