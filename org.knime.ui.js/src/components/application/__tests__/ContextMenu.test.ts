@@ -400,8 +400,8 @@ describe('ContextMenu.vue', () => {
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
                     { text: 'createMetanode' },
-                    { text: 'Metanode' },
-                    { text: 'createComponent' }
+                    { text: 'createComponent' },
+                    { text: 'Metanode' }
                 ])
             );
         });
@@ -427,7 +427,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'cut' },
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
-                    { text: 'createMetanode', separator: true },
+                    { text: 'createMetanode' },
                     { text: 'createComponent' },
                     { text: 'Component' }
                 ])
@@ -492,7 +492,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'copy' },
                     { text: 'deleteSelected', separator: true },
                     { text: 'Arrange annotations', separator: true },
-                    { text: 'createMetanode', separator: true },
+                    { text: 'createMetanode' },
                     { text: 'createComponent' }
                 ])
             );

@@ -199,8 +199,9 @@ export default defineComponent({
                 }
             ];
 
-            const metanodeGroup: Array<ContextMenuActionsGroupItem> = [
+            const metanodeAndComponentGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'createMetanode', isVisible: this.selectedNodes.length },
+                { name: 'createComponent', isVisible: this.selectedNodes.length },
                 {
                     text: 'Metanode',
                     isVisible: isMetanode,
@@ -208,10 +209,7 @@ export default defineComponent({
                         { name: 'expandMetanode', isVisible: true },
                         { name: 'editName', isVisible: true }
                     ]
-                }
-            ];
-            const componentGroup: Array<ContextMenuActionsGroupItem> = [
-                { name: 'createComponent', isVisible: this.selectedNodes.length },
+                },
                 {
                     text: 'Component',
                     isVisible: isComponent,
@@ -227,8 +225,7 @@ export default defineComponent({
                 .append(basicOperationsGroup)
                 .append(clipboardOperationsGroup)
                 .append(annotationsGroup)
-                .append(metanodeGroup)
-                .append(componentGroup)
+                .append(metanodeAndComponentGroup)
                 .value();
         }
     }
