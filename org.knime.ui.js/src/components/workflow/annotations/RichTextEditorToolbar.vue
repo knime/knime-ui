@@ -91,7 +91,8 @@ const tools: Array<ToolbarItem> = [
 
 const totalTools = computed(() => tools.length);
 
-const formatTemplates = computed(() => {
+const headingPresets = computed(() => {
+    // eslint-disable-next-line no-magic-numbers
     const levels: Level[] = [1, 2, 3, 4, 5, 6];
 
     const getCurrentLevel = () => levels.find(level => props.editor.isActive('heading', { level }));
@@ -99,7 +100,7 @@ const formatTemplates = computed(() => {
     const base = [{
         text: 'Normal text',
         selected: !props.editor.isActive('heading'),
-        hotkeyText: formatHotkeys(['Ctrl', '0']),
+        hotkeyText: formatHotkeys(['Ctrl', 'Alt', '0']),
         onClick: () => props.editor.chain().focus().toggleHeading({ level: getCurrentLevel() }).run()
     }];
 
@@ -107,7 +108,7 @@ const formatTemplates = computed(() => {
     const headings = levels.map(level => ({
         text: `Heading ${level}`,
         selected: props.editor.isActive('heading', { level }),
-        hotkeyText: formatHotkeys(['Ctrl', String(level)]),
+        hotkeyText: formatHotkeys(['Ctrl', 'Alt', String(level)]),
         onClick: () => props.editor.chain().focus().setHeading({ level }).run()
     }));
 
@@ -119,7 +120,7 @@ const zoomFactor = computed(() => store.state.canvas.zoomFactor);
 const toolbarItemPadding = 8;
 const toolbarItemGap = 4;
 const toolbarItemSize = 32;
-const formatDropdownWidth = 110;
+const headingDropdownWidth = 115;
 
 const toolbarWidth =
     /* account for padding on both ends */
@@ -127,17 +128,17 @@ const toolbarWidth =
     /* account for all items */
     totalTools.value * toolbarItemSize +
     /* add space for format dropdown */
-    formatDropdownWidth + toolbarItemGap +
+    headingDropdownWidth + toolbarItemGap +
     /* include gaps (total gaps = total items - 1) */
     toolbarItemGap * (totalTools.value - 1);
 
 const adjustedPosition = computed(() => {
-    // center X -> shift toolbar forward based on annotation width and then substract
-    // half the width (accounting for the zoomfactor)
+    // center X -> shift toolbar forward based on annotation width and then subtract
+    // half the width (accounting for the zoom factor)
     const xOffset = props.annotationBounds.width / 2 - Math.ceil((toolbarWidth / 2) / zoomFactor.value);
     const x = props.annotationBounds.x + xOffset;
 
-    // use same Y as annoation and add a negative Y offset equal to the toolbar height
+    // use same Y as annotation and add a negative Y offset equal to the toolbar height
     const y = props.annotationBounds.y - $shapes.annotationToolbarContainerHeight / zoomFactor.value;
 
     return {
@@ -151,18 +152,18 @@ const adjustedPosition = computed(() => {
   <FloatingMenu
     :canvas-position="adjustedPosition"
     aria-label="Annotation toolbar"
-    :prevent-oveflow="true"
+    :prevent-overflow="true"
   >
     <div class="editor-toolbar">
       <SubMenu
-        :items="formatTemplates"
+        :items="headingPresets"
         orientation="right"
         :teleport-to-body="false"
         floating-strategy="absolute"
-        class="format-menu"
+        class="heading-menu"
         @item-click="(e, item) => item.onClick()"
       >
-        <span class="current-format-text">{{ formatTemplates.find(tpl => tpl.selected)?.text }}</span>
+        <span class="heading-current-text">{{ headingPresets.find(heading => heading.selected)?.text }}</span>
         <DropdownIcon />
       </SubMenu>
       <FunctionButton
@@ -205,10 +206,10 @@ const adjustedPosition = computed(() => {
         }
     }
 
-    & .format-menu {
-        width: calc(v-bind("formatDropdownWidth") * 1px);
+    & .heading-menu {
+        width: calc(v-bind(headingDropdownWidth) * 1px);
 
-        & .current-format-text {
+        & .heading-current-text {
             max-width: 100%;
             white-space: nowrap;
             overflow: hidden;
@@ -221,6 +222,10 @@ const adjustedPosition = computed(() => {
             height: calc(v-bind(toolbarItemSize) * 1px);
             justify-content: center;
             align-items: center;
+        }
+
+        & :deep(.submenu-toggle.expanded) svg {
+            transform: scaleY(-1);
         }
     }
 }
