@@ -9,7 +9,7 @@ module.exports = {
   globals: {
     consola: false,
   },
-  ignorePatterns: ["generated-api.ts", "knime-js-pagebuilder/"],
+  ignorePatterns: ["generated-api.ts"],
   env: { browser: true, node: true },
   settings: {
     "import/resolver": {
