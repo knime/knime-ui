@@ -3,14 +3,9 @@ export type GeometryArea = {
     height: number;
 }
 
-export type XYPosition = {
-    x: number;
-    y: number;
-}
-
 export type GeometryBounds = {
     top: number;
-    right: number;
-    bottom: number;
     left: number;
+    right?: number;
+    bottom?: number;
 } & GeometryArea

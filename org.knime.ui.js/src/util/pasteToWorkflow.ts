@@ -2,7 +2,7 @@ import { nodeSize } from '@/style/shapes.mjs';
 import { geometry } from '@/util/geometry';
 
 // eslint-disable-next-line no-magic-numbers
-const getRandomNoise = () => (Math.random() * 2 - 1) * 10;
+const getRandomNoise = () => (Math.random() * 2 - 1) * 25;
 
 /**
  * Tries to fit clipboard objects beginning at the screen's center
@@ -10,15 +10,11 @@ const getRandomNoise = () => (Math.random() * 2 - 1) * 10;
  * @returns { Object } x and y position
  */
 export const centerStrategy = ({ visibleFrame, clipboardContent }) => {
-    const { objectBounds } = clipboardContent;
-    const centerX = visibleFrame.left + visibleFrame.width / 2 -
-        objectBounds.width / 2;
-    const centerY = visibleFrame.top + visibleFrame.height / 2 -
-        objectBounds.height / 2;
+    const { x, y } = geometry.utils.getCenteredPositionInVisibleFrame(visibleFrame, clipboardContent.objectBounds);
    
     const centerPosition = {
-        x: centerX + getRandomNoise(),
-        y: centerY + getRandomNoise()
+        x: x + getRandomNoise(),
+        y: y + getRandomNoise()
     };
 
     return centerPosition;

@@ -11,7 +11,7 @@ import type { ShortcutConditionContext, UnionToShortcutRegistry } from './types'
 import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 import { portPositions } from '@/util/portShift';
 import { nodeSize } from '@/style/shapes.mjs';
-import type { XYPosition } from '@/util/geometry/types';
+import type { XY } from '@/api/gateway-api/generated-api';
 import { geometry } from '@/util/geometry';
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
@@ -379,7 +379,7 @@ const workflowShortcuts: WorkflowShortcuts = {
                 // eslint-disable-next-line no-magic-numbers
                 const xOffset = nodeSize * 3;
 
-                const startPoint: XYPosition = {
+                const startPoint: XY = {
                     x: node.position.x + outPortPositions[portIndex][0] + xOffset,
                     y: node.position.y + outPortPositions[portIndex][1]
                 };

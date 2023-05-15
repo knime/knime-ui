@@ -12,21 +12,15 @@ export const nodePadding = {
     right: horizontalNodePadding
 };
 
-export default ({
-    nodes = {},
-    workflowAnnotations = [],
-    metaInPorts = null,
-    metaOutPorts = null
-}, { padding = false } = {}) => {
+/**
+ * Look for the outermost `left`, `top, `right`, and `bottom` values considering nodes and annotations
+*/
+const getLimitBounds = ({ nodes, workflowAnnotations, padding }) => {
     let left = Infinity;
     let top = Infinity;
     let right = -Infinity;
     let bottom = -Infinity;
 
-    // To create the bounds of the workflow:
-
-    // 1. Look for the outermost `left`, `top, `right`, and `bottom` values when considering
-    // all the existing nodes and their positions
     Object.values(nodes).forEach(({ position: { x, y } }) => {
         const nodeTop = y - (padding ? nodePadding.top : 0);
         const nodeBottom = y + nodeSize + (padding ? nodePadding.bottom : 0);
@@ -55,6 +49,18 @@ export default ({
         bottom = 0;
     }
 
+    return { left, top, right, bottom };
+};
+
+export default ({
+    nodes = {},
+    workflowAnnotations = [],
+    metaInPorts = null,
+    metaOutPorts = null
+}, { padding = false } = {}) => {
+    // eslint-disable-next-line prefer-const
+    let { left, top, right, bottom } = getLimitBounds({ nodes, workflowAnnotations, padding });
+
     const hasNodes = Object.keys(nodes).length !== 0;
     const isMetanode = Boolean(metaInPorts || metaOutPorts);
     const hasMetaInPorts = metaInPorts?.ports?.length > 0;
@@ -70,6 +76,31 @@ export default ({
         };
     }
 
+    const getInPortsMargins = (metaInPorts) => {
+        let leftBorder = 0; let rightBorder = 0;
+        if (metaInPorts.xPos) {
+            leftBorder = metaInPorts.xPos - metaNodeBarWidth;
+            rightBorder = metaInPorts.xPos + portSize;
+        } else {
+            leftBorder = Math.min(0, left) - metaNodeBarWidth;
+            rightBorder = leftBorder + metaNodeBarWidth + portSize;
+        }
+        return { leftBorder, rightBorder };
+    };
+
+    const getOutPortsMargins = (metaOutPorts) => {
+        const defaultBarPosition = defaultMetanodeBarPosition;
+        let leftBorder = 0; let rightBorder = 0;
+        if (metaOutPorts.xPos) {
+            leftBorder = metaOutPorts.xPos - portSize;
+            rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
+        } else {
+            leftBorder = left + defaultBarPosition - portSize;
+            rightBorder = leftBorder + metaNodeBarWidth + portSize;
+        }
+        return { leftBorder, rightBorder };
+    };
+
     // Consider horizontal position of metanode input / output bars.
     // The logic is as follows:
     // - if a user has moved an input / output bar, then its x-position is taken as saved.
@@ -84,16 +115,8 @@ export default ({
     // The vertical dimensions are always equal to the workflow dimensions, unless the workflow is empty,
     // in which case they get a default height.
 
-    const defaultBarPosition = defaultMetanodeBarPosition;
     if (metaInPorts?.ports?.length) {
-        let leftBorder, rightBorder;
-        if (metaInPorts.xPos) {
-            leftBorder = metaInPorts.xPos - metaNodeBarWidth;
-            rightBorder = metaInPorts.xPos + portSize;
-        } else {
-            leftBorder = Math.min(0, left) - metaNodeBarWidth;
-            rightBorder = leftBorder + metaNodeBarWidth + portSize;
-        }
+        const { leftBorder, rightBorder } = getInPortsMargins(metaInPorts);
         if (leftBorder < left) {
             left = leftBorder;
         }
@@ -103,14 +126,7 @@ export default ({
     }
 
     if (metaOutPorts?.ports?.length) {
-        let leftBorder, rightBorder;
-        if (metaOutPorts.xPos) {
-            leftBorder = metaOutPorts.xPos - portSize;
-            rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
-        } else {
-            leftBorder = left + defaultBarPosition - portSize;
-            rightBorder = leftBorder + metaNodeBarWidth + portSize;
-        }
+        const { leftBorder, rightBorder } = getOutPortsMargins(metaOutPorts);
         if (leftBorder < left) {
             left = leftBorder;
         }

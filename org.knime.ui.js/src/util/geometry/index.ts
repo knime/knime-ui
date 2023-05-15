@@ -1,7 +1,7 @@
 import { findFreeSpace, findFreeSpaceFrom, findFreeSpaceAroundCenterWithFallback,
     findFreeSpaceAroundPointWithFallback, NODE_PADDING, VISIBILITY_THRESHOLD } from './findFreeSpaceOnCanvas';
 
-import { areaCoverage, rectangleIntersection, snapToGrid } from './geometry';
+import { areaCoverage, rectangleIntersection, snapToGrid, getCenteredPositionInVisibleFrame } from './geometry';
 import getWorkflowObjectBounds, { nodePadding } from './workflowObjectBounds';
 
 export const geometry = {
@@ -14,7 +14,8 @@ export const geometry = {
     utils: {
         areaCoverage,
         rectangleIntersection,
-        snapToGrid
+        snapToGrid,
+        getCenteredPositionInVisibleFrame
     },
     constants: {
         NODE_PADDING,
