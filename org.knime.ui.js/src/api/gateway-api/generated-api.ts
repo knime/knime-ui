@@ -1458,7 +1458,7 @@ export interface NativeNode extends Node {
      */
     hasView?: boolean;
     /**
-     * Indicates whether the node can re-execute itself (e.g. within a page of a data app).
+     * Indicates whether the node can re-execute itself (e.g. within a page of a data app). It&#39;s absent if the node isn&#39;t re-executable at all (i.e. it can&#39;t even be configured to be re-executable).
      * @type {any}
      * @memberof NativeNode
      */
