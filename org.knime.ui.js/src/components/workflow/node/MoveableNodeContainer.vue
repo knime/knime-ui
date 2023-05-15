@@ -42,6 +42,7 @@ export default {
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedDrag', 'isDragging']),
+        ...mapState('canvas', ['unmovableObjects']),
 
         // Combined position of original position + the dragged amount
         combinedPosition() {
@@ -86,6 +87,11 @@ export default {
          * @returns {void} nothing to return
          */
         onMoveStart({ detail }) {
+            // console.log(this.moveableObjects);
+            if (this.unmovableObjects) {
+                return;
+            }
+
             if (!detail.event.shiftKey && !this.isNodeSelected(this.id)) {
                 this.deselectAllObjects();
             }
@@ -235,13 +241,23 @@ export default {
     v-move="{ onMove, onMoveStart, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
     :data-node-id="id"
-    :class="[{ dragging: isDragging && isNodeSelected(id) }]"
+    :class="[{ dragging: isDragging && isNodeSelected(id), unmovable: unmovableObjects }]"
   >
     <slot :position="translationAmount" />
   </g>
 </template>
 
 <style lang="postcss" scoped>
+.unmovable {
+    user-select: none;
+    pointer-events: none;
+
+    & :deep(.hover-area) {
+    pointer-events: none !important;
+    user-select: none !important;
+  }
+}
+
 .dragging {
   cursor: grabbing;
   pointer-events: none;

@@ -4,10 +4,10 @@ import * as $shapes from '@/style/shapes.mjs';
 export const findItemsInsideOfRectangle = ({ startPos, endPos, workflow }) => {
     // normalize rectangle
     let rectangle = {
-        x1: Math.min(startPos.x, endPos.x),
-        y1: Math.min(startPos.y, endPos.y),
-        x2: Math.max(startPos.x, endPos.x),
-        y2: Math.max(startPos.y, endPos.y)
+        x1: Math.min(startPos.x, endPos.x), // x left
+        y1: Math.min(startPos.y, endPos.y), // y top
+        x2: Math.max(startPos.x, endPos.x), // x right
+        y2: Math.max(startPos.y, endPos.y) // y bottom
     };
 
     // divide nodes
@@ -32,11 +32,18 @@ export const findItemsInsideOfRectangle = ({ startPos, endPos, workflow }) => {
     let annotationsInside = [];
     let annotationsOutside = [];
     Object.values(workflow.workflowAnnotations).forEach(({ bounds, id }) => {
-        let xInside = (rectangle.x1 <= bounds.x + bounds.width) && (rectangle.x2 >= bounds.x);
-        let yInside = (rectangle.y1 <= bounds.y + bounds.height) && (rectangle.y2 >= bounds.y);
+        let annotationX1 = bounds.x; // x left
+        let annotationX2 = bounds.x + bounds.width; // x right
+        let annotationY1 = bounds.y; // y top
+        let annotationY2 = bounds.y + bounds.height; // y bottom
+
+        let startedFromInside = (annotationX1 <= rectangle.x1) && (annotationX2 >= rectangle.x2) &&
+        (annotationY1 <= rectangle.y1) && (annotationY2 >= rectangle.y2);
+        let xInside = (rectangle.x1 <= annotationX2) && (rectangle.x2 >= annotationX1);
+        let yInside = (rectangle.y1 <= annotationY2) && (rectangle.y2 >= annotationY1);
     
         // create lists with annotation ids
-        if (xInside && yInside) {
+        if (xInside && yInside && !startedFromInside) {
             annotationsInside.push(id);
         } else {
             annotationsOutside.push(id);

@@ -130,7 +130,7 @@ export default defineComponent({
             };
         },
 
-        async onLeftClick(event: MouseEvent) {
+        async onLeftClick(event: PointerEvent) {
             const metaOrCtrlKey = getMetaOrCtrlKey();
             const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
@@ -211,7 +211,7 @@ export default defineComponent({
     :show-selection="showSelectionPlane"
     :initial-value="annotation.bounds"
     @transform-end="transformAnnotation($event.bounds)"
-    @click="onLeftClick"
+    @pointerdown.left="onLeftClick"
     @pointerdown.right.stop="onContextMenu"
   >
     <template #default="{ transformedBounds }">

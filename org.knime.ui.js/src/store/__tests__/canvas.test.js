@@ -86,6 +86,13 @@ describe('canvas store', () => {
         expect(store.state.canvas.isEmpty).toBe(true);
     });
 
+    it('setUnmovableObjects', () => {
+        expect(store.state.canvas.unmovableObjects).toBe(false);
+
+        store.commit('canvas/setUnmovableObjects', true);
+        expect(store.state.canvas.unmovableObjects).toBe(true);
+    });
+
     describe('scroll container element', () => {
         it('set & get ScrollContainerElement', () => {
             store.dispatch('canvas/initScrollContainerElement', scrollContainer);

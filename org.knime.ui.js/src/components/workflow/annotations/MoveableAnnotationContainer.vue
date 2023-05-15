@@ -27,7 +27,7 @@ export default defineComponent({
     },
     computed: {
         ...mapState('workflow', ['movePreviewDelta', 'isDragging', 'hasAbortedDrag']),
-        ...mapState('canvas', ['zoomFactor']),
+        ...mapState('canvas', ['zoomFactor', 'unmovableObjects']),
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('selection', ['isAnnotationSelected']),
@@ -75,6 +75,10 @@ export default defineComponent({
         },
 
         async onMoveStart({ detail }) {
+            if (this.unmovableObjects) {
+                return;
+            }
+
             if (!detail.event.shiftKey && !this.isAnnotationSelected(this.id)) {
                 await this.deselectAllObjects();
             }
@@ -146,7 +150,7 @@ export default defineComponent({
     ref="container"
     v-move="{ onMoveStart, onMove, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
-    :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
+    :class="[{ dragging: isDragging && isAnnotationSelected(id), unmovable: unmovableObjects }]"
     @pointerdown.left.stop="initCursorPosition"
   >
     <slot />
@@ -154,6 +158,10 @@ export default defineComponent({
 </template>
 
 <style lang="postcss" scoped>
+.unmovable {
+    user-select: none;
+    pointer-events: none;
+}
 .dragging {
   cursor: grabbing;
 }
