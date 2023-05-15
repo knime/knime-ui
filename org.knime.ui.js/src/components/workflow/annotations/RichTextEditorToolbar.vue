@@ -104,7 +104,6 @@ const headingPresets = computed(() => {
         onClick: () => props.editor.chain().focus().toggleHeading({ level: getCurrentLevel() }).run()
     }];
 
-    // eslint-disable-next-line no-magic-numbers
     const headings = levels.map(level => ({
         text: `Heading ${level}`,
         selected: props.editor.isActive('heading', { level }),
