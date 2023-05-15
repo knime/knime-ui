@@ -15,7 +15,8 @@ const createMockEditor = () => {
         'toggleOrderedList',
         'setTextAlign',
         'setTextAlign',
-        'setTextAlign'
+        'setTextAlign',
+        'setHeading'
     ] as const;
 
     type Actions = Record<
@@ -67,18 +68,45 @@ describe('RichTextEditorToolbar.vue', () => {
     });
 
     it('should set the active state correctly', () => {
-        mockEditor.isActive.mockImplementationOnce((name) => name === 'bold');
+        mockEditor.isActive.mockImplementation((name) => name === 'bold');
         const { wrapper } = doMount();
 
-        expect(wrapper.findAllComponents(FunctionButton).at(0).props('active')).toBe(true);
-        expect(wrapper.findAllComponents(FunctionButton).at(1).props('active')).toBe(false);
+        expect(wrapper.findAllComponents(FunctionButton).at(1).props('active')).toBe(true);
+        expect(wrapper.findAllComponents(FunctionButton).at(2).props('active')).toBe(false);
     });
 
     it('should execute the toolbar action', () => {
         const { wrapper } = doMount();
 
-        wrapper.findAllComponents(FunctionButton).at(0).vm.$emit('click', { stopPropagation: vi.fn() });
+        wrapper.findAllComponents(FunctionButton).at(1).vm.$emit('click', { stopPropagation: vi.fn() });
         expect(mockEditor.chain().focus().toggleBold).toHaveBeenCalled();
         expect(mockEditor.chain().focus().toggleBulletList).not.toHaveBeenCalled();
+    });
+
+    describe('heading dropdown', () => {
+        it('shows normal text for non headings', () => {
+            const { wrapper } = doMount();
+
+            expect(wrapper.findAllComponents(FunctionButton).at(0).text()).toBe('Normal text');
+        });
+
+        it('should select the current level', () => {
+            mockEditor.isActive.mockImplementation((name) => name === 'heading');
+            const { wrapper } = doMount();
+
+            expect(wrapper.findAllComponents(FunctionButton).at(0).text()).toBe('Heading 1');
+        });
+
+        it('should change the heading', async () => {
+            const { wrapper } = doMount();
+
+            // open headings submenu
+            await wrapper.find('.submenu-toggle').trigger('click');
+            // click on Heading 2
+            await wrapper.findAll('.submenu li').at(2).trigger('click');
+
+            expect(mockEditor.chain().focus().setHeading).toHaveBeenCalled();
+            expect(mockEditor.chain().focus().toggleBulletList).not.toHaveBeenCalled();
+        });
     });
 });
