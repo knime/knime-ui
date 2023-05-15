@@ -127,7 +127,7 @@ onMounted(() => {
             margin: 0 0 6px 12px;
             position: relative;
 
-            &:before {
+            &::before {
                 position: absolute;
                 content: '';
                 left: -12px;
@@ -186,7 +186,6 @@ onMounted(() => {
             padding: 0 2px;
             font-family: 'Roboto Mono', monospace;
             border: 1px solid var(--knime-silver-sand);
-            border-radius: 0px;
             background: var(--knime-gray-light-semi);
             box-decoration-break: clone;
         }
