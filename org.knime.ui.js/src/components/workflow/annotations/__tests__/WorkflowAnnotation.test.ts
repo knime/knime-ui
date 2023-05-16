@@ -302,7 +302,7 @@ describe('Workflow Annotation', () => {
     describe('selection', () => {
         it('should select with left click', async () => {
             const { wrapper, $store } = doMount();
-            await wrapper.findComponent(TransformControls).trigger('pointerdown', { button: 0 });
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0 });
             await wrapper.vm.$nextTick();
 
             expect($store.state.selection.selectedNodes).toEqual({});
@@ -314,7 +314,7 @@ describe('Workflow Annotation', () => {
             mockUserAgent('windows');
             const { wrapper, dispatchSpy } = doMount();
 
-            await wrapper.findComponent(TransformControls).trigger('pointerdown', { button: 0, [`${mod}Key`]: true });
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0, [`${mod}Key`]: true });
 
             expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
         });
@@ -323,7 +323,7 @@ describe('Workflow Annotation', () => {
             mockUserAgent('mac');
             const { wrapper, dispatchSpy } = doMount();
 
-            await wrapper.findComponent(TransformControls).trigger('pointerdown', { button: 0, metaKey: true });
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0, metaKey: true });
 
             expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
         });
@@ -333,7 +333,7 @@ describe('Workflow Annotation', () => {
             const { wrapper, $store } = doMount();
             await $store.dispatch('selection/selectAnnotation', 'id1');
 
-            await wrapper.findComponent(TransformControls).trigger('pointerdown', { button: 0, [`${mod}Key`]: true });
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0, [`${mod}Key`]: true });
 
             expect($store.state.selection.selectedAnnotations).toEqual({});
         });
@@ -343,7 +343,7 @@ describe('Workflow Annotation', () => {
             const { wrapper, $store } = doMount();
             await $store.dispatch('selection/selectAnnotation', 'id1');
 
-            await wrapper.findComponent(TransformControls).trigger('pointerdown', { button: 0, metaKey: true });
+            await wrapper.findComponent(TransformControls).trigger('click', { button: 0, metaKey: true });
             expect($store.state.selection.selectedAnnotations).toEqual({});
         });
     });

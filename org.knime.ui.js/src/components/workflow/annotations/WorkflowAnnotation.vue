@@ -211,7 +211,7 @@ export default defineComponent({
     :show-selection="showSelectionPlane"
     :initial-value="annotation.bounds"
     @transform-end="transformAnnotation($event.bounds)"
-    @pointerdown.left="onLeftClick"
+    @click="onLeftClick"
     @pointerdown.right.stop="onContextMenu"
   >
     <template #default="{ transformedBounds }">
