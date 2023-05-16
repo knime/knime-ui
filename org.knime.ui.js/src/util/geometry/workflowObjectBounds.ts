@@ -52,6 +52,31 @@ const getLimitBounds = ({ nodes, workflowAnnotations, padding }) => {
     return { left, top, right, bottom };
 };
 
+const getInPortsMargins = (metaInPorts, left) => {
+    let leftBorder = 0; let rightBorder = 0;
+    if (metaInPorts.xPos) {
+        leftBorder = metaInPorts.xPos - metaNodeBarWidth;
+        rightBorder = metaInPorts.xPos + portSize;
+    } else {
+        leftBorder = Math.min(0, left) - metaNodeBarWidth;
+        rightBorder = leftBorder + metaNodeBarWidth + portSize;
+    }
+    return { leftBorder, rightBorder };
+};
+
+const getOutPortsMargins = (metaOutPorts, left) => {
+    const defaultBarPosition = defaultMetanodeBarPosition;
+    let leftBorder = 0; let rightBorder = 0;
+    if (metaOutPorts.xPos) {
+        leftBorder = metaOutPorts.xPos - portSize;
+        rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
+    } else {
+        leftBorder = left + defaultBarPosition - portSize;
+        rightBorder = leftBorder + metaNodeBarWidth + portSize;
+    }
+    return { leftBorder, rightBorder };
+};
+
 export default ({
     nodes = {},
     workflowAnnotations = [],
@@ -76,31 +101,6 @@ export default ({
         };
     }
 
-    const getInPortsMargins = (metaInPorts) => {
-        let leftBorder = 0; let rightBorder = 0;
-        if (metaInPorts.xPos) {
-            leftBorder = metaInPorts.xPos - metaNodeBarWidth;
-            rightBorder = metaInPorts.xPos + portSize;
-        } else {
-            leftBorder = Math.min(0, left) - metaNodeBarWidth;
-            rightBorder = leftBorder + metaNodeBarWidth + portSize;
-        }
-        return { leftBorder, rightBorder };
-    };
-
-    const getOutPortsMargins = (metaOutPorts) => {
-        const defaultBarPosition = defaultMetanodeBarPosition;
-        let leftBorder = 0; let rightBorder = 0;
-        if (metaOutPorts.xPos) {
-            leftBorder = metaOutPorts.xPos - portSize;
-            rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
-        } else {
-            leftBorder = left + defaultBarPosition - portSize;
-            rightBorder = leftBorder + metaNodeBarWidth + portSize;
-        }
-        return { leftBorder, rightBorder };
-    };
-
     // Consider horizontal position of metanode input / output bars.
     // The logic is as follows:
     // - if a user has moved an input / output bar, then its x-position is taken as saved.
@@ -116,23 +116,15 @@ export default ({
     // in which case they get a default height.
 
     if (metaInPorts?.ports?.length) {
-        const { leftBorder, rightBorder } = getInPortsMargins(metaInPorts);
-        if (leftBorder < left) {
-            left = leftBorder;
-        }
-        if (rightBorder > right) {
-            right = rightBorder;
-        }
+        const { leftBorder, rightBorder } = getInPortsMargins(metaInPorts, left);
+        left = Math.min(left, leftBorder);
+        right = Math.max(right, rightBorder);
     }
 
     if (metaOutPorts?.ports?.length) {
-        const { leftBorder, rightBorder } = getOutPortsMargins(metaOutPorts);
-        if (leftBorder < left) {
-            left = leftBorder;
-        }
-        if (rightBorder > right) {
-            right = rightBorder;
-        }
+        const { leftBorder, rightBorder } = getOutPortsMargins(metaOutPorts, left);
+        left = Math.min(left, leftBorder);
+        right = Math.max(right, rightBorder);
     }
 
     if (metaInPorts?.ports?.length || metaOutPorts?.ports?.length) {
