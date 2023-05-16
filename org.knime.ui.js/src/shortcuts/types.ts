@@ -32,7 +32,7 @@ type Modifiers = 'Ctrl' | 'Alt' | 'Shift'
 type LooseAutoComplete<T extends string> = T | Omit<string, T>
 
 export type Hotkey = Keys | Modifiers;
-type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers>>;
+export type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers>>;
 
 export type ShortcutExecuteContext = {
     // TODO type the store once the types are available

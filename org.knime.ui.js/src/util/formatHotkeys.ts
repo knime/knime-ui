@@ -1,9 +1,9 @@
 import { isMac } from '@/util/navigator';
-import type { Hotkey } from '@/shortcuts';
+import type { Hotkey, Hotkeys } from '@/shortcuts';
 
 // Returns a string representation of a hotkey
 // Replaces some special key names with symbols
-export const formatHotkeys = (hotkeys: Array<string>) => {
+export const formatHotkeys = (hotkeys: Hotkeys) => {
     type KeyFormatMap = Partial<Record<Hotkey, string>>
     const globalKeyMap: KeyFormatMap = {
         ArrowUp: '↑',
@@ -18,7 +18,7 @@ export const formatHotkeys = (hotkeys: Array<string>) => {
     };
 
     const mapSymbols = (formatMap: KeyFormatMap) => (key: Hotkey) => formatMap[key] || key;
-    const identity = (value) => value;
+    const identity = (value: any) => value;
 
     return hotkeys
         // map all keys that should be displayed differently
