@@ -162,6 +162,7 @@ export default defineComponent({
     user-select: none;
     pointer-events: none;
 }
+
 .dragging {
   cursor: grabbing;
 }

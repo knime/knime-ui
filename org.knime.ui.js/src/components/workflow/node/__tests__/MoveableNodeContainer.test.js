@@ -73,7 +73,7 @@ describe('MoveableNodeContainer', () => {
                 state: workflowStore.state
             },
             canvas: {
-                state: { zoomFactor: 1 },
+                state: { zoomFactor: 1, unmovableObjects: false },
                 getters: { screenToCanvasCoordinates: () => screenToCanvasCoordinates }
             },
             application: {
@@ -345,6 +345,24 @@ describe('MoveableNodeContainer', () => {
             expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
                 expect.objectContaining({ type: 'node-dragging-leave' })
             );
+        });
+
+        it('adds unmovable class if unmovableObjects is true', async () => {
+            const { wrapper, $store } = doMount();
+            $store.state.canvas.unmovableObjects = true;
+
+            await wrapper.vm.$nextTick();
+            expect(wrapper.find('g').classes().includes('unmovable')).toBe(true);
+        });
+
+        it('does not move annotation if unmovableObjects is true', async () => {
+            const { wrapper, $store, mockMoveDirective } = doMount();
+            $store.state.canvas.unmovableObjects = true;
+
+            startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
+            await wrapper.vm.$nextTick();
+
+            expect($store.state.workflow.isDragging).toBe(false);
         });
     });
 });

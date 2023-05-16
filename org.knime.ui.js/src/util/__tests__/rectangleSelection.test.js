@@ -130,4 +130,25 @@ describe('findItemsInsideOfRectangle', () => {
             annotationsOutside: ['ann1', 'ann2']
         });
     });
+
+    it('excludes annotation that the selection started in', () => {
+        let p1 = { x: 51, y: 1 }; // annotation + 1 off
+        let p2 = { x: 54, y: 8 }; // annotation - 1 off
+
+        // forwards
+        expect(findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow })).toStrictEqual({
+            nodesInside: ['up-right'],
+            nodesOutside: ['up-left', 'down-left', 'down-right'],
+            annotationsInside: [],
+            annotationsOutside: ['ann1', 'ann2', 'ann3']
+        });
+
+        // backwards
+        expect(findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow })).toStrictEqual({
+            nodesInside: ['up-right'],
+            nodesOutside: ['up-left', 'down-left', 'down-right'],
+            annotationsInside: [],
+            annotationsOutside: ['ann1', 'ann2', 'ann3']
+        });
+    });
 });

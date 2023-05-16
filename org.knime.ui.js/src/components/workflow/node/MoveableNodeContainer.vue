@@ -87,7 +87,6 @@ export default {
          * @returns {void} nothing to return
          */
         onMoveStart({ detail }) {
-            // console.log(this.moveableObjects);
             if (this.unmovableObjects) {
                 return;
             }
