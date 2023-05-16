@@ -158,7 +158,7 @@ const adjustedPosition = computed(() => {
         :items="headingPresets"
         orientation="right"
         :teleport-to-body="false"
-        floating-strategy="absolute"
+        position-strategy="absolute"
         class="heading-menu"
         @item-click="(e, item) => item.onClick()"
       >
