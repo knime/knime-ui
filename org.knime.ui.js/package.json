@@ -1,5 +1,6 @@
 {
   "name": "knime-ui",
+  "private": true,
   "version": "0.0.0-unused+see-pom.xml",
   "description": "KNIME HTML based UI",
   "author": "KNIME AG",
@@ -7,32 +8,22 @@
     "dev": "vite",
     "build": "npm run type-check && vite build",
     "serve": "vite preview",
-    "postinstall": "npm run opensourcecredits -- --no-overwrite",
     "lint": "run-p 'lint:* -- --fix'",
     "lint:js": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
     "lint:css": "stylelint '**/*.{css,vue}'",
-    "ci:lint-format": "run-p lint:* format:check",
+    "format": "prettier --cache --write src/",
+    "format:check": "prettier --cache --check src/",
+    "ci:lint-format": "run-p lint:* format:check -c",
     "audit": "check-audit --omit dev",
     "audit:resolve": "resolve-audit --omit dev",
+    "test:unit": "vitest",
+    "coverage": "vitest run --coverage",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
     "jenkins:lint": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
-    "test:unit": "vitest",
-    "coverage": "vitest run --coverage",
     "opensourcecredits": "npm run --prefix webapps-common opensourcecredits",
-    "format": "prettier --cache --write src/",
-    "format:check": "prettier --cache --check src/",
+    "postinstall": "npm run opensourcecredits -- --no-overwrite",
     "prepare": "cd .. && husky install ./org.knime.ui.js/.husky"
-  },
-  "lint-staged": {
-    "*.{js,vue}": [
-      "eslint --cache --fix",
-      "prettier --cache --write"
-    ],
-    "*.{css,vue}": [
-      "stylelint --fix",
-      "prettier --cache --write"
-    ]
   },
   "dependencies": {
     "@fontsource/roboto-condensed": "4.5.9",
@@ -80,7 +71,6 @@
   "engines": {
     "node": "18.x"
   },
-  "private": true,
   "volta": {
     "node": "18.14.2"
   }
