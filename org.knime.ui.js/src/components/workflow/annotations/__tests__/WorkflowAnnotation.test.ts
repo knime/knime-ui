@@ -119,12 +119,14 @@ describe('Workflow Annotation', () => {
         expect(wrapper.findComponent(RichTextEditor).exists()).toBe(false);
     });
 
-    it('should render RichTextEditor', () => {
+    it('should render RichTextEditor', async () => {
         const { wrapper } = doMount({
             props: {
                 annotation: { ...defaultProps.annotation, contentType: Annotation.ContentTypeEnum.Html }
             }
         });
+
+        await nextTick();
 
         expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
         expect(wrapper.findComponent(RichTextEditor).props('id')).toEqual(defaultProps.annotation.id);

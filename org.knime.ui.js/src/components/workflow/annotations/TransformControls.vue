@@ -41,8 +41,7 @@ export default defineComponent({
     data() {
         return {
             directions: DIRECTIONS,
-            innerValue: getGridAdjustedBounds(this.initialValue),
-            TRANSFORM_RECT_OFFSET
+            innerValue: getGridAdjustedBounds(this.initialValue)
         };
     },
 
@@ -66,10 +65,10 @@ export default defineComponent({
 
         valueWithOffset(): Bounds {
             return {
-                width: this.innerValue.width + this.TRANSFORM_RECT_OFFSET * 2,
-                height: this.innerValue.height + this.TRANSFORM_RECT_OFFSET * 2,
-                x: this.innerValue.x - this.TRANSFORM_RECT_OFFSET,
-                y: this.innerValue.y - this.TRANSFORM_RECT_OFFSET
+                width: this.innerValue.width + TRANSFORM_RECT_OFFSET * 2,
+                height: this.innerValue.height + TRANSFORM_RECT_OFFSET * 2,
+                x: this.innerValue.x - TRANSFORM_RECT_OFFSET,
+                y: this.innerValue.y - TRANSFORM_RECT_OFFSET
             };
         }
     },

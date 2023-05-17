@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, nextTick, toRefs, watch, ref } from 'vue';
+import { onMounted, nextTick, toRefs, watch, ref, computed } from 'vue';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import TextAlign from '@tiptap/extension-text-align';
 import UnderLine from '@tiptap/extension-underline';
@@ -21,7 +21,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const { initialValue } = toRefs(props);
-const borderPreview = ref<string | null>(null);
+const previewBorderColor = ref<string | null>(null);
 
 // eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
@@ -47,6 +47,8 @@ watch(initialValue, () => {
     editor.value.commands.setContent(initialValue.value);
 });
 
+const activeBorderColor = computed(() => previewBorderColor.value || props.borderColor);
+
 onMounted(() => {
     if (props.editable) {
         nextTick(() => {
@@ -70,7 +72,7 @@ onMounted(() => {
         :editor="editor"
         :annotation-bounds="annotationBounds"
         @change-border-color="emit('changeBorderColor', $event)"
-        @preview-border-color="borderPreview = $event"
+        @preview-border-color="previewBorderColor = $event"
       />
     </Portal>
     <EditorContent
@@ -79,8 +81,7 @@ onMounted(() => {
       :class="{
         editable,
         selected: isSelected,
-        'is-dragging': isDragging,
-        'border-preview': Boolean(borderPreview)
+        'is-dragging': isDragging
       }"
       @dblclick="!editable && emit('editStart')"
     />
@@ -104,19 +105,13 @@ onMounted(() => {
 
 .annotation-editor {
     --border-width: 2px;
-    --border-color: v-bind("borderColor");
 
     height: 100%;
     overflow-y: auto;
-    border: var(--border-width) solid var(--border-color);
+    border: var(--border-width) solid v-bind("activeBorderColor");
 
     &.editable {
         cursor: text;
-    }
-
-    &.border-preview,
-    &.editable.border-preview {
-        --border-color: v-bind("borderPreview");
     }
 
     /* stylelint-disable-next-line selector-class-pattern */

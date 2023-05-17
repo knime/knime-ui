@@ -273,28 +273,28 @@ const changeBorderColor = (color: string) => {
       width: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
       height: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
     }
+  }
 
-    & .heading-menu {
-      width: calc(v-bind(headingDropdownWidth) * 1px);
+  & .heading-menu {
+    width: calc(v-bind(headingDropdownWidth) * 1px);
 
-      & .heading-current-text {
-        max-width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+    & .heading-current-text {
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-      & :deep(.submenu-toggle) {
-        width: 100%;
-        padding: 0 10px;
-        height: calc(v-bind(toolbarItemSize) * 1px);
-        justify-content: center;
-        align-items: center;
-      }
+    & :deep(.submenu-toggle) {
+      width: 100%;
+      padding: 0 10px;
+      height: calc(v-bind(toolbarItemSize) * 1px);
+      justify-content: center;
+      align-items: center;
+    }
 
-      & :deep(.submenu-toggle.expanded) svg {
-        transform: scaleY(-1);
-      }
+    & :deep(.submenu-toggle.expanded) svg {
+      transform: scaleY(-1);
     }
   }
 

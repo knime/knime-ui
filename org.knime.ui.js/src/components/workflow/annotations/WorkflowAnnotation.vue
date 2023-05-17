@@ -37,10 +37,12 @@ export default defineComponent({
     data() {
         return {
             selectionPreview: null,
+
             hasEdited: false,
-            richTextContent: '',
-            hasChangedBorderColor: false,
-            borderColor: null
+            newAnnotationData: {
+                richTextContent: '',
+                borderColor: ''
+            }
         };
     },
 
@@ -99,34 +101,30 @@ export default defineComponent({
 
         isRichTextAnnotation() {
             return this.annotation.contentType === Annotation.ContentTypeEnum.Html;
-        },
-
-        initialRichTextAnnotationValue() {
-            if (this.isRichTextAnnotation) {
-                return this.annotation.text;
-            }
-
-            const recreateLinebreaks = (content: string) => content.replaceAll('\r\n', '<br />');
-
-            return recreateLinebreaks(this.annotation.text);
-        },
-
-        activeBorderColor() {
-            if (this.hasChangedBorderColor) {
-                return this.borderColor;
-            }
-
-            const isEditingLegacyAnnotation = !this.isRichTextAnnotation && this.isEditing;
-
-            return isEditingLegacyAnnotation
-                ? this.$colors.defaultAnnotationBorderColor
-                : this.annotation.borderColor;
         }
+    },
+
+    mounted() {
+        this.initializeData();
     },
 
     methods: {
         ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
+
+        initializeData() {
+            const recreateLinebreaks = (content: string) => content.replaceAll('\r\n', '<br />');
+
+            this.newAnnotationData = {
+                richTextContent: this.isRichTextAnnotation
+                    ? this.annotation.text
+                    : recreateLinebreaks(this.annotation.text),
+
+                borderColor: this.isRichTextAnnotation
+                    ? this.annotation.borderColor
+                    : this.$colors.defaultAnnotationBorderColor
+            };
+        },
 
         async onLeftClick(event: MouseEvent) {
             const metaOrCtrlKey = getMetaOrCtrlKey();
@@ -177,11 +175,11 @@ export default defineComponent({
                 return;
             }
 
-            if (this.hasEdited || this.hasChangedBorderColor) {
+            if (this.hasEdited) {
                 await this.$store.dispatch('workflow/updateAnnotation', {
                     annotationId: this.annotation.id,
-                    text: this.hasEdited ? this.richTextContent : this.annotation.text,
-                    borderColor: this.hasChangedBorderColor ? this.borderColor : this.annotation.borderColor
+                    text: this.newAnnotationData.richTextContent,
+                    borderColor: this.newAnnotationData.borderColor
                 });
             }
 
@@ -190,18 +188,12 @@ export default defineComponent({
 
         onAnnotationChange(content: string) {
             this.hasEdited = true;
-            this.richTextContent = content;
-
-            // for a first-time edit of a legacy annotation
-            if (!this.isRichTextAnnotation) {
-                // we also say that the border changed, so that the new default color gets sent on the request
-                this.setColor(this.$colors.defaultAnnotationBorderColor);
-            }
+            this.newAnnotationData.richTextContent = content;
         },
 
         setColor(color: string) {
-            this.hasChangedBorderColor = true;
-            this.borderColor = color;
+            this.hasEdited = true;
+            this.newAnnotationData.borderColor = color;
         }
     }
 });
@@ -234,8 +226,8 @@ export default defineComponent({
         <RichTextEditor
           v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
-          :initial-value="initialRichTextAnnotationValue"
-          :border-color="activeBorderColor"
+          :initial-value="newAnnotationData.richTextContent"
+          :border-color="newAnnotationData.borderColor"
           :editable="isEditing"
           :is-dragging="isDragging"
           :annotation-bounds="transformedBounds"
