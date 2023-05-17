@@ -6,6 +6,7 @@ import LinkDecorator from '../LinkDecorator.vue';
 import StreamingDecorator from '../StreamingDecorator.vue';
 import LoopDecorator from '../LoopDecorator.vue';
 import ReexecutionDecorator from '../ReexecutionDecorator.vue';
+import LockDecorator from '../LockDecorator.vue';
 
 describe('NodeDecorators.vue', () => {
     const defaultProps = {
@@ -74,5 +75,15 @@ describe('NodeDecorators.vue', () => {
 
         expect(wrapper.findComponent(LinkDecorator).props('backgroundType')).toBe(expectedType);
         expect(wrapper.findComponent(StreamingDecorator).props('backgroundType')).toBe(expectedType);
+    });
+
+    it('shows/hides LockDecorator', async () => {
+        const wrapper = doMount(defaultProps);
+
+        expect(wrapper.findComponent(LockDecorator).exists()).toBe(false);
+
+        wrapper.setProps({ isLocked: false });
+        await wrapper.vm.$nextTick();
+        expect(wrapper.findComponent(LockDecorator).exists()).toBe(true);
     });
 });

@@ -173,6 +173,11 @@ export default {
         isReexecutable: {
             type: Boolean,
             default: false
+        },
+
+        isLocked: {
+            type: Boolean,
+            default: null
         }
     },
     data() {

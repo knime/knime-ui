@@ -66,7 +66,8 @@ const commonNode = {
     loopState: null,
     loopInfo: {
         allowedActions: {}
-    }
+    },
+    isLocked: null
 };
 const nativeNode = {
     ...commonNode,

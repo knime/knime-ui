@@ -1,5 +1,6 @@
 <script>
 import LinkDecorator from './LinkDecorator.vue';
+import LockDecorator from './LockDecorator.vue';
 import StreamingDecorator from './StreamingDecorator.vue';
 import LoopDecorator from './LoopDecorator.vue';
 import ReexecutionDecorator from './ReexecutionDecorator.vue';
@@ -10,7 +11,8 @@ export default {
         LinkDecorator,
         StreamingDecorator,
         LoopDecorator,
-        ReexecutionDecorator
+        ReexecutionDecorator,
+        LockDecorator
     },
     inheritAttrs: false,
     props: {
@@ -72,6 +74,11 @@ export default {
         isReexecutable: {
             type: Boolean,
             default: false
+        },
+
+        isLocked: {
+            type: Boolean,
+            default: null
         }
     },
     computed: {
@@ -113,6 +120,13 @@ export default {
       v-if="type === 'LoopStart' || type === 'LoopEnd'"
       :loop-status="loopInfo.status"
       transform="translate(20, 20)"
+    />
+
+    <LockDecorator
+      v-if="isLocked !== null"
+      :is-locked="isLocked"
+      :background-type="decoratorBackgroundType"
+      transform="translate(22, 1)"
     />
   </g>
 </template>

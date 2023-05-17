@@ -198,7 +198,8 @@ describe('Workflow', () => {
                     loopInfo: {
                         allowedActions: {}
                     },
-                    portGroups: null
+                    portGroups: null,
+                    isLocked: null
                 };
 
                 expect(props).toStrictEqual(expected);
