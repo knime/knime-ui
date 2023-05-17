@@ -6,8 +6,8 @@ import * as $colors from '@/style/colors.mjs';
 import LinkDecorator from '../LinkDecorator.vue';
 
 describe('LinkDecorator.vue', () => {
-    const doShallowMount = (backgroundType, linkStatus = null) => shallowMount(LinkDecorator, {
-        props: { backgroundType, linkStatus },
+    const doShallowMount = (backgroundType, updateStatus = null) => shallowMount(LinkDecorator, {
+        props: { backgroundType, updateStatus },
         global: { mocks: { $colors } }
     });
 
@@ -15,16 +15,16 @@ describe('LinkDecorator.vue', () => {
         const wrapper = doShallowMount('Manipulator');
         expect(wrapper.find('path').attributes()['data-testid']).toBe('arrow');
 
-        await wrapper.setProps({ linkStatus: 'UP_TO_DATE' });
+        await wrapper.setProps({ updateStatus: 'UP_TO_DATE' });
         expect(wrapper.find('path').attributes()['data-testid']).toBe('arrow');
 
-        await wrapper.setProps({ linkStatus: 'HAS_UPDATE' });
+        await wrapper.setProps({ updateStatus: 'HAS_UPDATE' });
         expect(wrapper.find('path').attributes()['data-testid']).toBe('dotted-arrow');
 
-        await wrapper.setProps({ linkStatus: 'ERROR' });
+        await wrapper.setProps({ updateStatus: 'ERROR' });
         expect(wrapper.find('path').attributes()['data-testid']).toBe('cross');
 
-        await wrapper.setProps({ linkStatus: 'InvalidLinkStatus' });
+        await wrapper.setProps({ updateStatus: 'InvalidLinkStatus' });
         expect(wrapper.find('path').exists()).toBeFalsy();
     });
 

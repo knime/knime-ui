@@ -23,7 +23,7 @@ export default {
         },
 
         /**
-         * MetaNodeLink object containing the link URL and linkStatus
+         * TemplateLink object containing the link URL and updateStatus
          */
         link: {
             type: Object,
@@ -88,7 +88,7 @@ export default {
     <LinkDecorator
       v-if="link?.url"
       :background-type="decoratorBackgroundType"
-      :link-status="link.linkStatus"
+      :update-status="link.updateStatus"
       transform="translate(0, 21)"
     />
 

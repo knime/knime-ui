@@ -25,7 +25,7 @@ describe('NodeDecorators.vue', () => {
     });
 
     it('shows/hides default LinkDecorator', () => {
-        const wrapper = doMount({ ...defaultProps, link: { url: 'link', linkStatus: 'UP_TO_DATE' } });
+        const wrapper = doMount({ ...defaultProps, link: { url: 'link', updateStatus: 'UP_TO_DATE' } });
 
         let linkDecorator = wrapper.findComponent(LinkDecorator);
         expect(linkDecorator.attributes('transform')).toBe('translate(0, 21)');
@@ -68,7 +68,7 @@ describe('NodeDecorators.vue', () => {
     ])('provides background type', (nodeProps, expectedType) => {
         const wrapper = doMount({
             ...nodeProps,
-            link: { url: 'testLink', linkStatus: 'UP_TO_DATE' },
+            link: { url: 'testLink', updateStatus: 'UP_TO_DATE' },
             executionInfo: { mock: 'something' }
         });
 

@@ -105,7 +105,7 @@ export default {
         },
 
         /**
-         * MetaNodeLink object containing the link URL and linkStatus
+         * TemplateLink object containing the link URL and updateStatus
          */
         link: {
             type: Object,

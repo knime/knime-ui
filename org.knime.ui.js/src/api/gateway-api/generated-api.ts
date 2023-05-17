@@ -660,10 +660,10 @@ export interface ComponentNode extends Node {
     state?: NodeState;
     /**
      *
-     * @type {MetaNodeLink}
+     * @type {TemplateLink}
      * @memberof ComponentNode
      */
-    link?: MetaNodeLink;
+    link?: TemplateLink;
 
 }
 
@@ -1322,10 +1322,10 @@ export interface MetaNode extends Node {
     outPorts: Array<MetaNodePort>;
     /**
      *
-     * @type {MetaNodeLink}
+     * @type {TemplateLink}
      * @memberof MetaNode
      */
-    link?: MetaNodeLink;
+    link?: TemplateLink;
 
 }
 
@@ -1335,44 +1335,6 @@ export interface MetaNode extends Node {
  * @namespace MetaNode
  */
 export namespace MetaNode {
-}
-/**
- * The link of a metanode.
- * @export
- * @interface MetaNodeLink
- */
-export interface MetaNodeLink {
-
-    /**
-     * A URL, if the metanode is linked.
-     * @type {string}
-     * @memberof MetaNodeLink
-     */
-    url?: string;
-    /**
-     * The status of the link of this component (UpToDate, HasUpdate, Error)
-     * @type {string}
-     * @memberof MetaNodeLink
-     */
-    linkStatus?: MetaNodeLink.LinkStatusEnum;
-
-}
-
-
-/**
- * @export
- * @namespace MetaNodeLink
- */
-export namespace MetaNodeLink {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum LinkStatusEnum {
-        UPTODATE = 'UP_TO_DATE',
-        HASUPDATE = 'HAS_UPDATE',
-        ERROR = 'ERROR'
-    }
 }
 /**
  * Extension of a node port with extra properties as required to characterise a metanode port.
@@ -2960,6 +2922,44 @@ export interface StyleRange {
 }
 
 
+/**
+ * The link of a metanode or component.
+ * @export
+ * @interface TemplateLink
+ */
+export interface TemplateLink {
+
+    /**
+     * A URL, if the metanode/component is linked to.
+     * @type {string}
+     * @memberof TemplateLink
+     */
+    url?: string;
+    /**
+     * The status of the link of this metanode/component (UpToDate, HasUpdate, Error)
+     * @type {string}
+     * @memberof TemplateLink
+     */
+    updateStatus?: TemplateLink.UpdateStatusEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace TemplateLink
+ */
+export namespace TemplateLink {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum UpdateStatusEnum {
+        UPTODATE = 'UP_TO_DATE',
+        HASUPDATE = 'HAS_UPDATE',
+        ERROR = 'ERROR'
+    }
+}
 /**
  * Changes the size (width and height) and position (x, y) of a workflow annotation.
  * @export
