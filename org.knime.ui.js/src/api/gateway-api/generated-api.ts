@@ -160,7 +160,7 @@ export interface AddWorkflowAnnotationCommand extends WorkflowCommand {
      */
     bounds: Bounds;
     /**
-     * The new border color
+     * The new border color as a hex string (rgb)
      * @type {string}
      * @memberof AddWorkflowAnnotationCommand
      */
@@ -3103,7 +3103,7 @@ export interface UpdateWorkflowAnnotationCommand extends WorkflowAnnotationComma
      */
     text?: string;
     /**
-     * The new border color
+     * The new border color as a hex string (rgb)
      * @type {string}
      * @memberof UpdateWorkflowAnnotationCommand
      */
@@ -3227,7 +3227,7 @@ export interface WorkflowAnnotation extends Annotation {
      */
     borderWidth: number;
     /**
-     *
+     * A hex color string (rgb).
      * @type {string}
      * @memberof WorkflowAnnotation
      */
