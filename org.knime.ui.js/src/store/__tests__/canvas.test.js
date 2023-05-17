@@ -86,11 +86,11 @@ describe('canvas store', () => {
         expect(store.state.canvas.isEmpty).toBe(true);
     });
 
-    it('setUnmovableObjects', () => {
-        expect(store.state.canvas.unmovableObjects).toBe(false);
+    it('setIsMoveLocked', () => {
+        expect(store.state.canvas.isMoveLocked).toBe(false);
 
-        store.commit('canvas/setUnmovableObjects', true);
-        expect(store.state.canvas.unmovableObjects).toBe(true);
+        store.commit('canvas/setIsMoveLocked', true);
+        expect(store.state.canvas.isMoveLocked).toBe(true);
     });
 
     describe('scroll container element', () => {

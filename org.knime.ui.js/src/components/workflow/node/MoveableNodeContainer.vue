@@ -42,7 +42,7 @@ export default {
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedDrag', 'isDragging']),
-        ...mapState('canvas', ['unmovableObjects']),
+        ...mapState('canvas', ['isMoveLocked']),
 
         // Combined position of original position + the dragged amount
         combinedPosition() {
@@ -87,7 +87,7 @@ export default {
          * @returns {void} nothing to return
          */
         onMoveStart({ detail }) {
-            if (this.unmovableObjects) {
+            if (this.isMoveLocked) {
                 return;
             }
 
@@ -240,7 +240,7 @@ export default {
     v-move="{ onMove, onMoveStart, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
     :data-node-id="id"
-    :class="[{ dragging: isDragging && isNodeSelected(id), unmovable: unmovableObjects }]"
+    :class="[{ dragging: isDragging && isNodeSelected(id), unmovable: isMoveLocked }]"
   >
     <slot :position="translationAmount" />
   </g>

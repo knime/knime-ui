@@ -86,7 +86,7 @@ describe('Kanvas', () => {
                 mutations: {
                     clearScrollContainerElement: vi.fn(),
                     setSuggestPanning: vi.fn(),
-                    setUnmovableObjects: vi.fn()
+                    setIsMoveLocked: vi.fn()
                 }
             },
             workflow: {
@@ -246,7 +246,7 @@ describe('Kanvas', () => {
             document.dispatchEvent(new KeyboardEvent('keydown', { metaKey: true }));
             await Vue.nextTick();
 
-            expect(commitSpy).toHaveBeenCalledWith('canvas/setUnmovableObjects', true, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('canvas/setIsMoveLocked', true, undefined);
         });
 
         it('should set objects to be unmovable if control key is down on windows', async () => {
@@ -256,7 +256,7 @@ describe('Kanvas', () => {
             document.dispatchEvent(new KeyboardEvent('keydown', { ctrlKey: true }));
             await Vue.nextTick();
 
-            expect(commitSpy).toHaveBeenCalledWith('canvas/setUnmovableObjects', true, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('canvas/setIsMoveLocked', true, undefined);
         });
 
         it('should set objects to back to be movable if shift key is released', async () => {
@@ -265,12 +265,12 @@ describe('Kanvas', () => {
             document.dispatchEvent(new KeyboardEvent('keydown', { shiftKey: true }));
             await Vue.nextTick();
 
-            expect(commitSpy).toHaveBeenCalledWith('canvas/setUnmovableObjects', true, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('canvas/setIsMoveLocked', true, undefined);
 
             document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Shift' }));
             await Vue.nextTick();
 
-            expect(commitSpy).toHaveBeenCalledWith('canvas/setUnmovableObjects', false, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('canvas/setIsMoveLocked', false, undefined);
         });
     });
 

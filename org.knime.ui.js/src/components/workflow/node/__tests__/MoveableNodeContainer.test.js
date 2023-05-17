@@ -73,7 +73,7 @@ describe('MoveableNodeContainer', () => {
                 state: workflowStore.state
             },
             canvas: {
-                state: { zoomFactor: 1, unmovableObjects: false },
+                state: { zoomFactor: 1, isMoveLocked: false },
                 getters: { screenToCanvasCoordinates: () => screenToCanvasCoordinates }
             },
             application: {
@@ -347,17 +347,17 @@ describe('MoveableNodeContainer', () => {
             );
         });
 
-        it('adds unmovable class if unmovableObjects is true', async () => {
+        it('adds unmovable class if isMoveLocked is true', async () => {
             const { wrapper, $store } = doMount();
-            $store.state.canvas.unmovableObjects = true;
+            $store.state.canvas.isMoveLocked = true;
 
             await wrapper.vm.$nextTick();
             expect(wrapper.find('g').classes().includes('unmovable')).toBe(true);
         });
 
-        it('does not move annotation if unmovableObjects is true', async () => {
+        it('does not move annotation if isMoveLocked is true', async () => {
             const { wrapper, $store, mockMoveDirective } = doMount();
-            $store.state.canvas.unmovableObjects = true;
+            $store.state.canvas.isMoveLocked = true;
 
             startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
             await wrapper.vm.$nextTick();

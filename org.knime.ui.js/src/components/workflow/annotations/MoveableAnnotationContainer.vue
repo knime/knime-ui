@@ -27,7 +27,7 @@ export default defineComponent({
     },
     computed: {
         ...mapState('workflow', ['movePreviewDelta', 'isDragging', 'hasAbortedDrag']),
-        ...mapState('canvas', ['zoomFactor', 'unmovableObjects']),
+        ...mapState('canvas', ['zoomFactor', 'isMoveLocked']),
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('selection', ['isAnnotationSelected']),
@@ -75,7 +75,7 @@ export default defineComponent({
         },
 
         async onMoveStart({ detail }) {
-            if (this.unmovableObjects) {
+            if (this.isMoveLocked) {
                 return;
             }
 
@@ -150,7 +150,7 @@ export default defineComponent({
     ref="container"
     v-move="{ onMoveStart, onMove, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
-    :class="[{ dragging: isDragging && isAnnotationSelected(id), unmovable: unmovableObjects }]"
+    :class="[{ dragging: isDragging && isAnnotationSelected(id), unmovable: isMoveLocked }]"
     @pointerdown.left.stop="initCursorPosition"
   >
     <slot />

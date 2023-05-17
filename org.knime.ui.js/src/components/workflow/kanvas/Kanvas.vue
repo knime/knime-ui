@@ -73,7 +73,7 @@ export default {
             'zoomAroundPointer',
             'contentBoundsChanged'
         ]),
-        ...mapMutations('canvas', ['clearScrollContainerElement', 'setUnmovableObjects']),
+        ...mapMutations('canvas', ['clearScrollContainerElement', 'setIsMoveLocked']),
 
         initResizeObserver() {
             // updating the container size and recalculating the canvas is debounced.
@@ -175,7 +175,7 @@ export default {
             const metaOrCtrlKey = isMac() ? 'Meta' : 'Control';
 
             if (e.key === 'Shift' || e.key === metaOrCtrlKey) {
-                this.setUnmovableObjects(false);
+                this.setIsMoveLocked(false);
             }
         },
 
@@ -277,7 +277,7 @@ export default {
             const metaOrCtrlKey = getMetaOrCtrlKey();
 
             if (e.shiftKey || e[metaOrCtrlKey]) {
-                this.setUnmovableObjects(true);
+                this.setIsMoveLocked(true);
             }
         },
 
