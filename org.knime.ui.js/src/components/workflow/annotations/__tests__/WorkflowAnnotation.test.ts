@@ -209,7 +209,11 @@ describe('Workflow Annotation', () => {
         });
 
         it('should set the active border color when first editing legacy annotations', async () => {
-            const { wrapper, $store, dispatchSpy } = doMount();
+            const { wrapper, $store, dispatchSpy } = doMount({
+                props: {
+                    annotation: { ...defaultProps.annotation, text: 'some text \r\n some more text' }
+                }
+            });
 
             await toggleAnnotationEdit($store, 'id1');
             expect(wrapper.findComponent(RichTextEditor).props('borderColor')).toBe(
@@ -217,6 +221,9 @@ describe('Workflow Annotation', () => {
             );
 
             const newText = '<p>new content</p>';
+            expect(wrapper.findComponent(RichTextEditor).props('initialValue')).toBe(
+                'some text <br /> some more text'
+            );
             wrapper.findComponent(RichTextEditor).vm.$emit('change', newText);
             // @ts-ignore
             VueClickAway.trigger();
@@ -254,6 +261,7 @@ describe('Workflow Annotation', () => {
             wrapper.findComponent(RichTextEditor).vm.$emit('change', newContent);
             await nextTick();
 
+            expect(wrapper.findComponent(RichTextEditor).props('initialValue')).toBe(modernAnnotation.text);
             expect(wrapper.findComponent(RichTextEditor).props('borderColor')).toBe('#000000');
             // @ts-ignore
             VueClickAway.trigger();
@@ -275,6 +283,7 @@ describe('Workflow Annotation', () => {
             await toggleAnnotationEdit($store, modernAnnotation.id);
             const newColor = '#123456';
 
+            expect(wrapper.findComponent(RichTextEditor).props('initialValue')).toBe(modernAnnotation.text);
             wrapper.findComponent(RichTextEditor).vm.$emit('changeBorderColor', newColor);
             await nextTick();
 

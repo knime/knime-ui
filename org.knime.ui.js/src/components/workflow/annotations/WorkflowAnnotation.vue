@@ -101,6 +101,14 @@ export default defineComponent({
 
         isRichTextAnnotation() {
             return this.annotation.contentType === Annotation.ContentTypeEnum.Html;
+        },
+
+        initialRichTextAnnotationValue() {
+            const recreateLinebreaks = (content: string) => content.replaceAll('\r\n', '<br />');
+
+            return this.isRichTextAnnotation
+                ? this.annotation.text
+                : recreateLinebreaks(this.annotation.text);
         }
     },
 
@@ -113,12 +121,8 @@ export default defineComponent({
         ...mapActions('application', ['toggleContextMenu']),
 
         initializeData() {
-            const recreateLinebreaks = (content: string) => content.replaceAll('\r\n', '<br />');
-
             this.newAnnotationData = {
-                richTextContent: this.isRichTextAnnotation
-                    ? this.annotation.text
-                    : recreateLinebreaks(this.annotation.text),
+                richTextContent: this.initialRichTextAnnotationValue,
 
                 borderColor: this.isRichTextAnnotation
                     ? this.annotation.borderColor
@@ -226,7 +230,7 @@ export default defineComponent({
         <RichTextEditor
           v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
-          :initial-value="newAnnotationData.richTextContent"
+          :initial-value="initialRichTextAnnotationValue"
           :border-color="newAnnotationData.borderColor"
           :editable="isEditing"
           :is-dragging="isDragging"
