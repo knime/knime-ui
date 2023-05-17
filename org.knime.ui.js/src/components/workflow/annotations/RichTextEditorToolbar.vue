@@ -21,6 +21,7 @@ import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
 import * as $shapes from '@/style/shapes.mjs';
 import { formatHotkeys } from '@/util/formatHotkeys';
+import type { Hotkeys } from '@/shortcuts';
 
 interface Props {
     editor: Editor;
@@ -30,6 +31,7 @@ interface Props {
 interface ToolbarItem {
     id: string;
     icon: FunctionalComponent<SVGAttributes>;
+    hotkey: Hotkeys,
     onClick: () => void;
     active?: () => boolean;
 }
@@ -41,6 +43,7 @@ const props = defineProps<Props>();
 const tools: Array<ToolbarItem> = [
     {
         id: 'bold',
+        hotkey: ['Ctrl', 'B'],
         icon: BoldIcon,
         active: () => props.editor.isActive('bold'),
         onClick: () => props.editor.chain().focus().toggleBold().run()
@@ -48,42 +51,49 @@ const tools: Array<ToolbarItem> = [
     {
         id: 'italic',
         icon: ItalicIcon,
+        hotkey: ['Ctrl', 'I'],
         active: () => props.editor.isActive('italic'),
         onClick: () => props.editor.chain().focus().toggleItalic().run()
     },
     {
         id: 'underline',
         icon: UnderlineIcon,
+        hotkey: ['Ctrl', 'U'],
         active: () => props.editor.isActive('underline'),
         onClick: () => props.editor.chain().focus().toggleUnderline().run()
     },
     {
         id: 'bullet-list',
         icon: BulletListIcon,
+        hotkey: ['Ctrl', 'Shift', '8'],
         active: () => props.editor.isActive('bulletList'),
         onClick: () => props.editor.chain().focus().toggleBulletList().run()
     },
     {
         id: 'bullet-list-numbered',
         icon: OrderedListIcon,
+        hotkey: ['Ctrl', 'Shift', '7'],
         active: () => props.editor.isActive('orderedList'),
         onClick: () => props.editor.chain().focus().toggleOrderedList().run()
     },
     {
         id: 'align-left',
         icon: AlignLeftIcon,
+        hotkey: ['Ctrl', 'Shift', 'L'],
         active: () => props.editor.isActive({ textAlign: 'left' }),
         onClick: () => props.editor.chain().focus().setTextAlign('left').run()
     },
     {
         id: 'align-center',
         icon: AlignCenterIcon,
+        hotkey: ['Ctrl', 'Shift', 'E'],
         active: () => props.editor.isActive({ textAlign: 'center' }),
         onClick: () => props.editor.chain().focus().setTextAlign('center').run()
     },
     {
         id: 'align-right',
         icon: AlignRightIcon,
+        hotkey: ['Ctrl', 'Shift', 'R'],
         active: () => props.editor.isActive({ textAlign: 'right' }),
         onClick: () => props.editor.chain().focus().setTextAlign('right').run()
     }
@@ -158,7 +168,7 @@ const adjustedPosition = computed(() => {
         :items="headingPresets"
         orientation="right"
         :teleport-to-body="false"
-        position-strategy="absolute"
+        positioning-strategy="absolute"
         class="heading-menu"
         @item-click="(e, item) => item.onClick()"
       >
@@ -169,6 +179,7 @@ const adjustedPosition = computed(() => {
         v-for="tool of tools"
         :key="tool.icon"
         :active="tool.active ? tool.active() : false"
+        :title="tool.hotkey ? formatHotkeys(tool.hotkey) : null"
         class="toolbar-button"
         @click.stop="tool.onClick"
       >
