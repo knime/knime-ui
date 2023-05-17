@@ -3,7 +3,6 @@ import { API } from '@api';
 import { pastePartsAt, pasteURI } from '@/util/pasteToWorkflow';
 import { Annotation, type ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 import { geometry } from '@/util/geometry';
-import { hslToHex } from '@/util/colorConversion';
 import * as colors from '@/style/colors.mjs';
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -611,13 +610,12 @@ export const actions = {
 
     async addWorkflowAnnotation({ state, dispatch }, { bounds }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-        const borderColor = hslToHex(colors.defaultAnnotationBorderColor);
 
         const { newAnnotationId } = await API.workflowCommand.AddWorkflowAnnotation({
             projectId,
             workflowId,
             bounds,
-            borderColor
+            borderColor: colors.defaultAnnotationBorderColor
         });
 
         dispatch('selection/deselectAllObjects', null, { root: true });
@@ -654,12 +652,10 @@ export const actions = {
     async updateAnnotation({ state, commit }, { annotationId, text, borderColor }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
-        const { text: originalText } = state
+        const { text: originalText, borderColor: originalBorderColor } = state
             .activeWorkflow
             .workflowAnnotations
             .find(annotation => annotation.id === annotationId);
-
-        const newColor = hslToHex(borderColor);
 
         try {
             // do small optimistic update to prevent annotation from flashing between legacy and new
@@ -667,7 +663,7 @@ export const actions = {
                 annotationId,
                 text,
                 contentType: Annotation.ContentTypeEnum.Html,
-                borderColor: newColor
+                borderColor
             });
 
             return await API.workflowCommand.UpdateWorkflowAnnotation({
@@ -675,13 +671,14 @@ export const actions = {
                 workflowId,
                 annotationId,
                 text,
-                borderColor: newColor
+                borderColor
             });
         } catch (error) {
             commit('setAnnotation', {
                 annotationId,
                 text: originalText,
-                contentType: Annotation.ContentTypeEnum.Plain
+                contentType: Annotation.ContentTypeEnum.Plain,
+                borderColor: originalBorderColor
             });
 
             throw error;

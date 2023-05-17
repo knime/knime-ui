@@ -104,7 +104,7 @@ onMounted(() => {
 
 .annotation-editor {
     --border-width: 2px;
-    --border-color: v-bind("props.borderColor");
+    --border-color: v-bind("borderColor");
 
     height: 100%;
     overflow-y: auto;

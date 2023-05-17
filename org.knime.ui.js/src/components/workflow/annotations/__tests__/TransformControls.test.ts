@@ -7,7 +7,8 @@ import type { Bounds } from '@/api/gateway-api/generated-api';
 import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
 
-import TransformControls from '../TransformControls.vue';
+// @ts-expect-error
+import TransformControls, { TRANSFORM_RECT_OFFSET } from '../TransformControls.vue';
 import { transformBounds,
     DIRECTIONS,
     getTransformControlPosition,
@@ -112,11 +113,18 @@ describe('TransformControls.vue', () => {
     it('should render the transform box', () => {
         const { wrapper } = doMount({ props: { showSelection: true } });
 
+        const offsetBounds = {
+            x: defaultProps.initialValue.x - TRANSFORM_RECT_OFFSET,
+            y: defaultProps.initialValue.y - TRANSFORM_RECT_OFFSET,
+            width: defaultProps.initialValue.width + TRANSFORM_RECT_OFFSET * 2,
+            height: defaultProps.initialValue.height + TRANSFORM_RECT_OFFSET * 2
+        };
+
         const transformBox = wrapper.find('rect.transform-box');
-        expect(transformBox.attributes('x')).toBe(defaultProps.initialValue.x.toString());
-        expect(transformBox.attributes('y')).toBe(defaultProps.initialValue.y.toString());
-        expect(transformBox.attributes('width')).toBe(defaultProps.initialValue.width.toString());
-        expect(transformBox.attributes('height')).toBe(defaultProps.initialValue.height.toString());
+        expect(transformBox.attributes('x')).toBe(offsetBounds.x.toString());
+        expect(transformBox.attributes('y')).toBe(offsetBounds.y.toString());
+        expect(transformBox.attributes('width')).toBe(offsetBounds.width.toString());
+        expect(transformBox.attributes('height')).toBe(offsetBounds.height.toString());
     });
 
     it('should render the transform controls correctly', () => {
@@ -130,7 +138,12 @@ describe('TransformControls.vue', () => {
             expect(transformControl.exists()).toBe(true);
 
             expect(mockGetTransformControlPosition).toHaveBeenCalledWith({
-                bounds,
+                bounds: {
+                    x: bounds.x - TRANSFORM_RECT_OFFSET,
+                    y: bounds.y - TRANSFORM_RECT_OFFSET,
+                    width: bounds.width + TRANSFORM_RECT_OFFSET * 2,
+                    height: bounds.height + TRANSFORM_RECT_OFFSET * 2
+                },
                 direction,
                 controlSize: 6
             });

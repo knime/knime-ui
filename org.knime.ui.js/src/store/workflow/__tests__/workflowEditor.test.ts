@@ -7,6 +7,7 @@ import { deepMocked, mockVuexStore } from '@/test/utils';
 import { API } from '@api';
 import { pastePartsAt } from '@/util/pasteToWorkflow';
 import { Annotation, ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
+import * as $colors from '@/style/colors.mjs';
 
 vi.mock('@/util/pasteToWorkflow');
 
@@ -493,7 +494,8 @@ describe('workflow store: Editing', () => {
             expect(mockedAPI.workflowCommand.AddWorkflowAnnotation).toHaveBeenCalledWith({
                 projectId: 'foo',
                 workflowId: 'root',
-                bounds
+                bounds,
+                borderColor: $colors.defaultAnnotationBorderColor
             });
 
             expect(store.state.selection.selectedAnnotations).toEqual({ 'mock-annotation2': true });
@@ -530,7 +532,7 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        describe('update annotation text', () => {
+        describe('update annotation', () => {
             it('success', async () => {
                 const { store } = await loadStore();
 
@@ -542,23 +544,26 @@ describe('workflow store: Editing', () => {
                         {
                             id: annotationId,
                             text: 'legacy plain text',
-                            contentType: Annotation.ContentTypeEnum.Plain
+                            contentType: Annotation.ContentTypeEnum.Plain,
+                            borderColor: '#000000'
                         }
                     ]
                 });
 
                 const newText = '<p>new annotation text</p>';
 
-                store.dispatch('workflow/updateAnnotationText', {
+                store.dispatch('workflow/updateAnnotation', {
                     text: '<p>new annotation text</p>',
-                    annotationId
+                    annotationId,
+                    borderColor: '#123456'
                 });
 
-                expect(mockedAPI.workflowCommand.UpdateWorkflowAnnotationText).toHaveBeenCalledWith({
+                expect(mockedAPI.workflowCommand.UpdateWorkflowAnnotation).toHaveBeenCalledWith({
                     projectId: 'foo',
                     workflowId: 'root',
                     text: newText,
-                    annotationId
+                    annotationId,
+                    borderColor: '#123456'
                 });
 
                 const updatedAnnotation = store.state.workflow.activeWorkflow.workflowAnnotations.find(
@@ -571,7 +576,7 @@ describe('workflow store: Editing', () => {
 
             it('failure', async () => {
                 const { store } = await loadStore();
-                mockedAPI.workflowCommand.UpdateWorkflowAnnotationText.mockRejectedValueOnce(new Error('random error'));
+                mockedAPI.workflowCommand.UpdateWorkflowAnnotation.mockRejectedValueOnce(new Error('random error'));
 
                 const annotationId = 'mock-annotation-id';
                 store.commit('workflow/setActiveWorkflow', {
@@ -581,14 +586,16 @@ describe('workflow store: Editing', () => {
                         {
                             id: annotationId,
                             text: 'legacy plain text',
-                            contentType: Annotation.ContentTypeEnum.Plain
+                            contentType: Annotation.ContentTypeEnum.Plain,
+                            borderColor: '#000000'
                         }
                     ]
                 });
 
-                await expect(() => store.dispatch('workflow/updateAnnotationText', {
+                await expect(() => store.dispatch('workflow/updateAnnotation', {
                     text: '<p>new annotation text</p>',
-                    annotationId
+                    annotationId,
+                    borderColor: '#123456'
                 })).rejects.toThrowError('random error');
 
                 const updatedAnnotation = store.state.workflow.activeWorkflow.workflowAnnotations.find(
@@ -596,6 +603,7 @@ describe('workflow store: Editing', () => {
                 );
 
                 expect(updatedAnnotation.text).toBe('legacy plain text');
+                expect(updatedAnnotation.borderColor).toBe('#000000');
                 expect(updatedAnnotation.contentType).toEqual(Annotation.ContentTypeEnum.Plain);
             });
         });

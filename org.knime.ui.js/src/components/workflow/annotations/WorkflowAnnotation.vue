@@ -172,13 +172,13 @@ export default defineComponent({
             this.$store.dispatch('workflow/setEditableAnnotationId', this.isEditing ? null : this.annotation.id);
         },
 
-        onClickAway() {
+        async onClickAway() {
             if (!this.isEditing) {
                 return;
             }
 
             if (this.hasEdited || this.hasChangedBorderColor) {
-                this.$store.dispatch('workflow/updateAnnotation', {
+                await this.$store.dispatch('workflow/updateAnnotation', {
                     annotationId: this.annotation.id,
                     text: this.hasEdited ? this.richTextContent : this.annotation.text,
                     borderColor: this.hasChangedBorderColor ? this.borderColor : this.annotation.borderColor

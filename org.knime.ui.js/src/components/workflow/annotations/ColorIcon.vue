@@ -42,6 +42,7 @@ const isNone = computed(() => props.color === annotationColorPresets.None);
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
 .none {
   fill: white;
 }
@@ -49,6 +50,7 @@ const isNone = computed(() => props.color === annotationColorPresets.None);
 svg {
   outline: 5px solid white;
   border-radius: 50%;
+
   @mixin svg-icon-size 18;
 }
 </style>

@@ -13,6 +13,8 @@ import {
 // eslint-disable-next-line object-curly-newline
 } from './transform-control-utils';
 
+export const TRANSFORM_RECT_OFFSET = 1;
+
 export default defineComponent({
     props: {
         showTransformControls: {
@@ -40,7 +42,7 @@ export default defineComponent({
         return {
             directions: DIRECTIONS,
             innerValue: getGridAdjustedBounds(this.initialValue),
-            OFFSET: 1
+            TRANSFORM_RECT_OFFSET
         };
     },
 
@@ -64,10 +66,10 @@ export default defineComponent({
 
         valueWithOffset(): Bounds {
             return {
-                width: this.innerValue.width + this.OFFSET * 2,
-                height: this.innerValue.height + this.OFFSET * 2,
-                x: this.innerValue.x - this.OFFSET,
-                y: this.innerValue.y - this.OFFSET
+                width: this.innerValue.width + this.TRANSFORM_RECT_OFFSET * 2,
+                height: this.innerValue.height + this.TRANSFORM_RECT_OFFSET * 2,
+                x: this.innerValue.x - this.TRANSFORM_RECT_OFFSET,
+                y: this.innerValue.y - this.TRANSFORM_RECT_OFFSET
             };
         }
     },
