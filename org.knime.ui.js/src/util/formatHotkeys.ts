@@ -1,8 +1,9 @@
 import { isMac } from '@/util/navigator';
 import type { Hotkey, Hotkeys } from '@/shortcuts';
 
-// Returns a string representation of a hotkey
-// Replaces some special key names with symbols
+/**
+ * Returns a string representation of a hotkey. Replaces some special key names with symbols
+ */
 export const formatHotkeys = (hotkeys: Hotkeys) => {
     type KeyFormatMap = Partial<Record<Hotkey, string>>
     const globalKeyMap: KeyFormatMap = {

@@ -133,6 +133,8 @@ const headingPresets = computed(() => {
     return base.concat(headings);
 });
 
+const selectedHeadingText = computed(() => headingPresets.value.find(heading => heading.selected)?.text);
+
 const zoomFactor = computed(() => store.state.canvas.zoomFactor);
 
 const toolbarItemPadding = 8;
@@ -181,7 +183,7 @@ const adjustedPosition = computed(() => {
         class="heading-menu"
         @item-click="(e, item) => item.onClick()"
       >
-        <span class="heading-current-text">{{ headingPresets.find(heading => heading.selected)?.text }}</span>
+        <span class="heading-current-text">{{ selectedHeadingText }}</span>
         <DropdownIcon />
       </SubMenu>
       <FunctionButton
