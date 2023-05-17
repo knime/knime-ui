@@ -30,6 +30,7 @@ interface Props {
 
 interface ToolbarItem {
     id: string;
+    name: string,
     icon: FunctionalComponent<SVGAttributes>;
     hotkey: Hotkeys,
     onClick: () => void;
@@ -43,6 +44,7 @@ const props = defineProps<Props>();
 const tools: Array<ToolbarItem> = [
     {
         id: 'bold',
+        name: 'Bold',
         hotkey: ['Ctrl', 'B'],
         icon: BoldIcon,
         active: () => props.editor.isActive('bold'),
@@ -50,6 +52,7 @@ const tools: Array<ToolbarItem> = [
     },
     {
         id: 'italic',
+        name: 'Italic',
         icon: ItalicIcon,
         hotkey: ['Ctrl', 'I'],
         active: () => props.editor.isActive('italic'),
@@ -57,6 +60,7 @@ const tools: Array<ToolbarItem> = [
     },
     {
         id: 'underline',
+        name: 'Underline',
         icon: UnderlineIcon,
         hotkey: ['Ctrl', 'U'],
         active: () => props.editor.isActive('underline'),
@@ -64,6 +68,7 @@ const tools: Array<ToolbarItem> = [
     },
     {
         id: 'bullet-list',
+        name: 'Bullet list',
         icon: BulletListIcon,
         hotkey: ['Ctrl', 'Shift', '8'],
         active: () => props.editor.isActive('bulletList'),
@@ -71,6 +76,7 @@ const tools: Array<ToolbarItem> = [
     },
     {
         id: 'bullet-list-numbered',
+        name: 'Ordered list',
         icon: OrderedListIcon,
         hotkey: ['Ctrl', 'Shift', '7'],
         active: () => props.editor.isActive('orderedList'),
@@ -79,6 +85,7 @@ const tools: Array<ToolbarItem> = [
     {
         id: 'align-left',
         icon: AlignLeftIcon,
+        name: 'Align left',
         hotkey: ['Ctrl', 'Shift', 'L'],
         active: () => props.editor.isActive({ textAlign: 'left' }),
         onClick: () => props.editor.chain().focus().setTextAlign('left').run()
@@ -86,6 +93,7 @@ const tools: Array<ToolbarItem> = [
     {
         id: 'align-center',
         icon: AlignCenterIcon,
+        name: 'Align center',
         hotkey: ['Ctrl', 'Shift', 'E'],
         active: () => props.editor.isActive({ textAlign: 'center' }),
         onClick: () => props.editor.chain().focus().setTextAlign('center').run()
@@ -93,6 +101,7 @@ const tools: Array<ToolbarItem> = [
     {
         id: 'align-right',
         icon: AlignRightIcon,
+        name: 'Align right',
         hotkey: ['Ctrl', 'Shift', 'R'],
         active: () => props.editor.isActive({ textAlign: 'right' }),
         onClick: () => props.editor.chain().focus().setTextAlign('right').run()
@@ -179,7 +188,7 @@ const adjustedPosition = computed(() => {
         v-for="tool of tools"
         :key="tool.icon"
         :active="tool.active ? tool.active() : false"
-        :title="tool.hotkey ? formatHotkeys(tool.hotkey) : null"
+        :title="`${tool.name} – ${formatHotkeys(tool.hotkey)}`"
         class="toolbar-button"
         @click.stop="tool.onClick"
       >
