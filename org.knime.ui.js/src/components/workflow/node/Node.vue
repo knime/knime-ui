@@ -272,9 +272,13 @@ export default {
         onLeftDoubleClick(e) {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
-                this.switchWorkflow({
-                    newWorkflow: { workflowId: this.id, projectId: this.projectId }
-                });
+                if (this.isLocked) {
+                    consola.trace(`${this.kind} cannot be opened because it's locked`);
+                } else {
+                    this.switchWorkflow({
+                        newWorkflow: { workflowId: this.id, projectId: this.projectId }
+                    });
+                }
             } else if (this.allowedActions?.canOpenDialog) {
                 // open node dialog if one is present
                 this.openNodeConfiguration(this.id);

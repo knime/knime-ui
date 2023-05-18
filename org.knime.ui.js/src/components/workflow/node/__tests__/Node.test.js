@@ -790,6 +790,14 @@ describe('Node', () => {
             });
         });
 
+        it('does not open metanode on double click if locked', async () => {
+            props = { ...metaNode, isLocked: true };
+            doMount();
+            await wrapper.findComponent(NodeTorso).trigger('dblclick');
+
+            expect(storeConfig.application.actions.switchWorkflow).not.toHaveBeenCalled();
+        });
+
         it('opens component on control-double click', async () => {
             props = { ...componentNode };
             doMount();
@@ -803,6 +811,16 @@ describe('Node', () => {
                     projectId: 'projectId'
                 }
             });
+        });
+
+        it('does not open component on control-double click if locked', async () => {
+            props = { ...componentNode, isLocked: true };
+            doMount();
+            await wrapper.findComponent(NodeTorso).trigger('dblclick', {
+                ctrlKey: true
+            });
+
+            expect(storeConfig.application.actions.switchWorkflow).not.toHaveBeenCalled();
         });
 
         it('does not open component on double click', async () => {
