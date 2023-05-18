@@ -431,7 +431,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
             });
 
-            it(`it can not expand ${nodeKind} when the metanode is linked`, () => {
+            it(`it can not expand ${nodeKind} when it is linked`, () => {
                 const { $store } = createStore({
                     singleSelectedNode: {
                         kind: nodeKind,
@@ -442,9 +442,38 @@ describe('workflowShortcuts', () => {
                     }
                 });
 
-                expect(workflowShortcuts.expandMetanode.condition({ $store })).toBe(false);
+                expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
+            });
+
+            it(`it can not expand ${nodeKind} when it is locked`, () => {
+                const { $store } = createStore({
+                    singleSelectedNode: {
+                        kind: nodeKind,
+                        isLocked: true
+                    }
+                });
+
+                expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
             });
         });
+
+        it('can (not) open component if (not) unlocked', () => {
+            const singleSelectedNode = {
+                kind: 'component'
+            };
+            const { $store } = createStore({
+                singleSelectedNode
+            });
+
+            expect(workflowShortcuts.openComponent.condition({ $store })).toBe(true);
+
+            singleSelectedNode.isLocked = false;
+            expect(workflowShortcuts.openComponent.condition({ $store })).toBe(true);
+
+            singleSelectedNode.isLocked = true;
+            expect(workflowShortcuts.openComponent.condition({ $store })).toBe(false);
+        });
+
 
         describe('openLayoutEditor', () => {
             it('it is not a component, button disabled', () => {

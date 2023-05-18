@@ -47,12 +47,19 @@ declare module './index' {
 const canExpand = (kind: 'metanode' | 'component') => ({ $store }: ShortcutConditionContext) => {
     const selectedNode = $store.getters['selection/singleSelectedNode'];
 
-    if (!$store.getters['workflow/isWritable'] || selectedNode?.link) {
+    if (!$store.getters['workflow/isWritable'] || selectedNode?.link || selectedNode?.isLocked) {
         return false;
     }
 
     return selectedNode?.kind === kind && selectedNode?.allowedActions.canExpand !== 'false';
 };
+
+const canOpen = (kind: 'metanode' | 'component') => ({ $store }: ShortcutConditionContext) => {
+    const selectedNode = $store.getters['selection/singleSelectedNode'];
+
+    return selectedNode?.kind === kind && !selectedNode?.isLocked;
+};
+
 
 const workflowShortcuts: WorkflowShortcuts = {
     save: {
@@ -206,7 +213,8 @@ const workflowShortcuts: WorkflowShortcuts = {
                 $store.dispatch('application/switchWorkflow', {
                     newWorkflow: { workflowId: componentId, projectId }
                 });
-            }
+            },
+        condition: canOpen('component')
     },
     expandMetanode: {
         text: 'Expand metanode',
