@@ -109,7 +109,7 @@ describe('MoveableNodeContainer', () => {
         return { wrapper, $store, mockMoveDirective };
     };
 
-    const startNodeDrag = (moveDirective, { startX, startY }) => {
+    const startNodeDrag = async (moveDirective, { startX, startY }) => {
         const moveStartEvent = new CustomEvent('movestart', {
             detail: {
                 startX,
@@ -119,16 +119,17 @@ describe('MoveableNodeContainer', () => {
                 }
             }
         });
-
-        return moveDirective.trigger('onMoveStart', moveStartEvent);
+        moveDirective.trigger('onMoveStart', moveStartEvent);
+        await Vue.nextTick();
     };
 
-    const moveNodeTo = (moveDirective, { clientX, clientY, altKey = false }) => {
+    const moveNodeTo = (moveDirective, { clientX, clientY, altKey = false, shiftKey = false }) => {
         const moveEvent = new CustomEvent('moving', {
             detail: {
                 clientX,
                 clientY,
-                altKey
+                altKey,
+                shiftKey
             }
         });
 
@@ -157,13 +158,13 @@ describe('MoveableNodeContainer', () => {
             expect(transform).toBe('translate(500, 200)');
         });
 
-        it('should deselect other nodes on movement of unselected node', () => {
+        it('should deselect other nodes on movement of unselected node', async () => {
             const { $store, mockMoveDirective } = doMount();
 
             // select different node
             $store.dispatch('selection/selectNode', 'root:2');
 
-            startNodeDrag(mockMoveDirective, { startX: 199, startY: 199 });
+            await startNodeDrag(mockMoveDirective, { startX: 199, startY: 199 });
 
             expect($store.state.selection.selectedNodes).toEqual({
                 'root:1': true
@@ -187,7 +188,7 @@ describe('MoveableNodeContainer', () => {
         it.each([
             ['without grid', { x: 1, y: 1 }, true],
             ['with grid', $shapes.gridSize, false]
-        ])('moves a single node %s', (_, gridSize, altKey) => {
+        ])('moves a single node %s', async (_, gridSize, altKey) => {
             const initialPosition = { x: 500, y: 200 };
             const positionAfterMove = {
                 x: initialPosition.x + 100,
@@ -199,7 +200,7 @@ describe('MoveableNodeContainer', () => {
                 screenToCanvasCoordinates: vi.fn(() => [positionAfterMove.x, positionAfterMove.y])
             });
 
-            startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
+            await startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
 
             moveNodeTo(mockMoveDirective, { clientX: 250, clientY: 250, altKey });
 
@@ -222,7 +223,7 @@ describe('MoveableNodeContainer', () => {
             vi.useFakeTimers();
             const { mockMoveDirective } = doMount();
 
-            startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
+            await startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
 
             moveNodeTo(mockMoveDirective, { clientX: 250, clientY: 250 });
 
@@ -245,14 +246,7 @@ describe('MoveableNodeContainer', () => {
         expect($store.state.workflow.hasAbortedDrag).toBe(true);
         expect($store.state.workflow.isDragging).toBe(false);
 
-        const moveEvent = new CustomEvent('moving', {
-            detail: {
-                clientX: 250,
-                clientY: 250,
-                e: { detail: { event: { shiftKey: false } } }
-            }
-        });
-        mockMoveDirective.trigger('onMove', moveEvent);
+        moveNodeTo(mockMoveDirective, { clientX: 250, clientY: 250 });
 
         // drag was aborted, so the move preview cannot be updated
         expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
@@ -265,7 +259,7 @@ describe('MoveableNodeContainer', () => {
     describe('node dragging notification', () => {
         let mockTarget, mockMoveDirective, wrapper;
 
-        beforeEach(() => {
+        beforeEach(async () => {
             mockTarget = { dispatchEvent: vi.fn() };
             window.document.elementFromPoint = vi.fn().mockReturnValue(mockTarget);
 
@@ -273,40 +267,16 @@ describe('MoveableNodeContainer', () => {
                 isDragging: true
             }));
 
-            const moveStartEvent = new CustomEvent('movestart', {
-                detail: {
-                    startX: 199,
-                    startY: 199,
-                    event: {
-                        shiftKey: false
-                    }
-                }
-            });
+            await startNodeDrag(mockMoveDirective, { startX: 199, startY: 199 });
 
-            mockMoveDirective.trigger('onMoveStart', moveStartEvent);
-
-            let moveEvent = new CustomEvent('moving', {
-                detail: {
-                    clientX: 250,
-                    clientY: 250,
-                    e: { detail: { event: { shiftKey: false } } }
-                }
-            });
-            mockMoveDirective.trigger('onMove', moveEvent);
+            moveNodeTo(mockMoveDirective, { clientX: 250, clientY: 250 });
         });
 
         it('changes dragging target', () => {
             const otherTarget = { dispatchEvent: vi.fn() };
             window.document.elementFromPoint.mockReturnValue(otherTarget);
 
-            const moveEvent = new CustomEvent('moving', {
-                detail: {
-                    clientX: 260,
-                    clientY: 260,
-                    e: { detail: { event: { shiftKey: false } } }
-                }
-            });
-            mockMoveDirective.trigger('onMove', moveEvent);
+            moveNodeTo(mockMoveDirective, { clientX: 260, clientY: 260 });
 
             expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
             expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
@@ -323,7 +293,7 @@ describe('MoveableNodeContainer', () => {
         });
 
         it('triggers dragging drop', () => {
-            mockMoveDirective.trigger('onMoveEnd', { detail: { endX: 0, endY: 0 } });
+            endNodeDrag(mockMoveDirective, { endX: 0, endY: 0 });
 
             expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
             expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
@@ -336,7 +306,7 @@ describe('MoveableNodeContainer', () => {
 
         it('aborts dragging', () => {
             escapeStackMock.onEscape.call(wrapper.vm);
-            mockMoveDirective.trigger('onMoveEnd', { detail: { endX: 0, endY: 0 } });
+            endNodeDrag(mockMoveDirective, { endX: 0, endY: 0 });
 
             expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
             expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
@@ -359,7 +329,7 @@ describe('MoveableNodeContainer', () => {
             const { wrapper, $store, mockMoveDirective } = doMount();
             $store.state.canvas.isMoveLocked = true;
 
-            startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
+            await startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
             await wrapper.vm.$nextTick();
 
             expect($store.state.workflow.isDragging).toBe(false);

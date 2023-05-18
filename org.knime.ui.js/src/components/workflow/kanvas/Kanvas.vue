@@ -26,23 +26,12 @@ export default {
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
         ...mapState('canvas', ['zoomFactor', 'interactionsEnabled', 'isEmpty']),
-        ...mapState('application', ['scrollToZoomEnabled'])
+        ...mapState('application', ['scrollToZoomEnabled']),
+        ...mapState('workflow', ['isDragging'])
     },
     watch: {
         contentBounds(...args) {
             this.contentBoundsChanged(args);
-        },
-
-        isHoldingDownSpace(newValue) {
-            if (newValue) {
-                // listen to blur events while waiting for space bar to be released
-                this.windowBlurListener = () => this.onReleaseKey();
-                window.addEventListener('blur', this.windowBlurListener, { once: true });
-            } else {
-                // remove manually when space bar has been released
-                window.removeEventListener('blur', this.windowBlurListener);
-                this.windowBlurListener = null;
-            }
         }
     },
     mounted() {
@@ -54,6 +43,18 @@ export default {
         document.addEventListener('keypress', this.onPressSpace);
         document.addEventListener('keyup', this.onReleaseKey);
         document.addEventListener('keydown', this.onDownShiftOrControl);
+
+        this.windowBlurListener = () => {
+            // unset panning state
+            this.useMoveCursor = false;
+            this.isPanning = false;
+            this.isHoldingDownSpace = false;
+
+            // unset move-lock state
+            this.setIsMoveLocked(false);
+        };
+
+        window.addEventListener('blur', this.windowBlurListener);
     },
     beforeUnmount() {
         // Stop Resize Observer
@@ -276,7 +277,7 @@ export default {
 
             const metaOrCtrlKey = getMetaOrCtrlKey();
 
-            if (e.shiftKey || e[metaOrCtrlKey]) {
+            if ((e.shiftKey || e[metaOrCtrlKey]) && !this.isDragging) {
                 this.setIsMoveLocked(true);
             }
         },

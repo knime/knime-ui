@@ -86,7 +86,9 @@ export default {
          * @param {Object} e - details of the mousedown event
          * @returns {void} nothing to return
          */
-        onMoveStart({ detail }) {
+        async onMoveStart({ detail }) {
+            await this.$store.dispatch('workflow/resetDragState');
+
             if (this.isMoveLocked) {
                 return;
             }
@@ -122,7 +124,7 @@ export default {
          */
         onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
             /* eslint-disable no-invalid-this */
-            if (!this.startPos || this.hasAbortedDrag) {
+            if (!this.startPos || this.hasAbortedDrag || this.isMoveLocked) {
                 return;
             }
 

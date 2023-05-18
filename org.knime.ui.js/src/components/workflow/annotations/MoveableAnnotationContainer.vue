@@ -75,6 +75,8 @@ export default defineComponent({
         },
 
         async onMoveStart({ detail }) {
+            await this.$store.dispatch('workflow/resetDragState');
+
             if (this.isMoveLocked) {
                 return;
             }
@@ -105,7 +107,7 @@ export default defineComponent({
 
         onMove: throttle(function (this: any, { detail: { event, altKey } }) {
             /* eslint-disable no-invalid-this */
-            if (this.hasAbortedDrag) {
+            if (this.hasAbortedDrag || this.isMoveLocked) {
                 return;
             }
 
