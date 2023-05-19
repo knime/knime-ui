@@ -1,147 +1,156 @@
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
-import { mapGetters, mapState } from 'vuex';
+import { defineComponent, type PropType } from "vue";
+import { mapGetters, mapState } from "vuex";
 
-import type { Bounds } from '@/api/gateway-api/generated-api';
+import type { Bounds } from "@/api/gateway-api/generated-api";
 // eslint-disable-next-line object-curly-newline
 import {
-    type Directions,
-    DIRECTIONS,
-    transformBounds,
-    getGridAdjustedBounds,
-    getTransformControlPosition
-// eslint-disable-next-line object-curly-newline
-} from './transform-control-utils';
+  type Directions,
+  DIRECTIONS,
+  transformBounds,
+  getGridAdjustedBounds,
+  getTransformControlPosition,
+  // eslint-disable-next-line object-curly-newline
+} from "./transform-control-utils";
 
 export const TRANSFORM_RECT_OFFSET = 1;
 
 export default defineComponent({
-    props: {
-        showTransformControls: {
-            type: Boolean,
-            default: false
-        },
-
-        initialValue: {
-            type: Object as PropType<Bounds>,
-            default: () => ({ x: 0, y: 0, width: 0, height: 0 })
-        },
-
-        showSelection: {
-            type: Boolean,
-            default: false
-        }
+  props: {
+    showTransformControls: {
+      type: Boolean,
+      default: false,
     },
 
-    emits: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        transformEnd: (_payload: { bounds: Bounds }) => true
+    initialValue: {
+      type: Object as PropType<Bounds>,
+      default: () => ({ x: 0, y: 0, width: 0, height: 0 }),
     },
 
-    data() {
-        return {
-            directions: DIRECTIONS,
-            innerValue: getGridAdjustedBounds(this.initialValue)
-        };
+    showSelection: {
+      type: Boolean,
+      default: false,
+    },
+  },
+
+  emits: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    transformEnd: (_payload: { bounds: Bounds }) => true,
+  },
+
+  data() {
+    return {
+      directions: DIRECTIONS,
+      innerValue: getGridAdjustedBounds(this.initialValue),
+    };
+  },
+
+  computed: {
+    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
+    ...mapState("canvas", ["zoomFactor"]),
+
+    controlSize() {
+      const CONTROL_SIZE = 6;
+      const MAX_FACTOR = 1.4;
+
+      return Math.max(
+        CONTROL_SIZE / MAX_FACTOR,
+        CONTROL_SIZE / this.zoomFactor
+      );
     },
 
-    computed: {
-        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapState('canvas', ['zoomFactor']),
-
-        controlSize() {
-            const CONTROL_SIZE = 6;
-            const MAX_FACTOR = 1.4;
-
-            return Math.max(CONTROL_SIZE / MAX_FACTOR, CONTROL_SIZE / this.zoomFactor);
-        },
-
-        transformRectStrokeWidth() {
-            return Math.max(
-                this.$shapes.selectedAnnotationStrokeWidth / 2,
-                this.$shapes.selectedAnnotationStrokeWidth / this.zoomFactor
-            );
-        },
-
-        valueWithOffset(): Bounds {
-            return {
-                width: this.innerValue.width + TRANSFORM_RECT_OFFSET * 2,
-                height: this.innerValue.height + TRANSFORM_RECT_OFFSET * 2,
-                x: this.innerValue.x - TRANSFORM_RECT_OFFSET,
-                y: this.innerValue.y - TRANSFORM_RECT_OFFSET
-            };
-        }
+    transformRectStrokeWidth() {
+      return Math.max(
+        this.$shapes.selectedAnnotationStrokeWidth / 2,
+        this.$shapes.selectedAnnotationStrokeWidth / this.zoomFactor
+      );
     },
 
-    watch: {
-        initialValue: {
-            handler() {
-                this.innerValue = getGridAdjustedBounds(this.initialValue);
-            },
-            immediate: true,
-            deep: true
-        }
+    valueWithOffset(): Bounds {
+      return {
+        width: this.innerValue.width + TRANSFORM_RECT_OFFSET * 2,
+        height: this.innerValue.height + TRANSFORM_RECT_OFFSET * 2,
+        x: this.innerValue.x - TRANSFORM_RECT_OFFSET,
+        y: this.innerValue.y - TRANSFORM_RECT_OFFSET,
+      };
+    },
+  },
+
+  watch: {
+    initialValue: {
+      handler() {
+        this.innerValue = getGridAdjustedBounds(this.initialValue);
+      },
+      immediate: true,
+      deep: true,
+    },
+  },
+
+  methods: {
+    onStart({
+      direction,
+      event,
+    }: {
+      event: PointerEvent;
+      direction: Directions;
+    }) {
+      const startX = this.innerValue.x;
+      const startY = this.innerValue.y;
+      const origWidth = this.innerValue.width;
+      const origHeight = this.innerValue.height;
+
+      // eslint-disable-next-line no-extra-parens
+      (event.target as HTMLElement).setPointerCapture(event.pointerId);
+
+      const transformHandler = (_event: MouseEvent) => {
+        _event.stopPropagation();
+        _event.preventDefault();
+        const { clientX, clientY } = _event;
+        const [moveX, moveY] = this.screenToCanvasCoordinates([
+          clientX,
+          clientY,
+        ]);
+
+        this.innerValue = transformBounds(this.innerValue, {
+          startX,
+          startY,
+          origWidth,
+          origHeight,
+          moveX,
+          moveY,
+          direction,
+        });
+      };
+
+      const mouseUpHandler = () => {
+        window.removeEventListener("mousemove", transformHandler);
+        window.removeEventListener("mouseup", mouseUpHandler);
+      };
+
+      window.addEventListener("mousemove", transformHandler);
+      window.addEventListener("mouseup", mouseUpHandler);
     },
 
-    methods: {
-        onStart({ direction, event }: { event: PointerEvent, direction: Directions }) {
-            const startX = this.innerValue.x;
-            const startY = this.innerValue.y;
-            const origWidth = this.innerValue.width;
-            const origHeight = this.innerValue.height;
+    onStop(event: PointerEvent) {
+      // eslint-disable-next-line no-extra-parens
+      (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+      this.$emit("transformEnd", { bounds: this.innerValue });
+    },
 
-            // eslint-disable-next-line no-extra-parens
-            (event.target as HTMLElement).setPointerCapture(event.pointerId);
+    getControlPosition(direction: Directions) {
+      return getTransformControlPosition({
+        bounds: this.valueWithOffset,
+        direction,
+        controlSize: this.controlSize,
+      });
+    },
 
-            const transformHandler = (_event: MouseEvent) => {
-                _event.stopPropagation();
-                _event.preventDefault();
-                const { clientX, clientY } = _event;
-                const [moveX, moveY] = this.screenToCanvasCoordinates([clientX, clientY]);
-
-                this.innerValue = transformBounds(
-                    this.innerValue,
-                    {
-                        startX,
-                        startY,
-                        origWidth,
-                        origHeight,
-                        moveX,
-                        moveY,
-                        direction
-                    }
-                );
-            };
-
-            const mouseUpHandler = () => {
-                window.removeEventListener('mousemove', transformHandler);
-                window.removeEventListener('mouseup', mouseUpHandler);
-            };
-
-            window.addEventListener('mousemove', transformHandler);
-            window.addEventListener('mouseup', mouseUpHandler);
-        },
-
-        onStop(event: PointerEvent) {
-            // eslint-disable-next-line no-extra-parens
-            (event.target as HTMLElement).releasePointerCapture(event.pointerId);
-            this.$emit('transformEnd', { bounds: this.innerValue });
-        },
-
-        getControlPosition(direction: Directions) {
-            return getTransformControlPosition({
-                bounds: this.valueWithOffset,
-                direction,
-                controlSize: this.controlSize
-            });
-        },
-
-        getCursorStyle(direction: Directions) {
-            return {
-                cursor: `${direction}-resize`
-            };
-        }
-    }
+    getCursorStyle(direction: Directions) {
+      return {
+        cursor: `${direction}-resize`,
+      };
+    },
+  },
 });
 </script>
 
@@ -184,21 +193,21 @@ export default defineComponent({
 
 <style lang="postcss" scoped>
 .transform-box {
-    fill: transparent;
-    z-index: 1;
+  fill: transparent;
+  z-index: 1;
 
-    /*
+  /*
     Because the transform box is portaled to be on top of annotations we need to
     prevent pointer events on the transform-box rect so that
     interactions go to the actual annotation instead of this rect
     */
-    pointer-events: none;
-    user-select: none;
+  pointer-events: none;
+  user-select: none;
 }
 
 .transform-control {
-    fill: var(--knime-cornflower);
-    stroke: var(--knime-white);
-    stroke-width: 1px;
+  fill: var(--knime-cornflower);
+  stroke: var(--knime-white);
+  stroke-width: 1px;
 }
 </style>

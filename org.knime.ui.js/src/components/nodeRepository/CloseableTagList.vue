@@ -1,8 +1,8 @@
 <script>
-import { mixin as VueClickAway } from 'vue3-click-away';
-import ClosePopoverIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
+import { mixin as VueClickAway } from "vue3-click-away";
+import ClosePopoverIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
 
-import SelectableTagList from '@/components/common/SelectableTagList.vue';
+import SelectableTagList from "@/components/common/SelectableTagList.vue";
 
 const maxLengthOfTagInChars = 31;
 const maxLinesOfTags = 2;
@@ -15,68 +15,68 @@ export const minNumberOfInitialTags = 2;
  * (number of chars) of a tag.
  */
 export default {
-    components: {
-        SelectableTagList,
-        ClosePopoverIcon
+  components: {
+    SelectableTagList,
+    ClosePopoverIcon,
+  },
+  mixins: [VueClickAway],
+  props: {
+    /**
+     * List of tags (Strings) to display. Not including selected ones.
+     */
+    tags: {
+      type: Array,
+      default: () => [],
     },
-    mixins: [VueClickAway],
-    props: {
-        /**
-         * List of tags (Strings) to display. Not including selected ones.
-         */
-        tags: {
-            type: Array,
-            default: () => []
-        },
-        /**
-         * List of selected tags (Strings) to display.
-         */
-        modelValue: {
-            type: Array,
-            default: () => []
-        }
+    /**
+     * List of selected tags (Strings) to display.
+     */
+    modelValue: {
+      type: Array,
+      default: () => [],
     },
-    emits: ['update:modelValue'],
-    data() {
-        return {
-            displayAll: false
-        };
-    },
-    computed: {
-        numberOfInitialTags() {
-            let availableChars = maxLengthOfTagInChars * maxLinesOfTags;
-            let tagsToShow = 0;
+  },
+  emits: ["update:modelValue"],
+  data() {
+    return {
+      displayAll: false,
+    };
+  },
+  computed: {
+    numberOfInitialTags() {
+      let availableChars = maxLengthOfTagInChars * maxLinesOfTags;
+      let tagsToShow = 0;
 
-            // Count amount of tags that fit inside the limit of availableChars
-            for (let tag of this.tags) {
-                availableChars -= tag.length;
-                if (availableChars > 0) {
-                    tagsToShow++;
-                } else {
-                    break;
-                }
-            }
-            // limit to lower and upper bound
-            return Math.min(Math.max(tagsToShow, minNumberOfInitialTags), maxNumberOfInitialTags);
+      // Count amount of tags that fit inside the limit of availableChars
+      for (let tag of this.tags) {
+        availableChars -= tag.length;
+        if (availableChars > 0) {
+          tagsToShow++;
+        } else {
+          break;
         }
+      }
+      // limit to lower and upper bound
+      return Math.min(
+        Math.max(tagsToShow, minNumberOfInitialTags),
+        maxNumberOfInitialTags
+      );
     },
-    methods: {
-        onUpdateModelValue(value) {
-            this.displayAll = false;
-            this.$emit('update:modelValue', value);
-        },
-        onClickAway() {
-            this.displayAll = false;
-        }
-    }
+  },
+  methods: {
+    onUpdateModelValue(value) {
+      this.displayAll = false;
+      this.$emit("update:modelValue", value);
+    },
+    onClickAway() {
+      this.displayAll = false;
+    },
+  },
 };
 </script>
 
 <template>
-  <div
-    v-click-away="onClickAway"
-    class="closeable-tags"
-  >
+  <div v-click-away="onClickAway" class="closeable-tags">
     <div class="popout">
       <SelectableTagList
         ref="tagList"
@@ -150,10 +150,7 @@ export default {
     &::before {
       position: absolute;
       content: "";
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      inset: 0;
       background-color: var(--knime-porcelain);
     }
 

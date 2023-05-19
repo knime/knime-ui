@@ -1,45 +1,52 @@
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
-import { mapActions, mapState } from 'vuex';
+import { defineComponent, type PropType } from "vue";
+import { mapActions, mapState } from "vuex";
 
-import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
-import SearchResults from '@/components/nodeRepository/SearchResults.vue';
-import type { KnimeNode } from '@/api/gateway-api/custom-types';
+import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
+import SearchResults from "@/components/nodeRepository/SearchResults.vue";
+import type { KnimeNode } from "@/api/gateway-api/custom-types";
 
 export default defineComponent({
-    components: {
-        SearchResults,
-        NodeTemplate
+  components: {
+    SearchResults,
+    NodeTemplate,
+  },
+  props: {
+    selectedNode: {
+      type: [Object, null] as PropType<KnimeNode | null>,
+      required: true,
     },
-    props: {
-        selectedNode: {
-            type: [Object, null] as PropType<KnimeNode | null>,
-            required: true
-        }
-    },
-    emits: ['update:selectedNode', 'addNode'],
-    expose: ['focusFirst'],
-    computed: {
-        ...mapState('application', ['hasNodeCollectionActive']),
-        ...mapState('quickAddNodes', ['topNodes', 'bottomNodes', 'isShowingBottomNodes', 'query']),
+  },
+  emits: ["update:selectedNode", "addNode"],
+  expose: ["focusFirst"],
+  computed: {
+    ...mapState("application", ["hasNodeCollectionActive"]),
+    ...mapState("quickAddNodes", [
+      "topNodes",
+      "bottomNodes",
+      "isShowingBottomNodes",
+      "query",
+    ]),
 
-        searchActions() {
-            return {
-                searchTopNodesNextPage: this.searchTopNodesNextPage,
-                searchBottomNodesNextPage: this.searchBottomNodesNextPage,
-                toggleShowingBottomNodes: this.toggleShowingBottomNodes
-            };
-        }
+    searchActions() {
+      return {
+        searchTopNodesNextPage: this.searchTopNodesNextPage,
+        searchBottomNodesNextPage: this.searchBottomNodesNextPage,
+        toggleShowingBottomNodes: this.toggleShowingBottomNodes,
+      };
     },
-    methods: {
-        ...mapActions('quickAddNodes', [
-            'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
-        ]),
-        focusFirst() {
-            // @ts-ignore
-            return this.$refs.searchResults?.focusFirst();
-        }
-    }
+  },
+  methods: {
+    ...mapActions("quickAddNodes", [
+      "searchTopNodesNextPage",
+      "searchBottomNodesNextPage",
+      "toggleShowingBottomNodes",
+    ]),
+    focusFirst() {
+      // @ts-ignore
+      return this.$refs.searchResults?.focusFirst();
+    },
+  },
 });
 </script>
 

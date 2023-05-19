@@ -1,12 +1,12 @@
 <script lang="ts">
-import type { PropType } from 'vue';
-import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
+import type { PropType } from "vue";
+import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 
 interface BreadcrumbItem {
-    text: string;
-    href?: string;
-    id?: string;
-    icon?: unknown;
+  text: string;
+  href?: string;
+  id?: string;
+  icon?: unknown;
 }
 
 /**
@@ -14,41 +14,41 @@ interface BreadcrumbItem {
  * Emits @click with the given id prop in items. Does not support `href` in items.
  */
 export default {
-    components: {
-        Breadcrumb
+  components: {
+    Breadcrumb,
+  },
+  props: {
+    items: {
+      type: Array as PropType<Array<BreadcrumbItem>>,
+      default: () => [],
     },
-    props: {
-        items: {
-            type: Array as PropType<Array<BreadcrumbItem>>,
-            default: () => []
+  },
+  emits: ["click"],
+  computed: {
+    breadcrumbItems() {
+      return this.items.map(({ text, icon, id }) => {
+        let item: BreadcrumbItem = {
+          text,
+          icon: icon || null,
+        };
+        if (id) {
+          item.href = `#${encodeURIComponent(id)}`;
         }
+        return item;
+      });
     },
-    emits: ['click'],
-    computed: {
-        breadcrumbItems() {
-            return this.items.map(({ text, icon, id }) => {
-                let item: BreadcrumbItem = {
-                    text,
-                    icon: icon || null
-                };
-                if (id) {
-                    item.href = `#${encodeURIComponent(id)}`;
-                }
-                return item;
-            });
-        }
-    },
-    methods: {
-        onClick({ target }) {
-            if (!target || !target.href) {
-                return;
-            }
-            let { hash } = new URL(target.href, 'file://dummy/');
-            let id = decodeURIComponent(hash.replace(/^#/, ''));
+  },
+  methods: {
+    onClick({ target }) {
+      if (!target || !target.href) {
+        return;
+      }
+      let { hash } = new URL(target.href, "file://dummy/");
+      let id = decodeURIComponent(hash.replace(/^#/, ""));
 
-            this.$emit('click', { id, target });
-        }
-    }
+      this.$emit("click", { id, target });
+    },
+  },
 };
 </script>
 

@@ -1,43 +1,40 @@
 <script>
-import NodeList from './NodeList.vue';
-import DraggableNodeTemplate from '@/components/nodeRepository/DraggableNodeTemplate.vue';
+import NodeList from "./NodeList.vue";
+import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 
 const CATEGORY_LIMIT = 6;
 
 export default {
-    components: {
-        DraggableNodeTemplate,
-        NodeList
+  components: {
+    DraggableNodeTemplate,
+    NodeList,
+  },
+  props: {
+    tag: {
+      type: String,
+      required: true,
     },
-    props: {
-        tag: {
-            type: String,
-            required: true
-        },
-        nodes: {
-            type: Array,
-            default: () => []
-        },
-        selectedNode: {
-            type: [Object, null],
-            required: true
-        }
+    nodes: {
+      type: Array,
+      default: () => [],
     },
-    emits: ['selectTag'],
-    computed: {
-        hasMoreNodes() {
-            return this.nodes.length >= CATEGORY_LIMIT;
-        }
-    }
+    selectedNode: {
+      type: [Object, null],
+      required: true,
+    },
+  },
+  emits: ["selectTag"],
+  computed: {
+    hasMoreNodes() {
+      return this.nodes.length >= CATEGORY_LIMIT;
+    },
+  },
 };
 </script>
 
 <template>
   <div class="category">
-    <span
-      class="category-title"
-      @click="$emit('selectTag', tag)"
-    >
+    <span class="category-title" @click="$emit('selectTag', tag)">
       {{ tag }}
     </span>
     <NodeList

@@ -7,94 +7,95 @@
  * The current value of the height or width is saved to the local store and loaded on mount.
  */
 export default {
-    props: {
-        /**
-         * direction - like `flex-direction` (no reverse support)
-         */
-        direction: {
-            type: String,
-            default: 'column',
-            validator: val => ['column', 'row'].includes(val)
-        },
-        /**
-         * id is used as html-id and to load and save state
-         */
-        id: {
-            type: String,
-            required: true
-        },
-        /**
-         * initial size of secondary area
-         */
-        secondarySize: {
-            type: String,
-            default: '40%',
-            validator: (str) => /^\d+[%\w]+$/.test(str)
-        }
+  props: {
+    /**
+     * direction - like `flex-direction` (no reverse support)
+     */
+    direction: {
+      type: String,
+      default: "column",
+      validator: (val) => ["column", "row"].includes(val),
     },
-    data() {
-        return {
-            isMove: false,
-            currentSecondarySize: this.secondarySize
-        };
+    /**
+     * id is used as html-id and to load and save state
+     */
+    id: {
+      type: String,
+      required: true,
     },
-    computed: {
-        isColumn() {
-            return this.direction === 'column';
-        },
-        isRow() {
-            return this.direction === 'row';
-        }
+    /**
+     * initial size of secondary area
+     */
+    secondarySize: {
+      type: String,
+      default: "40%",
+      validator: (str) => /^\d+[%\w]+$/.test(str),
     },
-    watch: {
-        currentSecondarySize() {
-            if (this.supportLocalStorage()) {
-                localStorage.setItem(`ui-splitter-${this.id}`, this.currentSecondarySize);
-            }
-        }
+  },
+  data() {
+    return {
+      isMove: false,
+      currentSecondarySize: this.secondarySize,
+    };
+  },
+  computed: {
+    isColumn() {
+      return this.direction === "column";
     },
-    beforeMount() {
-        if (this.supportLocalStorage()) {
-            this.currentSecondarySize = localStorage.getItem(`ui-splitter-${this.id}`) || this.secondarySize;
-        }
+    isRow() {
+      return this.direction === "row";
     },
-    methods: {
-        supportLocalStorage() {
-            return typeof localStorage !== 'undefined';
-        },
-        beginMove(e) {
-            this.$refs.handle.setPointerCapture(e.pointerId);
-            this.isMove = true;
-        },
-        stopMove(e) {
-            this.$refs.handle.releasePointerCapture(e.pointerId);
-            this.isMove = false;
-        },
-        move(e) {
-            if (this.isMove) {
-                const rect = this.$refs.secondary.getBoundingClientRect();
-                if (this.isColumn) {
-                    this.currentSecondarySize = `${rect.height + (rect.y - e.clientY)}px`;
-                } else {
-                    this.currentSecondarySize = `${rect.width + (rect.x - e.clientX)}px`;
-                }
-            }
-        }
+  },
+  watch: {
+    currentSecondarySize() {
+      if (this.supportLocalStorage()) {
+        localStorage.setItem(
+          `ui-splitter-${this.id}`,
+          this.currentSecondarySize
+        );
+      }
+    },
+  },
+  beforeMount() {
+    if (this.supportLocalStorage()) {
+      this.currentSecondarySize =
+        localStorage.getItem(`ui-splitter-${this.id}`) || this.secondarySize;
     }
+  },
+  methods: {
+    supportLocalStorage() {
+      return typeof localStorage !== "undefined";
+    },
+    beginMove(e) {
+      this.$refs.handle.setPointerCapture(e.pointerId);
+      this.isMove = true;
+    },
+    stopMove(e) {
+      this.$refs.handle.releasePointerCapture(e.pointerId);
+      this.isMove = false;
+    },
+    move(e) {
+      if (this.isMove) {
+        const rect = this.$refs.secondary.getBoundingClientRect();
+        if (this.isColumn) {
+          this.currentSecondarySize = `${rect.height + (rect.y - e.clientY)}px`;
+        } else {
+          this.currentSecondarySize = `${rect.width + (rect.x - e.clientX)}px`;
+        }
+      }
+    },
+  },
 };
 </script>
 
 <template>
-  <div
-    :id="id"
-    :class="['splitter', direction]"
-  >
+  <div :id="id" :class="['splitter', direction]">
     <div class="primary">
       <slot>Primary</slot>
     </div>
     <div
       ref="handle"
-      :class="{'handle': true, 'active': isMove }"
+      :class="{ handle: true, active: isMove }"
       @pointerdown.left="beginMove"
       @pointerup="stopMove"
       @pointermove="move"
@@ -102,7 +103,10 @@ export default {
     <div
       ref="secondary"
       class="secondary"
-      :style="{ 'height': isColumn && currentSecondarySize, 'width': isRow && currentSecondarySize }"
+      :style="{
+        height: isColumn && currentSecondarySize,
+        width: isRow && currentSecondarySize,
+      }"
     >
       <slot name="secondary">Secondary</slot>
     </div>

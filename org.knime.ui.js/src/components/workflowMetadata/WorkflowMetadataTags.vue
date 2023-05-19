@@ -1,34 +1,27 @@
 <script>
-import TagList from 'webapps-common/ui/components/TagList.vue';
-import MetadataPlaceholder from './MetadataPlaceholder.vue';
+import TagList from "webapps-common/ui/components/TagList.vue";
+import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 
 export default {
-    components: {
-        MetadataPlaceholder,
-        TagList
+  components: {
+    MetadataPlaceholder,
+    TagList,
+  },
+  props: {
+    tags: {
+      type: Array,
+      default: () => [],
     },
-    props: {
-        tags: {
-            type: Array,
-            default: () => []
-        }
-    }
+  },
 };
 </script>
 
 <template>
   <div class="tags">
     <h2>Tags</h2>
-    <hr>
-    <TagList
-      v-if="tags.length"
-      :tags="tags"
-    />
-    <MetadataPlaceholder
-      v-else
-      padded
-      text="No tags have been set yet"
-    />
+    <hr />
+    <TagList v-if="tags.length" :tags="tags" />
+    <MetadataPlaceholder v-else padded text="No tags have been set yet" />
   </div>
 </template>
 

@@ -1,11 +1,6 @@
 <template>
   <g fill="none">
-    <rect
-      width="32"
-      height="32"
-      rx="2"
-      fill="white"
-    />
+    <rect width="32" height="32" rx="2" fill="white" />
     <path
       d="M32 5.3V4.3H27.9V0H26.9V4.3H22.3V0H21.3V4.3H16.7V0H15.7V4.3H11.1V0H10.1V4.3H5.5V0H4.5V4.3H0V5.3H4.5V9.9H0V10.9H
       4.5V15.5H0V16.5H4.5V21.1H0V22.1H4.5V26.7H0V27.7H4.5V32H5.5V27.7H10.1V32H11.1V27.7H15.7V32H16.7V27.7H21.3V32H22.3V
@@ -17,20 +12,8 @@
       26.9V9.9Z"
       fill="#D30D52"
     />
-    <circle
-      cx="16"
-      cy="16"
-      r="8.5"
-      fill="white"
-      stroke="white"
-    />
-    <circle
-      cx="16"
-      cy="16"
-      r="7.5"
-      fill="white"
-      stroke="#D30D52"
-    />
+    <circle cx="16" cy="16" r="8.5" fill="white" stroke="white" />
+    <circle cx="16" cy="16" r="7.5" fill="white" stroke="#D30D52" />
     <path
       d="M16 18C16 18 15.8667 16.8 17.2 15.7333C17.8 15.2667 18 14.7333 18 14.0667C18 12.9333 17.1333 12 16 12C14.8667
        12 14 12.8667 14 14"
@@ -46,13 +29,6 @@
       20.2666C16.4002 20.3332 16.3335 20.3999 16.2668 20.3999C16.2002 20.4666 16.0668 20.4666 16.0002 20.4666Z"
       fill="#3E3A39"
     />
-    <rect
-      x="0.5"
-      y="0.5"
-      width="31"
-      height="31"
-      rx="1.5"
-      stroke="#A90A42"
-    />
+    <rect x="0.5" y="0.5" width="31" height="31" rx="1.5" stroke="#A90A42" />
   </g>
 </template>

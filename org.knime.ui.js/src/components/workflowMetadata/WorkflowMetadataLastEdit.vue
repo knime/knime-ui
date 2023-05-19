@@ -1,17 +1,16 @@
 <script>
-import { formatDateString } from 'webapps-common/util/format';
-
+import { formatDateString } from "webapps-common/util/format";
 
 export default {
-    props: {
-        lastEdit: {
-            type: String,
-            default: null
-        }
+  props: {
+    lastEdit: {
+      type: String,
+      default: null,
     },
-    methods: {
-        formatDateString
-    }
+  },
+  methods: {
+    formatDateString,
+  },
 };
 </script>
 

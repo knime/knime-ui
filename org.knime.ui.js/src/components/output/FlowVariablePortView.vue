@@ -4,21 +4,18 @@
  */
 
 export default {
-    props: {
-        initialData: {
-            type: Array,
-            required: true
-        }
-    }
+  props: {
+    initialData: {
+      type: Array,
+      required: true,
+    },
+  },
 };
 </script>
 
 <template>
   <div class="scroll-container">
-    <div
-      v-if="initialData"
-      class="counts"
-    >
+    <div v-if="initialData" class="counts">
       <span class="count">Count: {{ initialData.length }}</span>
     </div>
     <table>

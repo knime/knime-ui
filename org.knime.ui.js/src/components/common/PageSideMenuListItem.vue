@@ -1,52 +1,46 @@
 <script>
-import ArrowRight from 'webapps-common/ui/assets/img/icons/arrow-right.svg';
+import ArrowRight from "webapps-common/ui/assets/img/icons/arrow-right.svg";
 
 export default {
-    components: {
-        ArrowRight
+  components: {
+    ArrowRight,
+  },
+  props: {
+    item: {
+      type: Object,
+      default: () => {},
     },
-    props: {
-        item: {
-            type: Object,
-            default: () => {}
-        }
+  },
+  computed: {
+    currentRoute() {
+      return this.$route.path;
     },
-    computed: {
-        currentRoute() {
-            return this.$route.path;
-        },
-        isItemActive() {
-            return this.item.route === this.currentRoute;
-        },
-        itemRoute() {
-            return this.item.route || this.item.children?.[0].route;
-        },
-        hasChildren() {
-            return Boolean(this.item.children);
-        }
-    }
-
+    isItemActive() {
+      return this.item.route === this.currentRoute;
+    },
+    itemRoute() {
+      return this.item.route || this.item.children?.[0].route;
+    },
+    hasChildren() {
+      return Boolean(this.item.children);
+    },
+  },
 };
 </script>
 
 <template>
   <li
-    :class="{ active: isItemActive, disabled: item.disabled, 'has-children': hasChildren }"
+    :class="{
+      active: isItemActive,
+      disabled: item.disabled,
+      'has-children': hasChildren,
+    }"
     :title="item.tooltip ? item.tooltip : null"
   >
-    <Component
-      :is="item.disabled ? 'span' : 'router-link'"
-      :to="itemRoute"
-    >
+    <Component :is="item.disabled ? 'span' : 'router-link'" :to="itemRoute">
       <span>
-        <Component
-          :is="item.icon"
-          class="item-icon"
-        />
-        <ArrowRight
-          v-if="hasChildren"
-          class="arrow-icon"
-        />
+        <Component :is="item.icon" class="item-icon" />
+        <ArrowRight v-if="hasChildren" class="arrow-icon" />
         {{ item.text }}
       </span>
     </Component>

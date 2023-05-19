@@ -1,18 +1,18 @@
-import { nodeSize } from '@/style/shapes.mjs';
-import type { KnimeNode } from '@/api/gateway-api/custom-types';
-import { areaCoverage, getCenteredPositionInVisibleFrame } from './geometry';
-import type { GeometryArea, GeometryBounds } from './types';
-import type { XY } from '@/api/gateway-api/generated-api';
+import { nodeSize } from "@/style/shapes.mjs";
+import type { KnimeNode } from "@/api/gateway-api/custom-types";
+import { areaCoverage, getCenteredPositionInVisibleFrame } from "./geometry";
+import type { GeometryArea, GeometryBounds } from "./types";
+import type { XY } from "@/api/gateway-api/generated-api";
 
 export const NODE_PADDING = 50;
 export const VISIBILITY_THRESHOLD = 0.7;
 
 type findFreeSpaceOptions = {
-    area: GeometryArea;
-    workflow: { nodes: Record<string, KnimeNode> };
-    startPosition: XY;
-    step: XY;
-}
+  area: GeometryArea;
+  workflow: { nodes: Record<string, KnimeNode> };
+  startPosition: XY;
+  step: XY;
+};
 /**
  * Simple and inefficient algorithm to find free space on the workflow canvas,
  * based on the rectangular area around workflow objects
@@ -24,57 +24,60 @@ type findFreeSpaceOptions = {
  * @param step shift area by this step before trying again
  * @returns x and y, for where the area fits on the workflow
  */
-export const findFreeSpace = (
-    { area, workflow: { nodes }, startPosition = { x: 0, y: 0 }, step }: findFreeSpaceOptions
-) => {
-    const estimatedNodeBounds = (node: KnimeNode): GeometryBounds => ({
-        top: node.position.y - NODE_PADDING,
-        left: node.position.x - NODE_PADDING,
-        width: nodeSize + NODE_PADDING + NODE_PADDING,
-        height: nodeSize + NODE_PADDING + NODE_PADDING
+export const findFreeSpace = ({
+  area,
+  workflow: { nodes },
+  startPosition = { x: 0, y: 0 },
+  step,
+}: findFreeSpaceOptions) => {
+  const estimatedNodeBounds = (node: KnimeNode): GeometryBounds => ({
+    top: node.position.y - NODE_PADDING,
+    left: node.position.x - NODE_PADDING,
+    width: nodeSize + NODE_PADDING + NODE_PADDING,
+    height: nodeSize + NODE_PADDING + NODE_PADDING,
+  });
+
+  // draw a spacious rectangle around every node
+  const nodeBounds = Object.values(nodes).map(estimatedNodeBounds);
+
+  // shift the area to the start position
+  const currentBounds: GeometryBounds = {
+    top: startPosition.y,
+    left: startPosition.x,
+    width: area.width,
+    height: area.height,
+  };
+
+  let overlap: number;
+  do {
+    // check how much the area at the current position overlaps with workflow objects
+    overlap = 0;
+    nodeBounds.forEach((nodeArea) => {
+      overlap += areaCoverage(currentBounds, nodeArea);
     });
 
-    // draw a spacious rectangle around every node
-    const nodeBounds = Object.values(nodes).map(estimatedNodeBounds);
+    // if it doesn't overlap at all, take this position
+    if (overlap === 0) {
+      return {
+        x: currentBounds.left,
+        y: currentBounds.top,
+      };
+    }
 
-    // shift the area to the start position
-    const currentBounds: GeometryBounds = {
-        top: startPosition.y,
-        left: startPosition.x,
-        width: area.width,
-        height: area.height
-    };
+    // otherwise shift the area by [step] and repeat
+    currentBounds.left += step.x;
+    currentBounds.top += step.y;
 
-    let overlap: number;
-    do {
-        // check how much the area at the current position overlaps with workflow objects
-        overlap = 0;
-        nodeBounds.forEach(nodeArea => {
-            overlap += areaCoverage(currentBounds, nodeArea);
-        });
-
-        // if it doesn't overlap at all, take this position
-        if (overlap === 0) {
-            return {
-                x: currentBounds.left,
-                y: currentBounds.top
-            };
-        }
-
-        // otherwise shift the area by [step] and repeat
-        currentBounds.left += step.x;
-        currentBounds.top += step.y;
-
-        // the loop will terminate, because the workflow is theoretically limitless
-        // eslint-disable-next-line no-constant-condition
-    } while (true);
+    // the loop will terminate, because the workflow is theoretically limitless
+    // eslint-disable-next-line no-constant-condition
+  } while (true);
 };
 
 type FindFreeSpaceFromOptions = {
-    objectBounds: GeometryArea;
-    nodes: Record<string, KnimeNode>;
-    visibleFrame: GeometryBounds;
-}
+  objectBounds: GeometryArea;
+  nodes: Record<string, KnimeNode>;
+  visibleFrame: GeometryBounds;
+};
 
 /**
  * find free space for objects (e.g. clipboard)
@@ -85,71 +88,85 @@ type FindFreeSpaceFromOptions = {
  *
  * @returns {{x: Number, y: Number, visibility: Number}} free space position and visibility of the area, if pasted there
  */
-export const findFreeSpaceFrom = (
-    { objectBounds, nodes, visibleFrame }: FindFreeSpaceFromOptions
-) => ({ left, top }) => {
-    const position = findFreeSpace({ // eslint-disable-line implicit-arrow-linebreak
-        area: objectBounds,
-        workflow: { nodes },
-        startPosition: {
-            x: left,
-            y: top
-        },
-        step: {
-            x: 120,
-            y: 120
-        }
+export const findFreeSpaceFrom =
+  ({ objectBounds, nodes, visibleFrame }: FindFreeSpaceFromOptions) =>
+  ({ left, top }) => {
+    const position = findFreeSpace({
+      // eslint-disable-line implicit-arrow-linebreak
+      area: objectBounds,
+      workflow: { nodes },
+      startPosition: {
+        x: left,
+        y: top,
+      },
+      step: {
+        x: 120,
+        y: 120,
+      },
     });
 
-    const visibility = areaCoverage({
+    const visibility = areaCoverage(
+      {
         left: position.x,
         top: position.y,
         width: objectBounds.width,
-        height: objectBounds.height
-    }, visibleFrame);
+        height: objectBounds.height,
+      },
+      visibleFrame
+    );
 
     return {
-        ...position,
-        visibility
+      ...position,
+      visibility,
     };
+  };
+
+type findFreeSpaceAroundPointWithFallbackOptions = Omit<
+  FindFreeSpaceFromOptions,
+  "objectBounds"
+> & {
+  objectBounds?: GeometryArea;
+  startPoint: XY;
 };
 
-type findFreeSpaceAroundPointWithFallbackOptions = Omit<FindFreeSpaceFromOptions, 'objectBounds'> & {
-    objectBounds?: GeometryArea;
-    startPoint: XY;
-}
+export const findFreeSpaceAroundPointWithFallback = ({
+  startPoint: { x, y },
+  visibleFrame,
+  objectBounds = { width: nodeSize, height: nodeSize },
+  nodes,
+}: findFreeSpaceAroundPointWithFallbackOptions) => {
+  let offsetX = 0;
+  do {
+    const fromCenter = findFreeSpaceFrom({ visibleFrame, objectBounds, nodes })(
+      {
+        left: x + offsetX,
+        top: y,
+      }
+    );
 
-export const findFreeSpaceAroundPointWithFallback = ({ startPoint: { x, y },
-    visibleFrame,
-    objectBounds = { width: nodeSize, height: nodeSize },
-    nodes }: findFreeSpaceAroundPointWithFallbackOptions) => {
-    let offsetX = 0;
-    do {
-        const fromCenter = findFreeSpaceFrom({ visibleFrame, objectBounds, nodes })({
-            left: x + offsetX,
-            top: y
-        });
+    if (fromCenter.visibility >= VISIBILITY_THRESHOLD) {
+      consola.info("found free space around center");
+      const { x, y } = fromCenter;
+      return { x, y };
+    }
 
-        if (fromCenter.visibility >= VISIBILITY_THRESHOLD) {
-            consola.info('found free space around center');
-            const { x, y } = fromCenter;
-            return { x, y };
-        }
+    // eslint-disable-next-line no-magic-numbers
+    offsetX += 120;
+  } while (offsetX < visibleFrame.right);
 
-        // eslint-disable-next-line no-magic-numbers
-        offsetX += 120;
-    } while (offsetX < visibleFrame.right);
-
-    consola.info('no free space found around center');
-    return {
-        x: x + Math.random() * objectBounds.width,
-        y: y + Math.random() * objectBounds.height
-    };
+  consola.info("no free space found around center");
+  return {
+    x: x + Math.random() * objectBounds.width,
+    y: y + Math.random() * objectBounds.height,
+  };
 };
 
-type findFreeSpaceAroundCenterWithFallbackOptions = Omit<FindFreeSpaceFromOptions, 'objectBounds'> & {
-    objectBounds?: GeometryArea;
-}
+type findFreeSpaceAroundCenterWithFallbackOptions = Omit<
+  FindFreeSpaceFromOptions,
+  "objectBounds"
+> & {
+  objectBounds?: GeometryArea;
+};
 
 /**
  * Finds free space to paste or insert a node.
@@ -160,9 +177,19 @@ type findFreeSpaceAroundCenterWithFallbackOptions = Omit<FindFreeSpaceFromOption
  *
  * @returns position with free space
  */
-export const findFreeSpaceAroundCenterWithFallback = ({ visibleFrame,
-    objectBounds = { width: nodeSize, height: nodeSize },
-    nodes }: findFreeSpaceAroundCenterWithFallbackOptions): XY => {
-    const startPoint = getCenteredPositionInVisibleFrame(visibleFrame, objectBounds);
-    return findFreeSpaceAroundPointWithFallback({ startPoint, visibleFrame, objectBounds, nodes });
+export const findFreeSpaceAroundCenterWithFallback = ({
+  visibleFrame,
+  objectBounds = { width: nodeSize, height: nodeSize },
+  nodes,
+}: findFreeSpaceAroundCenterWithFallbackOptions): XY => {
+  const startPoint = getCenteredPositionInVisibleFrame(
+    visibleFrame,
+    objectBounds
+  );
+  return findFreeSpaceAroundPointWithFallback({
+    startPoint,
+    visibleFrame,
+    objectBounds,
+    nodes,
+  });
 };

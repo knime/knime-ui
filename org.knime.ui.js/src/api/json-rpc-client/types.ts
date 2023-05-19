@@ -1,13 +1,12 @@
 /* eslint-disable no-magic-numbers */
 /* eslint-disable no-undefined */
 /* eslint-disable no-use-before-define */
-export type JSONRPC = '2.0';
+export type JSONRPC = "2.0";
 // eslint-disable-next-line no-redeclare
-export const JSONRPC: JSONRPC = '2.0';
+export const JSONRPC: JSONRPC = "2.0";
 
 export type JSONRPCID = string | number | null;
 export type JSONRPCParams = any;
-
 
 export interface JSONRPCRequest {
   jsonrpc: JSONRPC;

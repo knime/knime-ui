@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from "vue";
 
-import CircleStopIcon from 'webapps-common/ui/assets/img/icons/circle-stop.svg';
-import { annotationColorPresets } from '@/style/colors.mjs';
+import CircleStopIcon from "webapps-common/ui/assets/img/icons/circle-stop.svg";
+import { annotationColorPresets } from "@/style/colors.mjs";
 
 interface Props {
-    color: string;
-    filled?: boolean;
+  color: string;
+  filled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), { filled: false });
@@ -15,11 +15,7 @@ const isNone = computed(() => props.color === annotationColorPresets.None);
 </script>
 
 <template>
-  <CircleStopIcon
-    v-if="isNone"
-    class="none"
-    v-bind="$attrs"
-  />
+  <CircleStopIcon v-if="isNone" class="none" v-bind="$attrs" />
 
   <svg
     v-else

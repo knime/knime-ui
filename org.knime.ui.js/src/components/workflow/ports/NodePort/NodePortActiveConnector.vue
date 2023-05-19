@@ -1,32 +1,33 @@
 <script setup lang="ts">
-import { watch, computed } from 'vue';
+import { watch, computed } from "vue";
 
-import type { NodePort } from '@/api/gateway-api/generated-api';
+import type { NodePort } from "@/api/gateway-api/generated-api";
 
-import Port from '@/components/common/Port.vue';
-import Connector from '@/components/workflow/connectors/Connector.vue';
-import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
-import type { Direction } from '@/util/compatibleConnections';
+import Port from "@/components/common/Port.vue";
+import Connector from "@/components/workflow/connectors/Connector.vue";
+import QuickAddNodeGhost from "@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue";
+import type { Direction } from "@/util/compatibleConnections";
 
-import type { DragConnector } from './types';
+import type { DragConnector } from "./types";
 
 interface Props {
-    port?: NodePort;
-    dragConnector: DragConnector;
-    direction: Direction;
-    targeted: boolean;
-    didDragToCompatibleTarget: boolean;
-    disableQuickNodeAdd: boolean;
+  port?: NodePort;
+  dragConnector: DragConnector;
+  direction: Direction;
+  targeted: boolean;
+  didDragToCompatibleTarget: boolean;
+  disableQuickNodeAdd: boolean;
 }
 
 const props = defineProps<Props>();
 
 // eslint-disable-next-line no-extra-parens
-const showAddNodeGhost = computed(() => (
-    props.direction === 'out' &&
+const showAddNodeGhost = computed(
+  () =>
+    props.direction === "out" &&
     !props.didDragToCompatibleTarget &&
     !props.disableQuickNodeAdd
-));
+);
 
 /*
  * only in-Ports replace their current connector if a new one is connected
@@ -35,37 +36,36 @@ const showAddNodeGhost = computed(() => (
  * indicate, if this port is the starting point of a new connector
  */
 const indicateConnectorReplacement = computed(() => {
-    const isConnected = props.port?.connectedVia.length > 0;
+  const isConnected = props.port?.connectedVia.length > 0;
 
-    return (
-        props.direction === 'in' &&
-        isConnected &&
-        // either the Port is being targeted or a connection is being
-        // drawn out of it
-        (props.targeted || Boolean(props.dragConnector))
-    );
+  return (
+    props.direction === "in" &&
+    isConnected &&
+    // either the Port is being targeted or a connection is being
+    // drawn out of it
+    (props.targeted || Boolean(props.dragConnector))
+  );
 });
 
 watch(indicateConnectorReplacement, (indicateReplacement) => {
-    if (!props.port) {
-        return;
-    }
-    const [incomingConnection] = props.port.connectedVia;
-    const incomingConnector = document.querySelector(`[data-connector-id="${incomingConnection}"]`);
+  if (!props.port) {
+    return;
+  }
+  const [incomingConnection] = props.port.connectedVia;
+  const incomingConnector = document.querySelector(
+    `[data-connector-id="${incomingConnection}"]`
+  );
 
-    incomingConnector.dispatchEvent(
-        new CustomEvent('indicate-replacement', {
-            detail: { state: indicateReplacement }
-        })
-    );
+  incomingConnector.dispatchEvent(
+    new CustomEvent("indicate-replacement", {
+      detail: { state: indicateReplacement },
+    })
+  );
 });
 </script>
 
 <template>
-  <Portal
-    v-if="dragConnector"
-    to="drag-connector"
-  >
+  <Portal v-if="dragConnector" to="drag-connector">
     <Connector
       v-if="port"
       v-bind="dragConnector"

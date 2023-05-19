@@ -1,23 +1,20 @@
 <script>
 export default {
-    props: {
-        text: {
-            type: String,
-            default: ''
-        },
-        padded: {
-            type: Boolean,
-            default: false
-        }
-    }
+  props: {
+    text: {
+      type: String,
+      default: "",
+    },
+    padded: {
+      type: Boolean,
+      default: false,
+    },
+  },
 };
 </script>
 
 <template>
-  <div
-    class="placeholder"
-    :class="{ padded }"
-  >
+  <div class="placeholder" :class="{ padded }">
     {{ text }}
   </div>
 </template>

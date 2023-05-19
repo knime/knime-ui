@@ -1,16 +1,16 @@
 <script>
-import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.vue';
+import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 
 export default {
-    components: {
-        NodeFeatureList
+  components: {
+    NodeFeatureList,
+  },
+  props: {
+    nodeFeatures: {
+      type: Object,
+      required: true,
     },
-    props: {
-        nodeFeatures: {
-            type: Object,
-            required: true
-        }
-    }
+  },
 };
 </script>
 

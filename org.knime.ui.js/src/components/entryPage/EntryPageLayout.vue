@@ -1,73 +1,65 @@
 <script>
-import RocketIcon from 'webapps-common/ui/assets/img/icons/rocket.svg';
+import RocketIcon from "webapps-common/ui/assets/img/icons/rocket.svg";
 // import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
-import KnimeLogo from 'webapps-common/ui/assets/img/KNIME_Logo_gray.svg';
+import KnimeLogo from "webapps-common/ui/assets/img/KNIME_Logo_gray.svg";
 
-import { APP_ROUTES, getPathFromRouteName } from '@/router';
-import Page from '@/components/common/Page.vue';
-import PageHeader from '@/components/common/PageHeader.vue';
-import PageSideMenu from '@/components/common/PageSideMenu.vue';
+import { APP_ROUTES, getPathFromRouteName } from "@/router";
+import Page from "@/components/common/Page.vue";
+import PageHeader from "@/components/common/PageHeader.vue";
+import PageSideMenu from "@/components/common/PageSideMenu.vue";
 
 export default {
-    components: {
-        Page,
-        KnimeLogo,
-        PageHeader,
-        PageSideMenu
-    },
+  components: {
+    Page,
+    KnimeLogo,
+    PageHeader,
+    PageSideMenu,
+  },
 
-    data() {
-        return {
-            sidebarItems: [
-                {
-                    route: getPathFromRouteName(APP_ROUTES.EntryPage.GetStartedPage),
-                    text: 'Get started',
-                    icon: RocketIcon
-                }
-                // TODO: NXT-1461 enable again when we have a dedicated stand alone SpaceSelection page again
-                // {
-                //    route: getPathFromRouteName(APP_ROUTES.EntryPage.SpaceSelectionPage),
-                //    text: 'Spaces',
-                //    icon: CubeIcon
-                // }
-            ]
-        };
-    },
-
-    computed: {
-        pageTitle() {
-            const titles = {
-                [APP_ROUTES.EntryPage.GetStartedPage]: 'Get started with KNIME Analytics Platform 5 – Early Access',
-                [APP_ROUTES.EntryPage.SpaceSelectionPage]: 'Spaces'
-            };
-
-            return titles[this.$route.name] || '';
+  data() {
+    return {
+      sidebarItems: [
+        {
+          route: getPathFromRouteName(APP_ROUTES.EntryPage.GetStartedPage),
+          text: "Get started",
+          icon: RocketIcon,
         },
-        showSidebar() {
-            return this.sidebarItems.length > 1;
-        }
-    }
+        // TODO: NXT-1461 enable again when we have a dedicated stand alone SpaceSelection page again
+        // {
+        //    route: getPathFromRouteName(APP_ROUTES.EntryPage.SpaceSelectionPage),
+        //    text: 'Spaces',
+        //    icon: CubeIcon
+        // }
+      ],
+    };
+  },
+
+  computed: {
+    pageTitle() {
+      const titles = {
+        [APP_ROUTES.EntryPage.GetStartedPage]:
+          "Get started with KNIME Analytics Platform 5 – Early Access",
+        [APP_ROUTES.EntryPage.SpaceSelectionPage]: "Spaces",
+      };
+
+      return titles[this.$route.name] || "";
+    },
+    showSidebar() {
+      return this.sidebarItems.length > 1;
+    },
+  },
 };
 </script>
 
 <template>
   <Page with-background>
-    <PageHeader
-      :left-offset="3"
-      :title="pageTitle"
-    />
+    <PageHeader :left-offset="3" :title="pageTitle" />
 
     <section class="main-content-wrapper">
       <div class="grid-container">
         <div class="grid-item-2 sidebar">
-          <PageSideMenu
-            v-if="showSidebar"
-            :items="sidebarItems"
-          />
-          <div
-            v-else
-            class="logo"
-          >
+          <PageSideMenu v-if="showSidebar" :items="sidebarItems" />
+          <div v-else class="logo">
             <KnimeLogo />
           </div>
         </div>

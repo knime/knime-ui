@@ -1,33 +1,33 @@
 <script>
-import Modal from 'webapps-common/ui/components/Modal.vue';
-import Button from 'webapps-common/ui/components/Button.vue';
-import OpenSourceCredits from 'webapps-common/ui/components/OpenSourceCredits.vue';
+import Modal from "webapps-common/ui/components/Modal.vue";
+import Button from "webapps-common/ui/components/Button.vue";
+import OpenSourceCredits from "webapps-common/ui/components/OpenSourceCredits.vue";
 
 export default {
-    components: {
-        Modal,
-        Button,
-        OpenSourceCredits
+  components: {
+    Modal,
+    Button,
+    OpenSourceCredits,
+  },
+  props: {
+    withBorder: {
+      type: Boolean,
+      default: false,
     },
-    props: {
-        withBorder: {
-            type: Boolean,
-            default: false
-        },
-        primary: {
-            type: Boolean,
-            default: true
-        },
-        textBold: {
-            type: Boolean,
-            default: false
-        }
+    primary: {
+      type: Boolean,
+      default: true,
     },
-    data() {
-        return {
-            modalActive: false
-        };
-    }
+    textBold: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  data() {
+    return {
+      modalActive: false,
+    };
+  },
 };
 </script>
 
@@ -71,4 +71,3 @@ export default {
   }
 }
 </style>
-

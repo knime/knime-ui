@@ -5,38 +5,38 @@
  * For use inside the Node component.
  */
 export default {
-    props: {
-        /**
-         * executionInfo as sent by the backend.
-         * For streaming components, this contains { jobManager: { type: 'streaming' }}.
-         * For nodes contained in a streaming component, it contains { streamable: <Boolean> }
-         * */
-        executionInfo: {
-            type: Object,
-            required: true
-        },
-        /**
-         * Node type for determining the background color
-         * */
-        backgroundType: {
-            type: String,
-            default: null
-        }
+  props: {
+    /**
+     * executionInfo as sent by the backend.
+     * For streaming components, this contains { jobManager: { type: 'streaming' }}.
+     * For nodes contained in a streaming component, it contains { streamable: <Boolean> }
+     * */
+    executionInfo: {
+      type: Object,
+      required: true,
     },
-    computed: {
-        backgroundColor() {
-            return this.$colors.nodeBackgroundColors[this.backgroundType];
-        },
-        /**
-         * The streaming decorator should be set either if the node is capable of streaming,
-         * or if it is the streaming component itself, hence the type of the jobManager is set to streaming
-         * @return {boolean} if true the node supports streaming
-         */
-        streamable() {
-            let { streamable, jobManager } = this.executionInfo;
-            return streamable || (jobManager?.type === 'streaming');
-        }
-    }
+    /**
+     * Node type for determining the background color
+     * */
+    backgroundType: {
+      type: String,
+      default: null,
+    },
+  },
+  computed: {
+    backgroundColor() {
+      return this.$colors.nodeBackgroundColors[this.backgroundType];
+    },
+    /**
+     * The streaming decorator should be set either if the node is capable of streaming,
+     * or if it is the streaming component itself, hence the type of the jobManager is set to streaming
+     * @return {boolean} if true the node supports streaming
+     */
+    streamable() {
+      let { streamable, jobManager } = this.executionInfo;
+      return streamable || jobManager?.type === "streaming";
+    },
+  },
 };
 </script>
 

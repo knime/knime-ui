@@ -1,18 +1,22 @@
 // eslint-disable-next-line object-curly-newline
 import type {
-    PortType,
-    DynamicPortGroupDescription,
-    NativeNodeDescription
-    // eslint-disable-next-line object-curly-newline
-} from '@/api/gateway-api/generated-api';
-import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
+  PortType,
+  DynamicPortGroupDescription,
+  NativeNodeDescription,
+  // eslint-disable-next-line object-curly-newline
+} from "@/api/gateway-api/generated-api";
+import type { AvailablePortTypes } from "@/api/gateway-api/custom-types";
 
-type FullPortType = PortType & { typeId: string; type?: string; description: string; }
+type FullPortType = PortType & {
+  typeId: string;
+  type?: string;
+  description: string;
+};
 type PortGroupDescription = {
-    groupName: string;
-    groupDescription: string;
-    types: Array<FullPortType & { typeName: string; }>
-}
+  groupName: string;
+  groupDescription: string;
+  types: Array<FullPortType & { typeName: string }>;
+};
 
 /**
  * Maps a port `typeId` string or a object with a `typeId` property to a port object with all the properties of the
@@ -25,34 +29,31 @@ type PortGroupDescription = {
  * with a `typeId` property. This mapping function will return the whole port object with information about color, kind,
  * etc
  */
-export const toPortObject = (
-    availablePortTypes: AvailablePortTypes,
-    includeType = true
-) => (
-    input: string | { typeId: string }
-): FullPortType => {
-    const isStringInput = typeof input === 'string';
+export const toPortObject =
+  (availablePortTypes: AvailablePortTypes, includeType = true) =>
+  (input: string | { typeId: string }): FullPortType => {
+    const isStringInput = typeof input === "string";
     const fullPortObject = isStringInput
-        ? availablePortTypes[input]
-        : availablePortTypes[input.typeId];
+      ? availablePortTypes[input]
+      : availablePortTypes[input.typeId];
 
     const result: FullPortType = {
-        ...fullPortObject,
-        description: 'No description available',
-        typeId: isStringInput ? input : input?.typeId
+      ...fullPortObject,
+      description: "No description available",
+      typeId: isStringInput ? input : input?.typeId,
     };
 
     return includeType
-        ? {
-            ...result,
-            // NodePreview component in webapps-common uses a `type` prop instead of kind.
-            // See: WorkflowMetadata.vue or NodeTemplate.vue
-            type: fullPortObject.kind,
-            // eslint-disable-next-line @typescript-eslint/no-extra-parens
-            ...(typeof input === 'string' ? {} : input)
+      ? {
+          ...result,
+          // NodePreview component in webapps-common uses a `type` prop instead of kind.
+          // See: WorkflowMetadata.vue or NodeTemplate.vue
+          type: fullPortObject.kind,
+          // eslint-disable-next-line @typescript-eslint/no-extra-parens
+          ...(typeof input === "string" ? {} : input),
         }
-        : result;
-};
+      : result;
+  };
 
 /**
  * Processes a dynamic port group description so it can be rendered.
@@ -60,28 +61,28 @@ export const toPortObject = (
  * @returns {Function} A function that maps the raw port group description as it was received to the format needed to
  * to render it.
  */
-const toPortGroupDescription = (
-    availablePortTypes: AvailablePortTypes
-) => (portGroupDescription: DynamicPortGroupDescription): PortGroupDescription => {
+const toPortGroupDescription =
+  (availablePortTypes: AvailablePortTypes) =>
+  (portGroupDescription: DynamicPortGroupDescription): PortGroupDescription => {
     const {
-        identifier,
-        description = 'No description available',
-        supportedPortTypes = []
+      identifier,
+      description = "No description available",
+      supportedPortTypes = [],
     } = portGroupDescription;
 
-    const types: PortGroupDescription['types'] = supportedPortTypes
-        .map(toPortObject(availablePortTypes))
-        .map(fullPortType => ({
-            ...fullPortType,
-            typeName: fullPortType.name
-        }));
+    const types: PortGroupDescription["types"] = supportedPortTypes
+      .map(toPortObject(availablePortTypes))
+      .map((fullPortType) => ({
+        ...fullPortType,
+        typeName: fullPortType.name,
+      }));
 
     return {
-        groupName: identifier,
-        groupDescription: description,
-        types
+      groupName: identifier,
+      groupDescription: description,
+      types,
     };
-};
+  };
 
 /**
  * Maps over a collection of ports to add information about their color and kind, extracted from the
@@ -91,8 +92,8 @@ const toPortGroupDescription = (
  * @returns {Array} ports
  */
 export const mapPortTypes = (
-    ports: Array<string | { typeId: string }> = [],
-    availablePortTypes: AvailablePortTypes = {}
+  ports: Array<string | { typeId: string }> = [],
+  availablePortTypes: AvailablePortTypes = {}
 ) => ports.map(toPortObject(availablePortTypes));
 
 /**
@@ -100,19 +101,24 @@ export const mapPortTypes = (
  * @param {Object} availablePortTypes Dictionary of all available port types and their information
  * @returns {Function} mapping function that takes a node to which all the port information will be added
  */
-export const toNodeWithFullPorts = (availablePortTypes: AvailablePortTypes) => (node: NativeNodeDescription) => {
+export const toNodeWithFullPorts =
+  (availablePortTypes: AvailablePortTypes) => (node: NativeNodeDescription) => {
     const {
-        inPorts = [],
-        outPorts = [],
-        dynamicInPortGroupDescriptions = [],
-        dynamicOutPortGroupDescriptions = []
+      inPorts = [],
+      outPorts = [],
+      dynamicInPortGroupDescriptions = [],
+      dynamicOutPortGroupDescriptions = [],
     } = node;
 
     return {
-        ...node,
-        inPorts: inPorts.map(toPortObject(availablePortTypes)),
-        outPorts: outPorts.map(toPortObject(availablePortTypes)),
-        dynInPorts: dynamicInPortGroupDescriptions.map(toPortGroupDescription(availablePortTypes)),
-        dynOutPorts: dynamicOutPortGroupDescriptions.map(toPortGroupDescription(availablePortTypes))
+      ...node,
+      inPorts: inPorts.map(toPortObject(availablePortTypes)),
+      outPorts: outPorts.map(toPortObject(availablePortTypes)),
+      dynInPorts: dynamicInPortGroupDescriptions.map(
+        toPortGroupDescription(availablePortTypes)
+      ),
+      dynOutPorts: dynamicOutPortGroupDescriptions.map(
+        toPortGroupDescription(availablePortTypes)
+      ),
     };
-};
+  };

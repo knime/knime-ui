@@ -1,50 +1,46 @@
 <script>
-import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
-import LensIcon from 'webapps-common/ui/assets/img/icons/lens.svg';
+import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import LensIcon from "webapps-common/ui/assets/img/icons/lens.svg";
 
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
 /**
  * Search input box for searches of nodes in the NodeRepository view of the sidebar.
  * Implements the v-model pattern.
  */
 export default {
-    components: {
-        FunctionButton,
-        CloseIcon,
-        LensIcon
+  components: {
+    FunctionButton,
+    CloseIcon,
+    LensIcon,
+  },
+  props: {
+    modelValue: {
+      type: String,
+      default: "",
     },
-    props: {
-        modelValue: {
-            type: String,
-            default: ''
-        },
-        placeholder: {
-            type: String,
-            default: null
-        }
+    placeholder: {
+      type: String,
+      default: null,
     },
-    emits: ['clear', 'update:modelValue'],
-    expose: ['focus'],
-    methods: {
-        clearSearch() {
-            this.$emit('clear');
-            this.$emit('update:modelValue', '');
-            this.$refs.searchInput.focus();
-        },
-        focus() {
-            this.$refs.searchInput.focus();
-        }
-    }
-
+  },
+  emits: ["clear", "update:modelValue"],
+  expose: ["focus"],
+  methods: {
+    clearSearch() {
+      this.$emit("clear");
+      this.$emit("update:modelValue", "");
+      this.$refs.searchInput.focus();
+    },
+    focus() {
+      this.$refs.searchInput.focus();
+    },
+  },
 };
 </script>
 
 <template>
-  <div
-    id="node-search"
-    class="node-search"
-  >
+  <div id="node-search" class="node-search">
     <div class="lens-icon">
       <LensIcon />
     </div>
@@ -54,7 +50,7 @@ export default {
       :placeholder="placeholder"
       type="text"
       @input="$emit('update:modelValue', $event.target.value)"
-    >
+    />
     <FunctionButton
       class="clear-search"
       data-test-clear-search

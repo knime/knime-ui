@@ -1,4 +1,10 @@
-import type { ComponentNode, MetaNode, NativeNode, PortGroup, PortType } from './generated-api';
+import type {
+  ComponentNode,
+  MetaNode,
+  NativeNode,
+  PortGroup,
+  PortType,
+} from "./generated-api";
 
 /**
  * Dictionary of all available port types that are installed in the AP for the use.
@@ -15,10 +21,10 @@ export type NodePortGroups = Record<string, PortGroup>;
 
 // TODO: UIEXT-932 remove types once they can be generated automatically
 export type ResourceInfo = {
-    id: string;
-    type: 'VUE_COMPONENT_LIB' | 'VUE_COMPONENT_REFERENCE';
-}
+  id: string;
+  type: "VUE_COMPONENT_LIB" | "VUE_COMPONENT_REFERENCE";
+};
 export type ViewConfig = {
-    initialData: string;
-    resourceInfo: ResourceInfo;
-}
+  initialData: string;
+  resourceInfo: ResourceInfo;
+};

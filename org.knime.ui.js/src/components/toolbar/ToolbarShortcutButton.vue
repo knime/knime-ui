@@ -1,28 +1,28 @@
 <script>
-import ToolbarButton from '@/components/common/ToolbarButton.vue';
+import ToolbarButton from "@/components/common/ToolbarButton.vue";
 
 export default {
-    components: {
-        ToolbarButton
+  components: {
+    ToolbarButton,
+  },
+  props: {
+    name: {
+      type: String,
+      required: true,
     },
-    props: {
-        name: {
-            type: String,
-            required: true
-        }
+  },
+  computed: {
+    shortcut() {
+      return this.$shortcuts.get(this.name);
     },
-    computed: {
-        shortcut() {
-            return this.$shortcuts.get(this.name);
-        },
-        title() {
-            const { title, hotkeyText } = this.shortcut;
-            return [title, hotkeyText].filter(Boolean).join(' – ');
-        },
-        enabled() {
-            return this.$shortcuts.isEnabled(this.name);
-        }
-    }
+    title() {
+      const { title, hotkeyText } = this.shortcut;
+      return [title, hotkeyText].filter(Boolean).join(" – ");
+    },
+    enabled() {
+      return this.$shortcuts.isEnabled(this.name);
+    },
+  },
 };
 </script>
 
@@ -34,10 +34,7 @@ export default {
     :title="title"
     @click="$shortcuts.dispatch(name)"
   >
-    <Component
-      :is="shortcut.icon"
-      v-if="shortcut.icon"
-    />
+    <Component :is="shortcut.icon" v-if="shortcut.icon" />
     {{ shortcut.text }}
   </ToolbarButton>
 </template>

@@ -1,26 +1,27 @@
-import { createStore } from 'vuex';
+import { createStore } from "vuex";
 
 const mockVuexStore = (moduleInput) => {
-    let modules = Object.entries(moduleInput).reduce((modules, [moduleName, moduleConfig]) => {
-        if (moduleName !== 'index') {
-            modules[moduleName] = { ...moduleConfig, namespaced: true };
-        }
-        return modules;
-    }, {});
+  let modules = Object.entries(moduleInput).reduce(
+    (modules, [moduleName, moduleConfig]) => {
+      if (moduleName !== "index") {
+        modules[moduleName] = { ...moduleConfig, namespaced: true };
+      }
+      return modules;
+    },
+    {}
+  );
 
-    let storeConfig = { modules };
+  let storeConfig = { modules };
 
-    if (moduleInput.index) {
-        Object.assign(storeConfig, moduleInput.index);
-    }
+  if (moduleInput.index) {
+    Object.assign(storeConfig, moduleInput.index);
+  }
 
-    if (typeof storeConfig.state === 'object') {
-        storeConfig.state = () => storeConfig.state;
-    }
+  if (typeof storeConfig.state === "object") {
+    storeConfig.state = () => storeConfig.state;
+  }
 
-    return createStore(storeConfig);
+  return createStore(storeConfig);
 };
 
-export {
-    mockVuexStore
-};
+export { mockVuexStore };

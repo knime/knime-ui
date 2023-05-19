@@ -1,37 +1,32 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 
-import { API } from '@api';
-import DummyNodes from '@/assets/workflow-coach-dummy-nodes.svg';
-import Button from 'webapps-common/ui/components/Button.vue';
+import { API } from "@api";
+import DummyNodes from "@/assets/workflow-coach-dummy-nodes.svg";
+import Button from "webapps-common/ui/components/Button.vue";
 
 export default defineComponent({
-    components: {
-        Button,
-        DummyNodes
+  components: {
+    Button,
+    DummyNodes,
+  },
+  methods: {
+    openWorkflowCoachPreferencePage() {
+      API.desktop.openWorkflowCoachPreferencePage();
     },
-    methods: {
-        openWorkflowCoachPreferencePage() {
-            API.desktop.openWorkflowCoachPreferencePage();
-        }
-    }
+  },
 });
 </script>
 
 <template>
-  <div
-    class="disabled-workflow-coach"
-  >
+  <div class="disabled-workflow-coach">
     <DummyNodes class="dummy-nodes" />
     <span>
-      The <strong>workflow coach</strong> will help you build workflows by suggesting nodes.
-      To activate this function change the settings in the preference page.
+      The <strong>workflow coach</strong> will help you build workflows by
+      suggesting nodes. To activate this function change the settings in the
+      preference page.
     </span>
-    <Button
-      primary
-      class="button"
-      @click="openWorkflowCoachPreferencePage"
-    >
+    <Button primary class="button" @click="openWorkflowCoachPreferencePage">
       Open Preferences
     </Button>
   </div>
@@ -49,7 +44,7 @@ export default defineComponent({
   font-family: "Roboto Condensed", sans-serif;
 
   & .dummy-nodes {
-    margin: 24px 0 ;
+    margin: 24px 0;
     filter: blur(2px);
     align-self: center;
   }

@@ -1,414 +1,435 @@
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex';
-import { API } from '@api';
+import { mapActions, mapGetters, mapState } from "vuex";
+import { API } from "@api";
 
-import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
-import TrashIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
-import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
-import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
-import Modal from 'webapps-common/ui/components/Modal.vue';
-import Button from 'webapps-common/ui/components/Button.vue';
+import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
+import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
+import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
+import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
+import Modal from "webapps-common/ui/components/Modal.vue";
+import Button from "webapps-common/ui/components/Button.vue";
 
-import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
-import ITEM_TYPES from '@/util/spaceItemTypes';
-import { APP_ROUTES } from '@/router/appRoutes';
-import SmartLoader from '@/components/common/SmartLoader.vue';
+import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
+import ITEM_TYPES from "@/util/spaceItemTypes";
+import { APP_ROUTES } from "@/router/appRoutes";
+import SmartLoader from "@/components/common/SmartLoader.vue";
 
-import SpaceExplorerActions from './SpaceExplorerActions.vue';
-import FileExplorer from './FileExplorer/FileExplorer.vue';
+import SpaceExplorerActions from "./SpaceExplorerActions.vue";
+import FileExplorer from "./FileExplorer/FileExplorer.vue";
 
 const ITEM_TYPES_TEXTS = {
-    [ITEM_TYPES.WorkflowGroup]: 'folder',
-    [ITEM_TYPES.Workflow]: 'workflow',
-    [ITEM_TYPES.Component]: 'component',
-    [ITEM_TYPES.Metanode]: 'metanode',
-    [ITEM_TYPES.Data]: 'data file'
+  [ITEM_TYPES.WorkflowGroup]: "folder",
+  [ITEM_TYPES.Workflow]: "workflow",
+  [ITEM_TYPES.Component]: "component",
+  [ITEM_TYPES.Metanode]: "metanode",
+  [ITEM_TYPES.Data]: "data file",
 };
 
 export default {
-    components: {
-        SpaceExplorerActions,
-        FileExplorer,
-        Breadcrumb,
-        SmartLoader,
-        Modal,
-        Button,
-        TrashIcon
+  components: {
+    SpaceExplorerActions,
+    FileExplorer,
+    Breadcrumb,
+    SmartLoader,
+    Modal,
+    Button,
+    TrashIcon,
+  },
+
+  props: {
+    mode: {
+      type: String,
+      default: "normal",
+      validator: (value) => ["normal", "mini"].includes(value),
+    },
+  },
+
+  emits: ["changeSelection", "itemChanged"],
+
+  data() {
+    return {
+      selectedItems: [],
+      isAboveCanvas: false,
+      fileNodeTemplate: null,
+      deleteModal: {
+        deleteModalActive: false,
+        modalMessage: null,
+        items: [],
+      },
+    };
+  },
+
+  computed: {
+    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
+    ...mapState("canvas", ["getScrollContainerElement"]),
+    ...mapState("application", [
+      "openProjects",
+      "fileExtensionToNodeTemplateId",
+    ]),
+    ...mapState("spaces", {
+      activeSpace: (state) => state.activeSpace,
+      activeSpaceProvider: (state) => state.activeSpaceProvider,
+      startItemId: (state) => state.activeSpace?.startItemId,
+      activeWorkflowGroup: (state) => state.activeSpace?.activeWorkflowGroup,
+      spaceId: (state) => state.activeSpace?.spaceId,
+      isLoading: (state) => state.isLoading,
+    }),
+    ...mapState("nodeRepository", ["nodesPerCategory"]),
+    ...mapGetters("spaces", [
+      "openedWorkflowItems",
+      "openedFolderItems",
+      "pathToItemId",
+      "hasActiveHubSession",
+      "activeSpaceInfo",
+    ]),
+
+    fileExplorerItems() {
+      return this.activeWorkflowGroup.items.map((item) => ({
+        ...item,
+        displayOpenIndicator:
+          this.openedWorkflowItems.includes(item.id) ||
+          this.openedFolderItems.includes(item.id),
+
+        canBeDeleted: !this.openedFolderItems.includes(item.id),
+      }));
     },
 
-    props: {
-        mode: {
-            type: String,
-            default: 'normal',
-            validator: (value) => ['normal', 'mini'].includes(value)
-        }
+    isLocal() {
+      return this.spaceId === "local";
     },
 
-    emits: ['changeSelection', 'itemChanged'],
-
-    data() {
+    homeBreadcrumbItem() {
+      if (this.mode !== "mini") {
         return {
-            selectedItems: [],
-            isAboveCanvas: false,
-            fileNodeTemplate: null,
-            deleteModal: {
-                deleteModalActive: false,
-                modalMessage: null,
-                items: []
-            }
+          text: "Home",
+          id: "root",
         };
+      }
+
+      // use icons for mini mode
+      let icon = ComputerDesktopIcon;
+      if (!this.activeSpaceInfo.local) {
+        icon = this.activeSpaceInfo.private ? PrivateSpaceIcon : CubeIcon;
+      }
+      return {
+        title: this.activeSpaceInfo.name,
+        icon,
+        id: "root",
+      };
     },
 
-    computed: {
-        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapState('canvas', ['getScrollContainerElement']),
-        ...mapState('application', ['openProjects', 'fileExtensionToNodeTemplateId']),
-        ...mapState('spaces', {
-            activeSpace: state => state.activeSpace,
-            activeSpaceProvider: state => state.activeSpaceProvider,
-            startItemId: state => state.activeSpace?.startItemId,
-            activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
-            spaceId: state => state.activeSpace?.spaceId,
-            isLoading: state => state.isLoading
-        }),
-        ...mapState('nodeRepository', ['nodesPerCategory']),
-        ...mapGetters('spaces', [
-            'openedWorkflowItems',
-            'openedFolderItems',
-            'pathToItemId',
-            'hasActiveHubSession',
-            'activeSpaceInfo'
-        ]),
+    breadcrumbItems() {
+      if (!this.activeWorkflowGroup) {
+        return [
+          {
+            ...this.homeBreadcrumbItem,
+            clickable: false,
+          },
+        ];
+      }
 
-        fileExplorerItems() {
-            return this.activeWorkflowGroup.items.map(item => ({
-                ...item,
-                displayOpenIndicator:
-                  this.openedWorkflowItems.includes(item.id) || this.openedFolderItems.includes(item.id),
+      const { path } = this.activeWorkflowGroup;
+      const rootBreadcrumb = {
+        ...this.homeBreadcrumbItem,
+        clickable: path.length > 0,
+      };
+      const lastPathIndex = path.length - 1;
 
-                canBeDeleted: !this.openedFolderItems.includes(item.id)
-            }));
-        },
+      return [rootBreadcrumb].concat(
+        path.map((pathItem, index) => ({
+          text: pathItem.name,
+          id: pathItem.id,
+          clickable: index !== lastPathIndex,
+        }))
+      );
+    },
 
-        isLocal() {
-            return this.spaceId === 'local';
-        },
+    fullPath() {
+      if (!this.activeWorkflowGroup) {
+        return "";
+      }
+      const { path } = this.activeWorkflowGroup;
+      return ["home"].concat(path.map(({ name }) => name)).join("/");
+    },
 
-        homeBreadcrumbItem() {
-            if (this.mode !== 'mini') {
-                return {
-                    text: 'Home',
-                    id: 'root'
-                };
-            }
+    explorerDisabledActions() {
+      return {
+        uploadToHub:
+          !this.hasActiveHubSession || this.selectedItems.length === 0,
+        downloadToLocalSpace: this.isLocal || this.selectedItems.length === 0,
+      };
+    },
+  },
 
-            // use icons for mini mode
-            let icon = ComputerDesktopIcon;
-            if (!this.activeSpaceInfo.local) {
-                icon = this.activeSpaceInfo.private ? PrivateSpaceIcon : CubeIcon;
-            }
-            return {
-                title: this.activeSpaceInfo.name,
-                icon,
-                id: 'root'
-            };
-        },
-
-        breadcrumbItems() {
-            if (!this.activeWorkflowGroup) {
-                return [{
-                    ...this.homeBreadcrumbItem,
-                    clickable: false
-                }];
-            }
-
-            const { path } = this.activeWorkflowGroup;
-            const rootBreadcrumb = {
-                ...this.homeBreadcrumbItem,
-                clickable: path.length > 0
-            };
-            const lastPathIndex = path.length - 1;
-
-            return [rootBreadcrumb].concat(
-                path.map((pathItem, index) => ({
-                    text: pathItem.name,
-                    id: pathItem.id,
-                    clickable: index !== lastPathIndex
-                }))
-            );
-        },
-
-        fullPath() {
-            if (!this.activeWorkflowGroup) {
-                return '';
-            }
-            const { path } = this.activeWorkflowGroup;
-            return ['home'].concat(path.map(({ name }) => name)).join('/');
-        },
-
-        explorerDisabledActions() {
-            return {
-                uploadToHub: !this.hasActiveHubSession || this.selectedItems.length === 0,
-                downloadToLocalSpace: this.isLocal || this.selectedItems.length === 0
-            };
+  watch: {
+    activeWorkflowGroup: {
+      async handler(newData, oldData) {
+        if (newData === null && oldData !== null) {
+          await this.fetchWorkflowGroupContent(this.startItemId || "root");
         }
+      },
+      immediate: true,
+    },
+  },
+
+  methods: {
+    ...mapActions("nodeRepository", ["getNodeTemplate"]),
+    ...mapActions("application", ["forceCloseProjects"]),
+    async fetchWorkflowGroupContent(itemId) {
+      await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
+        itemId,
+      });
     },
 
-    watch: {
-        activeWorkflowGroup: {
-            async handler(newData, oldData) {
-                if (newData === null && oldData !== null) {
-                    await this.fetchWorkflowGroupContent(this.startItemId || 'root');
-                }
-            },
-            immediate: true
-        }
+    onSelectionChange(selectedItems) {
+      this.selectedItems = selectedItems;
+      this.$emit("changeSelection", selectedItems);
     },
 
-    methods: {
-        ...mapActions('nodeRepository', ['getNodeTemplate']),
-        ...mapActions('application', ['forceCloseProjects']),
-        async fetchWorkflowGroupContent(itemId) {
-            await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
-        },
+    async onChangeDirectory(pathId) {
+      await this.$store.dispatch("spaces/changeDirectory", { pathId });
 
-        onSelectionChange(selectedItems) {
-            this.selectedItems = selectedItems;
-            this.$emit('changeSelection', selectedItems);
-        },
+      this.$emit("itemChanged", this.pathToItemId(pathId));
+    },
 
-        async onChangeDirectory(pathId) {
-            await this.$store.dispatch('spaces/changeDirectory', { pathId });
+    async onOpenFile({ id }) {
+      await this.$store.dispatch("spaces/openWorkflow", {
+        workflowItemId: id,
+        // send in router, so it can be used to navigate to an already open workflow
+        $router: this.$router,
+      });
+    },
 
-            this.$emit('itemChanged', this.pathToItemId(pathId));
-        },
+    onRenameFile({ itemId, newName }) {
+      this.$store
+        .dispatch("spaces/renameItem", { itemId, newName })
+        .catch(() => {
+          // TODO replace with a better notification alternative when available
+          window.alert(
+            `Could not rename the selected item with the new name "${newName}". Check for duplicates.`
+          );
+        });
+    },
 
-        async onOpenFile({ id }) {
-            await this.$store.dispatch('spaces/openWorkflow', {
-                workflowItemId: id,
-                // send in router, so it can be used to navigate to an already open workflow
-                $router: this.$router
-            });
-        },
+    onBreadcrumbClick({ id }) {
+      this.fetchWorkflowGroupContent(id);
+      this.$emit("itemChanged", id);
+    },
 
-        onRenameFile({ itemId, newName }) {
-            this.$store.dispatch('spaces/renameItem', { itemId, newName })
-                .catch(() => {
-                    // TODO replace with a better notification alternative when available
-                    window.alert(
-                        `Could not rename the selected item with the new name "${newName}". Check for duplicates.`
-                    );
-                });
-        },
+    onDeleteItems({ items }) {
+      const itemNameList = items
+        .map((item) => `${ITEM_TYPES_TEXTS[item.type]} “${item.name}”`)
+        .join(", ");
 
-        onBreadcrumbClick({ id }) {
-            this.fetchWorkflowGroupContent(id);
-            this.$emit('itemChanged', id);
-        },
+      this.deleteModal.modalMessage = `Do you want to delete the ${itemNameList}?`;
 
-        onDeleteItems({ items }) {
-            const itemNameList = items
-                .map((item) => `${ITEM_TYPES_TEXTS[item.type]} “${item.name}”`)
-                .join(', ');
+      this.deleteModal.items = items;
+      this.deleteModal.deleteModalActive = true;
+    },
 
-            this.deleteModal.modalMessage = `Do you want to delete the ${itemNameList}?`;
+    async deleteItems() {
+      this.deleteModal.deleteModalActive = false;
 
-            this.deleteModal.items = items;
-            this.deleteModal.deleteModalActive = true;
-        },
+      const itemIds = this.deleteModal.items.map((item) => item.id);
+      const relevantProjects = this.openProjects.filter(({ origin }) =>
+        itemIds.includes(origin.itemId)
+      );
+      const projectIds = relevantProjects.map(({ projectId }) => projectId);
+      let nextProjectId;
+      if (projectIds.length) {
+        nextProjectId = await this.forceCloseProjects({ projectIds });
+      }
 
-        async deleteItems() {
-            this.deleteModal.deleteModalActive = false;
+      await this.$store.dispatch("spaces/deleteItems", { itemIds });
+      if (nextProjectId) {
+        this.$router.push({
+          name: APP_ROUTES.WorkflowPage,
+          params: { projectId: nextProjectId, workflowId: "root" },
+        });
+      }
+    },
 
-            const itemIds = this.deleteModal.items.map(item => item.id);
-            const relevantProjects = this.openProjects.filter(({ origin }) => itemIds.includes(origin.itemId));
-            const projectIds = relevantProjects.map(({ projectId }) => projectId);
-            let nextProjectId;
-            if (projectIds.length) {
-                nextProjectId = await this.forceCloseProjects({ projectIds });
-            }
+    /**
+     * @typedef Payload
+     * @property {Array<string>} sourceItems
+     * @property {String} targetItem
+     * @property {(success: boolean) => void} onComplete
+     */
+    /**
+     * @param {Payload} eventPayload
+     * @returns {Void}
+     */
+    onMoveItems({ sourceItems, targetItem, onComplete }) {
+      const openedWorkflows = this.openProjects.filter((workflow) =>
+        sourceItems.includes(workflow.origin.itemId)
+      );
+      const isInsideFolder = this.openProjects.filter((project) =>
+        project.origin.ancestorItemIds.some((ancestorId) =>
+          sourceItems.includes(ancestorId)
+        )
+      );
 
-            await this.$store.dispatch('spaces/deleteItems', { itemIds });
-            if (nextProjectId) {
-                this.$router.push({
-                    name: APP_ROUTES.WorkflowPage,
-                    params: { projectId: nextProjectId, workflowId: 'root' }
-                });
-            }
-        },
+      if (openedWorkflows.length || isInsideFolder.length) {
+        const openedWorkflowsNames = openedWorkflows.map(
+          (workflow) => workflow.name
+        );
+        const isInsideFolderNames = isInsideFolder.map(
+          (workflow) => workflow.name
+        );
+        const extraSpace =
+          openedWorkflows.length && isInsideFolder.length ? "\n" : "";
 
-        /**
-         * @typedef Payload
-         * @property {Array<string>} sourceItems
-         * @property {String} targetItem
-         * @property {(success: boolean) => void} onComplete
-        */
-        /**
-         * @param {Payload} eventPayload
-         * @returns {Void}
-         */
-        onMoveItems({ sourceItems, targetItem, onComplete }) {
-            const openedWorkflows = this.openProjects.filter(workflow => sourceItems.includes(workflow.origin.itemId));
-            const isInsideFolder = this.openProjects.filter(
-                (project) => project.origin.ancestorItemIds
-                    .some((ancestorId) => sourceItems.includes(ancestorId))
-            );
-
-            if (openedWorkflows.length || isInsideFolder.length) {
-                const openedWorkflowsNames = openedWorkflows.map(workflow => workflow.name);
-                const isInsideFolderNames = isInsideFolder.map(workflow => workflow.name);
-                const extraSpace = openedWorkflows.length && isInsideFolder.length ? '\n' : '';
-
-                alert(`Following workflows are opened:\n
-                 ${openedWorkflowsNames.map(name => `• ${name}`).join('\n') + extraSpace +
-                 isInsideFolderNames.map(name => `• ${name}`).join('\n')}
+        alert(`Following workflows are opened:\n
+                 ${
+                   openedWorkflowsNames.map((name) => `• ${name}`).join("\n") +
+                   extraSpace +
+                   isInsideFolderNames.map((name) => `• ${name}`).join("\n")
+                 }
                 \nTo move your selected items, they have to be closed first`);
 
-                onComplete(false);
+        onComplete(false);
 
-                return;
-            }
+        return;
+      }
 
-            const destWorkflowGroupItemId = this.pathToItemId(targetItem);
-            const collisionStrategy = API.desktop.getNameCollisionStrategy({
-                spaceProviderId: this.activeSpaceProvider.id,
-                spaceId: this.activeSpace.spaceId,
-                itemIds: sourceItems,
-                destinationItemId: destWorkflowGroupItemId
-            });
+      const destWorkflowGroupItemId = this.pathToItemId(targetItem);
+      const collisionStrategy = API.desktop.getNameCollisionStrategy({
+        spaceProviderId: this.activeSpaceProvider.id,
+        spaceId: this.activeSpace.spaceId,
+        itemIds: sourceItems,
+        destinationItemId: destWorkflowGroupItemId,
+      });
 
-            if (collisionStrategy === 'CANCEL') {
-                onComplete(false);
+      if (collisionStrategy === "CANCEL") {
+        onComplete(false);
 
-                return;
-            }
+        return;
+      }
 
-            try {
-                this.$store.dispatch(
-                    'spaces/moveItems',
-                    { itemIds: sourceItems, destWorkflowGroupItemId, collisionStrategy }
-                );
+      try {
+        this.$store.dispatch("spaces/moveItems", {
+          itemIds: sourceItems,
+          destWorkflowGroupItemId,
+          collisionStrategy,
+        });
 
-                onComplete(true);
-            } catch (error) {
-                consola.error(`There was a problem moving the items`, { error });
-                onComplete(false);
-            }
-        },
+        onComplete(true);
+      } catch (error) {
+        consola.error("There was a problem moving the items", { error });
+        onComplete(false);
+      }
+    },
 
-        /**
-         * @typedef Payload
-         * @property {MouseEvent} event
-         * @property {item} sourceItem
-         * @property {isAboveCanvas: boolean, nodeTemplate: object) => void} onUpdate
-        */
-        /**
-         * @param {Payload} eventPayload
-         * @returns {Void}
-         */
-        async onDrag({ event, item, onUpdate }) {
-            const nodeTemplateId = this.getNodeTemplateId(item);
-            if (!nodeTemplateId) {
-                return;
-            }
+    /**
+     * @typedef Payload
+     * @property {MouseEvent} event
+     * @property {item} sourceItem
+     * @property {isAboveCanvas: boolean, nodeTemplate: object) => void} onUpdate
+     */
+    /**
+     * @param {Payload} eventPayload
+     * @returns {Void}
+     */
+    async onDrag({ event, item, onUpdate }) {
+      const nodeTemplateId = this.getNodeTemplateId(item);
+      if (!nodeTemplateId) {
+        return;
+      }
 
-            // check if item is above canvas
-            const screenX = event.clientX - this.$shapes.nodeSize / 2;
-            const screenY = event.clientY - this.$shapes.nodeSize / 2;
+      // check if item is above canvas
+      const screenX = event.clientX - this.$shapes.nodeSize / 2;
+      const screenY = event.clientY - this.$shapes.nodeSize / 2;
 
-            const el = document.elementFromPoint(screenX, screenY);
+      const el = document.elementFromPoint(screenX, screenY);
 
-            const kanvas = this.getScrollContainerElement();
+      const kanvas = this.getScrollContainerElement();
 
-            if (!this.nodeTemplate) {
-                this.nodeTemplate = await this.getNodeTemplate(nodeTemplateId);
-            }
+      if (!this.nodeTemplate) {
+        this.nodeTemplate = await this.getNodeTemplate(nodeTemplateId);
+      }
 
-            if (this.isAboveCanvas !== kanvas.contains(el) && el) {
-                this.isAboveCanvas = kanvas.contains(el);
-                onUpdate(this.isAboveCanvas, this.nodeTemplate);
-            }
-        },
+      if (this.isAboveCanvas !== kanvas.contains(el) && el) {
+        this.isAboveCanvas = kanvas.contains(el);
+        onUpdate(this.isAboveCanvas, this.nodeTemplate);
+      }
+    },
 
-        /**
-         * @typedef Payload
-         * @property {MouseEvent} event
-         * @property {{ id: string }} sourceItem
-         * @property {(success: boolean) => void} onComplete
-        */
-        /**
-         * @param {Payload} eventPayload
-         * @returns {Void}
-         */
-        async onDragEnd({ event, sourceItem, onComplete }) {
-            this.nodeTemplate = null;
+    /**
+     * @typedef Payload
+     * @property {MouseEvent} event
+     * @property {{ id: string }} sourceItem
+     * @property {(success: boolean) => void} onComplete
+     */
+    /**
+     * @param {Payload} eventPayload
+     * @returns {Void}
+     */
+    async onDragEnd({ event, sourceItem, onComplete }) {
+      this.nodeTemplate = null;
 
-            const screenX = event.clientX - this.$shapes.nodeSize / 2;
-            const screenY = event.clientY - this.$shapes.nodeSize / 2;
+      const screenX = event.clientX - this.$shapes.nodeSize / 2;
+      const screenY = event.clientY - this.$shapes.nodeSize / 2;
 
-            const el = document.elementFromPoint(screenX, screenY);
+      const el = document.elementFromPoint(screenX, screenY);
 
-            // skip behavior when not on the workflow
-            if (this.$route.name !== APP_ROUTES.WorkflowPage) {
-                onComplete(false);
-                return;
-            }
+      // skip behavior when not on the workflow
+      if (this.$route.name !== APP_ROUTES.WorkflowPage) {
+        onComplete(false);
+        return;
+      }
 
-            const kanvas = this.getScrollContainerElement();
+      const kanvas = this.getScrollContainerElement();
 
-            if (!kanvas.contains(el)) {
-                onComplete(false);
-                return;
-            }
+      if (!kanvas.contains(el)) {
+        onComplete(false);
+        return;
+      }
 
-            const nodeTemplateId = this.getNodeTemplateId(sourceItem);
-            if (!nodeTemplateId) {
-                onComplete(false);
-                return;
-            }
+      const nodeTemplateId = this.getNodeTemplateId(sourceItem);
+      if (!nodeTemplateId) {
+        onComplete(false);
+        return;
+      }
 
-            try {
-                const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
-                await this.$store.dispatch('workflow/addNode', {
-                    position: { x, y },
-                    spaceItemReference: {
-                        itemId: sourceItem.id,
-                        providerId: this.activeSpaceProvider.id,
-                        spaceId: this.activeSpace.spaceId
-                    },
-                    nodeFactory: {
-                        className: nodeTemplateId
-                    }
-                });
-                onComplete(true);
-            } catch (error) {
-                onComplete(false);
-                consola.error({ message: 'Error adding node via file to workflow', error });
-                throw error;
-            }
-        },
+      try {
+        const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
+        await this.$store.dispatch("workflow/addNode", {
+          position: { x, y },
+          spaceItemReference: {
+            itemId: sourceItem.id,
+            providerId: this.activeSpaceProvider.id,
+            spaceId: this.activeSpace.spaceId,
+          },
+          nodeFactory: {
+            className: nodeTemplateId,
+          },
+        });
+        onComplete(true);
+      } catch (error) {
+        onComplete(false);
+        consola.error({
+          message: "Error adding node via file to workflow",
+          error,
+        });
+        throw error;
+      }
+    },
 
-        getNodeTemplateId(sourceItem) {
-            const sourceFileExtension = Object
-                .keys(this.fileExtensionToNodeTemplateId)
-                .find(extension => sourceItem.name.endsWith(extension));
+    getNodeTemplateId(sourceItem) {
+      const sourceFileExtension = Object.keys(
+        this.fileExtensionToNodeTemplateId
+      ).find((extension) => sourceItem.name.endsWith(extension));
 
-            return this.fileExtensionToNodeTemplateId[sourceFileExtension];
-        }
-    }
+      return this.fileExtensionToNodeTemplateId[sourceFileExtension];
+    },
+  },
 };
 </script>
 
 <template>
-  <div
-    :class="mode"
-    class="space-explorer"
-  >
+  <div :class="mode" class="space-explorer">
     <div class="breadcrumb-wrapper">
-      <Breadcrumb
-        :items="breadcrumbItems"
-        @click-item="onBreadcrumbClick"
-      />
+      <Breadcrumb :items="breadcrumbItems" @click-item="onBreadcrumbClick" />
 
       <SpaceExplorerActions
         v-if="mode === 'mini'"
@@ -416,12 +437,30 @@ export default {
         :is-local="isLocal"
         :disabled-actions="explorerDisabledActions"
         :has-active-hub-session="hasActiveHubSession"
-        @action:create-workflow="$store.commit('spaces/setIsCreateWorkflowModalOpen', true)"
+        @action:create-workflow="
+          $store.commit('spaces/setIsCreateWorkflowModalOpen', true)
+        "
         @action:create-folder="$store.dispatch('spaces/createFolder')"
-        @action:import-workflow="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'WORKFLOW' })"
-        @action:import-files="$store.dispatch('spaces/importToWorkflowGroup', { importType: 'FILES' })"
-        @action:upload-to-hub="$store.dispatch('spaces/copyBetweenSpaces', { itemIds: selectedItems })"
-        @action:download-to-local-space="$store.dispatch('spaces/copyBetweenSpaces', { itemIds: selectedItems })"
+        @action:import-workflow="
+          $store.dispatch('spaces/importToWorkflowGroup', {
+            importType: 'WORKFLOW',
+          })
+        "
+        @action:import-files="
+          $store.dispatch('spaces/importToWorkflowGroup', {
+            importType: 'FILES',
+          })
+        "
+        @action:upload-to-hub="
+          $store.dispatch('spaces/copyBetweenSpaces', {
+            itemIds: selectedItems,
+          })
+        "
+        @action:download-to-local-space="
+          $store.dispatch('spaces/copyBetweenSpaces', {
+            itemIds: selectedItems,
+          })
+        "
       />
     </div>
 
@@ -451,7 +490,9 @@ export default {
     </SmartLoader>
     <div>
       <Modal
-        :active="deleteModal.deleteModalActive && Boolean(deleteModal.modalMessage)"
+        :active="
+          deleteModal.deleteModalActive && Boolean(deleteModal.modalMessage)
+        "
         title="Delete"
         style-type="info"
         @cancel="deleteModal.deleteModalActive = false"
@@ -459,18 +500,10 @@ export default {
         <template #icon><TrashIcon /></template>
         <template #confirmation>{{ deleteModal.modalMessage }}</template>
         <template #controls>
-          <Button
-            with-border
-            @click="deleteModal.deleteModalActive = false"
-          >
+          <Button with-border @click="deleteModal.deleteModalActive = false">
             Cancel
           </Button>
-          <Button
-            primary
-            @click="deleteItems"
-          >
-            Ok
-          </Button>
+          <Button primary @click="deleteItems"> Ok </Button>
         </template>
       </Modal>
     </div>

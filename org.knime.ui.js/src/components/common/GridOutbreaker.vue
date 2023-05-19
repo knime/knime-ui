@@ -1,40 +1,38 @@
 <script>
 export default {
-    props: {
-        columns: {
-            type: Number,
-            default: 9,
-            // eslint-disable-next-line no-magic-numbers
-            validator: (value) => value >= 1 && value <= 12
-        },
-
-        color: {
-            type: String,
-            default: 'transparent'
-        }
+  props: {
+    columns: {
+      type: Number,
+      default: 9,
+      // eslint-disable-next-line no-magic-numbers
+      validator: (value) => value >= 1 && value <= 12,
     },
 
-    computed: {
-        styles() {
-            const columns = this.columns;
-            return {
-                /* expect the component to be in grid-item-X, who's width is 100%. To get the column width,
+    color: {
+      type: String,
+      default: "transparent",
+    },
+  },
+
+  computed: {
+    styles() {
+      const columns = this.columns;
+      return {
+        /* expect the component to be in grid-item-X, who's width is 100%. To get the column width,
                 first subtract all spaces in between (N cols => N - 1 spaces) and divide by number of columns. */
-                /* e.g (9 cols): --grid-outbreaker-column-width: calc((100% - (var(--grid-gap-width) * 8)) / 9); */
-                '--grid-outbreaker-column-width':
-                    `calc((100% - (var(--grid-gap-width) * ${columns - 1})) / ${columns})`,
-                '--outbreaker-background-color': this.color
-            };
-        }
-    }
+        /* e.g (9 cols): --grid-outbreaker-column-width: calc((100% - (var(--grid-gap-width) * 8)) / 9); */
+        "--grid-outbreaker-column-width": `calc((100% - (var(--grid-gap-width) * ${
+          columns - 1
+        })) / ${columns})`,
+        "--outbreaker-background-color": this.color,
+      };
+    },
+  },
 };
 </script>
 
 <template>
-  <div
-    class="outbreaker-wrapper"
-    :style="styles"
-  >
+  <div class="outbreaker-wrapper" :style="styles">
     <slot />
   </div>
 </template>
@@ -59,7 +57,9 @@ export default {
     }
 
     /* left background extension then has width: 1 gap width + half column width */
-    --grid-gap-plus-half-column: calc(var(--grid-gap-width) + (var(--grid-outbreaker-column-width) / 2));
+    --grid-gap-plus-half-column: calc(
+      var(--grid-gap-width) + (var(--grid-outbreaker-column-width) / 2)
+    );
 
     &::before {
       width: var(--grid-gap-plus-half-column);

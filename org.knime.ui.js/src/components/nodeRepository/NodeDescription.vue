@@ -1,80 +1,82 @@
 <script>
-import Description from 'webapps-common/ui/components/Description.vue';
-import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.vue';
-import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
+import Description from "webapps-common/ui/components/Description.vue";
+import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
+import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
 /*
  * Base component for the NodeDescriptionOverlay for the nodeRepo, also used in the ContextAwareDescription for nodes
  * of the workflow
  */
 export default {
-    components: {
-        Description,
-        NodeFeatureList,
-        ExternalResourcesList
+  components: {
+    Description,
+    NodeFeatureList,
+    ExternalResourcesList,
+  },
+  props: {
+    selectedNode: {
+      type: Object,
+      default: null,
+      validator: (node) =>
+        node === null ||
+        (typeof node.nodeFactory?.className === "string" &&
+          typeof node.name === "string"),
     },
-    props: {
-        selectedNode: {
-            type: Object,
-            default: null,
-            validator: node => node === null || (typeof node.nodeFactory?.className === 'string' &&
-                typeof node.name === 'string')
+  },
+  data() {
+    return {
+      descriptionData: null,
+    };
+  },
+  computed: {
+    title() {
+      if (!this.selectedNode) {
+        return "";
+      }
+      return this.selectedNode.name;
+    },
+  },
+  watch: {
+    // update description on change of node (if not null which means unselected)
+    selectedNode: {
+      immediate: true,
+      async handler() {
+        // reset data
+        const { selectedNode } = this;
+        if (selectedNode === null) {
+          return;
         }
-    },
-    data() {
-        return {
-            descriptionData: null
-        };
-    },
-    computed: {
-        title() {
-            if (!this.selectedNode) {
-                return '';
-            }
-            return this.selectedNode.name;
+
+        this.descriptionData = await this.$store.dispatch(
+          "nodeRepository/getNodeDescription",
+          { selectedNode }
+        );
+
+        if (window.openUrlInExternalBrowser) {
+          this.redirectLinks(window.openUrlInExternalBrowser);
         }
+      },
     },
-    watch: {
-        // update description on change of node (if not null which means unselected)
-        selectedNode: {
-            immediate: true,
-            async handler() {
-                // reset data
-                const { selectedNode } = this;
-                if (selectedNode === null) {
-                    return;
-                }
+  },
 
-                this.descriptionData = await this.$store.dispatch(
-                    'nodeRepository/getNodeDescription',
-                    { selectedNode }
-                );
+  methods: {
+    async redirectLinks(redirect) {
+      await this.$nextTick();
+      const descriptionEl = document.querySelector("#node-description-html");
 
-                if (window.openUrlInExternalBrowser) {
-                    this.redirectLinks(window.openUrlInExternalBrowser);
-                }
-            }
-        }
+      if (!descriptionEl) {
+        return;
+      }
+
+      descriptionEl.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          redirect(link.href);
+          return false;
+        });
+      });
     },
-
-    methods: {
-        async redirectLinks(redirect) {
-            await this.$nextTick();
-            const descriptionEl = document.querySelector('#node-description-html');
-
-            if (!descriptionEl) {
-                return;
-            }
-
-            descriptionEl.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    redirect(link.href);
-                    return false;
-                });
-            });
-        }
-    }
+  },
 };
 </script>
 
@@ -85,7 +87,7 @@ export default {
         <h2>{{ title }}</h2>
         <slot name="header-action" />
       </div>
-      <hr>
+      <hr />
     </div>
     <div class="node-info">
       <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
@@ -99,10 +101,7 @@ export default {
             render-as-html
           />
 
-          <span
-            v-else
-            class="placeholder"
-          >
+          <span v-else class="placeholder">
             There is no description for this node.
           </span>
 
@@ -122,12 +121,7 @@ export default {
           />
         </template>
       </template>
-      <div
-        v-else
-        class="placeholder no-node"
-      >
-        Please select a node
-      </div>
+      <div v-else class="placeholder no-node">Please select a node</div>
     </div>
   </div>
 </template>

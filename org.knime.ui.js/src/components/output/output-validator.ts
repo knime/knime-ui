@@ -1,30 +1,51 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable func-style */
 
-import type { AvailablePortTypes, KnimeNode } from '@/api/gateway-api/custom-types';
-import type { NodePort } from '@/api/gateway-api/generated-api';
+import type {
+  AvailablePortTypes,
+  KnimeNode,
+} from "@/api/gateway-api/custom-types";
+import type { NodePort } from "@/api/gateway-api/generated-api";
 
 /**
  * Returns the PortType of a given port
  */
-const getPortType = ({ portTypes, port }: { portTypes: AvailablePortTypes, port: NodePort }) => portTypes[port.typeId];
+const getPortType = ({
+  portTypes,
+  port,
+}: {
+  portTypes: AvailablePortTypes;
+  port: NodePort;
+}) => portTypes[port.typeId];
 
-const isFlowVariablePort = ({ portTypes, port }: { portTypes: AvailablePortTypes, port: NodePort }) => {
-    const { kind } = getPortType({ portTypes, port });
-    return kind === 'flowVariable';
+const isFlowVariablePort = ({
+  portTypes,
+  port,
+}: {
+  portTypes: AvailablePortTypes;
+  port: NodePort;
+}) => {
+  const { kind } = getPortType({ portTypes, port });
+  return kind === "flowVariable";
 };
 
 /**
  * Determines whether a given port is "supported". Supported ports are only those whose PortType has a view
  * To determine the PortType, the dictionary of all available PortTypes is needed
  */
-const canDisplayPortView = ({ portTypes, port }: { portTypes: AvailablePortTypes, port: NodePort }) => {
-    try {
-        const { views } = getPortType({ portTypes, port });
-        return Boolean(views) || isFlowVariablePort({ portTypes, port });
-    } catch {
-        return false;
-    }
+const canDisplayPortView = ({
+  portTypes,
+  port,
+}: {
+  portTypes: AvailablePortTypes;
+  port: NodePort;
+}) => {
+  try {
+    const { views } = getPortType({ portTypes, port });
+    return Boolean(views) || isFlowVariablePort({ portTypes, port });
+  } catch {
+    return false;
+  }
 };
 
 // ========================== Validation Functions ============================     //
@@ -39,46 +60,53 @@ const canDisplayPortView = ({ portTypes, port }: { portTypes: AvailablePortTypes
 // ========================== Validation Functions ============================     //
 
 type ErrorCodes =
-    | 'NODE_DRAGGING'
-    | 'NO_NODE_SELECTED'
-    | 'MULTIPLE_NODES_SELECTED'
-    | 'NO_OUTPUT_PORTS'
-    | 'NO_SUPPORTED_PORTS'
-    | 'NO_PORT_SELECTED'
-    | 'NO_SUPPORTED_VIEW'
-    | 'PORT_INACTIVE'
-    | 'NO_DATA'
-    | 'NODE_UNCONFIGURED'
-    | 'NODE_BUSY';
-
+  | "NODE_DRAGGING"
+  | "NO_NODE_SELECTED"
+  | "MULTIPLE_NODES_SELECTED"
+  | "NO_OUTPUT_PORTS"
+  | "NO_SUPPORTED_PORTS"
+  | "NO_PORT_SELECTED"
+  | "NO_SUPPORTED_VIEW"
+  | "PORT_INACTIVE"
+  | "NO_DATA"
+  | "NODE_UNCONFIGURED"
+  | "NODE_BUSY";
 
 export type ValidationResult = {
-    error?: {
-        type: 'NODE' | 'PORT';
-        code: ErrorCodes;
-        message: string;
-    }
-}
+  error?: {
+    type: "NODE" | "PORT";
+    code: ErrorCodes;
+    message: string;
+  };
+};
 
-type NextFn<T = any> = (context: T & Record<string, any>) => ValidationResult | null;
-export type ValidationFn<T = any> = (context: T, next: NextFn<T>) => ValidationResult | null;
+type NextFn<T = any> = (
+  context: T & Record<string, any>
+) => ValidationResult | null;
+export type ValidationFn<T = any> = (
+  context: T,
+  next: NextFn<T>
+) => ValidationResult | null;
 
 /**
  * Validation middleware function. Asserts that:
  * - Nodes are not being dragged
  */
-export const validateDragging: ValidationFn<{ isDragging: boolean }> = (context, next) => {
-    if (context.isDragging) {
-        return {
-            error: {
-                type: 'NODE',
-                code: 'NODE_DRAGGING',
-                message: 'Node output will be loaded after moving is completed'
-            }
-        };
-    }
+export const validateDragging: ValidationFn<{ isDragging: boolean }> = (
+  context,
+  next
+) => {
+  if (context.isDragging) {
+    return {
+      error: {
+        type: "NODE",
+        code: "NODE_DRAGGING",
+        message: "Node output will be loaded after moving is completed",
+      },
+    };
+  }
 
-    return next(context);
+  return next(context);
 };
 
 /**
@@ -87,34 +115,37 @@ export const validateDragging: ValidationFn<{ isDragging: boolean }> = (context,
  *
  * Adds the `selectedNode` to the context
  */
-export const validateSelection: ValidationFn<{ selectedNodes: Array<KnimeNode> }> = (context, next) => {
-    const { selectedNodes } = context;
-    if (!selectedNodes) {
-        return next(context);
-    }
+export const validateSelection: ValidationFn<{
+  selectedNodes: Array<KnimeNode>;
+}> = (context, next) => {
+  const { selectedNodes } = context;
+  if (!selectedNodes) {
+    return next(context);
+  }
 
-    if (selectedNodes.length === 0) {
-        return {
-            error: {
-                type: 'NODE',
-                code: 'NO_NODE_SELECTED',
-                message: 'To show the node output, please select a configured or executed node.'
-            }
-        };
-    }
+  if (selectedNodes.length === 0) {
+    return {
+      error: {
+        type: "NODE",
+        code: "NO_NODE_SELECTED",
+        message:
+          "To show the node output, please select a configured or executed node.",
+      },
+    };
+  }
 
-    if (selectedNodes.length > 1) {
-        return {
-            error: {
-                type: 'NODE',
-                code: 'MULTIPLE_NODES_SELECTED',
-                message: 'To show the node output, please select only one node.'
-            }
-        };
-    }
+  if (selectedNodes.length > 1) {
+    return {
+      error: {
+        type: "NODE",
+        code: "MULTIPLE_NODES_SELECTED",
+        message: "To show the node output, please select only one node.",
+      },
+    };
+  }
 
-    const selectedNode = selectedNodes[0];
-    return next({ ...context, selectedNode });
+  const selectedNode = selectedNodes[0];
+  return next({ ...context, selectedNode });
 };
 
 /**
@@ -123,36 +154,40 @@ export const validateSelection: ValidationFn<{ selectedNodes: Array<KnimeNode> }
  * - The selected node has at least one supported port
  */
 export const validateOutputPorts: ValidationFn<{
-    selectedNode: KnimeNode;
-    portTypes: AvailablePortTypes
+  selectedNode: KnimeNode;
+  portTypes: AvailablePortTypes;
 }> = (context, next) => {
-    const { selectedNode, portTypes } = context;
-    if (!selectedNode || !portTypes) {
-        return next(context);
-    }
-
-    const hasOutputPorts = selectedNode.outPorts.length > 0;
-    if (!hasOutputPorts) {
-        return {
-            error: {
-                type: 'NODE',
-                code: 'NO_OUTPUT_PORTS',
-                message: 'The selected node has no output ports.'
-            }
-        };
-    }
-
-    if (!selectedNode.outPorts.some(port => canDisplayPortView({ portTypes, port }))) {
-        return {
-            error: {
-                type: 'NODE',
-                code: 'NO_SUPPORTED_PORTS',
-                message: 'The selected node has no supported output port.'
-            }
-        };
-    }
-
+  const { selectedNode, portTypes } = context;
+  if (!selectedNode || !portTypes) {
     return next(context);
+  }
+
+  const hasOutputPorts = selectedNode.outPorts.length > 0;
+  if (!hasOutputPorts) {
+    return {
+      error: {
+        type: "NODE",
+        code: "NO_OUTPUT_PORTS",
+        message: "The selected node has no output ports.",
+      },
+    };
+  }
+
+  if (
+    !selectedNode.outPorts.some((port) =>
+      canDisplayPortView({ portTypes, port })
+    )
+  ) {
+    return {
+      error: {
+        type: "NODE",
+        code: "NO_SUPPORTED_PORTS",
+        message: "The selected node has no supported output port.",
+      },
+    };
+  }
+
+  return next(context);
 };
 
 /**
@@ -160,28 +195,32 @@ export const validateOutputPorts: ValidationFn<{
  * - A port is selected
  */
 export const validatePortSelection: ValidationFn<{
-    selectedNode: KnimeNode;
-    selectedPortIndex: number
+  selectedNode: KnimeNode;
+  selectedPortIndex: number;
 }> = (context, next) => {
-    const { selectedNode, selectedPortIndex } = context;
+  const { selectedNode, selectedPortIndex } = context;
 
-    if (!selectedNode) {
-        return next(context);
-    }
+  if (!selectedNode) {
+    return next(context);
+  }
 
-    const selectedPort = selectedNode.outPorts[selectedPortIndex];
+  const selectedPort = selectedNode.outPorts[selectedPortIndex];
+  if (
+    !selectedPort ||
     // eslint-disable-next-line no-undefined
-    if (!selectedPort || selectedPortIndex === undefined || selectedPortIndex === null) {
-        return {
-            error: {
-                type: 'PORT',
-                code: 'NO_PORT_SELECTED',
-                message: 'No port selected'
-            }
-        };
-    }
+    selectedPortIndex === undefined ||
+    selectedPortIndex === null
+  ) {
+    return {
+      error: {
+        type: "PORT",
+        code: "NO_PORT_SELECTED",
+        message: "No port selected",
+      },
+    };
+  }
 
-    return next({ ...context, selectedPort });
+  return next({ ...context, selectedPort });
 };
 
 /**
@@ -190,76 +229,76 @@ export const validatePortSelection: ValidationFn<{
  * - The selected port is not inactive
  */
 export const validatePortSupport: ValidationFn<{
-    selectedPort: NodePort;
-    portTypes: AvailablePortTypes
+  selectedPort: NodePort;
+  portTypes: AvailablePortTypes;
 }> = (context, next) => {
-    const { selectedPort, portTypes } = context;
-    if (!selectedPort || !portTypes) {
-        return next(context);
-    }
-
-    if (!canDisplayPortView({ portTypes, port: selectedPort })) {
-        return {
-            error: {
-                type: 'PORT',
-                code: 'NO_SUPPORTED_VIEW',
-                message: 'The data at the output port is not supported by any viewer.'
-            }
-        };
-    }
-
-    if (selectedPort.inactive) {
-        return {
-            error: {
-                type: 'PORT',
-                code: 'PORT_INACTIVE',
-                message: 'This output port is inactive and therefore no output data is available for display.'
-            }
-        };
-    }
-
-    // eslint-disable-next-line no-undefined
-    if (selectedPort.portContentVersion === undefined) {
-        return {
-            error: {
-                type: 'PORT',
-                code: 'NO_DATA',
-                message: 'This output port has no data to display'
-            }
-        };
-    }
-
+  const { selectedPort, portTypes } = context;
+  if (!selectedPort || !portTypes) {
     return next(context);
-};
+  }
 
+  if (!canDisplayPortView({ portTypes, port: selectedPort })) {
+    return {
+      error: {
+        type: "PORT",
+        code: "NO_SUPPORTED_VIEW",
+        message: "The data at the output port is not supported by any viewer.",
+      },
+    };
+  }
+
+  if (selectedPort.inactive) {
+    return {
+      error: {
+        type: "PORT",
+        code: "PORT_INACTIVE",
+        message:
+          "This output port is inactive and therefore no output data is available for display.",
+      },
+    };
+  }
+
+  // eslint-disable-next-line no-undefined
+  if (selectedPort.portContentVersion === undefined) {
+    return {
+      error: {
+        type: "PORT",
+        code: "NO_DATA",
+        message: "This output port has no data to display",
+      },
+    };
+  }
+
+  return next(context);
+};
 
 /**
  * Validation middleware function. Asserts that:
  * - The selected node is configured when displaying view of non-flowVariable ports
  */
 export const validateNodeConfigurationState: ValidationFn<{
-    selectedNode: KnimeNode;
-    selectedPort: NodePort;
-    portTypes: AvailablePortTypes
+  selectedNode: KnimeNode;
+  selectedPort: NodePort;
+  portTypes: AvailablePortTypes;
 }> = (context, next) => {
-    const { selectedNode, selectedPort, portTypes } = context;
-    if (!selectedNode) {
-        return next(context);
-    }
-
-    const isNodeIdle = selectedNode.state?.executionState === 'IDLE';
-
-    if (isNodeIdle && !isFlowVariablePort({ portTypes, port: selectedPort })) {
-        return {
-            error: {
-                type: 'NODE',
-                code: 'NODE_UNCONFIGURED',
-                message: 'Please first configure the selected node.'
-            }
-        };
-    }
-
+  const { selectedNode, selectedPort, portTypes } = context;
+  if (!selectedNode) {
     return next(context);
+  }
+
+  const isNodeIdle = selectedNode.state?.executionState === "IDLE";
+
+  if (isNodeIdle && !isFlowVariablePort({ portTypes, port: selectedPort })) {
+    return {
+      error: {
+        type: "NODE",
+        code: "NODE_UNCONFIGURED",
+        message: "Please first configure the selected node.",
+      },
+    };
+  }
+
+  return next(context);
 };
 
 /**
@@ -267,36 +306,39 @@ export const validateNodeConfigurationState: ValidationFn<{
  * - The selected node is not in a busy state (QUEUE || EXECUTING)
  */
 export const validateNodeExecutionState: ValidationFn<{
-    selectedNode: KnimeNode;
-    selectedPort: NodePort;
-    portTypes: AvailablePortTypes;
-    selectedPortIndex: number;
+  selectedNode: KnimeNode;
+  selectedPort: NodePort;
+  portTypes: AvailablePortTypes;
+  selectedPortIndex: number;
 }> = (context, next) => {
-    const { selectedPort, selectedNode, portTypes } = context;
+  const { selectedPort, selectedNode, portTypes } = context;
 
-    if (isFlowVariablePort({ portTypes, port: selectedPort })) {
-        return next(context);
-    }
-
-    const state = selectedNode.state.executionState;
-    if (state === 'QUEUED' || state === 'EXECUTING') {
-        return {
-            error: {
-                type: 'NODE',
-                code: 'NODE_BUSY',
-                message: 'Output is available after execution.'
-            }
-        };
-    }
-
+  if (isFlowVariablePort({ portTypes, port: selectedPort })) {
     return next(context);
+  }
+
+  const state = selectedNode.state.executionState;
+  if (state === "QUEUED" || state === "EXECUTING") {
+    return {
+      error: {
+        type: "NODE",
+        code: "NODE_BUSY",
+        message: "Output is available after execution.",
+      },
+    };
+  }
+
+  return next(context);
 };
 
-type MiddlewareFn<TEnv, TCxt> =
-    (environment: TEnv, next: NextFn<TCxt>) =>
-    (context: TCxt) => ReturnType<ValidationFn<TCxt>>
+type MiddlewareFn<TEnv, TCxt> = (
+  environment: TEnv,
+  next: NextFn<TCxt>
+) => (context: TCxt) => ReturnType<ValidationFn<TCxt>>;
 
-type MiddlewareMappingFn<TEnv, TCxt> = (fn: ValidationFn<TCxt>) => MiddlewareFn<TEnv, TCxt>;
+type MiddlewareMappingFn<TEnv, TCxt> = (
+  fn: ValidationFn<TCxt>
+) => MiddlewareFn<TEnv, TCxt>;
 
 type MiddlewarePipe = () => ValidationResult | null;
 
@@ -310,22 +352,20 @@ type MiddlewarePipe = () => ValidationResult | null;
  * the context's value after all the validation middlewares
  * have executed, or it will return a different value if any function performed an early exit
  */
-export const buildMiddleware = <TEnv, TCxt>(
-    ...middlewares: Array<ValidationFn>
-) => (env: TEnv): MiddlewarePipe => {
-        // convert a simple function into a middleware function
-        // by partially applying environment and next before calling the given function along with the context
-        const toMiddlewareFn: MiddlewareMappingFn<TEnv, TCxt> =
-            (fn) => (environment, next) => (context) => fn({ ...environment, ...context }, next);
+export const buildMiddleware =
+  <TEnv, TCxt>(...middlewares: Array<ValidationFn>) =>
+  (env: TEnv): MiddlewarePipe => {
+    // convert a simple function into a middleware function
+    // by partially applying environment and next before calling the given function along with the context
+    const toMiddlewareFn: MiddlewareMappingFn<TEnv, TCxt> =
+      (fn) => (environment, next) => (context) =>
+        fn({ ...environment, ...context }, next);
 
-        const runFinal = (context?: any) => context;
+    const runFinal = (context?: any) => context;
 
-        const runChain = middlewares
-            .map(toMiddlewareFn)
-            .reduceRight(
-                (next, middleware) => middleware(env, next),
-                runFinal
-            );
+    const runChain = middlewares
+      .map(toMiddlewareFn)
+      .reduceRight((next, middleware) => middleware(env, next), runFinal);
 
-        return runChain;
-    };
+    return runChain;
+  };

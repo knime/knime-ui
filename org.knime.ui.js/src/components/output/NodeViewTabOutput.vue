@@ -1,7 +1,11 @@
 <script>
-import NodeViewLoader from '@/components/embeddedViews/NodeViewLoader.vue';
+import NodeViewLoader from "@/components/embeddedViews/NodeViewLoader.vue";
 
-import { buildMiddleware, validateNodeConfigurationState, validateNodeExecutionState } from './output-validator';
+import {
+  buildMiddleware,
+  validateNodeConfigurationState,
+  validateNodeExecutionState,
+} from "./output-validator";
 
 /**
  * Runs a set of validations that qualify whether a node from a given group is able
@@ -15,14 +19,14 @@ import { buildMiddleware, validateNodeConfigurationState, validateNodeExecutionS
  * more details about the error can be read from that `error` object
  */
 export const runNodeValidationChecks = ({ selectedNode, portTypes }) => {
-    const validationMiddleware = buildMiddleware(
-        validateNodeConfigurationState,
-        validateNodeExecutionState
-    );
+  const validationMiddleware = buildMiddleware(
+    validateNodeConfigurationState,
+    validateNodeExecutionState
+  );
 
-    const result = validationMiddleware({ selectedNode, portTypes })();
+  const result = validationMiddleware({ selectedNode, portTypes })();
 
-    return Object.freeze(result);
+  return Object.freeze(result);
 };
 
 /**
@@ -31,94 +35,99 @@ export const runNodeValidationChecks = ({ selectedNode, portTypes }) => {
  * about the loading state of the PortView
  */
 export default {
-    components: {
-        NodeViewLoader
-    },
+  components: {
+    NodeViewLoader,
+  },
 
-    props: {
-        projectId: {
-            type: String,
-            required: true
-        },
-        workflowId: {
-            type: String,
-            required: true
-        },
-        selectedNode: {
-            type: Object,
-            required: true
-        },
-        availablePortTypes: {
-            type: Object,
-            required: true
+  props: {
+    projectId: {
+      type: String,
+      required: true,
+    },
+    workflowId: {
+      type: String,
+      required: true,
+    },
+    selectedNode: {
+      type: Object,
+      required: true,
+    },
+    availablePortTypes: {
+      type: Object,
+      required: true,
+    },
+  },
+
+  emits: ["outputStateChange"],
+
+  data() {
+    return {
+      nodeViewState: null,
+    };
+  },
+
+  computed: {
+    nodeErrors() {
+      const { error } = runNodeValidationChecks({
+        selectedNode: this.selectedNode,
+        portTypes: this.availablePortTypes,
+      });
+
+      return error;
+    },
+  },
+
+  watch: {
+    // eslint-disable-next-line valid-jsdoc
+    /**
+     * Emits null or an object with the following structure:
+     *  EventPayload {
+     *      message: string;
+     *      loading?: string;
+     *      error?: {
+     *          type: string;
+     *          code: string;
+     *      }
+     *  }
+     */
+    nodeErrors: {
+      immediate: true,
+      handler() {
+        if (this.nodeErrors) {
+          this.$emit("outputStateChange", {
+            loading: this.nodeErrors.code === "NODE_BUSY",
+            message: this.nodeErrors.message,
+            error: this.nodeErrors,
+          });
         }
+      },
     },
+  },
 
-    emits: ['outputStateChange'],
+  methods: {
+    onNodeViewStateChange(newState) {
+      this.nodeViewState = newState;
 
-    data() {
-        return {
-            nodeViewState: null
-        };
-    },
-
-    computed: {
-        nodeErrors() {
-            const { error } = runNodeValidationChecks({
-                selectedNode: this.selectedNode,
-                portTypes: this.availablePortTypes
-            });
-
-            return error;
+      switch (this.nodeViewState?.state) {
+        case "loading": {
+          this.$emit("outputStateChange", {
+            message: "Loading data",
+            loading: true,
+          });
+          return;
         }
-    },
-
-    watch: {
-        // eslint-disable-next-line valid-jsdoc
-        /**
-         * Emits null or an object with the following structure:
-         *  EventPayload {
-         *      message: string;
-         *      loading?: string;
-         *      error?: {
-         *          type: string;
-         *          code: string;
-         *      }
-         *  }
-         */
-        nodeErrors: {
-            immediate: true,
-            handler() {
-                if (this.nodeErrors) {
-                    this.$emit('outputStateChange', {
-                        loading: this.nodeErrors.code === 'NODE_BUSY',
-                        message: this.nodeErrors.message,
-                        error: this.nodeErrors
-                    });
-                }
-            }
+        case "error": {
+          this.$emit("outputStateChange", {
+            message: this.nodeViewState.message,
+          });
+          return;
         }
-    },
-
-    methods: {
-        onNodeViewStateChange(newState) {
-            this.nodeViewState = newState;
-
-            switch (this.nodeViewState?.state) {
-                case 'loading': {
-                    this.$emit('outputStateChange', { message: 'Loading data', loading: true });
-                    return;
-                }
-                case 'error': {
-                    this.$emit('outputStateChange', { message: this.nodeViewState.message });
-                    return;
-                }
-                default: {
-                    this.$emit('outputStateChange', null);
-                }
-            }
+        default: {
+          this.$emit("outputStateChange", null);
         }
-    }
+      }
+    },
+  },
 };
 </script>
 

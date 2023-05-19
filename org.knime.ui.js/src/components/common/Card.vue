@@ -1,46 +1,41 @@
 <script>
-import { h as createElement } from 'vue';
-import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
+import { h as createElement } from "vue";
+import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 
 export default {
-    components: {
-        WorkflowIcon
+  components: {
+    WorkflowIcon,
+  },
+
+  props: {
+    link: {
+      type: Boolean,
+      default: false,
     },
 
-    props: {
-        link: {
-            type: Boolean,
-            default: false
-        },
-
-        href: {
-            type: String,
-            default: ''
-        }
+    href: {
+      type: String,
+      default: "",
     },
+  },
 
-    emits: ['click'],
+  emits: ["click"],
 
-    render() {
-        const element = this.link ? 'router-link' : 'div';
+  render() {
+    const element = this.link ? "router-link" : "div";
 
-        const attrs = this.link
-            ? { to: this.href }
-            : { role: 'button' };
+    const attrs = this.link ? { to: this.href } : { role: "button" };
 
-        const handlers = this.link
-            ? {}
-            : { onClick: () => this.$emit('click') };
+    const handlers = this.link ? {} : { onClick: () => this.$emit("click") };
 
-        return createElement(
-            element,
-            { class: 'card', ...attrs, ...handlers },
-            this.$slots.default()
-        );
-    }
+    return createElement(
+      element,
+      { class: "card", ...attrs, ...handlers },
+      this.$slots.default()
+    );
+  },
 };
 </script>
-
 
 <style lang="postcss" scoped>
 .card {

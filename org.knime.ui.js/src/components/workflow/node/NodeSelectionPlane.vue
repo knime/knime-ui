@@ -1,70 +1,73 @@
 <script>
-
 /**
  * Colored rect that is used as selection plane for nodes
  */
 export default {
-    props: {
-        /**
-         * The position of the node. Contains an x- and y-parameter
-         */
-        position: {
-            type: Object,
-            required: true,
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
-        },
-        /**
-         * Makes the selection plane larger vertically based on this value
-         */
-        extraHeight: {
-            type: Number,
-            default: 20
-        },
-        width: {
-            type: Number,
-            default: 0
-        },
-        /**
-         * Node variation.
-         * @values 'node', 'metanode', 'component'
-         */
-        kind: {
-            type: String,
-            required: true,
-            validator: kind => ['node', 'metanode', 'component'].includes(kind)
-        }
+  props: {
+    /**
+     * The position of the node. Contains an x- and y-parameter
+     */
+    position: {
+      type: Object,
+      required: true,
+      validator: (position) =>
+        typeof position.x === "number" && typeof position.y === "number",
     },
-    computed: {
-        // Getting the node selection measures and calculate if some additional space is needed for the status bar
-        nodeSelectionMeasures() {
-            const {
-                nodeStatusHeight,
-                nodeStatusMarginTop,
-                nodeSize,
-                nodeSelectionPadding: [top, right, bottom, left]
-            } = this.$shapes;
+    /**
+     * Makes the selection plane larger vertically based on this value
+     */
+    extraHeight: {
+      type: Number,
+      default: 20,
+    },
+    width: {
+      type: Number,
+      default: 0,
+    },
+    /**
+     * Node variation.
+     * @values 'node', 'metanode', 'component'
+     */
+    kind: {
+      type: String,
+      required: true,
+      validator: (kind) => ["node", "metanode", "component"].includes(kind),
+    },
+  },
+  computed: {
+    // Getting the node selection measures and calculate if some additional space is needed for the status bar
+    nodeSelectionMeasures() {
+      const {
+        nodeStatusHeight,
+        nodeStatusMarginTop,
+        nodeSize,
+        nodeSelectionPadding: [top, right, bottom, left],
+      } = this.$shapes;
 
-            const hasStatusBar = this.kind !== 'metanode';
+      const hasStatusBar = this.kind !== "metanode";
 
-            // the selection plane's height has to account for
-            // (1) node's size plus the selection padding for top and bottom
-            // (2) the height and margin of the node status bar if it's present
-            // (3) the provided `extraHeight` prop on the component
-            const height = (top + nodeSize + bottom) +
-                (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0) +
-                this.extraHeight;
+      // the selection plane's height has to account for
+      // (1) node's size plus the selection padding for top and bottom
+      // (2) the height and margin of the node status bar if it's present
+      // (3) the provided `extraHeight` prop on the component
+      const height =
+        top +
+        nodeSize +
+        bottom +
+        (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0) +
+        this.extraHeight;
 
-            const defaultWidth = left + right + nodeSize;
-            const width = this.width > defaultWidth ? this.width : defaultWidth;
+      const defaultWidth = left + right + nodeSize;
+      const width = this.width > defaultWidth ? this.width : defaultWidth;
 
-            return {
-                y: -(top + this.extraHeight),
-                x: -((width - nodeSize) / 2),
-                height,
-                width
-            };
-        }
-    }
+      return {
+        y: -(top + this.extraHeight),
+        x: -((width - nodeSize) / 2),
+        height,
+        width,
+      };
+    },
+  },
 };
 </script>
 
