@@ -11,8 +11,8 @@ import type { ShortcutConditionContext, UnionToShortcutRegistry } from './types'
 import { ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
 import { portPositions } from '@/util/portShift';
 import { nodeSize } from '@/style/shapes.mjs';
-import { findFreeSpaceAroundCenterWithFallback,
-    findFreeSpaceAroundPointWithFallback } from '@/util/findFreeSpaceOnCanvas';
+import type { XY } from '@/api/gateway-api/generated-api';
+import { geometry } from '@/util/geometry';
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
     | 'save'
@@ -302,7 +302,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         }
     },
     bringAnnotationToFront: {
-        text: 'Bring annotation to front',
+        text: 'Bring to front',
         hotkey: ['Ctrl', 'Shift', 'ArrowUp'],
         execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
             action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront
@@ -311,7 +311,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     bringAnnotationForward: {
         hotkey: ['Ctrl', 'ArrowUp'],
-        text: 'Bring annotation forward',
+        text: 'Bring forward',
         execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
             action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward
         }),
@@ -319,7 +319,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     sendAnnotationBackward: {
         hotkey: ['Ctrl', 'ArrowDown'],
-        text: 'Send annotation backward',
+        text: 'Send backward',
         execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
             action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward
         }),
@@ -327,7 +327,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     sendAnnotationToBack: {
         hotkey: ['Ctrl', 'Shift', 'ArrowDown'],
-        text: 'Send annotation to back',
+        text: 'Send to back',
         execute: ({ $store }) => $store.dispatch('workflow/reorderWorkflowAnnotation', {
             action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack
         }),
@@ -351,7 +351,7 @@ const workflowShortcuts: WorkflowShortcuts = {
 
             // global menu without predecessor node
             if (node === null) {
-                const position = findFreeSpaceAroundCenterWithFallback({
+                const position = geometry.findFreeSpaceAroundCenterWithFallback({
                     visibleFrame: $store.getters['canvas/getVisibleFrame'](),
                     nodes: $store.state.workflow.activeWorkflow.nodes
                 });
@@ -379,11 +379,11 @@ const workflowShortcuts: WorkflowShortcuts = {
                 // eslint-disable-next-line no-magic-numbers
                 const xOffset = nodeSize * 3;
 
-                const startPoint = {
+                const startPoint: XY = {
                     x: node.position.x + outPortPositions[portIndex][0] + xOffset,
                     y: node.position.y + outPortPositions[portIndex][1]
                 };
-                return findFreeSpaceAroundPointWithFallback({
+                return geometry.findFreeSpaceAroundPointWithFallback({
                     startPoint,
                     visibleFrame: $store.getters['canvas/getVisibleFrame'](),
                     nodes: $store.state.workflow.activeWorkflow.nodes

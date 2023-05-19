@@ -108,6 +108,7 @@ const createMousemoveHandler = (state) => (e) => {
                 totalDeltaY: y,
                 deltaX,
                 deltaY,
+                event: e,
                 altKey: e.altKey,
                 clientX: e.clientX,
                 clientY: e.clientY

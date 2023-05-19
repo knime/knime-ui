@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, nextTick, toRefs, watch } from 'vue';
+import { onMounted, nextTick, toRefs, watch, ref, computed } from 'vue';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import TextAlign from '@tiptap/extension-text-align';
 import UnderLine from '@tiptap/extension-underline';
 import StarterKit from '@tiptap/starter-kit';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
+
 import RichTextEditorToolbar from './RichTextEditorToolbar.vue';
 
 interface Props {
@@ -15,15 +16,18 @@ interface Props {
     annotationBounds: Bounds;
     isSelected: boolean;
     isDragging: boolean;
+    borderColor: string;
 }
 
 const props = defineProps<Props>();
 const { initialValue } = toRefs(props);
+const previewBorderColor = ref<string | null>(null);
 
 // eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
     (e: 'editStart'): void;
     (e: 'change', content: string): void;
+    (e: 'changeBorderColor', color: string): void;
 }>();
 
 const editor = useEditor({
@@ -42,6 +46,8 @@ const editor = useEditor({
 watch(initialValue, () => {
     editor.value.commands.setContent(initialValue.value);
 });
+
+const activeBorderColor = computed(() => previewBorderColor.value || props.borderColor);
 
 onMounted(() => {
     if (props.editable) {
@@ -62,14 +68,21 @@ onMounted(() => {
       to="annotation-editor-toolbar"
     >
       <RichTextEditorToolbar
+        :active-border-color="borderColor"
         :editor="editor"
         :annotation-bounds="annotationBounds"
+        @change-border-color="emit('changeBorderColor', $event)"
+        @preview-border-color="previewBorderColor = $event"
       />
     </Portal>
     <EditorContent
       class="annotation-editor"
       :editor="editor"
-      :class="{ editable, selected: isSelected, 'is-dragging': isDragging }"
+      :class="{
+        editable,
+        selected: isSelected,
+        'is-dragging': isDragging
+      }"
       @dblclick="!editable && emit('editStart')"
     />
   </div>
@@ -91,25 +104,22 @@ onMounted(() => {
 }
 
 .annotation-editor {
+    --border-width: 2px;
+
     height: 100%;
     overflow-y: auto;
-    border: 1px solid var(--knime-masala);
+    border: var(--border-width) solid v-bind("activeBorderColor");
 
     &.editable {
-        margin-top: 0;
-        border: 1px solid var(--knime-cornflower);
         cursor: text;
-    }
-
-    &.selected:not(.is-dragging) {
-        border-color: transparent;
     }
 
     /* stylelint-disable-next-line selector-class-pattern */
     & :deep(.ProseMirror) {
         height: 100%;
-        font-size: 10px;
+        font-size: 12px;
         padding: 10px;
+        color: var(--knime-black);
 
         &:focus-visible,
         &:focus {
@@ -119,6 +129,88 @@ onMounted(() => {
         & p {
             margin: 0;
             padding-bottom: 6px;
+            line-height: 1.44;
+        }
+
+        & blockquote {
+            margin: 0 0 6px 12px;
+            position: relative;
+
+            &::before {
+                position: absolute;
+                content: '';
+                left: -12px;
+                height: 100%;
+                width: 4px;
+                background-color: var(--knime-silver-sand);
+                border-radius: 4px;
+            }
+
+            & p:last-child {
+                padding-bottom: 0;
+            }
+        }
+
+        & h1 {
+            font-size: 48px;
+        }
+
+        & h2 {
+            font-size: 36px;
+        }
+
+        & h3 {
+            font-size: 30px;
+        }
+
+        & h4 {
+            font-size: 24px;
+        }
+
+        & h5 {
+            font-size: 18px;
+        }
+
+        & h6 {
+            font-size: 15px;
+        }
+
+        & h1:first-of-type,
+        & h2:first-of-type,
+        & h3:first-of-type,
+        & h4:first-of-type,
+        & h5:first-of-type,
+        & h6:first-of-type
+        {
+            margin-top: 0;
+        }
+
+        & hr {
+            border: none;
+            border-top: 1px solid var(--knime-silver-sand);
+            margin: 6px 0;
+        }
+
+        & :not(pre) > code {
+            padding: 0 2px;
+            font-family: 'Roboto Mono', monospace;
+            border: 1px solid var(--knime-silver-sand);
+            background: var(--knime-gray-light-semi);
+            box-decoration-break: clone;
+        }
+
+        & pre {
+            background: var(--knime-gray-light-semi);
+            border: 1px solid var(--knime-silver-sand);
+            font-family: 'Roboto Mono', monospace;
+            padding: 8px 12px;
+            line-height: 1.44;
+
+            & > code {
+                color: inherit;
+                padding: 0;
+                background: none;
+            }
         }
 
         & ul,

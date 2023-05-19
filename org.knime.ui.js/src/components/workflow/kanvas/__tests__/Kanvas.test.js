@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { expect, describe, it, vi } from 'vitest';
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
@@ -84,7 +85,8 @@ describe('Kanvas', () => {
                 actions: actions.canvas,
                 mutations: {
                     clearScrollContainerElement: vi.fn(),
-                    setSuggestPanning: vi.fn()
+                    setSuggestPanning: vi.fn(),
+                    setIsMoveLocked: vi.fn()
                 }
             },
             workflow: {
@@ -107,6 +109,8 @@ describe('Kanvas', () => {
             emit: vi.fn()
         };
 
+        const commitSpy = vi.spyOn($store, 'commit');
+
         const wrapper = shallowMount(Kanvas, {
             global: {
                 plugins: [$store],
@@ -128,7 +132,8 @@ describe('Kanvas', () => {
             setPointerCapture,
             releasePointerCapture,
             ResizeObserverMock,
-            mockBus
+            mockBus,
+            commitSpy
         };
     };
 
@@ -232,6 +237,40 @@ describe('Kanvas', () => {
             });
 
             expect(mockBus.emit).toHaveBeenCalledWith('selection-pointerdown', expect.anything());
+        });
+
+        it('should set objects to be unmovable if meta key is down on mac', async () => {
+            mockUserAgent('mac');
+            const { commitSpy } = doShallowMount();
+
+            document.dispatchEvent(new KeyboardEvent('keydown', { metaKey: true }));
+            await Vue.nextTick();
+
+            expect(commitSpy).toHaveBeenCalledWith('canvas/setIsMoveLocked', true, undefined);
+        });
+
+        it('should set objects to be unmovable if control key is down on windows', async () => {
+            mockUserAgent('windows');
+            const { commitSpy } = doShallowMount();
+
+            document.dispatchEvent(new KeyboardEvent('keydown', { ctrlKey: true }));
+            await Vue.nextTick();
+
+            expect(commitSpy).toHaveBeenCalledWith('canvas/setIsMoveLocked', true, undefined);
+        });
+
+        it('should set objects to back to be movable if shift key is released', async () => {
+            const { commitSpy } = doShallowMount();
+
+            document.dispatchEvent(new KeyboardEvent('keydown', { shiftKey: true }));
+            await Vue.nextTick();
+
+            expect(commitSpy).toHaveBeenCalledWith('canvas/setIsMoveLocked', true, undefined);
+
+            document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Shift' }));
+            await Vue.nextTick();
+
+            expect(commitSpy).toHaveBeenCalledWith('canvas/setIsMoveLocked', false, undefined);
         });
     });
 

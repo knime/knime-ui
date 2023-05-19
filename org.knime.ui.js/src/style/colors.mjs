@@ -55,4 +55,23 @@ export const warning = knimeColors.Yellow;
 
 export const notificationBackground = 'hsla(206, 42%, 86%, 90%)';
 
+export const annotationColorPresets = {
+    None: '#FFFFFF',
+    Avocado: '#CBD9A9',
+    Carrot: '#FF9632',
+    Coral: '#FF4B4B',
+    Meadow: '#3CB44B',
+    Petrol: '#469990',
+    CornflowerLight: '#91C6ED',
+    Cornflower: '#1E6DA8',
+    CornflowerDark: '#1A417A',
+    LavenderLight: '#C1AFDD',
+    Lavender: '#965591',
+    HibiscusLight: '#F6C7DF',
+    Hibiscus: '#F279BC',
+    Wood: '#D2A384',
+    SilverSand: '#C0C4C6'
+};
+export const defaultAnnotationBorderColor = annotationColorPresets.SilverSand;
+
 export * from 'webapps-common/ui/colors/knimeColors.mjs';

@@ -56,6 +56,7 @@ import java.util.stream.StreamSupport;
 
 import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.ui.java.util.TestingUtil;
@@ -80,6 +81,8 @@ final class TestingAPI {
      */
     @API
     static void initAppForTesting(final String appStateString) {
+        SWTUtilities.getActiveShell().setMaximized(true);
+
         JsonNode appStateNode;
         try {
             appStateNode = DesktopAPI.MAPPER.readValue(appStateString, JsonNode.class);

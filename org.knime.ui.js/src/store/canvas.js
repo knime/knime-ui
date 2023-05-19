@@ -23,7 +23,8 @@ export const state = () => ({
     containerSize: { width: 0, height: 0 },
     getScrollContainerElement: unsetScrollContainer,
     interactionsEnabled: true,
-    isEmpty: false
+    isEmpty: false,
+    isMoveLocked: false
 });
 
 export const mutations = {
@@ -58,6 +59,9 @@ export const mutations = {
     },
     setIsEmpty(state, value) {
         state.isEmpty = value;
+    },
+    setIsMoveLocked(state, value) {
+        state.isMoveLocked = value;
     }
 };
 

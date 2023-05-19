@@ -1,16 +1,29 @@
-<script>
+<script lang="ts">
+/* eslint-disable valid-jsdoc */
+import { defineComponent, type PropType } from 'vue';
+import type { KnimeService } from '@knime/ui-extension-service';
 import { loadAsyncComponent } from 'webapps-common/ui/util/loadComponentLibrary';
 
 // At the moment this component has to be directly provided because no dynamic counterparts
 // that can be loaded exists. Eventually this view will also be loaded dynamically
 import FlowVariablePortView from '@/components/output/FlowVariablePortView.vue';
 import ImagePortView from '@/components/output/ImagePortView.vue';
+import type { ViewConfig, ResourceInfo } from '@/api/gateway-api/custom-types';
+
+export type ViewStateChangeEvent = {
+    state: 'loading' | 'ready' | 'error';
+    message?: string;
+}
+
+type ResourceLocationResolverFn = (params: { resourceInfo: ResourceInfo }) => string;
+type InitKnimeServiceFn = (viewConfig: ViewConfig) => KnimeService;
+type ViewLoaderConfigFn = () => Promise<ViewConfig>;
 
 /**
  * Dynamically loads and renders a component for a view in the workflow. This could be a port view
  * or a dialog view
  */
-export default {
+export default defineComponent({
     components: {
         FlowVariablePortView,
         ImagePortView
@@ -34,7 +47,7 @@ export default {
          * A function to fetch the view's configuration object
          */
         viewConfigLoaderFn: {
-            type: Function,
+            type: Function as PropType<ViewLoaderConfigFn>,
             required: true
         },
         /**
@@ -42,14 +55,14 @@ export default {
          * KnimeService to inject into the loaded view
          */
         initKnimeService: {
-            type: Function,
+            type: Function as PropType<InitKnimeServiceFn>,
             required: true
         },
         /**
          * A function to resolve the url where to fetch the view from
          */
         resourceLocationResolver: {
-            type: Function,
+            type: Function as PropType<ResourceLocationResolverFn>,
             required: true
         },
         /**
@@ -70,7 +83,10 @@ export default {
         }
     },
 
-    emits: ['stateChange'],
+    emits: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        stateChange: (_payload: ViewStateChangeEvent) => true
+    },
 
     data() {
         return {
@@ -86,14 +102,14 @@ export default {
                 throw new Error(`Component ${componentName} hasn't been loaded properly`);
             }
         },
-        renderKey() {
-            this.loadView();
+        async renderKey() {
+            await this.loadView();
         }
     },
 
-    mounted() {
+    async mounted() {
         if (this.loadOnMount) {
-            this.loadView();
+            await this.loadView();
         }
     },
 
@@ -119,7 +135,7 @@ export default {
          * - Local component references (VUE_COMPONENT_REFERENCE)
          * - Remote component library scripts (VUE_COMPONENT_LIB) fetched over the network
         */
-        async renderDynamicViewComponent(viewConfig) {
+        async renderDynamicViewComponent(viewConfig: ViewConfig) {
             // create knime service and update provide/inject
             const knimeService = this.initKnimeService(viewConfig);
             this.getKnimeService = () => knimeService;
@@ -137,15 +153,14 @@ export default {
         /**
          * Fetches and registers a dynamic component that will render a view.
          * It will also initialize the KnimeService that said view requires
-         * @param {Object} viewConfig
-         * @return {void}
          */
-        async setupDynamicComponent(viewConfig) {
+        async setupDynamicComponent(viewConfig: ViewConfig) {
             const { resourceInfo } = viewConfig;
 
             const resourceLocation = this.resourceLocationResolver({ resourceInfo });
 
             const componentName = this.overrideComponentName || resourceInfo.id;
+            // @ts-expect-error
             const component = await loadAsyncComponent({
                 resourceLocation,
                 componentName
@@ -153,7 +168,7 @@ export default {
             this.$options.components[componentName] = component;
         }
     }
-};
+});
 </script>
 
 <template>

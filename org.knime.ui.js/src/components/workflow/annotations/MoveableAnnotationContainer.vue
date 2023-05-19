@@ -4,9 +4,7 @@ import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
 
 import type { Bounds } from '@/api/gateway-api/generated-api';
-import { snapToGrid } from '@/util/geometry';
-
-import { getGridAdjustedBounds } from './transform-control-utils';
+import { geometry } from '@/util/geometry';
 
 export default defineComponent({
     props: {
@@ -24,15 +22,15 @@ export default defineComponent({
     data() {
         return {
             startPos: null,
-            gridBounds: getGridAdjustedBounds(this.bounds),
             cursorPosition: null
         };
     },
     computed: {
+        ...mapState('workflow', ['movePreviewDelta', 'isDragging', 'hasAbortedDrag']),
+        ...mapState('canvas', ['zoomFactor', 'isMoveLocked']),
         ...mapGetters('workflow', ['isWritable']),
-        ...mapGetters('selection', ['isAnnotationSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapState('workflow', ['movePreviewDelta', 'isDragging', 'hasAbortedNodeDrag']),
+        ...mapGetters('selection', ['isAnnotationSelected']),
 
         combinedPosition() {
             return {
@@ -50,64 +48,79 @@ export default defineComponent({
         // Note that the position is not updated while the node is being dragged, only after it's dropped.
         bounds: {
             deep: true,
-            handler() {
-                this.gridBounds = getGridAdjustedBounds(this.bounds);
-                this.handleMoveFromStore();
+            async handler() {
+                await this.handleMoveFromStore();
             }
         }
     },
     methods: {
         ...mapActions('selection', ['selectAnnotation', 'deselectAllObjects']),
         ...mapActions('workflow', ['moveObjects']),
-        ...mapMutations('workflow', [
-            'setMovePreview',
-            'resetMovePreview',
-            'setIsDragging',
-            'setHasAbortedNodeDrag'
-        ]),
+        ...mapMutations('workflow', ['setMovePreview', 'setIsDragging']),
 
-        handleMoveFromStore() {
+        async handleMoveFromStore() {
             if (this.isDragging) {
-                this.resetMovePreview();
-                this.setIsDragging(false);
+                await this.$store.dispatch('workflow/resetDragState');
             }
         },
 
+        initCursorPosition(event: PointerEvent) {
+            // eslint-disable-next-line no-extra-parens
+            const rect = (this.$refs.container as HTMLElement).getBoundingClientRect();
+
+            this.cursorPosition = {
+                x: Math.floor(event.clientX - rect.left) / this.zoomFactor,
+                y: Math.floor(event.clientY - rect.top) / this.zoomFactor
+            };
+        },
+
         async onMoveStart({ detail }) {
+            await this.$store.dispatch('workflow/resetDragState');
+
+            if (this.isMoveLocked) {
+                return;
+            }
+
             if (!detail.event.shiftKey && !this.isAnnotationSelected(this.id)) {
                 await this.deselectAllObjects();
             }
 
             await this.selectAnnotation(this.id);
-            this.cursorPosition = {
-                x: detail.event.offsetX,
-                y: detail.event.offsetY
+
+            const gridAdjustedPosition = {
+                x: geometry.utils.snapToGrid(this.bounds.x),
+                y: geometry.utils.snapToGrid(this.bounds.y)
             };
 
             this.startPos = {
-                x: this.gridBounds.x,
-                y: this.gridBounds.y,
+                x: gridAdjustedPosition.x,
+                y: gridAdjustedPosition.y,
+
                 positionDelta: {
-                    x: this.gridBounds.x - this.bounds.x,
-                    y: this.gridBounds.y - this.bounds.y
+                    x: gridAdjustedPosition.x - this.bounds.x,
+                    y: gridAdjustedPosition.y - this.bounds.y
                 }
             };
 
             this.setIsDragging(true);
         },
 
-        onMove: throttle(function (this: any, { detail: { clientX, clientY, altKey } }) {
+        onMove: throttle(function (this: any, { detail: { event, altKey } }) {
             /* eslint-disable no-invalid-this */
-            if (this.hasAbortedNodeDrag) {
+            if (this.hasAbortedDrag || this.isMoveLocked) {
                 return;
             }
 
+            const [canvasX, canvasY] = this.screenToCanvasCoordinates([
+                event.clientX,
+                event.clientY
+            ]);
+
             const snapSize = altKey ? 1 : this.$shapes.gridSize.x;
-            const [canvasX, canvasY] = this.screenToCanvasCoordinates([clientX, clientY]);
 
             const deltas = {
-                x: snapToGrid(canvasX - this.startPos.x - this.cursorPosition.x, snapSize),
-                y: snapToGrid(canvasY - this.startPos.y - this.cursorPosition.y, snapSize)
+                x: geometry.utils.snapToGrid(canvasX - this.startPos.x - this.cursorPosition.x, snapSize),
+                y: geometry.utils.snapToGrid(canvasY - this.startPos.y - this.cursorPosition.y, snapSize)
             };
 
             if (this.movePreviewDelta.x !== deltas.x || this.movePreviewDelta.y !== deltas.y) {
@@ -121,9 +134,9 @@ export default defineComponent({
 
         onMoveEnd: throttle(function (this: any) {
             /* eslint-disable no-invalid-this */
-            if (this.hasAbortedNodeDrag) {
-                this.setHasAbortedNodeDrag(false);
-                this.$store.commit('workflow/setIsDragging', false);
+            if (this.hasAbortedDrag) {
+                this.$store.dispatch('workflow/resetDragState');
+                this.$store.dispatch('workflow/resetAbortDrag');
                 return;
             }
 
@@ -136,15 +149,22 @@ export default defineComponent({
 
 <template>
   <g
+    ref="container"
     v-move="{ onMoveStart, onMove, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
-    :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
+    :class="[{ dragging: isDragging && isAnnotationSelected(id), unmovable: isMoveLocked }]"
+    @pointerdown.left.stop="initCursorPosition"
   >
     <slot />
   </g>
 </template>
 
 <style lang="postcss" scoped>
+.unmovable {
+    user-select: none;
+    pointer-events: none;
+}
+
 .dragging {
   cursor: grabbing;
 }

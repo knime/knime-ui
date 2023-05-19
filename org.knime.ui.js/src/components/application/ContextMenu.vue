@@ -2,23 +2,24 @@
 import { defineComponent, type PropType } from 'vue';
 import { mapGetters } from 'vuex';
 
-import type { MenuItem } from 'webapps-common/ui/components/MenuItemsBase.vue';
+import type { MenuItem } from 'webapps-common/ui/components/MenuItems.vue';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 
 import type { XY } from '@/api/gateway-api/generated-api';
 import type { FormattedShortcut, ShortcutName } from '@/shortcuts';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
-type ContextMenuActionsGroupItem = {
-    name: ShortcutName;
-    isVisible: boolean;
-    text?: string;
-}
+type Base = { isVisible: boolean; }
+
+type ContextMenuActionsGroupItem =
+    | Base & { name: ShortcutName; text?: string }
+    | Base & { children: ContextMenuActionsGroupItem[]; text: string }
 
 type MenuItemWithName = Pick<FormattedShortcut, 'name'> & MenuItem
 
 type ComponentData = {
-    visibleItems: Array<ContextMenuActionsGroupItem & { separator?: boolean }>
+    visibleItems: Array<ContextMenuActionsGroupItem & { separator?: boolean }>;
+    activeDescendant: string|null;
 }
 
 // eslint-disable-next-line valid-jsdoc
@@ -69,7 +70,8 @@ export default defineComponent({
     },
     emits: ['menuClose'],
     data: (): ComponentData => ({
-        visibleItems: []
+        visibleItems: [],
+        activeDescendant: null
     }),
     computed: {
         ...mapGetters('selection', [
@@ -82,22 +84,33 @@ export default defineComponent({
 
         // map visible items to menu items and add shortcut information
         menuItems(): Array<MenuItemWithName> {
-            return this.visibleItems
-                .map((item) => {
-                    const shortcut = this.$shortcuts.get(item.name);
-
-                    const shortcutText = typeof shortcut.text === 'function'
-                        ? shortcut.text({ $store: this.$store })
-                        : shortcut.text;
-
+            const contextToMenuItemMapping = (item) => {
+                // special handling for sub menus
+                if (item.children?.length) {
                     return {
-                        name: item.name,
-                        text: item.text || shortcutText,
-                        hotkeyText: shortcut.hotkeyText,
-                        disabled: !this.$shortcuts.isEnabled(item.name),
-                        separator: item.separator
+                        name: null,
+                        text: item.text,
+                        separator: item.separator,
+                        children: item.children.map(contextToMenuItemMapping)
                     };
-                });
+                }
+
+                const shortcut = this.$shortcuts.get(item.name);
+
+                const shortcutText = typeof shortcut.text === 'function'
+                    ? shortcut.text({ $store: this.$store })
+                    : shortcut.text;
+
+                return {
+                    name: item.name,
+                    text: item.text || shortcutText,
+                    hotkeyText: shortcut.hotkeyText,
+                    disabled: !this.$shortcuts.isEnabled(item.name),
+                    separator: item.separator
+                };
+            };
+
+            return this.visibleItems.map(contextToMenuItemMapping);
         }
     },
     watch: {
@@ -121,10 +134,17 @@ export default defineComponent({
     methods: {
         onItemClick(event: MouseEvent, item: MenuItemWithName) {
             this.$emit('menuClose');
+            // do nothing for submenu items
+            if (item.name === null) {
+                return;
+            }
             this.$shortcuts.dispatch(item.name, {
                 event,
                 metadata: { position: this.position }
             });
+        },
+        setActiveDescendant(itemId: string|null) {
+            this.activeDescendant = itemId;
         },
         setMenuItems() {
             const areNodesSelected = this.selectedNodes.length > 0;
@@ -138,7 +158,6 @@ export default defineComponent({
                 'canOpenLegacyFlowVariableDialog' in this.singleSelectedNode.allowedActions;
             const isMetanode = this.singleSelectedNode?.kind === 'metanode';
             const isComponent = this.singleSelectedNode?.kind === 'component';
-            const isMetanodeOrComponent = isMetanode || isComponent;
 
             const basicOperationsGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'configureNode', isVisible: this.singleSelectedNode },
@@ -166,42 +185,48 @@ export default defineComponent({
                 { name: 'deleteSelected', isVisible: !this.isSelectionEmpty }
             ];
 
-            const annotationArrangementGroup: Array<ContextMenuActionsGroupItem> = [
+            const annotationsGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'addWorkflowAnnotation', isVisible: !isAnythingSelected },
-                { name: 'bringAnnotationToFront', isVisible: areAnnotationsSelected },
-                { name: 'bringAnnotationForward', isVisible: areAnnotationsSelected },
-                { name: 'sendAnnotationBackward', isVisible: areAnnotationsSelected },
-                { name: 'sendAnnotationToBack', isVisible: areAnnotationsSelected }
+                {
+                    text: 'Arrange annotations',
+                    isVisible: areAnnotationsSelected,
+                    children: [
+                        { name: 'bringAnnotationToFront', isVisible: areAnnotationsSelected },
+                        { name: 'bringAnnotationForward', isVisible: areAnnotationsSelected },
+                        { name: 'sendAnnotationBackward', isVisible: areAnnotationsSelected },
+                        { name: 'sendAnnotationToBack', isVisible: areAnnotationsSelected }
+                    ]
+                }
             ];
 
-            const metanodeOperationsGroup: Array<ContextMenuActionsGroupItem> = [
-                { name: 'createMetanode', isVisible: this.selectedNodes.length },
-                { name: 'expandMetanode', isVisible: isMetanode },
-                { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename metanode' },
-                { name: 'createComponent', isVisible: this.selectedNodes.length }
-            ];
-
-            const componentOperationsGroup: Array<ContextMenuActionsGroupItem> = [
+            const metanodeAndComponentGroup: Array<ContextMenuActionsGroupItem> = [
                 { name: 'createMetanode', isVisible: this.selectedNodes.length },
                 { name: 'createComponent', isVisible: this.selectedNodes.length },
-                { name: 'expandComponent', isVisible: isComponent },
-                { name: 'openComponent', isVisible: isComponent },
-                { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename component' }
+                {
+                    text: 'Metanode',
+                    isVisible: isMetanode,
+                    children: [
+                        { name: 'expandMetanode', isVisible: true },
+                        { name: 'editName', isVisible: true }
+                    ]
+                },
+                {
+                    text: 'Component',
+                    isVisible: isComponent,
+                    children: [
+                        { name: 'expandComponent', isVisible: true },
+                        { name: 'openComponent', isVisible: true },
+                        { name: 'editName', isVisible: true }
+                    ]
+                }
             ];
 
-            const items = menuGroups()
+            this.visibleItems = menuGroups()
                 .append(basicOperationsGroup)
                 .append(clipboardOperationsGroup)
-                .append(annotationArrangementGroup)
-                .append(isMetanode ? metanodeOperationsGroup : componentOperationsGroup)
+                .append(annotationsGroup)
+                .append(metanodeAndComponentGroup)
                 .value();
-
-            this.visibleItems = items;
-        },
-
-        onKeyDown(event: KeyboardEvent) {
-            // eslint-disable-next-line no-extra-parens
-            (this.$refs.menuItems as InstanceType<typeof MenuItems>).onKeydown(event);
         }
     }
 });
@@ -213,17 +238,19 @@ export default defineComponent({
     :disable-interactions="true"
     class="context-menu"
     aria-label="Context Menu"
+    :aria-activedescendant="activeDescendant"
     prevent-overflow
-    tabindex="-1"
     @menu-close="$emit('menuClose')"
-    @keydown="onKeyDown"
   >
     <MenuItems
+      id="context-menu-items"
       ref="menuItems"
       class="menu-items"
+      register-keydown
       :items="menuItems"
       menu-aria-label="Context Menu"
       @item-click="onItemClick"
+      @item-focused="setActiveDescendant"
     />
   </FloatingMenu>
 </template>
@@ -234,7 +261,8 @@ export default defineComponent({
   max-width: 320px;
 }
 
-.menu-items {
+.menu-items, :deep(.menu-items-sub-level) {
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 }
+
 </style>

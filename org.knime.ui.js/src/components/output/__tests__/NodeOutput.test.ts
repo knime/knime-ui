@@ -2,6 +2,7 @@ import { expect, describe, it, vi } from 'vitest';
 /* eslint-disable max-params */
 import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
+import type { DeepPartial } from '@/test/utils';
 import { mockVuexStore } from '@/test/utils/mockVuexStore';
 
 import * as selectionStore from '@/store/selection';
@@ -16,6 +17,8 @@ import PortTabs from '../PortTabs.vue';
 
 import PortViewTabOutput from '../PortViewTabOutput.vue';
 import NodeViewTabOutput from '../NodeViewTabOutput.vue';
+import type { KnimeNode } from '@/api/gateway-api/custom-types';
+import { NodeState } from '@/api/gateway-api/generated-api';
 
 vi.mock('@knime/ui-extension-service');
 
@@ -28,13 +31,12 @@ describe('NodeOutput.vue', () => {
         shouldDisplayEmbeddedViews: vi.fn(() => true)
     };
 
-    const dummyNodes = {
+    const dummyNodes: Record<string, DeepPartial<KnimeNode>> = {
         node1: {
             id: 'node1',
             outPorts: [{ typeId: 'flowVariable', index: 0 }, { typeId: 'table', index: 1 }],
-            isLoaded: false,
             state: {
-                executionState: 'UNSET'
+                executionState: NodeState.ExecutionStateEnum.IDLE
             },
             allowedActions: {
                 canExecute: false
@@ -173,25 +175,6 @@ describe('NodeOutput.vue', () => {
         await Vue.nextTick();
         expect(placeholderMessage(wrapper)).toBe('Loading data');
         expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
-    });
-
-    it('should show execute node button and trigger node execution', async () => {
-        const executeNodes = vi.fn();
-        const node = createNode();
-        const store = createStore({ executeNodes, nodes: { [node.id]: node }, selectedNodeIds: [node.id] });
-        const wrapper = doMount(store);
-        const portView = wrapper.findComponent(PortViewTabOutput);
-
-        portView.vm.$emit('output-state-change', { message: 'Some error', error: { code: 'NODE_UNEXECUTED' } });
-        await Vue.nextTick();
-
-        expect(wrapper.find('.action-button').exists()).toBe(true);
-        wrapper.find('.action-button').trigger('click');
-
-        expect(executeNodes).toHaveBeenCalledWith(
-            expect.any(Object),
-            [node.id]
-        );
     });
 
     it('should display placeholder when node is dragging', () => {

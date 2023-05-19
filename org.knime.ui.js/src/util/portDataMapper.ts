@@ -3,10 +3,10 @@ import type {
     PortType,
     DynamicPortGroupDescription,
     NativeNodeDescription
-// eslint-disable-next-line object-curly-newline
+    // eslint-disable-next-line object-curly-newline
 } from '@/api/gateway-api/generated-api';
+import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
 
-type AvailablePortTypes = Record<string, PortType>
 type FullPortType = PortType & { typeId: string; type?: string; description: string; }
 type PortGroupDescription = {
     groupName: string;

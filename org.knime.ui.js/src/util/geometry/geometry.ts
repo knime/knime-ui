@@ -1,6 +1,7 @@
 import { gsap } from 'gsap';
 import * as shapes from '@/style/shapes.mjs';
-
+import type { GeometryArea, GeometryBounds } from './types';
+import type { XY } from '@/api/gateway-api/generated-api';
 
 /**
  * Finds the intersection of A and B
@@ -18,7 +19,7 @@ import * as shapes from '@/style/shapes.mjs';
  *
  * @returns { Object | null } returns the intersection rectangle between A and B or null
  */
-export const rectangleIntersection = (A, B) => {
+export const rectangleIntersection = (A: GeometryBounds, B: GeometryBounds): GeometryBounds => {
     const intersectionX1 = Math.max(A.left, B.left);
     const intersectionX2 = Math.min(A.left + A.width, B.left + B.width);
     if (intersectionX2 <= intersectionX1) {
@@ -55,7 +56,7 @@ export const rectangleIntersection = (A, B) => {
  *
  * @returns { Number } coverage of A by B
  */
-export const areaCoverage = (A, B) => {
+export const areaCoverage = (A: GeometryBounds, B: GeometryBounds) => {
     const intersection = rectangleIntersection(A, B);
     if (!intersection) {
         return 0;
@@ -71,3 +72,21 @@ export const areaCoverage = (A, B) => {
  * Adjust a given coordinate point to its closest position on the grid
  */
 export const snapToGrid = (value: number, snapSize = shapes.gridSize.x): number => gsap.utils.snap(snapSize, value);
+
+/**
+ * Calculates the position of an HTML object within the visible frame, centered based on its width and height.
+ *
+ * @param width - The width of the HTML object.
+ * @param height - The height of the HTML object.
+ * @param visibleFrame - The current visible frame (with width and height).
+ * @returns The calculated position (x, y) of the HTML object.
+ */
+export const getCenteredPositionInVisibleFrame = (
+    { left, top, width, height }: GeometryBounds, objectBounds: GeometryArea
+): XY => {
+    const eyePleasingVerticalOffset = 0.75;
+    return {
+        x: left + width / 2 - objectBounds.width / 2,
+        y: top + height / 2 * eyePleasingVerticalOffset - objectBounds.height / 2
+    };
+};

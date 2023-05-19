@@ -3,7 +3,7 @@ import { defineComponent, type PropType } from 'vue';
 import { KnimeService } from '@knime/ui-extension-service';
 
 import { API } from '@api';
-import type { ComponentNode, MetaNode, NativeNode } from '@/api/gateway-api/generated-api';
+import type { KnimeNode, ViewConfig } from '@/api/gateway-api/custom-types';
 import ViewLoader from '@/components/embeddedViews/ViewLoader.vue';
 
 /**
@@ -24,35 +24,24 @@ export default defineComponent({
             required: true
         },
         selectedNode: {
-            type: Object as PropType<NativeNode | MetaNode | ComponentNode>,
+            type: Object as PropType<KnimeNode>,
             required: true
         },
         selectedPortIndex: {
             type: Number,
             required: true
+        },
+        selectedViewIndex: {
+            type: Number,
+            required: true
+        },
+        uniquePortKey: {
+            type: String,
+            required: true
         }
     },
 
     emits: ['stateChange'],
-
-    computed: {
-        uniquePortKey() {
-            // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
-            // is created upon switching ports
-            // port object version changes whenever a port state has updated.
-            // "ABA"-Changes on the port will always trigger a re-render.
-
-            const { portObjectVersion } = this.selectedNode.outPorts[this.selectedPortIndex];
-
-            return [
-                this.projectId,
-                this.workflowId,
-                this.selectedNode.id,
-                this.selectedPortIndex,
-                portObjectVersion
-            ].join('/');
-        }
-    },
 
     methods: {
         async viewConfigLoaderFn() {
@@ -60,7 +49,8 @@ export default defineComponent({
                 projectId: this.projectId,
                 workflowId: this.workflowId,
                 nodeId: this.selectedNode.id,
-                portIdx: this.selectedPortIndex
+                portIdx: this.selectedPortIndex,
+                viewIdx: this.selectedViewIndex
             });
 
             return portView;
@@ -75,8 +65,9 @@ export default defineComponent({
         },
 
         /* Required by dynamically loaded view components */
-        initKnimeService(config) {
+        initKnimeService(config: ViewConfig) {
             return new KnimeService(
+                // @ts-expect-error -- Because types are not generated from the API atm (UIEXT-932)
                 config,
 
                 // Data Service Callback
@@ -86,6 +77,7 @@ export default defineComponent({
                         workflowId: this.workflowId,
                         nodeId: this.selectedNode.id,
                         portIdx: this.selectedPortIndex,
+                        viewIdx: this.selectedViewIndex,
                         serviceType,
                         dataServiceRequest
                     });

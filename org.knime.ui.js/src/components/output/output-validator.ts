@@ -1,27 +1,27 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable func-style */
 
+import type { AvailablePortTypes, KnimeNode } from '@/api/gateway-api/custom-types';
+import type { NodePort } from '@/api/gateway-api/generated-api';
+
 /**
  * Returns the PortType of a given port
- * @param {Object} payload
- * @param {Object} payload.portTypes a dictionary of PortType objects
- * @param {Object} payload.port a Port object
- * @returns {String}
  */
-const getPortType = ({ portTypes, port }) => portTypes[port.typeId];
+const getPortType = ({ portTypes, port }: { portTypes: AvailablePortTypes, port: NodePort }) => portTypes[port.typeId];
+
+const isFlowVariablePort = ({ portTypes, port }: { portTypes: AvailablePortTypes, port: NodePort }) => {
+    const { kind } = getPortType({ portTypes, port });
+    return kind === 'flowVariable';
+};
 
 /**
  * Determines whether a given port is "supported". Supported ports are only those whose PortType has a view
  * To determine the PortType, the dictionary of all available PortTypes is needed
- * @param {Object} payload
- * @param {Object} payload.portTypes a dictionary of PortType objects
- * @param {Object} payload.port a Port object
- * @returns {Boolean}
  */
-const supportsPort = ({ portTypes, port }) => {
+const canDisplayPortView = ({ portTypes, port }: { portTypes: AvailablePortTypes, port: NodePort }) => {
     try {
-        const { hasView } = getPortType({ portTypes, port });
-        return hasView;
+        const { views } = getPortType({ portTypes, port });
+        return Boolean(views) || isFlowVariablePort({ portTypes, port });
     } catch {
         return false;
     }
@@ -38,11 +38,36 @@ const supportsPort = ({ portTypes, port }) => {
 //   in order to perform their logic. Early returns will cancel the middleware      //
 // ========================== Validation Functions ============================     //
 
+type ErrorCodes =
+    | 'NODE_DRAGGING'
+    | 'NO_NODE_SELECTED'
+    | 'MULTIPLE_NODES_SELECTED'
+    | 'NO_OUTPUT_PORTS'
+    | 'NO_SUPPORTED_PORTS'
+    | 'NO_PORT_SELECTED'
+    | 'NO_SUPPORTED_VIEW'
+    | 'PORT_INACTIVE'
+    | 'NO_DATA'
+    | 'NODE_UNCONFIGURED'
+    | 'NODE_BUSY';
+
+
+export type ValidationResult = {
+    error?: {
+        type: 'NODE' | 'PORT';
+        code: ErrorCodes;
+        message: string;
+    }
+}
+
+type NextFn<T = any> = (context: T & Record<string, any>) => ValidationResult | null;
+export type ValidationFn<T = any> = (context: T, next: NextFn<T>) => ValidationResult | null;
+
 /**
  * Validation middleware function. Asserts that:
  * - Nodes are not being dragged
  */
-export const validateDragging = (context, next) => {
+export const validateDragging: ValidationFn<{ isDragging: boolean }> = (context, next) => {
     if (context.isDragging) {
         return {
             error: {
@@ -62,7 +87,7 @@ export const validateDragging = (context, next) => {
  *
  * Adds the `selectedNode` to the context
  */
-export const validateSelection = (context, next) => {
+export const validateSelection: ValidationFn<{ selectedNodes: Array<KnimeNode> }> = (context, next) => {
     const { selectedNodes } = context;
     if (!selectedNodes) {
         return next(context);
@@ -97,7 +122,10 @@ export const validateSelection = (context, next) => {
  * - The selected node has output ports
  * - The selected node has at least one supported port
  */
-export const validateOutputPorts = (context, next) => {
+export const validateOutputPorts: ValidationFn<{
+    selectedNode: KnimeNode;
+    portTypes: AvailablePortTypes
+}> = (context, next) => {
     const { selectedNode, portTypes } = context;
     if (!selectedNode || !portTypes) {
         return next(context);
@@ -114,7 +142,7 @@ export const validateOutputPorts = (context, next) => {
         };
     }
 
-    if (!selectedNode.outPorts.some(port => supportsPort({ portTypes, port }))) {
+    if (!selectedNode.outPorts.some(port => canDisplayPortView({ portTypes, port }))) {
         return {
             error: {
                 type: 'NODE',
@@ -131,7 +159,10 @@ export const validateOutputPorts = (context, next) => {
  * Validation middleware function. Asserts that:
  * - A port is selected
  */
-export const validatePortSelection = (context, next) => {
+export const validatePortSelection: ValidationFn<{
+    selectedNode: KnimeNode;
+    selectedPortIndex: number
+}> = (context, next) => {
     const { selectedNode, selectedPortIndex } = context;
 
     if (!selectedNode) {
@@ -158,13 +189,16 @@ export const validatePortSelection = (context, next) => {
  * - The selected port has a supported viewer
  * - The selected port is not inactive
  */
-export const validatePortSupport = (context, next) => {
+export const validatePortSupport: ValidationFn<{
+    selectedPort: NodePort;
+    portTypes: AvailablePortTypes
+}> = (context, next) => {
     const { selectedPort, portTypes } = context;
     if (!selectedPort || !portTypes) {
         return next(context);
     }
 
-    if (!supportsPort({ portTypes, port: selectedPort })) {
+    if (!canDisplayPortView({ portTypes, port: selectedPort })) {
         return {
             error: {
                 type: 'PORT',
@@ -184,23 +218,38 @@ export const validatePortSupport = (context, next) => {
         };
     }
 
+    // eslint-disable-next-line no-undefined
+    if (selectedPort.portContentVersion === undefined) {
+        return {
+            error: {
+                type: 'PORT',
+                code: 'NO_DATA',
+                message: 'This output port has no data to display'
+            }
+        };
+    }
+
     return next(context);
 };
 
 
 /**
  * Validation middleware function. Asserts that:
- * - The selected node is configured
+ * - The selected node is configured when displaying view of non-flowVariable ports
  */
-export const validateNodeConfigurationState = (context, next) => {
-    const { selectedNode } = context;
+export const validateNodeConfigurationState: ValidationFn<{
+    selectedNode: KnimeNode;
+    selectedPort: NodePort;
+    portTypes: AvailablePortTypes
+}> = (context, next) => {
+    const { selectedNode, selectedPort, portTypes } = context;
     if (!selectedNode) {
         return next(context);
     }
 
     const isNodeIdle = selectedNode.state?.executionState === 'IDLE';
 
-    if (isNodeIdle) {
+    if (isNodeIdle && !isFlowVariablePort({ portTypes, port: selectedPort })) {
         return {
             error: {
                 type: 'NODE',
@@ -215,51 +264,41 @@ export const validateNodeConfigurationState = (context, next) => {
 
 /**
  * Validation middleware function. Asserts that:
- * - The selected node is executed
  * - The selected node is not in a busy state (QUEUE || EXECUTING)
  */
-export const validateNodeExecutionState = (context, next) => {
-    const { selectedPort, selectedNode, portTypes, selectedPortIndex } = context;
+export const validateNodeExecutionState: ValidationFn<{
+    selectedNode: KnimeNode;
+    selectedPort: NodePort;
+    portTypes: AvailablePortTypes;
+    selectedPortIndex: number;
+}> = (context, next) => {
+    const { selectedPort, selectedNode, portTypes } = context;
 
-    const validate = () => {
-        if (selectedNode.allowedActions.canExecute) {
-            return {
-                error: {
-                    type: 'NODE',
-                    code: 'NODE_UNEXECUTED',
-                    message: 'To show the output, please execute the selected node.'
-                }
-            };
-        }
-
-        const state = selectedNode.state.executionState;
-        if (state === 'QUEUED' || state === 'EXECUTING') {
-            return {
-                error: {
-                    type: 'NODE',
-                    code: 'NODE_BUSY',
-                    message: 'Output is available after execution.'
-                }
-            };
-        }
-
+    if (isFlowVariablePort({ portTypes, port: selectedPort })) {
         return next(context);
-    };
-
-    if (!selectedPort) {
-        return validate();
     }
 
-    const { kind: portKind } = getPortType({ portTypes, port: selectedPort });
-    const isNotDefaultFlowVariable = portKind !== 'flowVariable' || selectedPortIndex > 0;
-
-    // only flowVariable ports can be shown if the node hasn't executed
-    if (isNotDefaultFlowVariable) {
-        return validate();
+    const state = selectedNode.state.executionState;
+    if (state === 'QUEUED' || state === 'EXECUTING') {
+        return {
+            error: {
+                type: 'NODE',
+                code: 'NODE_BUSY',
+                message: 'Output is available after execution.'
+            }
+        };
     }
 
     return next(context);
 };
+
+type MiddlewareFn<TEnv, TCxt> =
+    (environment: TEnv, next: NextFn<TCxt>) =>
+    (context: TCxt) => ReturnType<ValidationFn<TCxt>>
+
+type MiddlewareMappingFn<TEnv, TCxt> = (fn: ValidationFn<TCxt>) => MiddlewareFn<TEnv, TCxt>;
+
+type MiddlewarePipe = () => ValidationResult | null;
 
 /**
  * Builds a middleware pipeline. Receives as parameters:
@@ -271,19 +310,22 @@ export const validateNodeExecutionState = (context, next) => {
  * the context's value after all the validation middlewares
  * have executed, or it will return a different value if any function performed an early exit
  */
-export const buildMiddleware = (...middlewares) => (env) => {
-    // convert a simple function into a middleware function
-    // by partially applying environment and next before calling the given function along with the context
-    const toMiddlewareFn = (fn) => (environment, next) => (context) => fn({ ...environment, ...context }, next);
+export const buildMiddleware = <TEnv, TCxt>(
+    ...middlewares: Array<ValidationFn>
+) => (env: TEnv): MiddlewarePipe => {
+        // convert a simple function into a middleware function
+        // by partially applying environment and next before calling the given function along with the context
+        const toMiddlewareFn: MiddlewareMappingFn<TEnv, TCxt> =
+            (fn) => (environment, next) => (context) => fn({ ...environment, ...context }, next);
 
-    const runFinal = (context) => context;
+        const runFinal = (context?: any) => context;
 
-    const runChain = middlewares
-        .map(toMiddlewareFn)
-        .reduceRight(
-            (next, middleware) => middleware(env, next),
-            runFinal
-        );
+        const runChain = middlewares
+            .map(toMiddlewareFn)
+            .reduceRight(
+                (next, middleware) => middleware(env, next),
+                runFinal
+            );
 
-    return runChain;
-};
+        return runChain;
+    };

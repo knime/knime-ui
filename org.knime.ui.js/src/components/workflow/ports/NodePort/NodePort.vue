@@ -3,7 +3,8 @@ import { inject, computed } from 'vue';
 import { useStore } from 'vuex';
 import { directive as vClickAway } from 'vue3-click-away';
 
-import type { NodePort, XY, PortType } from '@/api/gateway-api/generated-api';
+import type { NodePort, XY } from '@/api/gateway-api/generated-api';
+import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
 import { useTooltip, type TooltipDefinition } from '@/composables/useTooltip';
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -43,7 +44,7 @@ const emit = defineEmits<{
 
 const anchorPoint = inject<XY>('anchorPoint');
 
-const availablePortTypes = computed<Record<string, PortType>>(() => store.state.application.availablePortTypes);
+const availablePortTypes = computed<AvailablePortTypes>(() => store.state.application.availablePortTypes);
 
 const portTemplate = computed(() => {
     const template = toPortObject(availablePortTypes.value)(props.port.typeId);

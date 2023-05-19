@@ -1,10 +1,9 @@
 /* eslint-disable max-lines */
 import { API } from '@api';
-import workflowObjectBounds from '@/util/workflowObjectBounds';
 import { pastePartsAt, pasteURI } from '@/util/pasteToWorkflow';
-import { snapToGrid } from '@/util/geometry';
 import { Annotation, type ReorderWorkflowAnnotationsCommand } from '@/api/gateway-api/generated-api';
-
+import { geometry } from '@/util/geometry';
+import * as colors from '@/style/colors.mjs';
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
  * It handles shared state regarding editing.
@@ -15,7 +14,6 @@ export const state = {
     nameEditorNodeId: null,
     labelEditorNodeId: null,
     copyPaste: null,
-    hasAbortedNodeDrag: false,
     portTypeMenu: {
         isOpen: false,
         nodeId: null,
@@ -29,8 +27,10 @@ export const state = {
         props: {},
         events: {}
     },
-    isDragging: false,
-    editableAnnotationId: null
+    editableAnnotationId: null,
+
+    hasAbortedDrag: false,
+    isDragging: false
 };
 
 export const mutations = {
@@ -63,8 +63,8 @@ export const mutations = {
         state.copyPaste.lastPasteBounds = bounds;
     },
 
-    setHasAbortedNodeDrag(state, value) {
-        state.hasAbortedNodeDrag = value;
+    setHasAbortedDrag(state, value) {
+        state.hasAbortedDrag = value;
     },
 
     setPortTypeMenu(state, value) {
@@ -83,11 +83,11 @@ export const mutations = {
         state.isDragging = value;
     },
 
-    setAnnotationText(state, { annotationId, text, contentType }) {
+    setAnnotation(state, { annotationId, text, contentType, borderColor }) {
         const { activeWorkflow: { workflowAnnotations } } = state;
         const mapped = workflowAnnotations.map(
             annotation => annotation.id === annotationId
-                ? { ...annotation, text, contentType }
+                ? { ...annotation, text, contentType, borderColor }
                 : annotation
         );
 
@@ -119,6 +119,21 @@ export const actions = {
     },
     setEditableAnnotationId({ commit }, annotationId) {
         commit('setEditableAnnotationId', annotationId);
+    },
+
+    abortDrag({ commit }) {
+        commit('setHasAbortedDrag', true);
+        commit('setMovePreview', { deltaX: 0, deltaY: 0 });
+        commit('setIsDragging', false);
+    },
+
+    resetAbortDrag({ commit }) {
+        commit('setHasAbortedDrag', false);
+    },
+
+    resetDragState({ commit }) {
+        commit('setMovePreview', { deltaX: 0, deltaY: 0 });
+        commit('setIsDragging', false);
     },
 
     openPortTypeMenu({ commit }, { nodeId, startNodeId, props, events }) {
@@ -275,8 +290,8 @@ export const actions = {
 
         // Adjusted For Grid Snapping
         const gridAdjustedPosition = {
-            x: snapToGrid(position.x),
-            y: snapToGrid(position.y)
+            x: geometry.utils.snapToGrid(position.x),
+            y: geometry.utils.snapToGrid(position.y)
         };
 
         const response = await API.workflowCommand.AddNode({
@@ -303,7 +318,7 @@ export const actions = {
     /**
      * Calls the API to save the position of the nodes after the move is over
     */
-    async moveObjects({ state, commit, rootGetters }) {
+    async moveObjects({ state, commit, rootGetters, dispatch }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
         const selectedAnnotations = rootGetters['selection/selectedAnnotationIds'];
@@ -312,6 +327,11 @@ export const actions = {
             x: state.movePreviewDelta.x,
             y: state.movePreviewDelta.y
         };
+
+        if (translation.x === 0 && translation.y === 0) {
+            await dispatch('resetDragState');
+            return;
+        }
 
         try {
             await API.workflowCommand.Translate({
@@ -467,7 +487,7 @@ export const actions = {
             return;
         }
 
-        const objectBounds = workflowObjectBounds({
+        const objectBounds = geometry.getWorkflowObjectBounds({
             nodes: rootGetters['selection/selectedNodes'],
             workflowAnnotations: rootGetters['selection/selectedAnnotations']
         });
@@ -522,7 +542,7 @@ export const actions = {
         },
         { position: customPosition } = { position: null }
     ) {
-        const { activeWorkflow, copyPaste } = state;
+        const { activeWorkflow } = state;
         let clipboardContent, clipboardText;
         try {
             // TODO: NXT-1168 Put a limit on the clipboard content size
@@ -560,8 +580,6 @@ export const actions = {
                 visibleFrame: rootGetters['canvas/getVisibleFrame'](),
                 clipboardContent,
                 isWorkflowEmpty,
-                workflow: activeWorkflow,
-                copyPaste,
                 dispatch
             });
 
@@ -596,7 +614,8 @@ export const actions = {
         const { newAnnotationId } = await API.workflowCommand.AddWorkflowAnnotation({
             projectId,
             workflowId,
-            bounds
+            bounds,
+            borderColor: colors.defaultAnnotationBorderColor
         });
 
         dispatch('selection/deselectAllObjects', null, { root: true });
@@ -630,33 +649,36 @@ export const actions = {
         });
     },
 
-    async updateAnnotationText({ state, commit }, { annotationId, text }) {
+    async updateAnnotation({ state, commit }, { annotationId, text, borderColor }) {
         const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
-        const { text: originalText } = state
+        const { text: originalText, borderColor: originalBorderColor } = state
             .activeWorkflow
             .workflowAnnotations
             .find(annotation => annotation.id === annotationId);
 
         try {
             // do small optimistic update to prevent annotation from flashing between legacy and new
-            commit('setAnnotationText', {
+            commit('setAnnotation', {
                 annotationId,
                 text,
-                contentType: Annotation.ContentTypeEnum.Html
+                contentType: Annotation.ContentTypeEnum.Html,
+                borderColor
             });
 
-            return await API.workflowCommand.UpdateWorkflowAnnotationText({
+            return await API.workflowCommand.UpdateWorkflowAnnotation({
                 projectId,
                 workflowId,
                 annotationId,
-                text
+                text,
+                borderColor
             });
         } catch (error) {
-            commit('setAnnotationText', {
+            commit('setAnnotation', {
                 annotationId,
                 text: originalText,
-                contentType: Annotation.ContentTypeEnum.Plain
+                contentType: Annotation.ContentTypeEnum.Plain,
+                borderColor: originalBorderColor
             });
 
             throw error;

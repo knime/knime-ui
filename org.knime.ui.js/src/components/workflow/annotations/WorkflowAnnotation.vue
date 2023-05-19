@@ -37,8 +37,12 @@ export default defineComponent({
     data() {
         return {
             selectionPreview: null,
+
             hasEdited: false,
-            richTextContent: ''
+            newAnnotationData: {
+                richTextContent: '',
+                borderColor: ''
+            }
         };
     },
 
@@ -100,21 +104,33 @@ export default defineComponent({
         },
 
         initialRichTextAnnotationValue() {
-            if (this.isRichTextAnnotation) {
-                return this.annotation.text;
-            }
-
             const recreateLinebreaks = (content: string) => content.replaceAll('\r\n', '<br />');
 
-            return recreateLinebreaks(this.annotation.text);
+            return this.isRichTextAnnotation
+                ? this.annotation.text
+                : recreateLinebreaks(this.annotation.text);
         }
+    },
+
+    mounted() {
+        this.initializeData();
     },
 
     methods: {
         ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
         ...mapActions('application', ['toggleContextMenu']),
 
-        async onLeftClick(event: MouseEvent) {
+        initializeData() {
+            this.newAnnotationData = {
+                richTextContent: this.initialRichTextAnnotationValue,
+
+                borderColor: this.isRichTextAnnotation
+                    ? this.annotation.borderColor
+                    : this.$colors.defaultAnnotationBorderColor
+            };
+        },
+
+        async onLeftClick(event: PointerEvent) {
             const metaOrCtrlKey = getMetaOrCtrlKey();
             const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
@@ -158,15 +174,16 @@ export default defineComponent({
             this.$store.dispatch('workflow/setEditableAnnotationId', this.isEditing ? null : this.annotation.id);
         },
 
-        onClickAway() {
+        async onClickAway() {
             if (!this.isEditing) {
                 return;
             }
 
             if (this.hasEdited) {
-                this.$store.dispatch('workflow/updateAnnotationText', {
+                await this.$store.dispatch('workflow/updateAnnotation', {
                     annotationId: this.annotation.id,
-                    text: this.richTextContent
+                    text: this.newAnnotationData.richTextContent,
+                    borderColor: this.newAnnotationData.borderColor
                 });
             }
 
@@ -174,30 +191,13 @@ export default defineComponent({
         },
 
         onAnnotationChange(content: string) {
-            if (!this.hasEdited) {
-                this.hasEdited = true;
-            }
-
-            this.richTextContent = content;
+            this.hasEdited = true;
+            this.newAnnotationData.richTextContent = content;
         },
 
-        getAnnotationToolbarContainerBounds(transformedBounds: Bounds): Bounds {
-            const x =
-                // start from same X as annotation
-                transformedBounds.x -
-                // center by subtracting half the toolbar width + half the annotation width
-                this.$shapes.annotationToolbarContainerWidth / 2 +
-                transformedBounds.width / 2;
-
-            // use same Y as annotation and add a negative Y offset equal to the toolbar height
-            const y = transformedBounds.y - this.$shapes.annotationToolbarContainerHeight;
-
-            return {
-                x,
-                y,
-                width: this.$shapes.annotationToolbarContainerWidth,
-                height: this.$shapes.annotationToolbarContainerHeight
-            };
+        setColor(color: string) {
+            this.hasEdited = true;
+            this.newAnnotationData.borderColor = color;
         }
     }
 });
@@ -231,11 +231,13 @@ export default defineComponent({
           v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
           :initial-value="initialRichTextAnnotationValue"
+          :border-color="newAnnotationData.borderColor"
           :editable="isEditing"
           :is-dragging="isDragging"
           :annotation-bounds="transformedBounds"
           :is-selected="isSelected"
           @change="onAnnotationChange"
+          @change-border-color="setColor"
           @edit-start="toggleEdit"
         />
       </foreignObject>

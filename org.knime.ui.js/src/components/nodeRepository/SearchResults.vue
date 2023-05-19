@@ -4,9 +4,12 @@ import type { PropType } from 'vue';
 import BaseButton from 'webapps-common/ui/components/BaseButton.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
+
+import type { NodeTemplate } from '@/api/gateway-api/generated-api';
+import type { KnimeNode } from '@/api/gateway-api/custom-types';
+
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
-import type { ComponentNode, MetaNode, NativeNode, NodeTemplate } from '@/api/gateway-api/generated-api';
 
 export type SearchActions = {
     searchTopNodesNextPage: () => Promise<any>,
@@ -51,7 +54,7 @@ export default defineComponent({
             required: true
         },
         selectedNode: {
-            type: [Object, null] as PropType<NativeNode | ComponentNode | MetaNode | null>,
+            type: [Object, null] as PropType<KnimeNode | null>,
             required: true
         },
         searchActions: {

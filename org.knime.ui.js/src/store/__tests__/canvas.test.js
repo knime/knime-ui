@@ -86,6 +86,13 @@ describe('canvas store', () => {
         expect(store.state.canvas.isEmpty).toBe(true);
     });
 
+    it('setIsMoveLocked', () => {
+        expect(store.state.canvas.isMoveLocked).toBe(false);
+
+        store.commit('canvas/setIsMoveLocked', true);
+        expect(store.state.canvas.isMoveLocked).toBe(true);
+    });
+
     describe('scroll container element', () => {
         it('set & get ScrollContainerElement', () => {
             store.dispatch('canvas/initScrollContainerElement', scrollContainer);

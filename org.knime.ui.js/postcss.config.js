@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/extensions
-const { preset } = require('webapps-common/webpack/webpack.postcss.config.js');
+const { preset } = require('webapps-common/config/postcss.config.js');
 
 module.exports = {
     plugins: {

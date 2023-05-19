@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
-import { snapToGrid } from '@/util/geometry';
+import { geometry } from '@/util/geometry';
 
 import { escapeStack } from '@/mixins';
 
@@ -12,8 +12,7 @@ export default {
             alwaysActive: true,
             onEscape() {
                 if (this.isDragging) {
-                    this.setMovePreview({ deltaX: 0, deltaY: 0 });
-                    this.setHasAbortedNodeDrag(true);
+                    this.$store.dispatch('workflow/abortDrag');
                 }
             }
         })
@@ -42,7 +41,8 @@ export default {
         ...mapGetters('workflow', ['isWritable', 'isNodeConnected', 'getNodeById']),
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedNodeDrag', 'isDragging']),
+        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedDrag', 'isDragging']),
+        ...mapState('canvas', ['isMoveLocked']),
 
         // Combined position of original position + the dragged amount
         combinedPosition() {
@@ -69,16 +69,15 @@ export default {
     },
     methods: {
         ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
-        ...mapMutations('workflow', ['setMovePreview', 'setHasAbortedNodeDrag']),
+        ...mapMutations('workflow', ['setMovePreview']),
         /**
          * Resets the drag position in the store. This can only happen here, as otherwise the node
          * will be reset to its position before the actual movement of the store happened.
          * @returns {void} nothing to return
          */
-        handleMoveFromStore() {
+        async handleMoveFromStore() {
             if (this.isDragging) {
-                this.$store.commit('workflow/resetMovePreview');
-                this.$store.commit('workflow/setIsDragging', false);
+                await this.$store.dispatch('workflow/resetDragState');
             }
         },
 
@@ -87,22 +86,29 @@ export default {
          * @param {Object} e - details of the mousedown event
          * @returns {void} nothing to return
          */
-        onMoveStart({ detail }) {
+        async onMoveStart({ detail }) {
+            await this.$store.dispatch('workflow/resetDragState');
+
+            if (this.isMoveLocked) {
+                return;
+            }
+
             if (!detail.event.shiftKey && !this.isNodeSelected(this.id)) {
                 this.deselectAllObjects();
             }
             this.selectNode(this.id);
 
             const gridAdjustedPosition = {
-                x: snapToGrid(this.position.x),
-                y: snapToGrid(this.position.y)
+                x: geometry.utils.snapToGrid(this.position.x),
+                y: geometry.utils.snapToGrid(this.position.y)
             };
 
-            // account for any delta between the current position and its grid-adjusted equivalent.
-            // this is useful for nodes that might be not aligned to the grid, so that they can be brought back in
-            // during the drag operation
             this.startPos = {
                 ...gridAdjustedPosition,
+
+                // account for any delta between the current position and its grid-adjusted equivalent.
+                // this is useful for nodes that might be not aligned to the grid, so that they can be brought back in
+                // during the drag operation
                 positionDelta: {
                     x: gridAdjustedPosition.x - this.position.x,
                     y: gridAdjustedPosition.y - this.position.y
@@ -118,7 +124,7 @@ export default {
          */
         onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
             /* eslint-disable no-invalid-this */
-            if (!this.startPos || this.hasAbortedNodeDrag) {
+            if (!this.startPos || this.hasAbortedDrag || this.isMoveLocked) {
                 return;
             }
 
@@ -134,8 +140,8 @@ export default {
             // Adjusted For Grid Snapping
             const deltas = {
                 // adjust the deltas using `nodeSize` to make sure the reference is from the center of the node
-                x: snapToGrid(canvasX - this.startPos.x - nodeSize / 2, snapSize),
-                y: snapToGrid(canvasY - this.startPos.y - nodeSize / 2, snapSize)
+                x: geometry.utils.snapToGrid(canvasX - this.startPos.x - nodeSize / 2, snapSize),
+                y: geometry.utils.snapToGrid(canvasY - this.startPos.y - nodeSize / 2, snapSize)
             };
 
             // prevent unneeded dispatches if the position hasn't changed
@@ -159,9 +165,8 @@ export default {
          */
         onMoveEnd: throttle(function ({ detail: { endX, endY } }) {
             /* eslint-disable no-invalid-this */
-            if (this.hasAbortedNodeDrag) {
-                this.setHasAbortedNodeDrag(false);
-                this.$store.commit('workflow/setIsDragging', false);
+            if (this.hasAbortedDrag) {
+                this.$store.dispatch('workflow/resetAbortDrag');
 
                 if (this.lastHitTarget) {
                     this.lastHitTarget.dispatchEvent(
@@ -237,13 +242,23 @@ export default {
     v-move="{ onMove, onMoveStart, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
     :data-node-id="id"
-    :class="[{ dragging: isDragging && isNodeSelected(id) }]"
+    :class="[{ dragging: isDragging && isNodeSelected(id), unmovable: isMoveLocked }]"
   >
     <slot :position="translationAmount" />
   </g>
 </template>
 
 <style lang="postcss" scoped>
+.unmovable {
+    user-select: none;
+    pointer-events: none;
+
+    & :deep(.hover-area) {
+    pointer-events: none !important;
+    user-select: none !important;
+  }
+}
+
 .dragging {
   cursor: grabbing;
   pointer-events: none;

@@ -2,8 +2,7 @@ import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '..
 import * as workflowEditor from './workflow/workflowEditor';
 import * as APinteractions from './workflow/APinteractions';
 import * as workflowExecution from './workflow/workflowExecution';
-
-import workflowObjectBounds from '@/util/workflowObjectBounds';
+import { geometry } from '@/util/geometry';
 
 /**
  * The workflow store holds a workflow graph and the associated tooltips.
@@ -99,7 +98,7 @@ export const getters = {
 
     /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
     workflowBounds({ activeWorkflow }) {
-        return workflowObjectBounds(activeWorkflow || {}, { padding: true });
+        return geometry.getWorkflowObjectBounds(activeWorkflow || {}, { padding: true });
     },
 
     getNodeById: ({ activeWorkflow }) => nodeId => activeWorkflow?.nodes[nodeId] || null,

@@ -105,10 +105,10 @@ export default {
         },
 
         /**
-         * Path to the origin of a linked component or metanode
+         * TemplateLink object containing the link URL and updateStatus
          */
         link: {
-            type: String,
+            type: Object,
             default: null
         },
 
@@ -168,6 +168,11 @@ export default {
         portGroups: {
             type: Object,
             default: null
+        },
+
+        isReexecutable: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -422,7 +427,7 @@ export default {
         <NodeLabel
           :value="annotation ? annotation.text : ''"
           :annotation="annotation"
-          :editable="isEditable"
+          :editable="isWritable"
           :kind="kind"
           :node-id="id"
           :node-position="position"

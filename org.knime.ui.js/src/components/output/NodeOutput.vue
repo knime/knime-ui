@@ -1,16 +1,15 @@
-<script>
-/* eslint-disable brace-style */
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { mapState, mapGetters } from 'vuex';
 
-import Button from 'webapps-common/ui/components/Button.vue';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
-import PlayIcon from '@/assets/execute.svg';
+import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
 
 import PortTabs from './PortTabs.vue';
 import PortViewTabOutput from './PortViewTabOutput.vue';
 import NodeViewTabOutput from './NodeViewTabOutput.vue';
 
-import { buildMiddleware, validateDragging, validateSelection } from './output-validator';
+import { buildMiddleware, validateDragging, validateSelection, type ValidationResult } from './output-validator';
 
 export const runValidationChecks = ({ selectedNodes, isDragging }) => {
     const validationMiddleware = buildMiddleware(
@@ -23,31 +22,42 @@ export const runValidationChecks = ({ selectedNodes, isDragging }) => {
     return Object.freeze(result);
 };
 
+interface ComponentData {
+  // either 'view' or the number of the port as string
+  selectedTab: 'view' | Omit<string, 'view'> | null;
+
+  outputState: {
+    loading?: boolean;
+    message?: string;
+    error?: ValidationResult['error'];
+  } | null;
+}
+
 /**
  * Node output panel, displaying output port selection bar and port view if possible.
  * Port view will be rendered dynamically based on the port type
  */
-export default {
+export default defineComponent({
     components: {
         PortTabs,
-        Button,
         ReloadIcon,
-        PlayIcon,
         PortViewTabOutput,
         NodeViewTabOutput
     },
-    data() {
+    data(): ComponentData {
         return {
-            // string: either 'view' or the number of the port as string
-            selectedTab: '',
+            selectedTab: null,
             outputState: null
         };
     },
     computed: {
-        ...mapState('application', { projectId: 'activeProjectId', availablePortTypes: 'availablePortTypes' }),
+        ...mapState('application', {
+            projectId: state => state.activeProjectId as string | null,
+            availablePortTypes: state => state.availablePortTypes as AvailablePortTypes
+        }),
         ...mapState('workflow', {
-            workflowId: state => state.activeWorkflow.info.containerId,
-            isDragging: state => state.isDragging
+            workflowId: state => state.activeWorkflow.info.containerId as string,
+            isDragging: state => state.isDragging as boolean
         }),
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode']),
 
@@ -122,12 +132,9 @@ export default {
             // node is component or native node
             // select mickey-mouse port, if it is the only one, otherwise the first regular port
             this.selectedTab = outPorts.length > 1 ? '1' : '0';
-        },
-        executeNode() {
-            this.$store.dispatch('workflow/executeNodes', [this.singleSelectedNode.id]);
         }
     }
-};
+});
 </script>
 
 <template>
@@ -152,16 +159,6 @@ export default {
         />
         {{ outputState.message }}
       </span>
-      <Button
-        v-if="outputState.error && outputState.error.code === 'NODE_UNEXECUTED'"
-        class="action-button"
-        primary
-        compact
-        @click="executeNode"
-      >
-        <PlayIcon />
-        Execute
-      </Button>
     </div>
 
     <template v-if="!validationErrors">
@@ -184,6 +181,7 @@ export default {
         :available-port-types="availablePortTypes"
         class="output"
         @output-state-change="outputState = $event"
+        @execute-node="$store.dispatch('workflow/executeNodes', [singleSelectedNode.id])"
       />
     </template>
   </div>

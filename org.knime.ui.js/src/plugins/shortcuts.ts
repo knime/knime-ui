@@ -1,35 +1,9 @@
 /* eslint-disable @typescript-eslint/no-extra-parens */
 import shortcuts from '@/shortcuts';
-import type { ShortcutsService, FormattedShortcut, Hotkey } from '@/shortcuts/types';
-import { isMac } from '@/util/navigator';
+import type { ShortcutsService, FormattedShortcut } from '@/shortcuts/types';
 import type { PluginInitFunction } from '.';
-
-// Returns a string representation of a hotkey
-// Replaces some special key names with symbols
-const formatHotkeys = (hotkeys: Array<string>) => {
-    type KeyFormatMap = Partial<Record<Hotkey, string>>
-    const globalKeyMap: KeyFormatMap = {
-        ArrowUp: '↑',
-        ArrowDown: '↓'
-    };
-
-    const MacOSkeyMap: KeyFormatMap = {
-        Shift: '⇧',
-        Delete: '⌫',
-        Ctrl: '⌘',
-        Alt: '⌥'
-    };
-
-    const mapSymbols = (formatMap: KeyFormatMap) => (key: Hotkey) => formatMap[key] || key;
-    const identity = (value) => value;
-
-    return hotkeys
-        // map all keys that should be displayed differently
-        .map(mapSymbols(globalKeyMap))
-        // map only for mac the symbols that should be displayed differently
-        .map(isMac() ? mapSymbols(MacOSkeyMap) : identity)
-        .join(' ');
-};
+import { formatHotkeys } from '@/util/formatHotkeys';
+import { isMac } from '@/util/navigator';
 
 // Shortcut setup:
 // - add string representation of hotkeys

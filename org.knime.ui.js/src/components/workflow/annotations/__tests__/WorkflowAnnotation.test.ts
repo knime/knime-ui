@@ -1,6 +1,8 @@
 import { expect, describe, it, vi } from 'vitest';
-import { h } from 'vue';
+import { h, nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
+import type { Store } from 'vuex';
+import { mixin as VueClickAway } from 'vue3-click-away';
 
 import { mockVuexStore } from '@/test/utils';
 import { mockUserAgent } from 'jest-useragent-mock';
@@ -9,12 +11,40 @@ import * as $colors from '@/style/colors.mjs';
 import * as $shapes from '@/style/shapes.mjs';
 import { API } from '@api';
 import * as workflowStore from '@/store/workflow';
+import * as selectionStore from '@/store/selection';
+import * as canvasStore from '@/store/canvas';
 import { type WorkflowAnnotation, Annotation, type Bounds } from '@/api/gateway-api/generated-api';
 
 import WorkflowAnnotationComp from '../WorkflowAnnotation.vue';
 import LegacyAnnotation from '../LegacyAnnotation.vue';
 import RichTextEditor from '../RichTextEditor.vue';
 import TransformControls from '../TransformControls.vue';
+
+vi.mock('vue3-click-away', () => {
+    const createMockClickAwayDirective = () => {
+        let callback = () => {};
+
+        return {
+            mounted(el, bindings) {
+                callback = bindings.value;
+            },
+            trigger() {
+                callback();
+            }
+        };
+    };
+
+    const mockClickAwayDirective = createMockClickAwayDirective();
+
+    return {
+        mixin: {
+            trigger: mockClickAwayDirective.trigger,
+            directives: {
+                ClickAway: mockClickAwayDirective
+            }
+        }
+    };
+});
 
 describe('Workflow Annotation', () => {
     const defaultProps: {
@@ -35,40 +65,13 @@ describe('Workflow Annotation', () => {
 
     const doMount = ({
         props = {},
-        mocks = {},
-        isAnnotationSelectedMock = vi.fn().mockReturnValue(() => false),
-        selectedAnnotationIdsMock = vi.fn().mockReturnValue(() => []),
-        selectedNodeIdsMock = vi.fn().mockReturnValue(() => []),
-        selectedConnectionsMock = vi.fn().mockReturnValue(() => []),
-        transformControlStub = null
+        transformControlStub = null,
+        directives = {}
     } = {}) => {
-        const defaultMocks = { $shapes, $colors };
-
         const $store = mockVuexStore({
-            workflow: {
-                state: {
-                    activeWorkflow: {
-                        projectId: 'project1',
-                        info: { containerId: 'root' }
-                    },
-                    editableAnnotationId: 'id1'
-                },
-                mutations: workflowStore.mutations,
-                actions: workflowStore.actions
-            },
-            selection: {
-                getters: {
-                    isAnnotationSelected: isAnnotationSelectedMock,
-                    selectedAnnotationIds: selectedAnnotationIdsMock,
-                    selectedNodeIds: selectedNodeIdsMock,
-                    selectedConnections: selectedConnectionsMock
-                },
-                actions: {
-                    deselectAllObjects: vi.fn(),
-                    selectAnnotation: vi.fn(),
-                    deselectAnnotation: vi.fn()
-                }
-            },
+            workflow: workflowStore,
+            canvas: canvasStore,
+            selection: selectionStore,
             application: {
                 actions: {
                     toggleContextMenu: vi.fn()
@@ -76,17 +79,26 @@ describe('Workflow Annotation', () => {
             }
         });
 
+        $store.commit('workflow/setActiveWorkflow', {
+            projectId: 'project1',
+            info: { containerId: 'root' },
+            nodes: { 'root:1': { id: 'root:1' } },
+            connections: {},
+            workflowAnnotations: [defaultProps.annotation]
+        });
+
         const dispatchSpy = vi.spyOn($store, 'dispatch');
 
         const wrapper = mount(WorkflowAnnotationComp, {
             props: { ...defaultProps, ...props },
             global: {
-                mocks: { ...defaultMocks, ...mocks },
+                mocks: { $shapes, $colors },
                 plugins: [$store],
                 stubs: {
                     RichTextEditor: true,
                     TransformControls: transformControlStub || false
-                }
+                },
+                directives
             }
         });
 
@@ -107,12 +119,14 @@ describe('Workflow Annotation', () => {
         expect(wrapper.findComponent(RichTextEditor).exists()).toBe(false);
     });
 
-    it('should render RichTextEditor', () => {
+    it('should render RichTextEditor', async () => {
         const { wrapper } = doMount({
             props: {
                 annotation: { ...defaultProps.annotation, contentType: Annotation.ContentTypeEnum.Html }
             }
         });
+
+        await nextTick();
 
         expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
         expect(wrapper.findComponent(RichTextEditor).props('id')).toEqual(defaultProps.annotation.id);
@@ -158,53 +172,142 @@ describe('Workflow Annotation', () => {
     });
 
     describe('edit', () => {
+        const modernAnnotation = {
+            ...defaultProps.annotation,
+            contentType: Annotation.ContentTypeEnum.Html
+        };
+
+        const toggleAnnotationEdit = ($store: Store<any>, annotationId: string) => {
+            $store.commit('workflow/setEditableAnnotationId', annotationId);
+            return nextTick();
+        };
+
         it('should start editing when dblclicking on LegacyAnnotation', () => {
-            const { wrapper, $store } = doMount({
-                props: {
-                    annotation: { ...defaultProps.annotation, id: 'another-id' }
-                }
-            });
+            const { wrapper, $store } = doMount();
 
             wrapper.findComponent(LegacyAnnotation).trigger('dblclick');
-            expect($store.state.workflow.editableAnnotationId).toBe('another-id');
+            expect($store.state.workflow.editableAnnotationId).toBe(defaultProps.annotation.id);
         });
 
         it('should start editing when dblclicking on RichTextEditor', () => {
             const { wrapper, $store } = doMount({
-                props: {
-                    annotation: {
-                        ...defaultProps.annotation,
-                        id: 'another-id',
-                        contentType: Annotation.ContentTypeEnum.Html
-                    }
-                }
+                props: { annotation: modernAnnotation }
             });
 
             wrapper.findComponent(RichTextEditor).vm.$emit('editStart');
-            expect($store.state.workflow.editableAnnotationId).toBe('another-id');
+            expect($store.state.workflow.editableAnnotationId).toBe(modernAnnotation.id);
         });
 
-        it('should render RichTextEditor when annotation is editable', () => {
-            const { wrapper } = doMount({
-                props: {
-                    isEditing: true
-                }
-            });
+        it('should render RichTextEditor when annotation is editable', async () => {
+            const { wrapper, $store } = doMount();
+
+            await toggleAnnotationEdit($store, 'id1');
 
             expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
             expect(wrapper.findComponent(RichTextEditor).exists()).toBe(true);
             expect(wrapper.findComponent(RichTextEditor).props('editable')).toBe(true);
         });
+
+        it('should set the active border color when first editing legacy annotations', async () => {
+            const { wrapper, $store, dispatchSpy } = doMount({
+                props: {
+                    annotation: { ...defaultProps.annotation, text: 'some text \r\n some more text' }
+                }
+            });
+
+            await toggleAnnotationEdit($store, 'id1');
+            expect(wrapper.findComponent(RichTextEditor).props('borderColor')).toBe(
+                $colors.defaultAnnotationBorderColor
+            );
+
+            const newText = '<p>new content</p>';
+            expect(wrapper.findComponent(RichTextEditor).props('initialValue')).toBe(
+                'some text <br /> some more text'
+            );
+            wrapper.findComponent(RichTextEditor).vm.$emit('change', newText);
+            // @ts-ignore
+            VueClickAway.trigger();
+
+            expect(dispatchSpy).toHaveBeenCalledWith('workflow/updateAnnotation', {
+                annotationId: 'id1',
+                text: newText,
+                borderColor: $colors.defaultAnnotationBorderColor
+            });
+        });
+
+        it('should set the active border color for new annotations', async () => {
+            const { wrapper, $store } = doMount({
+                props: {
+                    annotation: { ...modernAnnotation, borderColor: '#000000' }
+                }
+            });
+
+            await toggleAnnotationEdit($store, 'id1');
+            expect(wrapper.findComponent(RichTextEditor).props('borderColor')).toBe(
+                '#000000'
+            );
+        });
+
+        it('should dispatch an update of an annotation content (no color change)', async () => {
+            const { wrapper, $store, dispatchSpy } = doMount({
+                props: {
+                    annotation: { ...modernAnnotation, borderColor: '#000000' }
+                }
+            });
+
+            await toggleAnnotationEdit($store, modernAnnotation.id);
+            const newContent = '<p>new content</p>';
+
+            wrapper.findComponent(RichTextEditor).vm.$emit('change', newContent);
+            await nextTick();
+
+            expect(wrapper.findComponent(RichTextEditor).props('initialValue')).toBe(modernAnnotation.text);
+            expect(wrapper.findComponent(RichTextEditor).props('borderColor')).toBe('#000000');
+            // @ts-ignore
+            VueClickAway.trigger();
+
+            expect(dispatchSpy).toHaveBeenCalledWith('workflow/updateAnnotation', {
+                annotationId: 'id1',
+                text: newContent,
+                borderColor: '#000000'
+            });
+        });
+
+        it('should dispatch an update of an annotation border color (no content change)', async () => {
+            const { wrapper, $store, dispatchSpy } = doMount({
+                props: {
+                    annotation: { ...modernAnnotation, borderColor: '#000000' }
+                }
+            });
+
+            await toggleAnnotationEdit($store, modernAnnotation.id);
+            const newColor = '#123456';
+
+            expect(wrapper.findComponent(RichTextEditor).props('initialValue')).toBe(modernAnnotation.text);
+            wrapper.findComponent(RichTextEditor).vm.$emit('changeBorderColor', newColor);
+            await nextTick();
+
+            expect(wrapper.findComponent(RichTextEditor).props('borderColor')).toBe(newColor);
+            // @ts-ignore
+            VueClickAway.trigger();
+
+            expect(dispatchSpy).toHaveBeenCalledWith('workflow/updateAnnotation', {
+                annotationId: 'id1',
+                text: modernAnnotation.text,
+                borderColor: newColor
+            });
+        });
     });
 
     describe('selection', () => {
         it('should select with left click', async () => {
-            const { wrapper, dispatchSpy } = doMount();
+            const { wrapper, $store } = doMount();
             await wrapper.findComponent(TransformControls).trigger('click', { button: 0 });
             await wrapper.vm.$nextTick();
 
-            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAllObjects', undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('selection/selectAnnotation', 'id1');
+            expect($store.state.selection.selectedNodes).toEqual({});
+            expect($store.state.selection.selectedConnections).toEqual({});
+            expect($store.state.selection.selectedAnnotations).toEqual({ id1: true });
         });
 
         it.each(['shift', 'ctrl'])('%ss-click adds to selection', async (mod) => {
@@ -227,23 +330,21 @@ describe('Workflow Annotation', () => {
 
         it.each(['shift', 'ctrl'])('%ss-click removes from selection', async (mod) => {
             mockUserAgent('windows');
-            const { wrapper, dispatchSpy } = doMount({
-                isAnnotationSelectedMock: vi.fn().mockReturnValue(() => true)
-            });
+            const { wrapper, $store } = doMount();
+            await $store.dispatch('selection/selectAnnotation', 'id1');
 
             await wrapper.findComponent(TransformControls).trigger('click', { button: 0, [`${mod}Key`]: true });
 
-            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAnnotation', 'id1');
+            expect($store.state.selection.selectedAnnotations).toEqual({});
         });
 
         it('should remove from selection with meta + left click', async () => {
             mockUserAgent('mac');
-            const { wrapper, dispatchSpy } = doMount({
-                isAnnotationSelectedMock: vi.fn().mockReturnValue(() => true)
-            });
+            const { wrapper, $store } = doMount();
+            await $store.dispatch('selection/selectAnnotation', 'id1');
 
             await wrapper.findComponent(TransformControls).trigger('click', { button: 0, metaKey: true });
-            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAnnotation', 'id1');
+            expect($store.state.selection.selectedAnnotations).toEqual({});
         });
     });
 

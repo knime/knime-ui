@@ -2,13 +2,15 @@
 import LinkDecorator from './LinkDecorator.vue';
 import StreamingDecorator from './StreamingDecorator.vue';
 import LoopDecorator from './LoopDecorator.vue';
+import ReexecutionDecorator from './ReexecutionDecorator.vue';
 
 /** A component used to render all different decorators a node can show */
 export default {
     components: {
         LinkDecorator,
         StreamingDecorator,
-        LoopDecorator
+        LoopDecorator,
+        ReexecutionDecorator
     },
     inheritAttrs: false,
     props: {
@@ -21,10 +23,10 @@ export default {
         },
 
         /**
-         * Path to the origin of a linked component or metanode
+         * TemplateLink object containing the link URL and updateStatus
          */
         link: {
-            type: String,
+            type: Object,
             default: null
         },
 
@@ -65,6 +67,11 @@ export default {
             default: () => ({
                 allowedActions: {}
             })
+        },
+
+        isReexecutable: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
@@ -79,8 +86,9 @@ export default {
 <template>
   <g>
     <LinkDecorator
-      v-if="link"
+      v-if="link?.url"
       :background-type="decoratorBackgroundType"
+      :update-status="link.updateStatus"
       transform="translate(0, 21)"
     />
 
@@ -93,6 +101,12 @@ export default {
       :background-type="decoratorBackgroundType"
       :execution-info="executionInfo"
       transform="translate(21, 21)"
+    />
+
+    <ReexecutionDecorator
+      v-if="isReexecutable"
+      :background-type="decoratorBackgroundType"
+      transform="translate(20, 0)"
     />
 
     <LoopDecorator

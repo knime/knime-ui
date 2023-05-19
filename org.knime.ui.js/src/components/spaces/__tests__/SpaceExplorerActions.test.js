@@ -86,7 +86,7 @@ describe('SpaceExplorerActions.vue', () => {
     });
 
     describe('mini mode', () => {
-        it('should render actions for local space', () => {
+        it('should render actions for local space', async () => {
             const { wrapper } = doMount({
                 props: {
                     mode: 'mini',
@@ -96,6 +96,9 @@ describe('SpaceExplorerActions.vue', () => {
 
             expect(wrapper.find('.toolbar-actions-mini').exists()).toBe(true);
             expect(wrapper.find('.toolbar-actions-normal').exists()).toBe(false);
+
+            // open submenu
+            await wrapper.find('.submenu-toggle').trigger('click');
 
             expect(wrapper.text()).toMatch('Upload to Hub');
             expect(wrapper.text()).toMatch('Create folder');
@@ -107,13 +110,16 @@ describe('SpaceExplorerActions.vue', () => {
             expect(wrapper.findComponent(SubMenu).props('items').length).toBe(5);
         });
 
-        it('should render actions for hub', () => {
+        it('should render actions for hub', async () => {
             const { wrapper } = doMount({
                 props: { mode: 'mini' }
             });
 
             expect(wrapper.find('.toolbar-actions-mini').exists()).toBe(true);
             expect(wrapper.find('.toolbar-actions-normal').exists()).toBe(false);
+
+            // open submenu
+            await wrapper.find('.submenu-toggle').trigger('click');
 
             expect(wrapper.text()).toMatch('Download to local space');
             expect(wrapper.text()).toMatch('Create folder');

@@ -159,6 +159,12 @@ export interface AddWorkflowAnnotationCommand extends WorkflowCommand {
      * @memberof AddWorkflowAnnotationCommand
      */
     bounds: Bounds;
+    /**
+     * The new border color as a hex string (rgb)
+     * @type {string}
+     * @memberof AddWorkflowAnnotationCommand
+     */
+    borderColor: string;
 
 }
 
@@ -653,11 +659,11 @@ export interface ComponentNode extends Node {
      */
     state?: NodeState;
     /**
-     * A URL, if the component is linked.
-     * @type {string}
+     *
+     * @type {TemplateLink}
      * @memberof ComponentNode
      */
-    link?: string;
+    link?: TemplateLink;
 
 }
 
@@ -712,7 +718,8 @@ export namespace ComponentNodeAndDescription {
         Learner = 'Learner',
         Predictor = 'Predictor',
         Manipulator = 'Manipulator',
-        Visualizer = 'Visualizer'
+        Visualizer = 'Visualizer',
+        Other = 'Other'
     }
 }
 /**
@@ -1314,11 +1321,11 @@ export interface MetaNode extends Node {
      */
     outPorts: Array<MetaNodePort>;
     /**
-     * A URL, if the metanode is linked.
-     * @type {string}
+     *
+     * @type {TemplateLink}
      * @memberof MetaNode
      */
-    link?: string;
+    link?: TemplateLink;
 
 }
 
@@ -1456,6 +1463,12 @@ export interface NativeNode extends Node {
      * @memberof NativeNode
      */
     hasView?: boolean;
+    /**
+     * Indicates whether the node can re-execute itself (e.g. within a page of a data app). It&#39;s absent if the node isn&#39;t re-executable at all (i.e. it can&#39;t even be configured to be re-executable).
+     * @type {boolean}
+     * @memberof NativeNode
+     */
+    isReexecutable?: boolean;
 
 }
 
@@ -1900,11 +1913,11 @@ export interface NodePort extends NodePortTemplate {
      */
     inactive?: boolean;
     /**
-     * A port object version which allows one to detect port object changes. Will be absent if there is no data, i.e. no port object or if it&#39;s an input port. Will also be absent if there is no &#39;interaction info&#39; supposed to be included.
+     * A port content version which allows one to detect port content changes (port data and spec). Will be absent if there is no data, i.e. no port content at all or if it&#39;s an input port. Will also be absent if there is no &#39;interaction info&#39; supposed to be included.
      * @type {number}
      * @memberof NodePort
      */
-    portObjectVersion?: number;
+    portContentVersion?: number;
     /**
      * The port group this port belongs to. Only available for native nodes.
      * @type {string}
@@ -2357,13 +2370,13 @@ export interface PortGroup {
      */
     outputRange?: Array<number>;
     /**
-     * Can you add another input port or not. Either this or the &#39;canAddOutPort&#39; is required for a port group.
+     * Whether an additional input port can be added. Either this or &#x60;canAddOutPort&#x60; is required.
      * @type {boolean}
      * @memberof PortGroup
      */
     canAddInPort?: boolean;
     /**
-     * Can you add another output port or not. Either this or the &#39;canAddInPort&#39; is required for a port group.
+     * Whether an additional input port can be added. Either this or &#x60;canAddInPort&#x60; is required.
      * @type {boolean}
      * @memberof PortGroup
      */
@@ -2379,7 +2392,7 @@ export interface PortGroup {
 
 
 /**
- * Decribes the type of a port.
+ * Describes the type of a port.
  * @export
  * @interface PortType
  */
@@ -2416,11 +2429,11 @@ export interface PortType {
      */
     hidden?: boolean;
     /**
-     * Indicates whether this port type has a view. Property is only available if true and if interaction info is to be included. 
-     * @type {boolean}
+     *
+     * @type {PortViews}
      * @memberof PortType
      */
-    hasView?: boolean;
+    views?: PortViews;
 
 }
 
@@ -2441,6 +2454,75 @@ export namespace PortType {
         Other = 'other'
     }
 }
+/**
+ * Metadata about a port view.
+ * @export
+ * @interface PortViewDescriptor
+ */
+export interface PortViewDescriptor {
+
+    /**
+     * The display name of the port view.
+     * @type {string}
+     * @memberof PortViewDescriptor
+     */
+    label: string;
+    /**
+     * Whether the view is a port object spec view. Assumed to be false if omitted.
+     * @type {boolean}
+     * @memberof PortViewDescriptor
+     */
+    isSpecView?: boolean;
+
+}
+
+
+/**
+ * Mapping of node execution state to list of view IDs to be displayed.
+ * @export
+ * @interface PortViewDescriptorMapping
+ */
+export interface PortViewDescriptorMapping {
+
+    /**
+     * IDs of views to be displayed when the node is in &#x60;configured&#x60; state.
+     * @type {Array<number>}
+     * @memberof PortViewDescriptorMapping
+     */
+    configured?: Array<number>;
+    /**
+     * IDs of views to be available when the node is in &#x60;executed&#x60; state.
+     * @type {Array<number>}
+     * @memberof PortViewDescriptorMapping
+     */
+    executed?: Array<number>;
+
+}
+
+
+/**
+ * Provides information about views available for a port type.
+ * @export
+ * @interface PortViews
+ */
+export interface PortViews {
+
+    /**
+     *
+     * @type {Array<PortViewDescriptor>}
+     * @memberof PortViews
+     */
+    descriptors: Array<PortViewDescriptor>;
+    /**
+     *
+     * @type {PortViewDescriptorMapping}
+     * @memberof PortViews
+     */
+    descriptorMapping: PortViewDescriptorMapping;
+
+}
+
+
 /**
  * Event for changes to the dirtyState of a project/workflow.
  * @export
@@ -2841,6 +2923,44 @@ export interface StyleRange {
 
 
 /**
+ * The link of a metanode or component.
+ * @export
+ * @interface TemplateLink
+ */
+export interface TemplateLink {
+
+    /**
+     * A URL, if the metanode/component is linked to.
+     * @type {string}
+     * @memberof TemplateLink
+     */
+    url?: string;
+    /**
+     * The status of the link of this metanode/component (UpToDate, HasUpdate, Error)
+     * @type {string}
+     * @memberof TemplateLink
+     */
+    updateStatus?: TemplateLink.UpdateStatusEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace TemplateLink
+ */
+export namespace TemplateLink {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum UpdateStatusEnum {
+        UPTODATE = 'UP_TO_DATE',
+        HASUPDATE = 'HAS_UPDATE',
+        ERROR = 'ERROR'
+    }
+}
+/**
  * Changes the size (width and height) and position (x, y) of a workflow annotation.
  * @export
  * @interface TransformWorkflowAnnotationCommand
@@ -3008,27 +3128,33 @@ export interface UpdateNodeLabelCommand extends WorkflowCommand {
 export namespace UpdateNodeLabelCommand {
 }
 /**
- * Updates the text of a workflow annotation
+ * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;,  but never both of them.
  * @export
- * @interface UpdateWorkflowAnnotationTextCommand
+ * @interface UpdateWorkflowAnnotationCommand
  */
-export interface UpdateWorkflowAnnotationTextCommand extends WorkflowAnnotationCommand {
+export interface UpdateWorkflowAnnotationCommand extends WorkflowAnnotationCommand {
 
     /**
      * The new formatted text to update the annotation with
      * @type {string}
-     * @memberof UpdateWorkflowAnnotationTextCommand
+     * @memberof UpdateWorkflowAnnotationCommand
      */
-    text: string;
+    text?: string;
+    /**
+     * The new border color as a hex string (rgb)
+     * @type {string}
+     * @memberof UpdateWorkflowAnnotationCommand
+     */
+    borderColor?: string;
 
 }
 
 
 /**
  * @export
- * @namespace UpdateWorkflowAnnotationTextCommand
+ * @namespace UpdateWorkflowAnnotationCommand
  */
-export namespace UpdateWorkflowAnnotationTextCommand {
+export namespace UpdateWorkflowAnnotationCommand {
 }
 /**
  * The structure of a workflow.
@@ -3139,7 +3265,7 @@ export interface WorkflowAnnotation extends Annotation {
      */
     borderWidth: number;
     /**
-     *
+     * A hex color string (rgb).
      * @type {string}
      * @memberof WorkflowAnnotation
      */
@@ -3272,7 +3398,7 @@ export namespace WorkflowCommand {
         Cut = 'cut',
         Paste = 'paste',
         TransformWorkflowAnnotation = 'transform_workflow_annotation',
-        UpdateWorkflowAnnotationText = 'update_workflow_annotation_text',
+        UpdateWorkflowAnnotation = 'update_workflow_annotation',
         ReorderWorkflowAnnotations = 'reorder_workflow_annotations',
         AddWorkflowAnnotation = 'add_workflow_annotation'
     }
@@ -3745,13 +3871,14 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} portIdx The port index to be used.
+         * @param {number} viewIdx The index of the specific port view to obtain
          * @param {'initial_data' | 'data'} serviceType 
          * @param {string} [dataServiceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         callPortDataService(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
         ): Promise<string> {
            const defaultParams = { 
                 dataServiceRequest: null,
@@ -3765,11 +3892,12 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} portIdx The port index to be used.
+         * @param {number} viewIdx The index of the specific port view to obtain
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getPortView(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number  }
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
         ): Promise<any> {
            const defaultParams = { 
            }
@@ -4221,16 +4349,16 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
-     * Updates the text of a workflow annotation
+     * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;,  but never both of them.
      */
-	UpdateWorkflowAnnotationText(
-		params: { projectId: string, workflowId: string } & Omit<UpdateWorkflowAnnotationTextCommand, 'kind'>
+	UpdateWorkflowAnnotation(
+		params: { projectId: string, workflowId: string } & Omit<UpdateWorkflowAnnotationCommand, 'kind'>
     ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
 		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
-            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateWorkflowAnnotationText }
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateWorkflowAnnotation }
 		});
 		return postProcessCommandResponse(commandResponse);
 	},	

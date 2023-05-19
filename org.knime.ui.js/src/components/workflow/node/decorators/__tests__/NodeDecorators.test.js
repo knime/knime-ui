@@ -5,6 +5,7 @@ import NodeDecorators from '../NodeDecorators.vue';
 import LinkDecorator from '../LinkDecorator.vue';
 import StreamingDecorator from '../StreamingDecorator.vue';
 import LoopDecorator from '../LoopDecorator.vue';
+import ReexecutionDecorator from '../ReexecutionDecorator.vue';
 
 describe('NodeDecorators.vue', () => {
     const defaultProps = {
@@ -20,10 +21,11 @@ describe('NodeDecorators.vue', () => {
         expect(wrapper.findComponent(LinkDecorator).exists()).toBe(false);
         expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(false);
         expect(wrapper.findComponent(LoopDecorator).exists()).toBe(false);
+        expect(wrapper.findComponent(ReexecutionDecorator).exists()).toBe(false);
     });
 
-    it('shows/hides LinkDecorator', () => {
-        const wrapper = doMount({ ...defaultProps, link: 'linkylinky' });
+    it('shows/hides default LinkDecorator', () => {
+        const wrapper = doMount({ ...defaultProps, link: { url: 'link', updateStatus: 'UP_TO_DATE' } });
 
         let linkDecorator = wrapper.findComponent(LinkDecorator);
         expect(linkDecorator.attributes('transform')).toBe('translate(0, 21)');
@@ -37,6 +39,18 @@ describe('NodeDecorators.vue', () => {
         expect(streamingDecorator.props('executionInfo')).toStrictEqual({
             jobManager: 'sampleJobManager'
         });
+    });
+
+    it('shows/hides ReexecutionDecorator', async () => {
+        const wrapper = doMount({ ...defaultProps, isReexecutable: true });
+
+        let reexecutionDecorator = wrapper.findComponent(ReexecutionDecorator);
+        expect(reexecutionDecorator.attributes('transform')).toBe('translate(20, 0)');
+
+        wrapper.setProps({ isReexecutable: false });
+        await wrapper.vm.$nextTick();
+        reexecutionDecorator = wrapper.findComponent(ReexecutionDecorator);
+        expect(wrapper.findComponent(ReexecutionDecorator).exists()).toBe(false);
     });
 
     it.each(['LoopStart', 'LoopEnd'])('shows/hides LoopDecorator', (type) => {
@@ -54,7 +68,7 @@ describe('NodeDecorators.vue', () => {
     ])('provides background type', (nodeProps, expectedType) => {
         const wrapper = doMount({
             ...nodeProps,
-            link: 'linky',
+            link: { url: 'testLink', updateStatus: 'UP_TO_DATE' },
             executionInfo: { mock: 'something' }
         });
 

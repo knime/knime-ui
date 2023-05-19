@@ -4,7 +4,7 @@ import { mapActions, mapState } from 'vuex';
 
 import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
 import SearchResults from '@/components/nodeRepository/SearchResults.vue';
-import type { ComponentNode, MetaNode, NativeNode } from '@/api/gateway-api/generated-api';
+import type { KnimeNode } from '@/api/gateway-api/custom-types';
 
 export default defineComponent({
     components: {
@@ -13,7 +13,7 @@ export default defineComponent({
     },
     props: {
         selectedNode: {
-            type: [Object, null] as PropType<NativeNode | ComponentNode | MetaNode | null>,
+            type: [Object, null] as PropType<KnimeNode | null>,
             required: true
         }
     },

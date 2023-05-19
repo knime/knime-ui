@@ -26,23 +26,12 @@ export default {
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
         ...mapState('canvas', ['zoomFactor', 'interactionsEnabled', 'isEmpty']),
-        ...mapState('application', ['scrollToZoomEnabled'])
+        ...mapState('application', ['scrollToZoomEnabled']),
+        ...mapState('workflow', ['isDragging'])
     },
     watch: {
         contentBounds(...args) {
             this.contentBoundsChanged(args);
-        },
-
-        isHoldingDownSpace(newValue) {
-            if (newValue) {
-                // listen to blur events while waiting for space bar to be released
-                this.windowBlurListener = () => this.onReleaseSpace();
-                window.addEventListener('blur', this.windowBlurListener, { once: true });
-            } else {
-                // remove manually when space bar has been released
-                window.removeEventListener('blur', this.windowBlurListener);
-                this.windowBlurListener = null;
-            }
         }
     },
     mounted() {
@@ -52,7 +41,20 @@ export default {
         this.$el.focus();
 
         document.addEventListener('keypress', this.onPressSpace);
-        document.addEventListener('keyup', this.onReleaseSpace);
+        document.addEventListener('keyup', this.onReleaseKey);
+        document.addEventListener('keydown', this.onDownShiftOrControl);
+
+        this.windowBlurListener = () => {
+            // unset panning state
+            this.useMoveCursor = false;
+            this.isPanning = false;
+            this.isHoldingDownSpace = false;
+
+            // unset move-lock state
+            this.setIsMoveLocked(false);
+        };
+
+        window.addEventListener('blur', this.windowBlurListener);
     },
     beforeUnmount() {
         // Stop Resize Observer
@@ -62,7 +64,8 @@ export default {
         this.clearScrollContainerElement();
         window.removeEventListener('blur', this.windowBlurListener);
         document.removeEventListener('keypress', this.onPressSpace);
-        document.removeEventListener('keyup', this.onReleaseSpace);
+        document.removeEventListener('keyup', this.onReleaseKey);
+        document.removeEventListener('keydown', this.onDownShiftOrControl);
     },
     methods: {
         ...mapActions('canvas', [
@@ -71,7 +74,7 @@ export default {
             'zoomAroundPointer',
             'contentBoundsChanged'
         ]),
-        ...mapMutations('canvas', ['clearScrollContainerElement']),
+        ...mapMutations('canvas', ['clearScrollContainerElement', 'setIsMoveLocked']),
 
         initResizeObserver() {
             // updating the container size and recalculating the canvas is debounced.
@@ -162,15 +165,19 @@ export default {
             this.isHoldingDownSpace = true;
         },
 
-        onReleaseSpace(e) {
-            if (e.code !== 'Space') {
-                return;
+        onReleaseKey(e) {
+            if (e.code === 'Space') {
+                // unset panning state
+                this.useMoveCursor = false;
+                this.isPanning = false;
+                this.isHoldingDownSpace = false;
             }
 
-            // unset panning state
-            this.useMoveCursor = false;
-            this.isPanning = false;
-            this.isHoldingDownSpace = false;
+            const metaOrCtrlKey = isMac() ? 'Meta' : 'Control';
+
+            if (e.key === 'Shift' || e.key === metaOrCtrlKey) {
+                this.setIsMoveLocked(false);
+            }
         },
 
         beginPan(e) {
@@ -261,6 +268,18 @@ export default {
 
             // move cursor should remain set if the user is still holding down the space key
             this.useMoveCursor = this.isHoldingDownSpace;
+        },
+
+        onDownShiftOrControl(e) {
+            if (isInputElement(e.target)) {
+                return;
+            }
+
+            const metaOrCtrlKey = getMetaOrCtrlKey();
+
+            if ((e.shiftKey || e[metaOrCtrlKey]) && !this.isDragging) {
+                this.setIsMoveLocked(true);
+            }
         },
 
         startRectangleSelection(event) {

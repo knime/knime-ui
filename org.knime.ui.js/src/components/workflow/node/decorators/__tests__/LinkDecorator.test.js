@@ -6,9 +6,26 @@ import * as $colors from '@/style/colors.mjs';
 import LinkDecorator from '../LinkDecorator.vue';
 
 describe('LinkDecorator.vue', () => {
-    const doShallowMount = (backgroundType) => shallowMount(LinkDecorator, {
-        props: { backgroundType },
+    const doShallowMount = (backgroundType, updateStatus = null) => shallowMount(LinkDecorator, {
+        props: { backgroundType, updateStatus },
         global: { mocks: { $colors } }
+    });
+
+    it('shows/hides link icon for different statuses', async () => {
+        const wrapper = doShallowMount('Manipulator');
+        expect(wrapper.find('path').attributes()['data-testid']).toBe('arrow');
+
+        await wrapper.setProps({ updateStatus: 'UP_TO_DATE' });
+        expect(wrapper.find('path').attributes()['data-testid']).toBe('arrow');
+
+        await wrapper.setProps({ updateStatus: 'HAS_UPDATE' });
+        expect(wrapper.find('path').attributes()['data-testid']).toBe('dotted-arrow');
+
+        await wrapper.setProps({ updateStatus: 'ERROR' });
+        expect(wrapper.find('path').attributes()['data-testid']).toBe('cross');
+
+        await wrapper.setProps({ updateStatus: 'InvalidLinkStatus' });
+        expect(wrapper.find('path').exists()).toBeFalsy();
     });
 
     it('draws background for known type', () => {

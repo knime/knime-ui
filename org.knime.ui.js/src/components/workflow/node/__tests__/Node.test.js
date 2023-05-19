@@ -62,6 +62,7 @@ const commonNode = {
 
     link: null,
     executionInfo: null,
+    isReexecutable: false,
     loopState: null,
     loopInfo: {
         allowedActions: {}
