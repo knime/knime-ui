@@ -14,7 +14,7 @@ const getTabTogglesFromViewDescriptors = (
     viewDescriptors: Array<PortViewDescriptor>;
     viewDescriptorMapping: PortViewDescriptorMapping;
   },
-  currentNodeState: "configured" | "executed"
+  currentNodeState: "configured" | "executed" | "idle"
 ): Array<ValueSwitchItem> => {
   const descriptorIndexes = data.viewDescriptorMapping[currentNodeState];
 
@@ -61,7 +61,7 @@ export default defineComponent({
     },
 
     currentNodeState: {
-      type: String as PropType<"configured" | "executed">,
+      type: String as PropType<"configured" | "executed" | "idle">,
       required: true,
     },
   },

@@ -179,21 +179,48 @@ export default defineComponent({
       return this.fullPortObject.views;
     },
 
-    currentNodeState(): "configured" | "executed" {
+    currentNodeState(): "configured" | "executed" | "idle" {
+      // console.log("here");
+      // console.log(isMetaNode(this.selectedNode));
+      console.log(this.selectedNode);
+
       // metanodes have no configured state so they use the state of the selected output port
       if (isMetaNode(this.selectedNode)) {
         const portState =
           this.selectedNode.outPorts[this.selectedPortIndex].nodeState;
+        // console.log(portState);
 
-        return portState === MetaNodePort.NodeStateEnum.CONFIGURED
-          ? "configured"
-          : "executed";
+        if (portState === MetaNodePort.NodeStateEnum.CONFIGURED) {
+          return "configured";
+        } else if (portState === MetaNodePort.NodeStateEnum.IDLE) {
+          return "idle";
+        }
+
+        return "executed";
+
+        // return portState === MetaNodePort.NodeStateEnum.CONFIGURED
+        //   ? "configured"
+        //   : "executed";
+      }
+      // console.log(this.selectedNode.state.executionState);
+
+      if (
+        this.selectedNode.state.executionState ===
+        NodeState.ExecutionStateEnum.CONFIGURED
+      ) {
+        return "configured";
+      } else if (
+        this.selectedNode.state.executionState ===
+        NodeState.ExecutionStateEnum.IDLE
+      ) {
+        return "idle";
       }
 
-      return this.selectedNode.state.executionState ===
-        NodeState.ExecutionStateEnum.CONFIGURED
-        ? "configured"
-        : "executed";
+      return "executed";
+      // return this.selectedNode.state.executionState ===
+      //   NodeState.ExecutionStateEnum.CONFIGURED
+      //   ? "configured"
+      //   : "executed";
     },
 
     shouldShowExecuteAction() {
