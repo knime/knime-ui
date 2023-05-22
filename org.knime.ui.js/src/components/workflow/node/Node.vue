@@ -271,10 +271,26 @@ export default {
     ]),
 
     onLeaveHoverArea(e) {
-      if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
+      const actionBarElement = this.$refs.actionbar?.$el;
+      if (actionBarElement?.contains(e.relatedTarget)) {
         // Used to test for elements that are logically contained inside this node
         // but aren't DOM-wise because they were teleported to another layer.
         // Currently only applies to ref 'actionbar'
+        return;
+      }
+
+      // chrome has a bug where it emits mouseleave even if the mouse did not really leave
+      // in our case we have two different sets of elements that are logically contained but not DOM-wise
+      // which makes it even more problematic. This check will prevent any false positives on leave.
+      // In theroy the test above for the relatedTarget is superseeded by this one we keep both because
+      // we consider this to be a workaround.
+      // the bug: https://bugs.chromium.org/p/chromium/issues/detail?id=798535
+      const hoverContainer = this.$refs.hoverContainer?.$el;
+      const elementFromPoint = document.elementFromPoint(e.clientX, e.clientY);
+      if (
+        hoverContainer?.contains(elementFromPoint) ||
+        actionBarElement?.contains(elementFromPoint)
+      ) {
         return;
       }
 
@@ -460,6 +476,7 @@ export default {
 
         <!-- Elements for which mouse hover triggers hover state -->
         <g
+          ref="hoverContainer"
           class="hover-container"
           @pointerdown.right="onContextMenu"
           @connector-enter="onConnectorEnter"
