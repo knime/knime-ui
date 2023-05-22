@@ -39,10 +39,6 @@ export default {
   },
   async created() {
     await this.$store.dispatch("spaces/fetchAllSpaceProviders");
-    // Load local space by default
-    await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-      itemId: "root",
-    });
   },
 
   methods: {
@@ -103,6 +99,9 @@ export default {
     },
 
     async createWorkflowLocally() {
+      await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
+        itemId: "root",
+      });
       this.$store.commit("spaces/setActiveSpaceProviderById", "local");
       this.$store.commit("spaces/setActiveSpaceId", "local");
       await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
