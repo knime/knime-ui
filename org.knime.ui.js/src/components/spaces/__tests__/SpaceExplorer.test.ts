@@ -84,16 +84,14 @@ describe("SpaceExplorer.vue", () => {
       },
       nodeRepository: {
         actions: {
-          getNodeTemplate: vi
-            .fn()
-            .mockReturnValue({
-              id: "test.id",
-              name: "test.test",
-              type: "type",
-              inPorts: [],
-              outPorts: [],
-              icon: "icon",
-            }),
+          getNodeTemplate: vi.fn().mockReturnValue({
+            id: "test.id",
+            name: "test.test",
+            type: "type",
+            inPorts: [],
+            outPorts: [],
+            icon: "icon",
+          }),
         },
       },
     });

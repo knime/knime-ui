@@ -801,15 +801,13 @@ describe("Connector.vue", () => {
       const wrapper = doShallowMount({ storeConfig });
 
       const paths = wrapper.findAll("path");
-      paths
-        .at(0)
-        .trigger("node-dragging-enter", {
-          detail: {
-            isNodeConnected: true,
-            inPorts: [portMock],
-            outPorts: [portMock],
-          },
-        });
+      paths.at(0).trigger("node-dragging-enter", {
+        detail: {
+          isNodeConnected: true,
+          inPorts: [portMock],
+          outPorts: [portMock],
+        },
+      });
 
       expect(paths.at(1).classes()).not.toContain("is-dragged-over");
     });
@@ -821,15 +819,13 @@ describe("Connector.vue", () => {
       const wrapper = doShallowMount({ storeConfig });
 
       const paths = wrapper.findAll("path");
-      paths
-        .at(0)
-        .trigger("node-dragging-enter", {
-          detail: {
-            isNodeConnected: true,
-            inPorts: [portMock],
-            outPorts: [portMock],
-          },
-        });
+      paths.at(0).trigger("node-dragging-enter", {
+        detail: {
+          isNodeConnected: true,
+          inPorts: [portMock],
+          outPorts: [portMock],
+        },
+      });
 
       expect(paths.at(1).classes()).not.toContain("is-dragged-over");
     });
@@ -839,23 +835,19 @@ describe("Connector.vue", () => {
       const wrapper = doShallowMount({ storeConfig });
 
       const paths = wrapper.findAll("path");
-      paths
-        .at(0)
-        .trigger("node-dragging-enter", {
-          detail: {
-            isNodeConnected: false,
-            inPorts: [portMock],
-            outPorts: [portMock],
-          },
-        });
+      paths.at(0).trigger("node-dragging-enter", {
+        detail: {
+          isNodeConnected: false,
+          inPorts: [portMock],
+          outPorts: [portMock],
+        },
+      });
       await Vue.nextTick();
       expect(paths.at(1).classes()).toContain("is-dragged-over");
 
-      paths
-        .at(0)
-        .trigger("node-dragging-end", {
-          detail: { id: "test", clientX: 0, clientY: 0 },
-        });
+      paths.at(0).trigger("node-dragging-end", {
+        detail: { id: "test", clientX: 0, clientY: 0 },
+      });
 
       expect(storeConfig.workflow.actions.insertNode).toHaveBeenCalledWith(
         expect.anything(),
@@ -881,27 +873,23 @@ describe("Connector.vue", () => {
       const wrapper = doShallowMount({ storeConfig, props });
 
       const paths = wrapper.findAll("path");
-      paths
-        .at(0)
-        .trigger("node-dragging-enter", {
-          detail: {
-            isNodeConnected: false,
-            inPorts: [portMock],
-            outPorts: [portMock],
-          },
-        });
+      paths.at(0).trigger("node-dragging-enter", {
+        detail: {
+          isNodeConnected: false,
+          inPorts: [portMock],
+          outPorts: [portMock],
+        },
+      });
 
       const errorCallback = vi.fn();
-      paths
-        .at(0)
-        .trigger("node-dragging-end", {
-          detail: {
-            id: "test",
-            clientX: 0,
-            clientY: 0,
-            onError: errorCallback,
-          },
-        });
+      paths.at(0).trigger("node-dragging-end", {
+        detail: {
+          id: "test",
+          clientX: 0,
+          clientY: 0,
+          onError: errorCallback,
+        },
+      });
       expect(errorCallback).toBeCalled();
 
       expect(storeConfig.workflow.actions.insertNode).not.toHaveBeenCalled();
