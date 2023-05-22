@@ -117,7 +117,7 @@ onMounted(() => {
   & :deep(.ProseMirror) {
     height: 100%;
     font-size: 12px;
-    padding: 10px;
+    padding: 16px;
     color: var(--knime-black);
 
     &:focus-visible,
@@ -126,8 +126,8 @@ onMounted(() => {
     }
 
     & p {
-      margin: 0;
-      padding-bottom: 6px;
+      margin: 0 0 6px;
+      padding: 0;
       line-height: 1.44;
     }
 
@@ -152,34 +152,40 @@ onMounted(() => {
 
     & h1 {
       font-size: 48px;
+      margin: 32px 0 16px;
     }
 
     & h2 {
       font-size: 36px;
+      margin: 24px 0 12px;
     }
 
     & h3 {
       font-size: 30px;
+      margin: 20px 0 10px;
     }
 
     & h4 {
       font-size: 24px;
+      margin: 16px 0 8px;
     }
 
     & h5 {
       font-size: 18px;
+      margin: 12px 0 6px;
     }
 
     & h6 {
       font-size: 15px;
+      margin: 10px 0 5px;
     }
 
-    & h1:first-of-type,
-    & h2:first-of-type,
-    & h3:first-of-type,
-    & h4:first-of-type,
-    & h5:first-of-type,
-    & h6:first-of-type {
+    & h1:first-child,
+    & h2:first-child,
+    & h3:first-child,
+    & h4:first-child,
+    & h5:first-child,
+    & h6:first-child {
       margin-top: 0;
     }
 
@@ -214,6 +220,10 @@ onMounted(() => {
     & ul,
     & ol {
       padding-left: 20px;
+
+      &:first-child {
+        margin-top: 0;
+      }
     }
 
     & a {
