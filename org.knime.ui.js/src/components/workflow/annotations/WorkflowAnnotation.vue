@@ -120,6 +120,12 @@ export default defineComponent({
         ? this.annotation.text
         : recreateLinebreaks(this.annotation.text);
     },
+
+    initialBorderColor() {
+      return this.isRichTextAnnotation
+        ? this.annotation.borderColor
+        : this.$colors.defaultAnnotationBorderColor;
+    },
   },
 
   mounted() {
@@ -137,10 +143,7 @@ export default defineComponent({
     initializeData() {
       this.newAnnotationData = {
         richTextContent: this.initialRichTextAnnotationValue,
-
-        borderColor: this.isRichTextAnnotation
-          ? this.annotation.borderColor
-          : this.$colors.defaultAnnotationBorderColor,
+        borderColor: this.initialBorderColor,
       };
     },
 
@@ -247,7 +250,7 @@ export default defineComponent({
           v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
           :initial-value="initialRichTextAnnotationValue"
-          :border-color="newAnnotationData.borderColor"
+          :initial-border-color="initialBorderColor"
           :editable="isEditing"
           :is-dragging="isDragging"
           :annotation-bounds="transformedBounds"

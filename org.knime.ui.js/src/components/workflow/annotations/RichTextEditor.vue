@@ -16,7 +16,7 @@ interface Props {
   annotationBounds: Bounds;
   isSelected: boolean;
   isDragging: boolean;
-  borderColor: string;
+  initialBorderColor: string;
 }
 
 const props = defineProps<Props>();
@@ -48,7 +48,7 @@ watch(initialValue, () => {
 });
 
 const activeBorderColor = computed(
-  () => previewBorderColor.value || props.borderColor
+  () => previewBorderColor.value || props.initialBorderColor
 );
 
 onMounted(() => {
@@ -67,7 +67,7 @@ onMounted(() => {
   >
     <Portal v-if="editable && editor" to="annotation-editor-toolbar">
       <RichTextEditorToolbar
-        :active-border-color="borderColor"
+        :active-border-color="initialBorderColor"
         :editor="editor"
         :annotation-bounds="annotationBounds"
         @change-border-color="emit('changeBorderColor', $event)"
