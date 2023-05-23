@@ -7,6 +7,7 @@ import { loadAsyncComponent } from "webapps-common/ui/util/loadComponentLibrary"
 // At the moment this component has to be directly provided because no dynamic counterparts
 // that can be loaded exists. Eventually this view will also be loaded dynamically
 import FlowVariablePortView from "@/components/output/FlowVariablePortView.vue";
+import IFramePortView from "@/components/output/IFramePortView.vue";
 import ImagePortView from "@/components/output/ImagePortView.vue";
 import type { ViewConfig, ResourceInfo } from "@/api/custom-types";
 
@@ -29,6 +30,7 @@ export default defineComponent({
   components: {
     FlowVariablePortView,
     ImagePortView,
+    IFramePortView,
   },
 
   provide() {
@@ -126,7 +128,15 @@ export default defineComponent({
       try {
         const viewConfig = await this.viewConfigLoaderFn();
 
-        await this.renderDynamicViewComponent(viewConfig);
+        if (viewConfig.resourceInfo.type === "HTML") {
+          this.initialData = {
+            src: this.resourceLocationResolver(viewConfig),
+            style: viewConfig.iframeStyle,
+          };
+          this.componentName = "IFramePortView";
+        } else {
+          await this.renderDynamicViewComponent(viewConfig);
+        }
         this.$emit("stateChange", { state: "ready" });
       } catch (e) {
         this.$emit("stateChange", { state: "error", message: e });
