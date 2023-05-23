@@ -34,7 +34,16 @@ npm run dev
 
 ### Git hooks
 
+To set up hooks via [husky] on the repository (recommended for a frontend-focused development setup) you can run the following npm script:
+
+```
+npm run add-husky
+```
+
+If working on a fullstack setup (backend & frontend) you might want to opt-out and instead fallback to using the global hooks approach (See [here](https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/3023077413/Git+Setup#Set-up-commit-message-template)). This is because husky will intervene with the global hooks and takeover, meaning that if you have other global hooks set up for the repo then those won't work.
+
 When committing your changes, a couple of commit hooks will run via [husky].
+
 - `pre-commit` hook to lint and format the changes in your stage zone (via [lintstaged])
 - `prepare-commit-msg` hook to format your commit message to conform with the required format by KNIME. In order for this to work you must set environment variables with your Atlassian email and API token. Refer to [webapps-common/scripts/README.md](webapps-common/scripts/README.md) for more information.
 
