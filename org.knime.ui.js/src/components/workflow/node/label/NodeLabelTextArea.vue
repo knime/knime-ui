@@ -1,80 +1,72 @@
 <script>
-import { getMetaOrCtrlKey } from '@/util/navigator';
-import NodeLabelText from './NodeLabelText.vue';
+import { getMetaOrCtrlKey } from "@/util/navigator";
+import NodeLabelText from "./NodeLabelText.vue";
 
 export default {
-    components: { NodeLabelText },
-    props: {
-        modelValue: {
-            type: String,
-            default: ''
-        },
-        kind: {
-            type: String,
-            default: ''
-        },
-        portOffset: {
-            type: Number,
-            required: false,
-            default: 0
-        }
+  components: { NodeLabelText },
+  props: {
+    modelValue: {
+      type: String,
+      default: "",
     },
-    emits: ['update:modelValue', 'save', 'cancel', 'invalidInput'],
-    mounted() {
-        this.$nextTick(() => {
-            this.resizeTextarea();
-
-            if (this.$refs.textarea) {
-                this.$refs.textarea.focus();
-                this.$refs.textarea.select();
-            }
-        });
+    kind: {
+      type: String,
+      default: "",
     },
-    methods: {
-        onInput(event) {
-            const value = event.target.value;
-            this.$refs.textarea.value = value;
-            this.$refs.ghost.innerText = value;
+    portOffset: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+  },
+  emits: ["update:modelValue", "save", "cancel", "invalidInput"],
+  mounted() {
+    this.$nextTick(() => {
+      this.resizeTextarea();
 
-            // apply the styles that resize the textarea according to the content
-            this.resizeTextarea();
+      if (this.$refs.textarea) {
+        this.$refs.textarea.focus();
+        this.$refs.textarea.select();
+      }
+    });
+  },
+  methods: {
+    onInput(event) {
+      const value = event.target.value;
+      this.$refs.textarea.value = value;
+      this.$refs.ghost.innerText = value;
 
-            this.$emit('update:modelValue', value);
-        },
-        resizeTextarea() {
-            const textarea = this.$refs.textarea;
+      // apply the styles that resize the textarea according to the content
+      this.resizeTextarea();
 
-            // width
-            // eslint-disable-next-line no-magic-numbers
-            const width = this.$refs.ghost.scrollWidth + 6;
-            textarea.style.width = `${width}px`;
+      this.$emit("update:modelValue", value);
+    },
+    resizeTextarea() {
+      const textarea = this.$refs.textarea;
 
-            // height
-            textarea.style.height = 'auto';
-            textarea.style.height = `${textarea.scrollHeight}px`;
-        },
-        onSave(event) {
-            const metaOrCtrlKey = getMetaOrCtrlKey();
+      // width
+      // eslint-disable-next-line no-magic-numbers
+      const width = this.$refs.ghost.scrollWidth + 6;
+      textarea.style.width = `${width}px`;
 
-            if (event[metaOrCtrlKey]) {
-                this.$emit('save');
-            }
-        }
-    }
+      // height
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    },
+    onSave(event) {
+      const metaOrCtrlKey = getMetaOrCtrlKey();
+
+      if (event[metaOrCtrlKey]) {
+        this.$emit("save");
+      }
+    },
+  },
 };
 </script>
 
 <template>
-  <NodeLabelText
-    class="editor"
-    :kind="kind"
-    :port-offset="portOffset"
-  >
-    <span
-      ref="ghost"
-      class="ghost"
-      aria-hidden="true"
-    >
+  <NodeLabelText class="editor" :kind="kind" :port-offset="portOffset">
+    <span ref="ghost" class="ghost" aria-hidden="true">
       {{ modelValue }}
     </span>
     <textarea

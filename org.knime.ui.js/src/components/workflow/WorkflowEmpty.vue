@@ -1,37 +1,37 @@
 <script>
-import { mapState } from 'vuex';
-import ArrowDown from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
-import WorkflowPortalLayers from './WorkflowPortalLayers.vue';
+import { mapState } from "vuex";
+import ArrowDown from "webapps-common/ui/assets/img/icons/arrow-down.svg";
+import WorkflowPortalLayers from "./WorkflowPortalLayers.vue";
 
 export default {
-    components: {
-        ArrowDown,
-        WorkflowPortalLayers
+  components: {
+    ArrowDown,
+    WorkflowPortalLayers,
+  },
+  computed: {
+    ...mapState("canvas", ["containerSize"]),
+    bounds() {
+      const { height, width } = this.containerSize;
+
+      // When showing this empty workflow, the origin (0,0) is exactly in the center of the canvas
+      return {
+        left: -width / 2,
+        top: -height / 2,
+        width,
+        height,
+      };
     },
-    computed: {
-        ...mapState('canvas', ['containerSize']),
-        bounds() {
-            const { height, width } = this.containerSize;
+    rectangleBounds() {
+      const padding = 25;
 
-            // When showing this empty workflow, the origin (0,0) is exactly in the center of the canvas
-            return {
-                left: -width / 2,
-                top: -height / 2,
-                width,
-                height
-            };
-        },
-        rectangleBounds() {
-            const padding = 25;
-
-            return {
-                left: this.bounds.left + padding,
-                top: this.bounds.top + padding,
-                height: Math.max(this.bounds.height - 2 * padding, 0),
-                width: Math.max(this.bounds.width - 2 * padding, 0)
-            };
-        }
-    }
+      return {
+        left: this.bounds.left + padding,
+        top: this.bounds.top + padding,
+        height: Math.max(this.bounds.height - 2 * padding, 0),
+        width: Math.max(this.bounds.width - 2 * padding, 0),
+      };
+    },
+  },
 };
 </script>
 
@@ -43,12 +43,7 @@ export default {
       :width="rectangleBounds.width"
       :height="rectangleBounds.height"
     />
-    <ArrowDown
-      height="64"
-      width="64"
-      x="-32"
-      y="-99"
-    />
+    <ArrowDown height="64" width="64" x="-32" y="-99" />
     <text y="-9">Start building your workflow by dropping</text>
     <text y="27"> your data or nodes here.</text>
 

@@ -1,48 +1,46 @@
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
-import { mapState } from 'vuex';
+import { defineComponent, type PropType } from "vue";
+import { mapState } from "vuex";
 
-import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
-import NodeList from '@/components/nodeRepository/NodeList.vue';
-import type { KnimeNode } from '@/api/gateway-api/custom-types';
+import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
+import NodeList from "@/components/nodeRepository/NodeList.vue";
+import type { KnimeNode } from "@/api/gateway-api/custom-types";
 
 export default defineComponent({
-    components: {
-        NodeList,
-        NodeTemplate
+  components: {
+    NodeList,
+    NodeTemplate,
+  },
+  props: {
+    selectedNode: {
+      type: [Object, null] as PropType<KnimeNode | null>,
+      required: true,
     },
-    props: {
-        selectedNode: {
-            type: [Object, null] as PropType<KnimeNode | null>,
-            required: true
-        },
-        disableRecommendations: {
-            type: Boolean,
-            default: false
-        }
+    disableRecommendations: {
+      type: Boolean,
+      default: false,
     },
-    emits: ['update:selectedNode', 'addNode', 'navReachedTop'],
-    expose: ['focusFirst'],
-    computed: {
-        ...mapState('quickAddNodes', ['recommendedNodes']),
+  },
+  emits: ["update:selectedNode", "addNode", "navReachedTop"],
+  expose: ["focusFirst"],
+  computed: {
+    ...mapState("quickAddNodes", ["recommendedNodes"]),
 
-        hasRecommendations() {
-            return this.recommendedNodes?.length > 0;
-        }
+    hasRecommendations() {
+      return this.recommendedNodes?.length > 0;
     },
-    methods: {
-        focusFirst() {
-            // @ts-ignore
-            return this.$refs.recommendationResults?.focusFirst();
-        }
-    }
+  },
+  methods: {
+    focusFirst() {
+      // @ts-ignore
+      return this.$refs.recommendationResults?.focusFirst();
+    },
+  },
 });
 </script>
 
 <template>
-  <div
-    class="recommendations"
-  >
+  <div class="recommendations">
     <NodeList
       v-if="hasRecommendations"
       ref="recommendationResults"
@@ -60,16 +58,11 @@ export default defineComponent({
         />
       </template>
     </NodeList>
-    <span
-      v-else-if="disableRecommendations"
-      class="no-recommendations-message"
-    >
-      There are no recommendations.<br> Search to add compatible nodes.
+    <span v-else-if="disableRecommendations" class="no-recommendations-message">
+      There are no recommendations.<br />
+      Search to add compatible nodes.
     </span>
-    <span
-      v-else
-      class="no-recommendations-message"
-    >
+    <span v-else class="no-recommendations-message">
       The Workflow Coach cannot recommend any nodes to you yet.
     </span>
   </div>

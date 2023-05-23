@@ -1,94 +1,95 @@
 <script>
-import { mapState, mapActions, mapMutations } from 'vuex';
-import NodeCogIcon from 'webapps-common/ui/assets/img/icons/node-cog.svg';
-import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
-import PlusIcon from 'webapps-common/ui/assets/img/icons/node-stack.svg';
-import MetainfoIcon from '@/assets/metainfo.svg';
+import { mapState, mapActions, mapMutations } from "vuex";
+import NodeCogIcon from "webapps-common/ui/assets/img/icons/node-cog.svg";
+import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
+import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
+import MetainfoIcon from "@/assets/metainfo.svg";
 
-import { TABS } from '@/store/panel';
-import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
-import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
-import SidebarSpaceExplorer from '@/components/sidebar/SidebarSpaceExplorer.vue';
+import { TABS } from "@/store/panel";
+import NodeRepository from "@/components/nodeRepository/NodeRepository.vue";
+import NodeDialogWrapper from "@/components/embeddedViews/NodeDialogWrapper.vue";
+import SidebarSpaceExplorer from "@/components/sidebar/SidebarSpaceExplorer.vue";
 
-import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
-import ContextAwareDescription from '@/components/sidebar/ContextAwareDescription.vue';
+import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
+import ContextAwareDescription from "@/components/sidebar/ContextAwareDescription.vue";
 
 export default {
-    components: {
-        ContextAwareDescription,
-        MetainfoIcon,
-        SidebarSpaceExplorer,
-        PlusIcon,
-        LeftCollapsiblePanel,
-        NodeRepository,
-        NodeDialogWrapper
-    },
-    data() {
-        return {
-            TABS: Object.freeze(TABS)
-        };
-    },
-    computed: {
-        ...mapState('panel', ['activeTab', 'expanded']),
-        ...mapState('application', ['activeProjectId']),
-        ...mapState('nodeRepository', ['isDescriptionPanelOpen']),
+  components: {
+    ContextAwareDescription,
+    MetainfoIcon,
+    SidebarSpaceExplorer,
+    PlusIcon,
+    LeftCollapsiblePanel,
+    NodeRepository,
+    NodeDialogWrapper,
+  },
+  data() {
+    return {
+      TABS: Object.freeze(TABS),
+    };
+  },
+  computed: {
+    ...mapState("panel", ["activeTab", "expanded"]),
+    ...mapState("application", ["activeProjectId"]),
+    ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
 
-        sidebarSections() {
-            return [
-                {
-                    title: 'Description',
-                    icon: MetainfoIcon,
-                    isActive: this.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
-                    isExpanded: this.expanded,
-                    onClick: () => this.clickItem(TABS.CONTEXT_AWARE_DESCRIPTION)
-                },
-                {
-                    title: 'Node repository',
-                    icon: PlusIcon,
-                    isActive: this.isTabActive(TABS.NODE_REPOSITORY),
-                    isExpanded: this.expanded,
-                    onClick: () => this.clickItem(TABS.NODE_REPOSITORY)
-                },
-                this.$features.shouldDisplayEmbeddedDialogs()
-                    ? {
-                        title: 'Node dialog',
-                        icon: NodeCogIcon,
-                        isActive: this.isTabActive(TABS.NODE_DIALOG),
-                        isExpanded: this.expanded,
-                        onClick: () => this.clickItem(TABS.NODE_DIALOG)
-                    }
-                    : null,
-                {
-                    title: 'Space explorer',
-                    icon: CubeIcon,
-                    isActive: this.isTabActive(TABS.SPACE_EXPLORER),
-                    isExpanded: this.expanded,
-                    onClick: () => this.clickItem(TABS.SPACE_EXPLORER)
-                }
-            ].filter(Boolean);
-        }
-    },
-    methods: {
-        ...mapMutations('panel', ['closePanel', 'toggleExpanded']),
-        ...mapActions('panel', ['setCurrentProjectActiveTab']),
-        ...mapActions('nodeRepository', ['closeDescriptionPanel']),
-
-        isTabActive(tabName) {
-            const activeTab = this.activeTab[this.activeProjectId] || TABS.CONTEXT_AWARE_DESCRIPTION;
-            return activeTab === tabName;
+    sidebarSections() {
+      return [
+        {
+          title: "Description",
+          icon: MetainfoIcon,
+          isActive: this.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
+          isExpanded: this.expanded,
+          onClick: () => this.clickItem(TABS.CONTEXT_AWARE_DESCRIPTION),
         },
-
-        clickItem(tabName) {
-            const isAlreadyActive = this.isTabActive(tabName);
-            if (isAlreadyActive && this.expanded) {
-                this.closePanel();
-            } else {
-                this.setCurrentProjectActiveTab(tabName);
+        {
+          title: "Node repository",
+          icon: PlusIcon,
+          isActive: this.isTabActive(TABS.NODE_REPOSITORY),
+          isExpanded: this.expanded,
+          onClick: () => this.clickItem(TABS.NODE_REPOSITORY),
+        },
+        this.$features.shouldDisplayEmbeddedDialogs()
+          ? {
+              title: "Node dialog",
+              icon: NodeCogIcon,
+              isActive: this.isTabActive(TABS.NODE_DIALOG),
+              isExpanded: this.expanded,
+              onClick: () => this.clickItem(TABS.NODE_DIALOG),
             }
+          : null,
+        {
+          title: "Space explorer",
+          icon: CubeIcon,
+          isActive: this.isTabActive(TABS.SPACE_EXPLORER),
+          isExpanded: this.expanded,
+          onClick: () => this.clickItem(TABS.SPACE_EXPLORER),
+        },
+      ].filter(Boolean);
+    },
+  },
+  methods: {
+    ...mapMutations("panel", ["closePanel", "toggleExpanded"]),
+    ...mapActions("panel", ["setCurrentProjectActiveTab"]),
+    ...mapActions("nodeRepository", ["closeDescriptionPanel"]),
 
-            this.closeDescriptionPanel();
-        }
-    }
+    isTabActive(tabName) {
+      const activeTab =
+        this.activeTab[this.activeProjectId] || TABS.CONTEXT_AWARE_DESCRIPTION;
+      return activeTab === tabName;
+    },
+
+    clickItem(tabName) {
+      const isAlreadyActive = this.isTabActive(tabName);
+      if (isAlreadyActive && this.expanded) {
+        this.closePanel();
+      } else {
+        this.setCurrentProjectActiveTab(tabName);
+      }
+
+      this.closeDescriptionPanel();
+    },
+  },
 };
 </script>
 
@@ -116,10 +117,7 @@ export default {
       :disabled="isDescriptionPanelOpen && isTabActive(TABS.NODE_REPOSITORY)"
       @toggle-expand="toggleExpanded"
     >
-      <TransitionGroup
-        name="tab"
-        tag="span"
-      >
+      <TransitionGroup name="tab" tag="span">
         <NodeRepository
           v-show="isTabActive(TABS.NODE_REPOSITORY)"
           key="node-repository"
@@ -142,10 +140,7 @@ export default {
       </TransitionGroup>
     </LeftCollapsiblePanel>
 
-    <PortalTarget
-      tag="div"
-      name="extension-panel"
-    />
+    <PortalTarget tag="div" name="extension-panel" />
   </div>
 </template>
 

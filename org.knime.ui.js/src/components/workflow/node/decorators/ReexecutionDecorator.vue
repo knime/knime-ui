@@ -1,20 +1,20 @@
 <script>
 export default {
-    props: {
-        /**
-         * Node type for determining the background color.
-         * Allows the node types defined in $colors.nodeBackgroundColors
-         * */
-        backgroundType: {
-            type: String,
-            default: null
-        }
+  props: {
+    /**
+     * Node type for determining the background color.
+     * Allows the node types defined in $colors.nodeBackgroundColors
+     * */
+    backgroundType: {
+      type: String,
+      default: null,
     },
-    computed: {
-        backgroundColor() {
-            return this.$colors.nodeBackgroundColors[this.backgroundType];
-        }
-    }
+  },
+  computed: {
+    backgroundColor() {
+      return this.$colors.nodeBackgroundColors[this.backgroundType];
+    },
+  },
 };
 </script>
 

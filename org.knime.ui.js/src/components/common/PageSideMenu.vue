@@ -1,26 +1,22 @@
 <script>
-import PageSideMenuListItem from './PageSideMenuListItem.vue';
+import PageSideMenuListItem from "./PageSideMenuListItem.vue";
 
 export default {
-    components: {
-        PageSideMenuListItem
+  components: {
+    PageSideMenuListItem,
+  },
+  props: {
+    items: {
+      type: Array,
+      default: () => [],
     },
-    props: {
-        items: {
-            type: Array,
-            default: () => []
-        }
-    }
+  },
 };
 </script>
 
 <template>
   <ul>
-    <PageSideMenuListItem
-      v-for="item in items"
-      :key="item.text"
-      :item="item"
-    />
+    <PageSideMenuListItem v-for="item in items" :key="item.text" :item="item" />
   </ul>
 </template>
 

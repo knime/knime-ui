@@ -1,31 +1,36 @@
 <script lang="ts">
 /* eslint-disable valid-jsdoc */
 /* eslint-disable object-curly-newline  */
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent, type PropType } from "vue";
 
-import Button from 'webapps-common/ui/components/Button.vue';
-import PlayIcon from '@/assets/execute.svg';
+import Button from "webapps-common/ui/components/Button.vue";
+import PlayIcon from "@/assets/execute.svg";
 
 import type {
-    AvailablePortTypes,
-    KnimeNode
-} from '@/api/gateway-api/custom-types';
-import { MetaNodePort, Node, NodeState, type MetaNode } from '@/api/gateway-api/generated-api';
-import PortViewLoader from '@/components/embeddedViews/PortViewLoader.vue';
-import type { ViewStateChangeEvent } from '@/components/embeddedViews/ViewLoader.vue';
-import { toPortObject } from '@/util/portDataMapper';
+  AvailablePortTypes,
+  KnimeNode,
+} from "@/api/gateway-api/custom-types";
+import {
+  MetaNodePort,
+  Node,
+  NodeState,
+  type MetaNode,
+} from "@/api/gateway-api/generated-api";
+import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
+import type { ViewStateChangeEvent } from "@/components/embeddedViews/ViewLoader.vue";
+import { toPortObject } from "@/util/portDataMapper";
 
 import {
-    buildMiddleware,
-    validateNodeConfigurationState,
-    validateNodeExecutionState,
-    validateOutputPorts,
-    validatePortSelection,
-    validatePortSupport,
-    type ValidationResult
-} from './output-validator';
+  buildMiddleware,
+  validateNodeConfigurationState,
+  validateNodeExecutionState,
+  validateOutputPorts,
+  validatePortSelection,
+  validatePortSupport,
+  type ValidationResult,
+} from "./output-validator";
 
-import PortViewTabToggles from './PortViewTabToggles.vue';
+import PortViewTabToggles from "./PortViewTabToggles.vue";
 
 /**
  * Runs a set of validations that qualify whether a port from a node is able
@@ -33,37 +38,40 @@ import PortViewTabToggles from './PortViewTabToggles.vue';
  * @returns object containing an `error` property. If not null then it means the port is invalid. Additionally
  * more details about the error can be read from the `error` object
  */
-const runValidationChecks = (
-    {
-        selectedNode,
-        portTypes,
-        selectedPortIndex
-    }: {
-        /** the node that is currently selected */
-        selectedNode: KnimeNode;
-        /** dictionary of Port Types. Can be used to get more information on the port based on its typeId property */
-        portTypes: AvailablePortTypes;
-        /** index of the selected port */
-        selectedPortIndex: number;
-    }
-) => {
-    const validationMiddleware = buildMiddleware(
-        validateOutputPorts,
-        validatePortSelection,
-        validatePortSupport,
-        validateNodeConfigurationState,
-        validateNodeExecutionState
-    );
+const runValidationChecks = ({
+  selectedNode,
+  portTypes,
+  selectedPortIndex,
+}: {
+  /** the node that is currently selected */
+  selectedNode: KnimeNode;
+  /** dictionary of Port Types. Can be used to get more information on the port based on its typeId property */
+  portTypes: AvailablePortTypes;
+  /** index of the selected port */
+  selectedPortIndex: number;
+}) => {
+  const validationMiddleware = buildMiddleware(
+    validateOutputPorts,
+    validatePortSelection,
+    validatePortSupport,
+    validateNodeConfigurationState,
+    validateNodeExecutionState
+  );
 
-    const result = validationMiddleware({ selectedNode, portTypes, selectedPortIndex })();
+  const result = validationMiddleware({
+    selectedNode,
+    portTypes,
+    selectedPortIndex,
+  })();
 
-    return Object.freeze(result);
+  return Object.freeze(result);
 };
 
-const isMetaNode = (node: KnimeNode): node is MetaNode => node.kind === Node.KindEnum.Metanode;
+const isMetaNode = (node: KnimeNode): node is MetaNode =>
+  node.kind === Node.KindEnum.Metanode;
 
 interface ComponentData {
-    portViewState: ViewStateChangeEvent | null;
+  portViewState: ViewStateChangeEvent | null;
 }
 
 /**
@@ -72,169 +80,178 @@ interface ComponentData {
  * about the loading state of the PortView
  */
 export default defineComponent({
-    components: {
-        PortViewLoader,
-        PortViewTabToggles,
-        Button,
-        PlayIcon
+  components: {
+    PortViewLoader,
+    PortViewTabToggles,
+    Button,
+    PlayIcon,
+  },
+
+  inheritAttrs: false,
+
+  props: {
+    projectId: {
+      type: String,
+      required: true,
+    },
+    workflowId: {
+      type: String,
+      required: true,
+    },
+    selectedNode: {
+      type: Object as PropType<KnimeNode>,
+      required: true,
+    },
+    selectedPortIndex: {
+      type: Number,
+      required: true,
+    },
+    availablePortTypes: {
+      type: Object as PropType<AvailablePortTypes>,
+      required: true,
+    },
+  },
+
+  emits: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    outputStateChange: (
+      _payload: {
+        message: string;
+        loading?: boolean;
+        error?: ValidationResult["error"];
+      } | null
+    ) => true,
+    executeNode: () => true,
+  },
+
+  data(): ComponentData {
+    return {
+      portViewState: null,
+    };
+  },
+
+  computed: {
+    uniquePortKey() {
+      // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
+      // is created upon switching ports
+      // port object version changes whenever a port state has updated.
+      // "ABA"-Changes on the port will always trigger a re-render.
+
+      const { portContentVersion } =
+        this.selectedNode.outPorts[this.selectedPortIndex];
+
+      return [
+        this.projectId,
+        this.workflowId,
+        this.selectedNode.id,
+        this.selectedPortIndex,
+        portContentVersion,
+      ].join("/");
     },
 
-    inheritAttrs: false,
+    hasNoDataValidationError() {
+      return this.validationError && this.validationError.code === "NO_DATA";
+    },
 
-    props: {
-        projectId: {
-            type: String,
-            required: true
-        },
-        workflowId: {
-            type: String,
-            required: true
-        },
-        selectedNode: {
-            type: Object as PropType<KnimeNode>,
-            required: true
-        },
-        selectedPortIndex: {
-            type: Number,
-            required: true
-        },
-        availablePortTypes: {
-            type: Object as PropType<AvailablePortTypes>,
-            required: true
+    validationError(): ValidationResult["error"] | null {
+      const { error } = runValidationChecks({
+        selectedNode: this.selectedNode,
+        portTypes: this.availablePortTypes,
+        selectedPortIndex: this.selectedPortIndex,
+      });
+
+      return error || null;
+    },
+
+    selectedPort() {
+      if (this.validationError) {
+        return null;
+      }
+
+      return this.selectedNode.outPorts[this.selectedPortIndex];
+    },
+
+    fullPortObject() {
+      return toPortObject(this.availablePortTypes)(this.selectedPort.typeId);
+    },
+
+    portViews() {
+      return this.fullPortObject.views;
+    },
+
+    currentNodeState(): "configured" | "executed" {
+      // metanodes have no configured state so they use the state of the selected output port
+      if (isMetaNode(this.selectedNode)) {
+        const portState =
+          this.selectedNode.outPorts[this.selectedPortIndex].nodeState;
+
+        return portState === MetaNodePort.NodeStateEnum.CONFIGURED
+          ? "configured"
+          : "executed";
+      }
+
+      return this.selectedNode.state.executionState ===
+        NodeState.ExecutionStateEnum.CONFIGURED
+        ? "configured"
+        : "executed";
+    },
+
+    shouldShowExecuteAction() {
+      const { canExecute } = this.selectedNode.allowedActions;
+      if (this.hasNoDataValidationError) {
+        return canExecute;
+      }
+
+      if (this.validationError) {
+        return false;
+      }
+
+      const isFlowVariable = this.fullPortObject.kind === "flowVariable";
+      return canExecute && !isFlowVariable;
+    },
+  },
+
+  watch: {
+    validationError: {
+      immediate: true,
+      handler() {
+        if (this.validationError) {
+          this.$emit("outputStateChange", {
+            loading: this.validationError.code === "NODE_BUSY",
+            message: this.validationError.message,
+            error: this.validationError,
+          });
+        } else {
+          this.$emit("outputStateChange", null);
         }
+      },
     },
+  },
 
-    emits: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        outputStateChange: (_payload: {
-            message: string;
-            loading?: boolean;
-            error?: ValidationResult['error']
-        } | null) => true,
-        executeNode: () => true
-    },
+  methods: {
+    onPortViewLoaderStateChange(newPortViewState: ViewStateChangeEvent | null) {
+      this.portViewState = newPortViewState;
 
-    data(): ComponentData {
-        return {
-            portViewState: null
-        };
-    },
-
-    computed: {
-        uniquePortKey() {
-            // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
-            // is created upon switching ports
-            // port object version changes whenever a port state has updated.
-            // "ABA"-Changes on the port will always trigger a re-render.
-
-
-            const { portContentVersion } = this.selectedNode.outPorts[this.selectedPortIndex];
-
-            return [
-                this.projectId,
-                this.workflowId,
-                this.selectedNode.id,
-                this.selectedPortIndex,
-                portContentVersion
-            ].join('/');
-        },
-
-        hasNoDataValidationError() {
-            return this.validationError && this.validationError.code === 'NO_DATA';
-        },
-
-        validationError(): ValidationResult['error'] | null {
-            const { error } = runValidationChecks({
-                selectedNode: this.selectedNode,
-                portTypes: this.availablePortTypes,
-                selectedPortIndex: this.selectedPortIndex
-            });
-
-            return error || null;
-        },
-
-        selectedPort() {
-            if (this.validationError) {
-                return null;
-            }
-
-            return this.selectedNode.outPorts[this.selectedPortIndex];
-        },
-
-        fullPortObject() {
-            return toPortObject(this.availablePortTypes)(this.selectedPort.typeId);
-        },
-
-        portViews() {
-            return this.fullPortObject.views;
-        },
-
-        currentNodeState(): 'configured' | 'executed' {
-            // metanodes have no configured state so they use the state of the selected output port
-            if (isMetaNode(this.selectedNode)) {
-                const portState = this.selectedNode.outPorts[this.selectedPortIndex].nodeState;
-
-                return portState === MetaNodePort.NodeStateEnum.CONFIGURED
-                    ? 'configured'
-                    : 'executed';
-            }
-
-            return this.selectedNode.state.executionState === NodeState.ExecutionStateEnum.CONFIGURED
-                ? 'configured'
-                : 'executed';
-        },
-
-        shouldShowExecuteAction() {
-            const { canExecute } = this.selectedNode.allowedActions;
-            if (this.hasNoDataValidationError) {
-                return canExecute;
-            }
-
-            if (this.validationError) {
-                return false;
-            }
-
-            const isFlowVariable = this.fullPortObject.kind === 'flowVariable';
-            return canExecute && !isFlowVariable;
+      switch (this.portViewState?.state) {
+        case "loading": {
+          this.$emit("outputStateChange", {
+            message: "Loading data",
+            loading: true,
+          });
+          return;
         }
-    },
-
-    watch: {
-        validationError: {
-            immediate: true,
-            handler() {
-                if (this.validationError) {
-                    this.$emit('outputStateChange', {
-                        loading: this.validationError.code === 'NODE_BUSY',
-                        message: this.validationError.message,
-                        error: this.validationError
-                    });
-                } else {
-                    this.$emit('outputStateChange', null);
-                }
-            }
+        case "error": {
+          this.$emit("outputStateChange", {
+            message: this.portViewState.message,
+          });
+          return;
         }
-    },
-
-    methods: {
-        onPortViewLoaderStateChange(newPortViewState: ViewStateChangeEvent | null) {
-            this.portViewState = newPortViewState;
-
-            switch (this.portViewState?.state) {
-                case 'loading': {
-                    this.$emit('outputStateChange', { message: 'Loading data', loading: true });
-                    return;
-                }
-                case 'error': {
-                    this.$emit('outputStateChange', { message: this.portViewState.message });
-                    return;
-                }
-                default: {
-                    this.$emit('outputStateChange', null);
-                }
-            }
+        default: {
+          this.$emit("outputStateChange", null);
         }
-    }
+      }
+    },
+  },
 });
 </script>
 
@@ -261,17 +278,9 @@ export default defineComponent({
     </template>
   </PortViewTabToggles>
 
-  <div
-    v-if="shouldShowExecuteAction"
-    class="execute-node-action"
-  >
+  <div v-if="shouldShowExecuteAction" class="execute-node-action">
     <span>To show the output, please execute the selected node.</span>
-    <Button
-      class="action-button"
-      primary
-      compact
-      @click="$emit('executeNode')"
-    >
+    <Button class="action-button" primary compact @click="$emit('executeNode')">
       <PlayIcon />
       Execute
     </Button>
@@ -280,18 +289,18 @@ export default defineComponent({
 
 <style lang="postcss" scoped>
 .execute-node-action {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    width: 440px;
-    height: 110px;
-    inset: v-bind("hasNoDataValidationError ? 0 : '130px'") 0 0 0;
-    margin: auto;
-    background: rgba(255 255 255 / 30%);
-    backdrop-filter: blur(10px);
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  width: 440px;
+  height: 110px;
+  inset: v-bind("hasNoDataValidationError ? 0 : '130px'") 0 0 0;
+  margin: auto;
+  background: rgba(255 255 255 / 30%);
+  backdrop-filter: blur(10px);
 }
 
 .action-button {

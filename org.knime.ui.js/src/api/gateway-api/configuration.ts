@@ -1,4 +1,4 @@
 export interface Configuration {
-    url: string;
-    postProcessCommandResponse?: <T>(response: T) => Promise<T>
+  url: string;
+  postProcessCommandResponse?: <T>(response: T) => Promise<T>;
 }

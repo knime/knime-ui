@@ -1,141 +1,142 @@
 <script>
-import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
+import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 
-import Button from 'webapps-common/ui/components/Button.vue';
-import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
-import FolderPlusIcon from 'webapps-common/ui/assets/img/icons/folder-plus.svg';
-import CloudDownloadIcon from 'webapps-common/ui/assets/img/icons/cloud-download.svg';
-import CloudUploadIcon from 'webapps-common/ui/assets/img/icons/cloud-upload.svg';
-import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
-import Modal from 'webapps-common/ui/components/Modal.vue';
-import InputField from 'webapps-common/ui/components/forms/InputField.vue';
+import Button from "webapps-common/ui/components/Button.vue";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
+import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
+import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg";
+import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
+import Modal from "webapps-common/ui/components/Modal.vue";
+import InputField from "webapps-common/ui/components/forms/InputField.vue";
 
-import PlusIcon from '@/assets/plus.svg';
-import ImportWorkflowIcon from '@/assets/import-workflow.svg';
-import AddFileIcon from '@/assets/add-file.svg';
+import PlusIcon from "@/assets/plus.svg";
+import ImportWorkflowIcon from "@/assets/import-workflow.svg";
+import AddFileIcon from "@/assets/add-file.svg";
 
-import ToolbarButton from '@/components/common/ToolbarButton.vue';
+import ToolbarButton from "@/components/common/ToolbarButton.vue";
 
 export default {
-    components: {
-        PlusButton,
-        Button,
-        SubMenu,
-        PlusIcon,
-        ToolbarButton,
-        FolderPlusIcon,
-        CloudDownloadIcon,
-        CloudUploadIcon,
-        ImportWorkflowIcon,
-        AddFileIcon,
-        MenuOptionsIcon,
-        Modal,
-        InputField
+  components: {
+    PlusButton,
+    Button,
+    SubMenu,
+    PlusIcon,
+    ToolbarButton,
+    FolderPlusIcon,
+    CloudDownloadIcon,
+    CloudUploadIcon,
+    ImportWorkflowIcon,
+    AddFileIcon,
+    MenuOptionsIcon,
+    Modal,
+    InputField,
+  },
+
+  props: {
+    mode: {
+      type: String,
+      default: "normal",
+      validator: (value) => ["normal", "mini"].includes(value),
+    },
+    /**
+     * @typedef DisabledActions
+     * @property {Boolean} [createWorkflow]
+     * @property {Boolean} [createFolder]
+     * @property {Boolean} [importWorkflow]
+     * @property {Boolean} [importFiles]
+     * @property {Boolean} [uploadToHub]
+     * @property {Boolean} [downloadToLocalSpace]
+     */
+    /**
+     * Object containing whether each action is allowed.
+     *
+     * @type {import('vue').PropOptions<DisabledActions>}
+     */
+    disabledActions: {
+      type: Object,
+      default: () => ({}),
     },
 
-    props: {
-        mode: {
-            type: String,
-            default: 'normal',
-            validator: (value) => ['normal', 'mini'].includes(value)
-        },
-        /**
-         * @typedef DisabledActions
-         * @property {Boolean} [createWorkflow]
-         * @property {Boolean} [createFolder]
-         * @property {Boolean} [importWorkflow]
-         * @property {Boolean} [importFiles]
-         * @property {Boolean} [uploadToHub]
-         * @property {Boolean} [downloadToLocalSpace]
-        */
-        /**
-         * Object containing whether each action is allowed.
-         *
-         * @type {import('vue').PropOptions<DisabledActions>}
-         */
-        disabledActions: {
-            type: Object,
-            default: () => ({})
-        },
-
-        hasActiveHubSession: {
-            type: Boolean,
-            default: false
-        },
-
-        isLocal: {
-            type: Boolean,
-            default: false
-        }
+    hasActiveHubSession: {
+      type: Boolean,
+      default: false,
     },
 
-    emits: [
-        'action:createWorkflow',
-        'action:createFolder',
-        'action:importWorkflow',
-        'action:importFiles',
-        'action:uploadToHub',
-        'action:downloadToLocalSpace'
-    ],
+    isLocal: {
+      type: Boolean,
+      default: false,
+    },
+  },
 
-    computed: {
-        actions() {
-            return [
-                {
-                    id: 'createWorkflow',
-                    text: 'Create workflow',
-                    icon: PlusIcon,
-                    disabled: this.disabledActions.createWorkflow,
-                    hidden: this.mode !== 'mini'
-                },
-                {
-                    id: 'createFolder',
-                    text: 'Create folder',
-                    icon: FolderPlusIcon,
-                    disabled: this.disabledActions.createFolder,
-                    separator: true
-                },
-                {
-                    id: 'importWorkflow',
-                    text: 'Import workflow',
-                    icon: ImportWorkflowIcon,
-                    disabled: this.disabledActions.importWorkflow
-                },
-                {
-                    id: 'importFiles',
-                    text: 'Add files',
-                    icon: AddFileIcon,
-                    disabled: this.disabledActions.importFiles,
-                    separator: true
-                },
-                this.isLocal
-                    ? {
-                        id: 'uploadToHub',
-                        text: 'Upload to Hub',
-                        icon: CloudUploadIcon,
-                        disabled: this.disabledActions.uploadToHub,
-                        title: this.hasActiveHubSession
-                            // eslint-disable-next-line no-extra-parens
-                            ? (this.disabledActions.uploadToHub && 'Select at least one file to upload.')
-                            : 'Login is required to upload to hub.'
-                    }
-                    : {
-                        id: 'downloadToLocalSpace',
-                        text: 'Download to local space',
-                        icon: CloudDownloadIcon,
-                        disabled: this.disabledActions.downloadToLocalSpace,
-                        title: this.disabledActions.downloadToLocalSpace
-                            ? 'Select at least one file to download.'
-                            : null
-                    }
-            ].filter(({ hidden }) => !hidden);
+  emits: [
+    "action:createWorkflow",
+    "action:createFolder",
+    "action:importWorkflow",
+    "action:importFiles",
+    "action:uploadToHub",
+    "action:downloadToLocalSpace",
+  ],
+
+  computed: {
+    actions() {
+      return [
+        {
+          id: "createWorkflow",
+          text: "Create workflow",
+          icon: PlusIcon,
+          disabled: this.disabledActions.createWorkflow,
+          hidden: this.mode !== "mini",
         },
+        {
+          id: "createFolder",
+          text: "Create folder",
+          icon: FolderPlusIcon,
+          disabled: this.disabledActions.createFolder,
+          separator: true,
+        },
+        {
+          id: "importWorkflow",
+          text: "Import workflow",
+          icon: ImportWorkflowIcon,
+          disabled: this.disabledActions.importWorkflow,
+        },
+        {
+          id: "importFiles",
+          text: "Add files",
+          icon: AddFileIcon,
+          disabled: this.disabledActions.importFiles,
+          separator: true,
+        },
+        this.isLocal
+          ? {
+              id: "uploadToHub",
+              text: "Upload to Hub",
+              icon: CloudUploadIcon,
+              disabled: this.disabledActions.uploadToHub,
+              title: this.hasActiveHubSession
+                ? // eslint-disable-next-line no-extra-parens
+                  this.disabledActions.uploadToHub &&
+                  "Select at least one file to upload."
+                : "Login is required to upload to hub.",
+            }
+          : {
+              id: "downloadToLocalSpace",
+              text: "Download to local space",
+              icon: CloudDownloadIcon,
+              disabled: this.disabledActions.downloadToLocalSpace,
+              title: this.disabledActions.downloadToLocalSpace
+                ? "Select at least one file to download."
+                : null,
+            },
+      ].filter(({ hidden }) => !hidden);
+    },
 
-        createWorkflowButtonTitle() {
-            const { text, hotkeyText } = this.$shortcuts.get('createWorkflow');
-            return `${text} (${hotkeyText})`;
-        }
-    }
+    createWorkflowButtonTitle() {
+      const { text, hotkeyText } = this.$shortcuts.get("createWorkflow");
+      return `${text} (${hotkeyText})`;
+    },
+  },
 };
 </script>
 

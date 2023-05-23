@@ -1,95 +1,100 @@
-import { expect, describe, beforeAll, it } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { expect, describe, beforeAll, it } from "vitest";
+import { shallowMount } from "@vue/test-utils";
 
-import * as $shapes from '@/style/shapes.mjs';
+import * as $shapes from "@/style/shapes.mjs";
 
-import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue';
-import NodeNameText from '../NodeNameText.vue';
+import AutoSizeForeignObject from "@/components/common/AutoSizeForeignObject.vue";
+import NodeNameText from "../NodeNameText.vue";
 
-describe('NodeNameText.vue', () => {
-    const doShallowMount = (props = {}, opts = {}) => shallowMount(NodeNameText, {
-        props,
-        global: {
-            mocks: { $shapes },
-            stubs: {
-                AutoSizeForeignObject: {
-                    template: `<div><slot :on="{}" /></div>`
-                }
-            }
+describe("NodeNameText.vue", () => {
+  const doShallowMount = (props = {}, opts = {}) =>
+    shallowMount(NodeNameText, {
+      props,
+      global: {
+        mocks: { $shapes },
+        stubs: {
+          AutoSizeForeignObject: {
+            template: '<div><slot :on="{}" /></div>',
+          },
         },
-        ...opts
+      },
+      ...opts,
     });
 
-    beforeAll(() => {
-        Object.defineProperty(document, 'fonts', {
-            value: { ready: Promise.resolve() }
-        });
+  beforeAll(() => {
+    Object.defineProperty(document, "fonts", {
+      value: { ready: Promise.resolve() },
     });
+  });
 
-    it('should emit a request edit event when component is editable', () => {
-        const wrapper = doShallowMount({ editable: true });
-        
-        wrapper.find('.node-name').trigger('dblclick');
+  it("should emit a request edit event when component is editable", () => {
+    const wrapper = doShallowMount({ editable: true });
 
-        expect(wrapper.emitted('requestEdit')).toBeDefined();
-    });
+    wrapper.find(".node-name").trigger("dblclick");
 
-    it('should ignore double click if name is not editable', () => {
-        const wrapper = doShallowMount();
+    expect(wrapper.emitted("requestEdit")).toBeDefined();
+  });
 
-        wrapper.find('.node-name').trigger('dblclick');
+  it("should ignore double click if name is not editable", () => {
+    const wrapper = doShallowMount();
 
-        expect(wrapper.emitted('request-edit')).toBeUndefined();
-    });
+    wrapper.find(".node-name").trigger("dblclick");
 
-    it.each([
-        'click',
-        'mouseenter',
-        'mouseleave'
-    ])('should emit a (%s) event', (eventName) => {
-        const wrapper = doShallowMount();
+    expect(wrapper.emitted("request-edit")).toBeUndefined();
+  });
 
-        expect(wrapper.emitted(eventName)).toBeUndefined();
+  it.each(["click", "mouseenter", "mouseleave"])(
+    "should emit a (%s) event",
+    (eventName) => {
+      const wrapper = doShallowMount();
 
-        wrapper.find('.node-name').trigger(eventName);
+      expect(wrapper.emitted(eventName)).toBeUndefined();
 
-        expect(wrapper.emitted(eventName)).toBeDefined();
-    });
+      wrapper.find(".node-name").trigger(eventName);
 
-    it('should add the full name as a title when overflow is not shown', async () => {
-        const value = 'this is the whole name of the node';
-        const wrapper = doShallowMount({ value, showOverflow: true });
+      expect(wrapper.emitted(eventName)).toBeDefined();
+    }
+  );
 
-        expect(wrapper.find('.text').attributes('title')).toBeUndefined();
+  it("should add the full name as a title when overflow is not shown", async () => {
+    const value = "this is the whole name of the node";
+    const wrapper = doShallowMount({ value, showOverflow: true });
 
-        await wrapper.setProps({ showOverflow: false });
+    expect(wrapper.find(".text").attributes("title")).toBeUndefined();
 
-        expect(wrapper.find('.text').attributes('title')).toBe(value);
-    });
+    await wrapper.setProps({ showOverflow: false });
 
-    it('should render content in the slot', () => {
-        const wrapper = doShallowMount({ showOverflow: false }, {
-            slots: {
-                default: '<span class="slot-content"></span>'
-            }
-        });
+    expect(wrapper.find(".text").attributes("title")).toBe(value);
+  });
 
-        expect(wrapper.find('.slot-content').exists()).toBe(true);
-    });
+  it("should render content in the slot", () => {
+    const wrapper = doShallowMount(
+      { showOverflow: false },
+      {
+        slots: {
+          default: '<span class="slot-content"></span>',
+        },
+      }
+    );
 
-    it('should add a text-ellipsis class when showOverflow is false', () => {
-        const wrapper = doShallowMount({ showOverflow: false });
-        expect(wrapper.classes()).toContain('text-ellipsis');
-    });
+    expect(wrapper.find(".slot-content").exists()).toBe(true);
+  });
 
-    it.each([
-        'widthChange',
-        'heightChange'
-    ])('should emit a (%) event', (eventName) => {
-        const wrapper = doShallowMount();
+  it("should add a text-ellipsis class when showOverflow is false", () => {
+    const wrapper = doShallowMount({ showOverflow: false });
+    expect(wrapper.classes()).toContain("text-ellipsis");
+  });
 
-        const emittedValue = 200;
-        wrapper.findComponent(AutoSizeForeignObject).vm.$emit(eventName, emittedValue);
-        expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
-    });
+  it.each(["widthChange", "heightChange"])(
+    "should emit a (%) event",
+    (eventName) => {
+      const wrapper = doShallowMount();
+
+      const emittedValue = 200;
+      wrapper
+        .findComponent(AutoSizeForeignObject)
+        .vm.$emit(eventName, emittedValue);
+      expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
+    }
+  );
 });

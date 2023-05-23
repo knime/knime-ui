@@ -1,125 +1,144 @@
 <script>
-import Button from 'webapps-common/ui/components/Button.vue';
-import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
+import Button from "webapps-common/ui/components/Button.vue";
+import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
 
 const NODES_PER_ROW = 3;
 
 export default {
-    components: {
-        Button,
-        NodeTemplate
+  components: {
+    Button,
+    NodeTemplate,
+  },
+  props: {
+    nodes: {
+      type: Array,
+      default: () => [],
     },
-    props: {
-        nodes: {
-            type: Array,
-            default: () => []
-        },
-        hasMoreNodes: {
-            type: Boolean,
-            default: false
-        },
-        selectedNode: {
-            type: [Object, null],
-            default: null
-        },
-        highlightFirst: {
-            type: Boolean,
-            default: false
-        }
+    hasMoreNodes: {
+      type: Boolean,
+      default: false,
     },
-    emits: ['enter-key', 'showMore', 'update:selectedNode', 'navReachedTop', 'navReachedEnd'],
-    watch: {
-        selectedNode: {
-            immediate: false,
-            handler(newSelectedNode) {
-                if (!newSelectedNode || !this.nodes) {
-                    return;
-                }
-                const nodeIndex = this.nodes.findIndex(node => node.id === newSelectedNode?.id);
-                if (nodeIndex >= 0) {
-                    this.domFocusNode(nodeIndex);
-                }
-            }
-        }
+    selectedNode: {
+      type: [Object, null],
+      default: null,
     },
-    expose: ['focusFirst', 'focusLast'],
-    methods: {
-        nodeTemplateProps(node, index) {
-            return {
-                nodeTemplate: node,
-                isHighlighted: this.selectedNode === null && index === 0 && this.highlightFirst,
-                isSelected: this.selectedNode?.id === node.id
-            };
-        },
-        focusLast() {
-            this.focusItem(this.nodes?.at(-1));
-        },
-        focusFirst() {
-            this.focusItem(this.nodes?.at(0));
-        },
-        focusItem(focusNode) {
-            // select the item if the current selection is not in our list
-            if (focusNode && !this.nodes.find(someNode => someNode.id === this.selectedNode?.id)) {
-                this.$emit('update:selectedNode', focusNode);
-            }
-        },
-        domFocusNode(nodeIndex) {
-            const nodeListElement = this.$el.querySelector(`[data-index="${nodeIndex}"]`);
-            nodeListElement?.focus();
-        },
-        onKeyDown(key) {
-            // no navigation for empty nodes
-            if (this.nodes.length < 1) {
-                return;
-            }
-
-            const activeItemIndex = this.nodes.findIndex(node => node.id === this.selectedNode?.id);
-
-            // switch from items to upper input elements (e.g. search box) on the first row
-            if (activeItemIndex < NODES_PER_ROW && key === 'up') {
-                this.$emit('navReachedTop');
-                return;
-            }
-
-            // switch to next list on down key
-            if (activeItemIndex + NODES_PER_ROW > this.nodes.length && key === 'down') {
-                this.$emit('navReachedEnd');
-                return;
-            }
-
-            const selectNextNode = (indexOffset) => {
-                const nextIndex = activeItemIndex + indexOffset;
-                if (nextIndex >= this.nodes.length) {
-                    this.$emit('navReachedEnd');
-                    return;
-                }
-                const node = this.nodes[nextIndex];
-                if (node) {
-                    this.$emit('update:selectedNode', node);
-                }
-            };
-
-            // items navigation
-            if (key === 'up') {
-                selectNextNode(-NODES_PER_ROW);
-                return;
-            }
-
-            if (key === 'down') {
-                selectNextNode(NODES_PER_ROW);
-                return;
-            }
-
-            if (key === 'left') {
-                selectNextNode(-1);
-                return;
-            }
-
-            if (key === 'right') {
-                selectNextNode(+1);
-            }
+    highlightFirst: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: [
+    "enter-key",
+    "showMore",
+    "update:selectedNode",
+    "navReachedTop",
+    "navReachedEnd",
+  ],
+  watch: {
+    selectedNode: {
+      immediate: false,
+      handler(newSelectedNode) {
+        if (!newSelectedNode || !this.nodes) {
+          return;
         }
-    }
+        const nodeIndex = this.nodes.findIndex(
+          (node) => node.id === newSelectedNode?.id
+        );
+        if (nodeIndex >= 0) {
+          this.domFocusNode(nodeIndex);
+        }
+      },
+    },
+  },
+  expose: ["focusFirst", "focusLast"],
+  methods: {
+    nodeTemplateProps(node, index) {
+      return {
+        nodeTemplate: node,
+        isHighlighted:
+          this.selectedNode === null && index === 0 && this.highlightFirst,
+        isSelected: this.selectedNode?.id === node.id,
+      };
+    },
+    focusLast() {
+      this.focusItem(this.nodes?.at(-1));
+    },
+    focusFirst() {
+      this.focusItem(this.nodes?.at(0));
+    },
+    focusItem(focusNode) {
+      // select the item if the current selection is not in our list
+      if (
+        focusNode &&
+        !this.nodes.find((someNode) => someNode.id === this.selectedNode?.id)
+      ) {
+        this.$emit("update:selectedNode", focusNode);
+      }
+    },
+    domFocusNode(nodeIndex) {
+      const nodeListElement = this.$el.querySelector(
+        `[data-index="${nodeIndex}"]`
+      );
+      nodeListElement?.focus();
+    },
+    onKeyDown(key) {
+      // no navigation for empty nodes
+      if (this.nodes.length < 1) {
+        return;
+      }
+
+      const activeItemIndex = this.nodes.findIndex(
+        (node) => node.id === this.selectedNode?.id
+      );
+
+      // switch from items to upper input elements (e.g. search box) on the first row
+      if (activeItemIndex < NODES_PER_ROW && key === "up") {
+        this.$emit("navReachedTop");
+        return;
+      }
+
+      // switch to next list on down key
+      if (
+        activeItemIndex + NODES_PER_ROW > this.nodes.length &&
+        key === "down"
+      ) {
+        this.$emit("navReachedEnd");
+        return;
+      }
+
+      const selectNextNode = (indexOffset) => {
+        const nextIndex = activeItemIndex + indexOffset;
+        if (nextIndex >= this.nodes.length) {
+          this.$emit("navReachedEnd");
+          return;
+        }
+        const node = this.nodes[nextIndex];
+        if (node) {
+          this.$emit("update:selectedNode", node);
+        }
+      };
+
+      // items navigation
+      if (key === "up") {
+        selectNextNode(-NODES_PER_ROW);
+        return;
+      }
+
+      if (key === "down") {
+        selectNextNode(NODES_PER_ROW);
+        return;
+      }
+
+      if (key === "left") {
+        selectNextNode(-1);
+        return;
+      }
+
+      if (key === "right") {
+        selectNextNode(+1);
+      }
+    },
+  },
 };
 </script>
 
@@ -141,10 +160,7 @@ export default {
         :data-index="index"
         @keydown.enter.stop.prevent="$emit('enter-key', node)"
       >
-        <slot
-          name="item"
-          v-bind="nodeTemplateProps(node, index)"
-        >
+        <slot name="item" v-bind="nodeTemplateProps(node, index)">
           <NodeTemplate v-bind="nodeTemplateProps(node, index)" />
         </slot>
       </li>

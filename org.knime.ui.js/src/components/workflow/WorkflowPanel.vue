@@ -1,68 +1,67 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { mapState, mapGetters } from 'vuex';
-import Button from 'webapps-common/ui/components/Button.vue';
-import StreamingIcon from 'webapps-common/ui/assets/img/icons/nodes-connect.svg';
-import ContextMenu from '@/components/application/ContextMenu.vue';
-import WorkflowCanvas from '@/components/workflow/WorkflowCanvas.vue';
-import PortTypeMenu from '@/components/workflow/ports/PortTypeMenu.vue';
-import QuickAddNodeMenu from '@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue';
-import type { Workflow } from '@/api/gateway-api/generated-api';
+import { defineComponent } from "vue";
+import { mapState, mapGetters } from "vuex";
+import Button from "webapps-common/ui/components/Button.vue";
+import StreamingIcon from "webapps-common/ui/assets/img/icons/nodes-connect.svg";
+import ContextMenu from "@/components/application/ContextMenu.vue";
+import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
+import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
+import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
+import type { Workflow } from "@/api/gateway-api/generated-api";
 
 export default defineComponent({
-    components: {
-        StreamingIcon,
-        ContextMenu,
-        WorkflowCanvas,
-        QuickAddNodeMenu,
-        PortTypeMenu,
-        Button
+  components: {
+    StreamingIcon,
+    ContextMenu,
+    WorkflowCanvas,
+    QuickAddNodeMenu,
+    PortTypeMenu,
+    Button,
+  },
+  computed: {
+    ...mapState("workflow", {
+      workflow: (state) =>
+        state.activeWorkflow as Workflow & { projectId: string },
+      activeWorkflowId: (state) =>
+        state.activeWorkflow.info.containerId as string,
+    }),
+    ...mapState("workflow", ["portTypeMenu", "quickAddNodeMenu"]),
+    ...mapState("application", ["contextMenu"]),
+    ...mapGetters("workflow", [
+      "isLinked",
+      "isInsideLinked",
+      "insideLinkedType",
+      "isWritable",
+      "isStreaming",
+      "isOnHub",
+    ]),
+    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
+    ...mapGetters("selection", ["selectedNodeIds"]),
+  },
+  watch: {
+    // close quickAddNodeMenu if node selection changes
+    selectedNodeIds() {
+      if (this.quickAddNodeMenu.isOpen) {
+        this.quickAddNodeMenu.events.menuClose();
+      }
     },
-    computed: {
-        ...mapState('workflow', {
-            workflow: state => state.activeWorkflow as Workflow & { projectId: string },
-            activeWorkflowId: state => state.activeWorkflow.info.containerId as string
-        }),
-        ...mapState('workflow', [
-            'portTypeMenu',
-            'quickAddNodeMenu'
-        ]),
-        ...mapState('application', ['contextMenu']),
-        ...mapGetters('workflow', [
-            'isLinked',
-            'isInsideLinked',
-            'insideLinkedType',
-            'isWritable',
-            'isStreaming',
-            'isOnHub'
-        ]),
-        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapGetters('selection', ['selectedNodeIds'])
+  },
+  methods: {
+    toggleContextMenu(event) {
+      this.$store.dispatch("application/toggleContextMenu", { event });
     },
-    watch: {
-        // close quickAddNodeMenu if node selection changes
-        selectedNodeIds() {
-            if (this.quickAddNodeMenu.isOpen) {
-                this.quickAddNodeMenu.events.menuClose();
-            }
-        }
+    onContextMenu(event) {
+      // this is the only place where we handle native context menu events
+      if (event.srcElement.classList.contains("native-context-menu")) {
+        return;
+      }
+      // prevent native context menus to appear
+      event.preventDefault();
     },
-    methods: {
-        toggleContextMenu(event) {
-            this.$store.dispatch('application/toggleContextMenu', { event });
-        },
-        onContextMenu(event) {
-            // this is the only place where we handle native context menu events
-            if (event.srcElement.classList.contains('native-context-menu')) {
-                return;
-            }
-            // prevent native context menus to appear
-            event.preventDefault();
-        },
-        onSaveLocalCopy() {
-            this.$store.dispatch('workflow/saveWorkflowAs');
-        }
-    }
+    onSaveLocalCopy() {
+      this.$store.dispatch("workflow/saveWorkflowAs");
+    },
+  },
 });
 </script>
 
@@ -90,35 +89,31 @@ export default defineComponent({
       v-on="quickAddNodeMenu.events"
     />
 
-    <PortalTarget
-      name="annotation-editor-toolbar"
-      tag="div"
-    />
+    <PortalTarget name="annotation-editor-toolbar" tag="div" />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming || isInsideLinked || isOnHub"
-      :class="['workflow-info', { 'only-streaming': isStreaming && !isLinked }, { 'only-on-hub': isOnHub }]"
+      :class="[
+        'workflow-info',
+        { 'only-streaming': isStreaming && !isLinked },
+        { 'only-on-hub': isOnHub },
+      ]"
     >
       <span v-if="isInsideLinked">
-        This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
+        This is a {{ workflow.info.containerType }} inside a linked
+        {{ insideLinkedType }} and cannot be edited.
       </span>
       <span v-else-if="isLinked">
-        This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
+        This is a linked {{ workflow.info.containerType }} and can therefore not
+        be edited.
       </span>
-      <div
-        v-if="isOnHub"
-        class="banner"
-      >
+      <div v-if="isOnHub" class="banner">
         <span>
-          This is a temporary copy. Once you are done, save to re-upload or save a local copy.
+          This is a temporary copy. Once you are done, save to re-upload or save
+          a local copy.
         </span>
-        <Button
-          primary
-          compact
-          class="button"
-          @click="onSaveLocalCopy"
-        >
+        <Button primary compact class="button" @click="onSaveLocalCopy">
           Save local copy
         </Button>
       </div>

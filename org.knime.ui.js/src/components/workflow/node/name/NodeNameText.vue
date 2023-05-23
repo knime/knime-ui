@@ -1,6 +1,6 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
-import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue';
+import { defineComponent } from "vue";
+import AutoSizeForeignObject from "@/components/common/AutoSizeForeignObject.vue";
 
 /**
  * Renders the node name and takes care of styling and clipping it when the contents are too large.
@@ -8,46 +8,53 @@ import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue
  * and slot props
  */
 export default defineComponent({
-    components: { AutoSizeForeignObject },
-    props: {
-        /**
-         * Determines whether the name is editable. It will not emit the request-edit
-         * event if it's not editable
-         */
-        editable: {
-            type: Boolean,
-            default: false
-        },
-        /**
-         * The node's name text itself
-         */
-        value: {
-            type: String,
-            default: ''
-        },
-        /**
-         * Whether to show the whole text when it overflows the calculated clipping point
-         */
-        showOverflow: {
-            type: Boolean,
-            default: false
-        },
-        /**
-         * Forwarded to the AutoSizeForeignObject component
-         */
-        startWidth: {
-            type: Number,
-            default: null
-        },
-        /**
-         * Forwarded to the AutoSizeForeignObject component
-         */
-        startHeight: {
-            type: Number,
-            default: null
-        }
+  components: { AutoSizeForeignObject },
+  props: {
+    /**
+     * Determines whether the name is editable. It will not emit the request-edit
+     * event if it's not editable
+     */
+    editable: {
+      type: Boolean,
+      default: false,
     },
-    emits: ['widthChange', 'heightChange', 'click', 'requestEdit', 'mouseenter', 'mouseleave']
+    /**
+     * The node's name text itself
+     */
+    value: {
+      type: String,
+      default: "",
+    },
+    /**
+     * Whether to show the whole text when it overflows the calculated clipping point
+     */
+    showOverflow: {
+      type: Boolean,
+      default: false,
+    },
+    /**
+     * Forwarded to the AutoSizeForeignObject component
+     */
+    startWidth: {
+      type: Number,
+      default: null,
+    },
+    /**
+     * Forwarded to the AutoSizeForeignObject component
+     */
+    startHeight: {
+      type: Number,
+      default: null,
+    },
+  },
+  emits: [
+    "widthChange",
+    "heightChange",
+    "click",
+    "requestEdit",
+    "mouseenter",
+    "mouseleave",
+  ],
 });
 </script>
 
@@ -56,7 +63,10 @@ export default defineComponent({
     :value="value"
     :start-width="startWidth"
     :start-height="startHeight"
-    :class="['node-name-text-container', { editable, 'text-ellipsis': !showOverflow }]"
+    :class="[
+      'node-name-text-container',
+      { editable, 'text-ellipsis': !showOverflow },
+    ]"
     :max-width="$shapes.maxNodeNameWidth"
     :y-offset="-$shapes.nodeNameMargin"
     :parent-width="$shapes.nodeSize"

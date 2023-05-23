@@ -1,49 +1,41 @@
 <script>
 export default {
-    props: {
-        title: {
-            type: String,
-            required: true
-        },
-        subtitle: {
-            type: String,
-            default: null
-        },
-        leftOffset: {
-            type: Number,
-            default: 0
-        }
-    }
+  props: {
+    title: {
+      type: String,
+      required: true,
+    },
+    subtitle: {
+      type: String,
+      default: null,
+    },
+    leftOffset: {
+      type: Number,
+      default: 0,
+    },
+  },
 };
 </script>
 
 <template>
   <header>
     <div class="grid-container">
-      <div
-        v-if="leftOffset"
-        :class="`grid-item-${leftOffset}`"
-      />
+      <div v-if="leftOffset" :class="`grid-item-${leftOffset}`" />
       <div class="button">
         <slot name="button" />
       </div>
       <div
-        :class="['title-wrapper', `grid-item-${12 - leftOffset}`, $slots.button ? 'with-button' : '']"
+        :class="[
+          'title-wrapper',
+          `grid-item-${12 - leftOffset}`,
+          $slots.button ? 'with-button' : '',
+        ]"
       >
-        <span
-          v-if="subtitle"
-          class="subtitle"
-        >
-          <slot
-            name="icon"
-            class="icon"
-          />
+        <span v-if="subtitle" class="subtitle">
+          <slot name="icon" class="icon" />
           {{ subtitle }}
         </span>
-        <h1
-          class="title"
-          :class="{ padded: !subtitle }"
-        >
+        <h1 class="title" :class="{ padded: !subtitle }">
           {{ title }}
         </h1>
       </div>

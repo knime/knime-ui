@@ -1,104 +1,107 @@
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters } from "vuex";
 
-import SaveIcon from '@/assets/ok.svg';
-import CancelIcon from '@/assets/cancel.svg';
-import ActionBar from '@/components/common/ActionBar.vue';
+import SaveIcon from "@/assets/ok.svg";
+import CancelIcon from "@/assets/cancel.svg";
+import ActionBar from "@/components/common/ActionBar.vue";
 
-import NodeLabelTextArea from './NodeLabelTextArea.vue';
+import NodeLabelTextArea from "./NodeLabelTextArea.vue";
 
 export default {
-    components: {
-        NodeLabelTextArea,
-        ActionBar
+  components: {
+    NodeLabelTextArea,
+    ActionBar,
+  },
+  props: {
+    value: {
+      type: String,
+      default: "",
     },
-    props: {
-        value: {
-            type: String,
-            default: ''
-        },
-        nodeId: {
-            type: String,
-            required: true
-        },
-        kind: {
-            type: String,
-            default: ''
-        },
-        nodePosition: {
-            type: Object,
-            required: true,
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
-        },
-        portOffset: {
-            type: Number,
-            required: false,
-            default: 0
-        }
+    nodeId: {
+      type: String,
+      required: true,
     },
-    emits: ['save', 'cancel'],
-    data() {
-        return {
-            currentLabel: this.value
-        };
+    kind: {
+      type: String,
+      default: "",
     },
-    computed: {
-        ...mapGetters('canvas', ['viewBox']),
-        overlayStyles() {
-            const { left, top } = this.viewBox;
-            return {
-                width: '100%',
-                height: '100%',
-                x: left,
-                y: top
-            };
-        },
-        actions() {
-            return [
-                {
-                    name: 'save',
-                    icon: SaveIcon,
-                    onClick: this.onSave,
-                    primary: true
-                },
-                {
-                    name: 'cancel',
-                    icon: CancelIcon,
-                    onClick: this.onCancel
-                }
-            ];
-        },
-        actionBarPosition() {
-            return [
-                this.nodePosition.x + this.$shapes.nodeSize / 2,
-                this.nodePosition.y + this.yOffset
-            ];
-        },
-        yOffset() {
-            return (this.kind === 'metanode'
-                ? this.$shapes.metanodeLabelActionBarOffset
-                : this.$shapes.nodeLabelActionBarOffset) + this.portOffset;
-        }
+    nodePosition: {
+      type: Object,
+      required: true,
+      validator: (position) =>
+        typeof position.x === "number" && typeof position.y === "number",
     },
-    watch: {
-        value(newValue) {
-            this.currentLabel = newValue;
-        }
+    portOffset: {
+      type: Number,
+      required: false,
+      default: 0,
     },
-    methods: {
-        onSave() {
-            if (this.currentLabel === this.value) {
-                this.onCancel();
-            } else {
-                this.$emit('save', { newLabel: this.currentLabel.trim() });
-            }
+  },
+  emits: ["save", "cancel"],
+  data() {
+    return {
+      currentLabel: this.value,
+    };
+  },
+  computed: {
+    ...mapGetters("canvas", ["viewBox"]),
+    overlayStyles() {
+      const { left, top } = this.viewBox;
+      return {
+        width: "100%",
+        height: "100%",
+        x: left,
+        y: top,
+      };
+    },
+    actions() {
+      return [
+        {
+          name: "save",
+          icon: SaveIcon,
+          onClick: this.onSave,
+          primary: true,
         },
-        onCancel() {
-            // reset internal value
-            this.currentLabel = this.value;
-            this.$emit('cancel');
-        }
-    }
+        {
+          name: "cancel",
+          icon: CancelIcon,
+          onClick: this.onCancel,
+        },
+      ];
+    },
+    actionBarPosition() {
+      return [
+        this.nodePosition.x + this.$shapes.nodeSize / 2,
+        this.nodePosition.y + this.yOffset,
+      ];
+    },
+    yOffset() {
+      return (
+        (this.kind === "metanode"
+          ? this.$shapes.metanodeLabelActionBarOffset
+          : this.$shapes.nodeLabelActionBarOffset) + this.portOffset
+      );
+    },
+  },
+  watch: {
+    value(newValue) {
+      this.currentLabel = newValue;
+    },
+  },
+  methods: {
+    onSave() {
+      if (this.currentLabel === this.value) {
+        this.onCancel();
+      } else {
+        this.$emit("save", { newLabel: this.currentLabel.trim() });
+      }
+    },
+    onCancel() {
+      // reset internal value
+      this.currentLabel = this.value;
+      this.$emit("cancel");
+    },
+  },
 };
 </script>
 
@@ -132,4 +135,3 @@ export default {
     />
   </g>
 </template>
-

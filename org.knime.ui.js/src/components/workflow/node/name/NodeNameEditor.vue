@@ -1,13 +1,13 @@
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
-import { mapGetters } from 'vuex';
+import { defineComponent, type PropType } from "vue";
+import { mapGetters } from "vuex";
 
-import SaveIcon from '@/assets/ok.svg';
-import CancelIcon from '@/assets/cancel.svg';
-import type { XY } from '@/api/gateway-api/generated-api';
-import ActionBar from '@/components/common/ActionBar.vue';
+import SaveIcon from "@/assets/ok.svg";
+import CancelIcon from "@/assets/cancel.svg";
+import type { XY } from "@/api/gateway-api/generated-api";
+import ActionBar from "@/components/common/ActionBar.vue";
 
-import NodeNameTextarea from './NodeNameTextarea.vue';
+import NodeNameTextarea from "./NodeNameTextarea.vue";
 
 const invalidCharsErrorVisibleTime = 4000; // ms
 
@@ -16,136 +16,151 @@ const invalidCharsErrorVisibleTime = 4000; // ms
  * canvas (via the portal) with a rect that avoids changes to the canvas.
  */
 export default defineComponent({
-    components: {
-        ActionBar,
-        NodeNameTextarea
+  components: {
+    ActionBar,
+    NodeNameTextarea,
+  },
+  props: {
+    value: {
+      type: String,
+      default: "",
     },
-    props: {
-        value: {
-            type: String,
-            default: ''
-        },
-        nodeId: {
-            type: String,
-            required: true
-        },
-        nodePosition: {
-            type: Object as PropType<XY>,
-            required: true,
-            validator: (position: XY) => typeof position.x === 'number' && typeof position.y === 'number'
-        },
-        /* start width to initialize the editor with */
-        startWidth: {
-            type: Number,
-            default: null
-        },
-        /* start height to initialize the editor with */
-        startHeight: {
-            type: Number,
-            default: null
-        }
+    nodeId: {
+      type: String,
+      required: true,
     },
-    emits: ['save', 'cancel', 'widthChange', 'heightChange'],
-    data() {
-        return {
-            hideInvalidCharsTimeoutId: null,
-            currentName: this.value,
-            latestDimensions: {
-                width: null,
-                height: null
-            }
-        };
+    nodePosition: {
+      type: Object as PropType<XY>,
+      required: true,
+      validator: (position: XY) =>
+        typeof position.x === "number" && typeof position.y === "number",
     },
-    computed: {
-        ...mapGetters('canvas', ['viewBox']),
-        overlayStyles() {
-            const { left, top } = this.viewBox;
-            return {
-                width: '100%',
-                height: '100%',
-                x: left,
-                y: top
-            };
-        },
-        invalidCharacters() {
-            return /[*?#:"<>%~|/\\]/g;
-        },
-
-        actions() {
-            return [
-                {
-                    name: 'save',
-                    icon: SaveIcon,
-                    onClick: this.onSave,
-                    primary: true
-                },
-                {
-                    name: 'cancel',
-                    icon: CancelIcon,
-                    onClick: this.onCancel
-                }
-            ];
-        },
-
-        actionBarPosition() {
-            return [
-                this.nodePosition.x + this.$shapes.nodeSize / 2,
-                this.nodePosition.y - this.$shapes.nodeSelectionPadding[0] - this.latestDimensions.height
-            ];
-        },
-
-        errorMessagePosition() {
-            const halfNodeSize = this.$shapes.nodeSize / 2;
-            // use node with padding as minimum
-            const currentWidthWithMinimum = Math.max(this.latestDimensions.width, this.$shapes.nodeWidthWithPadding);
-            return {
-                x: this.nodePosition.x + halfNodeSize - currentWidthWithMinimum / 2,
-                y: this.nodePosition.y
-            };
-        }
+    /* start width to initialize the editor with */
+    startWidth: {
+      type: Number,
+      default: null,
     },
-    watch: {
-        value(newValue) {
-            this.currentName = newValue;
-        }
+    /* start height to initialize the editor with */
+    startHeight: {
+      type: Number,
+      default: null,
     },
-    methods: {
-        handleDimensionChange(dimensionName: 'width' | 'height', dimensionValue: number) {
-            // keep a reference of the dimensions so that we can emit the most recent
-            // value upon saving. These values can be later provided so that the editor
-            // can be reinitialized using them as a starting point
-            this.latestDimensions = { ...this.latestDimensions, [dimensionName]: dimensionValue };
+  },
+  emits: ["save", "cancel", "widthChange", "heightChange"],
+  data() {
+    return {
+      hideInvalidCharsTimeoutId: null,
+      currentName: this.value,
+      latestDimensions: {
+        width: null,
+        height: null,
+      },
+    };
+  },
+  computed: {
+    ...mapGetters("canvas", ["viewBox"]),
+    overlayStyles() {
+      const { left, top } = this.viewBox;
+      return {
+        width: "100%",
+        height: "100%",
+        x: left,
+        y: top,
+      };
+    },
+    invalidCharacters() {
+      return /[*?#:"<>%~|/\\]/g;
+    },
 
-            this.$emit(`${dimensionName}Change`, dimensionValue);
+    actions() {
+      return [
+        {
+          name: "save",
+          icon: SaveIcon,
+          onClick: this.onSave,
+          primary: true,
         },
-        onSave() {
-            // reset to old value on empty edits
-            if (this.currentName.trim() === '') {
-                this.currentName = this.value;
-                this.$emit('cancel');
-                return;
-            }
+        {
+          name: "cancel",
+          icon: CancelIcon,
+          onClick: this.onCancel,
+        },
+      ];
+    },
 
-            if (this.currentName === this.value) {
-                this.onCancel();
-            } else {
-                this.$emit('save', { dimensionsOnClose: this.latestDimensions, newName: this.currentName.trim() });
-            }
-        },
-        onCancel() {
-            // reset internal value
-            this.currentName = this.value;
-            this.$emit('cancel');
-        },
-        onInvalidInput() {
-            if (this.hideInvalidCharsTimeoutId) {
-                clearTimeout(this.hideInvalidCharsTimeoutId);
-            }
-            this.hideInvalidCharsTimeoutId = setTimeout(() => {
-                this.hideInvalidCharsTimeoutId = null;
-            }, invalidCharsErrorVisibleTime);
-        }
-    }
+    actionBarPosition() {
+      return [
+        this.nodePosition.x + this.$shapes.nodeSize / 2,
+        this.nodePosition.y -
+          this.$shapes.nodeSelectionPadding[0] -
+          this.latestDimensions.height,
+      ];
+    },
+
+    errorMessagePosition() {
+      const halfNodeSize = this.$shapes.nodeSize / 2;
+      // use node with padding as minimum
+      const currentWidthWithMinimum = Math.max(
+        this.latestDimensions.width,
+        this.$shapes.nodeWidthWithPadding
+      );
+      return {
+        x: this.nodePosition.x + halfNodeSize - currentWidthWithMinimum / 2,
+        y: this.nodePosition.y,
+      };
+    },
+  },
+  watch: {
+    value(newValue) {
+      this.currentName = newValue;
+    },
+  },
+  methods: {
+    handleDimensionChange(
+      dimensionName: "width" | "height",
+      dimensionValue: number
+    ) {
+      // keep a reference of the dimensions so that we can emit the most recent
+      // value upon saving. These values can be later provided so that the editor
+      // can be reinitialized using them as a starting point
+      this.latestDimensions = {
+        ...this.latestDimensions,
+        [dimensionName]: dimensionValue,
+      };
+
+      this.$emit(`${dimensionName}Change`, dimensionValue);
+    },
+    onSave() {
+      // reset to old value on empty edits
+      if (this.currentName.trim() === "") {
+        this.currentName = this.value;
+        this.$emit("cancel");
+        return;
+      }
+
+      if (this.currentName === this.value) {
+        this.onCancel();
+      } else {
+        this.$emit("save", {
+          dimensionsOnClose: this.latestDimensions,
+          newName: this.currentName.trim(),
+        });
+      }
+    },
+    onCancel() {
+      // reset internal value
+      this.currentName = this.value;
+      this.$emit("cancel");
+    },
+    onInvalidInput() {
+      if (this.hideInvalidCharsTimeoutId) {
+        clearTimeout(this.hideInvalidCharsTimeoutId);
+      }
+      this.hideInvalidCharsTimeoutId = setTimeout(() => {
+        this.hideInvalidCharsTimeoutId = null;
+      }, invalidCharsErrorVisibleTime);
+    },
+  },
 });
 </script>
 
@@ -189,7 +204,8 @@ export default defineComponent({
       :y="errorMessagePosition.y"
     >
       <div class="invalid-chars-error">
-        Characters <span class="chars">{{ invalidCharacters.source }}</span> are not allowed and have been removed.
+        Characters <span class="chars">{{ invalidCharacters.source }}</span> are
+        not allowed and have been removed.
       </div>
     </foreignObject>
   </g>

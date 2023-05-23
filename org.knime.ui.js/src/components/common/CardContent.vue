@@ -1,25 +1,21 @@
 <script>
-
 export default {
-    props: {
-        centered: {
-            type: Boolean,
-            default: true
-        },
+  props: {
+    centered: {
+      type: Boolean,
+      default: true,
+    },
 
-        padded: {
-            type: Boolean,
-            default: false
-        }
-    }
+    padded: {
+      type: Boolean,
+      default: false,
+    },
+  },
 };
 </script>
 
 <template>
-  <div
-    class="card-content"
-    :class="{ centered, padded }"
-  >
+  <div class="card-content" :class="{ centered, padded }">
     <slot />
   </div>
 </template>

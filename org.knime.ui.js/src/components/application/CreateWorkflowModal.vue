@@ -1,103 +1,102 @@
 <script>
-import { mapState } from 'vuex';
-import Modal from 'webapps-common/ui/components/Modal.vue';
-import Button from 'webapps-common/ui/components/Button.vue';
-import InputField from 'webapps-common/ui/components/forms/InputField.vue';
-import Label from 'webapps-common/ui/components/forms/Label.vue';
+import { mapState } from "vuex";
+import Modal from "webapps-common/ui/components/Modal.vue";
+import Button from "webapps-common/ui/components/Button.vue";
+import InputField from "webapps-common/ui/components/forms/InputField.vue";
+import Label from "webapps-common/ui/components/forms/Label.vue";
 
-import WorkflowNameValidator from '@/components/common/WorkflowNameValidator.vue';
+import WorkflowNameValidator from "@/components/common/WorkflowNameValidator.vue";
 
-import { escapeStack } from '@/mixins/escapeStack';
+import { escapeStack } from "@/mixins/escapeStack";
 
 export default {
-    components: {
-        Modal,
-        Button,
-        Label,
-        InputField,
-        WorkflowNameValidator
-    },
+  components: {
+    Modal,
+    Button,
+    Label,
+    InputField,
+    WorkflowNameValidator,
+  },
 
-    mixins: [
-        escapeStack({
-            alwaysActive: true,
-            onEscape() {
-                if (this.isCreateWorkflowModalOpen) {
-                    this.closeModal();
-                }
-            }
-        })
-    ],
-
-    data() {
-        return {
-            workflowName: 'KNIME_project',
-            enableSubmit: true,
-            cleanName: () => {}
-        };
-    },
-
-    computed: {
-        ...mapState('spaces', ['isCreateWorkflowModalOpen', 'activeSpace'])
-    },
-
-    watch: {
-        isCreateWorkflowModalOpen: {
-            immediate: true,
-            handler() {
-                if (this.isCreateWorkflowModalOpen) {
-                    this.setNameSuggestion();
-                    setTimeout(() => {
-                        this.$refs.inputRef?.$refs?.input?.focus();
-                    // eslint-disable-next-line no-magic-numbers
-                    }, 200);
-                }
-            }
+  mixins: [
+    escapeStack({
+      alwaysActive: true,
+      onEscape() {
+        if (this.isCreateWorkflowModalOpen) {
+          this.closeModal();
         }
-    },
+      },
+    }),
+  ],
 
-    methods: {
-        async onSubmit() {
-            try {
-                await this.$store.dispatch(
-                    'spaces/createWorkflow',
-                    { workflowName: this.cleanName(this.workflowName) }
-                );
-                this.closeModal();
-            } catch (error) {
-                consola.log(`There was an error creating the workflow`, error);
-            }
-        },
-        closeModal() {
-            this.enableSubmit = true;
-            this.$store.commit('spaces/setIsCreateWorkflowModalOpen', false);
-        },
-        onkeyup(keyupEvent, isValid) {
-            if (keyupEvent.key === 'Enter' && isValid) {
-                this.onSubmit();
-            }
-        },
-        onValidChange(isValid) {
-            this.enableSubmit = isValid;
-        },
-        getNameCleanerFunction(cleanName) {
-            this.cleanName = cleanName;
-        },
-        setNameSuggestion() {
-            const NAME_TEMPLATE = 'KNIME_project';
-            const items = this.activeSpace.activeWorkflowGroup.items;
-            if (!items.some((item) => item.name === `${NAME_TEMPLATE}`)) {
-                this.workflowName = `${NAME_TEMPLATE}`;
-                return;
-            }
+  data() {
+    return {
+      workflowName: "KNIME_project",
+      enableSubmit: true,
+      cleanName: () => {},
+    };
+  },
 
-            let counter = 1;
-            while (items.some(({ name }) => name === `${NAME_TEMPLATE}${counter}`)) {
-                counter++;
-            }
-            this.workflowName = `${NAME_TEMPLATE}${counter}`;
+  computed: {
+    ...mapState("spaces", ["isCreateWorkflowModalOpen", "activeSpace"]),
+  },
+
+  watch: {
+    isCreateWorkflowModalOpen: {
+      immediate: true,
+      handler() {
+        if (this.isCreateWorkflowModalOpen) {
+          this.setNameSuggestion();
+          setTimeout(() => {
+            this.$refs.inputRef?.$refs?.input?.focus();
+            // eslint-disable-next-line no-magic-numbers
+          }, 200);
         }
-    }
+      },
+    },
+  },
+
+  methods: {
+    async onSubmit() {
+      try {
+        await this.$store.dispatch("spaces/createWorkflow", {
+          workflowName: this.cleanName(this.workflowName),
+        });
+        this.closeModal();
+      } catch (error) {
+        consola.log("There was an error creating the workflow", error);
+      }
+    },
+    closeModal() {
+      this.enableSubmit = true;
+      this.$store.commit("spaces/setIsCreateWorkflowModalOpen", false);
+    },
+    onkeyup(keyupEvent, isValid) {
+      if (keyupEvent.key === "Enter" && isValid) {
+        this.onSubmit();
+      }
+    },
+    onValidChange(isValid) {
+      this.enableSubmit = isValid;
+    },
+    getNameCleanerFunction(cleanName) {
+      this.cleanName = cleanName;
+    },
+    setNameSuggestion() {
+      const NAME_TEMPLATE = "KNIME_project";
+      const items = this.activeSpace.activeWorkflowGroup.items;
+      if (!items.some((item) => item.name === `${NAME_TEMPLATE}`)) {
+        this.workflowName = `${NAME_TEMPLATE}`;
+        return;
+      }
+
+      let counter = 1;
+      while (items.some(({ name }) => name === `${NAME_TEMPLATE}${counter}`)) {
+        counter++;
+      }
+      this.workflowName = `${NAME_TEMPLATE}${counter}`;
+    },
+  },
 };
 </script>
 
@@ -129,10 +128,7 @@ export default {
                 :is-valid="isValid"
                 @keyup="onkeyup($event, isValid)"
               />
-              <div
-                v-if="!isValid"
-                class="item-error"
-              >
+              <div v-if="!isValid" class="item-error">
                 <span>{{ errorMessage }}</span>
               </div>
             </div>
@@ -141,17 +137,10 @@ export default {
       </Label>
     </template>
     <template #controls>
-      <Button
-        with-border
-        @click="closeModal"
-      >
+      <Button with-border @click="closeModal">
         <strong>Cancel</strong>
       </Button>
-      <Button
-        primary
-        :disabled="!enableSubmit"
-        @click="onSubmit"
-      >
+      <Button primary :disabled="!enableSubmit" @click="onSubmit">
         <strong>Create</strong>
       </Button>
     </template>
@@ -171,4 +160,3 @@ export default {
   white-space: normal;
 }
 </style>
-

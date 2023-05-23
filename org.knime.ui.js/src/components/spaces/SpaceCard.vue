@@ -1,61 +1,63 @@
 <script>
-import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
-import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
-import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
-import HeartIcon from 'webapps-common/ui/assets/img/icons/heart.svg';
-import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
+import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
+import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
+import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
+import HeartIcon from "webapps-common/ui/assets/img/icons/heart.svg";
+import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 
-import Avatar from '@/components/common/Avatar.vue';
-import Card from '@/components/common/Card.vue';
-import CardHeader from '@/components/common/CardHeader.vue';
-import CardContent from '@/components/common/CardContent.vue';
-import CardFooter from '@/components/common/CardFooter.vue';
+import Avatar from "@/components/common/Avatar.vue";
+import Card from "@/components/common/Card.vue";
+import CardHeader from "@/components/common/CardHeader.vue";
+import CardContent from "@/components/common/CardContent.vue";
+import CardFooter from "@/components/common/CardFooter.vue";
 
 export default {
-    components: {
-        Avatar,
-        Card,
-        CardHeader,
-        CardContent,
-        CardFooter,
-        WorkflowIcon,
-        CubeIcon,
-        PrivateSpaceIcon,
-        HeartIcon,
-        ComputerDesktopIcon
+  components: {
+    Avatar,
+    Card,
+    CardHeader,
+    CardContent,
+    CardFooter,
+    WorkflowIcon,
+    CubeIcon,
+    PrivateSpaceIcon,
+    HeartIcon,
+    ComputerDesktopIcon,
+  },
+
+  props: {
+    space: {
+      type: Object,
+      required: true,
     },
 
-    props: {
-        space: {
-            type: Object,
-            required: true
-        },
-
-        isLocal: {
-            type: Boolean,
-            default: false
-        }
+    isLocal: {
+      type: Boolean,
+      default: false,
     },
+  },
 
-    emits: ['click'],
+  emits: ["click"],
 
-    computed: {
-        icon() {
-            if (this.isLocal) {
-                return ComputerDesktopIcon;
-            }
+  computed: {
+    icon() {
+      if (this.isLocal) {
+        return ComputerDesktopIcon;
+      }
 
-            return this.space.private ? PrivateSpaceIcon : CubeIcon;
-        },
-        spaceDescription() {
-            // override local description
-            if (this.isLocal) {
-                return 'The local space is the folder on your computer to store and access ' +
-                    'KNIME workflows and data produced by your workflows.';
-            }
-            return this.space.description;
-        }
-    }
+      return this.space.private ? PrivateSpaceIcon : CubeIcon;
+    },
+    spaceDescription() {
+      // override local description
+      if (this.isLocal) {
+        return (
+          "The local space is the folder on your computer to store and access " +
+          "KNIME workflows and data produced by your workflows."
+        );
+      }
+      return this.space.description;
+    },
+  },
 };
 </script>
 
@@ -73,11 +75,7 @@ export default {
       </div> -->
     </CardHeader>
 
-    <CardContent
-      padded
-      :centered="false"
-      class="space-card-content"
-    >
+    <CardContent padded :centered="false" class="space-card-content">
       <h5 v-if="!isLocal">{{ space.name }}</h5>
       <p>{{ spaceDescription }}</p>
       <!-- TODO: add later when lastUpdate is available -->

@@ -20,22 +20,30 @@ export const nodeNameHorizontalMargin = 4;
 
 export const nodeNameMaxLines = 2;
 
-export const nodeSelectionPaddingTop = 37 - (nodeNameLineHeight + nodeNamePadding * 2);
+export const nodeSelectionPaddingTop =
+  37 - (nodeNameLineHeight + nodeNamePadding * 2);
 export const nodeSelectionPaddingLeft = 34;
 export const nodeSelectionPaddingRight = 34;
 export const nodeSelectionPaddingBottom = 6;
-export const nodeSelectionPadding = [nodeSelectionPaddingTop, nodeSelectionPaddingLeft,
-    nodeSelectionPaddingBottom, nodeSelectionPaddingRight];
+export const nodeSelectionPadding = [
+  nodeSelectionPaddingTop,
+  nodeSelectionPaddingLeft,
+  nodeSelectionPaddingBottom,
+  nodeSelectionPaddingRight,
+];
 
-export const maxNodeNameWidth = (nodeSelectionPaddingLeft + nodeSize + nodeSelectionPaddingRight) * 1.7; // 170px
+export const maxNodeNameWidth =
+  (nodeSelectionPaddingLeft + nodeSize + nodeSelectionPaddingRight) * 1.7; // 170px
 
-export const nodeWidthWithPadding = nodeSelectionPaddingLeft + nodeSelectionPaddingRight + nodeSize;
+export const nodeWidthWithPadding =
+  nodeSelectionPaddingLeft + nodeSelectionPaddingRight + nodeSize;
 
 export const metanodeLabelOffsetY = nodeSize + nodeAnnotationMarginTop;
-export const nodeLabelOffsetY = nodeSize + nodeAnnotationMarginTop + (nodeStatusHeight + nodeStatusMarginTop);
-export const metanodeLabelActionBarOffset = (nodeWidthWithPadding / 2) -
-(nodeStatusHeight + nodeStatusMarginTop + 2);
-export const nodeLabelActionBarOffset = (nodeWidthWithPadding / 2) - 2;
+export const nodeLabelOffsetY =
+  nodeSize + nodeAnnotationMarginTop + (nodeStatusHeight + nodeStatusMarginTop);
+export const metanodeLabelActionBarOffset =
+  nodeWidthWithPadding / 2 - (nodeStatusHeight + nodeStatusMarginTop + 2);
+export const nodeLabelActionBarOffset = nodeWidthWithPadding / 2 - 2;
 
 export const nodeNameEditorMinWidth = 10;
 

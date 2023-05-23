@@ -1,24 +1,24 @@
 <script>
-import CloseIcon from '@/assets/cancel.svg';
-import DotIcon from '@/assets/dot.svg';
+import CloseIcon from "@/assets/cancel.svg";
+import DotIcon from "@/assets/dot.svg";
 
 export default {
-    components: {
-        CloseIcon,
-        DotIcon
+  components: {
+    CloseIcon,
+    DotIcon,
+  },
+  props: {
+    hasUnsavedChanges: {
+      type: Boolean,
+      default: false,
     },
-    props: {
-        hasUnsavedChanges: {
-            type: Boolean,
-            default: false
-        }
-    },
-    emits: ['close'],
-    data() {
-        return {
-            isHovered: false
-        };
-    }
+  },
+  emits: ["close"],
+  data() {
+    return {
+      isHovered: false,
+    };
+  },
 };
 </script>
 
@@ -28,10 +28,7 @@ export default {
       v-if="hasUnsavedChanges && !isHovered"
       @mouseover="isHovered = true"
     />
-    <CloseIcon
-      v-else
-      @mouseleave="isHovered = false"
-    />
+    <CloseIcon v-else @mouseleave="isHovered = false" />
   </button>
 </template>
 

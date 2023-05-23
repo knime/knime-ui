@@ -1,13 +1,12 @@
 <script>
-import Button from 'webapps-common/ui/components/Button.vue';
-import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
-import CopyIcon from 'webapps-common/ui/assets/img/icons/copy.svg';
-import CheckIcon from 'webapps-common/ui/assets/img/icons/check.svg';
-import WarningIcon from 'webapps-common/ui/assets/img/icons/circle-warning.svg';
-import { copyText } from 'webapps-common/util/copyText';
-import SwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-
+import Button from "webapps-common/ui/components/Button.vue";
+import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import CopyIcon from "webapps-common/ui/assets/img/icons/copy.svg";
+import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
+import WarningIcon from "webapps-common/ui/assets/img/icons/circle-warning.svg";
+import { copyText } from "webapps-common/util/copyText";
+import SwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
 /**
  * Error.vue
@@ -18,91 +17,85 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
  *
  */
 export default {
-    components: {
-        Button,
-        ReloadIcon,
-        CopyIcon,
-        CheckIcon,
-        WarningIcon,
-        SwitchIcon,
-        FunctionButton
+  components: {
+    Button,
+    ReloadIcon,
+    CopyIcon,
+    CheckIcon,
+    WarningIcon,
+    SwitchIcon,
+    FunctionButton,
+  },
+  props: {
+    message: {
+      type: String,
+      default: null,
     },
-    props: {
-        message: {
-            type: String,
-            default: null
-        },
-        stack: {
-            type: String,
-            default: null
-        },
-        vueInfo: {
-            type: String,
-            default: null
-        }
+    stack: {
+      type: String,
+      default: null,
     },
-    emits: ['close'],
-    data: () => ({
-        copied: false
-    }),
-    computed: {
-        errorDetails() {
-            let details = [this.message, this.vueInfo, this.stack];
-            // TODO: NXT-595 add version
-            return details.filter(Boolean).join('\n\n');
-        }
+    vueInfo: {
+      type: String,
+      default: null,
     },
-    methods: {
-        reloadApp() {
-            // redirect to the index.html page to trigger a refetch of the whole app
-            window.location.href = '/index.html';
-        },
-        copyToClipboard() {
-            copyText(JSON.stringify({
-                app: 'KnimeUI',
-                // version: // TODO: NXT-595
-                message: this.message,
-                vueInfo: this.vueInfo,
-                stack: this.stack
-            }, null, 2));
-            this.copied = true;
-        },
-        switchToJavaUI() {
-            window.switchToJavaUI();
-        }
-    }
+  },
+  emits: ["close"],
+  data: () => ({
+    copied: false,
+  }),
+  computed: {
+    errorDetails() {
+      let details = [this.message, this.vueInfo, this.stack];
+      // TODO: NXT-595 add version
+      return details.filter(Boolean).join("\n\n");
+    },
+  },
+  methods: {
+    reloadApp() {
+      // redirect to the index.html page to trigger a refetch of the whole app
+      window.location.href = "/index.html";
+    },
+    copyToClipboard() {
+      copyText(
+        JSON.stringify(
+          {
+            app: "KnimeUI",
+            // version: // TODO: NXT-595
+            message: this.message,
+            vueInfo: this.vueInfo,
+            stack: this.stack,
+          },
+          null,
+          2
+        )
+      );
+      this.copied = true;
+    },
+    switchToJavaUI() {
+      window.switchToJavaUI();
+    },
+  },
 };
 </script>
 
 <template>
-  <div
-    class="error-overlay"
-    @keydown.stop
-  >
+  <div class="error-overlay" @keydown.stop>
     <div class="background" />
     <div class="content">
-      <FunctionButton
-        class="switch-classic"
-        @click="switchToJavaUI"
-      >
+      <FunctionButton class="switch-classic" @click="switchToJavaUI">
         <SwitchIcon />
       </FunctionButton>
-      <div
-        class="header"
-        @click="$emit('close')"
-      >
+      <div class="header" @click="$emit('close')">
         <h2><WarningIcon /> Sorry, KNIME UI has stopped due to an error.</h2>
         <div class="message">
-          Hitting the reload button should bring you back to KNIME Modern UI, while you could also switch back
-          to KNIME Analytics Platform via the button on the top right.
+          Hitting the reload button should bring you back to KNIME Modern UI,
+          while you could also switch back to KNIME Analytics Platform via the
+          button on the top right.
         </div>
       </div>
       <div class="actions">
-        <Button
-          primary
-          on-dark
-          @click="reloadApp"
-        >
+        <Button primary on-dark @click="reloadApp">
           <ReloadIcon />
           Reload
         </Button>
@@ -124,10 +117,7 @@ export default {
       </div>
 
       <!-- eslint-disable vue/no-textarea-mustache -->
-      <textarea
-        class="stack"
-        readonly
-      >{{ errorDetails }}</textarea>
+      <textarea class="stack" readonly>{{ errorDetails }}</textarea>
     </div>
   </div>
 </template>

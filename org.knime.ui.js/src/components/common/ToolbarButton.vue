@@ -1,24 +1,21 @@
 <!-- A native button for use inside a toolbar. This is just used for styling. -->
 <script>
 export default {
-    props: {
-        withText: {
-            type: Boolean,
-            default: false
-        },
-        primary: {
-            type: Boolean,
-            default: false
-        }
-    }
+  props: {
+    withText: {
+      type: Boolean,
+      default: false,
+    },
+    primary: {
+      type: Boolean,
+      default: false,
+    },
+  },
 };
 </script>
 
 <template>
-  <button
-    :class="{ 'with-text': withText, primary }"
-    tabindex="1"
-  >
+  <button :class="{ 'with-text': withText, primary }" tabindex="1">
     <slot />
   </button>
 </template>

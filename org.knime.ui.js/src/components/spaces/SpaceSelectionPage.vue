@@ -1,109 +1,122 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState } from "vuex";
 
-import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
-import Button from 'webapps-common/ui/components/Button.vue';
-import PlusIcon from 'webapps-common/ui/assets/img/icons/plus-small.svg';
+import * as knimeColors from "webapps-common/ui/colors/knimeColors.mjs";
+import Button from "webapps-common/ui/components/Button.vue";
+import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 
-import { APP_ROUTES } from '@/router/appRoutes';
-import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
-import Card from '@/components/common/Card.vue';
-import CardContent from '@/components/common/CardContent.vue';
+import { APP_ROUTES } from "@/router/appRoutes";
+import GridOutbreaker from "@/components/common/GridOutbreaker.vue";
+import Card from "@/components/common/Card.vue";
+import CardContent from "@/components/common/CardContent.vue";
 
-import SpaceCard from './SpaceCard.vue';
+import SpaceCard from "./SpaceCard.vue";
 
 export default {
-    components: {
-        PlusIcon,
-        GridOutbreaker,
-        SpaceCard,
-        Button,
-        Card,
-        CardContent
-    },
+  components: {
+    PlusIcon,
+    GridOutbreaker,
+    SpaceCard,
+    Button,
+    Card,
+    CardContent,
+  },
 
-    data() {
-        return {
-            knimeColors
-        };
-    },
+  data() {
+    return {
+      knimeColors,
+    };
+  },
 
-    computed: {
-        ...mapState('spaces', ['spaceProviders', 'spaceBrowser', 'isLoading'])
-    },
-    beforeCreate() {
-        // redirect to browsing page if a space was selected
-        if (this.$store.state.spaces.spaceBrowser.spaceId) {
-            this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
-        }
-    },
-    async created() {
-        await this.$store.dispatch('spaces/fetchAllSpaceProviders');
-        // Load local space by default
-        await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId: 'root' });
-    },
-
-    methods: {
-        onLogin(spaceProviderId) {
-            this.$store.dispatch('spaces/connectProvider', { spaceProviderId });
-        },
-
-        async onLogout(spaceProviderId) {
-            await this.$store.dispatch('spaces/disconnectProvider', { spaceProviderId });
-        },
-
-        async onSpaceCardClick({ space, spaceProvider }) {
-            this.$store.commit('spaces/setActiveSpaceProviderById', spaceProvider.id);
-            this.$store.commit('spaces/setActiveSpaceId', space.id);
-            await this.$store.dispatch('spaces/saveSpaceBrowserState');
-            this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
-        },
-
-        isLocalSpace(spaceProvider) {
-            return spaceProvider.connectionMode === 'AUTOMATIC' && spaceProvider.id === 'local';
-        },
-
-        isCommunityHub(spaceProvider) {
-            // this is the official community hub that is automatically created
-            return spaceProvider.id === 'My-KNIME-Hub';
-        },
-
-        communityHubLink(spaceProvider) {
-            const base = 'https://hub.knime.com';
-            if (spaceProvider?.user?.name) {
-                return `${base}/${spaceProvider?.user?.name}`;
-            }
-            return base;
-        },
-
-        shouldDisplayAvatar(spaceProvider) {
-            return spaceProvider.connectionMode !== 'AUTOMATIC' && spaceProvider.connected;
-        },
-
-        shouldDisplayLoginButton(spaceProvider) {
-            return spaceProvider.connectionMode !== 'AUTOMATIC' && !spaceProvider.connected;
-        },
-
-        shouldDisplayLogoutButton(spaceProvider) {
-            return spaceProvider.connectionMode === 'AUTHENTICATED' && spaceProvider.connected;
-        },
-
-        async createWorkflowLocally() {
-            this.$store.commit('spaces/setActiveSpaceProviderById', 'local');
-            this.$store.commit('spaces/setActiveSpaceId', 'local');
-            await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId: 'root' });
-
-            this.$store.commit('spaces/setIsCreateWorkflowModalOpen', true);
-        }
+  computed: {
+    ...mapState("spaces", ["spaceProviders", "spaceBrowser", "isLoading"]),
+  },
+  beforeCreate() {
+    // redirect to browsing page if a space was selected
+    if (this.$store.state.spaces.spaceBrowser.spaceId) {
+      this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
     }
+  },
+  async created() {
+    await this.$store.dispatch("spaces/fetchAllSpaceProviders");
+    // Load local space by default
+    await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
+      itemId: "root",
+    });
+  },
+
+  methods: {
+    onLogin(spaceProviderId) {
+      this.$store.dispatch("spaces/connectProvider", { spaceProviderId });
+    },
+
+    async onLogout(spaceProviderId) {
+      await this.$store.dispatch("spaces/disconnectProvider", {
+        spaceProviderId,
+      });
+    },
+
+    async onSpaceCardClick({ space, spaceProvider }) {
+      this.$store.commit("spaces/setActiveSpaceProviderById", spaceProvider.id);
+      this.$store.commit("spaces/setActiveSpaceId", space.id);
+      await this.$store.dispatch("spaces/saveSpaceBrowserState");
+      this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+    },
+
+    isLocalSpace(spaceProvider) {
+      return (
+        spaceProvider.connectionMode === "AUTOMATIC" &&
+        spaceProvider.id === "local"
+      );
+    },
+
+    isCommunityHub(spaceProvider) {
+      // this is the official community hub that is automatically created
+      return spaceProvider.id === "My-KNIME-Hub";
+    },
+
+    communityHubLink(spaceProvider) {
+      const base = "https://hub.knime.com";
+      if (spaceProvider?.user?.name) {
+        return `${base}/${spaceProvider?.user?.name}`;
+      }
+      return base;
+    },
+
+    shouldDisplayAvatar(spaceProvider) {
+      return (
+        spaceProvider.connectionMode !== "AUTOMATIC" && spaceProvider.connected
+      );
+    },
+
+    shouldDisplayLoginButton(spaceProvider) {
+      return (
+        spaceProvider.connectionMode !== "AUTOMATIC" && !spaceProvider.connected
+      );
+    },
+
+    shouldDisplayLogoutButton(spaceProvider) {
+      return (
+        spaceProvider.connectionMode === "AUTHENTICATED" &&
+        spaceProvider.connected
+      );
+    },
+
+    async createWorkflowLocally() {
+      this.$store.commit("spaces/setActiveSpaceProviderById", "local");
+      this.$store.commit("spaces/setActiveSpaceId", "local");
+      await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
+        itemId: "root",
+      });
+
+      this.$store.commit("spaces/setIsCreateWorkflowModalOpen", true);
+    },
+  },
 };
 </script>
 
 <template>
-  <GridOutbreaker
-    v-if="spaceProviders"
-    :color="knimeColors.Porcelain"
-  >
+  <GridOutbreaker v-if="spaceProviders" :color="knimeColors.Porcelain">
     <section
       v-for="spaceProvider of spaceProviders"
       :key="spaceProvider.id"
@@ -111,7 +124,11 @@ export default {
     >
       <div class="space-provider-name">
         <h2>
-          {{ isCommunityHub(spaceProvider) ? 'KNIME Community Hub' : spaceProvider.name }}
+          {{
+            isCommunityHub(spaceProvider)
+              ? "KNIME Community Hub"
+              : spaceProvider.name
+          }}
           <span v-if="isCommunityHub(spaceProvider)">
             (<a :href="communityHubLink(spaceProvider)">hub.knime.com</a>)
           </span>
@@ -143,7 +160,11 @@ export default {
             class="sign-in"
             @click="onLogin(spaceProvider.id)"
           >
-            {{ spaceProvider.connectionMode === 'AUTHENTICATED' ? 'Sign in' : 'Connect' }}
+            {{
+              spaceProvider.connectionMode === "AUTHENTICATED"
+                ? "Sign in"
+                : "Connect"
+            }}
           </Button>
         </div>
       </div>
@@ -165,7 +186,10 @@ export default {
             <div class="icon-wrapper">
               <PlusIcon />
             </div>
-            <span>Create workflow <br> in your local space.</span>
+            <span
+              >Create workflow <br />
+              in your local space.</span
+            >
           </CardContent>
         </Card>
       </div>
@@ -173,7 +197,8 @@ export default {
         v-if="!spaceProvider.spaces && isCommunityHub(spaceProvider)"
         class="community-hub-text"
       >
-        Connect to the KNIME Community Hub to find workflows, nodes and components, and collaborate in spaces.
+        Connect to the KNIME Community Hub to find workflows, nodes and
+        components, and collaborate in spaces.
       </div>
     </section>
   </GridOutbreaker>

@@ -1,7 +1,7 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters } from "vuex";
 
-import Tooltip from './Tooltip.vue';
+import Tooltip from "./Tooltip.vue";
 
 /**
  * Controller for knime-ui tooltips
@@ -11,74 +11,74 @@ import Tooltip from './Tooltip.vue';
  * Prevents native browser zooming by catching Ctrl-Wheel events
  */
 export default {
-    components: {
-        Tooltip
-    },
-    data: () => ({
-        position: null
-    }),
-    computed: {
-        ...mapState('workflow', ['tooltip']),
-        ...mapState('canvas', ['zoomFactor']),
-        ...mapGetters('canvas', ['screenFromCanvasCoordinates']),
-        /*
+  components: {
+    Tooltip,
+  },
+  data: () => ({
+    position: null,
+  }),
+  computed: {
+    ...mapState("workflow", ["tooltip"]),
+    ...mapState("canvas", ["zoomFactor"]),
+    ...mapGetters("canvas", ["screenFromCanvasCoordinates"]),
+    /*
             The gap has to grow with the zoomFactor.
             Using the square root gives a more appropriate visual impression for larger factors
         */
-        zoomedGap() {
-            return Math.sqrt(this.zoomFactor) * (this.tooltip.gap || 0);
-        }
+    zoomedGap() {
+      return Math.sqrt(this.zoomFactor) * (this.tooltip.gap || 0);
     },
-    watch: {
-        tooltip(newTooltip, oldTooltip) {
-            if (!oldTooltip) {
-                this.setPosition();
-                this.openTooltip();
-            } else if (!newTooltip) {
-                this.closeTooltip();
-            }
-        }
-    },
-    beforeUnmount() {
-        // clean up event listeners
+  },
+  watch: {
+    tooltip(newTooltip, oldTooltip) {
+      if (!oldTooltip) {
+        this.setPosition();
+        this.openTooltip();
+      } else if (!newTooltip) {
         this.closeTooltip();
+      }
     },
-    methods: {
-        setPosition() {
-            if (!this.tooltip) {
-                this.position = null;
-                return;
-            }
+  },
+  beforeUnmount() {
+    // clean up event listeners
+    this.closeTooltip();
+  },
+  methods: {
+    setPosition() {
+      if (!this.tooltip) {
+        this.position = null;
+        return;
+      }
 
-            // get coordinates relative to kanvas' bounds
-            let { anchorPoint = { x: 0, y: 0 }, position } = this.tooltip;
-            this.position = this.screenFromCanvasCoordinates({
-                x: anchorPoint.x + position.x,
-                y: anchorPoint.y + position.y
-            });
-        },
-        openTooltip() {
-            consola.trace('add kanvas scroll listener for tooltips');
-                
-            let kanvas = document.getElementById('kanvas');
-            kanvas.addEventListener('scroll', this.onCanvasScroll);
-        },
-        closeTooltip() {
-            consola.trace('remove kanvas scroll listener for tooltips');
+      // get coordinates relative to kanvas' bounds
+      let { anchorPoint = { x: 0, y: 0 }, position } = this.tooltip;
+      this.position = this.screenFromCanvasCoordinates({
+        x: anchorPoint.x + position.x,
+        y: anchorPoint.y + position.y,
+      });
+    },
+    openTooltip() {
+      consola.trace("add kanvas scroll listener for tooltips");
 
-            let kanvas = document.getElementById('kanvas');
-            // if kanvas currently exsists (workflow is open) remove scroll event listener
-            kanvas?.removeEventListener('scroll', this.onCanvasScroll);
-        },
-        onMouseLeave() {
-            // trigger closing tooltip
-            this.$store.commit('workflow/setTooltip', null);
-        },
-        onCanvasScroll() {
-            consola.trace('scrolling canvas while tooltip is open');
-            this.setPosition();
-        }
-    }
+      let kanvas = document.getElementById("kanvas");
+      kanvas.addEventListener("scroll", this.onCanvasScroll);
+    },
+    closeTooltip() {
+      consola.trace("remove kanvas scroll listener for tooltips");
+
+      let kanvas = document.getElementById("kanvas");
+      // if kanvas currently exsists (workflow is open) remove scroll event listener
+      kanvas?.removeEventListener("scroll", this.onCanvasScroll);
+    },
+    onMouseLeave() {
+      // trigger closing tooltip
+      this.$store.commit("workflow/setTooltip", null);
+    },
+    onCanvasScroll() {
+      consola.trace("scrolling canvas while tooltip is open");
+      this.setPosition();
+    },
+  },
 };
 </script>
 

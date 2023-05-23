@@ -1,24 +1,24 @@
 <script>
 /* eslint-disable max-lines */
-import { mixin as VueClickAway } from 'vue3-click-away';
+import { mixin as VueClickAway } from "vue3-click-away";
 
-import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
-import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
-import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
-import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
-import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
-import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
-import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
-import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
-import InputField from 'webapps-common/ui/components/forms/InputField.vue';
-import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import WorkflowGroupIcon from "webapps-common/ui/assets/img/icons/folder.svg";
+import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
+import ComponentIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
+import DataIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
+import MetaNodeIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
+import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
+import ArrowIcon from "webapps-common/ui/assets/img/icons/arrow-back.svg";
+import InputField from "webapps-common/ui/components/forms/InputField.vue";
+import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 
-import { getMetaOrCtrlKey } from '@/util/navigator';
-import ITEM_TYPES from '@/util/spaceItemTypes';
-import WorkflowNameValidator from '@/components/common/WorkflowNameValidator.vue';
+import { getMetaOrCtrlKey } from "@/util/navigator";
+import ITEM_TYPES from "@/util/spaceItemTypes";
+import WorkflowNameValidator from "@/components/common/WorkflowNameValidator.vue";
 
-import * as multiSelectionService from './multiSelectionStateService';
-import { createDragGhosts } from './dragGhostHelpers';
+import * as multiSelectionService from "./multiSelectionStateService";
+import { createDragGhosts } from "./dragGhostHelpers";
 
 /**
  * Component that handles FileExplorer interactions.
@@ -26,361 +26,379 @@ import { createDragGhosts } from './dragGhostHelpers';
  * NOTE: Do not add store bindings to component to keep it as reusable as possible
  */
 export default {
-    components: {
-        SubMenu,
-        MenuOptionsIcon,
-        WorkflowGroupIcon,
-        WorkflowIcon,
-        ComponentIcon,
-        DataIcon,
-        MetaNodeIcon,
-        ArrowIcon,
-        WorkflowNameValidator,
-        InputField,
-        NodePreview
+  components: {
+    SubMenu,
+    MenuOptionsIcon,
+    WorkflowGroupIcon,
+    WorkflowIcon,
+    ComponentIcon,
+    DataIcon,
+    MetaNodeIcon,
+    ArrowIcon,
+    WorkflowNameValidator,
+    InputField,
+    NodePreview,
+  },
+
+  mixins: [VueClickAway],
+
+  props: {
+    mode: {
+      type: String,
+      default: "normal",
+      validator: (value) => ["normal", "mini"].includes(value),
     },
 
-    mixins: [VueClickAway],
+    isRootFolder: {
+      type: Boolean,
+      required: true,
+    },
 
-    props: {
-        mode: {
-            type: String,
-            default: 'normal',
-            validator: (value) => ['normal', 'mini'].includes(value)
-        },
+    items: {
+      type: Array,
+      required: true,
+    },
 
-        isRootFolder: {
-            type: Boolean,
-            required: true
-        },
+    fullPath: {
+      type: String,
+      default: "",
+    },
+  },
 
-        items: {
-            type: Array,
-            required: true
-        },
+  emits: [
+    "changeSelection",
+    "changeDirectory",
+    "openFile",
+    "deleteItems",
+    "moveItems",
+    "dragend",
+    "renameFile",
+    "drag",
+  ],
 
-        fullPath: {
-            type: String,
-            default: ''
+  data() {
+    return {
+      ITEM_TYPES,
+      multiSelectionState: multiSelectionService.getInitialState(),
+      isDragging: false,
+      startDragItemIndex: null,
+      activeRenameId: null,
+      renameValue: "",
+      nodeTemplate: null,
+    };
+  },
+
+  watch: {
+    fullPath() {
+      this.resetSelection();
+    },
+
+    multiSelectionState() {
+      const selectedIndexes = multiSelectionService.getSelectedIndexes(
+        this.multiSelectionState
+      );
+
+      this.$emit(
+        "changeSelection",
+        selectedIndexes.map((index) => this.items[index].id)
+      );
+    },
+  },
+
+  methods: {
+    resetSelection() {
+      this.multiSelectionState = multiSelectionService.getInitialState();
+    },
+
+    isDirectory(item) {
+      return item.type === ITEM_TYPES.WorkflowGroup;
+    },
+
+    canOpenFile(item) {
+      return item.type === ITEM_TYPES.Workflow;
+    },
+
+    getTypeIcon(item) {
+      const typeIcons = {
+        [ITEM_TYPES.WorkflowGroup]: WorkflowGroupIcon,
+        [ITEM_TYPES.Workflow]: WorkflowIcon,
+        [ITEM_TYPES.Component]: ComponentIcon,
+        [ITEM_TYPES.Metanode]: MetaNodeIcon,
+        [ITEM_TYPES.Data]: DataIcon,
+      };
+
+      return typeIcons[item.type];
+    },
+
+    isActiveRenameItem(item) {
+      return item.id === this.activeRenameId;
+    },
+
+    isSelected(index) {
+      return multiSelectionService.isItemSelected(
+        this.multiSelectionState,
+        index
+      );
+    },
+    /**
+     * @param {MouseEvent} event
+     * @param {Number} index
+     * @returns {void}
+     */
+    handleClick(event, index) {
+      const metaOrCtrlKey = getMetaOrCtrlKey();
+
+      if (event.shiftKey) {
+        this.shiftClickItem(index);
+        return;
+      }
+
+      if (event[metaOrCtrlKey]) {
+        this.ctrlClickItem(index);
+        return;
+      }
+
+      this.clickItem(index);
+    },
+
+    clickItem(index) {
+      this.multiSelectionState = multiSelectionService.click(index);
+    },
+
+    ctrlClickItem(index) {
+      this.multiSelectionState = multiSelectionService.ctrlClick(
+        this.multiSelectionState,
+        index
+      );
+    },
+
+    shiftClickItem(index) {
+      this.multiSelectionState = multiSelectionService.shiftClick(
+        this.multiSelectionState,
+        index
+      );
+    },
+
+    changeDirectory(pathId) {
+      this.$emit("changeDirectory", pathId);
+    },
+
+    onItemDoubleClick(item) {
+      if (this.isDirectory(item)) {
+        this.changeDirectory(item.id);
+        return;
+      }
+
+      if (this.canOpenFile(item)) {
+        this.$emit("openFile", item);
+      }
+    },
+
+    onDragStart(e, index) {
+      this.isDragging = true;
+      this.startDragItemIndex = index;
+
+      if (!this.isSelected(index)) {
+        this.resetSelection();
+        this.clickItem(index);
+      }
+
+      const isMultipleSelectionActive =
+        multiSelectionService.isMultipleSelectionActive(
+          this.multiSelectionState,
+          index
+        );
+
+      // get all items that are selected, except the one that initiated the drag
+      const selectedIndexes = multiSelectionService
+        .getSelectedIndexes(this.multiSelectionState)
+        .filter((selectedIndex) => index !== selectedIndex);
+
+      // map an index to an object that will be used to generate the ghost
+      const toGhostTarget = (_index) => ({
+        targetEl: this.getItemElementByRefIndex(_index),
+        textContent: this.items[_index].name,
+      });
+
+      const selectedTargets = []
+        // add the item that initiated the drag at the beginning of the array
+        .concat(toGhostTarget(index))
+        .concat(selectedIndexes.map(toGhostTarget));
+
+      const { removeGhosts, replaceGhostPreview } = createDragGhosts({
+        dragStartEvent: e,
+        badgeCount: isMultipleSelectionActive
+          ? selectedIndexes.length + 1
+          : null,
+        selectedTargets,
+      });
+
+      this.removeGhosts = removeGhosts;
+      this.replaceGhostPreview = replaceGhostPreview;
+    },
+
+    onDragEnter(index, isGoBackItem = false) {
+      if (this.isSelected(index) && !isGoBackItem) {
+        return;
+      }
+
+      if (index !== this.startDragItemIndex) {
+        const draggedOverEl = this.getItemElementByRefIndex(
+          index,
+          isGoBackItem
+        );
+        draggedOverEl.classList.add("dragging-over");
+      }
+    },
+
+    onDragLeave(index, isGoBackItem = false) {
+      const draggedOverEl = this.getItemElementByRefIndex(index, isGoBackItem);
+      draggedOverEl.classList.remove("dragging-over");
+    },
+
+    onDragEnd(event, item) {
+      this.isDragging = false;
+
+      if (event.dataTransfer.dropEffect === "none") {
+        this.removeGhosts?.();
+        return;
+      }
+
+      const onComplete = (isSuccessfulDrop) => {
+        if (isSuccessfulDrop) {
+          this.resetSelection();
         }
+
+        // animate ghosts back if drop was unsuccessful
+        this.removeGhosts?.(!isSuccessfulDrop);
+        this.removeGhosts = null;
+      };
+
+      this.$emit("dragend", { event, sourceItem: item, onComplete });
     },
 
-    emits: [
-        'changeSelection',
-        'changeDirectory',
-        'openFile',
-        'deleteItems',
-        'moveItems',
-        'dragend',
-        'renameFile',
-        'drag'
-    ],
+    onDrop(index, isGoBackItem = false) {
+      const droppedEl = this.getItemElementByRefIndex(index, isGoBackItem);
+      droppedEl.classList.remove("dragging-over");
 
-    data() {
-        return {
-            ITEM_TYPES,
-            multiSelectionState: multiSelectionService.getInitialState(),
-            isDragging: false,
-            startDragItemIndex: null,
-            activeRenameId: null,
-            renameValue: '',
-            nodeTemplate: null
-        };
-    },
+      if (!isGoBackItem && !this.isDirectory(this.items[index])) {
+        return;
+      }
 
-    watch: {
-        fullPath() {
-            this.resetSelection();
-        },
+      const selectedIndexes = multiSelectionService.getSelectedIndexes(
+        this.multiSelectionState
+      );
+      const sourceItems = selectedIndexes.map((index) => this.items[index].id);
+      const targetItem = isGoBackItem ? ".." : this.items[index].id;
 
-        multiSelectionState() {
-            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
+      const isTargetSelected = sourceItems.includes(targetItem);
 
-            this.$emit('changeSelection', selectedIndexes.map(index => this.items[index].id));
+      if (isTargetSelected) {
+        return;
+      }
+
+      const onComplete = (isSuccessfulMove) => {
+        if (isSuccessfulMove) {
+          this.resetSelection();
         }
+
+        // animate ghosts back if move was unsuccessful
+        this.removeGhosts?.(!isSuccessfulMove);
+        this.removeGhosts = null;
+      };
+
+      this.$emit("moveItems", { sourceItems, targetItem, onComplete });
     },
 
-    methods: {
-        resetSelection() {
-            this.multiSelectionState = multiSelectionService.getInitialState();
+    getItemElementByRefIndex(index, isGoBackItem = false) {
+      return isGoBackItem
+        ? this.$refs["item--BACK"]
+        : // except for the "Go back" item, all others are present within a v-for
+          // so the refs are returned in a collection, but we only need the 1st item
+          this.$refs[`item--${index}`][0];
+    },
+
+    getMenuOptions(item) {
+      return [
+        {
+          id: "rename",
+          text: "Rename",
+          title: item.displayOpenIndicator
+            ? "Open workflows cannot be renamed"
+            : "",
+          disabled: item.displayOpenIndicator,
         },
-
-        isDirectory(item) {
-            return item.type === ITEM_TYPES.WorkflowGroup;
+        {
+          id: "delete",
+          text: "Delete",
+          title: item.canBeDeleted ? "" : "Open workflows cannot be deleted",
+          disabled: !item.canBeDeleted,
         },
+      ];
+    },
 
-        canOpenFile(item) {
-            return item.type === ITEM_TYPES.Workflow;
-        },
+    onMenuClick(optionId, item) {
+      this.clearRenameState();
+      if (optionId === "delete") {
+        this.$emit("deleteItems", { items: [item] });
+      }
 
-        getTypeIcon(item) {
-            const typeIcons = {
-                [ITEM_TYPES.WorkflowGroup]: WorkflowGroupIcon,
-                [ITEM_TYPES.Workflow]: WorkflowIcon,
-                [ITEM_TYPES.Component]: ComponentIcon,
-                [ITEM_TYPES.Metanode]: MetaNodeIcon,
-                [ITEM_TYPES.Data]: DataIcon
-            };
+      if (optionId === "rename") {
+        this.setupRenameInput(item.id, item.name);
+      }
 
-            return typeIcons[item.type];
-        },
+      this.resetSelection();
+    },
 
-        isActiveRenameItem(item) {
-            return item.id === this.activeRenameId;
-        },
+    async setupRenameInput(id, name) {
+      this.activeRenameId = id;
+      this.renameValue = name;
 
-        isSelected(index) {
-            return multiSelectionService.isItemSelected(this.multiSelectionState, index);
-        },
-        /**
-         * @param {MouseEvent} event
-         * @param {Number} index
-         * @returns {void}
-         */
-        handleClick(event, index) {
-            const metaOrCtrlKey = getMetaOrCtrlKey();
+      await this.$nextTick();
+      // wait to next event loop to properly steal focus
+      await new Promise((r) => setTimeout(r, 0));
+      this.$refs.renameRef[0]?.$refs?.input?.focus();
+    },
+    onRenameSubmit(isValid, cleanNameFn, keyupEvent, isClickAway = false) {
+      if (keyupEvent.key === "Escape" || keyupEvent.key === "Esc") {
+        this.clearRenameState();
+      }
 
-            if (event.shiftKey) {
-                this.shiftClickItem(index);
-                return;
-            }
+      if ((keyupEvent.key === "Enter" || isClickAway) && isValid) {
+        const newName = cleanNameFn(this.renameValue.trim());
 
-            if (event[metaOrCtrlKey]) {
-                this.ctrlClickItem(index);
-                return;
-            }
-
-            this.clickItem(index);
-        },
-
-        clickItem(index) {
-            this.multiSelectionState = multiSelectionService.click(index);
-        },
-
-        ctrlClickItem(index) {
-            this.multiSelectionState = multiSelectionService.ctrlClick(
-                this.multiSelectionState,
-                index
-            );
-        },
-
-        shiftClickItem(index) {
-            this.multiSelectionState = multiSelectionService.shiftClick(
-                this.multiSelectionState,
-                index
-            );
-        },
-
-        changeDirectory(pathId) {
-            this.$emit('changeDirectory', pathId);
-        },
-
-        onItemDoubleClick(item) {
-            if (this.isDirectory(item)) {
-                this.changeDirectory(item.id);
-                return;
-            }
-
-            if (this.canOpenFile(item)) {
-                this.$emit('openFile', item);
-            }
-        },
-
-        onDragStart(e, index) {
-            this.isDragging = true;
-            this.startDragItemIndex = index;
-
-            if (!this.isSelected(index)) {
-                this.resetSelection();
-                this.clickItem(index);
-            }
-
-            const isMultipleSelectionActive = multiSelectionService.isMultipleSelectionActive(
-                this.multiSelectionState,
-                index
-            );
-
-            // get all items that are selected, except the one that initiated the drag
-            const selectedIndexes = multiSelectionService
-                .getSelectedIndexes(this.multiSelectionState)
-                .filter(selectedIndex => index !== selectedIndex);
-
-            // map an index to an object that will be used to generate the ghost
-            const toGhostTarget = (_index) => ({
-                targetEl: this.getItemElementByRefIndex(_index),
-                textContent: this.items[_index].name
-            });
-
-            const selectedTargets = []
-                // add the item that initiated the drag at the beginning of the array
-                .concat(toGhostTarget(index))
-                .concat(selectedIndexes.map(toGhostTarget));
-
-            const { removeGhosts, replaceGhostPreview } = createDragGhosts({
-                dragStartEvent: e,
-                badgeCount: isMultipleSelectionActive ? selectedIndexes.length + 1 : null,
-                selectedTargets
-            });
-
-            this.removeGhosts = removeGhosts;
-            this.replaceGhostPreview = replaceGhostPreview;
-        },
-
-        onDragEnter(index, isGoBackItem = false) {
-            if (this.isSelected(index) && !isGoBackItem) {
-                return;
-            }
-
-            if (index !== this.startDragItemIndex) {
-                const draggedOverEl = this.getItemElementByRefIndex(index, isGoBackItem);
-                draggedOverEl.classList.add('dragging-over');
-            }
-        },
-
-        onDragLeave(index, isGoBackItem = false) {
-            const draggedOverEl = this.getItemElementByRefIndex(index, isGoBackItem);
-            draggedOverEl.classList.remove('dragging-over');
-        },
-
-        onDragEnd(event, item) {
-            this.isDragging = false;
-
-            if (event.dataTransfer.dropEffect === 'none') {
-                this.removeGhosts?.();
-                return;
-            }
-
-            const onComplete = (isSuccessfulDrop) => {
-                if (isSuccessfulDrop) {
-                    this.resetSelection();
-                }
-
-                // animate ghosts back if drop was unsuccessful
-                this.removeGhosts?.(!isSuccessfulDrop);
-                this.removeGhosts = null;
-            };
-
-            this.$emit('dragend', { event, sourceItem: item, onComplete });
-        },
-
-        onDrop(index, isGoBackItem = false) {
-            const droppedEl = this.getItemElementByRefIndex(index, isGoBackItem);
-            droppedEl.classList.remove('dragging-over');
-
-            if (!isGoBackItem && !this.isDirectory(this.items[index])) {
-                return;
-            }
-
-            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
-            const sourceItems = selectedIndexes.map(index => this.items[index].id);
-            const targetItem = isGoBackItem ? '..' : this.items[index].id;
-
-            const isTargetSelected = sourceItems.includes(targetItem);
-
-            if (isTargetSelected) {
-                return;
-            }
-
-            const onComplete = (isSuccessfulMove) => {
-                if (isSuccessfulMove) {
-                    this.resetSelection();
-                }
-
-                // animate ghosts back if move was unsuccessful
-                this.removeGhosts?.(!isSuccessfulMove);
-                this.removeGhosts = null;
-            };
-
-            this.$emit('moveItems', { sourceItems, targetItem, onComplete });
-        },
-
-        getItemElementByRefIndex(index, isGoBackItem = false) {
-            return isGoBackItem
-                ? this.$refs[`item--BACK`]
-                // except for the "Go back" item, all others are present within a v-for
-                // so the refs are returned in a collection, but we only need the 1st item
-                : this.$refs[`item--${index}`][0];
-        },
-
-        getMenuOptions(item) {
-            return [
-                {
-                    id: 'rename',
-                    text: 'Rename',
-                    title: item.displayOpenIndicator ? 'Open workflows cannot be renamed' : '',
-                    disabled: item.displayOpenIndicator
-                },
-                {
-                    id: 'delete',
-                    text: 'Delete',
-                    title: item.canBeDeleted ? '' : 'Open workflows cannot be deleted',
-                    disabled: !item.canBeDeleted
-                }
-            ];
-        },
-
-        onMenuClick(optionId, item) {
-            this.clearRenameState();
-            if (optionId === 'delete') {
-                this.$emit('deleteItems', { items: [item] });
-            }
-
-            if (optionId === 'rename') {
-                this.setupRenameInput(item.id, item.name);
-            }
-
-            this.resetSelection();
-        },
-
-        async setupRenameInput(id, name) {
-            this.activeRenameId = id;
-            this.renameValue = name;
-
-            await this.$nextTick();
-            // wait to next event loop to properly steal focus
-            await new Promise(r => setTimeout(r, 0));
-            this.$refs.renameRef[0]?.$refs?.input?.focus();
-        },
-        onRenameSubmit(isValid, cleanNameFn, keyupEvent, isClickAway = false) {
-            if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
-                this.clearRenameState();
-            }
-
-            if ((keyupEvent.key === 'Enter' || isClickAway) && isValid) {
-                const newName = cleanNameFn(this.renameValue.trim());
-
-                if (newName === '') {
-                    this.clearRenameState();
-                    return;
-                }
-
-                this.$emit('renameFile', { itemId: this.activeRenameId, newName });
-                this.clearRenameState();
-            }
-        },
-
-        clearRenameState() {
-            this.activeRenameId = null;
-            this.renameValue = '';
-        },
-
-        onDrag(event, item) {
-            const onUpdate = async (isAboveCanvas, nodeTemplate) => {
-                this.nodeTemplate = nodeTemplate;
-                if (this.nodeTemplate) {
-                    await this.$nextTick();
-                    const nodePreview = this.$refs.nodePreview.$el;
-
-                    this.replaceGhostPreview({
-                        shouldUseCustomPreview: isAboveCanvas,
-                        ghostPreviewEl: nodePreview,
-                        opts: { leftOffset: 35, topOffset: 35 }
-                    });
-                }
-            };
-            this.$emit('drag', { event, item, onUpdate });
+        if (newName === "") {
+          this.clearRenameState();
+          return;
         }
-    }
+
+        this.$emit("renameFile", { itemId: this.activeRenameId, newName });
+        this.clearRenameState();
+      }
+    },
+
+    clearRenameState() {
+      this.activeRenameId = null;
+      this.renameValue = "";
+    },
+
+    onDrag(event, item) {
+      const onUpdate = async (isAboveCanvas, nodeTemplate) => {
+        this.nodeTemplate = nodeTemplate;
+        if (this.nodeTemplate) {
+          await this.$nextTick();
+          const nodePreview = this.$refs.nodePreview.$el;
+
+          this.replaceGhostPreview({
+            shouldUseCustomPreview: isAboveCanvas,
+            ghostPreviewEl: nodePreview,
+            opts: { leftOffset: 35, topOffset: 35 },
+          });
+        }
+      };
+      this.$emit("drag", { event, item, onUpdate });
+    },
+  },
 };
 </script>
 
@@ -392,12 +410,7 @@ export default {
     <thead>
       <tr>
         <th scope="col">Type</th>
-        <th
-          class="name"
-          scope="col"
-        >
-          Name
-        </th>
+        <th class="name" scope="col">Name</th>
       </tr>
     </thead>
     <tbody :class="mode">
@@ -412,24 +425,23 @@ export default {
         @drop.prevent="onDrop(null, true)"
         @click="changeDirectory('..')"
       >
-        <td
-          class="item-icon"
-          colspan="3"
-        >
-          <ArrowIcon
-            class="arrow-icon"
-          />
+        <td class="item-icon" colspan="3">
+          <ArrowIcon class="arrow-icon" />
         </td>
-        <td class="item-name hidden">
-          Go back to parent directory
-        </td>
+        <td class="item-name hidden">Go back to parent directory</td>
       </tr>
       <tr
         v-for="(item, index) in items"
         :key="index"
         :ref="`item--${index}`"
         class="file-explorer-item"
-        :class="[item.type, { selected: !isDragging && isSelected(index), dragging: isDragging && isSelected(index) }]"
+        :class="[
+          item.type,
+          {
+            selected: !isDragging && isSelected(index),
+            dragging: isDragging && isSelected(index),
+          },
+        ]"
         :draggable="!isActiveRenameItem(item)"
         @dragstart="!isActiveRenameItem(item) && onDragStart($event, index)"
         @dragenter="!isActiveRenameItem(item) && onDragEnter(index)"
@@ -442,16 +454,16 @@ export default {
         @dblclick="!isActiveRenameItem(item) && onItemDoubleClick(item)"
       >
         <td class="item-icon">
-          <span
-            v-if="item.displayOpenIndicator"
-            class="open-indicator"
-          />
+          <span v-if="item.displayOpenIndicator" class="open-indicator" />
           <Component :is="getTypeIcon(item)" />
         </td>
 
         <td
           class="item-content"
-          :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup, 'is-renamed': isActiveRenameItem(item) }"
+          :class="{
+            light: item.type !== ITEM_TYPES.WorkflowGroup,
+            'is-renamed': isActiveRenameItem(item),
+          }"
           :title="item.name"
         >
           <span v-if="!isActiveRenameItem(item)">{{ item.name }}</span>
@@ -462,7 +474,12 @@ export default {
               :workflow-items="items"
             >
               <template #default="{ isValid, cleanNameFn, errorMessage }">
-                <div v-click-away="($event) => onRenameSubmit(isValid, cleanNameFn, $event, true)">
+                <div
+                  v-click-away="
+                    ($event) =>
+                      onRenameSubmit(isValid, cleanNameFn, $event, true)
+                  "
+                >
                   <InputField
                     ref="renameRef"
                     v-model="renameValue"
@@ -472,10 +489,7 @@ export default {
                     :is-valid="isValid"
                     @keyup="onRenameSubmit(isValid, cleanNameFn, $event)"
                   />
-                  <div
-                    v-if="!isValid"
-                    class="item-error"
-                  >
+                  <div v-if="!isValid" class="item-error">
                     <span>{{ errorMessage }}</span>
                   </div>
                 </div>
@@ -484,10 +498,7 @@ export default {
           </template>
         </td>
 
-        <td
-          class="item-option"
-          @dblclick.stop
-        >
+        <td class="item-option" @dblclick.stop>
           <SubMenu
             button-title="Options"
             :teleport-to-body="false"
@@ -499,13 +510,8 @@ export default {
         </td>
       </tr>
 
-      <tr
-        v-if="items.length === 0"
-        class="empty"
-      >
-        <td>
-          Folder is empty
-        </td>
+      <tr v-if="items.length === 0" class="empty">
+        <td>Folder is empty</td>
       </tr>
     </tbody>
     <NodePreview

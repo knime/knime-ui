@@ -1,39 +1,39 @@
-import { expect, describe, beforeEach, it } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { expect, describe, beforeEach, it } from "vitest";
+import { mount } from "@vue/test-utils";
 
-import Modal from 'webapps-common/ui/components/Modal.vue';
-import Button from 'webapps-common/ui/components/Button.vue';
+import Modal from "webapps-common/ui/components/Modal.vue";
+import Button from "webapps-common/ui/components/Button.vue";
 
-import OpenSourceCreditsModal from '../OpenSourceCreditsModal.vue';
+import OpenSourceCreditsModal from "../OpenSourceCreditsModal.vue";
 
-describe('OpenSourceCreditsModal', () => {
-    let doMount, wrapper;
+describe("OpenSourceCreditsModal", () => {
+  let doMount, wrapper;
 
-    beforeEach(() => {
-        wrapper = null;
+  beforeEach(() => {
+    wrapper = null;
 
-        doMount = () => {
-            wrapper = mount(OpenSourceCreditsModal, {
-                global: {
-                    stubs: { FocusTrap: true }
-                }
-            });
-        };
-    });
+    doMount = () => {
+      wrapper = mount(OpenSourceCreditsModal, {
+        global: {
+          stubs: { FocusTrap: true },
+        },
+      });
+    };
+  });
 
-    it('renders', () => {
-        doMount();
+  it("renders", () => {
+    doMount();
 
-        expect(wrapper.findComponent(Button).exists()).toBe(true);
-        expect(wrapper.findComponent(Modal).exists()).toBe(true);
-    });
+    expect(wrapper.findComponent(Button).exists()).toBe(true);
+    expect(wrapper.findComponent(Modal).exists()).toBe(true);
+  });
 
-    it('activates modal when button is clicked', async () => {
-        doMount();
-        
-        expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
-        await wrapper.findComponent(Button).vm.$emit('click');
-        
-        expect(wrapper.findComponent(Modal).isVisible()).toBe(true);
-    });
+  it("activates modal when button is clicked", async () => {
+    doMount();
+
+    expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
+    await wrapper.findComponent(Button).vm.$emit("click");
+
+    expect(wrapper.findComponent(Modal).isVisible()).toBe(true);
+  });
 });

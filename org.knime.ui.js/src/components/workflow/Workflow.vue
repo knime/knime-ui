@@ -1,62 +1,62 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { mapState, mapGetters } from 'vuex';
-import Node from '@/components/workflow/node/Node.vue';
-import MoveableNodeContainer from '@/components/workflow/node/MoveableNodeContainer.vue';
-import Connector from '@/components/workflow/connectors/Connector.vue';
-import WorkflowAnnotation from '@/components/workflow/annotations/WorkflowAnnotation.vue';
-import MoveableAnnotationContainer from '@/components/workflow/annotations/MoveableAnnotationContainer.vue';
-import MetaNodePortBars from '@/components/workflow/ports/MetaNodePortBars.vue';
-import ConnectorLabel from '@/components/workflow/connectors/ConnectorLabel.vue';
-import WorkflowPortalLayers from './WorkflowPortalLayers.vue';
+import { defineComponent } from "vue";
+import { mapState, mapGetters } from "vuex";
+import Node from "@/components/workflow/node/Node.vue";
+import MoveableNodeContainer from "@/components/workflow/node/MoveableNodeContainer.vue";
+import Connector from "@/components/workflow/connectors/Connector.vue";
+import WorkflowAnnotation from "@/components/workflow/annotations/WorkflowAnnotation.vue";
+import MoveableAnnotationContainer from "@/components/workflow/annotations/MoveableAnnotationContainer.vue";
+import MetaNodePortBars from "@/components/workflow/ports/MetaNodePortBars.vue";
+import ConnectorLabel from "@/components/workflow/connectors/ConnectorLabel.vue";
+import WorkflowPortalLayers from "./WorkflowPortalLayers.vue";
 
 export default defineComponent({
-    components: {
-        WorkflowPortalLayers,
-        Node,
-        Connector,
-        WorkflowAnnotation,
-        MetaNodePortBars,
-        ConnectorLabel,
-        MoveableNodeContainer,
-        MoveableAnnotationContainer
+  components: {
+    WorkflowPortalLayers,
+    Node,
+    Connector,
+    WorkflowAnnotation,
+    MetaNodePortBars,
+    ConnectorLabel,
+    MoveableNodeContainer,
+    MoveableAnnotationContainer,
+  },
+
+  expose: ["applyNodeSelectionPreview", "applyAnnotationSelectionPreview"],
+
+  computed: {
+    ...mapState("workflow", {
+      workflow: "activeWorkflow",
+      editableAnnotationId: "editableAnnotationId",
+    }),
+
+    ...mapGetters("selection", ["isNodeSelected"]),
+    // Sort nodes so that selected nodes are rendered in front
+    // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
+    sortedNodes() {
+      let selected = [];
+      let unselected = [];
+
+      for (const nodeId of Object.keys(this.workflow.nodes)) {
+        if (this.isNodeSelected(nodeId)) {
+          selected.push(this.workflow.nodes[nodeId]);
+        } else {
+          unselected.push(this.workflow.nodes[nodeId]);
+        }
+      }
+      return [...unselected, ...selected];
+    },
+  },
+
+  methods: {
+    applyNodeSelectionPreview({ nodeId, type }) {
+      this.$refs[`node-${nodeId}`][0].setSelectionPreview(type);
     },
 
-    expose: ['applyNodeSelectionPreview', 'applyAnnotationSelectionPreview'],
-
-    computed: {
-        ...mapState('workflow', {
-            workflow: 'activeWorkflow',
-            editableAnnotationId: 'editableAnnotationId'
-        }),
-
-        ...mapGetters('selection', ['isNodeSelected']),
-        // Sort nodes so that selected nodes are rendered in front
-        // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
-        sortedNodes() {
-            let selected = [];
-            let unselected = [];
-
-            for (const nodeId of Object.keys(this.workflow.nodes)) {
-                if (this.isNodeSelected(nodeId)) {
-                    selected.push(this.workflow.nodes[nodeId]);
-                } else {
-                    unselected.push(this.workflow.nodes[nodeId]);
-                }
-            }
-            return [...unselected, ...selected];
-        }
+    applyAnnotationSelectionPreview({ annotationId, type }) {
+      this.$refs[`annotation-${annotationId}`][0].setSelectionPreview(type);
     },
-
-    methods: {
-        applyNodeSelectionPreview({ nodeId, type }) {
-            this.$refs[`node-${nodeId}`][0].setSelectionPreview(type);
-        },
-
-        applyAnnotationSelectionPreview({ annotationId, type }) {
-            this.$refs[`annotation-${annotationId}`][0].setSelectionPreview(type);
-        }
-    }
+  },
 });
 </script>
 
@@ -76,10 +76,7 @@ export default defineComponent({
             :annotation="annotation"
           />
 
-          <Portal
-            v-else
-            to="editable-annotation"
-          >
+          <Portal v-else to="editable-annotation">
             <WorkflowAnnotation
               :ref="`annotation-${annotation.id}`"
               :annotation="annotation"
@@ -98,9 +95,7 @@ export default defineComponent({
       </template>
 
       <template #metaNodePortBars>
-        <MetaNodePortBars
-          v-if="workflow.info.containerType === 'metanode'"
-        />
+        <MetaNodePortBars v-if="workflow.info.containerType === 'metanode'" />
       </template>
 
       <template #nodes>

@@ -1,31 +1,35 @@
 <script>
-import { mapState, mapMutations, mapActions } from 'vuex';
+import { mapState, mapMutations, mapActions } from "vuex";
 
-import ScrollViewContainer from './ScrollViewContainer.vue';
-import NodeCategory from './NodeCategory.vue';
+import ScrollViewContainer from "./ScrollViewContainer.vue";
+import NodeCategory from "./NodeCategory.vue";
 
 export default {
-    components: {
-        NodeCategory,
-        ScrollViewContainer
-    },
-    computed: {
-        ...mapState('nodeRepository', ['selectedNode', 'categoryScrollPosition', 'nodesPerCategory'])
-    },
-    methods: {
-        ...mapActions('nodeRepository', ['getAllNodes', 'setSelectedTags']),
-        ...mapMutations('nodeRepository', ['setCategoryScrollPosition']),
+  components: {
+    NodeCategory,
+    ScrollViewContainer,
+  },
+  computed: {
+    ...mapState("nodeRepository", [
+      "selectedNode",
+      "categoryScrollPosition",
+      "nodesPerCategory",
+    ]),
+  },
+  methods: {
+    ...mapActions("nodeRepository", ["getAllNodes", "setSelectedTags"]),
+    ...mapMutations("nodeRepository", ["setCategoryScrollPosition"]),
 
-        onScrollBottom() {
-            this.getAllNodes({ append: true });
-        },
-        onSaveScrollPosition(position) {
-            this.setCategoryScrollPosition(position);
-        },
-        onSelectTag(tag) {
-            this.setSelectedTags([tag]);
-        }
-    }
+    onScrollBottom() {
+      this.getAllNodes({ append: true });
+    },
+    onSaveScrollPosition(position) {
+      this.setCategoryScrollPosition(position);
+    },
+    onSelectTag(tag) {
+      this.setSelectedTags([tag]);
+    },
+  },
 };
 </script>
 
@@ -37,10 +41,7 @@ export default {
     @save-position="onSaveScrollPosition"
   >
     <div class="content">
-      <template
-        v-for="({ tag, nodes }) in nodesPerCategory"
-        :key="`tag-${tag}`"
-      >
+      <template v-for="{ tag, nodes } in nodesPerCategory" :key="`tag-${tag}`">
         <NodeCategory
           class="category"
           :tag="tag"
@@ -48,7 +49,7 @@ export default {
           :selected-node="selectedNode"
           @select-tag="onSelectTag"
         />
-        <hr>
+        <hr />
       </template>
     </div>
   </ScrollViewContainer>

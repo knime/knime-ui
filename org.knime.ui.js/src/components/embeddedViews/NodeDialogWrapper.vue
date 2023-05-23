@@ -1,29 +1,31 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
-import NodeDialogLoader from './NodeDialogLoader.vue';
+import { mapGetters, mapState } from "vuex";
+import NodeDialogLoader from "./NodeDialogLoader.vue";
 
 export default {
-    components: {
-        NodeDialogLoader
+  components: {
+    NodeDialogLoader,
+  },
+
+  computed: {
+    ...mapState("application", { projectId: "activeProjectId" }),
+    ...mapState("workflow", {
+      workflowId: (state) => state.activeWorkflow.info.containerId,
+    }),
+    ...mapGetters("selection", { selectedNode: "singleSelectedNode" }),
+
+    placeholder() {
+      if (!this.selectedNode) {
+        return "Please select a node";
+      }
+
+      if (this.selectedNode && !this.selectedNode.hasDialog) {
+        return "Node dialog cannot be displayed. Please open the configuration from the action bar";
+      }
+
+      return null;
     },
-
-    computed: {
-        ...mapState('application', { projectId: 'activeProjectId' }),
-        ...mapState('workflow', { workflowId: state => state.activeWorkflow.info.containerId }),
-        ...mapGetters('selection', { selectedNode: 'singleSelectedNode' }),
-
-        placeholder() {
-            if (!this.selectedNode) {
-                return 'Please select a node';
-            }
-
-            if (this.selectedNode && !this.selectedNode.hasDialog) {
-                return 'Node dialog cannot be displayed. Please open the configuration from the action bar';
-            }
-
-            return null;
-        }
-    }
+  },
 };
 </script>
 
@@ -36,10 +38,7 @@ export default {
       :selected-node="selectedNode"
     />
 
-    <div
-      v-if="placeholder"
-      class="placeholder-container"
-    >
+    <div v-if="placeholder" class="placeholder-container">
       <div class="placeholder">
         {{ placeholder }}
       </div>
@@ -68,5 +67,4 @@ export default {
     text-align: center;
   }
 }
-
 </style>

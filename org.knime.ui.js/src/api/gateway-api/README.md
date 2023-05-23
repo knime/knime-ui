@@ -11,6 +11,3 @@ When you work on a feature that adds new functionality to the Gateway API, you s
 The main idea behind the generated-api is based around the RPCClient contract defined in the `rpc-client.ts` file. This contract allows the API to interact with a provided RPC client via two methods: `call` and `registerEventHandlers`. The implementation of those methods is the responsibility of the consuming app (in this case knime-ui).
 
 In knime-ui's case the implementation of the RPCClient interface is made via a json-rpc-client which you can find in the folder with the same name. This closes the loop and allows the application to interact with the API based on the contract using the provided implementation of said client.
-
-
-

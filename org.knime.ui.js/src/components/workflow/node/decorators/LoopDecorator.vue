@@ -4,29 +4,25 @@
  * For use in a Node component.
  */
 export default {
-    props: {
-        /**
-         *  Loop specific configuration options
-         */
-        loopStatus: {
-            type: String,
-            default: null
-        }
-
+  props: {
+    /**
+     *  Loop specific configuration options
+     */
+    loopStatus: {
+      type: String,
+      default: null,
     },
-    computed: {
-        backgroundColor() {
-            return this.$colors.nodeBackgroundColors.Loop;
-        }
-    }
+  },
+  computed: {
+    backgroundColor() {
+      return this.$colors.nodeBackgroundColors.Loop;
+    },
+  },
 };
 </script>
 
 <template>
-  <g
-    v-if="loopStatus === 'PAUSED'"
-    class="pause"
-  >
+  <g v-if="loopStatus === 'PAUSED'" class="pause">
     <!-- Loop execution paused. -->
     <path
       fill-rule="evenodd"
@@ -42,21 +38,10 @@ export default {
       stroke-linejoin="round"
       :fill="backgroundColor"
     />
-    <path
-      d="M4.04102 3.104V6.89588"
-      stroke="#3E3A39"
-      stroke-linejoin="round"
-    />
-    <path
-      d="M5.95898 6.89588V3.104"
-      stroke="#3E3A39"
-      stroke-linejoin="round"
-    />
+    <path d="M4.04102 3.104V6.89588" stroke="#3E3A39" stroke-linejoin="round" />
+    <path d="M5.95898 6.89588V3.104" stroke="#3E3A39" stroke-linejoin="round" />
   </g>
-  <g
-    v-else-if="loopStatus === 'RUNNING'"
-    class="running"
-  >
+  <g v-else-if="loopStatus === 'RUNNING'" class="running">
     <!-- Loop execution running. -->
     <path
       fill-rule="evenodd"

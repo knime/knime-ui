@@ -1,39 +1,39 @@
 <script>
-import NestedSvg from './NestedSVG';
+import NestedSvg from "./NestedSVG";
 
 /** SVG Button that is displayed above a hovered or selected node */
 export default {
-    components: {
-        NestedSvg
+  components: {
+    NestedSvg,
+  },
+  props: {
+    /** x-position of the button */
+    x: {
+      type: [Number, String],
+      default: 0,
     },
-    props: {
-        /** x-position of the button */
-        x: {
-            type: [Number, String],
-            default: 0
-        },
-        disabled: {
-            type: Boolean,
-            default: false
-        },
-        /** title of the button; displays on hover */
-        title: {
-            type: String,
-            default: null
-        },
-        primary: {
-            type: Boolean,
-            default: false
-        }
+    disabled: {
+      type: Boolean,
+      default: false,
     },
-    emits: ['click'],
-    methods: {
-        onClick(e) {
-            if (!this.disabled) {
-                this.$emit('click', e);
-            }
-        }
-    }
+    /** title of the button; displays on hover */
+    title: {
+      type: String,
+      default: null,
+    },
+    primary: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ["click"],
+  methods: {
+    onClick(e) {
+      if (!this.disabled) {
+        this.$emit("click", e);
+      }
+    },
+  },
 };
 </script>
 
@@ -50,12 +50,7 @@ export default {
       :class="{ primary }"
     />
     <title v-if="title">{{ title }}</title>
-    <NestedSvg
-      width="20"
-      height="20"
-      :x="x - 10"
-      y="-10"
-    >
+    <NestedSvg width="20" height="20" :x="x - 10" y="-10">
       <slot />
     </NestedSvg>
   </g>
@@ -121,5 +116,4 @@ export default {
     }
   }
 }
-
 </style>

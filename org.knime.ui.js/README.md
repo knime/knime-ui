@@ -32,6 +32,13 @@ code changes will be visible in the browser immediately.
 npm run dev
 ```
 
+### Git hooks
+
+When committing your changes, a couple of commit hooks will run via [husky].
+
+- `pre-commit` hook to lint and format the changes in your stage zone (via [lintstaged])
+- `prepare-commit-msg` hook to format your commit message to conform with the required format by KNIME. In order for this to work you must set environment variables with your Atlassian email and API token. Refer to [webapps-common/scripts/README.md](webapps-common/scripts/README.md) for more information.
+
 ### Testing
 
 #### Running unit tests
@@ -105,3 +112,5 @@ to install that package to your local maven repository directly.
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
 [Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file
+[husky]: https://www.npmjs.com/package/husky
+[lintstaged]: https://github.com/okonet/lint-staged

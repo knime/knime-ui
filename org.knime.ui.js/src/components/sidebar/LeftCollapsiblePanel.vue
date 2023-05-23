@@ -1,60 +1,57 @@
 <script>
-import SwitchIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
+import SwitchIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
 
 export default {
-    components: {
-        SwitchIcon
+  components: {
+    SwitchIcon,
+  },
+  props: {
+    expanded: {
+      type: Boolean,
+      default: false,
     },
-    props: {
-        expanded: {
-            type: Boolean,
-            default: false
-        },
-        disabled: {
-            type: Boolean,
-            default: false
-        },
-        /**
-         *  Expanded width of the panel's content.
-         *  Should be a fixed width.
-         */
-        width: {
-            type: String,
-            default: '250px',
-            validator: (str) => /^\d+\w+$/.test(str)
-        },
-        /**
-         * The hover title to be shown when the panel is collapsed
-         */
-        title: {
-            type: String,
-            default: null
-        }
+    disabled: {
+      type: Boolean,
+      default: false,
     },
-    emits: ['toggleExpand'],
-    data: () => ({
-        showContainerTransition: false
-    }),
-    mounted() {
-        this.showContainerTransition = true;
+    /**
+     *  Expanded width of the panel's content.
+     *  Should be a fixed width.
+     */
+    width: {
+      type: String,
+      default: "250px",
+      validator: (str) => /^\d+\w+$/.test(str),
+    },
+    /**
+     * The hover title to be shown when the panel is collapsed
+     */
+    title: {
+      type: String,
+      default: null,
+    },
+  },
+  emits: ["toggleExpand"],
+  data: () => ({
+    showContainerTransition: false,
+  }),
+  mounted() {
+    this.showContainerTransition = true;
 
-        requestAnimationFrame(() => {
-            this.showContainerTransition = false;
-        });
-    }
+    requestAnimationFrame(() => {
+      this.showContainerTransition = false;
+    });
+  },
 };
 </script>
 
 <template>
   <div class="panel">
     <div
-      :class="['container',{ 'no-transition': showContainerTransition}]"
+      :class="['container', { 'no-transition': showContainerTransition }]"
       :style="{ width: expanded ? width : 0 }"
     >
-      <div
-        class="hidden-content"
-        :style="{ width }"
-      >
+      <div class="hidden-content" :style="{ width }">
         <slot />
       </div>
     </div>

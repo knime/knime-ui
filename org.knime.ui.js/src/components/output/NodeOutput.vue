@@ -1,35 +1,40 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { mapState, mapGetters } from 'vuex';
+import { defineComponent } from "vue";
+import { mapState, mapGetters } from "vuex";
 
-import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
-import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
+import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import type { AvailablePortTypes } from "@/api/gateway-api/custom-types";
 
-import PortTabs from './PortTabs.vue';
-import PortViewTabOutput from './PortViewTabOutput.vue';
-import NodeViewTabOutput from './NodeViewTabOutput.vue';
+import PortTabs from "./PortTabs.vue";
+import PortViewTabOutput from "./PortViewTabOutput.vue";
+import NodeViewTabOutput from "./NodeViewTabOutput.vue";
 
-import { buildMiddleware, validateDragging, validateSelection, type ValidationResult } from './output-validator';
+import {
+  buildMiddleware,
+  validateDragging,
+  validateSelection,
+  type ValidationResult,
+} from "./output-validator";
 
 export const runValidationChecks = ({ selectedNodes, isDragging }) => {
-    const validationMiddleware = buildMiddleware(
-        validateDragging,
-        validateSelection
-    );
+  const validationMiddleware = buildMiddleware(
+    validateDragging,
+    validateSelection
+  );
 
-    const result = validationMiddleware({ selectedNodes, isDragging })();
+  const result = validationMiddleware({ selectedNodes, isDragging })();
 
-    return Object.freeze(result);
+  return Object.freeze(result);
 };
 
 interface ComponentData {
   // either 'view' or the number of the port as string
-  selectedTab: 'view' | Omit<string, 'view'> | null;
+  selectedTab: "view" | Omit<string, "view"> | null;
 
   outputState: {
     loading?: boolean;
     message?: string;
-    error?: ValidationResult['error'];
+    error?: ValidationResult["error"];
   } | null;
 }
 
@@ -38,102 +43,104 @@ interface ComponentData {
  * Port view will be rendered dynamically based on the port type
  */
 export default defineComponent({
-    components: {
-        PortTabs,
-        ReloadIcon,
-        PortViewTabOutput,
-        NodeViewTabOutput
+  components: {
+    PortTabs,
+    ReloadIcon,
+    PortViewTabOutput,
+    NodeViewTabOutput,
+  },
+  data(): ComponentData {
+    return {
+      selectedTab: null,
+      outputState: null,
+    };
+  },
+  computed: {
+    ...mapState("application", {
+      projectId: (state) => state.activeProjectId as string | null,
+      availablePortTypes: (state) =>
+        state.availablePortTypes as AvailablePortTypes,
+    }),
+    ...mapState("workflow", {
+      workflowId: (state) => state.activeWorkflow.info.containerId as string,
+      isDragging: (state) => state.isDragging as boolean,
+    }),
+    ...mapGetters("selection", ["selectedNodes", "singleSelectedNode"]),
+
+    canSelectTabs() {
+      // allow selecting tabs when:
+      return (
+        // doesn't have errors in the output state
+        !this.outputState?.error ||
+        // or when it doesn't have these specific error types
+        (this.outputState?.error?.code !== "NO_SUPPORTED_PORTS" &&
+          this.outputState?.error?.code !== "NODE_DRAGGING")
+      );
     },
-    data(): ComponentData {
-        return {
-            selectedTab: null,
-            outputState: null
-        };
+
+    isViewTabSelected() {
+      return this.selectedTab === "view";
     },
-    computed: {
-        ...mapState('application', {
-            projectId: state => state.activeProjectId as string | null,
-            availablePortTypes: state => state.availablePortTypes as AvailablePortTypes
-        }),
-        ...mapState('workflow', {
-            workflowId: state => state.activeWorkflow.info.containerId as string,
-            isDragging: state => state.isDragging as boolean
-        }),
-        ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode']),
 
-        canSelectTabs() {
-            // allow selecting tabs when:
-            return (
-                // doesn't have errors in the output state
-                !this.outputState?.error ||
-                // or when it doesn't have these specific error types
-                (
-                    this.outputState?.error?.code !== 'NO_SUPPORTED_PORTS' &&
-                    this.outputState?.error?.code !== 'NODE_DRAGGING'
-                )
-            );
-        },
+    selectedPortIndex() {
+      // tab values are port indexes if it's not the view tab as string
+      return this.isViewTabSelected ? null : Number(this.selectedTab);
+    },
 
-        isViewTabSelected() {
-            return this.selectedTab === 'view';
-        },
+    validationErrors() {
+      const { error } = runValidationChecks({
+        selectedNodes: this.selectedNodes,
+        isDragging: this.isDragging,
+      });
 
-        selectedPortIndex() {
-            // tab values are port indexes if it's not the view tab as string
-            return this.isViewTabSelected ? null : Number(this.selectedTab);
-        },
-
-        validationErrors() {
-            const { error } = runValidationChecks({
-                selectedNodes: this.selectedNodes,
-                isDragging: this.isDragging
-            });
-
-            return error;
+      return error;
+    },
+  },
+  watch: {
+    validationErrors: {
+      handler(validationErrors) {
+        if (validationErrors) {
+          this.outputState = {
+            message: this.validationErrors.message,
+            error: validationErrors,
+          };
+        } else {
+          this.selectPort();
         }
+      },
+      // trigger the port selection as soon as the component mounts, based on the validation results
+      immediate: true,
+      // watcher won't trigger when the value hasn't been assigned a new value (e.g it stays the same),
+      // and that is the case because the computed property has cached it. But we deep watch to select the port
+      // and update the output state every time the validations retrigger
+      deep: true,
     },
-    watch: {
-        validationErrors: {
-            handler(validationErrors) {
-                if (validationErrors) {
-                    this.outputState = {
-                        message: this.validationErrors.message,
-                        error: validationErrors
-                    };
-                } else {
-                    this.selectPort();
-                }
-            },
-            // trigger the port selection as soon as the component mounts, based on the validation results
-            immediate: true,
-            // watcher won't trigger when the value hasn't been assigned a new value (e.g it stays the same),
-            // and that is the case because the computed property has cached it. But we deep watch to select the port
-            // and update the output state every time the validations retrigger
-            deep: true
-        }
+  },
+  methods: {
+    // select the first tab
+    selectPort() {
+      let { outPorts, kind: nodeKind } = this.singleSelectedNode;
+
+      // if a node has a view it's the first tab
+      if (
+        this.singleSelectedNode.hasView &&
+        this.$features.shouldDisplayEmbeddedViews()
+      ) {
+        this.selectedTab = "view";
+        return;
+      }
+
+      // choose the first node of a metanode
+      if (nodeKind === "metanode") {
+        this.selectedTab = "0";
+        return;
+      }
+
+      // node is component or native node
+      // select mickey-mouse port, if it is the only one, otherwise the first regular port
+      this.selectedTab = outPorts.length > 1 ? "1" : "0";
     },
-    methods: {
-        // select the first tab
-        selectPort() {
-            let { outPorts, kind: nodeKind } = this.singleSelectedNode;
-
-            // if a node has a view it's the first tab
-            if (this.singleSelectedNode.hasView && this.$features.shouldDisplayEmbeddedViews()) {
-                this.selectedTab = 'view';
-                return;
-            }
-
-            // choose the first node of a metanode
-            if (nodeKind === 'metanode') {
-                this.selectedTab = '0';
-                return;
-            }
-
-            // node is component or native node
-            // select mickey-mouse port, if it is the only one, otherwise the first regular port
-            this.selectedTab = outPorts.length > 1 ? '1' : '0';
-        }
-    }
+  },
 });
 </script>
 
@@ -153,10 +160,7 @@ export default defineComponent({
       :class="['placeholder', { 'is-viewer-loading': outputState.loading }]"
     >
       <span>
-        <ReloadIcon
-          v-if="outputState.loading"
-          class="loading-icon"
-        />
+        <ReloadIcon v-if="outputState.loading" class="loading-icon" />
         {{ outputState.message }}
       </span>
     </div>
@@ -181,7 +185,9 @@ export default defineComponent({
         :available-port-types="availablePortTypes"
         class="output"
         @output-state-change="outputState = $event"
-        @execute-node="$store.dispatch('workflow/executeNodes', [singleSelectedNode.id])"
+        @execute-node="
+          $store.dispatch('workflow/executeNodes', [singleSelectedNode.id])
+        "
       />
     </template>
   </div>
@@ -197,8 +203,13 @@ export default defineComponent({
 }
 
 @keyframes show {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .output {

@@ -3,29 +3,46 @@ declare function openUpdateDialog(): void;
 declare function openUrlInExternalBrowser(): void;
 declare function openInstallExtensionsDialog(): void;
 declare function openWebUIPreferencePage(): void;
-declare function openNodeDialog(projectId: string, nodeId: string): string | undefined;
-declare function openLegacyFlowVariableDialog(...args: unknown[]): string | undefined;
-declare function executeNodeAndOpenView(projectId: string, nodeId: string): void;
+declare function openNodeDialog(
+  projectId: string,
+  nodeId: string
+): string | undefined;
+declare function openLegacyFlowVariableDialog(
+  ...args: unknown[]
+): string | undefined;
+declare function executeNodeAndOpenView(
+  projectId: string,
+  nodeId: string
+): void;
 declare function saveWorkflow(...args: unknown[]): string | undefined;
 declare function openWorkflow(...args: unknown[]): string | undefined;
 declare function closeWorkflow(...args: unknown[]): unknown;
 declare function forceCloseWorkflows(...args: unknown[]): unknown;
-declare function setProjectActiveAndEnsureItsLoaded(...args: unknown[]): unknown;
+declare function setProjectActiveAndEnsureItsLoaded(
+  ...args: unknown[]
+): unknown;
 declare function openLayoutEditor(...args: unknown[]): string | undefined;
-declare function openWorkflowCoachPreferencePage(...args: unknown[]): string | undefined;
+declare function openWorkflowCoachPreferencePage(
+  ...args: unknown[]
+): string | undefined;
 declare function getSpaceProviders(...args: unknown[]): string;
 declare function connectSpaceProvider(...args: unknown[]): string;
 declare function disconnectSpaceProvider(...args: unknown[]): string;
 declare function importFiles(...args: unknown[]): unknown;
 declare function importWorkflows(...args: unknown[]): unknown;
-declare function getNameCollisionStrategy(...args: unknown[]): 'OVERWRITE' | 'NOOP' | 'AUTORENAME' | 'CANCEL';
+declare function getNameCollisionStrategy(
+  ...args: unknown[]
+): "OVERWRITE" | "NOOP" | "AUTORENAME" | "CANCEL";
 declare function copyBetweenSpaces(...args: unknown[]): unknown;
 declare function saveWorkflowAs(...args: unknown[]): unknown;
-declare function saveAndCloseWorkflows(totalProjects: number, ...args: unknown[]): unknown;
+declare function saveAndCloseWorkflows(
+  totalProjects: number,
+  ...args: unknown[]
+): unknown;
 declare function importURIAtWorkflowCanvas(
-    uri: string | null,
-    projectId: string,
-    worflowId: string,
-    x: number,
-    y: number,
+  uri: string | null,
+  projectId: string,
+  worflowId: string,
+  x: number,
+  y: number
 ): unknown;

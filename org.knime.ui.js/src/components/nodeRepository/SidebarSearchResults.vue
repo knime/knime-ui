@@ -1,49 +1,51 @@
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapActions } from "vuex";
 
-import SearchResults from '@/components/nodeRepository/SearchResults.vue';
-import DraggableNodeTemplate from '@/components/nodeRepository/DraggableNodeTemplate.vue';
+import SearchResults from "@/components/nodeRepository/SearchResults.vue";
+import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */
 export default {
-    components: {
-        DraggableNodeTemplate,
-        SearchResults
-    },
-    computed: {
-        ...mapState('nodeRepository', [
-            'topNodes',
-            'bottomNodes',
-            'query',
-            'selectedTags',
-            'selectedNode',
-            'isShowingBottomNodes'
-        ]),
-        ...mapState('application', ['hasNodeCollectionActive']),
+  components: {
+    DraggableNodeTemplate,
+    SearchResults,
+  },
+  computed: {
+    ...mapState("nodeRepository", [
+      "topNodes",
+      "bottomNodes",
+      "query",
+      "selectedTags",
+      "selectedNode",
+      "isShowingBottomNodes",
+    ]),
+    ...mapState("application", ["hasNodeCollectionActive"]),
 
-        searchScrollPosition: {
-            get() {
-                return this.$store.state.nodeRepository.searchScrollPosition;
-            },
-            set(value) {
-                this.$store.commit('nodeRepository/setSearchScrollPosition', value);
-            }
-        },
-        searchActions() {
-            return {
-                searchTopNodesNextPage: this.searchTopNodesNextPage,
-                searchBottomNodesNextPage: this.searchBottomNodesNextPage,
-                toggleShowingBottomNodes: this.toggleShowingBottomNodes
-            };
-        }
+    searchScrollPosition: {
+      get() {
+        return this.$store.state.nodeRepository.searchScrollPosition;
+      },
+      set(value) {
+        this.$store.commit("nodeRepository/setSearchScrollPosition", value);
+      },
     },
-    methods: {
-        ...mapActions('nodeRepository', [
-            'searchTopNodesNextPage', 'searchBottomNodesNextPage', 'toggleShowingBottomNodes'
-        ])
-    }
+    searchActions() {
+      return {
+        searchTopNodesNextPage: this.searchTopNodesNextPage,
+        searchBottomNodesNextPage: this.searchBottomNodesNextPage,
+        toggleShowingBottomNodes: this.toggleShowingBottomNodes,
+      };
+    },
+  },
+  methods: {
+    ...mapActions("nodeRepository", [
+      "searchTopNodesNextPage",
+      "searchBottomNodesNextPage",
+      "toggleShowingBottomNodes",
+    ]),
+  },
 };
 </script>
 

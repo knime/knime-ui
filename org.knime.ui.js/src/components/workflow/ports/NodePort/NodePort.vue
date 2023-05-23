@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue';
-import { useStore } from 'vuex';
-import { directive as vClickAway } from 'vue3-click-away';
+import { inject, computed } from "vue";
+import { useStore } from "vuex";
+import { directive as vClickAway } from "vue3-click-away";
 
-import type { NodePort, XY } from '@/api/gateway-api/generated-api';
-import type { AvailablePortTypes } from '@/api/gateway-api/custom-types';
-import { useTooltip, type TooltipDefinition } from '@/composables/useTooltip';
-import * as $shapes from '@/style/shapes.mjs';
+import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import type { AvailablePortTypes } from "@/api/gateway-api/custom-types";
+import { useTooltip, type TooltipDefinition } from "@/composables/useTooltip";
+import * as $shapes from "@/style/shapes.mjs";
 
-import { toPortObject } from '@/util/portDataMapper';
+import { toPortObject } from "@/util/portDataMapper";
 
-import Port from '@/components/common/Port.vue';
-import NodePortActions from './NodePortActions.vue';
-import NodePortActiveConnector from './NodePortActiveConnector.vue';
+import Port from "@/components/common/Port.vue";
+import NodePortActions from "./NodePortActions.vue";
+import NodePortActiveConnector from "./NodePortActiveConnector.vue";
 
-import { usePortDragging } from './usePortDragging';
+import { usePortDragging } from "./usePortDragging";
 
 interface Props {
-  direction: 'in' | 'out';
+  direction: "in" | "out";
   nodeId: string | null;
   relativePosition: [number, number];
   port: NodePort;
@@ -29,103 +29,109 @@ interface Props {
 const store = useStore();
 
 const props = withDefaults(defineProps<Props>(), {
-    relativePosition: () => [0, 0],
-    selected: false,
-    targeted: false,
-    disableQuickNodeAdd: false
+  relativePosition: () => [0, 0],
+  selected: false,
+  targeted: false,
+  disableQuickNodeAdd: false,
 });
 
 // eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
-    (e: 'click'): void;
-    (e: 'deselect'): void;
-    (e: 'remove'): void;
+  (e: "click"): void;
+  (e: "deselect"): void;
+  (e: "remove"): void;
 }>();
 
-const anchorPoint = inject<XY>('anchorPoint');
+const anchorPoint = inject<XY>("anchorPoint");
 
-const availablePortTypes = computed<AvailablePortTypes>(() => store.state.application.availablePortTypes);
+const availablePortTypes = computed<AvailablePortTypes>(
+  () => store.state.application.availablePortTypes
+);
 
 const portTemplate = computed(() => {
-    const template = toPortObject(availablePortTypes.value)(props.port.typeId);
-    if (!template) {
-        throw new Error(`port template ${props.port.typeId} not available in application`);
-    }
-    return template;
+  const template = toPortObject(availablePortTypes.value)(props.port.typeId);
+  if (!template) {
+    throw new Error(
+      `port template ${props.port.typeId} not available in application`
+    );
+  }
+  return template;
 });
 
-const isFlowVariable = computed(() => portTemplate.value.kind === 'flowVariable');
+const isFlowVariable = computed(
+  () => portTemplate.value.kind === "flowVariable"
+);
 
 const tooltip = computed<TooltipDefinition>(() => {
-    // table ports have less space than other ports, because the triangular shape naturally creates a gap
-    const gap = portTemplate.value.kind === 'table' ? 6 : 8; // eslint-disable-line no-magic-numbers
-    const { portSize } = $shapes;
+  // table ports have less space than other ports, because the triangular shape naturally creates a gap
+  const gap = portTemplate.value.kind === "table" ? 6 : 8; // eslint-disable-line no-magic-numbers
+  const { portSize } = $shapes;
 
-    return {
-        position: {
-            x: props.relativePosition[0],
-            y: props.relativePosition[1] - portSize / 2
-        },
-        gap,
-        anchorPoint,
-        title: props.port.name,
-        text: props.port.info,
-        orientation: 'top',
-        hoverable: false
-    };
+  return {
+    position: {
+      x: props.relativePosition[0],
+      y: props.relativePosition[1] - portSize / 2,
+    },
+    gap,
+    anchorPoint,
+    title: props.port.name,
+    text: props.port.info,
+    orientation: "top",
+    hoverable: false,
+  };
 });
 
 const openQuickAddNodeMenuAction = (payload) => {
-    store.dispatch('workflow/openQuickAddNodeMenu', payload);
+  store.dispatch("workflow/openQuickAddNodeMenu", payload);
 };
 
 const { elemRef: tooltipRef } = useTooltip({ tooltip });
 const {
-    didMove,
-    didDragToCompatibleTarget,
-    dragConnector,
-    onPointerDown,
-    onPointerMove,
-    onPointerUp,
-    onLostPointerCapture
+  didMove,
+  didDragToCompatibleTarget,
+  dragConnector,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onLostPointerCapture,
 } = usePortDragging({
-    direction: props.direction,
-    isFlowVariable: isFlowVariable.value,
-    nodeId: props.nodeId,
-    port: props.port,
+  direction: props.direction,
+  isFlowVariable: isFlowVariable.value,
+  nodeId: props.nodeId,
+  port: props.port,
 
-    onCanvasDrop: () => {
-        // ignore drop if quick add menu is disabled (e.g. for metanode or component)
-        if (props.disableQuickNodeAdd) {
-            return { removeConnector: true };
-        }
-
-        const [x, y] = dragConnector.value.absolutePoint;
-
-        openQuickAddNodeMenuAction({
-            props: {
-                position: { x, y },
-                port: props.port,
-                nodeId: props.nodeId
-            }
-        });
-
-        return { removeConnector: true };
+  onCanvasDrop: () => {
+    // ignore drop if quick add menu is disabled (e.g. for metanode or component)
+    if (props.disableQuickNodeAdd) {
+      return { removeConnector: true };
     }
+
+    const [x, y] = dragConnector.value.absolutePoint;
+
+    openQuickAddNodeMenuAction({
+      props: {
+        position: { x, y },
+        port: props.port,
+        nodeId: props.nodeId,
+      },
+    });
+
+    return { removeConnector: true };
+  },
 });
 
 const onClick = () => {
-    if (didMove.value) {
-        return;
-    }
+  if (didMove.value) {
+    return;
+  }
 
-    emit('click');
+  emit("click");
 };
 
 const onClose = () => {
-    if (props.selected) {
-        emit('deselect');
-    }
+  if (props.selected) {
+    emit("deselect");
+  }
 };
 </script>
 
@@ -134,7 +140,7 @@ const onClose = () => {
     ref="tooltipRef"
     v-click-away="() => onClose()"
     :transform="`translate(${relativePosition})`"
-    :class="{ 'targeted': targeted }"
+    :class="{ targeted: targeted }"
     @pointerdown="onPointerDown"
     @pointerup="onPointerUp"
     @pointermove.stop="onPointerMove"
