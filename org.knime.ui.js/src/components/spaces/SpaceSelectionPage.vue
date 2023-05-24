@@ -29,7 +29,7 @@ export default {
   },
 
   computed: {
-    ...mapState("spaces", ["spaceProviders", "spaceBrowser", "isLoading"]),
+    ...mapState("spaces", ["spaceProviders", "spaceBrowser", "isLoading", "activeSpace"]),
   },
   beforeCreate() {
     // redirect to browsing page if a space was selected
@@ -39,6 +39,13 @@ export default {
   },
   async created() {
     await this.$store.dispatch("spaces/fetchAllSpaceProviders");
+
+    // load local space if no activeWorkflowGroup is set
+    if (!this.activeSpace.activeWorkflowGroup) {
+      await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
+        itemId: "root",
+      });
+    }
   },
 
   methods: {
