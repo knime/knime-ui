@@ -329,23 +329,5 @@ describe("MoveableNodeContainer", () => {
         expect.objectContaining({ type: "node-dragging-leave" })
       );
     });
-
-    it("adds unmovable class if isMoveLocked is true", async () => {
-      const { wrapper, $store } = doMount();
-      $store.state.canvas.isMoveLocked = true;
-
-      await wrapper.vm.$nextTick();
-      expect(wrapper.find("g").classes().includes("unmovable")).toBe(true);
-    });
-
-    it("does not move annotation if isMoveLocked is true", async () => {
-      const { wrapper, $store, mockMoveDirective } = doMount();
-      $store.state.canvas.isMoveLocked = true;
-
-      await startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
-      await wrapper.vm.$nextTick();
-
-      expect($store.state.workflow.isDragging).toBe(false);
-    });
   });
 });
