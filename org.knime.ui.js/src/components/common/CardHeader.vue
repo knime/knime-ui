@@ -1,13 +1,12 @@
 <script>
-
 export default {
-    props: {
-        color: {
-            type: String,
-            default: 'default',
-            validator: (value) => ['default', 'primary', 'light'].includes(value)
-        }
-    }
+  props: {
+    color: {
+      type: String,
+      default: "default",
+      validator: (value) => ["default", "primary", "light"].includes(value),
+    },
+  },
 };
 </script>
 

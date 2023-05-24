@@ -1,73 +1,74 @@
 <script>
-import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
-import CloseButton from '@/components/common/CloseButton.vue';
-
+import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
+import CloseButton from "@/components/common/CloseButton.vue";
 
 /* eslint-disable no-magic-numbers */
 const maxCharSwitch = [
-    (width) => width < 600 ? 10 : false,
-    (width) => width < 900 ? 20 : false,
-    (width) => width < 1280 ? 50 : false,
-    (width) => width < 1680 ? 100 : false,
-    (width) => width < 2180 ? 150 : false,
-    (width) => width < 2800 ? 200 : false,
-    (width) => width >= 2800 ? 256 : false
+  (width) => (width < 600 ? 10 : false),
+  (width) => (width < 900 ? 20 : false),
+  (width) => (width < 1280 ? 50 : false),
+  (width) => (width < 1680 ? 100 : false),
+  (width) => (width < 2180 ? 150 : false),
+  (width) => (width < 2800 ? 200 : false),
+  (width) => (width >= 2800 ? 256 : false),
 ];
 /* eslint-enable no-magic-numbers */
 
 const maxCharFunction = (windowWidth) => {
-    const getMaxChars = maxCharSwitch.find(fn => fn(windowWidth));
-    return getMaxChars(windowWidth);
+  const getMaxChars = maxCharSwitch.find((fn) => fn(windowWidth));
+  return getMaxChars(windowWidth);
 };
 
 export default {
-    components: {
-        CloseButton,
-        WorkflowIcon
+  components: {
+    CloseButton,
+    WorkflowIcon,
+  },
+  props: {
+    name: {
+      type: String,
+      required: true,
     },
-    props: {
-        name: {
-            type: String,
-            required: true
-        },
-        projectId: {
-            type: String,
-            required: true
-        },
-        isActive: {
-            type: Boolean,
-            default: false
-        },
-        hasUnsavedChanges: {
-            type: Boolean,
-            default: false
-        },
-        isHoveredOver: {
-            type: Boolean,
-            default: false
-        },
-        windowWidth: {
-            type: Number,
-            default: 0
-        }
+    projectId: {
+      type: String,
+      required: true,
     },
-    emits: ['hover', 'switchWorkflow', 'closeWorkflow'],
-    computed: {
-        shouldTruncateName() {
-            const maxChars = maxCharFunction(this.windowWidth);
-            return this.name.length > maxChars;
-        },
-        truncatedProjectName() {
-            const maxChars = maxCharFunction(this.windowWidth);
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
+    hasUnsavedChanges: {
+      type: Boolean,
+      default: false,
+    },
+    isHoveredOver: {
+      type: Boolean,
+      default: false,
+    },
+    windowWidth: {
+      type: Number,
+      default: 0,
+    },
+  },
+  emits: ["hover", "switchWorkflow", "closeWorkflow"],
+  computed: {
+    shouldTruncateName() {
+      const maxChars = maxCharFunction(this.windowWidth);
+      return this.name.length > maxChars;
+    },
+    truncatedProjectName() {
+      const maxChars = maxCharFunction(this.windowWidth);
 
-            return this.shouldTruncateName ? `${this.name.slice(0, maxChars)} …` : this.name;
-        }
+      return this.shouldTruncateName
+        ? `${this.name.slice(0, maxChars)} …`
+        : this.name;
     },
-    methods: {
-        onHover(hoverValue) {
-            this.$emit('hover', hoverValue);
-        }
-    }
+  },
+  methods: {
+    onHover(hoverValue) {
+      this.$emit("hover", hoverValue);
+    },
+  },
 };
 </script>
 
@@ -80,9 +81,7 @@ export default {
     @mouseleave="onHover(null)"
     @click.middle.stop="$emit('closeWorkflow', projectId)"
   >
-    <WorkflowIcon
-      class="workflow-icon"
-    />
+    <WorkflowIcon class="workflow-icon" />
     <span class="text">{{ truncatedProjectName }}</span>
     <CloseButton
       class="close-icon"

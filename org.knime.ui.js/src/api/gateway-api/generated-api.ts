@@ -664,6 +664,12 @@ export interface ComponentNode extends Node {
      * @memberof ComponentNode
      */
     link?: TemplateLink;
+    /**
+     * The lock-status of this node. It has three states: absent if there is no lock at all, true if it&#39;s locked, false if it&#39;s unlocked.
+     * @type {boolean}
+     * @memberof ComponentNode
+     */
+    isLocked?: boolean;
 
 }
 
@@ -1326,6 +1332,12 @@ export interface MetaNode extends Node {
      * @memberof MetaNode
      */
     link?: TemplateLink;
+    /**
+     * The lock-status of this node. It has three states: absent if there is no lock at all, true if it&#39;s locked, false if it&#39;s unlocked.
+     * @type {boolean}
+     * @memberof MetaNode
+     */
+    isLocked?: boolean;
 
 }
 

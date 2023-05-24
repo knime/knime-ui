@@ -1,31 +1,32 @@
 <script>
-import { h as createElement } from 'vue';
-import Avatar from './Avatar.vue';
+import { h as createElement } from "vue";
+import Avatar from "./Avatar.vue";
 
 export default {
-    props: {
-        avatar: {
-            type: String,
-            default: null
-        }
+  props: {
+    avatar: {
+      type: String,
+      default: null,
     },
+  },
 
-    render() {
-        const icons = (this.$slots.icons || [])
-            .map(vnode => createElement(vnode.tag, { class: 'icon' }, vnode.children));
+  render() {
+    const icons = (this.$slots.icons || []).map((vnode) =>
+      createElement(vnode.tag, { class: "icon" }, vnode.children)
+    );
 
-        const footerChildren = this.avatar
-            // eslint-disable-next-line no-extra-parens
-            ? [...icons, ...(this.$slots.default?.() || []), createElement(Avatar, { props: { text: this.avatar } })]
-            // eslint-disable-next-line no-extra-parens
-            : [...icons, ...(this.$slots.default?.() || [])];
+    const footerChildren = this.avatar
+      ? // eslint-disable-next-line no-extra-parens
+        [
+          ...icons,
+          ...(this.$slots.default?.() || []),
+          createElement(Avatar, { props: { text: this.avatar } }),
+        ]
+      : // eslint-disable-next-line no-extra-parens
+        [...icons, ...(this.$slots.default?.() || [])];
 
-        return createElement(
-            'div',
-            { class: 'card-footer' },
-            footerChildren
-        );
-    }
+    return createElement("div", { class: "card-footer" }, footerChildren);
+  },
 };
 </script>
 

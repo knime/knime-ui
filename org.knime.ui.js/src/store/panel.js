@@ -3,39 +3,39 @@
  */
 
 export const TABS = {
-    CONTEXT_AWARE_DESCRIPTION: 'description',
-    NODE_REPOSITORY: 'nodeRepository',
-    NODE_DIALOG: 'nodeDialog',
-    SPACE_EXPLORER: 'spaceExplorer'
+  CONTEXT_AWARE_DESCRIPTION: "description",
+  NODE_REPOSITORY: "nodeRepository",
+  NODE_DIALOG: "nodeDialog",
+  SPACE_EXPLORER: "spaceExplorer",
 };
 
 export const state = () => ({
-    expanded: true,
-    activeTab: {}
+  expanded: true,
+  activeTab: {},
 });
 
 export const actions = {
-    setCurrentProjectActiveTab({ commit, rootState }, activeTab) {
-        const projectId = rootState.application.activeProjectId;
-        if (projectId === null) {
-            return;
-        }
-        commit('setActiveTab', { projectId, activeTab });
+  setCurrentProjectActiveTab({ commit, rootState }, activeTab) {
+    const projectId = rootState.application.activeProjectId;
+    if (projectId === null) {
+      return;
     }
+    commit("setActiveTab", { projectId, activeTab });
+  },
 };
 
 export const mutations = {
-    setActiveTab(state, { projectId, activeTab }) {
-        state.activeTab = {
-            ...state.activeTab,
-            [projectId]: activeTab
-        };
-        state.expanded = true;
-    },
-    toggleExpanded(state) {
-        state.expanded = !state.expanded;
-    },
-    closePanel(state) {
-        state.expanded = false;
-    }
+  setActiveTab(state, { projectId, activeTab }) {
+    state.activeTab = {
+      ...state.activeTab,
+      [projectId]: activeTab,
+    };
+    state.expanded = true;
+  },
+  toggleExpanded(state) {
+    state.expanded = !state.expanded;
+  },
+  closePanel(state) {
+    state.expanded = false;
+  },
 };

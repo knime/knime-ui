@@ -1,10 +1,10 @@
-import Fuse from 'fuse.js';
-import { toPortObject } from '@/util/portDataMapper';
+import Fuse from "fuse.js";
+import { toPortObject } from "@/util/portDataMapper";
 
 const fuseOptions = {
-    shouldSort: true,
-    isCaseSensitive: false,
-    minMatchCharLength: 0
+  shouldSort: true,
+  isCaseSensitive: false,
+  minMatchCharLength: 0,
 };
 
 /**
@@ -13,21 +13,21 @@ const fuseOptions = {
  * @param {String} compareKey the object property to use for comparison. Repeated values will be removed
  * @returns {Array}
  */
-const removeDuplicates = (array, compareKey = 'name') => {
-    const uniqueIds = [];
-    const out = array.filter(item => {
-        const isDuplicate = uniqueIds.includes(item[compareKey]);
+const removeDuplicates = (array, compareKey = "name") => {
+  const uniqueIds = [];
+  const out = array.filter((item) => {
+    const isDuplicate = uniqueIds.includes(item[compareKey]);
 
-        if (isDuplicate) {
-            return false;
-        }
+    if (isDuplicate) {
+      return false;
+    }
 
-        uniqueIds.push(item[compareKey]);
+    uniqueIds.push(item[compareKey]);
 
-        return true;
-    });
+    return true;
+  });
 
-    return out;
+  return out;
 };
 
 // eslint-disable-next-line valid-jsdoc
@@ -39,33 +39,41 @@ const removeDuplicates = (array, compareKey = 'name') => {
  * @param {Array<String>} options.typeIds A list of port type ids that will be used for the search
  * @param {Boolean} [options.showHidden] Whether hidden ports should be included in the search
  */
-export const makeTypeSearch = ({ availablePortTypes, typeIds, suggestedTypeIds = [], showHidden = false }) => {
-    const includeType = false;
-    const suggestedPorts = suggestedTypeIds.map(toPortObject(availablePortTypes, includeType));
+export const makeTypeSearch = ({
+  availablePortTypes,
+  typeIds,
+  suggestedTypeIds = [],
+  showHidden = false,
+}) => {
+  const includeType = false;
+  const suggestedPorts = suggestedTypeIds.map(
+    toPortObject(availablePortTypes, includeType)
+  );
 
-    const otherPorts = typeIds
-        .map(toPortObject(availablePortTypes, includeType))
-        // sort non-suggested ports by name
-        .sort((a, b) => a.name.localeCompare(b.name));
+  const otherPorts = typeIds
+    .map(toPortObject(availablePortTypes, includeType))
+    // sort non-suggested ports by name
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-    const allPortTypes = removeDuplicates(
-        suggestedPorts // place suggested ports at the top of the list
-            .concat(otherPorts)
-            // decide whether to hidden ports
-            .filter((portType) => showHidden || !portType.hidden)
-    );
+  const allPortTypes = removeDuplicates(
+    suggestedPorts // place suggested ports at the top of the list
+      .concat(otherPorts)
+      // decide whether to hidden ports
+      .filter((portType) => showHidden || !portType.hidden)
+  );
 
-    const searchEngine = new Fuse(allPortTypes, {
-        keys: ['name'],
-        ...fuseOptions
-    });
+  const searchEngine = new Fuse(allPortTypes, {
+    keys: ["name"],
+    ...fuseOptions,
+  });
 
-    // displays all items for an empty search
-    return function search(input = '', options) {
-        const results = input === ''
-            ? allPortTypes
-            : searchEngine.search(input, options).map(result => result.item);
+  // displays all items for an empty search
+  return function search(input = "", options) {
+    const results =
+      input === ""
+        ? allPortTypes
+        : searchEngine.search(input, options).map((result) => result.item);
 
-        return results;
-    };
+    return results;
+  };
 };

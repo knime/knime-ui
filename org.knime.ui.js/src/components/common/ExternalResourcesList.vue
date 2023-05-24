@@ -1,38 +1,30 @@
 <script>
-import LinkList from 'webapps-common/ui/components/LinkList.vue';
+import LinkList from "webapps-common/ui/components/LinkList.vue";
 
 /**
  * Wraps the webapps-common LinkList component to render them alongside a title and a separator
  */
 export default {
-    components: {
-        LinkList
+  components: {
+    LinkList,
+  },
+  props: {
+    links: {
+      type: Array,
+      required: true,
+      default: () => [],
     },
-    props: {
-        links: {
-            type: Array,
-            required: true,
-            default: () => []
-        }
-    }
+  },
 };
 </script>
 
 <template>
   <div class="external-resources-list">
     <h2>External resources</h2>
-    <hr>
-    <LinkList
-      v-if="links.length"
-      :links="links"
-    />
+    <hr />
+    <LinkList v-if="links.length" :links="links" />
     <!-- Use MetadataPlaceholder? -->
-    <div
-      v-else
-      class="placeholder"
-    >
-      No links have been added yet
-    </div>
+    <div v-else class="placeholder">No links have been added yet</div>
   </div>
 </template>
 

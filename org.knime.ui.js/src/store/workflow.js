@@ -1,8 +1,11 @@
-import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
-import * as workflowEditor from './workflow/workflowEditor';
-import * as APinteractions from './workflow/APinteractions';
-import * as workflowExecution from './workflow/workflowExecution';
-import { geometry } from '@/util/geometry';
+import {
+  actions as jsonPatchActions,
+  mutations as jsonPatchMutations,
+} from "../store-plugins/json-patch";
+import * as workflowEditor from "./workflow/workflowEditor";
+import * as APinteractions from "./workflow/APinteractions";
+import * as workflowExecution from "./workflow/workflowExecution";
+import { geometry } from "@/util/geometry";
 
 /**
  * The workflow store holds a workflow graph and the associated tooltips.
@@ -14,132 +17,145 @@ import { geometry } from '@/util/geometry';
  */
 
 export const state = () => ({
-    ...workflowExecution.state,
-    ...workflowEditor.state,
-    ...APinteractions.state,
+  ...workflowExecution.state,
+  ...workflowEditor.state,
+  ...APinteractions.state,
 
-    // TODO: rename to just workflow someday
-    activeWorkflow: null,
-    activeSnapshotId: null,
+  // TODO: rename to just workflow someday
+  activeWorkflow: null,
+  activeSnapshotId: null,
 
-    // TODO: NXT-1143 find a better place for the tooltip logic
-    // maybe use an event that bubbles to the top (workflow canvas?)
-    tooltip: null
+  // TODO: NXT-1143 find a better place for the tooltip logic
+  // maybe use an event that bubbles to the top (workflow canvas?)
+  tooltip: null,
 });
 
 export const mutations = {
-    ...jsonPatchMutations,
-    ...workflowExecution.mutations,
-    ...workflowEditor.mutations,
-    ...APinteractions.mutations,
+  ...jsonPatchMutations,
+  ...workflowExecution.mutations,
+  ...workflowEditor.mutations,
+  ...APinteractions.mutations,
 
-    setActiveWorkflow(state, workflow) {
-        state.activeWorkflow = workflow;
-    },
-    setActiveSnapshotId(state, id) {
-        state.activeSnapshotId = id;
-    },
+  setActiveWorkflow(state, workflow) {
+    state.activeWorkflow = workflow;
+  },
+  setActiveSnapshotId(state, id) {
+    state.activeSnapshotId = id;
+  },
 
-    setTooltip(state, tooltip) {
-        state.tooltip = tooltip;
-    }
+  setTooltip(state, tooltip) {
+    state.tooltip = tooltip;
+  },
 };
 
 export const actions = {
-    ...jsonPatchActions,
-    ...workflowExecution.actions,
-    ...workflowEditor.actions,
-    ...APinteractions.actions
+  ...jsonPatchActions,
+  ...workflowExecution.actions,
+  ...workflowEditor.actions,
+  ...APinteractions.actions,
 };
 
 export const getters = {
-    ...workflowExecution.getters,
-    ...workflowEditor.getters,
-    ...APinteractions.getters,
+  ...workflowExecution.getters,
+  ...workflowEditor.getters,
+  ...APinteractions.getters,
 
-    /* Workflow is empty if it doesn't contain nodes */
-    isWorkflowEmpty({ activeWorkflow }) {
-        let hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);
-        let hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
+  /* Workflow is empty if it doesn't contain nodes */
+  isWorkflowEmpty({ activeWorkflow }) {
+    let hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);
+    let hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
 
-        return !hasNodes && !hasAnnotations;
-    },
+    return !hasNodes && !hasAnnotations;
+  },
 
-    isStreaming({ activeWorkflow }) {
-        return Boolean(activeWorkflow?.info.jobManager);
-    },
+  isStreaming({ activeWorkflow }) {
+    return Boolean(activeWorkflow?.info.jobManager);
+  },
 
-    isLinked({ activeWorkflow }) {
-        return Boolean(activeWorkflow?.info.linked);
-    },
+  isLinked({ activeWorkflow }) {
+    return Boolean(activeWorkflow?.info.linked);
+  },
 
-    insideLinkedType({ activeWorkflow }) {
-        if (!activeWorkflow?.parents) {
-            return null;
-        }
-
-        return activeWorkflow.parents.find(({ linked }) => linked)?.containerType;
-    },
-    isInsideLinked(state, getters) {
-        return Boolean(getters.insideLinkedType);
-    },
-
-    /* Workflow is writable, if it is not linked or inside a linked workflow */
-    isWritable(state, { isLinked, isInsideLinked }) {
-        const linkage = isLinked || isInsideLinked;
-
-        // TODO: document better under which conditions a workflow is not writable
-        return !linkage;
-    },
-
-    isOnHub({ activeWorkflow }) {
-        return Boolean(activeWorkflow?.info.onHub);
-    },
-
-    /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
-    workflowBounds({ activeWorkflow }) {
-        return geometry.getWorkflowObjectBounds(activeWorkflow || {}, { padding: true });
-    },
-
-    getNodeById: ({ activeWorkflow }) => nodeId => activeWorkflow?.nodes[nodeId] || null,
-
-    getNodeIcon: ({ activeWorkflow }) => nodeId => {
-        let node = activeWorkflow.nodes[nodeId];
-        let { templateId } = node;
-        if (templateId) {
-            return activeWorkflow.nodeTemplates[templateId].icon;
-        } else {
-            return node.icon;
-        }
-    },
-
-    getNodeName: ({ activeWorkflow }) => nodeId => {
-        let node = activeWorkflow.nodes[nodeId];
-        let { templateId } = node;
-        if (templateId) {
-            return activeWorkflow.nodeTemplates[templateId].name;
-        } else {
-            return node.name;
-        }
-    },
-
-    getNodeFactory: ({ activeWorkflow }) => nodeId => {
-        let node = activeWorkflow.nodes[nodeId];
-        let { templateId } = node;
-        if (templateId) {
-            return activeWorkflow.nodeTemplates[templateId].nodeFactory;
-        } else {
-            return null;
-        }
-    },
-
-    getNodeType: ({ activeWorkflow }) => nodeId => {
-        let node = activeWorkflow.nodes[nodeId];
-        let { templateId } = node;
-        if (templateId) {
-            return activeWorkflow.nodeTemplates[templateId].type;
-        } else {
-            return node.type;
-        }
+  insideLinkedType({ activeWorkflow }) {
+    if (!activeWorkflow?.parents) {
+      return null;
     }
+
+    return activeWorkflow.parents.find(({ linked }) => linked)?.containerType;
+  },
+  isInsideLinked(state, getters) {
+    return Boolean(getters.insideLinkedType);
+  },
+
+  /* Workflow is writable, if it is not linked or inside a linked workflow */
+  isWritable(state, { isLinked, isInsideLinked }) {
+    const linkage = isLinked || isInsideLinked;
+
+    // TODO: document better under which conditions a workflow is not writable
+    return !linkage;
+  },
+
+  isOnHub({ activeWorkflow }) {
+    return Boolean(activeWorkflow?.info.onHub);
+  },
+
+  /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
+  workflowBounds({ activeWorkflow }) {
+    return geometry.getWorkflowObjectBounds(activeWorkflow || {}, {
+      padding: true,
+    });
+  },
+
+  getNodeById:
+    ({ activeWorkflow }) =>
+    (nodeId) =>
+      activeWorkflow?.nodes[nodeId] || null,
+
+  getNodeIcon:
+    ({ activeWorkflow }) =>
+    (nodeId) => {
+      let node = activeWorkflow.nodes[nodeId];
+      let { templateId } = node;
+      if (templateId) {
+        return activeWorkflow.nodeTemplates[templateId].icon;
+      } else {
+        return node.icon;
+      }
+    },
+
+  getNodeName:
+    ({ activeWorkflow }) =>
+    (nodeId) => {
+      let node = activeWorkflow.nodes[nodeId];
+      let { templateId } = node;
+      if (templateId) {
+        return activeWorkflow.nodeTemplates[templateId].name;
+      } else {
+        return node.name;
+      }
+    },
+
+  getNodeFactory:
+    ({ activeWorkflow }) =>
+    (nodeId) => {
+      let node = activeWorkflow.nodes[nodeId];
+      let { templateId } = node;
+      if (templateId) {
+        return activeWorkflow.nodeTemplates[templateId].nodeFactory;
+      } else {
+        return null;
+      }
+    },
+
+  getNodeType:
+    ({ activeWorkflow }) =>
+    (nodeId) => {
+      let node = activeWorkflow.nodes[nodeId];
+      let { templateId } = node;
+      if (templateId) {
+        return activeWorkflow.nodeTemplates[templateId].type;
+      } else {
+        return node.type;
+      }
+    },
 };

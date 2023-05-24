@@ -1,111 +1,116 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { mapActions, mapState } from 'vuex';
+import { defineComponent } from "vue";
+import { mapActions, mapState } from "vuex";
 
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import Carousel from 'webapps-common/ui/components/Carousel.vue';
-import KnimeIcon from 'webapps-common/ui/assets/img/KNIME_Triangle.svg';
-import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
-import SwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
-import InfoIcon from '@/assets/info.svg';
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import Carousel from "webapps-common/ui/components/Carousel.vue";
+import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
+import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import SwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
+import InfoIcon from "@/assets/info.svg";
 
-import { APP_ROUTES } from '@/router/appRoutes';
+import { APP_ROUTES } from "@/router/appRoutes";
 
-import AppHeaderTab from './AppHeaderTab.vue';
+import AppHeaderTab from "./AppHeaderTab.vue";
 
 /**
  * Header Bar containing Logo, Open project tabs, and switch to Info page Button
  */
 export default defineComponent({
-    components: {
-        AppHeaderTab,
-        KnimeIcon,
-        FunctionButton,
-        Carousel,
-        InfoIcon,
-        SwitchIcon,
-        CloseIcon
+  components: {
+    AppHeaderTab,
+    KnimeIcon,
+    FunctionButton,
+    Carousel,
+    InfoIcon,
+    SwitchIcon,
+    CloseIcon,
+  },
+  data() {
+    return {
+      windowWidth: 0,
+      hoveredTab: null,
+      activeProjectTab: null,
+      lastActiveProject: null,
+    };
+  },
+  computed: {
+    ...mapState("application", [
+      "openProjects",
+      "activeProjectId",
+      "isLoadingWorkflow",
+      "devMode",
+      "dirtyProjectsMap",
+    ]),
+
+    isInfoPageActive() {
+      return this.$route.name === APP_ROUTES.InfoPage;
     },
-    data() {
-        return {
-            windowWidth: 0,
-            hoveredTab: null,
-            activeProjectTab: null,
-            lastActiveProject: null
-        };
+
+    isGetStartedPageActive() {
+      return this.$route.name === APP_ROUTES.EntryPage.GetStartedPage;
     },
-    computed: {
-        ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow', 'devMode',
-            'dirtyProjectsMap']),
-        
-        isInfoPageActive() {
-            return this.$route.name === APP_ROUTES.InfoPage;
-        },
 
-        isGetStartedPageActive() {
-            return this.$route.name === APP_ROUTES.EntryPage.GetStartedPage;
-        },
+    isLogoActive() {
+      if (this.isInfoPageActive) {
+        return false;
+      }
 
-        isLogoActive() {
-            if (this.isInfoPageActive) {
-                return false;
-            }
-
-            return (
-                this.openProjects.length === 0 ||
-                (!this.activeProjectId && !this.isLoadingWorkflow) ||
-                this.isGetStartedPageActive
-            );
-        }
+      return (
+        this.openProjects.length === 0 ||
+        (!this.activeProjectId && !this.isLoadingWorkflow) ||
+        this.isGetStartedPageActive
+      );
     },
-    watch: {
-        activeProjectId() {
-            // prevent tab color flashing when switching workflows
-            if (this.activeProjectId) {
-                this.activeProjectTab = this.activeProjectId;
-            }
-        }
+  },
+  watch: {
+    activeProjectId() {
+      // prevent tab color flashing when switching workflows
+      if (this.activeProjectId) {
+        this.activeProjectTab = this.activeProjectId;
+      }
     },
-    created() {
-        this.setupResizeListener();
+  },
+  created() {
+    this.setupResizeListener();
+  },
+  methods: {
+    ...mapActions("workflow", ["closeWorkflow"]),
+
+    setupResizeListener() {
+      const onResize = () => {
+        this.windowWidth = window.innerWidth;
+      };
+
+      window.addEventListener("resize", onResize);
+      onResize();
     },
-    methods: {
-        ...mapActions('workflow', ['closeWorkflow']),
 
-        setupResizeListener() {
-            const onResize = () => {
-                this.windowWidth = window.innerWidth;
-            };
+    switchToJavaUI() {
+      window.switchToJavaUI();
+    },
 
-            window.addEventListener('resize', onResize);
-            onResize();
-        },
+    switchToInfoPage() {
+      if (this.isInfoPageActive) {
+        this.$router.back();
+      } else {
+        this.activeProjectTab = null;
+        this.$router.push({ name: APP_ROUTES.InfoPage });
+      }
+    },
 
-        switchToJavaUI() {
-            window.switchToJavaUI();
-        },
+    setGetStartedPageTab() {
+      this.activeProjectTab = null;
+      this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+    },
 
-        switchToInfoPage() {
-            if (this.isInfoPageActive) {
-                this.$router.back();
-            } else {
-                this.activeProjectTab = null;
-                this.$router.push({ name: APP_ROUTES.InfoPage });
-            }
-        },
-
-        setGetStartedPageTab() {
-            this.activeProjectTab = null;
-            this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
-        },
-
-        onProjectTabChange(projectId) {
-            this.$router.push({
-                name: APP_ROUTES.WorkflowPage,
-                params: { projectId, workflowId: 'root' }
-            });
-        }
-    }
+    onProjectTabChange(projectId) {
+      this.$router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId, workflowId: "root" },
+      });
+    },
+  },
 });
 </script>
 
@@ -113,17 +118,14 @@ export default defineComponent({
   <header>
     <div
       id="knime-logo"
-      :class="[ isLogoActive ? 'active-logo' : null ]"
+      :class="[isLogoActive ? 'active-logo' : null]"
       @click="setGetStartedPageTab()"
     >
       <KnimeIcon />
       <span class="text">Home</span>
     </div>
     <div class="toolbar">
-      <ul
-        v-if="openProjects.length >= 1"
-        class="project-tabs"
-      >
+      <ul v-if="openProjects.length >= 1" class="project-tabs">
         <Carousel>
           <div class="wrapper">
             <AppHeaderTab
@@ -142,10 +144,7 @@ export default defineComponent({
           </div>
         </Carousel>
       </ul>
-      <div
-        v-else
-        class="application-name"
-      >
+      <div v-else class="application-name">
         <span class="text">KNIME Analytics Platform 5 – Early Access</span>
       </div>
 
@@ -253,13 +252,16 @@ header {
       }
 
       & :deep(.shadow-wrapper::after) {
-        background-image: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 100%);
+        background-image: linear-gradient(
+          90deg,
+          hsl(0deg 0% 100% / 0%) 0%,
+          var(--knime-masala) 100%
+        );
       }
 
       & :deep(.carousel) {
         padding-left: 24px;
       }
-
 
       & .wrapper {
         display: inline-flex;

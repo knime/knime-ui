@@ -1,71 +1,71 @@
 <script>
-import { mapState } from 'vuex';
-import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
-import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
+import { mapState } from "vuex";
+import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 /**
  * ZoomMenu offers predefined zoom levels and an input field to enter custom zoom levels
  */
 export default {
-    components: {
-        DropdownIcon,
-        SubMenu
+  components: {
+    DropdownIcon,
+    SubMenu,
+  },
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
     },
-    props: {
-        disabled: {
-            type: Boolean,
-            default: false
-        }
+  },
+  computed: {
+    ...mapState("canvas", ["zoomFactor"]),
+    zoomInputValue() {
+      return `${Math.round(this.zoomFactor * 100)}%`;
     },
-    computed: {
-        ...mapState('canvas', ['zoomFactor']),
-        zoomInputValue() {
-            return `${Math.round(this.zoomFactor * 100)}%`;
-        },
-        zoomMenuItems() {
-            return [
-                'fillScreen',
-                'fitToScreen',
-                'zoomIn',
-                'zoomOut',
-                'zoomTo75',
-                'zoomTo100',
-                'zoomTo125',
-                'zoomTo150'
-            ].map(action => this.$shortcuts.get(action));
-        }
+    zoomMenuItems() {
+      return [
+        "fillScreen",
+        "fitToScreen",
+        "zoomIn",
+        "zoomOut",
+        "zoomTo75",
+        "zoomTo100",
+        "zoomTo125",
+        "zoomTo150",
+      ].map((action) => this.$shortcuts.get(action));
     },
-    methods: {
-        onZoomInputEnter(e) {
-            // '100' or '100%' works
-            let newZoomFactor = parseInt(e.target.value, 10) / 100;
+  },
+  methods: {
+    onZoomInputEnter(e) {
+      // '100' or '100%' works
+      let newZoomFactor = parseInt(e.target.value, 10) / 100;
 
-            if (!isNaN(newZoomFactor)) {
-                this.$store.dispatch('canvas/zoomCentered', { factor: newZoomFactor });
-            }
+      if (!isNaN(newZoomFactor)) {
+        this.$store.dispatch("canvas/zoomCentered", { factor: newZoomFactor });
+      }
 
-            // de-focus input. Resets and formats zoom level
-            e.target.blur();
-            e.target.value = this.zoomInputValue;
-        },
-        onZoomInputClick(e) {
-            e.target.focus();
-            e.target.select();
-        },
-        onZoomInputFocusOut(e) {
-            // Deselect text and reset to formatted value
-            e.target.blur();
-            e.target.value = this.zoomInputValue;
-        },
-        onZoomItemClick(e, item) {
-            this.$shortcuts.dispatch(item.name);
-            this.$refs.zoomInput.blur();
-        },
-        onWheel(e) {
-            const delta = e.deltaY < 0 ? 1 : -1;
-            this.$store.dispatch('canvas/zoomCentered', { delta });
-        }
-    }
+      // de-focus input. Resets and formats zoom level
+      e.target.blur();
+      e.target.value = this.zoomInputValue;
+    },
+    onZoomInputClick(e) {
+      e.target.focus();
+      e.target.select();
+    },
+    onZoomInputFocusOut(e) {
+      // Deselect text and reset to formatted value
+      e.target.blur();
+      e.target.value = this.zoomInputValue;
+    },
+    onZoomItemClick(e, item) {
+      this.$shortcuts.dispatch(item.name);
+      this.$refs.zoomInput.blur();
+    },
+    onWheel(e) {
+      const delta = e.deltaY < 0 ? 1 : -1;
+      this.$store.dispatch("canvas/zoomCentered", { delta });
+    },
+  },
 };
 </script>
 
@@ -87,7 +87,7 @@ export default {
       @keydown.enter.stop.prevent="onZoomInputEnter"
       @wheel.prevent="onWheel"
       @focusout.stop="onZoomInputFocusOut"
-    >
+    />
     <DropdownIcon />
   </SubMenu>
 </template>

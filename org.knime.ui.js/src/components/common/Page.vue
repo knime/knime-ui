@@ -1,18 +1,17 @@
 <script>
-
 export default {
-    props: {
-        scrollMode: {
-            type: String,
-            default: 'auto',
-            validator: (value) => ['auto', 'scroll'].includes(value)
-        },
+  props: {
+    scrollMode: {
+      type: String,
+      default: "auto",
+      validator: (value) => ["auto", "scroll"].includes(value),
+    },
 
-        withBackground: {
-            type: Boolean,
-            default: false
-        }
-    }
+    withBackground: {
+      type: Boolean,
+      default: false,
+    },
+  },
 };
 </script>
 
@@ -21,7 +20,7 @@ export default {
     :class="{
       'scroll-auto': scrollMode === 'auto',
       'scroll-static': scrollMode === 'scroll',
-      'with-background': withBackground
+      'with-background': withBackground,
     }"
   >
     <slot />

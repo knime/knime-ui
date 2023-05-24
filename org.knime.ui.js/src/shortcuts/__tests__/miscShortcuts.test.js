@@ -1,34 +1,34 @@
-import { expect, describe, beforeEach, it, vi } from 'vitest';
-import { sidePanelShortcuts, selectionShortcuts } from '../miscShortcuts';
+import { expect, describe, beforeEach, it, vi } from "vitest";
+import { sidePanelShortcuts, selectionShortcuts } from "../miscShortcuts";
 
-describe('miscShortcuts', () => {
-    let mockDispatch, $store, mockCommit;
+describe("miscShortcuts", () => {
+  let mockDispatch, $store, mockCommit;
 
-    beforeEach(() => {
-        mockDispatch = vi.fn();
-        mockCommit = vi.fn();
-        $store = {
-            dispatch: mockDispatch,
-            commit: mockCommit
-        };
+  beforeEach(() => {
+    mockDispatch = vi.fn();
+    mockCommit = vi.fn();
+    $store = {
+      dispatch: mockDispatch,
+      commit: mockCommit,
+    };
+  });
+
+  describe("sidePanelShortcuts", () => {
+    it("execute toggleSidePanel", () => {
+      sidePanelShortcuts.toggleSidePanel.execute({ $store });
+      expect(mockCommit).toHaveBeenCalledWith("panel/toggleExpanded");
+    });
+  });
+
+  describe("selectionShortcuts", () => {
+    it("execute selectAll", () => {
+      selectionShortcuts.selectAll.execute({ $store });
+      expect(mockDispatch).toHaveBeenCalledWith("selection/selectAllObjects");
     });
 
-    describe('sidePanelShortcuts', () => {
-        it('execute toggleSidePanel', () => {
-            sidePanelShortcuts.toggleSidePanel.execute({ $store });
-            expect(mockCommit).toHaveBeenCalledWith('panel/toggleExpanded');
-        });
+    it("execute deselectAll", () => {
+      selectionShortcuts.deselectAll.execute({ $store });
+      expect(mockDispatch).toHaveBeenCalledWith("selection/deselectAllObjects");
     });
-
-    describe('selectionShortcuts', () => {
-        it('execute selectAll', () => {
-            selectionShortcuts.selectAll.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('selection/selectAllObjects');
-        });
-
-        it('execute deselectAll', () => {
-            selectionShortcuts.deselectAll.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('selection/deselectAllObjects');
-        });
-    });
+  });
 });

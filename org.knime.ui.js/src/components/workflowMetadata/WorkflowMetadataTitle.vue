@@ -1,42 +1,36 @@
 <script>
-import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
-import MetadataPlaceholder from './MetadataPlaceholder.vue';
+import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
+import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 
 export default {
-    components: {
-        MetadataPlaceholder,
-        NodePreview
+  components: {
+    MetadataPlaceholder,
+    NodePreview,
+  },
+  props: {
+    title: {
+      type: String,
+      default: null,
     },
-    props: {
-        title: {
-            type: String,
-            default: null
-        },
-        nodePreview: {
-            type: Object,
-            default: null
-        }
-    }
+    nodePreview: {
+      type: Object,
+      default: null,
+    },
+  },
 };
 </script>
 
 <template>
   <div>
     <h2 :class="['title', { 'with-node-preview': nodePreview }]">
-      <div
-        v-if="nodePreview"
-        class="node-preview"
-      >
+      <div v-if="nodePreview" class="node-preview">
         <NodePreview v-bind="nodePreview" />
       </div>
 
       <span v-if="title">{{ title }}</span>
-      <MetadataPlaceholder
-        v-else
-        text="No title has been set yet"
-      />
+      <MetadataPlaceholder v-else text="No title has been set yet" />
     </h2>
-    <hr v-if="!nodePreview">
+    <hr v-if="!nodePreview" />
   </div>
 </template>
 

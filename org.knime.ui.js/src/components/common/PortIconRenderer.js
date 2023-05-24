@@ -1,5 +1,5 @@
-import { h as createElement } from 'vue';
-import Port from '@/components/common/Port.vue';
+import { h as createElement } from "vue";
+import Port from "@/components/common/Port.vue";
 
 /**
  * Higher order component that wraps a `Port` output in an svg element.
@@ -9,17 +9,17 @@ import Port from '@/components/common/Port.vue';
  * @returns {Object} A Vue component
  */
 export default (portConfig, iconSize = null) => ({
-    render() {
-        const port = { ...portConfig };
-        delete port.nodeState;
-        const g = createElement(Port, { port });
-        
-        const portSize = this.$shapes.portSize;
+  render() {
+    const port = { ...portConfig };
+    delete port.nodeState;
+    const g = createElement(Port, { port });
 
-        const attrs = {
-            viewBox: `-${portSize / 2} -${portSize / 2} ${portSize} ${portSize}`,
-            style: iconSize && `width: ${iconSize}px`
-        };
-        return createElement('svg', { ...attrs }, [g]);
-    }
+    const portSize = this.$shapes.portSize;
+
+    const attrs = {
+      viewBox: `-${portSize / 2} -${portSize / 2} ${portSize} ${portSize}`,
+      style: iconSize && `width: ${iconSize}px`,
+    };
+    return createElement("svg", { ...attrs }, [g]);
+  },
 });

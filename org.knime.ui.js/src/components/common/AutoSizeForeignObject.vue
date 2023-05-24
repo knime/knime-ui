@@ -6,107 +6,107 @@
  * when the size is adjusted so other drawings can update.
  */
 export default {
-    props: {
-        /**
-         * content that will be rendered in the wrapper
-         */
-        value: {
-            type: String,
-            default: ''
-        },
-        /**
-         * Max width of the element.
-         */
-        maxWidth: {
-            type: Number,
-            default: 1000
-        },
-        /**
-         * Optional y-offset relative to the default position.
-         */
-        yOffset: {
-            type: Number,
-            default: 0
-        },
-        /**
-         * Optional The element is moved on y-axis by the mesaured height (in addition to yOffset).
-         */
-        offsetByHeight: {
-            type: Boolean,
-            default: false
-        },
-        /**
-         * Optional the width of the (visual) parent to center around.
-         */
-        parentWidth: {
-            type: Number,
-            default: null
-        }
+  props: {
+    /**
+     * content that will be rendered in the wrapper
+     */
+    value: {
+      type: String,
+      default: "",
     },
-
-    emits: ['widthChange', 'heightChange'],
-
-    data() {
-        return {
-            width: this.maxWidth,
-            // A height of at least 1px is required for Firefox
-            // so that the wrapper's bounding rect is calculated correctly
-            height: 1,
-            x: 0
-        };
+    /**
+     * Max width of the element.
+     */
+    maxWidth: {
+      type: Number,
+      default: 1000,
     },
-
-    computed: {
-        y() {
-            if (this.offsetByHeight) {
-                return -this.height + this.yOffset;
-            }
-            return this.yOffset;
-        }
+    /**
+     * Optional y-offset relative to the default position.
+     */
+    yOffset: {
+      type: Number,
+      default: 0,
     },
-
-    watch: {
-        value() {
-            this.width = this.maxWidth;
-        }
+    /**
+     * Optional The element is moved on y-axis by the mesaured height (in addition to yOffset).
+     */
+    offsetByHeight: {
+      type: Boolean,
+      default: false,
     },
+    /**
+     * Optional the width of the (visual) parent to center around.
+     */
+    parentWidth: {
+      type: Number,
+      default: null,
+    },
+  },
 
-    async mounted() {
+  emits: ["widthChange", "heightChange"],
+
+  data() {
+    return {
+      width: this.maxWidth,
+      // A height of at least 1px is required for Firefox
+      // so that the wrapper's bounding rect is calculated correctly
+      height: 1,
+      x: 0,
+    };
+  },
+
+  computed: {
+    y() {
+      if (this.offsetByHeight) {
+        return -this.height + this.yOffset;
+      }
+      return this.yOffset;
+    },
+  },
+
+  watch: {
+    value() {
+      this.width = this.maxWidth;
+    },
+  },
+
+  async mounted() {
+    this.centerAroundParentWidth();
+    await this.$nextTick();
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { contentRect } = entry;
+        this.width = contentRect.width;
+        this.height = contentRect.height;
+
         this.centerAroundParentWidth();
-        await this.$nextTick();
+        this.emitDimensions();
+      }
+    });
 
-        const resizeObserver = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                const { contentRect } = entry;
-                this.width = contentRect.width;
-                this.height = contentRect.height;
+    resizeObserver.observe(this.$refs.wrapper);
 
-                this.centerAroundParentWidth();
-                this.emitDimensions();
-            }
-        });
+    this.resizeObserver = resizeObserver;
+  },
 
-        resizeObserver.observe(this.$refs.wrapper);
+  beforeUnmount() {
+    this.resizeObserver?.disconnect();
+  },
 
-        this.resizeObserver = resizeObserver;
+  methods: {
+    centerAroundParentWidth() {
+      if (this.parentWidth !== null) {
+        this.x = (this.parentWidth - this.width) / 2;
+      }
     },
 
-    beforeUnmount() {
-        this.resizeObserver?.disconnect();
+    emitDimensions() {
+      this.$emit("widthChange", this.width);
+      this.$emit("heightChange", this.height);
     },
-
-    methods: {
-        centerAroundParentWidth() {
-            if (this.parentWidth !== null) {
-                this.x = (this.parentWidth - this.width) / 2;
-            }
-        },
-
-        emitDimensions() {
-            this.$emit('widthChange', this.width);
-            this.$emit('heightChange', this.height);
-        }
-    }
+  },
 };
 </script>
 
@@ -119,10 +119,7 @@ export default {
     :y="y"
   >
     <!-- wrapper is used to calculate size -->
-    <div
-      ref="wrapper"
-      class="wrapper"
-    >
+    <div ref="wrapper" class="wrapper">
       <slot />
     </div>
   </foreignObject>

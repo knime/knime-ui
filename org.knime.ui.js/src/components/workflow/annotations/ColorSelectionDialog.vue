@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
-import { annotationColorPresets } from '@/style/colors.mjs';
+import { annotationColorPresets } from "@/style/colors.mjs";
 
-import ColorIcon from './ColorIcon.vue';
+import ColorIcon from "./ColorIcon.vue";
 
 interface Props {
-    activeColor: string | null;
+  activeColor: string | null;
 }
 
 const props = defineProps<Props>();
 
 interface Emits {
-    (e: 'hoverColor', color: string): void;
-    (e: 'selectColor', color: string): void;
+  (e: "hoverColor", color: string): void;
+  (e: "selectColor", color: string): void;
 }
 
 const emit = defineEmits<Emits>();
@@ -23,17 +23,16 @@ const totalColors = Object.keys(annotationColorPresets).length;
 const isNone = (color: string) => color === annotationColorPresets.None;
 
 const onSelectColor = (color: string) => {
-    emit('selectColor', color);
+  emit("selectColor", color);
 };
 
 const isActive = (color: string) => {
-    if (!props.activeColor) {
-        return false;
-    }
+  if (!props.activeColor) {
+    return false;
+  }
 
-    return props.activeColor === color;
+  return props.activeColor === color;
 };
-
 </script>
 
 <template>
@@ -49,10 +48,7 @@ const isActive = (color: string) => {
       @mouseleave.stop="emit('hoverColor', null)"
       @click.stop="onSelectColor(color)"
     >
-      <ColorIcon
-        :color="color"
-        filled
-      />
+      <ColorIcon :color="color" filled />
     </FunctionButton>
   </div>
 </template>
@@ -69,28 +65,28 @@ const isActive = (color: string) => {
 }
 
 .color-button {
-    --item-size: 32;
+  --item-size: 32;
 
-    justify-self: center;
-    width: calc(var(--item-size) * 1px);
-    height: calc(var(--item-size) * 1px);
-    padding: 0;
-    justify-content: center;
-    align-items: center;
+  justify-self: center;
+  width: calc(var(--item-size) * 1px);
+  height: calc(var(--item-size) * 1px);
+  padding: 0;
+  justify-content: center;
+  align-items: center;
 
-    &.none {
-        & svg {
-            stroke: var(--knime-cornflower);
-        }
+  &.none {
+    & svg {
+      stroke: var(--knime-cornflower);
     }
+  }
 
-    &.active:not(.none) {
-        background-color: var(--knime-cornflower);
-    }
+  &.active:not(.none) {
+    background-color: var(--knime-cornflower);
+  }
 
-    &.active.none {
-        background-color: white;
-        box-shadow: inset 0 0 0 2px var(--knime-cornflower);
-    }
+  &.active.none {
+    background-color: white;
+    box-shadow: inset 0 0 0 2px var(--knime-cornflower);
+  }
 }
 </style>

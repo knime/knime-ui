@@ -1,45 +1,45 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
-import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
+import { defineComponent } from "vue";
+import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 
 /**
  * Basic NodeTemplate without any drag or insert features. This component should stay reusable.
  */
 export default defineComponent({
-    components: {
-        NodePreview
+  components: {
+    NodePreview,
+  },
+  expose: ["getNodePreview"],
+  props: {
+    /**
+     * Additional to the properties of the NodeTemplate from the gateway API, this object
+     * contains the port information (color and kind) which was mapped from the store
+     */
+    nodeTemplate: {
+      type: Object,
+      default: null,
     },
-    expose: ['getNodePreview'],
-    props: {
-        /**
-         * Additional to the properties of the NodeTemplate from the gateway API, this object
-         * contains the port information (color and kind) which was mapped from the store
-         */
-        nodeTemplate: {
-            type: Object,
-            default: null
-        },
-        isSelected: {
-            type: Boolean,
-            default: false
-        },
-        isHighlighted: {
-            type: Boolean,
-            default: false
-        }
+    isSelected: {
+      type: Boolean,
+      default: false,
     },
-    methods: {
-        getNodePreview() {
-            return this.$refs.nodePreview;
-        }
-    }
+    isHighlighted: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  methods: {
+    getNodePreview() {
+      return this.$refs.nodePreview;
+    },
+  },
 });
 </script>
 
 <template>
   <div
     class="node"
-    :class="{ 'selected': isSelected, 'highlighted': isHighlighted }"
+    :class="{ selected: isSelected, highlighted: isHighlighted }"
   >
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview
@@ -106,15 +106,17 @@ export default defineComponent({
 }
 
 .highlighted {
-  outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid var(--knime-dove-gray);
+  outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid
+    var(--knime-dove-gray);
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
   background-color: var(--knime-porcelain);
 }
 
 /* selected needs to come after highlighted */
 .selected {
-  outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid v-bind("$colors.selection.activeBorder");
+  outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid
+    v-bind("$colors.selection.activeBorder");
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
-  background-color:  v-bind("$colors.selection.activeBackground");
+  background-color: v-bind("$colors.selection.activeBackground");
 }
 </style>

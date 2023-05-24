@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/extensions
-const { preset } = require('webapps-common/config/postcss.config.js');
+const { preset } = require("webapps-common/config/postcss.config.js");
 
 module.exports = {
-    plugins: {
-        'postcss-mixins': {},
-        'postcss-preset-env': preset
-    }
+  plugins: {
+    "postcss-mixins": {},
+    "postcss-preset-env": preset,
+  },
 };

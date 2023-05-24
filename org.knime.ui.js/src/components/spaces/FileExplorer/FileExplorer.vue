@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { ref, toRefs, computed, watch } from 'vue';
-import { directive as vClickAway } from 'vue3-click-away';
+import { ref, toRefs, computed, watch } from "vue";
+import { directive as vClickAway } from "vue3-click-away";
 
-import { SpaceItem } from '@/api/gateway-api/generated-api';
+import { SpaceItem } from "@/api/gateway-api/generated-api";
 
-import { useItemDragging } from './useItemDragging';
-import { useMultiSelection } from './useMultiSelection';
-import FileExplorerContextMenu from './FileExplorerContextMenu.vue';
-import FileExplorerItem from './FileExplorerItem.vue';
-import FileExplorerItemBack from './FileExplorerItemBack.vue';
-import type { FileExplorerItem as FileExplorerItemType,
-    FileExplorerContextMenu as FileExplorerContextMenuNamespace } from './types';
+import { useItemDragging } from "./useItemDragging";
+import { useMultiSelection } from "./useMultiSelection";
+import FileExplorerContextMenu from "./FileExplorerContextMenu.vue";
+import FileExplorerItem from "./FileExplorerItem.vue";
+import FileExplorerItemBack from "./FileExplorerItemBack.vue";
+import type {
+  FileExplorerItem as FileExplorerItemType,
+  FileExplorerContextMenu as FileExplorerContextMenuNamespace,
+} from "./types";
 
 /**
  * Component that handles FileExplorer interactions.
@@ -18,77 +20,86 @@ import type { FileExplorerItem as FileExplorerItemType,
  * NOTE: Do not add store bindings to component to keep it as reusable as possible
  */
 interface Props {
-    mode?: 'normal' | 'mini';
-    fullPath?: string;
-    isRootFolder: boolean;
-    items: Array<FileExplorerItemType>;
+  mode?: "normal" | "mini";
+  fullPath?: string;
+  isRootFolder: boolean;
+  items: Array<FileExplorerItemType>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    mode: 'normal',
-    fullPath: ''
+  mode: "normal",
+  fullPath: "",
 });
 
 // eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
-    (e: 'changeSelection', selectedItemIds: Array<string>): void
-    (e: 'changeDirectory', pathId: string): void
-    (e: 'openFile', item: FileExplorerItemType): void
-    (e: 'deleteItems', payload: { items: Array<FileExplorerItemType> }): void
-    (e: 'moveItems', payload: {
+  (e: "changeSelection", selectedItemIds: Array<string>): void;
+  (e: "changeDirectory", pathId: string): void;
+  (e: "openFile", item: FileExplorerItemType): void;
+  (e: "deleteItems", payload: { items: Array<FileExplorerItemType> }): void;
+  (
+    e: "moveItems",
+    payload: {
       sourceItems: Array<string>;
       targetItem: string;
       onComplete: (isSuccessfulMove: boolean) => void;
-    }): void
-    (e: 'dragend', payload: {
+    }
+  ): void;
+  (
+    e: "dragend",
+    payload: {
       event: DragEvent;
       sourceItem: FileExplorerItemType;
       onComplete: (isSuccessfulMove: boolean) => void;
-    }): void
-    (e: 'drag', payload: { event: DragEvent; item: FileExplorerItemType }): void;
-    (e: 'renameFile', payload: { itemId: string; newName: string }): void;
+    }
+  ): void;
+  (e: "drag", payload: { event: DragEvent; item: FileExplorerItemType }): void;
+  (e: "renameFile", payload: { itemId: string; newName: string }): void;
 }>();
 
-const isDirectory = (item: FileExplorerItemType) => item.type === SpaceItem.TypeEnum.WorkflowGroup;
-const canOpenFile = (item: FileExplorerItemType) => item.type === SpaceItem.TypeEnum.Workflow;
+const isDirectory = (item: FileExplorerItemType) =>
+  item.type === SpaceItem.TypeEnum.WorkflowGroup;
+const canOpenFile = (item: FileExplorerItemType) =>
+  item.type === SpaceItem.TypeEnum.Workflow;
 
-const changeDirectory = (pathId: string) => emit('changeDirectory', pathId);
+const changeDirectory = (pathId: string) => emit("changeDirectory", pathId);
 
 /** MULTISELECTION */
 const multiSelection = useMultiSelection();
 const {
-    multiSelectionState,
-    handleSelectionClick,
-    isSelected,
-    selectedIndexes,
-    isMultipleSelectionActive,
-    resetSelection
+  multiSelectionState,
+  handleSelectionClick,
+  isSelected,
+  selectedIndexes,
+  isMultipleSelectionActive,
+  resetSelection,
 } = multiSelection;
 
-const selectedItems = computed(() => selectedIndexes.value.map(index => props.items[index]));
-const selectedItemIds = computed(() => selectedItems.value.map(item => item.id));
+const selectedItems = computed(() =>
+  selectedIndexes.value.map((index) => props.items[index])
+);
+const selectedItemIds = computed(() =>
+  selectedItems.value.map((item) => item.id)
+);
 
 watch(multiSelectionState, () => {
-    emit('changeSelection', selectedItemIds.value);
+  emit("changeSelection", selectedItemIds.value);
 });
 
 const { fullPath } = toRefs(props);
 watch(fullPath, () => {
-    resetSelection();
+  resetSelection();
 });
 /** MULTISELECTION */
 
-
 /** RENAME */
 const activeRenameItemId = ref<string | null>(null);
-const blacklistedNames = computed(
-    () => props
-        .items
-        .filter(item => item.id !== activeRenameItemId.value)
-        .map(({ name }) => name)
+const blacklistedNames = computed(() =>
+  props.items
+    .filter((item) => item.id !== activeRenameItemId.value)
+    .map(({ name }) => name)
 );
 /** RENAME */
-
 
 /** DRAGGING */
 const itemBACK = ref<{ $el: HTMLElement } | null>(null);
@@ -97,24 +108,29 @@ const customPreviewContainer = ref<HTMLElement | null>(null);
 const customDragPreviewPlaceholder = ref<HTMLElement | null>(null);
 
 const {
-    isDragging,
-    onDragStart,
-    onDragEnter,
-    onDrag,
-    onDragLeave,
-    onDragEnd,
-    onDrop
+  isDragging,
+  onDragStart,
+  onDragEnter,
+  onDrag,
+  onDragLeave,
+  onDragEnd,
+  onDrop,
 } = useItemDragging({
-    itemBACK: computed(() => itemBACK.value ? itemBACK.value.$el : null),
-    itemRefs: computed(() => itemRefs.value ? itemRefs.value.map(({ $el }) => $el) : null),
-    isDirectory,
-    items: toRefs(props).items,
-    multiSelection,
-    // when default slot element (customDragPreviewPlaceholder ref) is not present, then
-    // it means the slot has an element inside, so we should use a custom preview
-    shouldUseCustomDragPreview: computed(() => !customDragPreviewPlaceholder.value),
-    // we then can obtain the element by using the container
-    getCustomPreviewEl: () => document.querySelector('.custom-preview') as HTMLElement
+  itemBACK: computed(() => (itemBACK.value ? itemBACK.value.$el : null)),
+  itemRefs: computed(() =>
+    itemRefs.value ? itemRefs.value.map(({ $el }) => $el) : null
+  ),
+  isDirectory,
+  items: toRefs(props).items,
+  multiSelection,
+  // when default slot element (customDragPreviewPlaceholder ref) is not present, then
+  // it means the slot has an element inside, so we should use a custom preview
+  shouldUseCustomDragPreview: computed(
+    () => !customDragPreviewPlaceholder.value
+  ),
+  // we then can obtain the element by using the container
+  getCustomPreviewEl: () =>
+    document.querySelector(".custom-preview") as HTMLElement,
 });
 
 // eslint-disable-next-line valid-jsdoc
@@ -123,11 +139,11 @@ const {
  * It's needed because the `useItemDragging` composable doesn't have access to the component emits
  */
 const forwardEmit = (eventName: any, eventPayload: any) => {
-    if (!eventPayload) {
-        return;
-    }
+  if (!eventPayload) {
+    return;
+  }
 
-    emit(eventName, eventPayload);
+  emit(eventName, eventPayload);
 };
 /** DRAGGING */
 
@@ -140,60 +156,70 @@ const contextMenuAnchor = ref<{
 } | null>(null);
 
 const closeContextMenu = () => {
-    isContextMenuVisible.value = false;
-    contextMenuAnchor.value = null;
+  isContextMenuVisible.value = false;
+  contextMenuAnchor.value = null;
 };
 
-const openContextMenu = (event: MouseEvent, clickedItem: FileExplorerItemType, index: number) => {
-    if (isContextMenuVisible.value) {
-        closeContextMenu();
-        return;
-    }
-
-    const element = itemRefs.value[index].$el;
-    contextMenuPos.value.x = event.clientX;
-    contextMenuPos.value.y = event.clientY;
-    contextMenuAnchor.value = { item: clickedItem, index, element };
-
-    if (!isSelected(index)) {
-        handleSelectionClick(index);
-    }
-
-    isContextMenuVisible.value = true;
-};
-
-const onContextMenuItemClick = (payload: FileExplorerContextMenuNamespace.ItemClickPayload) => {
-    const { isDelete, isRename, anchorItem } = payload;
-
-    if (isDelete) {
-        emit('deleteItems', { items: selectedItems.value });
-    }
-
-    if (isRename) {
-        activeRenameItemId.value = anchorItem.id;
-    }
-
-    resetSelection();
+const openContextMenu = (
+  event: MouseEvent,
+  clickedItem: FileExplorerItemType,
+  index: number
+) => {
+  if (isContextMenuVisible.value) {
     closeContextMenu();
+    return;
+  }
+
+  const element = itemRefs.value[index].$el;
+  contextMenuPos.value.x = event.clientX;
+  contextMenuPos.value.y = event.clientY;
+  contextMenuAnchor.value = { item: clickedItem, index, element };
+
+  if (!isSelected(index)) {
+    handleSelectionClick(index);
+  }
+
+  isContextMenuVisible.value = true;
 };
 
-const onItemClick = (item: FileExplorerItemType, event: MouseEvent, index: number) => {
-    if (activeRenameItemId.value !== item.id) {
-        handleSelectionClick(index, event);
-    }
+const onContextMenuItemClick = (
+  payload: FileExplorerContextMenuNamespace.ItemClickPayload
+) => {
+  const { isDelete, isRename, anchorItem } = payload;
 
-    closeContextMenu();
+  if (isDelete) {
+    emit("deleteItems", { items: selectedItems.value });
+  }
+
+  if (isRename) {
+    activeRenameItemId.value = anchorItem.id;
+  }
+
+  resetSelection();
+  closeContextMenu();
+};
+
+const onItemClick = (
+  item: FileExplorerItemType,
+  event: MouseEvent,
+  index: number
+) => {
+  if (activeRenameItemId.value !== item.id) {
+    handleSelectionClick(index, event);
+  }
+
+  closeContextMenu();
 };
 
 const onItemDoubleClick = (item: FileExplorerItemType) => {
-    if (isDirectory(item)) {
-        changeDirectory(item.id);
-        return;
-    }
+  if (isDirectory(item)) {
+    changeDirectory(item.id);
+    return;
+  }
 
-    if (canOpenFile(item)) {
-        emit('openFile', item);
-    }
+  if (canOpenFile(item)) {
+    emit("openFile", item);
+  }
 };
 </script>
 
@@ -205,12 +231,7 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
     <thead>
       <tr>
         <th scope="col">Type</th>
-        <th
-          class="name"
-          scope="col"
-        >
-          Name
-        </th>
+        <th class="name" scope="col">Name</th>
       </tr>
     </thead>
     <tbody :class="mode">
@@ -248,20 +269,12 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
         @rename:clear="activeRenameItemId = null"
       />
 
-      <tr
-        v-if="items.length === 0"
-        class="empty"
-      >
-        <td>
-          Folder is empty
-        </td>
+      <tr v-if="items.length === 0" class="empty">
+        <td>Folder is empty</td>
       </tr>
     </tbody>
 
-    <div
-      ref="customPreviewContainer"
-      class="custom-preview"
-    >
+    <div ref="customPreviewContainer" class="custom-preview">
       <slot name="customDragPreview">
         <div ref="customDragPreviewPlaceholder" />
       </slot>
@@ -271,7 +284,9 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
       v-if="isContextMenuVisible"
       :position="contextMenuPos"
       :anchor="contextMenuAnchor"
-      :is-multiple-selection-active="isMultipleSelectionActive(contextMenuAnchor.index)"
+      :is-multiple-selection-active="
+        isMultipleSelectionActive(contextMenuAnchor.index)
+      "
       @item-click="onContextMenuItemClick"
       @close="closeContextMenu"
     >

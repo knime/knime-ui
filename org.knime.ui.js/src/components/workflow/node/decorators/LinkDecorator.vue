@@ -4,29 +4,29 @@
  * For use inside the Node component.
  */
 export default {
-    props: {
-        /**
-         * Node type for determining the background color.
-         * Allows the node types defined in $colors.nodeBackgroundColors
-         * */
-        backgroundType: {
-            type: String,
-            default: null
-        },
-        
-        /**
-         * The update status of the link of a component (UpToDate, HasUpdate, Error)
-         */
-        updateStatus: {
-            type: String,
-            default: null
-        }
+  props: {
+    /**
+     * Node type for determining the background color.
+     * Allows the node types defined in $colors.nodeBackgroundColors
+     * */
+    backgroundType: {
+      type: String,
+      default: null,
     },
-    computed: {
-        backgroundColor() {
-            return this.$colors.nodeBackgroundColors[this.backgroundType];
-        }
-    }
+
+    /**
+     * The update status of the link of a component (UpToDate, HasUpdate, Error)
+     */
+    updateStatus: {
+      type: String,
+      default: null,
+    },
+  },
+  computed: {
+    backgroundColor() {
+      return this.$colors.nodeBackgroundColors[this.backgroundType];
+    },
+  },
 };
 </script>
 

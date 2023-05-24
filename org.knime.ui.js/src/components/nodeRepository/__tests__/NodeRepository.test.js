@@ -1,226 +1,272 @@
-import { expect, describe, beforeEach, it, vi } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/utils/mockVuexStore';
+import { expect, describe, beforeEach, it, vi } from "vitest";
+import { shallowMount } from "@vue/test-utils";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import SearchBar from '@/components/common/SearchBar.vue';
-import ActionBreadcrumb from '@/components/common/ActionBreadcrumb.vue';
+import SearchBar from "@/components/common/SearchBar.vue";
+import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 
-import NodeRepository from '../NodeRepository.vue';
-import CloseableTagList from '../CloseableTagList.vue';
-import CategoryResults from '../CategoryResults.vue';
-import SearchResults from '../SearchResults.vue';
-import NodeDescriptionOverlay from '../NodeDescriptionOverlay.vue';
-import { mockLodashThrottleAndDebounce } from '@/test/utils';
+import NodeRepository from "../NodeRepository.vue";
+import CloseableTagList from "../CloseableTagList.vue";
+import CategoryResults from "../CategoryResults.vue";
+import SearchResults from "../SearchResults.vue";
+import NodeDescriptionOverlay from "../NodeDescriptionOverlay.vue";
+import { mockLodashThrottleAndDebounce } from "@/test/utils";
 
 mockLodashThrottleAndDebounce();
 
-describe('NodeRepository', () => {
-    let doShallowMount, wrapper, $store, searchNodesMock, searchTopNodesNextPageMock, setSelectedTagsMock,
-        getAllNodesMock, clearSearchParamsMock, setScrollPositionMock,
-        setSelectedNodeMock, updateQueryMock, searchIsActive, isSelectedNodeVisible;
+describe("NodeRepository", () => {
+  let doShallowMount,
+    wrapper,
+    $store,
+    searchNodesMock,
+    searchTopNodesNextPageMock,
+    setSelectedTagsMock,
+    getAllNodesMock,
+    clearSearchParamsMock,
+    setScrollPositionMock,
+    setSelectedNodeMock,
+    updateQueryMock,
+    searchIsActive,
+    isSelectedNodeVisible;
 
-    beforeEach(() => {
-        wrapper = null;
-        searchNodesMock = vi.fn();
-        searchTopNodesNextPageMock = vi.fn();
-        setSelectedTagsMock = vi.fn();
-        getAllNodesMock = vi.fn();
-        clearSearchParamsMock = vi.fn();
-        setScrollPositionMock = vi.fn();
-        setSelectedNodeMock = vi.fn();
-        updateQueryMock = vi.fn();
-        searchIsActive = true;
-        isSelectedNodeVisible = true;
+  beforeEach(() => {
+    wrapper = null;
+    searchNodesMock = vi.fn();
+    searchTopNodesNextPageMock = vi.fn();
+    setSelectedTagsMock = vi.fn();
+    getAllNodesMock = vi.fn();
+    clearSearchParamsMock = vi.fn();
+    setScrollPositionMock = vi.fn();
+    setSelectedNodeMock = vi.fn();
+    updateQueryMock = vi.fn();
+    searchIsActive = true;
+    isSelectedNodeVisible = true;
 
-        $store = mockVuexStore({
-            nodeRepository: {
-                state: {
-                    nodesPerCategory: [{
-                        tag: 'myTag1',
-                        nodes: [{
-                            id: 'node3',
-                            name: 'Node 3'
-                        }, {
-                            id: 'node4',
-                            name: 'Node 4'
-                        }]
-                    }],
-                    topNodes: [{
-                        id: 'node1',
-                        name: 'Node 1'
-                    }, {
-                        id: 'node2',
-                        name: 'Node 2'
-                    }],
-                    totalNumTopNodes: 2,
-                    selectedTags: ['myTag2'],
-                    query: '',
-                    scrollPosition: 100,
-                    selectedNode: {
-                        id: 1,
-                        name: 'Test',
-                        nodeFactory: {
-                            className: 'some.class.name',
-                            settings: ''
-                        }
-                    },
-                    isDescriptionPanelOpen: false
+    $store = mockVuexStore({
+      nodeRepository: {
+        state: {
+          nodesPerCategory: [
+            {
+              tag: "myTag1",
+              nodes: [
+                {
+                  id: "node3",
+                  name: "Node 3",
                 },
-                actions: {
-                    searchNodes: searchNodesMock,
-                    searchTopNodesNextPage: searchTopNodesNextPageMock,
-                    setSelectedTags: setSelectedTagsMock,
-                    getAllNodes: getAllNodesMock,
-                    clearSearchParams: clearSearchParamsMock,
-                    updateQuery: updateQueryMock
+                {
+                  id: "node4",
+                  name: "Node 4",
                 },
-                getters: {
-                    searchIsActive() {
-                        return searchIsActive;
-                    },
-                    isSelectedNodeVisible() {
-                        return isSelectedNodeVisible;
-                    },
-                    tagsOfVisibleNodes() {
-                        return ['myTag1', 'myTag2'];
-                    }
-                },
-                mutations: {
-                    setScrollPosition: setScrollPositionMock,
-                    setSelectedNode: setSelectedNodeMock
-                }
-            }
-        });
-        doShallowMount = () => {
-            wrapper = shallowMount(NodeRepository, {
-                global: {
-                    plugins: [$store]
-                }
-            });
-        };
+              ],
+            },
+          ],
+          topNodes: [
+            {
+              id: "node1",
+              name: "Node 1",
+            },
+            {
+              id: "node2",
+              name: "Node 2",
+            },
+          ],
+          totalNumTopNodes: 2,
+          selectedTags: ["myTag2"],
+          query: "",
+          scrollPosition: 100,
+          selectedNode: {
+            id: 1,
+            name: "Test",
+            nodeFactory: {
+              className: "some.class.name",
+              settings: "",
+            },
+          },
+          isDescriptionPanelOpen: false,
+        },
+        actions: {
+          searchNodes: searchNodesMock,
+          searchTopNodesNextPage: searchTopNodesNextPageMock,
+          setSelectedTags: setSelectedTagsMock,
+          getAllNodes: getAllNodesMock,
+          clearSearchParams: clearSearchParamsMock,
+          updateQuery: updateQueryMock,
+        },
+        getters: {
+          searchIsActive() {
+            return searchIsActive;
+          },
+          isSelectedNodeVisible() {
+            return isSelectedNodeVisible;
+          },
+          tagsOfVisibleNodes() {
+            return ["myTag1", "myTag2"];
+          },
+        },
+        mutations: {
+          setScrollPosition: setScrollPositionMock,
+          setSelectedNode: setSelectedNodeMock,
+        },
+      },
+    });
+    doShallowMount = () => {
+      wrapper = shallowMount(NodeRepository, {
+        global: {
+          plugins: [$store],
+        },
+      });
+    };
+  });
+
+  describe("renders", () => {
+    it("renders empty Node Repository view and fetch first grouped nodes ", () => {
+      $store.state.nodeRepository.nodesPerCategory = [];
+      searchIsActive = false;
+      doShallowMount();
+
+      expect(getAllNodesMock).toHaveBeenCalled();
+      expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
+        { text: "Repository" },
+      ]);
+      expect(wrapper.findComponent(SearchBar).exists()).toBe(true);
+      expect(wrapper.findComponent(CategoryResults).exists()).toBe(true);
+      expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
+      expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
     });
 
-    describe('renders', () => {
-        it('renders empty Node Repository view and fetch first grouped nodes ', () => {
-            $store.state.nodeRepository.nodesPerCategory = [];
-            searchIsActive = false;
-            doShallowMount();
+    it("renders first grouped nodes ", () => {
+      searchIsActive = false;
+      doShallowMount();
 
-            expect(getAllNodesMock).toHaveBeenCalled();
-            expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toEqual([{ text: 'Repository' }]);
-            expect(wrapper.findComponent(SearchBar).exists()).toBe(true);
-            expect(wrapper.findComponent(CategoryResults).exists()).toBe(true);
-            expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
-            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
-        });
+      expect(getAllNodesMock).not.toHaveBeenCalled();
+      expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
+        { text: "Repository" },
+      ]);
+      expect(wrapper.findComponent(SearchBar).exists()).toBe(true);
+      expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
+      expect(wrapper.findComponent(CategoryResults).exists()).toBe(true);
+      expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
+    });
+  });
 
-        it('renders first grouped nodes ', () => {
-            searchIsActive = false;
-            doShallowMount();
-
-            expect(getAllNodesMock).not.toHaveBeenCalled();
-            expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toEqual([{ text: 'Repository' }]);
-            expect(wrapper.findComponent(SearchBar).exists()).toBe(true);
-            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
-            expect(wrapper.findComponent(CategoryResults).exists()).toBe(true);
-            expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
-        });
+  describe("tags", () => {
+    it("renders with selected tags", () => {
+      doShallowMount();
+      expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
+      expect(wrapper.findComponent(CloseableTagList).props("tags")).toEqual([
+        "myTag1",
+        "myTag2",
+      ]);
+      expect(
+        wrapper.findComponent(CloseableTagList).props("modelValue")
+      ).toEqual(["myTag2"]);
     });
 
-
-    describe('tags', () => {
-        it('renders with selected tags', () => {
-            doShallowMount();
-            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
-            expect(wrapper.findComponent(CloseableTagList).props('tags')).toEqual(['myTag1', 'myTag2']);
-            expect(wrapper.findComponent(CloseableTagList).props('modelValue')).toEqual(['myTag2']);
-        });
-
-        it('doesn\'t render CloseableTagList when no tags are selected and no search is active', () => {
-            searchIsActive = false;
-            doShallowMount();
-            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
-        });
-
-        it('renders only Filter CloseableTagList (first list) when a single search is in progress', () => {
-            $store.state.nodeRepository.query = 'some node';
-            $store.state.nodeRepository.selectedTags = [];
-            doShallowMount();
-            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
-        });
-
-        it('selects tag on click', () => {
-            doShallowMount();
-            wrapper.findComponent(CloseableTagList).vm.$emit('update:modelValue', ['myTag1', 'myTag2']);
-            expect(setSelectedTagsMock).toHaveBeenCalledWith(expect.anything(), ['myTag1', 'myTag2']);
-        });
+    it("doesn't render CloseableTagList when no tags are selected and no search is active", () => {
+      searchIsActive = false;
+      doShallowMount();
+      expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
     });
 
-    describe('tag de-selection', () => {
-        it('de-selects tag and clears search using back to Repository link', () => {
-            doShallowMount();
-            expect(wrapper.findComponent(ActionBreadcrumb).props('items'))
-                .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
-            wrapper.findComponent(ActionBreadcrumb).vm.$emit('click', { id: 'clear' });
-            expect(clearSearchParamsMock).toHaveBeenCalled();
-        });
+    it("renders only Filter CloseableTagList (first list) when a single search is in progress", () => {
+      $store.state.nodeRepository.query = "some node";
+      $store.state.nodeRepository.selectedTags = [];
+      doShallowMount();
+      expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
     });
 
-    describe('search for nodes', () => {
-        it('updates query on SearchBar input', async () => {
-            doShallowMount();
-            wrapper.findComponent(SearchBar).vm.$emit('update:modelValue', 'myquery');
-            await wrapper.vm.$nextTick();
-            expect(updateQueryMock).toHaveBeenCalledWith(expect.anything(), 'myquery');
-        });
+    it("selects tag on click", () => {
+      doShallowMount();
+      wrapper
+        .findComponent(CloseableTagList)
+        .vm.$emit("update:modelValue", ["myTag1", "myTag2"]);
+      expect(setSelectedTagsMock).toHaveBeenCalledWith(expect.anything(), [
+        "myTag1",
+        "myTag2",
+      ]);
+    });
+  });
 
-        it('links back to repository view on search/filter results', () => {
-            $store.state.nodeRepository.query = 'some node';
-            $store.state.nodeRepository.selectedTags = [];
-            $store.state.nodeRepository.topNodes = [];
-            doShallowMount();
-            expect(wrapper.findComponent(ActionBreadcrumb).props('items'))
-                .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
-        });
+  describe("tag de-selection", () => {
+    it("de-selects tag and clears search using back to Repository link", () => {
+      doShallowMount();
+      expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
+        { id: "clear", text: "Repository" },
+        { text: "Results" },
+      ]);
+      wrapper
+        .findComponent(ActionBreadcrumb)
+        .vm.$emit("click", { id: "clear" });
+      expect(clearSearchParamsMock).toHaveBeenCalled();
+    });
+  });
+
+  describe("search for nodes", () => {
+    it("updates query on SearchBar input", async () => {
+      doShallowMount();
+      wrapper.findComponent(SearchBar).vm.$emit("update:modelValue", "myquery");
+      await wrapper.vm.$nextTick();
+      expect(updateQueryMock).toHaveBeenCalledWith(
+        expect.anything(),
+        "myquery"
+      );
     });
 
-    describe('info panel', () => {
-        it('shows node description panel', async () => {
-            doShallowMount();
-            expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(false);
-
-            $store.state.nodeRepository.isDescriptionPanelOpen = true;
-            await wrapper.vm.$nextTick();
-
-            expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
-        });
-
-        it('sets selectedNode prop on NodeDescriptionOverlay', () => {
-            $store.state.nodeRepository.isDescriptionPanelOpen = true;
-            doShallowMount();
-            expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
-            expect(wrapper.findComponent(NodeDescriptionOverlay).props('selectedNode').name).toBe('Test');
-        });
-
-        it('hides info if selectedNode is invisible', () => {
-            $store.state.nodeRepository.isDescriptionPanelOpen = true;
-            isSelectedNodeVisible = false;
-            doShallowMount();
-            expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
-            expect(wrapper.findComponent(NodeDescriptionOverlay).props('selectedNode')).toBeNull();
-        });
-
-        it('de-selectes node on close of description panel', async () => {
-            window.setTimeout = vi.fn().mockImplementation(fn => {
-                fn();
-                return 0;
-            });
-            $store.state.nodeRepository.isDescriptionPanelOpen = true;
-            doShallowMount();
-            $store.state.nodeRepository.isDescriptionPanelOpen = false;
-            await wrapper.vm.$nextTick();
-
-            expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), null);
-        });
+    it("links back to repository view on search/filter results", () => {
+      $store.state.nodeRepository.query = "some node";
+      $store.state.nodeRepository.selectedTags = [];
+      $store.state.nodeRepository.topNodes = [];
+      doShallowMount();
+      expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
+        { id: "clear", text: "Repository" },
+        { text: "Results" },
+      ]);
     });
+  });
+
+  describe("info panel", () => {
+    it("shows node description panel", async () => {
+      doShallowMount();
+      expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(
+        false
+      );
+
+      $store.state.nodeRepository.isDescriptionPanelOpen = true;
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
+    });
+
+    it("sets selectedNode prop on NodeDescriptionOverlay", () => {
+      $store.state.nodeRepository.isDescriptionPanelOpen = true;
+      doShallowMount();
+      expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
+      expect(
+        wrapper.findComponent(NodeDescriptionOverlay).props("selectedNode").name
+      ).toBe("Test");
+    });
+
+    it("hides info if selectedNode is invisible", () => {
+      $store.state.nodeRepository.isDescriptionPanelOpen = true;
+      isSelectedNodeVisible = false;
+      doShallowMount();
+      expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
+      expect(
+        wrapper.findComponent(NodeDescriptionOverlay).props("selectedNode")
+      ).toBeNull();
+    });
+
+    it("de-selectes node on close of description panel", async () => {
+      window.setTimeout = vi.fn().mockImplementation((fn) => {
+        fn();
+        return 0;
+      });
+      $store.state.nodeRepository.isDescriptionPanelOpen = true;
+      doShallowMount();
+      $store.state.nodeRepository.isDescriptionPanelOpen = false;
+      await wrapper.vm.$nextTick();
+
+      expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), null);
+    });
+  });
 });

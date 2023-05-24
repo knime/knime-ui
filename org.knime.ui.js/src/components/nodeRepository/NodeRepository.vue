@@ -1,74 +1,79 @@
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapState, mapGetters, mapMutations } from "vuex";
 
-import ActionBreadcrumb from '@/components/common/ActionBreadcrumb.vue';
-import SearchBar from '@/components/common/SearchBar.vue';
-import CloseableTagList from './CloseableTagList.vue';
-import CategoryResults from './CategoryResults.vue';
-import NodeDescriptionOverlay from './NodeDescriptionOverlay.vue';
-import SidebarSearchResults from '@/components/nodeRepository/SidebarSearchResults.vue';
+import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
+import SearchBar from "@/components/common/SearchBar.vue";
+import CloseableTagList from "./CloseableTagList.vue";
+import CategoryResults from "./CategoryResults.vue";
+import NodeDescriptionOverlay from "./NodeDescriptionOverlay.vue";
+import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
 export default {
-    components: {
-        SidebarSearchResults,
-        CloseableTagList,
-        ActionBreadcrumb,
-        SearchBar,
-        CategoryResults,
-        NodeDescriptionOverlay
-    },
-    computed: {
-        ...mapState('nodeRepository', ['topNodes', 'nodesPerCategory', 'isDescriptionPanelOpen', 'selectedNode']),
-        ...mapGetters('nodeRepository', {
-            showSearchResults: 'searchIsActive',
-            isSelectedNodeVisible: 'isSelectedNodeVisible',
-            tags: 'tagsOfVisibleNodes'
-        }),
+  components: {
+    SidebarSearchResults,
+    CloseableTagList,
+    ActionBreadcrumb,
+    SearchBar,
+    CategoryResults,
+    NodeDescriptionOverlay,
+  },
+  computed: {
+    ...mapState("nodeRepository", [
+      "topNodes",
+      "nodesPerCategory",
+      "isDescriptionPanelOpen",
+      "selectedNode",
+    ]),
+    ...mapGetters("nodeRepository", {
+      showSearchResults: "searchIsActive",
+      isSelectedNodeVisible: "isSelectedNodeVisible",
+      tags: "tagsOfVisibleNodes",
+    }),
 
-        /* Search and Filter */
-        selectedTags: {
-            get() {
-                return this.$store.state.nodeRepository.selectedTags;
-            },
-            set(value) {
-                this.$store.dispatch('nodeRepository/setSelectedTags', value);
-            }
-        },
+    /* Search and Filter */
+    selectedTags: {
+      get() {
+        return this.$store.state.nodeRepository.selectedTags;
+      },
+      set(value) {
+        this.$store.dispatch("nodeRepository/setSelectedTags", value);
+      },
+    },
 
-        /* Navigation */
-        breadcrumbItems() {
-            // If search results are shown, it's possible to navigate back
-            return this.showSearchResults
-                ? [{ text: 'Repository', id: 'clear' }, { text: 'Results' }]
-                : [{ text: 'Repository' }];
-        }
+    /* Navigation */
+    breadcrumbItems() {
+      // If search results are shown, it's possible to navigate back
+      return this.showSearchResults
+        ? [{ text: "Repository", id: "clear" }, { text: "Results" }]
+        : [{ text: "Repository" }];
     },
-    watch: {
-        // deselect node on panel close
-        isDescriptionPanelOpen(val) {
-            if (val === false) {
-                setTimeout(() => {
-                    this.setSelectedNode(null);
-                }, DESELECT_NODE_DELAY);
-            }
-        }
+  },
+  watch: {
+    // deselect node on panel close
+    isDescriptionPanelOpen(val) {
+      if (val === false) {
+        setTimeout(() => {
+          this.setSelectedNode(null);
+        }, DESELECT_NODE_DELAY);
+      }
     },
-    mounted() {
-        if (!this.nodesPerCategory.length) {
-            this.$store.dispatch('nodeRepository/getAllNodes', { append: false });
-        }
-    },
-    methods: {
-        ...mapMutations('nodeRepository', ['setSelectedNode']),
-        /* Navigation */
-        onBreadcrumbClick(e) {
-            if (e.id === 'clear') {
-                this.$store.dispatch('nodeRepository/clearSearchParams');
-            }
-        }
+  },
+  mounted() {
+    if (!this.nodesPerCategory.length) {
+      this.$store.dispatch("nodeRepository/getAllNodes", { append: false });
     }
+  },
+  methods: {
+    ...mapMutations("nodeRepository", ["setSelectedNode"]),
+    /* Navigation */
+    onBreadcrumbClick(e) {
+      if (e.id === "clear") {
+        this.$store.dispatch("nodeRepository/clearSearchParams");
+      }
+    },
+  },
 };
 </script>
 
@@ -81,12 +86,14 @@ export default {
           class="repo-breadcrumb"
           @click="onBreadcrumbClick"
         />
-        <hr>
+        <hr />
         <SearchBar
           :model-value="$store.state.nodeRepository.query"
           placeholder="Search Nodes"
           class="search-bar"
-          @update:model-value="$store.dispatch('nodeRepository/updateQuery', $event)"
+          @update:model-value="
+            $store.dispatch('nodeRepository/updateQuery', $event)
+          "
         />
       </div>
       <CloseableTagList
@@ -94,12 +101,9 @@ export default {
         v-model="selectedTags"
         :tags="tags"
       />
-      <hr v-if="!topNodes || tags.length">
+      <hr v-if="!topNodes || tags.length" />
     </div>
-    <SidebarSearchResults
-      v-if="showSearchResults"
-      ref="searchResults"
-    />
+    <SidebarSearchResults v-if="showSearchResults" ref="searchResults" />
     <CategoryResults v-else />
     <Portal to="extension-panel">
       <Transition name="extension-panel">
@@ -191,5 +195,4 @@ export default {
 .extension-panel-leave-to {
   opacity: 0;
 }
-
 </style>

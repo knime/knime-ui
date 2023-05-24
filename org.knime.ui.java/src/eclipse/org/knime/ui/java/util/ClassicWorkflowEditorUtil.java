@@ -164,9 +164,11 @@ public final class ClassicWorkflowEditorUtil {
             ).get() // NOSONAR: group is never empty (result of groupBy)
         );
 
-        resolved.forEach(p -> wpm.addWorkflowProject(p.getID(), p));
+        resolved.forEach(p -> {
+            wpm.addWorkflowProject(p.getID(), p);
+            wpm.openAndCacheWorkflow(p.getID());
+        });
         if (activeProjectId.get() != null) {
-            wpm.openAndCacheWorkflow(activeProjectId.get());
             wpm.setWorkflowProjectActive(activeProjectId.get());
         }
     }

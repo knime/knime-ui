@@ -1,16 +1,16 @@
 <script>
-import FlowVarTabIcon from 'webapps-common/ui/assets/img/icons/both-flow-variables.svg';
-import TabBar from 'webapps-common/ui/components/TabBar.vue';
-import Eye from 'webapps-common/ui/assets/img/icons/eye.svg';
+import FlowVarTabIcon from "webapps-common/ui/assets/img/icons/both-flow-variables.svg";
+import TabBar from "webapps-common/ui/components/TabBar.vue";
+import Eye from "webapps-common/ui/assets/img/icons/eye.svg";
 
-import portIcon from '@/components/common/PortIconRenderer';
+import portIcon from "@/components/common/PortIconRenderer";
 
 export const portIconSize = 9;
 
 const portToPortTab = (port) => ({
-    value: String(port.index),
-    icon: portIcon(port, portIconSize),
-    label: `${port.index}: ${port.name}`
+  value: String(port.index),
+  icon: portIcon(port, portIconSize),
+  label: `${port.index}: ${port.name}`,
 });
 
 /**
@@ -18,67 +18,72 @@ const portToPortTab = (port) => ({
  * Can be used like a form element
  * */
 export default {
-    components: {
-        TabBar
+  components: {
+    TabBar,
+  },
+  model: {
+    prop: "modelValue",
+    event: "update:modelValue",
+  },
+  props: {
+    /**
+     * Node as given in a workflow store
+     */
+    node: {
+      type: Object,
+      default: () => ({}),
     },
-    model: {
-        prop: 'modelValue',
-        event: 'update:modelValue'
+    modelValue: {
+      type: String,
+      default: null,
     },
-    props: {
-        /**
-         * Node as given in a workflow store
-         */
-        node: {
-            type: Object,
-            default: () => ({})
-        },
-        modelValue: {
-            type: String,
-            default: null
-        },
-        disabled: {
-            type: Boolean,
-            default: false
-        },
-        hasViewTab: {
-            type: Boolean,
-            default: false
-        }
+    disabled: {
+      type: Boolean,
+      default: false,
     },
-    emits: ['update:modelValue'],
-    computed: {
-        possibleTabValues() {
-            if (!this.node || !this.node.outPorts.length) {
-                return [];
-            }
+    hasViewTab: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ["update:modelValue"],
+  computed: {
+    possibleTabValues() {
+      if (!this.node || !this.node.outPorts.length) {
+        return [];
+      }
 
-            let { outPorts, kind } = this.node;
+      let { outPorts, kind } = this.node;
 
-            const isMetanode = kind === 'metanode';
-            const ports = (isMetanode
-                // Metanodes don't have Mickey Mouse ears, so all ports are actual output ports.
-                ? outPorts
-                // For normal nodes, the 0th port is the hidden flow variable port, so we remove it for now
-                // and later reposition it to the end
-                : outPorts.slice(1))
-                .map(portToPortTab);
+      const isMetanode = kind === "metanode";
+      const ports = (
+        isMetanode
+          ? // Metanodes don't have Mickey Mouse ears, so all ports are actual output ports.
+            outPorts
+          : // For normal nodes, the 0th port is the hidden flow variable port, so we remove it for now
+            // and later reposition it to the end
+            outPorts.slice(1)
+      ).map(portToPortTab);
 
-            return []
-                .concat(
-                    this.hasViewTab && this.$features.shouldDisplayEmbeddedViews()
-                        ? { value: 'view', label: 'View', icon: Eye }
-                        : null
-                )
-                // all ports go before the flow variables
-                .concat(ports)
-                // add the flow variables but skip for metanodes which don't have any
-                .concat(isMetanode
-                    ? null
-                    : { value: '0', label: 'Flow Variables', icon: FlowVarTabIcon })
-                .filter(Boolean);
-        }
-    }
+      return (
+        []
+          .concat(
+            this.hasViewTab && this.$features.shouldDisplayEmbeddedViews()
+              ? { value: "view", label: "View", icon: Eye }
+              : null
+          )
+          // all ports go before the flow variables
+          .concat(ports)
+          // add the flow variables but skip for metanodes which don't have any
+          .concat(
+            isMetanode
+              ? null
+              : { value: "0", label: "Flow Variables", icon: FlowVarTabIcon }
+          )
+          .filter(Boolean)
+      );
+    },
+  },
 };
 </script>
 

@@ -2,375 +2,421 @@
 /* eslint-disable max-lines */
 // TODO: NXT-1069 split up this file
 
-import { mapActions, mapState, mapGetters } from 'vuex';
+import { mapActions, mapState, mapGetters } from "vuex";
 
-import NodePorts from '@/components/workflow/ports/NodePorts.vue';
-import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
-import { getMetaOrCtrlKey } from '@/util/navigator';
+import NodePorts from "@/components/workflow/ports/NodePorts.vue";
+import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
+import { getMetaOrCtrlKey } from "@/util/navigator";
 
-import NodeTorso from './torso/NodeTorso.vue';
-import NodeDecorators from './decorators/NodeDecorators.vue';
-import NodeName from './name/NodeName.vue';
-import NodeLabel from './label/NodeLabel.vue';
+import NodeTorso from "./torso/NodeTorso.vue";
+import NodeDecorators from "./decorators/NodeDecorators.vue";
+import NodeName from "./name/NodeName.vue";
+import NodeLabel from "./label/NodeLabel.vue";
 
-import NodeActionBar from './NodeActionBar.vue';
-import NodeState from './NodeState.vue';
-import NodeSelectionPlane from './NodeSelectionPlane.vue';
-import NodeHoverSizeProvider from './NodeHoverSizeProvider.vue';
+import NodeActionBar from "./NodeActionBar.vue";
+import NodeState from "./NodeState.vue";
+import NodeSelectionPlane from "./NodeSelectionPlane.vue";
+import NodeHoverSizeProvider from "./NodeHoverSizeProvider.vue";
 
-import { KnimeMIME } from '@/mixins/dropNode';
+import { KnimeMIME } from "@/mixins/dropNode";
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
  * Must be embedded in an `<svg>` element.
  * Requires the `portal-vue` module.
  * */
 export default {
-    components: {
-        NodeActionBar,
-        NodeTorso,
-        NodeState,
-        NodeName,
-        NodeLabel,
-        NodePorts,
-        NodeSelectionPlane,
-        NodeDecorators,
-        ConnectorSnappingProvider,
-        NodeHoverSizeProvider
+  components: {
+    NodeActionBar,
+    NodeTorso,
+    NodeState,
+    NodeName,
+    NodeLabel,
+    NodePorts,
+    NodeSelectionPlane,
+    NodeDecorators,
+    ConnectorSnappingProvider,
+    NodeHoverSizeProvider,
+  },
+  provide() {
+    return {
+      // Provide position as anchorPoint for tooltips
+      anchorPoint: this.position,
+    };
+  },
+  props: {
+    /**
+     * Node id, unique to the containing workflow
+     */
+    id: { type: String, required: true },
+
+    /**
+     * Node variation.
+     * @values 'node', 'metanode', 'component'
+     */
+    kind: {
+      type: String,
+      required: true,
+      validator: (kind) => ["node", "metanode", "component"].includes(kind),
     },
-    provide() {
-        return {
-            // Provide position as anchorPoint for tooltips
-            anchorPoint: this.position
-        };
+
+    /**
+     * Input ports. List of configuration objects passed-through to the `Port` component
+     */
+    inPorts: { type: Array, required: true },
+
+    /**
+     * Output ports. List of configuration objects passed-through to the `Port` component
+     */
+    outPorts: { type: Array, required: true },
+
+    /**
+     * The position of the node. Contains of an x and a y parameter
+     */
+    position: {
+      type: Object,
+      required: true,
+      validator: (position) =>
+        typeof position.x === "number" && typeof position.y === "number",
     },
-    props: {
-        /**
-         * Node id, unique to the containing workflow
-         */
-        id: { type: String, required: true },
 
-        /**
-         * Node variation.
-         * @values 'node', 'metanode', 'component'
-         */
-        kind: {
-            type: String,
-            required: true,
-            validator: kind => ['node', 'metanode', 'component'].includes(kind)
-        },
+    /**
+     * Node annotation, displayed below the node
+     */
+    annotation: { type: Object, default: null },
 
-        /**
-         * Input ports. List of configuration objects passed-through to the `Port` component
-         */
-        inPorts: { type: Array, required: true },
+    /**
+     * Node name displayed above the node
+     * Only for Component and Metanode
+     */
+    name: { type: String, default: null },
 
-        /**
-         * Output ports. List of configuration objects passed-through to the `Port` component
-         */
-        outPorts: { type: Array, required: true },
+    /**
+     * Node type, e.g. "Learner", "Visualizer"
+     */
+    type: { type: String, default: null },
 
-        /**
-         * The position of the node. Contains of an x and a y parameter
-         */
-        position: {
-            type: Object,
-            required: true,
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
-        },
+    /**
+     * data-url of icon to be displayed on the node's body
+     * Only for Component but not required
+     */
+    icon: {
+      type: String,
+      default: null,
+      validator: (url) => url.startsWith("data:image/"),
+    },
 
-        /**
-         * Node annotation, displayed below the node
-         */
-        annotation: { type: Object, default: null },
+    /**
+     * TemplateLink object containing the link URL and updateStatus
+     */
+    link: {
+      type: Object,
+      default: null,
+    },
 
-        /**
-         * Node name displayed above the node
-         * Only for Component and Metanode
-         */
-        name: { type: String, default: null },
+    /**
+     * Node Execution State
+     */
+    state: {
+      type: Object,
+      validator(state) {
+        return (
+          Reflect.has(state, "executionState") ||
+          Object.keys(state).length === 0
+        );
+      },
+      default: null,
+    },
 
-        /**
-         * Node type, e.g. "Learner", "Visualizer"
-         */
-        type: { type: String, default: null },
+    /**
+     *  Props passed through to NodeActionBar
+     */
+    allowedActions: {
+      type: Object,
+      default: () => ({}),
+    },
 
-        /**
-         * data-url of icon to be displayed on the node's body
-         * Only for Component but not required
-         */
-        icon: {
-            type: String,
-            default: null,
-            validator: url => url.startsWith('data:image/')
-        },
+    /**
+     *  Information about the node execution. Might not be present if no special node execution info is available
+     *  If given, usually only one of the following properties is set, either the icon, the 'streamble'-flag, or the
+     *  jobManager
+     */
+    executionInfo: {
+      type: Object,
+      validator(info) {
+        // TODO: NXT-845 document and improve this validator
+        return (
+          !info ||
+          Reflect.has(info, "streamable") ||
+          info.jobManager ||
+          info.icon
+        );
+      },
+      default: null,
+    },
 
-        /**
-         * TemplateLink object containing the link URL and updateStatus
-         */
-        link: {
-            type: Object,
-            default: null
-        },
+    /**
+     *  Loop specific configuration options
+     *  @example:
+     *    {
+     *      allowedActions: {
+     *        canResume: true,
+     *        canStep: true,
+     *        canPause: false
+     *      },
+     *      status: 'PAUSED'
+     *    }
+     */
+    loopInfo: {
+      type: Object,
+      default: () => ({
+        allowedActions: {},
+      }),
+    },
 
-        /**
-         * Node Execution State
-         */
-        state: {
-            type: Object,
-            validator(state) {
-                return Reflect.has(state, 'executionState') || Object.keys(state).length === 0;
-            },
-            default: null
-        },
+    /** Passed through to NodePorts */
+    portGroups: {
+      type: Object,
+      default: null,
+    },
 
-        /**
-         *  Props passed through to NodeActionBar
-         */
-        allowedActions: {
-            type: Object,
-            default: () => ({})
-        },
+    isReexecutable: {
+      type: Boolean,
+      default: false,
+    },
 
-        /**
-         *  Information about the node execution. Might not be present if no special node execution info is available
-         *  If given, usually only one of the following properties is set, either the icon, the 'streamble'-flag, or the
-         *  jobManager
-         */
-        executionInfo: {
-            type: Object,
-            validator(info) {
-                // TODO: NXT-845 document and improve this validator
-                return !info || Reflect.has(info, 'streamable') || info.jobManager || info.icon;
-            },
-            default: null
-        },
+    isLocked: {
+      type: Boolean,
+      default: null,
+    },
+  },
+  data() {
+    return {
+      isHovering: false,
+      selectionPreview: null,
+      nameDimensions: {
+        width: 0,
+        height: 20,
+      },
+      portPositions: { in: [], out: [] },
+      isDraggedOver: false,
+      dragTarget: null,
+    };
+  },
+  computed: {
+    ...mapState("application", { projectId: "activeProjectId" }),
+    ...mapState("workflow", ["isDragging"]),
+    ...mapGetters("selection", ["isNodeSelected", "singleSelectedNode"]),
+    ...mapGetters("workflow", ["isWritable"]),
+    /**
+     * Width of the node selection plane. It accounts not only for the node margins
+     * but also for the width of the name as it changes
+     * @return {boolean}
+     */
+    selectionWidth() {
+      return (
+        this.nameDimensions.width + this.$shapes.nodeNameHorizontalMargin * 2
+      );
+    },
+    /**
+     * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not
+     * matter, as the presence of the variable already indicates that the node is inside of a streaming component
+     * @return {boolean} if true action bar will be hidden
+     */
+    insideStreamingComponent() {
+      return typeof this.executionInfo?.streamable !== "undefined";
+    },
+    allNodeActions() {
+      return {
+        ...this.allowedActions,
+        ...this.loopInfo.allowedActions,
+      };
+    },
+    isSelected() {
+      return this.isNodeSelected(this.id);
+    },
+    isSingleSelected() {
+      return this.singleSelectedNode?.id === this.id;
+    },
+    showSelectionPlane() {
+      // no preview, honor dragging state
+      if (this.selectionPreview === null) {
+        return this.isSelected && !this.isDragging;
+      }
 
-        /**
-         *  Loop specific configuration options
-         *  @example:
-         *    {
-         *      allowedActions: {
-         *        canResume: true,
-         *        canStep: true,
-         *        canPause: false
-         *      },
-         *      status: 'PAUSED'
-         *    }
-         */
-        loopInfo: {
-            type: Object,
-            default: () => ({
-                allowedActions: {}
-            })
-        },
+      // preview can override selected state (think: deselect with shift)
+      if (this.isSelected && this.selectionPreview === "hide") {
+        return false;
+      }
 
-        /** Passed through to NodePorts */
-        portGroups: {
-            type: Object,
-            default: null
-        },
+      return this.selectionPreview === "show" || this.isSelected;
+    },
+    isEditable() {
+      return this.isWritable && !this.link;
+    },
+    isContainerNode() {
+      return ["metanode", "component"].includes(this.kind);
+    },
+    actionBarPosition() {
+      return {
+        x: this.position.x + this.$shapes.nodeSize / 2,
+        y:
+          this.position.y -
+          this.$shapes.nodeSelectionPadding[0] -
+          this.nameDimensions.height,
+      };
+    },
+  },
+  methods: {
+    ...mapActions("workflow", ["openNodeConfiguration", "replaceNode"]),
+    ...mapActions("application", ["switchWorkflow"]),
+    ...mapActions("selection", [
+      "selectNode",
+      "deselectAllObjects",
+      "deselectNode",
+    ]),
 
-        isReexecutable: {
-            type: Boolean,
-            default: false
+    onLeaveHoverArea(e) {
+      const actionBarElement = this.$refs.actionbar?.$el;
+      if (actionBarElement?.contains(e.relatedTarget)) {
+        // Used to test for elements that are logically contained inside this node
+        // but aren't DOM-wise because they were teleported to another layer.
+        // Currently only applies to ref 'actionbar'
+        return;
+      }
+
+      // chrome has a bug where it emits mouseleave even if the mouse did not really leave
+      // in our case we have two different sets of elements that are logically contained but not DOM-wise
+      // which makes it even more problematic. This check will prevent any false positives on leave.
+      // In theroy the test above for the relatedTarget is superseeded by this one we keep both because
+      // we consider this to be a workaround.
+      // the bug: https://bugs.chromium.org/p/chromium/issues/detail?id=798535
+      const hoverContainer = this.$refs.hoverContainer?.$el;
+      const elementFromPoint = document.elementFromPoint(e.clientX, e.clientY);
+      if (
+        hoverContainer?.contains(elementFromPoint) ||
+        actionBarElement?.contains(elementFromPoint)
+      ) {
+        return;
+      }
+
+      // disable hover state if the mouse leaves the hover area of the node
+      this.isHovering = false;
+    },
+
+    onLeftDoubleClick(e) {
+      // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
+      if (
+        this.kind === "metanode" ||
+        (this.kind === "component" && (e.ctrlKey || e.metaKey))
+      ) {
+        if (this.isLocked) {
+          consola.trace(`${this.kind} cannot be opened because it's locked`);
+        } else {
+          this.switchWorkflow({
+            newWorkflow: { workflowId: this.id, projectId: this.projectId },
+          });
         }
+      } else if (this.allowedActions?.canOpenDialog) {
+        // open node dialog if one is present
+        this.openNodeConfiguration(this.id);
+      }
     },
-    data() {
-        return {
-            isHovering: false,
-            selectionPreview: null,
-            nameDimensions: {
-                width: 0,
-                height: 20
-            },
-            portPositions: { in: [], out: [] },
-            isDraggedOver: false,
-            dragTarget: null
-        };
-    },
-    computed: {
-        ...mapState('application', { projectId: 'activeProjectId' }),
-        ...mapState('workflow', ['isDragging']),
-        ...mapGetters('selection', ['isNodeSelected', 'singleSelectedNode']),
-        ...mapGetters('workflow', ['isWritable']),
-        /**
-         * Width of the node selection plane. It accounts not only for the node margins
-         * but also for the width of the name as it changes
-         * @return {boolean}
-         */
-        selectionWidth() {
-            return this.nameDimensions.width + (this.$shapes.nodeNameHorizontalMargin * 2);
-        },
-        /**
-         * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not
-         * matter, as the presence of the variable already indicates that the node is inside of a streaming component
-         * @return {boolean} if true action bar will be hidden
-         */
-        insideStreamingComponent() {
-            return typeof this.executionInfo?.streamable !== 'undefined';
-        },
-        allNodeActions() {
-            return {
-                ...this.allowedActions,
-                ...this.loopInfo.allowedActions
-            };
-        },
-        isSelected() {
-            return this.isNodeSelected(this.id);
-        },
-        isSingleSelected() {
-            return this.singleSelectedNode?.id === this.id;
-        },
-        showSelectionPlane() {
-            // no preview, honor dragging state
-            if (this.selectionPreview === null) {
-                return this.isSelected && !this.isDragging;
-            }
 
-            // preview can override selected state (think: deselect with shift)
-            if (this.isSelected && this.selectionPreview === 'hide') {
-                return false;
-            }
+    /*
+     * Left-Click                      => Select only this node
+     * Left-Click & Shift or Ctrl/Meta => Add/Remove this node to/from selection
+     */
+    onLeftMouseClick(event) {
+      if (this.isDragging) {
+        return;
+      }
 
-            return this.selectionPreview === 'show' || this.isSelected;
-        },
-        isEditable() {
-            return this.isWritable && !this.link;
-        },
-        isContainerNode() {
-            return ['metanode', 'component'].includes(this.kind);
-        },
-        actionBarPosition() {
-            return {
-                x: this.position.x + this.$shapes.nodeSize / 2,
-                y: this.position.y - this.$shapes.nodeSelectionPadding[0] - this.nameDimensions.height
-            };
+      const metaOrCtrlKey = getMetaOrCtrlKey();
+
+      if (event.shiftKey || event[metaOrCtrlKey]) {
+        // Multi select
+        if (this.isNodeSelected(this.id)) {
+          this.deselectNode(this.id);
+        } else {
+          this.selectNode(this.id);
         }
+      } else {
+        // Single select
+        this.deselectAllObjects();
+        this.selectNode(this.id);
+      }
     },
-    methods: {
-        ...mapActions('workflow', ['openNodeConfiguration', 'replaceNode']),
-        ...mapActions('application', ['switchWorkflow']),
-        ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
+    /*
+     * Right-Click                      => Select only this node and show context menu (done in Kanvas.vue)
+     * Right-Click & Shift or Ctrl/Meta => Add/Remove this node to/from selection and show context menu (via Kanvas)
+     *
+     * We use the contextmenu event as click with button = 2 was not reliable.
+     */
+    onContextMenu(event) {
+      if (this.isDragging) {
+        return;
+      }
 
-        onLeaveHoverArea(e) {
-            if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
-                // Used to test for elements that are logically contained inside this node
-                // but aren't DOM-wise because they were teleported to another layer.
-                // Currently only applies to ref 'actionbar'
-                return;
-            }
+      const metaOrCtrlKey = getMetaOrCtrlKey();
 
-            // disable hover state if the mouse leaves the hover area of the node
-            this.isHovering = false;
-        },
+      if (event.shiftKey || event[metaOrCtrlKey]) {
+        // Multi select
+        this.selectNode(this.id);
+      } else if (!this.isNodeSelected(this.id)) {
+        // single select
+        this.deselectAllObjects();
+        this.selectNode(this.id);
+      }
 
-        onLeftDoubleClick(e) {
-            // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
-            if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
-                this.switchWorkflow({
-                    newWorkflow: { workflowId: this.id, projectId: this.projectId }
-                });
-            } else if (this.allowedActions?.canOpenDialog) {
-                // open node dialog if one is present
-                this.openNodeConfiguration(this.id);
-            }
-        },
+      this.$store.dispatch("application/toggleContextMenu", { event });
+    },
 
-        /*
-         * Left-Click                      => Select only this node
-         * Left-Click & Shift or Ctrl/Meta => Add/Remove this node to/from selection
-         */
-        onLeftMouseClick(event) {
-            if (this.isDragging) {
-                return;
-            }
+    onTorsoDragEnter(dragEvent) {
+      if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
+        this.isDraggedOver = true;
+        this.dragTarget = dragEvent.target;
+      }
+    },
 
-            const metaOrCtrlKey = getMetaOrCtrlKey();
+    onTorsoDragLeave(dragEvent) {
+      if (this.dragTarget === dragEvent.target) {
+        this.isDraggedOver = false;
+        this.dragTarget = null;
+      }
+    },
 
-            if (event.shiftKey || event[metaOrCtrlKey]) {
-                // Multi select
-                if (this.isNodeSelected(this.id)) {
-                    this.deselectNode(this.id);
-                } else {
-                    this.selectNode(this.id);
-                }
-            } else {
-                // Single select
-                this.deselectAllObjects();
-                this.selectNode(this.id);
-            }
-        },
-        /*
-         * Right-Click                      => Select only this node and show context menu (done in Kanvas.vue)
-         * Right-Click & Shift or Ctrl/Meta => Add/Remove this node to/from selection and show context menu (via Kanvas)
-         *
-         * We use the contextmenu event as click with button = 2 was not reliable.
-         */
-        onContextMenu(event) {
-            if (this.isDragging) {
-                return;
-            }
+    onTorsoDragDrop(dragEvent) {
+      const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
+      this.replaceNode({ targetNodeId: this.id, nodeFactory });
+      this.isDraggedOver = false;
+      this.dragTarget = null;
+    },
 
-            const metaOrCtrlKey = getMetaOrCtrlKey();
+    onNodeDragggingEnter(event) {
+      if (event.detail.isNodeConnected) {
+        return;
+      }
+      event.preventDefault();
+      this.isDraggedOver = true;
+    },
 
-            if (event.shiftKey || event[metaOrCtrlKey]) {
-                // Multi select
-                this.selectNode(this.id);
-            } else if (!this.isNodeSelected(this.id)) {
-                // single select
-                this.deselectAllObjects();
-                this.selectNode(this.id);
-            }
+    onNodeDragggingLeave() {
+      this.isDraggedOver = false;
+    },
 
-            this.$store.dispatch('application/toggleContextMenu', { event });
-        },
+    onNodeDragggingEnd(dragEvent) {
+      this.replaceNode({
+        targetNodeId: this.id,
+        replacementNodeId: dragEvent.detail.id,
+      });
+      this.isDraggedOver = false;
+    },
 
-        onTorsoDragEnter(dragEvent) {
-            if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
-                this.isDraggedOver = true;
-                this.dragTarget = dragEvent.target;
-            }
-        },
-
-        onTorsoDragLeave(dragEvent) {
-            if (this.dragTarget === dragEvent.target) {
-                this.isDraggedOver = false;
-                this.dragTarget = null;
-            }
-        },
-
-        onTorsoDragDrop(dragEvent) {
-            const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
-            this.replaceNode({ targetNodeId: this.id, nodeFactory });
-            this.isDraggedOver = false;
-            this.dragTarget = null;
-        },
-
-        onNodeDragggingEnter(event) {
-            if (event.detail.isNodeConnected) {
-                return;
-            }
-            event.preventDefault();
-            this.isDraggedOver = true;
-        },
-
-        onNodeDragggingLeave() {
-            this.isDraggedOver = false;
-        },
-        
-        onNodeDragggingEnd(dragEvent) {
-            this.replaceNode({
-                targetNodeId: this.id,
-                replacementNodeId: dragEvent.detail.id
-            });
-            this.isDraggedOver = false;
-        },
-
-        // public
-        setSelectionPreview(preview) {
-            this.selectionPreview = preview === 'clear' ? null : preview;
-        }
-    }
+    // public
+    setSelectionPreview(preview) {
+      this.selectionPreview = preview === "clear" ? null : preview;
+    },
+  },
 };
 </script>
 
@@ -391,13 +437,15 @@ export default {
           onConnectorEnter,
           onConnectorLeave,
           onConnectorMove,
-          onConnectorDrop
-        }
+          onConnectorDrop,
+        },
       }"
     >
       <g
         v-bind="$attrs"
-        :class="{ 'connection-forbidden': connectionForbidden && !isConnectionSource }"
+        :class="{
+          'connection-forbidden': connectionForbidden && !isConnectionSource,
+        }"
       >
         <!-- NodeActionBar portalled to the front-most layer -->
         <Portal to="node-actions">
@@ -437,6 +485,7 @@ export default {
 
         <!-- Elements for which mouse hover triggers hover state -->
         <g
+          ref="hoverContainer"
           class="hover-container"
           @pointerdown.right="onContextMenu"
           @connector-enter="onConnectorEnter"
@@ -455,13 +504,10 @@ export default {
           >
             <template #default="{ hoverSize }">
               <!-- Elements for which a click selects node -->
-              <g
-                class="mouse-clickable"
-                @click.left="onLeftMouseClick"
-              >
+              <g class="mouse-clickable" @click.left="onLeftMouseClick">
                 <!-- Hover Area, larger than the node torso -->
                 <rect
-                  :class="['hover-area', {'is-dragging': isDragging}]"
+                  :class="['hover-area', { 'is-dragging': isDragging }]"
                   :width="hoverSize.width"
                   :height="hoverSize.height"
                   :x="hoverSize.x"
@@ -492,7 +538,9 @@ export default {
                   v-bind="state"
                   :class="['node-state', { hover: isHovering }]"
                   :loop-status="loopInfo.status"
-                  :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
+                  :transform="`translate(0, ${
+                    $shapes.nodeSize + $shapes.nodeStatusMarginTop
+                  })`"
                 />
               </g>
 

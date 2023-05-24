@@ -1,99 +1,97 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
-import { API } from '@api';
-import PageBuilder from 'pagebuilder/src/components/PageBuilder.vue';
+import { mapGetters, mapState } from "vuex";
+import { API } from "@api";
+import PageBuilder from "pagebuilder/src/components/PageBuilder.vue";
 
-import singleViewPage from './singleViewPage.json';
+import singleViewPage from "./singleViewPage.json";
 
 /**
  * Renders a node view via the PageBuilder component
  */
 export default {
-    components: {
-        PageBuilder
+  components: {
+    PageBuilder,
+  },
+
+  emits: ["stateChange"],
+
+  data() {
+    return {
+      isReady: false,
+    };
+  },
+
+  computed: {
+    ...mapState("application", { projectId: "activeProjectId" }),
+    ...mapState("workflow", {
+      workflowId: (state) => state.activeWorkflow.info.containerId,
+    }),
+    ...mapGetters("selection", { selectedNode: "singleSelectedNode" }),
+
+    hasView() {
+      return Boolean(this.selectedNode?.hasView);
     },
+  },
 
-    emits: ['stateChange'],
+  watch: {
+    selectedNode: {
+      handler(newNode) {
+        // if (!this.showDialog && newNode === null && oldNode.hasView) {
+        //     // TODO remove selection event listener if
+        //     // * node views are shown (instead of dialogs)
+        //     // * no other node is selected
+        //     // * the previous node had a view
+        // }
 
-    data() {
-        return {
-            isReady: false
-        };
-    },
-
-    computed: {
-        ...mapState('application', { projectId: 'activeProjectId' }),
-        ...mapState('workflow', { workflowId: state => state.activeWorkflow.info.containerId }),
-        ...mapGetters('selection', { selectedNode: 'singleSelectedNode' }),
-
-        hasView() {
-            return Boolean(this.selectedNode?.hasView);
+        if (newNode?.hasView) {
+          this.loadContent(newNode.id);
         }
+      },
     },
+  },
 
-    watch: {
-        selectedNode: {
-            handler(newNode) {
-                // if (!this.showDialog && newNode === null && oldNode.hasView) {
-                //     // TODO remove selection event listener if
-                //     // * node views are shown (instead of dialogs)
-                //     // * no other node is selected
-                //     // * the previous node had a view
-                // }
+  async created() {
+    try {
+      this.$emit("stateChange", { state: "loading", message: "Loading view" });
 
-                if (newNode?.hasView) {
-                    this.loadContent(newNode.id);
-                }
-            }
-        }
-    },
+      await this.loadContent();
 
-    async created() {
-        try {
-            this.$emit('stateChange', { state: 'loading', message: 'Loading view' });
-
-            await this.loadContent();
-
-            this.isReady = true;
-            this.$emit('stateChange', { state: 'ready' });
-        } catch (error) {
-            this.$emit('stateChange', { state: 'error', message: error });
-        }
-    },
-
-    methods: {
-        async loadContent() {
-            try {
-                if (!this.selectedNode) {
-                    return;
-                }
-
-                const nodeView = await API.node.getNodeView({
-                    projectId: this.projectId,
-                    workflowId: this.workflowId,
-                    nodeId: this.selectedNode.id
-                });
-
-                const page = JSON.parse(JSON.stringify(singleViewPage));
-                page.wizardPageContent.nodeViews.ROOT = nodeView;
-
-                // eslint-disable-next-line consistent-return
-                return this.$store.dispatch('pagebuilder/setPage', { page });
-            } catch (error) {
-                consola.log('Error loading view content', error);
-                throw error;
-            }
-        }
+      this.isReady = true;
+      this.$emit("stateChange", { state: "ready" });
+    } catch (error) {
+      this.$emit("stateChange", { state: "error", message: error });
     }
+  },
 
+  methods: {
+    async loadContent() {
+      try {
+        if (!this.selectedNode) {
+          return;
+        }
+
+        const nodeView = await API.node.getNodeView({
+          projectId: this.projectId,
+          workflowId: this.workflowId,
+          nodeId: this.selectedNode.id,
+        });
+
+        const page = JSON.parse(JSON.stringify(singleViewPage));
+        page.wizardPageContent.nodeViews.ROOT = nodeView;
+
+        // eslint-disable-next-line consistent-return
+        return this.$store.dispatch("pagebuilder/setPage", { page });
+      } catch (error) {
+        consola.log("Error loading view content", error);
+        throw error;
+      }
+    },
+  },
 };
 </script>
 
 <template>
-  <PageBuilder
-    v-if="isReady"
-    class="page-builder"
-  />
+  <PageBuilder v-if="isReady" class="page-builder" />
 </template>
 
 <style lang="postcss" scoped>
@@ -103,8 +101,7 @@ export default {
   & :deep(> div),
   & :deep(.container-fluid),
   & :deep(.row) {
-      height: 100%;
+    height: 100%;
   }
 }
 </style>
-

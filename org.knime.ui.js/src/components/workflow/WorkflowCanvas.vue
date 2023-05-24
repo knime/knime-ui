@@ -1,81 +1,83 @@
 <script>
-import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
-import { TABS } from '@/store/panel';
-import Workflow from '@/components/workflow/Workflow.vue';
-import Kanvas from '@/components/workflow/kanvas/Kanvas.vue';
-import SelectionRectangle from '@/components/workflow/SelectionRectangle.vue';
-import WorkflowEmpty from '@/components/workflow/WorkflowEmpty.vue';
-import KanvasFilters from '@/components/workflow/kanvas/KanvasFilters.vue';
+import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
+import { TABS } from "@/store/panel";
+import Workflow from "@/components/workflow/Workflow.vue";
+import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
+import SelectionRectangle from "@/components/workflow/SelectionRectangle.vue";
+import WorkflowEmpty from "@/components/workflow/WorkflowEmpty.vue";
+import KanvasFilters from "@/components/workflow/kanvas/KanvasFilters.vue";
 
-import { dropNode } from '@/mixins';
+import { dropNode } from "@/mixins";
 
 export default {
-    components: {
-        Workflow,
-        Kanvas,
-        SelectionRectangle,
-        WorkflowEmpty,
-        KanvasFilters
-    },
-    mixins: [dropNode],
-    computed: {
-        ...mapGetters('application', ['workflowCanvasState']),
-        ...mapGetters('canvas', ['contentBounds']),
-        ...mapGetters('workflow', ['isWorkflowEmpty']),
-        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' }),
-        ...mapState('canvas', ['zoomFactor']),
-        ...mapState('workflow', ['activeWorkflow'])
-    },
-    watch: {
-        isWorkflowEmpty: {
-            immediate: true,
-            async handler(isWorkflowEmpty) {
-                // disable zoom & pan if workflow is empty
-                this.setIsEmpty(isWorkflowEmpty);
+  components: {
+    Workflow,
+    Kanvas,
+    SelectionRectangle,
+    WorkflowEmpty,
+    KanvasFilters,
+  },
+  mixins: [dropNode],
+  computed: {
+    ...mapGetters("application", ["workflowCanvasState"]),
+    ...mapGetters("canvas", ["contentBounds"]),
+    ...mapGetters("workflow", ["isWorkflowEmpty"]),
+    ...mapState("nodeRepository", {
+      isDraggingNodeFromRepository: "isDraggingNode",
+    }),
+    ...mapState("canvas", ["zoomFactor"]),
+    ...mapState("workflow", ["activeWorkflow"]),
+  },
+  watch: {
+    isWorkflowEmpty: {
+      immediate: true,
+      async handler(isWorkflowEmpty) {
+        // disable zoom & pan if workflow is empty
+        this.setIsEmpty(isWorkflowEmpty);
 
-                if (isWorkflowEmpty) {
-                    // call to action: move nodes onto workflow
-                    await this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
+        if (isWorkflowEmpty) {
+          // call to action: move nodes onto workflow
+          await this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
 
-                    // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
-                    await this.$nextTick();
-                    this.fillScreen();
-                }
-            }
+          // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
+          await this.$nextTick();
+          this.fillScreen();
         }
+      },
     },
-    mounted() {
-        if (this.isWorkflowEmpty) {
-            this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
-        }
-
-        this.$nextTick(() => {
-            // put canvas into fillScreen view after loading the workflow
-            // if there isn't a saved canvas state for it
-            if (!this.workflowCanvasState) {
-                this.fillScreen();
-            }
-        });
-    },
-    methods: {
-        ...mapMutations('canvas', ['setIsEmpty']),
-        ...mapActions('panel', ['setCurrentProjectActiveTab']),
-        ...mapActions('canvas', ['fillScreen']),
-        onNodeSelectionPreview($event) {
-            this.$refs.workflow.applyNodeSelectionPreview($event);
-        },
-        onAnnotationPreview($event) {
-            this.$refs.workflow.applyAnnotationSelectionPreview($event);
-        },
-        async onContainerSizeUpdated() {
-            if (this.isWorkflowEmpty) {
-                await this.$nextTick();
-
-                // scroll to center
-                this.fillScreen();
-            }
-        }
+  },
+  mounted() {
+    if (this.isWorkflowEmpty) {
+      this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
     }
+
+    this.$nextTick(() => {
+      // put canvas into fillScreen view after loading the workflow
+      // if there isn't a saved canvas state for it
+      if (!this.workflowCanvasState) {
+        this.fillScreen();
+      }
+    });
+  },
+  methods: {
+    ...mapMutations("canvas", ["setIsEmpty"]),
+    ...mapActions("panel", ["setCurrentProjectActiveTab"]),
+    ...mapActions("canvas", ["fillScreen"]),
+    onNodeSelectionPreview($event) {
+      this.$refs.workflow.applyNodeSelectionPreview($event);
+    },
+    onAnnotationPreview($event) {
+      this.$refs.workflow.applyAnnotationSelectionPreview($event);
+    },
+    async onContainerSizeUpdated() {
+      if (this.isWorkflowEmpty) {
+        await this.$nextTick();
+
+        // scroll to center
+        this.fillScreen();
+      }
+    },
+  },
 };
 </script>
 
@@ -83,7 +85,9 @@ export default {
   <Kanvas
     id="kanvas"
     ref="kanvas"
-    :class="{ 'indicate-node-drag': isWorkflowEmpty && isDraggingNodeFromRepository }"
+    :class="{
+      'indicate-node-drag': isWorkflowEmpty && isDraggingNodeFromRepository,
+    }"
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
@@ -101,9 +105,7 @@ export default {
         :height="contentBounds.height"
       />
 
-      <Workflow
-        ref="workflow"
-      />
+      <Workflow ref="workflow" />
     </template>
 
     <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas) -->

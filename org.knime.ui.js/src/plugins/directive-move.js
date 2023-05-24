@@ -20,159 +20,162 @@ let stateMap;
 const defaultThreshold = 5;
 
 const createMousedownHandler = (state, el) => (e) => {
-    // only left mouse button can move
-    if (e.button !== 0) {
-        return;
-    }
-    e.stopPropagation();
-    e.preventDefault();
+  // only left mouse button can move
+  if (e.button !== 0) {
+    return;
+  }
+  e.stopPropagation();
+  e.preventDefault();
 
-    let { pointerId } = e;
-    state.pointerId = pointerId;
-    // This is needed, as otherwise the pointerCapture might not get set if the component does not change
-    if (!e.target.hasPointerCapture(pointerId)) {
-        e.target.setPointerCapture(pointerId);
-    }
+  let { pointerId } = e;
+  state.pointerId = pointerId;
+  // This is needed, as otherwise the pointerCapture might not get set if the component does not change
+  if (!e.target.hasPointerCapture(pointerId)) {
+    e.target.setPointerCapture(pointerId);
+  }
 
-    el.onpointermove = state.mousemove;
-    let { clientX, clientY } = e;
-    delete state.prev;
-    state.start = [clientX, clientY];
+  el.onpointermove = state.mousemove;
+  let { clientX, clientY } = e;
+  delete state.prev;
+  state.start = [clientX, clientY];
 };
 
 const createMouseupHandler = (state, el) => (e) => {
-    el.releasePointerCapture(e.pointerId);
-    el.onpointermove = null;
-    delete state.pointerId;
+  el.releasePointerCapture(e.pointerId);
+  el.onpointermove = null;
+  delete state.pointerId;
 
-    const { clientX, clientY } = e;
-    if (state.dragging && state.handlers.onMoveEnd) {
-        let [startX, startY] = state.start;
-        let event = new CustomEvent('moveend', {
-            detail: {
-                startX,
-                startY,
-                totalDeltaX: clientX - startX,
-                totalDeltaY: clientY - startY,
-                endX: clientX,
-                endY: clientY,
-                event: e
-            }
-        });
-        state.handlers.onMoveEnd(event);
-    }
-    delete state.start;
-    delete state.dragging;
+  const { clientX, clientY } = e;
+  if (state.dragging && state.handlers.onMoveEnd) {
+    let [startX, startY] = state.start;
+    let event = new CustomEvent("moveend", {
+      detail: {
+        startX,
+        startY,
+        totalDeltaX: clientX - startX,
+        totalDeltaY: clientY - startY,
+        endX: clientX,
+        endY: clientY,
+        event: e,
+      },
+    });
+    state.handlers.onMoveEnd(event);
+  }
+  delete state.start;
+  delete state.dragging;
 };
 
 const createMousemoveHandler = (state) => (e) => {
-    if (!state.start) {
-        return;
-    }
+  if (!state.start) {
+    return;
+  }
 
-    const { clientX, clientY } = e;
-    const [x, y] = [clientX - state.start[0], clientY - state.start[1]];
-    if (!state.dragging && Math.max(Math.abs(x), Math.abs(y)) < state.threshold) {
-        return;
-    }
+  const { clientX, clientY } = e;
+  const [x, y] = [clientX - state.start[0], clientY - state.start[1]];
+  if (!state.dragging && Math.max(Math.abs(x), Math.abs(y)) < state.threshold) {
+    return;
+  }
 
-    e.stopPropagation();
-    e.preventDefault();
+  e.stopPropagation();
+  e.preventDefault();
 
-    if (!state.dragging && state.handlers.onMoveStart) {
-        let event = new CustomEvent('movestart', {
-            detail: {
-                startX: state.start[0],
-                startY: state.start[1],
-                event: e,
-                clientX: e.clientX,
-                clientY: e.clientY
-            }
-        });
-        state.handlers.onMoveStart(event);
-    }
-    state.dragging = true;
+  if (!state.dragging && state.handlers.onMoveStart) {
+    let event = new CustomEvent("movestart", {
+      detail: {
+        startX: state.start[0],
+        startY: state.start[1],
+        event: e,
+        clientX: e.clientX,
+        clientY: e.clientY,
+      },
+    });
+    state.handlers.onMoveStart(event);
+  }
+  state.dragging = true;
 
-    let deltaX, deltaY;
-    if (state.prev) {
-        [deltaX, deltaY] = [x - state.prev[0], y - state.prev[1]];
-    } else {
-        [deltaX, deltaY] = [x, y];
-    }
+  let deltaX, deltaY;
+  if (state.prev) {
+    [deltaX, deltaY] = [x - state.prev[0], y - state.prev[1]];
+  } else {
+    [deltaX, deltaY] = [x, y];
+  }
 
-    state.prev = [x, y];
-    if (state.handlers.onMove) {
-        const event = new CustomEvent('moving', {
-            detail: {
-                totalDeltaX: x,
-                totalDeltaY: y,
-                deltaX,
-                deltaY,
-                event: e,
-                altKey: e.altKey,
-                clientX: e.clientX,
-                clientY: e.clientY
-            }
-        });
-        state.handlers.onMove(event);
-    }
+  state.prev = [x, y];
+  if (state.handlers.onMove) {
+    const event = new CustomEvent("moving", {
+      detail: {
+        totalDeltaX: x,
+        totalDeltaY: y,
+        deltaX,
+        deltaY,
+        event: e,
+        altKey: e.altKey,
+        clientX: e.clientX,
+        clientY: e.clientY,
+      },
+    });
+    state.handlers.onMove(event);
+  }
 };
 
 const mounted = (el, { value }) => {
-    // Only insert when the object is writable
-    if (value.isProtected) {
-        return;
-    }
-    if (!stateMap) {
-        stateMap = new WeakMap();
-    }
-    let state = {
-        handlers: value,
-        threshold: value.threshold || defaultThreshold,
-        dragging: false
-    };
-    stateMap.set(el, state);
+  // Only insert when the object is writable
+  if (value.isProtected) {
+    return;
+  }
+  if (!stateMap) {
+    stateMap = new WeakMap();
+  }
+  let state = {
+    handlers: value,
+    threshold: value.threshold || defaultThreshold,
+    dragging: false,
+  };
+  stateMap.set(el, state);
 
-    state.mousedown = createMousedownHandler(state, el);
-    el.onpointerdown = state.mousedown;
+  state.mousedown = createMousedownHandler(state, el);
+  el.onpointerdown = state.mousedown;
 
-    state.mouseup = createMouseupHandler(state, el);
-    el.onpointerup = state.mouseup;
+  state.mouseup = createMouseupHandler(state, el);
+  el.onpointerup = state.mouseup;
 
-    state.mousemove = createMousemoveHandler(state);
+  state.mousemove = createMousemoveHandler(state);
 };
 
 const unmounted = (el, { value }) => {
-    // Only insert when the object is writable
-    if (value.isProtected) {
-        return;
-    }
+  // Only insert when the object is writable
+  if (value.isProtected) {
+    return;
+  }
 
-    el.onpointerdown = null;
-    el.onpointermove = null;
-    el.onpointerup = null;
+  el.onpointerdown = null;
+  el.onpointermove = null;
+  el.onpointerup = null;
 
-    stateMap.delete(el);
+  stateMap.delete(el);
 };
 
 // reapply the pointer capture when the component changes
 // this is necessary, as otherwise the capture is lost on rerender of the view
 const updated = (el, { value }) => {
-    // Only insert when the object is writable
-    if (value.isProtected) {
-        return;
-    }
-    let state = stateMap.get(el);
-    if (Reflect.has(state, 'pointerId') && !el.hasPointerCapture(state.pointerId)) {
-        el.setPointerCapture(state.pointerId);
-    }
+  // Only insert when the object is writable
+  if (value.isProtected) {
+    return;
+  }
+  let state = stateMap.get(el);
+  if (
+    Reflect.has(state, "pointerId") &&
+    !el.hasPointerCapture(state.pointerId)
+  ) {
+    el.setPointerCapture(state.pointerId);
+  }
 };
 
 export const directiveMove = {
-    name: 'move',
-    options: {
-        mounted,
-        unmounted,
-        updated
-    }
+  name: "move",
+  options: {
+    mounted,
+    unmounted,
+    updated,
+  },
 };

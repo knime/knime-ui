@@ -1,207 +1,226 @@
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
-import { mapState, mapActions, mapGetters } from 'vuex';
-import { mixin as VueClickAway } from 'vue3-click-away';
+import { defineComponent, type PropType } from "vue";
+import { mapState, mapActions, mapGetters } from "vuex";
+import { mixin as VueClickAway } from "vue3-click-away";
 
-import type { Bounds, WorkflowAnnotation } from '@/api/gateway-api/generated-api';
-import { Annotation } from '@/api/gateway-api/generated-api';
+import type {
+  Bounds,
+  WorkflowAnnotation,
+} from "@/api/gateway-api/generated-api";
+import { Annotation } from "@/api/gateway-api/generated-api";
 
-import { getMetaOrCtrlKey } from '@/util/navigator';
-import TransformControls from './TransformControls.vue';
-import LegacyAnnotation from './LegacyAnnotation.vue';
-import RichTextEditor from './RichTextEditor.vue';
+import { getMetaOrCtrlKey } from "@/util/navigator";
+import TransformControls from "./TransformControls.vue";
+import LegacyAnnotation from "./LegacyAnnotation.vue";
+import RichTextEditor from "./RichTextEditor.vue";
 
 /**
  * A workflow annotation, a rectangular box containing text.
  */
 export default defineComponent({
-    components: {
-        LegacyAnnotation,
-        RichTextEditor,
-        TransformControls
+  components: {
+    LegacyAnnotation,
+    RichTextEditor,
+    TransformControls,
+  },
+  mixins: [VueClickAway],
+  inheritAttrs: false,
+
+  props: {
+    annotation: {
+      type: Object as PropType<WorkflowAnnotation>,
+      required: true,
     },
-    mixins: [VueClickAway],
-    inheritAttrs: false,
+  },
 
-    props: {
-        annotation: {
-            type: Object as PropType<WorkflowAnnotation>,
-            required: true
-        }
-    },
+  emits: ["toggleEdit"],
 
-    emits: ['toggleEdit'],
+  expose: ["setSelectionPreview"],
 
-    expose: ['setSelectionPreview'],
+  data() {
+    return {
+      selectionPreview: null,
 
-    data() {
-        return {
-            selectionPreview: null,
+      hasEdited: false,
+      newAnnotationData: {
+        richTextContent: "",
+        borderColor: "",
+      },
+    };
+  },
 
-            hasEdited: false,
-            newAnnotationData: {
-                richTextContent: '',
-                borderColor: ''
-            }
-        };
-    },
+  computed: {
+    ...mapState("workflow", {
+      projectId: (state) => state.activeWorkflow.projectId,
+      activeWorkflowId: (state) => state.activeWorkflow.info.containerId,
+      editableAnnotationId: (state) => state.editableAnnotationId,
+      isDragging: (state) => state.isDragging,
+    }),
+    ...mapState("selection", ["selectedAnnotations"]),
+    ...mapGetters("selection", [
+      "isAnnotationSelected",
+      "selectedNodeIds",
+      "selectedConnections",
+      "selectedAnnotationIds",
+    ]),
 
-    computed: {
-        ...mapState('workflow', {
-            projectId: state => state.activeWorkflow.projectId,
-            activeWorkflowId: state => state.activeWorkflow.info.containerId,
-            editableAnnotationId: state => state.editableAnnotationId,
-            isDragging: state => state.isDragging
-        }),
-        ...mapState('selection', ['selectedAnnotations']),
-        ...mapGetters('selection', [
-            'isAnnotationSelected',
-            'selectedNodeIds',
-            'selectedConnections',
-            'selectedAnnotationIds'
-        ]),
-
-        isSelected() {
-            return this.isAnnotationSelected(this.annotation.id);
-        },
-
-        isEditing() {
-            return this.annotation.id === this.editableAnnotationId;
-        },
-
-        showSelectionPlane() {
-            if (this.isDragging) {
-                return false;
-            }
-
-            if (this.selectionPreview === null) {
-                return this.isSelected;
-            }
-
-            if (this.isSelected && this.selectionPreview === 'hide') {
-                return false;
-            }
-
-            return this.selectionPreview === 'show' || this.isSelected;
-        },
-
-        showTransformControls() {
-            if (this.isDragging) {
-                return false;
-            }
-
-            const isMoreThanOneAnnotationSelected = this.selectedAnnotationIds.length > 1;
-            const isOneOrMoreNodesSelected = this.selectedNodeIds.length >= 1;
-            const isOneOrMoreConnectionsSelected = this.selectedConnections.length >= 1;
-            let isMoreThanOneItemSelected =
-            isMoreThanOneAnnotationSelected || isOneOrMoreNodesSelected || isOneOrMoreConnectionsSelected;
-
-            return this.isSelected && !isMoreThanOneItemSelected && this.showSelectionPlane;
-        },
-
-        isRichTextAnnotation() {
-            return this.annotation.contentType === Annotation.ContentTypeEnum.Html;
-        },
-
-        initialRichTextAnnotationValue() {
-            const recreateLinebreaks = (content: string) => content.replaceAll('\r\n', '<br />');
-
-            return this.isRichTextAnnotation
-                ? this.annotation.text
-                : recreateLinebreaks(this.annotation.text);
-        }
+    isSelected() {
+      return this.isAnnotationSelected(this.annotation.id);
     },
 
-    mounted() {
-        this.initializeData();
+    isEditing() {
+      return this.annotation.id === this.editableAnnotationId;
     },
 
-    methods: {
-        ...mapActions('selection', ['selectAnnotation', 'deselectAnnotation', 'deselectAllObjects']),
-        ...mapActions('application', ['toggleContextMenu']),
+    showSelectionPlane() {
+      if (this.isDragging) {
+        return false;
+      }
 
-        initializeData() {
-            this.newAnnotationData = {
-                richTextContent: this.initialRichTextAnnotationValue,
+      if (this.selectionPreview === null) {
+        return this.isSelected;
+      }
 
-                borderColor: this.isRichTextAnnotation
-                    ? this.annotation.borderColor
-                    : this.$colors.defaultAnnotationBorderColor
-            };
-        },
+      if (this.isSelected && this.selectionPreview === "hide") {
+        return false;
+      }
 
-        async onLeftClick(event: PointerEvent) {
-            const metaOrCtrlKey = getMetaOrCtrlKey();
-            const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
+      return this.selectionPreview === "show" || this.isSelected;
+    },
 
-            if (!isMultiselect) {
-                await this.deselectAllObjects();
-                await this.selectAnnotation(this.annotation.id);
-                return;
-            }
+    showTransformControls() {
+      if (this.isDragging) {
+        return false;
+      }
 
-            const action = this.isSelected
-                ? this.deselectAnnotation
-                : this.selectAnnotation;
+      const isMoreThanOneAnnotationSelected =
+        this.selectedAnnotationIds.length > 1;
+      const isOneOrMoreNodesSelected = this.selectedNodeIds.length >= 1;
+      const isOneOrMoreConnectionsSelected =
+        this.selectedConnections.length >= 1;
+      let isMoreThanOneItemSelected =
+        isMoreThanOneAnnotationSelected ||
+        isOneOrMoreNodesSelected ||
+        isOneOrMoreConnectionsSelected;
 
-            action(this.annotation.id);
-        },
+      return (
+        this.isSelected && !isMoreThanOneItemSelected && this.showSelectionPlane
+      );
+    },
 
-        onContextMenu(event: PointerEvent) {
-            const metaOrCtrlKey = getMetaOrCtrlKey();
-            const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
+    isRichTextAnnotation() {
+      return this.annotation.contentType === Annotation.ContentTypeEnum.Html;
+    },
 
-            if (!isMultiselect && !this.isSelected) {
-                this.deselectAllObjects();
-            }
+    initialRichTextAnnotationValue() {
+      const recreateLinebreaks = (content: string) =>
+        content.replaceAll("\r\n", "<br />");
 
-            this.selectAnnotation(this.annotation.id);
-            this.toggleContextMenu({ event });
-        },
+      return this.isRichTextAnnotation
+        ? this.annotation.text
+        : recreateLinebreaks(this.annotation.text);
+    },
 
-        setSelectionPreview(type: string) {
-            this.selectionPreview = type;
-        },
+    initialBorderColor() {
+      return this.isRichTextAnnotation
+        ? this.annotation.borderColor
+        : this.$colors.defaultAnnotationBorderColor;
+    },
+  },
 
-        transformAnnotation(bounds: Bounds) {
-            this.$store.dispatch('workflow/transformWorkflowAnnotation', {
-                bounds,
-                annotationId: this.annotation.id
-            });
-        },
+  mounted() {
+    this.initializeData();
+  },
 
-        toggleEdit() {
-            this.$store.dispatch('workflow/setEditableAnnotationId', this.isEditing ? null : this.annotation.id);
-        },
+  methods: {
+    ...mapActions("selection", [
+      "selectAnnotation",
+      "deselectAnnotation",
+      "deselectAllObjects",
+    ]),
+    ...mapActions("application", ["toggleContextMenu"]),
 
-        async onClickAway() {
-            if (!this.isEditing) {
-                return;
-            }
+    initializeData() {
+      this.newAnnotationData = {
+        richTextContent: this.initialRichTextAnnotationValue,
+        borderColor: this.initialBorderColor,
+      };
+    },
 
-            if (this.hasEdited) {
-                await this.$store.dispatch('workflow/updateAnnotation', {
-                    annotationId: this.annotation.id,
-                    text: this.newAnnotationData.richTextContent,
-                    borderColor: this.newAnnotationData.borderColor
-                });
-            }
+    async onLeftClick(event: PointerEvent) {
+      const metaOrCtrlKey = getMetaOrCtrlKey();
+      const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
-            this.toggleEdit();
-        },
+      if (!isMultiselect) {
+        await this.deselectAllObjects();
+        await this.selectAnnotation(this.annotation.id);
+        return;
+      }
 
-        onAnnotationChange(content: string) {
-            this.hasEdited = true;
-            this.newAnnotationData.richTextContent = content;
-        },
+      const action = this.isSelected
+        ? this.deselectAnnotation
+        : this.selectAnnotation;
 
-        setColor(color: string) {
-            this.hasEdited = true;
-            this.newAnnotationData.borderColor = color;
-        }
-    }
+      action(this.annotation.id);
+    },
+
+    onContextMenu(event: PointerEvent) {
+      const metaOrCtrlKey = getMetaOrCtrlKey();
+      const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
+
+      if (!isMultiselect && !this.isSelected) {
+        this.deselectAllObjects();
+      }
+
+      this.selectAnnotation(this.annotation.id);
+      this.toggleContextMenu({ event });
+    },
+
+    setSelectionPreview(type: string) {
+      this.selectionPreview = type;
+    },
+
+    transformAnnotation(bounds: Bounds) {
+      this.$store.dispatch("workflow/transformWorkflowAnnotation", {
+        bounds,
+        annotationId: this.annotation.id,
+      });
+    },
+
+    toggleEdit() {
+      this.$store.dispatch(
+        "workflow/setEditableAnnotationId",
+        this.isEditing ? null : this.annotation.id
+      );
+    },
+
+    async onClickAway() {
+      if (!this.isEditing) {
+        return;
+      }
+
+      if (this.hasEdited) {
+        await this.$store.dispatch("workflow/updateAnnotation", {
+          annotationId: this.annotation.id,
+          text: this.newAnnotationData.richTextContent,
+          borderColor: this.newAnnotationData.borderColor,
+        });
+      }
+
+      this.toggleEdit();
+    },
+
+    onAnnotationChange(content: string) {
+      this.hasEdited = true;
+      this.newAnnotationData.richTextContent = content;
+    },
+
+    setColor(color: string) {
+      this.hasEdited = true;
+      this.newAnnotationData.borderColor = color;
+    },
+  },
 });
-
 </script>
 
 <template>
@@ -231,7 +250,7 @@ export default defineComponent({
           v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
           :initial-value="initialRichTextAnnotationValue"
-          :border-color="newAnnotationData.borderColor"
+          :initial-border-color="initialBorderColor"
           :editable="isEditing"
           :is-dragging="isDragging"
           :annotation-bounds="transformedBounds"

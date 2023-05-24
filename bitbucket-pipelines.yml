@@ -14,7 +14,7 @@ definitions:
           - cd org.knime.ui.js
           - git submodule update --init --recursive
           - npm ci
-          - npm run ci:lint
+          - npm run ci:lint-format
           - npm run coverage
           - npm run build
           - npm run audit

@@ -1,35 +1,37 @@
 <script>
-import { mapActions } from 'vuex';
-import { escapeStack } from '@/mixins/escapeStack';
-import NodeDescription from '@/components/nodeRepository/NodeDescription.vue';
-import CloseButton from '@/components/common/CloseButton.vue';
+import { mapActions } from "vuex";
+import { escapeStack } from "@/mixins/escapeStack";
+import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
+import CloseButton from "@/components/common/CloseButton.vue";
 
 /**
  * NodeDescription + close button, esc close + overlay/extension sidebar styling
  */
 export default {
-    components: {
-        CloseButton,
-        NodeDescription
+  components: {
+    CloseButton,
+    NodeDescription,
+  },
+  mixins: [
+    escapeStack({
+      onEscape() {
+        this.closeDescriptionPanel();
+      },
+    }),
+  ],
+  props: {
+    selectedNode: {
+      type: Object,
+      default: null,
+      validator: (node) =>
+        node === null ||
+        (typeof node.nodeFactory?.className === "string" &&
+          typeof node.name === "string"),
     },
-    mixins: [
-        escapeStack({
-            onEscape() {
-                this.closeDescriptionPanel();
-            }
-        })
-    ],
-    props: {
-        selectedNode: {
-            type: Object,
-            default: null,
-            validator: node => node === null || (typeof node.nodeFactory?.className === 'string' &&
-                typeof node.name === 'string')
-        }
-    },
-    methods: {
-        ...mapActions('nodeRepository', ['closeDescriptionPanel'])
-    }
+  },
+  methods: {
+    ...mapActions("nodeRepository", ["closeDescriptionPanel"]),
+  },
 };
 </script>
 
@@ -39,10 +41,7 @@ export default {
     :selected-node="selectedNode"
   >
     <template #header-action>
-      <CloseButton
-        class="close-button"
-        @close="closeDescriptionPanel"
-      />
+      <CloseButton class="close-button" @close="closeDescriptionPanel" />
     </template>
   </NodeDescription>
 </template>

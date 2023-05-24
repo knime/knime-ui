@@ -1,89 +1,103 @@
 <script lang="ts">
-import { defineComponent, type PropType, type StyleValue } from 'vue';
-import { applyStyleRanges } from '@/util/styleRanges';
-import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue';
-import { type NodeAnnotation, type StyleRange, Node } from '@/api/gateway-api/generated-api';
+import { defineComponent, type PropType, type StyleValue } from "vue";
+import { applyStyleRanges } from "@/util/styleRanges";
+import AutoSizeForeignObject from "@/components/common/AutoSizeForeignObject.vue";
+import {
+  type NodeAnnotation,
+  type StyleRange,
+  Node,
+} from "@/api/gateway-api/generated-api";
 
 export default defineComponent({
-    components: { AutoSizeForeignObject },
-    props: {
-        value: {
-            type: String,
-            default: 'Node label'
-        },
-        editable: {
-            type: Boolean,
-            default: false
-        },
-        isSelected: {
-            type: Boolean,
-            default: false
-        },
-        kind: {
-            type: String as PropType<Node.KindEnum>,
-            default: ''
-        },
-        nodeId: {
-            type: String,
-            default: ''
-        },
-        annotation: {
-            type: Object as PropType<NodeAnnotation>,
-            required: false,
-            default: () => ({
-                textAlign: 'center',
-                backgroundColor: 'transparent',
-                styleRanges: []
-            })
-        },
-        portOffset: {
-            type: Number,
-            required: false,
-            default: 0
-        }
+  components: { AutoSizeForeignObject },
+  props: {
+    value: {
+      type: String,
+      default: "Node label",
     },
-    emits: ['requestEdit'],
-    data() {
-        return {
-            textAlign: this.annotation?.textAlign,
-            backgroundColor:
-            this.annotation?.backgroundColor === '#FFFFFF' ? 'transparent' : this.annotation?.backgroundColor
-        };
+    editable: {
+      type: Boolean,
+      default: false,
     },
-    computed: {
-        isMetanode() {
-            return this.kind === Node.KindEnum.Metanode;
-        },
-        styledText() {
-            const styleRanges = this.annotation ? this.annotation.styleRanges : [];
-            let { textRanges, isValid } = applyStyleRanges(styleRanges, this.value);
-            if (!isValid) {
-                consola.warn(`Invalid styleRanges:
-                ${JSON.stringify(this.annotation.styleRanges)}. Using default style.`);
-            }
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
+    kind: {
+      type: String as PropType<Node.KindEnum>,
+      default: "",
+    },
+    nodeId: {
+      type: String,
+      default: "",
+    },
+    annotation: {
+      type: Object as PropType<NodeAnnotation>,
+      required: false,
+      default: () => ({
+        textAlign: "center",
+        backgroundColor: "transparent",
+        styleRanges: [],
+      }),
+    },
+    portOffset: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+  },
+  emits: ["requestEdit"],
+  data() {
+    return {
+      textAlign: this.annotation?.textAlign,
+      backgroundColor:
+        this.annotation?.backgroundColor === "#FFFFFF"
+          ? "transparent"
+          : this.annotation?.backgroundColor,
+    };
+  },
+  computed: {
+    isMetanode() {
+      return this.kind === Node.KindEnum.Metanode;
+    },
+    styledText() {
+      const styleRanges = this.annotation ? this.annotation.styleRanges : [];
+      let { textRanges, isValid } = applyStyleRanges(styleRanges, this.value);
+      if (!isValid) {
+        consola.warn(`Invalid styleRanges:
+                ${JSON.stringify(
+                  this.annotation.styleRanges
+                )}. Using default style.`);
+      }
 
-            return textRanges;
-        },
-        yOffset() {
-            return (this.isMetanode ? this.$shapes.metanodeLabelOffsetY : this.$shapes.nodeLabelOffsetY) +
-            this.portOffset;
-        }
+      return textRanges;
     },
-    methods: {
-        getTextStyles(styledTextPart: StyleRange): StyleValue {
-            const lineHeight = 1.1;
+    yOffset() {
+      return (
+        (this.isMetanode
+          ? this.$shapes.metanodeLabelOffsetY
+          : this.$shapes.nodeLabelOffsetY) + this.portOffset
+      );
+    },
+  },
+  methods: {
+    getTextStyles(styledTextPart: StyleRange): StyleValue {
+      const lineHeight = 1.1;
 
-            return {
-                fontSize: styledTextPart.fontSize
-                    ? `${styledTextPart.fontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`
-                    : null,
-                color: styledTextPart.color,
-                fontWeight: styledTextPart.bold ? 'bold' : null,
-                fontStyle: styledTextPart.italic ? 'italic' : null,
-                lineHeight: styledTextPart.fontSize ? lineHeight : null
-            };
-        }
-    }
+      return {
+        fontSize: styledTextPart.fontSize
+          ? `${
+              styledTextPart.fontSize *
+              this.$shapes.annotationsFontSizePointToPixelFactor
+            }px`
+          : null,
+        color: styledTextPart.color,
+        fontWeight: styledTextPart.bold ? "bold" : null,
+        fontStyle: styledTextPart.italic ? "italic" : null,
+        lineHeight: styledTextPart.fontSize ? lineHeight : null,
+      };
+    },
+  },
 });
 </script>
 

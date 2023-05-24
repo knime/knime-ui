@@ -1,52 +1,47 @@
 <script>
-import PlusIcon from 'webapps-common/ui/assets/img/icons/plus-small.svg';
+import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 
 /**
  * Node ghost with a plus ([ + ]) that shows up when user drags a port to some free space.
  * Only works for direction = out ports
  */
 export default {
-    components: {
-        PlusIcon
+  components: {
+    PlusIcon,
+  },
+  props: {
+    position: {
+      type: Array,
+      required: true,
     },
-    props: {
-        position: {
-            type: Array,
-            required: true
-        }
+  },
+  computed: {
+    size() {
+      return this.$shapes.addNodeGhostSize;
     },
-    computed: {
-        size() {
-            return this.$shapes.addNodeGhostSize;
-        },
-        iconSize() {
-            // eslint-disable-next-line no-magic-numbers
-            return this.size * 0.9;
-        },
-        portSize() {
-            return this.$shapes.portSize;
-        },
-        transformToCenter() {
-            return [this.portSize / 2, -this.size / 2];
-        }
-    }
+    iconSize() {
+      // eslint-disable-next-line no-magic-numbers
+      return this.size * 0.9;
+    },
+    portSize() {
+      return this.$shapes.portSize;
+    },
+    transformToCenter() {
+      return [this.portSize / 2, -this.size / 2];
+    },
+  },
 };
 </script>
 
 <template>
   <g :transform="`translate(${position})`">
     <g :transform="`translate(${transformToCenter})`">
-      <rect
-        :width="size"
-        :height="size"
-        rx="1"
-        ry="1"
-      />
+      <rect :width="size" :height="size" rx="1" ry="1" />
       <PlusIcon
         :width="iconSize"
         :height="iconSize"
-        :x="(size / 2) - iconSize / 2"
-        :y="(size / 2) - iconSize / 2"
+        :x="size / 2 - iconSize / 2"
+        :y="size / 2 - iconSize / 2"
       />
     </g>
   </g>

@@ -1,108 +1,119 @@
-import { expect, describe, it } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { expect, describe, it } from "vitest";
+import { mount } from "@vue/test-utils";
 
-import * as $shapes from '@/style/shapes.mjs';
-import LegacyAnnotation from '../LegacyAnnotation.vue';
-import { Annotation, type WorkflowAnnotation } from '@/api/gateway-api/generated-api';
+import * as $shapes from "@/style/shapes.mjs";
+import LegacyAnnotation from "../LegacyAnnotation.vue";
+import {
+  Annotation,
+  type WorkflowAnnotation,
+} from "@/api/gateway-api/generated-api";
 
-describe('LegacyAnnotation.vue', () => {
-    const defaultProps: { annotation: Partial<WorkflowAnnotation> } = {
+describe("LegacyAnnotation.vue", () => {
+  const defaultProps: { annotation: Partial<WorkflowAnnotation> } = {
+    annotation: {
+      text: "",
+      styleRanges: [],
+    },
+  };
+
+  const doMount = ({ props = {}, mocks = {} } = {}) => {
+    const wrapper = mount(LegacyAnnotation, {
+      props: { ...defaultProps, ...props },
+      global: { mocks: { $shapes, ...mocks } },
+    });
+
+    return { wrapper };
+  };
+
+  it("renders empty text", () => {
+    const { wrapper } = doMount();
+    expect(wrapper.findAll("span").length).toBe(0);
+  });
+
+  it("renders text", () => {
+    const { wrapper } = doMount({
+      props: {
         annotation: {
-            text: '',
-            styleRanges: []
-        }
+          text: "foo👻barbazqu👮🏻‍♂️xあなたは素晴らしい人です",
+          styleRanges: [
+            { start: 1, length: 2, bold: true, color: "red" },
+            { start: 8, length: 1, italic: true, bold: true },
+            { start: 10, length: 1, italic: true, bold: true, fontSize: 13 },
+          ],
+        },
+      },
+    });
+
+    const spans = wrapper.findAll("span");
+    expect(spans.length).toBe(7);
+
+    expect(spans[0].text()).toBe("f");
+    expect(spans[0].text()).toBe("f");
+    expect(spans[1].text()).toBe("oo");
+    expect(spans[2].text()).toBe("👻bar");
+    expect(spans[3].text()).toBe("b");
+    expect(spans[4].text()).toBe("a");
+    expect(spans[5].text()).toBe("z");
+    expect(spans[6].text()).toBe("qu👮🏻‍♂️xあなたは素晴らしい人です");
+
+    expect(spans[0].attributes().style).toBeUndefined();
+    expect(spans[1].attributes().style).toBe("color: red; font-weight: bold;");
+    expect(spans[2].attributes().style).toBeUndefined();
+    expect(spans[3].attributes().style).toBe(
+      "font-weight: bold; font-style: italic;"
+    );
+    expect(spans[4].attributes().style).toBeUndefined();
+    expect(spans[5].attributes().style).toBe(
+      "font-size: 13px; font-weight: bold; font-style: italic;"
+    );
+    expect(spans[6].attributes().style).toBeUndefined();
+  });
+
+  it("should apply styles to legacy annotation", () => {
+    const annotation: Partial<WorkflowAnnotation> = {
+      id: "id1",
+      textAlign: Annotation.TextAlignEnum.Right,
+      borderWidth: 4,
+      borderColor: "#000",
+      backgroundColor: "#000",
+      text: "lorem ipsum",
+      styleRanges: [{ start: 0, length: 2, fontSize: 14 }],
+      contentType: Annotation.ContentTypeEnum.Plain,
     };
 
-    const doMount = ({ props = {}, mocks = {} } = {}) => {
-        const wrapper = mount(LegacyAnnotation, {
-            props: { ...defaultProps, ...props },
-            global: { mocks: { $shapes, ...mocks } }
-        });
-
-        return { wrapper };
-    };
-
-    it('renders empty text', () => {
-        const { wrapper } = doMount();
-        expect(wrapper.findAll('span').length).toBe(0);
+    const { wrapper } = doMount({
+      props: { annotation },
     });
 
-    it('renders text', () => {
-        const { wrapper } = doMount({
-            props: {
-                annotation: {
-                    text: 'foo👻barbazqu👮🏻‍♂️xあなたは素晴らしい人です',
-                    styleRanges: [
-                        { start: 1, length: 2, bold: true, color: 'red' },
-                        { start: 8, length: 1, italic: true, bold: true },
-                        { start: 10, length: 1, italic: true, bold: true, fontSize: 13 }
-                    ]
-                }
-            }
-        });
+    const legacyAnnotationStyles = wrapper
+      .findComponent(LegacyAnnotation)
+      .attributes("style");
+    expect(legacyAnnotationStyles).toMatch("font-size: 12px;");
+    expect(legacyAnnotationStyles).toMatch("border: 4px solid #000;");
+    expect(legacyAnnotationStyles).toMatch("background: rgb(0, 0, 0);");
+    expect(legacyAnnotationStyles).toMatch("width: 100%;");
+    expect(legacyAnnotationStyles).toMatch("height: 100%;");
+    expect(legacyAnnotationStyles).toMatch("text-align: right;");
+    expect(legacyAnnotationStyles).toMatch("padding: 3px;");
+  });
 
-        const spans = wrapper.findAll('span');
-        expect(spans.length).toBe(7);
-
-        expect(spans[0].text()).toBe('f');
-        expect(spans[0].text()).toBe('f');
-        expect(spans[1].text()).toBe('oo');
-        expect(spans[2].text()).toBe('👻bar');
-        expect(spans[3].text()).toBe('b');
-        expect(spans[4].text()).toBe('a');
-        expect(spans[5].text()).toBe('z');
-        expect(spans[6].text()).toBe('qu👮🏻‍♂️xあなたは素晴らしい人です');
-
-        expect(spans[0].attributes().style).toBeUndefined();
-        expect(spans[1].attributes().style).toBe('color: red; font-weight: bold;');
-        expect(spans[2].attributes().style).toBeUndefined();
-        expect(spans[3].attributes().style).toBe('font-weight: bold; font-style: italic;');
-        expect(spans[4].attributes().style).toBeUndefined();
-        expect(spans[5].attributes().style).toBe('font-size: 13px; font-weight: bold; font-style: italic;');
-        expect(spans[6].attributes().style).toBeUndefined();
+  it("honors annotationsFontSizePointToPixelFactor", () => {
+    const shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2 };
+    const { wrapper } = doMount({
+      props: {
+        annotation: {
+          text: "someopthertextdkenaendfkejkansn3",
+          styleRanges: [
+            { start: 3, length: 1, italic: true, bold: true, fontSize: 13 },
+          ],
+        },
+      },
+      mocks: { $shapes: shapes },
     });
 
-    it('should apply styles to legacy annotation', () => {
-        const annotation: Partial<WorkflowAnnotation> = {
-            id: 'id1',
-            textAlign: Annotation.TextAlignEnum.Right,
-            borderWidth: 4,
-            borderColor: '#000',
-            backgroundColor: '#000',
-            text: 'lorem ipsum',
-            styleRanges: [{ start: 0, length: 2, fontSize: 14 }],
-            contentType: Annotation.ContentTypeEnum.Plain
-        };
-
-        const { wrapper } = doMount({
-            props: { annotation }
-        });
-
-        const legacyAnnotationStyles = wrapper.findComponent(LegacyAnnotation).attributes('style');
-        expect(legacyAnnotationStyles).toMatch('font-size: 12px;');
-        expect(legacyAnnotationStyles).toMatch('border: 4px solid #000;');
-        expect(legacyAnnotationStyles).toMatch('background: rgb(0, 0, 0);');
-        expect(legacyAnnotationStyles).toMatch('width: 100%;');
-        expect(legacyAnnotationStyles).toMatch('height: 100%;');
-        expect(legacyAnnotationStyles).toMatch('text-align: right;');
-        expect(legacyAnnotationStyles).toMatch('padding: 3px;');
-    });
-
-    it('honors annotationsFontSizePointToPixelFactor', () => {
-        const shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2 };
-        const { wrapper } = doMount({
-            props: {
-                annotation: {
-                    text: 'someopthertextdkenaendfkejkansn3',
-                    styleRanges: [
-                        { start: 3, length: 1, italic: true, bold: true, fontSize: 13 }
-                    ]
-                }
-            },
-            mocks: { $shapes: shapes }
-        });
-
-        const spans = wrapper.findAll('span');
-        expect(spans[1].attributes().style).toBe('font-size: 26px; font-weight: bold; font-style: italic;');
-    });
+    const spans = wrapper.findAll("span");
+    expect(spans[1].attributes().style).toBe(
+      "font-size: 26px; font-weight: bold; font-style: italic;"
+    );
+  });
 });

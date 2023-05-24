@@ -1,47 +1,41 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState } from "vuex";
 
-import Splitter from '@/components/application/Splitter.vue';
-import Sidebar from '@/components/sidebar/Sidebar.vue';
-import NodeOutput from '@/components/output/NodeOutput.vue';
+import Splitter from "@/components/application/Splitter.vue";
+import Sidebar from "@/components/sidebar/Sidebar.vue";
+import NodeOutput from "@/components/output/NodeOutput.vue";
 
-import TooltipContainer from '@/components/application/TooltipContainer.vue';
-import WorkflowToolbar from '@/components/toolbar/WorkflowToolbar.vue';
+import TooltipContainer from "@/components/application/TooltipContainer.vue";
+import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 
-import WorkflowPanel from '@/components/workflow/WorkflowPanel.vue';
+import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
 
 /**
  * Component that acts as a router page to render the workflow
  */
 export default {
-    components: {
-        Sidebar,
-        WorkflowPanel,
-        NodeOutput,
-        Splitter,
-        WorkflowToolbar,
-        TooltipContainer
-    },
-    computed: {
-        ...mapState('workflow', { workflow: 'activeWorkflow' })
-    }
+  components: {
+    Sidebar,
+    WorkflowPanel,
+    NodeOutput,
+    Splitter,
+    WorkflowToolbar,
+    TooltipContainer,
+  },
+  computed: {
+    ...mapState("workflow", { workflow: "activeWorkflow" }),
+  },
 };
 </script>
 
 <template>
-  <div
-    v-if="workflow"
-    id="workflow-page"
-  >
+  <div v-if="workflow" id="workflow-page">
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />
 
     <main class="workflow-area">
-      <Splitter
-        id="kanvasOutputSplitter"
-        direction="column"
-      >
+      <Splitter id="kanvasOutputSplitter" direction="column">
         <WorkflowPanel id="workflow-panel" />
         <template #secondary>
           <NodeOutput />

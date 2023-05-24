@@ -1,87 +1,88 @@
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent, type PropType } from "vue";
 
-const TOOLTIP_TYPES = ['error', 'warning', 'default'] as const;
-const TOOLTIP_ORIENTATIONS = ['bottom', 'top'] as const;
+const TOOLTIP_TYPES = ["error", "warning", "default"] as const;
+const TOOLTIP_ORIENTATIONS = ["bottom", "top"] as const;
 
-type TooltipType = typeof TOOLTIP_TYPES[number];
-type TooltipOrientation = typeof TOOLTIP_ORIENTATIONS[number];
+type TooltipType = (typeof TOOLTIP_TYPES)[number];
+type TooltipOrientation = (typeof TOOLTIP_ORIENTATIONS)[number];
 /**
  * A tooltip displaying text and an optional headline
  */
 export default defineComponent({
-    props: {
-        /**
-         * The text to display
-         */
-        text: {
-            type: [String, Number],
-            default: null
-        },
-        /**
-         * An optional headline
-         */
-        title: {
-            type: String,
-            default: null
-        },
-        issue: {
-            type: String,
-            default: null
-        },
-        resolutions: {
-            type: Array as PropType<Array<string>>,
-            default: () => []
-        },
-        /**
-         * horizontal position of the arrow tip
-         */
-        x: {
-            type: Number,
-            default: 0
-        },
-        /**
-         * vertical position of the arrow tip
-         */
-        y: {
-            type: Number,
-            default: 0
-        },
-        /**
-         * Type of tooltip. Affects styling
-         */
-        type: {
-            type: String as PropType<TooltipType>,
-            default: 'default',
-            validator: (type: TooltipType) => TOOLTIP_TYPES.includes(type)
-        },
-        /**
-         * `top` to render the tooltip above the target, `bottom` to render below.
-         */
-        orientation: {
-            type: String as PropType<TooltipOrientation>,
-            default: 'bottom',
-            validator: (orientation: TooltipOrientation) => TOOLTIP_ORIENTATIONS.includes(orientation)
-        },
-        /**
-         * spacing between the invisible hoverable boundaries of the tooltip and the visible part
-         */
-        gap: {
-            type: Number,
-            default: 0
-        },
-        /** if tooltip is hoverable, it will stay open when the mouse moves onto it */
-        hoverable: {
-            type: Boolean,
-            default: false
-        }
+  props: {
+    /**
+     * The text to display
+     */
+    text: {
+      type: [String, Number],
+      default: null,
     },
-    computed: {
-        expandedGap() {
-            // The arrow tip is outside of the bounding box and rotated by 45°.
-            return this.gap + this.$shapes.tooltipArrowSize * Math.SQRT1_2;
-        }
-    }
+    /**
+     * An optional headline
+     */
+    title: {
+      type: String,
+      default: null,
+    },
+    issue: {
+      type: String,
+      default: null,
+    },
+    resolutions: {
+      type: Array as PropType<Array<string>>,
+      default: () => [],
+    },
+    /**
+     * horizontal position of the arrow tip
+     */
+    x: {
+      type: Number,
+      default: 0,
+    },
+    /**
+     * vertical position of the arrow tip
+     */
+    y: {
+      type: Number,
+      default: 0,
+    },
+    /**
+     * Type of tooltip. Affects styling
+     */
+    type: {
+      type: String as PropType<TooltipType>,
+      default: "default",
+      validator: (type: TooltipType) => TOOLTIP_TYPES.includes(type),
+    },
+    /**
+     * `top` to render the tooltip above the target, `bottom` to render below.
+     */
+    orientation: {
+      type: String as PropType<TooltipOrientation>,
+      default: "bottom",
+      validator: (orientation: TooltipOrientation) =>
+        TOOLTIP_ORIENTATIONS.includes(orientation),
+    },
+    /**
+     * spacing between the invisible hoverable boundaries of the tooltip and the visible part
+     */
+    gap: {
+      type: Number,
+      default: 0,
+    },
+    /** if tooltip is hoverable, it will stay open when the mouse moves onto it */
+    hoverable: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  computed: {
+    expandedGap() {
+      // The arrow tip is outside of the bounding box and rotated by 45°.
+      return this.gap + this.$shapes.tooltipArrowSize * Math.SQRT1_2;
+    },
+  },
 });
 </script>
 
@@ -99,35 +100,19 @@ export default defineComponent({
     <div class="wrap-arrow">
       <div
         class="scroller"
-        :style="{maxHeight: `${$shapes.tooltipMaxHeight}px`}"
+        :style="{ maxHeight: `${$shapes.tooltipMaxHeight}px` }"
       >
-        <div
-          v-if="title"
-          class="title"
-        >
+        <div v-if="title" class="title">
           {{ title }}
         </div>
-        <p
-          v-if="text"
-          class="text"
-        >
+        <p v-if="text" class="text">
           {{ text }}
         </p>
-        <div
-          v-if="issue"
-          class="issue"
-          v-text="issue"
-        />
-        <div
-          v-if="resolutions.length"
-          class="resolutions"
-        >
+        <div v-if="issue" class="issue" v-text="issue" />
+        <div v-if="resolutions.length" class="resolutions">
           Potential resolutions:
           <ul>
-            <li
-              v-for="res in resolutions"
-              :key="res"
-            >
+            <li v-for="res in resolutions" :key="res">
               {{ res }}
             </li>
           </ul>
