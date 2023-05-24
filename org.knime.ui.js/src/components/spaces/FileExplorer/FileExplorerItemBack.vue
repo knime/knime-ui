@@ -1,21 +1,21 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 
-import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
+import ArrowIcon from "webapps-common/ui/assets/img/icons/arrow-back.svg";
 
-import FileExplorerItemBase from './FileExplorerItemBase.vue';
+import FileExplorerItemBase from "./FileExplorerItemBase.vue";
 
 export default defineComponent({
-    components: {
-        ArrowIcon,
-        FileExplorerItemBase
+  components: {
+    ArrowIcon,
+    FileExplorerItemBase,
+  },
+  props: {
+    isDragging: {
+      type: Boolean,
+      required: true,
     },
-    props: {
-        isDragging: {
-            type: Boolean,
-            required: true
-        }
-    }
+  },
 });
 </script>
 
@@ -30,9 +30,7 @@ export default defineComponent({
       <ArrowIcon class="arrow-icon" />
     </template>
 
-    <td class="item-name hidden">
-      Go back to parent directory
-    </td>
+    <td class="item-name hidden">Go back to parent directory</td>
   </FileExplorerItemBase>
 </template>
 

@@ -1,79 +1,86 @@
-import { computed, ref, type ComputedRef, type Ref } from 'vue';
-import * as multiSelectionService from './multiSelectionStateService';
-import { getMetaOrCtrlKey } from '@/util/navigator';
+import { computed, ref, type ComputedRef, type Ref } from "vue";
+import * as multiSelectionService from "./multiSelectionStateService";
+import { getMetaOrCtrlKey } from "@/util/navigator";
 
 export type UseMultiSelectionReturn = {
-    multiSelectionState: Ref<multiSelectionService.MultiSelectionState>;
-    isSelected: (index: number) => boolean;
-    selectedIndexes: ComputedRef<Array<number>>;
-    isMultipleSelectionActive: (index: number) => boolean;
-    resetSelection: () => void;
-    handleSelectionClick: (index: number, event?: MouseEvent | null) => void
-}
+  multiSelectionState: Ref<multiSelectionService.MultiSelectionState>;
+  isSelected: (index: number) => boolean;
+  selectedIndexes: ComputedRef<Array<number>>;
+  isMultipleSelectionActive: (index: number) => boolean;
+  resetSelection: () => void;
+  handleSelectionClick: (index: number, event?: MouseEvent | null) => void;
+};
 
 export const useMultiSelection = (): UseMultiSelectionReturn => {
-    const multiSelectionState = ref<multiSelectionService.MultiSelectionState>(
-        multiSelectionService.getInitialState()
+  const multiSelectionState = ref<multiSelectionService.MultiSelectionState>(
+    multiSelectionService.getInitialState()
+  );
+
+  const isSelected = (index: number) =>
+    multiSelectionService.isItemSelected(multiSelectionState.value, index);
+
+  const selectedIndexes = computed(() =>
+    multiSelectionService.getSelectedIndexes(multiSelectionState.value)
+  );
+
+  const isMultipleSelectionActive = (index: number) =>
+    multiSelectionService.isMultipleSelectionActive(
+      multiSelectionState.value,
+      index
     );
 
-    const isSelected = (index: number) => multiSelectionService.isItemSelected(multiSelectionState.value, index);
+  const resetSelection = () => {
+    multiSelectionState.value = multiSelectionService.getInitialState();
+  };
 
-    const selectedIndexes = computed(() => multiSelectionService.getSelectedIndexes(multiSelectionState.value));
+  const clickItem = (index: number) => {
+    multiSelectionState.value = multiSelectionService.click(index);
+  };
 
-    const isMultipleSelectionActive = (index: number) => multiSelectionService.isMultipleSelectionActive(
-        multiSelectionState.value,
-        index
+  const ctrlClickItem = (index: number) => {
+    multiSelectionState.value = multiSelectionService.ctrlClick(
+      multiSelectionState.value,
+      index
     );
+  };
 
-    const resetSelection = () => {
-        multiSelectionState.value = multiSelectionService.getInitialState();
-    };
+  const shiftClickItem = (index: number) => {
+    multiSelectionState.value = multiSelectionService.shiftClick(
+      multiSelectionState.value,
+      index
+    );
+  };
 
-    const clickItem = (index: number) => {
-        multiSelectionState.value = multiSelectionService.click(index);
-    };
+  const handleSelectionClick = (
+    index: number,
+    event: MouseEvent | null = null
+  ) => {
+    if (!event) {
+      clickItem(index);
+      return;
+    }
 
-    const ctrlClickItem = (index: number) => {
-        multiSelectionState.value = multiSelectionService.ctrlClick(
-            multiSelectionState.value,
-            index
-        );
-    };
+    const metaOrCtrlKey = getMetaOrCtrlKey();
 
-    const shiftClickItem = (index: number) => {
-        multiSelectionState.value = multiSelectionService.shiftClick(
-            multiSelectionState.value,
-            index
-        );
-    };
+    if (event.shiftKey) {
+      shiftClickItem(index);
+      return;
+    }
 
-    const handleSelectionClick = (index: number, event: MouseEvent | null = null) => {
-        if (!event) {
-            clickItem(index);
-            return;
-        }
+    if (event[metaOrCtrlKey]) {
+      ctrlClickItem(index);
+      return;
+    }
 
-        const metaOrCtrlKey = getMetaOrCtrlKey();
+    clickItem(index);
+  };
 
-        if (event.shiftKey) {
-            shiftClickItem(index);
-            return;
-        }
-
-        if (event[metaOrCtrlKey]) {
-            ctrlClickItem(index);
-            return;
-        }
-
-        clickItem(index);
-    };
-
-    return {
-        multiSelectionState,
-        isSelected,
-        selectedIndexes,
-        isMultipleSelectionActive,
-        resetSelection,
-        handleSelectionClick
-    };
+  return {
+    multiSelectionState,
+    isSelected,
+    selectedIndexes,
+    isMultipleSelectionActive,
+    resetSelection,
+    handleSelectionClick,
+  };
 };

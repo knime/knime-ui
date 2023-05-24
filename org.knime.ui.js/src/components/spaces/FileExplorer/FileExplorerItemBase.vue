@@ -1,18 +1,18 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 
 export default defineComponent({
-    props: {
-        isSelected: {
-            type: Boolean,
-            required: true
-        },
+  props: {
+    isSelected: {
+      type: Boolean,
+      required: true,
+    },
 
-        isDragging: {
-            type: Boolean,
-            required: true
-        }
-    }
+    isDragging: {
+      type: Boolean,
+      required: true,
+    },
+  },
 });
 </script>
 
@@ -21,7 +21,7 @@ export default defineComponent({
     class="file-explorer-item-base"
     :class="{
       selected: !isDragging && isSelected,
-      dragging: isDragging && isSelected
+      dragging: isDragging && isSelected,
     }"
     data-test-id="file-explorer-item"
   >

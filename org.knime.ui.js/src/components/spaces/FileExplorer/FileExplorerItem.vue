@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { toRefs, ref, watch, type Ref, nextTick } from 'vue';
-import { directive as vClickAway } from 'vue3-click-away';
+import { toRefs, ref, watch, type Ref, nextTick } from "vue";
+import { directive as vClickAway } from "vue3-click-away";
 
-import InputField from 'webapps-common/ui/components/forms/InputField.vue';
-import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
-import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
-import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
-import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
-import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
+import InputField from "webapps-common/ui/components/forms/InputField.vue";
+import WorkflowGroupIcon from "webapps-common/ui/assets/img/icons/folder.svg";
+import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
+import ComponentIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
+import DataIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
+import MetaNodeIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
 
-import { SpaceItem } from '@/api/gateway-api/generated-api';
-import { useWorkflowNameValidator } from '@/composables/useWorkflowNameValidator';
+import { SpaceItem } from "@/api/gateway-api/generated-api";
+import { useWorkflowNameValidator } from "@/composables/useWorkflowNameValidator";
 
-import FileExplorerItemBase from './FileExplorerItemBase.vue';
-import type { FileExplorerItem } from './types';
+import FileExplorerItemBase from "./FileExplorerItemBase.vue";
+import type { FileExplorerItem } from "./types";
 
 interface Props {
-    blacklistedNames: Array<string>;
-    mode: 'mini' | 'normal';
-    item: FileExplorerItem;
-    isSelected: boolean;
-    isDragging: boolean;
-    isRenameActive: boolean;
+  blacklistedNames: Array<string>;
+  mode: "mini" | "normal";
+  item: FileExplorerItem;
+  isSelected: boolean;
+  isDragging: boolean;
+  isRenameActive: boolean;
 }
 
 const props = defineProps<Props>();
@@ -29,70 +29,73 @@ const props = defineProps<Props>();
 const { isRenameActive, blacklistedNames } = toRefs(props);
 
 interface Emits {
-    (e: 'dblclick', nativeEvent: MouseEvent): void;
-    (e: 'click', nativeEvent: MouseEvent): void;
-    (e: 'dragstart', nativeEvent: DragEvent): void;
-    (e: 'dragenter', nativeEvent: DragEvent): void;
-    (e: 'drag', nativeEvent: DragEvent): void;
-    (e: 'dragleave', nativeEvent: DragEvent): void;
-    (e: 'dragend', nativeEvent: DragEvent): void;
-    (e: 'drop', nativeEvent: DragEvent): void;
-    (e: 'contextmenu', nativeEvent: MouseEvent): void;
-    (e: 'rename:submit', payload: { itemId: string; newName: string }): void;
-    (e: 'rename:clear'): void;
+  (e: "dblclick", nativeEvent: MouseEvent): void;
+  (e: "click", nativeEvent: MouseEvent): void;
+  (e: "dragstart", nativeEvent: DragEvent): void;
+  (e: "dragenter", nativeEvent: DragEvent): void;
+  (e: "drag", nativeEvent: DragEvent): void;
+  (e: "dragleave", nativeEvent: DragEvent): void;
+  (e: "dragend", nativeEvent: DragEvent): void;
+  (e: "drop", nativeEvent: DragEvent): void;
+  (e: "contextmenu", nativeEvent: MouseEvent): void;
+  (e: "rename:submit", payload: { itemId: string; newName: string }): void;
+  (e: "rename:clear"): void;
 }
 
 const emit = defineEmits<Emits>();
 
 const getTypeIcon = (item: FileExplorerItem) => {
-    const typeIcons = {
-        [SpaceItem.TypeEnum.WorkflowGroup]: WorkflowGroupIcon,
-        [SpaceItem.TypeEnum.Workflow]: WorkflowIcon,
-        [SpaceItem.TypeEnum.Component]: ComponentIcon,
-        [SpaceItem.TypeEnum.WorkflowTemplate]: MetaNodeIcon,
-        [SpaceItem.TypeEnum.Data]: DataIcon
-    };
+  const typeIcons = {
+    [SpaceItem.TypeEnum.WorkflowGroup]: WorkflowGroupIcon,
+    [SpaceItem.TypeEnum.Workflow]: WorkflowIcon,
+    [SpaceItem.TypeEnum.Component]: ComponentIcon,
+    [SpaceItem.TypeEnum.WorkflowTemplate]: MetaNodeIcon,
+    [SpaceItem.TypeEnum.Data]: DataIcon,
+  };
 
-    return typeIcons[item.type];
+  return typeIcons[item.type];
 };
 
 const renameInput: Ref<InstanceType<typeof InputField> | null> = ref(null);
-const renameValue = ref('');
+const renameValue = ref("");
 
 const { isValid, errorMessage, cleanName } = useWorkflowNameValidator({
-    blacklistedNames,
-    name: renameValue
+  blacklistedNames,
+  name: renameValue,
 });
 
 const setupRenameInput = async () => {
-    renameValue.value = props.item.name;
-    await nextTick();
+  renameValue.value = props.item.name;
+  await nextTick();
 
-    renameInput.value.focus();
+  renameInput.value.focus();
 };
 
 watch(isRenameActive, async (isActive) => {
-    if (isActive) {
-        await setupRenameInput();
-    }
+  if (isActive) {
+    await setupRenameInput();
+  }
 });
 
 const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
-    if (keyupEvent.key === 'Escape' || keyupEvent.key === 'Esc') {
-        emit('rename:clear');
+  if (keyupEvent.key === "Escape" || keyupEvent.key === "Esc") {
+    emit("rename:clear");
+  }
+
+  if ((keyupEvent.key === "Enter" || isClickAway) && isValid.value) {
+    const newName = cleanName(renameValue.value.trim());
+
+    if (newName === "") {
+      emit("rename:clear");
+      return;
     }
 
-    if ((keyupEvent.key === 'Enter' || isClickAway) && isValid.value) {
-        const newName = cleanName(renameValue.value.trim());
-
-        if (newName === '') {
-            emit('rename:clear');
-            return;
-        }
-
-        emit('rename:submit', { itemId: props.item.id, newName: renameValue.value });
-        emit('rename:clear');
-    }
+    emit("rename:submit", {
+      itemId: props.item.id,
+      newName: renameValue.value,
+    });
+    emit("rename:clear");
+  }
 };
 </script>
 
@@ -115,10 +118,7 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
     @dblclick="!isRenameActive && emit('dblclick', $event)"
   >
     <template #icon>
-      <span
-        v-if="item.isOpen"
-        class="open-indicator"
-      />
+      <span v-if="item.isOpen" class="open-indicator" />
       <Component :is="getTypeIcon(item)" />
     </template>
 
@@ -126,7 +126,7 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
       class="item-content"
       :class="{
         light: item.type !== SpaceItem.TypeEnum.WorkflowGroup,
-        'rename-active': isRenameActive
+        'rename-active': isRenameActive,
       }"
       :title="item.name"
     >
@@ -143,10 +143,7 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
             :is-valid="isValid"
             @keyup="onRenameSubmit($event)"
           />
-          <div
-            v-if="!isValid"
-            class="item-error"
-          >
+          <div v-if="!isValid" class="item-error">
             <span>{{ errorMessage }}</span>
           </div>
         </div>

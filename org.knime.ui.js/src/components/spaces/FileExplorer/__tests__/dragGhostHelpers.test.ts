@@ -24,10 +24,11 @@ describe("dragGhostHelpers", () => {
         : [{ targetEl: dragTarget, textContent: "" }];
 
     document.body.appendChild(dragTarget);
-    const dragStartEvent = new Event("dragstart");
+    const dragStartEvent = new Event("dragstart") as DragEvent;
     const dataTransfer = {
       setDragImage: vi.fn(),
     };
+    // @ts-expect-error
     dragStartEvent.dataTransfer = dataTransfer;
     dragTarget.dispatchEvent(dragStartEvent);
 

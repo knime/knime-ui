@@ -11,7 +11,7 @@ import Modal from "webapps-common/ui/components/Modal.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItemsBase.vue";
+import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import {
   SpaceItem,
