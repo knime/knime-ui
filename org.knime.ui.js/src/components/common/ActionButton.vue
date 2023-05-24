@@ -49,6 +49,7 @@ export default {
       filter="url(#node-action-button-shadow)"
       :class="{ primary }"
     />
+    <rect width="24" height="24" :x="x - 12" y="-12" opacity="0" />
     <title v-if="title">{{ title }}</title>
     <NestedSvg width="20" height="20" :x="x - 10" y="-10">
       <slot />

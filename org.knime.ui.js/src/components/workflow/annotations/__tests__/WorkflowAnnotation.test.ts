@@ -149,9 +149,9 @@ describe("Workflow Annotation", () => {
   describe("transform", () => {
     const getTransformControlsStub = (transformedBounds: Bounds) => ({
       render() {
-        // @ts-ignore
         return h(
           "g",
+          // @ts-ignore
           this.$slots.default({
             transformedBounds,
           })
@@ -253,9 +253,9 @@ describe("Workflow Annotation", () => {
       });
 
       await toggleAnnotationEdit($store, "id1");
-      expect(wrapper.findComponent(RichTextEditor).props("borderColor")).toBe(
-        $colors.defaultAnnotationBorderColor
-      );
+      expect(
+        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+      ).toBe($colors.defaultAnnotationBorderColor);
 
       const newText = "<p>new content</p>";
       expect(wrapper.findComponent(RichTextEditor).props("initialValue")).toBe(
@@ -280,9 +280,30 @@ describe("Workflow Annotation", () => {
       });
 
       await toggleAnnotationEdit($store, "id1");
-      expect(wrapper.findComponent(RichTextEditor).props("borderColor")).toBe(
-        "#000000"
-      );
+      expect(
+        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+      ).toBe("#000000");
+    });
+
+    it("should update the active border color for new annotations when it changes in the state", async () => {
+      const { wrapper, $store } = doMount({
+        props: {
+          annotation: { ...modernAnnotation, borderColor: "#000000" },
+        },
+      });
+
+      await toggleAnnotationEdit($store, "id1");
+      expect(
+        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+      ).toBe("#000000");
+
+      await wrapper.setProps({
+        annotation: { ...modernAnnotation, borderColor: "#987654" },
+      });
+
+      expect(
+        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+      ).toBe("#987654");
     });
 
     it("should dispatch an update of an annotation content (no color change)", async () => {
@@ -301,9 +322,9 @@ describe("Workflow Annotation", () => {
       expect(wrapper.findComponent(RichTextEditor).props("initialValue")).toBe(
         modernAnnotation.text
       );
-      expect(wrapper.findComponent(RichTextEditor).props("borderColor")).toBe(
-        "#000000"
-      );
+      expect(
+        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+      ).toBe("#000000");
       // @ts-ignore
       VueClickAway.trigger();
 
@@ -332,9 +353,9 @@ describe("Workflow Annotation", () => {
         .vm.$emit("changeBorderColor", newColor);
       await nextTick();
 
-      expect(wrapper.findComponent(RichTextEditor).props("borderColor")).toBe(
-        newColor
-      );
+      expect(
+        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+      ).toBe("#000000");
       // @ts-ignore
       VueClickAway.trigger();
 

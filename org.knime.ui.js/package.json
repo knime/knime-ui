@@ -23,7 +23,7 @@
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
     "opensourcecredits": "npm run --prefix webapps-common opensourcecredits",
     "postinstall": "npm run opensourcecredits -- --no-overwrite",
-    "prepare": "cd .. && husky install ./org.knime.ui.js/.husky"
+    "add-husky": "cd .. && husky install ./org.knime.ui.js/.husky"
   },
   "dependencies": {
     "@fontsource/roboto-condensed": "4.5.9",

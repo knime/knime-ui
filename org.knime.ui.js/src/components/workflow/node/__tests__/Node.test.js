@@ -174,6 +174,8 @@ describe("Node", () => {
         },
       });
     };
+
+    document.elementFromPoint = vi.fn();
   });
 
   describe("features", () => {
