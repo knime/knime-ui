@@ -85,10 +85,6 @@ export default defineComponent({
     async onMoveStart({ detail }) {
       await this.$store.dispatch("workflow/resetDragState");
 
-      if (this.isMoveLocked) {
-        return;
-      }
-
       if (!detail.event.shiftKey && !this.isAnnotationSelected(this.id)) {
         await this.deselectAllObjects();
       }
@@ -167,14 +163,14 @@ export default defineComponent({
 <template>
   <g
     ref="container"
-    v-move="{ onMoveStart, onMove, onMoveEnd, isProtected: !isWritable }"
+    v-move="{
+      onMoveStart,
+      onMove,
+      onMoveEnd,
+      isProtected: !isWritable || isMoveLocked,
+    }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
-    :class="[
-      {
-        dragging: isDragging && isAnnotationSelected(id),
-        unmovable: isMoveLocked,
-      },
-    ]"
+    :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
     @pointerdown.left.stop="initCursorPosition"
   >
     <slot />
@@ -182,11 +178,6 @@ export default defineComponent({
 </template>
 
 <style lang="postcss" scoped>
-.unmovable {
-  user-select: none;
-  pointer-events: none;
-}
-
 .dragging {
   cursor: grabbing;
   pointer-events: none;
