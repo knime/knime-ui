@@ -37,6 +37,7 @@ export default {
     // Start position of the dragging
     startPos: null,
     lastHitTarget: null,
+    lockedMoving: false,
   }),
   computed: {
     ...mapGetters("workflow", ["isWritable", "isNodeConnected", "getNodeById"]),
@@ -74,6 +75,13 @@ export default {
         this.handleMoveFromStore();
       },
     },
+    isMoveLocked: {
+      handler() {
+        if (!this.isMoveLocked) {
+          this.lockedMoving = false;
+        }
+      },
+    },
   },
   methods: {
     ...mapActions("selection", [
@@ -100,10 +108,6 @@ export default {
      */
     async onMoveStart({ detail }) {
       await this.$store.dispatch("workflow/resetDragState");
-
-      if (this.isMoveLocked) {
-        return;
-      }
 
       if (!detail.event.shiftKey && !this.isNodeSelected(this.id)) {
         this.deselectAllObjects();
@@ -134,11 +138,25 @@ export default {
      * throttled to limit recalculation
      * @param {Object} detail - containing the total amount moved in x and y direction
      */
-    onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
+    onMove: throttle(function ({
+      detail: { clientX, clientY, altKey, event },
+    }) {
       /* eslint-disable no-invalid-this */
-      if (!this.startPos || this.hasAbortedDrag || this.isMoveLocked) {
+      if (!this.startPos || this.hasAbortedDrag) {
         return;
       }
+
+      console.log("MOVE LOCKING", this.isMoveLocked);
+      // if (this.isMoveLocked) {
+      //   this.lockedMoving = true;
+      //   this.$el.dispatchEvent(
+      //     new CustomEvent("custom-rect-start", {
+      //       bubbles: true,
+      //       detail: { clientX, clientY },
+      //     })
+      //   );
+      //   return;
+      // }
 
       // Notify elements under the cursor
       this.notifyNodeDraggingListeners(clientX, clientY);
@@ -267,11 +285,16 @@ export default {
 
 <template>
   <g
-    v-move="{ onMove, onMoveStart, onMoveEnd, isProtected: !isWritable }"
+    v-move="{
+      onMove,
+      onMoveStart,
+      onMoveEnd,
+      isProtected: !isWritable || isMoveLocked,
+    }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :data-node-id="id"
     :class="[
-      { dragging: isDragging && isNodeSelected(id), unmovable: isMoveLocked },
+      { dragging: isDragging && isNodeSelected(id), unmovable: lockedMoving },
     ]"
   >
     <slot :position="translationAmount" />
@@ -279,15 +302,15 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.unmovable {
+/* .unmovable {
   user-select: none;
   pointer-events: none;
 
   & :deep(.hover-area) {
-    pointer-events: none !important;
+    pointer-events: none;
     user-select: none !important;
   }
-}
+} */
 
 .dragging {
   cursor: grabbing;

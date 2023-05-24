@@ -51,6 +51,10 @@ type DirectiveBinding = {
 
 interface MoveState {
   /**
+   * Determines whether move can happen or not
+   */
+  isProtected: boolean;
+  /**
    * Whether the element that this state corresponds to is being dragged
    */
   dragging: boolean;
@@ -91,6 +95,9 @@ const stateMap: WeakMap<HTMLElement, MoveState> = new WeakMap();
 const createPointerdownHandler =
   (srcElement: HTMLElement) => (event: PointerEvent) => {
     const state = stateMap.get(srcElement);
+    if (state.isProtected) {
+      return;
+    }
 
     // only left mouse button can move
     if (event.button !== 0) {
@@ -201,6 +208,27 @@ const createPointerupHandler =
     delete state.dragging;
   };
 
+const initializeState = (el: HTMLElement, value: DirectiveBinding) => {
+  if (stateMap.get(el)) {
+    return;
+  }
+
+  const state: MoveState = {
+    isProtected: value.isProtected,
+    handlers: value,
+    dragging: false,
+    pointerdownHandler: createPointerdownHandler(el),
+    pointermoveHandler: createPointermoveHandler(el),
+    pointerupHandler: createPointerupHandler(el),
+  };
+
+  el.addEventListener("pointerdown", state.pointerdownHandler);
+  el.addEventListener("pointerup", state.pointerupHandler);
+  el.addEventListener("lostpointercapture", state.pointerupHandler);
+
+  stateMap.set(el, state);
+};
+
 const options: Directive<HTMLElement, DirectiveBinding> = {
   mounted: (el, { value }) => {
     // Only insert when the object is writable
@@ -208,19 +236,7 @@ const options: Directive<HTMLElement, DirectiveBinding> = {
       return;
     }
 
-    const state: MoveState = {
-      handlers: value,
-      dragging: false,
-      pointerdownHandler: createPointerdownHandler(el),
-      pointermoveHandler: createPointermoveHandler(el),
-      pointerupHandler: createPointerupHandler(el),
-    };
-
-    el.addEventListener("pointerdown", state.pointerdownHandler);
-    el.addEventListener("pointerup", state.pointerupHandler);
-    el.addEventListener("lostpointercapture", state.pointerupHandler);
-
-    stateMap.set(el, state);
+    initializeState(el, value);
   },
 
   unmounted: (el, { value }) => {
@@ -242,10 +258,16 @@ const options: Directive<HTMLElement, DirectiveBinding> = {
   // this is necessary, as otherwise the capture is lost on rerender of the view
   updated: (el, { value }) => {
     // Only insert when the object is writable
+    if (!stateMap.get(el)) {
+      initializeState(el, value);
+    }
+
+    const state = stateMap.get(el);
+    state.isProtected = value.isProtected;
+
     if (value.isProtected) {
       return;
     }
-    const state = stateMap.get(el);
 
     if (
       Reflect.has(state, "pointerId") &&
