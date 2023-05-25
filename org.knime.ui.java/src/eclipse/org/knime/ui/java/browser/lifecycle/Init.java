@@ -137,7 +137,7 @@ final class Init {
         }
 
         DesktopAPI.injectDependencies(workflowProjectManager, appStateUpdater, spaceProviders, updateStateProvider,
-            eventConsumer);
+            eventConsumer, workflowMiddleware);
 
         var listener = registerListenerToSendProgressEvents(eventConsumer);
 

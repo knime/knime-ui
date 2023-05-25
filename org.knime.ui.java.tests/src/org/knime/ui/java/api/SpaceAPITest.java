@@ -88,7 +88,7 @@ class SpaceAPITest {
         providersMap.put("2", connectedSpaceProvider);
         when(spaceProviders.getProvidersMap()).thenReturn(providersMap);
 
-        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null);
+        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null, null);
 
         var spaceProvidersJson = SpaceAPI.getSpaceProviders();
         assertThat(spaceProvidersJson).isEqualTo("""
@@ -131,7 +131,7 @@ class SpaceAPITest {
         providersMap.put("2", disconnectedSpaceProvider);
         when(spaceProviders.getProvidersMap()).thenReturn(providersMap);
 
-        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null);
+        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null, null);
 
         assertThat(SpaceAPI.connectSpaceProvider("1")).isNull();
         assertThat(SpaceAPI.connectSpaceProvider("2")).isEqualTo("""
@@ -152,7 +152,7 @@ class SpaceAPITest {
         var spaceProviders = mock(SpaceProviders.class);
         when(spaceProviders.getProvidersMap()).thenReturn(Map.of("1", connectedSpaceProvider));
 
-        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null);
+        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null, null);
         SpaceAPI.disconnectSpaceProvider("1");
 
         verify(connection).disconnect();
