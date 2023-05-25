@@ -9,7 +9,6 @@ import { mockVuexStore } from "@/test/utils";
 import * as spacesStore from "@/store/spaces";
 
 import CreateWorkflowModal from "../CreateWorkflowModal.vue";
-import { escapeStack as escapeStackMock } from "@/mixins/escapeStack";
 vi.mock("@/mixins/escapeStack", () => {
   function escapeStack({ onEscape }) {
     // eslint-disable-line func-style
@@ -195,17 +194,6 @@ describe("CreateWorkflowModal.vue", () => {
         expect(dispatchSpy).not.toHaveBeenCalledWith("spaces/createWorkflow", {
           workflowName: newName,
         });
-      });
-
-      it("should close on ESC", () => {
-        const { wrapper, commitSpy } = doMount();
-
-        escapeStackMock.onEscape.call(wrapper.vm);
-
-        expect(commitSpy).toHaveBeenCalledWith(
-          "spaces/setIsCreateWorkflowModalOpen",
-          false
-        );
       });
     });
   });

@@ -1,103 +1,91 @@
-<script>
-import { mapState } from "vuex";
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import { useStore } from "vuex";
+
 import Modal from "webapps-common/ui/components/Modal.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 
-import WorkflowNameValidator from "@/components/common/WorkflowNameValidator.vue";
+import { useWorkflowNameValidator } from "@/composables/useWorkflowNameValidator";
 
-import { escapeStack } from "@/mixins/escapeStack";
+const store = useStore();
 
-export default {
-  components: {
-    Modal,
-    Button,
-    Label,
-    InputField,
-    WorkflowNameValidator,
-  },
+const inputRef = ref<InstanceType<typeof InputField>>(null);
+const workflowName = ref("KNIME_project");
 
-  mixins: [
-    escapeStack({
-      alwaysActive: true,
-      onEscape() {
-        if (this.isCreateWorkflowModalOpen) {
-          this.closeModal();
-        }
-      },
-    }),
-  ],
+const isCreateWorkflowModalOpen = computed(
+  () => store.state.spaces.isCreateWorkflowModalOpen
+);
 
-  data() {
-    return {
-      workflowName: "KNIME_project",
-      enableSubmit: true,
-      cleanName: () => {},
-    };
-  },
+const activeSpace = computed(() => store.state.spaces.activeSpace);
+const existingWorkflowNames = computed<Array<string>>(() => {
+  const items = activeSpace.value.activeWorkflowGroup?.items ?? [];
 
-  computed: {
-    ...mapState("spaces", ["isCreateWorkflowModalOpen", "activeSpace"]),
-  },
+  return items.map(({ name }) => name);
+});
 
-  watch: {
-    isCreateWorkflowModalOpen: {
-      immediate: true,
-      handler() {
-        if (this.isCreateWorkflowModalOpen) {
-          this.setNameSuggestion();
-          setTimeout(() => {
-            this.$refs.inputRef?.$refs?.input?.focus();
-            // eslint-disable-next-line no-magic-numbers
-          }, 200);
-        }
-      },
-    },
-  },
+const { isValid, errorMessage, cleanName } = useWorkflowNameValidator({
+  blacklistedNames: existingWorkflowNames,
+  name: workflowName,
+});
 
-  methods: {
-    async onSubmit() {
-      try {
-        await this.$store.dispatch("spaces/createWorkflow", {
-          workflowName: this.cleanName(this.workflowName),
-        });
-        this.closeModal();
-      } catch (error) {
-        consola.log("There was an error creating the workflow", error);
-      }
-    },
-    closeModal() {
-      this.enableSubmit = true;
-      this.$store.commit("spaces/setIsCreateWorkflowModalOpen", false);
-    },
-    onkeyup(keyupEvent, isValid) {
-      if (keyupEvent.key === "Enter" && isValid) {
-        this.onSubmit();
-      }
-    },
-    onValidChange(isValid) {
-      this.enableSubmit = isValid;
-    },
-    getNameCleanerFunction(cleanName) {
-      this.cleanName = cleanName;
-    },
-    setNameSuggestion() {
-      const NAME_TEMPLATE = "KNIME_project";
-      const items = this.activeSpace.activeWorkflowGroup.items;
-      if (!items.some((item) => item.name === `${NAME_TEMPLATE}`)) {
-        this.workflowName = `${NAME_TEMPLATE}`;
-        return;
-      }
-
-      let counter = 1;
-      while (items.some(({ name }) => name === `${NAME_TEMPLATE}${counter}`)) {
-        counter++;
-      }
-      this.workflowName = `${NAME_TEMPLATE}${counter}`;
-    },
-  },
+const closeModal = () => {
+  store.commit("spaces/setIsCreateWorkflowModalOpen", false);
 };
+
+const onSubmit = async () => {
+  try {
+    await store.dispatch("spaces/createWorkflow", {
+      workflowName: cleanName(workflowName.value),
+    });
+
+    closeModal();
+  } catch (error) {
+    consola.log("There was an error creating the workflow", error);
+  }
+};
+
+const onkeyup = (keyupEvent: KeyboardEvent) => {
+  if (keyupEvent.key === "Enter" && isValid.value) {
+    onSubmit();
+  }
+};
+
+const setNameSuggestion = () => {
+  const NAME_TEMPLATE = "KNIME_project";
+
+  const isNameInUse = (value: string) =>
+    existingWorkflowNames.value.some((name) => name === value);
+
+  if (!isNameInUse(NAME_TEMPLATE)) {
+    workflowName.value = NAME_TEMPLATE;
+    return;
+  }
+
+  let counter = 1;
+  while (isNameInUse(`${NAME_TEMPLATE}${counter}`)) {
+    counter++;
+  }
+
+  workflowName.value = `${NAME_TEMPLATE}${counter}`;
+};
+
+watch(
+  isCreateWorkflowModalOpen,
+  () => {
+    if (isCreateWorkflowModalOpen.value) {
+      setNameSuggestion();
+      setTimeout(() => {
+        const inputElement = inputRef.value?.$refs?.input as HTMLInputElement;
+        inputElement?.setSelectionRange(0, workflowName.value.length);
+        inputElement?.focus();
+        // eslint-disable-next-line no-magic-numbers
+      }, 200);
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -112,35 +100,26 @@ export default {
   >
     <template #confirmation>
       <Label text="Workflow name">
-        <WorkflowNameValidator
-          :name="workflowName"
-          :workflow-items="activeSpace.activeWorkflowGroup.items"
-          @is-valid-changed="onValidChange"
-          @clean-name="getNameCleanerFunction"
-        >
-          <template #default="{ isValid, errorMessage }">
-            <div>
-              <InputField
-                ref="inputRef"
-                v-model="workflowName"
-                type="text"
-                title="Workflow name"
-                :is-valid="isValid"
-                @keyup="onkeyup($event, isValid)"
-              />
-              <div v-if="!isValid" class="item-error">
-                <span>{{ errorMessage }}</span>
-              </div>
-            </div>
-          </template>
-        </WorkflowNameValidator>
+        <div>
+          <InputField
+            ref="inputRef"
+            v-model="workflowName"
+            type="text"
+            title="Workflow name"
+            :is-valid="isValid"
+            @keyup="onkeyup"
+          />
+          <div v-if="!isValid" class="item-error">
+            <span>{{ errorMessage }}</span>
+          </div>
+        </div>
       </Label>
     </template>
     <template #controls>
       <Button with-border @click="closeModal">
         <strong>Cancel</strong>
       </Button>
-      <Button primary :disabled="!enableSubmit" @click="onSubmit">
+      <Button primary :disabled="!isValid" @click="onSubmit">
         <strong>Create</strong>
       </Button>
     </template>
