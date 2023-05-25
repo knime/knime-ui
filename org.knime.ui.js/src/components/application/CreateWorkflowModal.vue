@@ -46,9 +46,9 @@ const onSubmit = async () => {
   }
 };
 
-const onkeyup = (keyupEvent: KeyboardEvent) => {
+const onkeyup = async (keyupEvent: KeyboardEvent) => {
   if (keyupEvent.key === "Enter" && isValid.value) {
-    onSubmit();
+    await onSubmit();
   }
 };
 
