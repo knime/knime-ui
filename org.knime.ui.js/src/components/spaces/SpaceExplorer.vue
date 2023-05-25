@@ -3,9 +3,9 @@ import { defineComponent, type PropType } from "vue";
 import { mapActions, mapGetters, mapState } from "vuex";
 import { API } from "@api";
 
-import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
-import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
+import HouseIcon from "webapps-common/ui/assets/img/icons/house.svg";
+import SpaceSelectionDropdown from "./SpaceSelectionDropdown.vue";
 import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 import Modal from "webapps-common/ui/components/Modal.vue";
 import Button from "webapps-common/ui/components/Button.vue";
@@ -17,7 +17,6 @@ import {
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
-import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 import { APP_ROUTES } from "@/router/appRoutes";
 import SmartLoader from "@/components/common/SmartLoader.vue";
 
@@ -46,6 +45,7 @@ export default defineComponent({
     FileExplorer,
     MenuItems,
     NodePreview,
+    SpaceSelectionDropdown,
     Breadcrumb,
     SmartLoader,
     Modal,
@@ -93,6 +93,7 @@ export default defineComponent({
         state.activeSpace?.activeWorkflowGroup as WorkflowGroupContent,
       spaceId: (state) => state.activeSpace?.spaceId as string,
       isLoading: (state) => state.isLoading as boolean,
+      spaceProviders: (state) => state.spaceProviders,
     }),
     ...mapState("nodeRepository", ["nodesPerCategory"]),
     ...mapGetters("spaces", [
@@ -122,31 +123,17 @@ export default defineComponent({
       return this.spaceId === "local";
     },
 
-    homeBreadcrumbItem() {
-      if (this.mode !== "mini") {
-        return {
-          text: "Home",
-          id: "root",
-        };
-      }
-
-      // use icons for mini mode
-      let icon = ComputerDesktopIcon;
-      if (!this.activeSpaceInfo.local) {
-        icon = this.activeSpaceInfo.private ? PrivateSpaceIcon : CubeIcon;
-      }
-      return {
-        title: this.activeSpaceInfo.name,
-        icon,
+    breadcrumbItems() {
+      const homeBreadcrumbItem = {
+        icon: HouseIcon,
         id: "root",
       };
-    },
 
-    breadcrumbItems() {
       if (!this.activeWorkflowGroup) {
         return [
           {
-            ...this.homeBreadcrumbItem,
+            ...homeBreadcrumbItem,
+            text: "Home",
             clickable: false,
           },
         ];
@@ -154,7 +141,8 @@ export default defineComponent({
 
       const { path } = this.activeWorkflowGroup;
       const rootBreadcrumb = {
-        ...this.homeBreadcrumbItem,
+        ...homeBreadcrumbItem,
+        text: path.length === 0 ? "Home" : null,
         clickable: path.length > 0,
       };
       const lastPathIndex = path.length - 1;
@@ -165,6 +153,44 @@ export default defineComponent({
           id: pathItem.id,
           clickable: index !== lastPathIndex,
         }))
+      );
+    },
+
+    spacesDropdownData() {
+      const providers = this.spaceProviders
+        ? Object.values(this.spaceProviders)
+        : [];
+
+      return providers.flatMap((provider) =>
+        (provider.id === "local"
+          ? []
+          : [
+              {
+                id: provider.id,
+                text: provider.name,
+                sectionHeadline: true,
+                separator: true,
+              },
+            ]
+        ).concat(
+          provider.spaces
+            ? provider.spaces.map((space) => ({
+                text: space.name,
+                id: `${provider.id}__${space.id}`,
+                selected: space.id === this.activeSpace.spaceId,
+                data: {
+                  spaceId: space.id,
+                  providerId: provider.id,
+                },
+              }))
+            : [
+                {
+                  text: "Sign in…",
+                  id: `${provider.id}__SIGN_IN`,
+                  data: { providerId: provider.id, requestSignIn: true },
+                },
+              ]
+        )
       );
     },
 
@@ -238,6 +264,11 @@ export default defineComponent({
     async onBreadcrumbClick({ id }) {
       await this.fetchWorkflowGroupContent(id);
       this.$emit("itemChanged", id);
+    },
+
+    onSpaceChange(spaceProviderItem) {
+      // TODO: implement
+      consola.warn(spaceProviderItem);
     },
 
     onDeleteItems({ items }) {
@@ -478,11 +509,13 @@ export default defineComponent({
 
 <template>
   <div :class="mode" class="space-explorer">
-    <div class="breadcrumb-wrapper">
-      <Breadcrumb :items="breadcrumbItems" @click-item="onBreadcrumbClick" />
+    <div v-if="mode === 'mini'" class="mini-actions">
+      <SpaceSelectionDropdown
+        :spaces="spacesDropdownData"
+        @change-space="onSpaceChange"
+      />
 
       <SpaceExplorerActions
-        v-if="mode === 'mini'"
         mode="mini"
         :is-local="isLocal"
         :disabled-actions="explorerDisabledActions"
@@ -512,6 +545,9 @@ export default defineComponent({
           })
         "
       />
+    </div>
+    <div class="breadcrumb-wrapper">
+      <Breadcrumb :items="breadcrumbItems" @click-item="onBreadcrumbClick" />
     </div>
 
     <SmartLoader
@@ -614,6 +650,11 @@ export default defineComponent({
   }
 }
 
+.mini-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
 .breadcrumb-wrapper {
   position: relative;
   display: flex;
@@ -623,11 +664,6 @@ export default defineComponent({
   width: 100%;
   border-bottom: 1px solid var(--knime-silver-sand);
   align-items: center;
-
-  & .create-workflow-mini-btn {
-    margin-left: auto;
-    margin-right: 5px;
-  }
 
   & .breadcrumb {
     padding-bottom: 0;
@@ -641,6 +677,10 @@ export default defineComponent({
 
     &::-webkit-scrollbar {
       display: none;
+    }
+
+    & :deep(.arrow) {
+      margin: 0;
     }
 
     & :deep(ul > li > span) {
