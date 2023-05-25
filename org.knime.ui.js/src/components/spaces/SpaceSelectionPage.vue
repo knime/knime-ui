@@ -29,7 +29,12 @@ export default {
   },
 
   computed: {
-    ...mapState("spaces", ["spaceProviders", "spaceBrowser", "isLoading", "activeSpace"]),
+    ...mapState("spaces", [
+      "spaceProviders",
+      "spaceBrowser",
+      "isLoading",
+      "activeSpace",
+    ]),
   },
   beforeCreate() {
     // redirect to browsing page if a space was selected
