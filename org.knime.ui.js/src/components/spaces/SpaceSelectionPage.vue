@@ -46,7 +46,7 @@ export default {
     await this.$store.dispatch("spaces/fetchAllSpaceProviders");
 
     // load local space if no activeWorkflowGroup is set
-    if (!this.activeSpace.activeWorkflowGroup) {
+    if (!this.activeSpace?.activeWorkflowGroup) {
       await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
         itemId: "root",
       });
