@@ -2,12 +2,11 @@
  * Drag & Drop Vue directive.
  *
  * @example:
- * <el v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }" />
+ * <el v-move="{ onMove, onMoveStart, onMoveEnd }" />
  *
  * @param {Function=} onMoveStart Optional handler for the `movestart` event
  * @param {Function=} onMove Optional handler for the `moving` event
  * @param {Function=} onMoveEnd Optional handler for the `moveend` event
- * @param {Number=} threshold Distance that the mouse must have travelled before a move event is fired. Defaults to 5.
  * @param {boolean=} isProtected Only applies the directive if is false
  *
  * The movestart, moving, and moveend events have a `detail` property which holds the attributes
@@ -15,6 +14,7 @@
  * respectively, depending on the event type.
  */
 
+import type { XY } from "@/api/gateway-api/generated-api";
 import type { Directive } from "vue";
 
 type MoveStartEventDetail = {
@@ -44,8 +44,6 @@ type MoveEndEventDetail = {
 
 type DirectiveBinding = {
   isProtected: boolean;
-  threshold?: number;
-
   onMoveStart?: (event: CustomEvent<MoveStartEventDetail>) => any;
   onMove?: (event: CustomEvent<MoveEventDetail>) => any;
   onMoveEnd?: (event: CustomEvent<MoveEndEventDetail>) => any;
@@ -83,9 +81,9 @@ interface MoveState {
   /** Pointer ID that has the pointercapture */
   pointerId?: number;
   /** Position where the drag started */
-  start?: [number, number];
+  startPosition?: XY;
   /** Store the position of the previous move (if any) */
-  prev?: [number, number];
+  previousPosition?: XY;
 }
 
 const stateMap: WeakMap<HTMLElement, MoveState> = new WeakMap();
@@ -108,19 +106,19 @@ const createPointerdownHandler =
     srcElement.addEventListener("pointermove", state.pointermoveHandler);
 
     const { clientX, clientY } = event;
-    delete state.prev;
-    state.start = [clientX, clientY];
+    delete state.previousPosition;
+    state.startPosition = { x: clientX, y: clientY };
   };
 
 const createPointermoveHandler =
   (srcElement: HTMLElement) => (event: PointerEvent) => {
     const state = stateMap.get(srcElement);
 
-    if (!state.start) {
+    if (!state.startPosition) {
       return;
     }
 
-    const [startX, startY] = state.start;
+    const { x: startX, y: startY } = state.startPosition;
     const { clientX, clientY } = event;
     const [moveX, moveY] = [clientX - startX, clientY - startY];
 
@@ -150,10 +148,14 @@ const createPointermoveHandler =
 
     state.dragging = true;
 
-    const deltaX = state.prev ? moveX - state.prev[0] : moveX;
-    const deltaY = state.prev ? moveY - state.prev[1] : moveY;
+    const deltaX = state.previousPosition
+      ? moveX - state.previousPosition.x
+      : moveX;
+    const deltaY = state.previousPosition
+      ? moveY - state.previousPosition.y
+      : moveY;
 
-    state.prev = [moveX, moveY];
+    state.previousPosition = { x: moveX, y: moveY };
 
     if (state.handlers.onMove) {
       const moveEvent = new CustomEvent<MoveEventDetail>("moving", {
@@ -181,7 +183,7 @@ const createPointerupHandler =
 
     if (state.dragging && state.handlers.onMoveEnd) {
       const { clientX, clientY } = event;
-      const [startX, startY] = state.start;
+      const { x: startX, y: startY } = state.startPosition;
       const moveEndEvent = new CustomEvent<MoveEndEventDetail>("moveend", {
         detail: {
           startX,
@@ -195,7 +197,7 @@ const createPointerupHandler =
       state.handlers.onMoveEnd(moveEndEvent);
     }
 
-    delete state.start;
+    delete state.startPosition;
     delete state.dragging;
   };
 
