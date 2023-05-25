@@ -11,13 +11,16 @@ import { MockIntersectionObserver } from "@/test/utils/mockIntersectionObserver"
 
 const setOptions = vi.fn();
 
-vi.mock("@popperjs/core/dist/esm", async () => {
-  const actual: any = await vi.importActual("@popperjs/core/dist/esm");
+vi.mock("webapps-common/ui/composables/usePopper", () => {
   return {
-    ...actual,
-    createPopper: vi.fn(() => ({
-      setOptions,
-    })),
+    default: () => ({
+      popperInstance: {
+        value: {
+          setOptions,
+          destroy: vi.fn(),
+        },
+      },
+    }),
   };
 });
 
