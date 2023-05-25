@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { directive as vClickAway } from "vue3-click-away";
 
 import type { MenuItem as BaseMenuItem } from "webapps-common/ui/components/MenuItems.vue";
@@ -26,6 +26,7 @@ const props = defineProps<Props>();
 const element = ref(props.anchor.element);
 const referenceRect = element.value.getBoundingClientRect();
 const menuWrapper = ref<HTMLElement | null>(null);
+const shouldShowMenu = ref(true);
 
 const wrapperHeight = computed(() => {
   if (!menuWrapper.value) {
@@ -35,12 +36,30 @@ const wrapperHeight = computed(() => {
   return menuWrapper.value.getBoundingClientRect().height;
 });
 
+let intersectionObserver: IntersectionObserver;
+
+onMounted(() => {
+  // prevent menu from being shown if anchor element is out of view
+  intersectionObserver = new IntersectionObserver(([entry]) => {
+    shouldShowMenu.value = entry.isIntersecting;
+  });
+
+  intersectionObserver.observe(props.anchor.element);
+});
+
+onUnmounted(() => {
+  intersectionObserver.disconnect();
+});
+
 const offsetX = props.position.x - referenceRect.left;
 const offsetY = computed(() => {
   const clickPosition = props.position.y - referenceRect.top;
   const distanceToBottom = window.innerHeight - props.position.y;
   const isClipped = distanceToBottom < wrapperHeight.value;
 
+  // when the menu is being clipped by the bottom, invert its
+  // positioning by increasing the Y axis offset. This is relevant only
+  // for the last items at the end of a large scrollable container
   return isClipped
     ? clickPosition * -1
     : (clickPosition + wrapperHeight.value) * -1;
@@ -70,7 +89,6 @@ watch(wrapperHeight, async () => {
   });
 });
 
-// eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
   (e: "itemClick", payload: FileExplorerContextMenu.ItemClickPayload): void;
   (e: "close"): void;
@@ -136,7 +154,12 @@ useEscapeStack({ onEscape: closeMenu });
 </script>
 
 <template>
-  <div ref="menuWrapper" v-click-away="() => closeMenu()" class="menu-wrapper">
+  <div
+    v-show="shouldShowMenu"
+    ref="menuWrapper"
+    v-click-away="() => closeMenu()"
+    class="menu-wrapper"
+  >
     <slot
       :items="items"
       :create-rename-option="createRenameOption"

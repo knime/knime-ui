@@ -7,6 +7,7 @@ import { SpaceItem } from "@/api/gateway-api/generated-api";
 import FileExplorerContextMenu from "../FileExplorerContextMenu.vue";
 import type { FileExplorerItem } from "../types";
 import { nextTick } from "vue";
+import { MockIntersectionObserver } from "@/test/utils/mockIntersectionObserver";
 
 const setOptions = vi.fn();
 
@@ -47,11 +48,13 @@ describe("FileExplorerContextMenu.vue", () => {
   };
 
   const doMount = ({ props = {} } = {}) => {
+    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+
     const wrapper = mount(FileExplorerContextMenu, {
       props: { ...defaultProps, ...props },
     });
 
-    return { wrapper };
+    return { wrapper, MockIntersectionObserver };
   };
 
   it("should render MenuItems", () => {
@@ -90,6 +93,18 @@ describe("FileExplorerContextMenu.vue", () => {
         }),
       ],
     });
+  });
+
+  it("should hide the menu if the anchor is not visible", async () => {
+    const { wrapper, MockIntersectionObserver } = doMount();
+
+    expect(wrapper.isVisible()).toBe(true);
+
+    MockIntersectionObserver.__trigger__(false);
+
+    await nextTick();
+
+    expect(wrapper.isVisible()).toBe(false);
   });
 
   it("should set the popper offset accounting distance to the window bottom", async () => {

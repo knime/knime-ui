@@ -12,6 +12,7 @@ import MetaNodeIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack
 import FileExplorer from "../FileExplorer.vue";
 import FileExplorerItemComp from "../FileExplorerItem.vue";
 import FileExplorerContextMenu from "../FileExplorerContextMenu.vue";
+import { MockIntersectionObserver } from "@/test/utils/mockIntersectionObserver";
 
 vi.mock("gsap", () => ({
   gsap: {
@@ -92,6 +93,8 @@ describe("FileExplorer.vue", () => {
         ? { contextMenu: customSlots.contextMenu }
         : {}),
     };
+
+    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
     const wrapper = mount(FileExplorer, {
       props: { ...defaultProps, ...props },
@@ -695,9 +698,9 @@ describe("FileExplorer.vue", () => {
 
     describe("slot", () => {
       const componentInSlot = `<div
-                id="slotted-component"
-                v-bind="scope"
-            ></div>`;
+        id="slotted-component"
+        v-bind="scope"
+      ></div>`;
 
       const getScopedComponent = {
         name: "SlottedChild",
