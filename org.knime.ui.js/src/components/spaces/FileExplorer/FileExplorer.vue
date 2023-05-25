@@ -296,6 +296,9 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
           :is-context-menu-visible="isContextMenuVisible"
           :position="contextMenuPos"
           :anchor-item="contextMenuAnchor"
+          :is-multiple-selection-active="
+            isMultipleSelectionActive(contextMenuAnchor.index)
+          "
           v-bind="slotProps"
         />
       </template>

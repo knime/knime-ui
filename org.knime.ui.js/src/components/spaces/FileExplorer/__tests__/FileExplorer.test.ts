@@ -773,8 +773,14 @@ describe("FileExplorer.vue", () => {
       });
 
       it.each([
-        ["getRenameOption", { id: "rename", text: "Rename", disabled: false }],
-        ["getDeleteOption", { id: "delete", text: "Delete", disabled: false }],
+        [
+          "createRenameOption",
+          { id: "rename", text: "Rename", disabled: false },
+        ],
+        [
+          "createDeleteOption",
+          { id: "delete", text: "Delete", disabled: false },
+        ],
       ])(
         'should provide a "%s" function on the slot',
         async (expectedFunctionName, expectedReturnValue) => {
@@ -806,11 +812,11 @@ describe("FileExplorer.vue", () => {
         await openContextMenu(wrapper, indexOfItemWithRenameDisabled);
 
         const assertRenameOptionIsDisabled = () => {
-          const getRenameOptionFn = getSlottedStubProp({
+          const createRenameOptionFn = getSlottedStubProp({
             wrapper,
-            propName: "getRenameOption",
+            propName: "createRenameOption",
           });
-          expect(getRenameOptionFn(items.at(0)).disabled).toBe(true);
+          expect(createRenameOptionFn(items.at(0)).disabled).toBe(true);
         };
 
         // disabled based on item's `canBeRenamed` property
@@ -845,25 +851,25 @@ describe("FileExplorer.vue", () => {
         await openContextMenu(wrapper, indexOfItemWithDeleteDisabled);
 
         // disabled based on item's `canBeDeleted` property
-        const getDeleteOptionFn = getSlottedStubProp({
+        const createDeleteOptionFn = getSlottedStubProp({
           wrapper,
-          propName: "getDeleteOption",
+          propName: "createDeleteOption",
         });
-        expect(getDeleteOptionFn(items.at(0)).disabled).toBe(true);
+        expect(createDeleteOptionFn(items.at(0)).disabled).toBe(true);
       });
 
       it.each([
-        ["getRenameOption", { id: "rename" }],
-        ["getDeleteOption", { id: "delete" }],
+        ["createRenameOption", { id: "rename" }],
+        ["createDeleteOption", { id: "delete" }],
       ])(
         "should allow sending custom values to the default options",
-        async (getOptionFnName, baseValue) => {
+        async (createOptionFnName, baseValue) => {
           const { wrapper } = doMountCustomWithSlots();
 
           await openContextMenu(wrapper, 0);
           const getOptionFn = getSlottedStubProp({
             wrapper,
-            propName: getOptionFnName,
+            propName: createOptionFnName,
           });
           const option = getOptionFn(MOCK_DATA.at(0), {
             text: "custom text",

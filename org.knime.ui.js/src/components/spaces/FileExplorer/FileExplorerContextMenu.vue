@@ -2,6 +2,7 @@
 import { computed, ref, watch } from "vue";
 import { directive as vClickAway } from "vue3-click-away";
 
+import type { MenuItem as BaseMenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import usePopper from "webapps-common/ui/composables/usePopper";
 
@@ -75,7 +76,7 @@ const emit = defineEmits<{
   (e: "close"): void;
 }>();
 
-const getRenameOption: FileExplorerContextMenu.GetDefaultMenuOption = (
+const createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption = (
   item,
   customProps = {}
 ) => ({
@@ -89,7 +90,7 @@ const getRenameOption: FileExplorerContextMenu.GetDefaultMenuOption = (
     false,
 });
 
-const getDeleteOption: FileExplorerContextMenu.GetDefaultMenuOption = (
+const createDeleteOption: FileExplorerContextMenu.CreateDefaultMenuOption = (
   item,
   customProps = {}
 ) => ({
@@ -99,9 +100,12 @@ const getDeleteOption: FileExplorerContextMenu.GetDefaultMenuOption = (
   disabled: !item.canBeDeleted || customProps.disabled || false,
 });
 
-const onItemClick = (contextMenuItem: FileExplorerContextMenu.MenuItem) => {
-  const isRename = contextMenuItem.id === "rename";
-  const isDelete = contextMenuItem.id === "delete";
+const onItemClick = (menuItem: BaseMenuItem) => {
+  const contextMenuItem = menuItem as FileExplorerContextMenu.MenuItem;
+  const { id } = contextMenuItem;
+
+  const isRename = id === "rename";
+  const isDelete = id === "delete";
 
   if (
     (isRename && !props.anchor.item.canBeRenamed) ||
@@ -119,8 +123,8 @@ const onItemClick = (contextMenuItem: FileExplorerContextMenu.MenuItem) => {
 };
 
 const items: Array<FileExplorerContextMenu.MenuItem> = [
-  getRenameOption(props.anchor.item),
-  getDeleteOption(props.anchor.item),
+  createRenameOption(props.anchor.item),
+  createDeleteOption(props.anchor.item),
 ];
 
 const closeMenu = () => {
@@ -135,8 +139,8 @@ useEscapeStack({ onEscape: closeMenu });
   <div ref="menuWrapper" v-click-away="() => closeMenu()" class="menu-wrapper">
     <slot
       :items="items"
-      :get-rename-option="getRenameOption"
-      :get-delete-option="getDeleteOption"
+      :create-rename-option="createRenameOption"
+      :create-delete-option="createDeleteOption"
       :on-item-click="onItemClick"
     >
       <MenuItems

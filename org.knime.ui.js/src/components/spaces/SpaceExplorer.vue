@@ -300,12 +300,12 @@ export default defineComponent({
           openedWorkflows.length && isInsideFolder.length ? "\n" : "";
 
         alert(`Following workflows are opened:\n
-                 ${
-                   openedWorkflowsNames.map((name) => `• ${name}`).join("\n") +
-                   extraSpace +
-                   isInsideFolderNames.map((name) => `• ${name}`).join("\n")
-                 }
-                \nTo move your selected items, they have to be closed first`);
+          ${
+            openedWorkflowsNames.map((name) => `• ${name}`).join("\n") +
+            extraSpace +
+            isInsideFolderNames.map((name) => `• ${name}`).join("\n")
+          }
+        \nTo move your selected items, they have to be closed first`);
 
         onComplete(false);
 
@@ -440,10 +440,11 @@ export default defineComponent({
       return this.fileExtensionToNodeTemplateId[sourceFileExtension];
     },
 
-    fileExplorerContextMenuItems(
-      getRenameOption: FileExplorerContextMenu.GetDefaultMenuOption,
-      getDeleteOption: FileExplorerContextMenu.GetDefaultMenuOption,
-      anchorItem: FileExplorerItem
+    getFileExplorerContextMenuItems(
+      createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption,
+      createDeleteOption: FileExplorerContextMenu.CreateDefaultMenuOption,
+      anchorItem: FileExplorerItem,
+      isMultipleSelectionActive: boolean
     ): MenuItem[] {
       const openFileType =
         anchorItem.type === SpaceItem.TypeEnum.Workflow
@@ -455,19 +456,15 @@ export default defineComponent({
         : "";
 
       return [
-        {
-          id: "another option",
-          text: "Export",
-          title: "Export",
-          disabled: false,
-        },
-        getRenameOption(anchorItem, { title: renameOptionTitle }),
-        getDeleteOption(anchorItem, {
+        !isMultipleSelectionActive &&
+          createRenameOption(anchorItem, { title: renameOptionTitle }),
+
+        createDeleteOption(anchorItem, {
           title: anchorItem.canBeDeleted
             ? ""
             : "Open folders cannot be deleted",
         }),
-      ];
+      ].filter(Boolean);
     },
   },
 });
@@ -545,19 +542,21 @@ export default defineComponent({
 
         <template
           #contextMenu="{
-            getRenameOption,
-            getDeleteOption,
+            createRenameOption,
+            createDeleteOption,
             anchorItem,
             onItemClick,
+            isMultipleSelectionActive,
           }"
         >
           <MenuItems
             menu-aria-label="Space explorer context menu"
             :items="
-              fileExplorerContextMenuItems(
-                getRenameOption,
-                getDeleteOption,
-                anchorItem.item
+              getFileExplorerContextMenuItems(
+                createRenameOption,
+                createDeleteOption,
+                anchorItem.item,
+                isMultipleSelectionActive
               )
             "
             @item-click="(_, item) => onItemClick(item)"
