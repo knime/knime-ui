@@ -71,6 +71,7 @@ export default defineComponent({
     },
 
     initCursorPosition(event: PointerEvent) {
+      event.stopPropagation();
       // eslint-disable-next-line no-extra-parens
       const rect = (
         this.$refs.container as HTMLElement
@@ -171,7 +172,7 @@ export default defineComponent({
     }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
-    @pointerdown.left.stop="initCursorPosition"
+    @pointerdown.left="!isMoveLocked && initCursorPosition($event)"
   >
     <slot />
   </g>
