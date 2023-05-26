@@ -17,6 +17,8 @@ export const state = () => ({
    * @type {Object.<string, boolean>}
    */
   selectedAnnotations: {},
+  startedSelectionFromAnnotationId: null,
+  didStartRectangleSelection: false,
 });
 
 export const mutations = {
@@ -84,6 +86,14 @@ export const mutations = {
       delete state.selectedAnnotations[id];
     });
   },
+
+  setStartedSelectionFromAnnotationId(state, value) {
+    state.startedSelectionFromAnnotationId = value;
+  },
+
+  setDidStartRectangleSelection(state, value) {
+    state.didStartRectangleSelection = value;
+  },
 };
 
 export const actions = {
@@ -150,6 +160,29 @@ export const actions = {
 
   deselectAnnotations({ commit }, annotationId) {
     commit("removeAnnotationFromSelection", annotationId);
+  },
+
+  async toggleAnnotationSelection(
+    { state, dispatch, commit },
+    { annotationId, isMultiselect }
+  ) {
+    if (
+      annotationId === state.startedSelectionFromAnnotationId &&
+      state.didStartRectangleSelection
+    ) {
+      commit("setStartedSelectionFromAnnotationId", null);
+      return;
+    }
+
+    if (!isMultiselect) {
+      await dispatch("deselectAllObjects");
+      await dispatch("selectAnnotation", annotationId);
+      return;
+    }
+
+    const action = this.isSelected ? "deselectAnnotation" : "selectAnnotation";
+
+    dispatch(action, annotationId);
   },
 };
 

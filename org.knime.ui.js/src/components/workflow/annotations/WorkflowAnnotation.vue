@@ -151,17 +151,10 @@ export default defineComponent({
       const metaOrCtrlKey = getMetaOrCtrlKey();
       const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
-      if (!isMultiselect) {
-        await this.deselectAllObjects();
-        await this.selectAnnotation(this.annotation.id);
-        return;
-      }
-
-      const action = this.isSelected
-        ? this.deselectAnnotation
-        : this.selectAnnotation;
-
-      action(this.annotation.id);
+      await this.$store.dispatch("selection/toggleAnnotationSelection", {
+        annotationId: this.annotation.id,
+        isMultiselect,
+      });
     },
 
     onContextMenu(event: PointerEvent) {

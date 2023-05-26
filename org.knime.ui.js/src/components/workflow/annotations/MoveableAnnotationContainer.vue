@@ -83,10 +83,10 @@ export default defineComponent({
       };
     },
 
-    async onMoveStart({ detail }) {
+    async onMoveStart() {
       await this.$store.dispatch("workflow/resetDragState");
 
-      if (!detail.event.shiftKey && !this.isAnnotationSelected(this.id)) {
+      if (!this.isAnnotationSelected(this.id)) {
         await this.deselectAllObjects();
       }
 
@@ -112,7 +112,7 @@ export default defineComponent({
 
     onMove: throttle(function (this: any, { detail: { event, altKey } }) {
       /* eslint-disable no-invalid-this */
-      if (this.hasAbortedDrag || this.isMoveLocked) {
+      if (this.hasAbortedDrag) {
         return;
       }
 
@@ -157,6 +157,16 @@ export default defineComponent({
       this.moveObjects();
       /* eslint-enable no-invalid-this */
     }),
+    onPointerDown(event) {
+      if (this.isMoveLocked) {
+        this.$store.commit(
+          "selection/setStartedSelectionFromAnnotationId",
+          this.id
+        );
+      } else {
+        this.initCursorPosition(event);
+      }
+    },
   },
 });
 </script>
@@ -172,7 +182,7 @@ export default defineComponent({
     }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
-    @pointerdown.left="!isMoveLocked && initCursorPosition($event)"
+    @pointerdown.left="onPointerDown($event)"
   >
     <slot />
   </g>

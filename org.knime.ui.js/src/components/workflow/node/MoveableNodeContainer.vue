@@ -98,10 +98,10 @@ export default {
      * @param {Object} e - details of the mousedown event
      * @returns {void} nothing to return
      */
-    async onMoveStart({ detail }) {
+    async onMoveStart() {
       await this.$store.dispatch("workflow/resetDragState");
 
-      if (!detail.event.shiftKey && !this.isNodeSelected(this.id)) {
+      if (!this.isNodeSelected(this.id)) {
         this.deselectAllObjects();
       }
       this.selectNode(this.id);

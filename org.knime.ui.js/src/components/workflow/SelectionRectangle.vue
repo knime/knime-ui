@@ -152,6 +152,8 @@ export default {
         this.annotationIdsToSelectOnEnd = [];
         this.annotationIdsToDeselectOnEnd = [];
         this.selectedAnnotationIdsAtStart = [];
+
+        this.$store.commit("selection/setDidStartRectangleSelection", false);
       }, 0);
       /* eslint-enable no-invalid-this */
     }),
@@ -161,6 +163,8 @@ export default {
       if (this.pointerId !== e.pointerId) {
         return;
       }
+
+      this.$store.commit("selection/setDidStartRectangleSelection", true);
 
       [this.endPos.x, this.endPos.y] = this.screenToCanvasCoordinates([
         e.clientX,
