@@ -43,7 +43,7 @@ export const useWorkflowNameValidator = (
 
   const errorMessage = computed(() => {
     if (!isValidName.value) {
-      return 'Name contains invalid characters *?#:"&lt;>%~|/ or exceeds 255 characters';
+      return 'Name contains invalid characters *?#:"<>%~|/ or exceeds 255 characters';
     }
 
     if (!isNameAvailable.value) {
