@@ -89,7 +89,7 @@ class CloseWorkflowTest {
         m_appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(m_appStateUpdateListener);
         var wpm = WorkflowProjectManager.getInstance();
-        DesktopAPI.injectDependencies(wpm, appStateUpdater, null, null, eventConsumer);
+        DesktopAPI.injectDependencies(wpm, appStateUpdater, null, null, eventConsumer, null);
 
         var workflowDir = CoreUtil.resolveToFile("/files/test_workspace/simple", OpenWorkflowTest.class);
 

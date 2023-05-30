@@ -49,9 +49,23 @@
 package org.knime.ui.java.api;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
+import org.eclipse.swt.widgets.Display;
+import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.webui.WorkflowKey;
+import org.knime.gateway.impl.webui.WorkflowMiddleware;
+import org.knime.gateway.impl.webui.service.commands.WorkflowCommand;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.workbench.editor2.commands.CreateMetaNodeTemplateCommand;
 
 /**
  * Functions around importing stuff.
@@ -75,7 +89,7 @@ final class ImportAPI {
      */
     @API
     static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
-            throws IOException {
+        throws IOException {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         var success = IMPORT_WORKFLOWS.importItems(space, itemId);
         if (success) {
@@ -91,7 +105,7 @@ final class ImportAPI {
      */
     @API
     static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId)
-            throws IOException {
+        throws IOException {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         return IMPORT_FILES.importItems(space, itemId);
     }
@@ -106,6 +120,96 @@ final class ImportAPI {
     static boolean importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
         final double canvasX, final double canvasY) {
         return ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
+    }
+
+    /**
+     * Imports a component from a space into a workflow.
+     *
+     * @param spaceProviderId
+     * @param spaceId
+     * @param itemId
+     * @param projectId
+     * @param workflowId
+     * @param x
+     * @param y
+     * @return the node-id of the new component or {@code null} if the import failed
+     */
+    @API
+    static String importComponent(final String spaceProviderId, final String spaceId, final String itemId,
+        final String projectId, final String workflowId, final double x, final double y) {
+        var workflowIdEnt = new NodeIDEnt(workflowId);
+        Supplier<WorkflowManager> wfmSupplier = () -> DefaultServiceUtil.getWorkflowManager(projectId, workflowIdEnt);
+        var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+        var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
+        var uri = space.toKnimeUrl(itemId);
+        var isRemoteLocation = !LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID.equals(spaceProviderId);
+        Supplier<NodeID> command = () -> Display.getDefault().syncCall(() -> {
+            var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfmSupplier.get(), uri, (int)x, (int)y,
+                isRemoteLocation, false);
+            return snc == null ? null : snc.getID();
+        });
+        var componentId = command.get();
+        if (componentId == null) {
+            return null;
+        }
+
+        // execute pseudo-command to enable undo and redo
+        var commands = DesktopAPI.getDeps(WorkflowMiddleware.class).getCommands();
+        commands.setCommandToExecute(new AddComponentCommand(wfmSupplier, componentId, command));
+        try {
+            commands.execute(new WorkflowKey(projectId, workflowIdEnt), null);
+        } catch (OperationNotAllowedException | NotASubWorkflowException | NodeNotFoundException e) { // NOSONAR
+            // will never happen since the workflow has already been resolved above and the command-execute does nothing
+        }
+
+        return componentId.toString();
+    }
+
+    /**
+     * Pseudo-command implementation which carries out the undo and redo after a component has been added.
+     */
+    private static class AddComponentCommand implements WorkflowCommand {
+
+        private NodeID m_componentId;
+
+        private Supplier<NodeID> m_redo;
+
+        private Supplier<WorkflowManager> m_wfm;
+
+        AddComponentCommand(final Supplier<WorkflowManager> wfm, final NodeID componentId,
+            final Supplier<NodeID> redo) {
+            m_wfm = wfm;
+            m_componentId = componentId;
+            m_redo = redo;
+        }
+
+        @Override
+        public boolean execute(final WorkflowKey wfKey)
+            throws NodeNotFoundException, NotASubWorkflowException, OperationNotAllowedException {
+            return true;
+        }
+
+        @Override
+        public boolean canUndo() {
+            return m_wfm.get().canRemoveNode(m_componentId);
+        }
+
+        @Override
+        public void undo() throws OperationNotAllowedException {
+            m_wfm.get().removeNode(m_componentId);
+            m_componentId = null;
+        }
+
+        @Override
+        public boolean canRedo() {
+            return true;
+        }
+
+        @Override
+        public void redo() throws OperationNotAllowedException {
+            m_componentId = m_redo.get();
+        }
+
     }
 
 }

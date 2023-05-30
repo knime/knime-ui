@@ -94,7 +94,7 @@ class OpenWorkflowTest {
         var appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
         DesktopAPI.injectDependencies(WorkflowProjectManager.getInstance(), appStateUpdater, spaceProviders, null,
-            eventConsumer);
+            eventConsumer, null);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
         OpenWorkflow.openWorkflowInWebUIOnly("local", "local", itemId, new NullProgressMonitor());

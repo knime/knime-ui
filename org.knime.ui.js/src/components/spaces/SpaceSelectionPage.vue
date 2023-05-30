@@ -29,7 +29,12 @@ export default {
   },
 
   computed: {
-    ...mapState("spaces", ["spaceProviders", "spaceBrowser", "isLoading"]),
+    ...mapState("spaces", [
+      "spaceProviders",
+      "spaceBrowser",
+      "isLoading",
+      "activeSpace",
+    ]),
   },
   beforeCreate() {
     // redirect to browsing page if a space was selected
@@ -39,10 +44,12 @@ export default {
   },
   async created() {
     await this.$store.dispatch("spaces/fetchAllSpaceProviders");
-    // Load local space by default
-    await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-      itemId: "root",
-    });
+
+    if (!this.activeSpace?.activeWorkflowGroup) {
+      await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
+        itemId: this.$store.state.spaces.spaceBrowser.itemId,
+      });
+    }
   },
 
   methods: {
@@ -103,6 +110,9 @@ export default {
     },
 
     async createWorkflowLocally() {
+      await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
+        itemId: "root",
+      });
       this.$store.commit("spaces/setActiveSpaceProviderById", "local");
       this.$store.commit("spaces/setActiveSpaceId", "local");
       await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {

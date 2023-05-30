@@ -189,5 +189,6 @@ export default defineComponent({
 
 .dragging {
   cursor: grabbing;
+  pointer-events: none;
 }
 </style>

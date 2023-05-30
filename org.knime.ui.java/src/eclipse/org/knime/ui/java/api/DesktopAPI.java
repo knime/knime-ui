@@ -62,6 +62,7 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
+import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -147,11 +148,13 @@ public final class DesktopAPI {
      * @param spaceProviders
      * @param updateStateProvider optional, can be {@code null}
      * @param eventConsumer
+     * @param workflowMiddleware
      * @throws IllegalStateException if the dependencies have been already injected
      */
     public static void injectDependencies(final WorkflowProjectManager workflowProjectManager,
         final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
-        final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer) {
+        final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
+        final WorkflowMiddleware workflowMiddleware) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -160,6 +163,7 @@ public final class DesktopAPI {
         dependencies.put(AppStateUpdater.class, appStateUpdater);
         dependencies.put(SpaceProviders.class, spaceProviders);
         dependencies.put(EventConsumer.class, eventConsumer);
+        dependencies.put(WorkflowMiddleware.class, workflowMiddleware);
         if (updateStateProvider != null) {
             dependencies.put(UpdateStateProvider.class, updateStateProvider);
         }

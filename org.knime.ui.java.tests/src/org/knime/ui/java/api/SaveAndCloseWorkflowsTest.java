@@ -101,7 +101,7 @@ class SaveAndCloseWorkflowsTest {
         var appStateUpdater = new AppStateUpdater();
         var appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
-        DesktopAPI.injectDependencies(null, appStateUpdater, null, null, null);
+        DesktopAPI.injectDependencies(null, appStateUpdater, null, null, null, null);
 
         var progressService = mock(IProgressService.class);
         Mockito.doAnswer(invocation -> {
