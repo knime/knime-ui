@@ -63,6 +63,9 @@ describe("SelectionRectangle", () => {
           selectAnnotations: vi.fn(),
           deselectAnnotations: vi.fn(),
         },
+        mutations: {
+          setDidStartRectangleSelection: vi.fn(),
+        },
       },
     };
 
@@ -293,6 +296,22 @@ describe("SelectionRectangle", () => {
         "ann-inside-1",
         "ann-inside-2",
       ]);
+    });
+
+    it("sets didStartRectangleSelection to true when rectangle selection updates", () => {
+      // pointerUp();
+
+      expect(
+        storeConfig.selection.mutations.setDidStartRectangleSelection
+      ).toHaveBeenCalledWith(expect.anything(), true);
+    });
+
+    it("sets didStartRectangleSelection to false when rectangle selection ends", () => {
+      pointerUp();
+
+      expect(
+        storeConfig.selection.mutations.setDidStartRectangleSelection
+      ).toHaveBeenCalledWith(expect.anything(), false);
     });
   });
 

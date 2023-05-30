@@ -121,25 +121,18 @@ describe("MoveableNodeContainer", () => {
       detail: {
         startX,
         startY,
-        event: {
-          shiftKey: false,
-        },
       },
     });
     moveDirective.trigger("onMoveStart", moveStartEvent);
     await Vue.nextTick();
   };
 
-  const moveNodeTo = (
-    moveDirective,
-    { clientX, clientY, altKey = false, shiftKey = false }
-  ) => {
+  const moveNodeTo = (moveDirective, { clientX, clientY, altKey = false }) => {
     const moveEvent = new CustomEvent("moving", {
       detail: {
         clientX,
         clientY,
         altKey,
-        shiftKey,
       },
     });
 

@@ -214,4 +214,16 @@ describe("MoveableAnnotationContainer.vue", () => {
       vi.useRealTimers();
     });
   });
+
+  it("sets an id of annotation from which selection started", () => {
+    const { wrapper, $store, commitSpy } = doMount();
+    $store.state.canvas.isMoveLocked = true;
+
+    wrapper.trigger("pointerdown", { button: 0 });
+
+    expect(commitSpy).toHaveBeenCalledWith(
+      "selection/setStartedSelectionFromAnnotationId",
+      defaultProps.id
+    );
+  });
 });

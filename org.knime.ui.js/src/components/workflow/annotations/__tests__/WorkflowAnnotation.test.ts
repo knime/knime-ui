@@ -233,7 +233,7 @@ describe("Workflow Annotation", () => {
     it("should render RichTextEditor when annotation is editable", async () => {
       const { wrapper, $store } = doMount();
 
-      await toggleAnnotationEdit($store, "id1");
+      await toggleAnnotationEdit($store, defaultProps.annotation.id);
 
       expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
       expect(wrapper.findComponent(RichTextEditor).exists()).toBe(true);
@@ -266,7 +266,7 @@ describe("Workflow Annotation", () => {
       VueClickAway.trigger();
 
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
-        annotationId: "id1",
+        annotationId: defaultProps.annotation.id,
         text: newText,
         borderColor: $colors.defaultAnnotationBorderColor,
       });
@@ -279,7 +279,7 @@ describe("Workflow Annotation", () => {
         },
       });
 
-      await toggleAnnotationEdit($store, "id1");
+      await toggleAnnotationEdit($store, defaultProps.annotation.id);
       expect(
         wrapper.findComponent(RichTextEditor).props("initialBorderColor")
       ).toBe("#000000");
@@ -292,7 +292,7 @@ describe("Workflow Annotation", () => {
         },
       });
 
-      await toggleAnnotationEdit($store, "id1");
+      await toggleAnnotationEdit($store, defaultProps.annotation.id);
       expect(
         wrapper.findComponent(RichTextEditor).props("initialBorderColor")
       ).toBe("#000000");
@@ -329,7 +329,7 @@ describe("Workflow Annotation", () => {
       VueClickAway.trigger();
 
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
-        annotationId: "id1",
+        annotationId: defaultProps.annotation.id,
         text: newContent,
         borderColor: "#000000",
       });
@@ -360,7 +360,7 @@ describe("Workflow Annotation", () => {
       VueClickAway.trigger();
 
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
-        annotationId: "id1",
+        annotationId: defaultProps.annotation.id,
         text: modernAnnotation.text,
         borderColor: newColor,
       });
@@ -380,19 +380,22 @@ describe("Workflow Annotation", () => {
       expect($store.state.selection.selectedAnnotations).toEqual({ id1: true });
     });
 
-    it.each(["shift", "ctrl"])("%ss-click adds to selection", async (mod) => {
-      mockUserAgent("windows");
-      const { wrapper, dispatchSpy } = doMount();
+    it.each(["shift", "ctrl"])(
+      "%ss-click toggles annotation to selection",
+      async (mod) => {
+        mockUserAgent("windows");
+        const { wrapper, dispatchSpy } = doMount();
 
-      await wrapper
-        .findComponent(TransformControls)
-        .trigger("click", { button: 0, [`${mod}Key`]: true });
+        await wrapper
+          .findComponent(TransformControls)
+          .trigger("click", { button: 0, [`${mod}Key`]: true });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectAnnotation",
-        "id1"
-      );
-    });
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          "selection/toggleAnnotationSelection",
+          { annotationId: defaultProps.annotation.id, isMultiselect: true }
+        );
+      }
+    );
 
     it("should add to selection with meta + left click", async () => {
       mockUserAgent("mac");
@@ -403,35 +406,9 @@ describe("Workflow Annotation", () => {
         .trigger("click", { button: 0, metaKey: true });
 
       expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectAnnotation",
-        "id1"
+        "selection/toggleAnnotationSelection",
+        { annotationId: defaultProps.annotation.id, isMultiselect: true }
       );
-    });
-
-    it.each(["shift", "ctrl"])(
-      "%ss-click removes from selection",
-      async (mod) => {
-        mockUserAgent("windows");
-        const { wrapper, $store } = doMount();
-        await $store.dispatch("selection/selectAnnotation", "id1");
-
-        await wrapper
-          .findComponent(TransformControls)
-          .trigger("click", { button: 0, [`${mod}Key`]: true });
-
-        expect($store.state.selection.selectedAnnotations).toEqual({});
-      }
-    );
-
-    it("should remove from selection with meta + left click", async () => {
-      mockUserAgent("mac");
-      const { wrapper, $store } = doMount();
-      await $store.dispatch("selection/selectAnnotation", "id1");
-
-      await wrapper
-        .findComponent(TransformControls)
-        .trigger("click", { button: 0, metaKey: true });
-      expect($store.state.selection.selectedAnnotations).toEqual({});
     });
   });
 
@@ -448,7 +425,7 @@ describe("Workflow Annotation", () => {
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectAnnotation",
-        "id1"
+        defaultProps.annotation.id
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
@@ -466,7 +443,7 @@ describe("Workflow Annotation", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectAnnotation",
-        "id1"
+        defaultProps.annotation.id
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
@@ -484,7 +461,7 @@ describe("Workflow Annotation", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectAnnotation",
-        "id1"
+        defaultProps.annotation.id
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
