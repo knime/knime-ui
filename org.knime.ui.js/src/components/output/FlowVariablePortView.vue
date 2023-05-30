@@ -14,38 +14,44 @@ export default {
 </script>
 
 <template>
-  <div class="scroll-container">
+  <div class="container">
     <div v-if="initialData" class="counts">
       <span class="count">Count: {{ initialData.length }}</span>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th class="title">Owner ID</th>
-          <th class="title">Data Type</th>
-          <th class="title">Variable Name</th>
-          <th class="title">Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="flowVariable of initialData"
-          :key="`flowVariable-${flowVariable.name}`"
-        >
-          <td>{{ flowVariable.ownerNodeId }}</td>
-          <td>{{ flowVariable.type }}</td>
-          <td>{{ flowVariable.name }}</td>
-          <td>{{ flowVariable.value }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="scroll-container">
+      <table>
+        <thead>
+          <tr>
+            <th class="title">Owner ID</th>
+            <th class="title">Data Type</th>
+            <th class="title">Variable Name</th>
+            <th class="title">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="flowVariable of initialData"
+            :key="`flowVariable-${flowVariable.name}`"
+          >
+            <td>{{ flowVariable.ownerNodeId }}</td>
+            <td>{{ flowVariable.type }}</td>
+            <td>{{ flowVariable.name }}</td>
+            <td>{{ flowVariable.value }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.scroller {
-  width: 100%;
-  overflow: auto;
+.container {
+  height: 100%;
+}
+
+.scroll-container {
+  height: calc(100% - 65px);
+  overflow-y: scroll;
 }
 
 .counts {
@@ -89,6 +95,7 @@ table {
     height: 41px;
     position: sticky;
     top: 0;
+    border-style: hidden;
   }
 
   & :deep(td) {
