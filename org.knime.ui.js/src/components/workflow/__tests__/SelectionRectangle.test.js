@@ -298,15 +298,20 @@ describe("SelectionRectangle", () => {
       ]);
     });
 
-    it("sets didStartRectangleSelection to true when rectangle selection updates", () => {
-      // pointerUp();
+    it("sets didStartRectangleSelection to true when rectangle selection updates", async () => {
+      pointerDown({ clientX: 10, clientY: 10 });
+      pointerMove({ clientX: 300, clientY: 300 });
+      await Vue.nextTick();
 
       expect(
         storeConfig.selection.mutations.setDidStartRectangleSelection
       ).toHaveBeenCalledWith(expect.anything(), true);
     });
 
-    it("sets didStartRectangleSelection to false when rectangle selection ends", () => {
+    it("sets didStartRectangleSelection to false when rectangle selection ends", async () => {
+      pointerDown({ clientX: 10, clientY: 10 });
+      pointerMove({ clientX: 300, clientY: 300 });
+      await Vue.nextTick();
       pointerUp();
 
       expect(
