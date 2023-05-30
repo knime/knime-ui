@@ -7,6 +7,7 @@ type CanvasShortcuts = UnionToShortcutRegistry<
   | "fitToScreen"
   | "fillScreen"
   | "zoomIn"
+  | "zoomInAlternative"
   | "zoomOut"
   | "zoomTo75"
   | "zoomTo100"
@@ -17,6 +18,10 @@ type CanvasShortcuts = UnionToShortcutRegistry<
 declare module "./index" {
   interface ShortcutsRegistry extends CanvasShortcuts {}
 }
+
+const zoomInHelper = throttle(({ $store }) => {
+  $store.dispatch("canvas/zoomCentered", { delta: 1 });
+});
 
 const canvasShortcuts: CanvasShortcuts = {
   fitToScreen: {
@@ -32,9 +37,11 @@ const canvasShortcuts: CanvasShortcuts = {
   zoomIn: {
     text: "Zoom in",
     hotkey: ["Ctrl", "+"],
-    execute: throttle(({ $store }) => {
-      $store.dispatch("canvas/zoomCentered", { delta: 1 });
-    }),
+    execute: zoomInHelper,
+  },
+  zoomInAlternative: {
+    hotkey: ["Shift", "Ctrl", "="],
+    execute: zoomInHelper,
   },
   zoomOut: {
     text: "Zoom out",
