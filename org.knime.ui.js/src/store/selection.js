@@ -166,6 +166,8 @@ export const actions = {
     { state, dispatch, commit },
     { annotationId, isMultiselect }
   ) {
+    // Prevents selecting/deselecting the annotation that the rectangle selection started from but was not included
+    // in a rectangle selection
     if (
       annotationId === state.startedSelectionFromAnnotationId &&
       state.didStartRectangleSelection
