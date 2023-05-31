@@ -653,16 +653,17 @@ export default defineComponent({
 .mini-actions {
   display: flex;
   justify-content: space-between;
+  padding-bottom: 7px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 .breadcrumb-wrapper {
   position: relative;
   display: flex;
   justify-content: space-between;
-  padding-bottom: 5px;
-  margin-bottom: 12px;
   width: 100%;
-  border-bottom: 1px solid var(--knime-silver-sand);
   align-items: center;
 
   & .breadcrumb {
@@ -672,7 +673,6 @@ export default defineComponent({
     -ms-overflow-style: none; /* needed to hide scroll bar in edge */
     scrollbar-width: none; /* for firefox */
     user-select: none;
-    font-size: 16px;
     margin-right: 8px;
 
     &::-webkit-scrollbar {
@@ -695,7 +695,7 @@ export default defineComponent({
 }
 
 .mini {
-  padding: 5px 15px;
+  padding: 5px 20px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
