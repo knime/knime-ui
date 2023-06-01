@@ -18,7 +18,7 @@ interface Props {
     element: HTMLElement;
     index: number;
   };
-  isMultipleSelectionActive: boolean;
+  selectedItems: Array<FileExplorerItem>;
 }
 
 const props = defineProps<Props>();
@@ -103,7 +103,7 @@ const createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption = (
   ...customProps,
   disabled:
     !item.canBeRenamed ||
-    props.isMultipleSelectionActive ||
+    props.selectedItems.length > 1 ||
     customProps.disabled ||
     false,
 });
@@ -111,12 +111,22 @@ const createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption = (
 const createDeleteOption: FileExplorerContextMenu.CreateDefaultMenuOption = (
   item,
   customProps = {}
-) => ({
-  id: "delete",
-  text: "Delete",
-  ...customProps,
-  disabled: !item.canBeDeleted || customProps.disabled || false,
-});
+) => {
+  const hasNonDeletableItem = props.selectedItems.some(
+    (item) => !item.canBeDeleted
+  );
+
+  return {
+    id: "delete",
+    text: "Delete",
+    ...customProps,
+    disabled:
+      !item.canBeDeleted ||
+      hasNonDeletableItem ||
+      customProps.disabled ||
+      false,
+  };
+};
 
 const onItemClick = (menuItem: BaseMenuItem) => {
   const contextMenuItem = menuItem as FileExplorerContextMenu.MenuItem;

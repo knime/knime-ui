@@ -31,7 +31,6 @@ const props = withDefaults(defineProps<Props>(), {
   fullPath: "",
 });
 
-// eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
   (e: "changeSelection", selectedItemIds: Array<string>): void;
   (e: "changeDirectory", pathId: string): void;
@@ -102,7 +101,7 @@ const blacklistedNames = computed(() =>
 /** RENAME */
 
 /** DRAGGING */
-const itemBACK = ref<{ $el: HTMLElement } | null>(null);
+const itemBack = ref<{ $el: HTMLElement } | null>(null);
 const itemRefs = ref<{ $el: HTMLElement }[]>([]);
 const customPreviewContainer = ref<HTMLElement | null>(null);
 const customDragPreviewPlaceholder = ref<HTMLElement | null>(null);
@@ -116,7 +115,7 @@ const {
   onDragEnd,
   onDrop,
 } = useItemDragging({
-  itemBACK: computed(() => (itemBACK.value ? itemBACK.value.$el : null)),
+  itemBACK: computed(() => (itemBack.value ? itemBack.value.$el : null)),
   itemRefs: computed(() =>
     itemRefs.value ? itemRefs.value.map(({ $el }) => $el) : null
   ),
@@ -129,11 +128,9 @@ const {
     () => !customDragPreviewPlaceholder.value
   ),
   // we then can obtain the element by using the container
-  getCustomPreviewEl: () =>
-    document.querySelector(".custom-preview") as HTMLElement,
+  getCustomPreviewEl: () => document.querySelector(".custom-preview"),
 });
 
-// eslint-disable-next-line valid-jsdoc
 /**
  * This helper simply forwards the emission of the given event name, provided the payload is not null.
  * It's needed because the `useItemDragging` composable doesn't have access to the component emits
@@ -237,7 +234,7 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
     <tbody :class="mode">
       <FileExplorerItemBack
         v-if="!isRootFolder"
-        ref="itemBACK"
+        ref="itemBack"
         :is-dragging="isDragging"
         @dragenter="onDragEnter(null, true)"
         @dragleave="onDragLeave(null, true)"
@@ -284,9 +281,7 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
       v-if="isContextMenuVisible"
       :position="contextMenuPos"
       :anchor="contextMenuAnchor"
-      :is-multiple-selection-active="
-        isMultipleSelectionActive(contextMenuAnchor.index)
-      "
+      :selected-items="selectedItems"
       @item-click="onContextMenuItemClick"
       @close="closeContextMenu"
     >

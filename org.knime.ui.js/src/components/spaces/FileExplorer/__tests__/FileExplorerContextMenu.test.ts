@@ -33,21 +33,24 @@ describe("FileExplorerContextMenu.vue", () => {
     vi.clearAllMocks();
   });
 
+  const mockItem = {
+    id: "0",
+    name: "Mock item",
+    canBeRenamed: true,
+    canBeDeleted: true,
+    isOpen: false,
+    type: SpaceItem.TypeEnum.Workflow,
+  } satisfies FileExplorerItem;
+
   const defaultProps = {
     position: { x: 40, y: 40 },
     anchor: {
-      item: {
-        id: "0",
-        name: "Mock item",
-        canBeRenamed: true,
-        canBeDeleted: true,
-        isOpen: false,
-        type: SpaceItem.TypeEnum.Workflow,
-      } satisfies FileExplorerItem,
+      item: mockItem,
       element: document.createElement("td"),
       index: 0,
     },
     isMultipleSelectionActive: false,
+    selectedItems: [mockItem],
   };
 
   const doMount = ({ props = {} } = {}) => {

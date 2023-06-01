@@ -25,7 +25,7 @@ export const useWorkflowNameValidator = (
   options: UseWorkflowNameValidatorOptions
 ) => {
   const cleanName = (value: string) =>
-    value.replace(INVALID_PREFIX, "").replace(INVALID_SUFFIX, "");
+    value.trim().replace(INVALID_PREFIX, "").replace(INVALID_SUFFIX, "");
 
   const isValidName = computed(() => {
     const newValue = cleanName(options.name.value);

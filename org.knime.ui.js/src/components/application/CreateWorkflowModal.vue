@@ -9,10 +9,12 @@ import Label from "webapps-common/ui/components/forms/Label.vue";
 
 import { useWorkflowNameValidator } from "@/composables/useWorkflowNameValidator";
 
+const NAME_TEMPLATE = "KNIME_project";
+
 const store = useStore();
 
 const inputRef = ref<InstanceType<typeof InputField>>(null);
-const workflowName = ref("KNIME_project");
+const workflowName = ref(NAME_TEMPLATE);
 
 const isCreateWorkflowModalOpen = computed(
   () => store.state.spaces.isCreateWorkflowModalOpen
@@ -53,8 +55,6 @@ const onkeyup = async (keyupEvent: KeyboardEvent) => {
 };
 
 const setNameSuggestion = () => {
-  const NAME_TEMPLATE = "KNIME_project";
-
   const isNameInUse = (value: string) =>
     existingWorkflowNames.value.some((name) => name === value);
 

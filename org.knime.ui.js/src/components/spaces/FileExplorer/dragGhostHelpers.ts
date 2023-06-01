@@ -30,7 +30,7 @@ const applyStyles = (
  * selected items
  * @param {Number} count number to display in the badge
  */
-const createGhostBadgeElement = ({ count }: { count: number }): HTMLElement => {
+const createGhostBadgeElement = (count: number): HTMLElement => {
   const badge = document.createElement("div");
   const MAX_COUNT = 99;
   badge.innerText = count <= MAX_COUNT ? count.toString() : "99+";
@@ -143,7 +143,7 @@ const createGhostElement = ({
   ghost.prepend(iconEl);
 
   if (badgeCount) {
-    const badge = createGhostBadgeElement({ count: badgeCount });
+    const badge = createGhostBadgeElement(badgeCount);
     ghost.appendChild(badge);
     return { ghost, badge };
   }

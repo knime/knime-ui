@@ -83,7 +83,7 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
   }
 
   if ((keyupEvent.key === "Enter" || isClickAway) && isValid.value) {
-    const newName = cleanName(renameValue.value.trim());
+    const newName = cleanName(renameValue.value);
 
     if (newName === "") {
       emit("rename:clear");

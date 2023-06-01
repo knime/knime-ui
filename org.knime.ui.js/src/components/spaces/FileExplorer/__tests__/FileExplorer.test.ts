@@ -479,17 +479,18 @@ describe("FileExplorer.vue", () => {
       expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(
         true
       );
+
       expect(
         wrapper.findComponent(FileExplorerContextMenu).props("position")
       ).toEqual({
         x: 100,
         y: 100,
       });
+
       expect(
-        wrapper
-          .findComponent(FileExplorerContextMenu)
-          .props("isMultipleSelectionActive")
-      ).toBe(true);
+        wrapper.findComponent(FileExplorerContextMenu).props("selectedItems")
+      ).toEqual([MOCK_DATA[0], MOCK_DATA[1]]);
+
       expect(
         wrapper.findComponent(FileExplorerContextMenu).props("anchor")
       ).toEqual({
@@ -521,10 +522,9 @@ describe("FileExplorer.vue", () => {
       await openContextMenu(wrapper, 0);
 
       expect(
-        wrapper
-          .findComponent(FileExplorerContextMenu)
-          .props("isMultipleSelectionActive")
-      ).toBe(false);
+        wrapper.findComponent(FileExplorerContextMenu).props("selectedItems")
+      ).toEqual([MOCK_DATA[0]]);
+
       expect(
         wrapper.findComponent(FileExplorerContextMenu).props("anchor")
       ).toEqual({
@@ -636,6 +636,30 @@ describe("FileExplorer.vue", () => {
           getRenameOptionElement(wrapper).find("button").classes()
         ).not.toContain("disabled");
       });
+
+      it("should be disabled if more than one item is selected", async () => {
+        const { wrapper } = doMount();
+
+        await getRenderedItems(wrapper).at(1).trigger("click");
+        await getRenderedItems(wrapper)
+          .at(3)
+          .trigger("click", { shiftKey: true });
+
+        await openContextMenu(wrapper, 1);
+
+        const renameOption = getRenameOptionElement(wrapper);
+        // option is disabled (cannot check attr because MenuItems component doesn't set it)
+        expect(renameOption.find("button").classes()).toContain("disabled");
+
+        // attempt clicking it
+        await renameOption.trigger("click");
+
+        // rename did not activate
+        const itemComponent = wrapper
+          .findAllComponents(FileExplorerItemComp)
+          .at(1);
+        expect(itemComponent.props("isRenameActive")).toBe(false);
+      });
     });
 
     describe("delete option", () => {
@@ -680,7 +704,7 @@ describe("FileExplorer.vue", () => {
         // attempt clicking it
         await deleteOption.trigger("click");
 
-        // rename did not activate
+        // delete did not activate
         expect(wrapper.emitted("deleteItems")).toBeUndefined();
 
         // close menu
@@ -693,6 +717,36 @@ describe("FileExplorer.vue", () => {
         expect(
           getDeleteOptionElement(wrapper).find("button").classes()
         ).not.toContain("disabled");
+      });
+
+      it("should be disabled if an item in the selection cannot be deleted", async () => {
+        const indexOfItemWithDeleteDisabled = 0;
+        const { wrapper } = doMount({
+          props: {
+            items: MOCK_DATA.map((item, index) => ({
+              ...item,
+              canBeDeleted: index !== indexOfItemWithDeleteDisabled,
+            })),
+          },
+        });
+
+        await getRenderedItems(wrapper).at(0).trigger("click");
+        await getRenderedItems(wrapper)
+          .at(3)
+          .trigger("click", { shiftKey: true });
+
+        // open menu at a different item other than the one that can't be deleted
+        await openContextMenu(wrapper, 1);
+
+        const deleteOption = getDeleteOptionElement(wrapper);
+        // option is disabled (cannot check attr because MenuItems component doesn't set it)
+        expect(deleteOption.find("button").classes()).toContain("disabled");
+
+        // attempt clicking it
+        await deleteOption.trigger("click");
+
+        // delete did not activate
+        expect(wrapper.emitted("deleteItems")).toBeUndefined();
       });
     });
 
