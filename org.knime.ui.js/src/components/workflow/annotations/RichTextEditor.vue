@@ -3,6 +3,7 @@ import { onMounted, nextTick, toRefs, watch, ref, computed } from "vue";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import TextAlign from "@tiptap/extension-text-align";
 import UnderLine from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
 import StarterKit from "@tiptap/starter-kit";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
@@ -38,6 +39,10 @@ const editor = useEditor({
     UnderLine,
     TextAlign.configure({
       types: ["heading", "paragraph"],
+    }),
+    Link.configure({
+      autolink: false,
+      validate: href => /^https?:\/\//.test(href),
     }),
   ],
   onUpdate: () => emit("change", editor.value.getHTML()),

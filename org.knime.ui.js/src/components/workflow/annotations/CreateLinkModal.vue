@@ -3,8 +3,7 @@ import Modal from "webapps-common/ui/components/Modal.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
-import type { isActive } from "@tiptap/vue-3";
-import { computed, onMounted } from "vue";
+import { computed, ref, type Ref, watch } from "vue";
 
 interface Props {
   text: string;
@@ -14,13 +13,13 @@ interface Props {
 
 const props = defineProps<Props>();
 
-let editedText: string,
-  editedUrl: string;
+const editedText: Ref<string> = ref(props.text);
+const editedUrl: Ref<string> = ref(props.url);
 
-onMounted(() => {
-  editedText = props.text;
-  editedUrl = props.url;
-})
+watch(props, (currentValue, _) => {
+  editedText.value = currentValue.text;
+  editedUrl.value = currentValue.url;
+});
 
 const emit = defineEmits<{
   (e: "addLink", text: string, url: string): void;
@@ -33,14 +32,14 @@ const closeModal = () => {
 };
 
 const onSubmit = () => {
-    emit("addLink", editedText, editedUrl);
+    emit("addLink", editedText.value, editedUrl.value);
 };
 
 // TODO add link validation
 
 const isValid = computed(() => {
-  const validText = editedText !== props.text;
-  const validURL = editedUrl !== props.url;
+  const validText = editedText.value !== props.text;
+  const validURL = editedUrl.value !== props.url;
 
   return validText || validURL;
 });
@@ -48,6 +47,7 @@ const isValid = computed(() => {
 
 <template>
   <Modal
+    v-show="isActive"
     :active="isActive"
     title="Add a link"
     style-type="info"
@@ -78,7 +78,7 @@ const isValid = computed(() => {
       <Button with-border @click="closeModal">
         <strong>Cancel</strong>
       </Button>
-      <Button primary :disabled="isValid" @click="onSubmit">
+      <Button primary :disabled="!isValid" @click="onSubmit">
         <strong>Add link</strong>
       </Button>
     </template>

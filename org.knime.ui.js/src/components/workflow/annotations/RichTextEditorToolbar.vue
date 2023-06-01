@@ -30,6 +30,7 @@ import type { Hotkeys } from "@/shortcuts";
 import ColorIcon from "./ColorIcon.vue";
 import RichTextEditorToolbarDialog from "./RichTextEditorToolbarDialog.vue";
 import ColorSelectionDialog from "./ColorSelectionDialog.vue";
+import CreateLinkModal from "./CreateLinkModal.vue";
 
 interface Props {
   editor: Editor;
@@ -55,6 +56,28 @@ const emit = defineEmits<{
   (e: "previewBorderColor", color: string): void;
   (e: "changeBorderColor", color: string): void;
 }>();
+
+let showCreateLinkModal = ref(false);
+
+const text = ref("");
+const url = ref("");
+
+const createLink = () => {
+  const { view, state } = props.editor
+  const { from, to } = view.state.selection;
+
+  text.value = state.doc.textBetween(from, to, "");
+  url.value = props.editor.getAttributes("link").href || "";
+
+  showCreateLinkModal.value = true;  
+};
+
+const addLink = (text: string, url: string) => {
+  props.editor.commands.insertContent(`<a href="${url}">${text}</a>`);
+  showCreateLinkModal.value = false;
+};
+
+const cancelAddLink = () => { showCreateLinkModal.value = false; };
 
 const editorTools: Array<ToolbarItem> = [
   {
@@ -120,6 +143,14 @@ const editorTools: Array<ToolbarItem> = [
     hotkey: ["Ctrl", "Shift", "R"],
     active: () => props.editor.isActive({ textAlign: "right" }),
     onClick: () => props.editor.chain().focus().setTextAlign("right").run(),
+  },
+  {
+    id: "add-link",
+    icon: AlignRightIcon,
+    name: "Add link",
+    hotkey: ["Ctrl", "Shift", "L"], // TODO add correct link shortcut
+    active: () => props.editor.isActive("link"),
+    onClick: () => createLink()
   },
 ];
 
@@ -214,56 +245,65 @@ const changeBorderColor = (color: string) => {
 </script>
 
 <template>
-  <FloatingMenu
+  <div>
+    <FloatingMenu
     :canvas-position="adjustedPosition"
     aria-label="Annotation toolbar"
     :prevent-overflow="true"
-  >
-    <div class="editor-toolbar">
-      <SubMenu
-        :items="headingPresets"
-        orientation="right"
-        :teleport-to-body="false"
-        positioning-strategy="absolute"
-        class="heading-menu"
-        @item-click="(e, item) => item.onClick()"
-      >
-        <span class="heading-current-text">{{ selectedHeadingText }}</span>
-        <DropdownIcon />
-      </SubMenu>
-      <FunctionButton
-        v-for="tool of editorTools"
-        :key="tool.icon"
-        :active="tool.active ? tool.active() : false"
-        :title="`${tool.name} – ${formatHotkeys(tool.hotkey)}`"
-        class="toolbar-button"
-        @click.stop="tool.onClick"
-      >
-        <Component :is="tool.icon" />
-      </FunctionButton>
+    >
+      <div class="editor-toolbar">
+        <SubMenu
+          :items="headingPresets"
+          orientation="right"
+          :teleport-to-body="false"
+          positioning-strategy="absolute"
+          class="heading-menu"
+          @item-click="(e, item) => item.onClick()"
+        >
+          <span class="heading-current-text">{{ selectedHeadingText }}</span>
+          <DropdownIcon />
+        </SubMenu>
+        <FunctionButton
+          v-for="tool of editorTools"
+          :key="tool.icon"
+          :active="tool.active ? tool.active() : false"
+          :title="`${tool.name} – ${formatHotkeys(tool.hotkey)}`"
+          class="toolbar-button"
+          @click.stop="tool.onClick"
+        >
+          <Component :is="tool.icon" />
+        </FunctionButton>
 
-      <RichTextEditorToolbarDialog :is-open="isBorderColorSelectionOpen">
-        <template #toggle>
-          <FunctionButton
-            class="border-color-tool"
-            @click.stop="
-              isBorderColorSelectionOpen = !isBorderColorSelectionOpen
-            "
-          >
-            <ColorIcon :color="hoveredColor || activeBorderColor" />
-          </FunctionButton>
-        </template>
+        <RichTextEditorToolbarDialog :is-open="isBorderColorSelectionOpen">
+          <template #toggle>
+            <FunctionButton
+              class="border-color-tool"
+              @click.stop="
+                isBorderColorSelectionOpen = !isBorderColorSelectionOpen
+              "
+            >
+              <ColorIcon :color="hoveredColor || activeBorderColor" />
+            </FunctionButton>
+          </template>
 
-        <template #content>
-          <ColorSelectionDialog
-            :active-color="activeBorderColor"
-            @hover-color="previewBorderColor"
-            @select-color="changeBorderColor"
-          />
-        </template>
-      </RichTextEditorToolbarDialog>
-    </div>
-  </FloatingMenu>
+          <template #content>
+            <ColorSelectionDialog
+              :active-color="activeBorderColor"
+              @hover-color="previewBorderColor"
+              @select-color="changeBorderColor"
+            />
+          </template>
+        </RichTextEditorToolbarDialog>
+      </div>
+    </FloatingMenu>
+    <CreateLinkModal
+      :is-active="showCreateLinkModal"
+      :text="text"
+      :url="url"
+      @add-link="addLink"
+      @cancel-add-link="cancelAddLink"
+    />
+  </div>
 </template>
 
 <style lang="postcss" scoped>
