@@ -98,14 +98,10 @@ export default {
      * @param {Object} e - details of the mousedown event
      * @returns {void} nothing to return
      */
-    async onMoveStart({ detail }) {
+    async onMoveStart() {
       await this.$store.dispatch("workflow/resetDragState");
 
-      if (this.isMoveLocked) {
-        return;
-      }
-
-      if (!detail.event.shiftKey && !this.isNodeSelected(this.id)) {
+      if (!this.isNodeSelected(this.id)) {
         this.deselectAllObjects();
       }
       this.selectNode(this.id);
@@ -136,7 +132,7 @@ export default {
      */
     onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
       /* eslint-disable no-invalid-this */
-      if (!this.startPos || this.hasAbortedDrag || this.isMoveLocked) {
+      if (!this.startPos || this.hasAbortedDrag) {
         return;
       }
 
@@ -267,28 +263,21 @@ export default {
 
 <template>
   <g
-    v-move="{ onMove, onMoveStart, onMoveEnd, isProtected: !isWritable }"
+    v-move="{
+      onMove,
+      onMoveStart,
+      onMoveEnd,
+      isProtected: !isWritable || isMoveLocked,
+    }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :data-node-id="id"
-    :class="[
-      { dragging: isDragging && isNodeSelected(id), unmovable: isMoveLocked },
-    ]"
+    :class="[{ dragging: isDragging && isNodeSelected(id) }]"
   >
     <slot :position="translationAmount" />
   </g>
 </template>
 
 <style lang="postcss" scoped>
-.unmovable {
-  user-select: none;
-  pointer-events: none;
-
-  & :deep(.hover-area) {
-    pointer-events: none !important;
-    user-select: none !important;
-  }
-}
-
 .dragging {
   cursor: grabbing;
   pointer-events: none;

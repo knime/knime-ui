@@ -23,18 +23,21 @@ describe("directive-move", () => {
     onMove = vi.fn(),
     onMoveStart = vi.fn(),
     onMoveEnd = vi.fn(),
+    isProtected = false,
   } = {}) => {
     const template = `
     <div v-move="{
       onMove,
       onMoveStart,
-      onMoveEnd
+      onMoveEnd,
+      isProtected
     }"></div>
     `;
 
     const wrapper = mount({
       methods: { onMove, onMoveStart, onMoveEnd },
       template,
+      data: () => ({ isProtected }),
     });
 
     const hasPointerCapture = vi.fn();
@@ -215,5 +218,51 @@ describe("directive-move", () => {
     expect(onMoveStart).not.toHaveBeenCalled();
     expect(onMove).not.toHaveBeenCalled();
     expect(onMoveEnd).not.toHaveBeenCalled();
+  });
+
+  it("does not update if isProtected is true and updates if isProtected is false", async () => {
+    const { wrapper, onMoveStart, onMove, onMoveEnd } = doMount({
+      isProtected: true,
+    });
+
+    dispatchPointerEvent(wrapper, "pointerdown", {
+      clientX: 50,
+      clientY: 50,
+    });
+
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 100,
+      clientY: 100,
+    });
+
+    dispatchPointerEvent(wrapper, "pointerup", {
+      clientX: 100,
+      clientY: 100,
+    });
+
+    expect(onMoveStart).not.toHaveBeenCalled();
+    expect(onMove).not.toHaveBeenCalled();
+    expect(onMoveEnd).not.toHaveBeenCalled();
+
+    await wrapper.setData({ isProtected: false });
+
+    dispatchPointerEvent(wrapper, "pointerdown", {
+      clientX: 50,
+      clientY: 50,
+    });
+
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 100,
+      clientY: 100,
+    });
+
+    dispatchPointerEvent(wrapper, "pointerup", {
+      clientX: 100,
+      clientY: 100,
+    });
+
+    expect(onMoveStart).toHaveBeenCalled();
+    expect(onMove).toHaveBeenCalled();
+    expect(onMoveEnd).toHaveBeenCalled();
   });
 });

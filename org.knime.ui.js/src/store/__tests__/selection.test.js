@@ -111,6 +111,22 @@ describe("workflow store", () => {
         Object.keys($store.state.selection.selectedAnnotations).length
       ).toBe(0);
     });
+
+    it("sets id of annotation that rectangle selection was started from", () => {
+      expect(
+        $store.state.selection.startedSelectionFromAnnotationId
+      ).toBeNull();
+      $store.commit("selection/setStartedSelectionFromAnnotationId", "root:1");
+      expect($store.state.selection.startedSelectionFromAnnotationId).toBe(
+        "root:1"
+      );
+    });
+
+    it("sets if rectangle selection was started", () => {
+      expect($store.state.selection.didStartRectangleSelection).toBe(false);
+      $store.commit("selection/setDidStartRectangleSelection", true);
+      expect($store.state.selection.didStartRectangleSelection).toBe(true);
+    });
   });
 
   describe("actions", () => {
@@ -261,6 +277,51 @@ describe("workflow store", () => {
         Object.keys($store.state.selection.selectedAnnotations).length
       ).toBe(0);
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
+    });
+
+    it("toggles selection of an annotation", () => {
+      const annotationId = "root:1_1";
+      const isMultiselect = true;
+      $store = mockVuexStore(storeConfig);
+      $store.dispatch("selection/toggleAnnotationSelection", {
+        annotationId,
+        isMultiselect,
+      });
+      expect(Object.keys($store.state.selection.selectedAnnotations)).toContain(
+        annotationId
+      );
+      expect(
+        Object.keys($store.state.selection.selectedAnnotations).length
+      ).toBe(2);
+    });
+
+    it("selects only clicked annotation if multi selection is false", async () => {
+      const annotationId = "root:1_1";
+      const isMultiselect = false;
+      $store = mockVuexStore(storeConfig);
+      await $store.dispatch("selection/toggleAnnotationSelection", {
+        annotationId,
+        isMultiselect,
+      });
+      expect(
+        Object.keys($store.state.selection.selectedAnnotations)
+      ).toStrictEqual([annotationId]);
+      expect(
+        Object.keys($store.state.selection.selectedAnnotations).length
+      ).toBe(1);
+    });
+
+    it("returns if rectangle selection was started from selected annotation", () => {
+      storeConfig.selection.state.didStartRectangleSelection = true;
+      storeConfig.selection.state.startedSelectionFromAnnotationId = "root:1_1";
+      $store = mockVuexStore(storeConfig);
+      $store.dispatch("selection/toggleAnnotationSelection", {
+        annotationId: "root:1_1",
+        isMultiselect: true,
+      });
+      expect(
+        $store.state.selection.startedSelectionFromAnnotationId
+      ).toBeNull();
     });
   });
 

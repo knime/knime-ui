@@ -213,25 +213,17 @@ describe("MoveableAnnotationContainer.vue", () => {
 
       vi.useRealTimers();
     });
+  });
 
-    it("adds unmovable class if isMoveLocked is true", async () => {
-      const { wrapper, $store } = doMount();
-      $store.state.canvas.isMoveLocked = true;
+  it("sets an id of annotation from which selection started", () => {
+    const { wrapper, $store, commitSpy } = doMount();
+    $store.state.canvas.isMoveLocked = true;
 
-      await wrapper.vm.$nextTick();
-      expect(wrapper.find("g").classes().includes("unmovable")).toBe(true);
-    });
+    wrapper.trigger("pointerdown", { button: 0 });
 
-    it("does not move annotation if isMoveLocked is true", async () => {
-      const { wrapper, $store, mockMoveDirective } = doMount();
-      $store.state.canvas.isMoveLocked = true;
-
-      const clickPosition = { clientX: 85, clientY: 85 };
-
-      startAnnotationDrag(wrapper, mockMoveDirective, clickPosition);
-      await flushPromises();
-
-      expect($store.state.workflow.isDragging).toBe(false);
-    });
+    expect(commitSpy).toHaveBeenCalledWith(
+      "selection/setStartedSelectionFromAnnotationId",
+      defaultProps.id
+    );
   });
 });

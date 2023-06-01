@@ -71,6 +71,7 @@ export default defineComponent({
     },
 
     initCursorPosition(event: PointerEvent) {
+      event.stopPropagation();
       // eslint-disable-next-line no-extra-parens
       const rect = (
         this.$refs.container as HTMLElement
@@ -82,14 +83,10 @@ export default defineComponent({
       };
     },
 
-    async onMoveStart({ detail }) {
+    async onMoveStart() {
       await this.$store.dispatch("workflow/resetDragState");
 
-      if (this.isMoveLocked) {
-        return;
-      }
-
-      if (!detail.event.shiftKey && !this.isAnnotationSelected(this.id)) {
+      if (!this.isAnnotationSelected(this.id)) {
         await this.deselectAllObjects();
       }
 
@@ -115,7 +112,7 @@ export default defineComponent({
 
     onMove: throttle(function (this: any, { detail: { event, altKey } }) {
       /* eslint-disable no-invalid-this */
-      if (this.hasAbortedDrag || this.isMoveLocked) {
+      if (this.hasAbortedDrag) {
         return;
       }
 
@@ -160,6 +157,16 @@ export default defineComponent({
       this.moveObjects();
       /* eslint-enable no-invalid-this */
     }),
+    onPointerDown(event) {
+      if (this.isMoveLocked) {
+        this.$store.commit(
+          "selection/setStartedSelectionFromAnnotationId",
+          this.id
+        );
+      } else {
+        this.initCursorPosition(event);
+      }
+    },
   },
 });
 </script>
@@ -167,26 +174,21 @@ export default defineComponent({
 <template>
   <g
     ref="container"
-    v-move="{ onMoveStart, onMove, onMoveEnd, isProtected: !isWritable }"
+    v-move="{
+      onMoveStart,
+      onMove,
+      onMoveEnd,
+      isProtected: !isWritable || isMoveLocked,
+    }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
-    :class="[
-      {
-        dragging: isDragging && isAnnotationSelected(id),
-        unmovable: isMoveLocked,
-      },
-    ]"
-    @pointerdown.left.stop="initCursorPosition"
+    :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
+    @pointerdown.left="onPointerDown($event)"
   >
     <slot />
   </g>
 </template>
 
 <style lang="postcss" scoped>
-.unmovable {
-  user-select: none;
-  pointer-events: none;
-}
-
 .dragging {
   cursor: grabbing;
   pointer-events: none;
