@@ -1,7 +1,7 @@
-/* eslint-disable max-lines */
 import { expect, describe, it, vi, afterEach } from "vitest";
 import { API } from "@api";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { loadStore } from "./loadStore";
 
 const mockedAPI = deepMocked(API);
 
@@ -9,15 +9,6 @@ describe("workflow store: Execution", () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
-
-  const loadStore = async () => {
-    const store = mockVuexStore({
-      workflow: await import("@/store/workflow"),
-      selection: await import("@/store/selection"),
-    });
-
-    return { store };
-  };
 
   describe("actions", () => {
     it.each([
