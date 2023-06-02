@@ -41,7 +41,7 @@ const editor = useEditor({
       types: ["heading", "paragraph"],
     }),
     Link.configure({
-      autolink: false,
+      openOnClick: true, // FIXME add ctrl click
       validate: href => /^https?:\/\//.test(href),
     }),
   ],
@@ -232,7 +232,7 @@ onMounted(() => {
     }
 
     & a {
-      color: var(--knime-cornflower);
+      color: var(--theme-text-link-foreground-color);
     }
   }
 }

@@ -13,12 +13,18 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const inputRef = ref(null)
+
 const editedText: Ref<string> = ref(props.text);
 const editedUrl: Ref<string> = ref(props.url);
 
-watch(props, (currentValue, _) => {
+watch(props, (currentValue) => {
   editedText.value = currentValue.text;
   editedUrl.value = currentValue.url;
+  setTimeout(() => {
+    inputRef.value?.focus();
+    // eslint-disable-next-line no-magic-numbers
+  }, 200);
 });
 
 const emit = defineEmits<{
@@ -26,22 +32,29 @@ const emit = defineEmits<{
   (e: "cancelAddLink"): void;
 }>();
 
-
 const closeModal = () => {
-    emit("cancelAddLink");
+  emit("cancelAddLink");
 };
 
 const onSubmit = () => {
-    emit("addLink", editedText.value, editedUrl.value);
+  emit("addLink", editedText.value, editedUrl.value);
 };
 
-// TODO add link validation
+const validateUrl = () => {
+  const validScheme = /^https?:\/\//.test(editedUrl.value);
+
+  return !editedUrl.value || validScheme;
+};
 
 const isValid = computed(() => {
-  const validText = editedText.value !== props.text;
-  const validURL = editedUrl.value !== props.url;
+  const textChanged = editedText.value !== props.text;
+  const urlChanged = editedUrl.value !== props.url;
 
-  return validText || validURL;
+  return (textChanged || urlChanged) && validateUrl();
+});
+
+const errorMessage = computed(() => {
+  return validateUrl() ? "" : "Invalid URL";
 });
 </script>
 
@@ -55,22 +68,32 @@ const isValid = computed(() => {
     @cancel="closeModal"
   >
     <template #confirmation>
-      <Label text="Text">
+      <Label
+        text="Text"
+        :compact="true"
+      >
         <div>
-            <InputField
+          <InputField
+            ref="inputRef"
             v-model="editedText"
             type="text"
             title="Text"
-            />
+          />
         </div>
       </Label>
-      <Label text="URL">
+      <Label
+        text="URL"
+        :compact="true"
+      >
         <div>
-            <InputField
+          <InputField
             v-model="editedUrl"
             type="text"
             title="URL"
-            />
+          />
+          <div v-if="!validateUrl()" class="item-error">
+            <span>{{ errorMessage }}</span>
+          </div>
         </div>
       </Label>
     </template>

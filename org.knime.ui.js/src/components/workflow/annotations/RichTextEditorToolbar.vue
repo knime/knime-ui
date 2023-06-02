@@ -20,6 +20,7 @@ import OrderedListIcon from "@/assets/ordered-list.svg";
 import AlignLeftIcon from "@/assets/align-left.svg";
 import AlignCenterIcon from "@/assets/align-center.svg";
 import AlignRightIcon from "@/assets/align-right.svg";
+import LinkIcon from "webapps-common/ui/assets/img/icons/link.svg";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
@@ -63,25 +64,36 @@ const text = ref("");
 const url = ref("");
 
 const createLink = () => {
-  const { view, state } = props.editor
+  const { view, state } = props.editor;
   const { from, to } = view.state.selection;
 
   text.value = state.doc.textBetween(from, to, "");
-  url.value = props.editor.getAttributes("link").href || "";
+  
+  if (text.value) {
+    url.value = props.editor.getAttributes("link").href || "";
+  } else {
+    url.value = "";
+  }
 
-  showCreateLinkModal.value = true;  
+  showCreateLinkModal.value = true;
 };
 
 const addLink = (text: string, url: string) => {
+  props.editor
+    .chain()
+    .focus()
+    .extendMarkRange("link")
+    .unsetLink()
+    .run()
+
   if (url) {
-    props.editor.commands.insertContent(`<a href="${url}">${text}</a>`);
-  } else {
-    props.editor
-      .chain()
-      .focus()
-      .extendMarkRange("link")
-      .unsetLink()
-      .run()
+    props.editor.commands.insertContent(`<a href="${url}">${text}</a> `,
+      {
+        parseOptions: {
+          preserveWhitespace: true,
+        }
+      }
+    );
   }
 
   showCreateLinkModal.value = false;
@@ -156,7 +168,7 @@ const editorTools: Array<ToolbarItem> = [
   },
   {
     id: "add-link",
-    icon: AlignRightIcon,
+    icon: LinkIcon,
     name: "Add link",
     hotkey: ["Ctrl", "Shift", "L"], // TODO add correct link shortcut
     active: () => props.editor.isActive("link"),
@@ -341,8 +353,8 @@ const changeBorderColor = (color: string) => {
 
   & .toolbar-button {
     & svg {
-      width: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
-      height: calc(calc(v-bind(toolbarItemSize) - 5) * 1px);
+      width: calc(calc(v-bind(toolbarItemSize) - 14) * 1px);
+      height: calc(calc(v-bind(toolbarItemSize) - 14) * 1px);
     }
   }
 
