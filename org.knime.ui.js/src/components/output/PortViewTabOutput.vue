@@ -314,7 +314,6 @@ export default defineComponent({
     border-radius: 12px;
     background: var(--knime-white);
     border: 1px solid var(--knime-masala);
-    stroke: red;
   }
 
   &:hover > svg {
