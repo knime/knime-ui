@@ -50,8 +50,8 @@ export default {
 }
 
 .scroll-container {
-  height: calc(100% - 65px);
-  overflow-y: scroll;
+  height: calc(100% - 65px); /* subtract the top margin / space */
+  overflow-y: auto;
 }
 
 .counts {
