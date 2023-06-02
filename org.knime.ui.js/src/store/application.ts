@@ -1,7 +1,7 @@
 import { API } from "@api";
 import { encodeString } from "@/util/encodeString";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { getNextProjectId } from "./workflow/APinteractions";
+import { getNextProjectId } from "./workflow/util";
 
 const getCanvasStateKey = (input) => encodeString(input);
 

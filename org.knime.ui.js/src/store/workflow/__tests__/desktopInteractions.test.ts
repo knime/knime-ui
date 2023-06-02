@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import {
   expect,
   describe,
@@ -10,7 +9,7 @@ import {
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 import { API } from "@api";
-import { getNextProjectId } from "../APinteractions";
+import { getNextProjectId } from "../util";
 
 vi.mock("@/util/generateWorkflowPreview");
 vi.mock("@/util/encodeString", () => ({

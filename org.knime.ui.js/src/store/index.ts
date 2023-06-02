@@ -1,5 +1,7 @@
 import { createStore } from "vuex";
 
+import type { RootStoreState } from "./types";
+
 import * as application from "./application";
 import * as canvas from "./canvas";
 import * as nodeRepository from "./nodeRepository";
@@ -10,9 +12,8 @@ import * as api from "./uiExtApi";
 import * as spaces from "./spaces";
 import * as quickAddNodes from "./quickAddNodes";
 
-// eslint-disable-next-line arrow-body-style
 export const initStore = () => {
-  return createStore({
+  return createStore<RootStoreState>({
     modules: {
       application: { namespaced: true, ...application },
       canvas: { namespaced: true, ...canvas },

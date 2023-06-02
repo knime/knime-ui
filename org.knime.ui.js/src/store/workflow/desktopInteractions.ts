@@ -1,48 +1,21 @@
+import type { ActionTree } from "vuex";
+
 import { API } from "@api";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 
-/**
- * Determines which project id should be set after closing the active one
- *
- * @param {Object} param
- * @param {Array} param.openProjects
- * @param {String} param.activeProjectId
- * @param {String} param.closingProjectIds
- * @returns {String} next project id to set
- */
-export const getNextProjectId = ({
-  openProjects,
-  activeProjectId,
-  closingProjectIds,
-}) => {
-  if (!closingProjectIds.includes(activeProjectId)) {
-    return activeProjectId;
-  }
-
-  if (openProjects.length === 1) {
-    return null; // null equals going to the entry page
-  }
-
-  const remainingProjects = openProjects.filter(
-    (project) => !closingProjectIds.includes(project.projectId)
-  );
-
-  if (remainingProjects.length === 0) {
-    return null; // null equals going to the entry page
-  }
-
-  return remainingProjects.at(-1).projectId;
-};
+import type { RootStoreState } from "../types";
+import { getNextProjectId } from "./util";
+import type { WorkflowState } from "./index";
 
 /**
  * This store is merged with the workflow store.
  * It holds all calls from the workflow store to the local Analytics Platform.
  */
-export const state = {};
+export const state = () => ({});
 
 export const mutations = {};
 
-export const actions = {
+export const actions: ActionTree<WorkflowState, RootStoreState> = {
   /* See docs in API */
   async saveWorkflow({ state, dispatch }) {
     const {
