@@ -75,7 +75,7 @@ describe("RichTextEditorToolbar.vue", () => {
   it("should render all options", () => {
     const { wrapper } = doMount();
 
-    expect(wrapper.findAll(".toolbar-button").length).toBe(8);
+    expect(wrapper.findAll(".toolbar-button").length).toBe(9);
   });
 
   it("should set the active state correctly", () => {
