@@ -73,7 +73,17 @@ const createLink = () => {
 };
 
 const addLink = (text: string, url: string) => {
-  props.editor.commands.insertContent(`<a href="${url}">${text}</a>`);
+  if (url) {
+    props.editor.commands.insertContent(`<a href="${url}">${text}</a>`);
+  } else {
+    props.editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .unsetLink()
+      .run()
+  }
+
   showCreateLinkModal.value = false;
 };
 
