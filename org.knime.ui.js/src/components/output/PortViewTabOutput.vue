@@ -304,8 +304,7 @@ export default defineComponent({
   inset: v-bind("hasNoDataValidationError ? 0 : '130px'") 0 0 0;
   margin: auto;
   background: rgba(255 255 255 / 30%);
-
-  /* backdrop-filter: blur(10px); */
+  backdrop-filter: blur(10px);
 }
 
 .action-button {
@@ -315,6 +314,11 @@ export default defineComponent({
     border-radius: 12px;
     background: var(--knime-white);
     border: 1px solid var(--knime-masala);
+    stroke: red;
+  }
+
+  &:hover > svg {
+    stroke: var(--knime-masala) !important;
   }
 }
 </style>
