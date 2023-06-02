@@ -78,7 +78,7 @@ watch(isRenameActive, async (isActive) => {
 });
 
 const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
-  if (keyupEvent.key === "Escape" || keyupEvent.key === "Esc") {
+  if (keyupEvent.key === "Escape") {
     emit("rename:clear");
   }
 

@@ -551,6 +551,7 @@ export default defineComponent({
         >
           <MenuItems
             menu-aria-label="Space explorer context menu"
+            class="menu-items"
             :items="
               getFileExplorerContextMenuItems(
                 createRenameOption,
@@ -657,5 +658,10 @@ export default defineComponent({
 .smart-loader {
   --smartloader-bg: var(--knime-gray-ultra-light);
   --smartloader-icon-size: 30;
+}
+
+.menu-items,
+:deep(.menu-items-sub-level) {
+  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 }
 </style>

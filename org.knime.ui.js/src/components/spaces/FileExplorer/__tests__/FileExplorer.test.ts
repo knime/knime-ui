@@ -592,7 +592,7 @@ describe("FileExplorer.vue", () => {
         await triggerRename(wrapper, renamedItemIndex);
 
         const itemElement = getRenderedItems(wrapper).at(renamedItemIndex);
-        await itemElement.find("input").trigger("keyup", { key: "Esc" });
+        await itemElement.find("input").trigger("keyup", { key: "Escape" });
 
         const firstItemComponent = wrapper
           .findAllComponents(FileExplorerItemComp)

@@ -162,11 +162,6 @@ const openContextMenu = (
   clickedItem: FileExplorerItemType,
   index: number
 ) => {
-  if (isContextMenuVisible.value) {
-    closeContextMenu();
-    return;
-  }
-
   const element = itemRefs.value[index].$el;
   contextMenuPos.value.x = event.clientX;
   contextMenuPos.value.y = event.clientY;

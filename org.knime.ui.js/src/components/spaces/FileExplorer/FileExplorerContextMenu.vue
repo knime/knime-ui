@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch, toRef } from "vue";
 import { directive as vClickAway } from "vue3-click-away";
 
 import type { MenuItem as BaseMenuItem } from "webapps-common/ui/components/MenuItems.vue";
@@ -51,7 +51,11 @@ onUnmounted(() => {
   intersectionObserver.disconnect();
 });
 
-const offsetX = props.position.x - referenceRect.left;
+const offsetX = computed(() => {
+  const referenceRect = element.value.getBoundingClientRect();
+  return props.position.x - referenceRect.left;
+});
+
 const offsetY = computed(() => {
   const clickPosition = props.position.y - referenceRect.top;
   const distanceToBottom = window.innerHeight - props.position.y;
@@ -67,7 +71,7 @@ const offsetY = computed(() => {
 
 const popperOffsetModifier = computed(() => ({
   name: "offset",
-  options: { offset: [offsetX, offsetY.value] },
+  options: { offset: [offsetX.value, offsetY.value] },
 }));
 
 const { popperInstance } = usePopper(
@@ -82,12 +86,24 @@ const { popperInstance } = usePopper(
   }
 );
 
-watch(wrapperHeight, async () => {
+const repositionPopper = async () => {
   // by re-setting the modifiers we update the offset which will reposition the popper
   await popperInstance.value.setOptions({
     modifiers: [popperOffsetModifier.value],
   });
+};
+
+watch(wrapperHeight, async () => {
+  await repositionPopper();
 });
+
+watch(
+  toRef(props, "position"),
+  async () => {
+    await repositionPopper();
+  },
+  { deep: true }
+);
 
 const emit = defineEmits<{
   (e: "itemClick", payload: FileExplorerContextMenu.ItemClickPayload): void;
@@ -191,7 +207,5 @@ useEscapeStack({ onEscape: closeMenu });
   z-index: 5;
   left: calc(v-bind("$props.position.x") * 1px);
   top: calc(v-bind("$props.position.y") * 1px);
-  background: white;
-  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 }
 </style>

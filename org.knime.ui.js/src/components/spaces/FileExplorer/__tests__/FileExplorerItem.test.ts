@@ -116,7 +116,7 @@ describe("FileExplorerItem.vue", () => {
       const { wrapper } = doMount({ props });
 
       wrapper.find("input").setValue("new name");
-      await wrapper.find("input").trigger("keyup", { key: "Esc" });
+      await wrapper.find("input").trigger("keyup", { key: "Escape" });
 
       expect(wrapper.emitted("rename:submit")).toBeUndefined();
       expect(wrapper.emitted("rename:clear")).toBeDefined();
