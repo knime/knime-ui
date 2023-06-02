@@ -179,52 +179,29 @@ export default defineComponent({
       return this.fullPortObject.views;
     },
 
-    currentNodeState(): "configured" | "executed" | "idle" {
-      // console.log("here");
-      // console.log(isMetaNode(this.selectedNode));
-      console.log(this.selectedNode);
-
+    currentNodeState(): "configured" | "executed" {
       // metanodes have no configured state so they use the state of the selected output port
       if (isMetaNode(this.selectedNode)) {
         const portState =
           this.selectedNode.outPorts[this.selectedPortIndex].nodeState;
-        // console.log(portState);
 
-        if (portState === MetaNodePort.NodeStateEnum.CONFIGURED) {
-          return "configured";
-        } else if (portState === MetaNodePort.NodeStateEnum.IDLE) {
-          return "idle";
-        }
-
-        return "executed";
-
-        // return portState === MetaNodePort.NodeStateEnum.CONFIGURED
-        //   ? "configured"
-        //   : "executed";
+        return portState === MetaNodePort.NodeStateEnum.CONFIGURED
+          ? "configured"
+          : "executed";
       }
-      // console.log(this.selectedNode.state.executionState);
 
-      if (
-        this.selectedNode.state.executionState ===
+      return this.selectedNode.state.executionState ===
         NodeState.ExecutionStateEnum.CONFIGURED
-      ) {
-        return "configured";
-      } else if (
-        this.selectedNode.state.executionState ===
-        NodeState.ExecutionStateEnum.IDLE
-      ) {
-        return "idle";
-      }
-
-      return "executed";
-      // return this.selectedNode.state.executionState ===
-      //   NodeState.ExecutionStateEnum.CONFIGURED
-      //   ? "configured"
-      //   : "executed";
+        ? "configured"
+        : "executed";
     },
 
     shouldShowExecuteAction() {
-      const { canExecute } = this.selectedNode.allowedActions;
+      const canExecute = isMetaNode(this.selectedNode)
+        ? this.selectedNode.outPorts[this.selectedPortIndex].nodeState ===
+          "CONFIGURED"
+        : this.selectedNode.allowedActions.canExecute;
+
       if (this.hasNoDataValidationError) {
         return canExecute;
       }
@@ -327,7 +304,8 @@ export default defineComponent({
   inset: v-bind("hasNoDataValidationError ? 0 : '130px'") 0 0 0;
   margin: auto;
   background: rgba(255 255 255 / 30%);
-  backdrop-filter: blur(10px);
+
+  /* backdrop-filter: blur(10px); */
 }
 
 .action-button {

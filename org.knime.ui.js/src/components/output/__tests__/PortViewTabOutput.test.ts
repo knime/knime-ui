@@ -215,6 +215,30 @@ describe("PortViewTabOutput.vue", () => {
       expect(wrapper.find(".execute-node-action").exists()).toBe(true);
     });
 
+    it("should show execute node button for metanodes with configured (but not executed) nodes", async () => {
+      const { wrapper } = doMount({
+        props: {
+          selectedNode: {
+            ...dummyNode,
+            state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
+            kind: "metanode",
+            outPorts: [
+              {
+                index: 0,
+                typeId: "table",
+                nodeState: NodeState.ExecutionStateEnum.CONFIGURED,
+              },
+            ],
+          },
+          selectedPortIndex: 0,
+        },
+      });
+
+      await nextTick();
+
+      expect(wrapper.find(".execute-node-action").exists()).toBe(true);
+    });
+
     it("should handle port without content", async () => {
       const { wrapper } = doMount({
         props: {
@@ -230,7 +254,7 @@ describe("PortViewTabOutput.vue", () => {
 
       await nextTick();
 
-      expect(wrapper.findComponent(PortViewTabToggles).exists()).toBe(false);
+      expect(wrapper.findComponent(PortViewTabToggles).exists()).toBe(true);
       expect(wrapper.find(".execute-node-action").exists()).toBe(true);
     });
 

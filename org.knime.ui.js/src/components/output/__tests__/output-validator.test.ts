@@ -207,6 +207,35 @@ describe("output-validator", () => {
     });
   });
 
+  it("validates that metanodes port is configured", () => {
+    const selectedNode = {
+      ...dummyNode,
+      state: { executionState: "EXECUTED" },
+      kind: "metanode",
+      outPorts: [
+        { typeId: "flowVariable", index: 0, nodeState: "EXECUTED" },
+        { typeId: "table", index: 1, nodeState: "IDLE" },
+      ],
+    };
+
+    const result = runNodeValidationChecks({
+      params: {
+        selectedNode,
+        selectedPortIndex: 1,
+        portTypes,
+      },
+      validations: [outputValidator.validateNodeConfigurationState],
+    });
+
+    expect(result).toEqual({
+      error: {
+        type: "NODE",
+        code: "NODE_UNCONFIGURED",
+        message: "Please first configure the selected node.",
+      },
+    });
+  });
+
   it("validates that flow variables can be displayed even when the node is not configured", () => {
     const selectedNode = {
       ...dummyNode,

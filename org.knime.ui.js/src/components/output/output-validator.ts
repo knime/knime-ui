@@ -5,7 +5,7 @@ import type {
   AvailablePortTypes,
   KnimeNode,
 } from "@/api/gateway-api/custom-types";
-import type { NodePort } from "@/api/gateway-api/generated-api";
+import type { NodePort, MetaNodePort } from "@/api/gateway-api/generated-api";
 
 /**
  * Returns the PortType of a given port
@@ -258,8 +258,11 @@ export const validatePortSupport: ValidationFn<{
     };
   }
 
-  // eslint-disable-next-line no-undefined
-  if (selectedPort.portContentVersion === undefined) {
+  if (
+    selectedPort.hasOwnProperty("portContentVersion") &&
+    // eslint-disable-next-line no-undefined
+    selectedPort.portContentVersion === undefined
+  ) {
     return {
       error: {
         type: "PORT",
@@ -279,26 +282,40 @@ export const validatePortSupport: ValidationFn<{
 export const validateNodeConfigurationState: ValidationFn<{
   selectedNode: KnimeNode;
   selectedPort: NodePort;
+  selectedPortIndex: number;
   portTypes: AvailablePortTypes;
 }> = (context, next) => {
-  const { selectedNode, selectedPort, portTypes } = context;
+  const { selectedNode, selectedPort, portTypes, selectedPortIndex } = context;
   if (!selectedNode) {
     return next(context);
   }
 
-  const isNodeIdle = selectedNode.state?.executionState === "IDLE";
+  const validate = (isNodeIdle, _selectedPort) => {
+    if (isNodeIdle && !isFlowVariablePort({ portTypes, port: _selectedPort })) {
+      return {
+        error: {
+          type: "NODE",
+          code: "NODE_UNCONFIGURED",
+          message: "Please first configure the selected node.",
+        },
+      };
+    }
 
-  if (isNodeIdle && !isFlowVariablePort({ portTypes, port: selectedPort })) {
-    return {
-      error: {
-        type: "NODE",
-        code: "NODE_UNCONFIGURED",
-        message: "Please first configure the selected node.",
-      },
-    };
+    return next(context);
+  };
+
+  if (selectedNode.kind === "metanode") {
+    const selectedPort = selectedNode.outPorts[
+      selectedPortIndex
+    ] as MetaNodePort;
+    const isNodePortIdle = selectedPort.nodeState === "IDLE";
+
+    return validate(isNodePortIdle, selectedPort);
   }
 
-  return next(context);
+  const isNodeIdle = selectedNode.state?.executionState === "IDLE";
+
+  return validate(isNodeIdle, selectedPort);
 };
 
 /**
