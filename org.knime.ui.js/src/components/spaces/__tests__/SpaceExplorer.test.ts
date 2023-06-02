@@ -27,17 +27,17 @@ const fetchWorkflowGroupContentResponse = {
     {
       id: "1",
       name: "Folder 1",
-      type: "WorkflowGroup",
+      type: SpaceItem.TypeEnum.WorkflowGroup,
     },
     {
       id: "2",
       name: "Folder 2",
-      type: "WorkflowGroup",
+      type: SpaceItem.TypeEnum.WorkflowGroup,
     },
     {
       id: "4",
       name: "File 2",
-      type: "Workflow",
+      type: SpaceItem.TypeEnum.Workflow,
     },
   ],
 };
@@ -887,7 +887,7 @@ describe("SpaceExplorer.vue", () => {
             {
               id: "4",
               name: "testFile.test",
-              type: "Workflow",
+              type: SpaceItem.TypeEnum.Workflow,
             },
           ],
         },
@@ -925,6 +925,61 @@ describe("SpaceExplorer.vue", () => {
           providerId: "local",
           spaceId: "local",
         },
+        isComponent: false,
+      });
+      await new Promise((r) => setTimeout(r, 0));
+      expect(onComplete).toHaveBeenCalledWith(true);
+    });
+
+    it("should add a component to canvas when dragged from the file explorer", async () => {
+      document.elementFromPoint = vi.fn().mockReturnValue(null);
+      const { wrapper, store, dispatchSpy, mockRoute } = await doMountAndLoad({
+        // components don't have an extenssion associated to them
+        fileExtensionToNodeTemplateId: {},
+        mockResponse: {
+          id: "test.id",
+          path: [],
+          items: [
+            {
+              id: "4",
+              name: "MyComponent",
+              type: SpaceItem.TypeEnum.Component,
+            },
+          ],
+        },
+      });
+
+      mockRoute.name = APP_ROUTES.WorkflowPage;
+      store.state.spaces.activeSpaceProvider = {
+        id: "local",
+      };
+
+      const event = new MouseEvent("dragend") as DragEvent;
+      const sourceItem = {
+        id: "0",
+        name: "file.test",
+        canBeDeleted: true,
+        canBeRenamed: true,
+        isOpen: false,
+        type: SpaceItem.TypeEnum.Component,
+      };
+      const onComplete = vi.fn();
+
+      wrapper.findComponent(FileExplorer).vm.$emit("dragend", {
+        event,
+        sourceItem,
+        onComplete,
+      });
+
+      expect(dispatchSpy).toHaveBeenNthCalledWith(2, "workflow/addNode", {
+        nodeFactory: null,
+        position: { x: 5, y: 5 },
+        spaceItemReference: {
+          itemId: "0",
+          providerId: "local",
+          spaceId: "local",
+        },
+        isComponent: true,
       });
       await new Promise((r) => setTimeout(r, 0));
       expect(onComplete).toHaveBeenCalledWith(true);
@@ -945,7 +1000,7 @@ describe("SpaceExplorer.vue", () => {
             {
               id: "4",
               name: "testFile.test",
-              type: "Workflow",
+              type: SpaceItem.TypeEnum.Workflow,
             },
           ],
         },

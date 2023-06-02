@@ -143,6 +143,63 @@ describe("workflow store: Editing", () => {
         });
       });
 
+      it("should add nodes based from a space", async () => {
+        const { store } = await setupStoreWithWorkflow();
+
+        store.dispatch("workflow/addNode", {
+          position: { x: 7, y: 31 },
+          nodeFactory: "factory",
+          sourceNodeId: null,
+          sourcePortIdx: null,
+          spaceItemReference: {
+            providerId: "provider",
+            spaceId: "space",
+            itemId: "item",
+          },
+        });
+
+        expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith({
+          projectId: store.state.workflow.activeWorkflow.projectId,
+          workflowId: store.state.workflow.activeWorkflow.info.containerId,
+          position: { x: 5, y: 30 },
+          nodeFactory: "factory",
+          sourceNodeId: null,
+          sourcePortIdx: null,
+          spaceItemReference: {
+            providerId: "provider",
+            spaceId: "space",
+            itemId: "item",
+          },
+        });
+      });
+
+      it("should add components from a space", async () => {
+        const { store } = await setupStoreWithWorkflow();
+
+        mockedAPI.desktop.importComponent.mockReturnValueOnce("new-node");
+
+        store.dispatch("workflow/addNode", {
+          position: { x: 7, y: 31 },
+          nodeFactory: null,
+          isComponent: true,
+          spaceItemReference: {
+            providerId: "provider",
+            spaceId: "space",
+            itemId: "item",
+          },
+        });
+
+        expect(mockedAPI.desktop.importComponent).toHaveBeenCalledWith({
+          projectId: store.state.workflow.activeWorkflow.projectId,
+          workflowId: store.state.workflow.activeWorkflow.info.containerId,
+          x: 5,
+          y: 30,
+          spaceProviderId: "provider",
+          spaceId: "space",
+          itemId: "item",
+        });
+      });
+
       it.each([
         // selectionMode, currentSelectedNodeIds, expectedNodeIds
         ["new-only", ["root:id"], ["new-mock-node"]],

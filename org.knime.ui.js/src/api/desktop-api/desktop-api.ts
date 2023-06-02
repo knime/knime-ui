@@ -306,3 +306,35 @@ export const saveWorkflowAs = ({
     throw error;
   }
 };
+
+export const importComponent = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+  projectId,
+  workflowId,
+  x,
+  y,
+}: SpaceProviderId &
+  SpaceId &
+  SpaceItemId & {
+    projectId: string;
+    workflowId: string;
+    x: number;
+    y: number;
+  }) => {
+  try {
+    return window.importComponent(
+      spaceProviderId,
+      spaceId,
+      itemId,
+      projectId,
+      workflowId,
+      x,
+      y
+    );
+  } catch (error) {
+    consola.error("Could not import component", { error });
+    throw error;
+  }
+};

@@ -36,6 +36,13 @@ const ITEM_TYPES_TEXTS = {
   [SpaceItem.TypeEnum.Data]: "data file",
 } as const;
 
+const isComponentItem = (
+  nodeTemplateId: string | null,
+  item: FileExplorerItem
+) => {
+  return !nodeTemplateId && item.type === SpaceItem.TypeEnum.Component;
+};
+
 export default defineComponent({
   components: {
     SpaceExplorerActions,
@@ -352,7 +359,9 @@ export default defineComponent({
      */
     async onDrag({ event, item }) {
       const nodeTemplateId = this.getNodeTemplateId(item);
-      if (!nodeTemplateId) {
+      const isComponent = isComponentItem(nodeTemplateId, item);
+
+      if (!nodeTemplateId && !isComponent) {
         return;
       }
 
@@ -361,11 +370,12 @@ export default defineComponent({
       const screenY = event.clientY - this.$shapes.nodeSize / 2;
 
       const el = document.elementFromPoint(screenX, screenY);
-
       const kanvas = this.getScrollContainerElement();
 
       if (!this.nodeTemplate) {
-        this.nodeTemplate = await this.getNodeTemplate(nodeTemplateId);
+        this.nodeTemplate = isComponent
+          ? { isComponent: true, inPorts: [], outPorts: [], type: item.type }
+          : await this.getNodeTemplate(nodeTemplateId);
       }
 
       this.isAboveCanvas = kanvas.contains(el);
@@ -403,24 +413,29 @@ export default defineComponent({
       }
 
       const nodeTemplateId = this.getNodeTemplateId(sourceItem);
-      if (!nodeTemplateId) {
+      const isComponent = isComponentItem(nodeTemplateId, sourceItem);
+
+      if (!nodeTemplateId && !isComponent) {
         onComplete(false);
         return;
       }
 
       try {
         const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
+        const position = { x, y };
+        const spaceItemReference = {
+          providerId: this.activeSpaceProvider.id,
+          spaceId: this.activeSpace.spaceId,
+          itemId: sourceItem.id,
+        };
+
         await this.$store.dispatch("workflow/addNode", {
-          position: { x, y },
-          spaceItemReference: {
-            itemId: sourceItem.id,
-            providerId: this.activeSpaceProvider.id,
-            spaceId: this.activeSpace.spaceId,
-          },
-          nodeFactory: {
-            className: nodeTemplateId,
-          },
+          position,
+          spaceItemReference,
+          nodeFactory: isComponent ? null : { className: nodeTemplateId },
+          isComponent,
         });
+
         onComplete(true);
       } catch (error) {
         onComplete(false);

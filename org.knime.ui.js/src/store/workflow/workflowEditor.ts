@@ -3,6 +3,7 @@ import { API } from "@api";
 import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
 import {
   Annotation,
+  type XY,
   type ReorderWorkflowAnnotationsCommand,
 } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/util/geometry";
@@ -286,14 +287,27 @@ export const actions = {
       position,
       nodeFactory = null,
       spaceItemReference,
-      // use either nodeFactory or spaceItemReference
       sourceNodeId = null,
       sourcePortIdx = null,
-      // possible values are: 'new-only' | 'add' | 'none'
-      // 'new-only' clears the active selection and selects only the new node
-      // 'add' adds the new node to the active selection
-      // 'none' doesn't modify the active selection nor it selects the new node
       selectionMode = "new-only",
+      isComponent = false,
+    }: {
+      position: XY;
+      nodeFactory: { className: string };
+      spaceItemReference: {
+        providerId: string;
+        spaceId: string;
+        itemId: string;
+      };
+      sourceNodeId: string | null;
+      sourcePortIdx: number | null;
+      /**
+       * 'new-only' clears the active selection and selects only the new node
+       * 'add' adds the new node to the active selection
+       * 'none' doesn't modify the active selection nor it selects the new node
+       */
+      selectionMode: "new-only" | "add" | "none";
+      isComponent?: boolean;
     }
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
@@ -304,22 +318,46 @@ export const actions = {
       y: geometry.utils.snapToGrid(position.y),
     };
 
-    const response = await API.workflowCommand.AddNode({
-      projectId,
-      workflowId,
-      position: gridAdjustedPosition,
-      nodeFactory,
-      spaceItemReference,
-      sourceNodeId,
-      sourcePortIdx,
-    });
+    const apiCall = isComponent
+      ? () =>
+          API.desktop.importComponent({
+            projectId,
+            workflowId,
+            x: gridAdjustedPosition.x,
+            y: gridAdjustedPosition.y,
+            spaceProviderId: spaceItemReference.providerId,
+            spaceId: spaceItemReference.spaceId,
+            itemId: spaceItemReference.itemId,
+          })
+      : () =>
+          API.workflowCommand.AddNode({
+            projectId,
+            workflowId,
+            position: gridAdjustedPosition,
+            nodeFactory,
+            spaceItemReference,
+            sourceNodeId,
+            sourcePortIdx,
+          });
 
+    const response = await apiCall();
+    if (!response) {
+      return null;
+    }
+
+    const newNodeId =
+      typeof response === "string" ? response : response.newNodeId;
+
+    // TODO: component selection doesn't work atm because the api call is
+    // made via a browser function which is async, so when the node id
+    // is returned the WorkflowChangedEvent that adds the node to the state
+    // still hasn't arrived, so the selection doesn't happen
     if (selectionMode !== "none") {
       if (selectionMode === "new-only") {
         dispatch("selection/deselectAllObjects", null, { root: true });
       }
 
-      dispatch("selection/selectNode", response.newNodeId, { root: true });
+      dispatch("selection/selectNode", newNodeId, { root: true });
     }
 
     return response;
