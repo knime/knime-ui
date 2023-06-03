@@ -17,6 +17,7 @@ describe("Sidebar", () => {
 
   const mockFeatureFlags = {
     shouldDisplayEmbeddedDialogs: vi.fn(() => true),
+    shouldShowAiAssistant: () => false,
   };
 
   beforeEach(() => {

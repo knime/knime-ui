@@ -140,5 +140,13 @@ export default ({ $store, $router }) => {
         text,
       });
     },
+
+    // Is triggered by the backend, e.g. when an answer is received from the AI Assistant
+    AiAssistantEvent({ chainType, data }) {
+      $store.dispatch("aiAssistant/handleAiAssistantEvent", {
+        chainType,
+        data,
+      });
+    },
   });
 };

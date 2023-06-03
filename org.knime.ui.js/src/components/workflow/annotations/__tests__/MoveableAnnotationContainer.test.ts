@@ -50,6 +50,9 @@ describe("MoveableAnnotationContainer.vue", () => {
           screenToCanvasCoordinates: screenToCanvasCoordinatesMock,
         },
       },
+      aiAssistant: {
+        state: { build: { isProcessing: false } },
+      },
     });
 
     $store.commit("workflow/setActiveWorkflow", createWorkflow());

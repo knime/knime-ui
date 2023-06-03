@@ -1,5 +1,5 @@
 import { createStore } from "vuex";
-
+import { API } from "@api";
 import type { RootStoreState } from "./types";
 
 import * as application from "./application";
@@ -11,6 +11,7 @@ import * as workflow from "./workflow";
 import * as api from "./uiExtApi";
 import * as spaces from "./spaces";
 import * as quickAddNodes from "./quickAddNodes";
+import * as aiAssistant from "./aiAssistant";
 
 export const initStore = () => {
   return createStore<RootStoreState>({
@@ -26,6 +27,10 @@ export const initStore = () => {
       // TODO: NXT-1217 Remove this unnecessary store once the issue in the ticket
       // can be solved in a better way
       api: { namespaced: true, ...api },
+      // Only use store if AI assistant is available
+      ...(API.desktop.isAiAssistantBackendAvailable && {
+        aiAssistant: { namespaced: true, ...aiAssistant },
+      }),
     },
   });
 };

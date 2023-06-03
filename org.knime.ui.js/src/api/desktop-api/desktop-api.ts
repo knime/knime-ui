@@ -392,3 +392,36 @@ export const importURIAtWorkflowCanvas = ({
     false
   );
 };
+
+export const abortAiRequest = ({ chainType }) => {
+  return callBrowserFunction(
+    window.abortAiRequest,
+    [chainType],
+    "Could not abort AI request",
+    false
+  );
+};
+
+export const makeAiRequest = ({
+  chainType,
+  projectId,
+  workflowId,
+  nodeId,
+  messages,
+}) => {
+  return callBrowserFunction(
+    window.makeAiRequest,
+    [chainType, projectId, workflowId, nodeId, JSON.stringify(messages)],
+    "Could not make AI request",
+    false
+  );
+};
+
+export const isAiAssistantBackendAvailable = () => {
+  return callBrowserFunction(
+    window.isAiAssistantBackendAvailable,
+    [],
+    "Could not open workflow coach preference page",
+    true
+  );
+};

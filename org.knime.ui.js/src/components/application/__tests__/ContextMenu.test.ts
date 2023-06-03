@@ -38,6 +38,13 @@ describe("ContextMenu.vue", () => {
           hasClipboardSupport: true,
         },
       },
+      aiAssistant: {
+        state: {
+          build: {
+            isProcessing: false,
+          },
+        },
+      },
     });
 
     $store.commit(
@@ -70,6 +77,7 @@ describe("ContextMenu.vue", () => {
 
     const $store: typeof defaultStore = store ?? defaultStore;
 
+    // @ts-ignore
     const $shortcuts = createShortcutsService({ $store, $router: mockRouter });
 
     const shortcutsSpy = vi.spyOn($shortcuts, "dispatch");

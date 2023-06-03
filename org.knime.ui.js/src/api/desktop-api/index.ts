@@ -10,6 +10,7 @@ export interface DesktopEventHandlers {
     status: "STARTED" | "FINISHED";
     text: string;
   }): void;
+  AiAssistantEvent(payload: { chainType: "qa" | "build"; data: {} });
 }
 
 export const desktop = {

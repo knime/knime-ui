@@ -3,12 +3,14 @@ import { mapState, mapActions, mapMutations } from "vuex";
 import NodeCogIcon from "webapps-common/ui/assets/img/icons/node-cog.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
+import ChatIcon from "webapps-common/ui/assets/img/icons/forum.svg";
 import MetainfoIcon from "@/assets/metainfo.svg";
 
 import { TABS } from "@/store/panel";
 import NodeRepository from "@/components/nodeRepository/NodeRepository.vue";
 import NodeDialogWrapper from "@/components/embeddedViews/NodeDialogWrapper.vue";
 import SidebarSpaceExplorer from "@/components/sidebar/SidebarSpaceExplorer.vue";
+import AiAssistant from "@/components/sidebar/aiAssistant/AiAssistant.vue";
 
 import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
 import ContextAwareDescription from "@/components/sidebar/ContextAwareDescription.vue";
@@ -22,6 +24,7 @@ export default {
     LeftCollapsiblePanel,
     NodeRepository,
     NodeDialogWrapper,
+    AiAssistant,
   },
   data() {
     return {
@@ -65,6 +68,15 @@ export default {
           isExpanded: this.expanded,
           onClick: () => this.clickItem(TABS.SPACE_EXPLORER),
         },
+        this.$features.shouldShowAiAssistant()
+          ? {
+              title: "AI Chat",
+              icon: ChatIcon,
+              isActive: this.isTabActive(TABS.AI_CHAT),
+              isExpanded: this.expanded,
+              onClick: () => this.clickItem(TABS.AI_CHAT),
+            }
+          : null,
       ].filter(Boolean);
     },
   },
@@ -139,6 +151,11 @@ export default {
         <SidebarSpaceExplorer
           v-show="isTabActive(TABS.SPACE_EXPLORER)"
           key="space-explorer"
+        />
+        <AiAssistant
+          v-if="$features.shouldShowAiAssistant()"
+          v-show="isTabActive(TABS.AI_CHAT)"
+          key="ai-chat"
         />
       </TransitionGroup>
     </LeftCollapsiblePanel>

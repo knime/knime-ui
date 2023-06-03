@@ -99,3 +99,13 @@ declare function importComponent(
   x: number,
   y: number
 ): string | null;
+
+declare function makeAiRequest(
+  chainType: string,
+  projectId: string,
+  workflowId: string,
+  nodeId: string,
+  messages: string
+): void;
+declare function abortAiRequest(chainType: string): void;
+declare function isAiAssistantBackendAvailable(): boolean;

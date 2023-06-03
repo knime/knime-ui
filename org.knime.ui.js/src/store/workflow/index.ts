@@ -1,4 +1,5 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { isEqual } from "lodash";
 
 import { API } from "@api";
 import type { Workflow } from "@/api/gateway-api/generated-api";
@@ -276,10 +277,21 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
   },
 
   /* Workflow is writable, if it is not linked or inside a linked workflow */
-  isWritable(state, { isLinked, isInsideLinked }) {
+  isWritable(
+    state,
+    { isLinked, isInsideLinked, projectAndWorkflowIds },
+    rootState
+  ) {
     const linkage = isLinked || isInsideLinked;
+    const isAiProcessingCurrentWorkflow =
+      rootState.aiAssistant.build.isProcessing &&
+      isEqual(
+        rootState.aiAssistant.build.projectAndWorkflowIds,
+        projectAndWorkflowIds
+      );
+
     // TODO: document better under which conditions a workflow is not writable
-    return !linkage;
+    return !linkage && !isAiProcessingCurrentWorkflow;
   },
 
   isOnHub({ activeWorkflow }) {
@@ -292,4 +304,5 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
       padding: true,
     });
   },
+  projectAndWorkflowIds: (state) => getProjectAndWorkflowIds(state),
 };

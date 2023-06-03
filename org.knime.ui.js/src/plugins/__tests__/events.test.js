@@ -58,6 +58,7 @@ describe("Event Plugin", () => {
       "SaveAndCloseWorkflowsEvent",
       "ImportURIEvent",
       "ProgressEvent",
+      "AiAssistantEvent",
     ]);
   });
 

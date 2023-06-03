@@ -1,7 +1,12 @@
+import type { Store } from "vuex";
+import { useStore } from "vuex";
+import { API } from "@api";
+
 export type Features = {
   shouldDisplayEmbeddedDialogs: () => boolean;
   shouldDisplayEmbeddedViews: () => boolean;
   shouldLoadPageBuilder: () => boolean;
+  shouldShowAiAssistant: () => boolean;
 };
 
 const featureFlagsPrefix = "org.knime.ui.feature";
@@ -16,17 +21,24 @@ const getFlagValue = (store, name) => {
   return featureFlags[`${featureFlagsPrefix}.${name}`];
 };
 
+export const features: ($store: Store<any>) => Features = ($store) => ({
+  shouldDisplayEmbeddedDialogs: () =>
+    getFlagValue($store, "embedded_views_and_dialogs"),
+
+  shouldDisplayEmbeddedViews: () =>
+    getFlagValue($store, "embedded_views_and_dialogs"),
+
+  shouldLoadPageBuilder: () =>
+    getFlagValue($store, "embedded_views_and_dialogs"),
+
+  shouldShowAiAssistant: () => API.desktop.isAiAssistantBackendAvailable(),
+});
+
+export const useFeatures: () => Features = () => {
+  const store = useStore();
+  return features(store);
+};
+
 export default ({ app, $store }) => {
-  const features: Features = {
-    shouldDisplayEmbeddedDialogs: () =>
-      getFlagValue($store, "embedded_views_and_dialogs"),
-
-    shouldDisplayEmbeddedViews: () =>
-      getFlagValue($store, "embedded_views_and_dialogs"),
-
-    shouldLoadPageBuilder: () =>
-      getFlagValue($store, "embedded_views_and_dialogs"),
-  };
-
-  app.config.globalProperties.$features = features;
+  app.config.globalProperties.$features = features($store);
 };
