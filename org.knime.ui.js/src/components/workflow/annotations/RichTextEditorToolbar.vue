@@ -67,12 +67,19 @@ const createLink = () => {
   const { view, state } = props.editor;
   const { from, to } = view.state.selection;
 
-  text.value = state.doc.textBetween(from, to, "");
+  const currentLink = props.editor.getAttributes("link").href;
+  url.value = currentLink || "";
 
-  if (text.value) {
-    url.value = props.editor.getAttributes("link").href || "";
+  if (currentLink) {
+    const textBefore = state.selection.$from.nodeBefore?.textContent ?? "";
+    const textAfter = state.selection.$to.nodeAfter?.textContent ?? "";
+    const hasNoSelection = from === to;
+
+    text.value = hasNoSelection
+      ? textBefore + textAfter
+      : state.doc.textBetween(from, to, "");
   } else {
-    url.value = "";
+    text.value = state.doc.textBetween(from, to, "");
   }
 
   showCreateLinkModal.value = true;
