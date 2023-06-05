@@ -113,8 +113,8 @@ export default defineComponent({
   },
 
   emits: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     outputStateChange: (
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       _payload: {
         message: string;
         loading?: boolean;

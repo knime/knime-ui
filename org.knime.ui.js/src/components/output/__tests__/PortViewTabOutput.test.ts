@@ -254,7 +254,7 @@ describe("PortViewTabOutput.vue", () => {
 
       await nextTick();
 
-      expect(wrapper.findComponent(PortViewTabToggles).exists()).toBe(true);
+      expect(wrapper.findComponent(PortViewTabToggles).exists()).toBe(false);
       expect(wrapper.find(".execute-node-action").exists()).toBe(true);
     });
 

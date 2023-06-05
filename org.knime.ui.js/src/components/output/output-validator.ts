@@ -259,7 +259,6 @@ export const validatePortSupport: ValidationFn<{
   }
 
   if (
-    selectedPort.hasOwnProperty("portContentVersion") &&
     // eslint-disable-next-line no-undefined
     selectedPort.portContentVersion === undefined
   ) {
