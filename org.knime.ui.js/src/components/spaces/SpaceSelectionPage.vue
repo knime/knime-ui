@@ -10,6 +10,11 @@ import GridOutbreaker from "@/components/common/GridOutbreaker.vue";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
 
+import {
+  globalSpaceBrowserProjectId,
+  localSpaceCacheProjectId,
+} from "@/store/spaces";
+
 import SpaceCard from "./SpaceCard.vue";
 
 export default {
@@ -38,18 +43,14 @@ export default {
   },
   beforeCreate() {
     // redirect to browsing page if a space was selected
-    if (this.$store.state.spaces.spaceBrowser.spaceId) {
-      this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
-    }
+    // TODO: find a better way support this usecase
+    // if (this.$store.state.spaces.projectPath[globalSpaceBrowserProjectId]) {
+    //  this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+    // }
   },
   async created() {
+    // update space providers
     await this.$store.dispatch("spaces/fetchAllSpaceProviders");
-
-    if (!this.activeSpace?.activeWorkflowGroup) {
-      await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-        itemId: this.$store.state.spaces.spaceBrowser.itemId,
-      });
-    }
   },
 
   methods: {
@@ -63,10 +64,15 @@ export default {
       });
     },
 
-    async onSpaceCardClick({ space, spaceProvider }) {
-      this.$store.commit("spaces/setActiveSpaceProviderById", spaceProvider.id);
-      this.$store.commit("spaces/setActiveSpaceId", space.id);
-      await this.$store.dispatch("spaces/saveSpaceBrowserState");
+    onSpaceCardClick({ space, spaceProvider }) {
+      this.$store.commit("spaces/setProjectPath", {
+        projectId: globalSpaceBrowserProjectId,
+        value: {
+          spaceId: space.id,
+          spaceProviderId: spaceProvider.id,
+          itemId: "root",
+        },
+      });
       this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
     },
 
@@ -111,15 +117,13 @@ export default {
 
     async createWorkflowLocally() {
       await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-        itemId: "root",
-      });
-      this.$store.commit("spaces/setActiveSpaceProviderById", "local");
-      this.$store.commit("spaces/setActiveSpaceId", "local");
-      await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-        itemId: "root",
+        projectId: localSpaceCacheProjectId,
       });
 
-      this.$store.commit("spaces/setIsCreateWorkflowModalOpen", true);
+      this.$store.commit("spaces/setCreateWorkflowModalConfig", {
+        isOpen: true,
+        projectId: localSpaceCacheProjectId,
+      });
     },
   },
 };

@@ -13,6 +13,8 @@ import PageHeader from "@/components/common/PageHeader.vue";
 import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 
+import { globalSpaceBrowserProjectId } from "@/store/spaces";
+
 export default {
   components: {
     ArrowLeftIcon,
@@ -23,6 +25,12 @@ export default {
     Button,
   },
 
+  setup() {
+    return {
+      globalSpaceBrowserProjectId,
+    };
+  },
+
   data() {
     return {
       selectedItems: [],
@@ -30,8 +38,12 @@ export default {
   },
 
   computed: {
-    ...mapState("spaces", ["spaceBrowser", "spaceProviders"]),
-    ...mapGetters("spaces", ["activeSpaceInfo", "hasActiveHubSession"]),
+    ...mapState("spaces", ["spaceProviders"]),
+    ...mapGetters("spaces", ["getSpaceInfo", "hasActiveHubSession"]),
+
+    activeSpaceInfo() {
+      return this.getSpaceInfo(globalSpaceBrowserProjectId);
+    },
 
     spaceInfo() {
       if (this.activeSpaceInfo.local) {
@@ -60,19 +72,8 @@ export default {
       };
     },
   },
-  async created() {
-    if (this.spaceBrowser.spaceId) {
-      await this.$store.dispatch("spaces/loadSpaceBrowserState");
-    }
-  },
   methods: {
-    async onItemChanged(itemId) {
-      // remember current path
-      await this.$store.dispatch("spaces/saveSpaceBrowserState", { itemId });
-    },
-
     onBackButtonClick() {
-      this.$store.commit("spaces/clearSpaceBrowserState");
       // TODO: NXT-1461 go back to the Entry page itself
       this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
     },
@@ -102,26 +103,37 @@ export default {
               :disabled-actions="explorerDisabledActions"
               :has-active-hub-session="hasActiveHubSession"
               @action:create-workflow="
-                $store.commit('spaces/setIsCreateWorkflowModalOpen', true)
+                $store.commit('spaces/setCreateWorkflowModalConfig', {
+                  isOpen: true,
+                  projectId: globalSpaceBrowserProjectId,
+                })
               "
-              @action:create-folder="$store.dispatch('spaces/createFolder')"
+              @action:create-folder="
+                $store.dispatch('spaces/createFolder', {
+                  projectId: globalSpaceBrowserProjectId,
+                })
+              "
               @action:import-workflow="
                 $store.dispatch('spaces/importToWorkflowGroup', {
+                  projectId: globalSpaceBrowserProjectId,
                   importType: 'WORKFLOW',
                 })
               "
               @action:import-files="
                 $store.dispatch('spaces/importToWorkflowGroup', {
+                  projectId: globalSpaceBrowserProjectId,
                   importType: 'FILES',
                 })
               "
               @action:upload-to-hub="
                 $store.dispatch('spaces/copyBetweenSpaces', {
+                  projectId: globalSpaceBrowserProjectId,
                   itemIds: selectedItems,
                 })
               "
               @action:download-to-local-space="
                 $store.dispatch('spaces/copyBetweenSpaces', {
+                  projectId: globalSpaceBrowserProjectId,
                   itemIds: selectedItems,
                 })
               "
@@ -135,7 +147,7 @@ export default {
       <div class="grid-container">
         <div class="grid-item-12">
           <SpaceExplorer
-            @item-changed="onItemChanged"
+            :project-id="globalSpaceBrowserProjectId"
             @change-selection="selectedItems = $event"
           />
         </div>

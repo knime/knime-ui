@@ -1,3 +1,10 @@
+import type {
+  SpaceProviderId,
+  SpaceId,
+  FullSpacePath,
+  SpaceProvider,
+} from "./custom-types";
+
 export const openNodeDialog = ({
   projectId,
   nodeId,
@@ -68,11 +75,6 @@ export const saveWorkflow = ({
     consola.error("Could not save workflow", e);
   }
 };
-
-export type SpaceProviderId = { spaceProviderId: string };
-export type SpaceId = { spaceId: string };
-export type SpaceItemId = { itemId: string };
-export type FullSpacePath = SpaceProviderId & SpaceId & SpaceItemId;
 
 export const openWorkflow = ({
   spaceId = "local",
@@ -165,13 +167,6 @@ export const openWorkflowCoachPreferencePage = () => {
     consola.error("Could not open preference page", e);
   }
 };
-
-export interface SpaceProvider {
-  id: string;
-  name: string;
-  connected: boolean;
-  connectionMode: "AUTHENTICATED" | "ANONYMOUS" | "AUTOMATIC";
-}
 
 export const fetchAllSpaceProviders = (): Promise<
   Record<string, SpaceProvider>

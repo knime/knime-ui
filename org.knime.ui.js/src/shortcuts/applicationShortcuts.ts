@@ -24,7 +24,10 @@ const applicationShortcuts: ApplicationShortcuts = {
     text: "Create workflow",
     hotkey: ["Ctrl", "N"],
     execute: ({ $store }) =>
-      $store.commit("spaces/setIsCreateWorkflowModalOpen", true),
+      $store.commit("spaces/setCreateWorkflowModalConfig", {
+        isOpen: true,
+        projectId: $store.state.application.activeProjectId,
+      }),
   },
 };
 

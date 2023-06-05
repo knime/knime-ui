@@ -59,6 +59,10 @@ export default defineComponent({
       default: "normal",
       validator: (value: string) => ["normal", "mini"].includes(value),
     },
+    projectId: {
+      type: [String, null],
+      required: true,
+    },
   },
 
   emits: ["changeSelection", "itemChanged"],
@@ -86,27 +90,38 @@ export default defineComponent({
       "fileExtensionToNodeTemplateId",
     ]),
     ...mapState("spaces", {
-      activeSpace: (state) => state.activeSpace,
-      activeSpaceProvider: (state) => state.activeSpaceProvider,
-      startItemId: (state) => state.activeSpace?.startItemId as string,
-      activeWorkflowGroup: (state) =>
-        state.activeSpace?.activeWorkflowGroup as WorkflowGroupContent,
-      spaceId: (state) => state.activeSpace?.spaceId as string,
-      isLoading: (state) => state.isLoading as boolean,
+      projectPath: (state) => state.projectPath,
+      isLoading: (state) => state.isLoading,
       spaceProviders: (state) => state.spaceProviders,
     }),
     ...mapState("nodeRepository", ["nodesPerCategory"]),
     ...mapGetters("spaces", [
-      "openedWorkflowItems",
-      "openedFolderItems",
+      "getOpenedWorkflowItems",
+      "getOpenedFolderItems",
       "pathToItemId",
       "hasActiveHubSession",
-      "activeSpaceInfo",
+      "getWorkflowGroupContent",
     ]),
 
+    activeSpacePath() {
+      return this.projectPath[this.projectId] || {};
+    },
+
+    activeWorkflowGroup() {
+      return this.getWorkflowGroupContent(this.projectId);
+    },
+
+    openedWorkflowItems() {
+      return this.getOpenedWorkflowItems(this.projectId);
+    },
+    openedFolderItems() {
+      return this.getOpenedFolderItems(this.projectId);
+    },
+
     fileExplorerItems(): Array<FileExplorerItem> {
-      return this.activeWorkflowGroup.items.map((item) => {
-        const isOpen =
+      return this.activeWorkflowGroup.items.map((item) => ({
+        ...item,
+        displayOpenIndicator:
           this.openedWorkflowItems.includes(item.id) ||
           this.openedFolderItems.includes(item.id);
 
@@ -120,7 +135,7 @@ export default defineComponent({
     },
 
     isLocal() {
-      return this.spaceId === "local";
+      return this.activeSpacePath.spaceId === "local";
     },
 
     breadcrumbItems() {
@@ -177,17 +192,22 @@ export default defineComponent({
             ? provider.spaces.map((space) => ({
                 text: space.name,
                 id: `${provider.id}__${space.id}`,
-                selected: space.id === this.activeSpace.spaceId,
+                selected: space.id === this.activeSpacePath.spaceId,
                 data: {
                   spaceId: space.id,
-                  providerId: provider.id,
+                  spaceProviderId: provider.id,
+                  requestSignIn: false,
                 },
               }))
             : [
                 {
                   text: "Sign in…",
                   id: `${provider.id}__SIGN_IN`,
-                  data: { providerId: provider.id, requestSignIn: true },
+                  data: {
+                    spaceId: null,
+                    spaceProviderId: provider.id,
+                    requestSignIn: true,
+                  },
                 },
               ]
         )
@@ -212,11 +232,9 @@ export default defineComponent({
   },
 
   watch: {
-    activeWorkflowGroup: {
-      async handler(newData, oldData) {
-        if (newData === null && oldData !== null) {
-          await this.fetchWorkflowGroupContent(this.startItemId || "root");
-        }
+    projectId: {
+      async handler() {
+        await this.fetchWorkflowGroupContent();
       },
       immediate: true,
     },
@@ -225,9 +243,13 @@ export default defineComponent({
   methods: {
     ...mapActions("nodeRepository", ["getNodeTemplate"]),
     ...mapActions("application", ["forceCloseProjects"]),
-    async fetchWorkflowGroupContent(itemId) {
+
+    async fetchWorkflowGroupContent() {
+      if (this.projectId === null) {
+        return;
+      }
       await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-        itemId,
+        projectId: this.projectId,
       });
     },
 
@@ -237,13 +259,18 @@ export default defineComponent({
     },
 
     async onChangeDirectory(pathId) {
-      await this.$store.dispatch("spaces/changeDirectory", { pathId });
+      const { projectId } = this;
+      await this.$store.dispatch("spaces/changeDirectory", {
+        projectId,
+        pathId,
+      });
 
-      this.$emit("itemChanged", this.pathToItemId(pathId));
+      this.$emit("itemChanged", this.pathToItemId(projectId, pathId));
     },
 
     async onOpenFile({ id }) {
       await this.$store.dispatch("spaces/openWorkflow", {
+        projectId: this.projectId,
         workflowItemId: id,
         // send in router, so it can be used to navigate to an already open workflow
         $router: this.$router,
@@ -252,7 +279,11 @@ export default defineComponent({
 
     onRenameFile({ itemId, newName }) {
       this.$store
-        .dispatch("spaces/renameItem", { itemId, newName })
+        .dispatch("spaces/renameItem", {
+          projectId: this.projectId,
+          itemId,
+          newName,
+        })
         .catch(() => {
           // TODO replace with a better notification alternative when available
           window.alert(
@@ -262,13 +293,26 @@ export default defineComponent({
     },
 
     async onBreadcrumbClick({ id }) {
-      await this.fetchWorkflowGroupContent(id);
-      this.$emit("itemChanged", id);
+      await this.onChangeDirectory(id);
     },
 
-    onSpaceChange(spaceProviderItem) {
-      // TODO: implement
-      consola.warn(spaceProviderItem);
+    onSpaceChange({
+      data: { spaceId, spaceProviderId, requestSignIn = false },
+    }) {
+      if (requestSignIn) {
+        this.$store.dispatch("spaces/connectProvider", { spaceProviderId });
+        return;
+      }
+
+      this.$store.commit("spaces/setProjectPath", {
+        projectId: this.projectId,
+        value: {
+          spaceId,
+          spaceProviderId,
+          itemId: "root",
+        },
+      });
+      this.fetchWorkflowGroupContent();
     },
 
     onDeleteItems({ items }) {
@@ -347,10 +391,13 @@ export default defineComponent({
         return;
       }
 
-      const destWorkflowGroupItemId = this.pathToItemId(targetItem);
+      const destWorkflowGroupItemId = this.pathToItemId(
+        this.projectId,
+        targetItem
+      );
       const collisionStrategy = API.desktop.getNameCollisionStrategy({
-        spaceProviderId: this.activeSpaceProvider.id,
-        spaceId: this.activeSpace.spaceId,
+        spaceProviderId: this.activeSpacePath.spaceProviderId,
+        spaceId: this.activeSpacePath.spaceId,
         itemIds: sourceItems,
         destinationItemId: destWorkflowGroupItemId,
       });
@@ -446,8 +493,8 @@ export default defineComponent({
         const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
         const position = { x, y };
         const spaceItemReference = {
-          providerId: this.activeSpaceProvider.id,
-          spaceId: this.activeSpace.spaceId,
+          providerId: this.activeSpacePath.spaceProviderId,
+          spaceId: this.activeSpacePath.spaceId,
           itemId: sourceItem.id,
         };
 
@@ -521,26 +568,35 @@ export default defineComponent({
         :disabled-actions="explorerDisabledActions"
         :has-active-hub-session="hasActiveHubSession"
         @action:create-workflow="
-          $store.commit('spaces/setIsCreateWorkflowModalOpen', true)
+          $store.commit('spaces/setCreateWorkflowModalConfig', {
+            isOpen: true,
+            projectId,
+          })
         "
-        @action:create-folder="$store.dispatch('spaces/createFolder')"
+        @action:create-folder="
+          $store.dispatch('spaces/createFolder', { projectId: projectId })
+        "
         @action:import-workflow="
           $store.dispatch('spaces/importToWorkflowGroup', {
+            projectId: projectId,
             importType: 'WORKFLOW',
           })
         "
         @action:import-files="
           $store.dispatch('spaces/importToWorkflowGroup', {
+            projectId: projectId,
             importType: 'FILES',
           })
         "
         @action:upload-to-hub="
           $store.dispatch('spaces/copyBetweenSpaces', {
+            projectId: projectId,
             itemIds: selectedItems,
           })
         "
         @action:download-to-local-space="
           $store.dispatch('spaces/copyBetweenSpaces', {
+            projectId: projectId,
             itemIds: selectedItems,
           })
         "

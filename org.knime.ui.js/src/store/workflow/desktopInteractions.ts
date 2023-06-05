@@ -35,7 +35,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 
   /* Tell the backend to unload this workflow from memory */
-  async closeWorkflow({ dispatch, commit, rootState }, closingProjectId) {
+  async closeWorkflow({ dispatch, rootState }, closingProjectId) {
     const { openProjects, activeProjectId } = rootState.application;
     const nextProjectId = getNextProjectId({
       openProjects,
@@ -57,11 +57,6 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
     await dispatch(
       "application/removeFromRootWorkflowSnapshots",
-      { projectId: closingProjectId },
-      { root: true }
-    );
-    commit(
-      "spaces/clearLastItemForProject",
       { projectId: closingProjectId },
       { root: true }
     );

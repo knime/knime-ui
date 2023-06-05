@@ -244,6 +244,11 @@ export const actions = {
 
     if (applicationState.openProjects) {
       commit("setOpenProjects", applicationState.openProjects);
+      dispatch(
+        "spaces/syncPathWithOpenProjects",
+        { openProjects: applicationState.openProjects },
+        { root: true }
+      );
     }
 
     if (applicationState.exampleProjects) {

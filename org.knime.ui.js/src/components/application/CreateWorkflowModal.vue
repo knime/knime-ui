@@ -17,12 +17,16 @@ const inputRef = ref<InstanceType<typeof InputField>>(null);
 const workflowName = ref(NAME_TEMPLATE);
 
 const isCreateWorkflowModalOpen = computed(
-  () => store.state.spaces.isCreateWorkflowModalOpen
+  () => store.state.spaces.createWorkflowModalConfig.isOpen
 );
 
-const activeSpace = computed(() => store.state.spaces.activeSpace);
+const activeSpace = computed(() =>
+  store.getters.getWorkflowGroupContent(
+    store.state.spaces.createWorkflowModalConfig.projectId
+  )
+);
 const existingWorkflowNames = computed<Array<string>>(() => {
-  const items = activeSpace.value.activeWorkflowGroup?.items ?? [];
+  const items = activeSpace.value.items ?? [];
 
   return items.map(({ name }) => name);
 });
@@ -33,12 +37,16 @@ const { isValid, errorMessage, cleanName } = useWorkflowNameValidator({
 });
 
 const closeModal = () => {
-  store.commit("spaces/setIsCreateWorkflowModalOpen", false);
+  store.commit("spaces/setCreateWorkflowModalConfig", {
+    isOpen: false,
+    projectId: null,
+  });
 };
 
 const onSubmit = async () => {
   try {
     await store.dispatch("spaces/createWorkflow", {
+      projectId: store.state.spaces.createWorkflowModalConfig.projectId,
       workflowName: cleanName(workflowName.value),
     });
 
