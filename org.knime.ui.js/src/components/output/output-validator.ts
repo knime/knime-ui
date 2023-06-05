@@ -290,7 +290,10 @@ export const validateNodeConfigurationState: ValidationFn<{
     return next(context);
   }
 
-  const validate = (isNodeIdle, _selectedPort) => {
+  const validate = (
+    isNodeIdle: boolean,
+    _selectedPort: NodePort
+  ): ValidationResult => {
     if (isNodeIdle && !isFlowVariablePort({ portTypes, port: _selectedPort })) {
       return {
         error: {
