@@ -7,7 +7,7 @@ import type {
   WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
 
-interface PathTriplet {
+export interface PathTriplet {
   spaceId: string;
   spaceProviderId: string;
   itemId: string;
@@ -17,7 +17,7 @@ interface SpaceProviderWithSpaces extends SpaceProvider {
   spaces: Array<Space & { private: boolean }>; // TODO: check type
 }
 
-interface SpaceProviderWithSpacesMap {
+export interface SpaceProviderWithSpacesMap {
   [key: string]: SpaceProviderWithSpaces;
 }
 
@@ -26,12 +26,14 @@ interface CreateWorkflowModalConfig {
   projectId: string;
 }
 
+export interface ProjectPathMap {
+  [projectId: string]: PathTriplet;
+}
+
 interface State {
   workflowGroupCache: WeakMap<PathTriplet, WorkflowGroupContent>;
   spaceProviders?: SpaceProviderWithSpacesMap;
-  projectPath: {
-    [projectId: string]: PathTriplet;
-  };
+  projectPath: ProjectPathMap;
   isLoading: boolean;
   createWorkflowModalConfig: CreateWorkflowModalConfig;
 }

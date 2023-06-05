@@ -12,7 +12,11 @@ import Button from "webapps-common/ui/components/Button.vue";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
-
+import type {
+  PathTriplet,
+  ProjectPathMap,
+  SpaceProviderWithSpacesMap,
+} from "@/store/spaces";
 import {
   SpaceItem,
   type WorkflowGroupContent,
@@ -90,9 +94,10 @@ export default defineComponent({
       "fileExtensionToNodeTemplateId",
     ]),
     ...mapState("spaces", {
-      projectPath: (state) => state.projectPath,
-      isLoading: (state) => state.isLoading,
-      spaceProviders: (state) => state.spaceProviders,
+      projectPath: (state) => state.projectPath as ProjectPathMap,
+      isLoading: (state) => state.isLoading as boolean,
+      spaceProviders: (state) =>
+        state.spaceProviders as SpaceProviderWithSpacesMap,
     }),
     ...mapState("nodeRepository", ["nodesPerCategory"]),
     ...mapGetters("spaces", [
@@ -103,11 +108,11 @@ export default defineComponent({
       "getWorkflowGroupContent",
     ]),
 
-    activeSpacePath() {
-      return this.projectPath[this.projectId] || {};
+    activeSpacePath(): PathTriplet {
+      return this.projectPath[this.projectId];
     },
 
-    activeWorkflowGroup() {
+    activeWorkflowGroup(): WorkflowGroupContent {
       return this.getWorkflowGroupContent(this.projectId);
     },
 
@@ -119,9 +124,8 @@ export default defineComponent({
     },
 
     fileExplorerItems(): Array<FileExplorerItem> {
-      return this.activeWorkflowGroup.items.map((item) => ({
-        ...item,
-        displayOpenIndicator:
+      return this.activeWorkflowGroup.items.map((item) => {
+        const isOpen =
           this.openedWorkflowItems.includes(item.id) ||
           this.openedFolderItems.includes(item.id);
 
@@ -135,7 +139,7 @@ export default defineComponent({
     },
 
     isLocal() {
-      return this.activeSpacePath.spaceId === "local";
+      return this.activeSpacePath?.spaceId === "local";
     },
 
     breadcrumbItems() {
@@ -164,6 +168,7 @@ export default defineComponent({
 
       return [rootBreadcrumb].concat(
         path.map((pathItem, index) => ({
+          icon: null,
           text: pathItem.name,
           id: pathItem.id,
           clickable: index !== lastPathIndex,
@@ -192,7 +197,9 @@ export default defineComponent({
             ? provider.spaces.map((space) => ({
                 text: space.name,
                 id: `${provider.id}__${space.id}`,
-                selected: space.id === this.activeSpacePath.spaceId,
+                selected: space.id === this.activeSpacePath?.spaceId,
+                sectionHeadline: false,
+                separator: false,
                 data: {
                   spaceId: space.id,
                   spaceProviderId: provider.id,
@@ -203,6 +210,9 @@ export default defineComponent({
                 {
                   text: "Sign in…",
                   id: `${provider.id}__SIGN_IN`,
+                  sectionHeadline: false,
+                  selected: false,
+                  separator: false,
                   data: {
                     spaceId: null,
                     spaceProviderId: provider.id,
@@ -396,8 +406,8 @@ export default defineComponent({
         targetItem
       );
       const collisionStrategy = API.desktop.getNameCollisionStrategy({
-        spaceProviderId: this.activeSpacePath.spaceProviderId,
-        spaceId: this.activeSpacePath.spaceId,
+        spaceProviderId: this.activeSpacePath?.spaceProviderId,
+        spaceId: this.activeSpacePath?.spaceId,
         itemIds: sourceItems,
         destinationItemId: destWorkflowGroupItemId,
       });
