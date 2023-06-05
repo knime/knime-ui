@@ -56,9 +56,11 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       }
     );
 
-    dispatch("selection/deselectAllObjects", null, { root: true });
-    dispatch("selection/selectAnnotations", [newAnnotationId], { root: true });
-    dispatch("setEditableAnnotationId", newAnnotationId);
+    await dispatch("selection/deselectAllObjects", null, { root: true });
+    await dispatch("selection/selectAnnotations", [newAnnotationId], {
+      root: true,
+    });
+    await dispatch("setEditableAnnotationId", newAnnotationId);
   },
 
   setEditableAnnotationId({ commit }, annotationId) {

@@ -204,10 +204,11 @@ describe("workflow::index", () => {
       mockedAPI.workflowCommand.Collapse.mockImplementation(() => ({
         newNodeId: "",
       }));
-      const { store } = await loadStoreWithNodes();
-      store.dispatch("selection/selectAllObjects");
 
-      store.dispatch("workflow/collapseToContainer", {
+      const { store } = await loadStoreWithNodes();
+      await store.dispatch("selection/selectAllObjects");
+
+      await store.dispatch("workflow/collapseToContainer", {
         containerType: "metanode",
       });
 
@@ -225,8 +226,9 @@ describe("workflow::index", () => {
       mockedAPI.workflowCommand.Collapse.mockImplementation(() => ({
         newNodeId,
       }));
+
       const { store } = await loadStoreWithNodes();
-      store.dispatch("selection/selectAllObjects");
+      await store.dispatch("selection/selectAllObjects");
 
       await store.dispatch("workflow/collapseToContainer", {
         containerType: "metanode",
@@ -307,9 +309,9 @@ describe("workflow::index", () => {
         expandedAnnotationIds: [],
       }));
       const { store } = await loadStoreWithNodes();
-      store.dispatch("selection/selectNode", "foo");
+      await store.dispatch("selection/selectNode", "foo");
 
-      store.dispatch("workflow/expandContainerNode");
+      await store.dispatch("workflow/expandContainerNode");
 
       expect(mockedAPI.workflowCommand.Expand).toHaveBeenCalledWith({
         projectId: "bar",

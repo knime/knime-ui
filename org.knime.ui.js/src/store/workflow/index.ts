@@ -94,7 +94,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
    * Deletes all selected objects and displays an error message for the objects, that cannot be deleted.
    * If the objects can be deleted a deselect event is fired.
    */
-  deleteSelectedObjects({ state, rootGetters, dispatch }) {
+  async deleteSelectedObjects({ state, rootGetters, dispatch }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     const selectedNodes = rootGetters["selection/selectedNodes"];
     const selectedConnections = rootGetters["selection/selectedConnections"];
@@ -119,7 +119,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       deletableConnectionIds.length ||
       selectedAnnotationIds.length
     ) {
-      API.workflowCommand.Delete({
+      await API.workflowCommand.Delete({
         projectId,
         workflowId,
         nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
@@ -130,7 +130,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
           ? selectedAnnotationIds
           : [],
       });
-      dispatch("selection/deselectAllObjects", null, { root: true });
+
+      await dispatch("selection/deselectAllObjects", null, { root: true });
     }
 
     const messages = [];
@@ -167,6 +168,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const isResetRequired = selectedNodes.some(
       (node) => node.allowedActions.canCollapse === "resetRequired"
     );
+
     if (isResetRequired) {
       if (
         !window.confirm(
@@ -176,8 +178,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         return;
       }
     }
+
     // 1. deselect all objects
-    dispatch("selection/deselectAllObjects", null, { root: true });
+    await dispatch("selection/deselectAllObjects", null, { root: true });
 
     // 2. send request
     const { newNodeId } = await API.workflowCommand.Collapse({
@@ -190,14 +193,15 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
     // 3. select new container node, if user hasn't selected something else in the meantime
     if (rootGetters["selection/isSelectionEmpty"]) {
-      dispatch("selection/selectNode", newNodeId, { root: true });
-      dispatch("openNameEditor", newNodeId);
+      await dispatch("selection/selectNode", newNodeId, { root: true });
+      await dispatch("openNameEditor", newNodeId);
     }
   },
 
   async expandContainerNode({ state, rootGetters, dispatch }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     const selectedNode = rootGetters["selection/singleSelectedNode"];
+
     if (selectedNode.allowedActions.canExpand === "resetRequired") {
       if (
         !window.confirm(
@@ -209,7 +213,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }
 
     // 1. deselect all objects
-    dispatch("selection/deselectAllObjects", null, { root: true });
+    await dispatch("selection/deselectAllObjects", null, { root: true });
 
     // 2. send request
     const { expandedNodeIds, expandedAnnotationIds } =
@@ -221,8 +225,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
     // 3. select expanded nodes, if user hasn't selected something else in the meantime
     if (rootGetters["selection/isSelectionEmpty"]) {
-      dispatch("selection/selectNodes", expandedNodeIds, { root: true });
-      dispatch("selection/selectAnnotations", expandedAnnotationIds, {
+      await dispatch("selection/selectNodes", expandedNodeIds, { root: true });
+      await dispatch("selection/selectAnnotations", expandedAnnotationIds, {
         root: true,
       });
     }

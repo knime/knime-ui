@@ -64,7 +64,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
 
     if (command === "cut") {
-      dispatch("selection/deselectAllObjects", null, { root: true });
+      await dispatch("selection/deselectAllObjects", null, { root: true });
     }
 
     const workflowCommand =
@@ -90,7 +90,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     };
 
     try {
-      navigator.clipboard.writeText(JSON.stringify(clipboardContent));
+      await navigator.clipboard.writeText(JSON.stringify(clipboardContent));
 
       commit("setCopyPaste", {
         payloadIdentifier: clipboardContent.payloadIdentifier,
@@ -167,9 +167,11 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
     // 4. Execute hook and select pasted content
     doAfterPaste?.();
-    dispatch("selection/deselectAllObjects", null, { root: true });
-    dispatch("selection/selectNodes", nodeIds, { root: true });
-    dispatch("selection/selectAnnotations", annotationIds, { root: true });
+    await dispatch("selection/deselectAllObjects", null, { root: true });
+    await dispatch("selection/selectNodes", nodeIds, { root: true });
+    await dispatch("selection/selectAnnotations", annotationIds, {
+      root: true,
+    });
   },
 };
 

@@ -4,7 +4,7 @@ import { API } from "@api";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 
 import type { RootStoreState } from "../types";
-import { getNextProjectId } from "./util";
+import { getNextProjectId, getProjectAndWorkflowIds } from "./util";
 import type { WorkflowState } from "./index";
 
 /**
@@ -18,9 +18,7 @@ export const mutations = {};
 export const actions: ActionTree<WorkflowState, RootStoreState> = {
   /* See docs in API */
   async saveWorkflow({ state, dispatch }) {
-    const {
-      activeWorkflow: { projectId },
-    } = state;
+    const { projectId } = getProjectAndWorkflowIds(state);
 
     const { svgElement, isCanvasEmpty } = await dispatch(
       "application/getActiveWorkflowSnapshot",
@@ -37,7 +35,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 
   /* Tell the backend to unload this workflow from memory */
-  closeWorkflow({ dispatch, commit, rootState }, closingProjectId) {
+  async closeWorkflow({ dispatch, commit, rootState }, closingProjectId) {
     const { openProjects, activeProjectId } = rootState.application;
     const nextProjectId = getNextProjectId({
       openProjects,
@@ -54,8 +52,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       return;
     }
 
-    dispatch("application/removeCanvasState", closingProjectId, { root: true });
-    dispatch(
+    await dispatch("application/removeCanvasState", closingProjectId, {
+      root: true,
+    });
+    await dispatch(
       "application/removeFromRootWorkflowSnapshots",
       { projectId: closingProjectId },
       { root: true }
@@ -93,21 +93,13 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   /* See docs in API */
   openLayoutEditor({ state }) {
-    const {
-      activeWorkflow: { projectId },
-    } = state;
-    const {
-      activeWorkflow: {
-        info: { containerId },
-      },
-    } = state;
-    API.desktop.openLayoutEditor({ projectId, workflowId: containerId });
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+
+    API.desktop.openLayoutEditor({ projectId, workflowId });
   },
 
   async saveWorkflowAs({ state, dispatch }) {
-    const {
-      activeWorkflow: { projectId },
-    } = state;
+    const { projectId } = getProjectAndWorkflowIds(state);
 
     const { svgElement, isCanvasEmpty } = await dispatch(
       "application/getActiveWorkflowSnapshot",

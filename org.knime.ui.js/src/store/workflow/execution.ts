@@ -66,7 +66,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
-    API.node.changeLoopState({
+    return API.node.changeLoopState({
       projectId,
       workflowId,
       nodeId,
@@ -86,26 +86,26 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 
   resetNodes({ dispatch }, nodes) {
-    dispatch("changeNodeState", { action: "reset", nodes });
+    return dispatch("changeNodeState", { action: "reset", nodes });
   },
 
   cancelNodeExecution({ dispatch }, nodes) {
-    dispatch("changeNodeState", { action: "cancel", nodes });
+    return dispatch("changeNodeState", { action: "cancel", nodes });
   },
 
   /* See docs in API */
   pauseLoopExecution({ dispatch }, nodeId) {
-    dispatch("changeLoopState", { action: "pause", nodeId });
+    return dispatch("changeLoopState", { action: "pause", nodeId });
   },
 
   /* See docs in API */
   resumeLoopExecution({ dispatch }, nodeId) {
-    dispatch("changeLoopState", { action: "resume", nodeId });
+    return dispatch("changeLoopState", { action: "resume", nodeId });
   },
 
   /* See docs in API */
   stepLoopExecution({ dispatch }, nodeId) {
-    dispatch("changeLoopState", { action: "step", nodeId });
+    return dispatch("changeLoopState", { action: "step", nodeId });
   },
 };
 
