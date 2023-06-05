@@ -199,7 +199,7 @@ export default defineComponent({
     shouldShowExecuteAction() {
       const canExecute = isMetaNode(this.selectedNode)
         ? this.selectedNode.outPorts[this.selectedPortIndex].nodeState ===
-          "CONFIGURED"
+          MetaNodePort.NodeStateEnum.CONFIGURED
         : this.selectedNode.allowedActions.canExecute;
 
       if (this.hasNoDataValidationError) {
