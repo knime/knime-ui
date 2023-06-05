@@ -41,7 +41,7 @@ const editor = useEditor({
       types: ["heading", "paragraph"],
     }),
     ControlClickLink.configure({
-      validate: href => /^https?:\/\//.test(href),
+      validate: (href) => /^https?:\/\//.test(href),
     }),
   ],
   onUpdate: () => emit("change", editor.value.getHTML()),

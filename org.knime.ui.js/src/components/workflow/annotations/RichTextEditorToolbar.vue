@@ -68,7 +68,7 @@ const createLink = () => {
   const { from, to } = view.state.selection;
 
   text.value = state.doc.textBetween(from, to, "");
-  
+
   if (text.value) {
     url.value = props.editor.getAttributes("link").href || "";
   } else {
@@ -79,27 +79,22 @@ const createLink = () => {
 };
 
 const addLink = (text: string, url: string) => {
-  props.editor
-    .chain()
-    .focus()
-    .extendMarkRange("link")
-    .unsetLink()
-    .run()
+  props.editor.chain().focus().extendMarkRange("link").unsetLink().run();
 
   if (url) {
-    props.editor.commands.insertContent(`<a href="${url}">${text}</a> `,
-      {
-        parseOptions: {
-          preserveWhitespace: true,
-        }
-      }
-    );
+    props.editor.commands.insertContent(`<a href="${url}">${text}</a> `, {
+      parseOptions: {
+        preserveWhitespace: true,
+      },
+    });
   }
 
   showCreateLinkModal.value = false;
 };
 
-const cancelAddLink = () => { showCreateLinkModal.value = false; };
+const cancelAddLink = () => {
+  showCreateLinkModal.value = false;
+};
 
 const editorTools: Array<ToolbarItem> = [
   {
@@ -172,7 +167,7 @@ const editorTools: Array<ToolbarItem> = [
     name: "Add link",
     hotkey: ["Ctrl", "Shift", "L"],
     active: () => props.editor.isActive("link"),
-    onClick: () => createLink()
+    onClick: () => createLink(),
   },
 ];
 
@@ -269,9 +264,9 @@ const changeBorderColor = (color: string) => {
 <template>
   <div>
     <FloatingMenu
-    :canvas-position="adjustedPosition"
-    aria-label="Annotation toolbar"
-    :prevent-overflow="true"
+      :canvas-position="adjustedPosition"
+      aria-label="Annotation toolbar"
+      :prevent-overflow="true"
     >
       <div class="editor-toolbar">
         <SubMenu

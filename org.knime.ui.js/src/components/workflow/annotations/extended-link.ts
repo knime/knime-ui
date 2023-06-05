@@ -4,14 +4,14 @@ import Link from "@tiptap/extension-link";
 
 /**
  * This is a workaround to support link open on Control + Click.
- * 
+ *
  * It comes from https://github.com/ueberdosis/tiptap/issues/3389#issuecomment-1422608677 originally.
  */
 export const ControlClickLink = Link.extend({
   addOptions() {
     return {
       ...this.parent?.(),
-      openOnClick: false
+      openOnClick: false,
     };
   },
   addProseMirrorPlugins() {
@@ -33,12 +33,12 @@ export const ControlClickLink = Link.extend({
           }
 
           return false;
-        }
-      }
+        },
+      },
     });
 
     plugins.push(ctrlClickHandler);
 
     return plugins;
-  }
+  },
 });

@@ -7,13 +7,16 @@ import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import CreateLinkModal from "../CreateLinkModal.vue";
 
 describe("CreateWorkflowModal.vue", () => {
-  const doMount = ({ url = "https://mock.url", text = "mock url", isActive = true} = {}) => {
-
+  const doMount = ({
+    url = "https://mock.url",
+    text = "mock url",
+    isActive = true,
+  } = {}) => {
     const wrapper = mount(CreateLinkModal, {
       props: {
-          url,
-          text,
-          isActive
+        url,
+        text,
+        isActive,
       },
       global: {
         stubs: { BaseModal: true },
@@ -57,10 +60,10 @@ describe("CreateWorkflowModal.vue", () => {
       const focusSpy = vi.spyOn(input.element, "focus");
 
       await wrapper.setProps({ text: "new text" });
-      
+
       vi.runAllTimers();
-    
-      expect(focusSpy).toHaveBeenCalled()
+
+      expect(focusSpy).toHaveBeenCalled();
     });
 
     describe("hotkeys", () => {

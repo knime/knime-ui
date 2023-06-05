@@ -13,7 +13,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const inputRef = ref(null)
+const inputRef = ref(null);
 
 const editedText: Ref<string> = ref(props.text);
 const editedUrl: Ref<string> = ref(props.url);
@@ -74,11 +74,7 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
     @cancel="closeModal"
   >
     <template #confirmation>
-      <Label
-        text="Text"
-        :compact="true"
-        class="text-input"
-      >
+      <Label text="Text" :compact="true" class="text-input">
         <div>
           <InputField
             ref="inputRef"
@@ -89,10 +85,7 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
           />
         </div>
       </Label>
-      <Label
-        text="URL"
-        :compact="true"
-      >
+      <Label text="URL" :compact="true">
         <div>
           <InputField
             v-model="editedUrl"
