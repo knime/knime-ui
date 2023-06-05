@@ -4,6 +4,8 @@ import {
   ref,
   type FunctionalComponent,
   type SVGAttributes,
+  onMounted,
+  onUnmounted,
 } from "vue";
 import { useStore } from "vuex";
 import type { Editor } from "@tiptap/vue-3";
@@ -172,7 +174,7 @@ const editorTools: Array<ToolbarItem> = [
     id: "add-link",
     icon: LinkIcon,
     name: "Add link",
-    hotkey: ["Ctrl", "Shift", "L"],
+    hotkey: ["Ctrl", "Shift", "U"],
     active: () => props.editor.isActive("link"),
     onClick: () => createLink(),
   },
@@ -266,68 +268,86 @@ const changeBorderColor = (color: string) => {
   hoveredColor.value = null;
   emit("changeBorderColor", color);
 };
+
+/**
+ * Handles custom hotkeys that are not supported by tiptap.
+ */
+const onKeyDown = (e: KeyboardEvent) => {
+  const ctrlPressed = e.ctrlKey || e.metaKey;
+  if (e.shiftKey && ctrlPressed && e.key === "u") {
+    createLink();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener("keydown", onKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", onKeyDown);
+});
 </script>
 
 <template>
-  <div>
-    <FloatingMenu
-      :canvas-position="adjustedPosition"
-      aria-label="Annotation toolbar"
-      :prevent-overflow="true"
-    >
-      <div class="editor-toolbar">
-        <SubMenu
-          :items="headingPresets"
-          orientation="right"
-          :teleport-to-body="false"
-          positioning-strategy="absolute"
-          class="heading-menu"
-          @item-click="(e, item) => item.onClick()"
-        >
-          <span class="heading-current-text">{{ selectedHeadingText }}</span>
-          <DropdownIcon />
-        </SubMenu>
-        <FunctionButton
-          v-for="tool of editorTools"
-          :key="tool.icon"
-          :active="tool.active ? tool.active() : false"
-          :title="`${tool.name} – ${formatHotkeys(tool.hotkey)}`"
-          class="toolbar-button"
-          @click.stop="tool.onClick"
-        >
-          <Component :is="tool.icon" />
-        </FunctionButton>
+  <FloatingMenu
+    :canvas-position="adjustedPosition"
+    aria-label="Annotation toolbar"
+    :prevent-overflow="true"
+    v-bind="$attrs"
+  >
+    <div class="editor-toolbar">
+      <SubMenu
+        :items="headingPresets"
+        orientation="right"
+        :teleport-to-body="false"
+        positioning-strategy="absolute"
+        class="heading-menu"
+        @item-click="(e, item) => item.onClick()"
+      >
+        <span class="heading-current-text">{{ selectedHeadingText }}</span>
+        <DropdownIcon />
+      </SubMenu>
+      <FunctionButton
+        v-for="tool of editorTools"
+        :key="tool.icon"
+        :active="tool.active ? tool.active() : false"
+        :title="`${tool.name} – ${formatHotkeys(tool.hotkey)}`"
+        class="toolbar-button"
+        @click.stop="tool.onClick"
+      >
+        <Component :is="tool.icon" />
+      </FunctionButton>
 
-        <RichTextEditorToolbarDialog :is-open="isBorderColorSelectionOpen">
-          <template #toggle>
-            <FunctionButton
-              class="border-color-tool"
-              @click.stop="
-                isBorderColorSelectionOpen = !isBorderColorSelectionOpen
-              "
-            >
-              <ColorIcon :color="hoveredColor || activeBorderColor" />
-            </FunctionButton>
-          </template>
+      <RichTextEditorToolbarDialog :is-open="isBorderColorSelectionOpen">
+        <template #toggle>
+          <FunctionButton
+            class="border-color-tool"
+            @click.stop="
+              isBorderColorSelectionOpen = !isBorderColorSelectionOpen
+            "
+          >
+            <ColorIcon :color="hoveredColor || activeBorderColor" />
+          </FunctionButton>
+        </template>
 
-          <template #content>
-            <ColorSelectionDialog
-              :active-color="activeBorderColor"
-              @hover-color="previewBorderColor"
-              @select-color="changeBorderColor"
-            />
-          </template>
-        </RichTextEditorToolbarDialog>
-      </div>
-    </FloatingMenu>
-    <CreateLinkModal
-      :is-active="showCreateLinkModal"
-      :text="text"
-      :url="url"
-      @add-link="addLink"
-      @cancel-add-link="cancelAddLink"
-    />
-  </div>
+        <template #content>
+          <ColorSelectionDialog
+            :active-color="activeBorderColor"
+            @hover-color="previewBorderColor"
+            @select-color="changeBorderColor"
+          />
+        </template>
+      </RichTextEditorToolbarDialog>
+    </div>
+  </FloatingMenu>
+  <CreateLinkModal
+    :is-active="showCreateLinkModal"
+    :text="text"
+    :url="url"
+    v-bind="$attrs"
+    @add-link="addLink"
+    @cancel-add-link="cancelAddLink"
+  />
 </template>
 
 <style lang="postcss" scoped>

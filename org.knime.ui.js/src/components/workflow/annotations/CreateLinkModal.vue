@@ -4,7 +4,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 import { LinkRegex } from "./extended-link";
-import { computed, ref, type Ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
 interface Props {
   text: string;
@@ -16,8 +16,8 @@ const props = defineProps<Props>();
 
 const inputRef = ref(null);
 
-const editedText: Ref<string> = ref(props.text);
-const editedUrl: Ref<string> = ref(props.url);
+const editedText = ref(props.text);
+const editedUrl = ref(props.url);
 
 watch(props, (currentValue) => {
   editedText.value = currentValue.text;

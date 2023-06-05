@@ -44,7 +44,7 @@ describe("CreateWorkflowModal.vue", () => {
       const { wrapper } = await doMount();
 
       const input = wrapper.findAll("input").at(1);
-      input.element.value = "invalid.url";
+      input.element.value = "ftp://invalid.url";
       input.trigger("input");
       await Vue.nextTick();
 
