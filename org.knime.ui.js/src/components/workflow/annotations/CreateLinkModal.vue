@@ -56,6 +56,12 @@ const isValid = computed(() => {
 const errorMessage = computed(() => {
   return validateUrl() ? "" : "Invalid URL";
 });
+
+const onkeyup = (keyupEvent: KeyboardEvent) => {
+  if (keyupEvent.key === "Enter" && isValid.value) {
+    onSubmit();
+  }
+};
 </script>
 
 <template>
@@ -78,6 +84,7 @@ const errorMessage = computed(() => {
             v-model="editedText"
             type="text"
             title="Text"
+            @keyup="onkeyup"
           />
         </div>
       </Label>
@@ -90,6 +97,7 @@ const errorMessage = computed(() => {
             v-model="editedUrl"
             type="text"
             title="URL"
+            @keyup="onkeyup"
           />
           <div v-if="!validateUrl()" class="item-error">
             <span>{{ errorMessage }}</span>
