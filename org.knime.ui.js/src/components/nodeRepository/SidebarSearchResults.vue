@@ -60,7 +60,6 @@ export default {
     :query="query"
     :bottom-nodes="bottomNodes"
     :top-nodes="topNodes"
-    :draggable="true"
     :has-node-collection-active="hasNodeCollectionActive"
   >
     <template #topNodeTemplate="slotProps">
