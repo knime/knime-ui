@@ -3,6 +3,7 @@ import Modal from "webapps-common/ui/components/Modal.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
+import { LinkRegex } from "./extended-link";
 import { computed, ref, type Ref, watch } from "vue";
 
 interface Props {
@@ -41,7 +42,7 @@ const onSubmit = () => {
 };
 
 const validateUrl = () => {
-  const validScheme = /^https?:\/\//.test(editedUrl.value);
+  const validScheme = LinkRegex.test(editedUrl.value);
 
   return !editedUrl.value || validScheme;
 };

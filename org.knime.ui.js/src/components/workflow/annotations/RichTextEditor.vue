@@ -3,7 +3,7 @@ import { onMounted, nextTick, toRefs, watch, ref, computed } from "vue";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import TextAlign from "@tiptap/extension-text-align";
 import UnderLine from "@tiptap/extension-underline";
-import { ControlClickLink } from "./extended-link";
+import { ControlClickLink, LinkRegex } from "./extended-link";
 import StarterKit from "@tiptap/starter-kit";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
@@ -41,7 +41,7 @@ const editor = useEditor({
       types: ["heading", "paragraph"],
     }),
     ControlClickLink.configure({
-      validate: (href) => /^https?:\/\//.test(href),
+      validate: (href) => LinkRegex.test(href),
     }),
   ],
   onUpdate: () => emit("change", editor.value.getHTML()),
