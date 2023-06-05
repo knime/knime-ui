@@ -36,10 +36,7 @@ const ITEM_TYPES_TEXTS = {
   [SpaceItem.TypeEnum.Data]: "data file",
 } as const;
 
-const isComponentItem = (
-  nodeTemplateId: string | null,
-  item: FileExplorerItem
-) => {
+const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
   return !nodeTemplateId && item.type === SpaceItem.TypeEnum.Component;
 };
 
@@ -347,21 +344,17 @@ export default defineComponent({
       }
     },
 
-    /**
-     * @typedef Payload
-     * @property {MouseEvent} event
-     * @property {item} sourceItem
-     * @property {isAboveCanvas: boolean, nodeTemplate: object) => void} onUpdate
-     */
-    /**
-     * @param {Payload} eventPayload
-     * @returns {Void}
-     */
-    async onDrag({ event, item }) {
+    async onDrag({
+      event,
+      item,
+    }: {
+      event: DragEvent;
+      item: FileExplorerItem;
+    }) {
       const nodeTemplateId = this.getNodeTemplateId(item);
-      const isComponent = isComponentItem(nodeTemplateId, item);
+      const isItemAComponent = isComponent(nodeTemplateId, item);
 
-      if (!nodeTemplateId && !isComponent) {
+      if (!nodeTemplateId && !isItemAComponent) {
         return;
       }
 
@@ -373,7 +366,7 @@ export default defineComponent({
       const kanvas = this.getScrollContainerElement();
 
       if (!this.nodeTemplate) {
-        this.nodeTemplate = isComponent
+        this.nodeTemplate = isItemAComponent
           ? { isComponent: true, inPorts: [], outPorts: [], type: item.type }
           : await this.getNodeTemplate(nodeTemplateId);
       }
@@ -381,17 +374,15 @@ export default defineComponent({
       this.isAboveCanvas = kanvas.contains(el);
     },
 
-    /**
-     * @typedef Payload
-     * @property {MouseEvent} event
-     * @property {{ id: string }} sourceItem
-     * @property {(success: boolean) => void} onComplete
-     */
-    /**
-     * @param {Payload} eventPayload
-     * @returns {Void}
-     */
-    async onDragEnd({ event, sourceItem, onComplete }) {
+    async onDragEnd({
+      event,
+      sourceItem,
+      onComplete,
+    }: {
+      event: DragEvent;
+      sourceItem: FileExplorerItem;
+      onComplete: (isSuccessful: boolean) => void;
+    }) {
       this.nodeTemplate = null;
 
       const screenX = event.clientX - this.$shapes.nodeSize / 2;
@@ -413,9 +404,9 @@ export default defineComponent({
       }
 
       const nodeTemplateId = this.getNodeTemplateId(sourceItem);
-      const isComponent = isComponentItem(nodeTemplateId, sourceItem);
+      const isItemAComponent = isComponent(nodeTemplateId, sourceItem);
 
-      if (!nodeTemplateId && !isComponent) {
+      if (!nodeTemplateId && !isItemAComponent) {
         onComplete(false);
         return;
       }
@@ -432,8 +423,8 @@ export default defineComponent({
         await this.$store.dispatch("workflow/addNode", {
           position,
           spaceItemReference,
-          nodeFactory: isComponent ? null : { className: nodeTemplateId },
-          isComponent,
+          nodeFactory: isItemAComponent ? null : { className: nodeTemplateId },
+          isComponent: isItemAComponent,
         });
 
         onComplete(true);
