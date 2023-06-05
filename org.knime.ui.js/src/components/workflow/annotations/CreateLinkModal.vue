@@ -77,6 +77,7 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
       <Label
         text="Text"
         :compact="true"
+        class="text-input"
       >
         <div>
           <InputField
@@ -119,6 +120,10 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
 <style lang="postcss" scoped>
 .modal {
   --modal-width: 400px;
+}
+
+.text-input {
+  margin-bottom: 20px;
 }
 
 .item-error {

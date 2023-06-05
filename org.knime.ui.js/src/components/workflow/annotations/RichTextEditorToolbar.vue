@@ -170,7 +170,7 @@ const editorTools: Array<ToolbarItem> = [
     id: "add-link",
     icon: LinkIcon,
     name: "Add link",
-    hotkey: ["Ctrl", "Shift", "L"], // TODO add correct link shortcut
+    hotkey: ["Ctrl", "Shift", "L"],
     active: () => props.editor.isActive("link"),
     onClick: () => createLink()
   },

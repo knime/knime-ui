@@ -21,6 +21,8 @@ const createMockEditor = () => {
     "setTextAlign",
     "setTextAlign",
     "setHeading",
+    "unsetLink",
+    "insertContent"
   ] as const;
 
   type Actions = Record<
@@ -36,8 +38,10 @@ const createMockEditor = () => {
   return {
     isActive: vi.fn(),
     chain: () => ({
-      focus: () => actions,
+      focus: () => ({ ...actions,
+        extendMarkRange: vi.fn(() => ({ unsetLink: actions.unsetLink }))}),
     }),
+    commands: { insertContent: vi.fn() }
   };
 };
 
@@ -131,6 +135,22 @@ describe("RichTextEditorToolbar.vue", () => {
       expect(
         mockEditor.chain().focus().toggleBulletList
       ).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("link", () => {
+    it("should add the link", () => {
+      const { wrapper } = doMount();
+
+      wrapper.vm.addLink("test text", "https://test.url");
+      expect(
+        mockEditor.chain().focus().extendMarkRange().unsetLink
+      ).toHaveBeenCalled();
+      expect(
+        mockEditor.commands.insertContent
+      // eslint-disable-next-line quotes
+      ).toHaveBeenCalledWith('<a href="https://test.url">test text</a> ',
+        { parseOptions: { preserveWhitespace: true } });
     });
   });
 
