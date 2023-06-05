@@ -1,4 +1,4 @@
-import type { ActionTree } from "vuex";
+import type { ActionTree, GetterTree } from "vuex";
 
 import { API } from "@api";
 
@@ -109,4 +109,4 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 };
 
-export const getters = {};
+export const getters: GetterTree<WorkflowState, RootStoreState> = {};

@@ -1,7 +1,13 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
-import type { XY } from "@/api/gateway-api/generated-api";
+import type {
+  Connection,
+  NativeNode,
+  NodeTemplate,
+  XY,
+} from "@/api/gateway-api/generated-api";
+import type { KnimeNode } from "@/api/gateway-api/custom-types";
 
 import { geometry } from "@/util/geometry";
 import type { RootStoreState } from "../types";
@@ -227,11 +233,35 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 };
 
+const getNodeTemplateProperty = (params: {
+  activeWorkflow: WorkflowState["activeWorkflow"];
+  nodeId: string;
+  property: keyof NodeTemplate;
+  fallbackProperty?: keyof KnimeNode | null;
+}) => {
+  const {
+    activeWorkflow,
+    nodeId,
+    property,
+    fallbackProperty = property,
+  } = params;
+
+  const node = activeWorkflow.nodes[nodeId] as NativeNode;
+  const { templateId } = node;
+
+  // get property from the node if there's no templateId
+  const fallbackValue = fallbackProperty ? node[fallbackProperty] : null;
+
+  return templateId
+    ? activeWorkflow.nodeTemplates[templateId][property]
+    : fallbackValue;
+};
+
 export const getters: GetterTree<WorkflowState, RootStoreState> = {
   isNodeConnected:
     ({ activeWorkflow }) =>
-    (nodeId) => {
-      let connection;
+    (nodeId: string) => {
+      let connection: Connection;
 
       for (const connectionID in activeWorkflow.connections) {
         connection = activeWorkflow.connections[connectionID];
@@ -251,56 +281,44 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     (nodeId: string) =>
       activeWorkflow?.nodes[nodeId] || null,
 
-  // TODO: improve typing and use in getters below
   getNodeIcon:
     ({ activeWorkflow }) =>
-    (nodeId) => {
-      const node = activeWorkflow.nodes[nodeId];
-      const { templateId } = node;
-
-      if (templateId) {
-        return activeWorkflow.nodeTemplates[templateId].icon;
-      } else {
-        return node.icon;
-      }
+    (nodeId: string) => {
+      return getNodeTemplateProperty({
+        nodeId,
+        activeWorkflow,
+        property: "icon",
+      });
     },
 
   getNodeName:
     ({ activeWorkflow }) =>
-    (nodeId) => {
-      const node = activeWorkflow.nodes[nodeId];
-      const { templateId } = node;
-
-      if (templateId) {
-        return activeWorkflow.nodeTemplates[templateId].name;
-      } else {
-        return node.name;
-      }
+    (nodeId: string) => {
+      return getNodeTemplateProperty({
+        nodeId,
+        activeWorkflow,
+        property: "name",
+      });
     },
 
   getNodeFactory:
     ({ activeWorkflow }) =>
     (nodeId: string) => {
-      const node = activeWorkflow.nodes[nodeId];
-      const { templateId } = node;
-
-      if (templateId) {
-        return activeWorkflow.nodeTemplates[templateId].nodeFactory;
-      } else {
-        return null;
-      }
+      return getNodeTemplateProperty({
+        nodeId,
+        activeWorkflow,
+        property: "nodeFactory",
+        fallbackProperty: null,
+      });
     },
 
   getNodeType:
     ({ activeWorkflow }) =>
     (nodeId: string) => {
-      const node = activeWorkflow.nodes[nodeId];
-      const { templateId } = node;
-
-      if (templateId) {
-        return activeWorkflow.nodeTemplates[templateId].type;
-      } else {
-        return node.type;
-      }
+      return getNodeTemplateProperty({
+        activeWorkflow,
+        nodeId,
+        property: "type",
+      });
     },
 };

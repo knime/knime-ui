@@ -1,4 +1,4 @@
-import type { ActionTree, MutationTree } from "vuex";
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
 import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
@@ -175,4 +175,4 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 };
 
-export const getters = {};
+export const getters: GetterTree<WorkflowState, RootStoreState> = {};
