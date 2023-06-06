@@ -283,9 +283,4 @@ export default defineComponent({
   min-width: 200px;
   max-width: 320px;
 }
-
-.menu-items,
-:deep(.menu-items-sub-level) {
-  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
-}
 </style>

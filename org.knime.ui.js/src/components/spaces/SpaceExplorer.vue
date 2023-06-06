@@ -665,9 +665,4 @@ export default defineComponent({
   --smartloader-bg: var(--knime-gray-ultra-light);
   --smartloader-icon-size: 30;
 }
-
-.menu-items,
-:deep(.menu-items-sub-level) {
-  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
-}
 </style>

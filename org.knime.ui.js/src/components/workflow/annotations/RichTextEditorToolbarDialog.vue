@@ -59,6 +59,6 @@ watch(isOpen, async () => {
 <style lang="postcss" scoped>
 .dialog {
   background: white;
-  box-shadow: 0 0 10px rgb(62 58 57 / 30%);
+  box-shadow: var(--shadow-elevation-1);
 }
 </style>

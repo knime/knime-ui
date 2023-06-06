@@ -78,7 +78,7 @@ export default {
 .streaming-label {
   color: white;
   font-size: 12px;
-  box-shadow: 0 0 4px rgb(0 0 0 / 25%);
+  box-shadow: var(--shadow-elevation-1);
   border-radius: 2px;
   background-color: var(--knime-masala);
   padding: 5px;

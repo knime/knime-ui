@@ -334,7 +334,7 @@ export default {
     gap: 10px;
     padding: 20px;
     border-radius: 2px;
-    box-shadow: 0 2px 10px rgb(130 133 134 / 40%);
+    box-shadow: var(--shadow-elevation-2);
 
     & .text {
       color: var(--smartloader-text-color, var(--knime-white));

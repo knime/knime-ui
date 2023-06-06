@@ -287,7 +287,7 @@ export default defineComponent({
   border: 1px solid var(--knime-masala);
   border-bottom: 0;
   background-color: white;
-  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
+  box-shadow: var(--shadow-elevation-1);
 
   &:hover {
     cursor: pointer;
@@ -303,9 +303,7 @@ export default defineComponent({
 }
 
 .search {
-  border: 1px solid var(--knime-masala);
   background-color: white;
-  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 }
 
 .placeholder {
@@ -318,7 +316,8 @@ export default defineComponent({
 .search-bar {
   font-size: 13px;
   border: none;
-  border-bottom: 1px solid var(--knime-stone-gray);
+  border-bottom: 1px solid var(--knime-silver-sand);
+  box-shadow: var(--shadow-elevation-1);
 
   & :deep(.lens-icon) {
     --icon-size: 14;
@@ -370,7 +369,7 @@ export default defineComponent({
   }
 
   & :deep(li button) {
-    padding: 6px;
+    padding: 6px 6px 6px 9px;
   }
 
   & :deep(li .item-icon) {

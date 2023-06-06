@@ -44,12 +44,12 @@ export default {
   padding: 0;
   background-color: var(--knime-white);
   border: 0;
-  box-shadow: 0 0 4px var(--knime-gray-dark-semi);
+  box-shadow: var(--shadow-elevation-1);
   transition: all 150ms ease-out;
   height: 100%;
 
   &:hover {
-    box-shadow: 0 2px 10px 0 var(--knime-gray-dark-semi);
+    box-shadow: var(--shadow-elevation-2);
     cursor: pointer;
   }
 }

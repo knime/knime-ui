@@ -53,7 +53,7 @@ export default defineComponent({
   border: 1px solid transparent;
 
   &:hover {
-    box-shadow: 0 1px 5px 0 var(--knime-gray-dark-semi);
+    box-shadow: var(--shadow-elevation-1);
   }
 
   &.selected {

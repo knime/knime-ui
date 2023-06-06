@@ -300,7 +300,7 @@ export default defineComponent({
 
   & .wrapper {
     height: calc(var(--quick-add-node-height) * 1px);
-    box-shadow: 0 1px 6px 0 var(--knime-gray-dark-semi);
+    box-shadow: var(--shadow-elevation-1);
     background: var(--knime-gray-ultra-light);
     display: flex;
     flex-direction: column;

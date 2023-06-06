@@ -373,7 +373,7 @@ onUnmounted(() => {
   padding: calc(v-bind(toolbarItemPadding) * 1px);
   width: calc(v-bind(toolbarWidth) * 1px);
   height: 48px;
-  box-shadow: 0 0 10px rgb(62 58 57 / 30%);
+  box-shadow: var(--shadow-elevation-1);
   border-radius: 30px;
 
   & .toolbar-button,
