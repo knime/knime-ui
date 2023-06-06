@@ -43,10 +43,9 @@ export default {
   },
   beforeCreate() {
     // redirect to browsing page if a space was selected
-    // TODO: find a better way support this usecase
-    // if (this.$store.state.spaces.projectPath[globalSpaceBrowserProjectId]) {
-    //  this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
-    // }
+    if (this.$store.state.spaces.projectPath[globalSpaceBrowserProjectId]) {
+      this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+    }
   },
   async created() {
     // update space providers

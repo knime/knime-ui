@@ -75,6 +75,10 @@ export default {
   methods: {
     onBackButtonClick() {
       // TODO: NXT-1461 go back to the Entry page itself
+      this.$store.commit(
+        "spaces/removeProjectPath",
+        globalSpaceBrowserProjectId
+      );
       this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
     },
   },

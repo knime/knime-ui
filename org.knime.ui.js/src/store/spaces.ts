@@ -584,6 +584,9 @@ export const getters = {
     },
 
   getSpaceInfo: (state: State) => (projectId: string) => {
+    if (!state.projectPath.hasOwnProperty(projectId)) {
+      return {};
+    }
     const { spaceId: activeId, spaceProviderId: activeSpaceProviderId } =
       state.projectPath[projectId];
 
