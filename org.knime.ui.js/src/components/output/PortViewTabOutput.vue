@@ -197,6 +197,10 @@ export default defineComponent({
     },
 
     shouldShowExecuteAction() {
+      if (this.validationError && !this.hasNoDataValidationError) {
+        return false;
+      }
+
       const canExecute = isMetaNode(this.selectedNode)
         ? this.selectedNode.outPorts[this.selectedPortIndex].nodeState ===
           MetaNodePort.NodeStateEnum.CONFIGURED
@@ -204,10 +208,6 @@ export default defineComponent({
 
       if (this.hasNoDataValidationError) {
         return canExecute;
-      }
-
-      if (this.validationError) {
-        return false;
       }
 
       const isFlowVariable = this.fullPortObject.kind === "flowVariable";
