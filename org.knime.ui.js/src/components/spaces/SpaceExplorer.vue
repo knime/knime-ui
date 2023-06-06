@@ -176,54 +176,6 @@ export default defineComponent({
       );
     },
 
-    spacesDropdownData() {
-      const providers = this.spaceProviders
-        ? Object.values(this.spaceProviders)
-        : [];
-
-      return providers.flatMap((provider) =>
-        (provider.id === "local"
-          ? []
-          : [
-              {
-                id: provider.id,
-                text: provider.name,
-                sectionHeadline: true,
-                separator: true,
-              },
-            ]
-        ).concat(
-          provider.spaces
-            ? provider.spaces.map((space) => ({
-                text: space.name,
-                id: `${provider.id}__${space.id}`,
-                selected: space.id === this.activeSpacePath?.spaceId,
-                sectionHeadline: false,
-                separator: false,
-                data: {
-                  spaceId: space.id,
-                  spaceProviderId: provider.id,
-                  requestSignIn: false,
-                },
-              }))
-            : [
-                {
-                  text: "Sign in…",
-                  id: `${provider.id}__SIGN_IN`,
-                  sectionHeadline: false,
-                  selected: false,
-                  separator: false,
-                  data: {
-                    spaceId: null,
-                    spaceProviderId: provider.id,
-                    requestSignIn: true,
-                  },
-                },
-              ]
-        )
-      );
-    },
-
     fullPath() {
       if (!this.activeWorkflowGroup) {
         return "";
@@ -255,11 +207,12 @@ export default defineComponent({
     ...mapActions("application", ["forceCloseProjects"]),
 
     async fetchWorkflowGroupContent() {
-      if (this.projectId === null) {
+      const { projectId } = this;
+      if (projectId === null) {
         return;
       }
       await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-        projectId: this.projectId,
+        projectId,
       });
     },
 
@@ -304,25 +257,6 @@ export default defineComponent({
 
     async onBreadcrumbClick({ id }) {
       await this.onChangeDirectory(id);
-    },
-
-    onSpaceChange({
-      data: { spaceId, spaceProviderId, requestSignIn = false },
-    }) {
-      if (requestSignIn) {
-        this.$store.dispatch("spaces/connectProvider", { spaceProviderId });
-        return;
-      }
-
-      this.$store.commit("spaces/setProjectPath", {
-        projectId: this.projectId,
-        value: {
-          spaceId,
-          spaceProviderId,
-          itemId: "root",
-        },
-      });
-      this.fetchWorkflowGroupContent();
     },
 
     onDeleteItems({ items }) {
@@ -567,10 +501,7 @@ export default defineComponent({
 <template>
   <div :class="mode" class="space-explorer">
     <div v-if="mode === 'mini'" class="mini-actions">
-      <SpaceSelectionDropdown
-        :spaces="spacesDropdownData"
-        @change-space="onSpaceChange"
-      />
+      <SpaceSelectionDropdown :project-id="projectId" />
 
       <SpaceExplorerActions
         mode="mini"
@@ -697,24 +628,6 @@ export default defineComponent({
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
-
-.space-explorer {
-  position: relative;
-
-  & .create-workflow-btn {
-    position: absolute;
-    right: 0;
-    top: -34px;
-  }
-
-  @media only screen and (min-width: 1600px) {
-    & .create-workflow-btn {
-      position: absolute;
-      right: -76px;
-      top: 6px;
-    }
-  }
-}
 
 .mini-actions {
   display: flex;

@@ -21,7 +21,7 @@ const isCreateWorkflowModalOpen = computed(
 );
 
 const activeSpace = computed(() =>
-  store.getters.getWorkflowGroupContent(
+  store.getters["spaces/getWorkflowGroupContent"](
     store.state.spaces.createWorkflowModalConfig.projectId
   )
 );
