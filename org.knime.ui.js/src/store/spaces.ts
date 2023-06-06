@@ -228,10 +228,32 @@ export const actions = {
     }
   },
 
-  disconnectProvider({ commit, state }, { spaceProviderId }) {
+  disconnectProvider(
+    { commit, state }: { state: State; commit: any },
+    { spaceProviderId }
+  ) {
     try {
       API.desktop.disconnectSpaceProvider({ spaceProviderId });
 
+      // update project paths that used this space provider
+      const projectsWithDisconnectedProvider = Object.entries(
+        state.projectPath
+      ).flatMap(([projectId, path]) =>
+        path.spaceProviderId === spaceProviderId ? [projectId] : []
+      );
+
+      projectsWithDisconnectedProvider.forEach((projectId) =>
+        commit("setProjectPath", {
+          projectId,
+          value: {
+            spaceProviderId: "local",
+            spaceId: "local",
+            itemId: "root",
+          },
+        })
+      );
+
+      // update space provider state
       const { spaceProviders } = state;
       const { name, connectionMode } = spaceProviders[spaceProviderId];
       commit("setSpaceProviders", {

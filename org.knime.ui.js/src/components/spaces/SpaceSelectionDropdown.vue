@@ -78,7 +78,7 @@ const spacesDropdownData = computed((): MenuItem[] => {
           }))
         : [
             {
-              text: "Sign in…",
+              text: "Sign in",
               id: `${provider.id}__SIGN_IN`,
               sectionHeadline: false,
               selected: false,
