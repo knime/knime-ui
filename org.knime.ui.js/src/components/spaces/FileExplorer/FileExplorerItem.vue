@@ -160,7 +160,6 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
     width: 100%;
     height: 100%;
     flex: 2 1 auto;
-    color: var(--knime-masala);
     padding: var(--item-padding);
     text-overflow: ellipsis;
     overflow: hidden;
@@ -180,6 +179,8 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
   }
 
   &:not(.selected, .dragging, .dragging-over) .item-content {
+    color: var(--knime-masala);
+
     &.light {
       background-color: var(--knime-white);
     }

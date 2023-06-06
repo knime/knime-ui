@@ -38,7 +38,8 @@ export default defineComponent({
 .file-explorer-item-base {
   --icon-size: 20;
   --item-padding: 8px;
-  --selection-color: hsl(206deg 74% 90%/100%);
+  --selection-color: var(--knime-cornflower-dark);
+  --selection-bg-color: var(--knime-cornflower-semi);
 
   user-select: none;
   background: var(--knime-gray-ultra-light);
@@ -56,26 +57,6 @@ export default defineComponent({
     box-shadow: var(--shadow-elevation-1);
   }
 
-  &.selected {
-    background: var(--selection-color);
-  }
-
-  &.dragging {
-    background: var(--selection-color);
-    color: var(--knime-masala);
-  }
-
-  &.dragging-over {
-    background: var(--knime-porcelain);
-    border: 1px solid var(--knime-dove-gray);
-  }
-
-  & td,
-  & :slotted(td) {
-    /* Prevent children from interfering with drag events */
-    pointer-events: none;
-  }
-
   & .item-icon {
     padding: var(--item-padding);
     position: relative;
@@ -87,6 +68,27 @@ export default defineComponent({
 
       stroke: var(--knime-masala);
     }
+  }
+
+  &.selected,
+  &.dragging {
+    color: var(--selection-color);
+    background: var(--selection-bg-color);
+
+    & .item-icon :slotted(svg) {
+      stroke: var(--selection-color);
+    }
+  }
+
+  &.dragging-over {
+    background: var(--knime-porcelain);
+    border: 1px solid var(--knime-dove-gray);
+  }
+
+  & td,
+  & :slotted(td) {
+    /* Prevent children from interfering with drag events */
+    pointer-events: none;
   }
 }
 </style>

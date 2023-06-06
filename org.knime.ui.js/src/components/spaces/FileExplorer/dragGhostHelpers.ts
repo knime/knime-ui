@@ -3,9 +3,8 @@ import * as knimeColors from "webapps-common/ui/colors/knimeColors.mjs";
 
 const COLORS = {
   dragGhostContainer: {
-    // TODO: create cornflower-ultra-light in webapps-common
-    background: "hsl(206deg 74% 90%/100%)",
-    font: knimeColors.Masala,
+    background: knimeColors.CornflowerSemi,
+    font: knimeColors.CornflowerDark,
   },
   dragGhostBadge: {
     background: knimeColors.Masala,
@@ -74,6 +73,7 @@ const createGhostIcon = (target: HTMLElement): HTMLElement | null => {
   iconEl.style.width = "20px";
   iconEl.style.height = "20px";
   iconEl.style.marginRight = "10px";
+  iconEl.style.stroke = knimeColors.CornflowerDark;
 
   return iconEl;
 };
