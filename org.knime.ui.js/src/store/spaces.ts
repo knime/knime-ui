@@ -6,6 +6,7 @@ import type {
   Space,
   WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
+import type { MutationTree } from "vuex";
 
 export interface PathTriplet {
   spaceId: string;
@@ -68,17 +69,17 @@ export const state = (): State => ({
   },
 });
 
-export const mutations = {
-  setIsLoading(state: State, value: boolean) {
+export const mutations: MutationTree<State> = {
+  setIsLoading(state, value: boolean) {
     state.isLoading = value;
   },
 
-  setCreateWorkflowModalConfig(state: State, value: CreateWorkflowModalConfig) {
+  setCreateWorkflowModalConfig(state, value: CreateWorkflowModalConfig) {
     state.createWorkflowModalConfig = value;
   },
 
   setProjectPath(
-    state: State,
+    state,
     { projectId, value }: { projectId: string; value: PathTriplet }
   ) {
     state.projectPath = {
@@ -87,12 +88,12 @@ export const mutations = {
     };
   },
 
-  removeProjectPath(state: State, projectId: string) {
+  removeProjectPath(state, projectId: string) {
     delete state.projectPath[projectId];
   },
 
   updateProjectPath(
-    state: State,
+    state,
     { projectId, value }: { projectId: string; value: Partial<PathTriplet> }
   ) {
     const oldValue = state.projectPath[projectId];
@@ -112,14 +113,14 @@ export const mutations = {
   },
 
   setActiveWorkflowGroupCache(
-    state: State,
+    state,
     { projectId, content }: { projectId: string; content: WorkflowGroupContent }
   ) {
     const key = state.projectPath[projectId];
     state.workflowGroupCache.set(key, content);
   },
 
-  setSpaceProviders(state: State, value: SpaceProviderWithSpacesMap) {
+  setSpaceProviders(state, value: SpaceProviderWithSpacesMap) {
     state.spaceProviders = value;
   },
 };
@@ -272,22 +273,17 @@ export const actions = {
     }
   },
 
-  async fetchWorkflowGroupContent(
-    { commit, state }: { commit: any; state: State },
-    { projectId }
+  async fetchWorkflowGroupContentByIdTriplet(
+    { commit }: { commit: any },
+    { spaceId, spaceProviderId, itemId }
   ) {
     try {
-      const pathTriplet = state.projectPath[projectId];
-      const { spaceId, spaceProviderId, itemId } = pathTriplet;
-
       commit("setIsLoading", true);
       const content = await API.space.listWorkflowGroup({
         spaceProviderId,
         spaceId,
         itemId,
       });
-
-      commit("setActiveWorkflowGroupCache", { projectId, content });
 
       return content;
     } catch (error) {
@@ -298,10 +294,40 @@ export const actions = {
     }
   },
 
-  changeDirectory({ dispatch, getters, commit }, { projectId, pathId }) {
+  async fetchWorkflowGroupContent(
+    { commit, state, dispatch }: { commit: any; state: State; dispatch: any },
+    { projectId }
+  ) {
+    const pathTriplet = state.projectPath[projectId];
+    const { spaceId, spaceProviderId, itemId } = pathTriplet;
+
+    const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
+      spaceId,
+      spaceProviderId,
+      itemId,
+    });
+
+    commit("setActiveWorkflowGroupCache", { projectId, content });
+
+    return content;
+  },
+
+  async changeDirectory(
+    { dispatch, getters, commit, state },
+    { projectId, pathId }
+  ) {
     const itemId = getters.pathToItemId(projectId, pathId);
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
+      spaceId,
+      spaceProviderId,
+      itemId,
+    });
+
     commit("updateProjectPath", { projectId, value: { itemId } });
-    return dispatch("fetchWorkflowGroupContent", { projectId });
+    commit("setActiveWorkflowGroupCache", { projectId, content });
+
+    return content;
   },
 
   async createWorkflow(

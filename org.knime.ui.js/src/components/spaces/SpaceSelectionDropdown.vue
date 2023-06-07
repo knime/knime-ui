@@ -13,7 +13,7 @@ import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 interface Props {
   showText?: boolean;
-  projectId: string;
+  projectId: string | null;
 }
 
 const store = useStore();
