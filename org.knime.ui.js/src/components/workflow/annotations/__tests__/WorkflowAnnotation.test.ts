@@ -381,7 +381,7 @@ describe("Workflow Annotation", () => {
     });
 
     it.each(["shift", "ctrl"])(
-      "%ss-click toggles annotation to selection",
+      "%ss-click toggles the selection of annotation",
       async (mod) => {
         mockUserAgent("windows");
         const { wrapper, dispatchSpy } = doMount();
@@ -390,14 +390,33 @@ describe("Workflow Annotation", () => {
           .findComponent(TransformControls)
           .trigger("click", { button: 0, [`${mod}Key`]: true });
 
+        // selects annotation
         expect(dispatchSpy).toHaveBeenCalledWith(
           "selection/toggleAnnotationSelection",
-          { annotationId: defaultProps.annotation.id, isMultiselect: true }
+          {
+            annotationId: defaultProps.annotation.id,
+            isMultiselect: true,
+            isSelected: false,
+          }
+        );
+
+        await wrapper
+          .findComponent(TransformControls)
+          .trigger("click", { button: 0, [`${mod}Key`]: true });
+
+        // deselects annotation
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          "selection/toggleAnnotationSelection",
+          {
+            annotationId: defaultProps.annotation.id,
+            isMultiselect: true,
+            isSelected: true,
+          }
         );
       }
     );
 
-    it("should add to selection with meta + left click", async () => {
+    it("should toggle the selection of annotation with meta + left click", async () => {
       mockUserAgent("mac");
       const { wrapper, dispatchSpy } = doMount();
 
@@ -407,7 +426,24 @@ describe("Workflow Annotation", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/toggleAnnotationSelection",
-        { annotationId: defaultProps.annotation.id, isMultiselect: true }
+        {
+          annotationId: defaultProps.annotation.id,
+          isMultiselect: true,
+          isSelected: false,
+        }
+      );
+
+      await wrapper
+        .findComponent(TransformControls)
+        .trigger("click", { button: 0, metaKey: true });
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "selection/toggleAnnotationSelection",
+        {
+          annotationId: defaultProps.annotation.id,
+          isMultiselect: true,
+          isSelected: true,
+        }
       );
     });
   });

@@ -154,6 +154,7 @@ export default defineComponent({
       await this.$store.dispatch("selection/toggleAnnotationSelection", {
         annotationId: this.annotation.id,
         isMultiselect,
+        isSelected: this.isSelected,
       });
     },
 

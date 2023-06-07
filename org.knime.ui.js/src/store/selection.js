@@ -164,7 +164,7 @@ export const actions = {
 
   async toggleAnnotationSelection(
     { state, dispatch, commit },
-    { annotationId, isMultiselect }
+    { annotationId, isMultiselect, isSelected }
   ) {
     // Prevents selecting/deselecting the annotation that the rectangle selection started from but was not included
     // in a rectangle selection
@@ -182,7 +182,7 @@ export const actions = {
       return;
     }
 
-    const action = this.isSelected ? "deselectAnnotation" : "selectAnnotation";
+    const action = isSelected ? "deselectAnnotation" : "selectAnnotation";
 
     dispatch(action, annotationId);
   },

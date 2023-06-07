@@ -282,10 +282,12 @@ describe("workflow store", () => {
     it("toggles selection of an annotation", () => {
       const annotationId = "root:1_1";
       const isMultiselect = true;
+      const isSelected = false;
       $store = mockVuexStore(storeConfig);
       $store.dispatch("selection/toggleAnnotationSelection", {
         annotationId,
         isMultiselect,
+        isSelected,
       });
       expect(Object.keys($store.state.selection.selectedAnnotations)).toContain(
         annotationId
@@ -298,10 +300,12 @@ describe("workflow store", () => {
     it("selects only clicked annotation if multi selection is false", async () => {
       const annotationId = "root:1_1";
       const isMultiselect = false;
+      const isSelected = false;
       $store = mockVuexStore(storeConfig);
       await $store.dispatch("selection/toggleAnnotationSelection", {
         annotationId,
         isMultiselect,
+        isSelected,
       });
       expect(
         Object.keys($store.state.selection.selectedAnnotations)
@@ -318,6 +322,7 @@ describe("workflow store", () => {
       $store.dispatch("selection/toggleAnnotationSelection", {
         annotationId: "root:1_1",
         isMultiselect: true,
+        isSelected: false,
       });
       expect(
         $store.state.selection.startedSelectionFromAnnotationId
