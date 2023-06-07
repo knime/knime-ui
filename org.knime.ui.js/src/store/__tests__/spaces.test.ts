@@ -55,6 +55,12 @@ describe("spaces store", () => {
       },
     });
 
+    store.state.spaces.projectPath.myProject1 = {
+      spaceProviderId: "mockProviderId",
+      spaceId: "mockSpaceId",
+      itemId: "bar",
+    };
+
     mockedAPI.desktop.fetchAllSpaceProviders.mockReturnValue(
       mockFetchAllProvidersResponse
     );
@@ -72,108 +78,6 @@ describe("spaces store", () => {
   });
 
   describe("actions", () => {
-    describe("saveLastItemForProject", () => {
-      it("should save current item for active project", async () => {
-        const activeProjectId = "projectId1";
-        const { store } = loadStore({ activeProjectId });
-
-        store.state.spaces.activeSpace = {
-          spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "level1" }, { id: "level2" }],
-          },
-        };
-
-        await store.dispatch("spaces/saveLastItemForProject");
-        expect(store.state.spaces.lastItemForProject).toMatchObject({
-          [activeProjectId]: "level2",
-        });
-      });
-
-      it("should save given item for active project", async () => {
-        const activeProjectId = "projectId1";
-        const { store } = loadStore({ activeProjectId });
-
-        store.state.spaces.activeSpace = {
-          spaceId: "local",
-          activeWorkflowGroup: {},
-        };
-
-        await store.dispatch("spaces/saveLastItemForProject", {
-          itemId: "myCustomItem",
-        });
-        expect(store.state.spaces.lastItemForProject).toMatchObject({
-          [activeProjectId]: "myCustomItem",
-        });
-      });
-    });
-
-    describe("saveSpaceBrowserState", () => {
-      it("saves the given itemId for active space and provider", async () => {
-        const { store } = loadStore();
-        store.state.spaces.activeSpaceProvider = { id: "provider" };
-        store.state.spaces.activeSpace = { spaceId: "space" };
-
-        await store.dispatch("spaces/saveSpaceBrowserState", {
-          itemId: "someItem",
-        });
-
-        expect(store.state.spaces.spaceBrowser).toMatchObject({
-          spaceId: "space",
-          spaceProviderId: "provider",
-          itemId: "someItem",
-        });
-      });
-    });
-
-    describe("loadSpaceBrowserState", () => {
-      it("loads current spaceBrowser data to active space", async () => {
-        const { store } = loadStore();
-        store.state.spaces.activeSpaceProvider = { id: "provider" };
-        store.state.spaces.activeSpace = { spaceId: "space" };
-        store.state.spaces.spaceProviders = {
-          someProvider: { id: "someProvider" },
-        };
-        store.state.spaces.spaceBrowser = {
-          spaceId: "differentSpace",
-          spaceProviderId: "someProvider",
-          itemId: "aCoolItemId",
-        };
-
-        await store.dispatch("spaces/loadSpaceBrowserState");
-
-        expect(store.state.spaces.activeSpace).toMatchObject({
-          spaceId: "differentSpace",
-        });
-        expect(store.state.spaces.activeSpaceProvider).toMatchObject({
-          id: "someProvider",
-        });
-        expect(store.state.spaces.activeSpace.startItemId).toBe("aCoolItemId");
-      });
-
-      it("loads local provider from spaceBrowser data to active space", async () => {
-        const { store } = loadStore();
-        store.state.spaces.activeSpaceProvider = { id: "provider" };
-        store.state.spaces.activeSpace = { spaceId: "space" };
-        store.state.spaces.spaceProviders = { local: { id: "local" } };
-        store.state.spaces.spaceBrowser = {
-          spaceId: "local",
-          spaceProviderId: "local",
-          itemId: "item1",
-        };
-
-        await store.dispatch("spaces/loadSpaceBrowserState");
-
-        expect(store.state.spaces.activeSpace).toMatchObject({
-          spaceId: "local",
-        });
-        expect(store.state.spaces.activeSpaceProvider).toMatchObject({
-          id: "local",
-        });
-        expect(store.state.spaces.activeSpace.startItemId).toBe("item1");
-      });
-    });
-
     describe("fetchAllSpaceProviders", () => {
       it('should set all providers in state and fetch spaces of connected "AUTOMATIC" providers', async () => {
         const mockFetchAllProvidersResponse = {
@@ -328,6 +232,8 @@ describe("spaces store", () => {
           connected: false,
         };
 
+        // TODO: check if projectPaths were reset to local
+
         await store.dispatch("spaces/disconnectProvider", {
           spaceProviderId: "hub1",
         });
@@ -342,33 +248,19 @@ describe("spaces store", () => {
         const { store } = loadStore();
 
         await store.dispatch("spaces/fetchWorkflowGroupContent", {
-          itemId: "bar",
-        });
-        expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
-          spaceProviderId: "local",
-          spaceId: "local",
-          itemId: "bar",
-        });
-
-        expect(store.state.spaces.activeSpace.spaceId).toBe("local");
-        expect(store.state.spaces.activeSpaceProvider).toEqual({ id: "local" });
-        expect(store.state.spaces.activeSpace.activeWorkflowGroup).toEqual(
-          fetchWorkflowGroupContentResponse
-        );
-      });
-
-      it("should use the spaceId and spaceProviderId", async () => {
-        const { store } = loadStore();
-        store.state.spaces.activeSpaceProvider = { id: "mockProviderId" };
-        store.state.spaces.activeSpace.spaceId = "mockSpaceId";
-        await store.dispatch("spaces/fetchWorkflowGroupContent", {
-          itemId: "bar",
+          projectId: "myProject1",
         });
         expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
           spaceProviderId: "mockProviderId",
           spaceId: "mockSpaceId",
           itemId: "bar",
         });
+
+        expect(
+          store.state.spaces.workflowGroupCache.get(
+            store.state.spaces.projectPath.myProject1
+          )
+        ).toEqual(fetchWorkflowGroupContentResponse);
       });
     });
 
@@ -376,7 +268,21 @@ describe("spaces store", () => {
       it("should change to another directory", async () => {
         const { store } = loadStore();
 
-        await store.dispatch("spaces/changeDirectory", { pathId: "baz" });
+        await store.dispatch("spaces/changeDirectory", {
+          projectId: "myProject1",
+          pathId: "baz",
+        });
+
+        // changed project path itemId
+        expect(store.state.spaces.projectPath.myProject1.itemId).toBe("baz");
+
+        // updated cache (was not set before)
+        expect(
+          store.state.spaces.workflowGroupCache.has(
+            store.state.spaces.projectPath.myProject1
+          )
+        ).toBeTruthy();
+
         expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
           expect.objectContaining({ itemId: "baz" })
         );
@@ -384,14 +290,17 @@ describe("spaces store", () => {
 
       it("should change to a parent directory", async () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
-          spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "level1" }, { id: "level2" }],
-          },
-        };
 
-        await store.dispatch("spaces/changeDirectory", { pathId: ".." });
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath.myProject1,
+          { path: [{ id: "level1" }, { id: "level2" }] }
+        );
+
+        await store.dispatch("spaces/changeDirectory", {
+          projectId: "myProject1",
+          pathId: "..",
+        });
+
         expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
           expect.objectContaining({ itemId: "level1" })
         );
@@ -406,17 +315,18 @@ describe("spaces store", () => {
           type: "Workflow",
         });
 
-        store.state.spaces.activeSpace = {
+        store.state.spaces.projectPath.project2 = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "level1" }, { id: "level2" }],
-            items: [{ id: "File-1", type: "Workflow" }],
-          },
+          itemId: "level2",
         };
 
         const workflowName = "workflow 1";
 
-        await store.dispatch("spaces/createWorkflow", { workflowName });
+        await store.dispatch("spaces/createWorkflow", {
+          projectId: "project2",
+          workflowName,
+        });
         expect(dispatchSpy).toHaveBeenCalledWith(
           "application/updateGlobalLoader",
           { loading: true, config: { displayMode: "transparent" } }
@@ -452,15 +362,13 @@ describe("spaces store", () => {
           type: "WorkflowGroup",
         });
 
-        store.state.spaces.activeSpace = {
+        store.state.spaces.projectPath.project2 = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "level1" }, { id: "level2" }],
-            items: [{ id: "File-1", type: "Workflow" }],
-          },
+          itemId: "level2",
         };
 
-        await store.dispatch("spaces/createFolder");
+        await store.dispatch("spaces/createFolder", { projectId: "project2" });
         expect(mockedAPI.space.createWorkflowGroup).toHaveBeenCalledWith(
           expect.objectContaining({ spaceId: "local", itemId: "level2" })
         );
@@ -473,11 +381,15 @@ describe("spaces store", () => {
     describe("openWorkflow", () => {
       it("should open workflow", async () => {
         const { store, dispatchSpy } = loadStore();
-        store.state.spaces.activeSpace = {
+
+        store.state.spaces.projectPath.project2 = {
+          spaceProviderId: "local",
           spaceId: "local",
+          itemId: "level2",
         };
 
         await store.dispatch("spaces/openWorkflow", {
+          projectId: "project2",
           workflowItemId: "foobar",
         });
         expect(dispatchSpy).toHaveBeenCalledWith(
@@ -497,14 +409,16 @@ describe("spaces store", () => {
 
       it("should open workflow from a different space", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
-          spaceId: "local",
+
+        store.state.spaces.projectPath.project3 = {
+          spaceProviderId: "knime1",
+          spaceId: "remote1",
+          itemId: "folder1",
         };
 
         store.dispatch("spaces/openWorkflow", {
           workflowItemId: "foobar",
-          spaceId: "remote1",
-          spaceProviderId: "knime1",
+          projectId: "project3",
         });
         expect(mockedAPI.desktop.openWorkflow).toHaveBeenCalledWith({
           spaceId: "remote1",
@@ -522,12 +436,15 @@ describe("spaces store", () => {
         ];
         const { store } = loadStore({ openProjects });
 
-        store.state.spaces.activeSpace = {
+        store.state.spaces.projectPath.project2 = {
+          spaceProviderId: "local",
           spaceId: "local",
+          itemId: "folder1",
         };
 
         const mockRouter = { push: vi.fn() };
         store.dispatch("spaces/openWorkflow", {
+          projectId: "project2",
           workflowItemId: "dummy",
           $router: mockRouter,
         });
@@ -543,15 +460,17 @@ describe("spaces store", () => {
     describe("importToWorkflowGroup", () => {
       it("should import files", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+
+        store.state.spaces.projectPath.project2 = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "level1" }],
-            items: [{ id: "File-1", type: "Workflow" }],
-          },
+          itemId: "level1",
         };
 
-        store.dispatch("spaces/importToWorkflowGroup", { importType: "FILES" });
+        store.dispatch("spaces/importToWorkflowGroup", {
+          projectId: "project2",
+          importType: "FILES",
+        });
         expect(mockedAPI.desktop.importFiles).toHaveBeenCalledWith({
           itemId: "level1",
           spaceId: "local",
@@ -561,15 +480,14 @@ describe("spaces store", () => {
 
       it("should import workflows", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+        store.state.spaces.projectPath.project2 = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "level1" }, { id: "level2" }],
-            items: [{ id: "File-1", type: "Workflow" }],
-          },
+          itemId: "level2",
         };
 
         store.dispatch("spaces/importToWorkflowGroup", {
+          projectId: "project2",
           importType: "WORKFLOW",
         });
         expect(mockedAPI.desktop.importWorkflows).toHaveBeenCalledWith({
@@ -584,11 +502,17 @@ describe("spaces store", () => {
       it("should delete items", async () => {
         const itemIds = ["item0", "item1"];
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+
+        store.state.spaces.projectPath.project2 = {
+          spaceProviderId: "local",
           spaceId: "local",
+          itemId: "level2",
         };
 
-        await store.dispatch("spaces/deleteItems", { itemIds });
+        await store.dispatch("spaces/deleteItems", {
+          projectId: "project2",
+          itemIds,
+        });
         expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith({
           spaceId: "local",
           spaceProviderId: "local",
@@ -598,16 +522,19 @@ describe("spaces store", () => {
 
       it("should re-fetch workflow group content", async () => {
         const itemIds = ["item0", "item1"];
+        const projectId = "project2";
+
         const { store, dispatchSpy } = loadStore();
-        store.state.spaces.activeSpace = {
+        store.state.spaces.projectPath.project2 = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: { path: [{ id: "foo" }, { id: "bar" }] },
+          itemId: "level2",
         };
 
-        await store.dispatch("spaces/deleteItems", { itemIds });
+        await store.dispatch("spaces/deleteItems", { projectId, itemIds });
         expect(dispatchSpy).toHaveBeenCalledWith(
           "spaces/fetchWorkflowGroupContent",
-          { itemId: "bar" }
+          { projectId }
         );
       });
     });
@@ -617,15 +544,18 @@ describe("spaces store", () => {
         const itemIds = ["id1", "id2"];
         const destWorkflowGroupItemId = "group1";
         const collisionStrategy = "OVERWRITE";
+
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "level1" }, { id: "level2" }],
-          },
+          itemId: "level2",
         };
 
         await store.dispatch("spaces/moveItems", {
+          projectId,
           itemIds,
           destWorkflowGroupItemId,
           collisionStrategy,
@@ -647,14 +577,18 @@ describe("spaces store", () => {
       it("should copy items between spaces", async () => {
         const itemIds = ["id1", "id2"];
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "level1" }, { id: "level2" }],
-          },
+          itemId: "level2",
         };
 
-        await store.dispatch("spaces/copyBetweenSpaces", { itemIds });
+        await store.dispatch("spaces/copyBetweenSpaces", {
+          projectId,
+          itemIds,
+        });
         expect(mockedAPI.desktop.copyBetweenSpaces).toHaveBeenCalledWith({
           spaceId: "local",
           spaceProviderId: "local",
@@ -668,21 +602,27 @@ describe("spaces store", () => {
     describe("pathToItemId", () => {
       it("should return path as itemId", () => {
         const { store } = loadStore();
+        const projectId = "something";
 
-        const result = store.getters["spaces/pathToItemId"]("baz");
+        const result = store.getters["spaces/pathToItemId"](projectId, "baz");
         expect(result).toBe("baz");
       });
 
       it("should change to a parent directory", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
-          spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "level1" }, { id: "level2" }],
-          },
-        };
 
-        const result = store.getters["spaces/pathToItemId"]("..");
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
+          spaceId: "local",
+          itemId: "level2",
+        };
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath[projectId],
+          { path: [{ id: "level1" }, { id: "level2" }] }
+        );
+
+        const result = store.getters["spaces/pathToItemId"](projectId, "..");
         expect(result).toBe("level1");
       });
     });
@@ -690,83 +630,122 @@ describe("spaces store", () => {
     describe("parentWorkflowGroupId", () => {
       it("should return the correct parent id for a root path", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
-          activeWorkflowGroup: {
-            path: [],
-          },
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
+          spaceId: "local",
+          itemId: "level2",
         };
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath[projectId],
+          { path: [] }
+        );
 
-        expect(store.getters["spaces/parentWorkflowGroupId"]).toBeNull();
+        expect(
+          store.getters["spaces/parentWorkflowGroupId"](projectId)
+        ).toBeNull();
       });
 
       it("should return the correct parent id for a path 1 level below root", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "path1" }],
-          },
+          itemId: "level2",
         };
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath[projectId],
+          { path: [{ id: "path1" }] }
+        );
 
-        expect(store.getters["spaces/parentWorkflowGroupId"]).toBe("root");
+        expect(store.getters["spaces/parentWorkflowGroupId"](projectId)).toBe(
+          "root"
+        );
       });
 
       it("should return the correct parent id for a nested level", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "path1" }, { id: "path2" }],
-          },
+          itemId: "level2",
         };
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath[projectId],
+          { path: [{ id: "path1" }, { id: "path2" }] }
+        );
 
-        expect(store.getters["spaces/parentWorkflowGroupId"]).toBe("path1");
+        expect(store.getters["spaces/parentWorkflowGroupId"](projectId)).toBe(
+          "path1"
+        );
       });
     });
 
     describe("currentWorkflowGroupId", () => {
       it("should return the correct id for a root path", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [],
-          },
+          itemId: "level2",
         };
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath[projectId],
+          { path: [] }
+        );
 
-        expect(store.getters["spaces/currentWorkflowGroupId"]).toBe("root");
+        expect(store.getters["spaces/currentWorkflowGroupId"](projectId)).toBe(
+          "root"
+        );
       });
 
       it("should return the correct id a child path", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: {
-            path: [{ id: "path1" }],
-          },
+          itemId: "level2",
         };
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath[projectId],
+          { path: [{ id: "path1" }] }
+        );
 
-        expect(store.getters["spaces/currentWorkflowGroupId"]).toBe("path1");
+        expect(store.getters["spaces/currentWorkflowGroupId"](projectId)).toBe(
+          "path1"
+        );
       });
     });
 
-    describe("openedWorkflowItems", () => {
+    describe("getOpenedWorkflowItems", () => {
       it("should return the opened workflow items", () => {
         const openProjects = [
           { origin: { providerId: "local", spaceId: "local", itemId: "4" } },
         ];
 
         const { store } = loadStore({ openProjects });
-        store.state.spaces.activeSpace = {
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
           spaceId: "local",
-          activeWorkflowGroup: fetchWorkflowGroupContentResponse,
+          itemId: "level2",
         };
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath[projectId],
+          fetchWorkflowGroupContentResponse
+        );
 
-        expect(store.getters["spaces/openedWorkflowItems"]).toEqual(["4"]);
+        expect(
+          store.getters["spaces/getOpenedWorkflowItems"](projectId)
+        ).toEqual(["4"]);
       });
     });
 
-    describe("openedFolderItems", () => {
+    describe("getOpenedFolderItems", () => {
       it("should return the opened folder items", () => {
         const openProjects = [
           {
@@ -797,23 +776,40 @@ describe("spaces store", () => {
         });
 
         const { store } = loadStore({ openProjects });
-        store.state.spaces.activeSpace = {
-          spaceId: "local",
-          activeWorkflowGroup,
-        };
 
-        expect(store.getters["spaces/openedFolderItems"]).toEqual(["2", "5"]);
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
+          spaceId: "local",
+          itemId: "level2",
+        };
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath[projectId],
+          activeWorkflowGroup
+        );
+
+        expect(store.getters["spaces/getOpenedFolderItems"](projectId)).toEqual(
+          ["2", "5"]
+        );
       });
     });
 
-    describe("activeSpaceInfo", () => {
+    describe("getSpaceInfo", () => {
       it("should return the information about the local active space", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "local",
           spaceId: "local",
+          itemId: "level2",
+        };
+        store.state.spaces.spaceProviders = {
+          local: {
+            spaces: [{ id: "local" }],
+          },
         };
 
-        expect(store.getters["spaces/activeSpaceInfo"]).toEqual({
+        expect(store.getters["spaces/getSpaceInfo"](projectId)).toEqual({
           local: true,
           private: false,
           name: "Local space",
@@ -822,19 +818,22 @@ describe("spaces store", () => {
 
       it("should return the information about the private active space", () => {
         const { store } = loadStore();
-        store.state.spaces.activeSpace = {
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "knime1",
           spaceId: "privateSpace",
+          itemId: "level2",
         };
-        store.state.spaces.activeSpaceProvider = {
-          spaceId: "space1",
-          spaces: [
-            { id: "privateSpace", name: "Private space", private: true },
-            { id: "publicSpace", name: "Public space", private: false },
-          ],
-          local: false,
+        store.state.spaces.spaceProviders = {
+          knime1: {
+            spaces: [
+              { id: "privateSpace", name: "Private space", private: true },
+              { id: "publicSpace", name: "Public space", private: false },
+            ],
+          },
         };
 
-        expect(store.getters["spaces/activeSpaceInfo"]).toEqual({
+        expect(store.getters["spaces/getSpaceInfo"](projectId)).toEqual({
           local: false,
           private: true,
           name: "Private space",
