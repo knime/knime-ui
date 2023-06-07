@@ -4,7 +4,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 import { LinkRegex } from "./extended-link";
-import { computed, ref, watch } from "vue";
+import { computed, ref, watchEffect } from "vue";
 
 interface Props {
   text: string;
@@ -19,9 +19,9 @@ const inputRef = ref(null);
 const editedText = ref(props.text);
 const editedUrl = ref(props.url);
 
-watch(props, (currentValue) => {
-  editedText.value = currentValue.text;
-  editedUrl.value = currentValue.url;
+watchEffect(() => {
+  editedText.value = props.text;
+  editedUrl.value = props.url;
   setTimeout(() => {
     inputRef.value?.focus();
     // eslint-disable-next-line no-magic-numbers
@@ -75,7 +75,7 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
     @cancel="closeModal"
   >
     <template #confirmation>
-      <Label text="Text" :compact="true" class="text-input">
+      <Label text="Text" compact class="text-input">
         <div>
           <InputField
             ref="inputRef"
@@ -86,7 +86,7 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
           />
         </div>
       </Label>
-      <Label text="URL" :compact="true">
+      <Label text="URL" compact>
         <div>
           <InputField
             v-model="editedUrl"

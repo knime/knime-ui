@@ -344,7 +344,6 @@ onUnmounted(() => {
     :is-active="showCreateLinkModal"
     :text="text"
     :url="url"
-    v-bind="$attrs"
     @add-link="addLink"
     @cancel-add-link="cancelAddLink"
   />
