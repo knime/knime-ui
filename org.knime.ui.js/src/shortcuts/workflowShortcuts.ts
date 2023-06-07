@@ -28,7 +28,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "deleteSelected"
   | "createMetanode"
   | "createComponent"
-  | "openComponent"
+  | "openComponentOrMetanode"
   | "expandMetanode"
   | "expandComponent"
   | "openLayoutEditor"
@@ -235,18 +235,22 @@ const workflowShortcuts: WorkflowShortcuts = {
       );
     },
   },
-  openComponent: {
-    text: "Open component",
-    title: "Open component",
+  openComponentOrMetanode: {
+    text: ({ $store }) =>
+      `Open ${$store.getters["selection/singleSelectedNode"]?.kind}`,
     hotkey: ["Ctrl", "Enter"],
     execute: ({ $store }) => {
       const projectId = $store.state.application.activeProjectId;
-      const componentId = $store.getters["selection/singleSelectedNode"].id;
+      const id = $store.getters["selection/singleSelectedNode"].id;
       $store.dispatch("application/switchWorkflow", {
-        newWorkflow: { workflowId: componentId, projectId },
+        newWorkflow: { workflowId: id, projectId },
       });
     },
-    condition: canOpen("component"),
+    condition: ({ $store }) => {
+      return (
+        canOpen("component")({ $store }) || canOpen("metanode")({ $store })
+      );
+    },
   },
   expandMetanode: {
     text: "Expand metanode",

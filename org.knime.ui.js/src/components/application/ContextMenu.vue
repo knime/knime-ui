@@ -229,6 +229,7 @@ export default defineComponent({
           isVisible: isMetanode,
           children: [
             { name: "expandMetanode", isVisible: true },
+            { name: "openComponentOrMetanode", isVisible: true },
             { name: "editName", isVisible: true },
           ],
         },
@@ -237,7 +238,7 @@ export default defineComponent({
           isVisible: isComponent,
           children: [
             { name: "expandComponent", isVisible: true },
-            { name: "openComponent", isVisible: true },
+            { name: "openComponentOrMetanode", isVisible: true },
             { name: "editName", isVisible: true },
           ],
         },
