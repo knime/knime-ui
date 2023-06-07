@@ -64,6 +64,7 @@ let showCreateLinkModal = ref(false);
 
 const text = ref("");
 const url = ref("");
+const isEditingLink = ref(false);
 
 const createLink = () => {
   const { view, state } = props.editor;
@@ -80,6 +81,8 @@ const createLink = () => {
     text.value = hasNoSelection
       ? textBefore + textAfter
       : state.doc.textBetween(from, to, "");
+
+    isEditingLink.value = true;
   } else {
     text.value = state.doc.textBetween(from, to, "");
   }
@@ -91,7 +94,13 @@ const addLink = (text: string, url: string) => {
   props.editor.chain().focus().extendMarkRange("link").unsetLink().run();
 
   if (url) {
-    props.editor.commands.insertContent(`<a href="${url}">${text}</a> `, {
+    let content = `<a href="${url}">${text || url}</a>`;
+    if (!isEditingLink.value) {
+      // escape link with space when creating a new link
+      content += " ";
+    }
+
+    props.editor.commands.insertContent(content, {
       parseOptions: {
         preserveWhitespace: true,
       },
@@ -99,6 +108,7 @@ const addLink = (text: string, url: string) => {
   }
 
   showCreateLinkModal.value = false;
+  isEditingLink.value = false;
 };
 
 const cancelAddLink = () => {

@@ -4,7 +4,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 import { LinkRegex } from "./extended-link";
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, watch } from "vue";
 
 interface Props {
   text: string;
@@ -19,14 +19,18 @@ const inputRef = ref(null);
 const editedText = ref(props.text);
 const editedUrl = ref(props.url);
 
-watchEffect(() => {
-  editedText.value = props.text;
-  editedUrl.value = props.url;
-  setTimeout(() => {
-    inputRef.value?.focus();
-    // eslint-disable-next-line no-magic-numbers
-  }, 200);
-});
+watch(
+  props,
+  () => {
+    editedText.value = props.text;
+    editedUrl.value = props.url;
+    setTimeout(() => {
+      inputRef.value?.focus();
+      // eslint-disable-next-line no-magic-numbers
+    }, 200);
+  },
+  { deep: true }
+);
 
 const emit = defineEmits<{
   (e: "addLink", text: string, url: string): void;
@@ -50,8 +54,9 @@ const validateUrl = () => {
 const isValid = computed(() => {
   const textChanged = editedText.value !== props.text;
   const urlChanged = editedUrl.value !== props.url;
+  const urlNotEmpty = editedUrl.value !== "";
 
-  return (textChanged || urlChanged) && validateUrl();
+  return (textChanged || urlChanged) && validateUrl() && urlNotEmpty;
 });
 
 const errorMessage = computed(() => {
