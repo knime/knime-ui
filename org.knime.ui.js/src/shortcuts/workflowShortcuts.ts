@@ -238,6 +238,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   openComponent: {
     text: "Open component",
     title: "Open component",
+    hotkey: ["Ctrl", "Enter"],
     execute: ({ $store }) => {
       const projectId = $store.state.application.activeProjectId;
       const componentId = $store.getters["selection/singleSelectedNode"].id;
