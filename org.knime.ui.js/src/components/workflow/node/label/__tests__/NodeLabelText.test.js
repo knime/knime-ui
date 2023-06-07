@@ -122,7 +122,7 @@ describe("NodeLabelText.vue", () => {
     );
     expect(texts.at(4).attributes().style).toBeUndefined();
     expect(texts.at(5).attributes().style).toBe(
-      "font-size: 13px; font-weight: bold; font-style: italic; line-height: 1.1;"
+      "font-size: 14.1375px; font-weight: bold; font-style: italic; line-height: 1.1;"
     );
     expect(texts.at(6).attributes().style).toBeUndefined();
   });
