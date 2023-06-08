@@ -8,7 +8,11 @@ import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 
 import { useStore } from "vuex";
 import { computed } from "vue";
-import type { PathTriplet, SpaceProviderWithSpacesMap } from "@/store/spaces";
+import type {
+  PathTriplet,
+  SpaceProviderWithSpaces,
+  SpaceProviderWithSpacesMap,
+} from "@/store/spaces";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 interface Props {
@@ -49,7 +53,9 @@ const spacesDropdownData = computed((): MenuItem[] => {
   const spaceProviders = store.state.spaces
     .spaceProviders as SpaceProviderWithSpacesMap;
 
-  const providers = spaceProviders ? Object.values(spaceProviders) : [];
+  const providers: SpaceProviderWithSpaces[] = spaceProviders
+    ? Object.values(spaceProviders)
+    : [];
 
   return providers.flatMap((provider) =>
     (provider.id === "local"
@@ -94,7 +100,7 @@ const spacesDropdownData = computed((): MenuItem[] => {
   );
 });
 const selectedText = computed(() => {
-  return spacesDropdownData.value.find((s) => s.selected)?.text;
+  return spacesDropdownData.value.find((item) => item.selected)?.text;
 });
 
 const spaceIcon = computed(() => {

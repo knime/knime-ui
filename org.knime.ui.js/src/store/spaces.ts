@@ -6,7 +6,8 @@ import type {
   Space,
   WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
-import type { MutationTree } from "vuex";
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import type { RootStoreState } from "./types";
 
 export interface PathTriplet {
   spaceId: string;
@@ -14,22 +15,21 @@ export interface PathTriplet {
   itemId: string;
 }
 
-interface SpaceProviderWithSpaces extends SpaceProvider {
+export interface SpaceProviderWithSpaces extends SpaceProvider {
   spaces: Array<Space & { private: boolean }>; // TODO: check type
 }
 
-export interface SpaceProviderWithSpacesMap {
-  [key: string]: SpaceProviderWithSpaces;
-}
+export type SpaceProviderWithSpacesMap = Record<
+  string,
+  SpaceProviderWithSpaces
+>;
 
 interface CreateWorkflowModalConfig {
   isOpen: boolean;
   projectId: string;
 }
 
-export interface ProjectPathMap {
-  [projectId: string]: PathTriplet;
-}
+export type ProjectPathMap = Record<string, PathTriplet>;
 
 interface State {
   workflowGroupCache: WeakMap<PathTriplet, WorkflowGroupContent>;
@@ -89,6 +89,8 @@ export const mutations: MutationTree<State> = {
   },
 
   removeProjectPath(state, projectId: string) {
+    // removing the projectPath object will also clear the workflowGroupCache
+    // for that path as it is used as key for the WeakMap
     delete state.projectPath[projectId];
   },
 
@@ -125,9 +127,9 @@ export const mutations: MutationTree<State> = {
   },
 };
 
-export const actions = {
+export const actions: ActionTree<State, RootStoreState> = {
   syncPathWithOpenProjects(
-    { commit, state }: { state: State; commit: any },
+    { commit, state },
     { openProjects }: { openProjects: [{ projectId: string; origin: any }] }
   ) {
     // add
@@ -229,10 +231,7 @@ export const actions = {
     }
   },
 
-  disconnectProvider(
-    { commit, state }: { state: State; commit: any },
-    { spaceProviderId }
-  ) {
+  disconnectProvider({ commit, state }, { spaceProviderId }) {
     try {
       API.desktop.disconnectSpaceProvider({ spaceProviderId });
 
@@ -274,7 +273,7 @@ export const actions = {
   },
 
   async fetchWorkflowGroupContentByIdTriplet(
-    { commit }: { commit: any },
+    { commit },
     { spaceId, spaceProviderId, itemId }
   ) {
     try {
@@ -294,10 +293,7 @@ export const actions = {
     }
   },
 
-  async fetchWorkflowGroupContent(
-    { commit, state, dispatch }: { commit: any; state: State; dispatch: any },
-    { projectId }
-  ) {
+  async fetchWorkflowGroupContent({ commit, state, dispatch }, { projectId }) {
     const pathTriplet = state.projectPath[projectId];
     const { spaceId, spaceProviderId, itemId } = pathTriplet;
 
@@ -330,10 +326,7 @@ export const actions = {
     return content;
   },
 
-  async createWorkflow(
-    { state, dispatch }: { state: State; dispatch: any },
-    { projectId, workflowName }
-  ) {
+  async createWorkflow({ state, dispatch }, { projectId, workflowName }) {
     const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
 
     try {
@@ -376,10 +369,7 @@ export const actions = {
     }
   },
 
-  async createFolder(
-    { dispatch, state, commit }: { state: State; dispatch: any; commit: any },
-    { projectId }
-  ) {
+  async createFolder({ dispatch, state, commit }, { projectId }) {
     const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
 
     try {
@@ -526,18 +516,17 @@ export const actions = {
   },
 };
 
-export const getters = {
-  pathToItemId:
-    (state: State, getters: any) => (projectId: string, pathId: string) => {
-      const isGoingBack = pathId === "..";
-      if (isGoingBack) {
-        return getters.parentWorkflowGroupId(projectId);
-      }
-      return pathId;
-    },
+export const getters: GetterTree<State, RootStoreState> = {
+  pathToItemId: (_, getters) => (projectId: string, pathId: string) => {
+    const isGoingBack = pathId === "..";
+    if (isGoingBack) {
+      return getters.parentWorkflowGroupId(projectId);
+    }
+    return pathId;
+  },
 
   parentWorkflowGroupId:
-    (state: State, getters: any) =>
+    (state, getters) =>
     (projectId: string): string => {
       const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
 
@@ -556,20 +545,19 @@ export const getters = {
       return path.length === 1 ? "root" : path[path.length - 2].id;
     },
 
-  currentWorkflowGroupId:
-    (state: State, getters: any) => (projectId: string) => {
-      const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
+  currentWorkflowGroupId: (state, getters) => (projectId: string) => {
+    const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
 
-      if (workflowGroupContent === null) {
-        return null;
-      }
+    if (workflowGroupContent === null) {
+      return null;
+    }
 
-      const { path } = workflowGroupContent;
-      return path.length > 0 ? path[path.length - 1].id : "root";
-    },
+    const { path } = workflowGroupContent;
+    return path.length > 0 ? path[path.length - 1].id : "root";
+  },
 
   getOpenedWorkflowItems:
-    (state: State, getters: any, { application }) =>
+    (state, getters, { application }) =>
     (projectId: string) => {
       const { spaceId, spaceProviderId } = state.projectPath[projectId];
       const { openProjects } = application;
@@ -597,7 +585,7 @@ export const getters = {
     },
 
   getOpenedFolderItems:
-    (state: State, getters: any, { application }) =>
+    (state, getters, { application }) =>
     (projectId: string) => {
       const { spaceProviderId, spaceId } = state.projectPath[projectId];
       const { openProjects } = application;
@@ -623,7 +611,7 @@ export const getters = {
     },
 
   getWorkflowGroupContent:
-    (state: State) =>
+    (state) =>
     (projectId: string): WorkflowGroupContent | null => {
       const pathTriplet = state.projectPath[projectId];
       if (!state.workflowGroupCache.has(pathTriplet)) {
@@ -632,7 +620,7 @@ export const getters = {
       return state.workflowGroupCache.get(pathTriplet);
     },
 
-  getSpaceInfo: (state: State) => (projectId: string) => {
+  getSpaceInfo: (state) => (projectId: string) => {
     if (!state.projectPath.hasOwnProperty(projectId)) {
       return {};
     }
@@ -663,7 +651,7 @@ export const getters = {
     return {};
   },
 
-  hasActiveHubSession({ spaceProviders }: State) {
+  hasActiveHubSession({ spaceProviders }) {
     if (!spaceProviders) {
       return false;
     }
