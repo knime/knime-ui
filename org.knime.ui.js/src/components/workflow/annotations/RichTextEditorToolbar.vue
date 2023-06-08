@@ -81,12 +81,11 @@ const createLink = () => {
     text.value = hasNoSelection
       ? textBefore + textAfter
       : state.doc.textBetween(from, to, "");
-
-    isEditingLink.value = true;
   } else {
     text.value = state.doc.textBetween(from, to, "");
   }
 
+  isEditingLink.value = currentLink || text.value;
   showCreateLinkModal.value = true;
 };
 
@@ -94,17 +93,45 @@ const addLink = (text: string, url: string) => {
   props.editor.chain().focus().extendMarkRange("link").unsetLink().run();
 
   if (url) {
-    let content = `<a href="${url}">${text || url}</a>`;
-    if (!isEditingLink.value) {
-      // escape link with space when creating a new link
-      content += " ";
-    }
+    const containsHttp = ["http://", "https://"].some((protocol) =>
+      url.includes(protocol)
+    );
+    const contentUrl = containsHttp ? url : `https://${url}`;
 
-    props.editor.commands.insertContent(content, {
-      parseOptions: {
-        preserveWhitespace: true,
-      },
-    });
+    if (isEditingLink.value) {
+      props.editor
+        .chain()
+        .focus()
+        .setLink({ href: contentUrl })
+        .command(({ tr }) => {
+          tr.insertText(text || url);
+          return true;
+        })
+        .run();
+    } else {
+      // TODO replace this rather complicated way to add a link once the tiptap bug is fixed
+      const { view } = props.editor;
+      const { from: startIndex } = view.state.selection;
+
+      // escape link with space when creating a new link
+      props.editor
+        .chain()
+        .insertContent([{ type: "text", text: " " }])
+        .run();
+      props.editor
+        .chain()
+        .insertContentAt(startIndex, [{ type: "text", text: text || url }])
+        .run();
+
+      const { from: endIndex } = view.state.selection;
+
+      props.editor.commands.setTextSelection({
+        from: startIndex,
+        to: endIndex,
+      });
+
+      props.editor.chain().focus().setLink({ href: contentUrl }).run();
+    }
   }
 
   showCreateLinkModal.value = false;
@@ -113,6 +140,7 @@ const addLink = (text: string, url: string) => {
 
 const cancelAddLink = () => {
   showCreateLinkModal.value = false;
+  isEditingLink.value = false;
 };
 
 const editorTools: Array<ToolbarItem> = [
