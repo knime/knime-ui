@@ -43,6 +43,14 @@ describe("workflowShortcuts", () => {
                 },
               },
             },
+            parents: [
+              {
+                containerId: "root:parent",
+              },
+              {
+                containerId: "direct:parent:id",
+              },
+            ],
           },
           quickAddNodeMenu: {
             isOpen: false,
@@ -149,11 +157,22 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("open component", () => {
+    it("open component or metanode", () => {
       const { $store, mockDispatch } = createStore();
-      workflowShortcuts.openComponent.execute({ $store });
+      workflowShortcuts.openComponentOrMetanode.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith("application/switchWorkflow", {
         newWorkflow: { workflowId: "root:0", projectId: "activeTestProjectId" },
+      });
+    });
+
+    it("open parent workflow", () => {
+      const { $store, mockDispatch } = createStore();
+      workflowShortcuts.openParentWorkflow.execute({ $store });
+      expect(mockDispatch).toHaveBeenCalledWith("application/switchWorkflow", {
+        newWorkflow: {
+          workflowId: "direct:parent:id",
+          projectId: "activeTestProjectId",
+        },
       });
     });
 
@@ -533,13 +552,19 @@ describe("workflowShortcuts", () => {
         singleSelectedNode,
       });
 
-      expect(workflowShortcuts.openComponent.condition({ $store })).toBe(true);
+      expect(
+        workflowShortcuts.openComponentOrMetanode.condition({ $store })
+      ).toBe(true);
 
       singleSelectedNode.isLocked = false;
-      expect(workflowShortcuts.openComponent.condition({ $store })).toBe(true);
+      expect(
+        workflowShortcuts.openComponentOrMetanode.condition({ $store })
+      ).toBe(true);
 
       singleSelectedNode.isLocked = true;
-      expect(workflowShortcuts.openComponent.condition({ $store })).toBe(false);
+      expect(
+        workflowShortcuts.openComponentOrMetanode.condition({ $store })
+      ).toBe(false);
     });
 
     describe("openLayoutEditor", () => {
