@@ -1,34 +1,30 @@
 <script setup lang="ts">
-import { onMounted, nextTick, toRefs, watch, ref, computed } from "vue";
+import { onMounted, toRefs, useSlots, watch } from "vue";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import TextAlign from "@tiptap/extension-text-align";
 import UnderLine from "@tiptap/extension-underline";
 import { ControlClickLink, LinkRegex } from "./extended-link";
 import StarterKit from "@tiptap/starter-kit";
 
-import type { Bounds } from "@/api/gateway-api/generated-api";
-
+import RichTextEditorBaseToolbar from "./RichTextEditorBaseToolbar.vue";
 import RichTextEditorToolbar from "./RichTextEditorToolbar.vue";
 
 interface Props {
-  id: string;
-  editable: boolean;
   initialValue: string;
-  annotationBounds: Bounds;
-  isSelected: boolean;
-  isDragging: boolean;
-  initialBorderColor: string;
+  editable?: boolean;
+  compact?: boolean;
 }
 
-const props = defineProps<Props>();
-const { initialValue } = toRefs(props);
-const previewBorderColor = ref<string | null>(null);
+const props = withDefaults(defineProps<Props>(), {
+  editable: true,
+  compact: false,
+});
 
-// eslint-disable-next-line func-call-spacing
+const slots = useSlots();
+const { initialValue, editable } = toRefs(props);
+
 const emit = defineEmits<{
-  (e: "editStart"): void;
   (e: "change", content: string): void;
-  (e: "changeBorderColor", color: string): void;
 }>();
 
 const editor = useEditor({
@@ -51,77 +47,103 @@ watch(initialValue, () => {
   editor.value.commands.setContent(initialValue.value);
 });
 
-const activeBorderColor = computed(
-  () => previewBorderColor.value || props.initialBorderColor
-);
+watch(editable, (value) => {
+  editor.value.setEditable(value);
+});
 
-onMounted(() => {
+onMounted(async () => {
   if (props.editable) {
-    nextTick(() => {
-      editor.value.commands.focus();
-    });
+    await new Promise((r) => setTimeout(r, 0));
+    editor.value.commands.focus();
   }
 });
+
+const hasCustomToolbar = slots.customToolbar;
 </script>
 
 <template>
-  <div
-    class="annotation-editor-wrapper"
-    @pointerdown="editable && $event.stopPropagation()"
-  >
-    <Portal v-if="editable && editor" to="annotation-editor-toolbar">
-      <RichTextEditorToolbar
-        :active-border-color="initialBorderColor"
-        :editor="editor"
-        :annotation-bounds="annotationBounds"
-        @change-border-color="emit('changeBorderColor', $event)"
-        @preview-border-color="previewBorderColor = $event"
-      />
-    </Portal>
+  <div class="editor-wrapper">
+    <Transition name="expand" :css="!hasCustomToolbar">
+      <div
+        v-if="editor && editable"
+        :class="{ 'embedded-toolbar': !hasCustomToolbar }"
+      >
+        <RichTextEditorBaseToolbar :editor="editor">
+          <template #default="{ tools }">
+            <slot name="customToolbar" :editor="editor" :tools="tools">
+              <RichTextEditorToolbar :editor="editor" :tools="tools" />
+            </slot>
+          </template>
+        </RichTextEditorBaseToolbar>
+      </div>
+    </Transition>
+
     <EditorContent
-      class="annotation-editor"
+      class="rich-text-editor"
       :editor="editor"
-      :class="{
-        editable,
-        selected: isSelected,
-        'is-dragging': isDragging,
-      }"
-      @dblclick="!editable && emit('editStart')"
+      :class="{ editable }"
     />
+
+    <RichTextEditorBaseToolbar :editor="editor">
+      <template #default="{ tools }">
+        <slot name="customToolbar" :editor="editor" :tools="tools" />
+      </template>
+    </RichTextEditorBaseToolbar>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.annotation-editor-wrapper {
+.editor-wrapper {
   height: 100%;
+}
+
+.embedded-toolbar {
+  height: 40px;
+  border-bottom: 1px solid var(--knime-silver-sand);
+  overscroll-behavior: contain;
+  padding: 4px;
   background: var(--knime-white);
+  overflow-x: auto;
+  white-space: pre;
+  -ms-overflow-style: none; /* needed to hide scroll bar in edge */
+  scrollbar-width: none; /* for firefox */
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.toolbar-wrapper {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: initial;
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.5s ease;
 }
 
-.annotation-editor {
-  --border-width: 2px;
+.expand-enter-from,
+.expand-leave-to {
+  height: 0;
+  opacity: 0;
+}
 
+.expand-enter-to,
+.expand-leave-from {
+  height: 40px;
+  opacity: 1;
+}
+
+.rich-text-editor {
   height: 100%;
+  max-height: 300px;
   overflow-y: auto;
-  border: var(--border-width) solid v-bind("activeBorderColor");
 
   &.editable {
     cursor: text;
+    background: var(--knime-white);
   }
 
   /* stylelint-disable-next-line selector-class-pattern */
   & :deep(.ProseMirror) {
     height: 100%;
     font-size: 12px;
-    padding: 16px;
+    padding: v-bind("compact ? '4px' : '16px'");
     color: var(--knime-black);
 
     &:focus-visible,

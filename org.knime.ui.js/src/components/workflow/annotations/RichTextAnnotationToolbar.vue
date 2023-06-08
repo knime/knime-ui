@@ -1,56 +1,32 @@
 <script setup lang="ts">
-import {
-  computed,
-  ref,
-  type FunctionalComponent,
-  type SVGAttributes,
-  onMounted,
-  onUnmounted,
-} from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useStore } from "vuex";
 import type { Editor } from "@tiptap/vue-3";
+import type { Level } from "@tiptap/extension-heading";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import type { Level } from "@tiptap/extension-heading";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
-import BoldIcon from "@/assets/bold.svg";
-import ItalicIcon from "@/assets/italic.svg";
-import UnderlineIcon from "@/assets/underline.svg";
-import BulletListIcon from "@/assets/unordered-list.svg";
-import OrderedListIcon from "@/assets/ordered-list.svg";
-import AlignLeftIcon from "@/assets/align-left.svg";
-import AlignCenterIcon from "@/assets/align-center.svg";
-import AlignRightIcon from "@/assets/align-right.svg";
-import LinkIcon from "webapps-common/ui/assets/img/icons/link.svg";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import * as $shapes from "@/style/shapes.mjs";
 import { formatHotkeys } from "@/util/formatHotkeys";
-import type { Hotkeys } from "@/shortcuts";
+import { getMetaOrCtrlKey } from "@/util/navigator";
 
 import ColorIcon from "./ColorIcon.vue";
-import RichTextEditorToolbarDialog from "./RichTextEditorToolbarDialog.vue";
+import RichTextAnnotationToolbarDialog from "./RichTextAnnotationToolbarDialog.vue";
 import ColorSelectionDialog from "./ColorSelectionDialog.vue";
 import CreateLinkModal from "./CreateLinkModal.vue";
 
 import { addCustomLink } from "./extended-link";
-import { getMetaOrCtrlKey } from "@/util/navigator";
+import type { EditorTools } from "./RichTextEditor/RichTextEditorBaseToolbar.vue";
 
 interface Props {
   editor: Editor;
+  tools: EditorTools;
   annotationBounds: Bounds;
   activeBorderColor: string;
-}
-
-interface ToolbarItem {
-  id: string;
-  name: string;
-  icon: FunctionalComponent<SVGAttributes>;
-  hotkey: Hotkeys;
-  onClick: () => void;
-  active?: () => boolean;
 }
 
 const store = useStore();
@@ -122,83 +98,8 @@ const cancelAddLink = () => {
   isEditingLink.value = false;
 };
 
-const editorTools: Array<ToolbarItem> = [
-  {
-    id: "bold",
-    name: "Bold",
-    hotkey: ["Ctrl", "B"],
-    icon: BoldIcon,
-    active: () => props.editor.isActive("bold"),
-    onClick: () => props.editor.chain().focus().toggleBold().run(),
-  },
-  {
-    id: "italic",
-    name: "Italic",
-    icon: ItalicIcon,
-    hotkey: ["Ctrl", "I"],
-    active: () => props.editor.isActive("italic"),
-    onClick: () => props.editor.chain().focus().toggleItalic().run(),
-  },
-  {
-    id: "underline",
-    name: "Underline",
-    icon: UnderlineIcon,
-    hotkey: ["Ctrl", "U"],
-    active: () => props.editor.isActive("underline"),
-    onClick: () => props.editor.chain().focus().toggleUnderline().run(),
-  },
-  {
-    id: "bullet-list",
-    name: "Bullet list",
-    icon: BulletListIcon,
-    hotkey: ["Ctrl", "Shift", "8"],
-    active: () => props.editor.isActive("bulletList"),
-    onClick: () => props.editor.chain().focus().toggleBulletList().run(),
-  },
-  {
-    id: "bullet-list-numbered",
-    name: "Ordered list",
-    icon: OrderedListIcon,
-    hotkey: ["Ctrl", "Shift", "7"],
-    active: () => props.editor.isActive("orderedList"),
-    onClick: () => props.editor.chain().focus().toggleOrderedList().run(),
-  },
-  {
-    id: "align-left",
-    icon: AlignLeftIcon,
-    name: "Align left",
-    hotkey: ["Ctrl", "Shift", "L"],
-    active: () => props.editor.isActive({ textAlign: "left" }),
-    onClick: () => props.editor.chain().focus().setTextAlign("left").run(),
-  },
-  {
-    id: "align-center",
-    icon: AlignCenterIcon,
-    name: "Align center",
-    hotkey: ["Ctrl", "Shift", "E"],
-    active: () => props.editor.isActive({ textAlign: "center" }),
-    onClick: () => props.editor.chain().focus().setTextAlign("center").run(),
-  },
-  {
-    id: "align-right",
-    icon: AlignRightIcon,
-    name: "Align right",
-    hotkey: ["Ctrl", "Shift", "R"],
-    active: () => props.editor.isActive({ textAlign: "right" }),
-    onClick: () => props.editor.chain().focus().setTextAlign("right").run(),
-  },
-  {
-    id: "add-link",
-    icon: LinkIcon,
-    name: "Add link",
-    hotkey: ["Ctrl", "K"],
-    active: () => props.editor.isActive("link"),
-    onClick: () => createLink(),
-  },
-];
-
 // +1 to include the border color tool
-const totalEditorTools = computed(() => editorTools.length + 1);
+const totalEditorTools = computed(() => props.tools.length + 1);
 
 const headingPresets = computed(() => {
   // eslint-disable-next-line no-magic-numbers
@@ -248,8 +149,7 @@ const toolbarWidth =
   /* account for all items */
   totalEditorTools.value * toolbarItemSize +
   /* add space for heading dropdown */
-  headingDropdownWidth +
-  toolbarItemGap +
+  (headingDropdownWidth + toolbarItemGap) +
   /* include gaps (total gaps = total items - 1) */
   toolbarItemGap * (totalEditorTools.value - 1);
 
@@ -319,13 +219,13 @@ onUnmounted(() => {
         :teleport-to-body="false"
         positioning-strategy="absolute"
         class="heading-menu"
-        @item-click="(e, item) => item.onClick()"
+        @item-click="(_, item) => item.onClick()"
       >
         <span class="heading-current-text">{{ selectedHeadingText }}</span>
         <DropdownIcon />
       </SubMenu>
       <FunctionButton
-        v-for="tool of editorTools"
+        v-for="tool of tools"
         :key="tool.icon"
         :active="tool.active ? tool.active() : false"
         :title="`${tool.name} – ${formatHotkeys(tool.hotkey)}`"
@@ -335,7 +235,7 @@ onUnmounted(() => {
         <Component :is="tool.icon" />
       </FunctionButton>
 
-      <RichTextEditorToolbarDialog :is-open="isBorderColorSelectionOpen">
+      <RichTextAnnotationToolbarDialog :is-open="isBorderColorSelectionOpen">
         <template #toggle>
           <FunctionButton
             class="border-color-tool"
@@ -354,7 +254,7 @@ onUnmounted(() => {
             @select-color="changeBorderColor"
           />
         </template>
-      </RichTextEditorToolbarDialog>
+      </RichTextAnnotationToolbarDialog>
     </div>
   </FloatingMenu>
   <CreateLinkModal

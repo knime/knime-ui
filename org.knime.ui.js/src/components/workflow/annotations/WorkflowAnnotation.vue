@@ -12,7 +12,7 @@ import { Annotation } from "@/api/gateway-api/generated-api";
 import { getMetaOrCtrlKey } from "@/util/navigator";
 import TransformControls from "./TransformControls.vue";
 import LegacyAnnotation from "./LegacyAnnotation.vue";
-import RichTextEditor from "./RichTextEditor.vue";
+import RichTextAnnotation from "./RichTextAnnotation.vue";
 
 /**
  * A workflow annotation, a rectangular box containing text.
@@ -20,7 +20,7 @@ import RichTextEditor from "./RichTextEditor.vue";
 export default defineComponent({
   components: {
     LegacyAnnotation,
-    RichTextEditor,
+    RichTextAnnotation,
     TransformControls,
   },
   mixins: [VueClickAway],
@@ -240,7 +240,7 @@ export default defineComponent({
           @edit-start="toggleEdit"
         />
 
-        <RichTextEditor
+        <RichTextAnnotation
           v-if="isRichTextAnnotation || isEditing"
           :id="annotation.id"
           :initial-value="initialRichTextAnnotationValue"
