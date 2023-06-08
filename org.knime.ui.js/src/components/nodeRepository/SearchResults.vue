@@ -6,7 +6,7 @@ import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg"
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
-import type { KnimeNode } from "@/api/gateway-api/custom-types";
+import type { KnimeNode } from "@/api/custom-types";
 
 import ScrollViewContainer from "./ScrollViewContainer.vue";
 import NodeList from "./NodeList.vue";

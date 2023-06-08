@@ -3,7 +3,7 @@ import { defineComponent } from "vue";
 import { mapState, mapGetters } from "vuex";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
-import type { AvailablePortTypes } from "@/api/gateway-api/custom-types";
+import type { AvailablePortTypes } from "@/api/custom-types";
 
 import PortTabs from "./PortTabs.vue";
 import PortViewTabOutput from "./PortViewTabOutput.vue";

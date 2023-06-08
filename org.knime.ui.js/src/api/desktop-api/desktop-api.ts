@@ -3,7 +3,8 @@ import type {
   SpaceId,
   FullSpacePath,
   SpaceProvider,
-} from "./custom-types";
+  SpaceItemId,
+} from "../custom-types";
 
 export const openNodeDialog = ({
   projectId,
@@ -179,11 +180,6 @@ export const fetchAllSpaceProviders = (): Promise<
     throw error;
   }
 };
-
-export interface SpaceUser {
-  name: string;
-}
-
 export const connectSpaceProvider = ({ spaceProviderId }: SpaceProviderId) => {
   try {
     const user = window.connectSpaceProvider(spaceProviderId);

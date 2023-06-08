@@ -3,7 +3,7 @@ import type {
   AvailablePortTypes,
   KnimeNode,
   NodePortGroups,
-} from "@/api/gateway-api/custom-types";
+} from "@/api/custom-types";
 import type {
   Connection,
   WorkflowInfo,

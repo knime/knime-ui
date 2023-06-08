@@ -4,7 +4,8 @@ import type {
   NativeNode,
   PortGroup,
   PortType,
-} from "./generated-api";
+} from "./gateway-api/generated-api";
+import { Space } from "./gateway-api/generated-api";
 
 /**
  * Dictionary of all available port types that are installed in the AP for the use.
@@ -28,3 +29,19 @@ export type ViewConfig = {
   initialData: string;
   resourceInfo: ResourceInfo;
 };
+
+export type SpaceProviderId = { spaceProviderId: string };
+export type SpaceId = { spaceId: string };
+export type SpaceItemId = { itemId: string };
+export type FullSpacePath = SpaceProviderId & SpaceId & SpaceItemId;
+export interface SpaceProvider {
+  id: string;
+  name: string;
+  connected: boolean;
+  connectionMode: "AUTHENTICATED" | "ANONYMOUS" | "AUTOMATIC";
+  spaces?: Array<Space & { private: boolean }>; // TODO: check type Space should contain private
+}
+
+export interface SpaceUser {
+  name: string;
+}

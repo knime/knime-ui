@@ -2,10 +2,7 @@ import { computed } from "vue";
 import { useStore } from "vuex";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
-import type {
-  AvailablePortTypes,
-  NodePortGroups,
-} from "@/api/gateway-api/custom-types";
+import type { AvailablePortTypes, NodePortGroups } from "@/api/custom-types";
 
 import {
   checkCompatibleConnectionAndPort,

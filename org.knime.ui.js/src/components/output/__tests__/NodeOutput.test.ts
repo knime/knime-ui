@@ -17,7 +17,7 @@ import PortTabs from "../PortTabs.vue";
 
 import PortViewTabOutput from "../PortViewTabOutput.vue";
 import NodeViewTabOutput from "../NodeViewTabOutput.vue";
-import type { KnimeNode } from "@/api/gateway-api/custom-types";
+import type { KnimeNode } from "../../../api/custom-types";
 import { NodeState } from "@/api/gateway-api/generated-api";
 
 vi.mock("@knime/ui-extension-service");

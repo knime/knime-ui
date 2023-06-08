@@ -8,7 +8,7 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import SpaceSelectionPage from "../SpaceSelectionPage.vue";
 import SpaceCard from "../SpaceCard.vue";
-import type { SpaceProvider, SpaceUser } from "@/api/desktop-api/desktop-api";
+import type { SpaceProvider, SpaceUser } from "@/api/custom-types";
 
 const mockSpaceProviders: Record<
   string,

@@ -4,10 +4,7 @@ import { nextTick } from "vue";
 
 import type { DeepPartial } from "@/test/utils";
 
-import type {
-  AvailablePortTypes,
-  KnimeNode,
-} from "@/api/gateway-api/custom-types";
+import type { AvailablePortTypes, KnimeNode } from "../../../api/custom-types";
 import { NodeState, PortType } from "@/api/gateway-api/generated-api";
 import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
 

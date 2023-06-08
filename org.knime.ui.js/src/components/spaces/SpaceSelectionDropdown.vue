@@ -8,12 +8,9 @@ import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 
 import { useStore } from "vuex";
 import { computed } from "vue";
-import type {
-  PathTriplet,
-  SpaceProviderWithSpaces,
-  SpaceProviderWithSpacesMap,
-} from "@/store/spaces";
+import type { PathTriplet } from "@/store/spaces";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { SpaceProvider } from "@/api/custom-types";
 
 interface Props {
   showText?: boolean;
@@ -50,10 +47,12 @@ const spacesDropdownData = computed((): MenuItem[] => {
   const activeSpacePath = store.state.spaces.projectPath[
     props.projectId
   ] as PathTriplet;
-  const spaceProviders = store.state.spaces
-    .spaceProviders as SpaceProviderWithSpacesMap;
+  const spaceProviders = store.state.spaces.spaceProviders as Record<
+    string,
+    SpaceProvider
+  >;
 
-  const providers: SpaceProviderWithSpaces[] = spaceProviders
+  const providers: SpaceProvider[] = spaceProviders
     ? Object.values(spaceProviders)
     : [];
 

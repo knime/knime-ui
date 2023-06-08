@@ -8,7 +8,7 @@ import { loadAsyncComponent } from "webapps-common/ui/util/loadComponentLibrary"
 // that can be loaded exists. Eventually this view will also be loaded dynamically
 import FlowVariablePortView from "@/components/output/FlowVariablePortView.vue";
 import ImagePortView from "@/components/output/ImagePortView.vue";
-import type { ViewConfig, ResourceInfo } from "@/api/gateway-api/custom-types";
+import type { ViewConfig, ResourceInfo } from "@/api/custom-types";
 
 export type ViewStateChangeEvent = {
   state: "loading" | "ready" | "error";

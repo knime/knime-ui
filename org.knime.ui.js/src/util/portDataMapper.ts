@@ -5,7 +5,7 @@ import type {
   NativeNodeDescription,
   // eslint-disable-next-line object-curly-newline
 } from "@/api/gateway-api/generated-api";
-import type { AvailablePortTypes } from "@/api/gateway-api/custom-types";
+import type { AvailablePortTypes } from "@/api/custom-types";
 
 type FullPortType = PortType & {
   typeId: string;

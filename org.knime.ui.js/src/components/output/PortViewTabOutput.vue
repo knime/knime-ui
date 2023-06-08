@@ -6,10 +6,7 @@ import { defineComponent, type PropType } from "vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import PlayIcon from "@/assets/execute.svg";
 
-import type {
-  AvailablePortTypes,
-  KnimeNode,
-} from "@/api/gateway-api/custom-types";
+import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import {
   MetaNodePort,
   Node,

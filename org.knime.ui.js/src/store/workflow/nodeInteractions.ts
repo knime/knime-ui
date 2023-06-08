@@ -7,7 +7,7 @@ import type {
   NodeTemplate,
   XY,
 } from "@/api/gateway-api/generated-api";
-import type { KnimeNode } from "@/api/gateway-api/custom-types";
+import type { KnimeNode } from "@/api/custom-types";
 
 import { geometry } from "@/util/geometry";
 import type { RootStoreState } from "../types";

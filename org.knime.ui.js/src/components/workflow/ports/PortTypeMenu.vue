@@ -7,7 +7,7 @@ import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import ReturnIcon from "webapps-common/ui/assets/img/icons/arrow-back.svg";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import type { NodePortGroups } from "@/api/gateway-api/custom-types";
+import type { NodePortGroups } from "@/api/custom-types";
 import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";

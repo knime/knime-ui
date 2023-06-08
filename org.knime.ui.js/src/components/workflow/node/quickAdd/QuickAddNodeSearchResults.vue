@@ -4,7 +4,7 @@ import { mapActions, mapState } from "vuex";
 
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
-import type { KnimeNode } from "@/api/gateway-api/custom-types";
+import type { KnimeNode } from "@/api/custom-types";
 
 export default defineComponent({
   components: {

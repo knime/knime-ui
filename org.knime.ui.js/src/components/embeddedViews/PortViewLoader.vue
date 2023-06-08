@@ -3,7 +3,7 @@ import { defineComponent, type PropType } from "vue";
 import { KnimeService } from "@knime/ui-extension-service";
 
 import { API } from "@api";
-import type { KnimeNode, ViewConfig } from "@/api/gateway-api/custom-types";
+import type { KnimeNode, ViewConfig } from "@/api/custom-types";
 import ViewLoader from "@/components/embeddedViews/ViewLoader.vue";
 
 /**

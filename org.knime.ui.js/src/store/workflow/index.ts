@@ -2,7 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
 import type { Workflow } from "@/api/gateway-api/generated-api";
-import type { KnimeNode } from "@/api/gateway-api/custom-types";
+import type { KnimeNode } from "@/api/custom-types";
 
 import {
   actions as jsonPatchActions,

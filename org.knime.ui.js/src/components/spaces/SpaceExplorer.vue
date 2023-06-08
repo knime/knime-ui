@@ -12,11 +12,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
-import type {
-  PathTriplet,
-  ProjectPathMap,
-  SpaceProviderWithSpacesMap,
-} from "@/store/spaces";
+import type { PathTriplet } from "@/store/spaces";
 import {
   SpaceItem,
   type WorkflowGroupContent,
@@ -30,6 +26,7 @@ import type {
   FileExplorerItem,
   FileExplorerContextMenu,
 } from "./FileExplorer/types";
+import type { SpaceProvider } from "@/api/custom-types";
 
 const ITEM_TYPES_TEXTS = {
   [SpaceItem.TypeEnum.WorkflowGroup]: "folder",
@@ -94,10 +91,10 @@ export default defineComponent({
       "fileExtensionToNodeTemplateId",
     ]),
     ...mapState("spaces", {
-      projectPath: (state) => state.projectPath as ProjectPathMap,
+      projectPath: (state) => state.projectPath as Record<string, PathTriplet>,
       isLoading: (state) => state.isLoading as boolean,
       spaceProviders: (state) =>
-        state.spaceProviders as SpaceProviderWithSpacesMap,
+        state.spaceProviders as Record<string, SpaceProvider>,
     }),
     ...mapState("nodeRepository", ["nodesPerCategory"]),
     ...mapGetters("spaces", [

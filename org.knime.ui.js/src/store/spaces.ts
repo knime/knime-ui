@@ -1,11 +1,8 @@
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
-import type { SpaceProvider } from "@/api/desktop-api/custom-types";
-import type {
-  Space,
-  WorkflowGroupContent,
-} from "@/api/gateway-api/generated-api";
+import type { SpaceProvider } from "@/api/custom-types";
+import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "./types";
 
@@ -15,26 +12,15 @@ export interface PathTriplet {
   itemId: string;
 }
 
-export interface SpaceProviderWithSpaces extends SpaceProvider {
-  spaces: Array<Space & { private: boolean }>; // TODO: check type
-}
-
-export type SpaceProviderWithSpacesMap = Record<
-  string,
-  SpaceProviderWithSpaces
->;
-
 interface CreateWorkflowModalConfig {
   isOpen: boolean;
   projectId: string;
 }
 
-export type ProjectPathMap = Record<string, PathTriplet>;
-
 interface State {
   workflowGroupCache: WeakMap<PathTriplet, WorkflowGroupContent>;
-  spaceProviders?: SpaceProviderWithSpacesMap;
-  projectPath: ProjectPathMap;
+  spaceProviders?: Record<string, SpaceProvider>;
+  projectPath: Record<string, PathTriplet>;
   isLoading: boolean;
   createWorkflowModalConfig: CreateWorkflowModalConfig;
 }
@@ -122,7 +108,7 @@ export const mutations: MutationTree<State> = {
     state.workflowGroupCache.set(key, content);
   },
 
-  setSpaceProviders(state, value: SpaceProviderWithSpacesMap) {
+  setSpaceProviders(state, value: Record<string, SpaceProvider>) {
     state.spaceProviders = value;
   },
 };
