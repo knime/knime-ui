@@ -37,16 +37,9 @@ describe("workflow store: AP Interactions", () => {
     const mockCanvasEl = document.createElement("div");
     mockCanvasWrapperEl.appendChild(mockCanvasEl);
 
-    const clearLastItemForProjectMock = vi.fn();
-
     const store = mockVuexStore({
       workflow: await import("@/store/workflow"),
       application: await import("@/store/application"),
-      spaces: {
-        mutations: {
-          clearLastItemForProject: clearLastItemForProjectMock,
-        },
-      },
       canvas: {
         state: {
           getScrollContainerElement: () => mockCanvasWrapperEl,
@@ -55,7 +48,7 @@ describe("workflow store: AP Interactions", () => {
     });
     const dispatchSpy = vi.spyOn(store, "dispatch");
 
-    return { store, dispatchSpy, mockCanvasEl, clearLastItemForProjectMock };
+    return { store, dispatchSpy, mockCanvasEl };
   };
 
   describe("actions", () => {
@@ -191,8 +184,7 @@ describe("workflow store: AP Interactions", () => {
         const { projectId: closingProjectId } = openProjects[0];
 
         // setup
-        const { store, dispatchSpy, clearLastItemForProjectMock } =
-          await loadStore();
+        const { store, dispatchSpy } = await loadStore();
         store.commit("application/setOpenProjects", openProjects);
         store.commit("application/setActiveProjectId", activeProjectId);
         store.commit("workflow/setActiveWorkflow", {
@@ -214,12 +206,6 @@ describe("workflow store: AP Interactions", () => {
         expect(dispatchSpy).toHaveBeenCalledWith(
           "application/removeCanvasState",
           closingProjectId
-        );
-        expect(clearLastItemForProjectMock).toHaveBeenCalledWith(
-          expect.anything(),
-          {
-            projectId: closingProjectId,
-          }
         );
       });
 
