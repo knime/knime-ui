@@ -21,8 +21,10 @@ const createMockEditor = () => {
     "setTextAlign",
     "setTextAlign",
     "setHeading",
+    "setLink",
     "unsetLink",
     "insertContent",
+    "insertContentAt",
   ] as const;
 
   type Actions = Record<
@@ -43,7 +45,8 @@ const createMockEditor = () => {
         extendMarkRange: vi.fn(() => ({ unsetLink: actions.unsetLink })),
       }),
     }),
-    commands: { insertContent: vi.fn() },
+    commands: { insertContent: vi.fn(), setTextSelection: vi.fn() },
+    view: { state: { selection: { from: 5 } } },
   };
 };
 
@@ -148,11 +151,20 @@ describe("RichTextEditorToolbar.vue", () => {
       expect(
         mockEditor.chain().focus().extendMarkRange().unsetLink
       ).toHaveBeenCalled();
-      expect(
-        mockEditor.commands.insertContent
-        // eslint-disable-next-line quotes
-      ).toHaveBeenCalledWith('<a href="https://test.url">test text</a> ', {
-        parseOptions: { preserveWhitespace: true },
+      expect(mockEditor.chain().focus().insertContent).toHaveBeenCalledWith([
+        { text: " ", type: "text" },
+      ]);
+
+      expect(mockEditor.chain().focus().insertContentAt).toHaveBeenCalledWith(
+        5,
+        [{ type: "text", text: "test text" }]
+      );
+      expect(mockEditor.commands.setTextSelection).toHaveBeenCalledWith({
+        from: 5,
+        to: 5,
+      });
+      expect(mockEditor.chain().focus().setLink).toHaveBeenCalledWith({
+        href: "https://test.url",
       });
     });
   });
