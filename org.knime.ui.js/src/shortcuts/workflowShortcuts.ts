@@ -29,6 +29,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "createMetanode"
   | "createComponent"
   | "openComponentOrMetanode"
+  | "openParentWorkflow"
   | "expandMetanode"
   | "expandComponent"
   | "openLayoutEditor"
@@ -250,6 +251,24 @@ const workflowShortcuts: WorkflowShortcuts = {
       return (
         canOpen("component")({ $store }) || canOpen("metanode")({ $store })
       );
+    },
+  },
+  openParentWorkflow: {
+    hotkey: ["Ctrl", "Shift", "Enter"],
+    execute: ({ $store }) => {
+      const projectId = $store.state.application.activeProjectId;
+      const activeWorkflowParents =
+        $store.state.workflow.activeWorkflow.parents;
+      const id = activeWorkflowParents.at(-1).containerId;
+
+      $store.dispatch("application/switchWorkflow", {
+        newWorkflow: { workflowId: id, projectId },
+      });
+    },
+    condition: ({ $store }) => {
+      const activeWorkflowParents =
+        $store.state.workflow.activeWorkflow.parents;
+      return activeWorkflowParents?.length > 0;
     },
   },
   expandMetanode: {
