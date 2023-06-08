@@ -26,11 +26,11 @@ interface State {
 }
 
 export const globalSpaceBrowserProjectId = "__SPACE_BROWSER_TAB__";
-export const localSpaceCacheProjectId = "__LOCAL_ROOT__";
+export const cachedLocalSpaceProjectId = "__LOCAL_ROOT__";
 
 const specialProjectIds = [
   globalSpaceBrowserProjectId,
-  localSpaceCacheProjectId,
+  cachedLocalSpaceProjectId,
 ];
 
 export const state = (): State => ({

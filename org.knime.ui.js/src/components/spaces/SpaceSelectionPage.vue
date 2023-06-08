@@ -12,7 +12,7 @@ import CardContent from "@/components/common/CardContent.vue";
 
 import {
   globalSpaceBrowserProjectId,
-  localSpaceCacheProjectId,
+  cachedLocalSpaceProjectId,
 } from "@/store/spaces";
 
 import SpaceCard from "./SpaceCard.vue";
@@ -116,12 +116,12 @@ export default {
 
     async createWorkflowLocally() {
       await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-        projectId: localSpaceCacheProjectId,
+        projectId: cachedLocalSpaceProjectId,
       });
 
       this.$store.commit("spaces/setCreateWorkflowModalConfig", {
         isOpen: true,
-        projectId: localSpaceCacheProjectId,
+        projectId: cachedLocalSpaceProjectId,
       });
     },
   },
