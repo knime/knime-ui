@@ -32,10 +32,10 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.knime.workbench.ui.preferences.gui"
+            category="org.knime.workbench.ui.preferences"
             class="org.knime.ui.java.prefs.KnimeUIPreferencePage"
             id="org.knime.ui.java.prefs.KnimeUIPreferencePage"
-            name="Modern UI Settings">
+            name="KNIME Modern User Interface">
       </page>
    </extension>
    <extension

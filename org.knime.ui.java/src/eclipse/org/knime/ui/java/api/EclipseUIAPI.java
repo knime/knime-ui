@@ -48,6 +48,8 @@
  */
 package org.knime.ui.java.api;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 
 import org.eclipse.ui.IWorkbench;
@@ -78,6 +80,12 @@ final class EclipseUIAPI {
     private static final String WORKFLOW_COACH_PREFERENCE_PAGE_ID = "org.knime.workbench.workflowcoach";
 
     private static final String WEB_UI_PREFERENCE_PAGE_ID = "org.knime.ui.java.prefs.KnimeUIPreferencePage";
+
+    private static final String ECLIPSE_GENERAL_PREFERENCE_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
+
+    private static final String ECLIPSE_APPEARANCE_PREFERENCE_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
+
+    private static final String ECLIPSE_KEYS_PREFERENCE_PAGE_ID = "org.eclipse.ui.preferencePages.Keys";
 
     private EclipseUIAPI() {
         // stateless
@@ -113,10 +121,26 @@ final class EclipseUIAPI {
      */
     @API
     static void openWebUIPreferencePage() {
-        var displayedIds = new String[]{WEB_UI_PREFERENCE_PAGE_ID};
-        var dialog = PreferencesUtil.createPreferenceDialogOn(null, WEB_UI_PREFERENCE_PAGE_ID, displayedIds, null);
-        dialog.open();
-        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState(); // Since changing the web UI settings changes the application state
+        var dialog = PreferencesUtil.createPreferenceDialogOn(null, WEB_UI_PREFERENCE_PAGE_ID, null, null);
+        var idsToExclude = List.of(ECLIPSE_APPEARANCE_PREFERENCE_PAGE_ID, ECLIPSE_KEYS_PREFERENCE_PAGE_ID);
+
+        Arrays.stream(dialog.getPreferenceManager().getRootSubNodes())//
+            .filter(pref -> pref.getId().equals(ECLIPSE_GENERAL_PREFERENCE_PAGE_ID))//
+            .findFirst()//
+            .ifPresentOrElse(parent -> {
+                var excluded = Arrays.stream(parent.getSubNodes())//
+                    .filter(pref -> idsToExclude.contains(pref.getId()))//
+                    .toList();
+                // If the preference pages for the IDs to exclude were found, exclude them
+                excluded.forEach(parent::remove);
+                // Open the dialog
+                dialog.open();
+                // Include them again to make them available in Classic UI
+                excluded.forEach(parent::add);
+            }, dialog::open); // Just open the dialog of the pages where not found
+
+        // Since changing the web-ui settings changes the application state
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
     }
 
     /**
@@ -131,7 +155,9 @@ final class EclipseUIAPI {
         var dialog =
             PreferencesUtil.createPreferenceDialogOn(null, WORKFLOW_COACH_PREFERENCE_PAGE_ID, displayedIds, null);
         dialog.open();
-        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState(); // Since changing the node recommendation settings changes the application state
+
+        // Since changing the node recommendation settings changes the application state
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
     }
 
     /**
