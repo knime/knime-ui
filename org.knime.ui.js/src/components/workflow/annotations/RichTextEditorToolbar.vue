@@ -35,6 +35,8 @@ import RichTextEditorToolbarDialog from "./RichTextEditorToolbarDialog.vue";
 import ColorSelectionDialog from "./ColorSelectionDialog.vue";
 import CreateLinkModal from "./CreateLinkModal.vue";
 
+import { addCustomLink } from "./extended-link";
+
 interface Props {
   editor: Editor;
   annotationBounds: Bounds;
@@ -89,49 +91,21 @@ const createLink = () => {
   showCreateLinkModal.value = true;
 };
 
-const addLink = (text: string, url: string) => {
+const addLink = (text: string, urlText: string) => {
   props.editor.chain().focus().extendMarkRange("link").unsetLink().run();
 
-  if (url) {
+  if (urlText) {
     const containsHttp = ["http://", "https://"].some((protocol) =>
-      url.includes(protocol)
+      urlText.includes(protocol)
     );
-    const contentUrl = containsHttp ? url : `https://${url}`;
+    const url = containsHttp ? urlText : `https://${urlText}`;
 
-    if (isEditingLink.value) {
-      props.editor
-        .chain()
-        .focus()
-        .setLink({ href: contentUrl })
-        .command(({ tr }) => {
-          tr.insertText(text || url);
-          return true;
-        })
-        .run();
-    } else {
-      // TODO replace this rather complicated way to add a link once the tiptap bug is fixed
-      const { view } = props.editor;
-      const { from: startIndex } = view.state.selection;
-
-      // escape link with space when creating a new link
-      props.editor
-        .chain()
-        .insertContent([{ type: "text", text: " " }])
-        .run();
-      props.editor
-        .chain()
-        .insertContentAt(startIndex, [{ type: "text", text: text || url }])
-        .run();
-
-      const { from: endIndex } = view.state.selection;
-
-      props.editor.commands.setTextSelection({
-        from: startIndex,
-        to: endIndex,
-      });
-
-      props.editor.chain().focus().setLink({ href: contentUrl }).run();
-    }
+    addCustomLink(props.editor, {
+      isEditing: isEditingLink.value,
+      urlText,
+      url,
+      text,
+    });
   }
 
   showCreateLinkModal.value = false;
