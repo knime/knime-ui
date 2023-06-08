@@ -357,7 +357,7 @@ export const actions = {
         { root: true }
       );
 
-      dispatch("fetchWorkflowGroupContent", { projectId });
+      await dispatch("fetchWorkflowGroupContent", { projectId });
       API.desktop.openWorkflow({
         spaceProviderId,
         spaceId,
@@ -599,7 +599,7 @@ export const getters = {
   getOpenedFolderItems:
     (state: State, getters: any, { application }) =>
     (projectId: string) => {
-      const { spaceId } = state.projectPath[projectId];
+      const { spaceProviderId, spaceId } = state.projectPath[projectId];
       const { openProjects } = application;
 
       const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
@@ -609,6 +609,7 @@ export const getters = {
       }
 
       const openProjectsFolders = openProjects
+        .filter((project) => project.origin.providerId === spaceProviderId)
         .filter((project) => project.origin.spaceId === spaceId)
         .flatMap((project) => project.origin.ancestorItemIds);
 
