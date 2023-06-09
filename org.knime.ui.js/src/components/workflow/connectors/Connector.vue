@@ -6,6 +6,7 @@ import { mapState, mapGetters, mapActions } from "vuex";
 import { portBar, connectorPosition } from "@/mixins";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import connectorPath from "@/util/connectorPath";
+import { getMetaOrCtrlKey } from "@/util/navigator";
 
 import { KnimeMIME } from "@/mixins/dropNode";
 
@@ -145,7 +146,7 @@ export default defineComponent({
       this.toggleContextMenu({ event });
     },
     onMouseClick(event: MouseEvent) {
-      if (event.shiftKey) {
+      if (event.shiftKey || event[getMetaOrCtrlKey()]) {
         // Multi select
         if (this.isConnectionSelected(this.id)) {
           this.deselectConnection(this.id);
