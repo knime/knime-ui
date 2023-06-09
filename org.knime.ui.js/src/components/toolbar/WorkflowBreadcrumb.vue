@@ -5,6 +5,7 @@ import ComponentIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg"
 import MetaNodeIcon from "webapps-common/ui/assets/img/icons/metanode.svg";
 import LinkedComponentIcon from "webapps-common/ui/assets/img/icons/linked-component.svg";
 import LinkedMetanodeIcon from "webapps-common/ui/assets/img/icons/linked-metanode.svg";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 /**
  * A breadcrumb for navigating through the component / metanode hierarchy inside a workflow
@@ -50,11 +51,9 @@ export default {
       }
     },
     onClick({ id }) {
-      this.$store.dispatch("application/switchWorkflow", {
-        newWorkflow: {
-          projectId: this.workflow.projectId,
-          workflowId: id,
-        },
+      this.$router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: this.workflow.projectId, workflowId: id },
       });
     },
   },

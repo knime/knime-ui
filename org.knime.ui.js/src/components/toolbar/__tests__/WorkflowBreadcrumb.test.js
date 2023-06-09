@@ -10,12 +10,14 @@ import LinkedMetanodeIcon from "webapps-common/ui/assets/img/icons/linked-metano
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 describe("WorkflowBreadcrumb.vue", () => {
   let store, workflow, wrapper, doShallowMount, storeConfig;
 
   beforeEach(() => {
     workflow = null;
+    const $router = { push: vi.fn() };
 
     doShallowMount = async () => {
       storeConfig = {
@@ -27,16 +29,11 @@ describe("WorkflowBreadcrumb.vue", () => {
             loadWorkflow: vi.fn(),
           },
         },
-        application: {
-          actions: {
-            switchWorkflow: vi.fn(),
-          },
-        },
       };
       store = mockVuexStore(storeConfig);
 
       wrapper = await shallowMount(WorkflowBreadcrumb, {
-        global: { plugins: [store] },
+        global: { plugins: [store], mocks: { $router } },
       });
     };
   });
@@ -154,10 +151,9 @@ describe("WorkflowBreadcrumb.vue", () => {
         id: "root:0:123",
       };
       wrapper.vm.onClick(event);
-      expect(
-        storeConfig.application.actions.switchWorkflow
-      ).toHaveBeenCalledWith(expect.anything(), {
-        newWorkflow: {
+      expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
+        name: APP_ROUTES.WorkflowPage,
+        params: {
           workflowId: "root:0:123",
           projectId: "proj",
         },

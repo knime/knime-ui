@@ -23,6 +23,7 @@ import NodeSelectionPlane from "../NodeSelectionPlane.vue";
 import Node from "../Node.vue";
 
 import { KnimeMIME } from "@/mixins/dropNode";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 import "@/plugins/directive-move";
 
@@ -145,6 +146,9 @@ describe("Node", () => {
     };
 
     doMount = (customStubs) => {
+      const $router = {
+        push: vi.fn(),
+      };
       const $commands = {
         dispatch: vi.fn(),
         get: vi.fn().mockImplementation((name) => ({
@@ -158,7 +162,7 @@ describe("Node", () => {
       wrapper = mount(Node, {
         props,
         global: {
-          mocks: { $shapes, $colors, $commands, $bus },
+          mocks: { $shapes, $colors, $commands, $bus, $router },
           plugins: [$store],
           stubs: {
             NodeName: true,
@@ -882,10 +886,9 @@ describe("Node", () => {
       doMount();
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
-      expect(
-        storeConfig.application.actions.switchWorkflow
-      ).toHaveBeenCalledWith(expect.anything(), {
-        newWorkflow: {
+      expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
+        name: APP_ROUTES.WorkflowPage,
+        params: {
           workflowId: "root:1",
           projectId: "projectId",
         },
@@ -909,10 +912,9 @@ describe("Node", () => {
         ctrlKey: true,
       });
 
-      expect(
-        storeConfig.application.actions.switchWorkflow
-      ).toHaveBeenCalledWith(expect.anything(), {
-        newWorkflow: {
+      expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
+        name: APP_ROUTES.WorkflowPage,
+        params: {
           workflowId: "root:1",
           projectId: "projectId",
         },

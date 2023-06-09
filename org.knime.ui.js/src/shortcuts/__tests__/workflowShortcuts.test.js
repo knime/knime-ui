@@ -2,6 +2,7 @@
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import { expect, describe, it, vi } from "vitest";
 import workflowShortcuts from "../workflowShortcuts";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 const capitalize = (str) => str.charAt(0).toUpperCase().concat(str.slice(1));
 
@@ -74,6 +75,14 @@ describe("workflowShortcuts", () => {
     };
 
     return { mockDispatch, $store };
+  };
+
+  const createRouter = () => {
+    const mockPush = vi.fn();
+    const $router = {
+      push: mockPush,
+    };
+    return { mockPush, $router };
   };
 
   describe("execute", () => {
@@ -158,18 +167,25 @@ describe("workflowShortcuts", () => {
     });
 
     it("open component or metanode", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.openComponentOrMetanode.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("application/switchWorkflow", {
-        newWorkflow: { workflowId: "root:0", projectId: "activeTestProjectId" },
+      const { mockPush, $router } = createRouter();
+      const { $store } = createStore();
+      workflowShortcuts.openComponentOrMetanode.execute({ $store, $router });
+      expect(mockPush).toHaveBeenCalledWith({
+        name: APP_ROUTES.WorkflowPage,
+        params: {
+          workflowId: "root:0",
+          projectId: "activeTestProjectId",
+        },
       });
     });
 
     it("open parent workflow", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.openParentWorkflow.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("application/switchWorkflow", {
-        newWorkflow: {
+      const { mockPush, $router } = createRouter();
+      const { $store } = createStore();
+      workflowShortcuts.openParentWorkflow.execute({ $store, $router });
+      expect(mockPush).toHaveBeenCalledWith({
+        name: APP_ROUTES.WorkflowPage,
+        params: {
           workflowId: "direct:parent:id",
           projectId: "activeTestProjectId",
         },

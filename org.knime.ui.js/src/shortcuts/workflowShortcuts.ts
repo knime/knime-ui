@@ -16,6 +16,7 @@ import { portPositions } from "@/util/portShift";
 import { nodeSize } from "@/style/shapes.mjs";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/util/geometry";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -240,11 +241,12 @@ const workflowShortcuts: WorkflowShortcuts = {
     text: ({ $store }) =>
       `Open ${$store.getters["selection/singleSelectedNode"]?.kind}`,
     hotkey: ["Ctrl", "Enter"],
-    execute: ({ $store }) => {
+    execute: ({ $store, $router }) => {
       const projectId = $store.state.application.activeProjectId;
       const id = $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("application/switchWorkflow", {
-        newWorkflow: { workflowId: id, projectId },
+      $router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId, workflowId: id },
       });
     },
     condition: ({ $store }) => {
@@ -255,14 +257,15 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   openParentWorkflow: {
     hotkey: ["Ctrl", "Shift", "Enter"],
-    execute: ({ $store }) => {
+    execute: ({ $store, $router }) => {
       const projectId = $store.state.application.activeProjectId;
       const activeWorkflowParents =
         $store.state.workflow.activeWorkflow.parents;
       const id = activeWorkflowParents.at(-1).containerId;
 
-      $store.dispatch("application/switchWorkflow", {
-        newWorkflow: { workflowId: id, projectId },
+      $router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId, workflowId: id },
       });
     },
     condition: ({ $store }) => {

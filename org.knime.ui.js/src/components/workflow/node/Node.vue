@@ -18,6 +18,7 @@ import NodeState from "./NodeState.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeHoverSizeProvider from "./NodeHoverSizeProvider.vue";
 
+import { APP_ROUTES } from "@/router/appRoutes";
 import { KnimeMIME } from "@/mixins/dropNode";
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
@@ -268,7 +269,6 @@ export default {
   },
   methods: {
     ...mapActions("workflow", ["openNodeConfiguration", "replaceNode"]),
-    ...mapActions("application", ["switchWorkflow"]),
     ...mapActions("selection", [
       "selectNode",
       "deselectAllObjects",
@@ -312,8 +312,9 @@ export default {
         if (this.isLocked) {
           consola.trace(`${this.kind} cannot be opened because it's locked`);
         } else {
-          this.switchWorkflow({
-            newWorkflow: { workflowId: this.id, projectId: this.projectId },
+          this.$router.push({
+            name: APP_ROUTES.WorkflowPage,
+            params: { projectId: this.projectId, workflowId: this.id },
           });
         }
       } else if (this.allowedActions?.canOpenDialog) {
