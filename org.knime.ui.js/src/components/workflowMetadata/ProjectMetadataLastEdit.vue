@@ -1,7 +1,8 @@
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { formatDateString } from "webapps-common/util/format";
 
-export default {
+export default defineComponent({
   props: {
     lastEdit: {
       type: String,
@@ -11,7 +12,7 @@ export default {
   methods: {
     formatDateString,
   },
-};
+});
 </script>
 
 <template>
@@ -24,8 +25,6 @@ export default {
 <style lang="postcss" scoped>
 .last-updated {
   color: var(--knime-dove-gray);
-  margin-top: 10px;
-  margin-bottom: 20px;
   font-style: italic;
 }
 </style>

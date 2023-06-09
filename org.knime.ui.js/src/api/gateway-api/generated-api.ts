@@ -2566,17 +2566,17 @@ export interface ProjectDirtyStateEvent extends Event {
 export interface ProjectMetadata {
 
     /**
-     * Single-line description of the workflow
-     * @type {string}
-     * @memberof ProjectMetadata
-     */
-    title?: string;
-    /**
-     * A detailed description of the project workflow.
+     * A detailed description of the project workflow
      * @type {string}
      * @memberof ProjectMetadata
      */
     description?: string;
+    /**
+     * The content type of the project workflow description
+     * @type {string}
+     * @memberof ProjectMetadata
+     */
+    contentType?: ProjectMetadata.ContentTypeEnum;
     /**
      * A collection of tags the user chose to describe the workflow
      * @type {Array<string>}
@@ -2599,6 +2599,20 @@ export interface ProjectMetadata {
 }
 
 
+/**
+ * @export
+ * @namespace ProjectMetadata
+ */
+export namespace ProjectMetadata {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ContentTypeEnum {
+        Plain = 'text/plain',
+        Html = 'text/html'
+    }
+}
 /**
  * Remove a port from a node
  * @export
@@ -3140,6 +3154,41 @@ export interface UpdateNodeLabelCommand extends WorkflowCommand {
 export namespace UpdateNodeLabelCommand {
 }
 /**
+ * Updates a projects metadata. At least one property must be set.
+ * @export
+ * @interface UpdateProjectMetadataCommand
+ */
+export interface UpdateProjectMetadataCommand extends WorkflowCommand {
+
+    /**
+     * A detailed description of the project workflow
+     * @type {string}
+     * @memberof UpdateProjectMetadataCommand
+     */
+    description?: string;
+    /**
+     * A collection of tags the user chose to describe the workflow
+     * @type {Array<string>}
+     * @memberof UpdateProjectMetadataCommand
+     */
+    tags?: Array<string>;
+    /**
+     * A collection of URLs attached to the workflow
+     * @type {Array<Link>}
+     * @memberof UpdateProjectMetadataCommand
+     */
+    links?: Array<Link>;
+
+}
+
+
+/**
+ * @export
+ * @namespace UpdateProjectMetadataCommand
+ */
+export namespace UpdateProjectMetadataCommand {
+}
+/**
  * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;,  but never both of them.
  * @export
  * @interface UpdateWorkflowAnnotationCommand
@@ -3412,7 +3461,8 @@ export namespace WorkflowCommand {
         TransformWorkflowAnnotation = 'transform_workflow_annotation',
         UpdateWorkflowAnnotation = 'update_workflow_annotation',
         ReorderWorkflowAnnotations = 'reorder_workflow_annotations',
-        AddWorkflowAnnotation = 'add_workflow_annotation'
+        AddWorkflowAnnotation = 'add_workflow_annotation',
+        UpdateProjectMetadata = 'update_project_metadata'
     }
 }
 /**
@@ -4402,6 +4452,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddWorkflowAnnotation }
 		}) as Promise<AddAnnotationResult>;
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Updates a projects metadata. At least one property must be set.
+     */
+	UpdateProjectMetadata(
+		params: { projectId: string, workflowId: string } & Omit<UpdateProjectMetadataCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateProjectMetadata }
+		});
 		return postProcessCommandResponse(commandResponse);
 	},	
 

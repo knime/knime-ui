@@ -1,7 +1,8 @@
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 
-export default {
+export default defineComponent({
   components: {
     NodeFeatureList,
   },
@@ -11,7 +12,7 @@ export default {
       required: true,
     },
   },
-};
+});
 </script>
 
 <template>

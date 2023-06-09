@@ -1,138 +1,52 @@
-<script>
-import { mapState } from "vuex";
+<script setup lang="ts">
+import { ref, computed } from "vue";
+import { useStore } from "vuex";
 
-import { toPortObject } from "@/util/portDataMapper";
-import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
+import { WorkflowInfo } from "@/api/gateway-api/generated-api";
+import type { RootStoreState } from "@/store/types";
 
-import WorkflowMetadataTitle from "./WorkflowMetadataTitle.vue";
-import WorkflowMetadataLastEdit from "./WorkflowMetadataLastEdit.vue";
-import WorkflowMetadataDescription from "./WorkflowMetadataDescription.vue";
-import WorkflowMetadataNodeFeatures from "./WorkflowMetadataNodeFeatures.vue";
-import WorkflowMetadataTags from "./WorkflowMetadataTags.vue";
+import ProjectMetadata from "./ProjectMetadata.vue";
+import ComponentMetadata from "./ComponentMetadata.vue";
 
-/** Displays metadata attached to a root-level workflow */
-export default {
-  components: {
-    WorkflowMetadataTitle,
-    WorkflowMetadataLastEdit,
-    WorkflowMetadataDescription,
-    WorkflowMetadataTags,
+const isEditing = ref(false);
 
-    // TODO: NXT-1164 Merge with Node Description Metadata
-    WorkflowMetadataNodeFeatures,
-    // TODO: NXT-1164 Put this into metadata folder
-    ExternalResourcesList,
-  },
-  computed: {
-    ...mapState("workflow", { workflow: "activeWorkflow" }),
-    ...mapState("application", ["availablePortTypes"]),
-    containerType() {
-      return this.workflow.info?.containerType;
-    },
-    hasMetadata() {
-      return this.containerType !== "metanode";
-    },
-    isComponent() {
-      return this.containerType === "component";
-    },
-    title() {
-      switch (this.containerType) {
-        // if no title has been set yet, display the workflow's name
-        case "project":
-          return (
-            this.workflow.projectMetadata?.title || this.workflow.info?.name
-          );
-        case "component": {
-          const { componentMetadata: { name } = {} } = this.workflow;
-          return name;
-        }
-        default:
-          throw new Error("unknown container type");
-      }
-    },
-    nodePreview() {
-      if (this.isComponent) {
-        const {
-          componentMetadata: { inPorts = [], outPorts = [], type, icon } = {},
-        } = this.workflow;
+const store = useStore<RootStoreState>();
 
-        return {
-          inPorts: inPorts.map(toPortObject(this.availablePortTypes)),
-          outPorts: outPorts.map(toPortObject(this.availablePortTypes)),
-          icon,
-          type,
-          isComponent: true,
-          hasDynPorts: false,
-        };
-      }
-      return null;
-    },
-    lastEdit() {
-      return this.workflow.projectMetadata?.lastEdit;
-    },
-    description() {
-      switch (this.containerType) {
-        case "project":
-          return this.workflow.projectMetadata?.description;
-        case "component": {
-          const { componentMetadata: { description } = {} } = this.workflow;
-          return description;
-        }
-        default:
-          throw new Error("unknown container type");
-      }
-    },
-    nodeFeatures() {
-      switch (this.containerType) {
-        case "project":
-          return this.workflow.projectMetadata?.nodeFeatures;
-        case "component": {
-          const {
-            componentMetadata: {
-              inPorts = [],
-              outPorts = [],
-              options,
-              views,
-            } = {},
-          } = this.workflow;
+const availablePortTypes = computed(
+  () => store.state.application.availablePortTypes
+);
+const workflow = computed(() => store.state.workflow.activeWorkflow);
+const containerType = computed(() => workflow.value.info.containerType);
 
-          return {
-            inPorts: inPorts.map(toPortObject(this.availablePortTypes)),
-            outPorts: outPorts.map(toPortObject(this.availablePortTypes)),
-            views,
-            options,
-          };
-        }
-        default:
-          throw new Error("unknown container type");
-      }
-    },
-    links() {
-      return this.workflow.projectMetadata?.links;
-    },
-    tags() {
-      return this.workflow.projectMetadata?.tags;
-    },
-  },
-};
+const isProject = computed(
+  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Project
+);
+
+const isComponent = computed(
+  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Component
+);
+
+const isMetanode = computed(
+  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode
+);
 </script>
 
 <template>
-  <div v-if="workflow && hasMetadata" class="metadata">
-    <WorkflowMetadataTitle :title="title" :node-preview="nodePreview" />
-
-    <WorkflowMetadataLastEdit v-if="!isComponent" :last-edit="lastEdit" />
-
-    <WorkflowMetadataDescription :description="description" />
-
-    <WorkflowMetadataNodeFeatures
-      v-if="nodeFeatures"
-      :node-features="nodeFeatures"
+  <div v-if="workflow && !isMetanode" class="metadata">
+    <ProjectMetadata
+      v-if="isProject"
+      :is-editing="isEditing"
+      :workflow="workflow"
+      @edit-start="isEditing = true"
+      @edit-save="isEditing = false"
+      @edit-cancel="isEditing = false"
     />
 
-    <ExternalResourcesList v-if="!isComponent" :links="links" />
-
-    <WorkflowMetadataTags v-if="!isComponent" :tags="tags" />
+    <ComponentMetadata
+      v-if="isComponent"
+      :workflow="workflow"
+      :available-port-types="availablePortTypes"
+    />
   </div>
 
   <!-- Render an element to prevent issue with transition-group and conditional elements -->

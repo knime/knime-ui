@@ -1,19 +1,20 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from "vue";
 import TagList from "webapps-common/ui/components/TagList.vue";
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 
-export default {
+export default defineComponent({
   components: {
     MetadataPlaceholder,
     TagList,
   },
   props: {
     tags: {
-      type: Array,
+      type: Array as PropType<Array<string>>,
       default: () => [],
     },
   },
-};
+});
 </script>
 
 <template>

@@ -5,6 +5,8 @@ import type {
   PortGroup,
   PortType,
   Space,
+  ComponentNodeAndDescription,
+  NodeDescription,
 } from "./gateway-api/generated-api";
 
 /**
@@ -46,3 +48,4 @@ export interface SpaceProvider {
 export interface SpaceUser {
   name: string;
 }
+export type ComponentMetadata = ComponentNodeAndDescription & NodeDescription;
