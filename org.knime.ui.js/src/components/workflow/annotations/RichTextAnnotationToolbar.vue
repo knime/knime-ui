@@ -7,6 +7,7 @@ import type { Level } from "@tiptap/extension-heading";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import type { EditorTools } from "webapps-common/ui/components/RichTextEditor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
@@ -20,7 +21,6 @@ import ColorSelectionDialog from "./ColorSelectionDialog.vue";
 import CreateLinkModal from "./CreateLinkModal.vue";
 
 import { addCustomLink } from "./extended-link";
-import type { EditorTools } from "./RichTextEditor/RichTextEditorBaseToolbar.vue";
 
 interface Props {
   editor: Editor;

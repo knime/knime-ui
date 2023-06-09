@@ -3,7 +3,7 @@ import { toRefs, ref, computed } from "vue";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 
-import RichTextEditor from "./RichTextEditor/RichTextEditor.vue";
+import RichTextEditor from "webapps-common/ui/components/RichTextEditor";
 import RichTextAnnotationToolbar from "./RichTextAnnotationToolbar.vue";
 
 interface Props {
