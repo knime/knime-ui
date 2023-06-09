@@ -89,6 +89,13 @@ const metaNode = {
     executionState: "EXECUTED",
   },
 };
+const linkedNode = {
+  ...commonNode,
+  link: {
+    updateStatus: '"UP_TO_DATE"',
+    url: "knime://LOCAL/Shared%20Metanode%20(2%20Levels)",
+  },
+};
 
 describe("Node", () => {
   let props, doMount, wrapper, storeConfig, $store;
@@ -1029,11 +1036,6 @@ describe("Node", () => {
   });
 
   describe("replace node", () => {
-    beforeEach(() => {
-      props = { ...commonNode };
-      doMount();
-    });
-
     describe("when node is dragged from repository", () => {
       const triggerDragEvent = (element, type, dataTransfer = {}) => {
         const event = new CustomEvent(type);
@@ -1043,6 +1045,8 @@ describe("Node", () => {
       };
 
       it("checks if dragged object is compatible", async () => {
+        props = { ...commonNode };
+        doMount();
         const torso = wrapper.findComponent(NodeTorso);
 
         triggerDragEvent(torso.element, "dragenter", { types: [KnimeMIME] });
@@ -1054,7 +1058,20 @@ describe("Node", () => {
         expect(torso.vm.$props.isDraggedOver).toBeFalsy();
       });
 
+      it("does not indicate as compatiable if node is not editable", async () => {
+        props = { ...linkedNode };
+        doMount();
+        const torso = wrapper.findComponent(NodeTorso);
+
+        triggerDragEvent(torso.element, "dragenter", { types: [KnimeMIME] });
+        await Vue.nextTick();
+
+        expect(torso.vm.$props.isDraggedOver).toBeFalsy();
+      });
+
       it("replaces node on drop", async () => {
+        props = { ...commonNode };
+        doMount();
         const node = wrapper.findComponent(Node);
 
         const dropEvent = triggerDragEvent(node.element, "drop", {
@@ -1067,10 +1084,25 @@ describe("Node", () => {
           { nodeFactory: { className: "test" }, targetNodeId: "root:1" }
         );
       });
+
+      it("does not replace node on drop is node is not editable", async () => {
+        props = { ...linkedNode };
+        doMount();
+        const node = wrapper.findComponent(Node);
+
+        const dropEvent = triggerDragEvent(node.element, "drop", {
+          getData: () => '{ "className": "test" }',
+        });
+        node.vm.onTorsoDragDrop(dropEvent);
+        await Vue.nextTick();
+        expect(storeConfig.workflow.actions.replaceNode).not.toHaveBeenCalled();
+      });
     });
 
     describe("when node is dragged from the workflow", () => {
       it("gives visual indication when node is hovered", async () => {
+        props = { ...commonNode };
+        doMount();
         const torso = wrapper.findComponent(NodeTorso);
 
         await torso.trigger("node-dragging-enter", {
@@ -1083,7 +1115,20 @@ describe("Node", () => {
         expect(torso.vm.$props.isDraggedOver).toBeFalsy();
       });
 
+      it("ignores linked nodes", async () => {
+        props = { ...linkedNode };
+        doMount();
+        const torso = wrapper.findComponent(NodeTorso);
+
+        await torso.trigger("node-dragging-enter", {
+          detail: { isNodeConnected: false },
+        });
+        expect(torso.vm.$props.isDraggedOver).toBeFalsy();
+      });
+
       it("ignores already connected nodes", () => {
+        props = { ...commonNode };
+        doMount();
         const torso = wrapper.findComponent(NodeTorso);
 
         torso.trigger("node-dragging-enter", {
@@ -1093,6 +1138,8 @@ describe("Node", () => {
       });
 
       it("replaces node on drop", async () => {
+        props = { ...commonNode };
+        doMount();
         const torso = wrapper.findComponent(NodeTorso);
 
         await torso.trigger("node-dragging-enter", {
@@ -1110,6 +1157,17 @@ describe("Node", () => {
             replacementNodeId: "test",
           }
         );
+      });
+
+      it("does not replace node on drop if its linked", async () => {
+        props = { ...linkedNode };
+        doMount();
+        const torso = wrapper.findComponent(NodeTorso);
+
+        await torso.trigger("node-dragging-end", {
+          detail: { id: "test", clientX: 0, clientY: 0 },
+        });
+        expect(storeConfig.workflow.actions.replaceNode).not.toHaveBeenCalled();
       });
     });
   });

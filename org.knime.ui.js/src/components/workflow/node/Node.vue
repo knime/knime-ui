@@ -373,6 +373,9 @@ export default {
     },
 
     onTorsoDragEnter(dragEvent) {
+      if (!this.isEditable) {
+        return;
+      }
       if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
         this.isDraggedOver = true;
         this.dragTarget = dragEvent.target;
@@ -387,6 +390,9 @@ export default {
     },
 
     onTorsoDragDrop(dragEvent) {
+      if (!this.isEditable) {
+        return;
+      }
       const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
       this.replaceNode({ targetNodeId: this.id, nodeFactory });
       this.isDraggedOver = false;
@@ -394,7 +400,7 @@ export default {
     },
 
     onNodeDragggingEnter(event) {
-      if (event.detail.isNodeConnected) {
+      if (event.detail.isNodeConnected || this.link) {
         return;
       }
       event.preventDefault();
@@ -406,6 +412,9 @@ export default {
     },
 
     onNodeDragggingEnd(dragEvent) {
+      if (this.link) {
+        return;
+      }
       this.replaceNode({
         targetNodeId: this.id,
         replacementNodeId: dragEvent.detail.id,
