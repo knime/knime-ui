@@ -284,7 +284,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   expandComponent: {
     text: "Expand component",
     title: "Expand component",
-    hotkey: ["Ctrl", "Shift", "K"],
+    hotkey: ["Ctrl", "Shift", "J"],
     execute: ({ $store }) => $store.dispatch("workflow/expandContainerNode"),
     condition: canExpand("component"),
   },
