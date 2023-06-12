@@ -1,28 +1,53 @@
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
 import TagList from "webapps-common/ui/components/TagList.vue";
+import ComboBox from "webapps-common/ui/components/forms/ComboBox.vue";
+
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 
-export default defineComponent({
-  components: {
-    MetadataPlaceholder,
-    TagList,
-  },
-  props: {
-    tags: {
-      type: Array as PropType<Array<string>>,
-      default: () => [],
-    },
-  },
+interface Props {
+  tags?: Array<string>;
+  editable?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  tags: () => [],
+  editable: false,
 });
+
+const emit = defineEmits<{
+  (e: "change", tags: Array<string>): void;
+}>();
+
+const currentTags = computed(() =>
+  props.tags.map((tag) => ({
+    id: tag,
+    text: tag,
+  }))
+);
+
+const initialSelectedIds = computed(() =>
+  currentTags.value.map(({ id }) => id)
+);
 </script>
 
 <template>
   <div class="tags">
     <h2>Tags</h2>
     <hr />
-    <TagList v-if="tags.length" :tags="tags" />
-    <MetadataPlaceholder v-else padded text="No tags have been set yet" />
+    <template v-if="!editable">
+      <TagList v-if="tags.length" :tags="tags" />
+      <MetadataPlaceholder v-else padded text="No tags have been set yet" />
+    </template>
+
+    <template v-else>
+      <ComboBox
+        :possible-values="currentTags"
+        :initial-selected-ids="initialSelectedIds"
+        :size-visible-options="3"
+        @update:selected-ids="emit('change', $event)"
+      />
+    </template>
   </div>
 </template>
 

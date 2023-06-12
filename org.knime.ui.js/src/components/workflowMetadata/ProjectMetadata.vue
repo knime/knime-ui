@@ -6,6 +6,7 @@ import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 
+import type { Link } from "@/api/gateway-api/generated-api";
 import type { WorkflowState } from "@/store/workflow";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
@@ -22,7 +23,14 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   (e: "editStart"): void;
-  (e: "editSave"): void;
+  (
+    e: "editSave",
+    payload: {
+      description: string;
+      links: Array<Link>;
+      tags: Array<string>;
+    }
+  ): void;
   (e: "editCancel"): void;
 }>();
 
@@ -30,7 +38,18 @@ const projectMetadata = computed(() => props.workflow.projectMetadata);
 const description = computed(() => projectMetadata.value.description);
 const lastEdit = computed(() => projectMetadata.value.lastEdit.toString());
 
-const editedDescription = ref(description.value);
+const isValid = ref(true);
+const editedDescription = ref(description.value || "");
+const editedLinks = ref<Array<Link>>(projectMetadata.value.links || []);
+const editedTags = ref(projectMetadata.value.tags || []);
+
+const emitSave = () => {
+  emit("editSave", {
+    description: editedDescription.value,
+    links: editedLinks.value,
+    tags: editedTags.value,
+  });
+};
 </script>
 
 <template>
@@ -42,7 +61,12 @@ const editedDescription = ref(description.value);
         Edit metadata
       </Button>
 
-      <FunctionButton v-if="isEditing" primary @click="emit('editSave')">
+      <FunctionButton
+        v-if="isEditing"
+        :disabled="!isValid"
+        primary
+        @click="emitSave"
+      >
         <CheckIcon />
       </FunctionButton>
 
@@ -62,9 +86,18 @@ const editedDescription = ref(description.value);
     @change="editedDescription = $event"
   />
 
-  <ExternalResourcesList :links="projectMetadata.links" />
+  <ExternalResourcesList
+    :editable="isEditing"
+    :links="projectMetadata.links"
+    @change="editedLinks = $event"
+    @valid="isValid = $event"
+  />
 
-  <ProjectMetadataTags :tags="projectMetadata.tags" />
+  <ProjectMetadataTags
+    :editable="isEditing"
+    :tags="projectMetadata.tags"
+    @change="editedTags = $event"
+  />
 </template>
 
 <style lang="postcss" scoped>

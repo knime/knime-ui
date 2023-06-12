@@ -18,10 +18,11 @@ const emit = defineEmits<{
     <RichTextEditor
       compact
       :editable="editable"
-      :initial-value="description || 'No description has been set yet'"
+      :initial-value="description"
       :class="['description-editor', { editable }]"
+      :min-height="150"
       :max-height="300"
-      :disabled-tools="{ textAlign: true }"
+      :disabled-tools="{ textAlign: true, heading: true }"
       @change="emit('change', $event)"
     />
   </div>
@@ -35,6 +36,7 @@ const emit = defineEmits<{
 
 .description-editor {
   border: 1px solid transparent;
+  --rich-text-editor-font-size: 16;
 
   &.editable {
     border: 1px solid var(--knime-masala);
