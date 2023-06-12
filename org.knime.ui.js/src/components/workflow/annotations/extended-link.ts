@@ -2,6 +2,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { getAttributes } from "@tiptap/core";
 import type { Editor } from "@tiptap/vue-3";
 import Link from "@tiptap/extension-link";
+import { getMetaOrCtrlKey } from "@/util/navigator";
 
 interface CustomLinkOptions {
   isEditing: boolean;
@@ -74,9 +75,9 @@ export const ControlClickLink = Link.extend({
           const attrs = getAttributes(view.state, "link");
           const link = (event.target as HTMLElement)?.closest("a");
 
-          const keyPressed = event.ctrlKey || event.metaKey;
+          const metaOrCtrlKeyPressed = event[getMetaOrCtrlKey()];
 
-          if (keyPressed && link && attrs.href) {
+          if (metaOrCtrlKeyPressed && link && attrs.href) {
             window.open(attrs.href, attrs.target);
 
             return true;

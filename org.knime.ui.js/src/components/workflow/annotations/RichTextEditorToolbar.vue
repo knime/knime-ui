@@ -36,6 +36,7 @@ import ColorSelectionDialog from "./ColorSelectionDialog.vue";
 import CreateLinkModal from "./CreateLinkModal.vue";
 
 import { addCustomLink } from "./extended-link";
+import { getMetaOrCtrlKey } from "@/util/navigator";
 
 interface Props {
   editor: Editor;
@@ -186,7 +187,7 @@ const editorTools: Array<ToolbarItem> = [
     id: "add-link",
     icon: LinkIcon,
     name: "Add link",
-    hotkey: ["Ctrl", "Shift", "U"],
+    hotkey: ["Ctrl", "L"],
     active: () => props.editor.isActive("link"),
     onClick: () => createLink(),
   },
@@ -285,8 +286,8 @@ const changeBorderColor = (color: string) => {
  * Handles custom hotkeys that are not supported by tiptap.
  */
 const onKeyDown = (e: KeyboardEvent) => {
-  const ctrlPressed = e.ctrlKey || e.metaKey;
-  if (e.shiftKey && ctrlPressed && e.key === "u") {
+  const ctrlPressed = e[getMetaOrCtrlKey()];
+  if (ctrlPressed && e.key === "l") {
     createLink();
   }
 };
