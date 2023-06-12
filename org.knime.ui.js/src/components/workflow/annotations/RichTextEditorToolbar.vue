@@ -187,7 +187,7 @@ const editorTools: Array<ToolbarItem> = [
     id: "add-link",
     icon: LinkIcon,
     name: "Add link",
-    hotkey: ["Ctrl", "L"],
+    hotkey: ["Ctrl", "K"],
     active: () => props.editor.isActive("link"),
     onClick: () => createLink(),
   },
@@ -287,7 +287,7 @@ const changeBorderColor = (color: string) => {
  */
 const onKeyDown = (e: KeyboardEvent) => {
   const ctrlPressed = e[getMetaOrCtrlKey()];
-  if (ctrlPressed && e.key === "l") {
+  if (ctrlPressed && e.key === "k") {
     createLink();
   }
 };

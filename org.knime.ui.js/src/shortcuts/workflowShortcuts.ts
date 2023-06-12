@@ -218,7 +218,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   createComponent: {
     text: "Create component",
     title: "Create component",
-    hotkey: ["Ctrl", "K"],
+    hotkey: ["Ctrl", "J"],
     icon: CreateComponent,
     execute: ({ $store }) =>
       $store.dispatch("workflow/collapseToContainer", {

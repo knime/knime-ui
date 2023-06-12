@@ -59,10 +59,6 @@ const isValid = computed(() => {
   return (textChanged || urlChanged) && validateUrl() && urlNotEmpty;
 });
 
-const errorMessage = computed(() => {
-  return validateUrl() ? "" : "Invalid URL";
-});
-
 const onkeyup = (keyupEvent: KeyboardEvent) => {
   if (keyupEvent.key === "Enter" && isValid.value) {
     onSubmit();
@@ -100,7 +96,7 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
             @keyup="onkeyup"
           />
           <div v-if="!validateUrl()" class="item-error">
-            <span>{{ errorMessage }}</span>
+            <span>Invalid URL</span>
           </div>
         </div>
       </Label>
