@@ -240,7 +240,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   openComponentOrMetanode: {
     text: ({ $store }) =>
       `Open ${$store.getters["selection/singleSelectedNode"]?.kind}`,
-    hotkey: ["Ctrl", "Enter"],
+    hotkey: ["Ctrl", "Alt", "Enter"],
     execute: ({ $store, $router }) => {
       const projectId = $store.state.application.activeProjectId;
       const id = $store.getters["selection/singleSelectedNode"].id;
@@ -256,7 +256,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
   },
   openParentWorkflow: {
-    hotkey: ["Ctrl", "Shift", "Enter"],
+    hotkey: ["Ctrl", "Alt", "Shift", "Enter"],
     execute: ({ $store, $router }) => {
       const projectId = $store.state.application.activeProjectId;
       const activeWorkflowParents =
