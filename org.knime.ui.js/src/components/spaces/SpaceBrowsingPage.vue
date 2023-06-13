@@ -57,7 +57,7 @@ export default {
       const isPrivateSpace = this.activeSpaceInfo.private;
 
       return {
-        title: this.activeSpaceInfo.name,
+        title: this.activeSpaceInfo.name || "",
         subtitle: isPrivateSpace ? "Private space" : "Public space",
         icon: isPrivateSpace ? PrivateSpaceIcon : CubeIcon,
       };
