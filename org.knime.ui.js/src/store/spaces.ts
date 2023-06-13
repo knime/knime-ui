@@ -309,7 +309,7 @@ export const actions: ActionTree<State, RootStoreState> = {
     commit("updateProjectPath", { projectId, value: { itemId } });
     commit("setActiveWorkflowGroupCache", { projectId, content });
 
-    return content;
+    return { itemId };
   },
 
   async createWorkflow({ state, dispatch }, { projectId, workflowName }) {

@@ -220,12 +220,12 @@ export default defineComponent({
 
     async onChangeDirectory(pathId) {
       const { projectId } = this;
-      await this.$store.dispatch("spaces/changeDirectory", {
+      const { itemId } = await this.$store.dispatch("spaces/changeDirectory", {
         projectId,
         pathId,
       });
 
-      this.$emit("itemChanged", this.pathToItemId(projectId, pathId));
+      this.$emit("itemChanged", itemId);
     },
 
     async onOpenFile({ id }) {
@@ -280,7 +280,10 @@ export default defineComponent({
         nextProjectId = await this.forceCloseProjects({ projectIds });
       }
 
-      await this.$store.dispatch("spaces/deleteItems", { itemIds });
+      await this.$store.dispatch("spaces/deleteItems", {
+        projectId: this.projectId,
+        itemIds,
+      });
       if (nextProjectId) {
         await this.$router.push({
           name: APP_ROUTES.WorkflowPage,
@@ -352,6 +355,7 @@ export default defineComponent({
       try {
         await this.$store.dispatch("spaces/moveItems", {
           itemIds: sourceItems,
+          projectId: this.projectId,
           destWorkflowGroupItemId,
           collisionStrategy,
         });

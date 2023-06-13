@@ -44,7 +44,7 @@ const fetchWorkflowGroupContentResponse = {
 
 describe("SpaceExplorer.vue", () => {
   const doMount = ({
-    props = {},
+    props = { projectId: null },
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
     openProjects = [],
@@ -99,6 +99,15 @@ describe("SpaceExplorer.vue", () => {
       },
     });
 
+    // default state of default project
+    store.state.spaces.projectPath = {
+      someProjectId: {
+        spaceId: "local",
+        spaceProviderId: "local",
+        itemId: "root",
+      },
+    };
+
     const dispatchSpy = vi.spyOn(store, "dispatch");
     const commitSpy = vi.spyOn(store, "commit");
     const mockRouter = { push: () => {} };
@@ -129,7 +138,9 @@ describe("SpaceExplorer.vue", () => {
   };
 
   const doMountAndLoad = async ({
-    props = {},
+    props = {
+      projectId: "someProjectId",
+    },
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
     openProjects = [],
@@ -165,20 +176,28 @@ describe("SpaceExplorer.vue", () => {
     );
   });
 
-  it("should load startItemId directory when data is reset", async () => {
-    const { store } = await doMountAndLoad();
+  it("should load data on projectId change", async () => {
+    const { wrapper, store } = await doMountAndLoad();
 
     // initial fetch of root has happened
     mockedAPI.space.listWorkflowGroup.mockReset();
 
-    store.state.spaces.activeSpace.startItemId = "startItemId";
-    store.commit("spaces/setActiveWorkflowGroupData", null);
+    store.commit("spaces/setProjectPath", {
+      projectId: "anotherProject",
+      value: {
+        spaceProviderId: "provider",
+        spaceId: "space",
+        itemId: "startItemId",
+      },
+    });
 
-    await new Promise((r) => setTimeout(r, 0));
+    await wrapper.setProps({
+      projectId: "anotherProject",
+    });
 
     expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
-      spaceProviderId: "local",
-      spaceId: "local",
+      spaceProviderId: "provider",
+      spaceId: "space",
       itemId: "startItemId",
     });
   });
@@ -224,7 +243,7 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should load data when navigating back to the parent directory", async () => {
-      const { wrapper } = await doMountAndLoad({
+      const { wrapper, store } = doMount({
         mockResponse: {
           ...fetchWorkflowGroupContentResponse,
           path: [
@@ -234,11 +253,23 @@ describe("SpaceExplorer.vue", () => {
         },
       });
 
+      // make sure the content is loaded and cached by the correct projectId (we load on mount and on projectId change)
+      store.state.spaces.projectPath = {
+        differentProjectId: {
+          spaceProviderId: "someProviderId",
+          spaceId: "someSpace",
+          itemId: "currentDirectoryId",
+        },
+      };
+
+      await wrapper.setProps({ projectId: "differentProjectId" });
+      await new Promise((r) => setTimeout(r, 0));
+
       mockedAPI.space.listWorkflowGroup.mockReset();
       wrapper.findComponent(FileExplorer).vm.$emit("changeDirectory", "..");
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
-        spaceProviderId: "local",
-        spaceId: "local",
+        spaceProviderId: "someProviderId",
+        spaceId: "someSpace",
         itemId: "parentId",
       });
     });
@@ -266,6 +297,7 @@ describe("SpaceExplorer.vue", () => {
       const openProjects = [
         {
           origin: {
+            providerId: "local",
             spaceId: "local",
             itemId: fetchWorkflowGroupContentResponse.items[2].id,
           },
@@ -281,6 +313,7 @@ describe("SpaceExplorer.vue", () => {
       const openProjects = [
         {
           origin: {
+            providerId: "local",
             spaceId: "local",
             itemId: "8",
             ancestorItemIds: ["1", "7"],
@@ -305,7 +338,10 @@ describe("SpaceExplorer.vue", () => {
       isOpen: false,
     });
 
+    await nextTick();
+
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/openWorkflow", {
+      projectId: "someProjectId",
       workflowItemId: "dummy",
       $router: mockRouter,
     });
@@ -313,22 +349,14 @@ describe("SpaceExplorer.vue", () => {
 
   describe("renaming", () => {
     it("should rename items", async () => {
-      const { wrapper, store, dispatchSpy } = doMount();
-      store.state.spaces.activeSpace = {
-        spaceId: "local",
-        activeWorkflowGroup: {
-          path: [],
-          items: [],
-        },
-      };
-      await nextTick();
-
+      const { wrapper, dispatchSpy } = await doMountAndLoad();
       const itemId = "12345";
       const newName = "some name";
       wrapper
         .findComponent(FileExplorer)
         .vm.$emit("renameFile", { itemId, newName });
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/renameItem", {
+        projectId: "someProjectId",
         itemId,
         newName,
       });
@@ -338,6 +366,7 @@ describe("SpaceExplorer.vue", () => {
       const openProjects = [
         {
           origin: {
+            providerId: "local",
             spaceId: "local",
             itemId: "8",
             ancestorItemIds: ["1", "7"],
@@ -345,6 +374,7 @@ describe("SpaceExplorer.vue", () => {
         },
         {
           origin: {
+            providerId: "local",
             spaceId: "local",
             itemId: "4",
           },
@@ -368,6 +398,7 @@ describe("SpaceExplorer.vue", () => {
       const openProjects = [
         {
           origin: {
+            providerId: "local",
             spaceId: "local",
             itemId: "8",
             ancestorItemIds: ["1", "7"],
@@ -414,6 +445,7 @@ describe("SpaceExplorer.vue", () => {
       const openProjects = [
         {
           origin: {
+            providerId: "local",
             spaceId: "local",
             itemId: "item0",
             ancestorItemIds: ["1", "7"],
@@ -428,13 +460,14 @@ describe("SpaceExplorer.vue", () => {
       await wrapper.vm.deleteItems();
 
       expect(dispatchSpy).toHaveBeenNthCalledWith(
-        2,
+        3,
         "application/forceCloseProjects",
         { projectIds: [openProjects[0].projectId] }
       );
 
-      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "spaces/deleteItems", {
+      expect(dispatchSpy).toHaveBeenNthCalledWith(4, "spaces/deleteItems", {
         itemIds: ["item0"],
+        projectId: "someProjectId",
       });
     });
 
@@ -463,100 +496,64 @@ describe("SpaceExplorer.vue", () => {
 
   describe("mini mode", () => {
     it("should handle create workflow", async () => {
-      const { wrapper, store, commitSpy } = doMount({
-        props: { mode: "mini" },
+      const { wrapper, commitSpy } = await doMountAndLoad({
+        props: { projectId: "someProjectId", mode: "mini" },
       });
-      store.state.spaces.activeSpace = {
-        spaceId: "local",
-        activeWorkflowGroup: {
-          path: [],
-          items: [],
-        },
-      };
-      await nextTick();
 
       wrapper
         .findComponent(SpaceExplorerActions)
         .vm.$emit("action:createWorkflow");
       expect(commitSpy).toHaveBeenCalledWith(
-        "spaces/setIsCreateWorkflowModalOpen",
-        true
+        "spaces/setCreateWorkflowModalConfig",
+        { isOpen: true, projectId: "someProjectId" }
       );
     });
 
     it("should handle import workflow", async () => {
-      const { wrapper, store, dispatchSpy } = doMount({
-        props: { mode: "mini" },
+      const { wrapper, dispatchSpy } = await doMountAndLoad({
+        props: { projectId: "someProjectId", mode: "mini" },
       });
-      store.state.spaces.activeSpace = {
-        spaceId: "local",
-        activeWorkflowGroup: {
-          path: [],
-          items: [],
-        },
-      };
-      await nextTick();
 
       wrapper
         .findComponent(SpaceExplorerActions)
         .vm.$emit("action:importWorkflow");
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/importToWorkflowGroup", {
+        projectId: "someProjectId",
         importType: "WORKFLOW",
       });
     });
 
     it("should handle import files", async () => {
-      const { wrapper, store, dispatchSpy } = doMount({
-        props: { mode: "mini" },
+      const { wrapper, dispatchSpy } = await doMountAndLoad({
+        props: { projectId: "someProjectId", mode: "mini" },
       });
-      store.state.spaces.activeSpace = {
-        spaceId: "local",
-        activeWorkflowGroup: {
-          path: [],
-          items: [],
-        },
-      };
-      await nextTick();
 
       wrapper
         .findComponent(SpaceExplorerActions)
         .vm.$emit("action:importFiles");
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/importToWorkflowGroup", {
+        projectId: "someProjectId",
         importType: "FILES",
       });
     });
 
     it("should handle create folder", async () => {
-      const { wrapper, store, dispatchSpy } = doMount({
-        props: { mode: "mini" },
+      const { wrapper, dispatchSpy } = await doMountAndLoad({
+        props: { projectId: "someProjectId", mode: "mini" },
       });
-      store.state.spaces.activeSpace = {
-        spaceId: "local",
-        activeWorkflowGroup: {
-          path: [],
-          items: [],
-        },
-      };
-      await nextTick();
 
       wrapper
         .findComponent(SpaceExplorerActions)
         .vm.$emit("action:createFolder");
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/createFolder");
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/createFolder", {
+        projectId: "someProjectId",
+      });
     });
 
     it("should handle uploading to Hub", async () => {
-      const { wrapper, store, dispatchSpy } = await doMountAndLoad({
-        props: { mode: "mini" },
+      const { wrapper, dispatchSpy } = await doMountAndLoad({
+        props: { projectId: "someProjectId", mode: "mini" },
       });
-      store.state.spaces.activeSpace = {
-        spaceId: "local",
-        activeWorkflowGroup: {
-          path: [],
-          items: [],
-        },
-      };
-
       wrapper
         .findComponent(FileExplorer)
         .vm.$emit("changeSelection", ["1", "2"]);
@@ -566,28 +563,15 @@ describe("SpaceExplorer.vue", () => {
         .findComponent(SpaceExplorerActions)
         .vm.$emit("action:uploadToHub");
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/copyBetweenSpaces", {
+        projectId: "someProjectId",
         itemIds: ["1", "2"],
       });
     });
 
     it("should handle downloading to local space", async () => {
-      const { wrapper, store, dispatchSpy } = await doMountAndLoad({
-        props: { mode: "mini" },
+      const { wrapper, dispatchSpy } = await doMountAndLoad({
+        props: { projectId: "someProjectId", mode: "mini" },
       });
-      store.state.spaces = {
-        activeSpace: {
-          spaceId: "hub1",
-        },
-        activeSpaceProvider: {
-          spaces: [
-            {
-              id: "randomhub",
-              name: "My public space",
-              private: false,
-            },
-          ],
-        },
-      };
 
       wrapper
         .findComponent(FileExplorer)
@@ -598,20 +582,15 @@ describe("SpaceExplorer.vue", () => {
         .findComponent(SpaceExplorerActions)
         .vm.$emit("action:downloadToLocalSpace");
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/copyBetweenSpaces", {
+        projectId: "someProjectId",
         itemIds: ["1", "2"],
       });
     });
 
     it("should only allow uploading to hub when there is a selection and a connected hub session", async () => {
-      const { wrapper, store } = doMount({ props: { mode: "mini" } });
-      store.state.spaces.activeSpace = {
-        spaceId: "local",
-        activeWorkflowGroup: {
-          path: [],
-          items: [],
-        },
-      };
-      await nextTick();
+      const { wrapper, store } = await doMountAndLoad({
+        props: { projectId: "someProjectId", mode: "mini" },
+      });
 
       expect(
         wrapper.findComponent(SpaceExplorerActions).props("disabledActions")
@@ -650,15 +629,9 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should only allow downloading to local when there is a selection and a connected hub session", async () => {
-      const { wrapper, store } = doMount({ props: { mode: "mini" } });
-      store.state.spaces.activeSpace = {
-        spaceId: "local",
-        activeWorkflowGroup: {
-          path: [],
-          items: [],
-        },
-      };
-      await nextTick();
+      const { wrapper, store } = await doMountAndLoad({
+        props: { projectId: "someProjectId", mode: "mini" },
+      });
 
       expect(
         wrapper.findComponent(SpaceExplorerActions).props("disabledActions")
@@ -681,14 +654,11 @@ describe("SpaceExplorer.vue", () => {
         downloadToLocalSpace: true,
       });
 
-      store.state.spaces = {
-        activeSpace: {
-          spaceId: "hub1",
-        },
-        activeSpaceProvider: {
+      store.state.spaces.spaceProviders = {
+        hub1: {
           spaces: [
             {
-              id: "randomhub",
+              id: "hub1space1",
               name: "My public space",
               private: false,
             },
@@ -696,7 +666,17 @@ describe("SpaceExplorer.vue", () => {
         },
       };
 
-      await nextTick();
+      store.state.spaces.projectPath = {
+        anotherProject: {
+          spaceProviderId: "hub1",
+          spaceId: "hub1space1",
+          itemId: "root",
+        },
+      };
+
+      await wrapper.setProps({
+        projectId: "anotherProject",
+      });
 
       expect(
         wrapper.findComponent(SpaceExplorerActions).props("disabledActions")
@@ -710,7 +690,7 @@ describe("SpaceExplorer.vue", () => {
   describe("move items", () => {
     it("should move items", async () => {
       mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("OVERWRITE");
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, dispatchSpy } = await doMountAndLoad();
       await new Promise((r) => setTimeout(r, 0));
 
       const sourceItems = ["id1", "id2"];
@@ -722,6 +702,7 @@ describe("SpaceExplorer.vue", () => {
       await nextTick();
 
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveItems", {
+        projectId: "someProjectId",
         itemIds: sourceItems,
         destWorkflowGroupItemId: targetItem,
         collisionStrategy: "OVERWRITE",
@@ -734,6 +715,7 @@ describe("SpaceExplorer.vue", () => {
     it("should move items to root", async () => {
       mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("OVERWRITE");
       const { wrapper, dispatchSpy } = doMount({
+        props: { projectId: "someProjectId" },
         mockResponse: {
           ...fetchWorkflowGroupContentResponse,
           path: [{ id: "currentDirectoryId", name: "Current Directory" }],
@@ -753,6 +735,7 @@ describe("SpaceExplorer.vue", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveItems", {
         itemIds: sourceItems,
+        projectId: "someProjectId",
         destWorkflowGroupItemId: "root",
         collisionStrategy: "OVERWRITE",
       });
@@ -763,6 +746,7 @@ describe("SpaceExplorer.vue", () => {
     it("should move items back to the parent directory", async () => {
       mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("OVERWRITE");
       const { wrapper, dispatchSpy } = await doMount({
+        props: { projectId: "someProjectId" },
         mockResponse: {
           ...fetchWorkflowGroupContentResponse,
           path: [
@@ -784,6 +768,7 @@ describe("SpaceExplorer.vue", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveItems", {
         itemIds: sourceItems,
+        projectId: "someProjectId",
         destWorkflowGroupItemId: "parentId",
         collisionStrategy: "OVERWRITE",
       });
@@ -793,7 +778,9 @@ describe("SpaceExplorer.vue", () => {
 
     it("should not move items if collision handling returns cancel", async () => {
       mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("CANCEL");
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, dispatchSpy } = doMount({
+        props: { projectId: "someProjectId" },
+      });
       await new Promise((r) => setTimeout(r, 0));
 
       const sourceItems = ["id1", "id2"];
@@ -823,7 +810,10 @@ describe("SpaceExplorer.vue", () => {
           name: "test2",
         },
       ];
-      const { wrapper } = doMount({ openProjects });
+      const { wrapper } = doMount({
+        openProjects,
+        props: { projectId: "someProjectId" },
+      });
       await new Promise((r) => setTimeout(r, 0));
 
       window.alert = vi.fn();
@@ -915,7 +905,7 @@ describe("SpaceExplorer.vue", () => {
         onComplete,
       });
 
-      expect(dispatchSpy).toHaveBeenNthCalledWith(2, "workflow/addNode", {
+      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "workflow/addNode", {
         nodeFactory: {
           className: "org.knime.test.test.nodeFactory",
         },
@@ -971,7 +961,7 @@ describe("SpaceExplorer.vue", () => {
         onComplete,
       });
 
-      expect(dispatchSpy).toHaveBeenNthCalledWith(2, "workflow/addNode", {
+      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "workflow/addNode", {
         nodeFactory: null,
         position: { x: 5, y: 5 },
         spaceItemReference: {
