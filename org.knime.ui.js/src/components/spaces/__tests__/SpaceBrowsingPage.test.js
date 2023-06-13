@@ -10,9 +10,10 @@ import * as spacesStore from "@/store/spaces";
 import SpaceExplorer from "../SpaceExplorer.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import SpaceBrowsingPage from "../SpaceBrowsingPage.vue";
+import { globalSpaceBrowserProjectId } from "@/store/spaces";
 
 describe("SpaceBrowsingPage", () => {
-  const doMount = ({ initialStoreState = null } = {}) => {
+  const doMount = ({ initialStoreState = {} } = {}) => {
     const $store = mockVuexStore({
       spaces: spacesStore,
     });
@@ -26,12 +27,19 @@ describe("SpaceBrowsingPage", () => {
       push: vi.fn(),
     };
 
-    if (initialStoreState) {
-      $store.state.spaces = {
-        ...$store.state.spaces,
-        ...initialStoreState,
-      };
-    }
+    $store.state.spaces = {
+      ...$store.state.spaces,
+      ...{
+        projectPath: {
+          [globalSpaceBrowserProjectId]: {
+            spaceId: "local",
+            spaceProviderId: "local",
+            itemId: "root",
+          },
+        },
+      },
+      ...initialStoreState,
+    };
 
     const wrapper = mount(SpaceBrowsingPage, {
       global: {
@@ -61,25 +69,29 @@ describe("SpaceBrowsingPage", () => {
     expect(title).toBe("Your local space");
   });
 
-  it("renders correct information for private space", async () => {
-    const { wrapper, $store } = doMount();
-
-    $store.state.spaces = {
-      activeSpace: {
-        spaceId: "randomhub",
-      },
-      activeSpaceProvider: {
-        spaces: [
-          {
-            id: "randomhub",
-            name: "My private space",
-            private: true,
+  it("renders correct information for private space", () => {
+    const { wrapper } = doMount({
+      initialStoreState: {
+        projectPath: {
+          [globalSpaceBrowserProjectId]: {
+            spaceId: "randomhub",
+            spaceProviderId: "hub1",
+            itemId: "root",
           },
-        ],
+        },
+        spaceProviders: {
+          hub1: {
+            spaces: [
+              {
+                id: "randomhub",
+                name: "My private space",
+                private: true,
+              },
+            ],
+          },
+        },
       },
-    };
-
-    await wrapper.vm.$nextTick();
+    });
 
     const subtitle = wrapper.find(".subtitle").text();
     const title = wrapper.find(".title").text();
@@ -87,25 +99,29 @@ describe("SpaceBrowsingPage", () => {
     expect(title).toBe("My private space");
   });
 
-  it("renders correct information for public space", async () => {
-    const { wrapper, $store } = doMount();
-
-    $store.state.spaces = {
-      activeSpace: {
-        spaceId: "randomhub",
-      },
-      activeSpaceProvider: {
-        spaces: [
-          {
-            id: "randomhub",
-            name: "My public space",
-            private: false,
+  it("renders correct information for public space", () => {
+    const { wrapper } = doMount({
+      initialStoreState: {
+        projectPath: {
+          [globalSpaceBrowserProjectId]: {
+            spaceId: "randomhub2",
+            spaceProviderId: "hub1",
+            itemId: "root",
           },
-        ],
+        },
+        spaceProviders: {
+          hub1: {
+            spaces: [
+              {
+                id: "randomhub2",
+                name: "My public space",
+                private: false,
+              },
+            ],
+          },
+        },
       },
-    };
-
-    await wrapper.vm.$nextTick();
+    });
 
     const subtitle = wrapper.find(".subtitle").text();
     const title = wrapper.find(".title").text();
@@ -113,14 +129,17 @@ describe("SpaceBrowsingPage", () => {
     expect(title).toBe("My public space");
   });
 
-  // eslint-disable-next-line vitest/no-disabled-tests
-  it.skip("routes back to space selection page when back button is clicked and clears state", async () => {
+  it("routes back to space selection page when back button is clicked and clears state", async () => {
     const { wrapper, $router, commitSpy } = doMount();
     await wrapper.findComponent(ArrowLeftIcon).vm.$emit("click");
 
-    expect(commitSpy).toHaveBeenCalledWith("spaces/clearSpaceBrowserState");
+    expect(commitSpy).toHaveBeenCalledWith(
+      "spaces/removeProjectPath",
+      globalSpaceBrowserProjectId
+    );
+
     expect($router.push).toHaveBeenCalledWith({
-      name: APP_ROUTES.EntryPage.SpaceSelectionPage,
+      name: APP_ROUTES.EntryPage.GetStartedPage,
     });
   });
 
@@ -130,6 +149,7 @@ describe("SpaceBrowsingPage", () => {
     const workflowButton = wrapper.find("#importWorkflow");
     workflowButton.trigger("click");
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/importToWorkflowGroup", {
+      projectId: globalSpaceBrowserProjectId,
       importType: "WORKFLOW",
     });
   });
@@ -140,6 +160,7 @@ describe("SpaceBrowsingPage", () => {
     const workflowButton = wrapper.find("#importFiles");
     workflowButton.trigger("click");
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/importToWorkflowGroup", {
+      projectId: globalSpaceBrowserProjectId,
       importType: "FILES",
     });
   });
@@ -149,8 +170,11 @@ describe("SpaceBrowsingPage", () => {
 
     wrapper.find(".create-workflow-btn button").trigger("click");
     expect(commitSpy).toHaveBeenCalledWith(
-      "spaces/setIsCreateWorkflowModalOpen",
-      true
+      "spaces/setCreateWorkflowModalConfig",
+      {
+        isOpen: true,
+        projectId: globalSpaceBrowserProjectId,
+      }
     );
   });
 
@@ -171,27 +195,34 @@ describe("SpaceBrowsingPage", () => {
 
     wrapper.find("#uploadToHub").trigger("click");
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/copyBetweenSpaces", {
+      projectId: globalSpaceBrowserProjectId,
       itemIds: ["1", "2"],
     });
   });
 
   it("should handle the download to local space action", async () => {
-    const { wrapper, $store, dispatchSpy } = doMount();
-    $store.state.spaces = {
-      activeSpace: {
-        spaceId: "randomhub",
-      },
-      activeSpaceProvider: {
-        spaces: [
-          {
-            id: "randomhub",
-            name: "My public space",
-            private: false,
+    const { wrapper, dispatchSpy } = doMount({
+      initialStoreState: {
+        projectPath: {
+          [globalSpaceBrowserProjectId]: {
+            spaceId: "randomhub2",
+            spaceProviderId: "hub1",
+            itemId: "root",
           },
-        ],
+        },
+        spaceProviders: {
+          hub1: {
+            spaces: [
+              {
+                id: "randomhub2",
+                name: "My public space",
+                private: false,
+              },
+            ],
+          },
+        },
       },
-    };
-
+    });
     await wrapper.vm.$nextTick();
 
     wrapper
@@ -202,51 +233,8 @@ describe("SpaceBrowsingPage", () => {
 
     wrapper.find("#downloadToLocalSpace").trigger("click");
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/copyBetweenSpaces", {
+      projectId: globalSpaceBrowserProjectId,
       itemIds: ["1", "2"],
-    });
-  });
-
-  describe("global spaceBrowser state", () => {
-    it("load the spaceBrowser state on mount", () => {
-      const { dispatchSpy } = doMount({
-        initialStoreState: {
-          spaceBrowser: {
-            spaceId: "local",
-            spaceProviderId: "local",
-            itemId: "someItem",
-          },
-        },
-      });
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/loadSpaceBrowserState");
-    });
-
-    it("does not load spaceBrowser state if its falsy", () => {
-      const { dispatchSpy } = doMount({
-        initialStoreState: {
-          spaceBrowser: {
-            spaceId: null,
-          },
-        },
-      });
-
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "spaces/loadSpaceBrowserState"
-      );
-    });
-
-    it("saves the spaceBrowser state on item change", () => {
-      const { wrapper, dispatchSpy } = doMount();
-
-      wrapper
-        .findComponent(SpaceExplorer)
-        .vm.$emit("itemChanged", "someNewItemId");
-
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "spaces/saveSpaceBrowserState",
-        expect.objectContaining({
-          itemId: "someNewItemId",
-        })
-      );
     });
   });
 });

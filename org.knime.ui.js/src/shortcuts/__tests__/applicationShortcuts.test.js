@@ -11,6 +11,9 @@ describe("applicationShortcuts", () => {
       dispatch: mockDispatch,
       commit: mockCommit,
       state: {
+        application: {
+          activeProjectId: "1",
+        },
         workflow: {
           activeWorkflow: {
             projectId: "1",
@@ -23,8 +26,11 @@ describe("applicationShortcuts", () => {
   it("createWorkflow", () => {
     applicationShortcuts.createWorkflow.execute({ $store });
     expect(mockCommit).toHaveBeenCalledWith(
-      "spaces/setIsCreateWorkflowModalOpen",
-      true
+      "spaces/setCreateWorkflowModalConfig",
+      {
+        isOpen: true,
+        projectId: "1",
+      }
     );
   });
 
