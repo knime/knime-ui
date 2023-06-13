@@ -93,7 +93,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     API.desktop.openLayoutEditor({ projectId, workflowId });
   },
 
-  async saveWorkflowAs({ state, dispatch }) {
+  async saveWorkflowAs({ state, dispatch, rootState }) {
     const { projectId } = getProjectAndWorkflowIds(state);
 
     const { svgElement, isCanvasEmpty } = await dispatch(
@@ -108,6 +108,11 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     );
 
     API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
+    dispatch(
+      "spaces/fetchWorkflowGroupContent",
+      { itemId: rootState.spaces.activeSpace.startItemId },
+      { root: true }
+    );
   },
 };
 
