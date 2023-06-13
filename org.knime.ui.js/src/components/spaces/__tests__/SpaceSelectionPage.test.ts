@@ -9,6 +9,10 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import SpaceSelectionPage from "../SpaceSelectionPage.vue";
 import SpaceCard from "../SpaceCard.vue";
 import type { SpaceProvider, SpaceUser } from "@/api/custom-types";
+import {
+  cachedLocalSpaceProjectId,
+  globalSpaceBrowserProjectId,
+} from "@/store/spaces";
 
 const mockSpaceProviders: Record<
   string,
@@ -67,10 +71,12 @@ describe("SpaceSelectionPage.vue", () => {
     const { $router } = doMount({
       spacesStoreOverrides: {
         state: {
-          spaceBrowser: {
-            spaceId: "local",
-            spaceProviderId: "local",
-            itemId: "someItem",
+          projectPath: {
+            [globalSpaceBrowserProjectId]: {
+              spaceId: "local",
+              spaceProviderId: "local",
+              itemId: "someItem",
+            },
           },
         },
         actions: {
@@ -91,14 +97,13 @@ describe("SpaceSelectionPage.vue", () => {
     await new Promise((r) => setTimeout(r, 0));
     await wrapper.find(".create-workflow-local").trigger("click");
     await new Promise((r) => setTimeout(r, 0));
-    expect(commitSpy).toHaveBeenCalledWith("spaces/setActiveSpaceId", "local");
     expect(dispatchSpy).toHaveBeenCalledWith(
       "spaces/fetchWorkflowGroupContent",
-      { itemId: "root" }
+      { projectId: cachedLocalSpaceProjectId }
     );
     expect(commitSpy).toHaveBeenCalledWith(
-      "spaces/setIsCreateWorkflowModalOpen",
-      true
+      "spaces/setCreateWorkflowModalConfig",
+      { isOpen: true, projectId: cachedLocalSpaceProjectId }
     );
   });
 
@@ -240,12 +245,11 @@ describe("SpaceSelectionPage.vue", () => {
 
     wrapper.findComponent(SpaceCard).vm.$emit("click", dummySpace);
 
-    expect($store.state.spaces.activeSpaceProvider.id).toBe("hub1");
-    expect($store.state.spaces.activeSpace.spaceId).toEqual(dummySpace.id);
+    const { spaceProviderId, spaceId } =
+      $store.state.spaces.projectPath[globalSpaceBrowserProjectId];
 
-    // remember current state
-    expect($store.state.spaces.spaceBrowser.spaceId).toEqual(dummySpace.id);
-    expect($store.state.spaces.spaceBrowser.spaceProviderId).toBe("hub1");
+    expect(spaceProviderId).toBe("hub1");
+    expect(spaceId).toEqual(dummySpace.id);
 
     await new Promise((r) => setTimeout(r, 0));
     expect($router.push).toHaveBeenCalledWith({
