@@ -100,7 +100,7 @@ export const mutations: MutationTree<State> = {
     return true;
   },
 
-  setActiveWorkflowGroupCache(
+  setWorkflowGroupContent(
     state,
     { projectId, content }: { projectId: string; content: WorkflowGroupContent }
   ) {
@@ -289,7 +289,7 @@ export const actions: ActionTree<State, RootStoreState> = {
       itemId,
     });
 
-    commit("setActiveWorkflowGroupCache", { projectId, content });
+    commit("setWorkflowGroupContent", { projectId, content });
 
     return content;
   },
@@ -307,7 +307,7 @@ export const actions: ActionTree<State, RootStoreState> = {
     });
 
     commit("updateProjectPath", { projectId, value: { itemId } });
-    commit("setActiveWorkflowGroupCache", { projectId, content });
+    commit("setWorkflowGroupContent", { projectId, content });
 
     return { itemId };
   },
