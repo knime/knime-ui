@@ -1058,7 +1058,7 @@ describe("Node", () => {
         expect(torso.vm.$props.isDraggedOver).toBeFalsy();
       });
 
-      it("does not indicate as compatiable if node is not editable", async () => {
+      it("does not give visual indication if node is not editable", async () => {
         props = { ...linkedNode };
         doMount();
         const torso = wrapper.findComponent(NodeTorso);
