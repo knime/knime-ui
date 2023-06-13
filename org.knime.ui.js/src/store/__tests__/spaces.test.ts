@@ -293,6 +293,12 @@ describe("spaces store", () => {
           spaces: [{ name: "mock space" }],
         };
 
+        store.state.spaces.projectPath.projectInHub1 = {
+          spaceId: "mock space",
+          spaceProviderId: "hub1",
+          itemId: "someFolderX",
+        };
+
         store.state.spaces.spaceProviders = {
           hub1: fullProvider,
         };
@@ -304,13 +310,23 @@ describe("spaces store", () => {
           connected: false,
         };
 
-        // TODO: check if projectPaths were reset to local
-
         await store.dispatch("spaces/disconnectProvider", {
           spaceProviderId: "hub1",
         });
         expect(store.state.spaces.spaceProviders.hub1).toEqual(
           expectedProvider
+        );
+
+        // reset projects that were connected to that hub to local
+        expect(store.state.spaces.projectPath.projectInHub1).toStrictEqual({
+          spaceId: "local",
+          spaceProviderId: "local",
+          itemId: "root",
+        });
+
+        // but keep others
+        expect(store.state.spaces.projectPath.myProject1.spaceId).toBe(
+          "mockSpaceId"
         );
       });
     });
