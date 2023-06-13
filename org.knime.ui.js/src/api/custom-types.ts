@@ -4,8 +4,8 @@ import type {
   NativeNode,
   PortGroup,
   PortType,
+  Space,
 } from "./gateway-api/generated-api";
-import { Space } from "./gateway-api/generated-api";
 
 /**
  * Dictionary of all available port types that are installed in the AP for the use.
