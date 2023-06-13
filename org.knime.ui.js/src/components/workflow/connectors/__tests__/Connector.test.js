@@ -763,6 +763,40 @@ describe("Connector.vue", () => {
           },
         },
       });
+
+      const wrapper = doShallowMount({ storeConfig });
+      const paths = wrapper.findAll("path");
+
+      triggerDragEvent(paths.at(0).element, "dragenter", {
+        types: [KnimeMIME],
+      });
+      await Vue.nextTick();
+      expect(paths.at(1).classes()).not.toContain("is-dragged-over");
+    });
+
+    it("ignores dragged repository node if workflow is not writable", async () => {
+      const storeConfig = getStoreConfig({
+        customPortMock: { typeId: "portType1" },
+        customStoreConfig: {
+          nodeRepository: {
+            state: {
+              isDraggingNode: true,
+              draggedNodeData: {
+                inPorts: [portMock],
+                outPorts: [portMock],
+              },
+            },
+          },
+          workflow: {
+            getters: {
+              isWritable() {
+                return false;
+              },
+            },
+          },
+        },
+      });
+
       const wrapper = doShallowMount({ storeConfig });
       const paths = wrapper.findAll("path");
 
@@ -792,6 +826,29 @@ describe("Connector.vue", () => {
           nodeId: null,
         }
       );
+    });
+
+    it("does not insert node on drop if workflow is not writable", async () => {
+      const storeConfig = getStoreConfig({
+        customStoreConfig: {
+          workflow: {
+            getters: {
+              isWritable() {
+                return false;
+              },
+            },
+          },
+        },
+      });
+      const wrapper = doShallowMount({ storeConfig });
+      const paths = wrapper.findAll("path");
+
+      triggerDragEvent(paths.at(0).element, "drop", {
+        getData: () => '{ "className": "test" }',
+      });
+      await Vue.nextTick();
+
+      expect(storeConfig.workflow.actions.insertNode).not.toHaveBeenCalled();
     });
 
     it("ignores dragged node with connections", () => {

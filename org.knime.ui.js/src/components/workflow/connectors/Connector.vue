@@ -184,6 +184,10 @@ export default defineComponent({
       return hasCompatibleSrcPort || hasCompatibleDestPort;
     },
     onRepositoryNodeDragEnter(dragEvent: DragEvent) {
+      if (!this.isWorkflowWritable) {
+        return;
+      }
+
       if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
         const { inPorts, outPorts } = this.draggedNodeTemplate;
 
@@ -226,6 +230,10 @@ export default defineComponent({
       });
     },
     insertNode({ clientX, clientY, event, nodeId = null, nodeFactory = null }) {
+      if (!this.isWorkflowWritable) {
+        return;
+      }
+
       const [x, y] = this.screenToCanvasCoordinates([
         clientX - this.$shapes.nodeSize / 2,
         clientY - this.$shapes.nodeSize / 2,
