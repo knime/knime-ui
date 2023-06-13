@@ -64,6 +64,8 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
+import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
@@ -74,6 +76,7 @@ import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.RemoteWorkflowInput;
@@ -93,6 +96,10 @@ import org.knime.workbench.explorer.view.actions.WorkflowDownload;
 final class OpenWorkflow {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenWorkflow.class);
+
+    private static final String DOWNLOAD_WORKFLOW_PROGRESS_MSG = "Downloading workflow...";
+
+    private static final String LOADING_WORKFLOW_PROGRESS_MSG = "Loading workflow...";
 
     private OpenWorkflow() {
        // utility
@@ -168,12 +175,44 @@ final class OpenWorkflow {
 
     private static void registerWorkflowProject(final WorkflowManager wfm, final String spaceProviderId,
         final String spaceId, final String itemId, final String relativePath) {
-        var wpm = WorkflowProjectManager.getInstance();
         var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, null);
-        var projectId = wfProj.getID();
-        wpm.addWorkflowProject(projectId, wfProj);
-        wpm.openAndCacheWorkflow(projectId);
-        wpm.setWorkflowProjectActive(projectId);
+        registerWorkflowProject(wfProj);
+    }
+
+    private static void registerWorkflowProject(final WorkflowManager wfm) {
+        var projectId = LocalSpaceUtil.getUniqueProjectId(wfm.getName());
+        var wfProj = new WorkflowProject() {
+            @Override
+            public String getName() {
+                return wfm.getName();
+            }
+
+            @Override
+            public String getID() {
+                return projectId;
+            }
+
+            @Override
+            public WorkflowManager openProject() {
+                return wfm;
+            }
+        };
+        registerWorkflowProject(wfProj);
+    }
+
+    private static void registerWorkflowProject(final WorkflowProject wfProj) {
+        var wpm = WorkflowProjectManager.getInstance();
+        wpm.addWorkflowProject(wfProj.getID(), wfProj);
+        wpm.openAndCacheWorkflow(wfProj.getID());
+        wpm.setWorkflowProjectActive(wfProj.getID());
+    }
+
+    static void openWorkflowInWebUIWithProgress(final String spaceProviderId, final String spaceId,
+        final String itemId) {
+        DesktopAPUtil.runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> { // NOSONAR better than inline class
+            OpenWorkflow.openWorkflowInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
+            return null;
+        });
     }
 
     /**
@@ -226,15 +265,52 @@ final class OpenWorkflow {
         page.openEditor(input, WorkflowEditor.ID, false);
     }
 
+    public static boolean openWorkflowFromURL(RepoObjectImport repoObjectImport) {
+        var knimeUrl = repoObjectImport.getKnimeURI();
+        var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
+        Optional<WorkflowManager> wfm =
+            DesktopAPUtil.runWithProgress(DOWNLOAD_WORKFLOW_PROGRESS_MSG, LOGGER, progress -> {
+                var fs = (RemoteExplorerFileStore)ExplorerFileSystem.INSTANCE.getStore(knimeUrl);
+                return downloadWorkflowFromMountpoint(progress, fs, hubSpaceLocationInfo);
+            }) //
+                .map(RemoteWorkflowInput::getWorkflowContext) //
+                .flatMap(ctx -> DesktopAPUtil.runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+                    progress -> DesktopAPUtil.loadWorkflow(progress, ctx.getExecutorInfo().getLocalWorkflowPath(),
+                        ctx)));
+
+        if (wfm.isEmpty()) {
+            return false;
+        }
+
+        OpenWorkflow.registerWorkflowProject(wfm.get());
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+        return true;
+    }
+
+    /**
+     *
+     * Downloads a remote workflow into a temporary directory.
+     * 
+     * @param progress
+     * @param source
+     * @return
+     */
+    private static RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
+        final RemoteExplorerFileStore source) {
+        return downloadWorkflowFromMountpoint(progress, source, null);
+    }
+
     /**
      * Downloads a remote workflow into a temporary directory. This code is heavily inspired by the
      * {@link DownloadAndOpenWorkflowAction}.
      *
+     * @param progress
      * @param source source file store
+     * @param locationInfo inferred from {@code source} if null.
      * @return
      */
-    private static final RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
-            final RemoteExplorerFileStore source) {
+    private static RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
+        final RemoteExplorerFileStore source, final LocationInfo locationInfo) {
         final LocalExplorerFileStore tmpDestDir;
         try {
             // fetch the actual name from the remote side because `source.getName()` may only return the repository ID
@@ -275,14 +351,14 @@ final class OpenWorkflow {
         try {
             final var localWorkflowPath = workflowDir.getParent().toLocalFile().toPath();
             final var mountpointRoot = workflowDir.getContentProvider().getRootStore().toLocalFile().toPath();
-            final var locationInfo = CheckUtils.checkNotNull(source.locationInfo().orElse(null),
-                "Location info could not be determined for " + source);
+            var effectiveLocationInfo = locationInfo == null ? source.locationInfo().orElse(null) : locationInfo;
+            CheckUtils.checkNotNull(effectiveLocationInfo, "Location info could not be determined for " + source);
             context = WorkflowContextV2.builder()
                     .withAnalyticsPlatformExecutor(builder -> builder
                         .withCurrentUserAsUserId()
                         .withLocalWorkflowPath(localWorkflowPath)
                         .withMountpoint(source.getMountID(), mountpointRoot))
-                        .withLocation(locationInfo)
+                .withLocation(effectiveLocationInfo)
                         .build();
         } catch (CoreException e) {
             throw new IllegalStateException(e);

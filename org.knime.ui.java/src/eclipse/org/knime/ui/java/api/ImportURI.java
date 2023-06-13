@@ -67,6 +67,7 @@ import org.knime.core.node.KNIMEComponentInformation;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.NodeCreationType;
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.ui.util.NodeTemplateId;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
@@ -81,6 +82,7 @@ import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAl
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.NodeImport;
@@ -90,6 +92,7 @@ import org.knime.workbench.core.imports.UpdateSiteInfo;
 import org.knime.workbench.editor2.InstallMissingNodesJob;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 import org.knime.workbench.ui.p2.actions.AbstractP2Action;
+
 
 /**
  * Utility methods for importing URIs (e.g. a node from a hub url).
@@ -120,11 +123,15 @@ public final class ImportURI {
      */
     public static boolean importURI(final Supplier<int[]> cursorLocationSupplier, final String uriString) {
         entityImportInProgress = getEntityImport(uriString);
-        if (entityImportInProgress != null) {
+        if (entityImportInProgress == null) {
+            return false;
+        }
+
+        if (entityImportInProgress instanceof RepoObjectImport repoObjectImport) {
+            return importWorkflow(repoObjectImport);
+        } else {
             var cursorLocation = cursorLocationSupplier.get();
             return sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
-        } else {
-            return false;
         }
     }
 
@@ -213,6 +220,26 @@ public final class ImportURI {
 
         return false;
     }
+
+    private static boolean importWorkflow(final RepoObjectImport repoObjectImport) {
+        if (!RepoObjectImport.RepoObjectType.Workflow.equals(repoObjectImport.getType())) {
+            LOGGER.error("Object to be imported is not a workflow");
+            return false;
+        }
+        var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
+        var providerId = repoObjectImport.getKnimeURI().getAuthority();
+        var spaceId = hubSpaceLocationInfo.getSpaceItemId();
+        var space = SpaceProviders.getSpaceOptional(DesktopAPI.getDeps(SpaceProviders.class), providerId, spaceId);
+        if (space.isPresent()) {
+            // space is in fact already mounted -- open as if opened from explorer
+            // allows plain save to re-upload and browsing of space in sidebar
+            OpenWorkflow.openWorkflowInWebUIWithProgress(providerId, spaceId, hubSpaceLocationInfo.getWorkflowItemId());
+        } else {
+            return OpenWorkflow.openWorkflowFromURL(repoObjectImport);
+        }
+        return true;
+    }
+
 
     private static boolean isNodeInstalled(final NodeImport nodeImport) {
         var nodeTemplate = NodeTemplateId.callWithNodeTemplateIdVariants(nodeImport.getCanonicalNodeFactory(),

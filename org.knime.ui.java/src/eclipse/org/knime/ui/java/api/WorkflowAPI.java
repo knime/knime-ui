@@ -58,7 +58,6 @@ import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
-import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
@@ -84,10 +83,7 @@ final class WorkflowAPI {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             OpenWorkflow.openWorkflowInClassicAndWebUI(spaceProviderId, spaceId, itemId);
         } else {
-            DesktopAPUtil.runWithProgress("Loading workflow", LOGGER, monitor -> {// NOSONAR better than inline class
-                OpenWorkflow.openWorkflowInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
-                return null;
-            });
+            OpenWorkflow.openWorkflowInWebUIWithProgress(spaceProviderId, spaceId, itemId);
         }
     }
 
