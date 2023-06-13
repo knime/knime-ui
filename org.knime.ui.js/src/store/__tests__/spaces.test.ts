@@ -6,6 +6,7 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import * as spacesConfig from "../spaces";
+import { SpaceItemReference } from "../../api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
 
@@ -78,6 +79,77 @@ describe("spaces store", () => {
   });
 
   describe("actions", () => {
+    describe("syncPathWithOpenProjects", () => {
+      it("should sync state of projectPaths with openProjects", async () => {
+        const { store } = loadStore();
+
+        // project that should be removed (not part of openProjects anymore)
+        store.state.spaces.projectPath.oldProject = {
+          spaceId: "space3",
+          spaceProviderId: "hub2",
+          itemId: "someFolder",
+        };
+
+        // currently open projects
+        const openProjects: {
+          projectId: string;
+          origin: Omit<SpaceItemReference, "itemId">; // TODO: remove this field from the API its outdated
+        }[] = [
+          {
+            projectId: "myProject1",
+            origin: {
+              providerId: "hub2",
+              spaceId: "space4",
+              ancestorItemIds: [],
+            },
+          },
+          {
+            projectId: "newProject3",
+            origin: {
+              providerId: "hub4",
+              spaceId: "space6",
+              ancestorItemIds: ["folderX"],
+            },
+          },
+          {
+            projectId: "newProject4",
+            origin: {
+              providerId: "hub4",
+              spaceId: "space6",
+              ancestorItemIds: [],
+            },
+          },
+        ];
+
+        await store.dispatch("spaces/syncPathWithOpenProjects", {
+          openProjects,
+        });
+
+        // remove project
+        expect(store.state.spaces.projectPath.oldProject).toBeUndefined();
+
+        // add new project
+        expect(store.state.spaces.projectPath.newProject3).toStrictEqual({
+          spaceProviderId: "hub4",
+          spaceId: "space6",
+          itemId: "folderX",
+        });
+
+        expect(store.state.spaces.projectPath.newProject4).toStrictEqual({
+          spaceProviderId: "hub4",
+          spaceId: "space6",
+          itemId: "root",
+        });
+
+        // does NOT update values of already open project (keep user surf state)
+        expect(store.state.spaces.projectPath.myProject1).toStrictEqual({
+          spaceProviderId: "mockProviderId",
+          spaceId: "mockSpaceId",
+          itemId: "bar",
+        });
+      });
+    });
+
     describe("fetchAllSpaceProviders", () => {
       it('should set all providers in state and fetch spaces of connected "AUTOMATIC" providers', async () => {
         const mockFetchAllProvidersResponse = {

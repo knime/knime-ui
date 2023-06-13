@@ -2,7 +2,10 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import type { SpaceProvider } from "@/api/custom-types";
-import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
+import type {
+  SpaceItemReference,
+  WorkflowGroupContent,
+} from "@/api/gateway-api/generated-api";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "./types";
 
@@ -116,7 +119,9 @@ export const mutations: MutationTree<State> = {
 export const actions: ActionTree<State, RootStoreState> = {
   syncPathWithOpenProjects(
     { commit, state },
-    { openProjects }: { openProjects: [{ projectId: string; origin: any }] }
+    {
+      openProjects,
+    }: { openProjects: { projectId: string; origin: SpaceItemReference }[] }
   ) {
     // add
     openProjects.forEach(({ projectId, origin }) => {
