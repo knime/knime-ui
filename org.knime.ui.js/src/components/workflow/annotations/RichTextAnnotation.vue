@@ -5,6 +5,7 @@ import type { Bounds } from "@/api/gateway-api/generated-api";
 
 import RichTextEditor from "webapps-common/ui/components/RichTextEditor";
 import RichTextAnnotationToolbar from "./RichTextAnnotationToolbar.vue";
+import { ControlClickLink, LinkRegex } from "./extended-link";
 
 interface Props {
   id: string;
@@ -30,6 +31,12 @@ const emit = defineEmits<{
 const activeBorderColor = computed(
   () => previewBorderColor.value || props.initialBorderColor
 );
+
+const customExtensions = [
+  ControlClickLink.configure({
+    validate: (href) => LinkRegex.test(href),
+  }),
+];
 </script>
 
 <template>
@@ -41,6 +48,7 @@ const activeBorderColor = computed(
       class="annotation-editor"
       :initial-value="initialValue"
       :editable="editable"
+      :custom-extensions="customExtensions"
       @change="emit('change', $event)"
       @dblclick="!editable && emit('editStart')"
     >

@@ -7,6 +7,7 @@ import type { Level } from "@tiptap/extension-heading";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import LinkIcon from "webapps-common/ui/assets/img/icons/link.svg";
 import type { EditorTools } from "webapps-common/ui/components/RichTextEditor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
@@ -98,8 +99,19 @@ const cancelAddLink = () => {
   isEditingLink.value = false;
 };
 
+const linkTool = {
+  id: "add-link",
+  icon: LinkIcon,
+  name: "Add link",
+  hotkey: ["Ctrl", "K"],
+  active: () => props.editor.isActive("link"),
+  onClick: () => createLink(),
+};
+
+const customTools = computed(() => props.tools.concat(linkTool));
+
 // +1 to include the border color tool
-const totalEditorTools = computed(() => props.tools.length + 1);
+const totalEditorTools = computed(() => customTools.value.length + 1);
 
 const headingPresets = computed(() => {
   // eslint-disable-next-line no-magic-numbers
@@ -224,8 +236,9 @@ onUnmounted(() => {
         <span class="heading-current-text">{{ selectedHeadingText }}</span>
         <DropdownIcon />
       </SubMenu>
+
       <FunctionButton
-        v-for="tool of tools"
+        v-for="tool of customTools"
         :key="tool.icon"
         :active="tool.active ? tool.active() : false"
         :title="`${tool.name} – ${formatHotkeys(tool.hotkey)}`"
