@@ -407,7 +407,7 @@ describe("spaces store", () => {
         );
       });
 
-      it("should open workflow from a different space", () => {
+      it("should open workflow from a different space", async () => {
         const { store } = loadStore();
 
         store.state.spaces.projectPath.project3 = {
@@ -416,10 +416,11 @@ describe("spaces store", () => {
           itemId: "folder1",
         };
 
-        store.dispatch("spaces/openWorkflow", {
+        await store.dispatch("spaces/openWorkflow", {
           workflowItemId: "foobar",
           projectId: "project3",
         });
+
         expect(mockedAPI.desktop.openWorkflow).toHaveBeenCalledWith({
           spaceId: "remote1",
           spaceProviderId: "knime1",
@@ -427,7 +428,7 @@ describe("spaces store", () => {
         });
       });
 
-      it("should navigate to already open workflow", () => {
+      it("should navigate to already open workflow", async () => {
         const openProjects = [
           {
             projectId: "dummyProject",
@@ -443,7 +444,7 @@ describe("spaces store", () => {
         };
 
         const mockRouter = { push: vi.fn() };
-        store.dispatch("spaces/openWorkflow", {
+        await store.dispatch("spaces/openWorkflow", {
           projectId: "project2",
           workflowItemId: "dummy",
           $router: mockRouter,
