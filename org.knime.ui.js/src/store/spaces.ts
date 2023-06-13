@@ -319,7 +319,7 @@ export const actions: ActionTree<State, RootStoreState> = {
       // use global loader because just using the local one for the space explorer
       // is not enough since createWorkflow would also open a new workflow instead of just
       // doing a local operation like fetching data or renaming
-      dispatch(
+      await dispatch(
         "application/updateGlobalLoader",
         { loading: true, config: { displayMode: "transparent" } },
         { root: true }
@@ -330,7 +330,7 @@ export const actions: ActionTree<State, RootStoreState> = {
         itemId,
         itemName: workflowName,
       });
-      dispatch(
+      await dispatch(
         "application/updateGlobalLoader",
         { loading: false },
         { root: true }
@@ -345,7 +345,7 @@ export const actions: ActionTree<State, RootStoreState> = {
 
       return newWorkflowItem;
     } catch (error) {
-      dispatch(
+      await dispatch(
         "application/updateGlobalLoader",
         { loading: false },
         { root: true }
@@ -367,7 +367,7 @@ export const actions: ActionTree<State, RootStoreState> = {
         itemId,
       });
 
-      dispatch("fetchWorkflowGroupContent", { projectId });
+      await dispatch("fetchWorkflowGroupContent", { projectId });
 
       return newFolderItem;
     } catch (error) {
@@ -377,7 +377,7 @@ export const actions: ActionTree<State, RootStoreState> = {
     }
   },
 
-  openWorkflow(
+  async openWorkflow(
     { rootState, state, dispatch },
     { workflowItemId, $router, projectId }
   ) {
@@ -404,7 +404,7 @@ export const actions: ActionTree<State, RootStoreState> = {
     // use global loader because just using the local one for the space explorer
     // is not enough since openWorkflow would open a new workflow instead of just
     // doing a local operation like fetching data or renaming
-    dispatch(
+    await dispatch(
       "application/updateGlobalLoader",
       { loading: true, config: { displayMode: "transparent" } },
       { root: true }
@@ -414,14 +414,14 @@ export const actions: ActionTree<State, RootStoreState> = {
       spaceId,
       itemId: workflowItemId,
     });
-    dispatch(
+    await dispatch(
       "application/updateGlobalLoader",
       { loading: false },
       { root: true }
     );
   },
 
-  importToWorkflowGroup({ state, dispatch }, { projectId, importType }) {
+  async importToWorkflowGroup({ state, dispatch }, { projectId, importType }) {
     const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
     const success =
       importType === "FILES"
@@ -429,7 +429,7 @@ export const actions: ActionTree<State, RootStoreState> = {
         : API.desktop.importWorkflows({ spaceProviderId, spaceId, itemId });
 
     if (success) {
-      dispatch("fetchWorkflowGroupContent", { projectId });
+      await dispatch("fetchWorkflowGroupContent", { projectId });
     }
   },
 

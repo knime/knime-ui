@@ -20,14 +20,14 @@ interface Props {
 const store = useStore();
 const props = withDefaults(defineProps<Props>(), { showText: true });
 
-const onSpaceChange = ({
+const onSpaceChange = async ({
   data: { spaceId, spaceProviderId, requestSignIn = false },
 }) => {
   const { projectId } = props;
 
   // handle sign in request
   if (requestSignIn) {
-    store.dispatch("spaces/connectProvider", { spaceProviderId });
+    await store.dispatch("spaces/connectProvider", { spaceProviderId });
     return;
   }
 
@@ -40,7 +40,7 @@ const onSpaceChange = ({
       itemId: "root",
     },
   });
-  store.dispatch("spaces/fetchWorkflowGroupContent", { projectId });
+  await store.dispatch("spaces/fetchWorkflowGroupContent", { projectId });
 };
 
 const spacesDropdownData = computed((): MenuItem[] => {
