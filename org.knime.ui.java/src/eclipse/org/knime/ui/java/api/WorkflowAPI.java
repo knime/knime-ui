@@ -75,8 +75,10 @@ final class WorkflowAPI {
      * Opens the workflow either in both, the Classic UI and the Modern/Web UI if the classic UI is active (the
      * WorkflowEditor is used in that case to open the workflow). Or it opens and loads the workflow exclusively in the
      * Modern UI. Those workflows won't be available in the classic UI when switching to it.
-     *
-     * @param arguments space-id (0), item-id (1) and space-provider-id (2, {@code "local"} if absent); never null
+     * 
+     * @param spaceId
+     * @param itemId
+     * @param spaceProviderId {@code local} if absent
      */
     @API
     static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
@@ -90,12 +92,9 @@ final class WorkflowAPI {
     /**
      * Close the Eclipse editor(s) associated with the given project ID.
      *
-     * @param arguments An array of {@code String}s with contents:
-     *            <ol>
-     *            <li>The ID of the project to be closed</li>
-     *            <li>The ID of the project to make active after the current one has been closed. Can be null or omitted
-     *            if there is no next project ID (e.g. when closing the last tab).</li>
-     *            </ol>
+     * @param projectIdToClose The ID of the project to be closed
+     * @param nextProjectId The ID of the project to make active after the current one has been closed. Can be null or
+     *            omitted if there is no next project ID (e.g. when closing the last tab).
      * @return A boolean indicating whether an editor has been closed.
      */
     @API

@@ -273,7 +273,7 @@ public final class ImportURI {
             public Optional<String> getFeatureSymbolicName() {
                 // Our internal update-sites require ".feature.group" suffix.
                 return Optional.of(featureSymbolicName.endsWith(FEATURE_GROUP_SUFFIX) ? featureSymbolicName
-                    : featureSymbolicName + FEATURE_GROUP_SUFFIX);
+                    : (featureSymbolicName + FEATURE_GROUP_SUFFIX));
             }
 
             @Override

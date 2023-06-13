@@ -94,9 +94,9 @@ public final class DesktopAPUtil {
     /**
      * Loads the workflow for the given item-id from the given space.
      *
-     * @param space
-     * @param itemId
-     * @param monitor
+     * @param space the space
+     * @param itemId the item ID of the workflow
+     * @param monitor progress monitor
      * @return the loaded workflow
      */
     public static WorkflowManager loadWorkflow(final Space space, final String itemId, final IProgressMonitor monitor) {

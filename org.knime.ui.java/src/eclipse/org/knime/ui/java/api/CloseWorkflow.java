@@ -79,12 +79,9 @@ final class CloseWorkflow {
     /**
      * Close the Eclipse editor(s) associated with the given project ID.
      *
-     * @param arguments An array of {@code String}s with contents:
-     *            <ol>
-     *            <li>The ID of the project to be closed</li>
-     *            <li>The ID of the project to make active after the current one has been closed. Can be null or omitted
-     *            if there is no next project ID (e.g. when closing the last tab).</li>
-     *            </ol>
+     * @param projectIdToClose The ID of the project to be closed
+     * @param nextProjectId The ID of the project to make active after the current one has been closed. Can be null or
+     *            omitted if there is no next project ID (e.g. when closing the last tab).
      * @return A boolean indicating whether an editor has been closed.
      */
     static boolean closeWorkflow(final String projectIdToClose, final String nextProjectId) {
