@@ -40,19 +40,28 @@ describe("CreateWorkflowModal.vue", () => {
     },
   ];
 
+  const projectId = "someProject";
   const doMount = ({ items = MOCK_DATA, isOpen = true } = {}) => {
-    const storeConfig = {
-      spaces: {
-        ...spacesStore,
-        state: {
-          activeSpace: { activeWorkflowGroup: { items } },
-          isLoading: false,
-          isCreateWorkflowModalOpen: isOpen,
+    const $store = mockVuexStore({
+      application: {
+        actions: {
+          updateGlobalLoader: vi.fn(),
         },
       },
-    };
+      spaces: {
+        ...spacesStore,
+        getters: {
+          getWorkflowGroupContent: () => () => ({ items }),
+        },
+      },
+    });
 
-    const $store = mockVuexStore(storeConfig);
+    // modal state
+    $store.commit("spaces/setCreateWorkflowModalConfig", {
+      isOpen,
+      projectId,
+    });
+
     const dispatchSpy = vi.spyOn($store, "dispatch");
     const commitSpy = vi.spyOn($store, "commit");
 
@@ -69,7 +78,10 @@ describe("CreateWorkflowModal.vue", () => {
   describe("createWorkflowModal", () => {
     it("opens on state change", async () => {
       const { wrapper, $store } = doMount({ isOpen: false });
-      await $store.commit("spaces/setIsCreateWorkflowModalOpen", true);
+      await $store.commit("spaces/setCreateWorkflowModalConfig", {
+        isOpen: true,
+        projectId,
+      });
       await Vue.nextTick();
       expect(wrapper.find("input").isVisible()).toBe(true);
     });
@@ -82,13 +94,13 @@ describe("CreateWorkflowModal.vue", () => {
 
       expect(wrapper.find("input").isVisible()).toBe(false);
       expect(commitSpy).toHaveBeenCalledWith(
-        "spaces/setIsCreateWorkflowModalOpen",
-        false
+        "spaces/setCreateWorkflowModalConfig",
+        { isOpen: false, projectId: null }
       );
     });
 
     it("should create workflow", async () => {
-      const { wrapper, dispatchSpy } = await doMount();
+      const { wrapper, dispatchSpy } = doMount();
 
       const newName = "Test name";
       const input = wrapper.find("input");
@@ -97,6 +109,7 @@ describe("CreateWorkflowModal.vue", () => {
 
       await wrapper.findAll("button").at(-1).trigger("click");
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/createWorkflow", {
+        projectId: "someProject",
         workflowName: newName,
       });
     });
@@ -104,7 +117,7 @@ describe("CreateWorkflowModal.vue", () => {
     it.each([".", "\\", "/"])(
       "should clean workflow input",
       async (invalidChar) => {
-        const { wrapper, dispatchSpy } = await doMount();
+        const { wrapper, dispatchSpy } = doMount();
 
         const newName = "Test name";
         const input = wrapper.find("input");
@@ -113,6 +126,7 @@ describe("CreateWorkflowModal.vue", () => {
 
         await wrapper.findAll("button").at(-1).trigger("click");
         expect(dispatchSpy).toHaveBeenCalledWith("spaces/createWorkflow", {
+          projectId: "someProject",
           workflowName: newName,
         });
       }
@@ -177,6 +191,7 @@ describe("CreateWorkflowModal.vue", () => {
         const inputField = wrapper.findComponent(InputField);
         await inputField.vm.$emit("keyup", { key: "Enter" });
         expect(dispatchSpy).toHaveBeenCalledWith("spaces/createWorkflow", {
+          projectId: "someProject",
           workflowName: newName,
         });
       });
