@@ -28,14 +28,6 @@ import type {
 } from "./FileExplorer/types";
 import type { SpaceProvider } from "@/api/custom-types";
 
-const ITEM_TYPES_TEXTS = {
-  [SpaceItem.TypeEnum.WorkflowGroup]: "folder",
-  [SpaceItem.TypeEnum.Workflow]: "workflow",
-  [SpaceItem.TypeEnum.Component]: "component",
-  [SpaceItem.TypeEnum.WorkflowTemplate]: "metanode",
-  [SpaceItem.TypeEnum.Data]: "data file",
-} as const;
-
 const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
   return !nodeTemplateId && item.type === SpaceItem.TypeEnum.Component;
 };
@@ -75,7 +67,6 @@ export default defineComponent({
       fileNodeTemplate: null,
       deleteModal: {
         deleteModalActive: false,
-        modalMessage: null,
         items: [],
       },
       nodeTemplate: null,
@@ -257,12 +248,6 @@ export default defineComponent({
     },
 
     onDeleteItems({ items }) {
-      const itemNameList = items
-        .map((item) => `${ITEM_TYPES_TEXTS[item.type]} “${item.name}”`)
-        .join(", ");
-
-      this.deleteModal.modalMessage = `Do you want to delete the ${itemNameList}?`;
-
       this.deleteModal.items = items;
       this.deleteModal.deleteModalActive = true;
     },
@@ -607,15 +592,22 @@ export default defineComponent({
     </SmartLoader>
     <div>
       <Modal
-        :active="
-          deleteModal.deleteModalActive && Boolean(deleteModal.modalMessage)
-        "
+        :active="deleteModal.deleteModalActive"
         title="Delete"
         style-type="info"
         @cancel="deleteModal.deleteModalActive = false"
       >
         <template #icon><TrashIcon /></template>
-        <template #confirmation>{{ deleteModal.modalMessage }}</template>
+        <template #confirmation>
+          <div>
+            <span>Do you want to delete the following item(s):</span>
+            <ul>
+              <li v-for="(item, index) of deleteModal.items" :key="index">
+                {{ item.name }}
+              </li>
+            </ul>
+          </div>
+        </template>
         <template #controls>
           <Button with-border @click="deleteModal.deleteModalActive = false">
             Cancel

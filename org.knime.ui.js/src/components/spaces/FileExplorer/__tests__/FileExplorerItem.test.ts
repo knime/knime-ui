@@ -112,6 +112,26 @@ describe("FileExplorerItem.vue", () => {
       expect(wrapper.emitted("rename:clear")).toBeDefined();
     });
 
+    it("should not submit name if new name is empty", async () => {
+      const { wrapper } = doMount({ props });
+
+      wrapper.find("input").setValue("");
+      await wrapper.find("input").trigger("keyup", { key: "Enter" });
+
+      expect(wrapper.emitted("rename:submit")).toBeUndefined();
+      expect(wrapper.emitted("rename:clear")).toBeDefined();
+    });
+
+    it("should not submit name if name didn't change", async () => {
+      const { wrapper } = doMount({ props });
+
+      wrapper.find("input").setValue(defaultProps.item.name);
+      await wrapper.find("input").trigger("keyup", { key: "Enter" });
+
+      expect(wrapper.emitted("rename:submit")).toBeUndefined();
+      expect(wrapper.emitted("rename:clear")).toBeDefined();
+    });
+
     it("should cancel the rename", async () => {
       const { wrapper } = doMount({ props });
 

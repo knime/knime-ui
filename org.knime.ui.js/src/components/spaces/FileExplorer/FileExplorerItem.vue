@@ -84,8 +84,9 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
 
   if ((keyupEvent.key === "Enter" || isClickAway) && isValid.value) {
     const newName = cleanName(renameValue.value);
+    const isSameName = newName === props.item.name;
 
-    if (newName === "") {
+    if (newName === "" || isSameName) {
       emit("rename:clear");
       return;
     }
