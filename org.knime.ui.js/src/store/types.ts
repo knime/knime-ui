@@ -1,4 +1,5 @@
 import type { WorkflowState } from "./workflow";
+import type { State as SpacesState } from "./spaces";
 
 export interface RootStoreState {
   application: any;
@@ -7,6 +8,6 @@ export interface RootStoreState {
   panel: any;
   selection: any;
   workflow: WorkflowState;
-  spaces: any;
+  spaces: SpacesState;
   quickAddNodes: any;
 }

@@ -8,16 +8,15 @@ import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 
 import { useStore } from "vuex";
 import { computed } from "vue";
-import type { PathTriplet } from "@/store/spaces";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
-import type { SpaceProvider } from "@/api/custom-types";
+import type { RootStoreState } from "@/store/types";
 
 interface Props {
   showText?: boolean;
   projectId: string | null;
 }
 
-const store = useStore();
+const store = useStore<RootStoreState>();
 const props = withDefaults(defineProps<Props>(), { showText: true });
 
 const onSpaceChange = async ({
@@ -44,17 +43,10 @@ const onSpaceChange = async ({
 };
 
 const spacesDropdownData = computed((): MenuItem[] => {
-  const activeSpacePath = store.state.spaces.projectPath[
-    props.projectId
-  ] as PathTriplet;
-  const spaceProviders = store.state.spaces.spaceProviders as Record<
-    string,
-    SpaceProvider
-  >;
+  const activeSpacePath = store.state.spaces.projectPath[props.projectId];
+  const spaceProviders = store.state.spaces.spaceProviders;
 
-  const providers: SpaceProvider[] = spaceProviders
-    ? Object.values(spaceProviders)
-    : [];
+  const providers = spaceProviders ? Object.values(spaceProviders) : [];
 
   return providers.flatMap((provider) =>
     (provider.id === "local"

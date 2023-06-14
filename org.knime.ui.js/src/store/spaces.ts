@@ -20,7 +20,7 @@ interface CreateWorkflowModalConfig {
   projectId: string;
 }
 
-interface State {
+export interface State {
   workflowGroupCache: WeakMap<PathTriplet, WorkflowGroupContent>;
   spaceProviders?: Record<string, SpaceProvider>;
   projectPath: Record<string, PathTriplet>;
