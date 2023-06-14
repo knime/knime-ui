@@ -74,6 +74,9 @@ export default {
     ...mapActions("nodeRepository", ["closeDescriptionPanel"]),
 
     isTabActive(tabName) {
+      if (!this.activeProjectId) {
+        return false;
+      }
       const activeTab =
         this.activeTab[this.activeProjectId] || TABS.CONTEXT_AWARE_DESCRIPTION;
       return activeTab === tabName;
