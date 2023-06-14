@@ -3,8 +3,8 @@ import ForumIcon from "webapps-common/ui/assets/img/icons/forum.svg";
 import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
 import PerspectiveSwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
 import SphereIcon from "webapps-common/ui/assets/img/icons/sphere.svg";
-import SettingsIcon from "webapps-common/ui/assets/img/icons/settings.svg";
 import KnimeLogo from "webapps-common/ui/assets/img/KNIME_Logo_gray.svg";
+import DocsIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import Page from "@/components/common/Page.vue";
@@ -17,7 +17,7 @@ export default {
     ExtensionIcon,
     PerspectiveSwitchIcon,
     SphereIcon,
-    SettingsIcon,
+    DocsIcon,
     KnimeLogo,
     Button,
     Page,
@@ -36,17 +36,13 @@ export default {
     openInstallExtensionsDialog() {
       window.openInstallExtensionsDialog();
     },
-
-    openKnimeUIPreferencePage() {
-      window.openWebUIPreferencePage();
-    },
   },
 };
 </script>
 
 <template>
   <Page>
-    <PageHeader title="Information" />
+    <PageHeader title="Resources" />
 
     <!-- Forum section -->
     <section>
@@ -94,22 +90,39 @@ export default {
       </div>
     </section>
 
-    <!-- Preferences section -->
+    <!-- Documentation section -->
     <section>
       <div class="grid-container">
         <div class="grid-item-3 category">
-          <SettingsIcon />
-          <h3>Settings</h3>
+          <DocsIcon />
+          <h3>Documentation and guides</h3>
         </div>
 
         <div class="grid-item-9 body">
           <p>
-            Change settings for the “Node repository” or the scrolling behaviour
-            of the “Workbench”.
+            Get more information within our documentations, our “Getting
+            Started” guide and our “Cheat sheets”.
           </p>
-          <Button with-border @click="openKnimeUIPreferencePage">
-            <strong>Open Modern UI Settings</strong>
-          </Button>
+          <div class="section-buttons">
+            <Button
+              with-border
+              href="https://www.knime.com/getting-started-guide-5-1?src=knimeappmodernui"
+            >
+              <strong>Getting started</strong>
+            </Button>
+            <Button
+              with-border
+              href="https://docs.knime.com/?src=knimeappmodernui"
+            >
+              <strong>Documentation</strong>
+            </Button>
+            <Button
+              with-border
+              href="https://www.knime.com/cheat-sheets-5-1?src=knimeappmodernui"
+            >
+              <strong>Cheat sheets</strong>
+            </Button>
+          </div>
         </div>
       </div>
     </section>
@@ -248,7 +261,8 @@ section {
   & .section-buttons {
     display: flex;
 
-    & button {
+    & button,
+    & a {
       margin-right: 20px;
     }
   }

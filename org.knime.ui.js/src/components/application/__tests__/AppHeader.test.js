@@ -2,13 +2,16 @@ import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 
+import { API } from "@api";
 import CloseIcon from "@/assets/cancel.svg";
 import AppHeader from "../AppHeader.vue";
 import AppHeaderTab from "../AppHeaderTab.vue";
 import { APP_ROUTES } from "@/router";
 import CloseButton from "@/components/common/CloseButton.vue";
+
+const mockedAPI = deepMocked(API);
 
 describe("AppHeader.vue", () => {
   const doMount = ({
@@ -143,20 +146,30 @@ describe("AppHeader.vue", () => {
   describe("right side buttons", () => {
     it("allows switching to Info Page", async () => {
       const { wrapper, $router } = doMount();
-      await wrapper.find(".switch-info-page").trigger("click");
+      await wrapper.find('[data-testid="switch-info-page"]').trigger("click");
       expect($router.push).toHaveBeenCalledWith({
         name: APP_ROUTES.InfoPage,
       });
     });
 
+    it("allows opens preferences", async () => {
+      const { wrapper } = doMount();
+      await wrapper.find('[data-testid="open-preferences"]').trigger("click");
+      expect(mockedAPI.desktop.openKnimeUIPreferences).toHaveBeenCalled();
+    });
+
     it("hides the switch button when dev mode is disabled", async () => {
       const { wrapper, $store } = doMount();
-      expect(wrapper.find(".switch-classic").exists()).toBeFalsy();
+      expect(
+        wrapper.find('[data-testid="switch-classic"]').exists()
+      ).toBeFalsy();
 
       $store.state.application.devMode = true;
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.find(".switch-classic").exists()).toBeTruthy();
+      expect(
+        wrapper.find('[data-testid="switch-classic"]').exists()
+      ).toBeTruthy();
     });
   });
 });
