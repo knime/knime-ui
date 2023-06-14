@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRefs, ref, computed } from "vue";
+import { ref, computed, toRefs } from "vue";
 
 import RichTextEditor from "webapps-common/ui/components/RichTextEditor";
 
@@ -48,10 +48,10 @@ const customExtensions = [
   >
     <RichTextEditor
       class="annotation-editor"
-      :initial-value="initialValue"
+      :model-value="initialValue"
       :editable="editable"
       :custom-extensions="customExtensions"
-      @change="emit('change', $event)"
+      @update:model-value="emit('change', $event)"
       @dblclick="!editable && emit('editStart')"
     >
       <template #customToolbar="{ editor, tools }">

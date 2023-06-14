@@ -18,12 +18,12 @@ const emit = defineEmits<{
     <RichTextEditor
       compact
       :editable="editable"
-      :initial-value="description"
+      :model-value="description"
       :class="['description-editor', { editable }]"
       :min-height="150"
       :max-height="300"
       :disabled-tools="{ textAlign: true, heading: true }"
-      @change="emit('change', $event)"
+      @update:model-value="emit('change', $event)"
     />
   </div>
 </template>
