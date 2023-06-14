@@ -564,14 +564,12 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         .map((item) => item.id);
 
       return openProjects
-        .filter((project) => {
-          const { origin } = project;
-          return (
+        .filter(
+          ({ origin }) =>
             origin.providerId === spaceProviderId &&
             origin.spaceId === spaceId &&
             workflowItemIds.includes(origin.itemId)
-          );
-        })
+        )
         .map(({ origin }) => origin.itemId);
     },
 
@@ -588,9 +586,11 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       }
 
       const openProjectsFolders = openProjects
-        .filter((project) => project.origin.providerId === spaceProviderId)
-        .filter((project) => project.origin.spaceId === spaceId)
-        .flatMap((project) => project.origin.ancestorItemIds);
+        .filter(
+          ({ origin }) =>
+            origin.providerId === spaceProviderId && origin.spaceId === spaceId
+        )
+        .flatMap(({ origin }) => origin.ancestorItemIds);
 
       return workflowGroupContent.items
         .filter(
