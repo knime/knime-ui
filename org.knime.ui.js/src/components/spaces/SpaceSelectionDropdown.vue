@@ -10,6 +10,8 @@ import { useStore } from "vuex";
 import { computed } from "vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import type { RootStoreState } from "@/store/types";
+import type { SpaceProvider } from "@/api/custom-types";
+import type { Space } from "@/api/gateway-api/generated-api";
 
 interface Props {
   showText?: boolean;
@@ -46,17 +48,20 @@ const spacesDropdownData = computed((): MenuItem[] => {
   const activeSpacePath = store.state.spaces.projectPath[props.projectId];
   const spaceProviders = store.state.spaces.spaceProviders;
 
-  const providerHeadlineMenuItem = (provider) => ({
+  const providerHeadlineMenuItem = (provider: SpaceProvider) => ({
     id: provider.id,
     text: provider.name,
+    selected: false,
     sectionHeadline: true,
     separator: true,
   });
 
-  const spaceMenuItem = (provider) => (space) => ({
+  const spaceMenuItem = (provider: SpaceProvider) => (space: Space) => ({
     text: space.name,
     id: `${provider.id}__${space.id}`,
     selected: space.id === activeSpacePath?.spaceId,
+    sectionHeadline: false,
+    separator: false,
     data: {
       spaceId: space.id,
       spaceProviderId: provider.id,
@@ -64,9 +69,12 @@ const spacesDropdownData = computed((): MenuItem[] => {
     },
   });
 
-  const signInMenuItem = (provider) => ({
+  const signInMenuItem = (provider: SpaceProvider) => ({
     text: "Sign in",
     id: `${provider.id}__SIGN_IN`,
+    selected: false,
+    sectionHeadline: false,
+    separator: false,
     data: {
       spaceId: null,
       spaceProviderId: provider.id,
