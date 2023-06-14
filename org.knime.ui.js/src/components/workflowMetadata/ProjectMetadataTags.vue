@@ -34,8 +34,8 @@ const initialSelectedIds = computed(() =>
 <template>
   <div class="tags">
     <h2>Tags</h2>
-    <hr />
     <template v-if="!editable">
+      <hr />
       <TagList v-if="tags.length" :tags="tags" />
       <MetadataPlaceholder v-else padded text="No tags have been set yet" />
     </template>

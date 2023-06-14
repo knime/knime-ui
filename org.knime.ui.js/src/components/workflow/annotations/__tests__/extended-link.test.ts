@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { ControlClickLink, LinkRegex } from "../extended-link";
+
+import { URL_REGEX } from "@/util/regex";
+import { ControlClickLink } from "../extended-link";
 
 describe("transform-control-utils", () => {
   it("extends tiptap link and blocks openOnClick", () => {
@@ -14,7 +16,7 @@ describe("transform-control-utils", () => {
     "http://test.de",
     "http://www.test.de",
   ])("matches valid urls", (url) => {
-    expect(LinkRegex.test(url)).toBeTruthy();
+    expect(URL_REGEX.test(url)).toBeTruthy();
   });
 
   it.each([
@@ -24,6 +26,6 @@ describe("transform-control-utils", () => {
     ".test.de",
     "www.test.dedasdffdsf",
   ])("does not match invalid urls", (url) => {
-    expect(LinkRegex.test(url)).toBeFalsy();
+    expect(URL_REGEX.test(url)).toBeFalsy();
   });
 });

@@ -6,7 +6,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 
-import { LinkRegex } from "./extended-link";
+import { URL_REGEX } from "@/util/regex";
 
 interface Props {
   text: string;
@@ -48,7 +48,7 @@ const onSubmit = () => {
 };
 
 const validateUrl = () => {
-  const validScheme = LinkRegex.test(editedUrl.value);
+  const validScheme = URL_REGEX.test(editedUrl.value);
 
   return !editedUrl.value || validScheme;
 };

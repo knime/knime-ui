@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { toRefs, ref, computed } from "vue";
 
-import type { Bounds } from "@/api/gateway-api/generated-api";
-
 import RichTextEditor from "webapps-common/ui/components/RichTextEditor";
+
+import type { Bounds } from "@/api/gateway-api/generated-api";
+import { URL_REGEX } from "@/util/regex";
+
 import RichTextAnnotationToolbar from "./RichTextAnnotationToolbar.vue";
-import { ControlClickLink, LinkRegex } from "./extended-link";
+import { ControlClickLink } from "./extended-link";
 
 interface Props {
   id: string;
@@ -34,7 +36,7 @@ const activeBorderColor = computed(
 
 const customExtensions = [
   ControlClickLink.configure({
-    validate: (href) => LinkRegex.test(href),
+    validate: (href) => URL_REGEX.test(href),
   }),
 ];
 </script>

@@ -9,9 +9,9 @@ import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 import Button from "webapps-common/ui/components/Button.vue";
+import PlusIcon from "webapps-common/ui/assets/img/icons/plus.svg";
 
-const linkRegex =
-  /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([-.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
+import { URL_REGEX } from "@/util/regex";
 
 /**
  * Wraps the webapps-common LinkList component to render them alongside a title and a separator
@@ -32,7 +32,7 @@ const emit = defineEmits<{
 const editedLinks = ref(props.links);
 
 const isValidUrl = (url: string) => {
-  return linkRegex.test(url);
+  return URL_REGEX.test(url);
 };
 
 watch(
@@ -105,6 +105,7 @@ const removeLink = (index: number) => {
       </div>
 
       <Button class="add-link-btn" with-border compact @click="addLink">
+        <PlusIcon />
         Add external resource
       </Button>
     </template>

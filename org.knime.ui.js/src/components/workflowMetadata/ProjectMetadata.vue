@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import Button from "webapps-common/ui/components/Button.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
+import PencilIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 
 import type { Link } from "@/api/gateway-api/generated-api";
@@ -57,9 +57,14 @@ const emitSave = () => {
     <ProjectMetadataLastEdit :last-edit="lastEdit" />
 
     <div class="buttons">
-      <Button v-if="!isEditing" compact primary @click="emit('editStart')">
-        Edit metadata
-      </Button>
+      <FunctionButton
+        v-if="!isEditing"
+        :disabled="!isValid"
+        title="Edit metadata"
+        @click="emit('editStart')"
+      >
+        <PencilIcon />
+      </FunctionButton>
 
       <FunctionButton
         v-if="isEditing"
