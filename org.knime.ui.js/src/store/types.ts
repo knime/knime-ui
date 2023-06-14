@@ -1,5 +1,5 @@
 import type { WorkflowState } from "./workflow";
-import type { State as SpacesState } from "./spaces";
+import type { SpacesState } from "./spaces";
 
 export interface RootStoreState {
   application: any;

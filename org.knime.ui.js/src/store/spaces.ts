@@ -20,7 +20,7 @@ interface CreateWorkflowModalConfig {
   projectId: string;
 }
 
-export interface State {
+export interface SpacesState {
   workflowGroupCache: WeakMap<PathTriplet, WorkflowGroupContent>;
   spaceProviders?: Record<string, SpaceProvider>;
   projectPath: Record<string, PathTriplet>;
@@ -36,7 +36,7 @@ const specialProjectIds = [
   cachedLocalSpaceProjectId,
 ];
 
-export const state = (): State => ({
+export const state = (): SpacesState => ({
   // current content of active browser (files and folders)
   workflowGroupCache: new WeakMap(),
   // metadata of all available space providers and their spaces (including local)
@@ -58,7 +58,7 @@ export const state = (): State => ({
   },
 });
 
-export const mutations: MutationTree<State> = {
+export const mutations: MutationTree<SpacesState> = {
   setIsLoading(state, value: boolean) {
     state.isLoading = value;
   },
@@ -116,7 +116,7 @@ export const mutations: MutationTree<State> = {
   },
 };
 
-export const actions: ActionTree<State, RootStoreState> = {
+export const actions: ActionTree<SpacesState, RootStoreState> = {
   syncPathWithOpenProjects(
     { commit, state },
     {
@@ -507,7 +507,7 @@ export const actions: ActionTree<State, RootStoreState> = {
   },
 };
 
-export const getters: GetterTree<State, RootStoreState> = {
+export const getters: GetterTree<SpacesState, RootStoreState> = {
   pathToItemId: (_, getters) => (projectId: string, pathId: string) => {
     const isGoingBack = pathId === "..";
     if (isGoingBack) {
