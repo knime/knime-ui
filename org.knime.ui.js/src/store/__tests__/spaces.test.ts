@@ -6,7 +6,7 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import * as spacesConfig from "../spaces";
-import { SpaceItemReference } from "../../api/gateway-api/generated-api";
+import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
 
