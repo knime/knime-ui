@@ -4,6 +4,7 @@ import { mockVuexStore } from "@/test/utils";
 
 import GetStartedPage from "@/components/entryPage/GetStartedPage.vue";
 import Card from "@/components/common/Card.vue";
+import { cachedLocalSpaceProjectId } from "@/store/spaces";
 
 describe("GettingStartedPage.vue", () => {
   const doMount = ({ openWorkflowMock = vi.fn() } = {}) => {
@@ -78,8 +79,7 @@ describe("GettingStartedPage.vue", () => {
     expect(openWorkflowMock).toBeCalledWith(
       expect.anything(),
       expect.objectContaining({
-        spaceId: "space",
-        spaceProviderId: "provider",
+        projectId: cachedLocalSpaceProjectId,
         workflowItemId: "item",
       })
     );

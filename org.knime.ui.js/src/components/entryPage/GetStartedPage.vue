@@ -1,13 +1,14 @@
 <script>
+import { mapState } from "vuex";
 import * as knimeColors from "webapps-common/ui/colors/knimeColors.mjs";
-
 import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
+
+import { cachedLocalSpaceProjectId } from "@/store/spaces";
 
 import GridOutbreaker from "@/components/common/GridOutbreaker.vue";
 import Card from "@/components/common/Card.vue";
 import CardHeader from "@/components/common/CardHeader.vue";
 import CardContent from "@/components/common/CardContent.vue";
-import { mapState } from "vuex";
 import SpaceSelectionPage from "@/components/spaces/SpaceSelectionPage.vue";
 
 const MAX_NUM_OF_EXAMPLES = 3;
@@ -42,13 +43,10 @@ export default {
     },
   },
   methods: {
-    async onExampleClick({
-      origin: { spaceId, providerId: spaceProviderId, itemId: workflowItemId },
-    }) {
+    async onExampleClick({ origin }) {
       await this.$store.dispatch("spaces/openWorkflow", {
-        workflowItemId,
-        spaceId,
-        spaceProviderId,
+        projectId: cachedLocalSpaceProjectId,
+        workflowItemId: origin.itemId,
         $router: this.$router,
       });
     },
