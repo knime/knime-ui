@@ -46,47 +46,45 @@ const spacesDropdownData = computed((): MenuItem[] => {
   const activeSpacePath = store.state.spaces.projectPath[props.projectId];
   const spaceProviders = store.state.spaces.spaceProviders;
 
-  const providers = spaceProviders ? Object.values(spaceProviders) : [];
+  const providerHeadlineMenuItem = (provider) => ({
+    id: provider.id,
+    text: provider.name,
+    sectionHeadline: true,
+    separator: true,
+  });
 
+  const spaceMenuItem = (provider) => (space) => ({
+    text: space.name,
+    id: `${provider.id}__${space.id}`,
+    selected: space.id === activeSpacePath?.spaceId,
+    data: {
+      spaceId: space.id,
+      spaceProviderId: provider.id,
+      requestSignIn: false,
+    },
+  });
+
+  const signInMenuItem = (provider) => ({
+    text: "Sign in",
+    id: `${provider.id}__SIGN_IN`,
+    data: {
+      spaceId: null,
+      spaceProviderId: provider.id,
+      requestSignIn: true,
+    },
+  });
+
+  const providers = spaceProviders ? Object.values(spaceProviders) : [];
   return providers.flatMap((provider) =>
+    // no headline for local spaces but for all others
     (provider.id === "local"
       ? []
-      : [
-          {
-            id: provider.id,
-            text: provider.name,
-            sectionHeadline: true,
-            separator: true,
-          },
-        ]
+      : [providerHeadlineMenuItem(provider)]
     ).concat(
-      provider.spaces
-        ? provider.spaces.map((space) => ({
-            text: space.name,
-            id: `${provider.id}__${space.id}`,
-            selected: space.id === activeSpacePath?.spaceId,
-            sectionHeadline: false,
-            separator: false,
-            data: {
-              spaceId: space.id,
-              spaceProviderId: provider.id,
-              requestSignIn: false,
-            },
-          }))
-        : [
-            {
-              text: "Sign in",
-              id: `${provider.id}__SIGN_IN`,
-              sectionHeadline: false,
-              selected: false,
-              separator: false,
-              data: {
-                spaceId: null,
-                spaceProviderId: provider.id,
-                requestSignIn: true,
-              },
-            },
-          ]
+      // create a menu item for each space, offer to sign in if we are not connected
+      provider.connected
+        ? provider.spaces?.map(spaceMenuItem(provider)) || []
+        : [signInMenuItem(provider)]
     )
   );
 });
