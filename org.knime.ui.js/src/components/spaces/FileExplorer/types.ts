@@ -1,14 +1,29 @@
+import type { FunctionalComponent, SVGAttributes } from "vue";
 import type { MenuItem as BaseMenuItem } from "webapps-common/ui/components/MenuItems.vue";
-import type { SpaceItem } from "@/api/gateway-api/generated-api";
 
-export type FileExplorerItem = SpaceItem & {
+export type FileExplorerItem<T = Record<string, any>> = {
+  id: string;
+  name: string;
   isOpen: boolean;
+  isDirectory: boolean;
+  isOpenableFile: boolean;
   canBeRenamed: boolean;
   canBeDeleted: boolean;
+  meta?: T;
 };
+
+export type ItemIconRenderer = (
+  item: FileExplorerItem
+) => FunctionalComponent<SVGAttributes>;
 
 export namespace FileExplorerContextMenu {
   type DefaultOptions = "rename" | "delete";
+
+  export type Anchor = {
+    item: FileExplorerItem;
+    index: number;
+    element: HTMLElement;
+  };
 
   export type MenuItem = BaseMenuItem & {
     id: DefaultOptions | Omit<string, DefaultOptions>;

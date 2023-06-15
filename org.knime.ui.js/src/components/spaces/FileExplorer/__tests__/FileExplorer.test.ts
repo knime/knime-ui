@@ -3,16 +3,16 @@ import * as Vue from "vue";
 import { expect, describe, beforeEach, it, vi } from "vitest";
 import { DOMWrapper, mount, VueWrapper } from "@vue/test-utils";
 
-import WorkflowGroupIcon from "webapps-common/ui/assets/img/icons/folder.svg";
+import FolderIcon from "webapps-common/ui/assets/img/icons/folder.svg";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 import ComponentIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
-import DataIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 import MetaNodeIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
 
 import FileExplorer from "../FileExplorer.vue";
 import FileExplorerItemComp from "../FileExplorerItem.vue";
 import FileExplorerContextMenu from "../FileExplorerContextMenu.vue";
 import { MockIntersectionObserver } from "@/test/utils/mockIntersectionObserver";
+import type { FileExplorerItem } from "../types";
 
 vi.mock("gsap", () => ({
   gsap: {
@@ -24,56 +24,91 @@ vi.mock("gsap", () => ({
 }));
 
 describe("FileExplorer.vue", () => {
-  const MOCK_DATA = [
+  const MOCK_DATA: Array<FileExplorerItem> = [
     {
       id: "0",
       name: "Folder 1",
-      type: "WorkflowGroup",
-      icon: WorkflowGroupIcon,
+      meta: {
+        type: "Folder",
+      },
+      isDirectory: true,
+      isOpenableFile: false,
+      isOpen: false,
       canBeRenamed: true,
       canBeDeleted: true,
     },
     {
       id: "1",
       name: "Folder 2",
-      type: "WorkflowGroup",
-      icon: WorkflowGroupIcon,
+      meta: {
+        type: "Folder",
+      },
+      isDirectory: true,
+      isOpenableFile: false,
+      isOpen: false,
       canBeRenamed: true,
       canBeDeleted: true,
     },
     {
       id: "2",
       name: "File 1",
-      type: "Data",
-      icon: DataIcon,
+      meta: {
+        type: "Workflow",
+      },
+      isDirectory: false,
+      isOpenableFile: true,
+      isOpen: false,
       canBeRenamed: true,
       canBeDeleted: true,
     },
     {
       id: "3",
       name: "File 2",
-      type: "Workflow",
-      icon: WorkflowIcon,
+      meta: {
+        type: "Workflow",
+      },
+      isDirectory: false,
+      isOpenableFile: true,
+      isOpen: false,
       canBeRenamed: true,
       canBeDeleted: true,
     },
     {
       id: "4",
       name: "File 3",
-      type: "Component",
-      icon: ComponentIcon,
+      meta: {
+        type: "Component",
+      },
+      isDirectory: false,
+      isOpenableFile: false,
+      isOpen: false,
       canBeRenamed: true,
       canBeDeleted: true,
     },
     {
       id: "5",
       name: "File 3",
-      type: "WorkflowTemplate",
-      icon: MetaNodeIcon,
+      meta: {
+        type: "Metanode",
+      },
+      isDirectory: false,
+      isOpenableFile: false,
+      isOpen: false,
       canBeRenamed: true,
       canBeDeleted: true,
     },
   ];
+
+  const itemIconRenderer = (item: FileExplorerItem) => {
+    const typeIcons = {
+      Folder: FolderIcon,
+      Workflow: WorkflowIcon,
+      Component: ComponentIcon,
+      Metanode: MetaNodeIcon,
+    };
+
+    return typeIcons[item.meta.type];
+  };
 
   const doMount = ({
     props = {},
@@ -85,6 +120,7 @@ describe("FileExplorer.vue", () => {
       items: MOCK_DATA,
       isRootFolder: true,
       mode: "normal",
+      itemIconRenderer,
     };
 
     const slots = {
@@ -115,10 +151,8 @@ describe("FileExplorer.vue", () => {
     expect(allItems.length).toBe(MOCK_DATA.length);
 
     allItems.forEach((item, index) => {
-      expect(item.classes()).toContain(MOCK_DATA.at(index).type);
-      expect(wrapper.findComponent(MOCK_DATA.at(index).icon).exists()).toBe(
-        true
-      );
+      const icon = itemIconRenderer(MOCK_DATA.at(index));
+      expect(wrapper.findComponent(icon).exists()).toBe(true);
     });
   });
 
@@ -193,17 +227,21 @@ describe("FileExplorer.vue", () => {
 
     const dragAndDropItem = async (
       _srcItemWrapper: DOMWrapper<Element>,
-      _tgtItemWrapper: DOMWrapper<Element>,
+      _tgtItemWrapper: DOMWrapper<Element> | null,
       dropEffect: "move" | "none" = "move",
       skipDrop = false
     ) => {
       const dataTransfer = { setDragImage: vi.fn() };
       await _srcItemWrapper.trigger("dragstart", { dataTransfer });
-      await _tgtItemWrapper.trigger("dragenter");
-      await _tgtItemWrapper.trigger("drag");
-      if (!skipDrop) {
-        await _tgtItemWrapper.trigger("drop");
+
+      if (_tgtItemWrapper) {
+        await _tgtItemWrapper.trigger("dragenter");
+        await _tgtItemWrapper.trigger("drag");
+        if (!skipDrop) {
+          await _tgtItemWrapper.trigger("drop");
+        }
       }
+
       await _srcItemWrapper.trigger("dragend", {
         dataTransfer: { dropEffect },
       });
@@ -371,7 +409,12 @@ describe("FileExplorer.vue", () => {
       // workflow-group item
       const secondItem = getRenderedItems(wrapper).at(1);
 
+      // dragging one item to another causes a move, which means we skip dragend
       await dragAndDropItem(secondItem, firstItem);
+      expect(wrapper.emitted("dragend")).toBeUndefined();
+
+      // drag to anything (other than another item in the FileExplorer itself)
+      await dragAndDropItem(secondItem, null);
 
       expect(wrapper.emitted("dragend")[0][0]).toEqual({
         event: expect.anything(),
@@ -813,13 +856,11 @@ describe("FileExplorer.vue", () => {
             }),
           ])
         );
-        expect(getSlottedStubProp({ wrapper, propName: "anchorItem" })).toEqual(
-          {
-            item: MOCK_DATA.at(0),
-            element: firstItem.element,
-            index: 0,
-          }
-        );
+        expect(getSlottedStubProp({ wrapper, propName: "anchor" })).toEqual({
+          item: MOCK_DATA.at(0),
+          element: firstItem.element,
+          index: 0,
+        });
         expect(
           getSlottedStubProp({ wrapper, propName: "isContextMenuVisible" })
         ).toBe(true);

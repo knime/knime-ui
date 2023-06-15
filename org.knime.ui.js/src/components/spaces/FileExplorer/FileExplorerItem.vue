@@ -1,19 +1,15 @@
 <script setup lang="ts">
-import { toRefs, ref, watch, type Ref, nextTick } from "vue";
+import { toRefs, ref, watch, nextTick, type Ref } from "vue";
 import { directive as vClickAway } from "vue3-click-away";
 
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
-import WorkflowGroupIcon from "webapps-common/ui/assets/img/icons/folder.svg";
-import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
-import ComponentIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
-import DataIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
-import MetaNodeIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
+import FolderIcon from "webapps-common/ui/assets/img/icons/folder.svg";
+import FileTextIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 
-import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { useWorkflowNameValidator } from "@/composables/useWorkflowNameValidator";
 
 import FileExplorerItemBase from "./FileExplorerItemBase.vue";
-import type { FileExplorerItem } from "./types";
+import type { FileExplorerItem, ItemIconRenderer } from "./types";
 
 interface Props {
   blacklistedNames: Array<string>;
@@ -22,9 +18,16 @@ interface Props {
   isSelected: boolean;
   isDragging: boolean;
   isRenameActive: boolean;
+  itemIconRenderer?: ItemIconRenderer | null;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  itemIconRenderer: null,
+});
+
+const defaultIconRenderer: ItemIconRenderer = (item) => {
+  return item.isDirectory ? FolderIcon : FileTextIcon;
+};
 
 const { isRenameActive, blacklistedNames } = toRefs(props);
 
@@ -43,18 +46,6 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>();
-
-const getTypeIcon = (item: FileExplorerItem) => {
-  const typeIcons = {
-    [SpaceItem.TypeEnum.WorkflowGroup]: WorkflowGroupIcon,
-    [SpaceItem.TypeEnum.Workflow]: WorkflowIcon,
-    [SpaceItem.TypeEnum.Component]: ComponentIcon,
-    [SpaceItem.TypeEnum.WorkflowTemplate]: MetaNodeIcon,
-    [SpaceItem.TypeEnum.Data]: DataIcon,
-  };
-
-  return typeIcons[item.type];
-};
 
 const renameInput: Ref<InstanceType<typeof InputField> | null> = ref(null);
 const renameValue = ref("");
@@ -105,7 +96,6 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
     class="file-explorer-item"
     :is-dragging="isDragging"
     :is-selected="isSelected"
-    :class="item.type"
     :draggable="!isRenameActive"
     @dragstart="!isRenameActive && emit('dragstart', $event)"
     @dragenter="!isRenameActive && emit('dragenter', $event)"
@@ -120,13 +110,13 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
   >
     <template #icon>
       <span v-if="item.isOpen" class="open-indicator" />
-      <Component :is="getTypeIcon(item)" />
+      <Component :is="(itemIconRenderer || defaultIconRenderer)(item)" />
     </template>
 
     <td
       class="item-content"
       :class="{
-        light: item.type !== SpaceItem.TypeEnum.WorkflowGroup,
+        light: !item.isDirectory,
         'rename-active': isRenameActive,
       }"
       :title="item.name"

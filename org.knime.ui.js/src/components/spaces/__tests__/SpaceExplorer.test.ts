@@ -140,6 +140,7 @@ describe("SpaceExplorer.vue", () => {
   const doMountAndLoad = async ({
     props = {
       projectId: "someProjectId",
+      mode: "normal",
     },
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
@@ -167,8 +168,13 @@ describe("SpaceExplorer.vue", () => {
       fetchWorkflowGroupContentResponse.items.map((item) => ({
         ...item,
         isOpen: false,
+        isDirectory: item.type === SpaceItem.TypeEnum.WorkflowGroup,
+        isOpenableFile: item.type === SpaceItem.TypeEnum.Workflow,
         canBeDeleted: true,
         canBeRenamed: true,
+        meta: {
+          type: item.type,
+        },
       }))
     );
     expect(wrapper.findComponent(FileExplorer).props("isRootFolder")).toBe(
@@ -948,10 +954,14 @@ describe("SpaceExplorer.vue", () => {
       const sourceItem = {
         id: "0",
         name: "file.test",
+        isDirectory: false,
+        isOpenableFile: true,
         canBeDeleted: true,
         canBeRenamed: true,
         isOpen: false,
-        type: SpaceItem.TypeEnum.Component,
+        meta: {
+          type: SpaceItem.TypeEnum.Component,
+        },
       };
       const onComplete = vi.fn();
 

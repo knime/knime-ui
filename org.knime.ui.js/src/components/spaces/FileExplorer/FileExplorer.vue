@@ -2,8 +2,6 @@
 import { ref, toRefs, computed, watch } from "vue";
 import { directive as vClickAway } from "vue3-click-away";
 
-import { SpaceItem } from "@/api/gateway-api/generated-api";
-
 import { useItemDragging } from "./useItemDragging";
 import { useMultiSelection } from "./useMultiSelection";
 import FileExplorerContextMenu from "./FileExplorerContextMenu.vue";
@@ -12,6 +10,7 @@ import FileExplorerItemBack from "./FileExplorerItemBack.vue";
 import type {
   FileExplorerItem as FileExplorerItemType,
   FileExplorerContextMenu as FileExplorerContextMenuNamespace,
+  ItemIconRenderer,
 } from "./types";
 
 /**
@@ -24,11 +23,13 @@ interface Props {
   fullPath?: string;
   isRootFolder: boolean;
   items: Array<FileExplorerItemType>;
+  itemIconRenderer?: ItemIconRenderer;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: "normal",
   fullPath: "",
+  itemIconRenderer: null,
 });
 
 const emit = defineEmits<{
@@ -56,10 +57,9 @@ const emit = defineEmits<{
   (e: "renameFile", payload: { itemId: string; newName: string }): void;
 }>();
 
-const isDirectory = (item: FileExplorerItemType) =>
-  item.type === SpaceItem.TypeEnum.WorkflowGroup;
-const canOpenFile = (item: FileExplorerItemType) =>
-  item.type === SpaceItem.TypeEnum.Workflow;
+const isDirectory = (item: FileExplorerItemType) => item.isDirectory;
+
+const canOpenFile = (item: FileExplorerItemType) => item.isOpenableFile;
 
 const changeDirectory = (pathId: string) => emit("changeDirectory", pathId);
 
@@ -131,11 +131,23 @@ const {
   getCustomPreviewEl: () => document.querySelector(".custom-preview"),
 });
 
+const hasMovedItems = ref(false);
 /**
  * This helper simply forwards the emission of the given event name, provided the payload is not null.
  * It's needed because the `useItemDragging` composable doesn't have access to the component emits
  */
 const forwardEmit = (eventName: any, eventPayload: any) => {
+  // when we have emitted a moveItems event we should then not forward
+  // any event after that
+  if (hasMovedItems.value) {
+    hasMovedItems.value = false;
+    return;
+  }
+
+  if (eventName === "moveItems") {
+    hasMovedItems.value = true;
+  }
+
   if (!eventPayload) {
     return;
   }
@@ -146,11 +158,9 @@ const forwardEmit = (eventName: any, eventPayload: any) => {
 
 const isContextMenuVisible = ref(false);
 const contextMenuPos = ref({ x: 0, y: 0 });
-const contextMenuAnchor = ref<{
-  item: FileExplorerItemType;
-  index: number;
-  element: HTMLElement;
-} | null>(null);
+const contextMenuAnchor = ref<FileExplorerContextMenuNamespace.Anchor | null>(
+  null
+);
 
 const closeContextMenu = () => {
   isContextMenuVisible.value = false;
@@ -248,6 +258,7 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
         :is-selected="isSelected(index)"
         :is-rename-active="item.id === activeRenameItemId"
         :blacklisted-names="blacklistedNames"
+        :item-icon-renderer="itemIconRenderer"
         @dragstart="onDragStart($event, index)"
         @dragenter="onDragEnter(index)"
         @dragleave="onDragLeave(index)"
@@ -285,7 +296,7 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
           name="contextMenu"
           :is-context-menu-visible="isContextMenuVisible"
           :position="contextMenuPos"
-          :anchor-item="contextMenuAnchor"
+          :anchor="contextMenuAnchor"
           :is-multiple-selection-active="
             isMultipleSelectionActive(contextMenuAnchor.index)
           "

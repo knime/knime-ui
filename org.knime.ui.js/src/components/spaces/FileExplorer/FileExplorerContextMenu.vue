@@ -13,11 +13,7 @@ import type { FileExplorerItem, FileExplorerContextMenu } from "./types";
 
 interface Props {
   position: XY;
-  anchor: {
-    item: FileExplorerItem;
-    element: HTMLElement;
-    index: number;
-  };
+  anchor: FileExplorerContextMenu.Anchor;
   selectedItems: Array<FileExplorerItem>;
 }
 

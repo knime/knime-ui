@@ -1,4 +1,5 @@
 <script lang="ts">
+/* eslint-disable max-lines */
 import { defineComponent, type PropType } from "vue";
 import { mapActions, mapGetters, mapState } from "vuex";
 import { API } from "@api";
@@ -12,6 +13,12 @@ import Button from "webapps-common/ui/components/Button.vue";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import FolderIcon from "webapps-common/ui/assets/img/icons/folder.svg";
+import FileTextIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
+import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
+import ComponentIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
+import MetaNodeIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
+
 import type { PathTriplet } from "@/store/spaces";
 import {
   SpaceItem,
@@ -19,6 +26,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import SmartLoader from "@/components/common/SmartLoader.vue";
+import type { SpaceProvider } from "@/api/custom-types";
 
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import FileExplorer from "./FileExplorer/FileExplorer.vue";
@@ -26,10 +34,23 @@ import type {
   FileExplorerItem,
   FileExplorerContextMenu,
 } from "./FileExplorer/types";
-import type { SpaceProvider } from "@/api/custom-types";
+
+type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
 
 const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
-  return !nodeTemplateId && item.type === SpaceItem.TypeEnum.Component;
+  return !nodeTemplateId && item.meta.type === SpaceItem.TypeEnum.Component;
+};
+
+const itemIconRenderer = (item: FileExplorerItemWithMeta) => {
+  const typeIcons = {
+    [SpaceItem.TypeEnum.WorkflowGroup]: FolderIcon,
+    [SpaceItem.TypeEnum.Workflow]: WorkflowIcon,
+    [SpaceItem.TypeEnum.Component]: ComponentIcon,
+    [SpaceItem.TypeEnum.WorkflowTemplate]: MetaNodeIcon,
+    [SpaceItem.TypeEnum.Data]: FileTextIcon,
+  };
+
+  return typeIcons[item.meta.type];
 };
 
 export default defineComponent({
@@ -71,6 +92,7 @@ export default defineComponent({
       },
       nodeTemplate: null,
       shouldShowPreview: false,
+      itemIconRenderer,
     };
   },
 
@@ -111,7 +133,7 @@ export default defineComponent({
       return this.getOpenedFolderItems(this.projectId);
     },
 
-    fileExplorerItems(): Array<FileExplorerItem> {
+    fileExplorerItems(): Array<FileExplorerItemWithMeta> {
       return this.activeWorkflowGroup.items.map((item) => {
         const isOpen =
           this.openedWorkflowItems.includes(item.id) ||
@@ -120,8 +142,13 @@ export default defineComponent({
         return {
           ...item,
           isOpen,
+          isDirectory: item.type === SpaceItem.TypeEnum.WorkflowGroup,
+          isOpenableFile: item.type === SpaceItem.TypeEnum.Workflow,
           canBeRenamed: !isOpen,
           canBeDeleted: !this.openedFolderItems.includes(item.id),
+          meta: {
+            type: item.type,
+          },
         };
       });
     },
@@ -357,7 +384,7 @@ export default defineComponent({
       item,
     }: {
       event: DragEvent;
-      item: FileExplorerItem;
+      item: FileExplorerItemWithMeta;
     }) {
       const nodeTemplateId = this.getNodeTemplateId(item);
       const isItemAComponent = isComponent(nodeTemplateId, item);
@@ -375,7 +402,12 @@ export default defineComponent({
 
       if (!this.nodeTemplate) {
         this.nodeTemplate = isItemAComponent
-          ? { isComponent: true, inPorts: [], outPorts: [], type: item.type }
+          ? {
+              isComponent: true,
+              inPorts: [],
+              outPorts: [],
+              type: item.meta.type,
+            }
           : await this.getNodeTemplate(nodeTemplateId);
       }
 
@@ -388,7 +420,7 @@ export default defineComponent({
       onComplete,
     }: {
       event: DragEvent;
-      sourceItem: FileExplorerItem;
+      sourceItem: FileExplorerItemWithMeta;
       onComplete: (isSuccessful: boolean) => void;
     }) {
       this.nodeTemplate = null;
@@ -446,7 +478,7 @@ export default defineComponent({
       }
     },
 
-    getNodeTemplateId(sourceItem: FileExplorerItem) {
+    getNodeTemplateId(sourceItem: FileExplorerItemWithMeta) {
       const sourceFileExtension = Object.keys(
         this.fileExtensionToNodeTemplateId
       ).find((extension) => sourceItem.name.endsWith(extension));
@@ -461,7 +493,7 @@ export default defineComponent({
       isMultipleSelectionActive: boolean
     ): MenuItem[] {
       const openFileType =
-        anchorItem.type === SpaceItem.TypeEnum.Workflow
+        anchorItem.meta.type === SpaceItem.TypeEnum.Workflow
           ? "workflows"
           : "folders";
 
@@ -547,6 +579,7 @@ export default defineComponent({
         :items="fileExplorerItems"
         :is-root-folder="activeWorkflowGroup.path.length === 0"
         :full-path="fullPath"
+        :item-icon-renderer="itemIconRenderer"
         @change-directory="onChangeDirectory"
         @change-selection="onSelectionChange"
         @open-file="onOpenFile"
@@ -569,7 +602,7 @@ export default defineComponent({
           #contextMenu="{
             createRenameOption,
             createDeleteOption,
-            anchorItem,
+            anchor,
             onItemClick,
             isMultipleSelectionActive,
           }"
@@ -581,7 +614,7 @@ export default defineComponent({
               getFileExplorerContextMenuItems(
                 createRenameOption,
                 createDeleteOption,
-                anchorItem.item,
+                anchor.item,
                 isMultipleSelectionActive
               )
             "
@@ -599,10 +632,11 @@ export default defineComponent({
       >
         <template #icon><TrashIcon /></template>
         <template #confirmation>
-          <div>
+          <div class="items-to-delete">
             <span>Do you want to delete the following item(s):</span>
             <ul>
               <li v-for="(item, index) of deleteModal.items" :key="index">
+                <Component :is="itemIconRenderer(item)" />
                 {{ item.name }}
               </li>
             </ul>
@@ -676,5 +710,29 @@ export default defineComponent({
 .smart-loader {
   --smartloader-bg: var(--knime-gray-ultra-light);
   --smartloader-icon-size: 30;
+}
+
+.items-to-delete {
+  & span {
+    font-weight: bold;
+  }
+
+  & ul {
+    margin: 0;
+    padding: 8px 0;
+    list-style-type: none;
+    max-height: 300px;
+    overflow-y: auto;
+
+    & li {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      & svg {
+        @mixin svg-icon-size 14;
+      }
+    }
+  }
 }
 </style>
