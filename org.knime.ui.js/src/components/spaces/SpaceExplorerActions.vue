@@ -1,36 +1,25 @@
 <script>
-import PlusButton from "webapps-common/ui/components/PlusButton.vue";
+import { mapGetters, mapState } from "vuex";
 
-import Button from "webapps-common/ui/components/Button.vue";
+import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
 import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
 import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg";
+import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
-import Modal from "webapps-common/ui/components/Modal.vue";
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
 
+import ItemButton from "@/components/common/ItemButton.vue";
 import PlusIcon from "@/assets/plus.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import AddFileIcon from "@/assets/add-file.svg";
 
-import ToolbarButton from "@/components/common/ToolbarButton.vue";
-
 export default {
   components: {
+    ItemButton,
     PlusButton,
-    Button,
     SubMenu,
-    PlusIcon,
-    ToolbarButton,
-    FolderPlusIcon,
-    CloudDownloadIcon,
-    CloudUploadIcon,
-    ImportWorkflowIcon,
-    AddFileIcon,
     MenuOptionsIcon,
-    Modal,
-    InputField,
   },
 
   props: {
@@ -39,67 +28,134 @@ export default {
       default: "normal",
       validator: (value) => ["normal", "mini"].includes(value),
     },
-    /**
-     * @typedef DisabledActions
-     * @property {Boolean} [createWorkflow]
-     * @property {Boolean} [createFolder]
-     * @property {Boolean} [importWorkflow]
-     * @property {Boolean} [importFiles]
-     * @property {Boolean} [uploadToHub]
-     * @property {Boolean} [downloadToLocalSpace]
-     */
-    /**
-     * Object containing whether each action is allowed.
-     *
-     * @type {import('vue').PropOptions<DisabledActions>}
-     */
-    disabledActions: {
-      type: Object,
-      default: () => ({}),
+    selectedItems: {
+      type: Array,
+      required: true,
     },
-
-    hasActiveHubSession: {
-      type: Boolean,
-      default: false,
-    },
-
-    isLocal: {
-      type: Boolean,
-      default: false,
+    projectId: {
+      type: String,
+      required: true,
     },
   },
 
-  emits: [
-    "action:createWorkflow",
-    "action:createFolder",
-    "action:importWorkflow",
-    "action:importFiles",
-    "action:uploadToHub",
-    "action:downloadToLocalSpace",
-  ],
-
   computed: {
-    actions() {
-      return [
-        {
-          id: "createWorkflow",
-          text: "Create workflow",
-          icon: PlusIcon,
-          disabled: this.disabledActions.createWorkflow,
-          hidden: this.mode !== "mini",
+    ...mapGetters("spaces", ["getSpaceInfo", "hasActiveHubSession"]),
+    ...mapState("spaces", ["spaceProviders"]),
+
+    isLocal() {
+      return this.getSpaceInfo(this.projectId).local;
+    },
+    disconnectedSpaceProviders() {
+      return Object.values(this.spaceProviders).filter(
+        (provider) => !provider.connected
+      );
+    },
+    disabledActions() {
+      return {
+        uploadToHub:
+          !this.hasActiveHubSession || this.selectedItems.length === 0,
+        downloadToLocalSpace: this.isLocal || this.selectedItems.length === 0,
+      };
+    },
+    createWorkflowAction() {
+      return {
+        id: "createWorkflow",
+        text: "Create workflow",
+        icon: PlusIcon,
+        disabled: this.disabledActions.createWorkflow,
+        hidden: this.mode !== "mini",
+        execute: () => {
+          this.$store.commit("spaces/setCreateWorkflowModalConfig", {
+            isOpen: true,
+            projectId: this.projectId,
+          });
         },
+      };
+    },
+    actions() {
+      const { projectId } = this;
+
+      const uploadToHub = {
+        id: "uploadToHub",
+        text: "Upload to Hub",
+        icon: CloudUploadIcon,
+        disabled: this.disabledActions.uploadToHub,
+        title: this.hasActiveHubSession
+          ? // eslint-disable-next-line no-extra-parens
+            this.disabledActions.uploadToHub &&
+            "Select at least one file to upload."
+          : "Login is required to upload to hub.",
+        execute: () => {
+          this.$store.dispatch("spaces/copyBetweenSpaces", {
+            projectId,
+            itemIds: this.selectedItems,
+          });
+        },
+      };
+
+      const createConnectToHubItem = (provider) => {
+        return {
+          id: `connectToHub-${provider.id}`,
+          text: provider.name,
+          execute: () => {
+            this.$store.dispatch("spaces/connectProvider", {
+              spaceProviderId: provider.id,
+            });
+          },
+        };
+      };
+
+      const connectToHub = {
+        id: "connectToHub",
+        text: "Connect to Hub",
+        icon: CloudLoginIcon,
+        hidden: this.disconnectedSpaceProviders.length === 0,
+        execute: null,
+        children: this.disconnectedSpaceProviders.map(createConnectToHubItem),
+      };
+
+      const uploadAndConnectToHub = [uploadToHub, connectToHub];
+
+      const downloadToLocalSpace = {
+        id: "downloadToLocalSpace",
+        text: "Download to local space",
+        icon: CloudDownloadIcon,
+        disabled: this.disabledActions.downloadToLocalSpace,
+        title: this.disabledActions.downloadToLocalSpace
+          ? "Select at least one file to download."
+          : null,
+        execute: () => {
+          $store.dispatch("spaces/copyBetweenSpaces", {
+            projectId,
+            itemIds: this.selectedItems,
+          });
+        },
+      };
+      return [
+        this.createWorkflowAction,
         {
           id: "createFolder",
           text: "Create folder",
           icon: FolderPlusIcon,
           disabled: this.disabledActions.createFolder,
           separator: true,
+          execute: () => {
+            this.$store.dispatch("spaces/createFolder", {
+              projectId,
+            });
+          },
         },
         {
           id: "importWorkflow",
           text: "Import workflow",
           icon: ImportWorkflowIcon,
           disabled: this.disabledActions.importWorkflow,
+          execute: () => {
+            this.$store.dispatch("spaces/importToWorkflowGroup", {
+              projectId,
+              importType: "WORKFLOW",
+            });
+          },
         },
         {
           id: "importFiles",
@@ -107,28 +163,14 @@ export default {
           icon: AddFileIcon,
           disabled: this.disabledActions.importFiles,
           separator: true,
+          execute: () => {
+            this.$store.dispatch("spaces/importToWorkflowGroup", {
+              projectId,
+              importType: "FILES",
+            });
+          },
         },
-        this.isLocal
-          ? {
-              id: "uploadToHub",
-              text: "Upload to Hub",
-              icon: CloudUploadIcon,
-              disabled: this.disabledActions.uploadToHub,
-              title: this.hasActiveHubSession
-                ? // eslint-disable-next-line no-extra-parens
-                  this.disabledActions.uploadToHub &&
-                  "Select at least one file to upload."
-                : "Login is required to upload to hub.",
-            }
-          : {
-              id: "downloadToLocalSpace",
-              text: "Download to local space",
-              icon: CloudDownloadIcon,
-              disabled: this.disabledActions.downloadToLocalSpace,
-              title: this.disabledActions.downloadToLocalSpace
-                ? "Select at least one file to download."
-                : null,
-            },
+        ...(this.isLocal ? uploadAndConnectToHub : [downloadToLocalSpace]),
       ].filter(({ hidden }) => !hidden);
     },
 
@@ -144,26 +186,20 @@ export default {
   <div class="toolbar-buttons">
     <template v-if="mode === 'normal'">
       <div class="toolbar-actions-normal">
-        <Button
+        <ItemButton
           v-for="action in actions"
           :id="action.id"
           :key="action.id"
-          :title="action.title"
-          with-border
-          compact
-          :aria-disabled="action.disabled || null"
-          @click="action.disabled ? null : $emit(`action:${action.id}`)"
-        >
-          <Component :is="action.icon" />
-          {{ action.text }}
-        </Button>
+          :item="action"
+          @click="(item) => (item.execute ? item.execute() : null)"
+        />
 
         <div class="create-workflow-btn">
           <PlusButton
             :title="createWorkflowButtonTitle"
             primary
-            :disabled="disabledActions.createWorkflow"
-            @click="$emit('action:createWorkflow')"
+            :disabled="createWorkflowAction.disabled"
+            @click="createWorkflowAction.execute()"
           />
         </div>
       </div>
@@ -172,12 +208,12 @@ export default {
     <template v-if="mode === 'mini'">
       <div class="toolbar-actions-mini">
         <SubMenu
-          :teleport-to-body="false"
+          :teleport-to-body="true"
           :items="actions"
           class="more-actions"
           button-title="More actions"
           @toggle.stop
-          @item-click="(_, { id }) => $emit(`action:${id}`)"
+          @item-click="(_, { execute }) => execute()"
         >
           <MenuOptionsIcon class="open-icon" />
         </SubMenu>
@@ -187,60 +223,15 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-@import url("@/assets/mixins.css");
-
 .toolbar-buttons {
   & .toolbar-actions-normal {
+    display: flex;
     position: relative;
-
-    & .button {
-      margin-left: 5px;
-      border-color: var(--knime-silver-sand);
-      color: var(--knime-masala);
-
-      & svg {
-        @mixin svg-icon-size 18;
-
-        stroke: var(--knime-masala);
-        margin-right: 4px;
-      }
-
-      &:hover,
-      &:active,
-      &:focus {
-        cursor: pointer;
-        color: var(--knime-white);
-        background-color: var(--knime-masala);
-        border-color: var(--knime-masala);
-
-        & svg {
-          stroke: var(--knime-white);
-        }
-      }
-
-      &[aria-disabled] {
-        cursor: default;
-        opacity: 0.6;
-
-        &:hover,
-        &:active,
-        &:focus {
-          border-color: var(--knime-silver-sand);
-          color: var(--knime-masala);
-          background-color: transparent;
-          cursor: default;
-        }
-
-        & svg {
-          stroke: var(--knime-masala);
-        }
-      }
-    }
 
     & .create-workflow-btn {
       position: absolute;
       z-index: 2;
-      top: 110px;
+      top: 105px;
       right: 0;
     }
 

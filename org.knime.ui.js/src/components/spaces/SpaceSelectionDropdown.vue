@@ -120,11 +120,13 @@ const spaceIcon = computed(() => {
       orientation="left"
       @item-click="(e, item) => onSpaceChange(item)"
     >
-      <template v-if="showText">
-        <Component :is="spaceIcon" />
-        <span class="selected-text">{{ selectedText }}</span>
+      <template #default="{ expanded }">
+        <template v-if="showText">
+          <Component :is="spaceIcon" />
+          <span class="selected-text">{{ selectedText }}</span>
+        </template>
+        <DropdownIcon class="dropdown-icon" :class="{ flip: expanded }" />
       </template>
-      <DropdownIcon class="dropdown-icon" />
     </SubMenu>
   </div>
 </template>
@@ -133,6 +135,10 @@ const spaceIcon = computed(() => {
 .space-path-breadcrumb {
   & .dropdown-icon {
     margin-left: 5px;
+
+    &.flip {
+      transform: scaleY(-1);
+    }
   }
 
   & .selected-text {

@@ -62,15 +62,6 @@ export default {
         icon: isPrivateSpace ? PrivateSpaceIcon : CubeIcon,
       };
     },
-
-    explorerDisabledActions() {
-      return {
-        uploadToHub:
-          !this.hasActiveHubSession || this.selectedItems.length === 0,
-        downloadToLocalSpace:
-          this.activeSpaceInfo.local || this.selectedItems.length === 0,
-      };
-    },
   },
   methods: {
     onBackButtonClick() {
@@ -103,44 +94,8 @@ export default {
         <div class="grid-item-12">
           <div class="toolbar">
             <SpaceExplorerActions
-              :is-local="activeSpaceInfo.local"
-              :disabled-actions="explorerDisabledActions"
-              :has-active-hub-session="hasActiveHubSession"
-              @action:create-workflow="
-                $store.commit('spaces/setCreateWorkflowModalConfig', {
-                  isOpen: true,
-                  projectId: globalSpaceBrowserProjectId,
-                })
-              "
-              @action:create-folder="
-                $store.dispatch('spaces/createFolder', {
-                  projectId: globalSpaceBrowserProjectId,
-                })
-              "
-              @action:import-workflow="
-                $store.dispatch('spaces/importToWorkflowGroup', {
-                  projectId: globalSpaceBrowserProjectId,
-                  importType: 'WORKFLOW',
-                })
-              "
-              @action:import-files="
-                $store.dispatch('spaces/importToWorkflowGroup', {
-                  projectId: globalSpaceBrowserProjectId,
-                  importType: 'FILES',
-                })
-              "
-              @action:upload-to-hub="
-                $store.dispatch('spaces/copyBetweenSpaces', {
-                  projectId: globalSpaceBrowserProjectId,
-                  itemIds: selectedItems,
-                })
-              "
-              @action:download-to-local-space="
-                $store.dispatch('spaces/copyBetweenSpaces', {
-                  projectId: globalSpaceBrowserProjectId,
-                  itemIds: selectedItems,
-                })
-              "
+              :project-id="globalSpaceBrowserProjectId"
+              :selected-items="selectedItems"
             />
           </div>
         </div>

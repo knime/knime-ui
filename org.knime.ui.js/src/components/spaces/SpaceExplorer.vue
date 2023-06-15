@@ -115,7 +115,6 @@ export default defineComponent({
       "getOpenedWorkflowItems",
       "getOpenedFolderItems",
       "pathToItemId",
-      "hasActiveHubSession",
       "getWorkflowGroupContent",
     ]),
     ...mapGetters("workflow", ["isWritable"]),
@@ -153,10 +152,6 @@ export default defineComponent({
           },
         };
       });
-    },
-
-    isLocal() {
-      return this.activeSpacePath?.spaceId === "local";
     },
 
     breadcrumbItems() {
@@ -199,14 +194,6 @@ export default defineComponent({
       }
       const { path } = this.activeWorkflowGroup;
       return ["home"].concat(path.map(({ name }) => name)).join("/");
-    },
-
-    explorerDisabledActions() {
-      return {
-        uploadToHub:
-          !this.hasActiveHubSession || this.selectedItems.length === 0,
-        downloadToLocalSpace: this.isLocal || this.selectedItems.length === 0,
-      };
     },
   },
 
@@ -525,42 +512,8 @@ export default defineComponent({
 
       <SpaceExplorerActions
         mode="mini"
-        :is-local="isLocal"
-        :disabled-actions="explorerDisabledActions"
-        :has-active-hub-session="hasActiveHubSession"
-        @action:create-workflow="
-          $store.commit('spaces/setCreateWorkflowModalConfig', {
-            isOpen: true,
-            projectId,
-          })
-        "
-        @action:create-folder="
-          $store.dispatch('spaces/createFolder', { projectId: projectId })
-        "
-        @action:import-workflow="
-          $store.dispatch('spaces/importToWorkflowGroup', {
-            projectId: projectId,
-            importType: 'WORKFLOW',
-          })
-        "
-        @action:import-files="
-          $store.dispatch('spaces/importToWorkflowGroup', {
-            projectId: projectId,
-            importType: 'FILES',
-          })
-        "
-        @action:upload-to-hub="
-          $store.dispatch('spaces/copyBetweenSpaces', {
-            projectId: projectId,
-            itemIds: selectedItems,
-          })
-        "
-        @action:download-to-local-space="
-          $store.dispatch('spaces/copyBetweenSpaces', {
-            projectId: projectId,
-            itemIds: selectedItems,
-          })
-        "
+        :project-id="projectId"
+        :selected-items="selectedItems"
       />
     </div>
     <div class="breadcrumb-wrapper">
