@@ -51,7 +51,9 @@ package org.knime.ui.java.api;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
+import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -77,15 +79,30 @@ import org.knime.workbench.ui.p2.actions.InvokeUpdateAction;
  */
 final class EclipseUIAPI {
 
-    private static final String WORKFLOW_COACH_PREFERENCE_PAGE_ID = "org.knime.workbench.workflowcoach";
+    private static class PreferencePageIds {
 
-    private static final String WEB_UI_PREFERENCE_PAGE_ID = "org.knime.ui.java.prefs.KnimeUIPreferencePage";
+        /** Pages in the 'General' section */
+        private static final String APPEARANCE = "org.eclipse.ui.preferencePages.Views";
+        private static final String KEYS = "org.eclipse.ui.preferencePages.Keys";
+        private static final String SECURITY = "org.eclipse.equinox.security.ui.category";
+        private static final String STARTUP_SHUTDOWN = "org.eclipse.ui.preferencePages.Startup";
+        private static final String WEB_BROWSER = "org.eclipse.ui.browser.preferencePage";
+        private static final String WORKSPACE = "org.eclipse.ui.preferencePages.Workspace";
 
-    private static final String ECLIPSE_GENERAL_PREFERENCE_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
+        /** Pages in the 'KNIME' section */
+        private static final String MASTER_KEY = "org.knime.workbench.ui.preferences.masterkey";
+        private static final String META_INFO = "org.knime.workbench.ui.metainfo";
+        private static final String MODERN_UI = "org.knime.ui.java.prefs.KnimeUIPreferencePage";
+        private static final String WORKFLOW_COACH = "org.knime.workbench.workflowcoach";
 
-    private static final String ECLIPSE_APPEARANCE_PREFERENCE_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
+        /** Pages in the 'Report Design' section */
+        private static final String REPORT_DESIGN = "org.eclipse.birt.report.designer.ui.preferences";
 
-    private static final String ECLIPSE_KEYS_PREFERENCE_PAGE_ID = "org.eclipse.ui.preferencePages.Keys";
+        /** A list of excluded pages */
+        private static final List<String> EXCLUDED = List.of(APPEARANCE, KEYS, SECURITY, STARTUP_SHUTDOWN, WEB_BROWSER,
+            WORKSPACE, MASTER_KEY, META_INFO, REPORT_DESIGN);
+
+    }
 
     private EclipseUIAPI() {
         // stateless
@@ -121,26 +138,27 @@ final class EclipseUIAPI {
      */
     @API
     static void openWebUIPreferencePage() {
-        var dialog = PreferencesUtil.createPreferenceDialogOn(null, WEB_UI_PREFERENCE_PAGE_ID, null, null);
-        var idsToExclude = List.of(ECLIPSE_APPEARANCE_PREFERENCE_PAGE_ID, ECLIPSE_KEYS_PREFERENCE_PAGE_ID);
-
-        Arrays.stream(dialog.getPreferenceManager().getRootSubNodes())//
-            .filter(pref -> pref.getId().equals(ECLIPSE_GENERAL_PREFERENCE_PAGE_ID))//
-            .findFirst()//
-            .ifPresentOrElse(parent -> {
-                var excluded = Arrays.stream(parent.getSubNodes())//
-                    .filter(pref -> idsToExclude.contains(pref.getId()))//
-                    .toList();
-                // If the preference pages for the IDs to exclude were found, exclude them
-                excluded.forEach(parent::remove);
-                // Open the dialog
-                dialog.open();
-                // Include them again to make them available in Classic UI
-                excluded.forEach(parent::add);
-            }, dialog::open); // Just open the dialog of the pages where not found
+        var rootSubNodes = PlatformUI.getWorkbench().getPreferenceManager().getRootSubNodes();
+        var displayedIds = getFilteredDisplayIds(rootSubNodes);
+        var dialog = PreferencesUtil.createPreferenceDialogOn(null, PreferencePageIds.MODERN_UI, displayedIds, null);
+        dialog.open();
 
         // Since changing the web-ui settings changes the application state
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+    }
+
+    /**
+     * Returns all the display IDs it could find, except the ones filtered out
+     */
+    private static String[] getFilteredDisplayIds(final IPreferenceNode[] nodes) {
+        return Arrays.stream(nodes)//
+            .filter(node -> !PreferencePageIds.EXCLUDED.contains(node.getId()))//
+            .flatMap(parent -> {
+                var children = parent.getSubNodes();
+                var filteredChildren = getFilteredDisplayIds(children);
+                return Stream.concat(Stream.of(parent.getId()), Arrays.stream(filteredChildren));
+            })//
+            .toArray(String[]::new);
     }
 
     /**
@@ -153,7 +171,7 @@ final class EclipseUIAPI {
             .filter(Predicate.not(String::isBlank))//
             .toArray(String[]::new);
         var dialog =
-            PreferencesUtil.createPreferenceDialogOn(null, WORKFLOW_COACH_PREFERENCE_PAGE_ID, displayedIds, null);
+            PreferencesUtil.createPreferenceDialogOn(null, PreferencePageIds.WORKFLOW_COACH, displayedIds, null);
         dialog.open();
 
         // Since changing the node recommendation settings changes the application state
