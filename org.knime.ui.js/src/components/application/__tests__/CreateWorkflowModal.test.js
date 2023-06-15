@@ -107,7 +107,12 @@ describe("CreateWorkflowModal.vue", () => {
       input.element.value = newName;
       input.trigger("input");
 
-      await wrapper.findAll("button").at(-1).trigger("click");
+      const submitButton = wrapper.findAll("button").at(-1);
+      expect(submitButton.attributes("disabled")).toBeUndefined();
+
+      await submitButton.trigger("click");
+      expect(submitButton.attributes("disabled")).toBe("");
+
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/createWorkflow", {
         projectId: "someProject",
         workflowName: newName,
@@ -180,7 +185,7 @@ describe("CreateWorkflowModal.vue", () => {
     });
 
     describe("hotkeys", () => {
-      it("should submit on keypress enter and with a valid name", async () => {
+      it("should submit on keypress enter with a valid name but only once", async () => {
         const { wrapper, dispatchSpy } = doMount();
 
         const newName = "A valid name";
@@ -190,10 +195,16 @@ describe("CreateWorkflowModal.vue", () => {
 
         const inputField = wrapper.findComponent(InputField);
         await inputField.vm.$emit("keyup", { key: "Enter" });
-        expect(dispatchSpy).toHaveBeenCalledWith("spaces/createWorkflow", {
-          projectId: "someProject",
-          workflowName: newName,
-        });
+        await inputField.vm.$emit("keyup", { key: "Enter" });
+
+        expect(dispatchSpy).toHaveBeenNthCalledWith(
+          1,
+          "spaces/createWorkflow",
+          {
+            projectId: "someProject",
+            workflowName: newName,
+          }
+        );
       });
 
       it("should not submit on keypress enter with an invalid name", async () => {

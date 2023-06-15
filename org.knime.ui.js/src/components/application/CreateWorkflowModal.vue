@@ -8,11 +8,13 @@ import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 
 import { useWorkflowNameValidator } from "@/composables/useWorkflowNameValidator";
+import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 
 const NAME_TEMPLATE = "KNIME_project";
 
 const store = useStore();
 
+const isSubmitted = ref(false);
 const inputRef = ref<InstanceType<typeof InputField>>(null);
 const workflowName = ref(NAME_TEMPLATE);
 
@@ -43,15 +45,24 @@ const closeModal = () => {
   });
 };
 
-const onSubmit = () => {
+const onSubmit = async () => {
+  if (isSubmitted.value) {
+    return;
+  }
+  isSubmitted.value = true;
   try {
-    // do not wait to finish this action, it takes time and will update the state of the validation (showing an error)
-    store.dispatch("spaces/createWorkflow", {
-      projectId: store.state.spaces.createWorkflowModalConfig.projectId,
+    const { projectId } = store.state.spaces.createWorkflowModalConfig;
+    const workflowItem = await store.dispatch("spaces/createWorkflow", {
+      projectId,
       workflowName: cleanName(workflowName.value),
     });
 
     closeModal();
+
+    await store.dispatch("spaces/openWorkflow", {
+      projectId,
+      workflowItemId: workflowItem.id,
+    });
   } catch (error) {
     consola.log("There was an error creating the workflow", error);
   }
@@ -91,6 +102,9 @@ watch(
         inputElement?.focus();
         // eslint-disable-next-line no-magic-numbers
       }, 200);
+    } else {
+      // reset on close
+      isSubmitted.value = false;
     }
   },
   { immediate: true }
@@ -115,10 +129,11 @@ watch(
             v-model="workflowName"
             type="text"
             title="Workflow name"
-            :is-valid="isValid"
+            :disabled="isSubmitted"
+            :is-valid="isValid || isSubmitted"
             @keyup="onkeyup"
           />
-          <div v-if="!isValid" class="item-error">
+          <div v-if="!isValid && !isSubmitted" class="item-error">
             <span>{{ errorMessage }}</span>
           </div>
         </div>
@@ -128,7 +143,13 @@ watch(
       <Button with-border @click="closeModal">
         <strong>Cancel</strong>
       </Button>
-      <Button primary :disabled="!isValid" @click="onSubmit">
+      <Button
+        primary
+        class="submit-button"
+        :disabled="!isValid || isSubmitted"
+        @click="onSubmit"
+      >
+        <LoadingIcon v-if="isSubmitted" />
         <strong>Create</strong>
       </Button>
     </template>
@@ -138,6 +159,10 @@ watch(
 <style lang="postcss" scoped>
 .modal {
   --modal-width: 400px;
+}
+
+.submit-button {
+  min-width: 145px;
 }
 
 .item-error {

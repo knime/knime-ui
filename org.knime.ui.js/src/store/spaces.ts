@@ -342,11 +342,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       );
 
       await dispatch("fetchWorkflowGroupContent", { projectId });
-      API.desktop.openWorkflow({
-        spaceProviderId,
-        spaceId,
-        itemId: newWorkflowItem.id,
-      });
 
       return newWorkflowItem;
     } catch (error) {

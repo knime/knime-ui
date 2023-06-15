@@ -430,11 +430,6 @@ describe("spaces store", () => {
         expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
           expect.objectContaining({ itemId: "level2" })
         );
-        expect(mockedAPI.desktop.openWorkflow).toHaveBeenCalledWith({
-          spaceId: "local",
-          spaceProviderId: "local",
-          itemId: "NewFile",
-        });
         expect(dispatchSpy).toHaveBeenCalledWith(
           "application/updateGlobalLoader",
           { loading: false }
