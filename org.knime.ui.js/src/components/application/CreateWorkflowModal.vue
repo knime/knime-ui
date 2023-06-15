@@ -43,9 +43,10 @@ const closeModal = () => {
   });
 };
 
-const onSubmit = async () => {
+const onSubmit = () => {
   try {
-    await store.dispatch("spaces/createWorkflow", {
+    // do not wait to finish this action, it takes time and will update the state of the validation (showing an error)
+    store.dispatch("spaces/createWorkflow", {
       projectId: store.state.spaces.createWorkflowModalConfig.projectId,
       workflowName: cleanName(workflowName.value),
     });
