@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.function.Supplier;
 
 import org.eclipse.swt.widgets.Display;
@@ -125,24 +126,38 @@ final class ImportAPI {
     /**
      * Imports a component from a space into a workflow.
      *
-     * @param spaceProviderId
-     * @param spaceId
-     * @param itemId
-     * @param projectId
-     * @param workflowId
-     * @param x
-     * @param y
+     * @param spaceProviderId The space provider of the workflow to import into
+     * @param spaceId The space of the workflow to import into
+     * @param itemId The item ID of the workflow to import into
+     * @param x X-Position to place the component in the workflow canvas
+     * @param y Y-Position to place the component in the workflow canvas
      * @return the node-id of the new component or {@code null} if the import failed
      */
     @API
     static String importComponent(final String spaceProviderId, final String spaceId, final String itemId,
         final String projectId, final String workflowId, final double x, final double y) {
-        var workflowIdEnt = new NodeIDEnt(workflowId);
-        Supplier<WorkflowManager> wfmSupplier = () -> DefaultServiceUtil.getWorkflowManager(projectId, workflowIdEnt);
         var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
         var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
         var uri = space.toKnimeUrl(itemId);
         var isRemoteLocation = !LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID.equals(spaceProviderId);
+        return importComponent(projectId, workflowId, uri, isRemoteLocation, x, y);
+    }
+
+    /**
+     * Imports a component from a space into a workflow.
+     *
+     * @param projectId The project to import into
+     * @param workflowId The workflow to import into
+     * @param uri The URI of the component template
+     * @param isRemoteLocation Whether the component template is from a remote location
+     * @param x X-Position to place the component in the workflow canvas
+     * @param y Y-Position to place the component in the workflow canvas
+     * @return the node-id of the new component or {@code null} if the import failed
+     */
+    static String importComponent(final String projectId, final String workflowId, final URI uri,
+            final boolean isRemoteLocation, final double x, final double y) {
+        var workflowIdEnt = new NodeIDEnt(workflowId);
+        Supplier<WorkflowManager> wfmSupplier = () -> DefaultServiceUtil.getWorkflowManager(projectId, workflowIdEnt);
         Supplier<NodeID> command = () -> Display.getDefault().syncCall(() -> {
             var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfmSupplier.get(), uri, (int)x, (int)y,
                 isRemoteLocation, false);

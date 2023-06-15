@@ -84,6 +84,7 @@ import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.NodeImport;
+import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.core.imports.URIImporterFinder;
 import org.knime.workbench.core.imports.UpdateSiteInfo;
 import org.knime.workbench.editor2.InstallMissingNodesJob;
@@ -203,10 +204,13 @@ public final class ImportURI {
             var key = getNodeFactoryKey(nodeImport.getCanonicalNodeFactory(), nodeImport.getNodeName(),
                 nodeImport.isDynamicNode());
             return importNode(key, null, projectId, workflowId, canvasX, canvasY);
+        } else if (entityImport instanceof RepoObjectImport componentImport) {
+            ImportAPI.importComponent(projectId, workflowId, componentImport.getKnimeURI(), true, canvasX, canvasY );
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
             return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId,
                 workflowId, canvasX, canvasY);
         }
+
         return false;
     }
 
