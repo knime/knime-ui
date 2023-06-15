@@ -7,8 +7,10 @@ import Carousel from "webapps-common/ui/components/Carousel.vue";
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import SwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
+import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 import InfoIcon from "@/assets/info.svg";
 
+import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import AppHeaderTab from "./AppHeaderTab.vue";
@@ -25,6 +27,7 @@ export default defineComponent({
     InfoIcon,
     SwitchIcon,
     CloseIcon,
+    CogIcon,
   },
   data() {
     return {
@@ -110,6 +113,10 @@ export default defineComponent({
         params: { projectId, workflowId: "root" },
       });
     },
+
+    openKnimeUIPreferencePage() {
+      API.desktop.openKnimeUIPreferences();
+    },
   },
 });
 </script>
@@ -150,17 +157,28 @@ export default defineComponent({
 
       <div class="buttons">
         <FunctionButton
-          v-if="!isInfoPageActive && devMode"
-          class="switch-classic"
+          v-if="devMode"
+          class="header-button"
           title="Open KNIME Modern UI"
+          data-testid="switch-classic"
           @click="switchToJavaUI"
         >
           <SwitchIcon />
         </FunctionButton>
 
         <FunctionButton
-          class="switch-info-page"
+          class="header-button"
+          title="Open preferences"
+          data-testid="open-preferences"
+          @click="openKnimeUIPreferencePage"
+        >
+          <CogIcon />
+        </FunctionButton>
+
+        <FunctionButton
+          class="header-button"
           title="Go to info page"
+          data-testid="switch-info-page"
           @click="switchToInfoPage"
         >
           <CloseIcon v-if="isInfoPageActive" />
@@ -210,8 +228,7 @@ header {
       flex-shrink: 0;
       margin-left: 30px;
 
-      & .switch-info-page,
-      & .switch-classic {
+      & .header-button {
         border: 1px solid var(--knime-dove-gray);
         display: flex;
         margin-right: 10px;

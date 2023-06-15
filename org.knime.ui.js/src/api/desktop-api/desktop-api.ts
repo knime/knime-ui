@@ -329,3 +329,12 @@ export const importComponent = ({
     throw error;
   }
 };
+
+export const openKnimeUIPreferences = () => {
+  try {
+    window.openWebUIPreferencePage();
+  } catch (error) {
+    consola.error("Could not open preferences");
+    throw error;
+  }
+};
