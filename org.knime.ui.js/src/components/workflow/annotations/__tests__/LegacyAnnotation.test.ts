@@ -64,7 +64,7 @@ describe("LegacyAnnotation.vue", () => {
     );
     expect(spans[4].attributes().style).toBeUndefined();
     expect(spans[5].attributes().style).toBe(
-      "font-size: 14.1375px; font-weight: bold; font-style: italic;"
+      "font-size: 17.3329px; font-weight: bold; font-style: italic;"
     );
     expect(spans[6].attributes().style).toBeUndefined();
   });
@@ -89,7 +89,7 @@ describe("LegacyAnnotation.vue", () => {
       .findComponent(LegacyAnnotation)
       .attributes("style");
 
-    expect(legacyAnnotationStyles).toMatch("font-size: 13.049");
+    expect(legacyAnnotationStyles).toMatch("font-size: 15.9996px");
     expect(legacyAnnotationStyles).toMatch("border: 4px solid #000;");
     expect(legacyAnnotationStyles).toMatch("background: rgb(0, 0, 0);");
     expect(legacyAnnotationStyles).toMatch("width: 100%;");
