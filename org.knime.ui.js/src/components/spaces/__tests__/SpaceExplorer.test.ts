@@ -17,8 +17,27 @@ import SpaceExplorer from "../SpaceExplorer.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import FileExplorer from "../FileExplorer/FileExplorer.vue";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
+import { FileExplorerItem } from "../FileExplorer/types";
 
 const mockedAPI = deepMocked(API);
+
+const createMockItem = (
+  data: Partial<FileExplorerItem> = {}
+): FileExplorerItem => {
+  return {
+    id: "dummy",
+    name: "dummy",
+    canBeRenamed: true,
+    canBeDeleted: true,
+    isDirectory: false,
+    isOpenableFile: true,
+    isOpen: false,
+    meta: {
+      type: SpaceItem.TypeEnum.Workflow,
+    },
+    ...data,
+  };
+};
 
 const fetchWorkflowGroupContentResponse = {
   id: "root",
@@ -335,14 +354,8 @@ describe("SpaceExplorer.vue", () => {
 
   it("should open workflows", async () => {
     const { wrapper, dispatchSpy, mockRouter } = await doMountAndLoad();
-    wrapper.findComponent(FileExplorer).vm.$emit("openFile", {
-      id: "dummy",
-      name: "dummy",
-      type: SpaceItem.TypeEnum.Workflow,
-      canBeRenamed: true,
-      canBeDeleted: true,
-      isOpen: false,
-    });
+
+    wrapper.findComponent(FileExplorer).vm.$emit("openFile", createMockItem());
 
     await nextTick();
 
@@ -421,15 +434,11 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should show delete modal on deleteItems", async () => {
-      const items = [
-        {
+      const items: FileExplorerItem[] = [
+        createMockItem({
           id: "item0",
           name: "WORKFLOW_NAME",
-          canBeDeleted: true,
-          canBeRenamed: true,
-          isOpen: false,
-          type: SpaceItem.TypeEnum.Workflow,
-        },
+        }),
       ];
       const { wrapper } = await doMountAndLoad();
 
@@ -438,15 +447,11 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should trigger closeItems before deleteItems onDeleteItems", async () => {
-      const items = [
-        {
+      const items: FileExplorerItem[] = [
+        createMockItem({
           id: "item0",
           name: "WORKFLOW_NAME",
-          canBeDeleted: true,
-          canBeRenamed: true,
-          isOpen: false,
-          type: SpaceItem.TypeEnum.Workflow,
-        },
+        }),
       ];
       const openProjects = [
         {
@@ -478,15 +483,11 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should not delete item on negative response", async () => {
-      const items = [
-        {
+      const items: FileExplorerItem[] = [
+        createMockItem({
           id: "item0",
           name: "WORKFLOW_NAME",
-          canBeDeleted: true,
-          canBeRenamed: true,
-          isOpen: false,
-          type: SpaceItem.TypeEnum.Workflow,
-        },
+        }),
       ];
       vi.spyOn(window, "confirm").mockImplementation(() => false);
       const { wrapper, dispatchSpy } = await doMountAndLoad();
@@ -847,14 +848,12 @@ describe("SpaceExplorer.vue", () => {
       mockRoute.name = APP_ROUTES.SpaceBrowsingPage;
 
       const onComplete = vi.fn();
-      const sourceItem = {
+
+      const sourceItem = createMockItem({
         id: "0",
         name: "WORKFLOW_NAME",
-        canBeDeleted: true,
-        canBeRenamed: true,
-        isOpen: false,
-        type: SpaceItem.TypeEnum.Workflow,
-      };
+      });
+
       const event = new MouseEvent("dragend") as DragEvent;
       wrapper.findComponent(FileExplorer).vm.$emit("dragend", {
         event,
@@ -895,14 +894,12 @@ describe("SpaceExplorer.vue", () => {
       };
 
       const event = new MouseEvent("dragend") as DragEvent;
-      const sourceItem = {
+
+      const sourceItem = createMockItem({
         id: "0",
         name: "file.test",
-        canBeDeleted: true,
-        canBeRenamed: true,
-        isOpen: false,
-        type: SpaceItem.TypeEnum.Workflow,
-      };
+      });
+
       const onComplete = vi.fn();
 
       wrapper.findComponent(FileExplorer).vm.$emit("dragend", {
@@ -951,18 +948,13 @@ describe("SpaceExplorer.vue", () => {
       };
 
       const event = new MouseEvent("dragend") as DragEvent;
-      const sourceItem = {
+      const sourceItem = createMockItem({
         id: "0",
         name: "file.test",
-        isDirectory: false,
-        isOpenableFile: true,
-        canBeDeleted: true,
-        canBeRenamed: true,
-        isOpen: false,
         meta: {
           type: SpaceItem.TypeEnum.Component,
         },
-      };
+      });
       const onComplete = vi.fn();
 
       wrapper.findComponent(FileExplorer).vm.$emit("dragend", {
@@ -1011,14 +1003,10 @@ describe("SpaceExplorer.vue", () => {
         id: "local",
       };
 
-      const item = {
+      const item = createMockItem({
         id: "0",
         name: "testfile.test",
-        canBeDeleted: true,
-        canBeRenamed: true,
-        isOpen: false,
-        type: SpaceItem.TypeEnum.Workflow,
-      };
+      });
       const event = new MouseEvent("dragend") as DragEvent;
 
       wrapper.findComponent(FileExplorer).vm.$emit("drag", { event, item });
