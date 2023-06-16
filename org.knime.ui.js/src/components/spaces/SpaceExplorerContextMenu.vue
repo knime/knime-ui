@@ -17,7 +17,6 @@ import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
 } from "@/components/spaces/hubMenuItems";
-import type { SpaceProvider } from "@/api/custom-types";
 
 const store = useStore<RootStoreState>();
 
@@ -34,12 +33,6 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const disconnectedSpaceProviders = computed(() => {
-  return Object.values(store.state.spaces.spaceProviders).filter(
-    (provider) => !provider.connected
-  ) as SpaceProvider[];
-});
-
 const downloadToLocalSpace = buildHubDownloadMenuItem(
   store.dispatch,
   props.projectId,
@@ -51,7 +44,7 @@ const uploadAndConnectToHub = buildHubUploadMenuItems(
   store.getters["spaces/hasActiveHubSession"],
   props.projectId,
   props.selectedItems,
-  disconnectedSpaceProviders.value
+  store.state.spaces.spaceProviders
 );
 
 const handleItemClick = (item) => {

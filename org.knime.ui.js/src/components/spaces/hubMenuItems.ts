@@ -37,7 +37,7 @@ export const buildHubUploadMenuItems = (
   hasActiveHubSession: boolean,
   projectId: string,
   selectedItems: string[],
-  disconnectedSpaceProviders: SpaceProvider[]
+  spaceProviders: Record<string, SpaceProvider>
   // eslint-disable-next-line max-params
 ): ActionMenuItem[] => {
   const isSelectionEmpty = selectedItems.length === 0;
@@ -48,7 +48,7 @@ export const buildHubUploadMenuItems = (
     disabled: !hasActiveHubSession || isSelectionEmpty,
     title: hasActiveHubSession
       ? (isSelectionEmpty && "Select at least one file to upload.") || null
-      : "Login is required to upload to hub.",
+      : "A connection to a hub is required to upload.",
     execute: () => {
       dispatch("spaces/copyBetweenSpaces", {
         projectId,
@@ -69,13 +69,31 @@ export const buildHubUploadMenuItems = (
     };
   };
 
+  const remoteSpaceProviders = Object.values(spaceProviders).filter(
+    (provider) => provider.id !== "local"
+  );
+
+  const disconnectedSpaceProviders = remoteSpaceProviders.filter(
+    (provider) => !provider.connected
+  );
+
+  const hasSingleRemoteSpaceProvider = remoteSpaceProviders.length === 1;
+
+  const connectToHubItems = disconnectedSpaceProviders.map(
+    createConnectToHubItem
+  );
+
   const connectToHub = {
     id: "connectToHub",
     text: "Connect to Hub",
     icon: CloudLoginIcon,
-    hidden: disconnectedSpaceProviders.length === 0,
-    execute: null,
-    children: disconnectedSpaceProviders.map(createConnectToHubItem),
+    hidden: connectToHubItems.length === 0,
+    // connect on click without submenu if there is only one remote hub known
+    execute: hasSingleRemoteSpaceProvider
+      ? connectToHubItems[0]?.execute
+      : null,
+    // show list of disconnected hubs if we have mulitple configured
+    children: hasSingleRemoteSpaceProvider ? null : connectToHubItems,
   };
 
   return [uploadToHub, connectToHub];

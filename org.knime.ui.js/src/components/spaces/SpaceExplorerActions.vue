@@ -46,11 +46,6 @@ export default {
     isLocal() {
       return this.getSpaceInfo(this.projectId).local;
     },
-    disconnectedSpaceProviders() {
-      return Object.values(this.spaceProviders).filter(
-        (provider) => !provider.connected
-      );
-    },
     createWorkflowAction() {
       return {
         id: "createWorkflow",
@@ -79,7 +74,7 @@ export default {
         this.hasActiveHubSession,
         this.projectId,
         this.selectedItems,
-        this.disconnectedSpaceProviders
+        this.spaceProviders
       );
 
       return [
