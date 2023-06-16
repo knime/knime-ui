@@ -57,21 +57,22 @@ export const notificationBackground = "hsla(206, 42%, 86%, 90%)";
 
 export const annotationColorPresets = {
   None: "#FFFFFF",
-  Avocado: "#CBD9A9",
-  Carrot: "#FF9632",
-  Coral: "#FF4B4B",
-  Meadow: "#3CB44B",
-  Petrol: "#469990",
-  CornflowerLight: "#91C6ED",
+  SilverSand: "#6E6E6E",
+  AquamarineDark: "#2B94B1",
   Cornflower: "#1E6DA8",
   CornflowerDark: "#1A417A",
+  Yellow: "#FFD800",
+  Carrot: "#FF9632",
+  Coral: "#FF4B4B",
   LavenderLight: "#C1AFDD",
   Lavender: "#965591",
-  HibiscusLight: "#F6C7DF",
-  Hibiscus: "#F279BC",
+  Avocado: "#CBD9A9",
+  Petrol: "#469990",
+  PetrolDark: "#005559",
   Wood: "#D2A384",
-  SilverSand: "#C0C4C6",
+  WoodDark: "#77563C",
 };
+
 export const defaultAnnotationBorderColor = annotationColorPresets.SilverSand;
 
 export * from "webapps-common/ui/colors/knimeColors.mjs";
