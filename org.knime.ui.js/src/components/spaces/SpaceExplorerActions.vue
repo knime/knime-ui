@@ -51,19 +51,11 @@ export default {
         (provider) => !provider.connected
       );
     },
-    disabledActions() {
-      return {
-        uploadToHub:
-          !this.hasActiveHubSession || this.selectedItems.length === 0,
-        downloadToLocalSpace: this.isLocal || this.selectedItems.length === 0,
-      };
-    },
     createWorkflowAction() {
       return {
         id: "createWorkflow",
         text: "Create workflow",
         icon: PlusIcon,
-        disabled: this.disabledActions.createWorkflow,
         hidden: this.mode !== "mini",
         execute: () => {
           this.$store.commit("spaces/setCreateWorkflowModalConfig", {
@@ -78,14 +70,12 @@ export default {
 
       const downloadToLocalSpace = buildHubDownloadMenuItem(
         this.$store.dispatch,
-        this.disabledActions.downloadToLocalSpace,
         this.projectId,
         this.selectedItems
       );
 
       const uploadAndConnectToHub = buildHubUploadMenuItems(
         this.$store.dispatch,
-        this.disabledActions.uploadToHub,
         this.hasActiveHubSession,
         this.projectId,
         this.selectedItems,
@@ -98,7 +88,6 @@ export default {
           id: "createFolder",
           text: "Create folder",
           icon: FolderPlusIcon,
-          disabled: this.disabledActions.createFolder,
           separator: true,
           execute: () => {
             this.$store.dispatch("spaces/createFolder", {
@@ -110,7 +99,6 @@ export default {
           id: "importWorkflow",
           text: "Import workflow",
           icon: ImportWorkflowIcon,
-          disabled: this.disabledActions.importWorkflow,
           execute: () => {
             this.$store.dispatch("spaces/importToWorkflowGroup", {
               projectId,
@@ -122,7 +110,6 @@ export default {
           id: "importFiles",
           text: "Add files",
           icon: AddFileIcon,
-          disabled: this.disabledActions.importFiles,
           separator: true,
           execute: () => {
             this.$store.dispatch("spaces/importToWorkflowGroup", {

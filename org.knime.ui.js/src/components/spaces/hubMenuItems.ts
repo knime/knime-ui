@@ -13,41 +13,41 @@ export type ActionMenuItem = MenuItem & {
 
 export const buildHubDownloadMenuItem = (
   dispatch: Dispatch,
-  disabledDownloadToLocalSpace: boolean,
   projectId: string,
   selectedItems: Array<string>
-): ActionMenuItem => ({
-  id: "downloadToLocalSpace",
-  text: "Download to local space",
-  icon: CloudDownloadIcon,
-  disabled: disabledDownloadToLocalSpace,
-  title: disabledDownloadToLocalSpace
-    ? "Select at least one file to download."
-    : null,
-  execute: () => {
-    dispatch("spaces/copyBetweenSpaces", {
-      projectId,
-      itemIds: selectedItems,
-    });
-  },
-});
+): ActionMenuItem => {
+  const isSelectionEmpty = selectedItems.length === 0;
+  return {
+    id: "downloadToLocalSpace",
+    text: "Download to local space",
+    icon: CloudDownloadIcon,
+    disabled: isSelectionEmpty,
+    title: isSelectionEmpty ? "Select at least one file to download." : null,
+    execute: () => {
+      dispatch("spaces/copyBetweenSpaces", {
+        projectId,
+        itemIds: selectedItems,
+      });
+    },
+  };
+};
 
 export const buildHubUploadMenuItems = (
   dispatch: Dispatch,
-  disableUploadToHub: boolean,
   hasActiveHubSession: boolean,
   projectId: string,
   selectedItems: string[],
   disconnectedSpaceProviders: SpaceProvider[]
   // eslint-disable-next-line max-params
 ): ActionMenuItem[] => {
+  const isSelectionEmpty = selectedItems.length === 0;
   const uploadToHub = {
     id: "uploadToHub",
     text: "Upload to Hub",
     icon: CloudUploadIcon,
-    disabled: !hasActiveHubSession || disableUploadToHub,
+    disabled: !hasActiveHubSession || isSelectionEmpty,
     title: hasActiveHubSession
-      ? (disableUploadToHub && "Select at least one file to upload.") || null
+      ? (isSelectionEmpty && "Select at least one file to upload.") || null
       : "Login is required to upload to hub.",
     execute: () => {
       dispatch("spaces/copyBetweenSpaces", {

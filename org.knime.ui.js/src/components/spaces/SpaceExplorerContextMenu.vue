@@ -42,14 +42,12 @@ const disconnectedSpaceProviders = computed(() => {
 
 const downloadToLocalSpace = buildHubDownloadMenuItem(
   store.dispatch,
-  false,
   props.projectId,
   props.selectedItems
 );
 
 const uploadAndConnectToHub = buildHubUploadMenuItems(
   store.dispatch,
-  false,
   store.getters["spaces/hasActiveHubSession"],
   props.projectId,
   props.selectedItems,
