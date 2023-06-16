@@ -251,6 +251,9 @@ export default {
 
       return this.selectionPreview === "show" || this.isSelected;
     },
+    isExecuting() {
+      return this.state?.executionState === "EXECUTING";
+    },
     isEditable() {
       return this.isWritable && !this.link;
     },
@@ -561,7 +564,7 @@ export default {
                 :in-ports="inPorts"
                 :out-ports="outPorts"
                 :target-port="targetPort"
-                :is-editable="isEditable"
+                :is-editable="isEditable && !isExecuting"
                 :port-groups="portGroups"
                 :hover="isHovering"
                 :connector-hover="connectorHover"

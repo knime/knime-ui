@@ -287,6 +287,17 @@ describe("Node", () => {
         );
       });
     });
+
+    it("blocks port editing while executing", async () => {
+      doMount();
+      const nodePorts = wrapper.findComponent(NodePorts);
+
+      expect(nodePorts.props("isEditable")).toBe(true);
+      await wrapper.setProps({
+        state: { ...wrapper.vm.state, executionState: "EXECUTING" },
+      });
+      expect(nodePorts.props("isEditable")).toBe(false);
+    });
   });
 
   it("opens the node config on double click", async () => {
