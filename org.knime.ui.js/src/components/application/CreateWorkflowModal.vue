@@ -39,6 +39,9 @@ const { isValid, errorMessage, cleanName } = useWorkflowNameValidator({
 });
 
 const closeModal = () => {
+  if (isSubmitted.value) {
+    return;
+  }
   store.commit("spaces/setCreateWorkflowModalConfig", {
     isOpen: false,
     projectId: null,
@@ -57,6 +60,7 @@ const onSubmit = async () => {
       workflowName: cleanName(workflowName.value),
     });
 
+    isSubmitted.value = false;
     closeModal();
 
     await store.dispatch("spaces/openWorkflow", {
@@ -64,6 +68,7 @@ const onSubmit = async () => {
       workflowItemId: workflowItem.id,
     });
   } catch (error) {
+    isSubmitted.value = false;
     consola.log("There was an error creating the workflow", error);
   }
 };
@@ -102,9 +107,6 @@ watch(
         inputElement?.focus();
         // eslint-disable-next-line no-magic-numbers
       }, 200);
-    } else {
-      // reset on close
-      isSubmitted.value = false;
     }
   },
   { immediate: true }
@@ -140,7 +142,7 @@ watch(
       </Label>
     </template>
     <template #controls>
-      <Button with-border @click="closeModal">
+      <Button with-border :disabled="isSubmitted" @click="closeModal">
         <strong>Cancel</strong>
       </Button>
       <Button
@@ -159,10 +161,6 @@ watch(
 <style lang="postcss" scoped>
 .modal {
   --modal-width: 400px;
-}
-
-.submit-button {
-  min-width: 145px;
 }
 
 .item-error {

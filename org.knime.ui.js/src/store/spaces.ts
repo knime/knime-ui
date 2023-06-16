@@ -341,7 +341,8 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         { root: true }
       );
 
-      await dispatch("fetchWorkflowGroupContent", { projectId });
+      // re-fetch the content of the current folder to include the created workflow (in the background)
+      dispatch("fetchWorkflowGroupContent", { projectId });
 
       return newWorkflowItem;
     } catch (error) {
