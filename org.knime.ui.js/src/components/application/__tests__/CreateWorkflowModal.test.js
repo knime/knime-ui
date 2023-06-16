@@ -1,14 +1,18 @@
-import { expect, describe, it, vi } from "vitest";
+import { expect, describe, it, vi, afterEach } from "vitest";
 import * as Vue from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 
-import { mockVuexStore } from "@/test/utils";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import * as spacesStore from "@/store/spaces";
 
 import CreateWorkflowModal from "../CreateWorkflowModal.vue";
+import { API } from "@api";
+
+const mockedAPI = deepMocked(API);
+
 vi.mock("@/mixins/escapeStack", () => {
   function escapeStack({ onEscape }) {
     // eslint-disable-line func-style
@@ -21,6 +25,10 @@ vi.mock("@/mixins/escapeStack", () => {
 });
 
 describe("CreateWorkflowModal.vue", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   const MOCK_DATA = [
     {
       id: "1",
@@ -42,18 +50,33 @@ describe("CreateWorkflowModal.vue", () => {
 
   const projectId = "someProject";
   const doMount = ({ items = MOCK_DATA, isOpen = true } = {}) => {
+    mockedAPI.space.createWorkflow.mockResolvedValue({ id: "new-wf" });
+    mockedAPI.space.listWorkflowGroup.mockResolvedValue({ items });
+
     const $store = mockVuexStore({
       application: {
+        state: {
+          openProjects: [],
+        },
         actions: {
           updateGlobalLoader: vi.fn(),
         },
       },
-      spaces: {
-        ...spacesStore,
-        getters: {
-          getWorkflowGroupContent: () => () => ({ items }),
-        },
+      spaces: spacesStore,
+    });
+
+    $store.commit("spaces/setProjectPath", {
+      projectId,
+      value: {
+        spaceId: "space",
+        spaceProviderId: "provider",
+        itemId: "root",
       },
+    });
+
+    $store.commit("spaces/setWorkflowGroupContent", {
+      projectId,
+      content: { items },
     });
 
     // modal state
@@ -113,9 +136,21 @@ describe("CreateWorkflowModal.vue", () => {
       await submitButton.trigger("click");
       expect(submitButton.attributes("disabled")).toBe("");
 
+      await flushPromises();
+
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/createWorkflow", {
         projectId: "someProject",
         workflowName: newName,
+      });
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/updateGlobalLoader",
+        expect.objectContaining({ loading: false })
+      );
+
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/openWorkflow", {
+        projectId: "someProject",
+        workflowItemId: "new-wf",
       });
     });
 
@@ -166,7 +201,7 @@ describe("CreateWorkflowModal.vue", () => {
         expect(input.element.value).toBe("KNIME_project");
       });
 
-      it("should find suitable name suggestion", () => {
+      it("should find suitable name suggestion", async () => {
         const { wrapper } = doMount({
           items: [
             {
@@ -179,6 +214,8 @@ describe("CreateWorkflowModal.vue", () => {
             },
           ],
         });
+        await flushPromises();
+
         const input = wrapper.find("input");
         expect(input.element.value).toBe("KNIME_project2");
       });

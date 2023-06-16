@@ -28,7 +28,7 @@ const activeSpace = computed(() =>
   )
 );
 const existingWorkflowNames = computed<Array<string>>(() => {
-  const items = activeSpace.value.items ?? [];
+  const items = activeSpace.value?.items ?? [];
 
   return items.map(({ name }) => name);
 });
