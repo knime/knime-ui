@@ -13,6 +13,7 @@ import FileExplorerItemComp from "../FileExplorerItem.vue";
 import FileExplorerContextMenu from "../FileExplorerContextMenu.vue";
 import { MockIntersectionObserver } from "@/test/utils/mockIntersectionObserver";
 import type { FileExplorerItem } from "../types";
+import { createSlottedChildComponent } from "@/test/utils/slottedChildComponent";
 
 vi.mock("gsap", () => ({
   gsap: {
@@ -790,52 +791,38 @@ describe("FileExplorer.vue", () => {
     });
 
     describe("slot", () => {
-      const componentInSlot = `<div
-        id="slotted-component"
-        v-bind="scope"
-      ></div>`;
-
-      const getScopedComponent = {
-        name: "SlottedChild",
-        template: componentInSlot,
-        props: {
-          scope: {
-            type: Object,
-            required: true,
-          },
-        },
-      };
-      const getSlottedChildComponent = (wrapper: VueWrapper<any>) =>
-        wrapper.findComponent({ name: "SlottedChild" });
-
-      // eslint-disable-next-line arrow-body-style
-      const getSlottedStubProp = ({
-        wrapper,
-        propName,
-      }: {
-        wrapper: VueWrapper<any>;
-        propName: string;
-      }) => {
-        // access the `scope` prop of the dummy slotted component and get value that was injected
-        // via the slot props
-        return getSlottedChildComponent(wrapper).props("scope")[propName];
-      };
-
       const doMountCustomWithSlots = ({ props = {} } = {}) => {
-        const contextMenu = (props) =>
-          Vue.h(getScopedComponent, { scope: props });
-        return doMount({ props, customSlots: { contextMenu } });
+        const slottedComponentTemplate = `<div
+          id="slotted-component"
+          v-bind="scope"
+        ></div>`;
+
+        const { renderSlot, getSlottedChildComponent, getSlottedStubProp } =
+          createSlottedChildComponent({
+            slottedComponentTemplate,
+          });
+
+        const mountResults = doMount({
+          props,
+          customSlots: { contextMenu: renderSlot },
+        });
+
+        return {
+          ...mountResults,
+          getSlottedChildComponent,
+          getSlottedStubProp,
+        };
       };
 
       it("should render a custom component on the contextmenu slot", async () => {
-        const { wrapper } = doMountCustomWithSlots();
+        const { wrapper, getSlottedChildComponent } = doMountCustomWithSlots();
 
         await openContextMenu(wrapper, 0);
         expect(getSlottedChildComponent(wrapper).exists()).toBe(true);
       });
 
       it("should provide contextmenu-related values on the slot as props", async () => {
-        const { wrapper } = doMountCustomWithSlots();
+        const { wrapper, getSlottedStubProp } = doMountCustomWithSlots();
 
         const firstItem = getRenderedItems(wrapper).at(0);
         await openContextMenu(wrapper, 0, { clientX: 200, clientY: 200 });
@@ -878,7 +865,7 @@ describe("FileExplorer.vue", () => {
       ])(
         'should provide a "%s" function on the slot',
         async (expectedFunctionName, expectedReturnValue) => {
-          const { wrapper } = doMountCustomWithSlots();
+          const { wrapper, getSlottedStubProp } = doMountCustomWithSlots();
 
           await openContextMenu(wrapper, 0);
 
@@ -899,7 +886,7 @@ describe("FileExplorer.vue", () => {
           canBeRenamed: index !== indexOfItemWithRenameDisabled,
         }));
 
-        const { wrapper } = doMountCustomWithSlots({
+        const { wrapper, getSlottedStubProp } = doMountCustomWithSlots({
           props: { items },
         });
 
@@ -938,7 +925,7 @@ describe("FileExplorer.vue", () => {
           canBeDeleted: index !== indexOfItemWithDeleteDisabled,
         }));
 
-        const { wrapper } = doMountCustomWithSlots({
+        const { wrapper, getSlottedStubProp } = doMountCustomWithSlots({
           props: { items },
         });
 
@@ -958,7 +945,7 @@ describe("FileExplorer.vue", () => {
       ])(
         "should allow sending custom values to the default options",
         async (createOptionFnName, baseValue) => {
-          const { wrapper } = doMountCustomWithSlots();
+          const { wrapper, getSlottedStubProp } = doMountCustomWithSlots();
 
           await openContextMenu(wrapper, 0);
           const getOptionFn = getSlottedStubProp({
@@ -980,7 +967,7 @@ describe("FileExplorer.vue", () => {
       );
 
       it('should expose an "onItemClick" function on the slot', async () => {
-        const { wrapper } = doMountCustomWithSlots();
+        const { wrapper, getSlottedStubProp } = doMountCustomWithSlots();
 
         await openContextMenu(wrapper, 0);
         const onItemClick = getSlottedStubProp({

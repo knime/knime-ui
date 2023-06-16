@@ -8,6 +8,7 @@ import * as $shapes from "@/style/shapes.mjs";
 import { $bus } from "@/plugins/event-bus";
 
 import ConnectorSnappingProvider from "../ConnectorSnappingProvider.vue";
+import { createSlottedChildComponent } from "@/test/utils/slottedChildComponent";
 
 describe("ConnectorSnappingProvider.vue", () => {
   Event.prototype.preventDefault = vi.fn();
@@ -47,31 +48,23 @@ describe("ConnectorSnappingProvider.vue", () => {
   };
 
   const doMount = (customProps = {}) => {
-    const componentInSlot = `<div
-            id="slotted-component"
-            :connection-forbidden="scope.connectionForbidden"
-            :isConnectionSource="scope.isConnectionSource"
-            :targetPort="scope.targetPort"
-            :connector-hover="scope.connectorHover"
-            @connector-enter.stop="scope.on.onConnectorEnter"
-            @connector-leave.stop="scope.on.onConnectorLeave"
-            @connector-move.stop="scope.on.onConnectorMove($event, mockPorts)"
-            @connector-drop.stop="scope.on.onConnectorDrop"
-        ></div>`;
+    const slottedComponentTemplate = `<div
+      id="slotted-component"
+      :connection-forbidden="scope.connectionForbidden"
+      :isConnectionSource="scope.isConnectionSource"
+      :targetPort="scope.targetPort"
+      :connector-hover="scope.connectorHover"
+      @connector-enter.stop="scope.on.onConnectorEnter"
+      @connector-leave.stop="scope.on.onConnectorLeave"
+      @connector-move.stop="scope.on.onConnectorMove($event, mockPorts)"
+      @connector-drop.stop="scope.on.onConnectorDrop"
+    ></div>`;
 
-    const getScopedComponent = {
-      name: "SlottedChild",
-      template: componentInSlot,
-      props: {
-        scope: {
-          type: Object,
-          required: true,
-        },
-      },
-      data() {
-        return { mockPorts };
-      },
-    };
+    const { renderSlot, getSlottedChildComponent, getSlottedStubProp } =
+      createSlottedChildComponent({
+        slottedComponentTemplate,
+        slottedComponentData: { mockPorts },
+      });
 
     const $store = mockVuexStore({
       workflow: {
@@ -87,26 +80,18 @@ describe("ConnectorSnappingProvider.vue", () => {
       },
     });
 
-    return mount(ConnectorSnappingProvider, {
+    const wrapper = mount(ConnectorSnappingProvider, {
       props: { ...defaultProps, ...customProps },
       global: {
         plugins: [$store],
         mocks: { mockPorts, $shapes, $bus },
       },
       slots: {
-        default: (props) => Vue.h(getScopedComponent, { scope: props }),
+        default: renderSlot,
       },
     });
-  };
 
-  const getSlottedChildComponent = (wrapper) =>
-    wrapper.findComponent({ name: "SlottedChild" });
-
-  // eslint-disable-next-line arrow-body-style
-  const getSlottedStubProp = ({ wrapper, propName }) => {
-    // access the `scope` prop of the dummy slotted component and get value that was injected by
-    // ConnectorSnappingProvider via the slot props
-    return getSlottedChildComponent(wrapper).props("scope")[propName];
+    return { wrapper, getSlottedChildComponent, getSlottedStubProp };
   };
 
   const startConnection = async ({
@@ -120,7 +105,7 @@ describe("ConnectorSnappingProvider.vue", () => {
     await Vue.nextTick();
   };
 
-  const connectorEnter = async ({ wrapper }) => {
+  const connectorEnter = async ({ wrapper, getSlottedChildComponent }) => {
     getSlottedChildComponent(wrapper).trigger("connector-enter");
     await Vue.nextTick();
   };
@@ -137,6 +122,7 @@ describe("ConnectorSnappingProvider.vue", () => {
     ports = mockPorts,
     eventDetails = { x: 0, y: 0, targetPortDirection: "in" },
     onSnapCallback = vi.fn(() => true),
+    getSlottedChildComponent,
   }) => {
     getSlottedChildComponent(wrapper).trigger(
       "connector-move",
@@ -148,7 +134,7 @@ describe("ConnectorSnappingProvider.vue", () => {
     await Vue.nextTick();
   };
 
-  const connectorLeave = async ({ wrapper }) => {
+  const connectorLeave = async ({ wrapper, getSlottedChildComponent }) => {
     getSlottedChildComponent(wrapper).trigger("connector-leave");
     await Vue.nextTick();
   };
@@ -165,7 +151,9 @@ describe("ConnectorSnappingProvider.vue", () => {
   describe("connector enter & leave", () => {
     it("should set the connector hover state for valid target", async () => {
       const myId = "target";
-      const wrapper = doMount({ id: myId });
+      const { wrapper, getSlottedStubProp, getSlottedChildComponent } = doMount(
+        { id: myId }
+      );
 
       // start connection to a valid target
       await startConnection({
@@ -179,14 +167,14 @@ describe("ConnectorSnappingProvider.vue", () => {
       ).toBeFalsy();
 
       // hover state is set when connector enters
-      await connectorEnter({ wrapper });
+      await connectorEnter({ wrapper, getSlottedChildComponent });
       expect(getSlottedStubProp({ wrapper, propName: "connectorHover" })).toBe(
         true
       );
       expect(Event.prototype.preventDefault).toHaveBeenCalled();
 
       // hover state is removed when connector leaves
-      await connectorLeave({ wrapper });
+      await connectorLeave({ wrapper, getSlottedChildComponent });
       expect(
         getSlottedStubProp({ wrapper, propName: "connectorHover" })
       ).toBeFalsy();
@@ -194,7 +182,9 @@ describe("ConnectorSnappingProvider.vue", () => {
 
     it("should ignore connector enter for invalid targets", async () => {
       const myId = "target";
-      const wrapper = doMount({ id: myId });
+      const { wrapper, getSlottedStubProp, getSlottedChildComponent } = doMount(
+        { id: myId }
+      );
 
       // start connection to an invalid target
       await startConnection({
@@ -204,7 +194,7 @@ describe("ConnectorSnappingProvider.vue", () => {
       });
 
       // hover state remains unchanged when connector enters
-      await connectorEnter({ wrapper });
+      await connectorEnter({ wrapper, getSlottedChildComponent });
       expect(
         getSlottedStubProp({ wrapper, propName: "connectorHover" })
       ).toBeFalsy();
@@ -218,7 +208,7 @@ describe("ConnectorSnappingProvider.vue", () => {
   describe("validates drop targets", () => {
     it("should not allow connection to self", async () => {
       const myId = "self";
-      const wrapper = doMount({ id: myId });
+      const { wrapper, getSlottedStubProp } = doMount({ id: myId });
 
       await startConnection({ wrapper, startNodeId: myId });
 
@@ -232,7 +222,10 @@ describe("ConnectorSnappingProvider.vue", () => {
 
     it("should skip checking for valid targets when the prop is set", async () => {
       const myId = "my-id";
-      const wrapper = doMount({ id: myId, disableValidTargetCheck: true });
+      const { wrapper, getSlottedStubProp } = doMount({
+        id: myId,
+        disableValidTargetCheck: true,
+      });
 
       await startConnection({
         wrapper,
@@ -247,14 +240,16 @@ describe("ConnectorSnappingProvider.vue", () => {
 
     it("should reset the state when the connector-end event is received", async () => {
       const myId = "my-id";
-      const wrapper = doMount({ id: myId });
+      const { wrapper, getSlottedStubProp, getSlottedChildComponent } = doMount(
+        { id: myId }
+      );
 
       await startConnection({
         wrapper,
         startNodeId: "start",
         validConnectionTargets: [myId],
       });
-      await connectorEnter({ wrapper });
+      await connectorEnter({ wrapper, getSlottedChildComponent });
       await connectorEnd({ wrapper });
 
       expect(
@@ -300,7 +295,8 @@ describe("ConnectorSnappingProvider.vue", () => {
         ["input", "in", 0],
         ["output", "out", 30],
       ])("snaps to %s placeholder port ", async (_, direction, x) => {
-        const wrapper = doMount({ portGroups });
+        const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
+          doMount({ portGroups });
 
         await connectorMove({
           wrapper,
@@ -310,6 +306,7 @@ describe("ConnectorSnappingProvider.vue", () => {
             targetPortDirection: direction,
           },
           onSnapCallback,
+          getSlottedChildComponent,
         });
 
         // snaps to the placeholder port
@@ -360,7 +357,7 @@ describe("ConnectorSnappingProvider.vue", () => {
       ])(
         "adds %s port on drop on a placeholder port ",
         async (side, direction, x, connect) => {
-          const wrapper = doMount({ portGroups });
+          const { wrapper, getSlottedChildComponent } = doMount({ portGroups });
 
           await connectorMove({
             wrapper,
@@ -370,6 +367,7 @@ describe("ConnectorSnappingProvider.vue", () => {
               targetPortDirection: direction,
             },
             onSnapCallback,
+            getSlottedChildComponent,
           });
 
           addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });
@@ -400,7 +398,7 @@ describe("ConnectorSnappingProvider.vue", () => {
 
     describe("port type menu", () => {
       const dropForMenu = async (validPortGroups) => {
-        const wrapper = doMount({ portGroups });
+        const { wrapper, getSlottedChildComponent } = doMount({ portGroups });
 
         await connectorMove({
           wrapper,
@@ -415,6 +413,7 @@ describe("ConnectorSnappingProvider.vue", () => {
               validPortGroups,
             },
           })),
+          getSlottedChildComponent,
         });
 
         await connectorDrop({
@@ -520,7 +519,7 @@ describe("ConnectorSnappingProvider.vue", () => {
       });
 
       it("does not create a connection if not snapped to a port", async () => {
-        const wrapper = doMount({ portGroups });
+        const { wrapper } = doMount({ portGroups });
 
         await connectorDrop({
           wrapper,
@@ -535,7 +534,8 @@ describe("ConnectorSnappingProvider.vue", () => {
       });
 
       it("does not add port or connection for incompatible targets", async () => {
-        const wrapper = doMount({ portGroups });
+        const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
+          doMount({ portGroups });
 
         await connectorMove({
           wrapper,
@@ -545,6 +545,7 @@ describe("ConnectorSnappingProvider.vue", () => {
             targetPortDirection: "out",
           },
           onSnapCallback,
+          getSlottedChildComponent,
         });
 
         // sets the proper data to target port that enables us to create this port on drop
@@ -582,7 +583,11 @@ describe("ConnectorSnappingProvider.vue", () => {
     const onSnapCallback = vi.fn(() => ({ didSnap: true }));
 
     it("should not snap when no portPositions are given", async () => {
-      const wrapper = doMount({ portPositions: { in: [], out: [] } });
+      const { wrapper, getSlottedStubProp, getSlottedChildComponent } = doMount(
+        {
+          portPositions: { in: [], out: [] },
+        }
+      );
 
       await startConnection({
         wrapper,
@@ -590,7 +595,11 @@ describe("ConnectorSnappingProvider.vue", () => {
         validConnectionTargets: ["root"],
       });
 
-      await connectorMove({ wrapper, onSnapCallback });
+      await connectorMove({
+        wrapper,
+        onSnapCallback,
+        getSlottedChildComponent,
+      });
 
       expect(
         getSlottedStubProp({ wrapper, propName: "targetPort" })
@@ -599,12 +608,14 @@ describe("ConnectorSnappingProvider.vue", () => {
     });
 
     it("should snap to the correct port when multiple are given", async () => {
-      const wrapper = doMount();
+      const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
+        doMount();
 
       await connectorMove({
         wrapper,
         eventDetails: { x: 0, y: 8, targetPortDirection: "in" },
         onSnapCallback,
+        getSlottedChildComponent,
       });
 
       expect(
@@ -618,12 +629,14 @@ describe("ConnectorSnappingProvider.vue", () => {
     });
 
     it("should not snap if the onSnapCallback returns falsy", async () => {
-      const wrapper = doMount();
+      const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
+        doMount();
 
       await connectorMove({
         wrapper,
         eventDetails: { x: 0, y: 8, targetPortDirection: "in" },
         onSnapCallback: onSnapCallback.mockReturnValueOnce(false),
+        getSlottedChildComponent,
       });
 
       expect(onSnapCallback).toHaveBeenCalled();
@@ -639,16 +652,18 @@ describe("ConnectorSnappingProvider.vue", () => {
       ])(
         "should not snap to an %sPort port outside of hover boundaries",
         async (targetPortDirection, mouseCoords) => {
-          const wrapper = doMount({
-            portPositions: {
-              in: [[0, 0]],
-              out: [[30, 0]],
-            },
-          });
+          const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
+            doMount({
+              portPositions: {
+                in: [[0, 0]],
+                out: [[30, 0]],
+              },
+            });
 
           await connectorMove({
             wrapper,
             eventDetails: { ...mouseCoords, targetPortDirection },
+            getSlottedChildComponent,
           });
 
           expect(onSnapCallback).not.toHaveBeenCalled();
@@ -670,7 +685,11 @@ describe("ConnectorSnappingProvider.vue", () => {
             out: [[30, 0]],
           };
 
-          const wrapper = doMount({ position, portPositions });
+          const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
+            doMount({
+              position,
+              portPositions,
+            });
 
           const [x, y] = portPositions[targetPortDirection][0];
 
@@ -678,6 +697,7 @@ describe("ConnectorSnappingProvider.vue", () => {
             wrapper,
             onSnapCallback,
             eventDetails: { ...mouseCoords, targetPortDirection },
+            getSlottedChildComponent,
           });
 
           expect(
@@ -698,10 +718,11 @@ describe("ConnectorSnappingProvider.vue", () => {
       describe.each([["in"], ["out"]])("3 ports", (targetPortDirection) => {
         it(`should snap to first ${targetPortDirection}-port`, async () => {
           const position = { x: 0, y: 0 };
-          const wrapper = doMount({
-            position,
-            disableHoverBoundaryCheck: true,
-          });
+          const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
+            doMount({
+              position,
+              disableHoverBoundaryCheck: true,
+            });
 
           const expectedIndex = 0;
           // above first port => port 0
@@ -709,6 +730,7 @@ describe("ConnectorSnappingProvider.vue", () => {
             wrapper,
             eventDetails: { x: -1, y: -10, targetPortDirection },
             onSnapCallback,
+            getSlottedChildComponent,
           });
 
           const [snapX, snapY] =
@@ -732,6 +754,7 @@ describe("ConnectorSnappingProvider.vue", () => {
             wrapper,
             eventDetails: { x: -1, y: 0, targetPortDirection },
             onSnapCallback,
+            getSlottedChildComponent,
           });
 
           expect(onSnapCallback).toHaveBeenCalledWith({
@@ -750,10 +773,11 @@ describe("ConnectorSnappingProvider.vue", () => {
 
         it(`should snap to second ${targetPortDirection}-port`, async () => {
           const position = { x: 0, y: 0 };
-          const wrapper = doMount({
-            position,
-            disableHoverBoundaryCheck: true,
-          });
+          const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
+            doMount({
+              position,
+              disableHoverBoundaryCheck: true,
+            });
 
           const expectedIndex = 1;
           const [snapX, snapY] =
@@ -764,6 +788,7 @@ describe("ConnectorSnappingProvider.vue", () => {
             wrapper,
             eventDetails: { x: -1, y: 1, targetPortDirection },
             onSnapCallback,
+            getSlottedChildComponent,
           });
 
           expect(onSnapCallback).toHaveBeenCalledWith({
@@ -784,6 +809,7 @@ describe("ConnectorSnappingProvider.vue", () => {
             wrapper,
             eventDetails: { x: -1, y: 10, targetPortDirection },
             onSnapCallback,
+            getSlottedChildComponent,
           });
 
           expect(onSnapCallback).toHaveBeenCalledWith({
@@ -801,10 +827,11 @@ describe("ConnectorSnappingProvider.vue", () => {
 
         it(`should snap to third ${targetPortDirection}-port`, async () => {
           const position = { x: 0, y: 0 };
-          const wrapper = doMount({
-            position,
-            disableHoverBoundaryCheck: true,
-          });
+          const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
+            doMount({
+              position,
+              disableHoverBoundaryCheck: true,
+            });
 
           const expectedIndex = 2;
           const [snapX, snapY] =
@@ -815,6 +842,7 @@ describe("ConnectorSnappingProvider.vue", () => {
             wrapper,
             eventDetails: { x: -1, y: 11, targetPortDirection },
             onSnapCallback,
+            getSlottedChildComponent,
           });
 
           expect(onSnapCallback).toHaveBeenCalledWith({

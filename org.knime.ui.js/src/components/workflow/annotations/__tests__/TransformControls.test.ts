@@ -1,14 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { mount, VueWrapper } from "@vue/test-utils";
-import { h as createElement } from "vue";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
 
-// @ts-expect-error
 import TransformControls, {
+  // @ts-expect-error
   TRANSFORM_RECT_OFFSET,
 } from "../TransformControls.vue";
 import {
@@ -19,6 +18,7 @@ import {
   type Directions,
 } from "../transform-control-utils";
 import { mockVuexStore } from "@/test/utils";
+import { createSlottedChildComponent } from "@/test/utils/slottedChildComponent";
 
 vi.mock("../transform-control-utils", async () => {
   const actual: any = await vi.importActual("../transform-control-utils");
@@ -68,21 +68,13 @@ describe("TransformControls.vue", () => {
     props = {},
     screenToCanvasCoordinatesMock = vi.fn().mockReturnValue(() => [5, 5]),
   } = {}) => {
-    const componentInSlot = `<foreignObject
-            id="slotted-component"
-            v-bind="scope.transformedBounds">
-        </foreignObject>`;
-
-    const getScopedComponent = {
-      name: "SlottedChild",
-      template: componentInSlot,
-      props: {
-        scope: {
-          type: Object,
-          required: true,
-        },
-      },
-    };
+    const { renderSlot, getSlottedChildComponent } =
+      createSlottedChildComponent({
+        slottedComponentTemplate: `<foreignObject
+          id="slotted-component"
+          v-bind="scope.transformedBounds">
+        </foreignObject>`,
+      });
 
     const $store = mockVuexStore({
       canvas: {
@@ -98,16 +90,13 @@ describe("TransformControls.vue", () => {
     const wrapper = mount(TransformControls, {
       props: { ...defaultProps, ...props },
       slots: {
-        default: (props) => createElement(getScopedComponent, { scope: props }),
+        default: renderSlot,
       },
       global: { plugins: [$store], mocks: { $shapes, $colors } },
     });
 
-    return { wrapper };
+    return { wrapper, getSlottedChildComponent };
   };
-
-  const getSlottedChildComponent = (wrapper: VueWrapper<any>) =>
-    wrapper.findComponent({ name: "SlottedChild" });
 
   const startDraggingControl = (
     wrapper: VueWrapper<any>,
@@ -178,7 +167,7 @@ describe("TransformControls.vue", () => {
   });
 
   it("should expose the transformed bounds on the default slot props", () => {
-    const { wrapper } = doMount();
+    const { wrapper, getSlottedChildComponent } = doMount();
 
     const { initialValue: bounds } = defaultProps;
     const slottedChild = getSlottedChildComponent(wrapper);
