@@ -35,7 +35,7 @@
             category="org.knime.workbench.ui.preferences"
             class="org.knime.ui.java.prefs.KnimeUIPreferencePage"
             id="org.knime.ui.java.prefs.KnimeUIPreferencePage"
-            name="KNIME Modern User Interface">
+            name="KNIME Modern UI">
       </page>
    </extension>
    <extension
