@@ -5,8 +5,16 @@ import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
-import { mockVuexStore } from "@/test/utils";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import * as spacesStore from "@/store/spaces";
+import { API } from "@api";
+
+const mockedAPI = deepMocked(API);
+
+mockedAPI.space.createWorkflowGroup.mockResolvedValue({
+  id: "NewFolder",
+  type: "WorkflowGroup",
+});
 
 describe("SpaceExplorerActions.vue", () => {
   const doMount = ({
