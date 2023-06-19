@@ -13,6 +13,7 @@ describe("SpaceExplorerActions.vue", () => {
     props = {},
     projectPath = null,
     spaceProvider = null,
+    moreSpaceProviders = null,
   } = {}) => {
     const store = mockVuexStore({
       spaces: spacesStore,
@@ -48,6 +49,7 @@ describe("SpaceExplorerActions.vue", () => {
         ],
         ...spaceProvider,
       },
+      ...moreSpaceProviders,
     });
 
     const dispatchSpy = vi.spyOn(store, "dispatch");
@@ -103,7 +105,7 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.findComponent(PlusButton).exists()).toBe(true);
     });
 
-    it("should disable actions", () => {
+    it("should disable actions that require selected items", () => {
       const { wrapper } = doMount({
         props: {
           selectedItemIds: [],
@@ -182,9 +184,7 @@ describe("SpaceExplorerActions.vue", () => {
       expect(allItems).toMatch("Upload to Hub");
       expect(allItems).toMatch("Create folder");
       expect(allItems).toMatch("Import workflow");
-      expect(allItems).toMatch("Create folder");
       expect(allItems).toMatch("Create workflow");
-      expect(allItems).toMatch("Create folder");
       expect(allItems).toMatch("Add files");
 
       expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
@@ -217,6 +217,87 @@ describe("SpaceExplorerActions.vue", () => {
       expect(items.length).toBe(5);
     });
 
+    it("shows multiple hubs to connect to in a sub menu", () => {
+      const { wrapper } = doMount({
+        props: {
+          mode: "mini",
+        },
+        // local to have the upload and connect options
+        projectPath: {
+          spaceId: "local",
+          spaceProviderId: "local",
+        },
+        moreSpaceProviders: {
+          hub2: {
+            id: "hub2",
+            name: "Hub 2",
+            connected: false,
+            spaces: [],
+          },
+          hub3: {
+            id: "hub3",
+            name: "Hub 3",
+            connected: true,
+            spaces: [],
+          },
+        },
+      });
+
+      expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: "connectToHub",
+            children: [
+              // no hub 3 as its connect, but we get still the submenu (children)
+              expect.objectContaining({
+                text: "Hub 2",
+              }),
+            ],
+          }),
+        ])
+      );
+    });
+
+    it("shows a single hub and triggers its connection on click", () => {
+      const { wrapper, dispatchSpy } = doMount({
+        props: {
+          mode: "mini",
+        },
+        // local to have the upload and connect options
+        projectPath: {
+          spaceId: "local",
+          spaceProviderId: "local",
+        },
+        moreSpaceProviders: {
+          hub2: {
+            id: "hub2",
+            name: "Hub 2",
+            connected: false,
+            spaces: [],
+          },
+        },
+      });
+
+      expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: "connectToHub",
+            children: null,
+          }),
+        ])
+      );
+
+      const subMenu = wrapper.findComponent(SubMenu);
+      const item = subMenu
+        .props("items")
+        .find((item) => item.id === "connectToHub");
+      subMenu.vm.$emit("item-click", null, item);
+
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
+        spaceProviderId: "hub2",
+      });
+    });
+
     it("should disable upload if no provider is connected", () => {
       const { wrapper } = doMount({
         props: {
@@ -225,9 +306,6 @@ describe("SpaceExplorerActions.vue", () => {
         projectPath: {
           spaceId: "local",
           spaceProviderId: "local",
-        },
-        spaceProvider: {
-          connected: false,
         },
       });
 
@@ -241,7 +319,7 @@ describe("SpaceExplorerActions.vue", () => {
       );
     });
 
-    it("should disable actions that require selected items", () => {
+    it("should disable actions that require selected items (download)", () => {
       const { wrapper } = doMount({
         props: {
           mode: "mini",
