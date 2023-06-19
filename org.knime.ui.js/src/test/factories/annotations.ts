@@ -1,0 +1,42 @@
+import {
+  Annotation,
+  type NodeAnnotation,
+  type WorkflowAnnotation,
+} from "@/api/gateway-api/generated-api";
+import { annotationColorPresets } from "@/style/colors.mjs";
+import { createBounds } from "./common";
+
+const createAnnotation = (data: Partial<Annotation> = {}): Annotation => {
+  return {
+    textAlign: Annotation.TextAlignEnum.Right,
+    backgroundColor: "#fff",
+    text: "Lorem ipsum dolor sit amet",
+    styleRanges: [{ start: 0, length: 2, fontSize: 14 }],
+    contentType: Annotation.ContentTypeEnum.Plain,
+
+    ...data,
+  };
+};
+
+export const createNodeAnnotation = (
+  data: Partial<NodeAnnotation> = {}
+): NodeAnnotation => {
+  return createAnnotation(data);
+};
+
+export const createWorkflowAnnotation = (
+  data: Partial<WorkflowAnnotation> = {}
+): WorkflowAnnotation => {
+  const baseAnnotation = createAnnotation(data);
+
+  return {
+    ...baseAnnotation,
+
+    id: "id1",
+    borderWidth: 4,
+    borderColor: annotationColorPresets.SilverSand,
+    bounds: createBounds({ x: 0, y: 0, width: 100, height: 50 }),
+
+    ...data,
+  };
+};
