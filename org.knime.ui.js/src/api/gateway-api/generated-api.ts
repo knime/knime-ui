@@ -3518,7 +3518,7 @@ export interface WorkflowProject {
      * @type {SpaceItemReference}
      * @memberof WorkflowProject
      */
-    origin: SpaceItemReference;
+    origin?: SpaceItemReference;
     /**
      *
      * @type {string}
