@@ -3,10 +3,7 @@ import MenuItems, {
   type MenuItem,
 } from "webapps-common/ui/components/MenuItems.vue";
 
-import type {
-  FileExplorerContextMenu,
-  FileExplorerItem,
-} from "@/components/spaces/FileExplorer/types";
+import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { computed } from "vue";
 import { useStore } from "vuex";
@@ -23,31 +20,17 @@ const store = useStore<RootStoreState>();
 interface Props {
   createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption;
   createDeleteOption: FileExplorerContextMenu.CreateDefaultMenuOption;
-  anchorItem: FileExplorerItem;
+  anchor: FileExplorerContextMenu.Anchor;
   isMultipleSelectionActive: boolean;
   onItemClick: (item: MenuItem) => void;
   closeContextMenu: () => void;
   projectId: string;
-  selectedItems: Array<string>;
+  selectedItemIds: Array<string>;
 }
 
 const props = defineProps<Props>();
 
-const downloadToLocalSpace = buildHubDownloadMenuItem(
-  store.dispatch,
-  props.projectId,
-  props.selectedItems
-);
-
-const uploadAndConnectToHub = buildHubUploadMenuItems(
-  store.dispatch,
-  store.getters["spaces/hasActiveHubSession"],
-  props.projectId,
-  props.selectedItems,
-  store.state.spaces.spaceProviders
-);
-
-const handleItemClick = (item) => {
+const handleItemClick = (item: MenuItem & { execute: () => void }) => {
   if (item.execute) {
     item.execute();
     props.closeContextMenu();
@@ -61,14 +44,30 @@ const fileExplorerContextMenuItems = computed(() => {
   const {
     createRenameOption,
     createDeleteOption,
-    anchorItem: { item: anchorItem },
+    anchor: { item: anchorItem },
     isMultipleSelectionActive,
   } = props;
 
   const isLocal = store.getters["spaces/getSpaceInfo"](props.projectId).local;
 
+  const downloadToLocalSpace = buildHubDownloadMenuItem(
+    store.dispatch,
+    props.projectId,
+    props.selectedItemIds
+  );
+
+  const uploadAndConnectToHub = buildHubUploadMenuItems(
+    store.dispatch,
+    store.getters["spaces/hasActiveHubSession"],
+    props.projectId,
+    props.selectedItemIds,
+    store.state.spaces.spaceProviders
+  );
+
   const openFileType =
-    anchorItem.type === SpaceItem.TypeEnum.Workflow ? "workflows" : "folders";
+    anchorItem.meta.type === SpaceItem.TypeEnum.Workflow
+      ? "workflows"
+      : "folders";
 
   const renameOptionTitle = anchorItem.isOpen
     ? `Open ${openFileType} cannot be renamed`

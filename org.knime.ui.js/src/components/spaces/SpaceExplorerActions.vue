@@ -29,7 +29,7 @@ export default {
       default: "normal",
       validator: (value) => ["normal", "mini"].includes(value),
     },
-    selectedItems: {
+    selectedItemIds: {
       type: Array,
       required: true,
     },
@@ -66,14 +66,14 @@ export default {
       const downloadToLocalSpace = buildHubDownloadMenuItem(
         this.$store.dispatch,
         this.projectId,
-        this.selectedItems
+        this.selectedItemIds
       );
 
       const uploadAndConnectToHub = buildHubUploadMenuItems(
         this.$store.dispatch,
         this.hasActiveHubSession,
         this.projectId,
-        this.selectedItems,
+        this.selectedItemIds,
         this.spaceProviders
       );
 

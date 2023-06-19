@@ -79,7 +79,7 @@ export default defineComponent({
 
   data() {
     return {
-      selectedItems: [],
+      selectedItemIds: [],
       isAboveCanvas: false,
       fileNodeTemplate: null,
       deleteModal: {
@@ -216,9 +216,9 @@ export default defineComponent({
       });
     },
 
-    onSelectionChange(selectedItems) {
-      this.selectedItems = selectedItems;
-      this.$emit("changeSelection", selectedItems);
+    onSelectionChange(selectedItemIds: string[]) {
+      this.selectedItemIds = selectedItemIds;
+      this.$emit("changeSelection", selectedItemIds);
     },
 
     async onChangeDirectory(pathId) {
@@ -482,7 +482,7 @@ export default defineComponent({
       <SpaceExplorerActions
         mode="mini"
         :project-id="projectId"
-        :selected-items="selectedItems"
+        :selected-item-ids="selectedItemIds"
       />
     </div>
     <div class="breadcrumb-wrapper">
@@ -541,7 +541,7 @@ export default defineComponent({
             :is-multiple-selection-active="isMultipleSelectionActive"
             :close-context-menu="closeContextMenu"
             :project-id="projectId"
-            :selected-items="selectedItems"
+            :selected-item-ids="selectedItemIds"
           />
         </template>
       </FileExplorer>

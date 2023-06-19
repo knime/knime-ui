@@ -33,7 +33,7 @@ export default {
 
   data() {
     return {
-      selectedItems: [],
+      selectedItemIds: [],
     };
   },
 
@@ -95,7 +95,7 @@ export default {
           <div class="toolbar">
             <SpaceExplorerActions
               :project-id="globalSpaceBrowserProjectId"
-              :selected-items="selectedItems"
+              :selected-item-ids="selectedItemIds"
             />
           </div>
         </div>
@@ -107,7 +107,7 @@ export default {
         <div class="grid-item-12">
           <SpaceExplorer
             :project-id="globalSpaceBrowserProjectId"
-            @change-selection="selectedItems = $event"
+            @change-selection="selectedItemIds = $event"
           />
         </div>
       </div>
