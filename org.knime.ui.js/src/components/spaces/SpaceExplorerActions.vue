@@ -6,7 +6,7 @@ import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 
-import ItemButton from "@/components/common/ItemButton.vue";
+import SpaceExplorerActionButton from "./SpaceExplorerActionButton.vue";
 import PlusIcon from "@/assets/plus.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import AddFileIcon from "@/assets/add-file.svg";
@@ -17,7 +17,7 @@ import {
 
 export default {
   components: {
-    ItemButton,
+    SpaceExplorerActionButton,
     PlusButton,
     SubMenu,
     MenuOptionsIcon,
@@ -129,7 +129,7 @@ export default {
   <div class="toolbar-buttons">
     <template v-if="mode === 'normal'">
       <div class="toolbar-actions-normal">
-        <ItemButton
+        <SpaceExplorerActionButton
           v-for="action in actions"
           :id="action.id"
           :key="action.id"
