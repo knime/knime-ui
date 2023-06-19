@@ -69,6 +69,7 @@ export const buildHubUploadMenuItems = (
     };
   };
 
+  spaceProviders = spaceProviders || {};
   const remoteSpaceProviders = Object.values(spaceProviders).filter(
     (provider) => provider.id !== "local"
   );
