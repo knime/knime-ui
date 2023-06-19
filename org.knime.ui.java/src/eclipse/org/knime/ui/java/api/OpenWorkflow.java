@@ -265,7 +265,7 @@ final class OpenWorkflow {
         page.openEditor(input, WorkflowEditor.ID, false);
     }
 
-    public static boolean openWorkflowFromURL(RepoObjectImport repoObjectImport) {
+    public static boolean openWorkflowFromURI(RepoObjectImport repoObjectImport) {
         var knimeUrl = repoObjectImport.getKnimeURI();
         var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
         Optional<WorkflowManager> wfm =
@@ -353,13 +353,13 @@ final class OpenWorkflow {
             final var mountpointRoot = workflowDir.getContentProvider().getRootStore().toLocalFile().toPath();
             var effectiveLocationInfo = locationInfo == null ? source.locationInfo().orElse(null) : locationInfo;
             CheckUtils.checkNotNull(effectiveLocationInfo, "Location info could not be determined for " + source);
-            context = WorkflowContextV2.builder()
-                    .withAnalyticsPlatformExecutor(builder -> builder
-                        .withCurrentUserAsUserId()
-                        .withLocalWorkflowPath(localWorkflowPath)
-                        .withMountpoint(source.getMountID(), mountpointRoot))
-                .withLocation(effectiveLocationInfo)
-                        .build();
+            context = WorkflowContextV2.builder() //
+                .withAnalyticsPlatformExecutor(builder -> builder //
+                    .withCurrentUserAsUserId() //
+                    .withLocalWorkflowPath(localWorkflowPath) //
+                    .withMountpoint(source.getMountID(), mountpointRoot)) //
+                .withLocation(effectiveLocationInfo) //
+                .build(); //
         } catch (CoreException e) {
             throw new IllegalStateException(e);
         }

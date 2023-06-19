@@ -128,7 +128,7 @@ public final class ImportURI {
         }
 
         if (entityImportInProgress instanceof RepoObjectImport repoObjectImport) {
-            return importWorkflow(repoObjectImport);
+            return openWorkflowFromURI(repoObjectImport);
         } else {
             var cursorLocation = cursorLocationSupplier.get();
             return sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
@@ -221,7 +221,7 @@ public final class ImportURI {
         return false;
     }
 
-    private static boolean importWorkflow(final RepoObjectImport repoObjectImport) {
+    private static boolean openWorkflowFromURI(final RepoObjectImport repoObjectImport) {
         if (!RepoObjectImport.RepoObjectType.Workflow.equals(repoObjectImport.getType())) {
             LOGGER.error("Object to be imported is not a workflow");
             return false;
@@ -230,13 +230,12 @@ public final class ImportURI {
         var providerId = repoObjectImport.getKnimeURI().getAuthority();
         var spaceId = hubSpaceLocationInfo.getSpaceItemId();
         var space = SpaceProviders.getSpaceOptional(DesktopAPI.getDeps(SpaceProviders.class), providerId, spaceId);
-        if (space.isPresent()) {
-            // space is in fact already mounted -- open as if opened from explorer
-            // allows plain save to re-upload and browsing of space in sidebar
-            OpenWorkflow.openWorkflowInWebUIWithProgress(providerId, spaceId, hubSpaceLocationInfo.getWorkflowItemId());
-        } else {
-            return OpenWorkflow.openWorkflowFromURL(repoObjectImport);
+        if (space.isEmpty()) {
+            return OpenWorkflow.openWorkflowFromURI(repoObjectImport);
         }
+        // space is in fact already mounted -- open as if opened from explorer
+        // allows plain save to re-upload and browsing of space in sidebar
+        OpenWorkflow.openWorkflowInWebUIWithProgress(providerId, spaceId, hubSpaceLocationInfo.getWorkflowItemId());
         return true;
     }
 
