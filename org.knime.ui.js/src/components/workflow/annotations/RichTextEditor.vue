@@ -231,11 +231,11 @@ onMounted(() => {
     }
 
     & a {
-      color: var(--knime-dove-gray);
-      text-decoration: none;
+      color: var(--theme-text-link-foreground-color);
 
       &:hover {
-        color: var(--knime-masala);
+        background: var(--theme-text-link-background-color-hover);
+        color: var(--theme-text-link-foreground-color-hover);
       }
     }
   }

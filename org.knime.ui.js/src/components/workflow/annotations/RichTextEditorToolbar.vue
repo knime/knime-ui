@@ -77,13 +77,17 @@ const createLink = () => {
   url.value = currentLink || "";
 
   if (currentLink) {
-    const textBefore = state.selection.$from.nodeBefore?.textContent ?? "";
-    const textAfter = state.selection.$to.nodeAfter?.textContent ?? "";
-    const hasNoSelection = from === to;
+    const hasSelection = from !== to;
+    if (hasSelection) {
+      // manually update the cursor position to get the entire link text
+      const newCursorPosition = from + Math.floor((to - from) / 2);
+      props.editor.chain().focus().setTextSelection(newCursorPosition).run();
+    }
 
-    text.value = hasNoSelection
-      ? textBefore + textAfter
-      : state.doc.textBetween(from, to, "");
+    const textBefore = view.state.selection.$from.nodeBefore?.textContent ?? "";
+    const textAfter = view.state.selection.$to.nodeAfter?.textContent ?? "";
+
+    text.value = textBefore + textAfter;
   } else {
     text.value = state.doc.textBetween(from, to, "");
   }

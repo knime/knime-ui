@@ -106,7 +106,7 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
         <strong>Cancel</strong>
       </Button>
       <Button primary :disabled="!isValid" @click="onSubmit">
-        <strong>Add link</strong>
+        <strong>{{ props.url ? "Apply" : "Add link" }}</strong>
       </Button>
     </template>
   </Modal>
