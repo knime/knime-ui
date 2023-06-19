@@ -121,6 +121,7 @@ describe("FileExplorer.vue", () => {
       isRootFolder: true,
       mode: "normal",
       itemIconRenderer,
+      activeRenamedItemId: "",
     };
 
     const slots = {

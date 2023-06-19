@@ -24,6 +24,7 @@ interface Props {
   isRootFolder: boolean;
   items: Array<FileExplorerItemType>;
   itemIconRenderer?: ItemIconRenderer;
+  activeRenamedItemId: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -92,12 +93,16 @@ watch(fullPath, () => {
 /** MULTISELECTION */
 
 /** RENAME */
-const activeRenameItemId = ref<string | null>(null);
+const renamedItemId = ref<string | null>(null);
 const blacklistedNames = computed(() =>
   props.items
-    .filter((item) => item.id !== activeRenameItemId.value)
+    .filter((item) => item.id !== renamedItemId.value)
     .map(({ name }) => name)
 );
+const { activeRenamedItemId } = toRefs(props);
+watch(activeRenamedItemId, () => {
+  renamedItemId.value = props.activeRenamedItemId;
+});
 /** RENAME */
 
 /** DRAGGING */
@@ -194,7 +199,7 @@ const onContextMenuItemClick = (
   }
 
   if (isRename) {
-    activeRenameItemId.value = anchorItem.id;
+    renamedItemId.value = anchorItem.id;
   }
 
   resetSelection();
@@ -206,7 +211,7 @@ const onItemClick = (
   event: MouseEvent,
   index: number
 ) => {
-  if (activeRenameItemId.value !== item.id) {
+  if (renamedItemId.value !== item.id) {
     handleSelectionClick(index, event);
   }
 
@@ -256,7 +261,7 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
         :item="item"
         :is-dragging="isDragging"
         :is-selected="isSelected(index)"
-        :is-rename-active="item.id === activeRenameItemId"
+        :is-rename-active="item.id === renamedItemId"
         :blacklisted-names="blacklistedNames"
         :item-icon-renderer="itemIconRenderer"
         @dragstart="onDragStart($event, index)"
@@ -269,7 +274,7 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
         @drop="forwardEmit('moveItems', onDrop(index))"
         @dblclick="onItemDoubleClick(item)"
         @rename:submit="emit('renameFile', $event)"
-        @rename:clear="activeRenameItemId = null"
+        @rename:clear="renamedItemId = null"
       />
 
       <tr v-if="items.length === 0" class="empty">

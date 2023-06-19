@@ -26,6 +26,7 @@ export interface SpacesState {
   projectPath: Record<string, PathTriplet>;
   isLoading: boolean;
   createWorkflowModalConfig: CreateWorkflowModalConfig;
+  activeRenamedItemId: string;
 }
 
 export const globalSpaceBrowserProjectId = "__SPACE_BROWSER_TAB__";
@@ -56,6 +57,7 @@ export const state = (): SpacesState => ({
     isOpen: false,
     projectId: null,
   },
+  activeRenamedItemId: "",
 });
 
 export const mutations: MutationTree<SpacesState> = {
@@ -113,6 +115,10 @@ export const mutations: MutationTree<SpacesState> = {
 
   setSpaceProviders(state, value: Record<string, SpaceProvider>) {
     state.spaceProviders = value;
+  },
+
+  setActiveRenamedItemId(state, value: string) {
+    state.activeRenamedItemId = value;
   },
 };
 
@@ -369,6 +375,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       });
 
       await dispatch("fetchWorkflowGroupContent", { projectId });
+      commit("setActiveRenamedItemId", newFolderItem.id);
 
       return newFolderItem;
     } catch (error) {
@@ -464,6 +471,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     try {
       // loading is cleared after data is fetched by fetchWorkflowGroupContent
       commit("setIsLoading", true);
+      commit("setActiveRenamedItemId", "");
       await API.space.deleteItems({ spaceProviderId, spaceId, itemIds });
       await dispatch("fetchWorkflowGroupContent", { projectId });
     } catch (error) {

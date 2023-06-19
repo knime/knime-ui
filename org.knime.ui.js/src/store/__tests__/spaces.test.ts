@@ -452,6 +452,7 @@ describe("spaces store", () => {
         };
 
         await store.dispatch("spaces/createFolder", { projectId: "project2" });
+        expect(store.state.spaces.activeRenamedItemId).toBe("NewFolder");
         expect(mockedAPI.space.createWorkflowGroup).toHaveBeenCalledWith(
           expect.objectContaining({ spaceId: "local", itemId: "level2" })
         );
@@ -597,6 +598,7 @@ describe("spaces store", () => {
           projectId: "project2",
           itemIds,
         });
+        expect(store.state.spaces.activeRenamedItemId).toBe("");
         expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith({
           spaceId: "local",
           spaceProviderId: "local",

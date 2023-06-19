@@ -548,6 +548,10 @@ describe("SpaceExplorer.vue", () => {
       const { wrapper, dispatchSpy } = await doMountAndLoad({
         props: { projectId: "someProjectId", mode: "mini" },
       });
+      mockedAPI.space.createWorkflowGroup.mockResolvedValue({
+        id: "NewFolder",
+        type: "WorkflowGroup",
+      });
 
       wrapper
         .findComponent(SpaceExplorerActions)

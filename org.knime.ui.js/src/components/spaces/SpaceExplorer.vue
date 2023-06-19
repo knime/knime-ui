@@ -108,6 +108,7 @@ export default defineComponent({
       isLoading: (state) => state.isLoading as boolean,
       spaceProviders: (state) =>
         state.spaceProviders as Record<string, SpaceProvider>,
+      activeRenamedItemId: (state) => state.activeRenamedItemId as string,
     }),
     ...mapState("nodeRepository", ["nodesPerCategory"]),
     ...mapGetters("spaces", [
@@ -580,6 +581,7 @@ export default defineComponent({
         :is-root-folder="activeWorkflowGroup.path.length === 0"
         :full-path="fullPath"
         :item-icon-renderer="itemIconRenderer"
+        :active-renamed-item-id="activeRenamedItemId"
         @change-directory="onChangeDirectory"
         @change-selection="onSelectionChange"
         @open-file="onOpenFile"
