@@ -57,7 +57,7 @@ const spacesDropdownData = computed((): MenuItem[] => {
   });
 
   const spaceMenuItem = (provider: SpaceProvider) => (space: Space) => ({
-    text: space.name,
+    text: space.id === "local" ? space.name : `${space.owner} – ${space.name}`,
     id: `${provider.id}__${space.id}`,
     selected: space.id === activeSpacePath?.spaceId,
     sectionHeadline: false,
@@ -139,6 +139,11 @@ const spaceIcon = computed(() => {
     &.flip {
       transform: scaleY(-1);
     }
+  }
+
+  & :deep(.menu-items) {
+    max-height: 60vh;
+    overflow-y: scroll;
   }
 
   & .selected-text {
