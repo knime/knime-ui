@@ -4,15 +4,16 @@ import { mapGetters, mapState } from "vuex";
 import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
-import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
-import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg";
-import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 
 import ItemButton from "@/components/common/ItemButton.vue";
 import PlusIcon from "@/assets/plus.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import AddFileIcon from "@/assets/add-file.svg";
+import {
+  buildHubDownloadMenuItem,
+  buildHubUploadMenuItems,
+} from "@/components/spaces/hubMenuItems";
 
 export default {
   components: {
@@ -75,62 +76,22 @@ export default {
     actions() {
       const { projectId } = this;
 
-      const uploadToHub = {
-        id: "uploadToHub",
-        text: "Upload to Hub",
-        icon: CloudUploadIcon,
-        disabled: this.disabledActions.uploadToHub,
-        title: this.hasActiveHubSession
-          ? // eslint-disable-next-line no-extra-parens
-            this.disabledActions.uploadToHub &&
-            "Select at least one file to upload."
-          : "Login is required to upload to hub.",
-        execute: () => {
-          this.$store.dispatch("spaces/copyBetweenSpaces", {
-            projectId,
-            itemIds: this.selectedItems,
-          });
-        },
-      };
+      const downloadToLocalSpace = buildHubDownloadMenuItem(
+        this.$store.dispatch,
+        this.disabledActions.downloadToLocalSpace,
+        this.projectId,
+        this.selectedItems
+      );
 
-      const createConnectToHubItem = (provider) => {
-        return {
-          id: `connectToHub-${provider.id}`,
-          text: provider.name,
-          execute: () => {
-            this.$store.dispatch("spaces/connectProvider", {
-              spaceProviderId: provider.id,
-            });
-          },
-        };
-      };
+      const uploadAndConnectToHub = buildHubUploadMenuItems(
+        this.$store.dispatch,
+        this.disabledActions.uploadToHub,
+        this.hasActiveHubSession,
+        this.projectId,
+        this.selectedItems,
+        this.disconnectedSpaceProviders
+      );
 
-      const connectToHub = {
-        id: "connectToHub",
-        text: "Connect to Hub",
-        icon: CloudLoginIcon,
-        hidden: this.disconnectedSpaceProviders.length === 0,
-        execute: null,
-        children: this.disconnectedSpaceProviders.map(createConnectToHubItem),
-      };
-
-      const uploadAndConnectToHub = [uploadToHub, connectToHub];
-
-      const downloadToLocalSpace = {
-        id: "downloadToLocalSpace",
-        text: "Download to local space",
-        icon: CloudDownloadIcon,
-        disabled: this.disabledActions.downloadToLocalSpace,
-        title: this.disabledActions.downloadToLocalSpace
-          ? "Select at least one file to download."
-          : null,
-        execute: () => {
-          $store.dispatch("spaces/copyBetweenSpaces", {
-            projectId,
-            itemIds: this.selectedItems,
-          });
-        },
-      };
       return [
         this.createWorkflowAction,
         {

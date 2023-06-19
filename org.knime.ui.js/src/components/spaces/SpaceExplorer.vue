@@ -10,9 +10,7 @@ import SpaceSelectionDropdown from "./SpaceSelectionDropdown.vue";
 import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 import Modal from "webapps-common/ui/components/Modal.vue";
 import Button from "webapps-common/ui/components/Button.vue";
-import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import FolderIcon from "webapps-common/ui/assets/img/icons/folder.svg";
 import FileTextIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
@@ -30,10 +28,8 @@ import type { SpaceProvider } from "@/api/custom-types";
 
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import FileExplorer from "./FileExplorer/FileExplorer.vue";
-import type {
-  FileExplorerItem,
-  FileExplorerContextMenu,
-} from "./FileExplorer/types";
+import type { FileExplorerItem } from "./FileExplorer/types";
+import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
 
@@ -55,9 +51,9 @@ const itemIconRenderer = (item: FileExplorerItemWithMeta) => {
 
 export default defineComponent({
   components: {
+    SpaceExplorerContextMenu,
     SpaceExplorerActions,
     FileExplorer,
-    MenuItems,
     NodePreview,
     SpaceSelectionDropdown,
     Breadcrumb,
@@ -474,33 +470,6 @@ export default defineComponent({
 
       return this.fileExtensionToNodeTemplateId[sourceFileExtension];
     },
-
-    getFileExplorerContextMenuItems(
-      createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption,
-      createDeleteOption: FileExplorerContextMenu.CreateDefaultMenuOption,
-      anchorItem: FileExplorerItem,
-      isMultipleSelectionActive: boolean
-    ): MenuItem[] {
-      const openFileType =
-        anchorItem.meta.type === SpaceItem.TypeEnum.Workflow
-          ? "workflows"
-          : "folders";
-
-      const renameOptionTitle = anchorItem.isOpen
-        ? `Open ${openFileType} cannot be renamed`
-        : "";
-
-      return [
-        !isMultipleSelectionActive &&
-          createRenameOption(anchorItem, { title: renameOptionTitle }),
-
-        createDeleteOption(anchorItem, {
-          title: anchorItem.canBeDeleted
-            ? ""
-            : "Open folders cannot be deleted",
-        }),
-      ].filter(Boolean);
-    },
   },
 });
 </script>
@@ -561,20 +530,18 @@ export default defineComponent({
             anchor,
             onItemClick,
             isMultipleSelectionActive,
+            closeContextMenu,
           }"
         >
-          <MenuItems
-            menu-aria-label="Space explorer context menu"
-            class="menu-items"
-            :items="
-              getFileExplorerContextMenuItems(
-                createRenameOption,
-                createDeleteOption,
-                anchor.item,
-                isMultipleSelectionActive
-              )
-            "
-            @item-click="(_, item) => onItemClick(item)"
+          <SpaceExplorerContextMenu
+            :create-rename-option="createRenameOption"
+            :create-delete-option="createDeleteOption"
+            :anchor="anchor"
+            :on-item-click="onItemClick"
+            :is-multiple-selection-active="isMultipleSelectionActive"
+            :close-context-menu="closeContextMenu"
+            :project-id="projectId"
+            :selected-items="selectedItems"
           />
         </template>
       </FileExplorer>
