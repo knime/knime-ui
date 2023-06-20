@@ -8,7 +8,6 @@ import type { Dispatch } from "vuex";
 export type ActionMenuItem = MenuItem & {
   id: string;
   execute: () => void;
-  hidden?: boolean;
 };
 
 export const buildHubDownloadMenuItem = (
@@ -88,14 +87,18 @@ export const buildHubUploadMenuItems = (
     id: "connectToHub",
     text: "Connect to Hub",
     icon: CloudLoginIcon,
-    hidden: connectToHubItems.length === 0,
     // connect on click without submenu if there is only one remote hub known
     execute: hasSingleRemoteSpaceProvider
       ? connectToHubItems[0]?.execute
       : null,
-    // show list of disconnected hubs if we have mulitple configured
+    // show list of disconnected hubs if we have multiple configured
     children: hasSingleRemoteSpaceProvider ? null : connectToHubItems,
   };
+
+  // hide connectToHub is we don't have any items
+  if (connectToHubItems.length === 0) {
+    return [uploadToHub];
+  }
 
   return [uploadToHub, connectToHub];
 };

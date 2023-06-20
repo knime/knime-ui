@@ -78,7 +78,7 @@ export default {
       );
 
       return [
-        this.createWorkflowAction,
+        ...(this.mode === "mini" ? [this.createWorkflowAction] : []),
         {
           id: "createFolder",
           text: "Create folder",
@@ -114,7 +114,7 @@ export default {
           },
         },
         ...(this.isLocal ? uploadAndConnectToHub : [downloadToLocalSpace]),
-      ].filter(({ hidden }) => !hidden);
+      ];
     },
 
     createWorkflowButtonTitle() {

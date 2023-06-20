@@ -30,7 +30,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const handleItemClick = (item: MenuItem & { execute: () => void }) => {
+const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
   if (item.execute) {
     item.execute();
     props.closeContextMenu();
@@ -73,14 +73,16 @@ const fileExplorerContextMenuItems = computed(() => {
     ? `Open ${openFileType} cannot be renamed`
     : "";
 
-  return [
-    {
-      ...createRenameOption(anchorItem, {
-        title: renameOptionTitle,
-        icon: RenameIcon,
-      }),
-      hidden: isMultipleSelectionActive,
-    },
+  const contextMenuItems = [
+    // hide rename for multiple selected items
+    ...(isMultipleSelectionActive
+      ? []
+      : [
+          createRenameOption(anchorItem, {
+            title: renameOptionTitle,
+            icon: RenameIcon,
+          }),
+        ]),
 
     createDeleteOption(anchorItem, {
       title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
@@ -88,12 +90,15 @@ const fileExplorerContextMenuItems = computed(() => {
     }),
 
     ...(isLocal ? uploadAndConnectToHub : [downloadToLocalSpace]),
-  ].filter(({ hidden }) => !hidden);
+  ];
+
+  return contextMenuItems;
 });
 </script>
 
 <template>
   <MenuItems
+    id="space-explorer-context-menu"
     menu-aria-label="Space explorer context menu"
     class="menu-items"
     :items="fileExplorerContextMenuItems"
