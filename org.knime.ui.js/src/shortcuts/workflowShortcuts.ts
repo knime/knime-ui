@@ -384,7 +384,8 @@ const workflowShortcuts: WorkflowShortcuts = {
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront,
       }),
     condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0,
+      $store.getters["selection/selectedAnnotations"].length > 0 &&
+      $store.getters["workflow/isWritable"],
   },
   bringAnnotationForward: {
     hotkey: ["Ctrl", "ArrowUp"],
@@ -394,7 +395,8 @@ const workflowShortcuts: WorkflowShortcuts = {
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward,
       }),
     condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0,
+      $store.getters["selection/selectedAnnotations"].length > 0 &&
+      $store.getters["workflow/isWritable"],
   },
   sendAnnotationBackward: {
     hotkey: ["Ctrl", "ArrowDown"],
@@ -404,7 +406,8 @@ const workflowShortcuts: WorkflowShortcuts = {
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward,
       }),
     condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0,
+      $store.getters["selection/selectedAnnotations"].length > 0 &&
+      $store.getters["workflow/isWritable"],
   },
   sendAnnotationToBack: {
     hotkey: ["Ctrl", "Shift", "ArrowDown"],
@@ -414,7 +417,8 @@ const workflowShortcuts: WorkflowShortcuts = {
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack,
       }),
     condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0,
+      $store.getters["selection/selectedAnnotations"].length > 0 &&
+      $store.getters["workflow/isWritable"],
   },
   quickAddNode: {
     text: "Quick add node",

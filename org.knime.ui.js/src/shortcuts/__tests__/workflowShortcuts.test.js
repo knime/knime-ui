@@ -709,6 +709,11 @@ describe("workflowShortcuts", () => {
         expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(
           true
         );
+
+        $store.getters["workflow/isWritable"] = false;
+        expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(
+          false
+        );
       }
     );
 
