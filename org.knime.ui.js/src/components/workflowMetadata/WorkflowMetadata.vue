@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import { useStore } from "vuex";
 
+import { API } from "@api";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
 
@@ -29,6 +30,18 @@ const isComponent = computed(
 const isMetanode = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode
 );
+
+const updateMetadata = ({ description, links, tags }) => {
+  isEditing.value = false;
+
+  API.workflowCommand.UpdateProjectMetadata({
+    projectId: workflow.value.projectId,
+    workflowId: workflow.value.info.containerId,
+    description,
+    tags,
+    links,
+  });
+};
 </script>
 
 <template>
@@ -38,7 +51,7 @@ const isMetanode = computed(
       :is-editing="isEditing"
       :workflow="workflow"
       @edit-start="isEditing = true"
-      @edit-save="isEditing = false"
+      @edit-save="updateMetadata"
       @edit-cancel="isEditing = false"
     />
 
