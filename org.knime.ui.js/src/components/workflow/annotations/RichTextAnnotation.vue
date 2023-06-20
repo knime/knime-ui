@@ -51,6 +51,7 @@ const customExtensions = [
       :model-value="initialValue"
       :editable="editable"
       :custom-extensions="customExtensions"
+      :enabled-tools="{ all: true }"
       @update:model-value="emit('change', $event)"
       @dblclick="!editable && emit('editStart')"
     >

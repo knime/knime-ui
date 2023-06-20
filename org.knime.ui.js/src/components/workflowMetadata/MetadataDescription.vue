@@ -22,7 +22,13 @@ const emit = defineEmits<{
       :class="['description-editor', { editable }]"
       :min-height="150"
       :max-height="300"
-      :disabled-tools="{ textAlign: true, heading: true }"
+      :enabled-tools="{
+        bold: true,
+        italic: true,
+        bulletList: true,
+        orderedList: true,
+        underline: true,
+      }"
       @update:model-value="emit('change', $event)"
     />
   </div>
