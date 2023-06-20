@@ -151,7 +151,6 @@ export default {
     <template v-if="mode === 'mini'">
       <div class="toolbar-actions-mini">
         <SubMenu
-          :teleport-to-body="true"
           :items="actions"
           class="more-actions"
           button-title="More actions"
