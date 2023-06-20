@@ -68,6 +68,7 @@ describe("SpaceExplorer.vue", () => {
     mockGetSpaceItems = null,
     openProjects = [],
     fileExtensionToNodeTemplateId = {},
+    isWriteableMock = vi.fn().mockReturnValue(true),
   } = {}) => {
     if (mockGetSpaceItems) {
       mockedAPI.space.listWorkflowGroup.mockImplementation(mockGetSpaceItems);
@@ -92,6 +93,9 @@ describe("SpaceExplorer.vue", () => {
       workflow: {
         actions: {
           addNode: () => {},
+        },
+        getters: {
+          isWritable: isWriteableMock,
         },
       },
       canvas: {
@@ -165,6 +169,7 @@ describe("SpaceExplorer.vue", () => {
     mockGetSpaceItems = null,
     openProjects = [],
     fileExtensionToNodeTemplateId = {},
+    isWriteableMock = vi.fn().mockReturnValue(true),
   } = {}) => {
     const mountResult = doMount({
       props,
@@ -172,6 +177,7 @@ describe("SpaceExplorer.vue", () => {
       mockGetSpaceItems,
       openProjects,
       fileExtensionToNodeTemplateId,
+      isWriteableMock,
     });
 
     await new Promise((r) => setTimeout(r, 0));
@@ -859,6 +865,54 @@ describe("SpaceExplorer.vue", () => {
       });
 
       const event = new MouseEvent("dragend") as DragEvent;
+      wrapper.findComponent(FileExplorer).vm.$emit("dragend", {
+        event,
+        sourceItem,
+        onComplete,
+      });
+
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "workflow/addNode",
+        expect.anything()
+      );
+      await nextTick();
+      expect(onComplete).toHaveBeenCalledWith(false);
+    });
+
+    it("should not add a node to canvas if a workflow is not writable", async () => {
+      document.elementFromPoint = vi.fn().mockReturnValue(null);
+      const { wrapper, store, dispatchSpy, mockRoute } = await doMountAndLoad({
+        isWriteableMock: vi.fn(() => false),
+        fileExtensionToNodeTemplateId: {
+          test: "org.knime.test.test.nodeFactory",
+        },
+        mockResponse: {
+          id: "test.id",
+          path: [],
+          items: [
+            {
+              id: "4",
+              name: "testFile.test",
+              type: SpaceItem.TypeEnum.Workflow,
+            },
+          ],
+        },
+      });
+
+      mockRoute.name = APP_ROUTES.WorkflowPage;
+      store.state.spaces.activeSpaceProvider = {
+        id: "local",
+      };
+
+      const event = new MouseEvent("dragend") as DragEvent;
+
+      const sourceItem = createMockItem({
+        id: "0",
+        name: "file.test",
+      });
+
+      const onComplete = vi.fn();
+
       wrapper.findComponent(FileExplorer).vm.$emit("dragend", {
         event,
         sourceItem,

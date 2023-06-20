@@ -815,5 +815,14 @@ describe("workflowShortcuts", () => {
         );
       });
     });
+
+    it("cannot add annotation when workflow is not writable", () => {
+      const { $store } = createStore();
+      $store.getters["workflow/isWritable"] = false;
+
+      expect(
+        workflowShortcuts.addWorkflowAnnotation.condition({ $store })
+      ).toBe(false);
+    });
   });
 });

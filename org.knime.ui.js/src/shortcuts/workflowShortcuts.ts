@@ -374,6 +374,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         },
       });
     },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   bringAnnotationToFront: {
     text: "Bring to front",

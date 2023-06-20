@@ -118,6 +118,7 @@ export default defineComponent({
       "hasActiveHubSession",
       "getWorkflowGroupContent",
     ]),
+    ...mapGetters("workflow", ["isWritable"]),
 
     activeSpacePath(): PathTriplet {
       return this.projectPath[this.projectId];
@@ -431,8 +432,8 @@ export default defineComponent({
 
       const el = document.elementFromPoint(screenX, screenY);
 
-      // skip behavior when not on the workflow
-      if (this.$route.name !== APP_ROUTES.WorkflowPage) {
+      // skip behavior when not on the workflow or workflow is not writable
+      if (this.$route.name !== APP_ROUTES.WorkflowPage || !this.isWritable) {
         onComplete(false);
         return;
       }
