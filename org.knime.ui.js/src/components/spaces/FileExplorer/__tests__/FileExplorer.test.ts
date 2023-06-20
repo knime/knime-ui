@@ -410,12 +410,7 @@ describe("FileExplorer.vue", () => {
       // workflow-group item
       const secondItem = getRenderedItems(wrapper).at(1);
 
-      // dragging one item to another causes a move, which means we skip dragend
       await dragAndDropItem(secondItem, firstItem);
-      expect(wrapper.emitted("dragend")).toBeUndefined();
-
-      // drag to anything (other than another item in the FileExplorer itself)
-      await dragAndDropItem(secondItem, null);
 
       expect(wrapper.emitted("dragend")[0][0]).toEqual({
         event: expect.anything(),

@@ -136,23 +136,11 @@ const {
   getCustomPreviewEl: () => document.querySelector(".custom-preview"),
 });
 
-const hasMovedItems = ref(false);
 /**
  * This helper simply forwards the emission of the given event name, provided the payload is not null.
  * It's needed because the `useItemDragging` composable doesn't have access to the component emits
  */
 const forwardEmit = (eventName: any, eventPayload: any) => {
-  // when we have emitted a moveItems event we should then not forward
-  // any event after that
-  if (hasMovedItems.value) {
-    hasMovedItems.value = false;
-    return;
-  }
-
-  if (eventName === "moveItems") {
-    hasMovedItems.value = true;
-  }
-
   if (!eventPayload) {
     return;
   }
