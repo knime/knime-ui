@@ -59,7 +59,9 @@ const setupRenameInput = async () => {
   renameValue.value = props.item.name;
   await nextTick();
 
-  renameInput.value.focus();
+  const inputElement = renameInput.value?.$refs?.input as HTMLInputElement;
+  inputElement?.setSelectionRange(0, renameValue.value.length);
+  inputElement?.focus();
 };
 
 watch(isRenameActive, async (isActive) => {
