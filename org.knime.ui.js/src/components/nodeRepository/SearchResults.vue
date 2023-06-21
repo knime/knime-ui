@@ -4,7 +4,9 @@ import type { PropType } from "vue";
 import BaseButton from "webapps-common/ui/components/BaseButton.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 
+import { API } from "@api";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 
@@ -27,6 +29,7 @@ export default defineComponent({
     ReloadIcon,
     BaseButton,
     DropdownIcon,
+    CogIcon,
   },
   props: {
     topNodes: {
@@ -160,6 +163,9 @@ export default defineComponent({
         this.$emit("navReachedTop");
       }
     },
+    openKnimeUIPreferencePage() {
+      API.desktop.openKnimeUIPreferences();
+    },
   },
 });
 </script>
@@ -194,18 +200,28 @@ export default defineComponent({
       </div>
     </div>
     <div v-if="hasNodeCollectionActive" class="content">
-      <BaseButton
-        class="more-nodes-button"
-        :aria-expanded="String(isShowingBottomNodes)"
-        @click.prevent="searchActions.toggleShowingBottomNodes"
-      >
-        <div class="more-nodes-dropdown">
-          <DropdownIcon
-            :class="['dropdown-icon', { flip: isShowingBottomNodes }]"
-          />
-        </div>
-        More advanced nodes
-      </BaseButton>
+      <div class="advanced-buttons">
+        <BaseButton
+          class="more-nodes-button"
+          :aria-expanded="String(isShowingBottomNodes)"
+          @click.prevent="searchActions.toggleShowingBottomNodes"
+        >
+          <div class="more-nodes-dropdown">
+            <DropdownIcon
+              :class="['dropdown-icon', { flip: isShowingBottomNodes }]"
+            />
+          </div>
+          More advanced nodes
+        </BaseButton>
+        <FunctionButton
+          class="preferences-button"
+          title="Set up nodes in the node repo"
+          data-testid="open-preferences"
+          @click="openKnimeUIPreferencePage"
+        >
+          <CogIcon />
+        </FunctionButton>
+      </div>
       <div v-show="isShowingBottomNodes">
         <div v-if="hasNoMoreSearchResults" class="no-matching-search">
           No additional node matching for: {{ query }}
@@ -275,35 +291,56 @@ export default defineComponent({
       align-self: center;
     }
 
-    & .more-nodes-button {
+    & .advanced-buttons {
       width: 100%;
-      border: 0;
-      cursor: pointer;
       display: flex;
-      align-items: center;
       justify-content: center;
 
-      & .more-nodes-dropdown {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
+      & .more-nodes-button {
+        border: 0;
+        cursor: pointer;
         display: flex;
         align-items: center;
+        justify-content: center;
 
-        & .dropdown-icon {
-          margin: auto;
-          width: 18px;
-          height: 18px;
-          stroke-width: calc(32px / 18);
-          stroke: var(--knime-masala);
+        & .more-nodes-dropdown {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
 
-          &.flip {
-            transform: scaleY(-1);
+          & .dropdown-icon {
+            margin: auto;
+            width: 18px;
+            height: 18px;
+            stroke-width: calc(32px / 18);
+            stroke: var(--knime-masala);
+
+            &.flip {
+              transform: scaleY(-1);
+            }
+          }
+
+          &:hover {
+            background-color: var(
+              --theme-button-function-background-color-hover
+            );
           }
         }
+      }
 
-        &:hover {
-          background-color: var(--theme-button-function-background-color-hover);
+      & .preferences-button {
+        width: 30px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        & svg {
+          @mixin svg-icon-size 18;
+
+          stroke: var(--knime-masala);
         }
       }
 
@@ -312,6 +349,7 @@ export default defineComponent({
         content: "";
         flex: 1 1;
         border-bottom: 1px solid var(--knime-silver-sand);
+        transform: translateY(-50%);
       }
 
       &::after {
