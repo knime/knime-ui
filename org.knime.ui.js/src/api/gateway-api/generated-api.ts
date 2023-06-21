@@ -353,22 +353,16 @@ export interface Annotation {
 
     /**
      *
-     * @type {string}
+     * @type {TypedText}
      * @memberof Annotation
      */
-    text: string;
+    text: TypedText;
     /**
      * The background color. If not given, the default background color needs to be used (which is usually opaque).
      * @type {string}
      * @memberof Annotation
      */
     backgroundColor?: string;
-    /**
-     * The content type of the annotation.
-     * @type {string}
-     * @memberof Annotation
-     */
-    contentType: Annotation.ContentTypeEnum;
     /**
      *
      * @type {string}
@@ -396,14 +390,6 @@ export interface Annotation {
  * @namespace Annotation
  */
 export namespace Annotation {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum ContentTypeEnum {
-        Plain = 'text/plain',
-        Html = 'text/html'
-    }
     /**
      * @export
      * @enum {string}
@@ -2566,29 +2552,23 @@ export interface ProjectDirtyStateEvent extends Event {
 export interface ProjectMetadata {
 
     /**
-     * A detailed description of the project workflow
-     * @type {string}
+     *
+     * @type {TypedText}
      * @memberof ProjectMetadata
      */
-    description?: string;
-    /**
-     * The content type of the project workflow description
-     * @type {string}
-     * @memberof ProjectMetadata
-     */
-    contentType?: ProjectMetadata.ContentTypeEnum;
+    description: TypedText;
     /**
      * A collection of tags the user chose to describe the workflow
      * @type {Array<string>}
      * @memberof ProjectMetadata
      */
-    tags?: Array<string>;
+    tags: Array<string>;
     /**
      * A collection of URLs attached to the workflow
      * @type {Array<Link>}
      * @memberof ProjectMetadata
      */
-    links?: Array<Link>;
+    links: Array<Link>;
     /**
      * The date and time of the last change made to this workflow
      * @type {Date}
@@ -2599,20 +2579,6 @@ export interface ProjectMetadata {
 }
 
 
-/**
- * @export
- * @namespace ProjectMetadata
- */
-export namespace ProjectMetadata {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum ContentTypeEnum {
-        Plain = 'text/plain',
-        Html = 'text/html'
-    }
-}
 /**
  * Remove a port from a node
  * @export
@@ -3033,6 +2999,43 @@ export interface TranslateCommand extends PartBasedCommand {
 export namespace TranslateCommand {
 }
 /**
+ * A text of a certain content type.
+ * @export
+ * @interface TypedText
+ */
+export interface TypedText {
+
+    /**
+     * The actual text.
+     * @type {string}
+     * @memberof TypedText
+     */
+    value: string;
+    /**
+     * The content type of the text.
+     * @type {string}
+     * @memberof TypedText
+     */
+    contentType: TypedText.ContentTypeEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace TypedText
+ */
+export namespace TypedText {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ContentTypeEnum {
+        Plain = 'text/plain',
+        Html = 'text/html'
+    }
+}
+/**
  * Event for changes to the update state indicating updates are available.
  * @export
  * @interface UpdateAvailableEvent
@@ -3161,17 +3164,11 @@ export namespace UpdateNodeLabelCommand {
 export interface UpdateProjectMetadataCommand extends WorkflowCommand {
 
     /**
-     * A detailed description of the project workflow
-     * @type {string}
+     *
+     * @type {TypedText}
      * @memberof UpdateProjectMetadataCommand
      */
-    description: string;
-    /**
-     * The content type of the description
-     * @type {string}
-     * @memberof UpdateProjectMetadataCommand
-     */
-    contentType: UpdateProjectMetadataCommand.ContentTypeEnum;
+    description: TypedText;
     /**
      * A collection of tags the user chose to describe the workflow
      * @type {Array<string>}
@@ -3193,14 +3190,6 @@ export interface UpdateProjectMetadataCommand extends WorkflowCommand {
  * @namespace UpdateProjectMetadataCommand
  */
 export namespace UpdateProjectMetadataCommand {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum ContentTypeEnum {
-        Plain = 'text/plain',
-        Html = 'text/html'
-    }
 }
 /**
  * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;,  but never both of them.

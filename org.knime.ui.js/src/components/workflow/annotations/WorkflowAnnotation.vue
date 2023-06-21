@@ -7,7 +7,7 @@ import type {
   Bounds,
   WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
-import { Annotation } from "@/api/gateway-api/generated-api";
+import { TypedText } from "@/api/gateway-api/generated-api";
 
 import { getMetaOrCtrlKey } from "@/util/navigator";
 import TransformControls from "./TransformControls.vue";
@@ -109,7 +109,9 @@ export default defineComponent({
     },
 
     isRichTextAnnotation() {
-      return this.annotation.contentType === Annotation.ContentTypeEnum.Html;
+      return (
+        this.annotation.text.contentType === TypedText.ContentTypeEnum.Html
+      );
     },
 
     initialRichTextAnnotationValue() {
@@ -117,8 +119,8 @@ export default defineComponent({
         content.replaceAll("\r\n", "<br />");
 
       return this.isRichTextAnnotation
-        ? this.annotation.text
-        : recreateLinebreaks(this.annotation.text);
+        ? this.annotation.text.value
+        : recreateLinebreaks(this.annotation.text.value);
     },
 
     initialBorderColor() {

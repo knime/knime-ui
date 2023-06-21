@@ -2,10 +2,7 @@
 import { computed } from "vue";
 
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import type {
-  AvailablePortTypes,
-  ComponentMetadata,
-} from "@/api/gateway-api/custom-types";
+import type { AvailablePortTypes, ComponentMetadata } from "@/api/custom-types";
 
 import type { WorkflowState } from "@/store/workflow";
 import { toPortObject } from "@/util/portDataMapper";

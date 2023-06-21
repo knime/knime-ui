@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
 import PencilIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 
-import type { Link } from "@/api/gateway-api/generated-api";
+import { TypedText, type Link } from "@/api/gateway-api/generated-api";
 import type { WorkflowState } from "@/store/workflow";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
@@ -21,34 +21,65 @@ interface Props {
 
 const props = defineProps<Props>();
 
+type SaveEventPayload = {
+  description: TypedText;
+  links: Array<Link>;
+  tags: Array<string>;
+  // contentType: TypedText.ContentTypeEnum;
+};
+
 const emit = defineEmits<{
   (e: "editStart"): void;
-  (
-    e: "editSave",
-    payload: {
-      description: string;
-      links: Array<Link>;
-      tags: Array<string>;
-    }
-  ): void;
+  (e: "editSave", payload: SaveEventPayload): void;
   (e: "editCancel"): void;
 }>();
 
 const projectMetadata = computed(() => props.workflow.projectMetadata);
-const description = computed(() => projectMetadata.value.description);
+const description = computed(() => projectMetadata.value.description.value);
 const lastEdit = computed(() => projectMetadata.value.lastEdit.toString());
 
 const isValid = ref(true);
-const editedDescription = ref(description.value || "");
-const editedLinks = ref<Array<Link>>(projectMetadata.value.links || []);
-const editedTags = ref(projectMetadata.value.tags || []);
+const hasEdited = ref(false);
+
+const editedState = reactive({
+  description: description.value,
+  links: projectMetadata.value.links || [],
+  tags: projectMetadata.value.tags || [],
+});
+
+const hasChangedDescription = computed(() => {
+  return editedState.description !== `<p>${description.value.trim()}</p>`;
+});
+
+const setEditedState = <K extends keyof typeof editedState>(
+  key: K,
+  value: (typeof editedState)[K]
+) => {
+  editedState[key] = value;
+  hasEdited.value = key !== "description" || hasChangedDescription.value;
+};
 
 const emitSave = () => {
-  emit("editSave", {
-    description: editedDescription.value,
-    links: editedLinks.value,
-    tags: editedTags.value,
-  });
+  const payload: SaveEventPayload = hasEdited.value
+    ? {
+        ...editedState,
+        description: {
+          contentType: TypedText.ContentTypeEnum.Html,
+          value: editedState.description,
+        },
+      }
+    : {
+        // description: description.value,
+        links: projectMetadata.value.links,
+        tags: projectMetadata.value.tags,
+        // contentType: TypedText.ContentTypeEnum.Plain,
+        description: {
+          contentType: TypedText.ContentTypeEnum.Plain,
+          value: description.value,
+        },
+      };
+
+  emit("editSave", payload);
 };
 </script>
 
@@ -88,21 +119,24 @@ const emitSave = () => {
   <MetadataDescription
     :editable="isEditing"
     :description="description"
-    @change="editedDescription = $event"
+    @change="setEditedState('description', $event)"
   />
+  <!-- @change="editedDescription = $event" -->
 
   <ExternalResourcesList
     :editable="isEditing"
     :links="projectMetadata.links"
-    @change="editedLinks = $event"
     @valid="isValid = $event"
+    @change="setEditedState('links', $event)"
   />
+  <!-- @change="editedLinks = $event" -->
 
   <ProjectMetadataTags
     :editable="isEditing"
     :tags="projectMetadata.tags"
-    @change="editedTags = $event"
+    @change="setEditedState('tags', $event)"
   />
+  <!-- @change="editedTags = $event" -->
 </template>
 
 <style lang="postcss" scoped>

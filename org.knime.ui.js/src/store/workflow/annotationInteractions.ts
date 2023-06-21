@@ -2,7 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
 import {
-  Annotation,
+  TypedText,
   type ReorderWorkflowAnnotationsCommand,
 } from "@/api/gateway-api/generated-api";
 
@@ -109,7 +109,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       commit("setAnnotation", {
         annotationId,
         text,
-        contentType: Annotation.ContentTypeEnum.Html,
+        contentType: TypedText.ContentTypeEnum.Html,
         borderColor,
       });
 
@@ -124,7 +124,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       commit("setAnnotation", {
         annotationId,
         text: originalText,
-        contentType: Annotation.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Plain,
         borderColor: originalBorderColor,
       });
 

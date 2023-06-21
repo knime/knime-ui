@@ -14,7 +14,10 @@ export default defineComponent({
   computed: {
     styledText() {
       const { styleRanges, text } = this.annotation;
-      const { textRanges, isValid } = applyStyleRanges(styleRanges, text);
+      const { textRanges, isValid } = applyStyleRanges(
+        styleRanges,
+        text.value || ""
+      );
       if (!isValid) {
         consola.warn(
           `Invalid styleRanges: ${JSON.stringify(

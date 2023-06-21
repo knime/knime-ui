@@ -2,7 +2,6 @@
 import { ref, computed } from "vue";
 import { useStore } from "vuex";
 
-import { API } from "@api";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
 
@@ -34,12 +33,10 @@ const isMetanode = computed(
 const updateMetadata = ({ description, links, tags }) => {
   isEditing.value = false;
 
-  API.workflowCommand.UpdateProjectMetadata({
-    projectId: workflow.value.projectId,
-    workflowId: workflow.value.info.containerId,
+  store.dispatch("workflow/updateWorkflowMetadata", {
     description,
-    tags,
     links,
+    tags,
   });
 };
 </script>
