@@ -3165,19 +3165,25 @@ export interface UpdateProjectMetadataCommand extends WorkflowCommand {
      * @type {string}
      * @memberof UpdateProjectMetadataCommand
      */
-    description?: string;
+    description: string;
+    /**
+     * The content type of the description
+     * @type {string}
+     * @memberof UpdateProjectMetadataCommand
+     */
+    contentType: UpdateProjectMetadataCommand.ContentTypeEnum;
     /**
      * A collection of tags the user chose to describe the workflow
      * @type {Array<string>}
      * @memberof UpdateProjectMetadataCommand
      */
-    tags?: Array<string>;
+    tags: Array<string>;
     /**
      * A collection of URLs attached to the workflow
      * @type {Array<Link>}
      * @memberof UpdateProjectMetadataCommand
      */
-    links?: Array<Link>;
+    links: Array<Link>;
 
 }
 
@@ -3187,6 +3193,14 @@ export interface UpdateProjectMetadataCommand extends WorkflowCommand {
  * @namespace UpdateProjectMetadataCommand
  */
 export namespace UpdateProjectMetadataCommand {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ContentTypeEnum {
+        Plain = 'text/plain',
+        Html = 'text/html'
+    }
 }
 /**
  * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;,  but never both of them.
