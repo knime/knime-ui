@@ -59,7 +59,9 @@ const spacesDropdownData = computed((): MenuItem[] => {
   const spaceMenuItem = (provider: SpaceProvider) => (space: Space) => ({
     text: space.id === "local" ? space.name : `${space.owner} – ${space.name}`,
     id: `${provider.id}__${space.id}`,
-    selected: space.id === activeSpacePath?.spaceId,
+    selected:
+      provider.id === activeSpacePath?.spaceProviderId &&
+      space.id === activeSpacePath?.spaceId,
     sectionHeadline: false,
     separator: false,
     data: {
