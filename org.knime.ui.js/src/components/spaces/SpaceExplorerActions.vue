@@ -34,7 +34,7 @@ export default {
       required: true,
     },
     projectId: {
-      type: String,
+      type: [String, null],
       required: true,
     },
   },

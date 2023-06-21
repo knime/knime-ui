@@ -114,6 +114,7 @@ const spaceIcon = computed(() => {
 <template>
   <div class="space-path-breadcrumb">
     <SubMenu
+      :teleport-to-body="false"
       :items="spacesDropdownData"
       class="submenu"
       button-title="Change space"
@@ -131,7 +132,7 @@ const spaceIcon = computed(() => {
   </div>
 </template>
 
-<style lang="postcss">
+<style lang="postcss" scoped>
 .space-path-breadcrumb {
   & .dropdown-icon {
     margin-left: 5px;
@@ -143,7 +144,7 @@ const spaceIcon = computed(() => {
 
   & :deep(.menu-items) {
     max-height: 60vh;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
   & .selected-text {
