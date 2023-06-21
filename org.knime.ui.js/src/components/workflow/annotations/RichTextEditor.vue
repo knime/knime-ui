@@ -232,8 +232,10 @@ onMounted(() => {
 
     & a {
       color: var(--theme-text-link-foreground-color);
+      text-decoration-style: dashed;
 
       &:hover {
+        text-decoration-style: solid;
         background: var(--theme-text-link-background-color-hover);
         color: var(--theme-text-link-foreground-color-hover);
       }
