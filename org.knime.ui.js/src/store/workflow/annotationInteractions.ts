@@ -4,6 +4,7 @@ import { API } from "@api";
 import {
   TypedText,
   type ReorderWorkflowAnnotationsCommand,
+  type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
 
 import * as colors from "@/style/colors.mjs";
@@ -29,9 +30,9 @@ export const mutations: MutationTree<WorkflowState> = {
     const {
       activeWorkflow: { workflowAnnotations },
     } = state;
-    const mapped = workflowAnnotations.map((annotation) =>
+    const mapped = workflowAnnotations.map<WorkflowAnnotation>((annotation) =>
       annotation.id === annotationId
-        ? { ...annotation, text, contentType, borderColor }
+        ? { ...annotation, text: { value: text, contentType}, borderColor }
         : annotation
     );
 
