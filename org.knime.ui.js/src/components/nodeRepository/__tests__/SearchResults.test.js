@@ -1,11 +1,15 @@
 import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
+import { deepMocked } from "@/test/utils";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import { API } from "@api";
 import SearchResults from "../SearchResults.vue";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
 import NodeList from "../NodeList.vue";
+
+const mockedAPI = deepMocked(API);
 
 describe("SearchResults", () => {
   const doMount = ({ propsOverrides = {} } = {}) => {
@@ -180,6 +184,15 @@ describe("SearchResults", () => {
 
       expect(wrapper.findAllComponents(NodeList).length).toBe(1);
       expect(wrapper.text()).toMatch("No additional node matching for: xxx");
+    });
+
+    it("allows opens preferences", async () => {
+      const { wrapper } = doMount({
+        propsOverrides: { hasNodeCollectionActive: true },
+      });
+      await Vue.nextTick();
+      await wrapper.find('[data-testid="open-preferences"]').trigger("click");
+      expect(mockedAPI.desktop.openKnimeUIPreferences).toHaveBeenCalled();
     });
   });
 });

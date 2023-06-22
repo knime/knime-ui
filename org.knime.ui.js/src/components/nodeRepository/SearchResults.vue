@@ -4,6 +4,7 @@ import type { PropType } from "vue";
 import BaseButton from "webapps-common/ui/components/BaseButton.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 
 import { API } from "@api";
@@ -29,6 +30,7 @@ export default defineComponent({
     ReloadIcon,
     BaseButton,
     DropdownIcon,
+    FunctionButton,
     CogIcon,
   },
   props: {
