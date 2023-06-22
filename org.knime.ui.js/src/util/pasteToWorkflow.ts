@@ -1,4 +1,9 @@
+import { API } from "@api";
+import type { XY } from "@/api/gateway-api/generated-api";
+import type { WorkflowState } from "@/store/workflow";
 import { nodeSize } from "@/style/shapes.mjs";
+
+import type { GeometryBounds } from "@/util/geometry/types";
 import { geometry } from "@/util/geometry";
 
 // eslint-disable-next-line no-magic-numbers
@@ -77,34 +82,34 @@ export const pastePartsAt = ({
   };
 };
 
-export const pasteURI = (string, activeWorkflow, position, visibleFrame) => {
-  if (window.importURIAtWorkflowCanvas) {
-    const {
-      projectId,
-      info: { containerId },
-    } = activeWorkflow;
-    let x, y;
-    if (position) {
-      x = position.x - nodeSize / 2;
-      y = position.y - nodeSize / 2;
-    } else {
-      const center = centerStrategy({
+export const pasteURI = (
+  uri: string,
+  activeWorkflow: WorkflowState["activeWorkflow"],
+  position: XY,
+  visibleFrame: GeometryBounds
+) => {
+  const {
+    projectId,
+    info: { containerId },
+  } = activeWorkflow;
+
+  const { x, y } = position
+    ? {
+        x: position.x - nodeSize / 2,
+        y: position.y - nodeSize / 2,
+      }
+    : centerStrategy({
         visibleFrame,
         clipboardContent: {
           objectBounds: { width: nodeSize, height: nodeSize },
         },
       });
-      x = center.x;
-      y = center.y;
-    }
-    return window.importURIAtWorkflowCanvas(
-      string,
-      projectId,
-      containerId,
-      x,
-      y
-    );
-  } else {
-    return false;
-  }
+
+  return API.desktop.importURIAtWorkflowCanvas({
+    uri,
+    projectId,
+    workflowId: containerId,
+    x,
+    y,
+  });
 };

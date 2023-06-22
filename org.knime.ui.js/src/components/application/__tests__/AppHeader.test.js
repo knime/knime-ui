@@ -155,7 +155,7 @@ describe("AppHeader.vue", () => {
     it("allows opens preferences", async () => {
       const { wrapper } = doMount();
       await wrapper.find('[data-testid="open-preferences"]').trigger("click");
-      expect(mockedAPI.desktop.openKnimeUIPreferences).toHaveBeenCalled();
+      expect(mockedAPI.desktop.openWebUIPreferencePage).toHaveBeenCalled();
     });
 
     it("hides the switch button when dev mode is disabled", async () => {

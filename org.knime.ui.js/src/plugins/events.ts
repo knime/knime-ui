@@ -105,18 +105,21 @@ export default ({ $store, $router }) => {
     ImportURIEvent({ x, y }) {
       const el = document.elementFromPoint(x, y);
       const kanvas = $store.state.canvas.getScrollContainerElement();
+
       if (kanvas.contains(el)) {
         const [canvasX, canvasY] = $store.getters[
           "canvas/screenToCanvasCoordinates"
         ]([x, y]);
+
         const workflow = $store.state.workflow.activeWorkflow;
-        window.importURIAtWorkflowCanvas(
-          null,
-          workflow.projectId,
-          workflow.info.containerId,
-          canvasX - nodeSize / 2,
-          canvasY - nodeSize / 2
-        );
+
+        API.desktop.importURIAtWorkflowCanvas({
+          uri: null,
+          projectId: workflow.projectId,
+          workflowId: workflow.info.containerId,
+          x: canvasX - nodeSize / 2,
+          y: canvasY - nodeSize / 2,
+        });
       }
     },
 

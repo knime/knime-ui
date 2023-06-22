@@ -67,7 +67,7 @@ export const openUrlInExternalBrowser = () => {
   );
 };
 
-export const openKnimeUIPreferences = () => {
+export const openWebUIPreferencePage = () => {
   callBrowserFunction(
     window.openWebUIPreferencePage,
     [],
@@ -331,6 +331,25 @@ export const saveWorkflowAs = ({
   );
 };
 
+export const saveAndCloseWorkflows = ({
+  totalProjects,
+  projectIds,
+  svgSnapshots,
+  params,
+}: {
+  totalProjects: number;
+  projectIds: string[];
+  svgSnapshots: string[];
+  params: any[];
+}) => {
+  callBrowserFunction(
+    window.saveAndCloseWorkflows,
+    [totalProjects, ...projectIds, ...svgSnapshots, ...params],
+    "Could not save and close all workflows",
+    false
+  );
+};
+
 export const importComponent = ({
   spaceProviderId,
   spaceId,
@@ -352,5 +371,26 @@ export const importComponent = ({
     [spaceProviderId, spaceId, itemId, projectId, workflowId, x, y],
     "Could not import component",
     true
+  );
+};
+
+export const importURIAtWorkflowCanvas = ({
+  uri,
+  projectId,
+  workflowId,
+  x,
+  y,
+}: {
+  uri: string | null;
+  projectId: string;
+  workflowId: string;
+  x: number;
+  y: number;
+}) => {
+  return callBrowserFunction(
+    window.importURIAtWorkflowCanvas,
+    [uri, projectId, workflowId, x, y],
+    `Could not import URI at canvas position (${x}, ${y})`,
+    false
   );
 };
