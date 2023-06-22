@@ -37,6 +37,7 @@ export default defineComponent({
     ]),
     ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
     ...mapGetters("selection", ["selectedNodeIds"]),
+    ...mapGetters("application", ["hasActiveProjectAnOrigin"]),
   },
   watch: {
     // close quickAddNodeMenu if node selection changes
@@ -110,8 +111,9 @@ export default defineComponent({
       </span>
       <div v-if="isOnHub" class="banner">
         <span>
-          This is a temporary copy. Once you are done, save to re-upload or save
-          a local copy.
+          This is a temporary copy. Once you are done,
+          {{ hasActiveProjectAnOrigin ? "save to re-upload or" : "" }} save a
+          local copy.
         </span>
         <Button primary compact class="button" @click="onSaveLocalCopy">
           Save local copy

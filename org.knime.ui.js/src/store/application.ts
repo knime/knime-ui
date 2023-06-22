@@ -618,6 +618,16 @@ export const getters = {
       .name;
   },
 
+  hasActiveProjectAnOrigin({ openProjects, activeProjectId }) {
+    if (!activeProjectId) {
+      return false;
+    }
+    return Boolean(
+      openProjects.find((project) => project.projectId === activeProjectId)
+        .origin
+    );
+  },
+
   workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
     if (!workflow.activeWorkflow) {
       return null;

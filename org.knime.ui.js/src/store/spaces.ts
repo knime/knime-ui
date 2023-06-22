@@ -131,7 +131,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   ) {
     // add
     openProjects.forEach(({ projectId, origin }) => {
-      if (!state.projectPath[projectId]) {
+      if (!state.projectPath[projectId] && origin) {
         const {
           spaceId,
           providerId: spaceProviderId,
@@ -393,11 +393,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     const { openProjects } = rootState.application;
 
+    // eslint-disable-next-line no-extra-parens
+
     const foundOpenProject = openProjects.find(
-      (project) =>
-        project.origin.providerId === spaceProviderId &&
-        project.origin.spaceId === spaceId &&
-        project.origin.itemId === workflowItemId
+      ({ origin }) =>
+        origin &&
+        origin.providerId === spaceProviderId &&
+        origin.spaceId === spaceId &&
+        origin.itemId === workflowItemId
     );
 
     if (foundOpenProject) {
