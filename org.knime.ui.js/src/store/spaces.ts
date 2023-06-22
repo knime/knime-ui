@@ -569,6 +569,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       return openProjects
         .filter(
           ({ origin }) =>
+            origin &&
             origin.providerId === spaceProviderId &&
             origin.spaceId === spaceId &&
             workflowItemIds.includes(origin.itemId)
@@ -591,7 +592,9 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       const openProjectsFolders = openProjects
         .filter(
           ({ origin }) =>
-            origin.providerId === spaceProviderId && origin.spaceId === spaceId
+            origin &&
+            origin.providerId === spaceProviderId &&
+            origin.spaceId === spaceId
         )
         .flatMap(({ origin }) => origin.ancestorItemIds);
 
@@ -618,60 +621,8 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     if (!state.projectPath.hasOwnProperty(projectId)) {
       return {};
     }
-<<<<<<< HEAD
     const { spaceId: activeId, spaceProviderId: activeSpaceProviderId } =
       state.projectPath[projectId];
-=======
-
-    const { spaceId, activeWorkflowGroup } = activeSpace;
-    const { openProjects } = application;
-
-    const workflowItemIds = activeWorkflowGroup.items
-      .filter((item) => item.type === ITEM_TYPES.Workflow)
-      .map((item) => item.id);
-
-    return openProjects
-      .filter((project) => {
-        const { origin } = project;
-        if (!origin) {
-          return false;
-        }
-        return (
-          origin.providerId === spaceProviderId &&
-            origin.spaceId === spaceId &&
-            workflowItemIds.includes(origin.itemId)
-        );
-      })
-      .map(({ origin }) => origin.itemId);
-  },
-
-  openedFolderItems({ activeSpace }, _, { application }) {
-    if (!activeSpace) {
-      return [];
-    }
-
-    const { spaceId, activeWorkflowGroup } = activeSpace;
-    const { openProjects } = application;
-
-      const openProjectsFolders = openProjects
-        .filter(
-          ({ origin }) =>
-            origin?.providerId === spaceProviderId && origin?.spaceId === spaceId
-        )
-        .flatMap(({ origin }) => origin?.ancestorItemIds);
-
-    return activeWorkflowGroup.items
-      .filter(
-        (item) =>
-          item.type === ITEM_TYPES.WorkflowGroup &&
-          openProjectsFolders.includes(item.id)
-      )
-      .map((item) => item.id);
-  },
-
-  activeSpaceInfo({ activeSpace, activeSpaceProvider }) {
-    const activeId = activeSpace.spaceId;
->>>>>>> ecc43677 (Frontend PoC: hacks to make workflow project origin; update space explorer on open)
 
     if (activeId === "local") {
       return {
