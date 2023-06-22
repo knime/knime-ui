@@ -14,11 +14,17 @@ import { API } from "@api";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as canvasStore from "@/store/canvas";
-import { Annotation, type Bounds } from "@/api/gateway-api/generated-api";
+import {
+  type WorkflowAnnotation,
+  type Bounds,
+  TypedText,
+} from "@/api/gateway-api/generated-api";
 
+// @ts-ignore
+import RichTextEditor from "webapps-common/ui/components/RichTextEditor";
 import WorkflowAnnotationComp from "../WorkflowAnnotation.vue";
+import RichTextAnnotation from "../RichTextAnnotation.vue";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
-import RichTextEditor from "../RichTextEditor.vue";
 import TransformControls from "../TransformControls.vue";
 
 vi.mock("vue3-click-away", () => {
@@ -51,7 +57,7 @@ describe("WorkflowAnnotation.vue", () => {
   const defaultProps = {
     annotation: createWorkflowAnnotation({
       id: "id1",
-      text: "hallo",
+      text: { value: "hallo" },
     }),
   };
 
@@ -112,12 +118,15 @@ describe("WorkflowAnnotation.vue", () => {
     expect(wrapper.findComponent(RichTextEditor).exists()).toBe(false);
   });
 
-  it("should render RichTextEditor", async () => {
+  it("should render RichTextAnnotation", async () => {
     const { wrapper } = doMount({
       props: {
         annotation: {
           ...defaultProps.annotation,
-          contentType: Annotation.ContentTypeEnum.Html,
+          text: {
+            value: defaultProps.annotation.text.value,
+            contentType: TypedText.ContentTypeEnum.Html,
+          },
         },
       },
     });
@@ -125,12 +134,12 @@ describe("WorkflowAnnotation.vue", () => {
     await nextTick();
 
     expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
-    expect(wrapper.findComponent(RichTextEditor).props("id")).toEqual(
+    expect(wrapper.findComponent(RichTextAnnotation).props("id")).toEqual(
       defaultProps.annotation.id
     );
-    expect(wrapper.findComponent(RichTextEditor).props("initialValue")).toEqual(
-      defaultProps.annotation.text
-    );
+    expect(
+      wrapper.findComponent(RichTextAnnotation).props("initialValue")
+    ).toEqual(defaultProps.annotation.text.value);
   });
 
   describe("transform", () => {
@@ -187,9 +196,12 @@ describe("WorkflowAnnotation.vue", () => {
   });
 
   describe("edit", () => {
-    const modernAnnotation = {
+    const modernAnnotation: WorkflowAnnotation = {
       ...defaultProps.annotation,
-      contentType: Annotation.ContentTypeEnum.Html,
+      text: {
+        value: defaultProps.annotation.text.value,
+        contentType: TypedText.ContentTypeEnum.Html,
+      },
     };
 
     const toggleAnnotationEdit = ($store: Store<any>, annotationId: string) => {
@@ -206,12 +218,12 @@ describe("WorkflowAnnotation.vue", () => {
       );
     });
 
-    it("should start editing when dblclicking on RichTextEditor", () => {
+    it("should start editing when dblclicking on RichTextAnnotation", () => {
       const { wrapper, $store } = doMount({
         props: { annotation: modernAnnotation },
       });
 
-      wrapper.findComponent(RichTextEditor).vm.$emit("editStart");
+      wrapper.findComponent(RichTextAnnotation).vm.$emit("editStart");
       expect($store.state.workflow.editableAnnotationId).toBe(
         modernAnnotation.id
       );
@@ -230,25 +242,29 @@ describe("WorkflowAnnotation.vue", () => {
     });
 
     it("should set the active border color when first editing legacy annotations", async () => {
-      const { wrapper, $store, dispatchSpy } = doMount({
-        props: {
-          annotation: {
-            ...defaultProps.annotation,
-            text: "some text \r\n some more text",
-          },
+      const annotation: WorkflowAnnotation = {
+        ...defaultProps.annotation,
+        text: {
+          value: "some text \r\n some more text",
+          contentType: TypedText.ContentTypeEnum.Plain,
         },
+      };
+
+      const { wrapper, $store, dispatchSpy } = doMount({
+        props: { annotation },
       });
 
       await toggleAnnotationEdit($store, "id1");
       expect(
-        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
       ).toBe($colors.defaultAnnotationBorderColor);
 
       const newText = "<p>new content</p>";
-      expect(wrapper.findComponent(RichTextEditor).props("initialValue")).toBe(
-        "some text <br /> some more text"
-      );
-      wrapper.findComponent(RichTextEditor).vm.$emit("change", newText);
+      expect(
+        wrapper.findComponent(RichTextAnnotation).props("initialValue")
+      ).toBe("some text <br /> some more text");
+
+      wrapper.findComponent(RichTextAnnotation).vm.$emit("change", newText);
       // @ts-ignore
       VueClickAway.trigger();
 
@@ -268,7 +284,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       await toggleAnnotationEdit($store, defaultProps.annotation.id);
       expect(
-        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
       ).toBe("#000000");
     });
 
@@ -281,7 +297,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       await toggleAnnotationEdit($store, defaultProps.annotation.id);
       expect(
-        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
       ).toBe("#000000");
 
       await wrapper.setProps({
@@ -289,7 +305,7 @@ describe("WorkflowAnnotation.vue", () => {
       });
 
       expect(
-        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
       ).toBe("#987654");
     });
 
@@ -303,14 +319,15 @@ describe("WorkflowAnnotation.vue", () => {
       await toggleAnnotationEdit($store, modernAnnotation.id);
       const newContent = "<p>new content</p>";
 
-      wrapper.findComponent(RichTextEditor).vm.$emit("change", newContent);
+      wrapper.findComponent(RichTextAnnotation).vm.$emit("change", newContent);
       await nextTick();
 
-      expect(wrapper.findComponent(RichTextEditor).props("initialValue")).toBe(
-        modernAnnotation.text
-      );
       expect(
-        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialValue")
+      ).toBe(modernAnnotation.text.value);
+
+      expect(
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
       ).toBe("#000000");
       // @ts-ignore
       VueClickAway.trigger();
@@ -332,23 +349,24 @@ describe("WorkflowAnnotation.vue", () => {
       await toggleAnnotationEdit($store, modernAnnotation.id);
       const newColor = "#123456";
 
-      expect(wrapper.findComponent(RichTextEditor).props("initialValue")).toBe(
-        modernAnnotation.text
-      );
+      expect(
+        wrapper.findComponent(RichTextAnnotation).props("initialValue")
+      ).toBe(modernAnnotation.text.value);
+
       wrapper
-        .findComponent(RichTextEditor)
+        .findComponent(RichTextAnnotation)
         .vm.$emit("changeBorderColor", newColor);
       await nextTick();
 
       expect(
-        wrapper.findComponent(RichTextEditor).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
       ).toBe("#000000");
       // @ts-ignore
       VueClickAway.trigger();
 
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
         annotationId: defaultProps.annotation.id,
-        text: modernAnnotation.text,
+        text: modernAnnotation.text.value,
         borderColor: newColor,
       });
     });

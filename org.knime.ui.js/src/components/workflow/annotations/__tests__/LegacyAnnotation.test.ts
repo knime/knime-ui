@@ -5,13 +5,14 @@ import { createWorkflowAnnotation } from "@/test/factories";
 import * as $shapes from "@/style/shapes.mjs";
 import {
   Annotation,
+  TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
 
 describe("LegacyAnnotation.vue", () => {
   const defaultProps = {
-    annotation: createWorkflowAnnotation({ text: "" }),
+    annotation: createWorkflowAnnotation({ text: { value: "" } }),
   };
 
   const doMount = ({ props = {}, mocks = {} } = {}) => {
@@ -32,7 +33,10 @@ describe("LegacyAnnotation.vue", () => {
     const { wrapper } = doMount({
       props: {
         annotation: {
-          text: "foo👻barbazqu👮🏻‍♂️xあなたは素晴らしい人です",
+          text: {
+            value: "foo👻barbazqu👮🏻‍♂️xあなたは素晴らしい人です",
+            contentType: TypedText.ContentTypeEnum.Plain,
+          },
           styleRanges: [
             { start: 1, length: 2, bold: true, color: "red" },
             { start: 8, length: 1, italic: true, bold: true },
@@ -74,9 +78,11 @@ describe("LegacyAnnotation.vue", () => {
       borderWidth: 4,
       borderColor: "#000",
       backgroundColor: "#000",
-      text: "lorem ipsum",
+      text: {
+        value: "lorem ipsum",
+        contentType: TypedText.ContentTypeEnum.Plain,
+      },
       styleRanges: [{ start: 0, length: 2, fontSize: 14 }],
-      contentType: Annotation.ContentTypeEnum.Plain,
     };
 
     const { wrapper } = doMount({
@@ -101,7 +107,10 @@ describe("LegacyAnnotation.vue", () => {
     const { wrapper } = doMount({
       props: {
         annotation: {
-          text: "someopthertextdkenaendfkejkansn3",
+          text: {
+            value: "someopthertextdkenaendfkejkansn3",
+            contentType: TypedText.ContentTypeEnum.Plain,
+          },
           styleRanges: [
             { start: 3, length: 1, italic: true, bold: true, fontSize: 13 },
           ],

@@ -34,7 +34,6 @@ const store = useStore();
 
 const props = defineProps<Props>();
 
-// eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
   (e: "previewBorderColor", color: string): void;
   (e: "changeBorderColor", color: string): void;

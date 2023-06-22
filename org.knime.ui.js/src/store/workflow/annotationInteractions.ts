@@ -26,13 +26,13 @@ export const state = (): State => ({
 });
 
 export const mutations: MutationTree<WorkflowState> = {
-  setAnnotation(state, { annotationId, text, contentType, borderColor }) {
+  setAnnotation(state, { annotationId, text, borderColor }) {
     const {
       activeWorkflow: { workflowAnnotations },
     } = state;
     const mapped = workflowAnnotations.map<WorkflowAnnotation>((annotation) =>
       annotation.id === annotationId
-        ? { ...annotation, text: { value: text, contentType}, borderColor }
+        ? { ...annotation, text, borderColor }
         : annotation
     );
 
@@ -109,8 +109,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       // do small optimistic update to prevent annotation from flashing between legacy and new
       commit("setAnnotation", {
         annotationId,
-        text,
-        contentType: TypedText.ContentTypeEnum.Html,
+        text: { value: text, contentType: TypedText.ContentTypeEnum.Html },
         borderColor,
       });
 
@@ -125,7 +124,6 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       commit("setAnnotation", {
         annotationId,
         text: originalText,
-        contentType: TypedText.ContentTypeEnum.Plain,
         borderColor: originalBorderColor,
       });
 

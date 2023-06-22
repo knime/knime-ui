@@ -14,8 +14,6 @@ interface Props {
   editable: boolean;
   initialValue: string;
   annotationBounds: Bounds;
-  isSelected: boolean;
-  isDragging: boolean;
   initialBorderColor: string;
 }
 
@@ -23,7 +21,6 @@ const props = defineProps<Props>();
 const { initialValue } = toRefs(props);
 const previewBorderColor = ref<string | null>(null);
 
-// eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
   (e: "editStart"): void;
   (e: "change", content: string): void;

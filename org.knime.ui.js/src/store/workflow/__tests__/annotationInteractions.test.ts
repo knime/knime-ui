@@ -4,8 +4,8 @@ import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 
 import {
-  Annotation,
   ReorderWorkflowAnnotationsCommand,
+  TypedText,
 } from "@/api/gateway-api/generated-api";
 
 import * as $colors from "@/style/colors.mjs";
@@ -117,8 +117,10 @@ describe("workflow::annotationInteractions", () => {
         workflowAnnotations: [
           {
             id: annotationId,
-            text: "legacy plain text",
-            contentType: Annotation.ContentTypeEnum.Plain,
+            text: {
+              value: "legacy plain text",
+              contentType: TypedText.ContentTypeEnum.Plain,
+            },
             borderColor: "#000000",
           },
         ],
@@ -127,7 +129,7 @@ describe("workflow::annotationInteractions", () => {
       const newText = "<p>new annotation text</p>";
 
       store.dispatch("workflow/updateAnnotation", {
-        text: "<p>new annotation text</p>",
+        text: newText,
         annotationId,
         borderColor: "#123456",
       });
@@ -146,9 +148,9 @@ describe("workflow::annotationInteractions", () => {
         store.state.workflow.activeWorkflow.workflowAnnotations.find(
           (annotation) => annotation.id === annotationId
         );
-      expect(updatedAnnotation.text).toEqual(newText);
-      expect(updatedAnnotation.contentType).toEqual(
-        Annotation.ContentTypeEnum.Html
+      expect(updatedAnnotation.text.value).toEqual(newText);
+      expect(updatedAnnotation.text.contentType).toEqual(
+        TypedText.ContentTypeEnum.Html
       );
     });
 
@@ -165,8 +167,10 @@ describe("workflow::annotationInteractions", () => {
         workflowAnnotations: [
           {
             id: annotationId,
-            text: "legacy plain text",
-            contentType: Annotation.ContentTypeEnum.Plain,
+            text: {
+              value: "legacy plain text",
+              contentType: TypedText.ContentTypeEnum.Plain,
+            },
             borderColor: "#000000",
           },
         ],
@@ -185,10 +189,10 @@ describe("workflow::annotationInteractions", () => {
           (annotation) => annotation.id === annotationId
         );
 
-      expect(updatedAnnotation.text).toBe("legacy plain text");
+      expect(updatedAnnotation.text.value).toBe("legacy plain text");
       expect(updatedAnnotation.borderColor).toBe("#000000");
-      expect(updatedAnnotation.contentType).toEqual(
-        Annotation.ContentTypeEnum.Plain
+      expect(updatedAnnotation.text.contentType).toEqual(
+        TypedText.ContentTypeEnum.Plain
       );
     });
   });

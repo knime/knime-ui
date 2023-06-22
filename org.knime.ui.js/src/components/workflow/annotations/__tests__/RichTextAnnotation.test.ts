@@ -1,16 +1,22 @@
-import { describe, expect, it, vi, type Mock } from "vitest";
-import { mount, VueWrapper } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
+import { shallowRef } from "vue";
+import { mount, VueWrapper } from "@vue/test-utils";
+import { describe, expect, it, vi, type Mock } from "vitest";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import type { Bounds } from "@/api/gateway-api/generated-api";
+
 import * as $colors from "@/style/colors.mjs";
 
-import RichTextEditorToolbar from "../RichTextEditorToolbar.vue";
+import RichTextAnnotation from "../RichTextAnnotation.vue";
+import CreateLinkModal from "../CreateLinkModal.vue";
 import ColorSelectionDialog from "../ColorSelectionDialog.vue";
+import RichTextAnnotationToolbar from "../RichTextAnnotationToolbar.vue";
 import ColorIcon from "../ColorIcon.vue";
 
-const createMockEditor = () => {
+// mock for editor's isActive function. declared separately due to mock hoisting via vi.mock
+const isActive = vi.fn();
+
+const createMockEditor = (params: any) => {
   const actionNames = [
     "toggleBold",
     "toggleItalic",
@@ -37,23 +43,48 @@ const createMockEditor = () => {
     return acc;
   }, {} as Actions);
 
-  return {
-    isActive: vi.fn(),
+  return shallowRef({
+    isActive,
     chain: () => ({
       focus: () => ({
         ...actions,
         extendMarkRange: vi.fn(() => ({ unsetLink: actions.unsetLink })),
       }),
     }),
-    commands: { insertContent: vi.fn(), setTextSelection: vi.fn() },
+    setEditable: vi.fn(),
+    getHTML: () => "<p>mock html</p>",
+    commands: {
+      insertContent: vi.fn(),
+      setTextSelection: vi.fn(),
+      focus: vi.fn(),
+    },
     view: { state: { selection: { from: 5 } } },
-  };
+    params,
+  });
 };
 
-const mockEditor = createMockEditor();
+let mockEditor: ReturnType<typeof createMockEditor>;
 
-describe("RichTextEditorToolbar.vue", () => {
-  const annotationBounds: Bounds = { x: 0, y: 0, width: 100, height: 50 };
+vi.mock("@tiptap/vue-3", () => {
+  return {
+    EditorContent: {
+      template: "<div></div>",
+    },
+    useEditor: vi.fn((params) => {
+      mockEditor = createMockEditor(params);
+      return mockEditor;
+    }),
+  };
+});
+
+describe("RichTextAnnotation.vue", () => {
+  const defaultProps = {
+    id: "1",
+    editable: true,
+    initialValue: "Hello",
+    annotationBounds: { x: 0, y: 0, width: 10, height: 10 },
+    initialBorderColor: "#000",
+  };
 
   const doMount = ({ props = {} } = {}) => {
     const $store = mockVuexStore({
@@ -64,21 +95,15 @@ describe("RichTextEditorToolbar.vue", () => {
       },
     });
 
-    const defaulProps = {
-      editor: mockEditor,
-      annotationBounds,
-      activeBorderColor: $colors.defaultAnnotationBorderColor,
-    };
-
-    const wrapper = mount(RichTextEditorToolbar, {
-      props: { ...defaulProps, ...props },
+    const wrapper = mount(RichTextAnnotation, {
+      props: { ...defaultProps, ...props },
       global: {
         plugins: [$store],
         stubs: { FloatingMenu: true },
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper };
   };
 
   it("should render all options", () => {
@@ -88,7 +113,7 @@ describe("RichTextEditorToolbar.vue", () => {
   });
 
   it("should set the active state correctly", () => {
-    mockEditor.isActive.mockImplementation((name) => name === "bold");
+    isActive.mockImplementation((name) => name === "bold");
     const { wrapper } = doMount();
 
     expect(
@@ -106,8 +131,11 @@ describe("RichTextEditorToolbar.vue", () => {
       .findAllComponents(FunctionButton)
       .at(1)
       .vm.$emit("click", { stopPropagation: vi.fn() });
-    expect(mockEditor.chain().focus().toggleBold).toHaveBeenCalled();
-    expect(mockEditor.chain().focus().toggleBulletList).not.toHaveBeenCalled();
+
+    expect(mockEditor.value.chain().focus().toggleBold).toHaveBeenCalled();
+    expect(
+      mockEditor.value.chain().focus().toggleBulletList
+    ).not.toHaveBeenCalled();
   });
 
   describe("heading dropdown", () => {
@@ -120,7 +148,7 @@ describe("RichTextEditorToolbar.vue", () => {
     });
 
     it("should select the current level", () => {
-      mockEditor.isActive.mockImplementation((name) => name === "heading");
+      isActive.mockImplementation((name) => name === "heading");
       const { wrapper } = doMount();
 
       expect(wrapper.findAllComponents(FunctionButton).at(0).text()).toBe(
@@ -136,9 +164,9 @@ describe("RichTextEditorToolbar.vue", () => {
       // click on Heading 2
       await wrapper.findAll(".submenu li").at(2).trigger("click");
 
-      expect(mockEditor.chain().focus().setHeading).toHaveBeenCalled();
+      expect(mockEditor.value.chain().focus().setHeading).toHaveBeenCalled();
       expect(
-        mockEditor.chain().focus().toggleBulletList
+        mockEditor.value.chain().focus().toggleBulletList
       ).not.toHaveBeenCalled();
     });
   });
@@ -147,23 +175,26 @@ describe("RichTextEditorToolbar.vue", () => {
     it("should add the link", () => {
       const { wrapper } = doMount();
 
-      wrapper.vm.addLink("test text", "https://test.url");
-      expect(
-        mockEditor.chain().focus().extendMarkRange().unsetLink
-      ).toHaveBeenCalled();
-      expect(mockEditor.chain().focus().insertContent).toHaveBeenCalledWith([
-        { text: " ", type: "text" },
-      ]);
+      wrapper
+        .findComponent(CreateLinkModal)
+        .vm.$emit("addLink", "test text", "https://test.url");
 
-      expect(mockEditor.chain().focus().insertContentAt).toHaveBeenCalledWith(
-        5,
-        [{ type: "text", text: "test text" }]
-      );
-      expect(mockEditor.commands.setTextSelection).toHaveBeenCalledWith({
+      expect(
+        mockEditor.value.chain().focus().extendMarkRange().unsetLink
+      ).toHaveBeenCalled();
+      expect(
+        mockEditor.value.chain().focus().insertContent
+      ).toHaveBeenCalledWith([{ text: " ", type: "text" }]);
+
+      expect(
+        mockEditor.value.chain().focus().insertContentAt
+      ).toHaveBeenCalledWith(5, [{ type: "text", text: "test text" }]);
+      expect(mockEditor.value.commands.setTextSelection).toHaveBeenCalledWith({
         from: 5,
         to: 5,
       });
-      expect(mockEditor.chain().focus().setLink).toHaveBeenCalledWith({
+
+      expect(mockEditor.value.chain().focus().setLink).toHaveBeenCalledWith({
         href: "https://test.url",
       });
     });
@@ -172,12 +203,13 @@ describe("RichTextEditorToolbar.vue", () => {
   describe("border color selection dialog", () => {
     const getDialogToggle = (wrapper: VueWrapper<any>) =>
       wrapper.find(".border-color-tool");
+
     const openDialog = (wrapper: VueWrapper<any>) =>
       getDialogToggle(wrapper).trigger("click");
 
     it("should open the border color selection dialog", async () => {
       const { wrapper } = doMount({
-        props: { activeBorderColor: $colors.Aquamarine },
+        props: { initialBorderColor: $colors.Aquamarine },
       });
 
       expect(wrapper.findComponent(ColorSelectionDialog).exists()).toBe(false);
@@ -191,7 +223,7 @@ describe("RichTextEditorToolbar.vue", () => {
 
     it("should set the preview border color", async () => {
       const { wrapper } = doMount({
-        props: { activeBorderColor: $colors.Aquamarine },
+        props: { initialBorderColor: $colors.Aquamarine },
       });
 
       await openDialog(wrapper);
@@ -206,12 +238,17 @@ describe("RichTextEditorToolbar.vue", () => {
       expect(
         getDialogToggle(wrapper).findComponent(ColorIcon).props("color")
       ).toBe(someColor);
-      expect(wrapper.emitted("previewBorderColor")[0][0]).toEqual(someColor);
+
+      expect(
+        wrapper
+          .findComponent(RichTextAnnotationToolbar)
+          .emitted("previewBorderColor")[0][0]
+      ).toEqual(someColor);
     });
 
     it("should close the border color selection dialog after a color is selected", async () => {
       const { wrapper } = doMount({
-        props: { activeBorderColor: $colors.Aquamarine },
+        props: { initialBorderColor: $colors.Aquamarine },
       });
 
       await openDialog(wrapper);
