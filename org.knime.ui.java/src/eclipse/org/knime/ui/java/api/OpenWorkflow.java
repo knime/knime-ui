@@ -265,10 +265,10 @@ final class OpenWorkflow {
         page.openEditor(input, WorkflowEditor.ID, false);
     }
 
-    public static boolean openWorkflowFromURI(RepoObjectImport repoObjectImport) {
+    static boolean openWorkflowFromURI(final RepoObjectImport repoObjectImport) {
         var knimeUrl = repoObjectImport.getKnimeURI();
         var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
-        Optional<WorkflowManager> wfm =
+        WorkflowManager wfm =
             DesktopAPUtil.runWithProgress(DOWNLOAD_WORKFLOW_PROGRESS_MSG, LOGGER, progress -> {
                 var fs = (RemoteExplorerFileStore)ExplorerFileSystem.INSTANCE.getStore(knimeUrl);
                 return downloadWorkflowFromMountpoint(progress, fs, hubSpaceLocationInfo);
@@ -276,13 +276,14 @@ final class OpenWorkflow {
                 .map(RemoteWorkflowInput::getWorkflowContext) //
                 .flatMap(ctx -> DesktopAPUtil.runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
                     progress -> DesktopAPUtil.loadWorkflow(progress, ctx.getExecutorInfo().getLocalWorkflowPath(),
-                        ctx)));
+                        ctx)))
+                .orElse(null);
 
-        if (wfm.isEmpty()) {
+        if (wfm == null) {
             return false;
         }
 
-        OpenWorkflow.registerWorkflowProject(wfm.get());
+        OpenWorkflow.registerWorkflowProject(wfm);
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         return true;
     }
@@ -290,7 +291,7 @@ final class OpenWorkflow {
     /**
      *
      * Downloads a remote workflow into a temporary directory.
-     * 
+     *
      * @param progress
      * @param source
      * @return

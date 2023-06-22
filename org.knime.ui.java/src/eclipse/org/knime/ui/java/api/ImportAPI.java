@@ -144,7 +144,7 @@ final class ImportAPI {
     }
 
     /**
-     * Imports a component from a space into a workflow.
+     * Imports a component from a given URI into a workflow.
      *
      * @param projectId The project to import into
      * @param workflowId The workflow to import into

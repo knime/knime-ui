@@ -87,6 +87,7 @@ import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.RepoObjectImport;
+import org.knime.workbench.core.imports.RepoObjectImport.RepoObjectType;
 import org.knime.workbench.core.imports.URIImporterFinder;
 import org.knime.workbench.core.imports.UpdateSiteInfo;
 import org.knime.workbench.editor2.InstallMissingNodesJob;
@@ -115,7 +116,8 @@ public final class ImportURI {
      * Helper to import objects (e.g. nodes) from a URI (e.g. a Hub-URL) into the App.
      *
      * Sends an event to the FE in order to get the actual workflow canvas coordinates (and more) back (the FE
-     * indirectly calls {@link #importURIAtWorkflowCanvas(String, String, String, int, int)} to return those).
+     * indirectly calls {@link #importURIAtWorkflowCanvas(String, String, String, int, int)} to return those). The event
+     * is only sent in case the canvas coordinates are needed (component, node); otherwise not (workflow).
      *
      * @param cursorLocationSupplier
      * @param uriString the URI to import from
@@ -127,7 +129,8 @@ public final class ImportURI {
             return false;
         }
 
-        if (entityImportInProgress instanceof RepoObjectImport repoObjectImport) {
+        if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
+            && repoObjectImport.getType() == RepoObjectType.Workflow) {
             return openWorkflowFromURI(repoObjectImport);
         } else {
             var cursorLocation = cursorLocationSupplier.get();
@@ -211,8 +214,9 @@ public final class ImportURI {
             var key = getNodeFactoryKey(nodeImport.getCanonicalNodeFactory(), nodeImport.getNodeName(),
                 nodeImport.isDynamicNode());
             return importNode(key, null, projectId, workflowId, canvasX, canvasY);
-        } else if (entityImport instanceof RepoObjectImport componentImport) {
-            ImportAPI.importComponent(projectId, workflowId, componentImport.getKnimeURI(), true, canvasX, canvasY );
+        } else if (entityImport instanceof RepoObjectImport repoObjectImport
+            && repoObjectImport.getType() == RepoObjectType.WorkflowTemplate) {
+            ImportAPI.importComponent(projectId, workflowId, repoObjectImport.getKnimeURI(), true, canvasX, canvasY);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
             return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId,
                 workflowId, canvasX, canvasY);
@@ -222,15 +226,12 @@ public final class ImportURI {
     }
 
     private static boolean openWorkflowFromURI(final RepoObjectImport repoObjectImport) {
-        if (!RepoObjectImport.RepoObjectType.Workflow.equals(repoObjectImport.getType())) {
-            LOGGER.error("Object to be imported is not a workflow");
-            return false;
-        }
         var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
         var providerId = repoObjectImport.getKnimeURI().getAuthority();
         var spaceId = hubSpaceLocationInfo.getSpaceItemId();
-        var space = SpaceProviders.getSpaceOptional(DesktopAPI.getDeps(SpaceProviders.class), providerId, spaceId);
-        if (space.isEmpty()) {
+        var space =
+            SpaceProviders.getSpaceOptional(DesktopAPI.getDeps(SpaceProviders.class), providerId, spaceId).orElse(null);
+        if (space == null) {
             return OpenWorkflow.openWorkflowFromURI(repoObjectImport);
         }
         // space is in fact already mounted -- open as if opened from explorer
@@ -255,7 +256,7 @@ public final class ImportURI {
         String[] dialogButtonLabels = {IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL};
         Shell shell = SWTUtilities.getActiveShell();
         // TODO: derive feature name from feature symbolic name (TODO)
-        MessageDialog dialog = new MessageDialog(shell, "The KNIME Extension for the node is not installed!", null,
+        var dialog = new MessageDialog(shell, "The KNIME Extension for the node is not installed!", null,
             "The extension '" + featureName + "' is not installed. Do you want to search and install it?"
                 + "\n\nNote: Please drag and drop the node again once the installation process is finished.",
             MessageDialog.QUESTION, dialogButtonLabels, 0);
