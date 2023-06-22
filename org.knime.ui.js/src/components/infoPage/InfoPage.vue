@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import ForumIcon from "webapps-common/ui/assets/img/icons/forum.svg";
 import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
 import PerspectiveSwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
@@ -7,11 +8,12 @@ import KnimeLogo from "webapps-common/ui/assets/img/KNIME_Logo_gray.svg";
 import DocsIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
+import { API } from "@api";
 import Page from "@/components/common/Page.vue";
 import PageHeader from "@/components/common/PageHeader.vue";
 import OpenSourceCreditsModal from "./OpenSourceCreditsModal.vue";
 
-export default {
+export default defineComponent({
   components: {
     ForumIcon,
     ExtensionIcon,
@@ -26,18 +28,22 @@ export default {
   },
   methods: {
     switchToJavaUI() {
-      window.switchToJavaUI();
+      API.desktop.switchToJavaUI();
     },
 
     openAboutDialog() {
-      window.openAboutDialog();
+      API.desktop.openAboutDialog();
     },
 
     openInstallExtensionsDialog() {
-      window.openInstallExtensionsDialog();
+      API.desktop.openInstallExtensionsDialog();
+    },
+
+    checkForUpdates() {
+      API.desktop.openUpdateDialog();
     },
   },
-};
+});
 </script>
 
 <template>
@@ -141,9 +147,14 @@ export default {
             ability to process complex data types, as well as to use advanced
             algorithms.
           </p>
-          <Button with-border @click="openInstallExtensionsDialog">
-            <strong>Install Extensions</strong>
-          </Button>
+          <div class="section-buttons">
+            <Button with-border @click="openInstallExtensionsDialog">
+              <strong>Install Extensions</strong>
+            </Button>
+            <Button with-border @click="checkForUpdates">
+              <strong>Check for updates</strong>
+            </Button>
+          </div>
         </div>
       </div>
     </section>

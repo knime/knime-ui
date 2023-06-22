@@ -3,6 +3,8 @@ import Description from "webapps-common/ui/components/Description.vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
+import { API } from "@api";
+
 /*
  * Base component for the NodeDescriptionOverlay for the nodeRepo, also used in the ContextAwareDescription for nodes
  * of the workflow
@@ -52,9 +54,7 @@ export default {
           { selectedNode }
         );
 
-        if (window.openUrlInExternalBrowser) {
-          this.redirectLinks(window.openUrlInExternalBrowser);
-        }
+        this.redirectLinks(API.desktop.openUrlInExternalBrowser);
       },
     },
   },

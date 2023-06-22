@@ -4,7 +4,86 @@ import type {
   FullSpacePath,
   SpaceProvider,
   SpaceItemId,
+  SpaceUser,
 } from "../custom-types";
+
+const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
+  browserFunction: TFunction,
+  params: Parameters<TFunction>,
+  messageOnError: string,
+  returnsValue: boolean
+): ReturnType<TFunction> => {
+  try {
+    const resultOrError = browserFunction(...params);
+
+    if (returnsValue) {
+      return resultOrError;
+    }
+
+    if (!returnsValue && resultOrError) {
+      throw new Error(resultOrError);
+    }
+
+    return null;
+  } catch (e) {
+    consola.error(messageOnError, e);
+    return null;
+  }
+};
+
+export const switchToJavaUI = () => {
+  callBrowserFunction(
+    window.switchToJavaUI,
+    [],
+    "Could not switch to classic UI",
+    false
+  );
+};
+
+export const openAboutDialog = () => {
+  callBrowserFunction(
+    window.openAboutDialog,
+    [],
+    "Could not open about dialog",
+    false
+  );
+};
+
+export const openUpdateDialog = () => {
+  callBrowserFunction(
+    window.openUpdateDialog,
+    [],
+    "Could not open update dialog",
+    false
+  );
+};
+
+export const openUrlInExternalBrowser = () => {
+  callBrowserFunction(
+    window.openUrlInExternalBrowser,
+    [],
+    "Could not open URL in External Browser",
+    false
+  );
+};
+
+export const openKnimeUIPreferences = () => {
+  callBrowserFunction(
+    window.openWebUIPreferencePage,
+    [],
+    "Could not open preferences",
+    false
+  );
+};
+
+export const openInstallExtensionsDialog = () => {
+  callBrowserFunction(
+    window.openInstallExtensionsDialog,
+    [],
+    "Could not open install extensions dialog",
+    false
+  );
+};
 
 export const openNodeDialog = ({
   projectId,
@@ -13,15 +92,12 @@ export const openNodeDialog = ({
   projectId: string;
   nodeId: string;
 }) => {
-  try {
-    // returns falsy on success
-    const error = window.openNodeDialog(projectId, nodeId);
-    if (error) {
-      throw new Error(error);
-    }
-  } catch (e) {
-    consola.error(`Could not open dialog of node ${nodeId}`, e);
-  }
+  callBrowserFunction(
+    window.openNodeDialog,
+    [projectId, nodeId],
+    `Could not open dialog of node ${nodeId}`,
+    false
+  );
 };
 
 export const openLegacyFlowVariableDialog = ({
@@ -31,18 +107,12 @@ export const openLegacyFlowVariableDialog = ({
   projectId: string;
   nodeId: string;
 }) => {
-  try {
-    // returns falsy on success
-    const error = window.openLegacyFlowVariableDialog(projectId, nodeId);
-    if (error) {
-      throw new Error(error);
-    }
-  } catch (e) {
-    consola.error(
-      `Could not open legacy flow variable dialog of node ${nodeId}`,
-      e
-    );
-  }
+  callBrowserFunction(
+    window.openLegacyFlowVariableDialog,
+    [projectId, nodeId],
+    `Could not open legacy flow variable dialog of node ${nodeId}`,
+    false
+  );
 };
 
 export const executeNodeAndOpenView = ({
@@ -52,11 +122,12 @@ export const executeNodeAndOpenView = ({
   projectId: string;
   nodeId: string;
 }) => {
-  try {
-    window.executeNodeAndOpenView(projectId, nodeId);
-  } catch (e) {
-    consola.error(`Could not execute and open view of node ${nodeId}`, e);
-  }
+  callBrowserFunction(
+    window.executeNodeAndOpenView,
+    [projectId, nodeId],
+    `Could not execute and open view of node ${nodeId}`,
+    false
+  );
 };
 
 export const saveWorkflow = ({
@@ -66,15 +137,12 @@ export const saveWorkflow = ({
   projectId: string;
   workflowPreviewSvg: string;
 }) => {
-  try {
-    // returns falsy on success
-    const error = window.saveWorkflow(projectId, workflowPreviewSvg);
-    if (error) {
-      throw new Error(error);
-    }
-  } catch (e) {
-    consola.error("Could not save workflow", e);
-  }
+  callBrowserFunction(
+    window.saveWorkflow,
+    [projectId, workflowPreviewSvg],
+    "Could not save workflow",
+    false
+  );
 };
 
 export const openWorkflow = ({
@@ -82,15 +150,12 @@ export const openWorkflow = ({
   itemId,
   spaceProviderId = "local",
 }: FullSpacePath) => {
-  try {
-    // returns falsy on success
-    const error = window.openWorkflow(spaceId, itemId, spaceProviderId);
-    if (error) {
-      throw new Error(error);
-    }
-  } catch (e) {
-    consola.error("Could not open workflow", e);
-  }
+  callBrowserFunction(
+    window.openWorkflow,
+    [spaceId, itemId, spaceProviderId],
+    "Could not open workflow",
+    false
+  );
 };
 
 export const closeWorkflow = ({
@@ -100,13 +165,12 @@ export const closeWorkflow = ({
   closingProjectId: string;
   nextProjectId: string;
 }) => {
-  try {
-    // returns true on success
-    return window.closeWorkflow(closingProjectId, nextProjectId);
-  } catch (e) {
-    consola.error("Could not close workflow", e);
-    return false;
-  }
+  return callBrowserFunction(
+    window.closeWorkflow,
+    [closingProjectId, nextProjectId],
+    "Could not close workflow",
+    true
+  );
 };
 
 export const forceCloseWorkflows = ({
@@ -114,13 +178,12 @@ export const forceCloseWorkflows = ({
 }: {
   projectIds: Array<string>;
 }) => {
-  try {
-    // returns true on success
-    return window.forceCloseWorkflows(...projectIds);
-  } catch (e) {
-    consola.error("Could not close workflow", e);
-    return false;
-  }
+  return callBrowserFunction(
+    window.forceCloseWorkflows,
+    projectIds,
+    "Could not close workflow",
+    true
+  );
 };
 
 export const setProjectActiveAndEnsureItsLoaded = ({
@@ -128,15 +191,12 @@ export const setProjectActiveAndEnsureItsLoaded = ({
 }: {
   projectId: string;
 }) => {
-  try {
-    window.setProjectActiveAndEnsureItsLoaded(projectId);
-  } catch (error) {
-    consola.error("Failed to set project as active in the backend", {
-      projectId,
-      error,
-    });
-    throw error;
-  }
+  callBrowserFunction(
+    window.setProjectActiveAndEnsureItsLoaded,
+    [projectId],
+    "Failed to set project as active in the backend",
+    false
+  );
 };
 
 export const openLayoutEditor = ({
@@ -146,63 +206,60 @@ export const openLayoutEditor = ({
   projectId: string;
   workflowId: string;
 }) => {
-  try {
-    // returns falsy on success
-    const error = window.openLayoutEditor(projectId, workflowId);
-    if (error) {
-      throw new Error(error);
-    }
-  } catch (e) {
-    consola.error("Could not open layout editor", e);
-  }
+  callBrowserFunction(
+    window.openLayoutEditor,
+    [projectId, workflowId],
+    "Could not open layout editor",
+    true
+  );
 };
 
 export const openWorkflowCoachPreferencePage = () => {
-  try {
-    // returns falsy on success
-    const error = window.openWorkflowCoachPreferencePage();
-    if (error) {
-      throw new Error(error);
-    }
-  } catch (e) {
-    consola.error("Could not open preference page", e);
-  }
+  callBrowserFunction(
+    window.openWorkflowCoachPreferencePage,
+    [],
+    "Could not open workflow coach preference page",
+    false
+  );
 };
 
 export const fetchAllSpaceProviders = (): Promise<
   Record<string, SpaceProvider>
 > => {
-  try {
-    const spaceProviders = window.getSpaceProviders();
-    return Promise.resolve(JSON.parse(spaceProviders));
-  } catch (error) {
-    consola.error("Could not fetch space providers", error);
-    throw error;
-  }
+  const spaceProviders = callBrowserFunction(
+    window.getSpaceProviders,
+    [],
+    "Could not fetch space providers",
+    true
+  );
+
+  return Promise.resolve(JSON.parse(spaceProviders));
 };
-export const connectSpaceProvider = ({ spaceProviderId }: SpaceProviderId) => {
-  try {
-    const user = window.connectSpaceProvider(spaceProviderId);
-    return JSON.parse(user);
-  } catch (error) {
-    consola.error("Could not connect to provider", { spaceProviderId, error });
-    throw error;
-  }
+
+export const connectSpaceProvider = ({
+  spaceProviderId,
+}: SpaceProviderId): SpaceUser => {
+  const user = callBrowserFunction(
+    window.connectSpaceProvider,
+    [spaceProviderId],
+    `Could not connect to provider ${spaceProviderId}`,
+    true
+  );
+
+  return JSON.parse(user);
 };
 
 export const disconnectSpaceProvider = ({
   spaceProviderId,
-}: SpaceProviderId) => {
-  try {
-    const user = window.disconnectSpaceProvider(spaceProviderId);
-    return Promise.resolve(JSON.parse(user));
-  } catch (error) {
-    consola.error("Could not disconnect from provider", {
-      spaceProviderId,
-      error,
-    });
-    throw error;
-  }
+}: SpaceProviderId): Promise<SpaceUser> => {
+  const user = callBrowserFunction(
+    window.disconnectSpaceProvider,
+    [spaceProviderId],
+    `Could not disconnect from provider ${spaceProviderId}`,
+    true
+  );
+
+  return Promise.resolve(JSON.parse(user));
 };
 
 export const importFiles = ({
@@ -210,18 +267,12 @@ export const importFiles = ({
   spaceId = "local",
   itemId,
 }: FullSpacePath) => {
-  try {
-    // Returns true on success
-    return window.importFiles(spaceProviderId, spaceId, itemId);
-  } catch (error) {
-    consola.error("Could not import files", {
-      spaceProviderId,
-      spaceId,
-      itemId,
-      error,
-    });
-    throw error;
-  }
+  return callBrowserFunction(
+    window.importFiles,
+    [spaceProviderId, spaceId, itemId],
+    "Could not disconnect import files",
+    true
+  );
 };
 
 export const importWorkflows = ({
@@ -229,18 +280,12 @@ export const importWorkflows = ({
   spaceId = "local",
   itemId,
 }: FullSpacePath) => {
-  try {
-    // Returns true on success
-    return window.importWorkflows(spaceProviderId, spaceId, itemId);
-  } catch (error) {
-    consola.error("Could not import workflows", {
-      spaceProviderId,
-      spaceId,
-      itemId,
-      error,
-    });
-    throw error;
-  }
+  return callBrowserFunction(
+    window.importWorkflows,
+    [spaceProviderId, spaceId, itemId],
+    "Could not import workflows",
+    true
+  );
 };
 
 export const getNameCollisionStrategy = ({
@@ -250,24 +295,12 @@ export const getNameCollisionStrategy = ({
   destinationItemId,
 }: SpaceProviderId &
   SpaceId & { itemIds: string[]; destinationItemId: string }) => {
-  try {
-    const collisionStrategy = window.getNameCollisionStrategy(
-      spaceProviderId,
-      spaceId,
-      itemIds,
-      destinationItemId
-    );
-    return collisionStrategy;
-  } catch (error) {
-    consola.error("Could not check for collisions", {
-      spaceProviderId,
-      spaceId,
-      itemIds,
-      destinationItemId,
-      error,
-    });
-    throw error;
-  }
+  return callBrowserFunction(
+    window.getNameCollisionStrategy,
+    [spaceProviderId, spaceId, itemIds, destinationItemId],
+    "Could not check for name collisions",
+    true
+  );
 };
 
 export const copyBetweenSpaces = ({
@@ -275,12 +308,12 @@ export const copyBetweenSpaces = ({
   spaceId = "local",
   itemIds,
 }: SpaceProviderId & SpaceId & { itemIds: string[] }) => {
-  try {
-    return window.copyBetweenSpaces(spaceProviderId, spaceId, itemIds);
-  } catch (error) {
-    consola.error("Error uploading to Hub space", { error });
-    throw error;
-  }
+  callBrowserFunction(
+    window.copyBetweenSpaces,
+    [spaceProviderId, spaceId, itemIds],
+    "Error uploading to Hub space",
+    false
+  );
 };
 
 export const saveWorkflowAs = ({
@@ -290,12 +323,12 @@ export const saveWorkflowAs = ({
   projectId: string;
   workflowPreviewSvg: string;
 }) => {
-  try {
-    window.saveWorkflowAs(projectId, workflowPreviewSvg);
-  } catch (error) {
-    consola.error("Could not save workflow locally", { projectId, error });
-    throw error;
-  }
+  callBrowserFunction(
+    window.saveWorkflowAs,
+    [projectId, workflowPreviewSvg],
+    "Could not save workflow locally",
+    false
+  );
 };
 
 export const importComponent = ({
@@ -314,27 +347,10 @@ export const importComponent = ({
     x: number;
     y: number;
   }) => {
-  try {
-    return window.importComponent(
-      spaceProviderId,
-      spaceId,
-      itemId,
-      projectId,
-      workflowId,
-      x,
-      y
-    );
-  } catch (error) {
-    consola.error("Could not import component", { error });
-    throw error;
-  }
-};
-
-export const openKnimeUIPreferences = () => {
-  try {
-    window.openWebUIPreferencePage();
-  } catch (error) {
-    consola.error("Could not open preferences");
-    throw error;
-  }
+  return callBrowserFunction(
+    window.importComponent,
+    [spaceProviderId, spaceId, itemId, projectId, workflowId, x, y],
+    "Could not import component",
+    true
+  );
 };

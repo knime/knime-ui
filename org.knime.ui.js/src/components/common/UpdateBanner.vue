@@ -1,5 +1,6 @@
 <script>
 import Button from "webapps-common/ui/components/Button.vue";
+import { API } from "@api";
 
 export default {
   components: {
@@ -38,7 +39,7 @@ export default {
   },
   methods: {
     openUpdateDialog() {
-      window.openUpdateDialog();
+      API.desktop.openUpdateDialog();
     },
   },
 };

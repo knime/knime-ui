@@ -1,4 +1,5 @@
 declare function switchToJavaUI(): void;
+declare function openAboutDialog(): void;
 declare function openUpdateDialog(): void;
 declare function openUrlInExternalBrowser(): void;
 declare function openInstallExtensionsDialog(): void;
@@ -9,7 +10,8 @@ declare function openNodeDialog(
 ): string | undefined;
 
 declare function openLegacyFlowVariableDialog(
-  ...args: unknown[]
+  projectId: string,
+  nodeId: string
 ): string | undefined;
 
 declare function executeNodeAndOpenView(
@@ -17,34 +19,63 @@ declare function executeNodeAndOpenView(
   nodeId: string
 ): void;
 
-declare function saveWorkflow(...args: unknown[]): string | undefined;
-declare function openWorkflow(...args: unknown[]): string | undefined;
-declare function closeWorkflow(...args: unknown[]): unknown;
-declare function forceCloseWorkflows(...args: unknown[]): unknown;
-
-declare function setProjectActiveAndEnsureItsLoaded(
-  ...args: unknown[]
-): unknown;
-
-declare function openLayoutEditor(...args: unknown[]): string | undefined;
-
-declare function openWorkflowCoachPreferencePage(
-  ...args: unknown[]
+declare function saveWorkflow(
+  projectId: string,
+  workflowPreviewSvg: string
 ): string | undefined;
 
-declare function getSpaceProviders(...args: unknown[]): string;
-declare function connectSpaceProvider(...args: unknown[]): string;
-declare function disconnectSpaceProvider(...args: unknown[]): string;
-declare function importFiles(...args: unknown[]): unknown;
-declare function importWorkflows(...args: unknown[]): unknown;
+declare function openWorkflow(
+  spaceId: string,
+  itemId: string,
+  spaceProviderId: string
+): string | undefined;
+
+declare function closeWorkflow(
+  closingProjectId: string,
+  nextProjectId: string
+): boolean;
+
+declare function forceCloseWorkflows(...args: string[]): boolean;
+
+declare function setProjectActiveAndEnsureItsLoaded(projectId: string): void;
+
+declare function openLayoutEditor(projectId: string, workflowId: string): void;
+
+declare function openWorkflowCoachPreferencePage(): string | undefined;
+
+declare function getSpaceProviders(): string;
+declare function connectSpaceProvider(spaceProviderId: string): string;
+declare function disconnectSpaceProvider(spaceProviderId: string): string;
+
+declare function importFiles(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string
+): string | null;
+
+declare function importWorkflows(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string
+): string | null;
 
 declare function getNameCollisionStrategy(
-  ...args: unknown[]
+  spaceProviderId: string,
+  spaceId: string,
+  itemIds: string[],
+  destinationItemId: string
 ): "OVERWRITE" | "NOOP" | "AUTORENAME" | "CANCEL";
 
-declare function copyBetweenSpaces(...args: unknown[]): unknown;
+declare function copyBetweenSpaces(
+  spaceProviderId: string,
+  spaceId: string,
+  itemIds: string[]
+): void;
 
-declare function saveWorkflowAs(...args: unknown[]): unknown;
+declare function saveWorkflowAs(
+  projectId: string,
+  workflowPreviewSvg: string
+): void;
 
 declare function saveAndCloseWorkflows(
   totalProjects: number,
