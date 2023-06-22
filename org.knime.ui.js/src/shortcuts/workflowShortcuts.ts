@@ -426,14 +426,13 @@ const workflowShortcuts: WorkflowShortcuts = {
     hotkey: ["Ctrl", "."],
     execute: ({ $store }) => {
       // destruct current state
+      const { isOpen, props } = $store.state.workflow.quickAddNodeMenu;
+
       const {
-        isOpen,
-        props: {
-          nodeId: lastNodeId,
-          port: { index: lastPortIndex } = { index: -1 },
-          position: lastPosition,
-        },
-      } = $store.state.workflow.quickAddNodeMenu;
+        nodeId: lastNodeId,
+        port: { index: lastPortIndex } = { index: -1 },
+        position: lastPosition,
+      } = props ?? {};
 
       // use the node of the currently open dialog because the node might not be selected in that case
       const node = isOpen

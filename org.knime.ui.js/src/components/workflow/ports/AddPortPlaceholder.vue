@@ -72,7 +72,7 @@ export default {
       return (
         this.portTypeMenu.isOpen &&
         this.portTypeMenu.nodeId === this.nodeId &&
-        this.portTypeMenu.props.side === this.side
+        this.portTypeMenu.props?.side === this.side
       );
     },
     previewPort() {
