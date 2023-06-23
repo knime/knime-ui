@@ -281,7 +281,6 @@ export const getters = {
     const allTags = [
       ...state.topNodesTags,
       ...state.selectedTags,
-      // eslint-disable-next-line no-extra-parens
       ...(state.isShowingBottomNodes ? state.bottomNodesTags : []),
     ];
     return [...new Set(allTags)];

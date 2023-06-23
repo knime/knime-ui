@@ -153,7 +153,6 @@ export default defineComponent({
     if (this.port) {
       this.$store.commit("quickAddNodes/setPortTypeId", this.port.typeId);
     }
-    // eslint-disable-next-line no-extra-parens
     (this.$refs.search as HTMLElement)?.focus();
   },
   beforeUnmount() {

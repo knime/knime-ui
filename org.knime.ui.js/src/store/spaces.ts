@@ -393,7 +393,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     const { openProjects } = rootState.application;
 
-    // eslint-disable-next-line no-extra-parens
     const foundOpenProject = openProjects.find(
       (project) =>
         project.origin.providerId === spaceProviderId &&

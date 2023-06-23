@@ -1,10 +1,8 @@
-// eslint-disable-next-line object-curly-newline
 import {
   JSONRPC,
   type JSONRPCRequest,
   type JSONRPCResponse,
   type JSONRPCParams,
-  // eslint-disable-next-line object-curly-newline
 } from "./types";
 
 type WrappedError = Error & { originalError: Error };

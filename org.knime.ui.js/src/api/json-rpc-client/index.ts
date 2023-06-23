@@ -1,10 +1,8 @@
 import { rpc } from "./json-rpc-adapter";
-// eslint-disable-next-line object-curly-newline
 import {
   getRegisteredNotificationHandler,
   registerNotificationHandler,
   serverEventHandler,
-  // eslint-disable-next-line object-curly-newline
 } from "./server-events";
 
 const JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";

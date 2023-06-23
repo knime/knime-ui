@@ -78,7 +78,6 @@ export default {
   },
 
   watch: {
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Emits null or an object with the following structure:
      *  EventPayload {

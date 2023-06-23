@@ -3,14 +3,12 @@ import { defineComponent, type PropType } from "vue";
 import { mapGetters, mapState } from "vuex";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
-// eslint-disable-next-line object-curly-newline
 import {
   type Directions,
   DIRECTIONS,
   transformBounds,
   getGridAdjustedBounds,
   getTransformControlPosition,
-  // eslint-disable-next-line object-curly-newline
 } from "./transform-control-utils";
 
 export const TRANSFORM_RECT_OFFSET = 1;
@@ -99,7 +97,6 @@ export default defineComponent({
       const origWidth = this.innerValue.width;
       const origHeight = this.innerValue.height;
 
-      // eslint-disable-next-line no-extra-parens
       (event.target as HTMLElement).setPointerCapture(event.pointerId);
 
       const transformHandler = (_event: MouseEvent) => {
@@ -132,7 +129,6 @@ export default defineComponent({
     },
 
     onStop(event: PointerEvent) {
-      // eslint-disable-next-line no-extra-parens
       (event.target as HTMLElement).releasePointerCapture(event.pointerId);
       this.$emit("transformEnd", { bounds: this.innerValue });
     },

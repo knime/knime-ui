@@ -30,7 +30,6 @@ const removeDuplicates = (array, compareKey = "name") => {
   return out;
 };
 
-// eslint-disable-next-line valid-jsdoc
 /**
  * Creates a port search function from the given criteria
  * @param {Object} options

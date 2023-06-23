@@ -165,7 +165,6 @@ export default defineComponent({
     },
   },
   mounted() {
-    // eslint-disable-next-line no-extra-parens
     (this.$refs.searchBar as HTMLElement)?.focus();
   },
   methods: {

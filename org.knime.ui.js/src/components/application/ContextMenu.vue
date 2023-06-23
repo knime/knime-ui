@@ -22,7 +22,6 @@ type ComponentData = {
   activeDescendant: string | null;
 };
 
-// eslint-disable-next-line valid-jsdoc
 /**
  * Helper fn that enables easily creating separators between the different context menu action groups
  */
@@ -124,7 +123,6 @@ export default defineComponent({
       handler() {
         this.setMenuItems();
         this.$nextTick(() => {
-          // eslint-disable-next-line no-extra-parens
           (this.$refs.menuItems as { $el: HTMLElement }).$el.focus();
         });
       },

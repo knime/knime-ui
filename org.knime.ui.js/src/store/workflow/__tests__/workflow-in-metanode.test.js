@@ -1,7 +1,6 @@
 import { expect, describe, it } from "vitest";
 import { mockVuexStore } from "@/test/utils";
 
-// eslint-disable-next-line object-curly-newline
 import {
   defaultMetaNodeBarHeight,
   defaultMetanodeBarPosition,
@@ -9,7 +8,6 @@ import {
   metaNodeBarWidth,
   portSize,
   nodeSize,
-  // eslint-disable-next-line object-curly-newline
 } from "@/style/shapes.mjs";
 
 import * as canvasStoreConfig from "@/store/canvas";

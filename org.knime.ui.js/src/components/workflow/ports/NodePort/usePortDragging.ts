@@ -115,7 +115,6 @@ export const usePortDragging = (params: Params) => {
     event.stopPropagation();
 
     pointerDown.value = true;
-    // eslint-disable-next-line no-extra-parens
     (event.target as HTMLElement).setPointerCapture(event.pointerId);
     startPosition = { x: event.clientX, y: event.clientY };
   };

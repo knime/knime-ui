@@ -21,7 +21,6 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// eslint-disable-next-line no-extra-parens
 const showAddNodeGhost = computed(
   () =>
     props.direction === "out" &&

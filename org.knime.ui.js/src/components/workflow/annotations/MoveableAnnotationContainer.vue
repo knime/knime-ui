@@ -72,7 +72,6 @@ export default defineComponent({
 
     initCursorPosition(event: PointerEvent) {
       event.stopPropagation();
-      // eslint-disable-next-line no-extra-parens
       const rect = (
         this.$refs.container as HTMLElement
       ).getBoundingClientRect();
