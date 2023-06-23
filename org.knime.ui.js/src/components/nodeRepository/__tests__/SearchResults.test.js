@@ -192,7 +192,7 @@ describe("SearchResults", () => {
       });
       await Vue.nextTick();
       await wrapper.find('[data-testid="open-preferences"]').trigger("click");
-      expect(mockedAPI.desktop.openKnimeUIPreferences).toHaveBeenCalled();
+      expect(mockedAPI.desktop.openWebUIPreferencePage).toHaveBeenCalled();
     });
   });
 });

@@ -166,7 +166,7 @@ export default defineComponent({
       }
     },
     openKnimeUIPreferencePage() {
-      API.desktop.openKnimeUIPreferences();
+      API.desktop.openWebUIPreferencePage();
     },
   },
 });
