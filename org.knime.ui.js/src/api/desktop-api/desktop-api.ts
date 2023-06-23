@@ -210,7 +210,7 @@ export const openLayoutEditor = ({
     window.openLayoutEditor,
     [projectId, workflowId],
     "Could not open layout editor",
-    true
+    false
   );
 };
 
@@ -251,15 +251,13 @@ export const connectSpaceProvider = ({
 
 export const disconnectSpaceProvider = ({
   spaceProviderId,
-}: SpaceProviderId): Promise<SpaceUser> => {
-  const user = callBrowserFunction(
+}: SpaceProviderId) => {
+  callBrowserFunction(
     window.disconnectSpaceProvider,
     [spaceProviderId],
     `Could not disconnect from provider ${spaceProviderId}`,
-    true
+    false
   );
-
-  return Promise.resolve(JSON.parse(user));
 };
 
 export const importFiles = ({
@@ -308,11 +306,11 @@ export const copyBetweenSpaces = ({
   spaceId = "local",
   itemIds,
 }: SpaceProviderId & SpaceId & { itemIds: string[] }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.copyBetweenSpaces,
     [spaceProviderId, spaceId, itemIds],
     "Error uploading to Hub space",
-    false
+    true
   );
 };
 

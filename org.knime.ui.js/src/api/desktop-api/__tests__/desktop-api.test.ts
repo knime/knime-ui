@@ -91,7 +91,6 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   {
     name: "disconnectSpaceProvider",
     params: [["spaceProviderId", "1"]],
-    returnValue: JSON.stringify({ name: "user" }),
   },
   {
     name: "importFiles",
