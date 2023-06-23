@@ -1,36 +1,88 @@
+import merge from "lodash/merge";
+
+import type { AvailablePortTypes } from "@/api/custom-types";
 import {
   MetaNodePort,
+  PortType,
   type NodePort,
   type PortGroup,
+  type PortViews,
 } from "@/api/gateway-api/generated-api";
 
 import { randomValue } from "./util";
+import { PORT_TYPE_IDS, type PortTypeId } from "./common";
 
-const PORT_TYPE_IDS = [
-  "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
-  "org.knime.core.node.workflow.capture.WorkflowPortObject",
-  "org.knime.core.data.uri.URIPortObject",
-  "org.knime.database.port.DBSessionPortObject",
-  "org.knime.database.port.DBDataPortObject",
-  "org.knime.filehandling.core.port.FileSystemPortObject",
-  "org.knime.core.node.port.database.DatabaseConnectionPortObject",
-  "org.knime.core.node.port.database.DatabasePortObject",
-  "org.knime.base.data.normalize.NormalizerPortObject",
-  "org.knime.core.node.BufferedDataTable",
-  "org.knime.core.node.port.PortObject",
-  "org.knime.core.node.port.image.ImagePortObject",
-] as const;
+export const createPortViews = (data: Partial<PortViews> = {}): PortViews => {
+  return merge(
+    {
+      descriptors: [
+        { label: "Table", isSpecView: true },
+        { label: "Table" },
+        { label: "Statistics" },
+      ],
+      descriptorMapping: {
+        configured: [0, 2],
+        executed: [1, 2],
+      },
+    },
+    data
+  );
+};
 
-type PortTypeIds =
-  | (typeof PORT_TYPE_IDS)[number]
-  | Omit<string, (typeof PORT_TYPE_IDS)[number]>;
+export const createPortType = (data: Partial<PortType> = {}): PortType => {
+  return merge(
+    {
+      kind: PortType.KindEnum.Table,
+      name: "Table",
+      color: "#000000",
+      views: createPortViews(data.views ?? {}),
+    },
+    data
+  );
+};
+
+export const createAvailablePortTypes = (
+  data: Partial<AvailablePortTypes> = {}
+): AvailablePortTypes => {
+  const base: AvailablePortTypes = {
+    [PORT_TYPE_IDS.BufferedDataTable]: createPortType(),
+    [PORT_TYPE_IDS.FlowVariablePortObject]: createPortType({
+      color: "#FF4B4B",
+      kind: PortType.KindEnum.FlowVariable,
+      name: "Flow Variable",
+      views: createPortViews({
+        descriptors: [
+          { label: "Flow variables", isSpecView: true },
+          { label: "Flow variables" },
+        ],
+        descriptorMapping: {
+          configured: [0],
+          executed: [1],
+        },
+      }),
+    }),
+    [PORT_TYPE_IDS.PortObject]: createPortType({
+      kind: PortType.KindEnum.Generic,
+      name: "Generic",
+      color: "#9B9B9B",
+    }),
+    [PORT_TYPE_IDS.DatabaseConnectionPortObject]: createPortType({
+      kind: PortType.KindEnum.Other,
+      name: "Database Connection",
+      color: "#FF4B4B",
+      compatibleTypes: [PORT_TYPE_IDS.DatabasePortObject],
+    }),
+  };
+
+  return merge(base, data);
+};
 
 export const createPort = (
-  data: Partial<NodePort & { typeId: PortTypeIds }>
+  data: Partial<NodePort & { typeId: PortTypeId }> = {}
 ): NodePort => {
   return {
     index: 0,
-    typeId: randomValue(PORT_TYPE_IDS),
+    typeId: randomValue(Object.values(PORT_TYPE_IDS)),
     canRemove: true,
     connectedVia: [],
     inactive: false,
@@ -45,7 +97,7 @@ export const createPort = (
 };
 
 export const createMetanodePort = (
-  data: Partial<MetaNodePort>
+  data: Partial<MetaNodePort & { typeId: PortTypeId }> = {}
 ): MetaNodePort => {
   const port = createPort(data);
   return {
@@ -56,7 +108,7 @@ export const createMetanodePort = (
   };
 };
 
-export const createPortGroup = (data: Partial<PortGroup>): PortGroup => {
+export const createPortGroup = (data: Partial<PortGroup> = {}): PortGroup => {
   return {
     canAddInPort: true,
     canAddOutPort: true,

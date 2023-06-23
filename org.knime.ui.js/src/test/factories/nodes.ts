@@ -66,8 +66,8 @@ const createBaseNode = (
 
     ...data,
 
-    inPorts: [defaultVariablePort].concat(data?.inPorts ?? []),
-    outPorts: [defaultVariablePort].concat(data?.outPorts ?? []),
+    inPorts: data.inPorts || [defaultVariablePort],
+    outPorts: data.outPorts || [defaultVariablePort],
   };
 };
 

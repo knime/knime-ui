@@ -2,7 +2,6 @@ import { expect, describe, it, vi } from "vitest";
 /* eslint-disable max-params */
 import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
-import type { DeepPartial } from "@/test/utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import * as selectionStore from "@/store/selection";
@@ -17,34 +16,41 @@ import PortTabs from "../PortTabs.vue";
 
 import PortViewTabOutput from "../PortViewTabOutput.vue";
 import NodeViewTabOutput from "../NodeViewTabOutput.vue";
-import type { KnimeNode } from "@/api/custom-types";
 import { NodeState } from "@/api/gateway-api/generated-api";
+import {
+  createAvailablePortTypes,
+  createNativeNode,
+  createPort,
+} from "@/test/factories";
+import type { KnimeNode } from "@/api/custom-types";
 
 vi.mock("@knime/ui-extension-service");
 
 describe("NodeOutput.vue", () => {
   const FLOW_VARIABLE = "flowVariable";
   const TABLE = "table";
-  const UNSUPPORTED = "unsupported";
 
   const mockFeatureFlags = {
     shouldDisplayEmbeddedViews: vi.fn(() => true),
   };
 
-  const dummyNodes: Record<string, DeepPartial<KnimeNode>> = {
-    node1: {
+  const dummyNodes: Record<string, KnimeNode> = {
+    node1: createNativeNode({
       id: "node1",
+      state: { executionState: NodeState.ExecutionStateEnum.IDLE },
+      inPorts: [],
       outPorts: [
-        { typeId: "flowVariable", index: 0 },
-        { typeId: "table", index: 1 },
+        createPort({
+          typeId:
+            "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+          index: 0,
+        }),
+        createPort({
+          typeId: "org.knime.core.node.BufferedDataTable",
+          index: 1,
+        }),
       ],
-      state: {
-        executionState: NodeState.ExecutionStateEnum.IDLE,
-      },
-      allowedActions: {
-        canExecute: false,
-      },
-    },
+    }),
   };
 
   const createNode = (customProperties) => ({
@@ -80,23 +86,7 @@ describe("NodeOutput.vue", () => {
     const application = {
       state: {
         activeProjectId: "projectId",
-        availablePortTypes: {
-          [TABLE]: {
-            kind: "table",
-            name: "Data",
-            hasView: true,
-          },
-          [FLOW_VARIABLE]: {
-            kind: "flowVariable",
-            name: "Flow Variable",
-            hasView: true,
-          },
-          [UNSUPPORTED]: {
-            kind: "unsupported",
-            name: "Unsupported",
-            hasView: false,
-          },
-        },
+        availablePortTypes: createAvailablePortTypes(),
       },
     };
 

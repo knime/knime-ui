@@ -12,7 +12,7 @@ export const createConnection = (
   const { id, ...rest } = data;
 
   return {
-    id: `${id || "root:2_1"}_${getId()}`,
+    id: id ?? `root:2_1_${getId()}`,
     sourceNode: "root:1",
     sourcePort: 1,
     destNode: "root:2",

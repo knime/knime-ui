@@ -4,7 +4,17 @@ import { mount } from "@vue/test-utils";
 
 import Button from "webapps-common/ui/components/Button.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import { mockLodashThrottleAndDebounce, mockVuexStore } from "@/test/utils";
+import {
+  deepMocked,
+  mockLodashThrottleAndDebounce,
+  mockVuexStore,
+} from "@/test/utils";
+import {
+  createAvailablePortTypes,
+  createPort,
+  createNodePortTemplate,
+  createNodeTemplate,
+} from "@/test/factories";
 
 import { API } from "@api";
 import * as $shapes from "@/style/shapes.mjs";
@@ -12,71 +22,61 @@ import * as $colors from "@/style/colors.mjs";
 
 import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as selectionStore from "@/store/selection";
+import { searchNodesResponse } from "@/store/common/__tests__/nodeSearch.test";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-
-import QuickAddNodeMenu from "../QuickAddNodeMenu.vue";
-// eslint-disable-next-line import/extensions
-import { searchNodesResponse } from "@/store/common/__tests__/nodeSearch.test";
 import QuickAddNodeRecommendations from "@/components/workflow/node/quickAdd/QuickAddNodeRecommendations.vue";
 
+import {
+  NativeNodeInvariants,
+  PortType,
+} from "@/api/gateway-api/generated-api";
+import QuickAddNodeMenu from "../QuickAddNodeMenu.vue";
+
 const defaultNodeRecommendationsResponse = [
-  {
-    inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
-    outPorts: [
-      { typeId: "org.knime.core.node.BufferedDataTable" },
-      { typeId: "org.some.otherPorType" },
+  createNodeTemplate(),
+  createNodeTemplate({
+    inPorts: [
+      createNodePortTemplate({
+        typeId: "org.knime.core.node.BufferedDataTable",
+      }),
     ],
-    component: false,
-    icon: "data:image/png;base64,xxx",
-    nodeFactory: {
-      className:
-        "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
-    },
-    name: "Column Filter",
-    id: "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
-    type: "Manipulator",
-  },
-  {
-    inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
-    outPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
-    component: false,
-    icon: "data:image/png;base64,xxx",
+    outPorts: [
+      createNodePortTemplate({
+        typeId: "org.knime.core.node.BufferedDataTable",
+      }),
+    ],
     nodeFactory: {
       className: "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory",
     },
     name: "Row Filter",
-    id: "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory",
-    type: "Manipulator",
-  },
+    type: NativeNodeInvariants.TypeEnum.Manipulator,
+  }),
 ];
 
 const notInCollectionSearchResult = {
   tags: [],
   totalNumNodes: 1355,
   nodes: [
-    {
-      component: false,
-      icon: "data:image/png;base64,xxx",
+    createNodeTemplate({
       name: "Advanced Node",
       id: "org.knime.ext.advanced.node3",
-      type: "Visualizer",
+      type: NativeNodeInvariants.TypeEnum.Visualizer,
       nodeFactory: { className: "org.knime.ext.advanced.node3" },
-      inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
+      inPorts: [createNodePortTemplate()],
       outPorts: [],
-    },
+    }),
   ],
 };
 
-const defaultPortMock = {
-  type: "table",
-  connectedVia: [],
-};
+const defaultPortMock = createPort();
 
 mockLodashThrottleAndDebounce();
 
+const mockedAPI = deepMocked(API);
+
 describe("QuickAddNodeMenu.vue", () => {
-  let FloatingMenuStub = {
+  const FloatingMenuStub = {
     template: `
           <div>
           <slot />
@@ -97,21 +97,21 @@ describe("QuickAddNodeMenu.vue", () => {
         x: 10,
         y: 10,
       },
-      port: {
+      port: createPort({
         index: 1,
         typeId: "org.knime.core.node.BufferedDataTable",
-        kind: "table",
         connectedVia: [],
-      },
+      }),
     };
 
-    API.noderepository.getNodeRecommendations.mockReturnValue(
+    mockedAPI.noderepository.getNodeRecommendations.mockReturnValue(
       nodeRecommendationsResponse
     );
-    API.noderepository.searchNodes.mockImplementation(({ nodesPartition }) =>
-      nodesPartition === "IN_COLLECTION"
-        ? searchNodesResponse
-        : notInCollectionSearchResult
+    mockedAPI.noderepository.searchNodes.mockImplementation(
+      ({ nodesPartition }) =>
+        nodesPartition === "IN_COLLECTION"
+          ? searchNodesResponse
+          : notInCollectionSearchResult
     );
 
     const storeConfig = {
@@ -131,16 +131,13 @@ describe("QuickAddNodeMenu.vue", () => {
       quickAddNodes: quickAddNodesStore,
       application: {
         state: {
-          availablePortTypes: {
-            "org.knime.core.node.BufferedDataTable": {
-              kind: "table",
-              color: "green",
-            },
+          availablePortTypes: createAvailablePortTypes({
             "org.some.otherPorType": {
-              kind: "other",
+              kind: PortType.KindEnum.Other,
               color: "blue",
+              name: "Some other port",
             },
-          },
+          }),
           hasNodeCollectionActive: true,
           hasNodeRecommendationsEnabled: true,
         },
@@ -211,14 +208,14 @@ describe("QuickAddNodeMenu.vue", () => {
 
   describe("visuals", () => {
     it("re-emits menuClose", () => {
-      let { wrapper } = doMount();
+      const { wrapper } = doMount();
       wrapper.findComponent(FloatingMenuStub).vm.$emit("menuClose");
 
       expect(wrapper.emitted("menuClose")).toBeTruthy();
     });
 
     it("centers to port", () => {
-      let { wrapper } = doMount();
+      const { wrapper } = doMount();
 
       expect(
         wrapper.findComponent(FloatingMenuStub).props("canvasPosition")
@@ -231,7 +228,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
   describe("recommendations", () => {
     it("should display the nodes recommended", async () => {
-      let { wrapper } = doMount();
+      const { wrapper } = doMount();
       await Vue.nextTick();
       const labels = wrapper.findAll(".node > label");
 
@@ -245,7 +242,7 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("adds node on click", async () => {
-      let { wrapper, addNodeMock } = doMount();
+      const { wrapper, addNodeMock } = doMount();
       await Vue.nextTick();
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("click");
@@ -265,7 +262,7 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("allows dynamic updates of the port", async () => {
-      let { wrapper, $store } = doMount();
+      const { wrapper, $store } = doMount();
       await Vue.nextTick();
       expect($store.state.quickAddNodes.portTypeId).toBe(
         "org.knime.core.node.BufferedDataTable"
@@ -295,7 +292,7 @@ describe("QuickAddNodeMenu.vue", () => {
         nodeId: null,
         port: null,
       };
-      let { wrapper, addNodeMock, $store } = doMount({ props });
+      const { wrapper, addNodeMock, $store } = doMount({ props });
 
       await Vue.nextTick();
 
@@ -317,7 +314,7 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("triggers shortcut hotkey in search field to switch between ports", async () => {
-      let { wrapper, $shortcuts } = doMount();
+      const { wrapper, $shortcuts } = doMount();
       await Vue.nextTick();
       const input = wrapper.find(".search-bar input");
       await input.trigger("keydown"); // key doesn't matter as its mocked
@@ -326,7 +323,7 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("adds node on pressing enter key", async () => {
-      let { wrapper, addNodeMock } = doMount();
+      const { wrapper, addNodeMock } = doMount();
       await Vue.nextTick();
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("keydown.enter");
@@ -346,7 +343,7 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("does not add node if workflow is not writeable", async () => {
-      let { wrapper, addNodeMock } = doMount({
+      const { wrapper, addNodeMock } = doMount({
         isWriteableMock: vi.fn(() => false),
       });
       await Vue.nextTick();
@@ -357,7 +354,7 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("does display overlay if workflow coach is disabled", async () => {
-      let { wrapper, $store } = doMount();
+      const { wrapper, $store } = doMount();
       $store.state.application.hasNodeRecommendationsEnabled = false;
       await Vue.nextTick();
 
@@ -365,14 +362,14 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("does not display overlay if workflow coach is enabled", async () => {
-      let { wrapper } = doMount();
+      const { wrapper } = doMount();
       await Vue.nextTick();
 
       expect(wrapper.find(".disabled-workflow-coach").exists()).toBe(false);
     });
 
     it("opens workflow coach preferences page when button is clicked", async () => {
-      let { wrapper, $store } = doMount();
+      const { wrapper, $store } = doMount();
       $store.state.application.hasNodeRecommendationsEnabled = false;
       await Vue.nextTick();
       await wrapper.findComponent(Button).vm.$emit("click");
@@ -381,7 +378,7 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("displays placeholder message if there are no suggested nodes", async () => {
-      let { wrapper } = doMount({ nodeRecommendationsResponse: [] });
+      const { wrapper } = doMount({ nodeRecommendationsResponse: [] });
       await Vue.nextTick();
 
       expect(wrapper.find(".no-recommendations-message").exists()).toBe(true);
@@ -408,7 +405,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
   describe("search", () => {
     it("display search results if query was entered", async () => {
-      let { wrapper } = doMount();
+      const { wrapper } = doMount();
       await wrapper.find(".search-bar input").setValue("search");
 
       const labels = wrapper.findAll(".node > label");
@@ -423,7 +420,7 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("displays more nodes if button is pressed", async () => {
-      let { wrapper } = doMount();
+      const { wrapper } = doMount();
       await wrapper.find(".search-bar input").setValue("search");
 
       await wrapper.find(".more-nodes-button").trigger("click");
@@ -434,7 +431,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
     describe("add node", () => {
       it("adds the first search result via enter in the search box to the workflow", async () => {
-        let { wrapper, addNodeMock } = doMount();
+        const { wrapper, addNodeMock } = doMount();
         const input = wrapper.find(".search-bar input");
 
         // trigger search
@@ -460,7 +457,7 @@ describe("QuickAddNodeMenu.vue", () => {
       it.each(["click", "keydown.enter"])(
         "adds search results via %s to workflow",
         async (event) => {
-          let { wrapper, addNodeMock } = doMount();
+          const { wrapper, addNodeMock } = doMount();
 
           const input = wrapper.find(".search-bar input");
           await input.setValue(`some-input-for-${event}`);
@@ -488,7 +485,7 @@ describe("QuickAddNodeMenu.vue", () => {
       it.each(["click", "keydown.enter"])(
         "adds bottom search results via %s to workflow",
         async (event) => {
-          let { wrapper, addNodeMock } = doMount();
+          const { wrapper, addNodeMock } = doMount();
 
           const input = wrapper.find(".search-bar input");
           await input.setValue(`some-input-for-${event}`);

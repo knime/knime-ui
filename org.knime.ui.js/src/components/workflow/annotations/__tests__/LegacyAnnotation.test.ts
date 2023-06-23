@@ -1,19 +1,17 @@
 import { expect, describe, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
+import { createWorkflowAnnotation } from "@/test/factories";
 import * as $shapes from "@/style/shapes.mjs";
-import LegacyAnnotation from "../LegacyAnnotation.vue";
 import {
   Annotation,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
+import LegacyAnnotation from "../LegacyAnnotation.vue";
 
 describe("LegacyAnnotation.vue", () => {
-  const defaultProps: { annotation: Partial<WorkflowAnnotation> } = {
-    annotation: {
-      text: "",
-      styleRanges: [],
-    },
+  const defaultProps = {
+    annotation: createWorkflowAnnotation({ text: "" }),
   };
 
   const doMount = ({ props = {}, mocks = {} } = {}) => {

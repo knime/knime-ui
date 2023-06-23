@@ -14,6 +14,11 @@ import { merge } from "lodash";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import {
+  createAvailablePortTypes,
+  createConnection,
+  createPort,
+} from "@/test/factories";
 
 import { $bus } from "@/plugins/event-bus";
 import * as workflowStoreConfig from "@/store/workflow";
@@ -39,21 +44,18 @@ describe("Connector.vue", () => {
     window.alert = vi.fn();
   });
 
-  const defaultProps = {
+  const defaultProps = createConnection({
     sourceNode: "root:1",
     destNode: "root:2",
     id: "root:2_2",
-    allowedActions: {
-      canDelete: true,
-    },
     sourcePort: 0,
     destPort: 2,
-  };
+  });
 
-  const defaultPortMock = {
-    type: "table",
+  const defaultPortMock = createPort({
+    typeId: "org.knime.core.node.BufferedDataTable",
     connectedVia: [],
-  };
+  });
 
   const doShallowMount = ({ props = defaultProps, storeConfig } = {}) => {
     const $store = mockVuexStore(storeConfig);
@@ -74,7 +76,7 @@ describe("Connector.vue", () => {
             toggleContextMenu: vi.fn(),
           },
           state: {
-            availablePortTypes: {
+            availablePortTypes: createAvailablePortTypes({
               portType1: {
                 color: "#9B9B9B",
                 compatibleTypes: ["portType1"],
@@ -87,7 +89,7 @@ describe("Connector.vue", () => {
                 kind: "other",
                 name: "name 2",
               },
-            },
+            }),
           },
         },
         workflow: {

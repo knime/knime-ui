@@ -1,3 +1,5 @@
+import merge from "lodash/merge";
+
 import type { KnimeNode } from "@/api/custom-types";
 import {
   NativeNodeInvariants,
@@ -13,6 +15,7 @@ import {
   isNativeNode,
 } from "./nodes";
 import { createMetanodePort, createPort } from "./ports";
+import type { DeepPartial } from "../utils";
 import { arrayToDictionary } from "./util";
 
 const createAndConnectNodes = () => {
@@ -114,11 +117,11 @@ const extractNodeTemplates = (nodes: KnimeNode[]): NativeNodeInvariants[] => {
   }));
 };
 
-export const createWorkflow = (data: Partial<Workflow>): Workflow => {
+export const createWorkflow = (data: DeepPartial<Workflow> = {}): Workflow => {
   const hasNodes = Object.keys(data?.nodes ?? {}).length > 0;
   const hasConnections = Object.keys(data?.connections ?? {}).length > 0;
 
-  const baseWorkflow = {
+  const baseWorkflow: Workflow = {
     info: {
       containerId: "root",
       containerType: WorkflowInfo.ContainerTypeEnum.Project,
@@ -150,8 +153,5 @@ export const createWorkflow = (data: Partial<Workflow>): Workflow => {
     );
   }
 
-  return {
-    ...baseWorkflow,
-    ...data,
-  };
+  return merge(baseWorkflow, data);
 };

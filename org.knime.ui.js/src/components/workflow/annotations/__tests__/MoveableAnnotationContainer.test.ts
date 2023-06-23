@@ -11,6 +11,7 @@ import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 
 import MoveableAnnotationContainer from "../MoveableAnnotationContainer.vue";
+import { createWorkflow } from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
@@ -51,12 +52,7 @@ describe("MoveableAnnotationContainer.vue", () => {
       },
     });
 
-    $store.commit("workflow/setActiveWorkflow", {
-      info: { containerId: "root" },
-      nodes: { "root:1": { id: "root:1" } },
-      connections: {},
-      workflowAnnotations: [{ id: "annotation:1" }, { id: "annotation:2" }],
-    });
+    $store.commit("workflow/setActiveWorkflow", createWorkflow());
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
     const commitSpy = vi.spyOn($store, "commit");

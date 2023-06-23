@@ -1,9 +1,7 @@
-// eslint-disable-next-line object-curly-newline
 import type {
   PortType,
   DynamicPortGroupDescription,
   NativeNodeDescription,
-  // eslint-disable-next-line object-curly-newline
 } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes } from "@/api/custom-types";
 

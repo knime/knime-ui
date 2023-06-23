@@ -5,6 +5,7 @@ import type { Store } from "vuex";
 import { mixin as VueClickAway } from "vue3-click-away";
 
 import { mockVuexStore } from "@/test/utils";
+import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
 import { mockUserAgent } from "jest-useragent-mock";
 
 import * as $colors from "@/style/colors.mjs";
@@ -13,11 +14,7 @@ import { API } from "@api";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as canvasStore from "@/store/canvas";
-import {
-  type WorkflowAnnotation,
-  Annotation,
-  type Bounds,
-} from "@/api/gateway-api/generated-api";
+import { Annotation, type Bounds } from "@/api/gateway-api/generated-api";
 
 import WorkflowAnnotationComp from "../WorkflowAnnotation.vue";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
@@ -50,21 +47,12 @@ vi.mock("vue3-click-away", () => {
   };
 });
 
-describe("Workflow Annotation", () => {
-  const defaultProps: {
-    annotation: WorkflowAnnotation;
-  } = {
-    annotation: {
+describe("WorkflowAnnotation.vue", () => {
+  const defaultProps = {
+    annotation: createWorkflowAnnotation({
       id: "id1",
-      textAlign: Annotation.TextAlignEnum.Right,
-      borderWidth: 4,
-      borderColor: "#000",
-      backgroundColor: "#000",
-      bounds: { x: 0, y: 0, width: 100, height: 50 },
       text: "hallo",
-      styleRanges: [{ start: 0, length: 2, fontSize: 14 }],
-      contentType: Annotation.ContentTypeEnum.Plain,
-    },
+    }),
   };
 
   const doMount = ({
@@ -83,13 +71,12 @@ describe("Workflow Annotation", () => {
       },
     });
 
-    $store.commit("workflow/setActiveWorkflow", {
-      projectId: "project1",
-      info: { containerId: "root" },
-      nodes: { "root:1": { id: "root:1" } },
-      connections: {},
-      workflowAnnotations: [defaultProps.annotation],
-    });
+    $store.commit(
+      "workflow/setActiveWorkflow",
+      createWorkflow({
+        workflowAnnotations: [defaultProps.annotation],
+      })
+    );
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
 
