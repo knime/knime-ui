@@ -1,31 +1,62 @@
 import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { shallowMount, VueWrapper } from "@vue/test-utils";
+
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import {
+  createComponentNode,
+  createMetanode,
+  createNativeNode,
+  createWorkflow,
+} from "@/test/factories";
+import type { AllowedWorkflowActions } from "@/api/gateway-api/generated-api";
+import type { KnimeNode } from "@/api/custom-types";
 
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import ContextMenu from "../ContextMenu.vue";
 import type { ShortcutName } from "@/shortcuts";
+import { createShortcutsService } from "@/plugins/shortcuts";
+import * as workflowStore from "@/store/workflow";
+import * as selectionStore from "@/store/selection";
+import * as canvasStore from "@/store/canvas";
+
+import ContextMenu from "../ContextMenu.vue";
 
 describe("ContextMenu.vue", () => {
-  const $shortcuts = {
-    dispatch: vi.fn(),
-    get: vi.fn().mockImplementation((name) => ({
-      text: name,
-      hotkeyText: "hotkeyText",
-    })),
-    isEnabled: vi.fn().mockReturnValue(false),
+  const createStore = (
+    options: {
+      allowedWorkflowActions?: Partial<AllowedWorkflowActions>;
+      nodes?: Record<string, KnimeNode>;
+    } = {}
+  ) => {
+    const $store = mockVuexStore({
+      selection: selectionStore,
+      workflow: workflowStore,
+      canvas: canvasStore,
+      application: {
+        state: {
+          hasClipboardSupport: true,
+        },
+      },
+    });
+
+    $store.commit(
+      "canvas/setScrollContainerElement",
+      document.createElement("div")
+    );
+
+    $store.commit(
+      "workflow/setActiveWorkflow",
+      createWorkflow({
+        allowedActions: { canReset: true, ...options.allowedWorkflowActions },
+        nodes: options.nodes,
+      })
+    );
+
+    return { $store };
   };
 
-  const doMount = ({
-    props = {},
-    selectedNodes = null,
-    selectedAnnotations = null,
-    selectedConnections = null,
-    singleSelectedNode = null,
-    isSelectionEmpty = null,
-  } = {}) => {
+  const doMount = ({ props = {}, store = null } = {}) => {
     const defaultProps = {
       position: {
         x: 10,
@@ -33,26 +64,16 @@ describe("ContextMenu.vue", () => {
       },
     };
 
-    const storeConfig = {
-      selection: {
-        state: () => ({
-          _selectedNodes: [],
-          _selectedAnnotations: [],
-          _selectedConnections: [],
-        }),
-        getters: {
-          selectedNodes: selectedNodes || ((state) => state._selectedNodes),
-          selectedAnnotations:
-            selectedAnnotations || ((state) => state._selectedAnnotations),
-          selectedConnections:
-            selectedConnections || ((state) => state._selectedConnections),
-          singleSelectedNode: singleSelectedNode || (() => null),
-          isSelectionEmpty: isSelectionEmpty || (() => false),
-        },
-      },
-    };
+    const mockRouter = { push: () => {} };
 
-    const $store = mockVuexStore(storeConfig);
+    const { $store: defaultStore } = createStore();
+
+    const $store: typeof defaultStore = store ?? defaultStore;
+
+    const $shortcuts = createShortcutsService({ $store, $router: mockRouter });
+
+    const shortcutsSpy = vi.spyOn($shortcuts, "dispatch");
+
     const wrapper = shallowMount(ContextMenu, {
       props: { ...defaultProps, ...props },
       global: {
@@ -61,10 +82,10 @@ describe("ContextMenu.vue", () => {
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, $store, shortcutsSpy };
   };
 
-  const renderedMenuItems = (wrapper) =>
+  const renderedMenuItems = (wrapper: VueWrapper<any>) =>
     wrapper.findComponent(MenuItems).props("items");
 
   describe("menu", () => {
@@ -85,12 +106,11 @@ describe("ContextMenu.vue", () => {
     });
 
     it("focuses menu items on position change", async () => {
-      const { wrapper, $store } = doMount();
+      const { $store } = createStore();
 
-      $store.state.selection._selectedNodes = ["a node"];
-      expect($store.getters["selection/selectedNodes"]).toStrictEqual([
-        "a node",
-      ]);
+      await $store.dispatch("selection/selectNode", "root:1");
+
+      const { wrapper } = doMount({ store: $store });
 
       const focusMock = vi.fn();
 
@@ -103,33 +123,30 @@ describe("ContextMenu.vue", () => {
   });
 
   it("sets items on mounted", () => {
-    const { wrapper } = doMount({ isSelectionEmpty: () => true });
+    const { wrapper } = doMount();
 
-    expect(renderedMenuItems(wrapper).length).toBe(5);
+    expect(renderedMenuItems(wrapper).length).toBe(4);
   });
 
   it("sets items on position change", async () => {
     const { wrapper, $store } = doMount();
 
-    $store.state.selection._selectedNodes = ["a node"];
-    expect($store.getters["selection/selectedNodes"]).toStrictEqual(["a node"]);
+    const totalItemsBefore = renderedMenuItems(wrapper).length;
 
-    wrapper.setProps({ position: { x: 2, y: 3 } });
-    await Vue.nextTick();
+    $store.dispatch("selection/selectNode", "root:1");
 
-    expect(renderedMenuItems(wrapper).length).toBe(8);
+    await wrapper.setProps({ position: { x: 2, y: 3 } });
+
+    expect(renderedMenuItems(wrapper).length).not.toBe(totalItemsBefore);
   });
 
   it("items are not set reactively", async () => {
-    const { wrapper, $store } = doMount({ isSelectionEmpty: () => true });
+    const { wrapper, $store } = doMount();
 
-    $store.state.selection._selectedNodes = ["a node"];
-    expect($store.getters["selection/selectedNodes"]).toStrictEqual(["a node"]);
-    await Vue.nextTick();
+    await $store.dispatch("selection/selectNode", "root:1");
 
     expect(renderedMenuItems(wrapper).map((item) => item.name)).toStrictEqual([
       "executeAll",
-      "cancelAll",
       "resetAll",
       "paste",
       "addWorkflowAnnotation",
@@ -137,30 +154,30 @@ describe("ContextMenu.vue", () => {
   });
 
   it("uses right format for MenuItems", async () => {
-    const { wrapper } = doMount({ isSelectionEmpty: () => true });
+    const { wrapper } = doMount();
 
     await Vue.nextTick();
 
-    expect($shortcuts.isEnabled).toHaveBeenCalledWith("executeAll");
     expect(renderedMenuItems(wrapper)).toEqual(
       expect.arrayContaining([
         {
           name: "executeAll",
-          text: "executeAll",
-          hotkeyText: "hotkeyText",
-          disabled: true,
+          text: "Execute all",
+          hotkeyText: "Shift F7",
+          disabled: false,
         },
       ])
     );
   });
 
   it("fires correct action based on store data and passes optional event detail and metadata", () => {
-    const { wrapper } = doMount();
+    const { wrapper, shortcutsSpy } = doMount();
     const mockEvent = { mock: true };
     wrapper
       .findComponent(MenuItems)
-      .vm.$emit("item-click", mockEvent, { name: "shortcut" });
-    expect($shortcuts.dispatch).toHaveBeenCalledWith("shortcut", {
+      .vm.$emit("item-click", mockEvent, { name: "executeAll" });
+
+    expect(shortcutsSpy).toHaveBeenCalledWith("executeAll", {
       event: mockEvent,
       metadata: { position: { x: 10, y: 10 } },
     });
@@ -172,341 +189,317 @@ describe("ContextMenu.vue", () => {
     expect(wrapper.emitted("menuClose")).toBeFalsy();
     wrapper
       .findComponent(MenuItems)
-      .vm.$emit("item-click", null, { name: "shortcut" });
+      .vm.$emit("item-click", null, { name: "executeAll" });
+
     expect(wrapper.emitted("menuClose")).toBeTruthy();
   });
 
   describe("visibility of menu items", () => {
     const assertItems = (
       items: Array<{
-        text: ShortcutName | Omit<string, ShortcutName>;
+        name?: ShortcutName | Omit<string, ShortcutName>;
+        text?: string;
         separator?: boolean;
       }>
     ) => items.map((item) => expect.objectContaining(item));
 
-    it("shows correct menu items if nothing is selected", async () => {
-      const { wrapper } = doMount({ isSelectionEmpty: () => true });
+    it("shows correct menu items if nothing is selected", () => {
+      const { $store } = createStore({
+        allowedWorkflowActions: { canCancel: true },
+      });
 
-      await Vue.nextTick();
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "executeAll" },
-          { text: "cancelAll" },
-          { text: "resetAll", separator: true },
-          { text: "paste", separator: true },
-          { text: "addWorkflowAnnotation" },
+          { name: "executeAll" },
+          { name: "cancelAll" },
+          { name: "resetAll", separator: true },
+          { name: "paste", separator: true },
+          { name: "addWorkflowAnnotation" },
         ])
       );
     });
 
     it("shows correct menu items if one node is selected", async () => {
-      const node = { id: "root:0", allowedActions: {} };
+      const { $store } = createStore();
 
-      const { wrapper } = doMount({
-        selectedNodes: () => [node],
-        singleSelectedNode: () => node,
-      });
+      await $store.dispatch("selection/selectNode", "root:1");
 
-      await Vue.nextTick();
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "configureNode" },
-          { text: "executeSelected" },
-          { text: "cancelSelected" },
-          { text: "resetSelected" },
-          { text: "editNodeLabel", separator: true },
-          { text: "cut" },
-          { text: "copy" },
-          { text: "deleteSelected", separator: true },
-          { text: "createMetanode" },
-          { text: "createComponent" },
+          { name: "configureNode", separator: true },
+          { name: "editNodeLabel", separator: true },
+          { name: "cut" },
+          { name: "copy" },
+          { name: "deleteSelected", separator: true },
+          { name: "createMetanode" },
+          { name: "createComponent" },
         ])
       );
     });
 
     it("shows correct menu items if selected node has loopInfo", async () => {
-      const node = {
+      const node = createNativeNode({
         id: "root:0",
-        allowedActions: {},
-        loopInfo: { allowedActions: {} },
-      };
-      const { wrapper } = doMount({
-        selectedNodes: () => [node],
-        singleSelectedNode: () => node,
+        allowedActions: { canExecute: true, canCancel: true, canReset: true },
+        loopInfo: {
+          allowedActions: {
+            canPause: true,
+            canResume: true,
+            canStep: true,
+          },
+        },
       });
+      const { $store } = createStore({ nodes: { "root:0": node } });
 
-      await Vue.nextTick();
+      await $store.dispatch("selection/selectNode", "root:0");
+
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "configureNode" },
-          { text: "executeSelected" },
-          { text: "resumeLoopExecution" },
-          { text: "pauseLoopExecution" },
-          { text: "stepLoopExecution" },
-          { text: "cancelSelected" },
-          { text: "resetSelected" },
-          { text: "editNodeLabel", separator: true },
-          { text: "cut" },
-          { text: "copy" },
-          { text: "deleteSelected", separator: true },
-          { text: "createMetanode" },
-          { text: "createComponent" },
+          { name: "configureNode" },
+          { name: "executeSelected" },
+          { name: "resumeLoopExecution" },
+          { name: "pauseLoopExecution" },
+          { name: "stepLoopExecution" },
+          { name: "cancelSelected" },
+          { name: "resetSelected" },
+          { name: "editNodeLabel", separator: true },
+          { name: "cut" },
+          { name: "copy" },
+          { name: "deleteSelected", separator: true },
+          { name: "createMetanode" },
+          { name: "createComponent" },
         ])
       );
     });
 
     it("shows correct menu items if selected node can be executed and has view", async () => {
-      const node = {
+      const node = createNativeNode({
         id: "root:0",
-        allowedActions: {
-          canExecute: true,
-          canOpenView: true,
-        },
-      };
-
-      const { wrapper } = doMount({
-        selectedNodes: () => [node],
-        singleSelectedNode: () => node,
+        allowedActions: { canExecute: true, canOpenView: true },
       });
 
-      await Vue.nextTick();
+      const { $store } = createStore({ nodes: { "root:0": node } });
+
+      await $store.dispatch("selection/selectNode", "root:0");
+
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "configureNode" },
-          { text: "executeSelected" },
-          { text: "cancelSelected" },
-          { text: "resetSelected" },
-          { text: "editNodeLabel" },
-          { text: "executeAndOpenView", separator: true },
-          { text: "cut" },
-          { text: "copy" },
-          { text: "deleteSelected", separator: true },
-          { text: "createMetanode" },
-          { text: "createComponent" },
+          { name: "configureNode" },
+          { name: "executeSelected" },
+          { name: "executeAndOpenView", separator: true },
+          { name: "editNodeLabel" },
+          { name: "cut" },
+          { name: "copy" },
+          { name: "deleteSelected", separator: true },
+          { name: "createMetanode" },
+          { name: "createComponent" },
         ])
       );
     });
 
-    it("shows correct menu items if selected node can open view", async () => {
-      const node = {
+    it("shows correct menu items if selected node can configure legacy flow variables", async () => {
+      const node = createNativeNode({
         id: "root:0",
         allowedActions: {
           canOpenLegacyFlowVariableDialog: true,
           canOpenView: true,
+          canExecute: true,
         },
-      };
-      const { wrapper } = doMount({
-        selectedNodes: () => [node],
-        singleSelectedNode: () => node,
       });
 
-      await Vue.nextTick();
+      const { $store } = createStore({ nodes: { "root:0": node } });
+
+      await $store.dispatch("selection/selectNode", "root:0");
+
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "configureNode" },
-          { text: "executeSelected" },
-          { text: "cancelSelected" },
-          { text: "resetSelected" },
-          { text: "editNodeLabel" },
-          { text: "executeAndOpenView" },
-          { text: "configureFlowVariables", separator: true },
-          { text: "cut" },
-          { text: "copy" },
-          { text: "deleteSelected", separator: true },
-          { text: "createMetanode" },
-          { text: "createComponent" },
+          { name: "configureNode" },
+          { name: "configureFlowVariables" },
+          { name: "executeSelected" },
+          { name: "executeAndOpenView", separator: true },
+          { name: "editNodeLabel", separator: true },
+          { name: "cut" },
+          { name: "copy" },
+          { name: "deleteSelected", separator: true },
+          { name: "createMetanode" },
+          { name: "createComponent" },
         ])
       );
     });
 
     it("shows correct menu items for multiple selected nodes", async () => {
-      const node = {
-        id: "root:0",
-        allowedActions: {
-          canOpenLegacyFlowVariableDialog: true,
-          canOpenView: true,
-          loopInfo: { allowedActions: {} },
-        },
-      };
-      const node2 = {
+      const node1 = createNativeNode({
         id: "root:1",
         allowedActions: {
-          canOpenLegacyFlowVariableDialog: true,
-          canOpenView: true,
-          loopInfo: { allowedActions: {} },
+          canExecute: true,
         },
-      };
-      const node3 = {
+      });
+      const node2 = createNativeNode({
         id: "root:2",
-        kind: "metanode",
-        allowedActions: {},
-      };
-      const { wrapper } = doMount({
-        selectedNodes: () => [node, node2, node3],
+        allowedActions: {
+          canExecute: true,
+        },
+      });
+      const node3 = createNativeNode({
+        id: "root:3",
+        allowedActions: {
+          canExecute: true,
+        },
       });
 
-      await Vue.nextTick();
+      const { $store } = createStore({
+        nodes: {
+          [node1.id]: node1,
+          [node2.id]: node2,
+          [node3.id]: node3,
+        },
+      });
+
+      await $store.dispatch("selection/selectNodes", [
+        "root:1",
+        "root:2",
+        "root:3",
+      ]);
+
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "executeSelected" },
-          { text: "cancelSelected" },
-          { text: "resetSelected", separator: true },
-          { text: "cut" },
-          { text: "copy" },
-          { text: "deleteSelected", separator: true },
-          { text: "createMetanode" },
-          { text: "createComponent" },
+          { name: "executeSelected", separator: true },
+          { name: "cut" },
+          { name: "copy" },
+          { name: "deleteSelected", separator: true },
+          { name: "createMetanode" },
+          { name: "createComponent" },
         ])
       );
     });
 
     it("shows correct menu items for multiple selected connections", async () => {
-      const conn = { id: "conn1" };
-      const conn2 = { id: "conn2" };
+      const { $store } = createStore();
 
-      const { wrapper } = doMount({ selectedConnections: () => [conn, conn2] });
+      const connections = $store.state.workflow.activeWorkflow.connections;
+      Object.values(connections)
+        .map(({ id }) => id)
+        .forEach((id) => {
+          $store.dispatch("selection/selectConnection", id);
+        });
+
+      const { wrapper } = doMount({ store: $store });
 
       await Vue.nextTick();
 
       expect(renderedMenuItems(wrapper)).toEqual(
-        assertItems([{ text: "deleteSelected" }])
+        assertItems([{ name: "deleteSelected" }])
       );
     });
 
     it("shows correct menu items for single selected connections", async () => {
-      const conn = { id: "conn1" };
+      const { $store } = createStore();
+      const connections = $store.state.workflow.activeWorkflow.connections;
+      $store.dispatch(
+        "selection/selectConnection",
+        Object.keys(connections).at(0)
+      );
 
-      const { wrapper } = doMount({ selectedConnections: () => [conn] });
+      const { wrapper } = doMount({ store: $store });
 
       await Vue.nextTick();
 
       expect(renderedMenuItems(wrapper)).toEqual(
-        assertItems([{ text: "deleteSelected" }])
+        assertItems([{ name: "deleteSelected" }])
       );
     });
 
-    it("shows options for metanodes", () => {
-      const node = {
-        id: "root:0",
-        kind: "metanode",
-        allowedActions: {},
-      };
-      const { wrapper } = doMount({
-        selectedNodes: () => [node],
-        singleSelectedNode: () => node,
-      });
+    it("shows options for metanodes", async () => {
+      const node = createMetanode({ id: "root:0" });
+
+      const { $store } = createStore({ nodes: { [node.id]: node } });
+
+      await $store.dispatch("selection/selectNode", "root:0");
+
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "configureNode" },
-          { text: "executeSelected" },
-          { text: "cancelSelected" },
-          { text: "resetSelected" },
-          { text: "editNodeLabel", separator: true },
-          { text: "cut" },
-          { text: "copy" },
-          { text: "deleteSelected", separator: true },
-          { text: "createMetanode" },
-          { text: "createComponent" },
+          { name: "configureNode" },
+          { name: "editNodeLabel", separator: true },
+          { name: "cut" },
+          { name: "copy" },
+          { name: "deleteSelected", separator: true },
+          { name: "createMetanode" },
+          { name: "createComponent" },
           { text: "Metanode" },
         ])
       );
     });
 
-    it("shows options for components", () => {
-      const node = {
-        id: "root:0",
-        kind: "component",
-        allowedActions: {},
-      };
-      const { wrapper } = doMount({
-        selectedNodes: () => [node],
-        singleSelectedNode: () => node,
-      });
+    it("shows options for components", async () => {
+      const node = createComponentNode({ id: "root:0" });
+
+      const { $store } = createStore({ nodes: { [node.id]: node } });
+
+      await $store.dispatch("selection/selectNode", "root:0");
+
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "configureNode" },
-          { text: "executeSelected" },
-          { text: "cancelSelected" },
-          { text: "resetSelected" },
-          { text: "editNodeLabel", separator: true },
-          { text: "cut" },
-          { text: "copy" },
-          { text: "deleteSelected", separator: true },
-          { text: "createMetanode" },
-          { text: "createComponent" },
+          { name: "configureNode", separator: true },
+          { name: "editNodeLabel", separator: true },
+          { name: "cut" },
+          { name: "copy" },
+          { name: "deleteSelected", separator: true },
+          { name: "createMetanode" },
+          { name: "createComponent" },
           { text: "Component" },
         ])
       );
     });
 
-    it("shows correct menu items if one annotation is selected", async () => {
-      const annotation = { id: "mock-annotation", text: "" };
+    it("shows correct menu items if one annotation is selected", () => {
+      const { $store } = createStore();
 
-      const { wrapper } = doMount({
-        selectedAnnotations: () => [annotation],
-      });
+      $store.dispatch("selection/selectAnnotation", "annotation:1");
 
-      await Vue.nextTick();
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "cut" },
-          { text: "copy" },
-          { text: "deleteSelected", separator: true },
+          { name: "cut" },
+          { name: "copy" },
+          { name: "deleteSelected", separator: true },
           { text: "Arrange annotations" },
         ])
       );
     });
 
     it("shows correct menu items if different object types are selected", async () => {
-      const annotation = { id: "mock-annotation", text: "" };
-      const metanode = {
-        id: "root:0",
-        kind: "metanode",
-        allowedActions: {},
-      };
-      const component = {
-        id: "root:0",
-        kind: "component",
-        allowedActions: {},
-      };
-      const node = {
-        id: "root:0",
-        allowedActions: {
-          canOpenLegacyFlowVariableDialog: true,
-          canOpenView: true,
-          loopInfo: { allowedActions: {} },
-        },
-      };
-      const conn = { id: "conn1" };
+      const { $store } = createStore();
 
-      const { wrapper } = doMount({
-        selectedNodes: () => [node, metanode, component],
-        selectedAnnotations: () => [annotation],
-        selectedConnections: () => [conn],
-      });
+      await $store.dispatch("selection/selectAnnotation", "annotation:1");
+      await $store.dispatch("selection/selectNodes", ["root:1", "root:2"]);
 
-      await Vue.nextTick();
+      const { wrapper } = doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { text: "executeSelected" },
-          { text: "cancelSelected" },
-          { text: "resetSelected", separator: true },
-          { text: "cut" },
-          { text: "copy" },
-          { text: "deleteSelected", separator: true },
+          { name: "cut" },
+          { name: "copy" },
+          { name: "deleteSelected", separator: true },
           { text: "Arrange annotations", separator: true },
-          { text: "createMetanode" },
-          { text: "createComponent" },
+          { name: "createMetanode" },
+          { name: "createComponent" },
         ])
       );
     });

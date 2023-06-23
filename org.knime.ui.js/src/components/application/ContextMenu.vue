@@ -6,34 +6,48 @@ import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import type { FormattedShortcut, ShortcutName } from "@/shortcuts";
+import type {
+  FormattedShortcut,
+  ShortcutName,
+  ShortcutsService,
+} from "@/shortcuts";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 
 type Base = { isVisible: boolean };
+type ItemWithName = Base & { name: ShortcutName; text?: string };
 
 type ContextMenuActionsGroupItem =
-  | (Base & { name: ShortcutName; text?: string })
+  | ItemWithName
   | (Base & { children: ContextMenuActionsGroupItem[]; text: string });
 
 type MenuItemWithName = Pick<FormattedShortcut, "name"> & MenuItem;
 
+type ContextMenuActionsGroup = Array<
+  ContextMenuActionsGroupItem & { separator?: boolean }
+>;
+
 type ComponentData = {
-  visibleItems: Array<ContextMenuActionsGroupItem & { separator?: boolean }>;
+  visibleItems: ContextMenuActionsGroup;
   activeDescendant: string | null;
 };
+
+const isItemWithName = (
+  item: ContextMenuActionsGroupItem
+): item is ItemWithName => "name" in item;
 
 /**
  * Helper fn that enables easily creating separators between the different context menu action groups
  */
-const menuGroups = function () {
-  let currItems: Array<ContextMenuActionsGroupItem & { separator?: boolean }> =
-    [];
+const menuGroups = function (shortcuts: ShortcutsService) {
+  let currItems: ContextMenuActionsGroup = [];
 
-  const onlyVisible = ({ isVisible }) => isVisible;
+  const onlyVisible = ({ isVisible }: ContextMenuActionsGroupItem) => isVisible;
+  const onlyEnabled = (item: ContextMenuActionsGroupItem) =>
+    isItemWithName(item) ? shortcuts.isEnabled(item.name) : true;
 
   return {
     append(groupItems: Array<ContextMenuActionsGroupItem>) {
-      const newItems = groupItems.filter(onlyVisible);
+      const newItems = groupItems.filter(onlyVisible).filter(onlyEnabled);
 
       if (currItems.length !== 0 && newItems.length > 0) {
         // add separator to last item of previous group
@@ -169,20 +183,21 @@ export default defineComponent({
 
       const basicOperationsGroup: Array<ContextMenuActionsGroupItem> = [
         { name: "configureNode", isVisible: this.singleSelectedNode },
+        {
+          name: "configureFlowVariables",
+          isVisible: hasLegacyFlowVariableDialog,
+        },
         { name: "executeSelected", isVisible: this.selectedNodes.length },
+        { name: "executeAndOpenView", isVisible: isView },
         // Loop nodes
         { name: "resumeLoopExecution", isVisible: isLoopEnd },
         { name: "pauseLoopExecution", isVisible: isLoopEnd },
         { name: "stepLoopExecution", isVisible: isLoopEnd },
         { name: "cancelSelected", isVisible: this.selectedNodes.length },
         { name: "resetSelected", isVisible: this.selectedNodes.length },
-        { name: "editNodeLabel", isVisible: this.singleSelectedNode },
-        // misc
-        { name: "executeAndOpenView", isVisible: isView },
-        {
-          name: "configureFlowVariables",
-          isVisible: hasLegacyFlowVariableDialog,
-        },
+      ];
+
+      const emptySelectionGroup: Array<ContextMenuActionsGroupItem> = [
         // no nodes selected
         { name: "executeAll", isVisible: this.isSelectionEmpty },
         { name: "cancelAll", isVisible: this.isSelectionEmpty },
@@ -242,8 +257,10 @@ export default defineComponent({
         },
       ];
 
-      this.visibleItems = menuGroups()
+      this.visibleItems = menuGroups(this.$shortcuts)
         .append(basicOperationsGroup)
+        .append([{ name: "editNodeLabel", isVisible: this.singleSelectedNode }])
+        .append(emptySelectionGroup)
         .append(clipboardOperationsGroup)
         .append(annotationsGroup)
         .append(metanodeAndComponentGroup)

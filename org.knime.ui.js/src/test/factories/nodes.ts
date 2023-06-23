@@ -1,3 +1,5 @@
+import merge from "lodash/merge";
+
 import type { KnimeNode } from "@/api/custom-types";
 import {
   AllowedNodeActions,
@@ -9,6 +11,7 @@ import {
   Node,
   NodeState,
 } from "@/api/gateway-api/generated-api";
+import type { DeepPartial } from "../utils";
 import { createNodeAnnotation } from "./annotations";
 import { createXY } from "./common";
 import { createPort } from "./ports";
@@ -35,14 +38,14 @@ export const isNativeNode = (node: KnimeNode): node is NativeNode => {
 
 const createBaseNode = (
   kind: Node.KindEnum,
-  data: Partial<Node> = {}
+  data: DeepPartial<Node> = {}
 ): Node => {
   const defaultVariablePort = createPort({
     index: 0,
     typeId: "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
   });
 
-  return {
+  const node: Node = {
     id: "root:1",
     kind,
     position: createXY({ x: 0, y: 0 }),
@@ -50,8 +53,10 @@ const createBaseNode = (
       canExecute: false,
       canCancel: false,
       canReset: false,
-      canDelete: false,
+      canDelete: true,
       canCollapse: AllowedNodeActions.CanCollapseEnum.ResetRequired,
+      canOpenDialog: true,
+      canExpand: AllowedNodeActions.CanExpandEnum.False,
     },
     annotation: createNodeAnnotation({
       text: "",
@@ -64,11 +69,11 @@ const createBaseNode = (
 
     hasDialog: false,
 
-    ...data,
-
-    inPorts: data.inPorts || [defaultVariablePort],
-    outPorts: data.outPorts || [defaultVariablePort],
+    inPorts: [defaultVariablePort],
+    outPorts: [defaultVariablePort],
   };
+
+  return merge(node, data);
 };
 
 type NodeTemplateIds =
@@ -76,14 +81,11 @@ type NodeTemplateIds =
   | Omit<string, (typeof TEMPLATE_IDS)[number]>;
 
 export const createNativeNode = (
-  data: Partial<NativeNode & { templateId: NodeTemplateIds }> = {}
+  data: DeepPartial<NativeNode & { templateId: NodeTemplateIds }> = {}
 ): NativeNode => {
   const baseNode = createBaseNode(Node.KindEnum.Node, data);
 
-  // ignore ports because those are already added from the createBaseNode fn
-  const { inPorts, outPorts, ...rest } = data;
-
-  return {
+  const nativeNode: NativeNode = {
     ...baseNode,
 
     templateId: randomValue(TEMPLATE_IDS),
@@ -93,44 +95,38 @@ export const createNativeNode = (
     state: {
       executionState: NodeState.ExecutionStateEnum.CONFIGURED,
     },
-
-    ...rest,
   };
+
+  return merge(nativeNode, data);
 };
 
 export const createComponentNode = (
-  data: Partial<ComponentNode> = {}
+  data: DeepPartial<ComponentNode> = {}
 ): ComponentNode => {
   const baseNode = createBaseNode(Node.KindEnum.Component, data);
 
-  // ignore ports because those are already added from the createBaseNode fn
-  const { inPorts, outPorts, ...rest } = data;
-
-  return {
+  const component: ComponentNode = {
     ...baseNode,
     isLocked: false,
     state: {
       executionState: NodeState.ExecutionStateEnum.CONFIGURED,
     },
-
-    ...rest,
   };
+
+  return merge(component, data);
 };
 
-export const createMetanode = (data: Partial<MetaNode> = {}): MetaNode => {
+export const createMetanode = (data: DeepPartial<MetaNode> = {}): MetaNode => {
   const baseNode = createBaseNode(Node.KindEnum.Metanode, data);
 
-  // ignore ports because those are already added from the createBaseNode fn
-  const { inPorts, outPorts, ...rest } = data;
-
-  return {
+  const metanode: MetaNode = {
     ...baseNode,
 
     name: "",
     state: {
       executionState: MetaNodeState.ExecutionStateEnum.EXECUTED,
     },
-
-    ...rest,
   };
+
+  return merge(metanode, data);
 };

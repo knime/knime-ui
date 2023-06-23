@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/no-extra-parens */
+import type { Router } from "vue-router";
+import type { Store } from "vuex";
+
 import shortcuts from "@/shortcuts";
 import type { ShortcutsService, FormattedShortcut } from "@/shortcuts/types";
 import type { PluginInitFunction } from ".";
@@ -17,8 +19,13 @@ Object.entries(shortcuts).forEach(([name, shortcut]) => {
 });
 Object.freeze(shortcuts);
 
-// define plugin
-const init: PluginInitFunction = ({ app, $store, $router }) => {
+export const createShortcutsService = ({
+  $store,
+  $router,
+}: {
+  $store: Store<any>;
+  $router: Router;
+}) => {
   // get the whole shortcut by name
   const get: ShortcutsService["get"] = (shortcutName) =>
     ({ ...shortcuts[shortcutName] } as FormattedShortcut);
@@ -107,6 +114,13 @@ const init: PluginInitFunction = ({ app, $store, $router }) => {
     findByHotkey,
     get,
   };
+
+  return $shortcuts;
+};
+
+// define plugin
+const init: PluginInitFunction = ({ app, $store, $router }) => {
+  const $shortcuts = createShortcutsService({ $store, $router });
 
   // define global $shortcuts property
   app.config.globalProperties.$shortcuts = $shortcuts;

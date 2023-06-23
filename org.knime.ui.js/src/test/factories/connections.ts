@@ -76,14 +76,14 @@ export const connectMultipleNodes = (
 ): Record<string, Connection> => {
   const connections: Connection[] = [];
 
-  for (const nodeConnection of nodeConnections) {
+  for (const [index, nodeConnection] of nodeConnections.entries()) {
     const { nodes, ports } = nodeConnection;
     const [sourceNode, destNode] = nodes;
     const [sourcePort, destPort] = ports;
 
     if (sourceNode.outPorts.at(sourcePort) && destNode.inPorts.at(destPort)) {
       const connection = createConnection({
-        id: `root:${sourceNode.id}_${destNode.id}`,
+        id: `root:${sourceNode.id}_${destNode.id}_${index}`,
         sourceNode: sourceNode.id,
         sourcePort,
         destNode: destNode.id,

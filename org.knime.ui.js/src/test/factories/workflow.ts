@@ -17,12 +17,17 @@ import {
 import { createMetanodePort, createPort } from "./ports";
 import type { DeepPartial } from "../utils";
 import { arrayToDictionary } from "./util";
+import { createWorkflowAnnotation } from "./annotations";
 
 const createAndConnectNodes = () => {
   const node1 = createNativeNode({
     id: "root:1",
     position: { x: 0, y: 10 },
     outPorts: [
+      createPort({
+        index: 0,
+        typeId: "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+      }),
       createPort({
         index: 1,
         typeId: "org.knime.core.node.BufferedDataTable",
@@ -35,6 +40,10 @@ const createAndConnectNodes = () => {
     position: { x: 40, y: 10 },
     inPorts: [
       createPort({
+        index: 0,
+        typeId: "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+      }),
+      createPort({
         index: 1,
         typeId: "org.knime.core.node.BufferedDataTable",
       }),
@@ -44,6 +53,10 @@ const createAndConnectNodes = () => {
       }),
     ],
     outPorts: [
+      createPort({
+        index: 0,
+        typeId: "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+      }),
       createPort({
         index: 1,
         typeId: "org.knime.core.node.BufferedDataTable",
@@ -59,6 +72,10 @@ const createAndConnectNodes = () => {
     id: "root:3",
     position: { x: 60, y: 10 },
     inPorts: [
+      createPort({
+        index: 0,
+        typeId: "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+      }),
       createMetanodePort({
         index: 1,
         typeId: "org.knime.core.node.BufferedDataTable",
@@ -66,6 +83,10 @@ const createAndConnectNodes = () => {
       }),
     ],
     outPorts: [
+      createPort({
+        index: 0,
+        typeId: "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+      }),
       createMetanodePort({
         index: 1,
         typeId: "org.knime.core.node.BufferedDataTable",
@@ -78,6 +99,10 @@ const createAndConnectNodes = () => {
     id: "root:4",
     position: { x: 80, y: 10 },
     inPorts: [
+      createPort({
+        index: 0,
+        typeId: "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+      }),
       createPort({
         index: 1,
         typeId: "org.knime.core.node.BufferedDataTable",
@@ -120,6 +145,7 @@ const extractNodeTemplates = (nodes: KnimeNode[]): NativeNodeInvariants[] => {
 export const createWorkflow = (data: DeepPartial<Workflow> = {}): Workflow => {
   const hasNodes = Object.keys(data?.nodes ?? {}).length > 0;
   const hasConnections = Object.keys(data?.connections ?? {}).length > 0;
+  const hasAnnotations = (data.workflowAnnotations ?? []).length > 0;
 
   const baseWorkflow: Workflow = {
     info: {
@@ -151,6 +177,15 @@ export const createWorkflow = (data: DeepPartial<Workflow> = {}): Workflow => {
       extractNodeTemplates(Object.values(nodes)),
       "type"
     );
+  }
+
+  if (!hasAnnotations) {
+    const annotation = createWorkflowAnnotation({
+      id: "annotation:1",
+      text: "Lorem ipsum",
+    });
+
+    baseWorkflow.workflowAnnotations = [annotation];
   }
 
   return merge(baseWorkflow, data);
