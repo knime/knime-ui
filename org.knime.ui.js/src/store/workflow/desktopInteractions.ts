@@ -110,7 +110,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
     dispatch(
       "spaces/fetchWorkflowGroupContent",
-      { itemId: rootState.spaces.activeSpace.startItemId },
+      { itemId: rootState.spaces.activeRenamedItemId },
       { root: true }
     );
   },

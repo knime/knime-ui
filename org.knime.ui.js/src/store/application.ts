@@ -622,10 +622,16 @@ export const getters = {
     if (!activeProjectId) {
       return false;
     }
-    return Boolean(
-      openProjects.find((project) => project.projectId === activeProjectId)
-        .origin
+
+    const activeProject = openProjects.find(
+      (project) => project.projectId === activeProjectId
     );
+
+    if (!activeProject) {
+      return false;
+    }
+
+    return Boolean(activeProject.origin);
   },
 
   workflowCanvasState({ savedCanvasStates }, _, { workflow }) {

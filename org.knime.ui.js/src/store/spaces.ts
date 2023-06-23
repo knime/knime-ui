@@ -32,6 +32,12 @@ export interface SpacesState {
 export const globalSpaceBrowserProjectId = "__SPACE_BROWSER_TAB__";
 export const cachedLocalSpaceProjectId = "__LOCAL_ROOT__";
 
+const localRootProjectPath = {
+  spaceId: "local",
+  spaceProviderId: "local",
+  itemId: "root",
+};
+
 const specialProjectIds = [
   globalSpaceBrowserProjectId,
   cachedLocalSpaceProjectId,
@@ -44,11 +50,7 @@ export const state = (): SpacesState => ({
   spaceProviders: null,
   // triplet data to remember current "path" of any SpaceExplorer component
   projectPath: {
-    __LOCAL_ROOT__: {
-      spaceId: "local",
-      spaceProviderId: "local",
-      itemId: "root",
-    },
+    [cachedLocalSpaceProjectId]: localRootProjectPath,
   },
   // loading state
   isLoading: false,
@@ -131,19 +133,24 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   ) {
     // add
     openProjects.forEach(({ projectId, origin }) => {
-      if (!state.projectPath[projectId] && origin) {
-        const {
-          spaceId,
-          providerId: spaceProviderId,
-          ancestorItemIds: [itemId = "root"],
-        } = origin;
-        commit("setProjectPath", {
-          projectId,
-          value: {
+      if (!state.projectPath[projectId]) {
+        // Take local root as default in case the workflow does not have an origin (ex. was Drag & Dropped from hub)
+        let projectPath = localRootProjectPath;
+        if (origin) {
+          const {
+            spaceId,
+            providerId: spaceProviderId,
+            ancestorItemIds: [itemId = "root"],
+          } = origin;
+          projectPath = {
             spaceId,
             spaceProviderId,
             itemId,
-          },
+          };
+        }
+        commit("setProjectPath", {
+          projectId,
+          value: projectPath,
         });
       }
     });
