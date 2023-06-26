@@ -1,6 +1,9 @@
 <script lang="ts">
 import { defineComponent } from "vue";
+import { mapState } from "vuex";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import CircleHelp from "webapps-common/ui/assets/img/icons/circle-help.svg";
 
 /**
  * Basic NodeTemplate without any drag or insert features. This component should stay reusable.
@@ -8,6 +11,8 @@ import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 export default defineComponent({
   components: {
     NodePreview,
+    FunctionButton,
+    CircleHelp,
   },
   expose: ["getNodePreview"],
   props: {
@@ -28,9 +33,43 @@ export default defineComponent({
       default: false,
     },
   },
+  data() {
+    return {
+      itemHovered: false,
+    };
+  },
+  computed: {
+    ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
+  },
   methods: {
+    // ...mapMutations("nodeRepository", ["setSelectedNode"]),
+    // ...mapActions("nodeRepository", [
+    //   "openDescriptionPanel",
+    //   "closeDescriptionPanel",
+    //   "setDraggingNodeTemplate",
+    // ]),
     getNodePreview() {
       return this.$refs.nodePreview;
+    },
+
+    onClick(e) {
+      e.stopPropagation();
+      if (!this.isSelected) {
+        this.$store.commit("nodeRepository/setSelectedNode", this.nodeTemplate);
+        // this.setSelectedNode(this.nodeTemplate);
+      }
+      if (!this.isDescriptionPanelOpen) {
+        this.$store.dispatch("nodeRepository/openDescriptionPanel");
+        // this.openDescriptionPanel();
+      }
+    },
+
+    onPointerEnter() {
+      this.itemHovered = true;
+    },
+
+    onPointerLeave() {
+      this.itemHovered = false;
     },
   },
 });
@@ -40,6 +79,8 @@ export default defineComponent({
   <div
     class="node"
     :class="{ selected: isSelected, highlighted: isHighlighted }"
+    @pointerenter="onPointerEnter"
+    @pointerleave="onPointerLeave"
   >
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview
@@ -50,10 +91,21 @@ export default defineComponent({
       :out-ports="nodeTemplate.outPorts"
       :icon="nodeTemplate.icon"
     />
+    <FunctionButton
+      :class="[
+        'description-icon',
+        { 'hovered-icon': itemHovered, 'selected-icon': isSelected },
+      ]"
+      @pointerdown.left.stop="onClick"
+    >
+      <CircleHelp />
+    </FunctionButton>
   </div>
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .node {
   width: 100px;
   height: 78px;
@@ -98,10 +150,61 @@ export default defineComponent({
 
   &:hover {
     cursor: pointer;
+  }
 
-    & .node-preview {
-      filter: url("#node-torso-shadow");
+  & .description-icon {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: -6px;
+    padding: 0;
+    z-index: 1000;
+
+    &.selected-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      & svg {
+        @mixin svg-icon-size 16;
+
+        fill: var(--knime-masala);
+        stroke: var(--knime-white);
+        margin-right: -16px;
+      }
     }
+
+    &.hovered-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      & svg {
+        @mixin svg-icon-size 16;
+
+        stroke: var(--knime-masala);
+        margin-right: -16px;
+
+        &:hover,
+        &:focus {
+          fill: var(--knime-masala);
+          stroke: var(--knime-white);
+        }
+      }
+    }
+
+    /* &.selected-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      & svg {
+        @mixin svg-icon-size 16;
+        fill: var(--knime-masala);
+        stroke: var(--knime-white);
+        margin-right: -16px;
+      }
+    } */
   }
 }
 
