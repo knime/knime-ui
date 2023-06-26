@@ -45,9 +45,20 @@ const menuGroups = function (shortcuts: ShortcutsService) {
   const onlyEnabled = (item: ContextMenuActionsGroupItem) =>
     isItemWithName(item) ? shortcuts.isEnabled(item.name) : true;
 
+  const removeInvalidItems = (items: Array<ContextMenuActionsGroupItem>) => {
+    return items
+      .filter(onlyVisible)
+      .filter(onlyEnabled)
+      .map((item) =>
+        isItemWithName(item)
+          ? item
+          : { ...item, children: removeInvalidItems(item.children) }
+      );
+  };
+
   return {
     append(groupItems: Array<ContextMenuActionsGroupItem>) {
-      const newItems = groupItems.filter(onlyVisible).filter(onlyEnabled);
+      const newItems = removeInvalidItems(groupItems);
 
       if (currItems.length !== 0 && newItems.length > 0) {
         // add separator to last item of previous group
