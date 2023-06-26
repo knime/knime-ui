@@ -460,7 +460,7 @@ final class ClassicAPCopyMoveLogic {
 
                 /* Make sure that a workflow group is not overwritten by a workflow or template and vice versa. */
                 final var srcFSInfo = srcFS.fetchInfo();
-                assertPreconditions(srcFSInfo, destFS, destProvider, destFS, isOverwritten);
+                assertPreconditions(srcFSInfo, srcFS, destProvider, destFS, isOverwritten);
 
                 final var isSrcRemote = srcFS instanceof RemoteExplorerFileStore;
                 final var isDstRemote = destFS instanceof RemoteExplorerFileStore;
@@ -510,8 +510,8 @@ final class ClassicAPCopyMoveLogic {
         }
 
         private void assertPreconditions(final AbstractExplorerFileInfo srcFSInfo,
-                final AbstractExplorerFileStore srcFS, final AbstractContentProvider destProvider,
-                final AbstractExplorerFileStore destFS, final boolean isOverwritten) {
+            final AbstractExplorerFileStore srcFS, final AbstractContentProvider destProvider,
+            final AbstractExplorerFileStore destFS, final boolean isOverwritten) {
             if (isOverwritten && (srcFSInfo.isWorkflowGroup() != destFS.fetchInfo().isWorkflowGroup())) {
                 if (srcFSInfo.isWorkflowGroup()) {
                     throw new UnsupportedOperationException("Cannot override \"" + destFS.getFullName()
