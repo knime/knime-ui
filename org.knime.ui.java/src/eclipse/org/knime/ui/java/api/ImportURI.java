@@ -217,6 +217,9 @@ public final class ImportURI {
         } else if (entityImport instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.WorkflowTemplate) {
             ImportAPI.importComponent(projectId, workflowId, repoObjectImport.getKnimeURI(), true, canvasX, canvasY);
+        } else if (entityImport instanceof RepoObjectImport repoObjectImport
+            && repoObjectImport.getType() == RepoObjectType.Workflow) {
+            return openWorkflowFromURI(repoObjectImport);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
             return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId,
                 workflowId, canvasX, canvasY);
