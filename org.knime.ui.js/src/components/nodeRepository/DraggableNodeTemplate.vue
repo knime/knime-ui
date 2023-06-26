@@ -87,7 +87,7 @@ export default {
       );
     },
     onDragEnd(e) {
-      e.target.removeAttribute("style");
+      e.target.style.cursor = "pointer";
       this.setDraggingNodeTemplate(null);
 
       // remove cloned node preview

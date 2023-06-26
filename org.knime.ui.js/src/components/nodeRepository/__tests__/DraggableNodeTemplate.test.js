@@ -324,7 +324,7 @@ describe("DraggableNodeTemplate", () => {
 
       wrapper.trigger("dragend", { dataTransfer: { dropEffect: "" } });
 
-      expect(node.attributes().style).toBeUndefined();
+      expect(node.attributes().style).toBe("cursor: pointer;");
     });
 
     it("closes description panel when dragging starts", () => {
