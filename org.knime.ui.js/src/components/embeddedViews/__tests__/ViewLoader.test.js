@@ -42,9 +42,10 @@ describe("ViewLoader.vue", () => {
     return { MockComponent, viewConfigLoaderFn };
   };
 
+  const renderKey = "123";
   const doMount = (customProps = {}) => {
     const defaultProps = {
-      renderKey: "123",
+      renderKey,
       viewConfigLoaderFn: vi.fn(),
       initKnimeService: vi.fn(),
       resourceLocationResolver: vi.fn(),
@@ -108,11 +109,17 @@ describe("ViewLoader.vue", () => {
 
     const wrapper = doMount({ viewConfigLoaderFn });
 
-    expect(wrapper.emitted("stateChange")[0][0]).toEqual({ state: "loading" });
+    expect(wrapper.emitted("stateChange")[0][0]).toEqual({
+      state: "loading",
+      portKey: renderKey,
+    });
 
     await flushRender();
 
-    expect(wrapper.emitted("stateChange")[1][0]).toEqual({ state: "ready" });
+    expect(wrapper.emitted("stateChange")[1][0]).toEqual({
+      state: "ready",
+      portKey: renderKey,
+    });
   });
 
   it("should emit state:error when an error occurs while loading the component", async () => {
@@ -122,13 +129,17 @@ describe("ViewLoader.vue", () => {
     });
     const wrapper = doMount({ viewConfigLoaderFn });
 
-    expect(wrapper.emitted("stateChange")[0][0]).toEqual({ state: "loading" });
+    expect(wrapper.emitted("stateChange")[0][0]).toEqual({
+      state: "loading",
+      portKey: renderKey,
+    });
 
     await flushRender();
 
     expect(wrapper.emitted("stateChange")[1][0]).toEqual({
       state: "error",
       message: error,
+      portKey: renderKey,
     });
   });
 

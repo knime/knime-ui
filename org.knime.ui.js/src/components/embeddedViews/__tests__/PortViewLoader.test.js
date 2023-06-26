@@ -138,10 +138,16 @@ describe("PortViewLoader.vue", () => {
     );
     const wrapper = doMount();
 
-    expect(wrapper.emitted("stateChange")[0][0]).toEqual({ state: "loading" });
+    expect(wrapper.emitted("stateChange")[0][0]).toEqual({
+      state: "loading",
+      portKey: "",
+    });
 
     await flushRender();
 
-    expect(wrapper.emitted("stateChange")[1][0]).toEqual({ state: "ready" });
+    expect(wrapper.emitted("stateChange")[1][0]).toEqual({
+      state: "ready",
+      portKey: "",
+    });
   });
 });
