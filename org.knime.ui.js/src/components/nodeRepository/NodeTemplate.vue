@@ -42,26 +42,18 @@ export default defineComponent({
     ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
   },
   methods: {
-    // ...mapMutations("nodeRepository", ["setSelectedNode"]),
-    // ...mapActions("nodeRepository", [
-    //   "openDescriptionPanel",
-    //   "closeDescriptionPanel",
-    //   "setDraggingNodeTemplate",
-    // ]),
     getNodePreview() {
       return this.$refs.nodePreview;
     },
 
-    onClick(e) {
-      e.stopPropagation();
-      if (!this.isSelected) {
-        this.$store.commit("nodeRepository/setSelectedNode", this.nodeTemplate);
-        // this.setSelectedNode(this.nodeTemplate);
-      }
-      if (!this.isDescriptionPanelOpen) {
+    onClick() {
+      if (!this.isSelected || !this.isDescriptionPanelOpen) {
         this.$store.dispatch("nodeRepository/openDescriptionPanel");
-        // this.openDescriptionPanel();
+        this.$store.commit("nodeRepository/setSelectedNode", this.nodeTemplate);
+        return;
       }
+
+      this.$store.dispatch("nodeRepository/closeDescriptionPanel");
     },
 
     onPointerEnter() {
@@ -94,9 +86,10 @@ export default defineComponent({
     <FunctionButton
       :class="[
         'description-icon',
-        { 'hovered-icon': itemHovered, 'selected-icon': isSelected },
+        { 'selected-icon': isSelected, 'hovered-icon': itemHovered },
       ]"
-      @pointerdown.left.stop="onClick"
+      @click="onClick"
+      @dblclick.stop
     >
       <CircleHelp />
     </FunctionButton>
@@ -158,7 +151,6 @@ export default defineComponent({
     top: -8px;
     right: -6px;
     padding: 0;
-    z-index: 1000;
 
     &.selected-icon {
       display: flex;

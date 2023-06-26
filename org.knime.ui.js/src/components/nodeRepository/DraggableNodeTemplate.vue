@@ -108,16 +108,7 @@ export default {
         this.openDescriptionPanel();
       }
     },
-    // onClick() {
-    //   if (!this.isSelected) {
-    //     this.setSelectedNode(this.nodeTemplate);
-    //   }
-    //   if (!this.isDescriptionPanelOpen) {
-    //     this.openDescriptionPanel();
-    //   }
-    // },
     onDoubleClick() {
-      // console.log("clicked");
       if (!this.isWritable) {
         return; // end here
       }
@@ -149,7 +140,7 @@ export default {
     :is-highlighted="isHighlighted"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
-    @dblclick.stop="onDoubleClick"
+    @dblclick="onDoubleClick"
     @drag="onDrag"
   />
 </template>
