@@ -108,9 +108,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     );
 
     API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
+    // refresh space after save workflow
     dispatch(
       "spaces/fetchWorkflowGroupContent",
-      { itemId: rootState.spaces.activeRenamedItemId },
+      { projectId: rootState.application.activeProjectId },
       { root: true }
     );
   },

@@ -619,6 +619,20 @@ describe("application store", () => {
       store.commit("application/setActiveProjectId", "bee");
       expect(store.getters["application/activeProjectName"]).toBe("gee");
     });
+
+    it("checks the active workflow has origin", async () => {
+      const { store } = await loadStore();
+      store.commit("application/setOpenProjects", [
+        { projectId: "foo", origin: {} },
+        { projectId: "bee" },
+      ]);
+      store.commit("application/setActiveProjectId", "foo");
+      expect(store.getters["application/hasActiveProjectAnOrigin"]).toBe(true);
+      store.commit("application/setActiveProjectId", "bee");
+      expect(store.getters["application/hasActiveProjectAnOrigin"]).toBe(false);
+      store.commit("application/setActiveProjectId", "baz");
+      expect(store.getters["application/hasActiveProjectAnOrigin"]).toBe(false);
+    });
   });
 
   describe("saved Canvas States", () => {

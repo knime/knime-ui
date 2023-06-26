@@ -148,6 +148,20 @@ describe("spaces store", () => {
           itemId: "bar",
         });
       });
+
+      it("should take the local root for default with a workflow without origin", async () => {
+        const { store } = loadStore();
+
+        await store.dispatch("spaces/syncPathWithOpenProjects", {
+          openProjects: [{ projectId: "myProject1" }],
+        });
+
+        expect(store.state.spaces.projectPath.myProject1).toStrictEqual({
+          spaceProviderId: "mockProviderId",
+          spaceId: "mockSpaceId",
+          itemId: "bar",
+        });
+      });
     });
 
     describe("fetchAllSpaceProviders", () => {
