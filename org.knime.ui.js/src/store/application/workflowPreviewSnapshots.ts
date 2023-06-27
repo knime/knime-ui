@@ -5,7 +5,7 @@ import type { ApplicationState } from "./index";
 
 interface WorkflowPreviewSnapshot {
   isCanvasEmpty: boolean;
-  svgElement: SVGAElement;
+  svgElement: SVGSVGElement;
 }
 
 interface State {

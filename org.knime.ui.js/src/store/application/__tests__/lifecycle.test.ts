@@ -1,0 +1,243 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { APP_ROUTES, router } from "@/router";
+import { API } from "@api";
+import { deepMocked } from "@/test/utils";
+import { applicationState, loadStore } from "./loadStore";
+
+const mockedAPI = deepMocked(API);
+
+describe("application::lifecycle", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("application Lifecycle", () => {
+    it("initialization", async () => {
+      const { store, dispatchSpy, subscribeEvent } = loadStore();
+      await store.dispatch("application/initializeApplication", {
+        $router: router,
+      });
+
+      expect(subscribeEvent).toHaveBeenCalled();
+      expect(API.application.getState).toHaveBeenCalled();
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/replaceApplicationState",
+        applicationState
+      );
+    });
+
+    it("destroy application", async () => {
+      const { store, dispatchSpy, unsubscribeEventListener } = loadStore();
+      await store.dispatch("application/destroyApplication");
+
+      expect(unsubscribeEventListener).toHaveBeenCalled();
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/unloadActiveWorkflow",
+        { clearWorkflow: true }
+      );
+    });
+  });
+
+  describe("workflow Lifecycle", () => {
+    it("loads root workflow successfully", async () => {
+      const { store, loadWorkflow, subscribeEvent } = loadStore();
+      loadWorkflow.mockResolvedValue({
+        dummy: true,
+        workflow: { info: { containerId: "root" }, nodes: [] },
+        snapshotId: "snap",
+      });
+
+      await store.dispatch("application/loadWorkflow", { projectId: "wf1" });
+
+      expect(loadWorkflow).toHaveBeenCalledWith(
+        expect.objectContaining({ workflowId: "root", projectId: "wf1" })
+      );
+      expect(
+        deepMocked(API).desktop.setProjectActiveAndEnsureItsLoaded
+      ).toHaveBeenCalledWith({ projectId: "wf1" });
+      expect(store.state.workflow.activeWorkflow).toStrictEqual({
+        info: { containerId: "root" },
+        nodes: [],
+        projectId: "wf1",
+      });
+      expect(store.state.workflow.activeSnapshotId).toBe("snap");
+      expect(subscribeEvent).toHaveBeenCalledWith({
+        typeId: "WorkflowChangedEventType",
+        projectId: "wf1",
+        workflowId: "root",
+        snapshotId: "snap",
+      });
+    });
+
+    it("loads inner workflow successfully", async () => {
+      const { store, loadWorkflow, subscribeEvent } = loadStore();
+      loadWorkflow.mockResolvedValue({
+        workflow: { dummy: true, info: { containerId: "root" }, nodes: [] },
+      });
+      await store.dispatch("application/loadWorkflow", {
+        projectId: "wf2",
+        workflowId: "root:0:123",
+      });
+
+      expect(loadWorkflow).toHaveBeenCalledWith(
+        expect.objectContaining({ workflowId: "root:0:123", projectId: "wf2" })
+      );
+
+      expect(store.state.workflow.activeWorkflow).toStrictEqual({
+        dummy: true,
+        info: { containerId: "root" },
+        nodes: [],
+        projectId: "wf2",
+      });
+
+      expect(subscribeEvent).toHaveBeenCalledWith({
+        typeId: "WorkflowChangedEventType",
+        projectId: "wf2",
+        workflowId: "root",
+      });
+    });
+
+    it("unloads workflow when another one is loaded", async () => {
+      const { store, loadWorkflow, unsubscribeEventListener } = loadStore();
+      loadWorkflow.mockResolvedValue({
+        workflow: { dummy: true, info: { containerId: "root" }, nodes: [] },
+        snapshotId: "snap",
+      });
+      await store.dispatch("application/loadWorkflow", {
+        projectId: "wf1",
+        workflowId: "root:0:12",
+      });
+
+      await store.dispatch("application/unloadActiveWorkflow", {
+        clearWorkflow: true,
+      });
+
+      expect(unsubscribeEventListener).toHaveBeenCalledWith({
+        typeId: "WorkflowChangedEventType",
+        projectId: "wf1",
+        workflowId: "root",
+        snapshotId: "snap",
+      });
+      expect(store.state.workflow.activeWorkflow).toBeNull();
+      expect(store.state.selection.selectedConnections).toEqual({});
+      expect(store.state.selection.selectedNodes).toEqual({});
+    });
+
+    it("does not unload if there is no active workflow", async () => {
+      const { store, unsubscribeEventListener } = loadStore();
+      store.state.workflow.activeWorkflow = null;
+      await store.dispatch("application/unloadActiveWorkflow", {
+        clearWorkflow: false,
+      });
+
+      expect(unsubscribeEventListener).not.toHaveBeenCalled();
+    });
+
+    it("force closes projects on call", async () => {
+      const { store } = loadStore();
+      await store.dispatch("application/forceCloseProjects", {
+        projectIds: ["projectTest1"],
+        force: true,
+      });
+
+      expect(mockedAPI.desktop.forceCloseWorkflows).toHaveBeenCalledWith({
+        projectIds: ["projectTest1"],
+      });
+    });
+
+    it("switches from nothing to workflow", async () => {
+      const { store, dispatchSpy } = loadStore();
+      store.state.workflow.activeWorkflow = null;
+
+      store.commit("application/setSavedCanvasStates", {
+        project: "1",
+        workflow: "root",
+      });
+
+      await store.dispatch("application/switchWorkflow", {
+        newWorkflow: { projectId: "1", workflowId: "root" },
+      });
+
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "application/saveCanvasState"
+      );
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "workflow/unloadActiveWorkflow"
+      );
+
+      expect(dispatchSpy).toHaveBeenCalledWith("application/loadWorkflow", {
+        projectId: "1",
+        workflowId: "root",
+      });
+      expect(store.state.application.activeProjectId).toBe("1");
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/restoreCanvasState",
+        undefined
+      );
+    });
+  });
+
+  describe("load workflows on navigation", () => {
+    it("should unload workflows when leaving the worklow page", async () => {
+      const { store, dispatchSpy } = await loadStore();
+
+      await store.dispatch("application/initializeApplication", {
+        $router: router,
+      });
+
+      await router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "foo", workflowId: "bar" },
+      });
+
+      await router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+
+      expect(dispatchSpy).toHaveBeenCalledWith("application/switchWorkflow", {
+        newWorkflow: null,
+      });
+
+      expect(router.currentRoute.value.name).toBe(
+        APP_ROUTES.EntryPage.GetStartedPage
+      );
+    });
+
+    it("should load aworkflow when entering the worklow page", async () => {
+      const { store, dispatchSpy } = await loadStore();
+
+      await store.dispatch("application/initializeApplication", {
+        $router: router,
+      });
+
+      await router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "foo", workflowId: "bar" },
+      });
+
+      expect(dispatchSpy).toHaveBeenCalledWith("application/switchWorkflow", {
+        newWorkflow: { projectId: "foo", workflowId: "bar" },
+      });
+
+      expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
+    });
+
+    it("should skip the navigation guards", async () => {
+      const { store, dispatchSpy } = await loadStore();
+
+      await store.dispatch("application/initializeApplication", {
+        $router: router,
+      });
+
+      await router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "foo", workflowId: "bar" },
+        query: { skipGuards: "true" },
+      });
+
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "application/switchWorkflow"
+      );
+      expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
+    });
+  });
+});

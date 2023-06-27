@@ -1,7 +1,7 @@
 import { createStore } from "vuex";
 
-const mockVuexStore = (moduleInput) => {
-  let modules = Object.entries(moduleInput).reduce(
+const mockVuexStore = <T = any>(moduleInput: Record<any, any>) => {
+  const modules = Object.entries(moduleInput).reduce(
     (modules, [moduleName, moduleConfig]) => {
       if (moduleName !== "index") {
         modules[moduleName] = { ...moduleConfig, namespaced: true };
@@ -11,17 +11,19 @@ const mockVuexStore = (moduleInput) => {
     {}
   );
 
-  let storeConfig = { modules };
+  const storeConfig = { modules };
 
   if (moduleInput.index) {
     Object.assign(storeConfig, moduleInput.index);
   }
 
+  // @ts-expect-error
   if (typeof storeConfig.state === "object") {
+    // @ts-expect-error
     storeConfig.state = () => storeConfig.state;
   }
 
-  return createStore(storeConfig);
+  return createStore<T>(storeConfig);
 };
 
 export { mockVuexStore };
