@@ -1,9 +1,10 @@
 import type { WorkflowState } from "./workflow";
 import type { SpacesState } from "./spaces";
 import type { AiAssistantState } from "./aiAssistant";
+import type { ApplicationState } from "./application";
 
 export interface RootStoreState {
-  application: any;
+  application: ApplicationState;
   canvas: any;
   nodeRepository: any;
   panel: any;

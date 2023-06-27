@@ -608,18 +608,6 @@ describe("application store", () => {
   });
 
   describe("getters", () => {
-    it("returns the active workflow name", async () => {
-      const { store } = await loadStore();
-      store.commit("application/setOpenProjects", [
-        { projectId: "foo", name: "bar" },
-        { projectId: "bee", name: "gee" },
-      ]);
-      store.commit("application/setActiveProjectId", "foo");
-      expect(store.getters["application/activeProjectName"]).toBe("bar");
-      store.commit("application/setActiveProjectId", "bee");
-      expect(store.getters["application/activeProjectName"]).toBe("gee");
-    });
-
     it("checks the active workflow has origin", async () => {
       const { store } = await loadStore();
       store.commit("application/setOpenProjects", [
