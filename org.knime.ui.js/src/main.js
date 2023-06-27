@@ -31,6 +31,7 @@ PageBuilder.initStore(store);
 // Enable easier store debugging while on dev
 if (import.meta.env.DEV) {
   window.store = store;
+  window.router = router;
 }
 
 initPlugins({ app, store, router });

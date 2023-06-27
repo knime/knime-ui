@@ -54,6 +54,8 @@ export default {
       this.$router.push({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId: this.workflow.projectId, workflowId: id },
+        force: true,
+        replace: true,
       });
     },
   },
