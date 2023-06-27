@@ -10,6 +10,7 @@ import {
   type NativeNode,
   Node,
   NodeState,
+  TypedText,
 } from "@/api/gateway-api/generated-api";
 import type { DeepPartial } from "../utils";
 import { createNodeAnnotation } from "./annotations";
@@ -59,8 +60,10 @@ const createBaseNode = (
       canExpand: AllowedNodeActions.CanExpandEnum.False,
     },
     annotation: createNodeAnnotation({
-      text: "",
-      contentType: Annotation.ContentTypeEnum.Plain,
+      text: {
+        value: "",
+        contentType: TypedText.ContentTypeEnum.Plain,
+      },
       styleRanges: [],
       textAlign: Annotation.TextAlignEnum.Left,
       backgroundColor: "",

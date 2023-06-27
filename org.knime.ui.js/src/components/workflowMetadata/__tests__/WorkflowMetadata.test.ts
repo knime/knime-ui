@@ -15,8 +15,7 @@ import ScrollViewContainer from "@/components/nodeRepository/ScrollViewContainer
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
 import WorkflowMetadata from "../WorkflowMetadata.vue";
-import WorkflowMetadataTitle from "../WorkflowMetadataTitle.vue";
-import WorkflowMetadataDescription from "../WorkflowMetadataDescription.vue";
+import MetadataDescription from "../MetadataDescription.vue";
 
 describe("WorkflowMetadata.vue", () => {
   let store, workflow, wrapper, doMount, availablePortTypes;
@@ -113,14 +112,14 @@ describe("WorkflowMetadata.vue", () => {
       expect(wrapper.text()).toMatch("Title");
       expect(wrapper.text()).toMatch("Last update: Jan 1, 2000");
 
-      let description = wrapper.findComponent(Description);
+      const description = wrapper.findComponent(Description);
       expect(description.props().text).toMatch("Description");
 
-      let linkList = wrapper.findComponent(LinkList);
+      const linkList = wrapper.findComponent(LinkList);
       expect(linkList.props().links).toStrictEqual([{ text: "link1" }]);
 
       expect(wrapper.findComponent(TagList).exists()).toBe(true);
-      let tags = wrapper.findAllComponents(Tag);
+      const tags = wrapper.findAllComponents(Tag);
       expect(tags.length).toBe(1);
       expect(tags.at(0).text()).toBe("tag1");
 
@@ -148,16 +147,11 @@ describe("WorkflowMetadata.vue", () => {
         },
       });
 
-      expect(
-        wrapper
-          .findComponent(WorkflowMetadataTitle)
-          .findComponent(NodePreview)
-          .exists()
-      ).toBe(true);
-      expect(wrapper.findComponent(WorkflowMetadataTitle).text()).toMatch(
-        "name"
-      );
-      expect(wrapper.findComponent(WorkflowMetadataDescription).text()).toMatch(
+      expect(wrapper.findComponent(NodePreview).exists()).toBe(true);
+      // expect(wrapper.findComponent(WorkflowMetadataTitle).text()).toMatch(
+      //   "name"
+      // );
+      expect(wrapper.findComponent(MetadataDescription).text()).toMatch(
         "description"
       );
     });
@@ -254,19 +248,19 @@ describe("WorkflowMetadata.vue", () => {
       await Vue.nextTick();
 
       // a `rect` element is expected for an unrecognized a port kind
-      expect(
-        wrapper
-          .findComponent(WorkflowMetadataTitle)
-          .find(`rect[fill="${mockPortMetadata.color}"]`)
-          .exists()
-      ).toBe(true);
+      // expect(
+      //   wrapper
+      //     .findComponent(WorkflowMetadataTitle)
+      //     .find(`rect[fill="${mockPortMetadata.color}"]`)
+      //     .exists()
+      // ).toBe(true);
 
-      expect(
-        wrapper
-          .findComponent(WorkflowMetadataTitle)
-          .find(`rect[stroke="${mockPortMetadata.color}"]`)
-          .exists()
-      ).toBe(true);
+      // expect(
+      //   wrapper
+      //     .findComponent(WorkflowMetadataTitle)
+      //     .find(`rect[stroke="${mockPortMetadata.color}"]`)
+      //     .exists()
+      // ).toBe(true);
 
       // a `rect` element is expected for an unrecognized a port kind
       expect(

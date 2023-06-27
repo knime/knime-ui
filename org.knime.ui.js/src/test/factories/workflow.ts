@@ -182,7 +182,9 @@ export const createWorkflow = (data: DeepPartial<Workflow> = {}): Workflow => {
   if (!hasAnnotations) {
     const annotation = createWorkflowAnnotation({
       id: "annotation:1",
-      text: "Lorem ipsum",
+      text: {
+        value: "Lorem ipsum",
+      },
     });
 
     baseWorkflow.workflowAnnotations = [annotation];
