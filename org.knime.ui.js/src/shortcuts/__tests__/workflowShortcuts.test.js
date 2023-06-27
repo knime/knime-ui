@@ -189,6 +189,8 @@ describe("workflowShortcuts", () => {
           workflowId: "direct:parent:id",
           projectId: "activeTestProjectId",
         },
+        force: true,
+        replace: true,
       });
     });
 
