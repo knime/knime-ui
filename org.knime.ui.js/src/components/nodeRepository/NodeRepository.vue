@@ -24,7 +24,6 @@ export default {
       "topNodes",
       "nodesPerCategory",
       "isDescriptionPanelOpen",
-      "selectedNode",
     ]),
     ...mapGetters("nodeRepository", {
       showSearchResults: "searchIsActive",
@@ -107,10 +106,7 @@ export default {
     <CategoryResults v-else />
     <Portal to="extension-panel">
       <Transition name="extension-panel">
-        <NodeDescriptionOverlay
-          v-if="isDescriptionPanelOpen"
-          :selected-node="isSelectedNodeVisible ? selectedNode : null"
-        />
+        <NodeDescriptionOverlay v-if="isDescriptionPanelOpen" />
       </Transition>
     </Portal>
   </div>

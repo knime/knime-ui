@@ -19,16 +19,6 @@ export default {
       },
     }),
   ],
-  props: {
-    selectedNode: {
-      type: Object,
-      default: null,
-      validator: (node) =>
-        node === null ||
-        (typeof node.nodeFactory?.className === "string" &&
-          typeof node.name === "string"),
-    },
-  },
   methods: {
     ...mapActions("nodeRepository", ["closeDescriptionPanel"]),
   },
@@ -36,10 +26,7 @@ export default {
 </script>
 
 <template>
-  <NodeDescription
-    class="node-description-overlay"
-    :selected-node="selectedNode"
-  >
+  <NodeDescription class="node-description-overlay">
     <template #header-action>
       <CloseButton class="close-button" @close="closeDescriptionPanel" />
     </template>
