@@ -43,12 +43,11 @@ watchEffect(async () => {
 
 const isUser = computed(() => props.role === "user");
 const isAssistant = computed(() => props.role === "assistant");
-const isDefinedRole = computed(() => isUser.value || isAssistant.value);
 </script>
 
 <template>
   <div class="chat-message">
-    <div v-if="isDefinedRole" class="content" :class="{ user: isUser }">
+    <div class="content" :class="{ user: isUser }">
       <div class="icon" :class="{ assistant: isAssistant }">
         <UserIcon v-if="isUser" />
         <KnimeIcon v-else />
@@ -61,17 +60,18 @@ const isDefinedRole = computed(() => isUser.value || isAssistant.value);
           <div class="placeholder" />
           <div class="placeholder" />
         </div>
-        <NodeList
-          v-if="nodeTemplates.length"
-          :nodes="nodeTemplates"
-          class="node-list"
-        >
-          <template #item="slotProps">
-            <DraggableNodeTemplate v-bind="slotProps" />
-          </template>
-        </NodeList>
       </div>
     </div>
+    <NodeList
+      v-if="nodeTemplates.length"
+      :nodes="nodeTemplates"
+      class="node-list"
+    >
+      <template #item="slotProps">
+        <DraggableNodeTemplate v-bind="slotProps" />
+      </template>
+    </NodeList>
+    <hr />
     <div v-if="props.statusUpdate" class="status-update">
       <LoadingIcon class="loading-icon" />
       {{ props.statusUpdate }}
@@ -108,7 +108,6 @@ const isDefinedRole = computed(() => isUser.value || isAssistant.value);
     flex-direction: row;
     align-items: flex-start;
     padding: 10px 2px;
-    border-bottom: 1px lightgray solid;
     overflow: hidden;
     overflow-wrap: break-word;
     white-space: pre-wrap;
@@ -161,11 +160,18 @@ const isDefinedRole = computed(() => isUser.value || isAssistant.value);
         background-position: -50px 0;
         animation: knight-rider 2s linear infinite;
       }
-
-      & .node-list {
-        margin-top: 20px;
-      }
     }
+  }
+
+  & .node-list {
+    margin-top: 13px;
+    margin-bottom: 13px;
+  }
+
+  & hr {
+    margin: 0;
+    border: none;
+    border-top: 1px solid var(--knime-silver-sand);
   }
 
   & .status-update {
