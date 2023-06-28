@@ -27,7 +27,11 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
     return null;
   } catch (e) {
     consola.error(messageOnError, e);
-    return null;
+    if (returnsValue) {
+      return null;
+    } else {
+      throw e;
+    }
   }
 };
 

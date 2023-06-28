@@ -46,8 +46,8 @@ export const state = (): AiAssistantState => ({
 });
 
 export const mutations = {
-  pushMessage(state, { chainType, role, content, nodes }) {
-    state[chainType].messages.push({ role, content, nodes });
+  pushMessage(state, { chainType, role, content, nodes, isError = false }) {
+    state[chainType].messages.push({ role, content, nodes, isError });
   },
   setStatusUpdate(state, { chainType, statusUpdate }) {
     state[chainType].statusUpdate = statusUpdate;
@@ -57,6 +57,10 @@ export const mutations = {
   },
   setProjectAndWorkflowIds(state, { chainType, projectAndWorkflowIds }) {
     state[chainType].projectAndWorkflowIds = projectAndWorkflowIds;
+  },
+  clearChain(state, { chainType }) {
+    state[chainType].isProcessing = false;
+    state[chainType].projectAndWorkflowIds = null;
   },
 };
 
@@ -75,17 +79,30 @@ export const actions = {
     }));
 
     const { projectId, workflowId } = projectAndWorkflowIds;
-    API.desktop.makeAiRequest({
-      chainType,
-      projectId,
-      workflowId,
-      nodeId,
-      messages,
-    });
+    try {
+      API.desktop.makeAiRequest({
+        chainType,
+        projectId,
+        workflowId,
+        nodeId,
+        messages,
+      });
+    } catch (error) {
+      consola.error("makeAiRequest", error);
+      commit("clearChain", { chainType });
+      commit("pushMessage", {
+        chainType,
+        role: "assistant",
+        content: "Sorry, something went wrong. Please try again later!",
+        isError: true,
+      });
+    }
   },
   handleAiAssistantEvent({ commit }, { chainType, data: { type, payload } }) {
     switch (type) {
       case "result":
+        commit("clearChain", { chainType });
+
         if (payload.message) {
           commit("pushMessage", {
             chainType,
@@ -94,23 +111,15 @@ export const actions = {
             nodes: payload.nodes,
           });
         }
-        commit("setIsProcessing", { chainType, isProcessing: false });
-        commit("setProjectAndWorkflowIds", {
-          chainType,
-          projectAndWorkflowIds: null,
-        });
         break;
       case "error":
+        commit("clearChain", { chainType });
+
         commit("pushMessage", {
           chainType,
           role: "assistant",
           content: payload.message,
           isError: true,
-        });
-        commit("setIsProcessing", { chainType, isProcessing: false });
-        commit("setProjectAndWorkflowIds", {
-          chainType,
-          projectAndWorkflowIds: null,
         });
         break;
       case "status_update":
@@ -121,8 +130,13 @@ export const actions = {
         break;
     }
   },
-  abortAiRequest(_, { chainType }) {
-    API.desktop.abortAiRequest({ chainType });
+  abortAiRequest({ commit }, { chainType }) {
+    try {
+      API.desktop.abortAiRequest({ chainType });
+    } catch (error) {
+      consola.error("abortAiRequest", error);
+      commit("clearChain", { chainType });
+    }
   },
 };
 
