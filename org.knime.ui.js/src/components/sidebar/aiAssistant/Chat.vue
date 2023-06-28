@@ -100,7 +100,8 @@ watch(
     width: 100%;
     padding-bottom: 20px;
     flex: 1;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   & .chat-controls {
