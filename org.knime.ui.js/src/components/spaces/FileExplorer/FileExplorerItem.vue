@@ -13,7 +13,6 @@ import type { FileExplorerItem, ItemIconRenderer } from "./types";
 
 interface Props {
   blacklistedNames: Array<string>;
-  mode: "mini" | "normal";
   item: FileExplorerItem;
   isSelected: boolean;
   isDragging: boolean;
@@ -130,7 +129,6 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
             ref="renameInput"
             v-model="renameValue"
             class="rename-input"
-            :class="mode"
             type="text"
             title="rename"
             :is-valid="isValid"
@@ -153,7 +151,7 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
     width: 100%;
     height: 100%;
     flex: 2 1 auto;
-    padding: var(--item-padding);
+    padding: calc(var(--item-padding) * 1px);
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -184,18 +182,12 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
 
     & .rename-input {
       pointer-events: auto;
-      height: 30px;
+      height: 26px;
       padding: 0;
 
       & :deep(input) {
-        font-size: 18px;
-        font-weight: 700;
-        padding: 0 7px 1px;
-      }
-
-      &.mini :deep(input) {
-        font-size: 16px;
-        font-weight: 400;
+        font-size: var(--item-font-size);
+        padding: 0 calc(var(--item-padding) * 1px);
       }
     }
   }

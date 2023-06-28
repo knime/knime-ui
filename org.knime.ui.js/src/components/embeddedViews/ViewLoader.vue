@@ -162,7 +162,9 @@ export default defineComponent({
       }
 
       // set initial data and component
-      this.initialData = JSON.parse(viewConfig.initialData).result;
+      if (viewConfig.initialData) {
+        this.initialData = JSON.parse(viewConfig.initialData).result;
+      }
       this.componentName =
         this.overrideComponentName || viewConfig.resourceInfo.id;
     },
@@ -191,7 +193,7 @@ export default defineComponent({
 <template>
   <Component
     :is="componentName"
-    v-if="componentName && initialData"
+    v-if="componentName"
     :initial-data="initialData"
   />
 </template>

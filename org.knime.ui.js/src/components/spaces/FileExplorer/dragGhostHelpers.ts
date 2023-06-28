@@ -111,6 +111,7 @@ const createGhostElement = ({
       : textContent;
   ghost.setAttribute("data-id", "drag-ghost");
 
+  const fontSize = getComputedStyle(target).getPropertyValue("font-size");
   const { x, y, width, height } = target.getBoundingClientRect();
 
   const ghostStyles: Partial<CSSStyleDeclaration> = {
@@ -128,6 +129,7 @@ const createGhostElement = ({
     // make sure the ghost doesn't interfere with the drag
     pointerEvents: "none",
 
+    fontSize,
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",

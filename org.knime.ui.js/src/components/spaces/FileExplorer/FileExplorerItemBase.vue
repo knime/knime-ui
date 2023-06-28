@@ -36,13 +36,16 @@ export default defineComponent({
 @import url("@/assets/mixins.css");
 
 .file-explorer-item-base {
-  --icon-size: 20;
-  --item-padding: 8px;
+  --icon-size: 18;
+  --item-padding: 8;
+  --item-bg-color: var(--knime-gray-ultra-light);
+  --item-font-size: 13px;
+
   --selection-color: var(--knime-cornflower-dark);
   --selection-bg-color: var(--knime-cornflower-semi);
 
   user-select: none;
-  background: var(--knime-gray-ultra-light);
+  background: var(--item-bg-color);
   transition: box-shadow 0.15s;
   display: flex;
   flex-flow: row nowrap;
@@ -50,15 +53,16 @@ export default defineComponent({
   margin-bottom: 2px;
   align-items: center;
 
-  /* add transparent border to prevent jumping when the dragging-over styles add a border */
-  border: 1px solid transparent;
+  /* add border that matches background to prevent jumping when the dragging-over styles add a border */
+  border: 1px solid var(--item-bg-color);
+  font-size: var(--item-font-size);
 
   &:hover {
     box-shadow: var(--shadow-elevation-1);
   }
 
   & .item-icon {
-    padding: var(--item-padding);
+    padding: calc(calc(var(--item-padding) - 2) * 1px);
     position: relative;
 
     & :slotted(svg) {
@@ -74,6 +78,7 @@ export default defineComponent({
   &.dragging {
     color: var(--selection-color);
     background: var(--selection-bg-color);
+    border: 1px solid var(--selection-bg-color);
 
     & .item-icon :slotted(svg) {
       stroke: var(--selection-color);

@@ -11,14 +11,17 @@ import type { FileExplorerItem } from "../types";
 describe("FileExplorerItem.vue", () => {
   const defaultProps = {
     blacklistedNames: [],
-    mode: "mini",
     item: {
       id: "0",
       name: "Mock item",
       isOpen: false,
+      isDirectory: false,
+      isOpenableFile: true,
       canBeDeleted: true,
       canBeRenamed: true,
-      type: SpaceItem.TypeEnum.Workflow,
+      meta: {
+        type: SpaceItem.TypeEnum.Workflow,
+      },
     } satisfies FileExplorerItem,
     isSelected: false,
     isDragging: false,
@@ -87,16 +90,6 @@ describe("FileExplorerItem.vue", () => {
 
       expect(wrapper.find(".item-error").exists()).toBe(true);
       expect(wrapper.findComponent(InputField).props("isValid")).toBe(false);
-    });
-
-    it("should render set the input class based on mode", async () => {
-      const { wrapper } = doMount({ props });
-
-      expect(wrapper.findComponent(InputField).classes()).toContain("mini");
-
-      await wrapper.setProps({ mode: "normal" });
-
-      expect(wrapper.findComponent(InputField).classes()).toContain("normal");
     });
 
     it('should submit the name and emit "rename:submit" and "rename:clear" events', async () => {
