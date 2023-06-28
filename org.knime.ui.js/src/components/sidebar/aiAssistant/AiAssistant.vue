@@ -24,12 +24,12 @@ const chainType = ref<"qa" | "build">("qa");
     <Chat
       v-show="chainType === 'qa'"
       chain-type="qa"
-      system-prompt="Hi! I am your KNIME Q&A Assistant. What would you like to know?"
+      system-prompt="Hi! I am K-AI, your KNIME Q&A Assistant. What would you like to know?"
     />
     <Chat
       v-show="chainType === 'build'"
       chain-type="build"
-      system-prompt="Hi! I am your KNIME Build Assistant. What would you like to build?"
+      system-prompt="Hi! I am K-AI, your KNIME Build Assistant. What would you like to build?"
     />
   </div>
 </template>
