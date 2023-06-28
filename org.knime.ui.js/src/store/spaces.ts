@@ -518,6 +518,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     API.desktop.copyBetweenSpaces({ spaceProviderId, spaceId, itemIds });
   },
+
+  openInHub({ state }, { projectId, itemId }) {
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    API.desktop.openInHub({ spaceProviderId, spaceId, itemId });
+  },
 };
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {

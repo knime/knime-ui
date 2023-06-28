@@ -318,6 +318,19 @@ export const copyBetweenSpaces = ({
   );
 };
 
+export const openInHub = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+}: SpaceProviderId & SpaceId & { itemId: string }) => {
+  return callBrowserFunction(
+    window.openInHub,
+    [spaceProviderId, spaceId, itemId],
+    "Error opening in Hub",
+    true
+  );
+};
+
 export const saveWorkflowAs = ({
   projectId,
   workflowPreviewSvg,

@@ -72,6 +72,12 @@ declare function copyBetweenSpaces(
   itemIds: string[]
 ): boolean;
 
+declare function openInHub(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string
+): boolean;
+
 declare function saveWorkflowAs(
   projectId: string,
   workflowPreviewSvg: string

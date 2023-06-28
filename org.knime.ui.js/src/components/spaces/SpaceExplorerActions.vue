@@ -13,6 +13,7 @@ import AddFileIcon from "@/assets/add-file.svg";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
+  buildOpenInHubMenuItem,
 } from "@/components/spaces/hubMenuItems";
 
 export default {
@@ -77,6 +78,12 @@ export default {
         this.spaceProviders
       );
 
+      const openInHub = buildOpenInHubMenuItem(
+        this.$store.dispatch,
+        this.projectId,
+        this.selectedItemIds
+      );
+
       return [
         ...(this.mode === "mini" ? [this.createWorkflowAction] : []),
         {
@@ -113,7 +120,9 @@ export default {
             });
           },
         },
-        ...(this.isLocal ? uploadAndConnectToHub : [downloadToLocalSpace]),
+        ...(this.isLocal
+          ? uploadAndConnectToHub
+          : [downloadToLocalSpace, openInHub]),
       ];
     },
 

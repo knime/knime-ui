@@ -1,6 +1,7 @@
 import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg";
 import CloudLoginIcon from "../../../webapps-common/ui/assets/img/icons/cloud-login.svg";
 import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
+import LinkExternal from "webapps-common/ui/assets/img/icons/link-external.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import type { SpaceProvider } from "@/api/custom-types";
 import type { Dispatch } from "vuex";
@@ -22,6 +23,7 @@ export const buildHubDownloadMenuItem = (
     icon: CloudDownloadIcon,
     disabled: isSelectionEmpty,
     title: isSelectionEmpty ? "Select at least one file to download." : null,
+    separator: true,
     execute: () => {
       dispatch("spaces/copyBetweenSpaces", {
         projectId,
@@ -100,4 +102,26 @@ export const buildHubUploadMenuItems = (
   }
 
   return [uploadToHub, connectToHub];
+};
+
+export const buildOpenInHubMenuItem = (
+  dispatch: Dispatch,
+  projectId: string,
+  selectedItems: Array<string>
+): ActionMenuItem => {
+  const isSelectionEmpty = selectedItems.length === 0;
+  const isSelectionMultiple = selectedItems.length > 1;
+  return {
+    id: "openInHub",
+    text: "Open in Hub",
+    icon: LinkExternal,
+    disabled: isSelectionEmpty || isSelectionMultiple,
+    title: isSelectionEmpty ? "Select at least one file to open in HUB." : null,
+    execute: () => {
+      dispatch("spaces/openInHub", {
+        projectId,
+        itemId: selectedItems[0],
+      });
+    },
+  };
 };

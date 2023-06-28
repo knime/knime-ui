@@ -13,6 +13,7 @@ import RenameIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
+  buildOpenInHubMenuItem,
 } from "@/components/spaces/hubMenuItems";
 
 const store = useStore<RootStoreState>();
@@ -56,6 +57,12 @@ const fileExplorerContextMenuItems = computed(() => {
     props.selectedItemIds
   );
 
+  const openInHub = buildOpenInHubMenuItem(
+    store.dispatch,
+    props.projectId,
+    props.selectedItemIds
+  );
+
   const uploadAndConnectToHub = buildHubUploadMenuItems(
     store.dispatch,
     store.getters["spaces/hasActiveHubSession"],
@@ -89,7 +96,7 @@ const fileExplorerContextMenuItems = computed(() => {
       icon: DeleteIcon,
     }),
 
-    ...(isLocal ? uploadAndConnectToHub : [downloadToLocalSpace]),
+    ...(isLocal ? uploadAndConnectToHub : [downloadToLocalSpace, openInHub]),
   ];
 
   return contextMenuItems;
