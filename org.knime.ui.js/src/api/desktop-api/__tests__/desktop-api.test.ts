@@ -127,6 +127,14 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
+    name: "openInHub",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemId", "123"],
+    ],
+  },
+  {
     name: "saveWorkflowAs",
     params: [
       ["projectId", "project1"],

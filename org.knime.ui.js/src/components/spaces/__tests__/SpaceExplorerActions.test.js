@@ -134,6 +134,7 @@ describe("SpaceExplorerActions.vue", () => {
         "spaces/copyBetweenSpaces",
         { itemIds: ["934383"] },
       ],
+      ["openInHub", "spaces/openInHub", { itemId: "934383" }],
       ["importFiles", "spaces/importToWorkflowGroup", { importType: "FILES" }],
       [
         "importWorkflow",
@@ -216,13 +217,14 @@ describe("SpaceExplorerActions.vue", () => {
 
       const allItems = items.map((item) => item.text).join("\n");
 
+      expect(allItems).toMatch("Open in Hub");
       expect(allItems).toMatch("Download to local space");
       expect(allItems).toMatch("Create folder");
       expect(allItems).toMatch("Create workflow");
       expect(allItems).toMatch("Import workflow");
       expect(allItems).toMatch("Add files");
 
-      expect(items.length).toBe(5);
+      expect(items.length).toBe(6);
     });
 
     it("shows multiple hubs to connect to in a sub menu", () => {
@@ -327,7 +329,7 @@ describe("SpaceExplorerActions.vue", () => {
       );
     });
 
-    it("should disable actions that require selected items (download)", () => {
+    it("should disable actions that require selected items (download and openInHub)", () => {
       const { wrapper } = doMount({
         props: {
           mode: "mini",
@@ -339,6 +341,10 @@ describe("SpaceExplorerActions.vue", () => {
         expect.arrayContaining([
           expect.objectContaining({
             id: "downloadToLocalSpace",
+            disabled: true,
+          }),
+          expect.objectContaining({
+            id: "openInHub",
             disabled: true,
           }),
         ])
