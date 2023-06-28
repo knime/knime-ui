@@ -245,7 +245,6 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
         v-for="(item, index) in items"
         :key="index"
         ref="itemRefs"
-        :mode="mode"
         :item="item"
         :is-dragging="isDragging"
         :is-selected="isSelected(index)"
@@ -317,16 +316,6 @@ tbody {
   display: block;
   width: 100%;
   border-spacing: 0;
-}
-
-tbody {
-  font-weight: 700;
-  font-size: 18px;
-}
-
-tbody.mini {
-  font-weight: 400;
-  font-size: 16px;
 }
 
 .empty {
