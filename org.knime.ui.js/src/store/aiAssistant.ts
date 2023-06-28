@@ -67,7 +67,7 @@ export const mutations = {
 export const actions = {
   makeAiRequest({ commit, state, rootGetters }, { chainType, message }) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
-    const nodeId = rootGetters["selection/singleSelectedNode"];
+    const nodeId = rootGetters["selection/singleSelectedNode"]?.id;
 
     commit("setIsProcessing", { chainType, isProcessing: true });
     commit("setProjectAndWorkflowIds", { chainType, projectAndWorkflowIds });
