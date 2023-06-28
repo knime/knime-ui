@@ -266,6 +266,8 @@ const workflowShortcuts: WorkflowShortcuts = {
       $router.push({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId, workflowId: id },
+        force: true,
+        replace: true,
       });
     },
     condition: ({ $store }) => {

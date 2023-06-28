@@ -14,6 +14,7 @@ import type { ViewConfig, ResourceInfo } from "@/api/custom-types";
 export type ViewStateChangeEvent = {
   state: "loading" | "ready" | "error";
   message?: string;
+  portKey: string;
 };
 
 type ResourceLocationResolverFn = (params: {
@@ -121,7 +122,8 @@ export default defineComponent({
 
   methods: {
     async loadView() {
-      this.$emit("stateChange", { state: "loading" });
+      let portKey = this.renderKey; // value at the time of dispatch
+      this.$emit("stateChange", { state: "loading", portKey });
       this.initialData = null;
       this.componentName = null;
 
@@ -137,9 +139,9 @@ export default defineComponent({
         } else {
           await this.renderDynamicViewComponent(viewConfig);
         }
-        this.$emit("stateChange", { state: "ready" });
+        this.$emit("stateChange", { state: "ready", portKey });
       } catch (e) {
-        this.$emit("stateChange", { state: "error", message: e });
+        this.$emit("stateChange", { state: "error", message: e, portKey });
       }
     },
 

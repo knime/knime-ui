@@ -157,6 +157,8 @@ describe("WorkflowBreadcrumb.vue", () => {
           workflowId: "root:0:123",
           projectId: "proj",
         },
+        force: true,
+        replace: true,
       });
     });
   });

@@ -152,7 +152,7 @@ export default defineComponent({
         </Carousel>
       </ul>
       <div v-else class="application-name">
-        <span class="text">KNIME Analytics Platform 5 – Early Access</span>
+        <span class="text">KNIME Analytics Platform 5</span>
       </div>
 
       <div class="buttons">

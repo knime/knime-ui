@@ -64,6 +64,15 @@ export default defineComponent({
       return this.$store.getters["api/uiExtResourceLocation"]({ resourceInfo });
     },
 
+    onStateChange(newState) {
+      if (this.uniquePortKey !== newState.portKey) {
+        // We are not interested in this state change since it corresponds to a port key
+        //   we are not currently displaying.
+        return;
+      }
+      this.$emit("stateChange", newState);
+    },
+
     /* Required by dynamically loaded view components */
     initKnimeService(config: ViewConfig) {
       return new KnimeService(
@@ -103,6 +112,6 @@ export default defineComponent({
     :init-knime-service="initKnimeService"
     :view-config-loader-fn="viewConfigLoaderFn"
     :resource-location-resolver="resourceLocationResolver"
-    @state-change="$emit('stateChange', $event)"
+    @state-change="onStateChange"
   />
 </template>

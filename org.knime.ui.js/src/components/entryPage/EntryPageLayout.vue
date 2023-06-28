@@ -38,7 +38,7 @@ export default {
     pageTitle() {
       const titles = {
         [APP_ROUTES.EntryPage.GetStartedPage]:
-          "Get started with KNIME Analytics Platform 5 – Early Access",
+          "Get started with KNIME Analytics Platform 5",
         [APP_ROUTES.EntryPage.SpaceSelectionPage]: "Spaces",
       };
 
