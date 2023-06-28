@@ -32,6 +32,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    isQuickAddMenu: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -70,11 +74,14 @@ export default defineComponent({
 <template>
   <div
     class="node"
-    :class="{ selected: isSelected, highlighted: isHighlighted }"
+    :class="{
+      selected: isSelected && isQuickAddMenu,
+      highlighted: isHighlighted,
+    }"
     @pointerenter="onPointerEnter"
     @pointerleave="onPointerLeave"
   >
-    <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
+    <span :title="nodeTemplate.name">{{ nodeTemplate.name }}</span>
     <NodePreview
       ref="nodePreview"
       class="node-preview"
@@ -84,6 +91,7 @@ export default defineComponent({
       :icon="nodeTemplate.icon"
     />
     <FunctionButton
+      v-if="!isQuickAddMenu"
       :class="[
         'description-icon',
         { 'selected-icon': isSelected, 'hovered-icon': itemHovered },
@@ -112,7 +120,7 @@ export default defineComponent({
   font-weight: 700;
   text-align: center;
 
-  & label {
+  & span {
     max-height: 26px;
     max-width: 90px;
     /* stylelint-disable-next-line value-no-vendor-prefix */
@@ -120,7 +128,6 @@ export default defineComponent({
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
-    pointer-events: none;
   }
 
   & .node-preview {
@@ -148,9 +155,23 @@ export default defineComponent({
   & .description-icon {
     display: none;
     position: absolute;
-    top: -8px;
-    right: -6px;
+    top: 2px;
+    right: -2px;
     padding: 0;
+
+    &.hovered-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      & svg {
+        @mixin svg-icon-size 16;
+
+        fill: var(--knime-white);
+        stroke: var(--knime-masala);
+        margin-right: -16px;
+      }
+    }
 
     &.selected-icon {
       display: flex;
@@ -166,37 +187,10 @@ export default defineComponent({
       }
     }
 
-    &.hovered-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      & svg {
-        @mixin svg-icon-size 16;
-
-        stroke: var(--knime-masala);
-        margin-right: -16px;
-
-        &:hover,
-        &:focus {
-          fill: var(--knime-masala);
-          stroke: var(--knime-white);
-        }
-      }
+    &.hovered-icon svg:hover {
+      fill: var(--knime-masala);
+      stroke: var(--knime-white);
     }
-
-    /* &.selected-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      & svg {
-        @mixin svg-icon-size 16;
-        fill: var(--knime-masala);
-        stroke: var(--knime-white);
-        margin-right: -16px;
-      }
-    } */
   }
 }
 
