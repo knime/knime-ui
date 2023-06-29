@@ -1,5 +1,4 @@
 <script>
-import { mapState } from "vuex";
 import Description from "webapps-common/ui/components/Description.vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
@@ -16,13 +15,22 @@ export default {
     NodeFeatureList,
     ExternalResourcesList,
   },
+  props: {
+    selectedNode: {
+      type: Object,
+      default: null,
+      validator: (node) =>
+        node === null ||
+        (typeof node.nodeFactory?.className === "string" &&
+          typeof node.name === "string"),
+    },
+  },
   data() {
     return {
       descriptionData: null,
     };
   },
   computed: {
-    ...mapState("nodeRepository", ["selectedNode"]),
     title() {
       if (!this.selectedNode) {
         return "";

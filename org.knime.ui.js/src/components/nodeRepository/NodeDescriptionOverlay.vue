@@ -1,8 +1,9 @@
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 import { escapeStack } from "@/mixins/escapeStack";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
 import CloseButton from "@/components/common/CloseButton.vue";
+import { TABS } from "@/store/panel";
 
 /**
  * NodeDescription + close button, esc close + overlay/extension sidebar styling
@@ -19,6 +20,22 @@ export default {
       },
     }),
   ],
+  computed: {
+    ...mapGetters("nodeRepository", {
+      isSelectedNodeVisible: "isSelectedNodeVisible",
+    }),
+    ...mapState("panel", ["activeTab"]),
+    ...mapState("application", ["activeProjectId"]),
+    ...mapState("nodeRepository", ["selectedNode"]),
+    activeNode() {
+      const isNodeRepositoryActive =
+        this.activeTab[this.activeProjectId] === TABS.NODE_REPOSITORY;
+      if (!isNodeRepositoryActive) {
+        return this.selectedNode;
+      }
+      return this.isSelectedNodeVisible ? this.selectedNode : null;
+    },
+  },
   methods: {
     ...mapActions("nodeRepository", ["closeDescriptionPanel"]),
   },
@@ -26,7 +43,7 @@ export default {
 </script>
 
 <template>
-  <NodeDescription class="node-description-overlay">
+  <NodeDescription class="node-description-overlay" :selected-node="activeNode">
     <template #header-action>
       <CloseButton class="close-button" @close="closeDescriptionPanel" />
     </template>
