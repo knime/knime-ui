@@ -53,12 +53,9 @@ const isAssistant = computed(() => props.role === "assistant");
         <KnimeIcon v-else />
       </div>
       <div class="container">
-        <!-- eslint-disable vue/no-v-html -->
-        <div
-          v-if="props.content"
-          :class="{ error: props.isError }"
-          v-html="props.content"
-        />
+        <div v-if="props.content" :class="{ error: props.isError }">
+          {{ props.content }}
+        </div>
         <div v-else>
           <div class="placeholder" />
           <div class="placeholder" />
