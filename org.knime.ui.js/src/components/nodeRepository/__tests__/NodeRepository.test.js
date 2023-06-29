@@ -237,25 +237,6 @@ describe("NodeRepository", () => {
       expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
     });
 
-    it("sets selectedNode prop on NodeDescriptionOverlay", () => {
-      $store.state.nodeRepository.isDescriptionPanelOpen = true;
-      doShallowMount();
-      expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
-      expect(
-        wrapper.findComponent(NodeDescriptionOverlay).props("selectedNode").name
-      ).toBe("Test");
-    });
-
-    it("hides info if selectedNode is invisible", () => {
-      $store.state.nodeRepository.isDescriptionPanelOpen = true;
-      isSelectedNodeVisible = false;
-      doShallowMount();
-      expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
-      expect(
-        wrapper.findComponent(NodeDescriptionOverlay).props("selectedNode")
-      ).toBeNull();
-    });
-
     it("de-selectes node on close of description panel", async () => {
       window.setTimeout = vi.fn().mockImplementation((fn) => {
         fn();

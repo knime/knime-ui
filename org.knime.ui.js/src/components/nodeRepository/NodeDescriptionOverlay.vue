@@ -27,12 +27,15 @@ export default {
     ...mapState("panel", ["activeTab"]),
     ...mapState("application", ["activeProjectId"]),
     ...mapState("nodeRepository", ["selectedNode"]),
+
     activeNode() {
       const isNodeRepositoryActive =
         this.activeTab[this.activeProjectId] === TABS.NODE_REPOSITORY;
+
       if (!isNodeRepositoryActive) {
         return this.selectedNode;
       }
+
       return this.isSelectedNodeVisible ? this.selectedNode : null;
     },
   },

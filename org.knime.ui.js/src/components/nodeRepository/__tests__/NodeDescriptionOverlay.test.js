@@ -2,13 +2,16 @@ import { expect, describe, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
+import * as panelStore from "@/store/panel";
+
 import NodeDescriptionOverlay from "../NodeDescriptionOverlay.vue";
 import NodeDescription from "../NodeDescription.vue";
 
 import { escapeStack as escapeStackMock } from "@/mixins/escapeStack";
+import { nextTick } from "vue";
 vi.mock("@/mixins/escapeStack", () => {
+  // eslint-disable-next-line func-style
   function escapeStack({ onEscape }) {
-    // eslint-disable-line func-style
     escapeStack.onEscape = onEscape;
     return {
       /* empty mixin */
@@ -18,7 +21,7 @@ vi.mock("@/mixins/escapeStack", () => {
 });
 
 describe("NodeDescription", () => {
-  const doMount = () => {
+  const doMount = ({ isSelectedNodeVisible = true } = {}) => {
     const getNodeDescription = () => ({
       id: 1,
       description: "This is a node.",
@@ -32,37 +35,58 @@ describe("NodeDescription", () => {
 
     const $store = mockVuexStore({
       nodeRepository: {
+        state: {
+          isDescriptionPanelOpen: false,
+          selectedNode: null,
+        },
         actions: {
           getNodeDescription,
           closeDescriptionPanel: () => {},
         },
+        getters: {
+          isSelectedNodeVisible() {
+            return isSelectedNodeVisible;
+          },
+        },
       },
+      panel: panelStore,
+      application: {
+        state: {
+          activeProjectId: "project1",
+        },
+      },
+    });
+
+    $store.commit("panel/setActiveTab", {
+      projectId: "project1",
+      activeTab: panelStore.TABS.NODE_REPOSITORY,
     });
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
 
-    const props = {
-      selectedNode: {
-        id: 1,
-        name: "Test",
-        nodeFactory: {
-          className: "some.class.name",
-          settings: "",
-        },
-      },
-    };
     const wrapper = mount(NodeDescriptionOverlay, {
-      props,
       global: { plugins: [$store] },
     });
 
-    return { wrapper, dispatchSpy };
+    return { wrapper, dispatchSpy, $store };
   };
 
-  it("renders all components", () => {
-    const { wrapper } = doMount();
+  it("renders all components", async () => {
+    const { wrapper, $store } = doMount();
+    $store.state.nodeRepository.selectedNode = {
+      id: 1,
+      name: "Test",
+      nodeFactory: {
+        className: "some.class.name",
+        settings: "",
+      },
+    };
+
     expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(true);
     expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
+
+    await nextTick();
+
     expect(
       wrapper.findComponent(NodeDescription).props("selectedNode").id
     ).toBe(1);
@@ -89,5 +113,16 @@ describe("NodeDescription", () => {
       undefined
     );
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should check for selected node visibility only when the node repository tab is active", () => {
+    const { wrapper, $store } = doMount({
+      isSelectedNodeVisible: false,
+    });
+
+    $store.state.nodeRepository.isDescriptionPanelOpen = true;
+    expect(
+      wrapper.findComponent(NodeDescription).props("selectedNode")
+    ).toBeNull();
   });
 });
