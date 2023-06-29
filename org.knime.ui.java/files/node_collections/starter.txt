@@ -59,6 +59,9 @@ org.knime.base.views.node.scatterplot.ScatterPlotNodeFactory
 org.knime.base.views.node.stackedareachart.StackedAreaChartNodeFactory
 org.knime.base.views.node.statistics.StatisticsNodeFactory
 org.knime.base.views.node.tableview.TableViewNodeFactory
+org.knime.base.views.node.sunburstchart.SunburstChartNodeFactory
+org.knime.base.views.node.roccurve.ROCCurveNodeFactory
+org.knime.base.views.node.scatterplotmatrix.ScatterPlotMatrixNodeFactory
 org.knime.ext.jep.JEPNodeFactory
 org.knime.ext.jep.multicolumn.MultiColumnJEPNodeFactory
 org.knime.ext.microsoft.authentication.node.auth.MicrosoftAuthenticationNodeFactory
