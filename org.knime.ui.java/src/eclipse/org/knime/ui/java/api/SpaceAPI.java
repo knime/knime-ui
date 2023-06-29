@@ -56,8 +56,10 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
@@ -217,5 +219,38 @@ final class SpaceAPI {
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
         return ClassicAPCopyMoveLogic.copy(shellProvider, sourceSpaceProvider, selection, targetSpaceProvider,
             destinationStore, excludeData);
+    }
+
+    /**
+     * Opens an item in a web browser
+     *
+     * @param spaceProviderId provider ID of the source space
+     * @param spaceId ID of the source space
+     * @param itemId ID of the selected item
+     */
+    @API
+    static boolean openInHub(final String spaceProviderId, final String spaceId, final String itemId) {
+        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+        final var sourceSpaceProvider = Optional.ofNullable(spaceProviders.getProvidersMap().get(spaceProviderId)) //
+                .orElseThrow(() -> new NoSuchElementException("Space provider '" + spaceProviderId + "' not found."));
+        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
+
+        var serverAddress = sourceSpaceProvider.getServerAddress().get();
+        serverAddress = serverAddress.endsWith("/") ? serverAddress : serverAddress + "/";
+        Pattern API_REMOVAL_PATTERN = Pattern.compile("(https?://)api\\.");
+        final var matcher = API_REMOVAL_PATTERN.matcher(serverAddress);
+        serverAddress =  matcher.find() ? matcher.replaceFirst(matcher.group(1)) : serverAddress;
+
+        var connection = sourceSpaceProvider.getConnection(true).get();
+        var username = connection.getUsername();
+
+        var KNIME_SPACES = "/spaces/";
+        var spaceName = sourceSpace.getName();
+        var LATEST = "/latest/";
+        var itemName = sourceSpace.getItemName(itemId);
+        var path = username + KNIME_SPACES + spaceName + LATEST + itemName + itemId.replace('*', '~');
+        var url = serverAddress + path;
+        WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
+        return true;
     }
 }
