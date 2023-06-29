@@ -29,6 +29,13 @@ const currentTags = computed(() =>
 const initialSelectedIds = computed(() =>
   currentTags.value.map(({ id }) => id)
 );
+
+const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
+  emit(
+    "change",
+    tags.map(({ text }) => text)
+  );
+};
 </script>
 
 <template>
@@ -45,7 +52,8 @@ const initialSelectedIds = computed(() =>
         :possible-values="currentTags"
         :initial-selected-ids="initialSelectedIds"
         :size-visible-options="3"
-        @update:selected-ids="emit('change', $event)"
+        allow-new-values
+        @change="onTagsChange"
       />
     </template>
   </div>

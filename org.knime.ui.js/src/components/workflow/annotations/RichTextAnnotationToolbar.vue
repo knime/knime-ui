@@ -7,8 +7,9 @@ import type { Level } from "@tiptap/extension-heading";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import PlusSmallIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 import LinkIcon from "webapps-common/ui/assets/img/icons/link.svg";
-import type { EditorTools } from "webapps-common/ui/components/RichTextEditor";
+import type { EditorTools } from "webapps-common/ui/components/forms/RichTextEditor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
@@ -107,10 +108,31 @@ const linkTool = {
   onClick: () => createLink(),
 };
 
-const customTools = computed(() => props.tools.concat(linkTool));
+const customTools = computed(() =>
+  props.tools.filter(({ secondary }) => !secondary).concat(linkTool)
+);
+
+const secondaryTools = computed(() =>
+  props.tools.filter(({ secondary }) => secondary)
+);
+
+const secondaryToolsMenuItems = computed(() =>
+  secondaryTools.value.map((tool) => ({
+    text: tool.name,
+    disabled: tool.disabled?.(),
+    hotkeyText: formatHotkeys(tool.hotkey ?? []),
+    icon: tool.icon,
+    id: tool.id,
+  }))
+);
+
+const onSecondaryToolClick = (_: any, { id }: { id: string }) => {
+  const foundTool = secondaryTools.value.find((tool) => tool.id === id);
+  foundTool?.onClick();
+};
 
 // +1 to include the border color tool
-const totalEditorTools = computed(() => customTools.value.length + 1);
+const totalEditorTools = computed(() => customTools.value.length + 2);
 
 const headingPresets = computed(() => {
   // eslint-disable-next-line no-magic-numbers
@@ -240,12 +262,21 @@ onUnmounted(() => {
         v-for="tool of customTools"
         :key="tool.icon"
         :active="tool.active ? tool.active() : false"
-        :title="`${tool.name} – ${formatHotkeys(tool.hotkey)}`"
+        :title="`${tool.name} – ${formatHotkeys(tool.hotkey ?? [])}`"
         class="toolbar-button"
         @click.stop="tool.onClick"
       >
         <Component :is="tool.icon" />
       </FunctionButton>
+
+      <SubMenu
+        v-if="secondaryTools.length > 0"
+        :items="secondaryToolsMenuItems"
+        orientation="left"
+        @item-click="onSecondaryToolClick"
+      >
+        <PlusSmallIcon />
+      </SubMenu>
 
       <RichTextAnnotationToolbarDialog :is-open="isBorderColorSelectionOpen">
         <template #toggle>

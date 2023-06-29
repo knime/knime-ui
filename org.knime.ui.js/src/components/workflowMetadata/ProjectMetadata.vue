@@ -25,7 +25,6 @@ type SaveEventPayload = {
   description: TypedText;
   links: Array<Link>;
   tags: Array<string>;
-  // contentType: TypedText.ContentTypeEnum;
 };
 
 const emit = defineEmits<{
@@ -69,10 +68,8 @@ const emitSave = () => {
         },
       }
     : {
-        // description: description.value,
         links: projectMetadata.value.links,
         tags: projectMetadata.value.tags,
-        // contentType: TypedText.ContentTypeEnum.Plain,
         description: {
           contentType: TypedText.ContentTypeEnum.Plain,
           value: description.value,
@@ -121,7 +118,6 @@ const emitSave = () => {
     :description="description"
     @change="setEditedState('description', $event)"
   />
-  <!-- @change="editedDescription = $event" -->
 
   <ExternalResourcesList
     :editable="isEditing"
@@ -129,14 +125,12 @@ const emitSave = () => {
     @valid="isValid = $event"
     @change="setEditedState('links', $event)"
   />
-  <!-- @change="editedLinks = $event" -->
 
   <ProjectMetadataTags
     :editable="isEditing"
     :tags="projectMetadata.tags"
     @change="setEditedState('tags', $event)"
   />
-  <!-- @change="editedTags = $event" -->
 </template>
 
 <style lang="postcss" scoped>

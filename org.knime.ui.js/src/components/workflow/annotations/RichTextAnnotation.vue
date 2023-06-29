@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, toRefs } from "vue";
 
-import RichTextEditor from "webapps-common/ui/components/RichTextEditor";
+import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor/RichTextEditor.vue";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { URL_REGEX } from "@/util/regex";
@@ -47,8 +47,9 @@ const customExtensions = [
       class="annotation-editor"
       :model-value="initialValue"
       :editable="editable"
+      :with-border="false"
       :custom-extensions="customExtensions"
-      :enabled-tools="{ all: true }"
+      :base-extensions="{ all: true }"
       @update:model-value="emit('change', $event)"
       @dblclick="!editable && emit('editStart')"
     >
@@ -86,6 +87,7 @@ const customExtensions = [
 .annotation-editor {
   --border-width: 2px;
 
+  height: 100%;
   border: var(--border-width) solid v-bind("activeBorderColor");
 }
 </style>

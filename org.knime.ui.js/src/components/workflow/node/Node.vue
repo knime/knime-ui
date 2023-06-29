@@ -486,7 +486,7 @@ export default {
 
         <!-- Label needs to be behind ports -->
         <NodeLabel
-          :value="annotation ? annotation.text : ''"
+          :value="annotation ? annotation.text.value : ''"
           :annotation="annotation"
           :editable="isWritable"
           :kind="kind"

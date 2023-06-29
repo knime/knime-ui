@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import RichTextEditor from "webapps-common/ui/components/RichTextEditor";
+import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor/RichTextEditor.vue";
+
+import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 
 interface Props {
   description: string | null;
@@ -15,20 +17,29 @@ const emit = defineEmits<{
 
 <template>
   <div class="description">
+    <MetadataPlaceholder
+      v-if="!description && !editable"
+      padded
+      text="No description has been set"
+    />
+
     <RichTextEditor
-      compact
+      v-else
       :editable="editable"
       :model-value="description"
       :class="['description-editor', { editable }]"
       :min-height="150"
       :max-height="300"
-      :enabled-tools="{
+      :base-extensions="{
         bold: true,
         italic: true,
         bulletList: true,
         orderedList: true,
         underline: true,
+        strike: true,
+        horizontalRule: true,
       }"
+      :with-border="editable"
       @update:model-value="emit('change', $event)"
     />
   </div>
@@ -46,6 +57,10 @@ const emit = defineEmits<{
 
   &.editable {
     border: 1px solid var(--knime-masala);
+  }
+
+  &:not(.editable) {
+    --rich-text-editor-padding: 0px;
   }
 }
 </style>
