@@ -23,6 +23,12 @@ type ResourceLocationResolverFn = (params: {
 type InitKnimeServiceFn = (viewConfig: ViewConfig) => KnimeService;
 type ViewLoaderConfigFn = () => Promise<ViewConfig>;
 
+// Keep track of the most recently loaded view key. Since views are loaded asynchronously,
+// and only 1 view can be displayed at a time, if we get a response from a load
+// request that's outdated because another view has
+// been loaded, then we can ignore this outdated response by means of this key
+let mostRecentlyLoadedViewKey = null;
+
 /**
  * Dynamically loads and renders a component for a view in the workflow. This could be a port view
  * or a dialog view
@@ -120,15 +126,23 @@ export default defineComponent({
     }
   },
 
+  unmounted() {
+    mostRecentlyLoadedViewKey = null;
+  },
+
   methods: {
     async loadView() {
       let portKey = this.renderKey; // value at the time of dispatch
+      mostRecentlyLoadedViewKey = portKey;
       this.$emit("stateChange", { state: "loading", portKey });
       this.initialData = null;
       this.componentName = null;
 
       try {
         const viewConfig = await this.viewConfigLoaderFn();
+        if (portKey !== mostRecentlyLoadedViewKey) {
+          return;
+        }
 
         if (viewConfig.resourceInfo.type === "HTML") {
           this.initialData = {

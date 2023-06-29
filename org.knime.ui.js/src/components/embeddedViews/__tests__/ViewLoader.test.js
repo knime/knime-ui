@@ -1,6 +1,6 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import { loadAsyncComponent } from "webapps-common/ui/util/loadComponentLibrary";
 import FlowVariablePortView from "@/components/output/FlowVariablePortView.vue";
@@ -30,13 +30,15 @@ describe("ViewLoader.vue", () => {
       },
     };
 
-    const viewConfigLoaderFn = vi.fn(() => ({
-      resourceInfo: {
-        type: "VUE_COMPONENT_LIB",
-        id: "MockComponent",
-      },
-      initialData: initialData || JSON.stringify({ result: {} }),
-    }));
+    const viewConfigLoaderFn = vi.fn(() =>
+      Promise.resolve({
+        resourceInfo: {
+          type: "VUE_COMPONENT_LIB",
+          id: "MockComponent",
+        },
+        initialData: initialData || JSON.stringify({ result: {} }),
+      })
+    );
 
     loadAsyncComponent.mockImplementation(() => MockComponent);
     return { MockComponent, viewConfigLoaderFn };
@@ -154,6 +156,34 @@ describe("ViewLoader.vue", () => {
 
     expect(initKnimeService).toHaveBeenCalled();
     expect(wrapper.vm.getKnimeService()).toEqual({ mockService: true });
+  });
+
+  it("should abort calls of pending view loads", async () => {
+    vi.useFakeTimers();
+
+    const { viewConfigLoaderFn } = setupDynamicMockComponent();
+    const initKnimeService = vi.fn(() => ({ mockService: true }));
+
+    // mounting will load the view
+    const wrapper = doMount({ viewConfigLoaderFn, initKnimeService });
+
+    // changing the renderkey will load the view a second time
+    await wrapper.setProps({ renderKey: "changed" });
+    expect(viewConfigLoaderFn).toHaveBeenCalledTimes(2);
+
+    await flushPromises();
+    vi.runAllTimers();
+
+    // the first request was aborted, so the knime service was only called
+    // for the second view load
+    expect(initKnimeService).toHaveBeenCalledOnce();
+    expect(wrapper.emitted("stateChange")).toEqual([
+      [{ state: "loading", portKey: "123" }],
+      [{ state: "loading", portKey: "changed" }],
+      [{ state: "ready", portKey: "changed" }],
+    ]);
+
+    vi.useRealTimers();
   });
 
   it("should use the resourceLocationResolver", async () => {
