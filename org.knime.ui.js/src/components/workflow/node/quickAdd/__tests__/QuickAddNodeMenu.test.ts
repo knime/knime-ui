@@ -230,10 +230,10 @@ describe("QuickAddNodeMenu.vue", () => {
     it("should display the nodes recommended", async () => {
       const { wrapper } = doMount();
       await Vue.nextTick();
-      const labels = wrapper.findAll(".node > label");
+      const spans = wrapper.findAll(".node > span");
 
-      expect(labels.at(0).text()).toBe("Column Filter");
-      expect(labels.at(1).text()).toBe("Row Filter");
+      expect(spans.at(0).text()).toBe("Column Filter");
+      expect(spans.at(1).text()).toBe("Row Filter");
 
       const previews = wrapper.findAllComponents(NodePreview);
 
@@ -408,10 +408,10 @@ describe("QuickAddNodeMenu.vue", () => {
       const { wrapper } = doMount();
       await wrapper.find(".search-bar input").setValue("search");
 
-      const labels = wrapper.findAll(".node > label");
+      const spans = wrapper.findAll(".node > span");
 
-      expect(labels.at(0).text()).toBe("GroupBy Bar Chart (JFreeChart)");
-      expect(labels.at(1).text()).toBe("Decision Tree Learner");
+      expect(spans.at(0).text()).toBe("GroupBy Bar Chart (JFreeChart)");
+      expect(spans.at(1).text()).toBe("Decision Tree Learner");
 
       const previews = wrapper.findAllComponents(NodePreview);
 
@@ -425,8 +425,8 @@ describe("QuickAddNodeMenu.vue", () => {
 
       await wrapper.find(".more-nodes-button").trigger("click");
 
-      const labels = wrapper.findAll(".node > label");
-      expect(labels.length).toBe(3);
+      const spans = wrapper.findAll(".node > span");
+      expect(spans.length).toBe(3);
     });
 
     describe("add node", () => {

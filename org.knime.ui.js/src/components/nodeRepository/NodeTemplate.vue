@@ -39,7 +39,7 @@ export default defineComponent({
   },
   data() {
     return {
-      itemHovered: false,
+      nodeHovered: false,
     };
   },
   computed: {
@@ -61,11 +61,11 @@ export default defineComponent({
     },
 
     onPointerEnter() {
-      this.itemHovered = true;
+      this.nodeHovered = true;
     },
 
     onPointerLeave() {
-      this.itemHovered = false;
+      this.nodeHovered = false;
     },
   },
 });
@@ -94,7 +94,7 @@ export default defineComponent({
       v-if="!isQuickAddMenu"
       :class="[
         'description-icon',
-        { 'selected-icon': isSelected, 'hovered-icon': itemHovered },
+        { 'selected-icon': isSelected, 'hovered-icon': nodeHovered },
       ]"
       @click="onClick"
       @dblclick.stop

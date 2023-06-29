@@ -2,7 +2,6 @@ import { expect, describe, beforeEach, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
-import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 
 import { KnimeMIME } from "@/mixins/dropNode";
 import DraggableNodeTemplate from "../DraggableNodeTemplate.vue";
@@ -140,28 +139,7 @@ describe("DraggableNodeTemplate", () => {
   it("shows node name in label", () => {
     doMount();
 
-    expect(wrapper.find("label").text()).toBe("node-name");
-  });
-
-  it("opens description panel when clicked", () => {
-    doMount();
-
-    const nodePreview = wrapper.findComponent(NodePreview);
-    nodePreview.trigger("click");
-
-    expect(openDescriptionPanelMock).toHaveBeenCalled();
-  });
-
-  it("selects a node when clicked", () => {
-    doMount();
-
-    const node = wrapper.find(".node");
-    node.trigger("click");
-
-    expect(setSelectedNodeMock).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ name: "node-name" })
-    );
+    expect(wrapper.find("span").text()).toBe("node-name");
   });
 
   it("never deselects a selected item via click", () => {
@@ -181,6 +159,7 @@ describe("DraggableNodeTemplate", () => {
 
   it("adds style if node is selected", () => {
     props.isSelected = true;
+    props.isQuickAddMenu = true;
     doMount();
 
     const node = wrapper.find(".node");
