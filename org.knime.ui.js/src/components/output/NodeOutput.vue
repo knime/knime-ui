@@ -251,7 +251,7 @@ export default defineComponent({
 
 .output-container {
   height: 100%;
-  padding: 10px;
+  padding: 10px 10px 0;
   position: relative;
   overflow: hidden;
   display: flex;

@@ -29,7 +29,6 @@ const emit = defineEmits<{
       :model-value="description"
       :class="['description-editor', { editable }]"
       :min-height="150"
-      :max-height="300"
       :base-extensions="{
         bold: true,
         italic: true,
