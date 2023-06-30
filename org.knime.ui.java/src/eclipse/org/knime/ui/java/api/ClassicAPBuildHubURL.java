@@ -54,10 +54,15 @@ import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 
 /**
- * Adaptation of @openInHubAction from explorer server to build the URL of an item in the Hub
+ * Adaptation of 'OpenInHubAction' from explorer server to build the URL of an item in the Hub
+ *
  * @author baqueroj
  */
-public class ClassicAPBuildHubURL {
+final class ClassicAPBuildHubURL {
+
+    private ClassicAPBuildHubURL() {
+        // utility class
+    }
 
     private static final Pattern API_REMOVAL_PATTERN = Pattern.compile("(https?://)api\\.");
 
@@ -67,15 +72,15 @@ public class ClassicAPBuildHubURL {
 
     /**
      * @param itemId
-     * @param sourceSpaceProvider
+     * @param sourceSpaceProvider a 'non-local' space provider
      * @param sourceSpace
      * @return The built hub URL
      */
-    static String getHubURL(final String itemId, final SpaceProvider sourceSpaceProvider,
-        final Space sourceSpace) {
+    static String getHubURL(final String itemId, final SpaceProvider sourceSpaceProvider, final Space sourceSpace) {
+        assert !sourceSpaceProvider.isLocal();
         var serverAddress = getServerAddress(sourceSpaceProvider);
 
-        var connection = sourceSpaceProvider.getConnection(true).get();
+        var connection = sourceSpaceProvider.getConnection(true).orElseThrow();
         var username = connection.getUsername();
 
         var spaceName = sourceSpace.getName();
@@ -85,10 +90,10 @@ public class ClassicAPBuildHubURL {
     }
 
     private static String getServerAddress(final SpaceProvider sourceSpaceProvider) {
-        var serverAddress = sourceSpaceProvider.getServerAddress().get();
-        serverAddress = serverAddress.endsWith("/") ? serverAddress : serverAddress + "/";
+        var serverAddress = sourceSpaceProvider.getServerAddress().orElseThrow();
+        serverAddress = serverAddress.endsWith("/") ? serverAddress : (serverAddress + "/");
         final var matcher = API_REMOVAL_PATTERN.matcher(serverAddress);
-        serverAddress =  matcher.find() ? matcher.replaceFirst(matcher.group(1)) : serverAddress;
+        serverAddress = matcher.find() ? matcher.replaceFirst(matcher.group(1)) : serverAddress;
         return serverAddress;
     }
 }
