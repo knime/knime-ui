@@ -327,7 +327,7 @@ export const openInHub = ({
     window.openInHub,
     [spaceProviderId, spaceId, itemId],
     "Error opening in Hub",
-    true
+    false
   );
 };
 

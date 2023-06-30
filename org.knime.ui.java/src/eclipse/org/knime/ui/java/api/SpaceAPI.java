@@ -226,16 +226,18 @@ final class SpaceAPI {
      * @param spaceProviderId provider ID of the source space
      * @param spaceId ID of the source space
      * @param itemId ID of the selected item
+     * @throws NoSuchElementException if there is no space provider, space or item for the given id
      */
     @API
-    static boolean openInHub(final String spaceProviderId, final String spaceId, final String itemId) {
+    static void openInHub(final String spaceProviderId, final String spaceId, final String itemId) {
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        final var sourceSpaceProvider = Optional.ofNullable(spaceProviders.getProvidersMap().get(spaceProviderId)) //
-                .orElseThrow(() -> new NoSuchElementException("Space provider '" + spaceProviderId + "' not found."));
-        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
+        final var sourceSpaceProvider = spaceProviders.getProvidersMap().get(spaceProviderId);
+        if (sourceSpaceProvider == null) {
+            throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
+        }
 
+        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         var url = ClassicAPBuildHubURL.getHubURL(itemId, sourceSpaceProvider, sourceSpace);
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
-        return true;
     }
 }

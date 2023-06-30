@@ -76,7 +76,7 @@ declare function openInHub(
   spaceProviderId: string,
   spaceId: string,
   itemId: string
-): boolean;
+): void;
 
 declare function saveWorkflowAs(
   projectId: string,
