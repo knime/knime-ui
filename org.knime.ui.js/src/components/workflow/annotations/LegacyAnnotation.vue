@@ -51,6 +51,16 @@ export default defineComponent({
       };
     },
   },
+
+  methods: {
+    getFontSize(part: any) {
+      return part.fontSize
+        ? `${
+            part.fontSize * this.$shapes.annotationsFontSizePointToPixelFactor
+          }px`
+        : null;
+    },
+  },
 });
 </script>
 
@@ -60,9 +70,7 @@ export default defineComponent({
       v-for="(part, i) in styledText"
       :key="`text-${i}`"
       :style="{
-        fontSize: part.fontSize
-          ? `${part.fontSize * $shapes.annotationsFontSizePointToPixelFactor}px`
-          : null,
+        fontSize: getFontSize(part),
         color: part.color,
         fontWeight: part.bold ? 'bold' : null,
         fontStyle: part.italic ? 'italic' : null,
