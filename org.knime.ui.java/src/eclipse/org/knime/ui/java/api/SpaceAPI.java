@@ -56,7 +56,6 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.webui.WebUIUtil;
@@ -235,21 +234,7 @@ final class SpaceAPI {
                 .orElseThrow(() -> new NoSuchElementException("Space provider '" + spaceProviderId + "' not found."));
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
 
-        var serverAddress = sourceSpaceProvider.getServerAddress().get();
-        serverAddress = serverAddress.endsWith("/") ? serverAddress : serverAddress + "/";
-        Pattern API_REMOVAL_PATTERN = Pattern.compile("(https?://)api\\.");
-        final var matcher = API_REMOVAL_PATTERN.matcher(serverAddress);
-        serverAddress =  matcher.find() ? matcher.replaceFirst(matcher.group(1)) : serverAddress;
-
-        var connection = sourceSpaceProvider.getConnection(true).get();
-        var username = connection.getUsername();
-
-        var KNIME_SPACES = "/spaces/";
-        var spaceName = sourceSpace.getName();
-        var LATEST = "/latest/";
-        var itemName = sourceSpace.getItemName(itemId);
-        var path = username + KNIME_SPACES + spaceName + LATEST + itemName + itemId.replace('*', '~');
-        var url = serverAddress + path;
+        var url = ClassicAPBuildHubURL.getHubURL(itemId, sourceSpaceProvider, sourceSpace);
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
         return true;
     }

@@ -59,6 +59,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
@@ -156,6 +157,26 @@ class SpaceAPITest {
         SpaceAPI.disconnectSpaceProvider("1");
 
         verify(connection).disconnect();
+    }
+
+    @Test
+    void testOpenInHub() {
+        var connectedSpaceProvider = mock(SpaceProvider.class);
+        when(connectedSpaceProvider.getId()).thenReturn("connected_provider");
+        when(connectedSpaceProvider.getName()).thenReturn("Connected Provider");
+        var connection = mock(SpaceProviderConnection.class);
+        when(connection.getUsername()).thenReturn("username");
+        when(connectedSpaceProvider.getConnection(true)).thenReturn(Optional.of(connection));
+        when(connectedSpaceProvider.getServerAddress()).thenReturn(Optional.of("test.test"));
+
+        var space = mock(Space.class);
+        when(space.getName()).thenReturn("spaceName");
+        when(space.getItemName("*itemId")).thenReturn("itemName");
+        when(connectedSpaceProvider.getSpace("spaceId")).thenReturn(space);
+
+        assertThat(ClassicAPBuildHubURL.getHubURL("*itemId", connectedSpaceProvider, space))
+            .isEqualTo("test.test/username/spaces/spaceName/latest/itemName~itemId");
+
     }
 
     @AfterEach
