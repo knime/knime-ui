@@ -32,7 +32,7 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    isQuickAddMenu: {
+    showFloatingHelpIcon: {
       type: Boolean,
       default: false,
     },
@@ -75,8 +75,9 @@ export default defineComponent({
   <div
     class="node"
     :class="{
-      selected: isSelected && isQuickAddMenu,
+      selected: isSelected && !showFloatingHelpIcon,
       highlighted: isHighlighted,
+      grabbable: showFloatingHelpIcon,
     }"
     @pointerenter="onPointerEnter"
     @pointerleave="onPointerLeave"
@@ -91,7 +92,7 @@ export default defineComponent({
       :icon="nodeTemplate.icon"
     />
     <FunctionButton
-      v-if="!isQuickAddMenu"
+      v-if="showFloatingHelpIcon"
       :class="[
         'description-icon',
         { 'selected-icon': isSelected, 'hovered-icon': nodeHovered },
@@ -141,15 +142,19 @@ export default defineComponent({
     right: 15px;
   }
 
-  & .add-action-button {
+  /* & .add-action-button {
     position: absolute;
     inset: 0 0 0 50px;
     overflow: visible;
     width: auto;
-  }
+  } */
 
   &:hover {
     cursor: pointer;
+  }
+
+  &.grabbable:hover {
+    cursor: grab;
   }
 
   & .description-icon {

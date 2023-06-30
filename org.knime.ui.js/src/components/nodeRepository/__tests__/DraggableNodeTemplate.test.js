@@ -159,7 +159,7 @@ describe("DraggableNodeTemplate", () => {
 
   it("adds style if node is selected", () => {
     props.isSelected = true;
-    props.isQuickAddMenu = true;
+    props.showFloatingHelpIcon = false;
     doMount();
 
     const node = wrapper.find(".node");

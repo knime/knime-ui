@@ -14,7 +14,7 @@ describe("NodeTemplate.vue", () => {
     nodeTemplate: Object;
     isSelected: Boolean;
     isHighlighted: Boolean;
-    isQuickAddMenu: Boolean;
+    showFloatingHelpIcon: Boolean;
   } = {
     nodeTemplate: {
       id: "node_1",
@@ -22,7 +22,7 @@ describe("NodeTemplate.vue", () => {
     },
     isSelected: false,
     isHighlighted: false,
-    isQuickAddMenu: false,
+    showFloatingHelpIcon: true,
   };
 
   const doMount = ({ props = {}, mocks = {} } = {}) => {
@@ -85,7 +85,7 @@ describe("NodeTemplate.vue", () => {
   it("does not show question mark icon for quick add node menu", () => {
     const { wrapper } = doMount({
       props: {
-        isQuickAddMenu: true,
+        showFloatingHelpIcon: false,
       },
     });
 

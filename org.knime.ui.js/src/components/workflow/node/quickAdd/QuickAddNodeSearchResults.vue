@@ -67,14 +67,12 @@ export default defineComponent({
     <template #topNodeTemplate="itemProps">
       <NodeTemplate
         v-bind="itemProps"
-        :is-quick-add-menu="true"
         @click="$emit('addNode', itemProps.nodeTemplate)"
       />
     </template>
     <template #bottomNodeTemplate="itemProps">
       <NodeTemplate
         v-bind="itemProps"
-        :is-quick-add-menu="true"
         @click="$emit('addNode', itemProps.nodeTemplate)"
       />
     </template>

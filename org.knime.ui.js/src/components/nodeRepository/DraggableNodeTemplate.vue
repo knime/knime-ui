@@ -138,6 +138,7 @@ export default {
     :node-template="nodeTemplate"
     :is-selected="isSelected"
     :is-highlighted="isHighlighted"
+    :show-floating-help-icon="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @dblclick="onDoubleClick"

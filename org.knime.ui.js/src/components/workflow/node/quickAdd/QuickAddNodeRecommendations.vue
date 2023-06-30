@@ -54,7 +54,6 @@ export default defineComponent({
       <template #item="itemProps">
         <NodeTemplate
           v-bind="itemProps"
-          :is-quick-add-menu="true"
           @click="$emit('addNode', itemProps.nodeTemplate)"
         />
       </template>
