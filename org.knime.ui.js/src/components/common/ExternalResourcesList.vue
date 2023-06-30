@@ -10,9 +10,9 @@ import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import PlusIcon from "webapps-common/ui/assets/img/icons/plus.svg";
+import { buildUrlRegex } from "@/util/regex";
 
-import { URL_REGEX } from "@/util/regex";
-
+const URL_REGEX = buildUrlRegex(true);
 /**
  * Wraps the webapps-common LinkList component to render them alongside a title and a separator
  */

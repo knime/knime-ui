@@ -6,7 +6,9 @@ import Button from "webapps-common/ui/components/Button.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 
-import { URL_REGEX } from "@/util/regex";
+import { buildUrlRegex } from "@/util/regex";
+
+const URL_REGEX = buildUrlRegex();
 
 interface Props {
   text: string;

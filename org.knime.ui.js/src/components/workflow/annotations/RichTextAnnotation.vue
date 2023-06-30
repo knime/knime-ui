@@ -4,10 +4,12 @@ import { ref, computed, toRefs } from "vue";
 import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor/RichTextEditor.vue";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import { URL_REGEX } from "@/util/regex";
+import { buildUrlRegex } from "@/util/regex";
 
 import RichTextAnnotationToolbar from "./RichTextAnnotationToolbar.vue";
 import { ControlClickLink } from "./extended-link";
+
+const URL_REGEX = buildUrlRegex();
 
 interface Props {
   id: string;

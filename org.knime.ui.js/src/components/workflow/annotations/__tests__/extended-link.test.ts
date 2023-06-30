@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { URL_REGEX } from "@/util/regex";
+import { buildUrlRegex } from "@/util/regex";
+
 import { ControlClickLink } from "../extended-link";
+
+const URL_REGEX = buildUrlRegex();
 
 describe("transform-control-utils", () => {
   it("extends tiptap link and blocks openOnClick", () => {

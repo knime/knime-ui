@@ -2,7 +2,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { getAttributes } from "@tiptap/core";
 import type { Editor } from "@tiptap/vue-3";
 import Link from "@tiptap/extension-link";
-import { getMetaOrCtrlKey } from "@/util/navigator";
+import { getMetaOrCtrlKey, isMac } from "@/util/navigator";
 
 interface CustomLinkOptions {
   isEditing: boolean;
@@ -65,6 +65,19 @@ export const ControlClickLink = Link.extend({
       openOnClick: false,
     };
   },
+
+  addAttributes() {
+    const modifier = isMac() ? "⌘" : "Ctrl +";
+
+    return {
+      ...this.parent?.(),
+
+      title: {
+        default: `Use "${modifier} click" to follow link`,
+      },
+    };
+  },
+
   addProseMirrorPlugins() {
     const plugins: Plugin[] = this.parent?.() || [];
 
