@@ -12,7 +12,7 @@ import type { DragConnector } from "./types";
 
 interface Props {
   port?: NodePort;
-  dragConnector: DragConnector;
+  dragConnector?: DragConnector;
   direction: Direction;
   targeted: boolean;
   didDragToCompatibleTarget: boolean;
