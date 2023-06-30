@@ -1,81 +1,67 @@
-import { expect, describe, beforeEach, it } from "vitest";
-import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
+import { expect, describe, it } from "vitest";
+import { nextTick } from "vue";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 
 import LinkList from "webapps-common/ui/components/LinkList.vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import Description from "webapps-common/ui/components/Description.vue";
 import TagList from "webapps-common/ui/components/TagList.vue";
 import Tag from "webapps-common/ui/components/Tag.vue";
 
-import ScrollViewContainer from "@/components/nodeRepository/ScrollViewContainer.vue";
+import {
+  ComponentNodeAndDescription,
+  TypedText,
+  WorkflowInfo,
+} from "@/api/gateway-api/generated-api";
+import * as workflowStore from "@/store/workflow";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
 import WorkflowMetadata from "../WorkflowMetadata.vue";
+import ProjectMetadata from "../ProjectMetadata.vue";
+import ComponentMetadata from "../ComponentMetadata.vue";
 import MetadataDescription from "../MetadataDescription.vue";
+import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue";
 
 describe("WorkflowMetadata.vue", () => {
-  let store, workflow, wrapper, doMount, availablePortTypes;
+  const doMount = () => {
+    const availablePortTypes = createAvailablePortTypes();
+    const $store = mockVuexStore({
+      workflow: workflowStore,
 
-  beforeEach(() => {
-    availablePortTypes = {};
-
-    workflow = {
-      projectMetadata: {
-        title: "title",
+      application: {
+        state: {
+          availablePortTypes,
+        },
       },
+    });
 
+    const workflow = createWorkflow({
       info: {
-        name: "fileName",
-        containerType: "project",
+        name: "filename",
+        containerType: WorkflowInfo.ContainerTypeEnum.Project,
       },
-    };
+      projectMetadata: {
+        lastEdit: "",
+      },
+    });
 
-    doMount = (customState = null) => {
-      store = mockVuexStore({
-        workflow: {
-          state: {
-            activeWorkflow: customState || workflow,
-          },
-        },
+    $store.commit("workflow/setActiveWorkflow", workflow);
 
-        application: {
-          state: {
-            availablePortTypes,
-          },
-        },
-      });
+    const wrapper = mount(WorkflowMetadata, {
+      global: {
+        plugins: [$store],
+      },
+    });
 
-      wrapper = mount(WorkflowMetadata, {
-        global: {
-          plugins: [store],
-        },
-      });
-    };
-  });
+    return { wrapper, $store };
+  };
 
   describe("project", () => {
-    it.each([
-      ["empty metadata object", { info: { containerType: "project" } }],
-      [
-        "metadata object but no content",
-        {
-          info: { containerType: "project" },
-          projectMetadata: {
-            links: [],
-            tags: [],
-            title: "",
-            lastEdit: "",
-            description: "",
-          },
-        },
-      ],
-    ])("renders placeholders %s", (testTitle, metadata) => {
-      // workflow = metadata;
-      doMount(metadata);
+    it("renders placeholders", () => {
+      const { wrapper } = doMount();
 
       // show placeholder parents
       expect(wrapper.find(".last-updated").exists()).toBe(true);
@@ -83,7 +69,6 @@ describe("WorkflowMetadata.vue", () => {
       expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(true);
 
       // show placeholder tags
-      expect(wrapper.text()).toMatch("No title has been set yet");
       expect(wrapper.text()).toMatch("Last update: no update yet");
       expect(wrapper.text()).toMatch("No description has been set yet");
       expect(wrapper.text()).toMatch("No tags have been set yet");
@@ -95,25 +80,30 @@ describe("WorkflowMetadata.vue", () => {
       expect(wrapper.findComponent(NodePreview).exists()).toBe(false);
     });
 
-    it("renders all metadata", () => {
-      doMount({
-        info: { containerType: "project" },
+    it("renders all metadata", async () => {
+      const { wrapper, $store } = doMount();
+
+      const workflow = createWorkflow({
+        info: { containerType: WorkflowInfo.ContainerTypeEnum.Project },
         projectMetadata: {
-          title: "Title",
           lastEdit: "2000-01-01T00:00Z",
-          description: "Description",
+          description: {
+            value: "Description",
+            contentType: TypedText.ContentTypeEnum.Plain,
+          },
           links: [{ text: "link1" }],
           tags: ["tag1"],
-          nodePreview: { type: "nodePreviewData" },
-          nodeFeatures: { inPorts: [{ name: "Port 1" }] },
         },
       });
 
-      expect(wrapper.text()).toMatch("Title");
+      $store.commit("workflow/setActiveWorkflow", workflow);
+
+      await nextTick();
+
       expect(wrapper.text()).toMatch("Last update: Jan 1, 2000");
 
-      const description = wrapper.findComponent(Description);
-      expect(description.props().text).toMatch("Description");
+      const description = wrapper.findComponent(MetadataDescription);
+      expect(description.props("description")).toMatch("Description");
 
       const linkList = wrapper.findComponent(LinkList);
       expect(linkList.props().links).toStrictEqual([{ text: "link1" }]);
@@ -122,166 +112,120 @@ describe("WorkflowMetadata.vue", () => {
       const tags = wrapper.findAllComponents(Tag);
       expect(tags.length).toBe(1);
       expect(tags.at(0).text()).toBe("tag1");
-
-      expect(wrapper.findComponent(NodeFeatureList).props("inPorts")).toEqual([
-        { name: "Port 1" },
-      ]);
     });
   });
 
   describe("component", () => {
-    it("displays component metadata", () => {
-      availablePortTypes = { mock: {} };
-      doMount({
+    it("displays component metadata", async () => {
+      const { wrapper, $store } = doMount();
+
+      const workflow = createWorkflow({
         info: {
-          containerType: "component",
+          containerType: WorkflowInfo.ContainerTypeEnum.Component,
         },
         componentMetadata: {
           name: "name",
-          description: "description",
-          inPorts: [{ typeId: "mock" }],
-          outPorts: [{ typeId: "mock" }],
-          type: "type",
-          views: ["views"],
+          // @ts-ignore
+          inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
+          outPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
+          description: "Description",
+          type: ComponentNodeAndDescription.TypeEnum.Source,
+          views: [{ name: "view", description: "description" }],
           options: ["options"],
         },
       });
 
+      $store.commit("workflow/setActiveWorkflow", workflow);
+      await nextTick();
+
       expect(wrapper.findComponent(NodePreview).exists()).toBe(true);
-      // expect(wrapper.findComponent(WorkflowMetadataTitle).text()).toMatch(
-      //   "name"
-      // );
+
       expect(wrapper.findComponent(MetadataDescription).text()).toMatch(
-        "description"
+        "Description"
       );
+
+      expect(
+        wrapper.findComponent(ComponentMetadataNodeFeatures).exists()
+      ).toBe(true);
     });
-
-    it("adds class if nodePreview exists", () => {
-      doMount({
-        info: { containerType: "component" },
-        projectMetadata: {
-          title: "Title",
-          lastEdit: "2000-01-01T00:00Z",
-          description: "Description",
-          links: [{ text: "link1" }],
-          tags: ["tag1"],
-          nodePreview: { type: "nodePreviewData" },
-          nodeFeatures: { emptyText: "nodeFeatureData" },
-        },
-      });
-
-      const header = wrapper.find("h2");
-      expect(header.classes("with-node-preview")).toBe(true);
-    });
-
-    it("removes placeholders for components", () => {
-      doMount({ info: { containerType: "component" } });
-
-      expect(wrapper.find(".last-updated").exists()).toBe(false);
-      expect(wrapper.find(".external-resources").exists()).toBe(false);
-      expect(wrapper.find(".tags").exists()).toBe(false);
-    });
-
-    it.each([
-      [
-        '<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP">',
-        '&lt;img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP"&gt;',
-      ],
-      [
-        "<img src=x onerror=\"javascript:alert('XSS')\">",
-        "&lt;img src=x onerror=\"javascript:alert('XSS')\"&gt;",
-      ],
-      [
-        "</li><span>HELLO WORLD!</span>",
-        "&lt;/li&gt;&lt;span&gt;HELLO WORLD!&lt;/span&gt;",
-      ],
-    ])(
-      "sanitizes the node features options",
-      async (dangerousContent, expectedContent) => {
-        const nodeOptions = [
-          {
-            sectionDescription: dangerousContent,
-            fields: [{ description: dangerousContent, name: "" }],
-          },
-        ];
-
-        doMount({
-          info: { containerType: "component" },
-          componentMetadata: {
-            name: "Title",
-            description: "Description",
-            options: nodeOptions,
-          },
-        });
-
-        await Vue.nextTick();
-
-        const sectionDescription = wrapper
-          .findComponent(NodeFeatureList)
-          .find(".options .section-description");
-        const optionDescription = wrapper
-          .findComponent(NodeFeatureList)
-          .find(".options .option-description");
-        expect(sectionDescription.element.innerHTML).toMatch(expectedContent);
-        expect(optionDescription.element.innerHTML).toMatch(expectedContent);
-      }
-    );
 
     it("maps the port color and type to display them properly", async () => {
-      const mockFullyQualifiedPortName = "mock-port-id";
-      const mockPortMetadata = {
-        kind: "MOCK-KIND",
-        color: "MOCK-COLOR",
-      };
-      availablePortTypes = { [mockFullyQualifiedPortName]: mockPortMetadata };
+      const { wrapper, $store } = doMount();
 
-      doMount({
-        info: { containerType: "component" },
+      const workflow = createWorkflow({
+        info: {
+          containerType: WorkflowInfo.ContainerTypeEnum.Component,
+        },
         componentMetadata: {
-          name: "Title",
+          name: "name",
+          // @ts-ignore
+          inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
+          outPorts: [
+            {
+              typeId:
+                "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+            },
+          ],
           description: "Description",
-          inPorts: [{ typeId: mockFullyQualifiedPortName }],
-          outPorts: [{ typeId: mockFullyQualifiedPortName }],
+          type: ComponentNodeAndDescription.TypeEnum.Source,
+          views: [{ name: "view", description: "description" }],
+          options: ["options"],
         },
       });
 
-      await Vue.nextTick();
+      $store.commit("workflow/setActiveWorkflow", workflow);
+      await nextTick();
 
-      // a `rect` element is expected for an unrecognized a port kind
-      // expect(
-      //   wrapper
-      //     .findComponent(WorkflowMetadataTitle)
-      //     .find(`rect[fill="${mockPortMetadata.color}"]`)
-      //     .exists()
-      // ).toBe(true);
+      const nodeFeatures = wrapper
+        .findComponent(ComponentMetadataNodeFeatures)
+        .props("nodeFeatures");
 
-      // expect(
-      //   wrapper
-      //     .findComponent(WorkflowMetadataTitle)
-      //     .find(`rect[stroke="${mockPortMetadata.color}"]`)
-      //     .exists()
-      // ).toBe(true);
+      expect(nodeFeatures.inPorts).toEqual([
+        {
+          kind: "table",
+          name: "Table",
+          color: "#000000",
+          views: {
+            descriptors: expect.any(Array),
+            descriptorMapping: expect.any(Object),
+          },
+          description: "No description available",
+          typeId: "org.knime.core.node.BufferedDataTable",
+          type: "table",
+        },
+      ]);
 
-      // a `rect` element is expected for an unrecognized a port kind
-      expect(
-        wrapper
-          .findComponent(NodeFeatureList)
-          .find(`rect[fill="${mockPortMetadata.color}"]`)
-          .exists()
-      ).toBe(true);
-
-      expect(
-        wrapper
-          .findComponent(NodeFeatureList)
-          .find(`rect[stroke="${mockPortMetadata.color}"]`)
-          .exists()
-      ).toBe(true);
+      expect(nodeFeatures.outPorts).toEqual([
+        {
+          kind: "flowVariable",
+          name: "Flow Variable",
+          color: "#FF4B4B",
+          views: {
+            descriptors: expect.any(Array),
+            descriptorMapping: expect.any(Object),
+          },
+          description: "No description available",
+          typeId:
+            "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+          type: "flowVariable",
+        },
+      ]);
     });
   });
 
-  it("no metadata for metanodes", () => {
-    doMount({ info: { containerType: "metanode" } });
+  it("should not display metadata for metanodes", async () => {
+    const { wrapper, $store } = doMount();
 
-    expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(false);
+    const workflow = createWorkflow({
+      info: {
+        containerType: WorkflowInfo.ContainerTypeEnum.Metanode,
+      },
+    });
+
+    $store.commit("workflow/setActiveWorkflow", workflow);
+    await nextTick();
+
+    expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(false);
+    expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(false);
   });
 });

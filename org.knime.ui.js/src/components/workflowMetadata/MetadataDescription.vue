@@ -20,7 +20,7 @@ const emit = defineEmits<{
     <MetadataPlaceholder
       v-if="!description && !editable"
       padded
-      text="No description has been set"
+      text="No description has been set yet"
     />
 
     <RichTextEditor
@@ -36,8 +36,6 @@ const emit = defineEmits<{
         bulletList: true,
         orderedList: true,
         underline: true,
-        strike: true,
-        horizontalRule: true,
       }"
       :with-border="editable"
       @update:model-value="emit('change', $event)"

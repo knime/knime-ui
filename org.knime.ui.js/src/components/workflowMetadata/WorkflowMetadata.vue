@@ -44,7 +44,7 @@ const updateMetadata = ({ description, links, tags }) => {
 <template>
   <div v-if="workflow && !isMetanode" class="metadata">
     <ProjectMetadata
-      v-if="isProject"
+      v-if="isProject && workflow.projectMetadata"
       :is-editing="isEditing"
       :workflow="workflow"
       @edit-start="isEditing = true"
@@ -53,7 +53,7 @@ const updateMetadata = ({ description, links, tags }) => {
     />
 
     <ComponentMetadata
-      v-if="isComponent"
+      v-if="isComponent && workflow.componentMetadata"
       :workflow="workflow"
       :available-port-types="availablePortTypes"
     />

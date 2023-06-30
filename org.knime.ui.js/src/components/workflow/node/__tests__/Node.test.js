@@ -42,7 +42,7 @@ const commonNode = {
 
   position: { x: 500, y: 200 },
   annotation: {
-    text: "ThatsMyNode",
+    text: { value: "ThatsMyNode", contentType: "text/plain" },
     backgroundColor: "rgb(255, 216, 0)",
     styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
     textAlign: "center",
@@ -238,7 +238,7 @@ describe("Node", () => {
 
     it("displays annotation", () => {
       expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
-        value: props.annotation.text,
+        value: props.annotation.text.value,
         kind: commonNode.kind,
         editable: true,
         nodeId: commonNode.id,

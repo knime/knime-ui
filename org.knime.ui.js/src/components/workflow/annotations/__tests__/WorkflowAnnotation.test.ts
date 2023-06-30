@@ -21,7 +21,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 
 // @ts-ignore
-import RichTextEditor from "webapps-common/ui/components/RichTextEditor";
+import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor";
 import WorkflowAnnotationComp from "../WorkflowAnnotation.vue";
 import RichTextAnnotation from "../RichTextAnnotation.vue";
 import LegacyAnnotation from "../LegacyAnnotation.vue";

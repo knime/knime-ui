@@ -49,7 +49,17 @@ const customExtensions = [
       :editable="editable"
       :with-border="false"
       :custom-extensions="customExtensions"
-      :base-extensions="{ all: true }"
+      :base-extensions="{
+        bold: true,
+        italic: true,
+        underline: true,
+        textAlign: true,
+        bulletList: true,
+        orderedList: true,
+        heading: true,
+        horizontalRule: true,
+        strike: true,
+      }"
       @update:model-value="emit('change', $event)"
       @dblclick="!editable && emit('editStart')"
     >

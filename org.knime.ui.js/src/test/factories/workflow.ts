@@ -6,6 +6,7 @@ import {
   type Workflow,
   WorkflowInfo,
   MetaNodePort,
+  TypedText,
 } from "@/api/gateway-api/generated-api";
 import { connectMultipleNodes } from "./connections";
 import {
@@ -152,6 +153,12 @@ export const createWorkflow = (data: DeepPartial<Workflow> = {}): Workflow => {
       containerId: "root",
       containerType: WorkflowInfo.ContainerTypeEnum.Project,
       name: "KNIME_MockWorkflow",
+    },
+    projectMetadata: {
+      description: { value: "", contentType: TypedText.ContentTypeEnum.Plain },
+      links: [],
+      tags: [],
+      lastEdit: new Date(),
     },
     dirty: false,
     connections: {},
