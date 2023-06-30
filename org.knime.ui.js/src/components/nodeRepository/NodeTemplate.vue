@@ -142,13 +142,6 @@ export default defineComponent({
     right: 15px;
   }
 
-  /* & .add-action-button {
-    position: absolute;
-    inset: 0 0 0 50px;
-    overflow: visible;
-    width: auto;
-  } */
-
   &:hover {
     cursor: pointer;
   }
