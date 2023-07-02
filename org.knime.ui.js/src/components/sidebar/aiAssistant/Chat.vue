@@ -28,7 +28,14 @@ const isProcessing = computed(
 const statusUpdate = computed(
   () => store.state.aiAssistant[props.chainType].statusUpdate
 );
-
+const lastUserMessage = computed(() => {
+  const messages = store.state.aiAssistant[props.chainType].messages;
+  const lastUserMessage = messages
+    .slice()
+    .reverse()
+    .find((message) => message.role === "user");
+  return lastUserMessage?.content ?? "";
+});
 const sendMessage = (message) => {
   store.dispatch("aiAssistant/makeAiRequest", {
     chainType: props.chainType,
@@ -83,6 +90,7 @@ watch(
     <ChatControls
       class="chat-controls"
       :is-processing="isProcessing"
+      :last-user-message="lastUserMessage"
       @send-message="sendMessage"
       @abort="abort"
     />

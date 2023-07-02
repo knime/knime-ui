@@ -2,6 +2,7 @@
 import { ref } from "vue";
 
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
+import Disclaimer from "./Disclaimer.vue";
 import Chat from "./Chat.vue";
 
 const chainType = ref<"qa" | "build">("qa");
@@ -21,6 +22,7 @@ const chainType = ref<"qa" | "build">("qa");
       />
     </div>
     <hr />
+    <Disclaimer />
     <Chat
       v-show="chainType === 'qa'"
       chain-type="qa"

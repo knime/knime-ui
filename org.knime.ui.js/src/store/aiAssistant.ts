@@ -60,6 +60,7 @@ export const mutations = {
   },
   clearChain(state, { chainType }) {
     state[chainType].isProcessing = false;
+    state[chainType].statusUpdate = false;
     state[chainType].projectAndWorkflowIds = null;
   },
 };

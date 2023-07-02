@@ -13,6 +13,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  lastUserMessage: {
+    type: String,
+    default: "",
+  },
 });
 
 const { textarea, input } = useTextareaAutosize();
@@ -28,6 +32,9 @@ const handleKeyDown = (e) => {
     if (!props.isProcessing) {
       sendMessage();
     }
+  }
+  if (e.key === "ArrowUp" && input.value === "") {
+    input.value = props.lastUserMessage;
   }
 };
 
