@@ -38,6 +38,7 @@ const chainType = ref<"qa" | "build">("qa");
 
 <style lang="postcss" scoped>
 .ai-assistant {
+  font-family: "Roboto Condensed", sans-serif;
   display: flex;
   flex-direction: column;
   padding: 8px 20px 20px;
