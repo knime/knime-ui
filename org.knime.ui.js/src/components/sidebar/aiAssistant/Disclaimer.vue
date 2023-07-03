@@ -4,6 +4,14 @@ import { ref } from "vue";
 import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+
+const props = defineProps({
+  text: {
+    type: String,
+    required: true,
+  },
+});
+
 const showDisclaimer = ref(
   localStorage.getItem("doNotShowDisclaimerAgain") !== "true"
 );
@@ -24,8 +32,7 @@ const closeDisclaimer = () => {
     </Button>
     <div class="title">Disclaimer</div>
     <p>
-      The KNIME AI Assistant is a prototype. It is not intended for production
-      use.
+      {{ props.text }}
     </p>
 
     <Checkbox v-model="doNotShowDisclaimerAgain" class="checkbox">
