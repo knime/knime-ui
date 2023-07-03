@@ -9,6 +9,7 @@ import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import { TypedText, type Link } from "@/api/gateway-api/generated-api";
 import type { WorkflowState } from "@/store/workflow";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
+import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 
 import ProjectMetadataLastEdit from "./ProjectMetadataLastEdit.vue";
 import MetadataDescription from "./MetadataDescription.vue";
@@ -34,7 +35,15 @@ const emit = defineEmits<{
 }>();
 
 const projectMetadata = computed(() => props.workflow.projectMetadata);
-const description = computed(() => projectMetadata.value.description.value);
+const description = computed(() => {
+  const isPlainText =
+    projectMetadata.value.description.contentType ===
+    TypedText.ContentTypeEnum.Plain;
+
+  return isPlainText
+    ? recreateLinebreaks(projectMetadata.value.description.value)
+    : projectMetadata.value.description.value;
+});
 const lastEdit = computed(() => projectMetadata.value.lastEdit.toString());
 
 const isValid = ref(true);
