@@ -86,6 +86,11 @@ public final class ChatAPI {
          * @param chainType the type of chain to cancel
          */
         void onCancel(String chainType);
+
+        /**
+         * @return the http(s) address of the server
+         */
+        String getServerAddress();
     }
 
     private static final Set<ChatListener> LISTENERS = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -137,6 +142,18 @@ public final class ChatAPI {
     @API
     public static void abortAiRequest(final String chainType) {
         LISTENERS.forEach(l -> l.onCancel(chainType));
+    }
+
+    /**
+     * @return the http(s) address of the server
+     */
+    @API
+    public static String getAiServerAddress() {
+        if (LISTENERS.isEmpty()) {
+            return null;
+        } else {
+            return LISTENERS.iterator().next().getServerAddress();
+        }
     }
 
 
