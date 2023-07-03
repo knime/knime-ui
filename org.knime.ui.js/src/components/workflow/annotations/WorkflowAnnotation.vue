@@ -9,7 +9,9 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { TypedText } from "@/api/gateway-api/generated-api";
 
+import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 import { getMetaOrCtrlKey } from "@/util/navigator";
+
 import TransformControls from "./TransformControls.vue";
 import LegacyAnnotation from "./LegacyAnnotation.vue";
 import RichTextAnnotation from "./RichTextAnnotation.vue";
@@ -115,9 +117,6 @@ export default defineComponent({
     },
 
     initialRichTextAnnotationValue() {
-      const recreateLinebreaks = (content: string) =>
-        content.replaceAll("\r\n", "<br />");
-
       return this.isRichTextAnnotation
         ? this.annotation.text.value
         : recreateLinebreaks(this.annotation.text.value);

@@ -176,6 +176,19 @@ public final class PerspectiveSwitchAddon {
             lifeCycle.saveState();
             lifeCycle.suspend();
         }
+
+        // Special case handling that's necessary for the following reason:
+        // When starting a 5.x AP with a 4.x workspace for the very first time, it starts up with the Modern UI
+        // (by default) but switches back again to the Classic UI during start-up (for unknown reasons).
+        // I.e. the Modern UI has been initialized at this point but was never loaded (web app loaded state).
+        // Thus this check to make sure we still suspend the Modern UI properly - which frees-up memory and
+        // allows for a proper shutdown later on.
+        // Fixes NXT-1728.
+        if (lifeCycle.isLastStateTransition(StateTransition.INIT)) {
+            lifeCycle.skipStateTransition(StateTransition.SAVE_STATE);
+            lifeCycle.suspend();
+        }
+
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(true);
         switchToJavaUITheme();
