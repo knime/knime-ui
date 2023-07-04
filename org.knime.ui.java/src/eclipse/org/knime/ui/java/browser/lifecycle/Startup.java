@@ -49,6 +49,7 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.knime.ui.java.ChromiumExternalMessagePump;
 import org.knime.ui.java.util.PerspectiveUtil;
 
@@ -68,7 +69,7 @@ final class Startup {
         // Stored as a eclipse preference and subsequently (from here on)
         // controlled via the 'perspective' system property.
         var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
-        if (prefs != null && !prefs.get(SharedConstants.START_WEB_UI_PREF_KEY, "not set").equals("not set")) {
+        if (hasPreference(prefs, SharedConstants.START_WEB_UI_PREF_KEY)) {
             if (prefs.getBoolean(SharedConstants.START_WEB_UI_PREF_KEY, true)) {
                 System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
                 ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
@@ -78,6 +79,10 @@ final class Startup {
             }
         }
         // else: if no perspective is stored, the fallback perspective will be determined in KNIMEApplication
+    }
+
+    private static boolean hasPreference(final IEclipsePreferences prefs, final String key) {
+        return prefs != null && !prefs.get(key, "not set").equals("not set");
     }
 
 }
