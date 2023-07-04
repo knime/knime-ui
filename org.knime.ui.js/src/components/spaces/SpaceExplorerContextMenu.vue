@@ -5,7 +5,6 @@ import MenuItems, {
 
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
-import ITEM_TYPES from "@/util/spaceItemTypes";
 import { computed } from "vue";
 import { useStore } from "vuex";
 import type { RootStoreState } from "@/store/types";
@@ -79,7 +78,7 @@ const fileExplorerContextMenuItems = computed(() => {
   const selectionContainsFile = (selectedIds: string[]) => {
     return workflowGroup.items
       .filter((item) => selectedIds.includes(item.id))
-      .some((selectedItem) => selectedItem.type === ITEM_TYPES.Data);
+      .some((selectedItem) => selectedItem.type === SpaceItem.TypeEnum.Data);
   };
 
   const getHubActions = () => {
