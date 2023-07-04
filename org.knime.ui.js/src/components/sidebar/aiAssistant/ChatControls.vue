@@ -55,6 +55,7 @@ const disabled = computed(() => !input.value && !props.isProcessing);
       ref="textarea"
       v-model="input"
       class="textarea"
+      maxlength="300"
       @keydown="handleKeyDown"
     />
     <Button class="send-button" :disabled="disabled" @click="handleClick">
