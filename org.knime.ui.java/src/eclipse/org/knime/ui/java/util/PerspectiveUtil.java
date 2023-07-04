@@ -116,15 +116,18 @@ public final class PerspectiveUtil {
      */
     private static final String LOCAL_CONTENT_PROVIDER_ID = "LOCAL";
 
-    private static boolean isClassicPerspectiveLoaded = false;
+    private static Boolean isClassicPerspectiveLoaded;
 
-    private static boolean isClassicPerspectiveActive = false;
+    private static Boolean isClassicPerspectiveActive;
 
     /**
      * @return {@code true} if the classic perspective has been loaded (i.e. the user switched from there to the Modern
      *         UI at least once)
      */
     public static boolean isClassicPerspectiveLoaded() {
+        if (isClassicPerspectiveLoaded == null) {
+            return isClassicPerspectiveActive();
+        }
         return isClassicPerspectiveLoaded;
     }
 
@@ -132,6 +135,9 @@ public final class PerspectiveUtil {
      * @return {@code true} if the classic perspective is currently active
      */
     public static boolean isClassicPerspectiveActive() {
+        if (isClassicPerspectiveActive == null) {
+            return CLASSIC_PERSPECTIVE_ID.equals(System.getProperty(PERSPECTIVE_SYSTEM_PROPERTY));
+        }
         return isClassicPerspectiveActive;
     }
 

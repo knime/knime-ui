@@ -75,7 +75,6 @@ final class Startup {
                 ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
             } else {
                 System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
-                PerspectiveUtil.setClassicPerspectiveActive(true);
             }
         }
         // else: if no perspective is stored, the fallback perspective will be determined in KNIMEApplication
