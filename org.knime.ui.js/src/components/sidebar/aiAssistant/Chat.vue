@@ -101,7 +101,7 @@ watch(
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: calc(100% - 47px);
+  min-height: 0;
 
   & .message-area {
     width: 100%;
