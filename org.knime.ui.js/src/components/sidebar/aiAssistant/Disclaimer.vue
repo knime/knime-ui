@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 
@@ -12,16 +11,10 @@ defineProps({
   },
 });
 
-const showDisclaimer = ref(
-  localStorage.getItem("doNotShowDisclaimerAgain") !== "true"
-);
-const doNotShowDisclaimerAgain = ref(false);
+const showDisclaimer = ref(true);
 
 const closeDisclaimer = () => {
   showDisclaimer.value = false;
-  if (doNotShowDisclaimerAgain.value) {
-    localStorage.setItem("doNotShowDisclaimerAgain", "true");
-  }
 };
 </script>
 
@@ -34,10 +27,6 @@ const closeDisclaimer = () => {
     <p class="content">
       {{ text }}
     </p>
-
-    <Checkbox v-model="doNotShowDisclaimerAgain" class="checkbox">
-      Do not show again.
-    </Checkbox>
   </div>
 </template>
 
