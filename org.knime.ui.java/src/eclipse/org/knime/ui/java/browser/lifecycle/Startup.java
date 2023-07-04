@@ -64,17 +64,20 @@ final class Startup {
     }
 
     static void run() {
-        // Determine with what perspective to start (classic or modern UI).
+        // Read property which determines with what perspective to start (classic or modern UI).
         // Stored as a eclipse preference and subsequently (from here on)
         // controlled via the 'perspective' system property.
         var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
-        if (prefs == null || prefs.getBoolean(SharedConstants.PREFERENCE_KEY, true)) {
-            System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
-            ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
-        } else {
-            System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
-            PerspectiveUtil.setClassicPerspectiveActive(true);
+        if (prefs != null && !prefs.get(SharedConstants.START_WEB_UI_PREF_KEY, "not set").equals("not set")) {
+            if (prefs.getBoolean(SharedConstants.START_WEB_UI_PREF_KEY, true)) {
+                System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
+                ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
+            } else {
+                System.setProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY, PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
+                PerspectiveUtil.setClassicPerspectiveActive(true);
+            }
         }
+        // else: if no perspective is stored, the fallback perspective will be determined in KNIMEApplication
     }
 
 }
