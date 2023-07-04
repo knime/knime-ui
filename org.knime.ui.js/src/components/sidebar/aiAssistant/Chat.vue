@@ -30,10 +30,9 @@ const statusUpdate = computed(
 );
 const lastUserMessage = computed(() => {
   const messages = store.state.aiAssistant[props.chainType].messages;
-  const lastUserMessage = messages
-    .slice()
-    .reverse()
-    .find((message) => message.role === "user");
+  const lastUserMessage = messages.findLast(
+    (message) => message.role === "user"
+  );
   return lastUserMessage?.content ?? "";
 });
 const sendMessage = (message) => {
