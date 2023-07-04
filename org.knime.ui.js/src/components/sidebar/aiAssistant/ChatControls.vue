@@ -59,7 +59,7 @@ const disabled = computed(() => !input.value && !props.isProcessing);
       @keydown="handleKeyDown"
     />
     <Button class="send-button" :disabled="disabled" @click="handleClick">
-      <AbortIcon v-if="props.isProcessing" class="abort-icon" />
+      <AbortIcon v-if="isProcessing" class="abort-icon" />
       <SendIcon v-else />
     </Button>
   </div>

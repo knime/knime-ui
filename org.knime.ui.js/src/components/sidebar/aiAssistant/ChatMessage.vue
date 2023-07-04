@@ -54,11 +54,7 @@ const isAssistant = computed(() => props.role === "assistant");
       </div>
       <div class="container">
         <!-- eslint-disable vue/no-v-html  -->
-        <div
-          v-if="props.content"
-          :class="{ error: props.isError }"
-          v-html="props.content"
-        />
+        <div v-if="content" :class="{ error: isError }" v-html="content" />
         <div v-else>
           <div class="placeholder" />
           <div class="placeholder" />

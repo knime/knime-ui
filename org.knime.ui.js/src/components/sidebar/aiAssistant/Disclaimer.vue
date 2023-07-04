@@ -5,7 +5,7 @@ import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 
-const props = defineProps({
+defineProps({
   text: {
     type: String,
     required: true,
@@ -32,7 +32,7 @@ const closeDisclaimer = () => {
     </Button>
     <div class="title">Disclaimer</div>
     <p class="content">
-      {{ props.text }}
+      {{ text }}
     </p>
 
     <Checkbox v-model="doNotShowDisclaimerAgain" class="checkbox">
