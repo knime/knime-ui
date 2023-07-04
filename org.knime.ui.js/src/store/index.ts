@@ -28,7 +28,7 @@ export const initStore = () => {
       // can be solved in a better way
       api: { namespaced: true, ...api },
       // Only use store if AI assistant is available
-      ...(API.desktop.isAiAssistantBackendAvailable && {
+      ...(API.desktop.isAiAssistantBackendAvailable() && {
         aiAssistant: { namespaced: true, ...aiAssistant },
       }),
     },
