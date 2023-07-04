@@ -65,5 +65,5 @@ final class SharedConstants {
 
     static final String PREFERENCE_NODE_QUALIFIER = "org.knime.ui.java";
 
-    static final String PREFERENCE_KEY = "startWithWebUI";
+    static final String START_WEB_UI_PREF_KEY = "startWithWebUI";
 }

@@ -77,7 +77,7 @@ final class Shutdown {
             AppStatePersistor.saveAppState(state.serializedAppState());
         }
         var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
-        prefs.putBoolean(SharedConstants.PREFERENCE_KEY, !PerspectiveUtil.isClassicPerspectiveActive());
+        prefs.putBoolean(SharedConstants.START_WEB_UI_PREF_KEY, !PerspectiveUtil.isClassicPerspectiveActive());
         try {
             prefs.flush();
         } catch (BackingStoreException e) {
