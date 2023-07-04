@@ -442,3 +442,12 @@ export const isAiAssistantBackendAvailable = () => {
     true
   );
 };
+
+export const getAiServerAddress = () => {
+  return callBrowserFunction(
+    window.getAiServerAddress,
+    [],
+    "Could not get AI server address",
+    true
+  );
+};

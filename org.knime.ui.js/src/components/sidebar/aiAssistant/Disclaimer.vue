@@ -31,7 +31,7 @@ const closeDisclaimer = () => {
       <CloseIcon />
     </Button>
     <div class="title">Disclaimer</div>
-    <p>
+    <p class="content">
       {{ props.text }}
     </p>
 
@@ -49,6 +49,11 @@ const closeDisclaimer = () => {
 
   & .title {
     text-decoration: underline;
+  }
+
+  & .content {
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
   }
 
   & .close-button {

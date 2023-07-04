@@ -1,15 +1,26 @@
 <script setup lang="ts">
 import { ref, onBeforeMount } from "vue";
+import { API } from "@api";
 
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
 import Disclaimer from "./Disclaimer.vue";
 import Chat from "./Chat.vue";
 
+const DISCLAIMER_DEFAULT_TEXT = `
+This chatbot is designed to help you build workflows.
+
+By using this chatbot, you acknowledge and agree the following:
+Any information you enter into the chat, as well as information about the workflow (being edited), may be shared with Open AI and KNIME in order to provide and improve this service.
+
+KNIME is not responsible for any content, input or output, or actions triggered on the workflow, and is not liable for any damages arising from or related to your use of the chatbot.
+
+This is an experimental service, USE AT YOUR OWN RISK.
+`;
+
 const chainType = ref<"qa" | "build">("qa");
 
 const uiStrings = ref({
-  disclaimer:
-    "The KNIME AI Assistant is a prototype. It is not intended for production.",
+  disclaimer: DISCLAIMER_DEFAULT_TEXT.trim(),
   // eslint-disable-next-line camelcase
   welcome_message: {
     qa: "Hi! I am K-AI, your KNIME Q&A Assistant. What would you like to know?",
@@ -20,8 +31,7 @@ const uiStrings = ref({
 
 onBeforeMount(async () => {
   try {
-    const aiAssistantServer = "https://ai-assistant.knime.com/";
-    const url = new URL("/v1/ui_strings", aiAssistantServer);
+    const url = new URL("/v1/ui_strings", API.desktop.getAiServerAddress());
     const response = await fetch(url.toString());
     uiStrings.value = await response.json();
   } catch (error) {

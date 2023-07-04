@@ -115,3 +115,4 @@ declare function makeAiRequest(
 ): void;
 declare function abortAiRequest(chainType: string): void;
 declare function isAiAssistantBackendAvailable(): boolean;
+declare function getAiServerAddress(): string;
