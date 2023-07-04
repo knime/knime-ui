@@ -5,6 +5,7 @@ import MenuItems, {
 
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
+import ITEM_TYPES from "@/util/spaceItemTypes";
 import { computed } from "vue";
 import { useStore } from "vuex";
 import type { RootStoreState } from "@/store/types";
@@ -71,6 +72,28 @@ const fileExplorerContextMenuItems = computed(() => {
     store.state.spaces.spaceProviders
   );
 
+  const workflowGroup = store.getters["spaces/getWorkflowGroupContent"](
+    props.projectId
+  );
+
+  const selectionContainsFile = (selectedIds: string[]) => {
+    return workflowGroup.items
+      .filter((item) => selectedIds.includes(item.id))
+      .some((selectedItem) => selectedItem.type === ITEM_TYPES.Data);
+  };
+
+  const getHubActions = () => {
+    if (isLocal) {
+      return uploadAndConnectToHub;
+    }
+
+    if (selectionContainsFile(props.selectedItemIds)) {
+      return [downloadToLocalSpace];
+    }
+
+    return [downloadToLocalSpace, openInHub];
+  };
+
   const openFileType =
     anchorItem.meta.type === SpaceItem.TypeEnum.Workflow
       ? "workflows"
@@ -96,7 +119,7 @@ const fileExplorerContextMenuItems = computed(() => {
       icon: DeleteIcon,
     }),
 
-    ...(isLocal ? uploadAndConnectToHub : [downloadToLocalSpace, openInHub]),
+    ...getHubActions(),
   ];
 
   return contextMenuItems;

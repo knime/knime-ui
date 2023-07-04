@@ -15,6 +15,7 @@ import {
   buildHubUploadMenuItems,
   buildOpenInHubMenuItem,
 } from "@/components/spaces/hubMenuItems";
+import ITEM_TYPES from "@/util/spaceItemTypes";
 
 export default {
   components: {
@@ -41,7 +42,11 @@ export default {
   },
 
   computed: {
-    ...mapGetters("spaces", ["getSpaceInfo", "hasActiveHubSession"]),
+    ...mapGetters("spaces", [
+      "getSpaceInfo",
+      "hasActiveHubSession",
+      "getWorkflowGroupContent",
+    ]),
     ...mapState("spaces", ["spaceProviders"]),
 
     isLocal() {
@@ -60,6 +65,9 @@ export default {
           });
         },
       };
+    },
+    activeWorkflowGroup() {
+      return this.getWorkflowGroupContent(this.projectId);
     },
     actions() {
       const { projectId } = this;
@@ -83,6 +91,26 @@ export default {
         this.projectId,
         this.selectedItemIds
       );
+
+      const selectionContainsFile = (selectedIds) => {
+        return this.activeWorkflowGroup
+          ? this.activeWorkflowGroup.items
+              .filter((item) => selectedIds.includes(item.id))
+              .some((selectedItem) => selectedItem.type === ITEM_TYPES.Data)
+          : false;
+      };
+
+      const getHubActions = () => {
+        if (this.isLocal) {
+          return uploadAndConnectToHub;
+        }
+
+        if (selectionContainsFile(this.selectedItemIds)) {
+          return [downloadToLocalSpace];
+        }
+
+        return [downloadToLocalSpace, openInHub];
+      };
 
       return [
         ...(this.mode === "mini" ? [this.createWorkflowAction] : []),
@@ -120,9 +148,7 @@ export default {
             });
           },
         },
-        ...(this.isLocal
-          ? uploadAndConnectToHub
-          : [downloadToLocalSpace, openInHub]),
+        ...getHubActions(),
       ];
     },
 
