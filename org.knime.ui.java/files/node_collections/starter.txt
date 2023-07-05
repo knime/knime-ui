@@ -60,7 +60,6 @@ org.knime.base.views.node.stackedareachart.StackedAreaChartNodeFactory
 org.knime.base.views.node.statistics.StatisticsNodeFactory
 org.knime.base.views.node.tableview.TableViewNodeFactory
 org.knime.base.views.node.sunburstchart.SunburstChartNodeFactory
-org.knime.base.views.node.roccurve.ROCCurveNodeFactory
 org.knime.base.views.node.scatterplotmatrix.ScatterPlotMatrixNodeFactory
 org.knime.ext.jep.JEPNodeFactory
 org.knime.ext.jep.multicolumn.MultiColumnJEPNodeFactory
@@ -85,3 +84,5 @@ org.knime.time.node.manipulate.modifydate.ModifyDateNodeFactory
 org.knime.time.node.manipulate.modifytime.ModifyTimeNodeFactory
 org.knime.time.node.manipulate.modifytimezone.ModifyTimeZoneNodeFactory
 org.knime.timeseries.node.movagg.MovingAggregationNodeFactory
+org.knime.base.node.viz.property.color.ColorManager2NodeFactory
+org.knime.base.node.preproc.stringreplacer.dict2.StringReplacerDictNodeFactory
