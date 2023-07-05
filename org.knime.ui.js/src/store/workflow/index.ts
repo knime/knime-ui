@@ -294,6 +294,11 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     rootState
   ) {
     const linkage = isLinked || isInsideLinked;
+
+    if (!rootState.aiAssistant) {
+      return !linkage;
+    }
+
     const isAiProcessingCurrentWorkflow =
       rootState.aiAssistant.build.isProcessing &&
       isEqual(
