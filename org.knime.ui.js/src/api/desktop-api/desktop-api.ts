@@ -2,7 +2,6 @@ import type {
   SpaceProviderId,
   SpaceId,
   FullSpacePath,
-  SpaceProvider,
   SpaceItemId,
   SpaceUser,
 } from "../custom-types";
@@ -227,17 +226,13 @@ export const openWorkflowCoachPreferencePage = () => {
   );
 };
 
-export const fetchAllSpaceProviders = (): Promise<
-  Record<string, SpaceProvider>
-> => {
-  const spaceProviders = callBrowserFunction(
+export const getSpaceProviders = () => {
+  callBrowserFunction(
     window.getSpaceProviders,
     [],
     "Could not fetch space providers",
-    true
+    false
   );
-
-  return Promise.resolve(JSON.parse(spaceProviders));
 };
 
 export const connectSpaceProvider = ({

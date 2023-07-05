@@ -43,7 +43,7 @@ declare function openLayoutEditor(
 
 declare function openWorkflowCoachPreferencePage(): void;
 
-declare function getSpaceProviders(): string;
+declare function getSpaceProviders(): void;
 declare function connectSpaceProvider(spaceProviderId: string): string;
 declare function disconnectSpaceProvider(spaceProviderId: string): void;
 

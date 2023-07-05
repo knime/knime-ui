@@ -176,11 +176,20 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     });
   },
 
-  async fetchAllSpaceProviders({ commit, state, dispatch }) {
-    try {
-      const spaceProviders = await API.desktop.fetchAllSpaceProviders();
+  fetchAllSpaceProviders({ commit }) {
+    commit("setIsLoadingProvider", true);
 
-      commit("setIsLoadingProvider", true);
+    // provider fetch happens async, so the payload will be received via a
+    // `SpaceProvidersResponseEvent` which will then call the `setAllSpaceProviders`
+    // action
+    API.desktop.getSpaceProviders();
+  },
+
+  async setAllSpaceProviders(
+    { commit, state, dispatch },
+    spaceProviders: Record<string, SpaceProvider>
+  ) {
+    try {
       const connectedProviderIds = Object.values(spaceProviders)
         .filter(
           ({ connected, connectionMode }) =>

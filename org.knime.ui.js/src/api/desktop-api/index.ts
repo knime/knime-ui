@@ -1,5 +1,7 @@
+import type { SpaceProvider } from "../custom-types";
 import { registerNotificationHandler } from "../json-rpc-client";
 import * as desktopAPIMethods from "./desktop-api";
+
 export interface DesktopEventHandlers {
   SaveAndCloseWorkflowsEvent(payload: {
     projectIds: Array<string>;
@@ -11,6 +13,9 @@ export interface DesktopEventHandlers {
     text: string;
   }): void;
   AiAssistantEvent(payload: { chainType: "qa" | "build"; data: {} });
+  SpaceProvidersResponseEvent(
+    payload: { result: Record<string, SpaceProvider> } | { error: string }
+  );
 }
 
 export const desktop = {
