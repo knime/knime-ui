@@ -93,7 +93,6 @@ final class SpaceAPI {
     @API
     static void getSpaceProviders() throws ExecutionException, InterruptedException {
         CompletableFuture.supplyAsync(() -> { // NOSONAR
-            var payload = MAPPER.createObjectNode();
             var result = MAPPER.createObjectNode();
             for (var sp : DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().values()) {
                 var isLocalSpaceProvider = sp.isLocal();
@@ -104,14 +103,9 @@ final class SpaceAPI {
                     .put("connectionMode", connectionMode) //
                     .put("local", isLocalSpaceProvider));
             }
-            payload.set("result", result);
-            return payload;
+            return MAPPER.createObjectNode().set("result", result);
         }) //
-            .exceptionally((throwable) -> {
-                var payload = MAPPER.createObjectNode();
-                payload.put("error", throwable.getCause().getMessage());
-                return payload;
-            }) //
+            .exceptionally((throwable) -> MAPPER.createObjectNode().put("error", throwable.getCause().getMessage())) //
             .thenAccept(res -> DesktopAPI.getDeps(EventConsumer.class).accept("SpaceProvidersResponseEvent", res)) //
             .get();
     }
