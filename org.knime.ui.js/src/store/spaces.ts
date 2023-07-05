@@ -2,9 +2,10 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import type { SpaceProvider } from "@/api/custom-types";
-import type {
-  SpaceItemReference,
-  WorkflowGroupContent,
+import {
+  SpaceItem,
+  type SpaceItemReference,
+  type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "./types";
@@ -620,6 +621,17 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
             openProjectsFolders.includes(item.id)
         )
         .map((item) => item.id);
+    },
+
+  selectionContainsFile:
+    (state, getters) => (projectId: string, selectedItemIds: string[]) => {
+      const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
+      if (!workflowGroupContent) {
+        return false;
+      }
+      return workflowGroupContent.items
+        .filter((item) => selectedItemIds.includes(item.id))
+        .some((selectedItem) => selectedItem.type === SpaceItem.TypeEnum.Data);
     },
 
   getWorkflowGroupContent:

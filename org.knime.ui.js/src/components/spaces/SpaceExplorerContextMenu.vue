@@ -51,6 +51,11 @@ const fileExplorerContextMenuItems = computed(() => {
 
   const isLocal = store.getters["spaces/getSpaceInfo"](props.projectId).local;
 
+  const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
+    props.projectId,
+    props.selectedItemIds
+  );
+
   const downloadToLocalSpace = buildHubDownloadMenuItem(
     store.dispatch,
     props.projectId,
@@ -71,22 +76,12 @@ const fileExplorerContextMenuItems = computed(() => {
     store.state.spaces.spaceProviders
   );
 
-  const workflowGroup = store.getters["spaces/getWorkflowGroupContent"](
-    props.projectId
-  );
-
-  const selectionContainsFile = (selectedIds: string[]) => {
-    return workflowGroup.items
-      .filter((item) => selectedIds.includes(item.id))
-      .some((selectedItem) => selectedItem.type === SpaceItem.TypeEnum.Data);
-  };
-
   const getHubActions = () => {
     if (isLocal) {
       return uploadAndConnectToHub;
     }
 
-    if (selectionContainsFile(props.selectedItemIds)) {
+    if (selectionContainsFile) {
       return [downloadToLocalSpace];
     }
 

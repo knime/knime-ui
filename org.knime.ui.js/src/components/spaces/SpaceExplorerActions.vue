@@ -15,7 +15,6 @@ import {
   buildHubUploadMenuItems,
   buildOpenInHubMenuItem,
 } from "@/components/spaces/hubMenuItems";
-import { SpaceItem } from "@/api/gateway-api/generated-api";
 
 export default {
   components: {
@@ -45,12 +44,15 @@ export default {
     ...mapGetters("spaces", [
       "getSpaceInfo",
       "hasActiveHubSession",
-      "getWorkflowGroupContent",
+      "selectionContainsFile",
     ]),
     ...mapState("spaces", ["spaceProviders"]),
 
     isLocal() {
       return this.getSpaceInfo(this.projectId).local;
+    },
+    fileSelected() {
+      return this.selectionContainsFile(this.projectId, this.selectedItemIds);
     },
     createWorkflowAction() {
       return {
@@ -65,18 +67,6 @@ export default {
           });
         },
       };
-    },
-    activeWorkflowGroup() {
-      return this.getWorkflowGroupContent(this.projectId);
-    },
-    selectionContainsFile() {
-      return this.activeWorkflowGroup
-        ? this.activeWorkflowGroup.items
-            .filter((item) => this.selectedItemIds.includes(item.id))
-            .some(
-              (selectedItem) => selectedItem.type === SpaceItem.TypeEnum.Data
-            )
-        : false;
     },
     actions() {
       const { projectId } = this;
@@ -106,7 +96,7 @@ export default {
           return uploadAndConnectToHub;
         }
 
-        if (this.selectionContainsFile) {
+        if (this.fileSelected) {
           return [downloadToLocalSpace];
         }
 
