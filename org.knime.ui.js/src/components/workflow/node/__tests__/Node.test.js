@@ -1071,6 +1071,7 @@ describe("Node", () => {
 
       it("does not give visual indication if node is not editable", async () => {
         props = { ...linkedNode };
+        storeConfig.workflow.getters.isWritable = () => false;
         doMount();
         const torso = wrapper.findComponent(NodeTorso);
 
@@ -1098,6 +1099,7 @@ describe("Node", () => {
 
       it("does not replace node on drop is node is not editable", async () => {
         props = { ...linkedNode };
+        storeConfig.workflow.getters.isWritable = () => false;
         doMount();
         const node = wrapper.findComponent(Node);
 
@@ -1123,17 +1125,6 @@ describe("Node", () => {
 
         await torso.trigger("node-dragging-leave");
 
-        expect(torso.vm.$props.isDraggedOver).toBeFalsy();
-      });
-
-      it("ignores linked nodes", async () => {
-        props = { ...linkedNode };
-        doMount();
-        const torso = wrapper.findComponent(NodeTorso);
-
-        await torso.trigger("node-dragging-enter", {
-          detail: { isNodeConnected: false },
-        });
         expect(torso.vm.$props.isDraggedOver).toBeFalsy();
       });
 
@@ -1168,17 +1159,6 @@ describe("Node", () => {
             replacementNodeId: "test",
           }
         );
-      });
-
-      it("does not replace node on drop if its linked", async () => {
-        props = { ...linkedNode };
-        doMount();
-        const torso = wrapper.findComponent(NodeTorso);
-
-        await torso.trigger("node-dragging-end", {
-          detail: { id: "test", clientX: 0, clientY: 0 },
-        });
-        expect(storeConfig.workflow.actions.replaceNode).not.toHaveBeenCalled();
       });
     });
   });
