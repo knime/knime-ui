@@ -80,8 +80,6 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   },
   {
     name: "getSpaceProviders",
-    desktopApiName: "fetchAllSpaceProviders",
-    returnValue: JSON.stringify({ name: "Test" }),
   },
   {
     name: "connectSpaceProvider",

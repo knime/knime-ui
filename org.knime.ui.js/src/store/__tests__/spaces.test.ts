@@ -1,12 +1,13 @@
-import { expect, describe, afterEach, it, vi } from "vitest";
 /* eslint-disable max-lines */
+import { expect, describe, afterEach, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
 import { API } from "@api";
+import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import * as spacesConfig from "../spaces";
-import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
 
@@ -62,9 +63,12 @@ describe("spaces store", () => {
       itemId: "bar",
     };
 
-    mockedAPI.desktop.fetchAllSpaceProviders.mockReturnValue(
-      mockFetchAllProvidersResponse
-    );
+    mockedAPI.desktop.getSpaceProviders.mockImplementation(() => {
+      store.dispatch(
+        "spaces/setAllSpaceProviders",
+        mockFetchAllProvidersResponse
+      );
+    });
     mockedAPI.space.listWorkflowGroup.mockResolvedValue(
       mockFetchWorkflowGroupResponse
     );
@@ -165,6 +169,17 @@ describe("spaces store", () => {
     });
 
     describe("fetchAllSpaceProviders", () => {
+      it("should call the desktop api", async () => {
+        const { store } = loadStore();
+
+        await store.dispatch("spaces/fetchAllSpaceProviders");
+
+        expect(store.state.spaces.isLoadingProvider).toBe(true);
+        expect(mockedAPI.desktop.getSpaceProviders).toHaveBeenCalled();
+      });
+    });
+
+    describe("setAllSpaceProviders", () => {
       it('should set all providers in state and fetch spaces of connected "AUTOMATIC" providers', async () => {
         const mockFetchAllProvidersResponse = {
           ...fetchAllSpaceProvidersResponse,
@@ -178,7 +193,11 @@ describe("spaces store", () => {
         const { store } = loadStore({ mockFetchAllProvidersResponse });
 
         await store.dispatch("spaces/fetchAllSpaceProviders");
+        expect(store.state.spaces.isLoadingProvider).toBe(true);
 
+        await flushPromises();
+
+        expect(store.state.spaces.isLoadingProvider).toBe(false);
         expect(store.state.spaces.spaceProviders).toEqual(
           mockFetchAllProvidersResponse
         );

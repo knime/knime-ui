@@ -1,4 +1,6 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
+import { nextTick } from "vue";
+
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import { mount } from "@vue/test-utils";
 
@@ -29,17 +31,28 @@ const mockSpaceProviders: Record<
 const mockedAPI = deepMocked(API);
 
 describe("SpaceSelectionPage.vue", () => {
-  const doMount = ({
+  const doMount = async ({
     mockProvidersResponse = mockSpaceProviders,
-    spacesStoreOverrides = null,
   } = {}) => {
-    mockedAPI.desktop.fetchAllSpaceProviders.mockResolvedValue(
-      mockProvidersResponse
-    );
     mockedAPI.space.listWorkflowGroup.mockResolvedValue({});
 
     const $store = mockVuexStore({
-      spaces: spacesStoreOverrides || spacesStore,
+      spaces: spacesStore,
+    });
+
+    await $store.dispatch("spaces/loadLocalSpace");
+
+    $store.commit("spaces/setProjectPath", {
+      projectId: globalSpaceBrowserProjectId,
+      value: {
+        spaceId: "local",
+        spaceProviderId: "local",
+        itemId: "someItem",
+      },
+    });
+
+    mockedAPI.desktop.getSpaceProviders.mockImplementation(() => {
+      $store.dispatch("spaces/setAllSpaceProviders", mockProvidersResponse);
     });
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
@@ -61,30 +74,14 @@ describe("SpaceSelectionPage.vue", () => {
     vi.clearAllMocks();
   });
 
-  it("should fetch space providers on created", () => {
-    const { dispatchSpy } = doMount();
+  it("should fetch space providers on created", async () => {
+    const { dispatchSpy } = await doMount();
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/fetchAllSpaceProviders");
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/refreshSpaceProviders");
   });
 
-  it("should redirect to browsing page if it was previously open", () => {
-    const { $router } = doMount({
-      spacesStoreOverrides: {
-        state: {
-          projectPath: {
-            [globalSpaceBrowserProjectId]: {
-              spaceId: "local",
-              spaceProviderId: "local",
-              itemId: "someItem",
-            },
-          },
-        },
-        actions: {
-          fetchAllSpaceProviders: vi.fn(),
-          fetchWorkflowGroupContent: vi.fn(),
-        },
-      },
-    });
+  it("should redirect to browsing page if it was previously open", async () => {
+    const { $router } = await doMount();
 
     expect($router.push).toHaveBeenCalledWith({
       name: APP_ROUTES.SpaceBrowsingPage,
@@ -92,7 +89,7 @@ describe("SpaceSelectionPage.vue", () => {
   });
 
   it("should create New workflow on local space", async () => {
-    const { wrapper, dispatchSpy, commitSpy } = doMount();
+    const { wrapper, dispatchSpy, commitSpy } = await doMount();
 
     await new Promise((r) => setTimeout(r, 0));
     await wrapper.find(".create-workflow-local").trigger("click");
@@ -108,15 +105,30 @@ describe("SpaceSelectionPage.vue", () => {
   });
 
   it("should render all space providers", async () => {
-    const { wrapper } = doMount();
+    const { wrapper } = await doMount();
 
     await new Promise((r) => setTimeout(r, 0));
 
     expect(wrapper.findAll(".space-provider").length).toBe(1);
   });
 
+  it("should render the loading skeletons", async () => {
+    const { wrapper, $store } = await doMount();
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(wrapper.find(".skeletons").exists()).toBe(false);
+
+    $store.commit("spaces/setIsLoadingProvider", true);
+
+    await nextTick();
+
+    expect(wrapper.find(".skeletons").exists()).toBe(true);
+    expect(wrapper.findAll(".space-provider").length).toBe(1);
+  });
+
   it("should handle login for spaces that require authentication", async () => {
-    const { wrapper, dispatchSpy } = doMount({
+    const { wrapper, dispatchSpy } = await doMount({
       mockProvidersResponse: {
         hub1: {
           id: "hub1",
@@ -139,7 +151,7 @@ describe("SpaceSelectionPage.vue", () => {
   });
 
   it("should display more information on special knime community hub", async () => {
-    const { wrapper } = doMount({
+    const { wrapper } = await doMount({
       mockProvidersResponse: {
         hub1: {
           id: "My-KNIME-Hub",
@@ -165,7 +177,7 @@ describe("SpaceSelectionPage.vue", () => {
   });
 
   it("should links to hub profile for community hub", async () => {
-    const { wrapper } = doMount({
+    const { wrapper } = await doMount({
       mockProvidersResponse: {
         hub1: {
           id: "My-KNIME-Hub",
@@ -188,7 +200,7 @@ describe("SpaceSelectionPage.vue", () => {
   });
 
   it("should handle logout for spaces that require authentication", async () => {
-    const { wrapper, dispatchSpy } = doMount({
+    const { wrapper, dispatchSpy } = await doMount({
       mockProvidersResponse: {
         hub1: {
           id: "hub1",
@@ -211,7 +223,7 @@ describe("SpaceSelectionPage.vue", () => {
   });
 
   it("should navigate to space browsing page", async () => {
-    const { wrapper, $store, $router } = doMount({
+    const { wrapper, $store, $router } = await doMount({
       mockProvidersResponse: {
         hub1: {
           id: "hub1",

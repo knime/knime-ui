@@ -702,21 +702,10 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       return state.workflowGroupCache.get(pathTriplet);
     },
 
-  getSpaceInfo: (state, _, rootState) => (projectId: string) => {
+  getSpaceInfo: (state) => (projectId: string) => {
     // spaces data has not been cached or providers are not yet loaded
     if (!state.projectPath.hasOwnProperty(projectId) || !state.spaceProviders) {
-      const currentProject = rootState.application.openProjects.find(
-        (project) => project.projectId === projectId
-      );
-
-      // If the space providers are not yet loaded we can only know if the
-      // space of the current project is the local space or not
-      const isLocal = currentProject?.origin?.spaceId === "local";
-      return {
-        local: isLocal,
-        private: false,
-        name: isLocal ? "Local Space" : "",
-      };
+      return {};
     }
 
     const { spaceId: activeId, spaceProviderId: activeSpaceProviderId } =
@@ -731,7 +720,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     }
 
     const activeSpaceProvider = state.spaceProviders[activeSpaceProviderId];
-    if (!activeSpaceProvider.spaces) {
+    if (!activeSpaceProvider?.spaces) {
       return {};
     }
 
