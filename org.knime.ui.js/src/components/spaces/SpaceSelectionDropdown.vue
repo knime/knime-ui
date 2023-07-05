@@ -124,12 +124,6 @@ const spaceIcon = computed(() => {
 
   return activeSpaceInfo?.private ? PrivateSpaceIcon : CubeIcon;
 });
-
-const onDropdownOpen = () => {
-  if (!store.state.spaces.hasLoadedProviders) {
-    store.dispatch("spaces/fetchAllSpaceProviders");
-  }
-};
 </script>
 
 <template>
@@ -141,7 +135,6 @@ const onDropdownOpen = () => {
       button-title="Change space"
       orientation="left"
       @item-click="(e, item) => onSpaceChange(item)"
-      @open="onDropdownOpen"
     >
       <template #default="{ expanded }">
         <template v-if="showText">

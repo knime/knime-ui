@@ -49,7 +49,7 @@ export default {
   },
   async created() {
     // update space providers
-    await this.$store.dispatch("spaces/fetchAllSpaceProviders");
+    await this.$store.dispatch("spaces/refreshSpaceProviders");
   },
 
   methods: {

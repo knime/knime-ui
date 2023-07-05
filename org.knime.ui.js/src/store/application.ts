@@ -199,6 +199,7 @@ export const actions = {
     const applicationState = await API.application.getState({});
     await dispatch("replaceApplicationState", applicationState);
     await dispatch("setActiveProject", { $router });
+    await dispatch("spaces/loadLocalSpace", {}, { root: true });
     await dispatch("spaces/fetchAllSpaceProviders", {}, { root: true });
   },
   destroyApplication({ dispatch }) {

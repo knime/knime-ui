@@ -176,6 +176,41 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     });
   },
 
+  async loadLocalSpace({ dispatch, commit }) {
+    const spacesData = await dispatch("fetchProviderSpaces", {
+      id: localRootProjectPath.spaceProviderId,
+    });
+
+    const localSpace = {
+      id: "local",
+      name: "Local space",
+      connected: true,
+      connectionMode: "AUTOMATIC",
+      local: true,
+      ...spacesData,
+    };
+
+    commit("setSpaceProviders", {
+      [localRootProjectPath.spaceProviderId]: localSpace,
+    });
+  },
+
+  refreshSpaceProviders(
+    { state, commit, dispatch },
+    { keepLocalSpace = true } = {}
+  ) {
+    const localSpace =
+      state.spaceProviders[localRootProjectPath.spaceProviderId];
+
+    const spaceProviders = keepLocalSpace
+      ? { [localRootProjectPath.spaceProviderId]: localSpace }
+      : null;
+
+    commit("setSpaceProviders", spaceProviders);
+
+    dispatch("fetchAllSpaceProviders");
+  },
+
   fetchAllSpaceProviders({ commit }) {
     commit("setIsLoadingProvider", true);
 
@@ -193,6 +228,8 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       const connectedProviderIds = Object.values(spaceProviders)
         .filter(
           ({ connected, connectionMode }) =>
+            // skip loading local space
+            // id !== localRootProjectPath.spaceProviderId &&
             connected || connectionMode === "AUTOMATIC"
         )
         .map(({ id }) => id);
