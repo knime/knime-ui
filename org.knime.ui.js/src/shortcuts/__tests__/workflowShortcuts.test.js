@@ -254,6 +254,17 @@ describe("workflowShortcuts", () => {
       );
     });
 
+    it("should dispatch action to toggle annotation mode", () => {
+      const { $store, mockDispatch } = createStore();
+
+      workflowShortcuts.toggleAnnotationMode.execute({
+        $store,
+      });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        "application/toggleAnnotationMode"
+      );
+    });
+
     it.each([
       ["bringAnnotationToFront"],
       ["bringAnnotationForward"],

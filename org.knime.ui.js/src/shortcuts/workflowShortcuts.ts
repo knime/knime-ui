@@ -38,6 +38,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "cut"
   | "paste"
   | "addWorkflowAnnotation"
+  | "toggleAnnotationMode"
   | "bringAnnotationToFront"
   | "bringAnnotationForward"
   | "sendAnnotationBackward"
@@ -371,10 +372,17 @@ const workflowShortcuts: WorkflowShortcuts = {
         bounds: {
           x: metadata.position.x,
           y: metadata.position.y,
-          width: 80,
-          height: 80,
+          width: metadata.width || 80,
+          height: metadata.height || 80,
         },
       });
+    },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+  },
+  toggleAnnotationMode: {
+    hotkey: ["Ctrl", "T"],
+    execute: ({ $store }) => {
+      $store.dispatch("application/toggleAnnotationMode");
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },

@@ -4,6 +4,7 @@ import { merge } from "lodash";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { createShortcutsService } from "@/plugins/shortcuts";
 
 import Button from "webapps-common/ui/components/Button.vue";
 
@@ -83,9 +84,11 @@ describe("WorkflowPanel", () => {
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
 
+    const $shortcuts = createShortcutsService({ $store });
+
     const wrapper = shallowMount(WorkflowPanel, {
       props,
-      global: { plugins: [$store] },
+      global: { plugins: [$store], mocks: { $shortcuts } },
     });
 
     return { wrapper, $store, dispatchSpy };

@@ -4,6 +4,7 @@ import { TABS } from "@/store/panel";
 import Workflow from "@/components/workflow/Workflow.vue";
 import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
 import SelectionRectangle from "@/components/workflow/SelectionRectangle.vue";
+import AnnotationRectangle from "@/components/workflow/AnnotationRectangle.vue";
 import WorkflowEmpty from "@/components/workflow/WorkflowEmpty.vue";
 import KanvasFilters from "@/components/workflow/kanvas/KanvasFilters.vue";
 
@@ -14,6 +15,7 @@ export default {
     Workflow,
     Kanvas,
     SelectionRectangle,
+    AnnotationRectangle,
     WorkflowEmpty,
     KanvasFilters,
   },
@@ -27,6 +29,7 @@ export default {
     }),
     ...mapState("canvas", ["zoomFactor"]),
     ...mapState("workflow", ["activeWorkflow"]),
+    ...mapState("application", ["annotationMode"]),
   },
   watch: {
     isWorkflowEmpty: {
@@ -108,8 +111,11 @@ export default {
       <Workflow ref="workflow" />
     </template>
 
+    <AnnotationRectangle v-if="annotationMode" />
+
     <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas) -->
     <SelectionRectangle
+      v-else
       @node-selection-preview="onNodeSelectionPreview"
       @annotation-selection-preview="onAnnotationPreview"
     />

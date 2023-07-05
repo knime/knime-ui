@@ -26,7 +26,7 @@ export default defineComponent({
         state.activeWorkflow.info.containerId as string,
     }),
     ...mapState("workflow", ["portTypeMenu", "quickAddNodeMenu"]),
-    ...mapState("application", ["contextMenu"]),
+    ...mapState("application", ["contextMenu", "annotationMode"]),
     ...mapGetters("workflow", [
       "isLinked",
       "isInsideLinked",
@@ -49,6 +49,9 @@ export default defineComponent({
   },
   methods: {
     toggleContextMenu(event) {
+      if (this.annotationMode) {
+        this.$store.dispatch("application/toggleAnnotationMode");
+      }
       this.$store.dispatch("application/toggleContextMenu", { event });
     },
     onContextMenu(event) {
@@ -68,7 +71,11 @@ export default defineComponent({
 
 <template>
   <div
-    :class="['workflow-panel', { 'read-only': !isWritable }]"
+    :class="[
+      'workflow-panel',
+      { 'read-only': !isWritable },
+      { 'annotation-cursor': annotationMode },
+    ]"
     @contextmenu.stop="onContextMenu"
     @pointerdown.right="contextMenu.isOpen && toggleContextMenu($event)"
   >
@@ -144,6 +151,10 @@ export default defineComponent({
 
 .read-only {
   background-color: var(--knime-gray-ultra-light);
+}
+
+.annotation-cursor {
+  cursor: crosshair;
 }
 
 .workflow-info {
