@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, reactive, ref, toRaw } from "vue";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
@@ -51,8 +51,8 @@ const hasEdited = ref(false);
 
 const editedState = reactive({
   description: description.value,
-  links: projectMetadata.value.links || [],
-  tags: projectMetadata.value.tags || [],
+  links: structuredClone(toRaw(projectMetadata.value.links || [])),
+  tags: structuredClone(toRaw(projectMetadata.value.tags || [])),
 });
 
 const hasChangedDescription = computed(() => {
@@ -67,7 +67,7 @@ const setEditedState = <K extends keyof typeof editedState>(
   hasEdited.value = key !== "description" || hasChangedDescription.value;
 };
 
-const emitSave = () => {
+const onSave = () => {
   const payload: SaveEventPayload = hasEdited.value
     ? {
         ...editedState,
@@ -85,7 +85,17 @@ const emitSave = () => {
         },
       };
 
+  hasEdited.value = false;
   emit("editSave", payload);
+};
+
+const onCancel = () => {
+  editedState.description = description.value;
+  editedState.links = projectMetadata.value.links ?? [];
+  editedState.tags = projectMetadata.value.tags ?? [];
+
+  hasEdited.value = false;
+  emit("editCancel");
 };
 </script>
 
@@ -96,7 +106,6 @@ const emitSave = () => {
     <div class="buttons">
       <FunctionButton
         v-if="!isEditing"
-        :disabled="!isValid"
         title="Edit metadata"
         @click="emit('editStart')"
       >
@@ -107,7 +116,7 @@ const emitSave = () => {
         v-if="isEditing"
         :disabled="!isValid"
         primary
-        @click="emitSave"
+        @click="onSave"
       >
         <CheckIcon />
       </FunctionButton>
@@ -115,7 +124,7 @@ const emitSave = () => {
       <FunctionButton
         v-if="isEditing"
         class="cancel-edit-button"
-        @click="emit('editCancel')"
+        @click="onCancel"
       >
         <CloseIcon />
       </FunctionButton>
@@ -123,22 +132,22 @@ const emitSave = () => {
   </div>
 
   <MetadataDescription
+    :model-value="editedState.description"
     :editable="isEditing"
-    :description="description"
-    @change="setEditedState('description', $event)"
+    @update:model-value="setEditedState('description', $event)"
   />
 
   <ExternalResourcesList
+    :model-value="editedState.links"
     :editable="isEditing"
-    :links="projectMetadata.links"
     @valid="isValid = $event"
-    @change="setEditedState('links', $event)"
+    @update:model-value="setEditedState('links', $event)"
   />
 
   <ProjectMetadataTags
     :editable="isEditing"
-    :tags="projectMetadata.tags"
-    @change="setEditedState('tags', $event)"
+    :model-value="editedState.tags"
+    @update:model-value="setEditedState('tags', $event)"
   />
 </template>
 

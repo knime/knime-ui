@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
-
+import { computed, watch } from "vue";
 import type { Link } from "@/api/gateway-api/generated-api";
 
 import LinkList from "webapps-common/ui/components/LinkList.vue";
@@ -18,39 +17,55 @@ const URL_REGEX = buildUrlRegex(true);
  */
 
 interface Props {
-  links: Array<Link>;
+  modelValue: Array<Link>;
   editable?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), { editable: false });
 
 const emit = defineEmits<{
-  (e: "change", links: Array<Link>): void;
   (e: "valid", value: boolean): void;
+  (e: "update:modelValue", value: Array<Link>): void;
 }>();
-
-const editedLinks = ref(props.links);
 
 const isValidUrl = (url: string) => {
   return URL_REGEX.test(url);
 };
 
+const hasInvalidUrl = computed(() => {
+  return props.modelValue.some(({ url }) => !isValidUrl(url));
+});
+
 watch(
-  editedLinks,
+  hasInvalidUrl,
   () => {
-    const isValid = editedLinks.value.every((link) => isValidUrl(link.url));
-    emit("change", editedLinks.value);
-    emit("valid", isValid);
+    emit("valid", !hasInvalidUrl.value);
   },
-  { deep: true }
+  { immediate: true }
 );
 
 const addLink = () => {
-  editedLinks.value = editedLinks.value.concat({ text: "", url: "" });
+  emit("update:modelValue", props.modelValue.concat({ text: "", url: "" }));
 };
 
 const removeLink = (index: number) => {
-  editedLinks.value = editedLinks.value.filter((_, _index) => _index !== index);
+  emit(
+    "update:modelValue",
+    props.modelValue.filter((_, _index) => _index !== index)
+  );
+};
+
+const updateField = <K extends keyof Link, V = Link[K]>(
+  property: K,
+  value: V,
+  index: number
+) => {
+  emit(
+    "update:modelValue",
+    props.modelValue.map((link, _index) => {
+      return index === _index ? { ...link, [property]: value } : link;
+    })
+  );
 };
 </script>
 
@@ -59,13 +74,13 @@ const removeLink = (index: number) => {
     <h2>External resources</h2>
     <hr />
     <template v-if="!editable">
-      <LinkList v-if="links.length" :links="links" />
+      <LinkList v-if="modelValue.length" :links="modelValue" />
       <!-- Use MetadataPlaceholder? -->
       <div v-else class="placeholder">No links have been added yet</div>
     </template>
 
     <template v-else>
-      <div v-for="(link, index) of editedLinks" :key="index" class="edit-link">
+      <div v-for="(link, index) of modelValue" :key="index" class="edit-link">
         <div class="edit-link-header">
           Link {{ index + 1 }}
           <FunctionButton class="delete-link-btn" @click="removeLink(index)">
@@ -77,9 +92,10 @@ const removeLink = (index: number) => {
           <Label text="Text" compact>
             <div>
               <InputField
-                v-model="editedLinks[index].text"
+                :model-value="modelValue[index].text"
                 type="text"
                 title="Text"
+                @update:model-value="updateField('text', $event, index)"
               />
             </div>
           </Label>
@@ -89,14 +105,12 @@ const removeLink = (index: number) => {
           <Label text="URL" compact>
             <div>
               <InputField
-                v-model="editedLinks[index].url"
+                :model-value="modelValue[index].url"
                 type="text"
                 title="URL"
+                @update:model-value="updateField('url', $event, index)"
               />
-              <div
-                v-if="!isValidUrl(editedLinks[index].url)"
-                class="item-error"
-              >
+              <div v-if="!isValidUrl(modelValue[index].url)" class="item-error">
                 <span>Invalid URL</span>
               </div>
             </div>

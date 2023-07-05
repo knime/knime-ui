@@ -6,7 +6,7 @@ import ComboBox from "webapps-common/ui/components/forms/ComboBox.vue";
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 
 interface Props {
-  tags?: Array<string>;
+  modelValue: Array<string>;
   editable?: boolean;
 }
 
@@ -16,11 +16,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: "change", tags: Array<string>): void;
+  (e: "update:modelValue", tags: Array<string>): void;
 }>();
 
 const currentTags = computed(() =>
-  props.tags.map((tag) => ({
+  props.modelValue.map((tag) => ({
     id: tag,
     text: tag,
   }))
@@ -32,7 +32,7 @@ const initialSelectedIds = computed(() =>
 
 const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
   emit(
-    "change",
+    "update:modelValue",
     tags.map(({ text }) => text)
   );
 };
@@ -43,7 +43,7 @@ const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
     <h2>Tags</h2>
     <template v-if="!editable">
       <hr />
-      <TagList v-if="tags.length" :tags="tags" />
+      <TagList v-if="modelValue.length" :tags="modelValue" />
       <MetadataPlaceholder v-else padded text="No tags have been set yet" />
     </template>
 
