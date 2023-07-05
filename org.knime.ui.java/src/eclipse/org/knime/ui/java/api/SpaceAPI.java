@@ -55,10 +55,12 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.webui.WebUIUtil;
+import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
@@ -88,18 +90,20 @@ final class SpaceAPI {
      * @return
      */
     @API
-    static String getSpaceProviders() {
-        var res = MAPPER.createObjectNode();
-        for (var sp : DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().values()) {
-            var isLocalSpaceProvider = sp.isLocal();
-            var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
-            res.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
-                .put("name", sp.getName()) //
-                .put("connected", isLocalSpaceProvider || sp.getConnection(false).isPresent()) //
-                .put("connectionMode", connectionMode) //
-                .put("local", isLocalSpaceProvider));
-        }
-        return res.toPrettyString();
+    static void getSpaceProviders() {
+        CompletableFuture.supplyAsync(() -> { // NOSONAR
+            var res = MAPPER.createObjectNode();
+            for (var sp : DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().values()) {
+                var isLocalSpaceProvider = sp.isLocal();
+                var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
+                res.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
+                        .put("name", sp.getName()) //
+                        .put("connected", isLocalSpaceProvider || sp.getConnection(false).isPresent()) //
+                        .put("connectionMode", connectionMode) //
+                        .put("local", isLocalSpaceProvider));
+            }
+            return res;
+        }).thenAccept(res -> DesktopAPI.getDeps(EventConsumer.class).accept("SpaceProvidersResponseEvent", res));
     }
 
     /**
