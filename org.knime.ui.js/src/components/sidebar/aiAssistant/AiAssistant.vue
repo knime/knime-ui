@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onBeforeMount } from "vue";
+import { computed, ref, onBeforeMount } from "vue";
+import { useStore } from "vuex";
 import { API } from "@api";
 
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
@@ -16,6 +17,17 @@ KNIME is not responsible for any content, input or output, or actions triggered 
 
 This is an experimental service, USE AT YOUR OWN RISK.
 `;
+
+const store = useStore();
+const showChat = computed(() => {
+  const spaceProviders = store.state.spaces.spaceProviders;
+  const communityHubProvider = spaceProviders?.["My-KNIME-Hub"];
+  return communityHubProvider?.connected;
+});
+
+const loginToCommunityHub = () => {
+  store.dispatch("spaces/connectProvider", { spaceProviderId: "My-KNIME-Hub" });
+};
 
 const chainType = ref<"qa" | "build">("qa");
 
@@ -55,16 +67,25 @@ onBeforeMount(async () => {
     </div>
     <hr />
     <Disclaimer :text="uiStrings.disclaimer" />
-    <Chat
-      v-show="chainType === 'qa'"
-      chain-type="qa"
-      :system-prompt="uiStrings.welcome_message.qa"
-    />
-    <Chat
-      v-show="chainType === 'build'"
-      chain-type="build"
-      :system-prompt="uiStrings.welcome_message.build"
-    />
+    <template v-if="showChat">
+      <Chat
+        v-show="chainType === 'qa'"
+        chain-type="qa"
+        :system-prompt="uiStrings.welcome_message.qa"
+      />
+      <Chat
+        v-show="chainType === 'build'"
+        chain-type="build"
+        :system-prompt="uiStrings.welcome_message.build"
+      />
+    </template>
+    <div v-else class="login-notice">
+      <div>
+        Please
+        <span class="login-button" @click="loginToCommunityHub">login</span>
+        to KNIME Community Hub.
+      </div>
+    </div>
   </div>
 </template>
 
@@ -94,6 +115,16 @@ onBeforeMount(async () => {
     margin: 5px 0;
     border: none;
     border-top: 1px solid var(--knime-silver-sand);
+  }
+
+  & .login-notice {
+    flex: 1;
+    display: flex;
+
+    & .login-button {
+      cursor: pointer;
+      text-decoration: underline;
+    }
   }
 }
 </style>
