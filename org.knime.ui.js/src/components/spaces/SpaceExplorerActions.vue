@@ -51,7 +51,7 @@ export default {
     isLocal() {
       return this.getSpaceInfo(this.projectId).local;
     },
-    fileSelected() {
+    isFileSelected() {
       return this.selectionContainsFile(this.projectId, this.selectedItemIds);
     },
     createWorkflowAction() {
@@ -96,7 +96,7 @@ export default {
           return uploadAndConnectToHub;
         }
 
-        if (this.fileSelected) {
+        if (this.isFileSelected) {
           return [downloadToLocalSpace];
         }
 
