@@ -211,7 +211,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     dispatch("fetchAllSpaceProviders");
   },
 
-  fetchAllSpaceProviders({ commit }) {
+  fetchAllSpaceProviders({ commit, state }) {
+    if (state.isLoadingProvider) {
+      return;
+    }
+
     commit("setIsLoadingProvider", true);
 
     // provider fetch happens async, so the payload will be received via a
@@ -247,6 +251,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       commit("setSpaceProviders", spaceProviders);
       commit("setHasLoadedProviders", true);
     } catch (error) {
+      commit("setHasLoadedProviders", false);
       consola.error("Error fetching providers", { error });
       throw error;
     } finally {

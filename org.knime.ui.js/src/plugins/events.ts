@@ -154,6 +154,7 @@ export default ({ $store, $router }) => {
         consola.error("Error fetching space providers", payload.error);
 
         $store.commit("spaces/setIsLoadingProvider", false);
+        $store.commit("setHasLoadedProviders", false);
         return;
       }
 
