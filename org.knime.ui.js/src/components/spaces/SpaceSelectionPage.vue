@@ -299,8 +299,6 @@ section.space-provider {
 }
 
 section.skeletons {
-  padding-bottom: 50px;
-
   & .skeleton-card,
   & .skeleton-text {
     background: linear-gradient(
@@ -316,7 +314,7 @@ section.skeletons {
 
   & .skeleton-text {
     min-height: 48px;
-    margin-bottom: 20px;
+    margin: 10px 0 25px;
   }
 
   & .skeleton-card {
