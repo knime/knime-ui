@@ -15,6 +15,7 @@ import {
   ComponentNodeAndDescription,
   TypedText,
   WorkflowInfo,
+  type Workflow,
 } from "@/api/gateway-api/generated-api";
 import * as workflowStore from "@/store/workflow";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
@@ -26,7 +27,7 @@ import MetadataDescription from "../MetadataDescription.vue";
 import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue";
 
 describe("WorkflowMetadata.vue", () => {
-  const doMount = () => {
+  const doMount = ({ workflow = null }: { workflow?: Workflow } = {}) => {
     const availablePortTypes = createAvailablePortTypes();
     const $store = mockVuexStore({
       workflow: workflowStore,
@@ -38,7 +39,7 @@ describe("WorkflowMetadata.vue", () => {
       },
     });
 
-    const workflow = createWorkflow({
+    const baseWorkflow = createWorkflow({
       info: {
         name: "filename",
         containerType: WorkflowInfo.ContainerTypeEnum.Project,
@@ -48,7 +49,7 @@ describe("WorkflowMetadata.vue", () => {
       },
     });
 
-    $store.commit("workflow/setActiveWorkflow", workflow);
+    $store.commit("workflow/setActiveWorkflow", workflow || baseWorkflow);
 
     const wrapper = mount(WorkflowMetadata, {
       global: {
@@ -80,9 +81,7 @@ describe("WorkflowMetadata.vue", () => {
       expect(wrapper.findComponent(NodePreview).exists()).toBe(false);
     });
 
-    it("renders all metadata", async () => {
-      const { wrapper, $store } = doMount();
-
+    it("renders all metadata", () => {
       const workflow = createWorkflow({
         info: { containerType: WorkflowInfo.ContainerTypeEnum.Project },
         projectMetadata: {
@@ -95,15 +94,12 @@ describe("WorkflowMetadata.vue", () => {
           tags: ["tag1"],
         },
       });
-
-      $store.commit("workflow/setActiveWorkflow", workflow);
-
-      await nextTick();
+      const { wrapper } = doMount({ workflow });
 
       expect(wrapper.text()).toMatch("Last update: Jan 1, 2000");
 
       const description = wrapper.findComponent(MetadataDescription);
-      expect(description.props("description")).toMatch("Description");
+      expect(description.props("modelValue")).toMatch("Description");
 
       const linkList = wrapper.findComponent(LinkList);
       expect(linkList.props().links).toStrictEqual([{ text: "link1" }]);

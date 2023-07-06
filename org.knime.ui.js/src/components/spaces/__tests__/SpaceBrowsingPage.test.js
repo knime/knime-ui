@@ -1,4 +1,5 @@
 import { expect, describe, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
 
@@ -6,6 +7,7 @@ import ArrowLeftIcon from "webapps-common/ui/assets/img/icons/arrow-left.svg";
 import { APP_ROUTES } from "@/router";
 import PageHeader from "@/components/common/PageHeader.vue";
 import * as spacesStore from "@/store/spaces";
+import * as applicationStore from "@/store/application";
 
 import SpaceExplorer from "../SpaceExplorer.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
@@ -16,6 +18,7 @@ describe("SpaceBrowsingPage", () => {
   const doMount = ({ initialStoreState = {} } = {}) => {
     const $store = mockVuexStore({
       spaces: spacesStore,
+      application: applicationStore,
     });
 
     const commitSpy = vi.spyOn($store, "commit");
@@ -60,8 +63,17 @@ describe("SpaceBrowsingPage", () => {
     expect(wrapper.findComponent(SpaceExplorerActions).exists()).toBe(true);
   });
 
-  it("renders correct information for local space", () => {
-    const { wrapper } = doMount();
+  it("renders correct information for local space", async () => {
+    const { wrapper, $store } = doMount();
+    $store.commit("spaces/setSpaceProviders", {
+      local: {
+        spaceProviderId: "local",
+        spaceId: "local",
+        itemId: "root",
+      },
+    });
+
+    await nextTick();
 
     const subtitle = wrapper.find(".subtitle").text();
     const title = wrapper.find(".title").text();

@@ -155,6 +155,7 @@ export default {
         // add the initial dimensions as css properties for later usage in the styles
         "--initial-width": width,
         "--initial-height": height,
+        "--smartloader-z-index": 99,
       };
     },
   },
@@ -263,7 +264,7 @@ export default {
       <ReloadIcon v-if="isIconShown" />
       <span v-if="isTextShown" class="text">{{ text }}</span>
     </div>
-    <slot />
+    <slot v-if="!showLoader" />
   </div>
 </template>
 
@@ -283,7 +284,7 @@ export default {
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  z-index: 99;
+  z-index: var(--smartloader-z-index);
 
   & svg {
     @mixin svg-icon-size var(--smartloader-icon-size, 50);
@@ -319,6 +320,7 @@ export default {
     position: absolute;
     min-height: var(--initial-height);
     width: var(--initial-width);
+    height: 200px;
   }
 
   &.toast {

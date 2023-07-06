@@ -1,14 +1,15 @@
 <script lang="ts" setup>
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { computed } from "vue";
+import { useStore } from "vuex";
 
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
 import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
-
-import { useStore } from "vuex";
-import { computed } from "vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+
 import type { RootStoreState } from "@/store/types";
 import type { SpaceProvider } from "@/api/custom-types";
 import type { Space } from "@/api/gateway-api/generated-api";
@@ -45,6 +46,17 @@ const onSpaceChange = async ({
 };
 
 const spacesDropdownData = computed((): MenuItem[] => {
+  if (store.state.spaces.isLoadingProvider) {
+    return [
+      {
+        text: "Loading…",
+        disabled: true,
+        // @ts-ignore
+        icon: LoadingIcon,
+      },
+    ];
+  }
+
   const activeSpacePath = store.state.spaces.projectPath[props.projectId];
   const spaceProviders = store.state.spaces.spaceProviders;
 
@@ -98,6 +110,7 @@ const spacesDropdownData = computed((): MenuItem[] => {
     )
   );
 });
+
 const selectedText = computed(() => {
   return spacesDropdownData.value.find((item) => item.selected)?.text;
 });

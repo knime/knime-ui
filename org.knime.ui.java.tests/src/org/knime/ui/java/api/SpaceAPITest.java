@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,9 +57,11 @@ import static org.mockito.Mockito.when;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
@@ -72,43 +75,72 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 class SpaceAPITest {
 
     @Test
-    void testGetSpaceProviders() {
+    void testGetSpaceProviders() throws ExecutionException, InterruptedException {
+        String localProviderId = "local_provider";
+        String localProviderName = "Local Provider";
+        String connectedProviderId = "connected_provider";
+        String connectedProviderName = "Connected Provider";
+
+        // mock space providers
         var localSpaceProvider = mock(SpaceProvider.class);
-        when(localSpaceProvider.getId()).thenReturn("local_provider");
-        when(localSpaceProvider.getName()).thenReturn("Local Provider");
+        when(localSpaceProvider.getId()).thenReturn(localProviderId);
+        when(localSpaceProvider.getName()).thenReturn(localProviderName);
         when(localSpaceProvider.isLocal()).thenReturn(true);
         var connectedSpaceProvider = mock(SpaceProvider.class);
-        when(connectedSpaceProvider.getId()).thenReturn("connected_provider");
-        when(connectedSpaceProvider.getName()).thenReturn("Connected Provider");
+        when(connectedSpaceProvider.getId()).thenReturn(connectedProviderId);
+        when(connectedSpaceProvider.getName()).thenReturn(connectedProviderName);
         when(connectedSpaceProvider.isLocal()).thenReturn(false);
         when(connectedSpaceProvider.getConnection(false)).thenReturn(Optional.of(mock(SpaceProviderConnection.class)));
 
+        // make mocks available by mocking `SpaceProviders`
         var spaceProviders = mock(SpaceProviders.class);
         var providersMap = new LinkedHashMap<String, SpaceProvider>();
         providersMap.put("1", localSpaceProvider);
         providersMap.put("2", connectedSpaceProvider);
         when(spaceProviders.getProvidersMap()).thenReturn(providersMap);
 
-        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null, null);
+        // The endpoint returns void and dispatches an event instead
+        var eventConsumer = mock(EventConsumer.class);
 
-        var spaceProvidersJson = SpaceAPI.getSpaceProviders();
-        assertThat(spaceProvidersJson).isEqualTo("""
-                {
-                  "local_provider" : {
-                    "id" : "local_provider",
-                    "name" : "Local Provider",
-                    "connected" : true,
-                    "connectionMode" : "AUTOMATIC",
-                    "local" : true
-                  },
-                  "connected_provider" : {
-                    "id" : "connected_provider",
-                    "name" : "Connected Provider",
-                    "connected" : true,
-                    "connectionMode" : "AUTHENTICATED",
-                    "local" : false
-                  }
-                }""");
+        DesktopAPI.injectDependencies(null, null, spaceProviders, null, eventConsumer, null);
+
+        SpaceAPI.getSpaceProviders();
+
+        // construct expected event payload
+        var localProvider = MAPPER.createObjectNode();
+        localProvider.put("id", localProviderId);
+        localProvider.put("name", localProviderName);
+        localProvider.put("connected", true);
+        localProvider.put("connectionMode", "AUTOMATIC");
+        localProvider.put("local", true);
+        var connectedProvider = MAPPER.createObjectNode();
+        connectedProvider.put("id", connectedProviderId);
+        connectedProvider.put("name", connectedProviderName);
+        connectedProvider.put("connected", true);
+        connectedProvider.put("connectionMode", "AUTHENTICATED");
+        connectedProvider.put("local", false);
+        var result = MAPPER.createObjectNode();
+        result.set(localProviderId, localProvider);
+        result.set(connectedProviderId, connectedProvider);
+        var expected = MAPPER.createObjectNode();
+        expected.set("result", result);
+
+        // verify that event was dispatched
+        verify(eventConsumer).accept("SpaceProvidersResponseEvent", expected);
+    }
+
+    @Test
+    void testGetSpaceProvidersExceptionally() throws ExecutionException, InterruptedException {
+        // verify that event is sent in case of exception
+        var spaceProviders = mock(SpaceProviders.class);
+        var exception = new IllegalStateException("mock exception message");
+        when(spaceProviders.getProvidersMap()).thenThrow(exception);
+        var eventConsumer = mock(EventConsumer.class);
+        DesktopAPI.injectDependencies(null, null, spaceProviders, null, eventConsumer, null);
+        SpaceAPI.getSpaceProviders();
+        var expected = MAPPER.createObjectNode();
+        expected.put("error", exception.getMessage());
+        verify(eventConsumer).accept("SpaceProvidersResponseEvent", expected);
     }
 
     @Test

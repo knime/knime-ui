@@ -107,7 +107,7 @@ export default {
 
           <ExternalResourcesList
             v-if="descriptionData.links"
-            :links="descriptionData.links"
+            :model-value="descriptionData.links"
           />
 
           <NodeFeatureList

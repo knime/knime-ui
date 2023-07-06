@@ -1,8 +1,20 @@
-import { expect, describe, afterEach, it, vi, beforeAll } from "vitest";
+import {
+  expect,
+  describe,
+  afterEach,
+  it,
+  vi,
+  beforeAll,
+  type Mock,
+} from "vitest";
 /* eslint-disable new-cap */
 import { notifyPatch } from "@/util/event-syncer";
 import { deepMocked } from "@/test/utils";
+
 import { API } from "@api";
+import type { EventHandlers } from "@/api/gateway-api/generated-api";
+import type { DesktopEventHandlers } from "@/api/desktop-api";
+import type { SpaceProvider } from "@/api/custom-types";
 
 import eventsPlugin from "../events";
 
@@ -10,7 +22,9 @@ vi.mock("@/util/event-syncer");
 
 vi.mock("@/router");
 
-let registeredHandlers = {};
+const registeredHandlers: Partial<EventHandlers & DesktopEventHandlers> = {};
+
+const notifyPatchMock = notifyPatch as Mock<Parameters<typeof notifyPatch>>;
 
 const mockedAPI = deepMocked(API);
 
@@ -59,6 +73,7 @@ describe("Event Plugin", () => {
       "ImportURIEvent",
       "ProgressEvent",
       "AiAssistantEvent",
+      "SpaceProvidersResponseEvent",
     ]);
   });
 
@@ -71,12 +86,13 @@ describe("Event Plugin", () => {
 
   describe("events", () => {
     afterEach(() => {
-      notifyPatch.mockClear();
+      notifyPatchMock.mockClear();
     });
 
     it("handles WorkflowChangedEvents", () => {
       const { storeMock } = loadPlugin();
       registeredHandlers.WorkflowChangedEvent({
+        // @ts-expect-error
         patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
       });
 
@@ -86,8 +102,9 @@ describe("Event Plugin", () => {
     });
 
     it("should call `notifyPatch` for patches with snapshotId", () => {
-      const snapshotId = 1;
+      const snapshotId = "1";
       registeredHandlers.WorkflowChangedEvent({
+        // @ts-expect-error
         patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
         snapshotId,
       });
@@ -98,6 +115,7 @@ describe("Event Plugin", () => {
     it("should not call `notifyPatch` for patches without snapshotId", () => {
       loadPlugin();
       registeredHandlers.WorkflowChangedEvent({
+        // @ts-expect-error
         patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
       });
       expect(notifyPatch).not.toHaveBeenCalled();
@@ -141,6 +159,7 @@ describe("Event Plugin", () => {
 
       registeredHandlers.CompositeEvent({
         events: ["WorkflowChangedEvent", "ProjectDirtyStateEvent"],
+        // @ts-expect-error
         params: [
           { patch: { ops: [{ dummy: true, path: "/foo/bar" }] } },
           { dirtyProjectsMap },
@@ -160,6 +179,7 @@ describe("Event Plugin", () => {
         const { storeMock, routerMock } = loadPlugin();
 
         await registeredHandlers.AppStateChangedEvent({
+          // @ts-expect-error
           appState: { openProjects: [{ id: "mock" }] },
         });
 
@@ -225,6 +245,48 @@ describe("Event Plugin", () => {
         });
 
         expect(storeMock.commit).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("spaceProvidersResponseEvent", () => {
+      it("should set the loaded space providers (success)", () => {
+        const mockProvider: SpaceProvider = {
+          connected: false,
+          connectionMode: "AUTOMATIC",
+          id: "providerId",
+          name: "Mock provider",
+        };
+
+        const result = {
+          [mockProvider.id]: mockProvider,
+        };
+
+        const { storeMock } = loadPlugin();
+        registeredHandlers.SpaceProvidersResponseEvent({
+          result,
+        });
+
+        expect(storeMock.dispatch).toHaveBeenCalledWith(
+          "spaces/setAllSpaceProviders",
+          result
+        );
+      });
+
+      it("should not set the loaded space providers (error)", () => {
+        const { storeMock } = loadPlugin();
+        registeredHandlers.SpaceProvidersResponseEvent({
+          error: "something went wrong",
+        });
+
+        expect(storeMock.commit).toBeCalledWith(
+          "spaces/setIsLoadingProvider",
+          false
+        );
+
+        expect(storeMock.dispatch).not.toHaveBeenCalledWith(
+          "spaces/setAllSpaceProviders",
+          expect.anything()
+        );
       });
     });
   });

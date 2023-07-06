@@ -148,5 +148,17 @@ export default ({ $store, $router }) => {
         data,
       });
     },
+
+    SpaceProvidersResponseEvent(payload) {
+      if ("error" in payload) {
+        consola.error("Error fetching space providers", payload.error);
+
+        $store.commit("spaces/setIsLoadingProvider", false);
+        $store.commit("setHasLoadedProviders", false);
+        return;
+      }
+
+      $store.dispatch("spaces/setAllSpaceProviders", payload.result);
+    },
   });
 };

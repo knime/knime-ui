@@ -37,7 +37,7 @@ export default {
     ...mapState("spaces", [
       "spaceProviders",
       "spaceBrowser",
-      "isLoading",
+      "isLoadingProvider",
       "activeSpace",
     ]),
   },
@@ -49,7 +49,7 @@ export default {
   },
   async created() {
     // update space providers
-    await this.$store.dispatch("spaces/fetchAllSpaceProviders");
+    await this.$store.dispatch("spaces/refreshSpaceProviders");
   },
 
   methods: {
@@ -129,89 +129,99 @@ export default {
 </script>
 
 <template>
-  <GridOutbreaker v-if="spaceProviders" :color="knimeColors.Porcelain">
-    <section
-      v-for="spaceProvider of spaceProviders"
-      :key="spaceProvider.id"
-      class="space-provider"
-    >
-      <div class="space-provider-name">
-        <h2>
-          {{
-            isCommunityHub(spaceProvider)
-              ? "KNIME Community Hub"
-              : spaceProvider.name
-          }}
-          <span v-if="isCommunityHub(spaceProvider)">
-            (<a :href="communityHubLink(spaceProvider)">hub.knime.com</a>)
-          </span>
-        </h2>
-        <div
-          v-if="shouldDisplayAvatar(spaceProvider) && spaceProvider.user"
-          class="owner"
-        >
-          <span class="owner-name">{{ spaceProvider.user.name }}</span>
-        </div>
-
-        <div class="connection-btn">
-          <Button
-            v-if="shouldDisplayLogoutButton(spaceProvider)"
-            with-border
-            compact
-            :disabled="isLoading"
-            class="logout"
-            @click="onLogout(spaceProvider.id)"
-          >
-            Logout
-          </Button>
-
-          <Button
-            v-if="shouldDisplayLoginButton(spaceProvider)"
-            primary
-            compact
-            :disabled="isLoading"
-            class="sign-in"
-            @click="onLogin(spaceProvider.id)"
-          >
+  <GridOutbreaker :color="knimeColors.Porcelain">
+    <template v-if="spaceProviders">
+      <section
+        v-for="spaceProvider of spaceProviders"
+        :key="spaceProvider.id"
+        class="space-provider"
+      >
+        <div class="space-provider-name">
+          <h2>
             {{
-              spaceProvider.connectionMode === "AUTHENTICATED"
-                ? "Sign in"
-                : "Connect"
+              isCommunityHub(spaceProvider)
+                ? "KNIME Community Hub"
+                : spaceProvider.name
             }}
-          </Button>
+            <span v-if="isCommunityHub(spaceProvider)">
+              (<a :href="communityHubLink(spaceProvider)">hub.knime.com</a>)
+            </span>
+          </h2>
+          <div
+            v-if="shouldDisplayAvatar(spaceProvider) && spaceProvider.user"
+            class="owner"
+          >
+            <span class="owner-name">{{ spaceProvider.user.name }}</span>
+          </div>
+
+          <div class="connection-btn">
+            <Button
+              v-if="shouldDisplayLogoutButton(spaceProvider)"
+              with-border
+              compact
+              :disabled="isLoadingProvider"
+              class="logout"
+              @click="onLogout(spaceProvider.id)"
+            >
+              Logout
+            </Button>
+
+            <Button
+              v-if="shouldDisplayLoginButton(spaceProvider)"
+              primary
+              compact
+              :disabled="isLoadingProvider"
+              class="sign-in"
+              @click="onLogin(spaceProvider.id)"
+            >
+              {{
+                spaceProvider.connectionMode === "AUTHENTICATED"
+                  ? "Sign in"
+                  : "Connect"
+              }}
+            </Button>
+          </div>
         </div>
-      </div>
+
+        <div class="cards">
+          <SpaceCard
+            v-for="(space, id) of spaceProvider.spaces"
+            :key="id"
+            :space="space"
+            :is-local="isLocalSpace(spaceProvider)"
+            @click="onSpaceCardClick({ space: $event, spaceProvider })"
+          />
+          <Card
+            v-if="isLocalSpace(spaceProvider)"
+            class="create-workflow-local"
+            @click="createWorkflowLocally"
+          >
+            <CardContent padded>
+              <div class="icon-wrapper">
+                <PlusIcon />
+              </div>
+              <span
+                >Create workflow <br />
+                in your local space.</span
+              >
+            </CardContent>
+          </Card>
+        </div>
+        <div
+          v-if="!spaceProvider.spaces && isCommunityHub(spaceProvider)"
+          class="community-hub-text"
+        >
+          Connect to the KNIME Community Hub to find workflows, nodes and
+          components, and collaborate in spaces.
+        </div>
+      </section>
+    </template>
+    <section v-if="isLoadingProvider" class="skeletons">
+      <div class="skeleton-text" />
 
       <div class="cards">
-        <SpaceCard
-          v-for="(space, id) of spaceProvider.spaces"
-          :key="id"
-          :space="space"
-          :is-local="isLocalSpace(spaceProvider)"
-          @click="onSpaceCardClick({ space: $event, spaceProvider })"
-        />
-        <Card
-          v-if="isLocalSpace(spaceProvider)"
-          class="create-workflow-local"
-          @click="createWorkflowLocally"
-        >
-          <CardContent padded>
-            <div class="icon-wrapper">
-              <PlusIcon />
-            </div>
-            <span
-              >Create workflow <br />
-              in your local space.</span
-            >
-          </CardContent>
-        </Card>
-      </div>
-      <div
-        v-if="!spaceProvider.spaces && isCommunityHub(spaceProvider)"
-        class="community-hub-text"
-      >
-        Connect to the KNIME Community Hub to find workflows, nodes and
-        components, and collaborate in spaces.
+        <div class="skeleton-card" />
+        <div class="skeleton-card" />
       </div>
     </section>
   </GridOutbreaker>
@@ -220,10 +230,24 @@ export default {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-section.space-provider {
+section {
   padding-top: 30px;
   padding-bottom: 50px;
 
+  & .cards {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media only screen and (max-width: 900px) {
+    & .cards {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+  }
+}
+
+section.space-provider {
   & .space-provider-name {
     margin-bottom: 20px;
     display: flex;
@@ -266,17 +290,35 @@ section.space-provider {
       margin-top: 15px;
     }
   }
+}
 
-  & .cards {
-    display: grid;
-    gap: 24px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@keyframes shine {
+  to {
+    background-position-x: -200%;
+  }
+}
+
+section.skeletons {
+  & .skeleton-card,
+  & .skeleton-text {
+    background: linear-gradient(
+      110deg,
+      var(--knime-white) 8%,
+      var(--knime-porcelain) 18%,
+      var(--knime-white) 33%
+    );
+    border-radius: 5px;
+    background-size: 200% 100%;
+    animation: 1.5s shine linear infinite;
   }
 
-  @media only screen and (max-width: 900px) {
-    & .cards {
-      grid-template-columns: repeat(1, minmax(0, 1fr));
-    }
+  & .skeleton-text {
+    min-height: 48px;
+    margin: 10px 0 25px;
+  }
+
+  & .skeleton-card {
+    min-height: 230px;
   }
 }
 </style>

@@ -1,7 +1,7 @@
 declare function switchToJavaUI(): void;
 declare function openAboutDialog(): void;
 declare function openUpdateDialog(): void;
-declare function openUrlInExternalBrowser(): void;
+declare function openUrlInExternalBrowser(url: string): void;
 declare function openInstallExtensionsDialog(): void;
 declare function openWebUIPreferencePage(): void;
 declare function openNodeDialog(projectId: string, nodeId: string): void;
@@ -43,7 +43,7 @@ declare function openLayoutEditor(
 
 declare function openWorkflowCoachPreferencePage(): void;
 
-declare function getSpaceProviders(): string;
+declare function getSpaceProviders(): void;
 declare function connectSpaceProvider(spaceProviderId: string): string;
 declare function disconnectSpaceProvider(spaceProviderId: string): void;
 

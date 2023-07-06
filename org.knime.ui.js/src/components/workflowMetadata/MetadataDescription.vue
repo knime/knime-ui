@@ -4,21 +4,21 @@ import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor/Ri
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 
 interface Props {
-  description: string | null;
+  modelValue: string | null;
   editable?: boolean;
 }
 
 defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: "change", content: string): void;
+  (e: "update:modelValue", content: string): void;
 }>();
 </script>
 
 <template>
   <div class="description">
     <MetadataPlaceholder
-      v-if="!description && !editable"
+      v-if="!modelValue && !editable"
       padded
       text="No description has been set yet"
     />
@@ -26,7 +26,7 @@ const emit = defineEmits<{
     <RichTextEditor
       v-else
       :editable="editable"
-      :model-value="description"
+      :model-value="modelValue"
       :class="['description-editor', { editable }]"
       :min-height="150"
       :base-extensions="{
@@ -37,7 +37,7 @@ const emit = defineEmits<{
         underline: true,
       }"
       :with-border="editable"
-      @update:model-value="emit('change', $event)"
+      @update:model-value="editable && emit('update:modelValue', $event)"
     />
   </div>
 </template>

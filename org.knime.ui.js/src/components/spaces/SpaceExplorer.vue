@@ -17,14 +17,13 @@ import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 import ComponentIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
 import MetaNodeIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
 
-import type { PathTriplet } from "@/store/spaces";
+import type { PathTriplet, SpacesState } from "@/store/spaces";
 import {
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import SmartLoader from "@/components/common/SmartLoader.vue";
-import type { SpaceProvider } from "@/api/custom-types";
 
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import FileExplorer from "./FileExplorer/FileExplorer.vue";
@@ -100,11 +99,10 @@ export default defineComponent({
       "fileExtensionToNodeTemplateId",
     ]),
     ...mapState("spaces", {
-      projectPath: (state) => state.projectPath as Record<string, PathTriplet>,
-      isLoading: (state) => state.isLoading as boolean,
-      spaceProviders: (state) =>
-        state.spaceProviders as Record<string, SpaceProvider>,
-      activeRenamedItemId: (state) => state.activeRenamedItemId as string,
+      projectPath: (state: SpacesState) => state.projectPath,
+      isLoadingContent: (state: SpacesState) => state.isLoadingContent,
+      spaceProviders: (state: SpacesState) => state.spaceProviders,
+      activeRenamedItemId: (state: SpacesState) => state.activeRenamedItemId,
     }),
     ...mapState("nodeRepository", ["nodesPerCategory"]),
     ...mapGetters("spaces", [
@@ -491,7 +489,7 @@ export default defineComponent({
 
     <SmartLoader
       class="smart-loader"
-      :loading="isLoading"
+      :loading="isLoadingContent"
       :config="{
         initialDimensions: { height: '76px' },
         staggerStageCount: 1,
@@ -633,6 +631,7 @@ export default defineComponent({
 .smart-loader {
   --smartloader-bg: var(--knime-gray-ultra-light);
   --smartloader-icon-size: 30;
+  --smartloader-z-index: 2;
 }
 
 .items-to-delete {

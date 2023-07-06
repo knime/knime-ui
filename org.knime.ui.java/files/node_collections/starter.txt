@@ -31,9 +31,10 @@ org.knime.base.node.preproc.rounddouble.RoundDoubleNodeFactory
 org.knime.base.node.preproc.rowagg.RowAggregatorNodeFactory
 org.knime.base.node.preproc.rowtocolumnheader.RowToColumnHeaderNodeFactory
 org.knime.base.node.preproc.sorter.SorterNodeFactory
-org.knime.base.node.preproc.stringmanipulation.multicolumn.MultiColumnStringManipulationNodeFactory
 org.knime.base.node.preproc.stringmanipulation.StringManipulationNodeFactory
+org.knime.base.node.preproc.stringmanipulation.multicolumn.MultiColumnStringManipulationNodeFactory
 org.knime.base.node.preproc.stringreplacer.StringReplacerNodeFactory
+org.knime.base.node.preproc.stringreplacer.dict2.StringReplacerDictNodeFactory
 org.knime.base.node.preproc.table.cellextractor.CellExtractorNodeFactory
 org.knime.base.node.preproc.table.cellupdater.CellUpdaterNodeFactory
 org.knime.base.node.preproc.table.cropper.TableCropperNodeFactory
@@ -47,6 +48,7 @@ org.knime.base.node.rules.engine.RuleEngineFilterNodeFactory
 org.knime.base.node.rules.engine.RuleEngineNodeFactory
 org.knime.base.node.util.extracttabledimension.ExtractTableDimensionNodeFactory
 org.knime.base.node.util.sendmail.SendMailNodeFactory
+org.knime.base.node.viz.property.color.ColorManager2NodeFactory
 org.knime.base.views.node.barchart.BarChartNodeFactory
 org.knime.base.views.node.boxplot.BoxPlotNodeFactory
 org.knime.base.views.node.densityplot.DensityPlotNodeFactory
@@ -56,12 +58,11 @@ org.knime.base.views.node.lineplot.LinePlotNodeFactory
 org.knime.base.views.node.parallelcoordinatesplot.ParallelCoordinatesPlotNodeFactory
 org.knime.base.views.node.piechart.PieChartNodeFactory
 org.knime.base.views.node.scatterplot.ScatterPlotNodeFactory
+org.knime.base.views.node.scatterplotmatrix.ScatterPlotMatrixNodeFactory
 org.knime.base.views.node.stackedareachart.StackedAreaChartNodeFactory
 org.knime.base.views.node.statistics.StatisticsNodeFactory
-org.knime.base.views.node.tableview.TableViewNodeFactory
 org.knime.base.views.node.sunburstchart.SunburstChartNodeFactory
-org.knime.base.views.node.roccurve.ROCCurveNodeFactory
-org.knime.base.views.node.scatterplotmatrix.ScatterPlotMatrixNodeFactory
+org.knime.base.views.node.tableview.TableViewNodeFactory
 org.knime.ext.jep.JEPNodeFactory
 org.knime.ext.jep.multicolumn.MultiColumnJEPNodeFactory
 org.knime.ext.microsoft.authentication.node.auth.MicrosoftAuthenticationNodeFactory

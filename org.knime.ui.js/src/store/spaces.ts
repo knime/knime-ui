@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
@@ -25,7 +26,9 @@ export interface SpacesState {
   workflowGroupCache: WeakMap<PathTriplet, WorkflowGroupContent>;
   spaceProviders?: Record<string, SpaceProvider>;
   projectPath: Record<string, PathTriplet>;
-  isLoading: boolean;
+  isLoadingProvider: boolean;
+  hasLoadedProviders: boolean;
+  isLoadingContent: boolean;
   createWorkflowModalConfig: CreateWorkflowModalConfig;
   activeRenamedItemId: string;
 }
@@ -54,7 +57,9 @@ export const state = (): SpacesState => ({
     [cachedLocalSpaceProjectId]: localRootProjectPath,
   },
   // loading state
-  isLoading: false,
+  isLoadingProvider: false,
+  hasLoadedProviders: false,
+  isLoadingContent: false,
   // modal open state
   createWorkflowModalConfig: {
     isOpen: false,
@@ -64,8 +69,14 @@ export const state = (): SpacesState => ({
 });
 
 export const mutations: MutationTree<SpacesState> = {
-  setIsLoading(state, value: boolean) {
-    state.isLoading = value;
+  setIsLoadingProvider(state, value: boolean) {
+    state.isLoadingProvider = value;
+  },
+  setIsLoadingContent(state, value: boolean) {
+    state.isLoadingContent = value;
+  },
+  setHasLoadedProviders(state, value: boolean) {
+    state.hasLoadedProviders = value;
   },
 
   setCreateWorkflowModalConfig(state, value: CreateWorkflowModalConfig) {
@@ -165,14 +176,64 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     });
   },
 
-  async fetchAllSpaceProviders({ commit, state, dispatch }) {
-    try {
-      const spaceProviders = await API.desktop.fetchAllSpaceProviders();
+  async loadLocalSpace({ dispatch, commit }) {
+    const spacesData = await dispatch("fetchProviderSpaces", {
+      id: localRootProjectPath.spaceProviderId,
+    });
 
-      commit("setIsLoading", true);
+    const localSpace = {
+      id: "local",
+      name: "Local space",
+      connected: true,
+      connectionMode: "AUTOMATIC",
+      local: true,
+      ...spacesData,
+    };
+
+    commit("setSpaceProviders", {
+      [localRootProjectPath.spaceProviderId]: localSpace,
+    });
+  },
+
+  refreshSpaceProviders(
+    { state, commit, dispatch },
+    { keepLocalSpace = true } = {}
+  ) {
+    const localSpace =
+      state.spaceProviders[localRootProjectPath.spaceProviderId];
+
+    const spaceProviders = keepLocalSpace
+      ? { [localRootProjectPath.spaceProviderId]: localSpace }
+      : null;
+
+    commit("setSpaceProviders", spaceProviders);
+
+    dispatch("fetchAllSpaceProviders");
+  },
+
+  fetchAllSpaceProviders({ commit, state }) {
+    if (state.isLoadingProvider) {
+      return;
+    }
+
+    commit("setIsLoadingProvider", true);
+
+    // provider fetch happens async, so the payload will be received via a
+    // `SpaceProvidersResponseEvent` which will then call the `setAllSpaceProviders`
+    // action
+    API.desktop.getSpaceProviders();
+  },
+
+  async setAllSpaceProviders(
+    { commit, state, dispatch },
+    spaceProviders: Record<string, SpaceProvider>
+  ) {
+    try {
       const connectedProviderIds = Object.values(spaceProviders)
         .filter(
           ({ connected, connectionMode }) =>
+            // skip loading local space
+            // id !== localRootProjectPath.spaceProviderId &&
             connected || connectionMode === "AUTOMATIC"
         )
         .map(({ id }) => id);
@@ -188,11 +249,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         };
       }
       commit("setSpaceProviders", spaceProviders);
+      commit("setHasLoadedProviders", true);
     } catch (error) {
+      commit("setHasLoadedProviders", false);
       consola.error("Error fetching providers", { error });
       throw error;
     } finally {
-      commit("setIsLoading", false);
+      commit("setIsLoadingProvider", false);
     }
   },
 
@@ -211,7 +274,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async connectProvider({ dispatch, commit, state }, { spaceProviderId }) {
     try {
-      commit("setIsLoading", true);
+      commit("setIsLoadingProvider", true);
       const user = API.desktop.connectSpaceProvider({ spaceProviderId });
 
       if (user) {
@@ -232,7 +295,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       consola.error("Error connecting to provider", { error });
       throw error;
     } finally {
-      commit("setIsLoading", false);
+      commit("setIsLoadingProvider", false);
     }
   },
 
@@ -282,7 +345,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     { spaceId, spaceProviderId, itemId }
   ) {
     try {
-      commit("setIsLoading", true);
+      commit("setIsLoadingContent", true);
       const content = await API.space.listWorkflowGroup({
         spaceProviderId,
         spaceId,
@@ -294,7 +357,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       consola.error("Error trying to fetch workflow group content", { error });
       throw error;
     } finally {
-      commit("setIsLoading", false);
+      commit("setIsLoadingContent", false);
     }
   },
 
@@ -375,7 +438,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     try {
       // loading will be cleared after fetching the data by fetchWorkflowGroupContent
-      commit("setIsLoading", true);
+      commit("setIsLoadingContent", true);
       const newFolderItem = await API.space.createWorkflowGroup({
         spaceId,
         spaceProviderId,
@@ -387,7 +450,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       return newFolderItem;
     } catch (error) {
-      commit("setIsLoading", false);
+      commit("setIsLoadingContent", false);
       consola.log("Error creating folder", { error });
       throw error;
     }
@@ -459,7 +522,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     try {
       // loading is cleared after data is fetched by fetchWorkflowGroupContent
-      commit("setIsLoading", true);
+      commit("setIsLoadingContent", true);
       await API.space.renameItem({
         spaceProviderId,
         spaceId,
@@ -469,7 +532,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       await dispatch("fetchWorkflowGroupContent", { projectId });
     } catch (error) {
-      commit("setIsLoading", false);
+      commit("setIsLoadingContent", false);
       consola.log("Error renaming item", { error });
       throw error;
     }
@@ -480,12 +543,12 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     try {
       // loading is cleared after data is fetched by fetchWorkflowGroupContent
-      commit("setIsLoading", true);
+      commit("setIsLoadingContent", true);
       commit("setActiveRenamedItemId", "");
       await API.space.deleteItems({ spaceProviderId, spaceId, itemIds });
       await dispatch("fetchWorkflowGroupContent", { projectId });
     } catch (error) {
-      commit("setIsLoading", false);
+      commit("setIsLoadingContent", false);
       consola.log("Error deleting item", { error });
       throw error;
     }
@@ -498,7 +561,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
 
     try {
-      commit("setIsLoading", true);
+      commit("setIsLoadingContent", true);
       await API.space.moveItems({
         spaceProviderId,
         spaceId,
@@ -511,7 +574,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       consola.log("Error moving items", { error });
       throw error;
     } finally {
-      commit("setIsLoading", false);
+      commit("setIsLoadingContent", false);
     }
   },
 
@@ -645,9 +708,11 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     },
 
   getSpaceInfo: (state) => (projectId: string) => {
-    if (!state.projectPath.hasOwnProperty(projectId)) {
+    // spaces data has not been cached or providers are not yet loaded
+    if (!state.projectPath.hasOwnProperty(projectId) || !state.spaceProviders) {
       return {};
     }
+
     const { spaceId: activeId, spaceProviderId: activeSpaceProviderId } =
       state.projectPath[projectId];
 
@@ -660,12 +725,11 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     }
 
     const activeSpaceProvider = state.spaceProviders[activeSpaceProviderId];
-    if (!activeSpaceProvider.spaces) {
+    if (!activeSpaceProvider?.spaces) {
       return {};
     }
-    const space = activeSpaceProvider.spaces.find(
-      (space) => space.id === activeId
-    );
+
+    const space = activeSpaceProvider.spaces.find(({ id }) => id === activeId);
 
     if (space) {
       return {
