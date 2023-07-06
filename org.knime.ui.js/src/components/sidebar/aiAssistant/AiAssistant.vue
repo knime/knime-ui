@@ -11,7 +11,7 @@ const DISCLAIMER_DEFAULT_TEXT = `
 This chatbot is designed to help you build workflows.
 
 By using this chatbot, you acknowledge and agree the following:
-Any information you enter into the chat, as well as information about the workflow (being edited), may be shared with Open AI and KNIME in order to provide and improve this service.
+Any information you enter into the chat, as well as information about the workflow (being edited), may be shared with OpenAI and KNIME in order to provide and improve this service.
 
 KNIME is not responsible for any content, input or output, or actions triggered on the workflow, and is not liable for any damages arising from or related to your use of the chatbot.
 
@@ -120,6 +120,8 @@ onBeforeMount(async () => {
   & .login-notice {
     flex: 1;
     display: flex;
+    justify-content: center;
+    align-items: center;
 
     & .login-button {
       cursor: pointer;
