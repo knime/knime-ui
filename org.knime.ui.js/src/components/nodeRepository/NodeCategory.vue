@@ -1,8 +1,9 @@
 <script>
-import NodeList from "./NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 
-const CATEGORY_LIMIT = 6;
+import NodeList from "./NodeList.vue";
+
+const CATEGORY_LIMIT = 8;
 
 export default {
   components: {
@@ -46,32 +47,32 @@ export default {
       <template #item="itemProps">
         <DraggableNodeTemplate v-bind="itemProps" />
       </template>
-      <template #more-button>More {{ tag }} nodes</template>
+      <template #more-button>Show all</template>
     </NodeList>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 .category-title {
-  border: 1px solid var(--knime-dove-gray);
+  border: 1px solid var(--knime-silver-sand);
   margin: 13px 5px 13px 0;
   padding: 3px 5px;
   line-height: 15px;
   display: inline-block;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--knime-dove-gray);
   cursor: pointer;
 
   &:hover {
     color: var(--knime-white);
-    background-color: var(--knime-masala);
-    border-color: var(--knime-masala);
+    background-color: var(--knime-dove-gray);
+    border-color: var(--knime-dove-gray);
   }
 
   &:active {
     color: var(--knime-white);
-    background-color: var(--knime-black);
-    border-color: var(--knime-black);
+    background-color: var(--knime-masala);
+    border-color: var(--knime-masala);
   }
 }
 </style>

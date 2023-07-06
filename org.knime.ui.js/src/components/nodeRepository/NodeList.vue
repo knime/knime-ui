@@ -1,5 +1,6 @@
 <script>
 import Button from "webapps-common/ui/components/Button.vue";
+import CircleArrowIcon from "webapps-common/ui/assets/img/icons/circle-arrow-right.svg";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
 
 const NODES_PER_ROW = 3;
@@ -7,6 +8,7 @@ const NODES_PER_ROW = 3;
 export default {
   components: {
     Button,
+    CircleArrowIcon,
     NodeTemplate,
   },
   props: {
@@ -164,16 +166,19 @@ export default {
           <NodeTemplate v-bind="nodeTemplateProps(node, index)" />
         </slot>
       </li>
+      <li>
+        <Button
+          v-if="hasMoreNodes"
+          compact
+          without-border
+          class="show-more"
+          @click="$emit('showMore')"
+        >
+          <slot name="more-button" /><br />
+          <CircleArrowIcon class="icon" />
+        </Button>
+      </li>
     </ul>
-    <Button
-      v-if="hasMoreNodes"
-      compact
-      with-border
-      class="show-more"
-      @click="$emit('showMore')"
-    >
-      <slot name="more-button" />
-    </Button>
   </div>
 </template>
 
@@ -208,11 +213,15 @@ export default {
 .show-more {
   color: var(--knime-masala);
   font-weight: 400;
-  margin: 0 auto 10px;
+  margin: 27px auto 0;
   display: block;
 
   &:active {
     background-color: var(--knime-black);
+  }
+
+  & svg {
+    margin: 0;
   }
 }
 </style>

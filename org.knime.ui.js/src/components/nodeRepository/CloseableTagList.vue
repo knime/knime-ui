@@ -5,7 +5,7 @@ import ClosePopoverIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg"
 import SelectableTagList from "@/components/common/SelectableTagList.vue";
 
 const maxLengthOfTagInChars = 31;
-const maxLinesOfTags = 2;
+const maxLinesOfTags = 1;
 export const maxNumberOfInitialTags = 10;
 export const minNumberOfInitialTags = 2;
 
@@ -108,7 +108,7 @@ export default {
   align-items: flex-start;
 
   & .popout {
-    height: 61px;
+    height: 30px;
     width: 100%;
   }
 
@@ -121,6 +121,29 @@ export default {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-size: 13px;
+      line-height: 15px;
+
+      &:hover {
+        text-decoration: none;
+        background-color: var(--knime-dove-gray);
+        border-color: var(--knime-dove-gray);
+      }
+    }
+
+    /* Checked icon */
+    & :deep(.tag.clickable.selected)::after {
+      border-color: var(--knime-white);
+      border-style: solid;
+      border-width: 0 0 1.3px 1.3px;
+      content: "";
+      display: block;
+      height: 5px;
+      margin-right: 3px;
+      position: relative;
+      top: -5px;
+      transform: translate(4px, 3.5px) rotate(-45deg);
+      width: 8px;
     }
 
     &.show-all {

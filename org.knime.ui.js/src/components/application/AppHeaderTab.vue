@@ -95,7 +95,7 @@ export default {
 @import url("@/assets/mixins.css");
 
 li {
-  height: 49px;
+  height: 39px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -115,7 +115,7 @@ li {
   & .workflow-icon {
     stroke: var(--knime-white);
 
-    @mixin svg-icon-size 20;
+    @mixin svg-icon-size 18;
   }
 
   &:hover {
@@ -124,15 +124,14 @@ li {
 
   & .text {
     color: var(--knime-white);
-    font-family: "Roboto Condensed", sans-serif;
-    font-size: 18px;
+    font-size: 13px;
+    font-weight: 500;
     padding: 10px 0 10px 5px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     min-width: 0;
     line-height: 21px;
-    font-weight: 400;
     width: 100%;
     text-align: left;
   }

@@ -1,7 +1,6 @@
 <script>
 import { mapState, mapGetters, mapMutations } from "vuex";
 
-import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
 import CloseableTagList from "./CloseableTagList.vue";
 import CategoryResults from "./CategoryResults.vue";
@@ -14,7 +13,6 @@ export default {
   components: {
     SidebarSearchResults,
     CloseableTagList,
-    ActionBreadcrumb,
     SearchBar,
     CategoryResults,
     NodeDescriptionOverlay,
@@ -79,17 +77,12 @@ export default {
 <template>
   <div class="node-repo">
     <div class="header">
-      <div class="title-and-search">
-        <ActionBreadcrumb
-          :items="breadcrumbItems"
-          class="repo-breadcrumb"
-          @click="onBreadcrumbClick"
-        />
-        <hr />
+      <div class="search">
         <SearchBar
           :model-value="$store.state.nodeRepository.query"
           placeholder="Search Nodes"
           class="search-bar"
+          @clear="$store.dispatch('nodeRepository/clearSearchParams')"
           @update:model-value="
             $store.dispatch('nodeRepository/updateQuery', $event)
           "
@@ -122,7 +115,6 @@ export default {
 
   & hr {
     border: none;
-    border-top: 1px solid var(--knime-silver-sand);
     margin: 0;
   }
 }
@@ -133,12 +125,8 @@ export default {
   z-index: 2;
   top: 0;
 
-  & > hr {
-    margin-top: 8px;
-  }
-
-  & .title-and-search {
-    padding: 0 20px 5px;
+  & .search {
+    padding: 10px 20px;
 
     & > hr {
       margin-bottom: 13px;

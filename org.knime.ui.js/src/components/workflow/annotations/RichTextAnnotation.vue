@@ -51,6 +51,7 @@ const customExtensions = [
       :editable="editable"
       :with-border="false"
       :custom-extensions="customExtensions"
+      autofocus
       :base-extensions="{
         bold: true,
         italic: true,

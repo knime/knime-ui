@@ -87,7 +87,7 @@ export const actions = {
 
     const { totalNumGroups, groups } =
       await API.noderepository.getNodesGroupedByTags({
-        numNodesPerTag: 6,
+        numNodesPerTag: 8,
         tagsOffset,
         tagsLimit,
         fullTemplateInfo: true,

@@ -49,7 +49,6 @@ export default {
           :selected-node="selectedNode"
           @select-tag="onSelectTag"
         />
-        <hr />
       </template>
     </div>
   </ScrollViewContainer>
@@ -58,17 +57,5 @@ export default {
 <style lang="postcss" scoped>
 .content {
   padding: 0 20px 15px;
-}
-
-hr {
-  width: 360px;
-  margin-left: -20px;
-  margin-bottom: 14px;
-  border: none;
-  border-top: 1px solid var(--knime-silver-sand);
-
-  &:last-child {
-    display: none;
-  }
 }
 </style>

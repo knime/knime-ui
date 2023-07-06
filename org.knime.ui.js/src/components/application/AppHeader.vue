@@ -231,9 +231,12 @@ header {
       & .header-button {
         border: 1px solid var(--knime-dove-gray);
         display: flex;
-        margin-right: 10px;
+        margin-right: 5px;
         align-items: center;
         justify-content: center;
+        width: 26px;
+        height: 26px;
+        padding: 4px;
 
         & svg {
           @mixin svg-icon-size 18;
@@ -249,8 +252,8 @@ header {
 
       & .text {
         color: var(--knime-white);
-        font-family: "Roboto Condensed", sans-serif;
-        font-size: 18px;
+        font-size: 13px;
+        font-weight: 500;
       }
     }
 
@@ -297,14 +300,13 @@ header {
     height: 100%;
     margin-right: 25px;
     padding: 0 10px;
-    font-family: "Roboto Condensed", sans-serif;
 
     & .text {
-      font-size: 18px;
+      font-size: 13px;
+      font-weight: 500;
       padding-left: 5px;
       min-width: 45px;
       line-height: 21px;
-      font-weight: 400;
       text-align: left;
       color: var(--knime-white);
     }
