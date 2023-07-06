@@ -65,7 +65,7 @@ const nodeFeatures = computed(() => {
     </h2>
   </div>
 
-  <MetadataDescription :description="description" />
+  <MetadataDescription :model-value="description" />
 
   <ComponentMetadataNodeFeatures :node-features="nodeFeatures" />
 </template>
