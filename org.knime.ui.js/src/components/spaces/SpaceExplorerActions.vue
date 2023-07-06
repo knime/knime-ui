@@ -41,11 +41,18 @@ export default {
   },
 
   computed: {
-    ...mapGetters("spaces", ["getSpaceInfo", "hasActiveHubSession"]),
+    ...mapGetters("spaces", [
+      "getSpaceInfo",
+      "hasActiveHubSession",
+      "selectionContainsFile",
+    ]),
     ...mapState("spaces", ["spaceProviders"]),
 
     isLocal() {
       return this.getSpaceInfo(this.projectId).local;
+    },
+    isFileSelected() {
+      return this.selectionContainsFile(this.projectId, this.selectedItemIds);
     },
     createWorkflowAction() {
       return {
@@ -84,6 +91,18 @@ export default {
         this.selectedItemIds
       );
 
+      const getHubActions = () => {
+        if (this.isLocal) {
+          return uploadAndConnectToHub;
+        }
+
+        if (this.isFileSelected) {
+          return [downloadToLocalSpace];
+        }
+
+        return [downloadToLocalSpace, openInHub];
+      };
+
       return [
         ...(this.mode === "mini" ? [this.createWorkflowAction] : []),
         {
@@ -120,9 +139,7 @@ export default {
             });
           },
         },
-        ...(this.isLocal
-          ? uploadAndConnectToHub
-          : [downloadToLocalSpace, openInHub]),
+        ...getHubActions(),
       ];
     },
 

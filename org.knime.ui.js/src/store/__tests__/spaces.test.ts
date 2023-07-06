@@ -940,5 +940,51 @@ describe("spaces store", () => {
         });
       });
     });
+
+    describe("selectionContainsFile", () => {
+      it("return whether a file is selected", () => {
+        const { store } = loadStore();
+        const projectId = "project2";
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "private",
+          spaceId: "local",
+          itemId: "level2",
+        };
+        store.state.spaces.spaceProviders = {
+          private: {
+            spaces: [{ id: "local" }],
+          },
+        };
+
+        const activeWorkflowGroup = {
+          id: "private",
+          path: [],
+          items: [
+            {
+              id: "1",
+              name: "Folder 1",
+              type: "Data",
+            },
+            {
+              id: "2",
+              name: "Folder 2",
+              type: "Workflow",
+            },
+          ],
+        };
+
+        store.state.spaces.workflowGroupCache.set(
+          store.state.spaces.projectPath[projectId],
+          activeWorkflowGroup
+        );
+
+        expect(
+          store.getters["spaces/selectionContainsFile"](projectId, ["2"])
+        ).toBeFalsy();
+        expect(
+          store.getters["spaces/selectionContainsFile"](projectId, ["1"])
+        ).toBeTruthy();
+      });
+    });
   });
 });
