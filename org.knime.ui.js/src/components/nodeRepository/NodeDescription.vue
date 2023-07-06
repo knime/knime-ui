@@ -71,7 +71,7 @@ export default {
       descriptionEl.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", (e) => {
           e.preventDefault();
-          redirect(link.href);
+          redirect({ url: link.href });
           return false;
         });
       });

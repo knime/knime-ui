@@ -175,6 +175,7 @@ export const actions = {
         // clear any open menus when leaving a workflow
         await dispatch("toggleContextMenu");
         dispatch("workflow/setEditableAnnotationId", null, { root: true });
+        dispatch("nodeRepository/closeDescriptionPanel", null, { root: true });
       }
 
       if (isLeavingWorkflow && !isEnteringWorkflow) {

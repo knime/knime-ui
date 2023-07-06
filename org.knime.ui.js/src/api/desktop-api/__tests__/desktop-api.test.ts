@@ -14,7 +14,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   { name: "switchToJavaUI" },
   { name: "openAboutDialog" },
   { name: "openUpdateDialog" },
-  { name: "openUrlInExternalBrowser" },
+  { name: "openUrlInExternalBrowser", params: [["url", "http://www.url.com"]] },
   { name: "openInstallExtensionsDialog" },
   { name: "openWebUIPreferencePage" },
   { name: "openWorkflowCoachPreferencePage" },

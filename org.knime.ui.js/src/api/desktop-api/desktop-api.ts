@@ -61,7 +61,7 @@ export const openUpdateDialog = () => {
   );
 };
 
-export const openUrlInExternalBrowser = (url: string)  => {
+export const openUrlInExternalBrowser = ({ url }: { url: string }) => {
   callBrowserFunction(
     window.openUrlInExternalBrowser,
     [url],
