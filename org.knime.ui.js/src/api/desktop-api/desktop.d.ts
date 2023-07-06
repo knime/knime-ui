@@ -1,7 +1,7 @@
 declare function switchToJavaUI(): void;
 declare function openAboutDialog(): void;
 declare function openUpdateDialog(): void;
-declare function openUrlInExternalBrowser(): void;
+declare function openUrlInExternalBrowser(url: string): void;
 declare function openInstallExtensionsDialog(): void;
 declare function openWebUIPreferencePage(): void;
 declare function openNodeDialog(projectId: string, nodeId: string): void;

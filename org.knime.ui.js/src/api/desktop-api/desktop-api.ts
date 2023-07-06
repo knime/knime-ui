@@ -61,10 +61,10 @@ export const openUpdateDialog = () => {
   );
 };
 
-export const openUrlInExternalBrowser = () => {
+export const openUrlInExternalBrowser = (url: string)  => {
   callBrowserFunction(
     window.openUrlInExternalBrowser,
-    [],
+    [url],
     "Could not open URL in External Browser",
     false
   );
