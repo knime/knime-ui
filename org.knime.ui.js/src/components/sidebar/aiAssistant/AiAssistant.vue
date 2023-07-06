@@ -82,7 +82,9 @@ onBeforeMount(async () => {
     <div v-else class="login-notice">
       <div>
         Please
-        <span class="login-button" @click="loginToCommunityHub">login</span>
+        <span role="button" class="login-button" @click="loginToCommunityHub">
+          login</span
+        >
         to KNIME Community Hub.
       </div>
     </div>
