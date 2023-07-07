@@ -199,6 +199,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     { state, commit, dispatch },
     { keepLocalSpace = true } = {}
   ) {
+    if (state.isLoadingProvider) {
+      return;
+    }
+
     const localSpace =
       state.spaceProviders[localRootProjectPath.spaceProviderId];
 
