@@ -35,9 +35,12 @@ export default {
 
 <template>
   <div class="category">
-    <span class="category-title" @click="$emit('selectTag', tag)">
-      {{ tag }}
-    </span>
+    <div>
+      <span class="category-title" @click="$emit('selectTag', tag)">
+        {{ tag }}
+      </span>
+      <hr />
+    </div>
     <NodeList
       :nodes="nodes"
       :has-more-nodes="hasMoreNodes"
@@ -53,26 +56,52 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.category-title {
-  border: 1px solid var(--knime-silver-sand);
-  margin: 13px 5px 13px 0;
-  padding: 3px 5px;
-  line-height: 15px;
-  display: inline-block;
-  font-size: 13px;
-  color: var(--knime-dove-gray);
-  cursor: pointer;
+.category {
+  & div {
+    display: flex;
+    align-items: center;
 
-  &:hover {
-    color: var(--knime-white);
-    background-color: var(--knime-dove-gray);
-    border-color: var(--knime-dove-gray);
-  }
+    .category-title {
+      border: 1px solid var(--knime-silver-sand);
+      margin: 0px 5px 0 0;
+      padding: 3px 5px;
+      line-height: 15px;
+      display: inline-block;
+      font-size: 13px;
+      color: var(--knime-dove-gray);
+      cursor: pointer;
+      position: relative;
+      background-color: var(--knime-porcelain);
+    }
 
-  &:active {
-    color: var(--knime-white);
-    background-color: var(--knime-masala);
-    border-color: var(--knime-masala);
+    .category-title {
+      border: 1px solid var(--knime-silver-sand);
+      margin: 0px 5px 0 0;
+      padding: 3px 5px;
+      line-height: 15px;
+      display: inline-block;
+      font-size: 13px;
+      color: var(--knime-dove-gray);
+      cursor: pointer;
+
+      &:hover {
+        color: var(--knime-white);
+        background-color: var(--knime-dove-gray);
+        border-color: var(--knime-dove-gray);
+      }
+
+      &:active {
+        color: var(--knime-white);
+        background-color: var(--knime-masala);
+        border-color: var(--knime-masala);
+      }
+    }
+
+    & hr {
+      flex: 1;
+      border: 0;
+      border-top: 1px solid var(--knime-silver-sand);
+    }
   }
 }
 </style>
