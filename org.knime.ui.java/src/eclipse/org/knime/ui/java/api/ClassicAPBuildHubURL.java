@@ -86,7 +86,8 @@ final class ClassicAPBuildHubURL {
         var spaceName = sourceSpace.getName();
         var itemName = sourceSpace.getItemName(itemId);
         var path = username + KNIME_SPACES + spaceName + LATEST + itemName + itemId.replace('*', '~');
-        return serverAddress + path;
+
+        return serverAddress + path + "/";
     }
 
     private static String getServerAddress(final SpaceProvider sourceSpaceProvider) {

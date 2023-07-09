@@ -207,7 +207,7 @@ class SpaceAPITest {
         when(connectedSpaceProvider.getSpace("spaceId")).thenReturn(space);
 
         assertThat(ClassicAPBuildHubURL.getHubURL("*itemId", connectedSpaceProvider, space))
-            .isEqualTo("test.test/username/spaces/spaceName/latest/itemName~itemId");
+            .isEqualTo("test.test/username/spaces/spaceName/latest/itemName~itemId/");
 
     }
 
