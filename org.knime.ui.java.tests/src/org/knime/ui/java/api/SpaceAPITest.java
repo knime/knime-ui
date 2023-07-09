@@ -126,7 +126,7 @@ class SpaceAPITest {
         expected.set("result", result);
 
         // verify that event was dispatched
-        verify(eventConsumer).accept("SpaceProvidersResponseEvent", expected);
+        verify(eventConsumer).accept("SpaceProvidersChangedEvent", expected);
     }
 
     @Test
@@ -140,7 +140,7 @@ class SpaceAPITest {
         SpaceAPI.getSpaceProviders();
         var expected = MAPPER.createObjectNode();
         expected.put("error", exception.getMessage());
-        verify(eventConsumer).accept("SpaceProvidersResponseEvent", expected);
+        verify(eventConsumer).accept("SpaceProvidersChangedEvent", expected);
     }
 
     @Test

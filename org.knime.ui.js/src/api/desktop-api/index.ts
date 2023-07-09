@@ -13,7 +13,7 @@ export interface DesktopEventHandlers {
     text: string;
   }): void;
   AiAssistantEvent(payload: { chainType: "qa" | "build"; data: {} });
-  SpaceProvidersResponseEvent(
+  SpaceProvidersChangedEvent(
     payload: { result: Record<string, SpaceProvider> } | { error: string }
   );
 }

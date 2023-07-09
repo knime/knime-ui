@@ -1,4 +1,4 @@
-/* eslint-disable valid-jsdoc */
+/boolean* eslint-disable valid-jsdoc */
 import { API } from "@api";
 import { notifyPatch } from "@/util/event-syncer";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
@@ -149,7 +149,7 @@ export default ({ $store, $router }) => {
       });
     },
 
-    SpaceProvidersResponseEvent(payload) {
+    SpaceProvidersChangedEvent(payload) {
       if ("error" in payload) {
         consola.error("Error fetching space providers", payload.error);
 

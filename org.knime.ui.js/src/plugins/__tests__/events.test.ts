@@ -73,7 +73,7 @@ describe("Event Plugin", () => {
       "ImportURIEvent",
       "ProgressEvent",
       "AiAssistantEvent",
-      "SpaceProvidersResponseEvent",
+      "SpaceProvidersChangedEvent",
     ]);
   });
 
@@ -248,7 +248,7 @@ describe("Event Plugin", () => {
       });
     });
 
-    describe("spaceProvidersResponseEvent", () => {
+    describe("spaceProvidersChangedEvent", () => {
       it("should set the loaded space providers (success)", () => {
         const mockProvider: SpaceProvider = {
           connected: false,
@@ -262,7 +262,7 @@ describe("Event Plugin", () => {
         };
 
         const { storeMock } = loadPlugin();
-        registeredHandlers.SpaceProvidersResponseEvent({
+        registeredHandlers.SpaceProvidersChangedEvent({
           result,
         });
 
@@ -274,7 +274,7 @@ describe("Event Plugin", () => {
 
       it("should not set the loaded space providers (error)", () => {
         const { storeMock } = loadPlugin();
-        registeredHandlers.SpaceProvidersResponseEvent({
+        registeredHandlers.SpaceProvidersChangedEvent({
           error: "something went wrong",
         });
 

@@ -55,8 +55,6 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
 import org.eclipse.ui.PlatformUI;
@@ -71,6 +69,7 @@ import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.ui.java.util.SpaceProvidersUtil;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
 /**
@@ -91,23 +90,9 @@ final class SpaceAPI {
      * @return
      */
     @API
-    static void getSpaceProviders() throws ExecutionException, InterruptedException {
-        CompletableFuture.supplyAsync(() -> { // NOSONAR
-            var result = MAPPER.createObjectNode();
-            for (var sp : DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().values()) {
-                var isLocalSpaceProvider = sp.isLocal();
-                var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
-                result.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
-                    .put("name", sp.getName()) //
-                    .put("connected", isLocalSpaceProvider || sp.getConnection(false).isPresent()) //
-                    .put("connectionMode", connectionMode) //
-                    .put("local", isLocalSpaceProvider));
-            }
-            return MAPPER.createObjectNode().set("result", result);
-        }) //
-            .exceptionally((throwable) -> MAPPER.createObjectNode().put("error", throwable.getCause().getMessage())) //
-            .thenAccept(res -> DesktopAPI.getDeps(EventConsumer.class).accept("SpaceProvidersResponseEvent", res)) //
-            .get();
+    static void getSpaceProviders() {
+        SpaceProvidersUtil.sendSpaceProvidersChangedEvent(DesktopAPI.getDeps(SpaceProviders.class),
+            DesktopAPI.getDeps(EventConsumer.class));
     }
 
     /**

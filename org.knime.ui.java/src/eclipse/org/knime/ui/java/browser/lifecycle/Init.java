@@ -93,6 +93,7 @@ import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.NodeCollectionUtil;
+import org.knime.ui.java.util.SpaceProvidersUtil;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -141,20 +142,7 @@ final class Init {
 
         var listener = registerListenerToSendProgressEvents(eventConsumer);
 
-        // Update the app state when the node repository filter changes
-        KnimeUIPreferences.setSelectedNodeCollectionChangeListener((oldValue, newValue) -> {
-            if (!Objects.equals(oldValue, newValue)) {
-                // Reset the node repository such that it uses the newly configured collection
-                DefaultNodeRepositoryService.getInstance().resetNodeRepository();
-                appStateUpdater.updateAppState();
-            }
-        });
-        // Update the app state when the mouse wheel action changes
-        KnimeUIPreferences.setMouseWheelActionChangeListener((oldValue, newValue) -> {
-            if (!Objects.equals(oldValue, newValue)) {
-                appStateUpdater.updateAppState();
-            }
-        });
+        registerPreferenceListeners(appStateUpdater, spaceProviders, eventConsumer);
 
         return new LifeCycleStateInternal() {
 
@@ -175,6 +163,28 @@ final class Init {
 
     }
 
+    private static void registerPreferenceListeners(final AppStateUpdater appStateUpdater,
+        final UpdatableSpaceProviders spaceProviders, final EventConsumer eventConsumer) {
+        // Update the app state when the node repository filter changes
+        KnimeUIPreferences.setSelectedNodeCollectionChangeListener((oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                // Reset the node repository such that it uses the newly configured collection
+                DefaultNodeRepositoryService.getInstance().resetNodeRepository();
+                appStateUpdater.updateAppState();
+            }
+        });
+        // Update the app state when the mouse wheel action changes
+        KnimeUIPreferences.setMouseWheelActionChangeListener((oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                appStateUpdater.updateAppState();
+            }
+        });
+        KnimeUIPreferences.setExplorerMointPointChangeListener(() -> {
+            spaceProviders.update();
+            SpaceProvidersUtil.sendSpaceProvidersChangedEvent(spaceProviders, eventConsumer);
+        });
+    }
+
     /**
      * @return a new event consumer instance forwarding events to java-script
      */
@@ -183,13 +193,8 @@ final class Init {
             SharedConstants.EVENT_ACTION_ID);
     }
 
-    private static SpaceProviders createSpaceProviders() {
-        var localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
-        var spaceProvidersFromExtensionPoint = getSpaceProvidersFromExtensionPoint();
-        var res = new LinkedHashMap<String, SpaceProvider>();
-        res.put(localWorkspaceProvider.getId(), localWorkspaceProvider);
-        spaceProvidersFromExtensionPoint.forEach(sp -> res.putAll(sp.getProvidersMap()));
-        return () -> res;
+    private static UpdatableSpaceProviders createSpaceProviders() {
+        return new UpdatableSpaceProviders();
     }
 
     private static PreferencesProvider createPreferencesProvider() {
@@ -243,10 +248,6 @@ final class Init {
                 return fileExtensionToNodeFactoryMap;
             }
         };
-    }
-
-    static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
-        return ExtPointUtil.collectExecutableExtensions(SPACE_PROVIDERS_EXTENSION_ID, "class");
     }
 
     private static EventConsumer initializeJavaBrowserCommunication(final String jsonRpcActionId,
@@ -352,6 +353,35 @@ final class Init {
             progressEvent.put("text", jobName);
             progressEvent.put("status", status);
             m_eventConsumer.accept("ProgressEvent", progressEvent);
+        }
+
+    }
+
+    private static final class UpdatableSpaceProviders implements SpaceProviders {
+
+        private final Map<String, SpaceProvider> m_providers = new LinkedHashMap<>();
+
+        private final SpaceProvider m_localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
+
+        private final List<SpaceProviders> m_spaceProvidersFromExtensionPoint = getSpaceProvidersFromExtensionPoint();
+
+        public UpdatableSpaceProviders() {
+            update();
+        }
+
+        @Override
+        public synchronized Map<String, SpaceProvider> getProvidersMap() {
+            return m_providers;
+        }
+
+        synchronized void update() {
+            m_providers.clear();
+            m_providers.put(m_localWorkspaceProvider.getId(), m_localWorkspaceProvider);
+            m_spaceProvidersFromExtensionPoint.forEach(sp -> m_providers.putAll(sp.getProvidersMap()));
+        }
+
+        private static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
+            return ExtPointUtil.collectExecutableExtensions(SPACE_PROVIDERS_EXTENSION_ID, "class");
         }
 
     }

@@ -56,6 +56,7 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.workbench.explorer.ExplorerMountTable;
 
 /**
  * The preference of the modern UI.
@@ -69,6 +70,8 @@ public final class KnimeUIPreferences {
     static final String SELECTED_NODE_COLLECTION_PREF_KEY = "selectedNodeCollection";
 
     private static BiConsumer<String, String> mouseWheelActionChangeListener = null;
+
+    private static Runnable explorerMountPointChangeListener = null;
 
     static final String MOUSE_WHEEL_ACTION_PREF_KEY = "mouseWheelAction";
 
@@ -89,6 +92,12 @@ public final class KnimeUIPreferences {
             }
             if (MOUSE_WHEEL_ACTION_PREF_KEY.equals(e.getProperty()) && mouseWheelActionChangeListener != null) {
                 mouseWheelActionChangeListener.accept((String)e.getOldValue(), (String)e.getNewValue());
+            }
+        });
+
+        ExplorerMountTable.addPropertyChangeListener(e -> {
+            if (explorerMountPointChangeListener != null) {
+                explorerMountPointChangeListener.run();
             }
         });
     }
@@ -146,10 +155,21 @@ public final class KnimeUIPreferences {
     }
 
     /**
+     * Set a listener that is called whenever the mount point table changes. If a listener was set already it is
+     * replaced.
+     *
+     * @param runnable
+     */
+    public static void setExplorerMointPointChangeListener(final Runnable runnable) {
+        explorerMountPointChangeListener = runnable;
+    }
+
+    /**
      * Removes all the set listeners.
      */
     public static void unsetAllListeners() {
         selectedNodeCollectionChangeListener = null;
         mouseWheelActionChangeListener = null;
+        explorerMountPointChangeListener = null;
     }
 }
