@@ -30,6 +30,7 @@ export default {
   data() {
     return {
       knimeColors,
+      isConnectingToProvider: null,
     };
   },
 
@@ -41,6 +42,7 @@ export default {
       "activeSpace",
     ]),
   },
+
   beforeCreate() {
     // redirect to browsing page if a space was selected
     if (this.$store.state.spaces.projectPath[globalSpaceBrowserProjectId]) {
@@ -53,8 +55,10 @@ export default {
   },
 
   methods: {
-    onLogin(spaceProviderId) {
-      this.$store.dispatch("spaces/connectProvider", { spaceProviderId });
+    async onLogin(spaceProviderId) {
+      this.isConnectingToProvider = spaceProviderId;
+      await this.$store.dispatch("spaces/connectProvider", { spaceProviderId });
+      this.isConnectingToProvider = null;
     },
 
     async onLogout(spaceProviderId) {
@@ -206,9 +210,28 @@ export default {
               >
             </CardContent>
           </Card>
+
+          <div
+            v-if="
+              !isLocalSpace(spaceProvider) &&
+              isConnectingToProvider === spaceProvider.id
+            "
+            class="skeleton-card"
+          />
+          <div
+            v-if="
+              !isLocalSpace(spaceProvider) &&
+              isConnectingToProvider === spaceProvider.id
+            "
+            class="skeleton-card"
+          />
         </div>
         <div
-          v-if="!spaceProvider.spaces && isCommunityHub(spaceProvider)"
+          v-if="
+            !spaceProvider.spaces &&
+            isCommunityHub(spaceProvider) &&
+            !isLoadingProvider
+          "
           class="community-hub-text"
         >
           Connect to the KNIME Community Hub to find workflows, nodes and
@@ -216,7 +239,10 @@ export default {
         </div>
       </section>
     </template>
-    <section v-if="isLoadingProvider" class="skeletons">
+    <section
+      v-if="isLoadingProvider && !isConnectingToProvider"
+      class="skeletons"
+    >
       <div class="skeleton-text" />
 
       <div class="cards">
@@ -298,27 +324,25 @@ section.space-provider {
   }
 }
 
-section.skeletons {
-  & .skeleton-card,
-  & .skeleton-text {
-    background: linear-gradient(
-      110deg,
-      var(--knime-white) 8%,
-      var(--knime-porcelain) 18%,
-      var(--knime-white) 33%
-    );
-    border-radius: 5px;
-    background-size: 200% 100%;
-    animation: 1.5s shine linear infinite;
-  }
+.skeleton-card,
+.skeleton-text {
+  background: linear-gradient(
+    110deg,
+    var(--knime-white) 8%,
+    var(--knime-porcelain) 18%,
+    var(--knime-white) 33%
+  );
+  border-radius: 5px;
+  background-size: 200% 100%;
+  animation: 1.5s shine linear infinite;
+}
 
-  & .skeleton-text {
-    min-height: 48px;
-    margin: 10px 0 25px;
-  }
+.skeleton-text {
+  min-height: 48px;
+  margin: 10px 0 25px;
+}
 
-  & .skeleton-card {
-    min-height: 230px;
-  }
+.skeleton-card {
+  min-height: 230px;
 }
 </style>
