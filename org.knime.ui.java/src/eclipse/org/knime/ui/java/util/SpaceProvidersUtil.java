@@ -89,7 +89,8 @@ public final class SpaceProvidersUtil {
                 }
                 return MAPPER.createObjectNode().set("result", result);
             }) //
-                .exceptionally((throwable) -> MAPPER.createObjectNode().put("error", throwable.getCause().getMessage())) //
+                .exceptionally(throwable -> MAPPER.createObjectNode()//
+                    .put("error", throwable.getCause().getMessage())) //
                 .thenAccept(res -> eventConsumer.accept("SpaceProvidersChangedEvent", res)) //
                 .get();
         } catch (InterruptedException | ExecutionException e) { // NOSONAR

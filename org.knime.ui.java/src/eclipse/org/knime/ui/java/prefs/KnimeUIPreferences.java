@@ -52,6 +52,7 @@ import java.util.function.BiConsumer;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.ui.java.UIPlugin;
@@ -65,13 +66,13 @@ import org.knime.workbench.explorer.ExplorerMountTable;
  */
 public final class KnimeUIPreferences {
 
-    private static BiConsumer<String, String> selectedNodeCollectionChangeListener = null;
+    private static BiConsumer<String, String> selectedNodeCollectionChangeListener;
 
     static final String SELECTED_NODE_COLLECTION_PREF_KEY = "selectedNodeCollection";
 
-    private static BiConsumer<String, String> mouseWheelActionChangeListener = null;
+    private static BiConsumer<String, String> mouseWheelActionChangeListener;
 
-    private static Runnable explorerMountPointChangeListener = null;
+    private static Runnable explorerMountPointChangeListener;
 
     static final String MOUSE_WHEEL_ACTION_PREF_KEY = "mouseWheelAction";
 
@@ -79,19 +80,14 @@ public final class KnimeUIPreferences {
         new ScopedPreferenceStore(InstanceScope.INSTANCE, UIPlugin.getContext().getBundle().getSymbolicName());
 
     static {
-        PREF_STORE.addPropertyChangeListener(e -> {
-            if (SELECTED_NODE_COLLECTION_PREF_KEY.equals(e.getProperty())) {
-                final String newValue = (String)e.getNewValue();
-                if (!PerspectiveUtil.isClassicPerspectiveActive()) {
-                    //update the last used perspective only if we are in the modern UI
-                    NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(newValue);
-                }
-                if (selectedNodeCollectionChangeListener != null) {
-                    selectedNodeCollectionChangeListener.accept((String)e.getOldValue(), newValue);
-                }
-            }
-            if (MOUSE_WHEEL_ACTION_PREF_KEY.equals(e.getProperty()) && mouseWheelActionChangeListener != null) {
-                mouseWheelActionChangeListener.accept((String)e.getOldValue(), (String)e.getNewValue());
+        PREF_STORE.addPropertyChangeListener(event -> {
+            if (SELECTED_NODE_COLLECTION_PREF_KEY.equals(event.getProperty())) {
+                updateLastUsedPerspectiveAndNotifyListener(event);
+          }
+            if (MOUSE_WHEEL_ACTION_PREF_KEY.equals(event.getProperty()) && mouseWheelActionChangeListener != null) {
+                final var oldValue = (String)event.getOldValue();
+                final var newValue = (String)event.getNewValue();
+                mouseWheelActionChangeListener.accept(oldValue, newValue);
             }
         });
 
@@ -104,6 +100,18 @@ public final class KnimeUIPreferences {
 
     private KnimeUIPreferences() {
         // Utility class
+    }
+
+    private static void updateLastUsedPerspectiveAndNotifyListener(final PropertyChangeEvent event) {
+        final var newValue = (String)event.getNewValue();
+        if (!PerspectiveUtil.isClassicPerspectiveActive()) {
+            //update the last used perspective only if we are in the modern UI
+            NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(newValue);
+        }
+        if (selectedNodeCollectionChangeListener != null) {
+            final var oldValue = (String)event.getOldValue();
+            selectedNodeCollectionChangeListener.accept(oldValue, newValue);
+        }
     }
 
     /** The identifier for a no node repository filter. The node repository will show all nodes. */
