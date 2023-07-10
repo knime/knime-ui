@@ -33,7 +33,7 @@ const isValidUrl = (url: string) => {
 };
 
 const hasInvalidUrl = computed(() => {
-  return props.modelValue.some(({ url }) => !isValidUrl(url));
+  return props.modelValue.some(({ url, text }) => !isValidUrl(url) || !text);
 });
 
 watch(
@@ -97,6 +97,9 @@ const updateField = <K extends keyof Link, V = Link[K]>(
                 title="Text"
                 @update:model-value="updateField('text', $event, index)"
               />
+              <div v-if="!modelValue[index].text" class="item-error">
+                <span>Text is required</span>
+              </div>
             </div>
           </Label>
         </div>

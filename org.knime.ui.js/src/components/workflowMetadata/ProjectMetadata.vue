@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, reactive, ref, toRaw } from "vue";
+import { computed, reactive, toRaw, watch } from "vue";
+import { useStore } from "vuex";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
@@ -7,7 +8,7 @@ import PencilIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 
 import { TypedText, type Link } from "@/api/gateway-api/generated-api";
-import type { WorkflowState } from "@/store/workflow";
+import type { RootStoreState } from "@/store/types";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 
@@ -15,88 +16,172 @@ import ProjectMetadataLastEdit from "./ProjectMetadataLastEdit.vue";
 import MetadataDescription from "./MetadataDescription.vue";
 import ProjectMetadataTags from "./ProjectMetadataTags.vue";
 
-interface Props {
-  workflow: WorkflowState["activeWorkflow"];
-  isEditing: boolean;
-}
+const ID_SEPARATOR = "#@#";
 
-const props = defineProps<Props>();
+type MetadataDraft = {
+  isEditing: boolean;
+  isValid: boolean;
+  hasEdited: boolean;
+  data: {
+    description: string;
+    links: Link[];
+    tags: string[];
+  };
+};
+
+const store = useStore<RootStoreState>();
+const workflow = computed(() => store.state.workflow.activeWorkflow);
+const projectMetadata = computed(() => workflow.value.projectMetadata);
+const currentProjectId = computed(() => workflow.value.projectId);
+const currentWorkflowId = computed(() => workflow.value.info.containerId);
+const lastEdit = computed(() => projectMetadata.value.lastEdit.toString());
+
+const currentDraftID = computed(
+  () => `${currentProjectId.value}${ID_SEPARATOR}${currentWorkflowId.value}`
+);
+
+const metadataDrafts = reactive<Record<string, MetadataDraft>>({});
+
+const isEditing = computed(
+  () => metadataDrafts[currentDraftID.value].isEditing
+);
+
+const getInitialDraftData = () => {
+  const getDescriptionText = () => {
+    const isPlainText =
+      projectMetadata.value.description.contentType ===
+      TypedText.ContentTypeEnum.Plain;
+
+    return isPlainText
+      ? recreateLinebreaks(projectMetadata.value.description.value)
+      : projectMetadata.value.description.value;
+  };
+
+  return {
+    description: getDescriptionText(),
+    links: structuredClone(toRaw(projectMetadata.value.links || [])),
+    tags: structuredClone(toRaw(projectMetadata.value.tags || [])),
+  };
+};
+
+const createNewDraft = (draftId: string) => {
+  metadataDrafts[draftId] = {
+    isEditing: false,
+    isValid: true,
+    hasEdited: false,
+    data: getInitialDraftData(),
+  };
+};
 
 type SaveEventPayload = {
+  projectId: string;
+  workflowId: string;
   description: TypedText;
   links: Array<Link>;
   tags: Array<string>;
 };
 
 const emit = defineEmits<{
-  (e: "editStart"): void;
-  (e: "editSave", payload: SaveEventPayload): void;
-  (e: "editCancel"): void;
+  (e: "save", payload: SaveEventPayload): void;
 }>();
 
-const projectMetadata = computed(() => props.workflow.projectMetadata);
-const description = computed(() => {
-  const isPlainText =
-    projectMetadata.value.description.contentType ===
-    TypedText.ContentTypeEnum.Plain;
-
-  return isPlainText
-    ? recreateLinebreaks(projectMetadata.value.description.value)
-    : projectMetadata.value.description.value;
-});
-const lastEdit = computed(() => projectMetadata.value.lastEdit.toString());
-
-const isValid = ref(true);
-const hasEdited = ref(false);
-
-const editedState = reactive({
-  description: description.value,
-  links: structuredClone(toRaw(projectMetadata.value.links || [])),
-  tags: structuredClone(toRaw(projectMetadata.value.tags || [])),
-});
-
 const hasChangedDescription = computed(() => {
-  return editedState.description !== `<p>${description.value.trim()}</p>`;
+  const description = metadataDrafts[currentDraftID.value].data.description;
+  return description !== `<p>${description.trim()}</p>`;
 });
 
-const setEditedState = <K extends keyof typeof editedState>(
-  key: K,
-  value: (typeof editedState)[K]
+const isValid = computed(() => metadataDrafts[currentDraftID.value].isValid);
+
+const onValidChange = (isValid: boolean) => {
+  metadataDrafts[currentDraftID.value].isValid = isValid;
+};
+
+const onStartEdit = () => {
+  metadataDrafts[currentDraftID.value].isEditing = true;
+};
+
+const onCancelEdit = () => {
+  createNewDraft(currentDraftID.value);
+};
+
+const getMetadataFieldValue = <K extends keyof MetadataDraft["data"]>(
+  fieldName: K
 ) => {
-  editedState[key] = value;
-  hasEdited.value = key !== "description" || hasChangedDescription.value;
+  return metadataDrafts[currentDraftID.value].data[fieldName];
 };
 
-const onSave = () => {
-  const payload: SaveEventPayload = hasEdited.value
-    ? {
-        ...editedState,
-        description: {
-          contentType: TypedText.ContentTypeEnum.Html,
-          value: editedState.description,
-        },
-      }
-    : {
-        links: projectMetadata.value.links,
-        tags: projectMetadata.value.tags,
-        description: {
-          contentType: TypedText.ContentTypeEnum.Plain,
-          value: description.value,
-        },
-      };
-
-  hasEdited.value = false;
-  emit("editSave", payload);
+const updateMetadataField = <K extends keyof MetadataDraft["data"]>(
+  fieldName: K,
+  value: MetadataDraft["data"][K]
+) => {
+  metadataDrafts[currentDraftID.value].data[fieldName] = value;
+  metadataDrafts[currentDraftID.value].hasEdited =
+    fieldName !== "description" || hasChangedDescription.value;
 };
 
-const onCancel = () => {
-  editedState.description = description.value;
-  editedState.links = projectMetadata.value.links ?? [];
-  editedState.tags = projectMetadata.value.tags ?? [];
+const onSave = (draftId: string) => {
+  const draft = metadataDrafts[draftId];
 
-  hasEdited.value = false;
-  emit("editCancel");
+  const [projectId, workflowId] = draftId.split(ID_SEPARATOR);
+
+  if (!draft.hasEdited) {
+    onCancelEdit();
+    return;
+  }
+
+  draft.isEditing = false;
+  draft.hasEdited = false;
+
+  emit("save", {
+    projectId,
+    workflowId,
+    links: draft.data.links,
+    tags: draft.data.tags,
+    description: {
+      value: draft.data.description,
+      contentType: TypedText.ContentTypeEnum.Html,
+    },
+  });
 };
+
+watch(currentDraftID, (_, prev) => {
+  if (
+    metadataDrafts[prev] &&
+    metadataDrafts[prev].isEditing &&
+    metadataDrafts[prev].hasEdited &&
+    metadataDrafts[prev].isValid
+  ) {
+    const result = window.confirm(
+      "You are still editing the Workflow metadata, do you want to save your changes?"
+    );
+
+    if (result) {
+      onSave(prev);
+    } else {
+      createNewDraft(prev);
+    }
+  }
+});
+
+watch(
+  projectMetadata,
+  () => {
+    if (!projectMetadata.value) {
+      return;
+    }
+
+    // if already editing the new draft preserve editing state and simply overwrite data
+    if (
+      metadataDrafts[currentDraftID.value] &&
+      metadataDrafts[currentDraftID.value].isEditing
+    ) {
+      metadataDrafts[currentDraftID.value].data = getInitialDraftData();
+    } else {
+      createNewDraft(currentDraftID.value);
+    }
+  },
+  { deep: true, immediate: true }
+);
 </script>
 
 <template>
@@ -107,7 +192,7 @@ const onCancel = () => {
       <FunctionButton
         v-if="!isEditing"
         title="Edit metadata"
-        @click="emit('editStart')"
+        @click="onStartEdit"
       >
         <PencilIcon />
       </FunctionButton>
@@ -115,8 +200,9 @@ const onCancel = () => {
       <FunctionButton
         v-if="isEditing"
         :disabled="!isValid"
+        title="Save metadata"
         primary
-        @click="onSave"
+        @click="onSave(currentDraftID)"
       >
         <CheckIcon />
       </FunctionButton>
@@ -124,7 +210,8 @@ const onCancel = () => {
       <FunctionButton
         v-if="isEditing"
         class="cancel-edit-button"
-        @click="onCancel"
+        title="Cancel edit"
+        @click="onCancelEdit"
       >
         <CloseIcon />
       </FunctionButton>
@@ -132,22 +219,23 @@ const onCancel = () => {
   </div>
 
   <MetadataDescription
-    :model-value="editedState.description"
+    :original-description="projectMetadata.description.value"
+    :model-value="getMetadataFieldValue('description')"
     :editable="isEditing"
-    @update:model-value="setEditedState('description', $event)"
+    @update:model-value="updateMetadataField('description', $event)"
   />
 
   <ExternalResourcesList
-    :model-value="editedState.links"
+    :model-value="getMetadataFieldValue('links')"
     :editable="isEditing"
-    @valid="isValid = $event"
-    @update:model-value="setEditedState('links', $event)"
+    @update:model-value="updateMetadataField('links', $event)"
+    @valid="onValidChange"
   />
 
   <ProjectMetadataTags
     :editable="isEditing"
-    :model-value="editedState.tags"
-    @update:model-value="setEditedState('tags', $event)"
+    :model-value="getMetadataFieldValue('tags')"
+    @update:model-value="updateMetadataField('tags', $event)"
   />
 </template>
 

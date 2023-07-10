@@ -7,19 +7,23 @@ import MetadataDescription from "../MetadataDescription.vue";
 describe("MetadataDescription.vue", () => {
   const doMount = ({ props = {} } = {}) => {
     const defaultProps = {
+      originalDescription: "Lorem ipsum",
       modelValue: "Lorem ipsum",
       editable: false,
     };
 
     const wrapper = mount(MetadataDescription, {
       props: { ...defaultProps, ...props },
+      global: {
+        stubs: { RichTextEditor: true },
+      },
     });
 
     return { wrapper };
   };
 
   it("should render placeholder when no description is set", () => {
-    const { wrapper } = doMount({ props: { modelValue: "" } });
+    const { wrapper } = doMount({ props: { originalDescription: "" } });
 
     expect(wrapper.text()).toMatch("No description has been set yet");
   });
@@ -27,11 +31,9 @@ describe("MetadataDescription.vue", () => {
   it("should render the description editor", async () => {
     const { wrapper } = doMount();
 
-    const editor = wrapper.findComponent(RichTextEditor);
-    expect(editor.props("editable")).toBe(false);
-
     await wrapper.setProps({ editable: true });
 
+    const editor = wrapper.findComponent(RichTextEditor);
     expect(editor.props("editable")).toBe(true);
 
     expect(editor.props("baseExtensions")).toEqual({

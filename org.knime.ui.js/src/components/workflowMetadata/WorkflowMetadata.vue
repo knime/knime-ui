@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useStore } from "vuex";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
@@ -7,8 +7,6 @@ import type { RootStoreState } from "@/store/types";
 
 import ProjectMetadata from "./ProjectMetadata.vue";
 import ComponentMetadata from "./ComponentMetadata.vue";
-
-const isEditing = ref(false);
 
 const store = useStore<RootStoreState>();
 
@@ -30,10 +28,16 @@ const isMetanode = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode
 );
 
-const updateMetadata = ({ description, links, tags }) => {
-  isEditing.value = false;
-
+const updateMetadata = ({
+  description,
+  links,
+  tags,
+  projectId,
+  workflowId,
+}) => {
   store.dispatch("workflow/updateWorkflowMetadata", {
+    projectId,
+    workflowId,
     description,
     links,
     tags,
@@ -45,11 +49,7 @@ const updateMetadata = ({ description, links, tags }) => {
   <div v-if="workflow && !isMetanode" class="metadata">
     <ProjectMetadata
       v-if="isProject && workflow.projectMetadata"
-      :is-editing="isEditing"
-      :workflow="workflow"
-      @edit-start="isEditing = true"
-      @edit-save="updateMetadata"
-      @edit-cancel="isEditing = false"
+      @save="updateMetadata"
     />
 
     <ComponentMetadata

@@ -239,8 +239,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }
   },
 
-  async updateWorkflowMetadata({ state }, { description, tags, links }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+  async updateWorkflowMetadata(
+    _,
+    { description, tags, links, projectId, workflowId }
+  ) {
     await API.workflowCommand.UpdateProjectMetadata({
       projectId,
       workflowId,
