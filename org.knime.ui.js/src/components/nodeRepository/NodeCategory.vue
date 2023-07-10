@@ -61,9 +61,9 @@ export default {
     display: flex;
     align-items: center;
 
-    .category-title {
+    & .category-title {
       border: 1px solid var(--knime-silver-sand);
-      margin: 0px 5px 0 0;
+      margin: 0 5px 0 0;
       padding: 3px 5px;
       line-height: 15px;
       display: inline-block;
@@ -72,17 +72,6 @@ export default {
       cursor: pointer;
       position: relative;
       background-color: var(--knime-porcelain);
-    }
-
-    .category-title {
-      border: 1px solid var(--knime-silver-sand);
-      margin: 0px 5px 0 0;
-      padding: 3px 5px;
-      line-height: 15px;
-      display: inline-block;
-      font-size: 13px;
-      color: var(--knime-dove-gray);
-      cursor: pointer;
 
       &:hover {
         color: var(--knime-white);
