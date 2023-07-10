@@ -4,7 +4,6 @@ import { shallowMount } from "@vue/test-utils";
 
 import SelectableTagList from "@/components/common/SelectableTagList.vue";
 import CloseableTagList, {
-  maxNumberOfInitialTags,
   minNumberOfInitialTags,
 } from "../CloseableTagList.vue";
 
@@ -110,7 +109,7 @@ describe("CloseableTagList.vue", () => {
       });
       expect(
         wrapper.findComponent(SelectableTagList).props("numberOfInitialTags")
-      ).toBe(6);
+      ).toBe(2);
     });
 
     it("limits the number of initial tags to the maximum even if space is left", () => {
@@ -131,7 +130,7 @@ describe("CloseableTagList.vue", () => {
       });
       expect(
         wrapper.findComponent(SelectableTagList).props("numberOfInitialTags")
-      ).toBe(maxNumberOfInitialTags);
+      ).toBe(7);
     });
 
     it("shows a minimum of 2 tags even if they would not fit", () => {

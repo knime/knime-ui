@@ -55,7 +55,7 @@ describe("NodeList", () => {
     const wrapper = doMount();
 
     const listItems = wrapper.findAll("li");
-    expect(listItems.length).toBe(6);
+    expect(listItems.length).toBe(7);
 
     const focusMock = vi.fn();
     listItems.at(3).element.focus = focusMock;

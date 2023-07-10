@@ -47,6 +47,8 @@ describe("NodeCategory", () => {
 
   it("has more nodes", () => {
     props.nodes.push({ id: "node:6" });
+    props.nodes.push({ id: "node:7" });
+    props.nodes.push({ id: "node:8" });
     doShallowMount();
 
     expect(wrapper.findComponent(NodeList).props("hasMoreNodes")).toBe(true);

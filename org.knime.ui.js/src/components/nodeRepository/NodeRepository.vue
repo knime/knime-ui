@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapGetters, mapMutations } from "vuex";
 
+import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
 import CloseableTagList from "./CloseableTagList.vue";
 import CategoryResults from "./CategoryResults.vue";
@@ -11,6 +12,7 @@ const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transi
 
 export default {
   components: {
+    ActionBreadcrumb,
     SidebarSearchResults,
     CloseableTagList,
     SearchBar,
@@ -77,7 +79,13 @@ export default {
 <template>
   <div class="node-repo">
     <div class="header">
-      <div class="search">
+      <div class="title-and-search">
+        <ActionBreadcrumb
+          :items="breadcrumbItems"
+          class="repo-breadcrumb"
+          @click="onBreadcrumbClick"
+        />
+        <hr />
         <SearchBar
           :model-value="$store.state.nodeRepository.query"
           placeholder="Search Nodes"
@@ -125,11 +133,15 @@ export default {
   z-index: 2;
   top: 0;
 
-  & .search {
-    padding: 10px 20px;
+  & > hr {
+    margin-top: 8px;
+  }
+
+  & .title-and-search {
+    padding: 0 20px 5px;
 
     & > hr {
-      margin-bottom: 13px;
+      margin-bottom: 2px;
       margin-top: 5px;
     }
   }

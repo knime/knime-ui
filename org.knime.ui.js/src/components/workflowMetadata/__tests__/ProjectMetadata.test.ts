@@ -35,6 +35,9 @@ describe("ProjectMetadata.vue", () => {
 
     const wrapper = mount(ProjectMetadata, {
       props: { ...defaultProps, ...props },
+      global: {
+        stubs: { RichTextEditor: true },
+      },
     });
 
     return { wrapper, workflow };

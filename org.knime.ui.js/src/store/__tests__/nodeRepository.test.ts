@@ -259,7 +259,7 @@ describe("Node Repository store", () => {
         expect(
           mockedAPI.noderepository.getNodesGroupedByTags
         ).toHaveBeenCalledWith({
-          numNodesPerTag: 6,
+          numNodesPerTag: 8,
           tagsOffset: 6,
           tagsLimit: 3,
           fullTemplateInfo: true,
@@ -288,7 +288,7 @@ describe("Node Repository store", () => {
         expect(
           mockedAPI.noderepository.getNodesGroupedByTags
         ).toHaveBeenCalledWith({
-          numNodesPerTag: 6,
+          numNodesPerTag: 8,
           tagsOffset: 0,
           tagsLimit: 6,
           fullTemplateInfo: true,

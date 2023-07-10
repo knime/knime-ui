@@ -29,6 +29,7 @@ const emit = defineEmits<{
       :model-value="modelValue"
       :class="['description-editor', { editable }]"
       :min-height="150"
+      autofocus
       :base-extensions="{
         bold: true,
         italic: true,
