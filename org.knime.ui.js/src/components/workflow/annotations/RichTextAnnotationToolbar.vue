@@ -263,6 +263,7 @@ onUnmounted(() => {
         :key="tool.icon"
         :active="tool.active ? tool.active() : false"
         :title="`${tool.name} – ${formatHotkeys(tool.hotkey ?? [])}`"
+        :disabled="tool.disabled?.()"
         class="toolbar-button"
         @click.stop="tool.onClick"
       >
