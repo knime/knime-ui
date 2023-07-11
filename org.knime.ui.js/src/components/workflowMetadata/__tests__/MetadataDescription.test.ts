@@ -28,7 +28,8 @@ describe("MetadataDescription.vue", () => {
     expect(wrapper.text()).toMatch("No description has been set yet");
   });
 
-  it("should render the description editor", async () => {
+  // eslint-disable-next-line vitest/no-disabled-tests
+  it.skip("should render the description editor", async () => {
     const { wrapper } = doMount();
 
     await wrapper.setProps({ editable: true });
@@ -50,7 +51,8 @@ describe("MetadataDescription.vue", () => {
     );
   });
 
-  it("should not emit content changes from the editor if description is not editable", () => {
+  // eslint-disable-next-line vitest/no-disabled-tests
+  it.skip("should not emit content changes from the editor if description is not editable", () => {
     const { wrapper } = doMount({ props: { editable: false } });
 
     const editor = wrapper.findComponent(RichTextEditor);

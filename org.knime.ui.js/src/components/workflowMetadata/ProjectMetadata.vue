@@ -10,7 +10,7 @@ import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import { TypedText, type Link } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-import { recreateLinebreaks } from "@/util/recreateLineBreaks";
+// import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 
 import ProjectMetadataLastEdit from "./ProjectMetadataLastEdit.vue";
 import MetadataDescription from "./MetadataDescription.vue";
@@ -47,18 +47,18 @@ const isEditing = computed(
 );
 
 const getInitialDraftData = () => {
-  const getDescriptionText = () => {
-    const isPlainText =
-      projectMetadata.value.description.contentType ===
-      TypedText.ContentTypeEnum.Plain;
+  // const getDescriptionText = () => {
+  //   const isPlainText =
+  //     projectMetadata.value.description.contentType ===
+  //     TypedText.ContentTypeEnum.Plain;
 
-    return isPlainText
-      ? recreateLinebreaks(projectMetadata.value.description.value)
-      : projectMetadata.value.description.value;
-  };
+  //   return isPlainText
+  //     ? recreateLinebreaks(projectMetadata.value.description.value)
+  //     : projectMetadata.value.description.value;
+  // };
 
   return {
-    description: getDescriptionText(),
+    description: projectMetadata.value.description.value,
     links: structuredClone(toRaw(projectMetadata.value.links || [])),
     tags: structuredClone(toRaw(projectMetadata.value.tags || [])),
   };
@@ -85,11 +85,6 @@ const emit = defineEmits<{
   (e: "save", payload: SaveEventPayload): void;
 }>();
 
-const hasChangedDescription = computed(() => {
-  const description = metadataDrafts[currentDraftID.value].data.description;
-  return description !== `<p>${description.trim()}</p>`;
-});
-
 const isValid = computed(() => metadataDrafts[currentDraftID.value].isValid);
 
 const onValidChange = (isValid: boolean) => {
@@ -115,8 +110,7 @@ const updateMetadataField = <K extends keyof MetadataDraft["data"]>(
   value: MetadataDraft["data"][K]
 ) => {
   metadataDrafts[currentDraftID.value].data[fieldName] = value;
-  metadataDrafts[currentDraftID.value].hasEdited =
-    fieldName !== "description" || hasChangedDescription.value;
+  metadataDrafts[currentDraftID.value].hasEdited = true;
 };
 
 const onSave = (draftId: string) => {
@@ -139,7 +133,7 @@ const onSave = (draftId: string) => {
     tags: draft.data.tags,
     description: {
       value: draft.data.description,
-      contentType: TypedText.ContentTypeEnum.Html,
+      contentType: TypedText.ContentTypeEnum.Plain,
     },
   });
 };

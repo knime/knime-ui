@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor/RichTextEditor.vue";
-
+import { ref, watch, toRef, nextTick } from "vue";
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 
 interface Props {
@@ -9,11 +8,23 @@ interface Props {
   modelValue?: string | null;
 }
 
-withDefaults(defineProps<Props>(), { modelValue: "", editable: false });
+const editor = ref<HTMLTextAreaElement | null>(null);
 
-const emit = defineEmits<{
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: "",
+  editable: false,
+});
+
+defineEmits<{
   (e: "update:modelValue", content: string): void;
 }>();
+
+watch(toRef(props, "editable"), async (next) => {
+  if (next) {
+    await nextTick();
+    editor.value.focus();
+  }
+});
 </script>
 
 <template>
@@ -30,32 +41,15 @@ const emit = defineEmits<{
       modelValue when switching between workflow tabs
     -->
     <template v-else>
-      <RichTextEditor
-        v-if="editable"
-        editable
-        :model-value="modelValue"
-        :class="['description-editor', { editable }]"
-        :min-height="150"
-        :base-extensions="{
-          bold: true,
-          italic: true,
-          bulletList: true,
-          orderedList: true,
-          underline: true,
-        }"
-        autofocus
-        :with-border="editable"
-        @update:model-value="editable && emit('update:modelValue', $event)"
-      />
-
-      <RichTextEditor
-        v-else
-        :editable="false"
-        :model-value="originalDescription"
-        :class="['description-editor']"
-        :min-height="150"
-        :with-border="false"
-      />
+      <div class="grow-wrap" :data-replicated-value="modelValue">
+        <textarea
+          ref="editor"
+          :class="['description-editor', { editable }]"
+          :readonly="!editable"
+          :value="modelValue"
+          @input="$emit('update:modelValue', ($event.target as any).value)"
+        />
+      </div>
     </template>
   </div>
 </template>
@@ -70,12 +64,53 @@ const emit = defineEmits<{
   border: 1px solid transparent;
   --rich-text-editor-font-size: 16;
 
+  width: 100%;
+  min-height: 150px;
+  resize: none;
+  background-color: transparent;
+  outline: transparent;
+
   &.editable {
-    border: 1px solid var(--knime-masala);
+    padding: 10px;
+    border: 1px solid var(--knime-stone-gray);
+    background-color: var(--knime-white);
+
+    &:focus {
+      border: 1px solid var(--knime-masala);
+    }
+  }
+}
+
+.grow-wrap {
+  /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
+  display: grid;
+
+  &::after {
+    /* Note the weird space! Needed to preventy jumpy behavior */
+    content: attr(data-replicated-value) " ";
+
+    /* This is how textarea text behaves */
+    white-space: pre-wrap;
+
+    /* Hidden from view, clicks, and screen readers */
+    visibility: hidden;
   }
 
-  &:not(.editable) {
-    --rich-text-editor-padding: 0px;
+  & > textarea {
+    resize: none;
+
+    /* Firefox shows scrollbar on growth, you can hide like this. */
+    overflow: hidden;
+  }
+
+  & > textarea,
+  &::after {
+    border: 1px solid transparent;
+    padding: 0.5rem;
+    font: inherit;
+
+    /* Place on top of each other */
+    grid-area: 1 / 1 / 2 / 2;
   }
 }
 </style>
