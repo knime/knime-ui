@@ -22,8 +22,10 @@ const props = defineProps({
 const { textarea, input } = useTextareaAutosize();
 
 const sendMessage = () => {
-  emit("sendMessage", input.value);
-  input.value = "";
+  if (input.value) {
+    emit("sendMessage", input.value);
+    input.value = "";
+  }
 };
 
 const handleKeyDown = (e) => {
