@@ -20,6 +20,9 @@ import NodeHoverSizeProvider from "./NodeHoverSizeProvider.vue";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import { KnimeMIME } from "@/mixins/dropNode";
+
+const DOUBLE_TAP_DELAY = 600;
+
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
  * Must be embedded in an `<svg>` element.
@@ -201,6 +204,7 @@ export default {
       portPositions: { in: [], out: [] },
       isDraggedOver: false,
       dragTarget: null,
+      latestTap: 0,
     };
   },
   computed: {
@@ -324,6 +328,16 @@ export default {
         // open node dialog if one is present
         this.openNodeConfiguration(this.id);
       }
+    },
+
+    // Need to use onClick instead of dblclick directly in order to support touchpad devices
+    onClick(e) {
+      const currentTime = new Date().getTime();
+      const delta = currentTime - this.latestTap;
+      if (delta < DOUBLE_TAP_DELAY) {
+        this.onLeftDoubleClick(e);
+      }
+      this.latestTap = currentTime;
     },
 
     /*
@@ -532,7 +546,7 @@ export default {
                   :execution-state="state && state.executionState"
                   :class="['node-torso', { hover: isHovering }]"
                   :filter="isHovering && 'url(#node-torso-shadow)'"
-                  @dblclick.left="onLeftDoubleClick"
+                  @click.left="onClick"
                   @dragenter="onTorsoDragEnter"
                   @dragleave="onTorsoDragLeave"
                   @drop.stop="onTorsoDragDrop"
