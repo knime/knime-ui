@@ -1,4 +1,4 @@
-/boolean* eslint-disable valid-jsdoc */
+/boolean* eslint-disable valid-jsdoc */;
 import { API } from "@api";
 import { notifyPatch } from "@/util/event-syncer";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
