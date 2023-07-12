@@ -19,8 +19,8 @@ export interface GlobalLoaderConfig {
    * initialize the loader size with these values (only applies to 'localized' displayMode)
    */
   initialDimensions?: {
-    width: number;
-    height: number;
+    width?: string;
+    height?: string;
   };
 }
 

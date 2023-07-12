@@ -143,7 +143,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     }
 
     // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
-    if (applicationState.hasNodeRecommendationsEnabled) {
+    if (applicationState.hasOwnProperty("hasNodeRecommendationsEnabled")) {
       commit(
         "setHasNodeRecommendationsEnabled",
         applicationState.hasNodeRecommendationsEnabled

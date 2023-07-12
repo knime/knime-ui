@@ -6,6 +6,8 @@ import { encodeString } from "@/util/encodeString";
 
 import type { RootStoreState } from "../types";
 import type { ApplicationState } from "./index";
+import type { Router } from "vue-router";
+import type { Workflow } from "@/api/gateway-api/generated-api";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 
@@ -31,20 +33,12 @@ export const mutations: MutationTree<ApplicationState> = {
 };
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
-  async initializeApplication({ dispatch }, { $router }) {
+  async initializeApplication({ dispatch }, { $router }: { $router: Router }) {
     await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
 
     $router.beforeEach(async (to, from, next) => {
       const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;
       const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
-
-      if (isLeavingWorkflow) {
-        // TODO: move all this logic to a specific action
-        // clear any open menus when leaving a workflow
-        await dispatch("toggleContextMenu");
-        dispatch("workflow/setEditableAnnotationId", null, { root: true });
-        dispatch("nodeRepository/closeDescriptionPanel", null, { root: true });
-      }
 
       if (isLeavingWorkflow && !isEnteringWorkflow) {
         // when leaving workflow we should dispatch to the store to run the switching logic
@@ -77,7 +71,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     dispatch("unloadActiveWorkflow", { clearWorkflow: true });
   },
 
-  async setActiveProject({ state }, { $router }) {
+  async setActiveProject({ state }, { $router }: { $router: Router }) {
     const { openProjects } = state;
 
     if (openProjects.length === 0) {
@@ -128,7 +122,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       dispatch("saveCanvasState");
 
       // unload current workflow
-      dispatch("unloadActiveWorkflow", { clearWorkflow: !newWorkflow });
+      await dispatch("unloadActiveWorkflow", { clearWorkflow: !newWorkflow });
       commit("setActiveProjectId", null);
     }
 
@@ -173,7 +167,14 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
     }
   },
-  async setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId }) {
+  async setWorkflow(
+    { commit, dispatch },
+    {
+      workflow,
+      projectId,
+      snapshotId,
+    }: { workflow: Workflow; projectId: string; snapshotId: string }
+  ) {
     commit("setActiveProjectId", projectId);
     commit(
       "workflow/setActiveWorkflow",
@@ -185,8 +186,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     );
 
     commit("workflow/setActiveSnapshotId", snapshotId, { root: true });
-    // TODO: remove this 'root' fallback after mocks have been adjusted
-    const workflowId = workflow.info.containerId || "root";
+    const workflowId = workflow.info.containerId;
     API.event.subscribeEvent({
       typeId: "WorkflowChangedEventType",
       projectId,
@@ -198,18 +198,27 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await dispatch("restoreCanvasState");
   },
 
-  unloadActiveWorkflow({ commit, rootState }, { clearWorkflow }) {
-    const activeWorkflow = rootState.workflow.activeWorkflow;
+  async unloadActiveWorkflow(
+    { commit, rootState, dispatch },
+    { clearWorkflow }
+  ) {
+    const { activeWorkflow } = rootState.workflow;
 
     // nothing to do (no tabs open)
     if (!activeWorkflow) {
       return;
     }
 
+    await dispatch("toggleContextMenu");
+    dispatch("workflow/setEditableAnnotationId", null, { root: true });
+    dispatch("nodeRepository/closeDescriptionPanel", null, { root: true });
+
     // clean up
-    const { projectId } = activeWorkflow;
+    const {
+      projectId,
+      info: { containerId: workflowId },
+    } = activeWorkflow;
     const { activeSnapshotId: snapshotId } = rootState.workflow;
-    const workflowId = rootState.workflow.activeWorkflow.info.containerId;
 
     API.event.unsubscribeEventListener({
       typeId: "WorkflowChangedEventType",

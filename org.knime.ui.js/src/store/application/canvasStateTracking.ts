@@ -73,13 +73,16 @@ export const mutations: MutationTree<ApplicationState> = {
 };
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
-  saveCanvasState({ rootGetters, commit, rootState }) {
-    const {
-      info: { containerId: workflow },
-      projectId: project,
-    } = rootState.workflow.activeWorkflow;
+  saveCanvasState({ rootGetters, commit }) {
+    const { projectId, workflowId } =
+      rootGetters["workflow/projectAndWorkflowIds"];
+
     const scrollState = rootGetters["canvas/getCanvasScrollState"]();
-    commit("setSavedCanvasStates", { ...scrollState, project, workflow });
+    commit("setSavedCanvasStates", {
+      ...scrollState,
+      project: projectId,
+      workflow: workflowId,
+    });
   },
 
   async restoreCanvasState({ dispatch, getters }) {
@@ -98,16 +101,13 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 };
 
 export const getters: GetterTree<ApplicationState, RootStoreState> = {
-  workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
+  workflowCanvasState({ savedCanvasStates }, _, { workflow }, rootGetters) {
     if (!workflow.activeWorkflow) {
       return null;
     }
 
-    // TODO: replace this with getter or helper fn
-    const {
-      info: { containerId: workflowId },
-      projectId,
-    } = workflow.activeWorkflow;
+    const { projectId, workflowId } =
+      rootGetters["workflow/projectAndWorkflowIds"];
 
     const rootWorkflowId = "root";
     const isRootWorkflow = rootWorkflowId === workflowId;

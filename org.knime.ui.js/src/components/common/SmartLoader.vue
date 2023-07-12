@@ -1,5 +1,32 @@
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
+import type { PropType, CSSProperties } from "vue";
+
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import type { GlobalLoaderConfig } from "@/store/application/globalLoader";
+
+type StaggeredLoadedParams = {
+  /**
+   * callback fn that executes without delay at the start
+   */
+  initialCallback?: () => any;
+  /**
+   * callback fn that executes after the 1st stage's delay
+   */
+  firstStageCallback?: () => any;
+  /**
+   * callback fn that executes after the 1st callback and the 2nd stage's delay
+   */
+  secondStageCallback?: () => any;
+  /**
+   * callback fn that executes when the loader's value is false. It clears the internal timer
+   */
+  resetCallback?: () => any;
+  options?: {
+    stage1Delay?: number;
+    stage2Delay?: number;
+  };
+};
 
 /**
  * Returns function that when called will execute the given callbacks
@@ -21,7 +48,7 @@ const createStaggeredLoader = ({
   secondStageCallback = () => {},
   resetCallback = () => {},
   options = {},
-}) => {
+}: StaggeredLoadedParams) => {
   const DEFAULT_STAGE1_DELAY = 1000;
   const DEFAULT_STAGE2_DELAY = 2500;
 
@@ -69,7 +96,15 @@ const DEFAULTS = Object.freeze({
   staggerStageCount: 2,
 });
 
-export default {
+type ComponentData = {
+  DEFAULTS: typeof DEFAULTS;
+  showLoader: boolean;
+  isTextShown: boolean;
+  isIconShown: boolean;
+  setLoading: (value: boolean) => any;
+};
+
+export default defineComponent({
   components: {
     ReloadIcon,
   },
@@ -84,25 +119,14 @@ export default {
       type: String,
       default: "Loading…",
     },
-    /**
-     * @typedef SmartLoaderConfig
-     * @property {'fullscreen' | 'localized' | 'toast' | 'transparent'} [displayMode] determines the loader's appeareance
-     * @property {'stagger' | 'normal'} [loadingMode] whether to use standard load without delay, or a staggered
-     * loader
-     * @property {Number} [staggerStageCount] number of stages to stagger for. (1 or 2)
-     */
-    /**
-     * Configuration object for the loader
-     *
-     * @type {import('vue').PropOptions<SmartLoaderConfig>}
-     */
+
     config: {
-      type: Object,
-      default: () => ({}),
+      type: Object as PropType<GlobalLoaderConfig>,
+      default: () => ({} as GlobalLoaderConfig),
     },
   },
 
-  data() {
+  data(): ComponentData {
     return {
       DEFAULTS,
       showLoader: false,
@@ -113,7 +137,7 @@ export default {
   },
 
   computed: {
-    overlayStyles() {
+    overlayStyles(): CSSProperties {
       const { displayMode = DEFAULTS.displayMode } = this.config;
 
       const positionMap = {
@@ -212,7 +236,7 @@ export default {
 
     focus() {
       this.$nextTick(() => {
-        this.$refs.loader.focus();
+        (this.$refs.loader as HTMLElement).focus();
       });
     },
 
@@ -249,7 +273,7 @@ export default {
       });
     },
   },
-};
+});
 </script>
 
 <template>
