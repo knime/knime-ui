@@ -102,8 +102,7 @@ export default {
     :y="selectionBounds.y"
     :width="selectionBounds.width"
     :height="selectionBounds.height"
-    :stroke="$colors.Yellow"
-    stroke-dasharray="5"
+    :stroke="$colors.Cornflower"
     vector-effect="non-scaling-stroke"
   />
 </template>
@@ -111,6 +110,6 @@ export default {
 <style lang="postcss" scoped>
 rect {
   fill: none;
-  stroke-width: 1;
+  stroke-width: 2;
 }
 </style>

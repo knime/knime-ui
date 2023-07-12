@@ -380,7 +380,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   toggleAnnotationMode: {
-    hotkey: ["Ctrl", "T"],
+    hotkey: ["T"],
     execute: ({ $store }) => {
       $store.dispatch("application/toggleAnnotationMode");
     },

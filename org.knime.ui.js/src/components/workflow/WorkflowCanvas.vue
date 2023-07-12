@@ -4,7 +4,7 @@ import { TABS } from "@/store/panel";
 import Workflow from "@/components/workflow/Workflow.vue";
 import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
 import SelectionRectangle from "@/components/workflow/SelectionRectangle.vue";
-import AnnotationRectangle from "@/components/workflow/AnnotationRectangle.vue";
+import AnnotationRectangle from "@/components/workflow/annotations/AnnotationRectangle.vue";
 import WorkflowEmpty from "@/components/workflow/WorkflowEmpty.vue";
 import KanvasFilters from "@/components/workflow/kanvas/KanvasFilters.vue";
 
@@ -66,6 +66,7 @@ export default {
     ...mapMutations("canvas", ["setIsEmpty"]),
     ...mapActions("panel", ["setCurrentProjectActiveTab"]),
     ...mapActions("canvas", ["fillScreen"]),
+    ...mapActions("application", ["toggleAnnotationMode"]),
     onNodeSelectionPreview($event) {
       this.$refs.workflow.applyNodeSelectionPreview($event);
     },
@@ -94,6 +95,7 @@ export default {
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
+    @keydown.esc="annotationMode && toggleAnnotationMode()"
   >
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />
