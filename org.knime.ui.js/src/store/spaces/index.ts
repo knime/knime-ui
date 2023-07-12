@@ -14,6 +14,7 @@ interface CreateWorkflowModalConfig {
 }
 
 export * from "./common";
+export * from "./types";
 
 export interface SpacesState {
   createWorkflowModalConfig: CreateWorkflowModalConfig;

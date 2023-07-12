@@ -11,12 +11,7 @@ import {
   cachedLocalSpaceProjectId,
   globalSpaceBrowserProjectId,
 } from "./common";
-
-export interface PathTriplet {
-  spaceId: string;
-  spaceProviderId: string;
-  itemId: string;
-}
+import type { PathTriplet } from "./types";
 
 interface State {
   workflowGroupCache: WeakMap<PathTriplet, WorkflowGroupContent>;
