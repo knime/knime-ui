@@ -1,15 +1,12 @@
-/* eslint-disable max-lines */
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
-import type { SpaceProvider } from "@/api/custom-types";
-import {
-  SpaceItem,
-  type SpaceItemReference,
-  type WorkflowGroupContent,
-} from "@/api/gateway-api/generated-api";
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
-import type { RootStoreState } from "./types";
+import { SpaceItem } from "@/api/gateway-api/generated-api";
+import type { RootStoreState } from "../types";
+
+import type { SpacesState } from "./index";
 
 export interface PathTriplet {
   spaceId: string;
@@ -17,118 +14,23 @@ export interface PathTriplet {
   itemId: string;
 }
 
-interface CreateWorkflowModalConfig {
-  isOpen: boolean;
-  projectId: string;
-}
-
-export interface SpacesState {
-  workflowGroupCache: WeakMap<PathTriplet, WorkflowGroupContent>;
-  spaceProviders?: Record<string, SpaceProvider>;
-  projectPath: Record<string, PathTriplet>;
-  isLoadingProvider: boolean;
-  hasLoadedProviders: boolean;
+interface State {
   isLoadingContent: boolean;
-  createWorkflowModalConfig: CreateWorkflowModalConfig;
   activeRenamedItemId: string;
 }
 
-export const globalSpaceBrowserProjectId = "__SPACE_BROWSER_TAB__";
-export const cachedLocalSpaceProjectId = "__LOCAL_ROOT__";
+declare module "./index" {
+  interface SpacesState extends State {}
+}
 
-const localRootProjectPath = {
-  spaceId: "local",
-  spaceProviderId: "local",
-  itemId: "root",
-};
-
-const specialProjectIds = [
-  globalSpaceBrowserProjectId,
-  cachedLocalSpaceProjectId,
-];
-
-export const state = (): SpacesState => ({
-  // current content of active browser (files and folders)
-  workflowGroupCache: new WeakMap(),
-  // metadata of all available space providers and their spaces (including local)
-  spaceProviders: null,
-  // triplet data to remember current "path" of any SpaceExplorer component
-  projectPath: {
-    [cachedLocalSpaceProjectId]: localRootProjectPath,
-  },
-  // loading state
-  isLoadingProvider: false,
-  hasLoadedProviders: false,
+export const state = (): State => ({
   isLoadingContent: false,
-  // modal open state
-  createWorkflowModalConfig: {
-    isOpen: false,
-    projectId: null,
-  },
   activeRenamedItemId: "",
 });
 
 export const mutations: MutationTree<SpacesState> = {
-  setIsLoadingProvider(state, value: boolean) {
-    state.isLoadingProvider = value;
-  },
   setIsLoadingContent(state, value: boolean) {
     state.isLoadingContent = value;
-  },
-  setHasLoadedProviders(state, value: boolean) {
-    state.hasLoadedProviders = value;
-  },
-
-  setCreateWorkflowModalConfig(state, value: CreateWorkflowModalConfig) {
-    state.createWorkflowModalConfig = value;
-  },
-
-  setProjectPath(
-    state,
-    { projectId, value }: { projectId: string; value: PathTriplet }
-  ) {
-    state.projectPath = {
-      ...state.projectPath,
-      [projectId]: value,
-    };
-  },
-
-  removeProjectPath(state, projectId: string) {
-    // removing the projectPath object will also clear the workflowGroupCache
-    // for that path as it is used as key for the WeakMap
-    delete state.projectPath[projectId];
-  },
-
-  updateProjectPath(
-    state,
-    { projectId, value }: { projectId: string; value: Partial<PathTriplet> }
-  ) {
-    const oldValue = state.projectPath[projectId];
-    if (!oldValue) {
-      consola.warn(
-        "updateProjectPath failed project was never added",
-        projectId
-      );
-      return false;
-    }
-
-    state.projectPath = {
-      ...state.projectPath,
-      [projectId]: { ...oldValue, ...value },
-    };
-    return true;
-  },
-
-  setWorkflowGroupContent(
-    state,
-    { projectId, content }: { projectId: string; content: WorkflowGroupContent }
-  ) {
-    const key = state.projectPath[projectId];
-    state.workflowGroupCache.set(key, content);
-  },
-
-  setSpaceProviders(state, value: Record<string, SpaceProvider>) {
-    state.spaceProviders = value;
   },
 
   setActiveRenamedItemId(state, value: string) {
@@ -137,213 +39,6 @@ export const mutations: MutationTree<SpacesState> = {
 };
 
 export const actions: ActionTree<SpacesState, RootStoreState> = {
-  syncPathWithOpenProjects(
-    { commit, state },
-    {
-      openProjects,
-    }: { openProjects: { projectId: string; origin: SpaceItemReference }[] }
-  ) {
-    // add
-    openProjects.forEach(({ projectId, origin }) => {
-      if (!state.projectPath[projectId]) {
-        // Take local root as default in case the workflow does not have an origin (ex. was Drag & Dropped from hub)
-        let projectPath = localRootProjectPath;
-        if (origin) {
-          const {
-            spaceId,
-            providerId: spaceProviderId,
-            ancestorItemIds: [itemId = "root"],
-          } = origin;
-          projectPath = {
-            spaceId,
-            spaceProviderId,
-            itemId,
-          };
-        }
-        commit("setProjectPath", {
-          projectId,
-          value: projectPath,
-        });
-      }
-    });
-    // remove
-    const openProjectIds = openProjects.map((project) => project.projectId);
-    const unknownProjectIds = Object.keys(state.projectPath).filter(
-      (id) => !specialProjectIds.includes(id) && !openProjectIds.includes(id)
-    );
-    unknownProjectIds.forEach((projectId) => {
-      commit("removeProjectPath", projectId);
-    });
-  },
-
-  async loadLocalSpace({ dispatch, commit }) {
-    const spacesData = await dispatch("fetchProviderSpaces", {
-      id: localRootProjectPath.spaceProviderId,
-    });
-
-    const localSpace = {
-      id: "local",
-      name: "Local space",
-      connected: true,
-      connectionMode: "AUTOMATIC",
-      local: true,
-      ...spacesData,
-    };
-
-    commit("setSpaceProviders", {
-      [localRootProjectPath.spaceProviderId]: localSpace,
-    });
-  },
-
-  refreshSpaceProviders(
-    { state, commit, dispatch },
-    { keepLocalSpace = true } = {}
-  ) {
-    if (state.isLoadingProvider) {
-      return;
-    }
-
-    const localSpace =
-      state.spaceProviders[localRootProjectPath.spaceProviderId];
-
-    const spaceProviders = keepLocalSpace
-      ? { [localRootProjectPath.spaceProviderId]: localSpace }
-      : null;
-
-    commit("setSpaceProviders", spaceProviders);
-
-    dispatch("fetchAllSpaceProviders");
-  },
-
-  fetchAllSpaceProviders({ commit, state }) {
-    if (state.isLoadingProvider) {
-      return;
-    }
-
-    commit("setIsLoadingProvider", true);
-
-    // provider fetch happens async, so the payload will be received via a
-    // `SpaceProvidersResponseEvent` which will then call the `setAllSpaceProviders`
-    // action
-    API.desktop.getSpaceProviders();
-  },
-
-  async setAllSpaceProviders(
-    { commit, state, dispatch },
-    spaceProviders: Record<string, SpaceProvider>
-  ) {
-    try {
-      const connectedProviderIds = Object.values(spaceProviders)
-        .filter(
-          ({ connected, connectionMode }) =>
-            // skip loading local space
-            // id !== localRootProjectPath.spaceProviderId &&
-            connected || connectionMode === "AUTOMATIC"
-        )
-        .map(({ id }) => id);
-
-      for (const id of connectedProviderIds) {
-        const spacesData = await dispatch("fetchProviderSpaces", { id });
-        // use current state of store to ensure the user is kept,
-        // it's not part of the response and set by connectProvider
-        spaceProviders[id] = {
-          ...state.spaceProviders?.[id],
-          ...spaceProviders[id],
-          ...spacesData,
-        };
-      }
-      commit("setSpaceProviders", spaceProviders);
-      commit("setHasLoadedProviders", true);
-    } catch (error) {
-      commit("setHasLoadedProviders", false);
-      consola.error("Error fetching providers", { error });
-      throw error;
-    } finally {
-      commit("setIsLoadingProvider", false);
-    }
-  },
-
-  async fetchProviderSpaces(_, { id }) {
-    try {
-      const providerData = await API.space.getSpaceProvider({
-        spaceProviderId: id,
-      });
-
-      return { ...providerData, connected: true };
-    } catch (error) {
-      consola.error("Error fetching provider spaces", { error });
-      throw error;
-    }
-  },
-
-  async connectProvider({ dispatch, commit, state }, { spaceProviderId }) {
-    try {
-      commit("setIsLoadingProvider", true);
-      const user = API.desktop.connectSpaceProvider({ spaceProviderId });
-
-      if (user) {
-        // Only fetch spaces when a valid user was returned
-        const updatedProvider = await dispatch("fetchProviderSpaces", {
-          id: spaceProviderId,
-        });
-        commit("setSpaceProviders", {
-          ...state.spaceProviders,
-          [spaceProviderId]: {
-            ...state.spaceProviders[spaceProviderId],
-            ...updatedProvider,
-            user,
-          },
-        });
-      }
-    } catch (error) {
-      consola.error("Error connecting to provider", { error });
-      throw error;
-    } finally {
-      commit("setIsLoadingProvider", false);
-    }
-  },
-
-  disconnectProvider({ commit, state }, { spaceProviderId }) {
-    try {
-      API.desktop.disconnectSpaceProvider({ spaceProviderId });
-
-      // update project paths that used this space provider
-      const projectsWithDisconnectedProvider = Object.entries(
-        state.projectPath
-      ).flatMap(([projectId, path]) =>
-        path.spaceProviderId === spaceProviderId ? [projectId] : []
-      );
-
-      projectsWithDisconnectedProvider.forEach((projectId) =>
-        commit("setProjectPath", {
-          projectId,
-          value: {
-            spaceProviderId: "local",
-            spaceId: "local",
-            itemId: "root",
-          },
-        })
-      );
-
-      // update space provider state
-      const { spaceProviders } = state;
-      const { name, connectionMode } = spaceProviders[spaceProviderId];
-      commit("setSpaceProviders", {
-        ...state.spaceProviders,
-        [spaceProviderId]: {
-          id: spaceProviderId,
-          name,
-          connectionMode,
-          connected: false,
-        },
-      });
-      return spaceProviderId;
-    } catch (error) {
-      consola.error("Error disconnecting from provider", { error });
-      throw error;
-    }
-  },
-
   async fetchWorkflowGroupContentByIdTriplet(
     { commit },
     { spaceId, spaceProviderId, itemId }
@@ -581,16 +276,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       commit("setIsLoadingContent", false);
     }
   },
-
-  copyBetweenSpaces({ state }, { projectId, itemIds }) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    API.desktop.copyBetweenSpaces({ spaceProviderId, spaceId, itemIds });
-  },
-
-  openInHub({ state }, { projectId, itemId }) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    API.desktop.openInHub({ spaceProviderId, spaceId, itemId });
-  },
 };
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {
@@ -700,61 +385,4 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         .filter((item) => selectedItemIds.includes(item.id))
         .some((selectedItem) => selectedItem.type === SpaceItem.TypeEnum.Data);
     },
-
-  getWorkflowGroupContent:
-    (state) =>
-    (projectId: string): WorkflowGroupContent | null => {
-      const pathTriplet = state.projectPath[projectId];
-      if (!state.workflowGroupCache.has(pathTriplet)) {
-        return null;
-      }
-      return state.workflowGroupCache.get(pathTriplet);
-    },
-
-  getSpaceInfo: (state) => (projectId: string) => {
-    // spaces data has not been cached or providers are not yet loaded
-    if (!state.projectPath.hasOwnProperty(projectId) || !state.spaceProviders) {
-      return {};
-    }
-
-    const { spaceId: activeId, spaceProviderId: activeSpaceProviderId } =
-      state.projectPath[projectId];
-
-    if (activeId === "local") {
-      return {
-        local: true,
-        private: false,
-        name: "Local space",
-      };
-    }
-
-    const activeSpaceProvider = state.spaceProviders[activeSpaceProviderId];
-    if (!activeSpaceProvider?.spaces) {
-      return {};
-    }
-
-    const space = activeSpaceProvider.spaces.find(({ id }) => id === activeId);
-
-    if (space) {
-      return {
-        local: false,
-        private: space.private,
-        name: space.name,
-      };
-    }
-
-    return {};
-  },
-
-  hasActiveHubSession({ spaceProviders }) {
-    if (!spaceProviders) {
-      return false;
-    }
-
-    return Boolean(
-      Object.values(spaceProviders).find(
-        ({ id, connected }) => id !== "local" && connected
-      )
-    );
-  },
 };
