@@ -3,6 +3,7 @@ import { mapState, mapGetters } from "vuex";
 
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
+import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
 
 /**
@@ -12,12 +13,14 @@ export default {
   components: {
     WorkflowBreadcrumb,
     ZoomMenu,
+    ValueSwitch,
     ToolbarShortcutButton,
   },
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
     ...mapGetters("selection", ["selectedNodes"]),
+    ...mapState("application", ["annotationMode"]),
 
     hasBreadcrumb() {
       return this.workflow?.parents?.length > 0;
@@ -55,6 +58,25 @@ export default {
         .filter(([_, visible]) => visible)
         .map(([name]) => name);
     },
+    currentMode() {
+      return this.annotationMode ? "annotation" : "selection";
+    },
+  },
+  methods: {
+    onModeUpdate(e) {
+      switch (e) {
+        case "annotation":
+          if (!this.annotationMode) {
+            this.$store.dispatch("application/toggleAnnotationMode");
+          }
+          break;
+        case "selection":
+          if (this.annotationMode) {
+            this.$store.dispatch("application/toggleAnnotationMode");
+          }
+          break;
+      }
+    },
   },
 };
 </script>
@@ -78,7 +100,18 @@ export default {
 
     <WorkflowBreadcrumb v-if="hasBreadcrumb" class="breadcrumb" />
 
-    <ZoomMenu v-if="workflow" :disabled="isWorkflowEmpty" />
+    <div class="control-list">
+      <ValueSwitch
+        class="control"
+        :model-value="currentMode"
+        :possible-values="[
+          { id: 'selection', text: 'Selection' },
+          { id: 'annotation', text: 'Annotation' },
+        ]"
+        @update:model-value="onModeUpdate"
+      />
+      <ZoomMenu v-if="workflow" :disabled="isWorkflowEmpty" />
+    </div>
   </div>
 </template>
 
@@ -91,6 +124,18 @@ export default {
   padding: 10px;
   background-color: var(--knime-gray-ultra-light);
   border-bottom: 1px solid var(--knime-silver-sand);
+
+  & .control-list {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-left: auto;
+
+    & .control {
+      margin-right: 5px;
+    }
+  }
 }
 
 .button-list-leave-to,
