@@ -154,6 +154,13 @@ public final class PerspectiveUtil {
     }
 
     /**
+     * Marks the classic perspective as being loaded at least once (does not mean it's active).
+     */
+    public static void setClassicPerspectiveLoaded() {
+        isClassicPerspectiveLoaded = true;
+    }
+
+    /**
      * Obtain the Web UI perspective
      *
      * @param app The application model
