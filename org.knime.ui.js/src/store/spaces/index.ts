@@ -4,7 +4,7 @@ import { API } from "@api";
 
 import * as auth from "./auth";
 import * as caching from "./caching";
-import * as loadingProviders from "./loadingProviders";
+import * as providers from "./providers";
 import * as spaceOperations from "./spaceOperations";
 import type { RootStoreState } from "../types";
 
@@ -23,7 +23,7 @@ export interface SpacesState {
 export const state = (): SpacesState => ({
   ...auth.state(),
   ...caching.state(),
-  ...loadingProviders.state(),
+  ...providers.state(),
   ...spaceOperations.state(),
 
   // modal open state
@@ -36,7 +36,7 @@ export const state = (): SpacesState => ({
 export const mutations: MutationTree<SpacesState> = {
   ...auth.mutations,
   ...caching.mutations,
-  ...loadingProviders.mutations,
+  ...providers.mutations,
   ...spaceOperations.mutations,
 
   setCreateWorkflowModalConfig(state, value: CreateWorkflowModalConfig) {
@@ -47,7 +47,7 @@ export const mutations: MutationTree<SpacesState> = {
 export const actions: ActionTree<SpacesState, RootStoreState> = {
   ...auth.actions,
   ...caching.actions,
-  ...loadingProviders.actions,
+  ...providers.actions,
   ...spaceOperations.actions,
 
   copyBetweenSpaces({ state }, { projectId, itemIds }) {
@@ -64,6 +64,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 export const getters: GetterTree<SpacesState, RootStoreState> = {
   ...auth.getters,
   ...caching.getters,
-  ...loadingProviders.getters,
+  ...providers.getters,
   ...spaceOperations.getters,
 };

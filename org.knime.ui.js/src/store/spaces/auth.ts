@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { API } from "@api";
 
 import type { ActionTree, GetterTree, MutationTree } from "vuex";

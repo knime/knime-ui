@@ -7,7 +7,7 @@ import { flushPromises } from "@vue/test-utils";
 
 const mockedAPI = deepMocked(API);
 
-describe("spaces::loadingProviders", () => {
+describe("spaces::providers", () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
