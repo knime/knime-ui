@@ -10,7 +10,6 @@ import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import { TypedText, type Link } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-// import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 
 import ProjectMetadataLastEdit from "./ProjectMetadataLastEdit.vue";
 import MetadataDescription from "./MetadataDescription.vue";
@@ -47,16 +46,6 @@ const isEditing = computed(
 );
 
 const getInitialDraftData = () => {
-  // const getDescriptionText = () => {
-  //   const isPlainText =
-  //     projectMetadata.value.description.contentType ===
-  //     TypedText.ContentTypeEnum.Plain;
-
-  //   return isPlainText
-  //     ? recreateLinebreaks(projectMetadata.value.description.value)
-  //     : projectMetadata.value.description.value;
-  // };
-
   return {
     description: projectMetadata.value.description.value,
     links: structuredClone(toRaw(projectMetadata.value.links || [])),
@@ -164,15 +153,7 @@ watch(
       return;
     }
 
-    // if already editing the new draft preserve editing state and simply overwrite data
-    if (
-      metadataDrafts[currentDraftID.value] &&
-      metadataDrafts[currentDraftID.value].isEditing
-    ) {
-      metadataDrafts[currentDraftID.value].data = getInitialDraftData();
-    } else {
-      createNewDraft(currentDraftID.value);
-    }
+    createNewDraft(currentDraftID.value);
   },
   { deep: true, immediate: true }
 );

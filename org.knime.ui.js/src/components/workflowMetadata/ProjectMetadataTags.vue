@@ -11,7 +11,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  tags: () => [],
+  modelValue: () => [],
   editable: false,
 });
 
