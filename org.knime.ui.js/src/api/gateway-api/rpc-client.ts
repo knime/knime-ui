@@ -1,5 +1,5 @@
 import type { Configuration } from "./configuration";
-import { rpc, registerNotificationHandler } from "../json-rpc-client";
+import { jsonRPCClient, registerNotificationHandler } from "../json-rpc-client";
 
 export interface RPCClient {
   call(method: string, params: unknown): Promise<any>;
@@ -7,11 +7,16 @@ export interface RPCClient {
   registerEventHandlers(eventHandlers: Record<string, any>): void;
 }
 
+const request = {
+  jsonrpc: "2.0",
+  id: 0,
+} as const;
+
 // eslint-disable-next-line unused-imports/no-unused-vars
 export const createRPCClient = (configuration: Configuration): RPCClient => {
   const rpcClient: RPCClient = {
     call(method, params) {
-      return rpc(method, params);
+      return jsonRPCClient.request({ ...request, method, params });
     },
 
     registerEventHandlers(handlers) {

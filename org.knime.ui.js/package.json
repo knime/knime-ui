@@ -28,6 +28,8 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "4.5.9",
     "@knime/ui-extension-service": "^0.13.0",
+    "@open-rpc/client-js": "^1.8.1",
+    "events": "^3.3.0",
     "fuse.js": "6.6.2",
     "gsap": "3.11.4",
     "lodash": "4.17.21",

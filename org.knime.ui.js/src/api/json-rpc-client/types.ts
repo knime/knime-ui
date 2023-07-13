@@ -20,3 +20,7 @@ export interface JSONRPCResponse {
   result: any;
   error?: undefined;
 }
+
+export type JSONRPCClient = {
+  request: <T = any>(request: JSONRPCRequest) => Promise<T>;
+};

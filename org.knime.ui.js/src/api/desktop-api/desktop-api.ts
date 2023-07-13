@@ -12,6 +12,10 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   messageOnError: string,
   returnsValue: boolean
 ): ReturnType<TFunction> => {
+  if (window.runningMode === "BROWSER") {
+    return null;
+  }
+
   try {
     const resultOrError = browserFunction(...params);
 

@@ -3,6 +3,7 @@ import {
   type JSONRPCRequest,
   type JSONRPCResponse,
   type JSONRPCParams,
+  type JSONRPCClient,
 } from "./types";
 
 type WrappedError = Error & { originalError: Error };
@@ -110,7 +111,11 @@ const handleResponse = ({
   }
 };
 
-export const rpc = async (method: string, params: any) => {
+export const rpc = async (
+  client: JSONRPCClient,
+  method: string,
+  params: any
+) => {
   const request: JSONRPCRequest = {
     jsonrpc: JSONRPC,
     method,
@@ -120,10 +125,16 @@ export const rpc = async (method: string, params: any) => {
 
   consola.trace("JSON-RPC Request:", request);
   try {
-    const response = (await window.jsonrpc(request)) as
-      | string
-      | JSONRPCResponse;
-    return handleResponse({ response, method, params });
+    const response = await client.request<string | JSONRPCResponse>(request);
+    console.log("method", method);
+    console.log("response", response);
+    console.log("-------------------------");
+    return response;
+    // if (window.runningMode === "DESKTOP") {
+    //   return handleResponse({ response, method, params });
+    // } else {
+    //   return response;
+    // }
   } catch (error) {
     throw createWrappedError(
       `Error calling JSON-RPC api "${[method, JSON.stringify(params)].join(
