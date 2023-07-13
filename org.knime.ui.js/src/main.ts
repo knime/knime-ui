@@ -6,6 +6,7 @@ import { silentLogger } from "./plugins/logger";
 import { initStore } from "./store";
 import { router } from "./router";
 import { initPlugins } from "./plugins";
+import { environment, initGlobalEnvProperty } from "./environment";
 
 import "./assets/index.css";
 
@@ -18,12 +19,8 @@ silentLogger();
 // e.g: TableView, NodeDialog
 window.Vue = Vue;
 
-window.runningMode =
-  // eslint-disable-next-line no-undefined
-  window.switchToJavaUI === undefined ? "BROWSER" : "DESKTOP";
-
 try {
-  await initJSONRPCClient(window.runningMode);
+  await initJSONRPCClient(environment);
 
   // Create Vue app
   const app = Vue.createApp(KnimeUI);
@@ -40,6 +37,7 @@ try {
   }
 
   initPlugins({ app, store, router });
+  initGlobalEnvProperty(app);
 
   app.use(store);
   app.use(router);

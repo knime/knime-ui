@@ -8,6 +8,7 @@ import type { RootStoreState } from "../types";
 import type { ApplicationState } from "./index";
 import type { Router } from "vue-router";
 import type { Workflow } from "@/api/gateway-api/generated-api";
+import { runInEnvironment } from "@/environment";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 
@@ -76,7 +77,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     if (openProjects.length === 0) {
       consola.info("No workflows opened");
-      await $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+      await runInEnvironment({
+        DESKTOP: () =>
+          $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage }),
+      });
       return;
     }
 
@@ -84,7 +88,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     // No active project is set -> stay on entry page (aka: null project)
     if (!activeProject) {
-      await $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+      await runInEnvironment({
+        DESKTOP: () =>
+          $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage }),
+      });
       return;
     }
 

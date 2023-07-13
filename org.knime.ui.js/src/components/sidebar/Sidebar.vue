@@ -1,30 +1,40 @@
 <script>
+import { defineAsyncComponent } from "vue";
 import { mapState, mapActions, mapMutations } from "vuex";
+
 import NodeCogIcon from "webapps-common/ui/assets/img/icons/node-cog.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import ChatIcon from "webapps-common/ui/assets/img/icons/forum.svg";
-import MetainfoIcon from "@/assets/metainfo.svg";
 
+import { environment } from "@/environment";
+import MetainfoIcon from "@/assets/metainfo.svg";
 import { TABS } from "@/store/panel";
-import NodeRepository from "@/components/nodeRepository/NodeRepository.vue";
-import NodeDialogWrapper from "@/components/embeddedViews/NodeDialogWrapper.vue";
-import SidebarSpaceExplorer from "@/components/sidebar/SidebarSpaceExplorer.vue";
-import AiAssistant from "@/components/sidebar/aiAssistant/AiAssistant.vue";
 
 import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
-import ContextAwareDescription from "@/components/sidebar/ContextAwareDescription.vue";
+
+const registerSidebarSection = (condition, sectionData) => {
+  return condition ? [sectionData] : [];
+};
 
 export default {
   components: {
-    ContextAwareDescription,
-    MetainfoIcon,
-    SidebarSpaceExplorer,
-    PlusIcon,
     LeftCollapsiblePanel,
-    NodeRepository,
-    NodeDialogWrapper,
-    AiAssistant,
+    ContextAwareDescription: defineAsyncComponent(() =>
+      import("@/components/sidebar/ContextAwareDescription.vue")
+    ),
+    NodeRepository: defineAsyncComponent(() =>
+      import("@/components/nodeRepository/NodeRepository.vue")
+    ),
+    NodeDialogWrapper: defineAsyncComponent(() =>
+      import("@/components/embeddedViews/NodeDialogWrapper.vue")
+    ),
+    SidebarSpaceExplorer: defineAsyncComponent(() =>
+      import("@/components/sidebar/SidebarSpaceExplorer.vue")
+    ),
+    AiAssistant: defineAsyncComponent(() =>
+      import("@/components/sidebar/aiAssistant/AiAssistant.vue")
+    ),
   },
   data() {
     return {
@@ -52,32 +62,34 @@ export default {
           isExpanded: this.expanded,
           onClick: () => this.clickItem(TABS.NODE_REPOSITORY),
         },
-        this.$features.shouldDisplayEmbeddedDialogs()
-          ? {
-              title: "Node dialog",
-              icon: NodeCogIcon,
-              isActive: this.isTabActive(TABS.NODE_DIALOG),
-              isExpanded: this.expanded,
-              onClick: () => this.clickItem(TABS.NODE_DIALOG),
-            }
-          : null,
-        {
+
+        ...registerSidebarSection(
+          this.$features.shouldDisplayEmbeddedDialogs(),
+          {
+            title: "Node dialog",
+            icon: NodeCogIcon,
+            isActive: this.isTabActive(TABS.NODE_DIALOG),
+            isExpanded: this.expanded,
+            onClick: () => this.clickItem(TABS.NODE_DIALOG),
+          }
+        ),
+
+        ...registerSidebarSection(environment === "DESKTOP", {
           title: "Space explorer",
           icon: CubeIcon,
           isActive: this.isTabActive(TABS.SPACE_EXPLORER),
           isExpanded: this.expanded,
           onClick: () => this.clickItem(TABS.SPACE_EXPLORER),
-        },
-        this.$features.shouldShowAiAssistant()
-          ? {
-              title: "AI Chat",
-              icon: ChatIcon,
-              isActive: this.isTabActive(TABS.AI_CHAT),
-              isExpanded: this.expanded,
-              onClick: () => this.clickItem(TABS.AI_CHAT),
-            }
-          : null,
-      ].filter(Boolean);
+        }),
+
+        ...registerSidebarSection(this.$features.shouldShowAiAssistant(), {
+          title: "AI Chat",
+          icon: ChatIcon,
+          isActive: this.isTabActive(TABS.AI_CHAT),
+          isExpanded: this.expanded,
+          onClick: () => this.clickItem(TABS.AI_CHAT),
+        }),
+      ];
     },
   },
   methods: {

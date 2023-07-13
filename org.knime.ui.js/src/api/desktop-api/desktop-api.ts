@@ -1,3 +1,5 @@
+import { environment } from "@/environment";
+
 import type {
   SpaceProviderId,
   SpaceId,
@@ -12,7 +14,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   messageOnError: string,
   returnsValue: boolean
 ): ReturnType<TFunction> => {
-  if (window.runningMode === "BROWSER") {
+  if (environment === "BROWSER") {
     return null;
   }
 

@@ -1,4 +1,11 @@
-import { createRouter, createWebHistory } from "vue-router";
+import {
+  createRouter,
+  createWebHistory,
+  type RouteRecordRaw,
+} from "vue-router";
+
+import { environment } from "@/environment";
+
 import WorkflowPage from "@/components/workflow/WorkflowPage.vue";
 import SpaceBrowsingPage from "@/components/spaces/SpaceBrowsingPage.vue";
 import EntryPageLayout from "@/components/entryPage/EntryPageLayout.vue";
@@ -7,16 +14,25 @@ import InfoPage from "@/components/infoPage/InfoPage.vue";
 
 import { APP_ROUTES } from "./appRoutes";
 
-/**
- * @type {Array<import('vue-router').Route>}
- */
-export const routes = [
-  {
+const registerRoute = (
+  env: typeof environment | "ANY",
+  route: RouteRecordRaw
+): [RouteRecordRaw] | [] => {
+  return [route];
+  // if (env === "ANY") {
+  //   return [route];
+  // }
+
+  // return env === environment ? [route] : [];
+};
+
+export const routes: Array<RouteRecordRaw> = [
+  ...registerRoute("ANY", {
     name: APP_ROUTES.WorkflowPage,
     path: "/workflow/:projectId/:workflowId",
     component: WorkflowPage,
-  },
-  {
+  }),
+  ...registerRoute("DESKTOP", {
     // name: APP_ROUTES.EntryPage,
     path: "/",
     component: EntryPageLayout,
@@ -35,17 +51,17 @@ export const routes = [
       //    meta: { showUpdateBanner: true }
       // }
     ],
-  },
-  {
+  }),
+  ...registerRoute("DESKTOP", {
     name: APP_ROUTES.SpaceBrowsingPage,
     path: "/space-browsing",
     component: SpaceBrowsingPage,
-  },
-  {
+  }),
+  ...registerRoute("DESKTOP", {
     name: APP_ROUTES.InfoPage,
     path: "/info",
     component: InfoPage,
-  },
+  }),
 ];
 
 export const getPathFromRouteName = (name) => {

@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
+import { defineComponent, defineAsyncComponent } from "vue";
 import { mapActions, mapState } from "vuex";
 
+import { environment } from "@/environment";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
-import AppHeader from "@/components/application/AppHeader.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import Error from "@/components/application/Error.vue";
 import SmartLoader from "@/components/common/SmartLoader.vue";
@@ -13,10 +14,12 @@ import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vu
  * Initiates application state
  * Defines the router outlet
  */
-export default {
+export default defineComponent({
   components: {
+    AppHeader: defineAsyncComponent(
+      () => import("@/components/application/AppHeader.vue")
+    ),
     UpdateBanner,
-    AppHeader,
     HotkeyHandler,
     Error,
     SmartLoader,
@@ -34,14 +37,8 @@ export default {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
     ...mapState("application", ["availableUpdates", "globalLoader", "devMode"]),
 
-    isInsideAP() {
-      // When the `window.isInsideAP` property is set, the app is being run in development mode
-      // via knime-ui-internal, so the API will be mocked and therefore the browser functions will exist
-      // and we can't use them to determine the value
-      // eslint-disable-next-line no-undefined
-      return window.isInsideAP === undefined
-        ? Boolean(window.switchToJavaUI)
-        : window.isInsideAP;
+    environment() {
+      return environment;
     },
   },
 
@@ -84,7 +81,7 @@ export default {
     },
 
     async checkClipboardSupport() {
-      if (this.isInsideAP) {
+      if (environment === "DESKTOP") {
         this.$store.commit("application/setHasClipboardSupport", true);
         return;
       }
@@ -94,8 +91,11 @@ export default {
       try {
         // Ask for permission if Permission API is available
         const permission = await navigator.permissions.query({
+          // TODO: check if this is needed anymore
+          // @ts-expect-error
           name: "clipboard-read",
         });
+
         if (permission.state === "granted" || permission.state === "prompt") {
           hasClipboardSupport = true;
         }
@@ -114,12 +114,12 @@ export default {
     },
 
     onCloseError() {
-      if (devMode) {
+      if (this.devMode) {
         this.error = null;
       }
     },
   },
-};
+});
 </script>
 
 <template>
@@ -127,16 +127,17 @@ export default {
     <!-- if subsequent errors occur, stick with the first one -->
     <Error v-if="error" v-bind="error" @close="onCloseError" />
 
-    <AppHeader id="header" />
+    <AppHeader v-if="environment === 'DESKTOP'" />
     <HotkeyHandler />
 
     <template v-if="loaded">
       <div
-        :class="
+        :class="[
           $route.meta.showUpdateBanner && availableUpdates
             ? 'main-content-with-banner'
-            : 'main-content'
-        "
+            : 'main-content',
+          environment,
+        ]"
       >
         <RouterView />
       </div>
@@ -171,8 +172,15 @@ export default {
 
 .main-content {
   width: 100vw;
-  height: calc(100vh - var(--app-header-height));
   grid-area: workflow;
+  /* height: calc(100vh - var(--app-header-height)); */
+
+  &.DESKTOP {
+    height: calc(100vh - var(--app-header-height));
+  }
+  &.BROWSER {
+    height: 100vh;
+  }
 }
 
 .main-content-with-banner {

@@ -13,7 +13,6 @@ interface Window {
     ) => any;
   };
 
-  runningMode: "DESKTOP" | "BROWSER";
   Vue: any;
   store: any;
   router: any;
