@@ -153,6 +153,9 @@ public final class PerspectiveSwitchAddon {
         NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
         PerspectiveUtil.setClassicPerspectiveActive(false);
+        // we assume we always switch _from_ the classic UI - i.e. it must have been loaded
+        // before a switch to the web UI is possible
+        PerspectiveUtil.setClassicPerspectiveLoaded();
         OpenKnimeUrlAction.setEventHandlingActive(false);
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
