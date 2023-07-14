@@ -26,7 +26,7 @@ export default defineComponent({
         state.activeWorkflow.info.containerId as string,
     }),
     ...mapState("workflow", ["portTypeMenu", "quickAddNodeMenu"]),
-    ...mapState("application", ["contextMenu", "annotationMode"]),
+    ...mapState("application", ["contextMenu"]),
     ...mapGetters("workflow", [
       "isLinked",
       "isInsideLinked",
@@ -37,7 +37,10 @@ export default defineComponent({
     ]),
     ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
     ...mapGetters("selection", ["selectedNodeIds"]),
-    ...mapGetters("application", ["hasActiveProjectAnOrigin"]),
+    ...mapGetters("application", [
+      "hasActiveProjectAnOrigin",
+      "hasAnnotationModeEnabled",
+    ]),
   },
   watch: {
     // close quickAddNodeMenu if node selection changes
@@ -49,7 +52,7 @@ export default defineComponent({
   },
   methods: {
     toggleContextMenu(event) {
-      if (this.annotationMode) {
+      if (this.hasAnnotationModeEnabled) {
         this.$store.dispatch("application/toggleAnnotationMode");
       }
       this.$store.dispatch("application/toggleContextMenu", { event });
@@ -74,7 +77,7 @@ export default defineComponent({
     :class="[
       'workflow-panel',
       { 'read-only': !isWritable },
-      { 'annotation-cursor': annotationMode },
+      { 'annotation-cursor': hasAnnotationModeEnabled },
     ]"
     @contextmenu.stop="onContextMenu"
     @pointerdown.right="contextMenu.isOpen && toggleContextMenu($event)"

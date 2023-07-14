@@ -39,6 +39,8 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "paste"
   | "addWorkflowAnnotation"
   | "toggleAnnotationMode"
+  | "togglePanMode"
+  | "switchToSelectionMode"
   | "bringAnnotationToFront"
   | "bringAnnotationForward"
   | "sendAnnotationBackward"
@@ -383,6 +385,22 @@ const workflowShortcuts: WorkflowShortcuts = {
     hotkey: ["T"],
     execute: ({ $store }) => {
       $store.dispatch("application/toggleAnnotationMode");
+    },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+  },
+  togglePanMode: {
+    hotkey: ["P"],
+    execute: ({ $store }) => {
+      $store.dispatch("application/togglePanMode");
+    },
+    condition: ({ $store }) =>
+      $store.getters["workflow/isWritable"] &&
+      !$store.getters["workflow/isWorkflowEmpty"],
+  },
+  switchToSelectionMode: {
+    hotkey: ["V"],
+    execute: ({ $store }) => {
+      $store.dispatch("application/resetCanvasMode");
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },

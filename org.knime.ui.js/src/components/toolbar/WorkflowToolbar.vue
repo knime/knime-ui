@@ -9,24 +9,6 @@ import ZoomMenu from "./ZoomMenu.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
 
-const canvasModes = [
-  {
-    id: "selection",
-    icon: InteractiveIcon,
-    text: "Selection mode",
-    // TODO add hotkey for selection mode
-    // hotkeyText: "V",
-  },
-  {
-    id: "annotation",
-    icon: UpperLowerCaseIcon,
-    text: "Annotation mode",
-    hotkeyText: "T",
-  },
-  // TODO add pan mode
-  // { id: "pan", icon: ArrowMoveIcon, text: "Pan mode", hotkeyText: "P" },
-];
-
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
  */
@@ -42,14 +24,38 @@ export default {
   },
   data() {
     return {
-      canvasModes,
+      // TODO disabled on non writable and isEmpty
+      canvasModes: [
+        {
+          id: "selection",
+          icon: InteractiveIcon,
+          text: "Selection mode",
+          hotkeyText: "V",
+        },
+        {
+          id: "annotation",
+          icon: UpperLowerCaseIcon,
+          text: "Annotation mode",
+          hotkeyText: "T",
+        },
+        {
+          id: "pan",
+          icon: ArrowMoveIcon,
+          text: "Pan mode",
+          hotkeyText: "P",
+        },
+      ],
     };
   },
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
     ...mapGetters("selection", ["selectedNodes"]),
-    ...mapState("application", ["annotationMode"]),
+    ...mapGetters("application", [
+      "hasAnnotationModeEnabled",
+      "hasSelectionModeEnabled",
+      "hasPanModeEnabled",
+    ]),
 
     hasBreadcrumb() {
       return this.workflow?.parents?.length > 0;
@@ -87,24 +93,10 @@ export default {
         .filter(([_, visible]) => visible)
         .map(([name]) => name);
     },
-    currentMode() {
-      return this.annotationMode ? "annotation" : "selection";
-    },
   },
   methods: {
-    onModeUpdate(_, { id }) {
-      switch (id) {
-        case "annotation":
-          if (!this.annotationMode) {
-            this.$store.dispatch("application/toggleAnnotationMode");
-          }
-          break;
-        case "selection":
-          if (this.annotationMode) {
-            this.$store.dispatch("application/toggleAnnotationMode");
-          }
-          break;
-      }
+    onCanvasModeUpdate(_, { id }) {
+      this.$store.dispatch("application/switchCanvasMode", id);
     },
   },
 };
@@ -134,11 +126,11 @@ export default {
         class="control"
         :items="canvasModes"
         orientation="left"
-        @item-click="onModeUpdate"
+        @item-click="onCanvasModeUpdate"
       >
-        <InteractiveIcon v-if="currentMode === 'selection'" />
-        <UpperLowerCaseIcon v-if="currentMode === 'annotation'" />
-        <ArrowMoveIcon v-if="currentMode === 'pan'" />
+        <InteractiveIcon v-if="hasSelectionModeEnabled" />
+        <UpperLowerCaseIcon v-else-if="hasAnnotationModeEnabled" />
+        <ArrowMoveIcon v-else-if="hasPanModeEnabled" />
       </SubMenu>
 
       <ZoomMenu v-if="workflow" :disabled="isWorkflowEmpty" />

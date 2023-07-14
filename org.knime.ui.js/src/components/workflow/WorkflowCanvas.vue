@@ -21,7 +21,10 @@ export default {
   },
   mixins: [dropNode],
   computed: {
-    ...mapGetters("application", ["workflowCanvasState"]),
+    ...mapGetters("application", [
+      "workflowCanvasState",
+      "hasAnnotationModeEnabled",
+    ]),
     ...mapGetters("canvas", ["contentBounds"]),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
     ...mapState("nodeRepository", {
@@ -29,7 +32,6 @@ export default {
     }),
     ...mapState("canvas", ["zoomFactor"]),
     ...mapState("workflow", ["activeWorkflow"]),
-    ...mapState("application", ["annotationMode"]),
   },
   watch: {
     isWorkflowEmpty: {
@@ -66,7 +68,7 @@ export default {
     ...mapMutations("canvas", ["setIsEmpty"]),
     ...mapActions("panel", ["setCurrentProjectActiveTab"]),
     ...mapActions("canvas", ["fillScreen"]),
-    ...mapActions("application", ["toggleAnnotationMode"]),
+    ...mapActions("application", ["resetCanvasMode"]),
     onNodeSelectionPreview($event) {
       this.$refs.workflow.applyNodeSelectionPreview($event);
     },
@@ -95,7 +97,7 @@ export default {
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
-    @keydown.esc="annotationMode && toggleAnnotationMode()"
+    @keydown.esc="!hasSelectionModeEnabled && resetCanvasMode()"
   >
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />
@@ -114,7 +116,7 @@ export default {
     </template>
 
     <!-- The Annotation- and SelectionRectangle register to the selection-pointer{up,down,move} events of their parent (the Kanvas) -->
-    <AnnotationRectangle v-if="annotationMode" />
+    <AnnotationRectangle v-if="hasAnnotationModeEnabled" />
     <SelectionRectangle
       v-else
       @node-selection-preview="onNodeSelectionPreview"

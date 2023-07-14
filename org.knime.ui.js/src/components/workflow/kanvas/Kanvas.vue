@@ -25,6 +25,7 @@ export default {
   },
   computed: {
     ...mapGetters("canvas", ["canvasSize", "viewBox", "contentBounds"]),
+    ...mapGetters("application", ["hasPanModeEnabled"]),
     ...mapState("canvas", ["zoomFactor", "interactionsEnabled", "isEmpty"]),
     ...mapState("application", ["scrollToZoomEnabled"]),
     ...mapState("workflow", ["isDragging"]),
@@ -177,6 +178,13 @@ export default {
         this.isHoldingDownSpace = false;
       }
 
+      if (e.code === "Escape") {
+        // unset panning state
+        this.useMoveCursor = false;
+        this.isPanning = false;
+        this.$store.dispatch("application/resetCanvasMode");
+      }
+
       const metaOrCtrlKey = isMac() ? "Meta" : "Control";
 
       if (e.key === "Shift" || e.key === metaOrCtrlKey) {
@@ -195,7 +203,11 @@ export default {
       this.isHoldingDownRightClick = e.button === rightButton;
 
       // definite pan for these 2 interactions
-      if (this.isHoldingDownMiddleClick || this.isHoldingDownSpace) {
+      if (
+        this.isHoldingDownMiddleClick ||
+        this.isHoldingDownSpace ||
+        this.hasPanModeEnabled
+      ) {
         this.isPanning = true;
         this.useMoveCursor = true;
         this.panningOffset = [e.screenX, e.screenY];
@@ -303,7 +315,7 @@ export default {
     :class="[
       'scroll-container',
       {
-        panning: useMoveCursor,
+        panning: useMoveCursor || hasPanModeEnabled,
         empty: isEmpty,
         disabled: !interactionsEnabled,
       },
