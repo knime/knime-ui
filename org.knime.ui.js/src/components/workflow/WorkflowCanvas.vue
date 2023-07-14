@@ -113,9 +113,8 @@ export default {
       <Workflow ref="workflow" />
     </template>
 
+    <!-- The Annotation- and SelectionRectangle register to the selection-pointer{up,down,move} events of their parent (the Kanvas) -->
     <AnnotationRectangle v-if="annotationMode" />
-
-    <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas) -->
     <SelectionRectangle
       v-else
       @node-selection-preview="onNodeSelectionPreview"

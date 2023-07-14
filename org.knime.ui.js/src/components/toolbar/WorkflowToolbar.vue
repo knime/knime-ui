@@ -2,9 +2,30 @@
 import { mapState, mapGetters } from "vuex";
 
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
+import InteractiveIcon from "webapps-common/ui/assets/img/icons/interactive.svg";
+import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
+import UpperLowerCaseIcon from "webapps-common/ui/assets/img/icons/upper-lower-case.svg";
 import ZoomMenu from "./ZoomMenu.vue";
-import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
+
+const canvasModes = [
+  {
+    id: "selection",
+    icon: InteractiveIcon,
+    text: "Selection mode",
+    // TODO add hotkey for selection mode
+    // hotkeyText: "V",
+  },
+  {
+    id: "annotation",
+    icon: UpperLowerCaseIcon,
+    text: "Annotation mode",
+    hotkeyText: "T",
+  },
+  // TODO add pan mode
+  // { id: "pan", icon: ArrowMoveIcon, text: "Pan mode", hotkeyText: "P" },
+];
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -13,8 +34,16 @@ export default {
   components: {
     WorkflowBreadcrumb,
     ZoomMenu,
-    ValueSwitch,
     ToolbarShortcutButton,
+    SubMenu,
+    InteractiveIcon,
+    ArrowMoveIcon,
+    UpperLowerCaseIcon,
+  },
+  data() {
+    return {
+      canvasModes,
+    };
   },
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
@@ -63,8 +92,8 @@ export default {
     },
   },
   methods: {
-    onModeUpdate(e) {
-      switch (e) {
+    onModeUpdate(_, { id }) {
+      switch (id) {
         case "annotation":
           if (!this.annotationMode) {
             this.$store.dispatch("application/toggleAnnotationMode");
@@ -101,15 +130,17 @@ export default {
     <WorkflowBreadcrumb v-if="hasBreadcrumb" class="breadcrumb" />
 
     <div class="control-list">
-      <ValueSwitch
+      <SubMenu
         class="control"
-        :model-value="currentMode"
-        :possible-values="[
-          { id: 'selection', text: 'Selection' },
-          { id: 'annotation', text: 'Annotation' },
-        ]"
-        @update:model-value="onModeUpdate"
-      />
+        :items="canvasModes"
+        orientation="left"
+        @item-click="onModeUpdate"
+      >
+        <InteractiveIcon v-if="currentMode === 'selection'" />
+        <UpperLowerCaseIcon v-if="currentMode === 'annotation'" />
+        <ArrowMoveIcon v-if="currentMode === 'pan'" />
+      </SubMenu>
+
       <ZoomMenu v-if="workflow" :disabled="isWorkflowEmpty" />
     </div>
   </div>
