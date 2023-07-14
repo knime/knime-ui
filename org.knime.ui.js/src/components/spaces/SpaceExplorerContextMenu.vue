@@ -6,10 +6,11 @@ import MenuItems, {
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { computed } from "vue";
-import { useStore } from "vuex";
+import { type Dispatch, useStore } from "vuex";
 import type { RootStoreState } from "@/store/types";
 import DeleteIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import RenameIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
+import ExportIcon from "webapps-common/ui/assets/img/icons/export.svg";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
@@ -88,6 +89,26 @@ const fileExplorerContextMenuItems = computed(() => {
     return [downloadToLocalSpace, openInHub];
   };
 
+  const createExportItemOption = (
+    dispatch: Dispatch,
+    projectId: string,
+    selectedItems: Array<string>
+  ) => {
+    const isSelectionMultiple = selectedItems.length > 1;
+    return {
+      id: "export",
+      text: "Export",
+      icon: ExportIcon,
+      disabled: selectionContainsFile || isSelectionMultiple,
+      execute: () => {
+        dispatch("spaces/exportSpaceItem", {
+          projectId,
+          itemId: selectedItems[0],
+        });
+      },
+    };
+  };
+
   const openFileType =
     anchorItem.meta.type === SpaceItem.TypeEnum.Workflow
       ? "workflows"
@@ -112,7 +133,15 @@ const fileExplorerContextMenuItems = computed(() => {
       title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
       icon: DeleteIcon,
     }),
-
+    ...(isLocal
+      ? [
+          createExportItemOption(
+            store.dispatch,
+            props.projectId,
+            props.selectedItemIds
+          ),
+        ]
+      : []),
     ...getHubActions(),
   ];
 

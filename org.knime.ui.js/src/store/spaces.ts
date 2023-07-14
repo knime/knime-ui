@@ -518,6 +518,19 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
+  async exportSpaceItem({ state, dispatch }, { projectId, itemId }) {
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    const success = API.desktop.exportSpaceItem({
+      spaceProviderId,
+      spaceId,
+      itemId,
+    });
+
+    if (success) {
+      await dispatch("fetchWorkflowGroupContent", { projectId });
+    }
+  },
+
   async renameItem(
     { state, dispatch, commit },
     { projectId, itemId, newName }

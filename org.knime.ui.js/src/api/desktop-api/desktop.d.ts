@@ -59,6 +59,12 @@ declare function importWorkflows(
   itemId: string
 ): boolean;
 
+declare function exportSpaceItem(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string
+): boolean;
+
 declare function getNameCollisionStrategy(
   spaceProviderId: string,
   spaceId: string,

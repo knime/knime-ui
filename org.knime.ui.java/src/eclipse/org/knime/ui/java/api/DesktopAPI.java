@@ -87,6 +87,7 @@ public final class DesktopAPI {
         WorkflowAPI.class, //
         SpaceAPI.class, //
         ImportAPI.class, //
+        ExportAPI.class, //
         EclipseUIAPI.class, //
         ChatAPI.class//
     );
