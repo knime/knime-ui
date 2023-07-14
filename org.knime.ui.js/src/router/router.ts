@@ -56,10 +56,10 @@ export const routes: Array<RouteRecordRaw> = [
     component: () => import("@/components/infoPage/InfoPage.vue"),
   }),
 
-  ...registerRoute("BROWSER", {
-    path: "/",
-    redirect: "/workflow",
-  }),
+  // ...registerRoute("BROWSER", {
+  //   path: "/:pathMatch(.*)*",
+  //   redirect: APP_ROUTES.WorkflowPage,
+  // }),
 ];
 
 export const getPathFromRouteName = (name) => {

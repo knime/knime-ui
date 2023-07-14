@@ -1,5 +1,5 @@
 import type { Configuration } from "./configuration";
-import { jsonRPCClient, registerNotificationHandler } from "../json-rpc-client";
+import { jsonRPCClient, registerEventHandler } from "../json-rpc-client";
 
 export interface RPCClient {
   call(method: string, params: unknown): Promise<any>;
@@ -21,7 +21,7 @@ export const createRPCClient = (configuration: Configuration): RPCClient => {
 
     registerEventHandlers(handlers) {
       Object.entries(handlers).forEach(([eventName, eventHandler]) => {
-        registerNotificationHandler(eventName, eventHandler);
+        registerEventHandler(eventName, eventHandler);
       });
     },
   };

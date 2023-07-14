@@ -7,4 +7,4 @@ export const APP_ROUTES = {
   },
   SpaceBrowsingPage: "SpaceBrowsingPage",
   InfoPage: "InfoPage",
-};
+} as const;

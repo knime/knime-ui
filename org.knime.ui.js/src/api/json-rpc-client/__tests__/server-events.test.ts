@@ -7,10 +7,7 @@ import {
   it,
   vi,
 } from "vitest";
-import {
-  registerNotificationHandler,
-  serverEventHandler,
-} from "../server-events";
+import { registerEventHandler, serverEventHandler } from "../server-events";
 
 const origErrorLogger = consola.error;
 
@@ -27,7 +24,7 @@ describe("server-events", () => {
       NotFunction: null,
     };
     Object.entries(eventHandlers).forEach(([eventName, eventHandler]) => {
-      registerNotificationHandler(eventName, eventHandler);
+      registerEventHandler(eventName, eventHandler);
     });
   });
 

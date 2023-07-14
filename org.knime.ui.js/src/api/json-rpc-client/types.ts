@@ -14,7 +14,7 @@ export interface JSONRPCRequest {
   params?: JSONRPCParams;
   id?: JSONRPCID;
 }
-export interface JSONRPCResponse {
+interface JSONRPCResponse {
   jsonrpc: JSONRPC;
   id: JSONRPCID;
   result: any;
@@ -22,5 +22,5 @@ export interface JSONRPCResponse {
 }
 
 export type JSONRPCClient = {
-  request: <T = any>(request: JSONRPCRequest) => Promise<T>;
+  request: <T = JSONRPCResponse>(request: JSONRPCRequest) => Promise<T>;
 };

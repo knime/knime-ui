@@ -1,8 +1,8 @@
 import { RequestManager, Client } from "@open-rpc/client-js";
 
 import {
-  getRegisteredNotificationHandler,
-  registerNotificationHandler,
+  getRegisteredEventHandler,
+  registerEventHandler,
 } from "./server-events";
 
 import type { JSONRPCClient } from "./types";
@@ -69,6 +69,6 @@ const initJSONRPCClient = async (mode: "BROWSER" | "DESKTOP") => {
 export {
   initJSONRPCClient,
   jsonRPCClient,
-  registerNotificationHandler,
-  getRegisteredNotificationHandler,
+  registerEventHandler,
+  getRegisteredEventHandler,
 };

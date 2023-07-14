@@ -79,13 +79,10 @@ const validate = (json: string): MaybeValidServerEvent => {
   return maybeMethodFound;
 };
 
-export const getRegisteredNotificationHandler = (eventName: string) =>
+export const getRegisteredEventHandler = (eventName: string) =>
   REGISTERED_HANDLERS.get(eventName);
 
-export const registerNotificationHandler = (
-  eventName: string,
-  handler: Function
-) => {
+export const registerEventHandler = (eventName: string, handler: Function) => {
   REGISTERED_HANDLERS.set(eventName, handler);
 };
 
