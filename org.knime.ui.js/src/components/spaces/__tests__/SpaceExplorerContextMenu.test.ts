@@ -98,10 +98,11 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     expect(wrapper.findComponent(MenuItems).exists()).toBe(true);
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items.length).toBe(4);
+    expect(items.length).toBe(5);
     expect(items.map((item) => item.text)).toStrictEqual([
       "rename",
       "delete",
+      "Export",
       "Upload to Hub",
       "Connect to Hub",
     ]);
@@ -118,6 +119,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     const items = wrapper.findComponent(MenuItems).props("items");
     expect(items.map((item) => item.text)).toStrictEqual([
       "delete",
+      "Export",
       "Upload to Hub",
       "Connect to Hub",
     ]);
@@ -135,6 +137,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     const items = wrapper.findComponent(MenuItems).props("items");
     expect(items.map((item) => item.text)).toStrictEqual([
       "delete",
+      "Export",
       "Upload to Hub",
     ]);
   });
@@ -152,7 +155,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     });
 
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items[1]).toStrictEqual(
+    expect(items[2]).toStrictEqual(
       expect.objectContaining({
         disabled: true,
         text: "Upload to Hub",
@@ -173,7 +176,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     });
 
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items[1]).toStrictEqual(
+    expect(items[2]).toStrictEqual(
       expect.objectContaining({
         disabled: false,
         text: "Upload to Hub",
@@ -201,7 +204,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     });
 
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items[2]).toStrictEqual(
+    expect(items[3]).toStrictEqual(
       expect.objectContaining({
         text: "Connect to Hub",
         execute: null,
@@ -239,7 +242,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     const menuItems = wrapper.findComponent(MenuItems);
     const items = menuItems.props("items");
-    const connectToHubItem = items[2].children[0];
+    const connectToHubItem = items[3].children[0];
     menuItems.vm.$emit("item-click", null, connectToHubItem);
     await nextTick();
 
@@ -265,7 +268,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     const menuItems = wrapper.findComponent(MenuItems);
     const items = menuItems.props("items");
-    const uploadToHub = items[1];
+    const uploadToHub = items[2];
     menuItems.vm.$emit("item-click", null, uploadToHub);
     await nextTick();
 
@@ -292,7 +295,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     const menuItems = wrapper.findComponent(MenuItems);
     const items = menuItems.props("items");
-    const connectToHub = items[2];
+    const connectToHub = items[3];
     menuItems.vm.$emit("item-click", null, connectToHub);
     await nextTick();
 

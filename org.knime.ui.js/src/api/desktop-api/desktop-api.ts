@@ -285,6 +285,19 @@ export const importWorkflows = ({
   );
 };
 
+export const exportSpaceItem = ({
+  spaceProviderId = "local",
+  spaceId = "local",
+  itemId,
+}: FullSpacePath) => {
+  return callBrowserFunction(
+    window.exportSpaceItem,
+    [spaceProviderId, spaceId, itemId],
+    "Could not export item",
+    true
+  );
+};
+
 export const getNameCollisionStrategy = ({
   spaceProviderId = "local",
   spaceId = "local",

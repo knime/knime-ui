@@ -266,6 +266,27 @@ describe("spaces::spaceOperations", () => {
     });
   });
 
+  describe("exportSpaceItem", () => {
+    it("should export workflows", () => {
+      const { store } = loadStore();
+      store.state.spaces.projectPath.project2 = {
+        spaceProviderId: "local",
+        spaceId: "local",
+        itemId: "level2",
+      };
+
+      store.dispatch("spaces/exportSpaceItem", {
+        projectId: "project2",
+        itemId: "level2",
+      });
+      expect(mockedAPI.desktop.exportSpaceItem).toHaveBeenCalledWith({
+        itemId: "level2",
+        spaceId: "local",
+        spaceProviderId: "local",
+      });
+    });
+  });
+
   describe("deleteItems", () => {
     it("should delete items", async () => {
       const itemIds = ["item0", "item1"];
