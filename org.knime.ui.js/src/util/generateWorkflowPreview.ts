@@ -167,6 +167,7 @@ const inheritedCssProperties = [
   "text-align",
   "border",
   "padding",
+  "margin",
 
   // properties needed for correct text clipping on node names
   "display",
@@ -277,9 +278,13 @@ const addFontStyles = async (svgElement: SVGElement) => {
 
   styleTag.appendChild(
     document.createTextNode(`@font-face {
-            font-family: "Roboto Condensed";
-            src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}");
-        }`)
+      font-family: "Roboto Condensed";
+      src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}");
+    }`)
+  );
+  // Make sure the list item markers are displayed
+  styleTag.appendChild(
+    document.createTextNode("li { overflow: initial !important; }")
   );
 
   styleTag.type = "text/css";
