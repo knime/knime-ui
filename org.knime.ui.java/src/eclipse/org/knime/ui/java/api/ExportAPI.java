@@ -48,19 +48,23 @@
  */
 package org.knime.ui.java.api;
 
-import java.io.IOException;
-
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.workbench.explorer.localworkspace.LocalWorkspaceFileStore;
+import org.knime.workbench.explorer.view.ContentObject;
+import org.knime.workbench.explorer.view.actions.export.WorkflowExportWizard;
 
 /**
  * API functions related with export workflow, folders, etc.
  *
  * @author baqueroj
  */
-public class ExportAPI {
-
-    private static final ExportItem EXPORT_ITEM = new ExportItem();
+final class ExportAPI {
 
     private ExportAPI() {
         // stateless
@@ -72,13 +76,33 @@ public class ExportAPI {
      * @return Success state
      */
     @API
-    static boolean exportSpaceItem(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
+    static boolean exportSpaceItem(final String spaceProviderId, final String spaceId, final String itemId) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-        final var success = EXPORT_ITEM.exportItem(space, itemId);
+        final var success = openExportWizard(space, itemId);
         if (success) {
             NodeTimer.GLOBAL_TIMER.incWorkflowExport();
         }
         return success;
+    }
+
+    /**
+     * @param space space that contains the item to export
+     * @param itemId id of the item to export
+     *
+     * @return true if the legacy workbench dialog has not been exited via "Cancel"
+     */
+    static boolean openExportWizard(final Space space, final String itemId) {
+        final var workbench = PlatformUI.getWorkbench();
+        final var shell = workbench.getModalDialogShellProvider().getShell();
+        final var itemUri = space.toKnimeUrl(itemId);
+        return workbench.getDisplay().syncCall(() -> {
+            final var exportWizard = new WorkflowExportWizard();
+            final var fileStore = new LocalWorkspaceFileStore(itemUri.getHost(), itemUri.getPath());
+            final var item = ContentObject.forFile(fileStore);
+            exportWizard.init(workbench, new StructuredSelection(item));
+            final var dialog = new WizardDialog(shell, exportWizard);
+            dialog.create();
+            return dialog.open() != Window.CANCEL;
+        });
     }
 }
