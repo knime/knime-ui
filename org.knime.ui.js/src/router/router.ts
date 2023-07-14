@@ -7,40 +7,31 @@ import {
 import { environment } from "@/environment";
 
 import WorkflowPage from "@/components/workflow/WorkflowPage.vue";
-import SpaceBrowsingPage from "@/components/spaces/SpaceBrowsingPage.vue";
-import EntryPageLayout from "@/components/entryPage/EntryPageLayout.vue";
-import GetStartedPage from "@/components/entryPage/GetStartedPage.vue";
-import InfoPage from "@/components/infoPage/InfoPage.vue";
 
 import { APP_ROUTES } from "./appRoutes";
 
 const registerRoute = (
-  env: typeof environment | "ANY",
+  env: typeof environment,
   route: RouteRecordRaw
 ): [RouteRecordRaw] | [] => {
-  return [route];
-  // if (env === "ANY") {
-  //   return [route];
-  // }
-
-  // return env === environment ? [route] : [];
+  return env === environment ? [route] : [];
 };
 
 export const routes: Array<RouteRecordRaw> = [
-  ...registerRoute("ANY", {
+  {
     name: APP_ROUTES.WorkflowPage,
     path: "/workflow/:projectId/:workflowId",
     component: WorkflowPage,
-  }),
+  },
+
   ...registerRoute("DESKTOP", {
-    // name: APP_ROUTES.EntryPage,
     path: "/",
-    component: EntryPageLayout,
+    component: () => import("@/components/entryPage/EntryPageLayout.vue"),
     children: [
       {
         name: APP_ROUTES.EntryPage.GetStartedPage,
         path: "/get-started",
-        component: GetStartedPage,
+        component: () => import("@/components/entryPage/GetStartedPage.vue"),
         meta: { showUpdateBanner: true },
       },
       // TODO: NXT-1461 enable again when we have a dedicated stand alone SpaceSelection page again
@@ -52,15 +43,22 @@ export const routes: Array<RouteRecordRaw> = [
       // }
     ],
   }),
+
   ...registerRoute("DESKTOP", {
     name: APP_ROUTES.SpaceBrowsingPage,
     path: "/space-browsing",
-    component: SpaceBrowsingPage,
+    component: () => import("@/components/spaces/SpaceBrowsingPage.vue"),
   }),
+
   ...registerRoute("DESKTOP", {
     name: APP_ROUTES.InfoPage,
     path: "/info",
-    component: InfoPage,
+    component: () => import("@/components/infoPage/InfoPage.vue"),
+  }),
+
+  ...registerRoute("BROWSER", {
+    path: "/",
+    redirect: "/workflow",
   }),
 ];
 

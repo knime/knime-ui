@@ -1,15 +1,13 @@
-import {
-  RequestManager,
-  Client,
-  WebSocketTransport,
-} from "@open-rpc/client-js";
+import { RequestManager, Client } from "@open-rpc/client-js";
 
 import {
   getRegisteredNotificationHandler,
   registerNotificationHandler,
 } from "./server-events";
+
 import type { JSONRPCClient } from "./types";
 import { DesktopAPTransport } from "./DesktopAPTransport";
+import { WebSocketTransport } from "./WebSocketTransport";
 
 type ClientInitResult = Promise<any>;
 
@@ -27,7 +25,7 @@ const initDesktopClient = (): ClientInitResult => {
     return Promise.resolve();
   }
 
-  const transport = new DesktopAPTransport("");
+  const transport = new DesktopAPTransport();
   const requestManager = new RequestManager([transport]);
   const client = new Client(requestManager);
   jsonRPCClient = client;

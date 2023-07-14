@@ -13,21 +13,14 @@ export const initGlobalEnvProperty = (app: App) => {
 
 type Handler = () => void | Promise<any>;
 
-type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
-type XOR<T, U> = T | U extends object
-  ? (Without<T, U> & U) | (Without<U, T> & T)
-  : T | U;
+type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
+  U[keyof U];
 
-type MatchAll = Partial<Record<Environment, Handler>>;
-type MatchAny = Record<"ANY", Handler>;
-type Matcher = XOR<MatchAll, MatchAny>;
+type Matcher = AtLeastOne<Record<Environment, Handler>>;
 
 export const runInEnvironment = (matcher: Matcher) => {
+  // fallback, just in case value is not provided
   const noop = () => Promise.resolve();
-
-  if (matcher.ANY) {
-    return matcher.ANY();
-  }
 
   return (matcher[environment] ?? noop)();
 };

@@ -1,5 +1,5 @@
 import { expect, describe, beforeEach, afterEach, it } from "vitest";
-import { silentLogger } from "../logger";
+import { setupLogger } from "../logger";
 
 describe("logger", () => {
   let originalConsola;
@@ -14,7 +14,7 @@ describe("logger", () => {
   });
 
   it("defines a logger", () => {
-    silentLogger();
+    setupLogger();
     [
       "debug",
       "error",

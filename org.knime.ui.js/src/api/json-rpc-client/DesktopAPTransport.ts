@@ -3,19 +3,13 @@ import type { JSONRPCRequestData } from "@open-rpc/client-js/build/Request";
 import { Transport } from "@open-rpc/client-js/build/transports/Transport";
 import { JSONRPCError } from "@open-rpc/client-js";
 import { ERR_UNKNOWN } from "@open-rpc/client-js/build/Error";
+
 import { serverEventHandler } from "./server-events";
 
 const JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
 const JAVA_EVENT_ACTION_ID = "org.knime.ui.java.event";
 
 export class DesktopAPTransport extends Transport {
-  public uri: string;
-
-  constructor(uri: string) {
-    super();
-    this.uri = uri;
-  }
-
   public connect(): Promise<any> {
     window.EquoCommService.on(
       JAVA_EVENT_ACTION_ID,
@@ -42,6 +36,7 @@ export class DesktopAPTransport extends Transport {
       const responseErr = this.transportRequestManager.resolveResponse(
         JSON.stringify(result)
       );
+
       if (responseErr) {
         return Promise.reject(responseErr);
       }
