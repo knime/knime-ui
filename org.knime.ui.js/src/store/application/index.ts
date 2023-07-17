@@ -18,6 +18,7 @@ import * as canvasStateTracking from "./canvasStateTracking";
 import * as settings from "./settings";
 import * as globalLoader from "./globalLoader";
 import * as dirtyProjectTracking from "./dirtyProjectsTracking";
+import * as canvasModes from "./canvasModes";
 
 export interface ApplicationState {
   /**
@@ -71,6 +72,7 @@ export const state = (): ApplicationState => ({
   ...settings.state(),
   ...globalLoader.state(),
   ...dirtyProjectTracking.state(),
+  ...canvasModes.state(),
 
   openProjects: [],
   activeProjectId: null,
@@ -93,6 +95,7 @@ export const mutations: MutationTree<ApplicationState> = {
   ...settings.mutations,
   ...globalLoader.mutations,
   ...dirtyProjectTracking.mutations,
+  ...canvasModes.mutations,
 
   setActiveProjectId(state, projectId) {
     state.activeProjectId = projectId;
@@ -130,6 +133,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
   ...settings.actions,
   ...globalLoader.actions,
   ...dirtyProjectTracking.actions,
+  ...canvasModes.actions,
 
   // ----------------------------------------------------------------------------------------- //
   replaceApplicationState({ commit, dispatch, state }, applicationState) {
@@ -270,6 +274,7 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
   ...settings.getters,
   ...globalLoader.getters,
   ...dirtyProjectTracking.getters,
+  ...canvasModes.getters,
 
   hasActiveProjectAnOrigin({ openProjects, activeProjectId }) {
     if (!activeProjectId) {
