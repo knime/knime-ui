@@ -2,9 +2,9 @@
 import { mapState, mapGetters } from "vuex";
 
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
-import InteractiveIcon from "webapps-common/ui/assets/img/icons/interactive.svg";
 import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
-import UpperLowerCaseIcon from "webapps-common/ui/assets/img/icons/upper-lower-case.svg";
+import SelectionModeIcon from "@/assets/selection-mode.svg";
+import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import ZoomMenu from "./ZoomMenu.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
@@ -18,34 +18,9 @@ export default {
     ZoomMenu,
     ToolbarShortcutButton,
     SubMenu,
-    InteractiveIcon,
+    SelectionModeIcon,
     ArrowMoveIcon,
-    UpperLowerCaseIcon,
-  },
-  data() {
-    return {
-      // TODO disabled on non writable and isEmpty
-      canvasModes: [
-        {
-          id: "selection",
-          icon: InteractiveIcon,
-          text: "Selection mode",
-          hotkeyText: "V",
-        },
-        {
-          id: "annotation",
-          icon: UpperLowerCaseIcon,
-          text: "Annotation mode",
-          hotkeyText: "T",
-        },
-        {
-          id: "pan",
-          icon: ArrowMoveIcon,
-          text: "Pan mode",
-          hotkeyText: "P",
-        },
-      ],
-    };
+    AnnotationModeIcon,
   },
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
@@ -56,6 +31,30 @@ export default {
       "hasSelectionModeEnabled",
       "hasPanModeEnabled",
     ]),
+
+    canvasModes() {
+      return [
+        {
+          id: "selection",
+          icon: SelectionModeIcon,
+          text: "Selection mode",
+          hotkeyText: "V",
+        },
+        {
+          id: "annotation",
+          icon: AnnotationModeIcon,
+          text: "Annotation mode",
+          hotkeyText: "T",
+        },
+        {
+          id: "pan",
+          icon: ArrowMoveIcon,
+          text: "Pan mode",
+          hotkeyText: "P",
+          disabled: this.isWorkflowEmpty,
+        },
+      ];
+    },
 
     hasBreadcrumb() {
       return this.workflow?.parents?.length > 0;
@@ -128,8 +127,8 @@ export default {
         orientation="left"
         @item-click="onCanvasModeUpdate"
       >
-        <InteractiveIcon v-if="hasSelectionModeEnabled" />
-        <UpperLowerCaseIcon v-else-if="hasAnnotationModeEnabled" />
+        <SelectionModeIcon v-if="hasSelectionModeEnabled" />
+        <AnnotationModeIcon v-else-if="hasAnnotationModeEnabled" />
         <ArrowMoveIcon v-else-if="hasPanModeEnabled" />
       </SubMenu>
 

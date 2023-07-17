@@ -476,7 +476,7 @@ export default {
         <!-- Node Selection Plane. Portalled to the back -->
         <Portal to="node-select">
           <NodeSelectionPlane
-            v-show="showSelectionPlane && hasAnnotationModeEnabled"
+            v-show="showSelectionPlane && !hasAnnotationModeEnabled"
             :position="position"
             :width="selectionWidth"
             :extra-height="nameDimensions.height"
