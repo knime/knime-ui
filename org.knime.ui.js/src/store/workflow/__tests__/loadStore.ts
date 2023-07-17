@@ -17,6 +17,7 @@ export const loadStore = async () => {
       },
     },
     aiAssistant: { state: { build: { isProcessing: false } } },
+    application: await import("@/store/application"),
   });
 
   return { store };

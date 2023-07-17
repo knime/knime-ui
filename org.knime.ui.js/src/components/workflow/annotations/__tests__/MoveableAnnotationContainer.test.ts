@@ -53,6 +53,7 @@ describe("MoveableAnnotationContainer.vue", () => {
       aiAssistant: {
         state: { build: { isProcessing: false } },
       },
+      application: { state: { canvasMode: "selection" } },
     });
 
     $store.commit("workflow/setActiveWorkflow", createWorkflow());
