@@ -295,6 +295,10 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     { isLinked, isInsideLinked, projectAndWorkflowIds },
     rootState
   ) {
+    if (rootState.application.canvasMode === "annotation") {
+      return false;
+    }
+
     const linkage = isLinked || isInsideLinked;
 
     if (!rootState.aiAssistant) {

@@ -209,6 +209,8 @@ export default {
     ...mapState("workflow", ["isDragging"]),
     ...mapGetters("selection", ["isNodeSelected", "singleSelectedNode"]),
     ...mapGetters("workflow", ["isWritable"]),
+    ...mapGetters("application", ["hasAnnotationModeEnabled"]),
+
     /**
      * Width of the node selection plane. It accounts not only for the node margins
      * but also for the width of the name as it changes
@@ -474,7 +476,7 @@ export default {
         <!-- Node Selection Plane. Portalled to the back -->
         <Portal to="node-select">
           <NodeSelectionPlane
-            v-show="showSelectionPlane"
+            v-show="showSelectionPlane && hasAnnotationModeEnabled"
             :position="position"
             :width="selectionWidth"
             :extra-height="nameDimensions.height"

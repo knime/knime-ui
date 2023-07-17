@@ -386,7 +386,6 @@ const workflowShortcuts: WorkflowShortcuts = {
     execute: ({ $store }) => {
       $store.dispatch("application/toggleAnnotationMode");
     },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   togglePanMode: {
     hotkey: ["P"],

@@ -31,6 +31,7 @@ export default defineComponent({
     }),
 
     ...mapGetters("selection", ["isNodeSelected"]),
+    ...mapGetters("application", ["hasAnnotationModeEnabled"]),
     // Sort nodes so that selected nodes are rendered in front
     // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
     sortedNodes() {
@@ -68,6 +69,7 @@ export default defineComponent({
           v-for="annotation of workflow.workflowAnnotations"
           :id="annotation.id"
           :key="`annotation-${annotation.id}`"
+          :class="{ disabled: hasAnnotationModeEnabled }"
           :bounds="annotation.bounds"
         >
           <WorkflowAnnotation
@@ -90,12 +92,16 @@ export default defineComponent({
         <Connector
           v-for="connector of workflow.connections"
           :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
+          :class="{ disabled: hasAnnotationModeEnabled }"
           v-bind="connector"
         />
       </template>
 
       <template #metaNodePortBars>
-        <MetaNodePortBars v-if="workflow.info.containerType === 'metanode'" />
+        <MetaNodePortBars
+          v-if="workflow.info.containerType === 'metanode'"
+          :class="{ disabled: hasAnnotationModeEnabled }"
+        />
       </template>
 
       <template #nodes>
@@ -103,12 +109,14 @@ export default defineComponent({
           v-for="node of sortedNodes"
           :id="node.id"
           :key="`node-${node.id}`"
+          :class="{ disabled: hasAnnotationModeEnabled }"
           :position="node.position"
           :kind="node.kind"
         >
           <template #default="{ position }">
             <Node
               :ref="`node-${node.id}`"
+              :class="{ disabled: hasAnnotationModeEnabled }"
               v-bind="node"
               :icon="$store.getters['workflow/getNodeIcon'](node.id)"
               :name="$store.getters['workflow/getNodeName'](node.id)"
@@ -129,3 +137,13 @@ export default defineComponent({
     </WorkflowPortalLayers>
   </g>
 </template>
+
+<style scoped lang="postcss">
+.disabled {
+  pointer-events: none;
+
+  &:deep(.hover-area) {
+    pointer-events: none;
+  }
+}
+</style>
