@@ -1,13 +1,17 @@
-import { RequestManager, Client } from "@open-rpc/client-js";
+import {
+  RequestManager,
+  Client,
+  WebSocketTransport,
+} from "@open-rpc/client-js";
 
 import {
   getRegisteredEventHandler,
   registerEventHandler,
+  serverEventHandler,
 } from "./server-events";
 
 import type { JSONRPCClient } from "./types";
 import { DesktopAPTransport } from "./DesktopAPTransport";
-import { WebSocketTransport } from "./WebSocketTransport";
 
 type ClientInitResult = Promise<any>;
 
@@ -21,11 +25,22 @@ const initDesktopClient = (): ClientInitResult => {
     );
   }
 
+  const JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
+  const JAVA_EVENT_ACTION_ID = "org.knime.ui.java.event";
+
+  // setup server event handler
+  window.EquoCommService.on(
+    JAVA_EVENT_ACTION_ID,
+    (event) => serverEventHandler(event),
+    // eslint-disable-next-line no-console
+    (error) => console.error(error)
+  );
+
   if (jsonRPCClient) {
     return Promise.resolve();
   }
 
-  const transport = new DesktopAPTransport();
+  const transport = new DesktopAPTransport(JSON_RPC_ACTION_ID);
   const requestManager = new RequestManager([transport]);
   const client = new Client(requestManager);
   jsonRPCClient = client;
@@ -33,15 +48,31 @@ const initDesktopClient = (): ClientInitResult => {
   return Promise.resolve("SUCCESS");
 };
 
-const initBrowserClient = (): ClientInitResult => {
+const initBrowserClient = (url: string): ClientInitResult => {
   try {
     if (jsonRPCClient) {
       return Promise.resolve();
     }
 
-    const WS_SOCKET_URL = "ws://localhost:7000/websocket";
+    const transport = new WebSocketTransport(url);
 
-    const transport = new WebSocketTransport(WS_SOCKET_URL);
+    // setup server event handler
+    transport.connection.addEventListener("message", (message) => {
+      const { data } = message;
+      if (typeof data !== "string") {
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(data);
+        if (parsed.eventType) {
+          serverEventHandler(data as string);
+        }
+      } catch (error) {
+        consola.log(data);
+      }
+    });
+
     const requestManager = new RequestManager([transport]);
     const client = new Client(requestManager);
     jsonRPCClient = client;
@@ -53,12 +84,12 @@ const initBrowserClient = (): ClientInitResult => {
   }
 };
 
-const initJSONRPCClient = async (mode: "BROWSER" | "DESKTOP") => {
+const initJSONRPCClient = async (mode: "BROWSER" | "DESKTOP", url: string) => {
   try {
     const clientInitializer =
       mode === "DESKTOP" ? initDesktopClient : initBrowserClient;
 
-    await clientInitializer();
+    await clientInitializer(url);
 
     return Promise.resolve("SUCCESS");
   } catch (error) {
