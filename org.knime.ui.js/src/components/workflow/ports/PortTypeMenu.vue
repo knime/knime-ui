@@ -22,6 +22,9 @@ const portNameSizeThreshold = 20;
 
 type MenuItemWithPort = MenuItem & { port?: { typeId: string } };
 
+const ABSTRACT_HUB_PORT_ID =
+  "org.knime.workflowservices.connection.AbstractHubAuthenticationPortObject";
+
 export default defineComponent({
   components: {
     FloatingMenu,
@@ -103,7 +106,7 @@ export default defineComponent({
         : this.suggestedPortTypes;
 
       return makeTypeSearch({
-        typeIds: searchTypeIds,
+        typeIds: searchTypeIds.filter((id) => id !== ABSTRACT_HUB_PORT_ID),
         availablePortTypes: this.availablePortTypes,
         suggestedTypeIds,
       });
