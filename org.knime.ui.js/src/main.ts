@@ -19,8 +19,35 @@ setupLogger();
 // e.g: TableView, NodeDialog
 window.Vue = Vue;
 
+const apiURLResolver = () =>
+  new Promise<{ url: string }>((resolve) => {
+    // immediately resolve for desktop environment
+    if (environment === "DESKTOP") {
+      resolve({ url: "" });
+    }
+
+    // for dev mode, use provided url directly
+    if (import.meta.env.VITE_WS_API_URL) {
+      resolve({ url: import.meta.env.VITE_WS_API_URL });
+    }
+
+    // wait for wrapper app to send a message containing the api url
+    window.addEventListener(
+      "message",
+      (event) => {
+        if (event.data.type !== "KNIME_CONNECTION_REQUEST") {
+          return;
+        }
+
+        resolve({ url: event.data.payload.url });
+      },
+      false
+    );
+  });
+
 try {
-  await initJSONRPCClient(environment);
+  const { url } = await apiURLResolver();
+  await initJSONRPCClient(environment, url);
 
   // Create Vue app
   const app = Vue.createApp(KnimeUI);

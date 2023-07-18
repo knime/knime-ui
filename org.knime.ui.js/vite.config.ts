@@ -10,6 +10,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [vue(), svgLoader()],
 
+    build: {
+      target: "esnext",
+    },
+
     server: {
       port: Number(process.env.VITE_APP_PORT) || 3000,
       watch: {
