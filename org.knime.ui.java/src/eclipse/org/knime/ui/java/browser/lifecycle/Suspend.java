@@ -49,9 +49,9 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import org.eclipse.core.runtime.jobs.Job;
+import org.knime.gateway.impl.webui.service.util.DefaultServicesUtil;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.util.DefaultServicesUtil;
 
 /**
  * The 'suspend' lifecycle state transition for the KNIME-UI. Called when the view is (temporarily) not used anymore (on
