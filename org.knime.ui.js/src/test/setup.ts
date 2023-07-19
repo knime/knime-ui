@@ -11,6 +11,9 @@ config.global.stubs = {
 };
 consola.level = LogLevel.Error;
 
+// mock presence of desktop function
+window.switchToJavaUI = () => {};
+
 vi.mock("raf-throttle", () => ({
   default(func) {
     return function (this: any, ...args: any[]) {

@@ -1,5 +1,5 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import * as panelStoreConfig from "@/store/panel";
@@ -8,7 +8,6 @@ import * as nodeRepositoryStoreConfig from "@/store/nodeRepository";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import Metainfo from "@/assets/metainfo.svg";
 
-import NodeRepository from "@/components/nodeRepository/NodeRepository.vue";
 import NodeDialogWrapper from "@/components/embeddedViews/NodeDialogWrapper.vue";
 import Sidebar from "../Sidebar.vue";
 
@@ -47,10 +46,17 @@ describe("Sidebar", () => {
     });
 
     doShallowMount = () => {
-      wrapper = shallowMount(Sidebar, {
+      wrapper = mount(Sidebar, {
         global: {
           plugins: [store],
           mocks: { $features: mockFeatureFlags },
+          stubs: {
+            ContextAwareDescription: true,
+            NodeRepository: true,
+            NodeDialogWrapper: true,
+            SidebarSpaceExplorer: true,
+            AiAssistant: true,
+          },
         },
       });
     };
@@ -79,8 +85,6 @@ describe("Sidebar", () => {
     await wrapper.find(`[title="${tabName}"]`).trigger("click");
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(true);
     expect(wrapper.find(`[title="${tabName}"]`).classes("active")).toBe(true);
-
-    expect(wrapper.findComponent(NodeRepository).exists()).toBe(true);
   });
 
   it("clicking on open tab should close it", async () => {

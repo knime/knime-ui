@@ -13,11 +13,9 @@ import {
 import type { JSONRPCClient } from "./types";
 import { DesktopAPTransport } from "./DesktopAPTransport";
 
-type ClientInitResult = Promise<any>;
-
 let jsonRPCClient: JSONRPCClient = null;
 
-const initDesktopClient = (): ClientInitResult => {
+const initDesktopClient = () => {
   if (!window.EquoCommService) {
     consola.error("Could not access EquoComm service. Aborting");
     return Promise.reject(
@@ -48,7 +46,7 @@ const initDesktopClient = (): ClientInitResult => {
   return Promise.resolve("SUCCESS");
 };
 
-const initBrowserClient = (url: string): ClientInitResult => {
+const initBrowserClient = (url: string) => {
   try {
     if (jsonRPCClient) {
       return Promise.resolve();

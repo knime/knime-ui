@@ -5,15 +5,23 @@ import { API } from "@api";
 import { deepMocked } from "@/test/utils";
 import { applicationState, loadStore } from "./loadStore";
 
+import { runInEnvironment } from "@/environment";
+
 const mockedAPI = deepMocked(API);
+
+vi.mock("@/environment");
 
 describe("application::lifecycle", () => {
   afterEach(() => {
     vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe("application Lifecycle", () => {
-    it("initialization", async () => {
+    it("initialization (DESKTOP)", async () => {
+      // @ts-ignore
+      // eslint-disable-next-line new-cap
+      runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP());
       const { store, dispatchSpy, subscribeEvent } = loadStore();
       await store.dispatch("application/initializeApplication", {
         $router: router,
@@ -25,6 +33,45 @@ describe("application::lifecycle", () => {
         "application/replaceApplicationState",
         applicationState
       );
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "spaces/loadLocalSpace",
+        expect.anything()
+      );
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "spaces/fetchAllSpaceProviders",
+        expect.anything()
+      );
+      expect(dispatchSpy).toHaveBeenCalledWith("application/setActiveProject", {
+        $router: router,
+      });
+    });
+
+    it("initialization (BROWSER)", async () => {
+      const { store, dispatchSpy, subscribeEvent } = loadStore();
+      await store.dispatch("application/initializeApplication", {
+        $router: router,
+      });
+
+      expect(subscribeEvent).toHaveBeenCalled();
+      expect(API.application.getState).toHaveBeenCalled();
+
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "spaces/loadLocalSpace",
+        expect.anything()
+      );
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "spaces/fetchAllSpaceProviders",
+        expect.anything()
+      );
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/replaceApplicationState",
+        applicationState
+      );
+      expect(dispatchSpy).toHaveBeenCalledWith("application/setActiveProject", {
+        $router: router,
+      });
     });
 
     it("destroy application", async () => {

@@ -102,7 +102,7 @@ export default defineComponent({
       } catch (error) {
         // Check if the Clipboard API is available
         // (on Firefox this is a property `readText` in navigator.clipboard)
-        if ("readText" in navigator.clipboard) {
+        if (navigator.clipboard && "readText" in navigator.clipboard) {
           hasClipboardSupport = true;
         }
       }
@@ -127,7 +127,7 @@ export default defineComponent({
     <!-- if subsequent errors occur, stick with the first one -->
     <Error v-if="error" v-bind="error" @close="onCloseError" />
 
-    <AppHeader v-if="environment === 'DESKTOP'" />
+    <AppHeader v-if="environment === 'DESKTOP'" id="app-header" />
     <HotkeyHandler />
 
     <template v-if="loaded">
@@ -136,7 +136,7 @@ export default defineComponent({
           $route.meta.showUpdateBanner && availableUpdates
             ? 'main-content-with-banner'
             : 'main-content',
-          environment,
+          environment.toLowerCase(),
         ]"
       >
         <RouterView />
@@ -173,12 +173,12 @@ export default defineComponent({
 .main-content {
   width: 100vw;
   grid-area: workflow;
-  /* height: calc(100vh - var(--app-header-height)); */
 
-  &.DESKTOP {
+  &.desktop {
     height: calc(100vh - var(--app-header-height));
   }
-  &.BROWSER {
+
+  &.browser {
     height: 100vh;
   }
 }
