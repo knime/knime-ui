@@ -1,5 +1,6 @@
-<script>
-import { defineAsyncComponent } from "vue";
+<script lang="ts">
+import { defineAsyncComponent, defineComponent } from "vue";
+import type { FunctionalComponent, SVGAttributes } from "vue";
 import { mapState, mapActions, mapMutations } from "vuex";
 
 import NodeCogIcon from "webapps-common/ui/assets/img/icons/node-cog.svg";
@@ -13,27 +14,39 @@ import { TABS } from "@/store/panel";
 
 import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
 
-const registerSidebarSection = (condition, sectionData) => {
+type SidebarSection = {
+  name: string;
+  title: string;
+  icon: FunctionalComponent<SVGAttributes>;
+  isActive: boolean;
+  isExpanded: boolean;
+  onClick: () => void;
+};
+
+const registerSidebarSection = (
+  condition: boolean,
+  sectionData: SidebarSection
+) => {
   return condition ? [sectionData] : [];
 };
 
-export default {
+export default defineComponent({
   components: {
     LeftCollapsiblePanel,
-    ContextAwareDescription: defineAsyncComponent(() =>
-      import("@/components/sidebar/ContextAwareDescription.vue")
+    ContextAwareDescription: defineAsyncComponent(
+      () => import("@/components/sidebar/ContextAwareDescription.vue")
     ),
-    NodeRepository: defineAsyncComponent(() =>
-      import("@/components/nodeRepository/NodeRepository.vue")
+    NodeRepository: defineAsyncComponent(
+      () => import("@/components/nodeRepository/NodeRepository.vue")
     ),
-    NodeDialogWrapper: defineAsyncComponent(() =>
-      import("@/components/embeddedViews/NodeDialogWrapper.vue")
+    NodeDialogWrapper: defineAsyncComponent(
+      () => import("@/components/embeddedViews/NodeDialogWrapper.vue")
     ),
-    SidebarSpaceExplorer: defineAsyncComponent(() =>
-      import("@/components/sidebar/SidebarSpaceExplorer.vue")
+    SidebarSpaceExplorer: defineAsyncComponent(
+      () => import("@/components/sidebar/SidebarSpaceExplorer.vue")
     ),
-    AiAssistant: defineAsyncComponent(() =>
-      import("@/components/sidebar/aiAssistant/AiAssistant.vue")
+    AiAssistant: defineAsyncComponent(
+      () => import("@/components/sidebar/aiAssistant/AiAssistant.vue")
     ),
   },
   data() {
@@ -46,9 +59,10 @@ export default {
     ...mapState("application", ["activeProjectId"]),
     ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
 
-    sidebarSections() {
+    sidebarSections(): Array<SidebarSection> {
       return [
         {
+          name: TABS.CONTEXT_AWARE_DESCRIPTION,
           title: "Description",
           icon: MetainfoIcon,
           isActive: this.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
@@ -56,6 +70,7 @@ export default {
           onClick: () => this.clickItem(TABS.CONTEXT_AWARE_DESCRIPTION),
         },
         {
+          name: TABS.NODE_REPOSITORY,
           title: "Node repository",
           icon: PlusIcon,
           isActive: this.isTabActive(TABS.NODE_REPOSITORY),
@@ -66,6 +81,7 @@ export default {
         ...registerSidebarSection(
           this.$features.shouldDisplayEmbeddedDialogs(),
           {
+            name: TABS.NODE_DIALOG,
             title: "Node dialog",
             icon: NodeCogIcon,
             isActive: this.isTabActive(TABS.NODE_DIALOG),
@@ -75,6 +91,7 @@ export default {
         ),
 
         ...registerSidebarSection(environment === "DESKTOP", {
+          name: TABS.SPACE_EXPLORER,
           title: "Space explorer",
           icon: CubeIcon,
           isActive: this.isTabActive(TABS.SPACE_EXPLORER),
@@ -82,13 +99,17 @@ export default {
           onClick: () => this.clickItem(TABS.SPACE_EXPLORER),
         }),
 
-        ...registerSidebarSection(this.$features.shouldShowAiAssistant(), {
-          title: "AI Chat",
-          icon: ChatIcon,
-          isActive: this.isTabActive(TABS.AI_CHAT),
-          isExpanded: this.expanded,
-          onClick: () => this.clickItem(TABS.AI_CHAT),
-        }),
+        ...registerSidebarSection(
+          this.$features.shouldShowAiAssistant() && environment === "DESKTOP",
+          {
+            name: TABS.AI_CHAT,
+            title: "AI Chat",
+            icon: ChatIcon,
+            isActive: this.isTabActive(TABS.AI_CHAT),
+            isExpanded: this.expanded,
+            onClick: () => this.clickItem(TABS.AI_CHAT),
+          }
+        ),
       ];
     },
   },
@@ -97,7 +118,7 @@ export default {
     ...mapActions("panel", ["setCurrentProjectActiveTab"]),
     ...mapActions("nodeRepository", ["closeDescriptionPanel"]),
 
-    isTabActive(tabName) {
+    isTabActive(tabName: string) {
       if (!this.activeProjectId) {
         return false;
       }
@@ -106,7 +127,11 @@ export default {
       return activeTab === tabName;
     },
 
-    clickItem(tabName) {
+    hasSection(name: string) {
+      return this.sidebarSections.find((section) => section.name === name);
+    },
+
+    clickItem(tabName: string) {
       const isAlreadyActive = this.isTabActive(tabName);
       if (isAlreadyActive && this.expanded) {
         this.closePanel();
@@ -117,7 +142,7 @@ export default {
       this.closeDescriptionPanel();
     },
   },
-};
+});
 </script>
 
 <template>
@@ -146,26 +171,31 @@ export default {
     >
       <TransitionGroup name="tab" tag="span">
         <NodeRepository
+          v-if="hasSection(TABS.NODE_REPOSITORY)"
           v-show="isTabActive(TABS.NODE_REPOSITORY)"
           key="node-repository"
         />
 
         <ContextAwareDescription
+          v-if="hasSection(TABS.CONTEXT_AWARE_DESCRIPTION)"
           v-show="isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
           key="context-aware-description"
         />
 
         <NodeDialogWrapper
-          v-if="$features.shouldDisplayEmbeddedDialogs()"
+          v-if="hasSection(TABS.NODE_DIALOG)"
           v-show="isTabActive(TABS.NODE_DIALOG)"
           key="node-dialog"
         />
+
         <SidebarSpaceExplorer
+          v-if="hasSection(TABS.SPACE_EXPLORER)"
           v-show="isTabActive(TABS.SPACE_EXPLORER)"
           key="space-explorer"
         />
+
         <AiAssistant
-          v-if="$features.shouldShowAiAssistant()"
+          v-if="hasSection(TABS.AI_CHAT)"
           v-show="isTabActive(TABS.AI_CHAT)"
           key="ai-chat"
         />
