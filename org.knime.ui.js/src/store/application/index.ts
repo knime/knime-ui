@@ -220,7 +220,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     return nextProjectId;
   },
 
-  toggleContextMenu(
+  async toggleContextMenu(
     { state, commit, dispatch, rootGetters, rootState },
     { event = null, deselectAllObjects = false } = {}
   ) {
@@ -252,8 +252,11 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     event.preventDefault();
 
     if (deselectAllObjects) {
-      dispatch("selection/deselectAllObjects", null, { root: true });
+      await dispatch("selection/deselectAllObjects", null, { root: true });
     }
+
+    // reset to selection mode
+    await dispatch("resetCanvasMode");
 
     const { clientX, clientY } = event;
     const screenToCanvasCoordinates =

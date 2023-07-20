@@ -142,6 +142,7 @@ export default defineComponent({
 .disabled {
   pointer-events: none;
 
+  /* disable actions on hover area, used to prevent the showing of the hover toolbar in annotation mode */
   &:deep(.hover-area) {
     pointer-events: none;
   }

@@ -97,7 +97,6 @@ export default {
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
-    @keydown.esc="!hasSelectionModeEnabled && resetCanvasMode()"
   >
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />

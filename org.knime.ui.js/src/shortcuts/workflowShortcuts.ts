@@ -38,8 +38,8 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "cut"
   | "paste"
   | "addWorkflowAnnotation"
-  | "toggleAnnotationMode"
-  | "togglePanMode"
+  | "switchToAnnotationMode"
+  | "switchToPanMode"
   | "switchToSelectionMode"
   | "bringAnnotationToFront"
   | "bringAnnotationForward"
@@ -381,27 +381,25 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
-  toggleAnnotationMode: {
+  switchToAnnotationMode: {
     hotkey: ["T"],
-    execute: ({ $store }) => {
-      $store.dispatch("application/toggleAnnotationMode");
+    execute: async ({ $store }) => {
+      await $store.dispatch("application/switchCanvasMode", "annotation");
     },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
-  togglePanMode: {
+  switchToPanMode: {
     hotkey: ["P"],
-    execute: ({ $store }) => {
-      $store.dispatch("application/togglePanMode");
+    execute: async ({ $store }) => {
+      await $store.dispatch("application/switchCanvasMode", "pan");
     },
-    condition: ({ $store }) =>
-      $store.getters["workflow/isWritable"] &&
-      !$store.getters["workflow/isWorkflowEmpty"],
+    condition: ({ $store }) => !$store.getters["workflow/isWorkflowEmpty"],
   },
   switchToSelectionMode: {
     hotkey: ["V"],
-    execute: ({ $store }) => {
-      $store.dispatch("application/resetCanvasMode");
+    execute: async ({ $store }) => {
+      await $store.dispatch("application/switchCanvasMode", "selection");
     },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   bringAnnotationToFront: {
     text: "Bring to front",

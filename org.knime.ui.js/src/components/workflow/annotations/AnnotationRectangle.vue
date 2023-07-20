@@ -4,11 +4,11 @@ import throttle from "raf-throttle";
 
 export default {
   data: () => ({
-    startPos: {
+    startPosition: {
       x: 0,
       y: 0,
     },
-    endPos: {
+    endPosition: {
       x: 0,
       y: 0,
     },
@@ -18,14 +18,14 @@ export default {
     ...mapState("workflow", ["activeWorkflow"]),
     ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
     selectionBounds() {
-      const { endPos, startPos } = this;
+      const { endPosition, startPosition } = this;
 
       return {
-        x: Math.min(startPos.x, endPos.x),
-        y: Math.min(startPos.y, endPos.y),
+        x: Math.min(startPosition.x, endPosition.x),
+        y: Math.min(startPosition.y, endPosition.y),
 
-        width: Math.abs(startPos.x - endPos.x),
-        height: Math.abs(startPos.y - endPos.y),
+        width: Math.abs(startPosition.x - endPosition.x),
+        height: Math.abs(startPosition.y - endPosition.y),
       };
     },
   },
@@ -46,11 +46,9 @@ export default {
       this.pointerId = e.pointerId;
       e.target.setPointerCapture(e.pointerId);
 
-      [this.startPos.x, this.startPos.y] = this.screenToCanvasCoordinates([
-        e.clientX,
-        e.clientY,
-      ]);
-      this.endPos = { ...this.startPos };
+      [this.startPosition.x, this.startPosition.y] =
+        this.screenToCanvasCoordinates([e.clientX, e.clientY]);
+      this.endPosition = { ...this.startPosition };
     },
 
     // Because the selection update/move function is throttled we also need to
@@ -75,7 +73,7 @@ export default {
             height,
           },
         });
-        this.$store.dispatch("application/toggleAnnotationMode");
+        this.$store.dispatch("application/switchCanvasMode", "selection");
       }, 0);
       /* eslint-enable no-invalid-this */
     }),
@@ -86,10 +84,9 @@ export default {
         return;
       }
 
-      [this.endPos.x, this.endPos.y] = this.screenToCanvasCoordinates([
-        e.clientX,
-        e.clientY,
-      ]);
+      [this.endPosition.x, this.endPosition.y] = this.screenToCanvasCoordinates(
+        [e.clientX, e.clientY]
+      );
     }),
   },
 };

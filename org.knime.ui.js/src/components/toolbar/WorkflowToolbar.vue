@@ -149,7 +149,6 @@ export default {
 
   & .control-list {
     display: flex;
-    flex-direction: row;
     justify-content: center;
     align-items: center;
     margin-left: auto;

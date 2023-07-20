@@ -289,18 +289,20 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     return Boolean(getters.insideLinkedType);
   },
 
-  /* Workflow is writable, if it is not linked or inside a linked workflow */
   isWritable(
     state,
     { isLinked, isInsideLinked, projectAndWorkflowIds },
     rootState
   ) {
+    // annotation mode (cross hair mouse cursor)
     if (rootState.application.canvasMode === "annotation") {
       return false;
     }
 
+    // linking state
     const linkage = isLinked || isInsideLinked;
 
+    // ai assistant stuff
     if (!rootState.aiAssistant) {
       return !linkage;
     }

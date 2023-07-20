@@ -202,7 +202,7 @@ export default {
       this.isHoldingDownMiddleClick = e.button === middleButton;
       this.isHoldingDownRightClick = e.button === rightButton;
 
-      // definite pan for these 2 interactions
+      // definite pan for these 3 interactions
       if (
         this.isHoldingDownMiddleClick ||
         this.isHoldingDownSpace ||

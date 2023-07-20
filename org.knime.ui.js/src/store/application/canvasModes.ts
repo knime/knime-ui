@@ -26,23 +26,14 @@ export const mutations: MutationTree<ApplicationState> = {
 };
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
-  resetCanvasMode({ commit }) {
-    commit("setCanvasMode", "selection");
+  resetCanvasMode({ state, commit }) {
+    if (state.canvasMode !== "selection") {
+      commit("setCanvasMode", "selection");
+    }
   },
 
   switchCanvasMode({ commit }, value: CanvasMode) {
     commit("setCanvasMode", value);
-  },
-
-  toggleAnnotationMode({ getters, commit }) {
-    commit(
-      "setCanvasMode",
-      getters.hasAnnotationModeEnabled ? "selection" : "annotation"
-    );
-  },
-
-  togglePanMode({ getters, commit }) {
-    commit("setCanvasMode", getters.hasPanModeEnabled ? "selection" : "pan");
   },
 };
 
