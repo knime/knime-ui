@@ -383,22 +383,22 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   switchToAnnotationMode: {
     hotkey: ["T"],
-    execute: async ({ $store }) => {
-      await $store.dispatch("application/switchCanvasMode", "annotation");
+    execute: ({ $store }) => {
+      $store.dispatch("application/switchCanvasMode", "annotation");
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   switchToPanMode: {
     hotkey: ["P"],
-    execute: async ({ $store }) => {
-      await $store.dispatch("application/switchCanvasMode", "pan");
+    execute: ({ $store }) => {
+      $store.dispatch("application/switchCanvasMode", "pan");
     },
     condition: ({ $store }) => !$store.getters["workflow/isWorkflowEmpty"],
   },
   switchToSelectionMode: {
     hotkey: ["V"],
-    execute: async ({ $store }) => {
-      await $store.dispatch("application/switchCanvasMode", "selection");
+    execute: ({ $store }) => {
+      $store.dispatch("application/switchCanvasMode", "selection");
     },
   },
   bringAnnotationToFront: {
