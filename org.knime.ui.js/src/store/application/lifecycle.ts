@@ -175,7 +175,6 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       snapshotId,
     }: { workflow: Workflow; projectId: string; snapshotId: string }
   ) {
-    await dispatch("resetCanvasMode");
     commit("setActiveProjectId", projectId);
     commit(
       "workflow/setActiveWorkflow",
@@ -210,6 +209,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       return;
     }
 
+    await dispatch("resetCanvasMode");
     await dispatch("toggleContextMenu");
     dispatch("workflow/setEditableAnnotationId", null, { root: true });
     dispatch("nodeRepository/closeDescriptionPanel", null, { root: true });
