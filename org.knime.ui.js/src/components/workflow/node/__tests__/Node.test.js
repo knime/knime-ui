@@ -125,6 +125,9 @@ describe("Node", () => {
         state() {
           return { activeProjectId: "projectId" };
         },
+        getters: {
+          hasAnnotationModeEnabled: () => false,
+        },
         actions: {
           switchWorkflow: vi.fn(),
           toggleContextMenu: vi.fn(),

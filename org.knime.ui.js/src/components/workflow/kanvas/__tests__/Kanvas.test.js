@@ -65,6 +65,9 @@ describe("Kanvas", () => {
     const storeConfig = {
       application: {
         actions: actions.application,
+        getters: {
+          hasPanModeEnabled: () => false,
+        },
       },
       canvas: {
         state: {

@@ -74,6 +74,7 @@ describe("Kanvas", () => {
         },
         getters: {
           workflowCanvasState: () => null,
+          hasAnnotationModeEnabled: () => false,
         },
       },
     };

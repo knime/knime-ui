@@ -87,6 +87,11 @@ describe("Workflow", () => {
           },
         },
       },
+      application: {
+        getters: {
+          hasAnnotationModeEnabled: () => false,
+        },
+      },
       selection: {
         getters: {
           isNodeSelected: () => isNodeSelectedMock,

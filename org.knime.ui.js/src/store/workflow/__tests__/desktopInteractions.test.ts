@@ -45,6 +45,11 @@ describe("workflow store: AP Interactions", () => {
           getScrollContainerElement: () => mockCanvasWrapperEl,
         },
       },
+      spaces: {
+        actions: {
+          fetchWorkflowGroupContent: () => null,
+        },
+      },
     });
     const dispatchSpy = vi.spyOn(store, "dispatch");
 

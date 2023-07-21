@@ -63,6 +63,13 @@ describe("WorkflowToolbar.vue", () => {
           isWorkflowEmpty: vi.fn(),
         },
       },
+      application: {
+        getters: {
+          hasAnnotationModeEnabled: () => false,
+          hasSelectionModeEnabled: () => true,
+          hasPanModeEnabled: () => false,
+        },
+      },
       selection: {
         getters: {
           selectedNodes: () => selectedNodes,
