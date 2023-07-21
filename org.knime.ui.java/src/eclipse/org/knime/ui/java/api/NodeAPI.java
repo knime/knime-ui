@@ -59,6 +59,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
+import org.knime.core.node.workflow.NodeOutPort;
 import org.knime.core.node.workflow.NodeStateChangeListener;
 import org.knime.core.node.workflow.NodeStateEvent;
 import org.knime.core.node.workflow.SubNodeContainer;
@@ -103,20 +104,41 @@ final class NodeAPI {
      */
     @API
     static void executeNodeAndOpenView(final String projectId, final String nodeId) {
+        executeNodeThenRun(projectId, nodeId, () -> NodeAPI.openNodeView(projectId, nodeId));
+    }
+
+    @API
+    static void executeNodeAndOpenLegacyPortView(final String projectId, final String nodeId, final Double portIdx) {
+        executeNodeThenRun(projectId, nodeId, () -> {
+            final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+            checkIsNotNull(nc, projectId, nodeId);
+            NodeOutPort port = nc.getOutPort(portIdx.intValue());
+            port.openPortView(port.getPortName(), getAppBoundsAsAWTRec());
+        });
+    }
+
+    /**
+     * If the node is already executed, run the given task. If the node is not already executed, execute the workflow up
+     * to the node and attach a listener to run the given task once executed.
+     * 
+     * @param projectId The project containing the workflow
+     * @param nodeId The node to act on
+     * @param task The task to run
+     */
+    private static void executeNodeThenRun(final String projectId, final String nodeId, Runnable task) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
 
         if (nc.getNodeContainerState().isExecuted()) {
-            openNodeView(projectId, nodeId);
+            task.run();
             return;
         }
         nc.addNodeStateChangeListener(new NodeStateChangeListener() {
-
             @Override
             public void stateChanged(final NodeStateEvent event) {
                 var state = nc.getNodeContainerState();
                 if (event.getSource().equals(nc.getID()) && state.isExecuted()) {
-                    Display.getDefault().asyncExec(() -> openNodeView(projectId, nodeId));
+                    Display.getDefault().asyncExec(task);
                 }
                 if (!state.isExecutionInProgress()) {
                     nc.removeNodeStateChangeListener(this);
