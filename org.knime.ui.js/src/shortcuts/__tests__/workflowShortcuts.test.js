@@ -254,14 +254,15 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("should dispatch action to toggle annotation mode", () => {
+    it("should dispatch action to switch to annotation mode", () => {
       const { $store, mockDispatch } = createStore();
 
-      workflowShortcuts.toggleAnnotationMode.execute({
+      workflowShortcuts.switchToAnnotationMode.execute({
         $store,
       });
       expect(mockDispatch).toHaveBeenCalledWith(
-        "application/toggleAnnotationMode"
+        "application/switchCanvasMode",
+        "annotation"
       );
     });
 

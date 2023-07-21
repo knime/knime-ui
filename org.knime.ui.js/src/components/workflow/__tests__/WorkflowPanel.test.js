@@ -188,7 +188,7 @@ describe("WorkflowPanel", () => {
       wrapper.vm.$store.dispatch("application/toggleContextMenu", {
         event: createEvent(242, 122),
       });
-      await wrapper.vm.$nextTick();
+      await new Promise((r) => setTimeout(r, 0));
 
       expect(
         wrapper.findComponent(ContextMenu).props("position")
@@ -202,7 +202,7 @@ describe("WorkflowPanel", () => {
       wrapper.vm.$store.dispatch("application/toggleContextMenu", {
         event: createEvent(100, 200),
       });
-      await wrapper.vm.$nextTick();
+      await new Promise((r) => setTimeout(r, 0));
 
       wrapper.findComponent(ContextMenu).vm.$emit("menuClose");
 

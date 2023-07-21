@@ -51,10 +51,10 @@ export default defineComponent({
     },
   },
   methods: {
-    async toggleContextMenu(event) {
+    toggleContextMenu(event) {
       // this is not the only place where it is activated, look into Kanvas
       // where an unsuccessful pan by right click also opens it
-      await this.$store.dispatch("application/toggleContextMenu", { event });
+      this.$store.dispatch("application/toggleContextMenu", { event });
     },
     onContextMenu(event) {
       // this is the only place where we handle native context menu events
