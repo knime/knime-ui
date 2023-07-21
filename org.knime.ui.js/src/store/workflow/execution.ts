@@ -78,6 +78,14 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     return dispatch("changeNodeState", { action: "execute", nodes });
   },
 
+  executeNodeAndOpenLegacyPortView({ state }, { nodeId, portIdx }) {
+    API.desktop.executeNodeAndOpenLegacyPortView({
+      projectId: state.activeWorkflow.projectId,
+      nodeId,
+      portIdx,
+    });
+  },
+
   executeNodeAndOpenView({ state }, nodeId) {
     API.desktop.executeNodeAndOpenView({
       projectId: state.activeWorkflow.projectId,

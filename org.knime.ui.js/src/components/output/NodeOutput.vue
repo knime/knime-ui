@@ -4,6 +4,8 @@ import { mapState, mapGetters } from "vuex";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import type { AvailablePortTypes } from "@/api/custom-types";
+import Button from "webapps-common/ui/components/Button.vue";
+import PlayIcon from "@/assets/execute.svg";
 
 import PortTabs from "./PortTabs.vue";
 import PortViewTabOutput from "./PortViewTabOutput.vue";
@@ -15,6 +17,7 @@ import {
   validateSelection,
   type ValidationResult,
 } from "./output-validator";
+import { canExecute } from "@/util/nodeUtil";
 
 export const runValidationChecks = ({ selectedNodes, isDragging }) => {
   const validationMiddleware = buildMiddleware(
@@ -48,6 +51,8 @@ export default defineComponent({
     ReloadIcon,
     PortViewTabOutput,
     NodeViewTabOutput,
+    Button,
+    PlayIcon,
   },
   data(): ComponentData {
     return {
@@ -95,6 +100,10 @@ export default defineComponent({
 
       return error;
     },
+
+    canExecute() {
+      return canExecute(this.singleSelectedNode, this.selectedPortIndex);
+    },
   },
   watch: {
     validationErrors: {
@@ -140,6 +149,13 @@ export default defineComponent({
       // select mickey-mouse port, if it is the only one, otherwise the first regular port
       this.selectedTab = outPorts.length > 1 ? "1" : "0";
     },
+
+    executeNodeAndOpenLegacyPortView() {
+      this.$store.dispatch("workflow/executeNodeAndOpenLegacyPortView", {
+        nodeId: this.singleSelectedNode.id,
+        portIdx: this.selectedPortIndex,
+      });
+    },
   },
 });
 </script>
@@ -162,6 +178,20 @@ export default defineComponent({
       <span>
         <ReloadIcon v-if="outputState.loading" class="loading-icon" />
         {{ outputState.message }}
+        <div
+          v-if="outputState?.error?.code === 'NO_SUPPORTED_VIEW'"
+          class="execute-open-legacy-view-action"
+        >
+          <Button
+            class="action-button"
+            primary
+            compact
+            @click="executeNodeAndOpenLegacyPortView"
+          >
+            <PlayIcon v-if="canExecute" />
+            {{ canExecute ? "Execute and open" : "Open" }} legacy port view
+          </Button>
+        </div>
       </span>
     </div>
 

@@ -18,6 +18,7 @@ import { nodeSize } from "@/style/shapes.mjs";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/util/geometry";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { isNodeMetaNode } from "@/util/nodeUtil";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -498,7 +499,7 @@ const workflowShortcuts: WorkflowShortcuts = {
       const calculatePosition = (node, portIndex, portCount, $store) => {
         const outPortPositions = portPositions({
           portCount,
-          isMetanode: node.kind === "metanode",
+          isMetanode: isNodeMetaNode(node),
           isOutports: true,
         });
 

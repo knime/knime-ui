@@ -23,6 +23,8 @@ import {
   createPort,
 } from "@/test/factories";
 import type { KnimeNode } from "@/api/custom-types";
+import { nextTick } from "vue";
+import PlayIcon from "@/assets/execute.svg";
 
 vi.mock("@knime/ui-extension-service");
 
@@ -250,6 +252,58 @@ describe("NodeOutput.vue", () => {
       expect(
         wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
       ).toBe(0);
+    });
+
+    describe("show 'execute and open legacy port view' button", () => {
+      const nodePartial = createNode({
+        id: "1",
+        kind: "node",
+        outPorts: [{ typeId: "unsupported" }],
+      });
+      const outputState = {
+        error: {
+          type: "PORT",
+          code: "NO_SUPPORTED_VIEW",
+        },
+      };
+      const configuredNode = {
+        ...nodePartial,
+        state: {
+          executionState: NodeState.ExecutionStateEnum.CONFIGURED,
+        },
+        allowedActions: { canExecute: true },
+      };
+      const executedNode = {
+        ...nodePartial,
+        state: {
+          executionState: NodeState.ExecutionStateEnum.EXECUTED,
+        },
+        allowedActions: { canExecute: false },
+      };
+      const storeWithNode = (node) =>
+        createStore({
+          nodes: { [node.id]: node },
+          selectedNodeIds: [node.id],
+        });
+
+      it("shows button if no supported view available", async () => {
+        const wrapper = doMount(storeWithNode(nodePartial));
+        await triggerOutputStateChange(wrapper, outputState);
+        await nextTick();
+        expect(wrapper.find(".execute-open-legacy-view-action").exists()).toBe(
+          true
+        );
+      });
+
+      it.each([
+        ["configured node", () => configuredNode, true],
+        ["executed node", () => executedNode, false],
+      ])("button properly displayed for %s", async (_, node, presence) => {
+        const wrapper = doMount(storeWithNode(node()));
+        await triggerOutputStateChange(wrapper, outputState);
+        await nextTick();
+        expect(wrapper.findComponent(PlayIcon).exists()).toBe(presence);
+      });
     });
 
     describe("select port", () => {

@@ -287,7 +287,8 @@ describe("output-validator", () => {
       error: {
         type: "PORT",
         code: "NO_SUPPORTED_VIEW",
-        message: "The data at the output port is not supported by any viewer.",
+        message:
+          "The data at the output port is not supported by any modern viewer.",
       },
     });
   });

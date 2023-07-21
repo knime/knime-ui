@@ -16,6 +16,12 @@ declare function executeNodeAndOpenView(
   nodeId: string,
 ): void;
 
+declare function executeNodeAndOpenLegacyPortView(
+  projectId: string,
+  nodeId: string,
+  portIdx: number
+): void;
+
 declare function saveWorkflow(
   projectId: string,
   workflowPreviewSvg: string,

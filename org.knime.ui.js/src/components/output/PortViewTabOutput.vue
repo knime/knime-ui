@@ -3,16 +3,11 @@
 /* eslint-disable object-curly-newline  */
 import { defineComponent, type PropType } from "vue";
 
-import Button from "webapps-common/ui/components/Button.vue";
 import PlayIcon from "@/assets/execute.svg";
+import Button from "webapps-common/ui/components/Button.vue";
 
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
-import {
-  MetaNodePort,
-  Node,
-  NodeState,
-  type MetaNode,
-} from "@/api/gateway-api/generated-api";
+import { MetaNodePort, NodeState } from "@/api/gateway-api/generated-api";
 import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
 import type { ViewStateChangeEvent } from "@/components/embeddedViews/ViewLoader.vue";
 import { toPortObject } from "@/util/portDataMapper";
@@ -27,6 +22,7 @@ import {
   type ValidationResult,
 } from "./output-validator";
 
+import { canExecute, isNodeMetaNode } from "@/util/nodeUtil";
 import PortViewTabToggles from "./PortViewTabToggles.vue";
 
 /**
@@ -63,9 +59,6 @@ const runValidationChecks = ({
 
   return Object.freeze(result);
 };
-
-const isMetaNode = (node: KnimeNode): node is MetaNode =>
-  node.kind === Node.KindEnum.Metanode;
 
 interface ComponentData {
   portViewState: ViewStateChangeEvent | null;
@@ -178,7 +171,7 @@ export default defineComponent({
 
     currentNodeState(): "configured" | "executed" {
       // metanodes have no configured state so they use the state of the selected output port
-      if (isMetaNode(this.selectedNode)) {
+      if (isNodeMetaNode(this.selectedNode)) {
         const portState =
           this.selectedNode.outPorts[this.selectedPortIndex].nodeState;
 
@@ -198,17 +191,14 @@ export default defineComponent({
         return false;
       }
 
-      const canExecute = isMetaNode(this.selectedNode)
-        ? this.selectedNode.outPorts[this.selectedPortIndex].nodeState ===
-          MetaNodePort.NodeStateEnum.CONFIGURED
-        : this.selectedNode.allowedActions.canExecute;
+      const canEx = canExecute(this.selectedNode, this.selectedPortIndex);
 
       if (this.hasNoDataValidationError) {
-        return canExecute;
+        return canEx;
       }
 
       const isFlowVariable = this.fullPortObject.kind === "flowVariable";
-      return canExecute && !isFlowVariable;
+      return canEx && !isFlowVariable;
     },
   },
 

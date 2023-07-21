@@ -234,16 +234,6 @@ export const validatePortSupport: ValidationFn<{
     return next(context);
   }
 
-  if (!canDisplayPortView({ portTypes, port: selectedPort })) {
-    return {
-      error: {
-        type: "PORT",
-        code: "NO_SUPPORTED_VIEW",
-        message: "The data at the output port is not supported by any viewer.",
-      },
-    };
-  }
-
   if (selectedPort.inactive) {
     return {
       error: {
@@ -251,6 +241,17 @@ export const validatePortSupport: ValidationFn<{
         code: "PORT_INACTIVE",
         message:
           "This output port is inactive and therefore no output data is available for display.",
+      },
+    };
+  }
+
+  if (!canDisplayPortView({ portTypes, port: selectedPort })) {
+    return {
+      error: {
+        type: "PORT",
+        code: "NO_SUPPORTED_VIEW",
+        message:
+          "The data at the output port is not supported by any modern viewer.",
       },
     };
   }

@@ -131,7 +131,7 @@ describe("PortViewTabOutput.vue", () => {
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
           message:
-            "The data at the output port is not supported by any viewer.",
+            "The data at the output port is not supported by any modern viewer.",
         }),
       );
     });

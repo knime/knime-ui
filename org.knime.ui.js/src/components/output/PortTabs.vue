@@ -5,6 +5,8 @@ import Eye from "webapps-common/ui/assets/img/icons/eye.svg";
 
 import portIcon from "@/components/common/PortIconRenderer";
 
+import { isNodeMetaNode } from "@/util/nodeUtil";
+
 export const portIconSize = 9;
 
 const portToPortTab = (port) => ({
@@ -53,9 +55,9 @@ export default {
         return [];
       }
 
-      let { outPorts, kind } = this.node;
+      let { outPorts } = this.node;
 
-      const isMetanode = kind === "metanode";
+      const isMetanode = isNodeMetaNode(this.node);
       const ports = (
         isMetanode
           ? // Metanodes don't have Mickey Mouse ears, so all ports are actual output ports.
