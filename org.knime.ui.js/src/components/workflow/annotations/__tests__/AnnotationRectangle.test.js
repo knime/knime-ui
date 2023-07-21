@@ -1,6 +1,6 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import { $bus } from "@/plugins/event-bus";
@@ -9,23 +9,11 @@ import * as $colors from "@/style/colors.mjs";
 import AnnotationRectangle from "../AnnotationRectangle.vue";
 
 describe("AnnotationRectangle", () => {
-  let wrapper,
-    props,
-    doShallowMount,
-    $store,
-    storeConfig,
-    pointerDown,
-    pointerUp,
-    pointerMove,
-    toggleAnnotationModeMock,
-    pointerId,
-    $shortcuts;
+  const doMount = ({ pointerId = 1 } = {}) => {
+    let props = {};
+    let switchCanvasModeMock = vi.fn();
 
-  beforeEach(() => {
-    props = {};
-    toggleAnnotationModeMock = vi.fn();
-
-    storeConfig = {
+    let storeConfig = {
       canvas: {
         getters: {
           screenToCanvasCoordinates: () =>
@@ -34,36 +22,34 @@ describe("AnnotationRectangle", () => {
       },
       application: {
         actions: {
-          toggleAnnotationMode: toggleAnnotationModeMock,
+          switchCanvasMode: switchCanvasModeMock,
         },
       },
     };
 
-    $shortcuts = {
+    let $shortcuts = {
       findByHotkey: vi.fn(),
       isEnabled: vi.fn(),
       preventDefault: vi.fn(),
       dispatch: vi.fn(),
     };
 
-    doShallowMount = () => {
-      $store = mockVuexStore(storeConfig);
-      wrapper = shallowMount(AnnotationRectangle, {
-        props,
-        global: {
-          plugins: [$store],
-          mocks: {
-            $colors,
-            $bus,
-            $shortcuts,
-          },
+    const $store = mockVuexStore(storeConfig);
+    const wrapper = mount(AnnotationRectangle, {
+      props,
+      global: {
+        plugins: [$store],
+        mocks: {
+          $colors,
+          $bus,
+          $shortcuts,
         },
-      });
-    };
+      },
+    });
 
-    pointerDown = ({ clientX, clientY, shiftKey }) => {
+    const pointerDown = ({ clientX, clientY, shiftKey }) => {
       $bus.emit("selection-pointerdown", {
-        pointerId: pointerId || 1,
+        pointerId,
         clientX,
         clientY,
         shiftKey: shiftKey || false,
@@ -79,9 +65,9 @@ describe("AnnotationRectangle", () => {
       });
     };
 
-    pointerMove = ({ clientX, clientY }) => {
+    const pointerMove = ({ clientX, clientY }) => {
       $bus.emit("selection-pointermove", {
-        pointerId: pointerId || 1,
+        pointerId,
         clientX,
         clientY,
         currentTarget: {
@@ -93,12 +79,12 @@ describe("AnnotationRectangle", () => {
       });
     };
 
-    pointerUp = () => {
+    const pointerUp = () => {
       vi.useFakeTimers(); // implementation contains setTimout
 
       // stop also changes global dragging state
       $bus.emit("selection-pointerup", {
-        pointerId: pointerId || 1,
+        pointerId,
         target: {
           releasePointerCapture: vi.fn(),
         },
@@ -106,10 +92,22 @@ describe("AnnotationRectangle", () => {
 
       vi.runAllTimers();
     };
-  });
+
+    return {
+      wrapper,
+      props,
+      $store,
+      storeConfig,
+      pointerDown,
+      pointerUp,
+      pointerMove,
+      switchCanvasModeMock,
+      $shortcuts,
+    };
+  };
 
   it("appears on pointerDown, disappears on pointerUp", async () => {
-    doShallowMount();
+    const { wrapper, pointerDown, pointerUp } = doMount();
     expect(wrapper.isVisible()).toBe(false);
 
     pointerDown({ clientX: 0, clientY: 0 });
@@ -124,7 +122,7 @@ describe("AnnotationRectangle", () => {
   });
 
   it("toggles annotationMode on pointerUp", async () => {
-    doShallowMount();
+    const { wrapper, pointerDown, pointerUp, switchCanvasModeMock } = doMount();
 
     pointerDown({ clientX: 0, clientY: 0 });
     await Vue.nextTick();
@@ -134,11 +132,18 @@ describe("AnnotationRectangle", () => {
     pointerUp();
     await Vue.nextTick();
 
-    expect(toggleAnnotationModeMock).toHaveBeenCalled();
+    expect(switchCanvasModeMock).toHaveBeenCalled();
   });
 
   it("creates correct annotation on pointerUp", async () => {
-    doShallowMount();
+    const {
+      wrapper,
+      pointerDown,
+      pointerUp,
+      switchCanvasModeMock,
+      pointerMove,
+      $shortcuts,
+    } = doMount();
 
     pointerDown({ clientX: 0, clientY: 0 });
     await Vue.nextTick();
@@ -149,7 +154,7 @@ describe("AnnotationRectangle", () => {
     pointerUp();
     await Vue.nextTick();
 
-    expect(toggleAnnotationModeMock).toHaveBeenCalled();
+    expect(switchCanvasModeMock).toHaveBeenCalled();
     expect($shortcuts.dispatch).toHaveBeenCalledWith(
       "addWorkflowAnnotation",
       expect.objectContaining({
