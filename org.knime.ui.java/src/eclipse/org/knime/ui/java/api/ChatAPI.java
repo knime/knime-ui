@@ -53,7 +53,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import org.knime.gateway.impl.service.util.EventConsumer;
+import org.knime.gateway.impl.service.events.EventConsumer;
 
 /**
  * API for the KNIME AI Assistant.

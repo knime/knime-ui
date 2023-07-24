@@ -59,7 +59,7 @@ import java.util.function.Predicate;
 
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.webui.WebUIUtil;
-import org.knime.gateway.impl.service.util.EventConsumer;
+import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;

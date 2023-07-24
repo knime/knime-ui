@@ -53,7 +53,7 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import org.knime.gateway.impl.service.util.EventConsumer;
+import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 
 /**

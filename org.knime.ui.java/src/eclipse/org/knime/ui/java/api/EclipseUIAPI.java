@@ -64,7 +64,7 @@ import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.ui.workflowcoach.data.NodeTripleProviderFactory;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.service.util.EventConsumer;
+import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
