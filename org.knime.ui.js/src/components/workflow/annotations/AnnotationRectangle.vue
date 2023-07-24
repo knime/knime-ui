@@ -1,95 +1,91 @@
-<script>
-import { mapGetters, mapState } from "vuex";
+<script setup lang="ts">
+import { useStore } from "vuex";
 import throttle from "raf-throttle";
+import { ref, reactive, computed, onBeforeUnmount } from "vue";
 
-export default {
-  data: () => ({
-    startPosition: {
-      x: 0,
-      y: 0,
-    },
-    endPosition: {
-      x: 0,
-      y: 0,
-    },
-    pointerId: null,
-  }),
-  computed: {
-    ...mapState("workflow", ["activeWorkflow"]),
-    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    selectionBounds() {
-      const { endPosition, startPosition } = this;
+import type { RootStoreState } from "@/store/types";
+import { $bus } from "@/plugins/event-bus";
+import { useShortcuts } from "@/plugins/shortcuts";
 
-      return {
-        x: Math.min(startPosition.x, endPosition.x),
-        y: Math.min(startPosition.y, endPosition.y),
+const startPosition = reactive({ x: 0, y: 0 });
+const endPosition = reactive({ x: 0, y: 0 });
+const pointerId = ref<number | null>(null);
 
-        width: Math.abs(startPosition.x - endPosition.x),
-        height: Math.abs(startPosition.y - endPosition.y),
-      };
-    },
-  },
-  created() {
-    this.$bus.on("selection-pointerdown", this.startAnnotationDrag);
-    this.$bus.on("selection-pointerup", this.stopAnnotationDrag);
-    this.$bus.on("selection-pointermove", this.updateAnnotationDrag);
-    this.$bus.on("selection-lostpointercapture", this.stopAnnotationDrag);
-  },
-  beforeUnmount() {
-    this.$bus.off("selection-pointerdown", this.startAnnotationDrag);
-    this.$bus.off("selection-pointerup", this.stopAnnotationDrag);
-    this.$bus.off("selection-pointermove", this.updateAnnotationDrag);
-    this.$bus.off("selection-lostpointercapture", this.stopAnnotationDrag);
-  },
-  methods: {
-    startAnnotationDrag(e) {
-      this.pointerId = e.pointerId;
-      e.target.setPointerCapture(e.pointerId);
+const $shortcuts = useShortcuts();
+const store = useStore<RootStoreState>();
+const screenToCanvasCoordinates = computed(
+  () => store.getters["canvas/screenToCanvasCoordinates"]
+);
 
-      [this.startPosition.x, this.startPosition.y] =
-        this.screenToCanvasCoordinates([e.clientX, e.clientY]);
-      this.endPosition = { ...this.startPosition };
-    },
+const selectionBounds = computed(() => {
+  return {
+    x: Math.min(startPosition.x, endPosition.x),
+    y: Math.min(startPosition.y, endPosition.y),
 
-    // Because the selection update/move function is throttled we also need to
-    // throttle the stop function to guarantee order of event handling
-    stopAnnotationDrag: throttle(function (event) {
-      /* eslint-disable no-invalid-this */
-      if (this.pointerId !== event.pointerId) {
-        return;
-      }
-      event.target.releasePointerCapture(this.pointerId);
+    width: Math.abs(startPosition.x - endPosition.x),
+    height: Math.abs(startPosition.y - endPosition.y),
+  };
+});
 
-      // hide rect
-      this.pointerId = null;
+const startAnnotationDrag = (event: PointerEvent) => {
+  pointerId.value = event.pointerId;
+  (event.target as HTMLElement).setPointerCapture(event.pointerId);
 
-      setTimeout(() => {
-        const { x, y, width, height } = this.selectionBounds;
-        this.$shortcuts.dispatch("addWorkflowAnnotation", {
-          event,
-          metadata: {
-            position: { x, y },
-            width,
-            height,
-          },
-        });
-        this.$store.dispatch("application/switchCanvasMode", "selection");
-      }, 0);
-      /* eslint-enable no-invalid-this */
-    }),
-
-    updateAnnotationDrag: throttle(function (e) {
-      /* eslint-disable no-invalid-this */
-      if (this.pointerId !== e.pointerId) {
-        return;
-      }
-
-      [this.endPosition.x, this.endPosition.y] = this.screenToCanvasCoordinates(
-        [e.clientX, e.clientY]
-      );
-    }),
-  },
+  [startPosition.x, startPosition.y] = screenToCanvasCoordinates.value([
+    event.clientX,
+    event.clientY,
+  ]);
+  endPosition.x = startPosition.x;
+  endPosition.y = startPosition.y;
 };
+
+const updateAnnotationDrag = throttle(function (e) {
+  if (pointerId.value !== e.pointerId) {
+    return;
+  }
+
+  [endPosition.x, endPosition.y] = screenToCanvasCoordinates.value([
+    e.clientX,
+    e.clientY,
+  ]);
+});
+
+// Because the selection update/move function is throttled we also need to
+// throttle the stop function to guarantee order of event handling
+const stopAnnotationDrag = throttle(function (event) {
+  if (pointerId.value !== event.pointerId) {
+    return;
+  }
+  event.target.releasePointerCapture(pointerId.value);
+
+  // hide rect
+  pointerId.value = null;
+
+  setTimeout(() => {
+    const { x, y, width, height } = selectionBounds.value;
+    $shortcuts.dispatch("addWorkflowAnnotation", {
+      event,
+      metadata: {
+        position: { x, y },
+        width,
+        height,
+      },
+    });
+    store.dispatch("application/switchCanvasMode", "selection");
+  }, 0);
+});
+
+$bus.on("selection-pointerdown", startAnnotationDrag);
+$bus.on("selection-pointerup", stopAnnotationDrag);
+$bus.on("selection-pointermove", updateAnnotationDrag);
+$bus.on("selection-lostpointercapture", stopAnnotationDrag);
+
+onBeforeUnmount(() => {
+  $bus.off("selection-pointerdown", startAnnotationDrag);
+  $bus.off("selection-pointerup", stopAnnotationDrag);
+  $bus.off("selection-pointermove", updateAnnotationDrag);
+  $bus.off("selection-lostpointercapture", stopAnnotationDrag);
+});
 </script>
 
 <template>

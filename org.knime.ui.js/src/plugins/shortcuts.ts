@@ -1,5 +1,5 @@
-import type { Router } from "vue-router";
-import type { Store } from "vuex";
+import { useRouter, type Router } from "vue-router";
+import { useStore, type Store } from "vuex";
 
 import shortcuts from "@/shortcuts";
 import type { ShortcutsService, FormattedShortcut } from "@/shortcuts/types";
@@ -116,6 +116,12 @@ export const createShortcutsService = ({
   };
 
   return $shortcuts;
+};
+
+export const useShortcuts = () => {
+  const $store = useStore();
+  const $router = useRouter();
+  return createShortcutsService({ $store, $router });
 };
 
 // define plugin

@@ -8,12 +8,23 @@ import * as $colors from "@/style/colors.mjs";
 
 import AnnotationRectangle from "../AnnotationRectangle.vue";
 
+const $shortcuts = {
+  findByHotkey: vi.fn(),
+  isEnabled: vi.fn(),
+  preventDefault: vi.fn(),
+  dispatch: vi.fn(),
+};
+
+vi.mock("@/plugins/shortcuts", () => ({
+  useShortcuts: () => $shortcuts,
+}));
+
 describe("AnnotationRectangle", () => {
   const doMount = ({ pointerId = 1 } = {}) => {
-    let props = {};
-    let switchCanvasModeMock = vi.fn();
+    const props = {};
+    const switchCanvasModeMock = vi.fn();
 
-    let storeConfig = {
+    const storeConfig = {
       canvas: {
         getters: {
           screenToCanvasCoordinates: () =>
@@ -27,13 +38,6 @@ describe("AnnotationRectangle", () => {
       },
     };
 
-    let $shortcuts = {
-      findByHotkey: vi.fn(),
-      isEnabled: vi.fn(),
-      preventDefault: vi.fn(),
-      dispatch: vi.fn(),
-    };
-
     const $store = mockVuexStore(storeConfig);
     const wrapper = mount(AnnotationRectangle, {
       props,
@@ -42,24 +46,25 @@ describe("AnnotationRectangle", () => {
         mocks: {
           $colors,
           $bus,
-          $shortcuts,
         },
       },
     });
 
-    const pointerDown = ({ clientX, clientY, shiftKey }) => {
+    const pointerDown = ({ clientX, clientY, shiftKey = false }) => {
       $bus.emit("selection-pointerdown", {
         pointerId,
         clientX,
         clientY,
         shiftKey: shiftKey || false,
         currentTarget: {
+          // @ts-expect-error
           getBoundingClientRect: () => ({
             left: 0,
             top: 0,
           }),
         },
         target: {
+          // @ts-expect-error
           setPointerCapture: () => null,
         },
       });
@@ -71,6 +76,7 @@ describe("AnnotationRectangle", () => {
         clientX,
         clientY,
         currentTarget: {
+          // @ts-expect-error
           getBoundingClientRect: () => ({
             left: 0,
             top: 0,
@@ -86,6 +92,7 @@ describe("AnnotationRectangle", () => {
       $bus.emit("selection-pointerup", {
         pointerId,
         target: {
+          // @ts-expect-error
           releasePointerCapture: vi.fn(),
         },
       });
@@ -102,7 +109,6 @@ describe("AnnotationRectangle", () => {
       pointerUp,
       pointerMove,
       switchCanvasModeMock,
-      $shortcuts,
     };
   };
 
@@ -142,7 +148,6 @@ describe("AnnotationRectangle", () => {
       pointerUp,
       switchCanvasModeMock,
       pointerMove,
-      $shortcuts,
     } = doMount();
 
     pointerDown({ clientX: 0, clientY: 0 });
