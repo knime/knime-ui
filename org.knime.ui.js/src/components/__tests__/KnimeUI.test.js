@@ -1,10 +1,8 @@
 import { expect, describe, afterEach, it, vi, beforeEach } from "vitest";
+import { mockUserAgent } from "jest-useragent-mock";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
-
-// import KnimeUI from "../KnimeUI.vue";
-import { mockUserAgent } from "jest-useragent-mock";
 
 describe("KnimeUI.vue", () => {
   const mockFeatureFlags = {

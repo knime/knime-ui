@@ -1,5 +1,4 @@
 /* eslint-disable one-var */
-// import * as Vue from "vue";
 
 declare let consola: import("consola").Consola;
 
