@@ -19,6 +19,17 @@ setupLogger();
 // e.g: TableView, NodeDialog
 window.Vue = Vue;
 
+const AWAITING_CONNECTION_INFO_MESSAGE = "KNIME_UI__AWAITING_CONNECTION_INFO";
+const CONNECTION_INFO_MESSAGE = "KNIME_UI__CONNECTION_INFO";
+
+const isValidOrigin = (origin: string) => {
+  if (import.meta.env.DEV) {
+    return true;
+  }
+
+  return origin.includes("knime.com");
+};
+
 const apiURLResolver = () =>
   new Promise<{ url: string }>((resolve) => {
     // immediately resolve for desktop environment
@@ -35,14 +46,24 @@ const apiURLResolver = () =>
     window.addEventListener(
       "message",
       (event) => {
-        if (event.data.type !== "KNIME_CONNECTION_REQUEST") {
+        if (!isValidOrigin(event.origin)) {
+          consola.error(`invalid origin received: ${event.origin}`);
           return;
         }
 
+        if (event.data.type !== CONNECTION_INFO_MESSAGE) {
+          return;
+        }
+
+        consola.log("received connection info message", event.data);
         resolve({ url: event.data.payload.url });
       },
       false
     );
+
+    // send message to parent after listener has been set-up
+    consola.log("posting message to parent window");
+    window.parent.postMessage({ type: AWAITING_CONNECTION_INFO_MESSAGE }, "*");
   });
 
 try {
