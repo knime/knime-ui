@@ -93,7 +93,10 @@ describe("PortViewTabOutput.vue", () => {
 
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
-          message: "The selected node has no output ports.",
+          error: expect.objectContaining({
+            type: "NODE",
+            code: "NO_OUTPUT_PORTS",
+          }),
         }),
       );
     });
@@ -110,7 +113,10 @@ describe("PortViewTabOutput.vue", () => {
 
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
-          message: "The selected node has no supported output port.",
+          error: expect.objectContaining({
+            type: "NODE",
+            code: "NO_SUPPORTED_PORTS",
+          }),
         }),
       );
     });
@@ -130,8 +136,10 @@ describe("PortViewTabOutput.vue", () => {
 
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
-          message:
-            "The data at the output port is not supported by any modern viewer.",
+          error: expect.objectContaining({
+            type: "PORT",
+            code: "NO_SUPPORTED_VIEW",
+          }),
         }),
       );
     });
@@ -150,8 +158,10 @@ describe("PortViewTabOutput.vue", () => {
 
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
-          message:
-            "This output port is inactive and therefore no output data is available for display.",
+          error: expect.objectContaining({
+            type: "PORT",
+            code: "PORT_INACTIVE",
+          }),
         }),
       );
     });
@@ -168,7 +178,10 @@ describe("PortViewTabOutput.vue", () => {
 
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
-          message: "Please first configure the selected node.",
+          error: expect.objectContaining({
+            type: "NODE",
+            code: "NODE_UNCONFIGURED",
+          }),
         }),
       );
     });
