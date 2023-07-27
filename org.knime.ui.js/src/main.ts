@@ -1,7 +1,7 @@
 import * as Vue from "vue";
 import KnimeUI from "./components/KnimeUI.vue";
 
-import { initJSONRPCClient } from "./api/json-rpc-client";
+import { initJSONRPCClient, type ConnectionInfo } from "./api/json-rpc-client";
 import { setupLogger } from "./plugins/logger";
 import { initStore } from "./store";
 import { router } from "./router";
@@ -31,15 +31,19 @@ const isValidOrigin = (origin: string) => {
 };
 
 const apiURLResolver = () =>
-  new Promise<{ url: string }>((resolve) => {
+  new Promise<ConnectionInfo | null>((resolve, reject) => {
     // immediately resolve for desktop environment
     if (environment === "DESKTOP") {
-      resolve({ url: "" });
+      resolve(null);
     }
 
     // for dev mode, use provided url directly
     if (import.meta.env.VITE_WS_API_URL) {
-      resolve({ url: import.meta.env.VITE_WS_API_URL });
+      resolve({
+        url: import.meta.env.VITE_WS_API_URL,
+        jobId: "",
+        sessionId: "",
+      });
     }
 
     // wait for wrapper app to send a message containing the api url
@@ -55,8 +59,20 @@ const apiURLResolver = () =>
           return;
         }
 
-        consola.log("received connection info message", event.data);
-        resolve({ url: event.data.payload.url });
+        const { data } = event as MessageEvent<{
+          type: string;
+          payload: ConnectionInfo;
+        }>;
+
+        consola.log("received connection info message", data);
+        const { payload } = data;
+
+        if (!payload.url || !payload.jobId || !payload.sessionId) {
+          consola.error("incorrect connection info payload", data);
+          reject(new Error("incorrect connection info payload"));
+        }
+
+        resolve(data.payload);
       },
       false
     );
@@ -67,8 +83,8 @@ const apiURLResolver = () =>
   });
 
 try {
-  const { url } = await apiURLResolver();
-  await initJSONRPCClient(environment, url);
+  const connectionInfo = await apiURLResolver();
+  await initJSONRPCClient(environment, connectionInfo);
 
   // Create Vue app
   const app = Vue.createApp(KnimeUI);
