@@ -1,8 +1,4 @@
-import {
-  RequestManager,
-  Client,
-  WebSocketTransport,
-} from "@open-rpc/client-js";
+import { RequestManager, Client } from "@open-rpc/client-js";
 
 import {
   getRegisteredEventHandler,
@@ -12,6 +8,7 @@ import {
 
 import type { JSONRPCClient } from "./types";
 import { DesktopAPTransport } from "./DesktopAPTransport";
+import { WebSocketTransport } from "./WebSocketTransport";
 
 let jsonRPCClient: JSONRPCClient = null;
 
@@ -50,65 +47,18 @@ const initDesktopClient = () => {
   return Promise.resolve();
 };
 
-const doConnectionHandshake = (
-  connection: typeof WebSocketTransport.prototype.connection,
-  connectionInfo: ConnectionInfo
-) =>
-  new Promise((resolve, reject) => {
-    // immediately resolve for local development, because the jobId is just a
-    // local workflow instead of a remote job running in the executor
-    if (!connectionInfo.jobId) {
-      resolve("SUCCESS");
-    }
-
-    // setup handler to receive the handshake. This will only fire upon receiving the
-    // first message on the WS channel, and then the handler will automatically unregister
-    const handshakeResolve = (message) => {
-      const { data } = message;
-      if (typeof data !== "string") {
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(data);
-
-        if (connectionInfo.jobId !== null && parsed.status === "success") {
-          connection.removeEventListener("message", handshakeResolve);
-          resolve("SUCCESS");
-        }
-      } catch (error) {
-        connection.removeEventListener("message", handshakeResolve);
-        reject(new Error("Handshake error"));
-      }
-    };
-
-    connection.addEventListener("message", handshakeResolve);
-
-    // setup the start of the handshake
-    // as soon as the connection opens a message will be sent over the WS
-    // channel to send the projectId and initiate the handshake
-    const handshakeStart = () => {
-      connection.send(
-        JSON.stringify({
-          workflowProjectId: connectionInfo.jobId,
-        })
-      );
-
-      // immediately remove the handler since it's not needed after this
-      connection.removeEventListener("open", handshakeStart);
-    };
-
-    connection.addEventListener("open", handshakeStart);
-  });
-
 const initBrowserClient = (connectionInfo: ConnectionInfo) =>
   new Promise((resolve, reject) => {
     try {
       if (jsonRPCClient) {
         resolve("SUCCESS");
+        return;
       }
 
-      const transport = new WebSocketTransport(connectionInfo.url);
+      const transport = new WebSocketTransport(
+        connectionInfo.url,
+        connectionInfo.jobId
+      );
       const { connection } = transport;
 
       // setup server event handler
@@ -132,94 +82,14 @@ const initBrowserClient = (connectionInfo: ConnectionInfo) =>
       const requestManager = new RequestManager([transport]);
       const client = new Client(requestManager);
 
-      // only resolve client after handshake is complete
-      doConnectionHandshake(connection, connectionInfo)
-        .then(() => {
-          jsonRPCClient = client;
-
-          // resolve outer promise
-          resolve("SUCCESS");
-        })
-        .catch((error) => reject(error));
+      jsonRPCClient = client;
+      resolve("SUCCESS");
     } catch (error) {
-      consola.log(error);
+      consola.error(error);
       // if any other unknown error happens then reject client initialization
       reject(error);
     }
   });
-
-// const handshakeResolve = (message) => {
-//   const { data } = message;
-//   if (typeof data !== "string") {
-//     return;
-//   }
-
-//   try {
-//     const parsed = JSON.parse(data);
-
-//     if (connectionInfo.jobId !== null && parsed.status === "success") {
-//       resolve("SUCCESS");
-//     }
-//   } catch (error) {
-//     reject(new Error("Handshake error"));
-//   } finally {
-//     connection.removeEventListener("message", handshakeResolve);
-//   }
-// };
-
-// connection.addEventListener("message", handshakeResolve);
-
-// if (connectionInfo.jobId !== null) {
-//   const handshakeStart = () => {
-//     connection.send(
-//       JSON.stringify({
-//         workflowProjectId: connectionInfo.jobId,
-//       })
-//     );
-
-//     connection.removeEventListener("open", handshakeStart);
-//   };
-
-//   connection.addEventListener("open", handshakeStart);
-// }
-
-// -----------------------------------------------
-
-// const initBrowserClient = (connectionInfo: ConnectionInfo) => {
-//   try {
-//     if (jsonRPCClient) {
-//       return Promise.resolve();
-//     }
-
-//     const transport = new WebSocketTransport(url);
-
-//     // setup server event handler
-//     transport.connection.addEventListener("message", (message) => {
-//       const { data } = message;
-//       if (typeof data !== "string") {
-//         return;
-//       }
-
-//       try {
-//         const parsed = JSON.parse(data);
-//         if (parsed.eventType) {
-//           serverEventHandler(data);
-//         }
-//       } catch (error) {
-//         consola.log(data);
-//       }
-//     });
-
-//     const requestManager = new RequestManager([transport]);
-//     const client = new Client(requestManager);
-//     jsonRPCClient = client;
-
-//     return Promise.resolve();
-//   } catch (error) {
-//     consola.log(error);
-//     return Promise.reject(error);
-//   }
-// };
 
 const initJSONRPCClient = async (
   mode: "BROWSER" | "DESKTOP",

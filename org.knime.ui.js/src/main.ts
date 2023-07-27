@@ -35,6 +35,7 @@ const apiURLResolver = () =>
     // immediately resolve for desktop environment
     if (environment === "DESKTOP") {
       resolve(null);
+      return;
     }
 
     // for dev mode, use provided url directly
@@ -44,6 +45,7 @@ const apiURLResolver = () =>
         jobId: "",
         sessionId: "",
       });
+      return;
     }
 
     // wait for wrapper app to send a message containing the api url
