@@ -39,9 +39,10 @@ const apiURLResolver = () =>
     }
 
     // for dev mode, use provided url directly
-    if (import.meta.env.VITE_WS_API_URL) {
+    if (import.meta.env.VITE_BROWSER_DEV_MODE) {
       resolve({
-        url: import.meta.env.VITE_WS_API_URL,
+        url: import.meta.env.VITE_BROWSER_DEV_WS_URL,
+        restApiBaseUrl: import.meta.env.VITE_BROWSER_DEV_REST_API_BASE_URL,
         jobId: "",
         sessionId: "",
       });
@@ -93,6 +94,7 @@ try {
 
   // Provide store and init plugins
   const store = initStore();
+  store.commit("api/setRestApiBaseUrl", connectionInfo.restApiBaseUrl);
 
   PageBuilder.initStore(store);
 

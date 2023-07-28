@@ -14,6 +14,7 @@ let jsonRPCClient: JSONRPCClient = null;
 
 export type ConnectionInfo = {
   url: string;
+  restApiBaseUrl: string;
   jobId: string;
   sessionId: string;
 };

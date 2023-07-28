@@ -1,8 +1,25 @@
 import { API } from "@api";
+import type { GetterTree } from "vuex";
+import type { RootStoreState } from "./types";
+
+interface State {
+  restApiBaseUrl: string;
+}
+
+export const state = (): State => {
+  return {
+    restApiBaseUrl: null,
+  };
+};
+
+export const mutations = {
+  setRestApiBaseUrl(state, url: string) {
+    state.restApiBaseUrl = url;
+  },
+};
 
 // TODO: NXT-1295 the action / getter names in this store module CANNOT be renamed
 // See other TODOs below
-
 export const actions = {
   // TODO: NXT-1295 this is internally called by the pagebuilder. This should be removed if the page builder is
   // reworked to not be coupled to the existence of such a store
@@ -39,11 +56,16 @@ export const actions = {
   },
 };
 
-export const getters = {
+export const getters: GetterTree<State, RootStoreState> = {
   // TODO: NXT-1295 This is internally used by the TableView, which is not ideal and should be removed to reduce coupling
   // See: https://bitbucket.org/KNIME/knime-base-views/src/dfd7674d74343205c36c627e795fd69722761936/org.knime.base.views/js-src/vue/src/components/TableView.vue#lines-396
   uiExtResourceLocation:
-    () =>
-    ({ resourceInfo }) =>
-      resourceInfo.baseUrl + resourceInfo.path,
+    (state, _getters, rootState) =>
+    ({ resourceInfo }) => {
+      if (resourceInfo.baseUrl) {
+        return resourceInfo.baseUrl + resourceInfo.path;
+      } else {
+        return `${state.restApiBaseUrl}/jobs/${rootState.application.activeProjectId}/workflow/wizard/web-resources/${resourceInfo.path}`;
+      }
+    },
 };
