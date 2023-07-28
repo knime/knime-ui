@@ -67,7 +67,6 @@ import org.knime.core.node.KNIMEComponentInformation;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.NodeCreationType;
-import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.ui.util.NodeTemplateId;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
@@ -82,7 +81,6 @@ import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAl
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.NodeImport;
@@ -131,7 +129,7 @@ public final class ImportURI {
 
         if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
-            return openWorkflowFromURI(repoObjectImport);
+            return OpenWorkflow.openWorkflowFromURI(repoObjectImport);
         } else {
             var cursorLocation = cursorLocationSupplier.get();
             return sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
@@ -219,28 +217,13 @@ public final class ImportURI {
             ImportAPI.importComponent(projectId, workflowId, repoObjectImport.getKnimeURI(), true, canvasX, canvasY);
         } else if (entityImport instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
-            return openWorkflowFromURI(repoObjectImport);
+            return OpenWorkflow.openWorkflowFromURI(repoObjectImport);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
             return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId,
                 workflowId, canvasX, canvasY);
         }
 
         return false;
-    }
-
-    private static boolean openWorkflowFromURI(final RepoObjectImport repoObjectImport) {
-        var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
-        var providerId = repoObjectImport.getKnimeURI().getAuthority();
-        var spaceId = hubSpaceLocationInfo.getSpaceItemId();
-        var space =
-            SpaceProviders.getSpaceOptional(DesktopAPI.getDeps(SpaceProviders.class), providerId, spaceId).orElse(null);
-        if (space == null) {
-            return OpenWorkflow.openWorkflowFromURI(repoObjectImport);
-        }
-        // space is in fact already mounted -- open as if opened from explorer
-        // allows plain save to re-upload and browsing of space in sidebar
-        OpenWorkflow.openWorkflowInWebUIWithProgress(providerId, spaceId, hubSpaceLocationInfo.getWorkflowItemId());
-        return true;
     }
 
 
