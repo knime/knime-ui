@@ -106,3 +106,8 @@ launch.json
 # Maven
 **/.flattened-pom.xml
 **/CHANGELOG.md
+
+**/.polyglot.build.properties
+**/.polyglot.feature.xml
+**/.polyglot.META-INF
+
