@@ -6,7 +6,11 @@ import { setupLogger } from "./plugins/logger";
 import { initStore } from "./store";
 import { router } from "./router";
 import { initPlugins } from "./plugins";
-import { environment, initGlobalEnvProperty } from "./environment";
+import {
+  environment,
+  initGlobalEnvProperty,
+  runInEnvironment,
+} from "./environment";
 
 import "./assets/index.css";
 
@@ -94,7 +98,11 @@ try {
 
   // Provide store and init plugins
   const store = initStore();
-  store.commit("api/setRestApiBaseUrl", connectionInfo.restApiBaseUrl);
+  runInEnvironment({
+    BROWSER: () => {
+      store.commit("api/setRestApiBaseUrl", connectionInfo.restApiBaseUrl);
+    },
+  });
 
   PageBuilder.initStore(store);
 
