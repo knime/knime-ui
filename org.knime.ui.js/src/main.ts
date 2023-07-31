@@ -23,8 +23,10 @@ setupLogger();
 // e.g: TableView, NodeDialog
 window.Vue = Vue;
 
+// Keep these in sync with the 'ap-loader' wrapper application, until the
 const AWAITING_CONNECTION_INFO_MESSAGE = "KNIME_UI__AWAITING_CONNECTION_INFO";
 const CONNECTION_INFO_MESSAGE = "KNIME_UI__CONNECTION_INFO";
+const CONNECTION_FAIL_MESSAGE = "KNIME_UI__CONNECTION_FAIL";
 
 const isValidOrigin = (origin: string) => {
   if (import.meta.env.DEV) {
@@ -120,4 +122,5 @@ try {
   app.mount("#app");
 } catch (error) {
   consola.log("Could not initialize Application due to:", error);
+  window.parent.postMessage({ type: CONNECTION_FAIL_MESSAGE, error }, "*");
 }
