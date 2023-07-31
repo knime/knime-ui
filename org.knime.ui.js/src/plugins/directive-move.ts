@@ -129,12 +129,6 @@ const createPointermoveHandler =
     const { clientX, clientY } = event;
     const [moveX, moveY] = [clientX - startX, clientY - startY];
 
-    // do not capture the pointer if the user has not moved yet
-    // to capture the pointer before time have the consequence of not triggering other pointer events on some devices
-    if (!state.dragging && Math.max(Math.abs(moveX), Math.abs(moveY)) < 1) {
-      return;
-    }
-
     if (!srcElement.hasPointerCapture(state.pointerId)) {
       srcElement.setPointerCapture(state.pointerId);
     }

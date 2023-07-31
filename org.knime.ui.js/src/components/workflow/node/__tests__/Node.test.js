@@ -311,7 +311,8 @@ describe("Node", () => {
       },
     };
     doMount();
-    await wrapper.findComponent(NodeTorso).trigger("dblclick");
+    await wrapper.findComponent(NodeTorso).trigger("click");
+    await wrapper.findComponent(NodeTorso).trigger("click");
 
     expect(
       storeConfig.workflow.actions.openNodeConfiguration
@@ -905,7 +906,8 @@ describe("Node", () => {
     it("opens metanode on double click", async () => {
       props = { ...metaNode };
       doMount();
-      await wrapper.findComponent(NodeTorso).trigger("dblclick");
+      await wrapper.findComponent(NodeTorso).trigger("click");
+      await wrapper.findComponent(NodeTorso).trigger("click");
 
       expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
@@ -929,10 +931,12 @@ describe("Node", () => {
     it("opens component on control-double click", async () => {
       props = { ...componentNode };
       doMount();
-      await wrapper.findComponent(NodeTorso).trigger("dblclick", {
+      await wrapper.findComponent(NodeTorso).trigger("click", {
         ctrlKey: true,
       });
-
+      await wrapper.findComponent(NodeTorso).trigger("click", {
+        ctrlKey: true,
+      });
       expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: {
