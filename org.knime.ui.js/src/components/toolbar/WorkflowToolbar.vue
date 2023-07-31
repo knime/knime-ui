@@ -59,6 +59,16 @@ export default {
     hasBreadcrumb() {
       return this.workflow?.parents?.length > 0;
     },
+    hideText() {
+      return {
+        save: true,
+        undo: true,
+        redo: true,
+      };
+    },
+    toolbarDropdowns() {
+      return { save: ["save", "saveAs"] };
+    },
     toolbarButtons() {
       const isInsideComponent =
         this.workflow?.info.containerType === "component";
@@ -66,6 +76,7 @@ export default {
       if (!this.workflow) {
         return [];
       }
+
       let visibleItems = {
         // Always visible
         save: true,
@@ -114,6 +125,8 @@ export default {
           v-for="button in toolbarButtons"
           :key="button"
           :name="button"
+          :with-text="!hideText[button]"
+          :dropdown="toolbarDropdowns[button]"
         />
       </div>
     </transition-group>
