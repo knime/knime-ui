@@ -20,13 +20,17 @@ const props = withDefaults(defineProps<Props>(), {
   dropdown: () => [],
 });
 
-const subMenuItems = computed((): MenuItem[] => {
+type MenuItemWithName = MenuItem & { name: ShortcutName };
+
+const subMenuItems = computed((): MenuItemWithName[] => {
   if (!props.dropdown || props.dropdown.length === 0) {
     return [];
   }
 
   const mapShortcutToItem = (name: ShortcutName) => {
-    const { text, hotkeyText, icon, title } = $shortcuts.get(name);
+    const shortcut = $shortcuts.get(name);
+    const { hotkeyText, icon, title } = shortcut;
+    const text = shortcut.text as string;
     const disabled = !$shortcuts.isEnabled(name);
 
     return {
@@ -42,16 +46,20 @@ const subMenuItems = computed((): MenuItem[] => {
   return props.dropdown.map(mapShortcutToItem);
 });
 
+const hasSubmenuItems = computed(() => subMenuItems.value.length > 0);
+
 const shortcut = computed(() => $shortcuts.get(props.name));
+
 const title = computed(() => {
-  const { title, hotkeyText } = shortcut;
+  const { title, hotkeyText } = shortcut.value;
   return [title, hotkeyText].filter(Boolean).join(" – ");
 });
+
 const enabled = computed(() => $shortcuts.isEnabled(props.name));
 </script>
 
 <template>
-  <div :class="{ 'split-button': subMenuItems.length > 0 }">
+  <div :class="{ 'split-button': hasSubmenuItems }">
     <ToolbarButton
       class="toolbar-button"
       :with-text="withText && Boolean(shortcut.text)"
@@ -63,13 +71,14 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       {{ withText ? shortcut.text : "" }}
     </ToolbarButton>
     <SubMenu
-      v-if="subMenuItems.length > 0"
+      v-if="hasSubmenuItems"
       ref="submenu"
+      :teleport-to-body="false"
       :items="subMenuItems"
       tabindex="1"
       orientation="left"
       @item-click="(e, item) => $shortcuts.dispatch(item.name)"
-      @keydown.enter.stop.prevent="(e) => $refs.submenu.toggleMenu(e)"
+      @keydown.enter.stop.prevent="(e) => ($refs.submenu as any).toggleMenu(e)"
     >
       <DropdownIcon />
     </SubMenu>
