@@ -906,6 +906,8 @@ describe("Node", () => {
     it("opens metanode on double click", async () => {
       props = { ...metaNode };
       doMount();
+      // This 2 click calls are meant so simulate a double click
+      // (given the component listens to single clicks instead of the dblclick event)
       await wrapper.findComponent(NodeTorso).trigger("click");
       await wrapper.findComponent(NodeTorso).trigger("click");
 
