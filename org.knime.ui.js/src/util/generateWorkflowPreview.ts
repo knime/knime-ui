@@ -150,10 +150,16 @@ const updateViewBox = (
   let height = parseInt(workflowSheet.getAttribute("height"), 10);
   const padding = 20;
   const nodeSize = 70;
+  const isNodeLabelHigher =
+    height + minY <
+    edges.bottomEdge.dimension.height + Math.abs(edges.bottomEdge.position.y);
+  const nodeLabelHeight =
+    edges.bottomEdge.dimension.height + (edges.bottomEdge.position.y - minY);
+  const isNodeWithLabelOnLeftEdge =
+    minX === edges.rightEdge.position.x - nodeSize;
 
-  if (height < edges.bottomEdge.dimension.height) {
-    height =
-      edges.bottomEdge.dimension.height + (edges.bottomEdge.position.y - minY);
+  if (isNodeLabelHigher) {
+    height = nodeLabelHeight;
   }
 
   if (edges.length === 1) {
@@ -165,9 +171,8 @@ const updateViewBox = (
 
   width = edges.leftEdge.dimension.width / 2 + width;
 
-  if (minX === edges.rightEdge.position.x - nodeSize) {
-    height =
-      edges.bottomEdge.dimension.height + (edges.bottomEdge.position.y - minY);
+  if (isNodeWithLabelOnLeftEdge && isNodeLabelHigher) {
+    height = nodeLabelHeight;
     minX -= edges.leftEdge.dimension.width / 2;
   }
 
