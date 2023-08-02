@@ -144,32 +144,31 @@ const updateViewBox = (
   workflowSheet: HTMLElement,
   edges: any
 ) => {
-  let minX: any = workflowSheet.getAttribute("x");
-  const minY: any = workflowSheet.getAttribute("y");
-  let width: any = workflowSheet.getAttribute("width");
-  let height = workflowSheet.getAttribute("height");
+  let minX = parseInt(workflowSheet.getAttribute("x"), 10);
+  const minY = parseInt(workflowSheet.getAttribute("y"), 10);
+  let width = parseInt(workflowSheet.getAttribute("width"), 10);
+  let height = parseInt(workflowSheet.getAttribute("height"), 10);
   const padding = 20;
   const nodeSize = 70;
 
-  if (parseInt(height, 10) < edges.bottomEdge.dimension.height) {
+  if (height < edges.bottomEdge.dimension.height) {
     height =
       edges.bottomEdge.dimension.height + (edges.bottomEdge.position.y - minY);
   }
 
   if (edges.length === 1) {
     width = edges.leftEdge.dimension.width + padding;
-    minX = parseInt(minX, 10) - edges.leftEdge.dimension.width / 2 + nodeSize;
+    minX = minX - edges.leftEdge.dimension.width / 2 + nodeSize;
     svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
-
     return;
   }
 
-  width = edges.leftEdge.dimension.width / 2 + parseInt(width, 10);
+  width = edges.leftEdge.dimension.width / 2 + width;
 
-  if (parseInt(minX, 10) === edges.rightEdge.position.x - nodeSize) {
+  if (minX === edges.rightEdge.position.x - nodeSize) {
     height =
       edges.bottomEdge.dimension.height + (edges.bottomEdge.position.y - minY);
-    minX = parseInt(minX, 10) - nodeSize;
+    minX -= edges.leftEdge.dimension.width / 2;
   }
 
   svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
@@ -451,7 +450,6 @@ export const generateWorkflowPreview = async (
   );
 
   const output = getSvgContent(svgClone);
-  // console.log("output", output);
 
   // remove hidden preview container
   teardown();
