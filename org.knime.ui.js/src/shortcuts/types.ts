@@ -51,7 +51,7 @@ export type Shortcut = {
    * @param context
    * @returns
    */
-  execute: (context: ShortcutExecuteContext) => void;
+  execute: (context: ShortcutExecuteContext) => void | Promise<any>;
 
   /**
    * Shortcut can only execute if the result of this function is `true`. If not provided defaults to
