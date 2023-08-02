@@ -174,11 +174,10 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       }
 
       & svg {
-        padding: 0;
-        width: 12px;
-        height: 12px;
-        stroke-width: calc(32px / 12);
+        @mixin svg-icon-size 12;
+
         stroke: var(--theme-button-split-foreground-color);
+        padding: 0;
       }
     }
 
