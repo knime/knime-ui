@@ -19,6 +19,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   /* See docs in API */
   async saveWorkflow({ state, dispatch }) {
     const { projectId } = getProjectAndWorkflowIds(state);
+    // console.log("state", state.activeWorkflow.nodes);
+    const nodes = state.activeWorkflow.nodes;
 
     const { svgElement, isCanvasEmpty } = await dispatch(
       "application/getActiveWorkflowSnapshot",
@@ -28,7 +30,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
     const workflowPreviewSvg = await generateWorkflowPreview(
       svgElement,
-      isCanvasEmpty
+      isCanvasEmpty,
+      nodes
     );
 
     API.desktop.saveWorkflow({ projectId, workflowPreviewSvg });
