@@ -112,6 +112,7 @@ const getSVGElementClone = (
 ): WorkflowPreviewReturnType => {
   const div = document.createElement("div");
   div.id = "NODE_PREVIEW_CONTAINER";
+  // console.log("original", element);
 
   const svgClone = element.cloneNode(true) as SVGSVGElement;
 
@@ -138,11 +139,38 @@ const getSVGElementClone = (
  * @param workflowSheet
  * @returns {void}
  */
-const updateViewBox = (svgClone: SVGSVGElement, workflowSheet: HTMLElement) => {
-  const minX = workflowSheet.getAttribute("x");
-  const minY = workflowSheet.getAttribute("y");
-  const width = workflowSheet.getAttribute("width");
-  const height = workflowSheet.getAttribute("height");
+const updateViewBox = (
+  svgClone: SVGSVGElement,
+  workflowSheet: HTMLElement,
+  edges: any
+) => {
+  let minX: any = workflowSheet.getAttribute("x");
+  const minY: any = workflowSheet.getAttribute("y");
+  let width: any = workflowSheet.getAttribute("width");
+  let height = workflowSheet.getAttribute("height");
+  const padding = 20;
+  const nodeSize = 70;
+
+  if (parseInt(height, 10) < edges.bottomEdge.dimension.height) {
+    height =
+      edges.bottomEdge.dimension.height + (edges.bottomEdge.position.y - minY);
+  }
+
+  if (edges.length === 1) {
+    width = edges.leftEdge.dimension.width + padding;
+    minX = parseInt(minX, 10) - edges.leftEdge.dimension.width / 2 + nodeSize;
+    svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
+
+    return;
+  }
+
+  width = edges.leftEdge.dimension.width / 2 + parseInt(width, 10);
+
+  if (parseInt(minX, 10) === edges.rightEdge.position.x - nodeSize) {
+    height =
+      edges.bottomEdge.dimension.height + (edges.bottomEdge.position.y - minY);
+    minX = parseInt(minX, 10) - nodeSize;
+  }
 
   svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
 };
@@ -292,18 +320,51 @@ const addFontStyles = async (svgElement: SVGElement) => {
   svgElement.getElementsByTagName("defs")[0].appendChild(styleTag);
 };
 
+const findEdges = (nodes: any) => {
+  const objectValues: any = Object.values(nodes);
+  if (!Array.isArray(objectValues) || objectValues.length === 0) {
+    return { minX: null, maxY: null, maxX: null };
+  }
+
+  const { minX, maxX, maxY } = objectValues.reduce(
+    (result, obj) => {
+      if (obj.annotation) {
+        if (obj.position.x < result.minX.position.x) {
+          result.minX = obj;
+        }
+        if (obj.position.x > result.maxX.position.x) {
+          result.maxX = obj;
+        }
+        if (obj.position.y > result.maxY.position.y) {
+          result.maxY = obj;
+        }
+      }
+      return result;
+    },
+    {
+      minX: objectValues[0], // left edge
+      maxX: objectValues[0], // right edge
+      maxY: objectValues[0], // bottom edge
+    }
+  );
+
+  return { minX, maxX, maxY };
+};
+
 /**
  * Generate the preview of a workflow based on the provided SVG element which
  * represents the rendered workflow content.
  *
  * @param  svgElement root workflow SVG element
  * @param  isEmpty whether the canvas is empty
+ * @param  nodes object containing nodes
  * @returns  The contents of the root workflow as an SVG string or null when no element is provided
  * as a parameter
  */
 export const generateWorkflowPreview = async (
   svgElement: SVGSVGElement,
-  isEmpty: boolean
+  isEmpty: boolean,
+  nodes: Object
 ) => {
   if (!svgElement) {
     return null;
@@ -322,6 +383,8 @@ export const generateWorkflowPreview = async (
     ".workflow-sheet"
   ) as HTMLElement;
 
+  const edges = findEdges(nodes);
+
   // inline custom fonts to the svg element clone
   await addFontStyles(svgClone);
 
@@ -329,7 +392,27 @@ export const generateWorkflowPreview = async (
   setElementFill(workflowSheet, "transparent");
 
   // Set the viewbox to only the visible content
-  updateViewBox(svgClone, workflowSheet);
+  updateViewBox(svgClone, workflowSheet, {
+    rightEdge: {
+      dimension: svgClone
+        .querySelector(`[data-node-id="${edges.maxX.id}"]`)
+        .getBoundingClientRect(),
+      position: edges.maxX.position,
+    },
+    leftEdge: {
+      dimension: svgClone
+        .querySelector(`[data-node-id="${edges.minX.id}"]`)
+        .getBoundingClientRect(),
+      position: edges.minX.position,
+    },
+    bottomEdge: {
+      dimension: svgClone
+        .querySelector(`[data-node-id="${edges.maxY.id}"]`)
+        .getBoundingClientRect(),
+      position: edges.maxY.position,
+    },
+    length: Object.keys(nodes).length,
+  });
 
   // remove all portal-targets
   removeElements(svgClone.querySelectorAll("[data-portal-target]"));
@@ -368,6 +451,7 @@ export const generateWorkflowPreview = async (
   );
 
   const output = getSvgContent(svgClone);
+  // console.log("output", output);
 
   // remove hidden preview container
   teardown();
