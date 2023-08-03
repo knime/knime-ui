@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -123,6 +124,11 @@ final class SaveWorkflowCopy {
         }
 
         var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+        if (collisionHandling == NameCollisionHandling.OVERWRITE
+                && areOriginAndDestinyEqual(srcPath, workflowGroupItemId, fileName, localWorkspace)) {
+            SaveWorkflow.saveWorkflow(projectId, workflowSvg, false);
+            return;
+        }
         final var newPath = localWorkspace.createWorkflowDir(workflowGroupItemId, fileName, collisionHandling);
 
         final WorkflowContextV2 newContext = WorkflowContextV2.builder() //
@@ -159,6 +165,12 @@ final class SaveWorkflowCopy {
             projectManager.addWorkflowProject(projectId, project);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
+    }
+
+    public static boolean areOriginAndDestinyEqual(final Path srcPath, final String workflowGroupItemId,
+        final String fileName, final LocalWorkspace localWorkspace) {
+        final var destPath = localWorkspace.getAbsolutePath(workflowGroupItemId).resolve(fileName);
+        return srcPath.equals(destPath);
     }
 
     private static String askForDestinationWorkflowGroupAndGetId(final SpaceDestinationPicker picker) {
