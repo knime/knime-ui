@@ -37,7 +37,7 @@ export default {
       let buttonCount = this.actions.length;
       // spread buttons evenly around the horizontal center
       return this.actions.map(
-        (_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread
+        (_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread,
       );
     },
   },

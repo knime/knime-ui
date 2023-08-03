@@ -19,13 +19,13 @@ const inputRef = ref<InstanceType<typeof InputField>>(null);
 const workflowName = ref(NAME_TEMPLATE);
 
 const isCreateWorkflowModalOpen = computed(
-  () => store.state.spaces.createWorkflowModalConfig.isOpen
+  () => store.state.spaces.createWorkflowModalConfig.isOpen,
 );
 
 const activeSpace = computed(() =>
   store.getters["spaces/getWorkflowGroupContent"](
-    store.state.spaces.createWorkflowModalConfig.projectId
-  )
+    store.state.spaces.createWorkflowModalConfig.projectId,
+  ),
 );
 const existingWorkflowNames = computed<Array<string>>(() => {
   const items = activeSpace.value?.items ?? [];
@@ -109,7 +109,7 @@ watch(
       }, 200);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 

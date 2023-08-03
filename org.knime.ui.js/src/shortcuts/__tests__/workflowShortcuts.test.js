@@ -109,7 +109,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts.configureNode.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openNodeConfiguration",
-        "root:0"
+        "root:0",
       );
     });
 
@@ -118,7 +118,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts.configureFlowVariables.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openFlowVariableConfiguration",
-        "root:0"
+        "root:0",
       );
     });
 
@@ -127,7 +127,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts.editName.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openNameEditor",
-        "root:0"
+        "root:0",
       );
     });
 
@@ -136,7 +136,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts.editNodeLabel.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openLabelEditor",
-        "root:0"
+        "root:0",
       );
     });
 
@@ -144,7 +144,7 @@ describe("workflowShortcuts", () => {
       const { $store, mockDispatch } = createStore();
       workflowShortcuts.deleteSelected.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/deleteSelectedObjects"
+        "workflow/deleteSelectedObjects",
       );
     });
 
@@ -153,7 +153,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts.createMetanode.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/collapseToContainer",
-        { containerType: "metanode" }
+        { containerType: "metanode" },
       );
     });
 
@@ -162,7 +162,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts.createComponent.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/collapseToContainer",
-        { containerType: "component" }
+        { containerType: "component" },
       );
     });
 
@@ -211,7 +211,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts.copy.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/copyOrCutWorkflowParts",
-        { command: "copy" }
+        { command: "copy" },
       );
     });
 
@@ -220,7 +220,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts.cut.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/copyOrCutWorkflowParts",
-        { command: "cut" }
+        { command: "cut" },
       );
     });
 
@@ -229,7 +229,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts.paste.execute({ $store, payload: {} });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/pasteWorkflowParts",
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -250,7 +250,7 @@ describe("workflowShortcuts", () => {
             width: 80,
             height: 80,
           },
-        }
+        },
       );
     });
 
@@ -262,7 +262,7 @@ describe("workflowShortcuts", () => {
       });
       expect(mockDispatch).toHaveBeenCalledWith(
         "application/switchCanvasMode",
-        "annotation"
+        "annotation",
       );
     });
 
@@ -289,7 +289,7 @@ describe("workflowShortcuts", () => {
       workflowShortcuts[shortcutName].execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/reorderWorkflowAnnotation",
-        { action }
+        { action },
       );
     });
   });
@@ -328,13 +328,13 @@ describe("workflowShortcuts", () => {
     it("configureFlowVariables", () => {
       const { $store } = createStore();
       expect(
-        workflowShortcuts.configureFlowVariables.condition({ $store })
+        workflowShortcuts.configureFlowVariables.condition({ $store }),
       ).toBeFalsy();
       $store.getters["selection/singleSelectedNode"].allowedActions = {
         canOpenLegacyFlowVariableDialog: true,
       };
       expect(
-        workflowShortcuts.configureFlowVariables.condition({ $store })
+        workflowShortcuts.configureFlowVariables.condition({ $store }),
       ).toBe(true);
     });
 
@@ -359,9 +359,9 @@ describe("workflowShortcuts", () => {
           $store.getters["selection/singleSelectedNode"].kind = kind;
 
           expect(workflowShortcuts.editName.condition({ $store })).toBe(
-            conditionValue
+            conditionValue,
           );
-        }
+        },
       );
 
       it("cannot rename if the selected node is linked", () => {
@@ -382,7 +382,7 @@ describe("workflowShortcuts", () => {
         });
 
         expect(workflowShortcuts.editNodeLabel.condition({ $store })).toBe(
-          false
+          false,
         );
       });
 
@@ -396,7 +396,7 @@ describe("workflowShortcuts", () => {
         });
 
         expect(workflowShortcuts.editNodeLabel.condition({ $store })).toBe(
-          false
+          false,
         );
       });
     });
@@ -406,7 +406,7 @@ describe("workflowShortcuts", () => {
         const { $store } = createStore({ singleSelectedNode: null });
         $store.getters["workflow/isWritable"] = false;
         expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-          false
+          false,
         );
       });
 
@@ -415,7 +415,7 @@ describe("workflowShortcuts", () => {
         $store.getters["selection/selectedNodes"] = [];
         $store.getters["selection/selectedConnections"] = [];
         expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-          false
+          false,
         );
       });
 
@@ -430,7 +430,7 @@ describe("workflowShortcuts", () => {
         });
 
         expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-          false
+          false,
         );
       });
 
@@ -444,7 +444,7 @@ describe("workflowShortcuts", () => {
           selectedConnections: [{ allowedActions: { canDelete: false } }],
         });
         expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-          false
+          false,
         );
       });
 
@@ -461,7 +461,7 @@ describe("workflowShortcuts", () => {
           ],
         });
         expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-          true
+          true,
         );
       });
 
@@ -475,7 +475,7 @@ describe("workflowShortcuts", () => {
         });
 
         expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-          true
+          true,
         );
       });
     });
@@ -583,17 +583,17 @@ describe("workflowShortcuts", () => {
       });
 
       expect(
-        workflowShortcuts.openComponentOrMetanode.condition({ $store })
+        workflowShortcuts.openComponentOrMetanode.condition({ $store }),
       ).toBe(true);
 
       singleSelectedNode.isLocked = false;
       expect(
-        workflowShortcuts.openComponentOrMetanode.condition({ $store })
+        workflowShortcuts.openComponentOrMetanode.condition({ $store }),
       ).toBe(true);
 
       singleSelectedNode.isLocked = true;
       expect(
-        workflowShortcuts.openComponentOrMetanode.condition({ $store })
+        workflowShortcuts.openComponentOrMetanode.condition({ $store }),
       ).toBe(false);
     });
 
@@ -601,7 +601,7 @@ describe("workflowShortcuts", () => {
       it("it is not a component, button disabled", () => {
         const { $store } = createStore();
         expect(
-          workflowShortcuts.openLayoutEditor.condition({ $store })
+          workflowShortcuts.openLayoutEditor.condition({ $store }),
         ).toBeFalsy();
       });
 
@@ -612,7 +612,7 @@ describe("workflowShortcuts", () => {
         });
 
         expect(
-          workflowShortcuts.openLayoutEditor.condition({ $store })
+          workflowShortcuts.openLayoutEditor.condition({ $store }),
         ).toBeFalsy();
       });
 
@@ -622,7 +622,7 @@ describe("workflowShortcuts", () => {
           containerType: "component",
         });
         expect(workflowShortcuts.openLayoutEditor.condition({ $store })).toBe(
-          true
+          true,
         );
       });
     });
@@ -714,21 +714,21 @@ describe("workflowShortcuts", () => {
         const { $store } = createStore();
 
         expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(
-          false
+          false,
         );
 
         $store.getters["selection/selectedAnnotations"] = [
           { id: "mock-annotation" },
         ];
         expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(
-          true
+          true,
         );
 
         $store.getters["workflow/isWritable"] = false;
         expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(
-          false
+          false,
         );
-      }
+      },
     );
 
     describe("quickAddNode", () => {
@@ -755,7 +755,7 @@ describe("workflowShortcuts", () => {
             props: {
               position: expect.anything(),
             },
-          }
+          },
         );
       });
 
@@ -783,7 +783,7 @@ describe("workflowShortcuts", () => {
               port: { index: 0, typeId: "some.type" },
               position: expect.anything(),
             },
-          }
+          },
         );
       });
 
@@ -801,7 +801,7 @@ describe("workflowShortcuts", () => {
               port: { index: 1, typeId: "some.type" },
               position: expect.anything(),
             },
-          }
+          },
         );
       });
 
@@ -830,7 +830,7 @@ describe("workflowShortcuts", () => {
               port: { index: 2, typeId: "some.type" },
               position: { x: 5, y: 8 },
             },
-          }
+          },
         );
       });
     });
@@ -840,7 +840,7 @@ describe("workflowShortcuts", () => {
       $store.getters["workflow/isWritable"] = false;
 
       expect(
-        workflowShortcuts.addWorkflowAnnotation.condition({ $store })
+        workflowShortcuts.addWorkflowAnnotation.condition({ $store }),
       ).toBe(false);
     });
   });

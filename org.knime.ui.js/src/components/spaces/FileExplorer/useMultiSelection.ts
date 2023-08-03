@@ -13,20 +13,20 @@ export type UseMultiSelectionReturn = {
 
 export const useMultiSelection = (): UseMultiSelectionReturn => {
   const multiSelectionState = ref<multiSelectionService.MultiSelectionState>(
-    multiSelectionService.getInitialState()
+    multiSelectionService.getInitialState(),
   );
 
   const isSelected = (index: number) =>
     multiSelectionService.isItemSelected(multiSelectionState.value, index);
 
   const selectedIndexes = computed(() =>
-    multiSelectionService.getSelectedIndexes(multiSelectionState.value)
+    multiSelectionService.getSelectedIndexes(multiSelectionState.value),
   );
 
   const isMultipleSelectionActive = (index: number) =>
     multiSelectionService.isMultipleSelectionActive(
       multiSelectionState.value,
-      index
+      index,
     );
 
   const resetSelection = () => {
@@ -40,20 +40,20 @@ export const useMultiSelection = (): UseMultiSelectionReturn => {
   const ctrlClickItem = (index: number) => {
     multiSelectionState.value = multiSelectionService.ctrlClick(
       multiSelectionState.value,
-      index
+      index,
     );
   };
 
   const shiftClickItem = (index: number) => {
     multiSelectionState.value = multiSelectionService.shiftClick(
       multiSelectionState.value,
-      index
+      index,
     );
   };
 
   const handleSelectionClick = (
     index: number,
-    event: MouseEvent | null = null
+    event: MouseEvent | null = null,
   ) => {
     if (!event) {
       clickItem(index);

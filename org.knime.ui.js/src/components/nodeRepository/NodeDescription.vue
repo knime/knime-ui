@@ -51,7 +51,7 @@ export default {
 
         this.descriptionData = await this.$store.dispatch(
           "nodeRepository/getNodeDescription",
-          { selectedNode }
+          { selectedNode },
         );
 
         this.redirectLinks(API.desktop.openUrlInExternalBrowser);

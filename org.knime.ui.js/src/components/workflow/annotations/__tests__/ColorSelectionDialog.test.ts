@@ -35,7 +35,7 @@ describe("ColorSelectionDialog.vue", () => {
       .find("button")
       .trigger("mouseenter", { stopPropagation });
     expect(wrapper.emitted("hoverColor")[0][0]).toBe(
-      annotationColorPresets.SilverSand
+      annotationColorPresets.SilverSand,
     );
     expect(stopPropagation).toHaveBeenCalled();
 
@@ -58,7 +58,7 @@ describe("ColorSelectionDialog.vue", () => {
       .find("button")
       .trigger("click", { stopPropagation });
     expect(wrapper.emitted("selectColor")[0][0]).toBe(
-      annotationColorPresets.SilverSand
+      annotationColorPresets.SilverSand,
     );
     expect(stopPropagation).toHaveBeenCalled();
 
@@ -69,7 +69,7 @@ describe("ColorSelectionDialog.vue", () => {
       .find("button")
       .trigger("click", { stopPropagation });
     expect(wrapper.emitted("selectColor")[1][0]).toBe(
-      annotationColorPresets.None
+      annotationColorPresets.None,
     );
   });
 
@@ -77,12 +77,12 @@ describe("ColorSelectionDialog.vue", () => {
     const { wrapper } = doMount();
 
     expect(
-      wrapper.findAllComponents(FunctionButton).at(1).props("active")
+      wrapper.findAllComponents(FunctionButton).at(1).props("active"),
     ).toBe(false);
 
     await wrapper.setProps({ activeColor: annotationColorPresets.SilverSand });
     expect(
-      wrapper.findAllComponents(FunctionButton).at(1).props("active")
+      wrapper.findAllComponents(FunctionButton).at(1).props("active"),
     ).toBe(true);
   });
 
@@ -90,13 +90,13 @@ describe("ColorSelectionDialog.vue", () => {
     const { wrapper } = doMount();
 
     expect(
-      wrapper.findAllComponents(FunctionButton).at(0).props("active")
+      wrapper.findAllComponents(FunctionButton).at(0).props("active"),
     ).toBe(false);
 
     await wrapper.setProps({ activeColor: annotationColorPresets.None });
 
     expect(
-      wrapper.findAllComponents(FunctionButton).at(0).props("active")
+      wrapper.findAllComponents(FunctionButton).at(0).props("active"),
     ).toBe(true);
     const colorButton = wrapper
       .findAllComponents(FunctionButton)

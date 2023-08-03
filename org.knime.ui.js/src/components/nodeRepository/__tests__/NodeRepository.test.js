@@ -158,7 +158,7 @@ describe("NodeRepository", () => {
         "myTag2",
       ]);
       expect(
-        wrapper.findComponent(CloseableTagList).props("modelValue")
+        wrapper.findComponent(CloseableTagList).props("modelValue"),
       ).toEqual(["myTag2"]);
     });
 
@@ -208,7 +208,7 @@ describe("NodeRepository", () => {
       await wrapper.vm.$nextTick();
       expect(updateQueryMock).toHaveBeenCalledWith(
         expect.anything(),
-        "myquery"
+        "myquery",
       );
     });
 
@@ -228,7 +228,7 @@ describe("NodeRepository", () => {
     it("shows node description panel", async () => {
       doShallowMount();
       expect(wrapper.findComponent(NodeDescriptionOverlay).exists()).toBe(
-        false
+        false,
       );
 
       $store.state.nodeRepository.isDescriptionPanelOpen = true;

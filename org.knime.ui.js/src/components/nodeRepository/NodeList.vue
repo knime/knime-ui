@@ -44,7 +44,7 @@ export default {
           return;
         }
         const nodeIndex = this.nodes.findIndex(
-          (node) => node.id === newSelectedNode?.id
+          (node) => node.id === newSelectedNode?.id,
         );
         if (nodeIndex >= 0) {
           this.domFocusNode(nodeIndex);
@@ -79,7 +79,7 @@ export default {
     },
     domFocusNode(nodeIndex) {
       const nodeListElement = this.$el.querySelector(
-        `[data-index="${nodeIndex}"]`
+        `[data-index="${nodeIndex}"]`,
       );
       nodeListElement?.focus();
     },
@@ -90,7 +90,7 @@ export default {
       }
 
       const activeItemIndex = this.nodes.findIndex(
-        (node) => node.id === this.selectedNode?.id
+        (node) => node.id === this.selectedNode?.id,
       );
 
       // switch from items to upper input elements (e.g. search box) on the first row

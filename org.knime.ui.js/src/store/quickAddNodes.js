@@ -26,7 +26,7 @@ export const actions = {
 
   async getNodeRecommendations(
     { commit, rootState },
-    { nodeId, portIdx, nodesLimit = recommendationLimit }
+    { nodeId, portIdx, nodesLimit = recommendationLimit },
   ) {
     const {
       projectId,
@@ -47,7 +47,7 @@ export const actions = {
 
     commit(
       "setRecommendedNodes",
-      recommendedNodesResult.map(toNodeWithFullPorts(availablePortTypes))
+      recommendedNodesResult.map(toNodeWithFullPorts(availablePortTypes)),
     );
   },
 

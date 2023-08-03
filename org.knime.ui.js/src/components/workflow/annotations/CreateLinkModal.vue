@@ -33,7 +33,7 @@ watch(
       // eslint-disable-next-line no-magic-numbers
     }, 200);
   },
-  { deep: true }
+  { deep: true },
 );
 
 const emit = defineEmits<{

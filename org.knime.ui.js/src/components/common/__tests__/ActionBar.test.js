@@ -35,10 +35,10 @@ describe("ActionBar.vue", () => {
     let buttons = wrapper.findAllComponents(ActionButton);
 
     expect(buttons.at(0).props()).toStrictEqual(
-      expect.objectContaining({ x: -12.5, disabled: false, primary: true })
+      expect.objectContaining({ x: -12.5, disabled: false, primary: true }),
     );
     expect(buttons.at(1).props()).toStrictEqual(
-      expect.objectContaining({ x: 12.5, disabled: false, primary: false })
+      expect.objectContaining({ x: 12.5, disabled: false, primary: false }),
     );
   });
 

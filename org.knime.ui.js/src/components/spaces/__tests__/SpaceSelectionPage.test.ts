@@ -96,11 +96,11 @@ describe("SpaceSelectionPage.vue", () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(dispatchSpy).toHaveBeenCalledWith(
       "spaces/fetchWorkflowGroupContent",
-      { projectId: cachedLocalSpaceProjectId }
+      { projectId: cachedLocalSpaceProjectId },
     );
     expect(commitSpy).toHaveBeenCalledWith(
       "spaces/setCreateWorkflowModalConfig",
-      { isOpen: true, projectId: cachedLocalSpaceProjectId }
+      { isOpen: true, projectId: cachedLocalSpaceProjectId },
     );
   });
 

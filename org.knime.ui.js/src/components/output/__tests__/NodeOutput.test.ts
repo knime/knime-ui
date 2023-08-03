@@ -121,7 +121,7 @@ describe("NodeOutput.vue", () => {
       const wrapper = doMount(store);
 
       expect(placeholderMessage(wrapper)).toBe(
-        "To show the node output, please select a configured or executed node."
+        "To show the node output, please select a configured or executed node.",
       );
 
       expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
@@ -138,7 +138,7 @@ describe("NodeOutput.vue", () => {
       const wrapper = doMount(store);
 
       expect(placeholderMessage(wrapper)).toBe(
-        "To show the node output, please select only one node."
+        "To show the node output, please select only one node.",
       );
       expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
       expect(wrapper.find(".loading-icon").exists()).toBe(false);
@@ -187,7 +187,7 @@ describe("NodeOutput.vue", () => {
     const wrapper = doMount(store);
 
     expect(placeholderMessage(wrapper)).toBe(
-      "Node output will be loaded after moving is completed"
+      "Node output will be loaded after moving is completed",
     );
     expect(wrapper.findComponent(PortTabs).exists()).toBe(true);
     expect(wrapper.findComponent(PortTabs).props("disabled")).toBe(true);
@@ -216,7 +216,7 @@ describe("NodeOutput.vue", () => {
       await triggerOutputStateChange(wrapper, null);
       expect(wrapper.find(".placeholder").exists()).toBe(false);
       expect(
-        wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex")
+        wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
       ).toBe(1);
     });
 
@@ -238,7 +238,7 @@ describe("NodeOutput.vue", () => {
       // port should initially be 1 because regular nodes by default select the second port
       // since the first is the flowVariable port
       expect(
-        wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex")
+        wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
       ).toBe(1);
 
       // change from node1 -> node2
@@ -248,7 +248,7 @@ describe("NodeOutput.vue", () => {
 
       // the port should change to 0 because metanode has a single port
       expect(
-        wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex")
+        wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
       ).toBe(0);
     });
 
@@ -309,7 +309,7 @@ describe("NodeOutput.vue", () => {
         expect(wrapper.findComponent(PortViewTabOutput).exists()).toBe(false);
         expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(true);
         expect(
-          wrapper.findComponent(NodeViewTabOutput).props("selectedNode")
+          wrapper.findComponent(NodeViewTabOutput).props("selectedNode"),
         ).toEqual(node2);
       });
 
@@ -337,7 +337,7 @@ describe("NodeOutput.vue", () => {
         await Vue.nextTick();
 
         expect(
-          wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex")
+          wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
         ).toBe(expectedPort);
       });
 
@@ -386,7 +386,7 @@ describe("NodeOutput.vue", () => {
         await Vue.nextTick();
 
         expect(
-          wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex")
+          wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
         ).toBe(toPort);
       });
     });

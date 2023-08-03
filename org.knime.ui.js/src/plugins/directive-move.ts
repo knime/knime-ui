@@ -148,7 +148,7 @@ const createPointermoveHandler =
             clientX: event.clientX,
             clientY: event.clientY,
           },
-        }
+        },
       );
       state.handlers.onMoveStart(moveStartEvent);
     }

@@ -109,7 +109,7 @@ describe("canvas store", () => {
     it("set & get ScrollContainerElement", () => {
       store.dispatch("canvas/initScrollContainerElement", scrollContainer);
       expect(store.state.canvas.getScrollContainerElement()).toBe(
-        scrollContainer
+        scrollContainer,
       );
     });
 
@@ -267,7 +267,7 @@ describe("canvas store", () => {
 
         expect(dispatchSpy).toHaveBeenCalledWith(
           "canvas/fillScreen",
-          undefined
+          undefined,
         );
       });
     });
@@ -313,7 +313,7 @@ describe("canvas store", () => {
         // new padding is 200 (screen units) => decreasy by 100 => scroll by 100
         expect(scrollContainer.scrollLeft).toBe(-100);
         expect(scrollContainer.scrollTop).toBe(-100);
-      }
+      },
     );
 
     describe("scroll to", () => {
@@ -493,7 +493,7 @@ describe("canvas store", () => {
 
         store.dispatch("canvas/zoomAroundPointer", { delta: 2 });
         expect(store.state.canvas.zoomFactor).toBe(
-          zoomMultiplier * zoomMultiplier
+          zoomMultiplier * zoomMultiplier,
         );
       });
 
@@ -577,7 +577,7 @@ describe("canvas store", () => {
 
         store.dispatch("canvas/zoomAroundPointer", { delta: 1 });
         expect(store.state.canvas.zoomFactor).toBe(
-          zoomMultiplier * zoomMultiplier
+          zoomMultiplier * zoomMultiplier,
         );
 
         store.dispatch("canvas/zoomAroundPointer", { delta: -2 });
@@ -585,12 +585,12 @@ describe("canvas store", () => {
 
         store.dispatch("canvas/zoomAroundPointer", { delta: -1 });
         expect(round(store.state.canvas.zoomFactor)).toBe(
-          round(1 / zoomMultiplier)
+          round(1 / zoomMultiplier),
         );
 
         store.dispatch("canvas/zoomAroundPointer", { delta: -1 });
         expect(round(store.state.canvas.zoomFactor)).toBe(
-          round(1 / zoomMultiplier / zoomMultiplier)
+          round(1 / zoomMultiplier / zoomMultiplier),
         );
       });
     });
@@ -606,7 +606,7 @@ describe("canvas store", () => {
         });
 
         expect(
-          store.getters["canvas/screenFromCanvasCoordinates"]({ x: 0, y: 0 })
+          store.getters["canvas/screenFromCanvasCoordinates"]({ x: 0, y: 0 }),
         ).toStrictEqual({ x: 300, y: 300 });
       });
 
@@ -620,7 +620,7 @@ describe("canvas store", () => {
         });
 
         expect(
-          store.getters["canvas/screenToCanvasCoordinates"]([300, 300])
+          store.getters["canvas/screenToCanvasCoordinates"]([300, 300]),
         ).toStrictEqual([0, 0]);
       });
     });

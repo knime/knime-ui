@@ -73,10 +73,10 @@ describe("application::canvasStateTracking", () => {
 
     expect(mockedGetters.canvas.getCanvasScrollState).toHaveBeenCalled();
     expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(
-      1
+      1,
     );
     expect(
-      store.state.application.savedCanvasStates["project1--root"]
+      store.state.application.savedCanvasStates["project1--root"],
     ).toBeTruthy();
   });
 
@@ -101,7 +101,7 @@ describe("application::canvasStateTracking", () => {
         scrollLeft: 100,
         scrollHeight: 1000,
         scrollWidth: 1000,
-      })
+      }),
     );
   });
 
@@ -132,7 +132,7 @@ describe("application::canvasStateTracking", () => {
         scrollLeft: 80,
         scrollHeight: 800,
         scrollWidth: 800,
-      })
+      }),
     );
   });
 
@@ -140,10 +140,10 @@ describe("application::canvasStateTracking", () => {
     const { store } = loadStoreWithWorkflow();
     store.dispatch("application/saveCanvasState");
     expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(
-      1
+      1,
     );
     expect(
-      store.state.application.savedCanvasStates["project1--root"]
+      store.state.application.savedCanvasStates["project1--root"],
     ).toBeTruthy();
 
     store.dispatch("application/removeCanvasState", "project1");

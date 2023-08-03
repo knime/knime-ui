@@ -111,7 +111,7 @@ describe("dragGhostHelpers", () => {
     expect(dataTransfer.setDragImage).toHaveBeenCalledWith(
       expect.any(Image),
       0,
-      0
+      0,
     );
   });
 

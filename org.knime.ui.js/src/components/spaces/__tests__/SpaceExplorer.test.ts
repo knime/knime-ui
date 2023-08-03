@@ -22,7 +22,7 @@ import { FileExplorerItem } from "../FileExplorer/types";
 const mockedAPI = deepMocked(API);
 
 const createMockItem = (
-  data: Partial<FileExplorerItem> = {}
+  data: Partial<FileExplorerItem> = {},
 ): FileExplorerItem => {
   return {
     id: "dummy",
@@ -200,10 +200,10 @@ describe("SpaceExplorer.vue", () => {
         meta: {
           type: item.type,
         },
-      }))
+      })),
     );
     expect(wrapper.findComponent(FileExplorer).props("isRootFolder")).toBe(
-      true
+      true,
     );
   });
 
@@ -336,7 +336,7 @@ describe("SpaceExplorer.vue", () => {
       ];
       const { wrapper } = await doMountAndLoad({ openProjects });
       expect(wrapper.findComponent(FileExplorer).props("items")[2]).toEqual(
-        expect.objectContaining({ isOpen: true })
+        expect.objectContaining({ isOpen: true }),
       );
     });
 
@@ -353,7 +353,7 @@ describe("SpaceExplorer.vue", () => {
       ];
       const { wrapper } = await doMountAndLoad({ openProjects });
       expect(wrapper.findComponent(FileExplorer).props("items")[0]).toEqual(
-        expect.objectContaining({ isOpen: true })
+        expect.objectContaining({ isOpen: true }),
       );
     });
   });
@@ -407,13 +407,13 @@ describe("SpaceExplorer.vue", () => {
       ];
       const { wrapper } = await doMountAndLoad({ openProjects });
       expect(wrapper.findComponent(FileExplorer).props("items")[0]).toEqual(
-        expect.objectContaining({ canBeRenamed: false })
+        expect.objectContaining({ canBeRenamed: false }),
       );
       expect(wrapper.findComponent(FileExplorer).props("items")[1]).toEqual(
-        expect.objectContaining({ canBeRenamed: true })
+        expect.objectContaining({ canBeRenamed: true }),
       );
       expect(wrapper.findComponent(FileExplorer).props("items")[2]).toEqual(
-        expect.objectContaining({ canBeRenamed: false })
+        expect.objectContaining({ canBeRenamed: false }),
       );
     });
   });
@@ -432,10 +432,10 @@ describe("SpaceExplorer.vue", () => {
       ];
       const { wrapper } = await doMountAndLoad({ openProjects });
       expect(wrapper.findComponent(FileExplorer).props("items")[0]).toEqual(
-        expect.objectContaining({ canBeDeleted: false })
+        expect.objectContaining({ canBeDeleted: false }),
       );
       expect(wrapper.findComponent(FileExplorer).props("items")[2]).toEqual(
-        expect.objectContaining({ canBeDeleted: true })
+        expect.objectContaining({ canBeDeleted: true }),
       );
     });
 
@@ -479,7 +479,7 @@ describe("SpaceExplorer.vue", () => {
       expect(dispatchSpy).toHaveBeenNthCalledWith(
         3,
         "application/forceCloseProjects",
-        { projectIds: [openProjects[0].projectId] }
+        { projectIds: [openProjects[0].projectId] },
       );
 
       expect(dispatchSpy).toHaveBeenNthCalledWith(4, "spaces/deleteItems", {
@@ -518,7 +518,7 @@ describe("SpaceExplorer.vue", () => {
           projectId: "someProjectId",
           mode: "mini",
           selectedItemIds: [],
-        }
+        },
       );
     });
   });
@@ -662,7 +662,7 @@ describe("SpaceExplorer.vue", () => {
 
       expect(window.alert).toHaveBeenCalledWith(
         // eslint-disable-next-line vitest/no-conditional-tests
-        expect.stringContaining("Following workflows are opened:" && "• test2")
+        expect.stringContaining("Following workflows are opened:" && "• test2"),
       );
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);
@@ -692,7 +692,7 @@ describe("SpaceExplorer.vue", () => {
 
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "workflow/addNode",
-        expect.anything()
+        expect.anything(),
       );
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);
@@ -740,7 +740,7 @@ describe("SpaceExplorer.vue", () => {
 
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "workflow/addNode",
-        expect.anything()
+        expect.anything(),
       );
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);

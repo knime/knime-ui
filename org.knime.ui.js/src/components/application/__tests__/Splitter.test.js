@@ -36,7 +36,7 @@ describe("Splitter.vue", () => {
 
     it("uses default size", () => {
       expect(wrapper.find(".secondary").attributes().style).toBe(
-        "height: 45%;"
+        "height: 45%;",
       );
     });
 
@@ -104,7 +104,7 @@ describe("Splitter.vue", () => {
 
       expect(localStorageSetItemSpy).toHaveBeenCalledWith(
         "ui-splitter-test-column",
-        "230px"
+        "230px",
       );
 
       handle.trigger("pointerup", {

@@ -105,7 +105,7 @@ describe("Workflow", () => {
   const getNodesPositions = (store) => {
     const nodes = store.state.workflow.activeWorkflow.nodes;
     const positions = Object.keys(nodes).map(
-      (nodeId) => nodes[nodeId].position
+      (nodeId) => nodes[nodeId].position,
     );
     // eslint-disable-next-line func-style
     function* generator() {
@@ -138,7 +138,7 @@ describe("Workflow", () => {
               return Vue.h(
                 "div",
                 { id: _props.id },
-                this.$slots.default({ position: positions.next() })
+                this.$slots.default({ position: positions.next() }),
               );
             },
           },
@@ -191,7 +191,7 @@ describe("Workflow", () => {
       });
 
       expect(annotation.vm.setSelectionPreview).toHaveBeenLastCalledWith(
-        "show"
+        "show",
       );
     });
 
@@ -226,7 +226,7 @@ describe("Workflow", () => {
       const wrapper = doShallowMount({ store });
 
       const connections = Object.values(
-        store.state.workflow.activeWorkflow.connections
+        store.state.workflow.activeWorkflow.connections,
       );
 
       // TODO: FIX props do not list mixin props when using shallowMount. The assertion fails

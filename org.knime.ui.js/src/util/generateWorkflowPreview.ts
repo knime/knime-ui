@@ -39,19 +39,19 @@ const getSvgContent = (svg: SVGElement, skipLicense: boolean = false) => {
   // Add name spaces
   if (
     !source.match(
-      /^<svg[^>]*?\sxmlns=(['"`])https?:\/\/www\.w3\.org\/2000\/svg\1/
+      /^<svg[^>]*?\sxmlns=(['"`])https?:\/\/www\.w3\.org\/2000\/svg\1/,
     )
   ) {
     source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
   }
   if (
     !source.match(
-      /^<svg[^>]*?\sxmlns:xlink=(['"`])http:\/\/www\.w3\.org\/1999\/xlink\1/
+      /^<svg[^>]*?\sxmlns:xlink=(['"`])http:\/\/www\.w3\.org\/1999\/xlink\1/,
     )
   ) {
     source = source.replace(
       /^<svg/,
-      '<svg xmlns:xlink="http://www.w3.org/1999/xlink"'
+      '<svg xmlns:xlink="http://www.w3.org/1999/xlink"',
     );
   }
 
@@ -84,7 +84,7 @@ type PredicateFn = (el: HTMLElement) => boolean;
  */
 const removeElements = (
   elements: ReturnType<typeof document.querySelectorAll>,
-  predicateFn: PredicateFn = () => true
+  predicateFn: PredicateFn = () => true,
 ) => {
   elements.forEach((el) => {
     if (predicateFn(el as HTMLElement)) {
@@ -108,7 +108,7 @@ type WorkflowPreviewReturnType = {
  * @param element
  */
 const getSVGElementClone = (
-  element: SVGSVGElement
+  element: SVGSVGElement,
 ): WorkflowPreviewReturnType => {
   const div = document.createElement("div");
   div.id = "NODE_PREVIEW_CONTAINER";
@@ -233,8 +233,8 @@ const fileToBase64 = async (filepath): Promise<string> => {
         // remove data url preceding headers to be left only with the base64 encoded string
         (event.target.result as string).replace(
           dataUrlDeclarationHeaderRegex,
-          ""
-        )
+          "",
+        ),
       );
     };
 
@@ -280,11 +280,11 @@ const addFontStyles = async (svgElement: SVGElement) => {
     document.createTextNode(`@font-face {
       font-family: "Roboto Condensed";
       src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}");
-    }`)
+    }`),
   );
   // Make sure the list item markers are displayed
   styleTag.appendChild(
-    document.createTextNode("li { overflow: initial !important; }")
+    document.createTextNode("li { overflow: initial !important; }"),
   );
 
   styleTag.type = "text/css";
@@ -303,7 +303,7 @@ const addFontStyles = async (svgElement: SVGElement) => {
  */
 export const generateWorkflowPreview = async (
   svgElement: SVGSVGElement,
-  isEmpty: boolean
+  isEmpty: boolean,
 ) => {
   if (!svgElement) {
     return null;
@@ -319,7 +319,7 @@ export const generateWorkflowPreview = async (
   const { svgClone, teardown } = getSVGElementClone(svgElement);
 
   const workflowSheet = svgClone.querySelector(
-    ".workflow-sheet"
+    ".workflow-sheet",
   ) as HTMLElement;
 
   // inline custom fonts to the svg element clone
@@ -340,7 +340,7 @@ export const generateWorkflowPreview = async (
   // remove all empty g elements
   removeElements(
     svgClone.querySelectorAll("g"),
-    (node) => !node.hasChildNodes()
+    (node) => !node.hasChildNodes(),
   );
 
   // remove all `display: none` elements
@@ -351,7 +351,7 @@ export const generateWorkflowPreview = async (
   svgClone.querySelectorAll("[data-connector-id]").forEach(
     useCSSfromComputedStyles({
       strokeWidth: "1px",
-    })
+    }),
   );
 
   // select `foreignObject`s and inline all styles that may be only available from classes
@@ -364,7 +364,7 @@ export const generateWorkflowPreview = async (
     useCSSfromComputedStyles({
       overflowX: "hidden",
       overflowY: "hidden",
-    })
+    }),
   );
 
   const output = getSvgContent(svgClone);

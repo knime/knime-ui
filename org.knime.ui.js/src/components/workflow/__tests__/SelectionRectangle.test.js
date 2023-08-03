@@ -236,7 +236,7 @@ describe("SelectionRectangle", () => {
 
       expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(
         expect.anything(),
-        ["inside-1", "inside-2"]
+        ["inside-1", "inside-2"],
       );
     });
 
@@ -268,7 +268,7 @@ describe("SelectionRectangle", () => {
       await Vue.nextTick();
 
       const selectionPreviewEvents = wrapper.emitted(
-        "annotationSelectionPreview"
+        "annotationSelectionPreview",
       );
 
       expect(selectionPreviewEvents.slice(2)).toStrictEqual([
@@ -291,7 +291,7 @@ describe("SelectionRectangle", () => {
       pointerUp();
 
       expect(
-        storeConfig.selection.actions.selectAnnotations
+        storeConfig.selection.actions.selectAnnotations,
       ).toHaveBeenCalledWith(expect.anything(), [
         "ann-inside-1",
         "ann-inside-2",
@@ -304,7 +304,7 @@ describe("SelectionRectangle", () => {
       await Vue.nextTick();
 
       expect(
-        storeConfig.selection.mutations.setDidStartRectangleSelection
+        storeConfig.selection.mutations.setDidStartRectangleSelection,
       ).toHaveBeenCalledWith(expect.anything(), true);
     });
 
@@ -315,7 +315,7 @@ describe("SelectionRectangle", () => {
       pointerUp();
 
       expect(
-        storeConfig.selection.mutations.setDidStartRectangleSelection
+        storeConfig.selection.mutations.setDidStartRectangleSelection,
       ).toHaveBeenCalledWith(expect.anything(), false);
     });
   });
@@ -337,7 +337,7 @@ describe("SelectionRectangle", () => {
 
     it("no global deselection", () => {
       expect(
-        storeConfig.selection.actions.deselectAllObjects
+        storeConfig.selection.actions.deselectAllObjects,
       ).not.toHaveBeenCalled();
     });
 
@@ -383,7 +383,7 @@ describe("SelectionRectangle", () => {
       expect(storeConfig.selection.actions.selectNodes).not.toHaveBeenCalled();
       expect(storeConfig.selection.actions.deselectNodes).toHaveBeenCalledWith(
         expect.anything(),
-        ["inside-1", "inside-2"]
+        ["inside-1", "inside-2"],
       );
     });
 
@@ -408,7 +408,7 @@ describe("SelectionRectangle", () => {
       pointerUp();
 
       expect(
-        wrapper.emitted("annotationSelectionPreview").slice(2)
+        wrapper.emitted("annotationSelectionPreview").slice(2),
       ).toStrictEqual([
         [
           {
@@ -429,10 +429,10 @@ describe("SelectionRectangle", () => {
       pointerUp();
 
       expect(
-        storeConfig.selection.actions.selectAnnotations
+        storeConfig.selection.actions.selectAnnotations,
       ).not.toHaveBeenCalled();
       expect(
-        storeConfig.selection.actions.deselectAnnotations
+        storeConfig.selection.actions.deselectAnnotations,
       ).toHaveBeenCalledWith(expect.anything(), [
         "ann-inside-1",
         "ann-inside-2",
@@ -469,7 +469,7 @@ describe("SelectionRectangle", () => {
       pointerUp();
       expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(
         expect.anything(),
-        ["inside-1", "inside-2"]
+        ["inside-1", "inside-2"],
       );
     });
 
@@ -500,7 +500,7 @@ describe("SelectionRectangle", () => {
 
       pointerUp();
       expect(
-        storeConfig.selection.actions.selectAnnotations
+        storeConfig.selection.actions.selectAnnotations,
       ).toHaveBeenCalledWith(expect.anything(), [
         "ann-inside-1",
         "ann-inside-2",
@@ -526,10 +526,10 @@ describe("SelectionRectangle", () => {
       expect(wrapper.emitted("nodeSelectionPreview")).toBeFalsy();
       expect(wrapper.emitted("annotationSelectionPreview")).toBeFalsy();
       expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(
-        0
+        0,
       );
       expect(
-        storeConfig.selection.actions.selectAnnotations
+        storeConfig.selection.actions.selectAnnotations,
       ).toHaveBeenCalledTimes(0);
     });
 
@@ -544,10 +544,10 @@ describe("SelectionRectangle", () => {
       expect(wrapper.emitted("nodeSelectionPreview")).toBeFalsy();
       expect(wrapper.emitted("annotationSelectionPreview")).toBeFalsy();
       expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(
-        0
+        0,
       );
       expect(
-        storeConfig.selection.actions.selectAnnotations
+        storeConfig.selection.actions.selectAnnotations,
       ).toHaveBeenCalledTimes(0);
     });
   });

@@ -88,7 +88,7 @@ describe("NodeDescription", () => {
     await nextTick();
 
     expect(
-      wrapper.findComponent(NodeDescription).props("selectedNode").id
+      wrapper.findComponent(NodeDescription).props("selectedNode").id,
     ).toBe(1);
   });
 
@@ -98,7 +98,7 @@ describe("NodeDescription", () => {
     button.trigger("click");
     expect(dispatchSpy).toHaveBeenCalledWith(
       "nodeRepository/closeDescriptionPanel",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -110,7 +110,7 @@ describe("NodeDescription", () => {
 
     expect(dispatchSpy).toHaveBeenCalledWith(
       "nodeRepository/closeDescriptionPanel",
-      undefined
+      undefined,
     );
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
   });
@@ -122,7 +122,7 @@ describe("NodeDescription", () => {
 
     $store.state.nodeRepository.isDescriptionPanelOpen = true;
     expect(
-      wrapper.findComponent(NodeDescription).props("selectedNode")
+      wrapper.findComponent(NodeDescription).props("selectedNode"),
     ).toBeNull();
   });
 });

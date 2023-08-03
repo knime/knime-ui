@@ -52,7 +52,7 @@ describe("ContextAwareDescription.vue", () => {
     expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(false);
     expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
     expect(
-      wrapper.findComponent(NodeDescription).props("selectedNode")
+      wrapper.findComponent(NodeDescription).props("selectedNode"),
     ).toMatchObject({
       name: "Node with id 2", // see getter
       nodeFactory: {
@@ -72,6 +72,6 @@ describe("ContextAwareDescription.vue", () => {
       });
       expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(true);
       expect(wrapper.findComponent(NodeDescription).exists()).toBe(false);
-    }
+    },
   );
 });

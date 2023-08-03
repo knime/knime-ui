@@ -34,12 +34,12 @@ describe("LeftCollapsiblePanel.vue", () => {
     const wrapper = doShallowMount();
 
     expect(wrapper.find(".container").attributes("style")).toMatch(
-      "width: 0px"
+      "width: 0px",
     );
 
     await wrapper.setProps({ expanded: true });
     expect(wrapper.find(".container").attributes("style")).toMatch(
-      "width: 200px"
+      "width: 200px",
     );
   });
 
@@ -47,7 +47,7 @@ describe("LeftCollapsiblePanel.vue", () => {
     const wrapper = doShallowMount({ width: "400px", expanded: true });
 
     expect(wrapper.find(".container").attributes("style")).toMatch(
-      "width: 400px"
+      "width: 400px",
     );
   });
 
@@ -101,7 +101,7 @@ describe("LeftCollapsiblePanel.vue", () => {
     it("flips icon", () => {
       const wrapper = doShallowMount();
       expect(wrapper.findComponent(SwitchIcon).attributes().style).toBe(
-        "transform: scaleX(-1);"
+        "transform: scaleX(-1);",
       );
     });
   });

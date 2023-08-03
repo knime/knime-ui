@@ -25,7 +25,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     {
       action,
       nodes,
-    }: { action: ExecutionAction; nodes: Array<string> | "all" | "selected" }
+    }: { action: ExecutionAction; nodes: Array<string> | "all" | "selected" },
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
@@ -55,14 +55,14 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       });
     } else {
       throw new TypeError(
-        "'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]"
+        "'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]",
       );
     }
   },
 
   changeLoopState(
     { state },
-    { action, nodeId }: { action: LoopStateAction; nodeId: string }
+    { action, nodeId }: { action: LoopStateAction; nodeId: string },
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 

@@ -195,6 +195,6 @@ describe("desktop-api", () => {
       API.desktop[desktopApiName || name](paramsAsObj);
 
       expect(window[name]).toHaveBeenCalledWith(...values);
-    }
+    },
   );
 });

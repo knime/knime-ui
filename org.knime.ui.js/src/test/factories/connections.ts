@@ -7,7 +7,7 @@ import { createPort } from "./ports";
 import { arrayToDictionary } from "./util";
 
 export const createConnection = (
-  data: Partial<Connection> = {}
+  data: Partial<Connection> = {},
 ): Connection => {
   const { id, ...rest } = data;
 
@@ -26,7 +26,7 @@ export const createConnection = (
 export const createConnectedNodes = (
   node1: KnimeNode | string = "root:1",
   node2: KnimeNode | string = "root:2",
-  connectionData?: Pick<Connection, "allowedActions">
+  connectionData?: Pick<Connection, "allowedActions">,
 ) => {
   const sourceNode =
     typeof node1 === "string"
@@ -72,7 +72,7 @@ type ConnectionPair = {
 };
 
 export const connectMultipleNodes = (
-  nodeConnections: Array<ConnectionPair>
+  nodeConnections: Array<ConnectionPair>,
 ): Record<string, Connection> => {
   const connections: Connection[] = [];
 

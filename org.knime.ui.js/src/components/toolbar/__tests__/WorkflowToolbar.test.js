@@ -98,7 +98,7 @@ describe("WorkflowToolbar.vue", () => {
 
       let shortcutButtons = wrapper.findAllComponents(ToolbarShortcutButton);
       expect(
-        shortcutButtons.map((button) => button.props("name"))
+        shortcutButtons.map((button) => button.props("name")),
       ).toStrictEqual(wrapper.vm.toolbarButtons);
     });
 

@@ -3,10 +3,10 @@ export const randomValue = (values: any[] | Readonly<any[]>) =>
 
 export const arrayToDictionary = <T, K extends keyof T>(
   array: T[],
-  property: K
+  property: K,
 ): { [key: string]: T } => {
   return array.reduce(
     (acc, item) => ({ ...acc, [String(item[property])]: item }),
-    {}
+    {},
   );
 };

@@ -28,7 +28,7 @@ describe("ActionBreadcrumb.vue", () => {
 
     expect(wrapper.findComponent(Breadcrumb).props("greyStyle")).toBe(true);
     expect(wrapper.findComponent(Breadcrumb).vm.$attrs.someOtherAttr).toBe(
-      "value"
+      "value",
     );
   });
 

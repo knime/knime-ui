@@ -41,13 +41,13 @@ describe("NodeActionBar", () => {
     let buttons = wrapper.findAllComponents(ActionButton);
 
     expect(buttons[0].props()).toStrictEqual(
-      expect.objectContaining({ x: -25, disabled: true })
+      expect.objectContaining({ x: -25, disabled: true }),
     );
     expect(buttons[1].props()).toStrictEqual(
-      expect.objectContaining({ x: 0, disabled: true })
+      expect.objectContaining({ x: 0, disabled: true }),
     );
     expect(buttons[2].props()).toStrictEqual(
-      expect.objectContaining({ x: 25, disabled: true })
+      expect.objectContaining({ x: 25, disabled: true }),
     );
   });
 
@@ -57,16 +57,16 @@ describe("NodeActionBar", () => {
     let buttons = wrapper.findAllComponents(ActionButton);
 
     expect(buttons.at(0).props()).toStrictEqual(
-      expect.objectContaining({ x: -37.5, disabled: true })
+      expect.objectContaining({ x: -37.5, disabled: true }),
     );
     expect(buttons.at(1).props()).toStrictEqual(
-      expect.objectContaining({ x: -12.5, disabled: true })
+      expect.objectContaining({ x: -12.5, disabled: true }),
     );
     expect(buttons.at(2).props()).toStrictEqual(
-      expect.objectContaining({ x: 12.5, disabled: true })
+      expect.objectContaining({ x: 12.5, disabled: true }),
     );
     expect(buttons.at(3).props()).toStrictEqual(
-      expect.objectContaining({ x: 37.5, disabled: true })
+      expect.objectContaining({ x: 37.5, disabled: true }),
     );
   });
 
@@ -78,19 +78,19 @@ describe("NodeActionBar", () => {
     let buttons = wrapper.findAllComponents(ActionButton);
 
     expect(buttons.at(0).props()).toStrictEqual(
-      expect.objectContaining({ x: -50, disabled: true })
+      expect.objectContaining({ x: -50, disabled: true }),
     );
     expect(buttons.at(1).props()).toStrictEqual(
-      expect.objectContaining({ x: -25, disabled: true })
+      expect.objectContaining({ x: -25, disabled: true }),
     );
     expect(buttons.at(2).props()).toStrictEqual(
-      expect.objectContaining({ x: 0, disabled: true })
+      expect.objectContaining({ x: 0, disabled: true }),
     );
     expect(buttons.at(3).props()).toStrictEqual(
-      expect.objectContaining({ x: 25, disabled: true })
+      expect.objectContaining({ x: 25, disabled: true }),
     );
     expect(buttons.at(4).props()).toStrictEqual(
-      expect.objectContaining({ x: 50, disabled: true })
+      expect.objectContaining({ x: 50, disabled: true }),
     );
   });
 
@@ -139,7 +139,7 @@ describe("NodeActionBar", () => {
         metadata: {
           nodeId: "root:1",
         },
-      }
+      },
     );
   });
 
@@ -162,7 +162,7 @@ describe("NodeActionBar", () => {
           metadata: {
             nodeId: "root:1",
           },
-        }
+        },
       );
       expect($shortcuts.dispatch).toHaveBeenNthCalledWith(
         2,
@@ -171,7 +171,7 @@ describe("NodeActionBar", () => {
           metadata: {
             nodeId: "root:1",
           },
-        }
+        },
       );
     });
 
@@ -192,7 +192,7 @@ describe("NodeActionBar", () => {
           metadata: {
             nodeId: "root:1",
           },
-        }
+        },
       );
       expect($shortcuts.dispatch).toHaveBeenNthCalledWith(
         2,
@@ -201,7 +201,7 @@ describe("NodeActionBar", () => {
           metadata: {
             nodeId: "root:1",
           },
-        }
+        },
       );
     });
 
@@ -223,7 +223,7 @@ describe("NodeActionBar", () => {
           metadata: {
             nodeId: "root:1",
           },
-        }
+        },
       );
       expect($shortcuts.dispatch).toHaveBeenNthCalledWith(
         2,
@@ -232,7 +232,7 @@ describe("NodeActionBar", () => {
           metadata: {
             nodeId: "root:1",
           },
-        }
+        },
       );
       expect($shortcuts.dispatch).not.toHaveBeenCalledWith(
         "resumeLoopExecution",
@@ -240,7 +240,7 @@ describe("NodeActionBar", () => {
           metadata: {
             nodeId: "root:1",
           },
-        }
+        },
       );
     });
   });

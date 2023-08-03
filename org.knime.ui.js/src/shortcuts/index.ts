@@ -13,7 +13,7 @@ export interface ShortcutsRegistry {}
 // exported for testing purposes
 export const conditionGroup = (
   groupCondition: (payload: ShortcutConditionContext) => boolean,
-  shortcuts: Partial<ShortcutsRegistry>
+  shortcuts: Partial<ShortcutsRegistry>,
 ): ShortcutsRegistry => {
   if (groupCondition) {
     Object.values(shortcuts).forEach((shortcut) => {
@@ -40,17 +40,17 @@ const shortcuts: ShortcutsRegistry = {
       ...executionShortcuts,
       ...conditionGroup(
         ({ $store }) => Boolean($store.state.canvas.interactionsEnabled),
-        selectionShortcuts
+        selectionShortcuts,
       ),
       ...conditionGroup(
         ({ $store }) =>
           Boolean(
             $store.state.canvas.interactionsEnabled &&
-              !$store.state.canvas.isEmpty
+              !$store.state.canvas.isEmpty,
           ),
-        canvasShortcuts
+        canvasShortcuts,
       ),
-    }
+    },
   ),
   ...sidePanelShortcuts,
 };

@@ -66,7 +66,7 @@ describe("CategoryResults", () => {
 
       expect(setCategoryScrollPositionMock).toHaveBeenCalledWith(
         expect.anything(),
-        100
+        100,
       );
     });
 

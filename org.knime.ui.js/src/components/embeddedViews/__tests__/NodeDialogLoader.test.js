@@ -54,7 +54,7 @@ describe("NodeDialogLoader.vue", () => {
         projectId: props.projectId,
         workflowId: props.workflowId,
         nodeId: props.selectedNode.id,
-      })
+      }),
     );
   });
 
@@ -70,7 +70,7 @@ describe("NodeDialogLoader.vue", () => {
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith(
       expect.objectContaining({
         nodeId: "node2",
-      })
+      }),
     );
   });
 
@@ -143,7 +143,7 @@ describe("NodeDialogLoader.vue", () => {
 
       expect(mockDispatch).toHaveBeenCalledWith(
         "pagebuilder/service/pushEvent",
-        mockEvent
+        mockEvent,
       );
     });
   });

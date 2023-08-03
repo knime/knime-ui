@@ -94,7 +94,7 @@ export default defineComponent({
       if (tag.selected) {
         this.$emit(
           "update:modelValue",
-          this.modelValue.filter((x) => x !== tag.text)
+          this.modelValue.filter((x) => x !== tag.text),
         );
       } else {
         this.$emit("update:modelValue", [...this.modelValue, tag.text]);

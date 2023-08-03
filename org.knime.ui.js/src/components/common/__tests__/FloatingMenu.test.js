@@ -269,7 +269,7 @@ describe("FloatingMenu.vue", () => {
 
       expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(
         expect.anything(),
-        false
+        false,
       );
     });
   });
@@ -306,7 +306,7 @@ describe("FloatingMenu.vue", () => {
 
       expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(
         expect.anything(),
-        true
+        true,
       );
     });
   });

@@ -18,18 +18,18 @@ export class DesktopAPTransport extends Transport {
 
   public async sendData(
     data: JSONRPCRequestData,
-    timeout: number | null = null
+    timeout: number | null = null,
   ): Promise<any> {
     const promise = this.transportRequestManager.addRequest(data, timeout);
 
     try {
       const result = await window.EquoCommService.send(
         this.rpcActionId,
-        JSON.stringify(this.parseData(data))
+        JSON.stringify(this.parseData(data)),
       );
 
       const responseErr = this.transportRequestManager.resolveResponse(
-        JSON.stringify(result)
+        JSON.stringify(result),
       );
 
       if (responseErr) {

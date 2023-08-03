@@ -44,7 +44,7 @@ const emit = defineEmits<{
       sourceItems: Array<string>;
       targetItem: string;
       onComplete: (isSuccessfulMove: boolean) => void;
-    }
+    },
   ): void;
   (
     e: "dragend",
@@ -52,7 +52,7 @@ const emit = defineEmits<{
       event: DragEvent;
       sourceItem: FileExplorerItemType;
       onComplete: (isSuccessfulMove: boolean) => void;
-    }
+    },
   ): void;
   (e: "drag", payload: { event: DragEvent; item: FileExplorerItemType }): void;
   (e: "renameFile", payload: { itemId: string; newName: string }): void;
@@ -76,10 +76,10 @@ const {
 } = multiSelection;
 
 const selectedItems = computed(() =>
-  selectedIndexes.value.map((index) => props.items[index])
+  selectedIndexes.value.map((index) => props.items[index]),
 );
 const selectedItemIds = computed(() =>
-  selectedItems.value.map((item) => item.id)
+  selectedItems.value.map((item) => item.id),
 );
 
 watch(multiSelectionState, () => {
@@ -97,7 +97,7 @@ const renamedItemId = ref<string | null>(null);
 const blacklistedNames = computed(() =>
   props.items
     .filter((item) => item.id !== renamedItemId.value)
-    .map(({ name }) => name)
+    .map(({ name }) => name),
 );
 const { activeRenamedItemId } = toRefs(props);
 watch(activeRenamedItemId, () => {
@@ -122,7 +122,7 @@ const {
 } = useItemDragging({
   itemBACK: computed(() => (itemBack.value ? itemBack.value.$el : null)),
   itemRefs: computed(() =>
-    itemRefs.value ? itemRefs.value.map(({ $el }) => $el) : null
+    itemRefs.value ? itemRefs.value.map(({ $el }) => $el) : null,
   ),
   isDirectory,
   items: toRefs(props).items,
@@ -130,7 +130,7 @@ const {
   // when default slot element (customDragPreviewPlaceholder ref) is not present, then
   // it means the slot has an element inside, so we should use a custom preview
   shouldUseCustomDragPreview: computed(
-    () => !customDragPreviewPlaceholder.value
+    () => !customDragPreviewPlaceholder.value,
   ),
   // we then can obtain the element by using the container
   getCustomPreviewEl: () => document.querySelector(".custom-preview"),
@@ -152,7 +152,7 @@ const forwardEmit = (eventName: any, eventPayload: any) => {
 const isContextMenuVisible = ref(false);
 const contextMenuPos = ref({ x: 0, y: 0 });
 const contextMenuAnchor = ref<FileExplorerContextMenuNamespace.Anchor | null>(
-  null
+  null,
 );
 
 const closeContextMenu = () => {
@@ -163,7 +163,7 @@ const closeContextMenu = () => {
 const openContextMenu = (
   event: MouseEvent,
   clickedItem: FileExplorerItemType,
-  index: number
+  index: number,
 ) => {
   const element = itemRefs.value[index].$el;
   contextMenuPos.value.x = event.clientX;
@@ -178,7 +178,7 @@ const openContextMenu = (
 };
 
 const onContextMenuItemClick = (
-  payload: FileExplorerContextMenuNamespace.ItemClickPayload
+  payload: FileExplorerContextMenuNamespace.ItemClickPayload,
 ) => {
   const { isDelete, isRename, anchorItem } = payload;
 
@@ -197,7 +197,7 @@ const onContextMenuItemClick = (
 const onItemClick = (
   item: FileExplorerItemType,
   event: MouseEvent,
-  index: number
+  index: number,
 ) => {
   if (renamedItemId.value !== item.id) {
     handleSelectionClick(index, event);

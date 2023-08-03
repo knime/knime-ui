@@ -62,11 +62,11 @@ export const loadStore = ({
   mockedAPI.desktop.getSpaceProviders.mockImplementation(() => {
     store.dispatch(
       "spaces/setAllSpaceProviders",
-      mockFetchAllProvidersResponse
+      mockFetchAllProvidersResponse,
     );
   });
   mockedAPI.space.listWorkflowGroup.mockResolvedValue(
-    mockFetchWorkflowGroupResponse
+    mockFetchWorkflowGroupResponse,
   );
 
   const dispatchSpy = vi.spyOn(store, "dispatch");

@@ -77,13 +77,13 @@ export default {
       e.dataTransfer.setDragImage(
         this.dragGhost,
         dragGhostRect.width / 2,
-        dragGhostRect.height / 2
+        dragGhostRect.height / 2,
       );
 
       e.dataTransfer.setData("text/plain", this.nodeTemplate.id);
       e.dataTransfer.setData(
         KnimeMIME,
-        JSON.stringify(this.nodeTemplate.nodeFactory)
+        JSON.stringify(this.nodeTemplate.nodeFactory),
       );
     },
     onDragEnd(e) {

@@ -23,7 +23,7 @@ describe("SearchBar", () => {
 
     expect(wrapper.findComponent(LensIcon).exists()).toBe(true);
     expect(
-      wrapper.findComponent(FunctionButton).findComponent(CloseIcon).exists()
+      wrapper.findComponent(FunctionButton).findComponent(CloseIcon).exists(),
     ).toBe(true);
     expect(wrapper.find("input").exists()).toBe(true);
   });
@@ -35,7 +35,7 @@ describe("SearchBar", () => {
     doShallowMount();
 
     expect(wrapper.find("input").attributes("placeholder")).toBe(
-      "type something"
+      "type something",
     );
   });
 

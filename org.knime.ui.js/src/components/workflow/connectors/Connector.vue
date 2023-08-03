@@ -170,7 +170,7 @@ export default defineComponent({
             fromPort: this.sourceNodeObject.outPorts[this.sourcePort],
             toPort,
             availablePortTypes: this.availablePortTypes,
-          })
+          }),
         );
       const hasCompatibleDestPort =
         this.destNodeObject &&
@@ -179,7 +179,7 @@ export default defineComponent({
             fromPort,
             toPort: this.destNodeObject.inPorts[this.destPort],
             availablePortTypes: this.availablePortTypes,
-          })
+          }),
         );
       return hasCompatibleSrcPort || hasCompatibleDestPort;
     },
@@ -247,7 +247,7 @@ export default defineComponent({
         });
       } else {
         window.alert(
-          "Cannot delete connection at this point. Insert node operation aborted."
+          "Cannot delete connection at this point. Insert node operation aborted.",
         );
         event.detail.onError();
       }
@@ -306,7 +306,9 @@ path:not(.hover-area) {
   pointer-events: none;
   stroke-width: v-bind("$shapes.connectorWidth");
   stroke: var(--knime-stone-gray);
-  transition: stroke-width 0.1s ease-in, stroke 0.1s ease-in;
+  transition:
+    stroke-width 0.1s ease-in,
+    stroke 0.1s ease-in;
 
   &:not(.read-only) {
     cursor: grab;

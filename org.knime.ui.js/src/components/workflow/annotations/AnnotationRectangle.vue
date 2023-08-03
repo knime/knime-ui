@@ -14,7 +14,7 @@ const pointerId = ref<number | null>(null);
 const $shortcuts = useShortcuts();
 const store = useStore<RootStoreState>();
 const screenToCanvasCoordinates = computed(
-  () => store.getters["canvas/screenToCanvasCoordinates"]
+  () => store.getters["canvas/screenToCanvasCoordinates"],
 );
 
 const selectionBounds = computed(() => {

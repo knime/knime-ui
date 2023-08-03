@@ -24,7 +24,7 @@ describe("ColorIcon.vue", () => {
 
     expect(wrapper.findComponent(CircleStopIcon).exists()).toBe(false);
     expect(wrapper.find("circle").attributes("stroke")).toBe(
-      annotationColorPresets.Avocado
+      annotationColorPresets.Avocado,
     );
     expect(wrapper.find("circle").attributes("fill")).toBe("white");
   });
@@ -40,10 +40,10 @@ describe("ColorIcon.vue", () => {
   it("should render filled icon", () => {
     const { wrapper } = doMount({ props: { filled: true } });
     expect(wrapper.find("circle").attributes("stroke")).toBe(
-      annotationColorPresets.Avocado
+      annotationColorPresets.Avocado,
     );
     expect(wrapper.find("circle").attributes("fill")).toBe(
-      annotationColorPresets.Avocado
+      annotationColorPresets.Avocado,
     );
   });
 });

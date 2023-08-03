@@ -31,7 +31,7 @@ export default {
     renderKey() {
       if (this.selectedNode?.hasDialog) {
         return [this.projectId, this.workflowId, this.selectedNode.id].join(
-          "/"
+          "/",
         );
       }
       return "";
@@ -91,7 +91,7 @@ export default {
           // TODO: NXT-1295 this should be reworked in the pagebuilder somehow, so that the NodeDialog and
           // the pagebuilder are not coupled to each other like this
           this.$store.dispatch("pagebuilder/service/pushEvent", event);
-        }
+        },
       );
     },
   },

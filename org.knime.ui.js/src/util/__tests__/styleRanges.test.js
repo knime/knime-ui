@@ -32,7 +32,7 @@ describe("styleRanges util", () => {
           { start: 0, length: 3 },
           { start: 1, length: 2 },
         ],
-        "foobar"
+        "foobar",
       );
       expect(result).toEqual(expected);
     });
@@ -43,7 +43,7 @@ describe("styleRanges util", () => {
           { start: -1, length: 1 },
           { start: 2, length: 2 },
         ],
-        "foobar"
+        "foobar",
       );
       expect(result).toEqual(expected);
     });
@@ -54,7 +54,7 @@ describe("styleRanges util", () => {
           { start: 0, length: 1 },
           { start: 2, length: 20 },
         ],
-        "foobar"
+        "foobar",
       );
       expect(result).toEqual(expected);
     });
@@ -82,7 +82,7 @@ describe("styleRanges util", () => {
   it("applies styles when single range cover text", () => {
     let result = applyStyleRanges(
       [{ start: 0, length: 6, bold: true }],
-      "foobar"
+      "foobar",
     );
     let expected = {
       isValid: true,
@@ -97,7 +97,7 @@ describe("styleRanges util", () => {
         { start: 3, length: 3, italic: true },
         { start: 0, length: 3, bold: true },
       ],
-      "foobar"
+      "foobar",
     );
     let expected = {
       isValid: true,
@@ -112,7 +112,7 @@ describe("styleRanges util", () => {
   it("applies styles when single range does not cover text", () => {
     let result = applyStyleRanges(
       [{ start: 1, length: 3, bold: true }],
-      "foobar"
+      "foobar",
     );
     let expected = {
       isValid: true,
@@ -127,7 +127,7 @@ describe("styleRanges util", () => {
         { start: 4, length: 1, italic: true },
         { start: 1, length: 1, bold: true },
       ],
-      "foobar"
+      "foobar",
     );
     let expected = {
       isValid: true,

@@ -69,10 +69,10 @@ describe("NodePortActions.vue", () => {
       25 * (defaultProps.direction === "in" ? -1 : 1);
 
     expect(wrapper.attributes("transform")).toBe(
-      `translate(${expectedWrapperTranslate})`
+      `translate(${expectedWrapperTranslate})`,
     );
     expect(wrapper.findComponent(ActionButton).props("x")).toBe(
-      expectedActionButtonXOffset
+      expectedActionButtonXOffset,
     );
   });
 
@@ -98,9 +98,9 @@ describe("NodePortActions.vue", () => {
       };
 
       expect(wrapper.find("rect").attributes()).toEqual(
-        expect.objectContaining(objPropertiesToString(hoverAreaDimensions))
+        expect.objectContaining(objPropertiesToString(hoverAreaDimensions)),
       );
-    }
+    },
   );
 
   it("should capture events on the area between actions", () => {

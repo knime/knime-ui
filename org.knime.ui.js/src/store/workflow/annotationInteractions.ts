@@ -33,7 +33,7 @@ export const mutations: MutationTree<WorkflowState> = {
     const mapped = workflowAnnotations.map<WorkflowAnnotation>((annotation) =>
       annotation.id === annotationId
         ? { ...annotation, text, borderColor }
-        : annotation
+        : annotation,
     );
 
     state.activeWorkflow.workflowAnnotations = mapped;
@@ -54,7 +54,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         workflowId,
         bounds,
         borderColor: colors.defaultAnnotationBorderColor,
-      }
+      },
     );
 
     await dispatch("selection/deselectAllObjects", null, { root: true });
@@ -81,7 +81,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   reorderWorkflowAnnotation(
     { state, rootGetters },
-    { action }: { action: ReorderWorkflowAnnotationsCommand.ActionEnum }
+    { action }: { action: ReorderWorkflowAnnotationsCommand.ActionEnum },
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     const annotationIds = rootGetters["selection/selectedAnnotationIds"];
@@ -96,13 +96,13 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   async updateAnnotation(
     { state, commit },
-    { annotationId, text, borderColor }
+    { annotationId, text, borderColor },
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
     const { text: originalText, borderColor: originalBorderColor } =
       state.activeWorkflow.workflowAnnotations.find(
-        (annotation) => annotation.id === annotationId
+        (annotation) => annotation.id === annotationId,
       );
 
     try {

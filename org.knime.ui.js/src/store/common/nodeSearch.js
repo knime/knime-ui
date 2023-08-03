@@ -45,7 +45,7 @@ export const mutations = {
   addTopNodes(state, topNodes) {
     let existingNodeIds = state.topNodes.map((node) => node.id);
     let newNodes = topNodes.filter(
-      (node) => !existingNodeIds.includes(node.id)
+      (node) => !existingNodeIds.includes(node.id),
     );
     state.topNodes.push(...newNodes);
   },
@@ -53,7 +53,7 @@ export const mutations = {
   addBottomNodes(state, bottomNodes) {
     let existingNodeIds = state.bottomNodes.map((node) => node.id);
     let newNodes = bottomNodes.filter(
-      (node) => !existingNodeIds.includes(node.id)
+      (node) => !existingNodeIds.includes(node.id),
     );
     state.bottomNodes.push(...newNodes);
   },
@@ -118,7 +118,7 @@ export const actions = {
    */
   async searchNodes(
     { commit, state, dispatch, getters, rootState },
-    { append = false, bottom = false } = {}
+    { append = false, bottom = false } = {},
   ) {
     // only do request if we search for something
     if (!getters.hasSearchParams) {
@@ -146,7 +146,7 @@ export const actions = {
         fullTemplateInfo: true,
         nodesPartition: bottom ? "NOT_IN_COLLECTION" : "IN_COLLECTION",
         portTypeId: state.portTypeId,
-      }
+      },
     );
 
     const { availablePortTypes } = rootState.application;

@@ -77,7 +77,7 @@ describe("MetaNodePortBars.vue", () => {
       expect(bar.props("position").y).toBe(extendedBoundsTop);
       expect(bar.props("ports")).toEqual([dummy]);
       expect(bar.props("containerId")).toBe("metanode");
-    }
+    },
   );
 
   it("renders two bars if workflow has both input and output ports", () => {

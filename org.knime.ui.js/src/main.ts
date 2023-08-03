@@ -83,7 +83,7 @@ const apiURLResolver = () =>
 
         resolve(data.payload);
       },
-      false
+      false,
     );
 
     // send message to parent after listener has been set-up

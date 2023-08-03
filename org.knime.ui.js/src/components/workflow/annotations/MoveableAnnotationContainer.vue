@@ -125,11 +125,11 @@ export default defineComponent({
       const deltas = {
         x: geometry.utils.snapToGrid(
           canvasX - this.startPos.x - this.cursorPosition.x,
-          snapSize
+          snapSize,
         ),
         y: geometry.utils.snapToGrid(
           canvasY - this.startPos.y - this.cursorPosition.y,
-          snapSize
+          snapSize,
         ),
       };
 
@@ -160,7 +160,7 @@ export default defineComponent({
       if (this.isMoveLocked) {
         this.$store.commit(
           "selection/setStartedSelectionFromAnnotationId",
-          this.id
+          this.id,
         );
       } else {
         this.initCursorPosition(event);

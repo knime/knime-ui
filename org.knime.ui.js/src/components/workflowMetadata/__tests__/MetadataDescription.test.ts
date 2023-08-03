@@ -47,7 +47,7 @@ describe("MetadataDescription.vue", () => {
 
     editor.vm.$emit("update:modelValue", "<p>Lorem ipsum</p>");
     expect(wrapper.emitted("update:modelValue")[0][0]).toBe(
-      "<p>Lorem ipsum</p>"
+      "<p>Lorem ipsum</p>",
     );
   });
 

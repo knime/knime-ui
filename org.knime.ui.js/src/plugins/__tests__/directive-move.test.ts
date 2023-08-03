@@ -65,7 +65,7 @@ describe("directive-move", () => {
       | "pointermove"
       | "pointerup"
       | "lostpointercapture",
-    { clientX = 0, clientY = 0, button = 0 }
+    { clientX = 0, clientY = 0, button = 0 },
   ) => {
     const pointerEvent = new Event(eventType);
 
@@ -118,7 +118,7 @@ describe("directive-move", () => {
           // move start gets passed the move event, not the start event. This is by design
           event: moveEvent,
         }),
-      })
+      }),
     );
 
     expect(setPointerCapture).toHaveBeenCalled();
@@ -132,7 +132,7 @@ describe("directive-move", () => {
           clientX: 100,
           clientY: 100,
         }),
-      })
+      }),
     );
 
     dispatchPointerEvent(wrapper, "pointermove", {
@@ -148,7 +148,7 @@ describe("directive-move", () => {
           clientX: 150,
           clientY: 150,
         }),
-      })
+      }),
     );
   });
 
@@ -190,7 +190,7 @@ describe("directive-move", () => {
           endX: 100,
           endY: 100,
         }),
-      })
+      }),
     );
 
     expect(releasePointerCapture).toHaveBeenCalled();

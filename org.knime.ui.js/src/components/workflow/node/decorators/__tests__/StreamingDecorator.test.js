@@ -35,7 +35,7 @@ describe("StreamingDecorator.vue", () => {
     it("draws background for unstreamable nodes of known type", () => {
       const wrapper = doShallowMount({ streamable: false }, "Manipulator");
       expect(wrapper.find("rect").attributes().fill).toBe(
-        $colors.nodeBackgroundColors.Manipulator
+        $colors.nodeBackgroundColors.Manipulator,
       );
     });
 

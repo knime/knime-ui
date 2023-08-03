@@ -53,7 +53,7 @@ describe("NodeNameText.vue", () => {
       wrapper.find(".node-name").trigger(eventName);
 
       expect(wrapper.emitted(eventName)).toBeDefined();
-    }
+    },
   );
 
   it("should add the full name as a title when overflow is not shown", async () => {
@@ -74,7 +74,7 @@ describe("NodeNameText.vue", () => {
         slots: {
           default: '<span class="slot-content"></span>',
         },
-      }
+      },
     );
 
     expect(wrapper.find(".slot-content").exists()).toBe(true);
@@ -95,6 +95,6 @@ describe("NodeNameText.vue", () => {
         .findComponent(AutoSizeForeignObject)
         .vm.$emit(eventName, emittedValue);
       expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
-    }
+    },
   );
 });

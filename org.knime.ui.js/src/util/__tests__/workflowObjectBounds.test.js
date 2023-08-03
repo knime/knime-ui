@@ -20,8 +20,8 @@ describe("Workflow-Objects Bounds", () => {
           nodes: {},
           workflowAnnotations: [],
         },
-        { padding: true }
-      )
+        { padding: true },
+      ),
     ).toStrictEqual({
       left: 0,
       right: 0,
@@ -44,8 +44,8 @@ describe("Workflow-Objects Bounds", () => {
           },
           workflowAnnotations: [],
         },
-        { padding: true }
-      )
+        { padding: true },
+      ),
     ).toStrictEqual({
       left: 150,
       right: 250 + nodeSize,
@@ -94,8 +94,8 @@ describe("Workflow-Objects Bounds", () => {
         },
         {
           padding: true,
-        }
-      )
+        },
+      ),
     ).toStrictEqual({
       left: -10,
       right: 20,
@@ -124,8 +124,8 @@ describe("Workflow-Objects Bounds", () => {
             },
           ],
         },
-        { padding: true }
-      )
+        { padding: true },
+      ),
     ).toStrictEqual({
       left: -40,
       right: 92,
@@ -149,8 +149,8 @@ describe("Workflow-Objects Bounds", () => {
         },
         {
           padding: true,
-        }
-      )
+        },
+      ),
     ).toStrictEqual({
       left: -60,
       right: 102,
@@ -174,8 +174,8 @@ describe("Workflow-Objects Bounds", () => {
         },
         {
           padding: false,
-        }
-      )
+        },
+      ),
     ).toStrictEqual({
       left: -10,
       right: 52,

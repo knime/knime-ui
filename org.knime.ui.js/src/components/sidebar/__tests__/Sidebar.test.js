@@ -70,7 +70,7 @@ describe("Sidebar", () => {
 
     expect(wrapper.find('[title="Description"]').classes("active")).toBe(true);
     expect(wrapper.find('[title="Node repository"]').classes("active")).toBe(
-      false
+      false,
     );
     wrapper.findAll("li").forEach((wp) => {
       expect(wp.classes("expanded")).toBe(true);
@@ -92,7 +92,7 @@ describe("Sidebar", () => {
     doShallowMount();
     await wrapper.find(`[title="${tabName}"]`).trigger("click");
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(
-      false
+      false,
     );
 
     await wrapper.find(`[title="${tabName}"]`).trigger("click");
@@ -134,7 +134,7 @@ describe("Sidebar", () => {
 
   it("should not display node dialog section when flag is set to false", () => {
     mockFeatureFlags.shouldDisplayEmbeddedDialogs.mockImplementation(
-      () => false
+      () => false,
     );
 
     doShallowMount();

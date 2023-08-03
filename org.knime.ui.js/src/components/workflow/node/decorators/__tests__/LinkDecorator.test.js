@@ -21,7 +21,7 @@ describe("LinkDecorator.vue", () => {
 
     await wrapper.setProps({ updateStatus: "HAS_UPDATE" });
     expect(wrapper.find("path").attributes()["data-testid"]).toBe(
-      "dotted-arrow"
+      "dotted-arrow",
     );
 
     await wrapper.setProps({ updateStatus: "ERROR" });
@@ -34,20 +34,20 @@ describe("LinkDecorator.vue", () => {
   it("draws background for known type", () => {
     const wrapper = doShallowMount("Manipulator");
     expect(wrapper.find("rect").attributes().fill).toBe(
-      $colors.nodeBackgroundColors.Manipulator
+      $colors.nodeBackgroundColors.Manipulator,
     );
     expect(wrapper.find("path").attributes().stroke).toBe(
-      $colors.linkDecorator
+      $colors.linkDecorator,
     );
   });
 
   it("draws background for metanode", () => {
     const wrapper = doShallowMount("Metanode");
     expect(wrapper.find("rect").attributes().fill).toBe(
-      $colors.nodeBackgroundColors.Metanode
+      $colors.nodeBackgroundColors.Metanode,
     );
     expect(wrapper.find("path").attributes().stroke).toBe(
-      $colors.linkDecorator
+      $colors.linkDecorator,
     );
   });
 
@@ -55,7 +55,7 @@ describe("LinkDecorator.vue", () => {
     const wrapper = doShallowMount("unknown type");
     expect(wrapper.find("rect").exists()).toBe(false);
     expect(wrapper.find("path").attributes().stroke).toBe(
-      $colors.linkDecorator
+      $colors.linkDecorator,
     );
   });
 });

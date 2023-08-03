@@ -145,7 +145,7 @@ export const actions = {
    */
   zoomAroundPointer(
     { commit, getters, state },
-    { factor, delta, cursorX, cursorY }
+    { factor, delta, cursorX, cursorY },
   ) {
     let kanvas = state.getScrollContainerElement();
     let { scrollLeft, scrollTop } = kanvas;
@@ -170,13 +170,13 @@ export const actions = {
       // this method naturally produces in-precise results for small zoom factors
       // because many pixels in canvas coordinates map to the same pixel in screen coordinates
       canvasCoordinatesPoint = getters.toCanvasCoordinates(
-        screenCoordinatesPointer
+        screenCoordinatesPointer,
       );
     }
 
     if (isNaN(factor) === isNaN(delta)) {
       throw new Error(
-        "Either delta or factor have to be passed to zoomAroundPointer"
+        "Either delta or factor have to be passed to zoomAroundPointer",
       );
     } else if (!isNaN(delta)) {
       commit("setFactor", state.zoomFactor * Math.pow(zoomMultiplier, delta));
@@ -208,7 +208,7 @@ export const actions = {
 
   scroll(
     { getters, state },
-    { canvasX = 0, canvasY = 0, toScreenX = 0, toScreenY = 0, smooth = false }
+    { canvasX = 0, canvasY = 0, toScreenX = 0, toScreenY = 0, smooth = false },
   ) {
     let kanvas = state.getScrollContainerElement();
 
@@ -411,7 +411,7 @@ export const getters = {
     */
   screenFromCanvasCoordinates(
     { getScrollContainerElement },
-    { fromCanvasCoordinates }
+    { fromCanvasCoordinates },
   ) {
     let scrollContainerElement = getScrollContainerElement();
 
@@ -443,7 +443,7 @@ export const getters = {
     */
   screenToCanvasCoordinates(
     { getScrollContainerElement },
-    { toCanvasCoordinates }
+    { toCanvasCoordinates },
   ) {
     let scrollContainerElement = getScrollContainerElement();
 
@@ -482,7 +482,7 @@ export const getters = {
     */
   getVisibleFrame(
     { getScrollContainerElement },
-    { screenToCanvasCoordinates }
+    { screenToCanvasCoordinates },
   ) {
     return () => {
       let container = getScrollContainerElement();

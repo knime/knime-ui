@@ -70,17 +70,17 @@ describe("Tooltip", () => {
     expect(wrapper.attributes("style")).toContain("top: 345px;");
     expect(wrapper.attributes("style")).toContain(`--gap-size: ${gap}`);
     expect(wrapper.attributes("style")).toContain(
-      `--arrow-size: ${$shapes.tooltipArrowSize}`
+      `--arrow-size: ${$shapes.tooltipArrowSize}`,
     );
   });
 
   it("sets maximum size", () => {
     doShallowMount();
     expect(wrapper.attributes("style")).toContain(
-      `max-width: ${$shapes.tooltipMaxWidth}`
+      `max-width: ${$shapes.tooltipMaxWidth}`,
     );
     expect(wrapper.find(".scroller").attributes("style")).toContain(
-      `max-height: ${$shapes.tooltipMaxHeight}`
+      `max-height: ${$shapes.tooltipMaxHeight}`,
     );
   });
 

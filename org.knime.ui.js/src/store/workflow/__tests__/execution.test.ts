@@ -29,7 +29,7 @@ describe("workflow store: Execution", () => {
           projectId: "foo",
           action,
           workflowId: "root",
-        })
+        }),
       );
     });
 
@@ -72,7 +72,7 @@ describe("workflow store: Execution", () => {
           projectId: "foo",
           workflowId: "root",
           nodeIds: [],
-        })
+        }),
       );
 
       store.dispatch("selection/selectAllObjects");
@@ -82,7 +82,7 @@ describe("workflow store: Execution", () => {
           nodeIds: ["root:1", "root:2"],
           projectId: "foo",
           workflowId: "root",
-        })
+        }),
       );
 
       store.dispatch("workflow/changeNodeState", {

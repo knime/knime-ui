@@ -41,7 +41,7 @@ export const mutations: MutationTree<SpacesState> = {
 export const actions: ActionTree<SpacesState, RootStoreState> = {
   async fetchWorkflowGroupContentByIdTriplet(
     { commit },
-    { spaceId, spaceProviderId, itemId }
+    { spaceId, spaceProviderId, itemId },
   ) {
     try {
       commit("setIsLoadingContent", true);
@@ -77,7 +77,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async changeDirectory(
     { dispatch, getters, commit, state },
-    { projectId, pathId }
+    { projectId, pathId },
   ) {
     const itemId = getters.pathToItemId(projectId, pathId);
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
@@ -103,7 +103,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       await dispatch(
         "application/updateGlobalLoader",
         { loading: true, config: { displayMode: "transparent" } },
-        { root: true }
+        { root: true },
       );
       const newWorkflowItem = await API.space.createWorkflow({
         spaceProviderId,
@@ -114,7 +114,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       await dispatch(
         "application/updateGlobalLoader",
         { loading: false },
-        { root: true }
+        { root: true },
       );
 
       // re-fetch the content of the current folder to include the created workflow (in the background)
@@ -125,7 +125,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       await dispatch(
         "application/updateGlobalLoader",
         { loading: false },
-        { root: true }
+        { root: true },
       );
       consola.log("Error creating workflow", { error });
       throw error;
@@ -157,7 +157,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async openWorkflow(
     { rootState, state, dispatch },
-    { workflowItemId, $router, projectId }
+    { workflowItemId, $router, projectId },
   ) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
 
@@ -170,7 +170,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         origin &&
         origin.providerId === spaceProviderId &&
         origin.spaceId === spaceId &&
-        origin.itemId === workflowItemId
+        origin.itemId === workflowItemId,
     );
 
     if (foundOpenProject) {
@@ -187,7 +187,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     await dispatch(
       "application/updateGlobalLoader",
       { loading: true, config: { displayMode: "transparent" } },
-      { root: true }
+      { root: true },
     );
     API.desktop.openWorkflow({
       spaceProviderId,
@@ -197,7 +197,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     await dispatch(
       "application/updateGlobalLoader",
       { loading: false },
-      { root: true }
+      { root: true },
     );
   },
 
@@ -228,7 +228,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async renameItem(
     { state, dispatch, commit },
-    { projectId, itemId, newName }
+    { projectId, itemId, newName },
   ) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
 
@@ -268,7 +268,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async moveItems(
     { state, dispatch, commit },
-    { projectId, itemIds, destWorkflowGroupItemId, collisionStrategy }
+    { projectId, itemIds, destWorkflowGroupItemId, collisionStrategy },
   ) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
 
@@ -353,7 +353,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
             origin &&
             origin.providerId === spaceProviderId &&
             origin.spaceId === spaceId &&
-            workflowItemIds.includes(origin.itemId)
+            workflowItemIds.includes(origin.itemId),
         )
         .map(({ origin }) => origin.itemId);
     },
@@ -375,7 +375,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
           ({ origin }) =>
             origin &&
             origin.providerId === spaceProviderId &&
-            origin.spaceId === spaceId
+            origin.spaceId === spaceId,
         )
         .flatMap(({ origin }) => origin.ancestorItemIds);
 
@@ -383,7 +383,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         .filter(
           (item) =>
             item.type === ITEM_TYPES.WorkflowGroup &&
-            openProjectsFolders.includes(item.id)
+            openProjectsFolders.includes(item.id),
         )
         .map((item) => item.id);
     },

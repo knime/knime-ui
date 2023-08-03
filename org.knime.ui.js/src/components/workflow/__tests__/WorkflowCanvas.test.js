@@ -115,7 +115,7 @@ describe("Kanvas", () => {
         .vm.$emit("node-selection-preview", "args");
 
       expect(
-        workflowComponent.vm.applyNodeSelectionPreview
+        workflowComponent.vm.applyNodeSelectionPreview,
       ).toHaveBeenCalledWith("args");
     });
 
@@ -142,11 +142,11 @@ describe("Kanvas", () => {
 
       expect(storeConfig.canvas.mutations.setIsEmpty).toHaveBeenCalledWith(
         expect.anything(),
-        false
+        false,
       );
       expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
       expect(
-        storeConfig.panel.actions.setCurrentProjectActiveTab
+        storeConfig.panel.actions.setCurrentProjectActiveTab,
       ).not.toHaveBeenCalledWith(expect.any(Object), TABS.NODE_REPOSITORY);
     });
   });
@@ -180,11 +180,11 @@ describe("Kanvas", () => {
 
       expect(storeConfig.canvas.mutations.setIsEmpty).toHaveBeenCalledWith(
         expect.anything(),
-        true
+        true,
       );
       expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
       expect(
-        storeConfig.panel.actions.setCurrentProjectActiveTab
+        storeConfig.panel.actions.setCurrentProjectActiveTab,
       ).toHaveBeenCalledWith(expect.any(Object), TABS.NODE_REPOSITORY);
     });
 
@@ -192,7 +192,7 @@ describe("Kanvas", () => {
       doShallowMount();
 
       expect(
-        storeConfig.panel.actions.setCurrentProjectActiveTab
+        storeConfig.panel.actions.setCurrentProjectActiveTab,
       ).toHaveBeenCalledWith(expect.any(Object), TABS.NODE_REPOSITORY);
     });
   });

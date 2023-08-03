@@ -18,7 +18,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const componentMetadata = computed<ComponentMetadata>(
-  () => props.workflow.componentMetadata
+  () => props.workflow.componentMetadata,
 );
 const name = computed(() => componentMetadata.value.name);
 

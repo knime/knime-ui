@@ -50,7 +50,7 @@ describe("Quick add node store", () => {
     };
     // search is part of the node repo API
     mockedAPI.noderepository.getNodeRecommendations.mockReturnValue(
-      getNodeRecommendationsResponse
+      getNodeRecommendationsResponse,
     );
 
     const store = mockVuexStore({
@@ -89,7 +89,7 @@ describe("Quick add node store", () => {
 
     // this makes sure the test is failing if you add a property and do not adjust the test
     expect(
-      withoutKeys(store.state.quickAddNodes, nodeSearchStateKeys)
+      withoutKeys(store.state.quickAddNodes, nodeSearchStateKeys),
     ).toStrictEqual({
       recommendedNodes: null,
     });
@@ -107,10 +107,10 @@ describe("Quick add node store", () => {
 
       let responseWithPorts = withPorts(
         getNodeRecommendationsResponse,
-        availablePortTypes
+        availablePortTypes,
       );
       expect(store.state.quickAddNodes.recommendedNodes).toStrictEqual(
-        responseWithPorts
+        responseWithPorts,
       );
     });
   });

@@ -185,7 +185,7 @@ export default defineComponent({
     toggleEdit() {
       this.$store.dispatch(
         "workflow/setEditableAnnotationId",
-        this.isEditing ? null : this.annotation.id
+        this.isEditing ? null : this.annotation.id,
       );
     },
 

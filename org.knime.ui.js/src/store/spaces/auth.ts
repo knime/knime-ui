@@ -48,9 +48,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       // update project paths that used this space provider
       const projectsWithDisconnectedProvider = Object.entries(
-        state.projectPath
+        state.projectPath,
       ).flatMap(([projectId, path]) =>
-        path.spaceProviderId === spaceProviderId ? [projectId] : []
+        path.spaceProviderId === spaceProviderId ? [projectId] : [],
       );
 
       projectsWithDisconnectedProvider.forEach((projectId) =>
@@ -61,7 +61,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
             spaceId: "local",
             itemId: "root",
           },
-        })
+        }),
       );
 
       // update space provider state
@@ -92,8 +92,8 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
     return Boolean(
       Object.values(spaceProviders).find(
-        ({ id, connected }) => id !== "local" && connected
-      )
+        ({ id, connected }) => id !== "local" && connected,
+      ),
     );
   },
 };

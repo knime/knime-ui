@@ -67,7 +67,7 @@ describe("PortViewLoader.vue", () => {
         workflowId: props.workflowId,
         nodeId: props.selectedNode.id,
         portIdx: props.selectedPortIndex,
-      })
+      }),
     );
   });
 
@@ -87,7 +87,7 @@ describe("PortViewLoader.vue", () => {
       expect(mockedAPI.port.getPortView).toBeCalledWith(
         expect.objectContaining({
           nodeId: "node2",
-        })
+        }),
       );
     });
 
@@ -106,7 +106,7 @@ describe("PortViewLoader.vue", () => {
       expect(mockedAPI.port.getPortView).toBeCalledWith(
         expect.objectContaining({
           portIdx: 1,
-        })
+        }),
       );
     });
 
@@ -125,7 +125,7 @@ describe("PortViewLoader.vue", () => {
       expect(mockedAPI.port.getPortView).toBeCalledWith(
         expect.objectContaining({
           viewIdx: 2,
-        })
+        }),
       );
     });
   });
@@ -134,7 +134,7 @@ describe("PortViewLoader.vue", () => {
     setupGetPortViewMock(
       RESOURCE_TYPES.VUE_COMPONENT_REFERENCE,
       "FlowVariablePortView",
-      []
+      [],
     );
     const wrapper = doMount();
 

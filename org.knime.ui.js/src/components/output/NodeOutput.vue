@@ -19,7 +19,7 @@ import {
 export const runValidationChecks = ({ selectedNodes, isDragging }) => {
   const validationMiddleware = buildMiddleware(
     validateDragging,
-    validateSelection
+    validateSelection,
   );
 
   const result = validationMiddleware({ selectedNodes, isDragging })();

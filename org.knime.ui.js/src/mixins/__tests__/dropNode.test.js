@@ -55,8 +55,7 @@ describe("Drop Node Mixin", () => {
         getters: {
           screenToCanvasCoordinates:
             () =>
-            ([x, y]) =>
-              [x - 10, y - 10],
+            ([x, y]) => [x - 10, y - 10],
         },
       },
     });

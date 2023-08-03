@@ -81,7 +81,7 @@ describe("GettingStartedPage.vue", () => {
       expect.objectContaining({
         projectId: cachedLocalSpaceProjectId,
         workflowItemId: "item",
-      })
+      }),
     );
   });
 });

@@ -32,7 +32,7 @@ type ComponentData = {
 };
 
 const isItemWithName = (
-  item: ContextMenuActionsGroupItem
+  item: ContextMenuActionsGroupItem,
 ): item is ItemWithName => "name" in item;
 
 /**
@@ -52,7 +52,7 @@ const menuGroups = function (shortcuts: ShortcutsService) {
       .map((item) =>
         isItemWithName(item)
           ? item
-          : { ...item, children: removeInvalidItems(item.children) }
+          : { ...item, children: removeInvalidItems(item.children) },
       );
   };
 
@@ -180,7 +180,7 @@ export default defineComponent({
         areNodesSelected || areAnnotationsSelected || areConnectionsSelected;
 
       const isLoopEnd = Boolean(
-        this.singleSelectedNode?.loopInfo?.allowedActions
+        this.singleSelectedNode?.loopInfo?.allowedActions,
       );
       const isView =
         this.singleSelectedNode &&

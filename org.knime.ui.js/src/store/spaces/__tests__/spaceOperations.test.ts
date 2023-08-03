@@ -28,8 +28,8 @@ describe("spaces::spaceOperations", () => {
 
       expect(
         store.state.spaces.workflowGroupCache.get(
-          store.state.spaces.projectPath.myProject1
-        )
+          store.state.spaces.projectPath.myProject1,
+        ),
       ).toEqual(fetchWorkflowGroupContentResponse);
     });
   });
@@ -49,12 +49,12 @@ describe("spaces::spaceOperations", () => {
       // updated cache (was not set before)
       expect(
         store.state.spaces.workflowGroupCache.has(
-          store.state.spaces.projectPath.myProject1
-        )
+          store.state.spaces.projectPath.myProject1,
+        ),
       ).toBeTruthy();
 
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ itemId: "baz" })
+        expect.objectContaining({ itemId: "baz" }),
       );
     });
 
@@ -64,7 +64,7 @@ describe("spaces::spaceOperations", () => {
       store.state.spaces.workflowGroupCache.set(
         store.state.spaces.projectPath.myProject1,
         // @ts-ignore
-        { path: [{ id: "level1" }, { id: "level2" }] }
+        { path: [{ id: "level1" }, { id: "level2" }] },
       );
 
       await store.dispatch("spaces/changeDirectory", {
@@ -73,7 +73,7 @@ describe("spaces::spaceOperations", () => {
       });
 
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ itemId: "level1" })
+        expect.objectContaining({ itemId: "level1" }),
       );
     });
   });
@@ -100,7 +100,7 @@ describe("spaces::spaceOperations", () => {
       });
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/updateGlobalLoader",
-        { loading: true, config: { displayMode: "transparent" } }
+        { loading: true, config: { displayMode: "transparent" } },
       );
       expect(mockedAPI.space.createWorkflow).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -108,14 +108,14 @@ describe("spaces::spaceOperations", () => {
           spaceId: "local",
           itemId: "level2",
           itemName: workflowName,
-        })
+        }),
       );
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ itemId: "level2" })
+        expect.objectContaining({ itemId: "level2" }),
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/updateGlobalLoader",
-        { loading: false }
+        { loading: false },
       );
     });
   });
@@ -137,10 +137,10 @@ describe("spaces::spaceOperations", () => {
       await store.dispatch("spaces/createFolder", { projectId: "project2" });
       expect(store.state.spaces.activeRenamedItemId).toBe("NewFolder");
       expect(mockedAPI.space.createWorkflowGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ spaceId: "local", itemId: "level2" })
+        expect.objectContaining({ spaceId: "local", itemId: "level2" }),
       );
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ itemId: "level2" })
+        expect.objectContaining({ itemId: "level2" }),
       );
     });
   });
@@ -161,7 +161,7 @@ describe("spaces::spaceOperations", () => {
       });
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/updateGlobalLoader",
-        { loading: true, config: { displayMode: "transparent" } }
+        { loading: true, config: { displayMode: "transparent" } },
       );
       expect(mockedAPI.desktop.openWorkflow).toHaveBeenCalledWith({
         spaceId: "local",
@@ -170,7 +170,7 @@ describe("spaces::spaceOperations", () => {
       });
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/updateGlobalLoader",
-        { loading: false }
+        { loading: false },
       );
     });
 
@@ -324,7 +324,7 @@ describe("spaces::spaceOperations", () => {
       await store.dispatch("spaces/deleteItems", { projectId, itemIds });
       expect(dispatchSpy).toHaveBeenCalledWith(
         "spaces/fetchWorkflowGroupContent",
-        { projectId }
+        { projectId },
       );
     });
   });
@@ -358,7 +358,7 @@ describe("spaces::spaceOperations", () => {
         collisionHandling: collisionStrategy,
       });
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ itemId: "level2" })
+        expect.objectContaining({ itemId: "level2" }),
       );
     });
   });
@@ -385,7 +385,7 @@ describe("spaces::spaceOperations", () => {
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
           // @ts-ignore
-          { path: [{ id: "level1" }, { id: "level2" }] }
+          { path: [{ id: "level1" }, { id: "level2" }] },
         );
 
         const result = store.getters["spaces/pathToItemId"](projectId, "..");
@@ -405,11 +405,11 @@ describe("spaces::spaceOperations", () => {
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
           // @ts-ignore
-          { path: [] }
+          { path: [] },
         );
 
         expect(
-          store.getters["spaces/parentWorkflowGroupId"](projectId)
+          store.getters["spaces/parentWorkflowGroupId"](projectId),
         ).toBeNull();
       });
 
@@ -424,11 +424,11 @@ describe("spaces::spaceOperations", () => {
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
           // @ts-ignore
-          { path: [{ id: "path1" }] }
+          { path: [{ id: "path1" }] },
         );
 
         expect(store.getters["spaces/parentWorkflowGroupId"](projectId)).toBe(
-          "root"
+          "root",
         );
       });
 
@@ -443,11 +443,11 @@ describe("spaces::spaceOperations", () => {
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
           // @ts-ignore
-          { path: [{ id: "path1" }, { id: "path2" }] }
+          { path: [{ id: "path1" }, { id: "path2" }] },
         );
 
         expect(store.getters["spaces/parentWorkflowGroupId"](projectId)).toBe(
-          "path1"
+          "path1",
         );
       });
     });
@@ -464,11 +464,11 @@ describe("spaces::spaceOperations", () => {
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
           // @ts-ignore
-          { path: [] }
+          { path: [] },
         );
 
         expect(store.getters["spaces/currentWorkflowGroupId"](projectId)).toBe(
-          "root"
+          "root",
         );
       });
 
@@ -483,11 +483,11 @@ describe("spaces::spaceOperations", () => {
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
           // @ts-ignore
-          { path: [{ id: "path1" }] }
+          { path: [{ id: "path1" }] },
         );
 
         expect(store.getters["spaces/currentWorkflowGroupId"](projectId)).toBe(
-          "path1"
+          "path1",
         );
       });
     });
@@ -508,11 +508,11 @@ describe("spaces::spaceOperations", () => {
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
           // @ts-ignore
-          fetchWorkflowGroupContentResponse
+          fetchWorkflowGroupContentResponse,
         );
 
         expect(
-          store.getters["spaces/getOpenedWorkflowItems"](projectId)
+          store.getters["spaces/getOpenedWorkflowItems"](projectId),
         ).toEqual(["4"]);
       });
     });
@@ -539,7 +539,7 @@ describe("spaces::spaceOperations", () => {
         ];
 
         const activeWorkflowGroup = JSON.parse(
-          JSON.stringify(fetchWorkflowGroupContentResponse)
+          JSON.stringify(fetchWorkflowGroupContentResponse),
         );
         activeWorkflowGroup.items.push({
           id: "5",
@@ -557,11 +557,11 @@ describe("spaces::spaceOperations", () => {
         };
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
-          activeWorkflowGroup
+          activeWorkflowGroup,
         );
 
         expect(store.getters["spaces/getOpenedFolderItems"](projectId)).toEqual(
-          ["2", "5"]
+          ["2", "5"],
         );
       });
     });
@@ -602,14 +602,14 @@ describe("spaces::spaceOperations", () => {
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
           // @ts-ignore
-          activeWorkflowGroup
+          activeWorkflowGroup,
         );
 
         expect(
-          store.getters["spaces/selectionContainsFile"](projectId, ["2"])
+          store.getters["spaces/selectionContainsFile"](projectId, ["2"]),
         ).toBeFalsy();
         expect(
-          store.getters["spaces/selectionContainsFile"](projectId, ["1"])
+          store.getters["spaces/selectionContainsFile"](projectId, ["1"]),
         ).toBeTruthy();
       });
     });

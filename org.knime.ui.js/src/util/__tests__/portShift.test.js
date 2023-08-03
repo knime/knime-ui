@@ -137,25 +137,25 @@ describe("portShift", () => {
       describe("normal nodes", () => {
         it("placeholder in the middle", () => {
           expect(
-            placeholderPosition({ portCount: 1, isOutport })
+            placeholderPosition({ portCount: 1, isOutport }),
           ).toStrictEqual([x, 16]);
         });
 
         it("placeholder bottom", () => {
           expect(
-            placeholderPosition({ portCount: 2, isOutport })
+            placeholderPosition({ portCount: 2, isOutport }),
           ).toStrictEqual([x, 37]);
           expect(
-            placeholderPosition({ portCount: 3, isOutport })
+            placeholderPosition({ portCount: 3, isOutport }),
           ).toStrictEqual([x, 37]);
           expect(
-            placeholderPosition({ portCount: 4, isOutport })
+            placeholderPosition({ portCount: 4, isOutport }),
           ).toStrictEqual([x, 37]);
         });
 
         it("flowing with the ports", () => {
           expect(
-            placeholderPosition({ portCount: 5, isOutport })
+            placeholderPosition({ portCount: 5, isOutport }),
           ).toStrictEqual([x, 47.5]);
         });
       });
@@ -163,25 +163,25 @@ describe("portShift", () => {
       describe("metanodes", () => {
         it("placeholder in the middle", () => {
           expect(
-            placeholderPosition({ portCount: 0, isMetanode: true, isOutport })
+            placeholderPosition({ portCount: 0, isMetanode: true, isOutport }),
           ).toStrictEqual([x, 16]);
         });
 
         it("placeholder bottom", () => {
           expect(
-            placeholderPosition({ portCount: 1, isMetanode: true, isOutport })
+            placeholderPosition({ portCount: 1, isMetanode: true, isOutport }),
           ).toStrictEqual([x, 37]);
           expect(
-            placeholderPosition({ portCount: 2, isMetanode: true, isOutport })
+            placeholderPosition({ portCount: 2, isMetanode: true, isOutport }),
           ).toStrictEqual([x, 37]);
           expect(
-            placeholderPosition({ portCount: 3, isMetanode: true, isOutport })
+            placeholderPosition({ portCount: 3, isMetanode: true, isOutport }),
           ).toStrictEqual([x, 37]);
         });
 
         it("flowing with the ports", () => {
           expect(
-            placeholderPosition({ portCount: 4, isMetanode: true, isOutport })
+            placeholderPosition({ portCount: 4, isMetanode: true, isOutport }),
           ).toStrictEqual([x, 47.5]);
         });
       });

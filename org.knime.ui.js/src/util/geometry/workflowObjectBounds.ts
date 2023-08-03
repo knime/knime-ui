@@ -94,7 +94,7 @@ export default (
     metaInPorts = null,
     metaOutPorts = null,
   },
-  { padding = false } = {}
+  { padding = false } = {},
 ) => {
   // eslint-disable-next-line prefer-const
   let { left, top, right, bottom } = getLimitBounds({

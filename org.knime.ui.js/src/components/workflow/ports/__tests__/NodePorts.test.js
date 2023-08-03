@@ -127,7 +127,7 @@ describe("NodePorts.vue", () => {
 
       let allPorts = wrapper.findAllComponents(NodePort);
       expect(
-        allPorts.every((port) => port.props("selected") === false)
+        allPorts.every((port) => port.props("selected") === false),
       ).toBeTruthy();
     });
 
@@ -503,7 +503,7 @@ describe("NodePorts.vue", () => {
             portGroup: null,
           });
         });
-      }
+      },
     );
 
     it.each(["input", "output"])("remove dynamic ports on %s side", (side) => {
@@ -561,7 +561,7 @@ describe("NodePorts.vue", () => {
     const [inPort, outPort] = ports;
 
     expect([inPort.props("targeted"), outPort.props("targeted")]).toStrictEqual(
-      result
+      result,
     );
   });
 });

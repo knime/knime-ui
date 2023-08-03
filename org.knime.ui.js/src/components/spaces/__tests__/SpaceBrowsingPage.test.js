@@ -147,7 +147,7 @@ describe("SpaceBrowsingPage", () => {
 
     expect(commitSpy).toHaveBeenCalledWith(
       "spaces/removeProjectPath",
-      globalSpaceBrowserProjectId
+      globalSpaceBrowserProjectId,
     );
 
     expect($router.push).toHaveBeenCalledWith({
@@ -186,7 +186,7 @@ describe("SpaceBrowsingPage", () => {
       {
         isOpen: true,
         projectId: globalSpaceBrowserProjectId,
-      }
+      },
     );
   });
 

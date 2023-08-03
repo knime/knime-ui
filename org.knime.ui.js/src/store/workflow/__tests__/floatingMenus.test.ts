@@ -58,7 +58,7 @@ describe("workflow::floatingMenus", () => {
       expect(store.state.workflow.portTypeMenu.isOpen).toBe(true);
       expect(store.state.workflow.portTypeMenu.nodeId).toBe("node-id");
       expect(store.state.workflow.portTypeMenu.startNodeId).toBe(
-        "start-node-id"
+        "start-node-id",
       );
       expect(store.state.workflow.portTypeMenu.previewPort).toBeNull();
       expect(store.state.workflow.portTypeMenu.props).toStrictEqual({

@@ -104,7 +104,7 @@ export default defineComponent({
           consola.warn("Notifications not yet implemented");
           this.error = pushEvent.alert.subtitle;
           return Promise.resolve("");
-        }
+        },
       );
     },
   },

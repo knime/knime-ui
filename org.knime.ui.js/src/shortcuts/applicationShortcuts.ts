@@ -15,7 +15,7 @@ const applicationShortcuts: ApplicationShortcuts = {
     execute: ({ $store }) =>
       $store.dispatch(
         "workflow/closeWorkflow",
-        $store.state.workflow.activeWorkflow?.projectId
+        $store.state.workflow.activeWorkflow?.projectId,
       ),
     condition: ({ $store }) =>
       $store.state.workflow.activeWorkflow?.projectId !== null,

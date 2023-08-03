@@ -121,7 +121,7 @@ describe("SpaceExplorerActions.vue", () => {
       });
 
       expect(
-        wrapper.find("#downloadToLocalSpace").attributes("aria-disabled")
+        wrapper.find("#downloadToLocalSpace").attributes("aria-disabled"),
       ).toBeTruthy();
       expect(wrapper.find("#createFolder").attributes("disabled")).toBeFalsy();
       expect(wrapper.find("#importFiles").attributes("disabled")).toBeFalsy();
@@ -151,7 +151,7 @@ describe("SpaceExplorerActions.vue", () => {
           projectId: "someProjectId",
           ...params,
         });
-      }
+      },
     );
 
     it("should open create workflow dialog  when clicking on the relevant action", () => {
@@ -163,7 +163,7 @@ describe("SpaceExplorerActions.vue", () => {
         {
           isOpen: true,
           projectId: "someProjectId",
-        }
+        },
       );
     });
   });
@@ -264,7 +264,7 @@ describe("SpaceExplorerActions.vue", () => {
               }),
             ],
           }),
-        ])
+        ]),
       );
     });
 
@@ -294,7 +294,7 @@ describe("SpaceExplorerActions.vue", () => {
             id: "connectToHub",
             children: null,
           }),
-        ])
+        ]),
       );
 
       const subMenu = wrapper.findComponent(SubMenu);
@@ -325,7 +325,7 @@ describe("SpaceExplorerActions.vue", () => {
             id: "uploadToHub",
             disabled: true,
           }),
-        ])
+        ]),
       );
     });
 
@@ -347,7 +347,7 @@ describe("SpaceExplorerActions.vue", () => {
             id: "openInHub",
             disabled: true,
           }),
-        ])
+        ]),
       );
     });
 
@@ -381,7 +381,7 @@ describe("SpaceExplorerActions.vue", () => {
           projectId: "someProjectId",
           ...params,
         });
-      }
+      },
     );
   });
 });

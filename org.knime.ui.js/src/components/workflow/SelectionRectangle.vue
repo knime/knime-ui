@@ -133,7 +133,7 @@ export default {
         [...this.nodeIdsToSelectOnEnd, ...this.nodeIdsToDeselectOnEnd].forEach(
           (nodeId) => {
             this.$emit("nodeSelectionPreview", { type: "clear", nodeId });
-          }
+          },
         );
 
         [

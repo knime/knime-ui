@@ -23,12 +23,12 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const { svgElement, isCanvasEmpty } = await dispatch(
       "application/getActiveWorkflowSnapshot",
       null,
-      { root: true }
+      { root: true },
     );
 
     const workflowPreviewSvg = await generateWorkflowPreview(
       svgElement,
-      isCanvasEmpty
+      isCanvasEmpty,
     );
 
     API.desktop.saveWorkflow({ projectId, workflowPreviewSvg });
@@ -58,7 +58,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     await dispatch(
       "application/removeFromRootWorkflowSnapshots",
       { projectId: closingProjectId },
-      { root: true }
+      { root: true },
     );
   },
 
@@ -99,12 +99,12 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const { svgElement, isCanvasEmpty } = await dispatch(
       "application/getActiveWorkflowSnapshot",
       null,
-      { root: true }
+      { root: true },
     );
 
     const workflowPreviewSvg = await generateWorkflowPreview(
       svgElement,
-      isCanvasEmpty
+      isCanvasEmpty,
     );
 
     API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
@@ -112,7 +112,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     dispatch(
       "spaces/fetchWorkflowGroupContent",
       { projectId: rootState.application.activeProjectId },
-      { root: true }
+      { root: true },
     );
   },
 };

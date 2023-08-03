@@ -30,7 +30,7 @@ describe("UpdateBanner", () => {
     const updateText = wrapper.find(".text");
 
     expect(updateText.text()).toBe(
-      "Get the latest features and enhancements! Update now to 5.0"
+      "Get the latest features and enhancements! Update now to 5.0",
     );
   });
 
@@ -47,7 +47,7 @@ describe("UpdateBanner", () => {
     const updateText = wrapper.find(".text");
 
     expect(updateText.text()).toBe(
-      "There are updates for 2 extensions available."
+      "There are updates for 2 extensions available.",
     );
   });
 
@@ -64,7 +64,7 @@ describe("UpdateBanner", () => {
     const updateText = wrapper.find(".text");
 
     expect(updateText.text()).toBe(
-      "There is an update for 1 extension available."
+      "There is an update for 1 extension available.",
     );
   });
 });

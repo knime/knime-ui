@@ -66,7 +66,7 @@ export default defineComponent({
       if (!isValid) {
         consola.warn(`Invalid styleRanges:
                 ${JSON.stringify(
-                  this.annotation.styleRanges
+                  this.annotation.styleRanges,
                 )}. Using default style.`);
       }
 

@@ -67,8 +67,8 @@ export default {
             stack: this.stack,
           },
           null,
-          2
-        )
+          2,
+        ),
       );
       this.copied = true;
     },

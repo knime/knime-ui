@@ -81,7 +81,7 @@ describe("WorkflowAnnotation.vue", () => {
       "workflow/setActiveWorkflow",
       createWorkflow({
         workflowAnnotations: [defaultProps.annotation],
-      })
+      }),
     );
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
@@ -113,7 +113,7 @@ describe("WorkflowAnnotation.vue", () => {
       {
         ...defaultProps.annotation,
         id: "id2",
-      }
+      },
     );
     expect(wrapper.findComponent(RichTextEditor).exists()).toBe(false);
   });
@@ -135,10 +135,10 @@ describe("WorkflowAnnotation.vue", () => {
 
     expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
     expect(wrapper.findComponent(RichTextAnnotation).props("id")).toEqual(
-      defaultProps.annotation.id
+      defaultProps.annotation.id,
     );
     expect(
-      wrapper.findComponent(RichTextAnnotation).props("initialValue")
+      wrapper.findComponent(RichTextAnnotation).props("initialValue"),
     ).toEqual(defaultProps.annotation.text.value);
   });
 
@@ -150,7 +150,7 @@ describe("WorkflowAnnotation.vue", () => {
           // @ts-ignore
           this.$slots.default({
             transformedBounds,
-          })
+          }),
         );
       },
     });
@@ -166,7 +166,7 @@ describe("WorkflowAnnotation.vue", () => {
       const workflowId = $store.state.workflow.activeWorkflow.info.containerId;
 
       expect(
-        API.workflowCommand.TransformWorkflowAnnotation
+        API.workflowCommand.TransformWorkflowAnnotation,
       ).toHaveBeenCalledWith({
         projectId,
         workflowId,
@@ -181,16 +181,16 @@ describe("WorkflowAnnotation.vue", () => {
       const { wrapper } = doMount({ transformControlStub });
 
       expect(wrapper.find("foreignObject").attributes("x")).toEqual(
-        bounds.x.toString()
+        bounds.x.toString(),
       );
       expect(wrapper.find("foreignObject").attributes("y")).toEqual(
-        bounds.y.toString()
+        bounds.y.toString(),
       );
       expect(wrapper.find("foreignObject").attributes("width")).toEqual(
-        bounds.width.toString()
+        bounds.width.toString(),
       );
       expect(wrapper.find("foreignObject").attributes("height")).toEqual(
-        bounds.height.toString()
+        bounds.height.toString(),
       );
     });
   });
@@ -214,7 +214,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       wrapper.findComponent(LegacyAnnotation).trigger("dblclick");
       expect($store.state.workflow.editableAnnotationId).toBe(
-        defaultProps.annotation.id
+        defaultProps.annotation.id,
       );
     });
 
@@ -225,7 +225,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       wrapper.findComponent(RichTextAnnotation).vm.$emit("editStart");
       expect($store.state.workflow.editableAnnotationId).toBe(
-        modernAnnotation.id
+        modernAnnotation.id,
       );
     });
 
@@ -237,7 +237,7 @@ describe("WorkflowAnnotation.vue", () => {
       expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
       expect(wrapper.findComponent(RichTextEditor).exists()).toBe(true);
       expect(wrapper.findComponent(RichTextEditor).props("editable")).toBe(
-        true
+        true,
       );
     });
 
@@ -256,12 +256,12 @@ describe("WorkflowAnnotation.vue", () => {
 
       await toggleAnnotationEdit($store, "id1");
       expect(
-        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe($colors.defaultAnnotationBorderColor);
 
       const newText = "<p>new content</p>";
       expect(
-        wrapper.findComponent(RichTextAnnotation).props("initialValue")
+        wrapper.findComponent(RichTextAnnotation).props("initialValue"),
       ).toBe("some text <br /> some more text");
 
       wrapper.findComponent(RichTextAnnotation).vm.$emit("change", newText);
@@ -284,7 +284,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       await toggleAnnotationEdit($store, defaultProps.annotation.id);
       expect(
-        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe("#000000");
     });
 
@@ -297,7 +297,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       await toggleAnnotationEdit($store, defaultProps.annotation.id);
       expect(
-        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe("#000000");
 
       await wrapper.setProps({
@@ -305,7 +305,7 @@ describe("WorkflowAnnotation.vue", () => {
       });
 
       expect(
-        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe("#987654");
     });
 
@@ -323,11 +323,11 @@ describe("WorkflowAnnotation.vue", () => {
       await nextTick();
 
       expect(
-        wrapper.findComponent(RichTextAnnotation).props("initialValue")
+        wrapper.findComponent(RichTextAnnotation).props("initialValue"),
       ).toBe(modernAnnotation.text.value);
 
       expect(
-        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe("#000000");
       // @ts-ignore
       VueClickAway.trigger();
@@ -350,7 +350,7 @@ describe("WorkflowAnnotation.vue", () => {
       const newColor = "#123456";
 
       expect(
-        wrapper.findComponent(RichTextAnnotation).props("initialValue")
+        wrapper.findComponent(RichTextAnnotation).props("initialValue"),
       ).toBe(modernAnnotation.text.value);
 
       wrapper
@@ -359,7 +359,7 @@ describe("WorkflowAnnotation.vue", () => {
       await nextTick();
 
       expect(
-        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor")
+        wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe("#000000");
       // @ts-ignore
       VueClickAway.trigger();
@@ -402,7 +402,7 @@ describe("WorkflowAnnotation.vue", () => {
             annotationId: defaultProps.annotation.id,
             isMultiselect: true,
             isSelected: false,
-          }
+          },
         );
 
         await wrapper
@@ -416,9 +416,9 @@ describe("WorkflowAnnotation.vue", () => {
             annotationId: defaultProps.annotation.id,
             isMultiselect: true,
             isSelected: true,
-          }
+          },
         );
-      }
+      },
     );
 
     it("should toggle the selection of annotation with meta + left click", async () => {
@@ -435,7 +435,7 @@ describe("WorkflowAnnotation.vue", () => {
           annotationId: defaultProps.annotation.id,
           isMultiselect: true,
           isSelected: false,
-        }
+        },
       );
 
       await wrapper
@@ -448,7 +448,7 @@ describe("WorkflowAnnotation.vue", () => {
           annotationId: defaultProps.annotation.id,
           isMultiselect: true,
           isSelected: true,
-        }
+        },
       );
     });
   });
@@ -462,15 +462,15 @@ describe("WorkflowAnnotation.vue", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/deselectAllObjects",
-        undefined
+        undefined,
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectAnnotation",
-        defaultProps.annotation.id
+        defaultProps.annotation.id,
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -484,11 +484,11 @@ describe("WorkflowAnnotation.vue", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectAnnotation",
-        defaultProps.annotation.id
+        defaultProps.annotation.id,
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -502,11 +502,11 @@ describe("WorkflowAnnotation.vue", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectAnnotation",
-        defaultProps.annotation.id
+        defaultProps.annotation.id,
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
-        expect.anything()
+        expect.anything(),
       );
     });
   });

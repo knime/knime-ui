@@ -47,7 +47,7 @@ export const connectorPosition = {
         sourceNodeIndex,
         allPorts.length,
         node.kind === "metanode",
-        type === "source"
+        type === "source",
       );
       let { x, y } = node.position;
       return [x + dx, y + dy];

@@ -171,27 +171,27 @@ describe("Node search partial store", () => {
     it("returns proper value for searchResultsContainNodeId", async () => {
       const { store } = await createStore();
       expect(store.getters["nodeSearch/searchResultsContainNodeId"](null)).toBe(
-        false
+        false,
       );
       store.state.nodeSearch.topNodes = [{ id: 1, name: "Node" }];
       expect(store.getters["nodeSearch/searchResultsContainNodeId"](null)).toBe(
-        false
+        false,
       );
       const selectedNode = { id: 1, name: "Node" };
       expect(
-        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id)
+        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id),
       ).toBe(true);
       store.state.nodeSearch.topNodes = [];
       expect(
-        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id)
+        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id),
       ).toBe(false);
       store.state.nodeSearch.bottomNodes = [{ id: 1, name: "Node" }];
       expect(
-        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id)
+        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id),
       ).toBe(false);
       store.state.nodeSearch.isShowingBottomNodes = true;
       expect(
-        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id)
+        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id),
       ).toBe(true);
     });
 
@@ -363,13 +363,13 @@ describe("Node search partial store", () => {
             nodesPartition: "IN_COLLECTION",
           });
           expect(store.state.nodeSearch.totalNumTopNodes).toBe(
-            searchNodesResponse.totalNumNodes
+            searchNodesResponse.totalNumNodes,
           );
           expect(store.state.nodeSearch.topNodes).toEqual(
-            withPorts(searchNodesResponse.nodes, availablePortTypes)
+            withPorts(searchNodesResponse.nodes, availablePortTypes),
           );
           expect(store.state.nodeSearch.topNodesTags).toEqual(
-            searchNodesResponse.tags
+            searchNodesResponse.tags,
           );
         });
 
@@ -392,14 +392,14 @@ describe("Node search partial store", () => {
             nodesPartition: "IN_COLLECTION",
           });
           expect(store.state.nodeSearch.totalNumTopNodes).toBe(
-            searchNodesResponse.totalNumNodes
+            searchNodesResponse.totalNumNodes,
           );
           expect(store.state.nodeSearch.topNodes).toEqual([
             dummyNode,
             ...withPorts(searchNodesResponse.nodes, availablePortTypes),
           ]);
           expect(store.state.nodeSearch.topNodesTags).toEqual(
-            searchNodesResponse.tags
+            searchNodesResponse.tags,
           );
         });
 
@@ -418,7 +418,7 @@ describe("Node search partial store", () => {
           await store.dispatch("nodeSearch/searchTopNodesNextPage");
           expect(dispatchSpy).not.toHaveBeenCalledWith(
             "nodeSearch/searchNodes",
-            expect.anything()
+            expect.anything(),
           );
         });
       });
@@ -430,14 +430,14 @@ describe("Node search partial store", () => {
           await store.dispatch("nodeSearch/searchNodes", { bottom: true });
           expect(dispatchSpy).toHaveBeenCalledWith(
             "nodeSearch/clearSearchResultsForBottomNodes",
-            undefined
+            undefined,
           );
         });
 
         it("searches for bottomNodes", async () => {
           const { store, availablePortTypes } = await createStore();
           mockedAPI.noderepository.searchNodes.mockReturnValue(
-            searchBottomNodesResponse
+            searchBottomNodesResponse,
           );
           store.commit("nodeSearch/setQuery", "lookup");
           await store.dispatch("nodeSearch/searchNodes", { bottom: true });
@@ -454,20 +454,20 @@ describe("Node search partial store", () => {
             nodesPartition: "NOT_IN_COLLECTION",
           });
           expect(store.state.nodeSearch.totalNumBottomNodes).toBe(
-            searchBottomNodesResponse.totalNumNodes
+            searchBottomNodesResponse.totalNumNodes,
           );
           expect(store.state.nodeSearch.bottomNodes).toEqual(
-            withPorts(searchBottomNodesResponse.nodes, availablePortTypes)
+            withPorts(searchBottomNodesResponse.nodes, availablePortTypes),
           );
           expect(store.state.nodeSearch.bottomNodesTags).toEqual(
-            searchBottomNodesResponse.tags
+            searchBottomNodesResponse.tags,
           );
         });
 
         it("searches for bottomNodes with append=true", async () => {
           const { store, availablePortTypes } = await createStore();
           mockedAPI.noderepository.searchNodes.mockReturnValue(
-            searchBottomNodesResponse
+            searchBottomNodesResponse,
           );
           const dummyNode = { dummy: true };
           store.commit("nodeSearch/setBottomNodes", [dummyNode]);
@@ -489,14 +489,14 @@ describe("Node search partial store", () => {
             nodesPartition: "NOT_IN_COLLECTION",
           });
           expect(store.state.nodeSearch.totalNumBottomNodes).toBe(
-            searchBottomNodesResponse.totalNumNodes
+            searchBottomNodesResponse.totalNumNodes,
           );
           expect(store.state.nodeSearch.bottomNodes).toEqual([
             dummyNode,
             ...withPorts(searchBottomNodesResponse.nodes, availablePortTypes),
           ]);
           expect(store.state.nodeSearch.bottomNodesTags).toEqual(
-            searchBottomNodesResponse.tags
+            searchBottomNodesResponse.tags,
           );
         });
 
@@ -516,7 +516,7 @@ describe("Node search partial store", () => {
           await store.dispatch("nodeSearch/searchBottomNodesNextPage");
           expect(dispatchSpy).not.toHaveBeenCalledWith(
             "nodeSearch/searchNodes",
-            expect.anything()
+            expect.anything(),
           );
         });
 
@@ -528,7 +528,7 @@ describe("Node search partial store", () => {
           await store.dispatch("nodeSearch/searchBottomNodesNextPage");
           expect(dispatchSpy).not.toHaveBeenCalledWith(
             "nodeSearch/searchNodes",
-            expect.anything()
+            expect.anything(),
           );
         });
       });
@@ -559,7 +559,7 @@ describe("Node search partial store", () => {
           expect(store.state.nodeSearch.isShowingBottomNodes).toBe(true);
           expect(dispatchSpy).not.toHaveBeenCalledWith(
             "nodeSearch/searchNodes",
-            expect.anything()
+            expect.anything(),
           );
         });
       });
@@ -571,11 +571,11 @@ describe("Node search partial store", () => {
         expect(store.state.nodeSearch.query).toBe("some value");
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeSearch/searchTopAndBottomNodes",
-          undefined
+          undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeSearch/searchNodes",
-          undefined
+          undefined,
         );
       });
 
@@ -589,7 +589,7 @@ describe("Node search partial store", () => {
 
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeSearch/searchTopAndBottomNodes",
-          undefined
+          undefined,
         );
       });
 
@@ -604,7 +604,7 @@ describe("Node search partial store", () => {
         expect(store.state.nodeSearch.selectedTags).toEqual([]);
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeSearch/searchTopAndBottomNodes",
-          undefined
+          undefined,
         );
       });
 
@@ -618,7 +618,7 @@ describe("Node search partial store", () => {
         expect(store.state.nodeSearch.topNodesTags).toEqual([]);
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeSearch/clearSearchResults",
-          undefined
+          undefined,
         );
       });
 
@@ -630,7 +630,7 @@ describe("Node search partial store", () => {
         expect(store.state.nodeSearch.topNodesTags).toEqual([]);
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeSearch/clearSearchResultsForBottomNodes",
-          undefined
+          undefined,
         );
       });
 

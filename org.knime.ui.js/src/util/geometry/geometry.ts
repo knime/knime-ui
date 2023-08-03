@@ -21,7 +21,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
  */
 export const rectangleIntersection = (
   A: GeometryBounds,
-  B: GeometryBounds
+  B: GeometryBounds,
 ): GeometryBounds => {
   const intersectionX1 = Math.max(A.left, B.left);
   const intersectionX2 = Math.min(A.left + A.width, B.left + B.width);
@@ -76,7 +76,7 @@ export const areaCoverage = (A: GeometryBounds, B: GeometryBounds) => {
  */
 export const snapToGrid = (
   value: number,
-  snapSize = shapes.gridSize.x
+  snapSize = shapes.gridSize.x,
 ): number => gsap.utils.snap(snapSize, value);
 
 /**
@@ -89,7 +89,7 @@ export const snapToGrid = (
  */
 export const getCenteredPositionInVisibleFrame = (
   { left, top, width, height }: GeometryBounds,
-  objectBounds: GeometryArea
+  objectBounds: GeometryArea,
 ): XY => {
   const eyePleasingVerticalOffset = 0.75;
   return {

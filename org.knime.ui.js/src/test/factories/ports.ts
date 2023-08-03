@@ -25,7 +25,7 @@ export const createPortViews = (data: Partial<PortViews> = {}): PortViews => {
         executed: [1, 2],
       },
     },
-    data
+    data,
   );
 };
 
@@ -37,12 +37,12 @@ export const createPortType = (data: Partial<PortType> = {}): PortType => {
       color: "#000000",
       views: createPortViews(data.views ?? {}),
     },
-    data
+    data,
   );
 };
 
 export const createAvailablePortTypes = (
-  data: Partial<AvailablePortTypes> = {}
+  data: Partial<AvailablePortTypes> = {},
 ): AvailablePortTypes => {
   const base: AvailablePortTypes = {
     [PORT_TYPE_IDS.BufferedDataTable]: createPortType(),
@@ -78,7 +78,7 @@ export const createAvailablePortTypes = (
 };
 
 export const createPort = (
-  data: Partial<NodePort & { typeId: PortTypeId }> = {}
+  data: Partial<NodePort & { typeId: PortTypeId }> = {},
 ): NodePort => {
   return {
     index: 0,
@@ -97,7 +97,7 @@ export const createPort = (
 };
 
 export const createMetanodePort = (
-  data: Partial<MetaNodePort & { typeId: PortTypeId }> = {}
+  data: Partial<MetaNodePort & { typeId: PortTypeId }> = {},
 ): MetaNodePort => {
   const port = createPort(data);
   return {

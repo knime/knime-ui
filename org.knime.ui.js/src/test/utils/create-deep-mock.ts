@@ -19,7 +19,7 @@ type DeepMocked<T> = T extends object
   : T;
 
 export const createDeepMock = <T extends Record<string, any>>(
-  source: T
+  source: T,
 ): DeepMocked<T> => {
   const isFunction = (value: unknown) => typeof value === "function";
   const isObject = (value: unknown) =>

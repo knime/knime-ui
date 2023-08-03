@@ -52,7 +52,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     $store.commit(
       "spaces/setSpaceProviders",
-      spaceProviders || startSpaceProviders
+      spaceProviders || startSpaceProviders,
     );
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
@@ -159,7 +159,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
       expect.objectContaining({
         disabled: true,
         text: "Upload to Hub",
-      })
+      }),
     );
   });
 
@@ -180,7 +180,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
       expect.objectContaining({
         disabled: false,
         text: "Upload to Hub",
-      })
+      }),
     );
   });
 
@@ -215,7 +215,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
             text: "Hub 2",
           },
         ],
-      })
+      }),
     );
   });
 

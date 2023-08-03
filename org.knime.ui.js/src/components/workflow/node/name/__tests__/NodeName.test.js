@@ -58,7 +58,7 @@ describe("NodeName", () => {
         expect.objectContaining({
           value: defaultProps.value,
           editable: defaultProps.editable,
-        })
+        }),
       );
     });
 
@@ -123,7 +123,7 @@ describe("NodeName", () => {
           nodeId: defaultProps.nodeId,
           value: defaultProps.value,
           nodePosition: defaultProps.nodePosition,
-        })
+        }),
       );
     });
 
@@ -148,13 +148,13 @@ describe("NodeName", () => {
 
       wrapper.findComponent(NodeNameEditor).vm.$emit("save", saveEventPayload);
       expect(
-        storeConfig.workflow.actions.renameContainerNode
+        storeConfig.workflow.actions.renameContainerNode,
       ).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({
           nodeId: defaultProps.nodeId,
           name: saveEventPayload.newName,
-        })
+        }),
       );
 
       vi.runAllTimers();
@@ -191,10 +191,10 @@ describe("NodeName", () => {
       };
 
       expect(
-        wrapper.findComponent(NodeNameEditor).props("startWidth")
+        wrapper.findComponent(NodeNameEditor).props("startWidth"),
       ).toBeNull();
       expect(
-        wrapper.findComponent(NodeNameEditor).props("startHeight")
+        wrapper.findComponent(NodeNameEditor).props("startHeight"),
       ).toBeNull();
 
       wrapper.findComponent(NodeNameEditor).vm.$emit("save", saveEventPayload);
@@ -203,10 +203,10 @@ describe("NodeName", () => {
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findComponent(NodeNameEditor).props("startWidth")).toBe(
-        saveEventPayload.dimensionsOnClose.width
+        saveEventPayload.dimensionsOnClose.width,
       );
       expect(wrapper.findComponent(NodeNameEditor).props("startHeight")).toBe(
-        saveEventPayload.dimensionsOnClose.height
+        saveEventPayload.dimensionsOnClose.height,
       );
     });
   });

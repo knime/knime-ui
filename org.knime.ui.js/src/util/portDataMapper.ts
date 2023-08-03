@@ -91,7 +91,7 @@ const toPortGroupDescription =
  */
 export const mapPortTypes = (
   ports: Array<string | { typeId: string }> = [],
-  availablePortTypes: AvailablePortTypes = {}
+  availablePortTypes: AvailablePortTypes = {},
 ) => ports.map(toPortObject(availablePortTypes));
 
 /**
@@ -113,10 +113,10 @@ export const toNodeWithFullPorts =
       inPorts: inPorts.map(toPortObject(availablePortTypes)),
       outPorts: outPorts.map(toPortObject(availablePortTypes)),
       dynInPorts: dynamicInPortGroupDescriptions.map(
-        toPortGroupDescription(availablePortTypes)
+        toPortGroupDescription(availablePortTypes),
       ),
       dynOutPorts: dynamicOutPortGroupDescriptions.map(
-        toPortGroupDescription(availablePortTypes)
+        toPortGroupDescription(availablePortTypes),
       ),
     };
   };

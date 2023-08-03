@@ -49,7 +49,7 @@ describe("PortIconRenderer", () => {
     expect(wrapper.findAll(".scale g").length).toBe(0);
     expect(wrapper.findAll(".scale g *").length).toBe(0);
     expect(wrapper.find(".scale *").element.tagName.toLowerCase()).toBe(
-      "polygon"
+      "polygon",
     );
   });
 
@@ -65,7 +65,7 @@ describe("PortIconRenderer", () => {
     expect(wrapper.findAll(".scale g").length).toBe(0);
     expect(wrapper.findAll(".scale *").length).toBe(1 + 2); // 1 circle + 2 paths for "X"
     expect(wrapper.find(".scale *").element.tagName.toLowerCase()).toBe(
-      "circle"
+      "circle",
     );
   });
 
@@ -78,7 +78,7 @@ describe("PortIconRenderer", () => {
 
     let { portSize } = $shapes;
     expect(wrapper.attributes().viewBox).toBe(
-      `-${portSize / 2} -${portSize / 2} ${portSize} ${portSize}`
+      `-${portSize / 2} -${portSize / 2} ${portSize} ${portSize}`,
     );
   });
 

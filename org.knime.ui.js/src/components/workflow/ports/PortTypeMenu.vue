@@ -15,7 +15,7 @@ import SearchBar from "@/components/common/SearchBar.vue";
 
 const isPortGroupWithSinglePort = (
   portGroups: NodePortGroups,
-  groupName: string
+  groupName: string,
 ) => portGroups[groupName].supportedPortTypeIds.length === 1;
 
 const portNameSizeThreshold = 20;
@@ -98,7 +98,7 @@ export default defineComponent({
 
       const suggestedTypeIds = this.portTypesInSelectedGroup
         ? this.suggestedPortTypes.filter((typeId) =>
-            this.portTypesInSelectedGroup.includes(typeId)
+            this.portTypesInSelectedGroup.includes(typeId),
           )
         : this.suggestedPortTypes;
 
@@ -119,7 +119,7 @@ export default defineComponent({
           Object.entries(this.portGroups)
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             .filter(([_, group]) =>
-              this.side === "input" ? group.canAddInPort : group.canAddOutPort
+              this.side === "input" ? group.canAddInPort : group.canAddOutPort,
             )
         );
       }

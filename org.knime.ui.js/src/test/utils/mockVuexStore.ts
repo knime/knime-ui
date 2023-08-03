@@ -8,7 +8,7 @@ const mockVuexStore = <T = any>(moduleInput: Record<any, any>) => {
       }
       return modules;
     },
-    {}
+    {},
   );
 
   const storeConfig = { modules };

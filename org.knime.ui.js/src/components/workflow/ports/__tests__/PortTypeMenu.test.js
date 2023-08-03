@@ -101,7 +101,7 @@ describe("PortTypeMenu.vue", () => {
 
         let header = wrapper.find(".header");
         expect(header.attributes("style")).toMatch(
-          "--margin: 16.669910139330234px"
+          "--margin: 16.669910139330234px",
         );
       });
 
@@ -113,7 +113,7 @@ describe("PortTypeMenu.vue", () => {
 
         let header = wrapper.find(".header");
         expect(header.attributes("style")).toMatch(
-          "--margin: 6.1691425974866565px"
+          "--margin: 6.1691425974866565px",
         );
       });
     });
@@ -192,7 +192,7 @@ describe("PortTypeMenu.vue", () => {
         expect(wrapper.emitted("itemActive").at(-1)[0]).toEqual(
           expect.objectContaining({
             port: { typeId: expectedTypeId },
-          })
+          }),
         );
       });
     });
@@ -217,9 +217,9 @@ describe("PortTypeMenu.vue", () => {
           const { wrapper } = doMount({ props: { portGroups, side } });
 
           expect(wrapper.findComponent(MenuItems).props("items")).toEqual(
-            Object.keys(portGroups).map((key) => ({ text: key }))
+            Object.keys(portGroups).map((key) => ({ text: key })),
           );
-        }
+        },
       );
 
       it("should automatically select the port group when only 1 is given", () => {
@@ -396,7 +396,7 @@ describe("PortTypeMenu.vue", () => {
                 text: "Table",
                 title: null,
               },
-            ]
+            ],
           );
         });
 
@@ -413,7 +413,7 @@ describe("PortTypeMenu.vue", () => {
                 text: "Flow Variable",
                 title: null,
               },
-            ]
+            ],
           );
         });
       });
@@ -450,10 +450,10 @@ describe("PortTypeMenu.vue", () => {
         const { wrapper } = doMount();
 
         expect(wrapper.findComponent(MenuItems).attributes("aria-label")).toBe(
-          "Port Type Menu"
+          "Port Type Menu",
         );
         expect(wrapper.findComponent(MenuItems).classes()).toContain(
-          "search-results"
+          "search-results",
         );
       });
     });

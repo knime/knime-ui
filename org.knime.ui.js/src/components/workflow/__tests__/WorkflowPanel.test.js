@@ -105,10 +105,10 @@ describe("WorkflowPanel", () => {
 
         const notification = wrapper.find(".workflow-info").find("span");
         expect(notification.text()).toBe(
-          `This is a linked ${containerType} and can therefore not be edited.`
+          `This is a linked ${containerType} and can therefore not be edited.`,
         );
         expect(notification.text()).not.toContain("inside a linked");
-      }
+      },
     );
 
     it.each([
@@ -128,12 +128,12 @@ describe("WorkflowPanel", () => {
 
         const notification = wrapper.find(".workflow-info").find("span");
         expect(notification.text()).toBe(
-          `This is a ${containerType} inside a linked ${insideLinkedType} and cannot be edited.`
+          `This is a ${containerType} inside a linked ${insideLinkedType} and cannot be edited.`,
         );
         expect(notification.text()).not.toContain(
-          `This is a linked ${containerType}`
+          `This is a linked ${containerType}`,
         );
-      }
+      },
     );
 
     it("shows decorator in streaming component", () => {
@@ -191,7 +191,7 @@ describe("WorkflowPanel", () => {
       await new Promise((r) => setTimeout(r, 0));
 
       expect(
-        wrapper.findComponent(ContextMenu).props("position")
+        wrapper.findComponent(ContextMenu).props("position"),
       ).toStrictEqual({ x: 242, y: 122 });
     });
 

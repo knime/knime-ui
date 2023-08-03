@@ -122,7 +122,7 @@ describe("workflow::index", () => {
         await nextTick();
         store.dispatch("workflow/deleteSelectedObjects");
         expect(window.alert).toHaveBeenCalledWith(
-          "The following nodes can’t be deleted: [node-1]"
+          "The following nodes can’t be deleted: [node-1]",
         );
       });
 
@@ -131,13 +131,13 @@ describe("workflow::index", () => {
 
         store.dispatch(
           "selection/selectConnection",
-          connectionsArray[connectorName].id
+          connectionsArray[connectorName].id,
         );
 
         await nextTick();
         store.dispatch("workflow/deleteSelectedObjects");
         expect(window.alert).toHaveBeenCalledWith(
-          "The following connections can’t be deleted: [connection-1]"
+          "The following connections can’t be deleted: [connection-1]",
         );
       });
 
@@ -147,14 +147,14 @@ describe("workflow::index", () => {
         store.dispatch("selection/selectNode", nodesArray[nodeName].id);
         store.dispatch(
           "selection/selectConnection",
-          connectionsArray[connectorName].id
+          connectionsArray[connectorName].id,
         );
 
         await nextTick();
         store.dispatch("workflow/deleteSelectedObjects");
         expect(window.alert).toHaveBeenCalledWith(
           "The following nodes can’t be deleted: [node-1] \n" +
-            "The following connections can’t be deleted: [connection-1]"
+            "The following connections can’t be deleted: [connection-1]",
         );
       });
     });

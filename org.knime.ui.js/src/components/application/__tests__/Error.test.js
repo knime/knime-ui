@@ -22,7 +22,7 @@ describe("Error.vue", () => {
       },
     });
     expect(wrapper.find(".stack").text()).toBe(
-      "one-liner\n\nerror in watcher\n\nstacky"
+      "one-liner\n\nerror in watcher\n\nstacky",
     );
   });
 
@@ -60,8 +60,8 @@ describe("Error.vue", () => {
           stack: "stacky",
         },
         null,
-        2
-      )
+        2,
+      ),
     );
   });
 

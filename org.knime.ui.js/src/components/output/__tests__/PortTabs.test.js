@@ -71,7 +71,7 @@ describe("PortTabs.vue", () => {
       [
         { value: "0", label: "0: flowVariable port", icon: "portIcon-fv" },
         { value: "1", label: "1: triangle port", icon: "portIcon-1" },
-      ]
+      ],
     );
     expect(portIcon).toHaveBeenCalledWith(expect.anything(), portIconSize);
   });
@@ -126,7 +126,7 @@ describe("PortTabs.vue", () => {
       [
         { value: "1", label: "1: triangle port", icon: "portIcon-1" },
         { value: "0", label: "Flow Variables", icon: FlowVarTabIcon },
-      ]
+      ],
     );
     expect(portIcon).toHaveBeenCalledWith(expect.anything(), portIconSize);
   });
@@ -158,7 +158,7 @@ describe("PortTabs.vue", () => {
           label: "View",
           icon: expect.anything(),
         }),
-      ])
+      ]),
     );
   });
 });

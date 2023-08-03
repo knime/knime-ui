@@ -47,7 +47,7 @@ describe("WorkflowBreadcrumb.vue", () => {
     await doShallowMount();
 
     expect(
-      wrapper.findComponent(ActionBreadcrumb).props("items")
+      wrapper.findComponent(ActionBreadcrumb).props("items"),
     ).toStrictEqual([
       {
         icon: null,
@@ -94,7 +94,7 @@ describe("WorkflowBreadcrumb.vue", () => {
     await doShallowMount();
 
     expect(
-      wrapper.findComponent(ActionBreadcrumb).props("items")
+      wrapper.findComponent(ActionBreadcrumb).props("items"),
     ).toStrictEqual([
       {
         id: "root",

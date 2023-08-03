@@ -65,7 +65,7 @@ describe("panel store", () => {
   it("sets active tab for current project", async () => {
     await store.dispatch(
       "panel/setCurrentProjectActiveTab",
-      panelStoreConfig.TABS.NODE_REPOSITORY
+      panelStoreConfig.TABS.NODE_REPOSITORY,
     );
     expect(store.state.panel.activeTab.activeProject33).toBe("nodeRepository");
   });

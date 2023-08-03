@@ -53,13 +53,13 @@ describe("NodeTemplate.vue", () => {
     const { wrapper, commitSpy, dispatchSpy } = doMount();
 
     expect(
-      wrapper.findComponent(FunctionButton).findComponent(CircleHelp).exists()
+      wrapper.findComponent(FunctionButton).findComponent(CircleHelp).exists(),
     ).toBe(true);
 
     await wrapper.findComponent(FunctionButton).vm.$emit("click");
 
     expect(dispatchSpy).toHaveBeenCalledWith(
-      "nodeRepository/openDescriptionPanel"
+      "nodeRepository/openDescriptionPanel",
     );
     expect(commitSpy).toHaveBeenCalledWith("nodeRepository/setSelectedNode", {
       id: "node_1",
@@ -78,7 +78,7 @@ describe("NodeTemplate.vue", () => {
     await wrapper.findComponent(FunctionButton).vm.$emit("click");
 
     expect(dispatchSpy).toHaveBeenCalledWith(
-      "nodeRepository/closeDescriptionPanel"
+      "nodeRepository/closeDescriptionPanel",
     );
   });
 

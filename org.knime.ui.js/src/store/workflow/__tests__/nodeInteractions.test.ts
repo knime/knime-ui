@@ -173,11 +173,11 @@ describe("workflow::nodeInteractions", () => {
             ...acc,
             [nodeId]: true,
           }),
-          {}
+          {},
         );
 
         expect(store.state.selection.selectedNodes).toEqual(expectedSelection);
-      }
+      },
     );
   });
 

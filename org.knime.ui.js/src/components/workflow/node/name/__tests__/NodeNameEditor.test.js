@@ -90,7 +90,7 @@ describe("NodeNameEditor", () => {
     expect(wrapper.emitted("save")[0][0]).toEqual(
       expect.objectContaining({
         newName: "new value",
-      })
+      }),
     );
   });
 
@@ -131,7 +131,7 @@ describe("NodeNameEditor", () => {
           .findComponent(NodeNameTextarea)
           .vm.$emit(eventName, emittedValue);
         expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
-      }
+      },
     );
 
     it("should emit a save event", () => {
@@ -173,7 +173,7 @@ describe("NodeNameEditor", () => {
     expect(wrapper.emitted("save")[0][0]).toEqual(
       expect.objectContaining({
         newName: emittedValue.trim(),
-      })
+      }),
     );
   });
 
@@ -209,7 +209,7 @@ describe("NodeNameEditor", () => {
     expect(wrapper.emitted("save")[0][0]).toEqual(
       expect.objectContaining({
         dimensionsOnClose: { width: emittedWidth, height: emittedHeight },
-      })
+      }),
     );
   });
 
@@ -219,7 +219,7 @@ describe("NodeNameEditor", () => {
     await wrapper.findComponent(NodeNameTextarea).vm.$emit("invalidInput");
     expect(wrapper.find("foreignObject").exists()).toBe(true);
     expect(wrapper.find("foreignObject").text()).toContain(
-      "are not allowed and have been removed."
+      "are not allowed and have been removed.",
     );
   });
 
@@ -245,11 +245,11 @@ describe("NodeNameEditor", () => {
   it("updates value of textarea on value prop change", async () => {
     const wrapper = doMount();
     expect(wrapper.findComponent(NodeNameTextarea).props("modelValue")).toBe(
-      "test"
+      "test",
     );
     await wrapper.setProps({ value: "newValue" });
     expect(wrapper.findComponent(NodeNameTextarea).props("modelValue")).toBe(
-      "newValue"
+      "newValue",
     );
   });
 });

@@ -31,7 +31,7 @@ export default {
     return createElement(
       element,
       { class: "card", ...attrs, ...handlers },
-      this.$slots.default()
+      this.$slots.default(),
     );
   },
 };

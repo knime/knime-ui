@@ -119,7 +119,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
        */
       selectionMode: "new-only" | "add" | "none";
       isComponent?: boolean;
-    }
+    },
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
@@ -176,7 +176,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   replaceNode(
     { state },
-    { targetNodeId, replacementNodeId = null, nodeFactory = null }
+    { targetNodeId, replacementNodeId = null, nodeFactory = null },
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
@@ -191,7 +191,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   insertNode(
     { state: { activeWorkflow } },
-    { connectionId, position, nodeFactory, nodeId }
+    { connectionId, position, nodeFactory, nodeId },
   ) {
     const projectId = activeWorkflow.projectId;
     const workflowId = activeWorkflow.info.containerId;

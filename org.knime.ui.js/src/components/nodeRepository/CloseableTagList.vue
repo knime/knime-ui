@@ -59,7 +59,7 @@ export default {
       // limit to lower and upper bound
       return Math.min(
         Math.max(tagsToShow, minNumberOfInitialTags),
-        maxNumberOfInitialTags
+        maxNumberOfInitialTags,
       );
     },
   },

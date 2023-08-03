@@ -29,7 +29,7 @@ const showDialog = () => {
           options: { offset: [0, yOffset] },
         },
       ],
-    }
+    },
   );
 };
 

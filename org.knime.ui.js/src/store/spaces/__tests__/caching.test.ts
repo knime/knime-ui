@@ -102,11 +102,11 @@ describe("spaces::caching", () => {
       });
 
       expect(
-        store.getters["spaces/getWorkflowGroupContent"]("unknown")
+        store.getters["spaces/getWorkflowGroupContent"]("unknown"),
       ).toBeNull();
 
       expect(
-        store.getters["spaces/getWorkflowGroupContent"]("myProject1")
+        store.getters["spaces/getWorkflowGroupContent"]("myProject1"),
       ).toEqual({ items: [], path: [] });
     });
   });

@@ -111,7 +111,7 @@ export default defineComponent({
     componentName(componentName) {
       if (componentName && !this.$options.components[componentName]) {
         throw new Error(
-          `Component ${componentName} hasn't been loaded properly`
+          `Component ${componentName} hasn't been loaded properly`,
         );
       }
     },

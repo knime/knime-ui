@@ -83,7 +83,7 @@ describe("transform-control-utils", () => {
       });
 
       expect(nextBounds).toStrictEqual(expectedBounds);
-    }
+    },
   );
 
   it.each([
@@ -105,7 +105,7 @@ describe("transform-control-utils", () => {
       });
 
       expect(position).toStrictEqual(expectedPosition);
-    }
+    },
   );
 
   it("should return grid adjusted bounds", () => {

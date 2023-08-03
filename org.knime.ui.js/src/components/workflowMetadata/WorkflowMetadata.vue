@@ -11,21 +11,21 @@ import ComponentMetadata from "./ComponentMetadata.vue";
 const store = useStore<RootStoreState>();
 
 const availablePortTypes = computed(
-  () => store.state.application.availablePortTypes
+  () => store.state.application.availablePortTypes,
 );
 const workflow = computed(() => store.state.workflow.activeWorkflow);
 const containerType = computed(() => workflow.value.info.containerType);
 
 const isProject = computed(
-  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Project
+  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Project,
 );
 
 const isComponent = computed(
-  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Component
+  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Component,
 );
 
 const isMetanode = computed(
-  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode
+  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode,
 );
 
 const updateMetadata = ({

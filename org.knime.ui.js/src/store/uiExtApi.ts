@@ -26,7 +26,7 @@ export const actions = {
   // See: https://bitbucket.org/KNIME/knime-js-pagebuilder/src/6d50150c80a73eeb8281c368ce2a4a30ce2ed509/org.knime.js.pagebuilder/src/components/views/UIExtension.vue#lines-97
   async callService(
     _,
-    { extensionConfig, nodeService, serviceRequest, requestParams }
+    { extensionConfig, nodeService, serviceRequest, requestParams },
   ) {
     const { projectId, workflowId, nodeId, extensionType } = extensionConfig;
     let result;

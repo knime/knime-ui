@@ -36,10 +36,10 @@ describe("Event Plugin", () => {
       });
     };
     mockedAPI.event.registerEventHandlers.mockImplementation(
-      registerEventHandlers
+      registerEventHandlers,
     );
     mockedAPI.desktop.registerEventHandlers.mockImplementation(
-      registerEventHandlers
+      registerEventHandlers,
     );
   });
 
@@ -129,7 +129,7 @@ describe("Event Plugin", () => {
 
       expect(storeMock.dispatch).toHaveBeenCalledWith(
         "application/updateDirtyProjectsMap",
-        dirtyProjectsMap
+        dirtyProjectsMap,
       );
 
       registeredHandlers.ProjectDirtyStateEvent({
@@ -139,7 +139,7 @@ describe("Event Plugin", () => {
 
       expect(storeMock.dispatch).toHaveBeenCalledWith(
         "application/setDirtyProjectsMap",
-        dirtyProjectsMap
+        dirtyProjectsMap,
       );
     });
 
@@ -149,11 +149,11 @@ describe("Event Plugin", () => {
       const pdsSpy = vi.spyOn(registeredHandlers, "ProjectDirtyStateEvent");
       eventHandlers.set(
         "WorkflowChangedEvent",
-        registeredHandlers.WorkflowChangedEvent
+        registeredHandlers.WorkflowChangedEvent,
       );
       eventHandlers.set(
         "ProjectDirtyStateEvent",
-        registeredHandlers.ProjectDirtyStateEvent
+        registeredHandlers.ProjectDirtyStateEvent,
       );
       const dirtyProjectsMap = { 1: false, 2: false, 3: true };
 
@@ -185,11 +185,11 @@ describe("Event Plugin", () => {
 
         expect(storeMock.dispatch).toHaveBeenCalledWith(
           "application/replaceApplicationState",
-          { openProjects: [{ id: "mock" }] }
+          { openProjects: [{ id: "mock" }] },
         );
         expect(storeMock.dispatch).toHaveBeenCalledWith(
           "application/setActiveProject",
-          { $router: routerMock }
+          { $router: routerMock },
         );
       });
 
@@ -230,7 +230,7 @@ describe("Event Plugin", () => {
 
         expect(storeMock.commit).toHaveBeenCalledWith(
           "application/setAvailableUpdates",
-          { newReleases, bugfixes }
+          { newReleases, bugfixes },
         );
       });
 
@@ -268,7 +268,7 @@ describe("Event Plugin", () => {
 
         expect(storeMock.dispatch).toHaveBeenCalledWith(
           "spaces/setAllSpaceProviders",
-          result
+          result,
         );
       });
 
@@ -280,12 +280,12 @@ describe("Event Plugin", () => {
 
         expect(storeMock.commit).toBeCalledWith(
           "spaces/setIsLoadingProvider",
-          false
+          false,
         );
 
         expect(storeMock.dispatch).not.toHaveBeenCalledWith(
           "spaces/setAllSpaceProviders",
-          expect.anything()
+          expect.anything(),
         );
       });
     });

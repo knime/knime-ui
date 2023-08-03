@@ -60,7 +60,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   refreshSpaceProviders(
     { state, commit, dispatch },
-    { keepLocalSpace = true } = {}
+    { keepLocalSpace = true } = {},
   ) {
     if (state.isLoadingProvider) {
       return;
@@ -93,7 +93,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async setAllSpaceProviders(
     { commit, state, dispatch },
-    spaceProviders: Record<string, SpaceProvider>
+    spaceProviders: Record<string, SpaceProvider>,
   ) {
     try {
       const connectedProviderIds = Object.values(spaceProviders)
@@ -101,7 +101,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
           ({ connected, connectionMode }) =>
             // skip loading local space
             // id !== localRootProjectPath.spaceProviderId &&
-            connected || connectionMode === "AUTOMATIC"
+            connected || connectionMode === "AUTOMATIC",
         )
         .map(({ id }) => id);
 

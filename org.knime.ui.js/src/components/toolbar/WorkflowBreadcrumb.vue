@@ -25,7 +25,7 @@ export default {
           icon: this.getIcon(containerType, linked),
           text: name,
           id: containerId,
-        })
+        }),
       );
 
       const { containerType, linked } = this.workflow.info;

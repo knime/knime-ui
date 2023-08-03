@@ -27,7 +27,7 @@ describe("ContextMenu.vue", () => {
     options: {
       allowedWorkflowActions?: Partial<AllowedWorkflowActions>;
       nodes?: Record<string, KnimeNode>;
-    } = {}
+    } = {},
   ) => {
     const $store = mockVuexStore({
       selection: selectionStore,
@@ -49,7 +49,7 @@ describe("ContextMenu.vue", () => {
 
     $store.commit(
       "canvas/setScrollContainerElement",
-      document.createElement("div")
+      document.createElement("div"),
     );
 
     $store.commit(
@@ -57,7 +57,7 @@ describe("ContextMenu.vue", () => {
       createWorkflow({
         allowedActions: { canReset: true, ...options.allowedWorkflowActions },
         nodes: options.nodes,
-      })
+      }),
     );
 
     return { $store };
@@ -100,10 +100,10 @@ describe("ContextMenu.vue", () => {
     it("sets position", () => {
       const { wrapper } = doMount();
       expect(
-        wrapper.findComponent(FloatingMenu).props("canvasPosition")
+        wrapper.findComponent(FloatingMenu).props("canvasPosition"),
       ).toStrictEqual({ x: 10, y: 10 });
       expect(wrapper.findComponent(FloatingMenu).props("preventOverflow")).toBe(
-        true
+        true,
       );
     });
 
@@ -174,7 +174,7 @@ describe("ContextMenu.vue", () => {
           hotkeyText: "Shift F7",
           disabled: false,
         },
-      ])
+      ]),
     );
   });
 
@@ -208,7 +208,7 @@ describe("ContextMenu.vue", () => {
         name?: ShortcutName | Omit<string, ShortcutName>;
         text?: string;
         separator?: boolean;
-      }>
+      }>,
     ) => items.map((item) => expect.objectContaining(item));
 
     it("shows correct menu items if nothing is selected", () => {
@@ -225,7 +225,7 @@ describe("ContextMenu.vue", () => {
           { name: "resetAll", separator: true },
           { name: "paste", separator: true },
           { name: "addWorkflowAnnotation" },
-        ])
+        ]),
       );
     });
 
@@ -245,7 +245,7 @@ describe("ContextMenu.vue", () => {
           { name: "deleteSelected", separator: true },
           { name: "createMetanode" },
           { name: "createComponent" },
-        ])
+        ]),
       );
     });
 
@@ -282,7 +282,7 @@ describe("ContextMenu.vue", () => {
           { name: "deleteSelected", separator: true },
           { name: "createMetanode" },
           { name: "createComponent" },
-        ])
+        ]),
       );
     });
 
@@ -309,7 +309,7 @@ describe("ContextMenu.vue", () => {
           { name: "deleteSelected", separator: true },
           { name: "createMetanode" },
           { name: "createComponent" },
-        ])
+        ]),
       );
     });
 
@@ -341,7 +341,7 @@ describe("ContextMenu.vue", () => {
           { name: "deleteSelected", separator: true },
           { name: "createMetanode" },
           { name: "createComponent" },
-        ])
+        ]),
       );
     });
 
@@ -389,7 +389,7 @@ describe("ContextMenu.vue", () => {
           { name: "deleteSelected", separator: true },
           { name: "createMetanode" },
           { name: "createComponent" },
-        ])
+        ]),
       );
     });
 
@@ -408,7 +408,7 @@ describe("ContextMenu.vue", () => {
       await Vue.nextTick();
 
       expect(renderedMenuItems(wrapper)).toEqual(
-        assertItems([{ name: "deleteSelected" }])
+        assertItems([{ name: "deleteSelected" }]),
       );
     });
 
@@ -417,7 +417,7 @@ describe("ContextMenu.vue", () => {
       const connections = $store.state.workflow.activeWorkflow.connections;
       $store.dispatch(
         "selection/selectConnection",
-        Object.keys(connections).at(0)
+        Object.keys(connections).at(0),
       );
 
       const { wrapper } = doMount({ store: $store });
@@ -425,7 +425,7 @@ describe("ContextMenu.vue", () => {
       await Vue.nextTick();
 
       expect(renderedMenuItems(wrapper)).toEqual(
-        assertItems([{ name: "deleteSelected" }])
+        assertItems([{ name: "deleteSelected" }]),
       );
     });
 
@@ -448,7 +448,7 @@ describe("ContextMenu.vue", () => {
           { name: "createMetanode" },
           { name: "createComponent" },
           { text: "Metanode" },
-        ])
+        ]),
       );
     });
 
@@ -471,7 +471,7 @@ describe("ContextMenu.vue", () => {
           { name: "createMetanode" },
           { name: "createComponent" },
           { text: "Component" },
-        ])
+        ]),
       );
     });
 
@@ -488,7 +488,7 @@ describe("ContextMenu.vue", () => {
           { name: "copy" },
           { name: "deleteSelected", separator: true },
           { text: "Arrange annotations" },
-        ])
+        ]),
       );
     });
 
@@ -508,7 +508,7 @@ describe("ContextMenu.vue", () => {
           { text: "Arrange annotations", separator: true },
           { name: "createMetanode" },
           { name: "createComponent" },
-        ])
+        ]),
       );
     });
   });

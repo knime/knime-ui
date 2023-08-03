@@ -62,11 +62,11 @@ describe("LegacyAnnotation.vue", () => {
     expect(spans[1].attributes().style).toBe("color: red; font-weight: bold;");
     expect(spans[2].attributes().style).toBeUndefined();
     expect(spans[3].attributes().style).toBe(
-      "font-weight: bold; font-style: italic;"
+      "font-weight: bold; font-style: italic;",
     );
     expect(spans[4].attributes().style).toBeUndefined();
     expect(spans[5].attributes().style).toBe(
-      "font-size: 17.3329px; font-weight: bold; font-style: italic;"
+      "font-size: 17.3329px; font-weight: bold; font-style: italic;",
     );
     expect(spans[6].attributes().style).toBeUndefined();
   });
@@ -121,7 +121,7 @@ describe("LegacyAnnotation.vue", () => {
 
     const spans = wrapper.findAll("span");
     expect(spans[1].attributes().style).toBe(
-      "font-size: 26px; font-weight: bold; font-style: italic;"
+      "font-size: 26px; font-weight: bold; font-style: italic;",
     );
   });
 });

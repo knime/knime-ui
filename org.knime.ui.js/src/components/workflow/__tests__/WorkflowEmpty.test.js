@@ -27,7 +27,7 @@ describe("WorkflowEmpty", () => {
     const wrapper = doShallowMount();
 
     expect(wrapper.text()).toMatch(
-      "Start building your workflow by dropping your data or nodes here."
+      "Start building your workflow by dropping your data or nodes here.",
     );
   });
 

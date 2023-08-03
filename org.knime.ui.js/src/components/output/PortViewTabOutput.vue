@@ -52,7 +52,7 @@ const runValidationChecks = ({
     validatePortSelection,
     validatePortSupport,
     validateNodeConfigurationState,
-    validateNodeExecutionState
+    validateNodeExecutionState,
   );
 
   const result = validationMiddleware({
@@ -116,7 +116,7 @@ export default defineComponent({
         message: string;
         loading?: boolean;
         error?: ValidationResult["error"];
-      } | null
+      } | null,
     ) => true,
     executeNode: () => true,
   },

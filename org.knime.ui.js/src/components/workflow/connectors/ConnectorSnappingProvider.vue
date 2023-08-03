@@ -94,7 +94,7 @@ export default {
       }
       if (this.portPositions.out) {
         partitions.out = makePartitions(
-          this.portPositions.out.map(([, y]) => y)
+          this.portPositions.out.map(([, y]) => y),
         );
       }
       return partitions;
@@ -163,7 +163,7 @@ export default {
         this.isOutsideConnectorHoverRegion(
           relativeX,
           relativeY,
-          targetPortDirection
+          targetPortDirection,
         )
       ) {
         this.targetPort = null;
@@ -181,7 +181,7 @@ export default {
 
       // find index of port to snap to
       const partitionIndex = snapPartitions.findIndex(
-        (boundary) => relativeY <= boundary
+        (boundary) => relativeY <= boundary,
       );
       let snapPortIndex;
 
@@ -268,7 +268,7 @@ export default {
           targetPort: newPortIdx,
           targetNode: this.id,
           side,
-        })
+        }),
       );
     },
     createConnectorObject({
@@ -324,7 +324,7 @@ export default {
             targetPort: targetPort.index,
             targetNode: this.id,
             side: targetPort.side,
-          })
+          }),
         );
         return;
       }

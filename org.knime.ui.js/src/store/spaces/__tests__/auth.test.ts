@@ -36,7 +36,7 @@ describe("spaces::auth", () => {
       });
       expect(store.state.spaces.spaceProviders.hub1.user).toEqual(mockUser);
       expect(store.state.spaces.spaceProviders.hub1.spaces).toEqual(
-        mockSpaces.spaces
+        mockSpaces.spaces,
       );
     });
 
@@ -106,7 +106,7 @@ describe("spaces::auth", () => {
 
       // but keep others
       expect(store.state.spaces.projectPath.myProject1.spaceId).toBe(
-        "mockSpaceId"
+        "mockSpaceId",
       );
     });
   });

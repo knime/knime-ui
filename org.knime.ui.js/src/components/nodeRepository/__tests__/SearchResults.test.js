@@ -169,7 +169,7 @@ describe("SearchResults", () => {
 
       const moreNodesList = wrapper.findAllComponents(NodeList).at(1);
       expect(moreNodesList.props("nodes")).toStrictEqual(
-        propsOverrides.bottomNodes
+        propsOverrides.bottomNodes,
       );
     });
 

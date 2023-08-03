@@ -52,7 +52,7 @@ describe("Card.vue", () => {
     });
 
     expect(wrapper.find("router-link").attributes("to")).toBe(
-      "http://example.com"
+      "http://example.com",
     );
   });
 });

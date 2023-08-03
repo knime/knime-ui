@@ -106,7 +106,7 @@ export default {
           placeholderPosition({
             portCount: this.inPorts.length,
             isMetanode: this.isMetanode,
-          })
+          }),
         );
       }
 
@@ -116,7 +116,7 @@ export default {
             portCount: this.outPorts.length,
             isMetanode: this.isMetanode,
             isOutport: true,
-          })
+          }),
         );
       }
       return positions;
@@ -206,7 +206,7 @@ export default {
 
       const isShowingQuickAddNodeMenu = this.isShowingQuickAddNodeMenu(
         port.index,
-        direction
+        direction,
       );
 
       return {
@@ -351,7 +351,9 @@ export default {
 
 .add-port {
   opacity: 0;
-  transition: opacity 0.2s, transform 120ms ease-out;
+  transition:
+    opacity 0.2s,
+    transform 120ms ease-out;
 
   &.node-selected,
   &.node-hover {

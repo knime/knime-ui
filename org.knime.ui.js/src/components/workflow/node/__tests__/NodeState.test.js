@@ -149,7 +149,7 @@ describe("NodeState.vue", () => {
 
     expect(wrapper.find(".progress-circle").exists()).toBe(false);
     expect(wrapper.find("[clip-path]").attributes("clip-path")).toBe(
-      "polygon(0 0, 51.78% 0, 51.78% 100%, 0 100%)"
+      "polygon(0 0, 51.78% 0, 51.78% 100%, 0 100%)",
     );
     expect(wrapper.text()).toMatch("52%");
   });
@@ -161,7 +161,7 @@ describe("NodeState.vue", () => {
 
     expect(wrapper.find(".progress-circle").exists()).toBe(false);
     expect(wrapper.find("[clip-path]").attributes("clip-path")).toBe(
-      "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
+      "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
     );
     expect(wrapper.text()).toMatch("100%");
   });

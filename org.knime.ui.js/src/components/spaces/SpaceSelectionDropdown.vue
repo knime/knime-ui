@@ -106,8 +106,8 @@ const spacesDropdownData = computed((): MenuItem[] => {
       // create a menu item for each space, offer to sign in if we are not connected
       provider.connected
         ? provider.spaces?.map(spaceMenuItem(provider)) || []
-        : [signInMenuItem(provider)]
-    )
+        : [signInMenuItem(provider)],
+    ),
   );
 });
 

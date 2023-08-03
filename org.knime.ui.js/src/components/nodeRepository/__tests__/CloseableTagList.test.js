@@ -12,7 +12,7 @@ vi.mock(
   () => ({
     mixin: {},
   }),
-  { virtual: true }
+  { virtual: true },
 );
 
 const sevenTags = [
@@ -44,10 +44,10 @@ describe("CloseableTagList.vue", () => {
       modelValue: threeTags,
     });
     expect(wrapper.findComponent(SelectableTagList).props("tags")).toEqual(
-      sevenTags
+      sevenTags,
     );
     expect(
-      wrapper.findComponent(SelectableTagList).props("modelValue")
+      wrapper.findComponent(SelectableTagList).props("modelValue"),
     ).toEqual(threeTags);
   });
 
@@ -57,14 +57,14 @@ describe("CloseableTagList.vue", () => {
       modelValue: threeTags,
     });
     expect(wrapper.findComponent(SelectableTagList).props("showAll")).toBe(
-      false
+      false,
     );
     expect(wrapper.vm.displayAll).toBe(false);
     wrapper.findComponent(SelectableTagList).vm.$emit("show-more", true);
     await Vue.nextTick();
     expect(wrapper.vm.displayAll).toBe(true);
     expect(wrapper.findComponent(SelectableTagList).props("showAll")).toBe(
-      true
+      true,
     );
   });
 
@@ -78,7 +78,7 @@ describe("CloseableTagList.vue", () => {
     expect(wrapper.vm.displayAll).toBe(true);
     expect(btn.exists()).toBe(true);
     expect(wrapper.findComponent(SelectableTagList).props("showAll")).toBe(
-      true
+      true,
     );
   });
 
@@ -108,7 +108,7 @@ describe("CloseableTagList.vue", () => {
         modelValue: ["some selected ", "medium sized tags", "should be shown"],
       });
       expect(
-        wrapper.findComponent(SelectableTagList).props("numberOfInitialTags")
+        wrapper.findComponent(SelectableTagList).props("numberOfInitialTags"),
       ).toBe(2);
     });
 
@@ -129,7 +129,7 @@ describe("CloseableTagList.vue", () => {
         modelValue: ["some", "short", "tags"],
       });
       expect(
-        wrapper.findComponent(SelectableTagList).props("numberOfInitialTags")
+        wrapper.findComponent(SelectableTagList).props("numberOfInitialTags"),
       ).toBe(7);
     });
 
@@ -142,7 +142,7 @@ describe("CloseableTagList.vue", () => {
         modelValue: [],
       });
       expect(
-        wrapper.findComponent(SelectableTagList).props("numberOfInitialTags")
+        wrapper.findComponent(SelectableTagList).props("numberOfInitialTags"),
       ).toBe(minNumberOfInitialTags);
     });
   });
@@ -163,7 +163,7 @@ describe("CloseableTagList.vue", () => {
       expect(wrapper.vm.displayAll).toBe(false);
       expect(wrapper.find(".tags-popout-close").exists()).toBe(false);
       expect(wrapper.findComponent(SelectableTagList).props("showAll")).toBe(
-        false
+        false,
       );
     });
 
