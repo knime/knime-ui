@@ -70,19 +70,31 @@ import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 
 /**
- * Helper class to save an opened remote workflow locally
+ * Helper class to save a copy of a project, for instance
+ * <ul>
+ *     <li>Save an opened remote workflow project locally</li>
+ *     <li>Save a copy of a local workflow project under a different name ("Save As...")</li>
+ * </ul>
+ *
+ * opened remote workflow locally
  *
  * @author Kai Franze, KNIME GmbH
  */
-final class SaveRemoteWorkflowLocally {
+final class SaveWorkflowCopy {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveRemoteWorkflowLocally.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveWorkflowCopy.class);
 
-    private SaveRemoteWorkflowLocally() {
+    private SaveWorkflowCopy() {
         // State-less
     }
 
-    static void saveTempWorkflowAs(final String projectId, final String workflowSvg) throws IOException {
+    /**
+     * Save a copy of the provided workflow project. Prompts the user for the save destination.
+     * @param projectId The ID identifying the workflow project to save
+     * @param workflowSvg The workflow SVG
+     * @throws IOException In case the workflow project could not be saved
+     */
+    static void saveCopyOf(final String projectId, final String workflowSvg) throws IOException {
         final var projectManager = WorkflowProjectManager.getInstance();
         final var workflowProject = projectManager.getWorkflowProject(projectId) //
                 .orElseThrow(() -> new NoSuchElementException(
@@ -151,7 +163,6 @@ final class SaveRemoteWorkflowLocally {
     }
 
     private static String askForDestinationWorkflowGroupAndGetId(final SpaceDestinationPicker picker) {
-        final var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         final var dest = picker.getSelectedDestination();
         if (dest == null) {
             return null;
@@ -159,7 +170,7 @@ final class SaveRemoteWorkflowLocally {
 
         try {
             final var localFile = dest.getDestination().resolveToLocalFile();
-            return localWorkspace.getItemId(localFile.toPath());
+            return LocalSpaceUtil.getLocalWorkspace().getItemId(localFile.toPath());
         } catch (CoreException e) {
             DesktopAPUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow locally didn't work",
                 LOGGER, e);

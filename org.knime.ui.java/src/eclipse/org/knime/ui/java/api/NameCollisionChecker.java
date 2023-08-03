@@ -106,7 +106,7 @@ final class NameCollisionChecker {
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
         final List<Path> srcPaths) {
         return srcPaths.stream() //
-            .map(srcPath -> checkForNameCollisionInDir(space, srcPath, destWorkflowGroupItemId))//
+            .map(srcPath -> checkForNameCollisionInDir(space, srcPath.getFileName().toString(), destWorkflowGroupItemId))//
             .flatMap(Optional::stream)//
             .collect(Collectors.toList());
     }
@@ -132,20 +132,6 @@ final class NameCollisionChecker {
             return Optional.of(rootNames.iterator().next()) //
                 .filter(name -> space.containsItemWithName(destWorkflowGroupItemId, name));
         }
-    }
-
-    /**
-     * Checks for name collisions before something is written to the destination workflow group.
-     *
-     * @param space surrounding space
-     * @param srcPath The source path of the directory
-     * @param destWorkflowGroupItemId The destination workflow group ID
-     *
-     * @return The optional name of the existing workflow group.
-     */
-    static Optional<String> checkForNameCollisionInDir(final Space space, final Path srcPath,
-        final String destWorkflowGroupItemId) {
-        return checkForNameCollisionInDir(space, srcPath.getFileName().toString(), destWorkflowGroupItemId);
     }
 
     /**

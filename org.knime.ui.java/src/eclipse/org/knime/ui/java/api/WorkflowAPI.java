@@ -163,14 +163,13 @@ final class WorkflowAPI {
     }
 
     /**
-     * Moves the workflow from a temporary location to the local workspace.
-     *
+     * @see SaveWorkflowCopy#saveCopyOf(String, String)
      * @param projectId The project ID of the open remote workflow
      * @throws IOException if moving the workflow fails
      */
     @API
     static void saveWorkflowAs(final String projectId, final String workflowSvg) throws IOException {
-        SaveRemoteWorkflowLocally.saveTempWorkflowAs(projectId, workflowSvg);
+        SaveWorkflowCopy.saveCopyOf(projectId, workflowSvg);
     }
 
 }

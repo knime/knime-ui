@@ -79,7 +79,7 @@ final class SpaceDestinationPicker {
 
     private final String[] m_spaceProviders;
 
-    private String m_fileName = null;
+    private String m_fileName;
 
     private DestinationSelectionDialog m_dialog;
 
