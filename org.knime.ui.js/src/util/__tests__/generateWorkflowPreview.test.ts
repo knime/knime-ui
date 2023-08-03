@@ -6,6 +6,42 @@ vi.mock(
   () => "font data"
 );
 
+const nodes = {
+  "root:1": {
+    annotation: {
+      text: {
+        value:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
+        contentType: "text/plain",
+      },
+      textAlign: "center",
+      styleRanges: [],
+    },
+    id: "root:1",
+    position: {
+      y: -1260,
+      x: -1085,
+    },
+    kind: "node",
+  },
+  "root:2": {
+    id: "root:2",
+    position: {
+      y: -1515,
+      x: -1880,
+    },
+    kind: "node",
+  },
+  "root:3": {
+    id: "root:3",
+    position: {
+      y: -1790,
+      x: -1665,
+    },
+    kind: "node",
+  },
+};
+
 describe("generateWorkflowPreview", () => {
   const mockFetch = vi.fn(() =>
     Promise.resolve({
@@ -95,6 +131,13 @@ describe("generateWorkflowPreview", () => {
     foreignObject.classList.add("dummy-class");
     svg.appendChild(foreignObject);
 
+    // add nodes
+    Object.values(nodes).forEach((node) => {
+      const n = document.createElementNS(svgNS, "div");
+      n.setAttribute("data-node-id", node.id);
+      svg.appendChild(n);
+    });
+
     const foreignObject2 = document.createElementNS(svgNS, "foreignObject");
     const annotation = document.createElement("div");
     annotation.classList.add("annotation-editor");
@@ -108,7 +151,7 @@ describe("generateWorkflowPreview", () => {
 
   it("should add fonts", async () => {
     const { svg } = setup();
-    const output = await generateWorkflowPreview(svg, false);
+    const output = await generateWorkflowPreview(svg, false, nodes);
 
     expect(output).toMatch(
       /url\("data:application\/font-woff;charset=utf-8;base64,.+/g
@@ -118,7 +161,7 @@ describe("generateWorkflowPreview", () => {
   it("should set transparency on the workflow sheet", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false);
+    const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     const workflowSheet = outputEl.querySelector(
       ".workflow-sheet"
@@ -135,16 +178,16 @@ describe("generateWorkflowPreview", () => {
     };
     const { svg } = setup({ workflowSheetDimensions });
 
-    const output = await generateWorkflowPreview(svg, false);
+    const output = await generateWorkflowPreview(svg, false, nodes);
 
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 200");
+    expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 -1280");
   });
 
   it('should remove all elements with the attribute "data-hide-in-workflow-preview"', async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false);
+    const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
 
     expect(
@@ -155,7 +198,7 @@ describe("generateWorkflowPreview", () => {
   it("should remove empty and hidden elements", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false);
+    const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     const emptyGTags = Array.from(outputEl.querySelectorAll("g")).filter(
       (el) => el.hasChildNodes
@@ -169,7 +212,7 @@ describe("generateWorkflowPreview", () => {
   it("should inline the styles of the connectors", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false);
+    const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     const connectorEl = outputEl.querySelector(
       "[data-connector-id]"
@@ -180,7 +223,7 @@ describe("generateWorkflowPreview", () => {
   it("should inline the styles of the foreignObjects", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false);
+    const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     expect(outputEl.querySelector("foreignObject").style.stroke).toBe(
       "rgb(123, 123, 123)"
@@ -190,7 +233,7 @@ describe("generateWorkflowPreview", () => {
   it("should inline the styles of the workflow annotations", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false);
+    const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     const annotationEl = outputEl.querySelector(
       ".annotation-editor"
@@ -206,11 +249,11 @@ describe("generateWorkflowPreview", () => {
     vi.spyOn(Storage.prototype, "setItem");
     vi.spyOn(Storage.prototype, "getItem");
 
-    await generateWorkflowPreview(svg, false);
+    await generateWorkflowPreview(svg, false, nodes);
 
     expect(localStorage.setItem).toHaveBeenCalledTimes(1);
 
-    await generateWorkflowPreview(svg, false);
+    await generateWorkflowPreview(svg, false, nodes);
 
     expect(localStorage.getItem).toHaveBeenCalled();
     expect(localStorage.setItem).toHaveBeenCalledTimes(1);
@@ -219,7 +262,7 @@ describe("generateWorkflowPreview", () => {
   it("should return empty svg when canvas is empty", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, true);
+    const output = await generateWorkflowPreview(svg, true, nodes);
     const outputEl = createElementFromOutput(output);
     expect(outputEl.childNodes.length).toBe(0);
   });
