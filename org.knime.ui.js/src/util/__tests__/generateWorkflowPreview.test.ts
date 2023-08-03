@@ -184,6 +184,82 @@ describe("generateWorkflowPreview", () => {
     expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 -1280");
   });
 
+  it("should set the correct viewbox for single node", async () => {
+    const workflowSheetDimensions = {
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 200,
+    };
+    const { svg } = setup({ workflowSheetDimensions });
+    const node = {
+      "root:1": {
+        annotation: {
+          text: {
+            value:
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
+            contentType: "text/plain",
+          },
+          textAlign: "center",
+          styleRanges: [],
+        },
+        id: "root:1",
+        position: {
+          y: -1260,
+          x: -1085,
+        },
+        kind: "node",
+      },
+    };
+
+    const output = await generateWorkflowPreview(svg, false, node);
+
+    const outputEl = createElementFromOutput(output);
+    expect(outputEl.getAttribute("viewBox")).toBe("80 20 20 -1280");
+  });
+
+  it("should set the correct viewbox for node with label on left", async () => {
+    const workflowSheetDimensions = {
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 200,
+    };
+    const { svg } = setup({ workflowSheetDimensions });
+    const node = {
+      "root:1": {
+        annotation: {
+          text: {
+            value:
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
+            contentType: "text/plain",
+          },
+          textAlign: "center",
+          styleRanges: [],
+        },
+        id: "root:1",
+        position: {
+          y: -1515,
+          x: -1880,
+        },
+        kind: "node",
+      },
+      "root:2": {
+        id: "root:2",
+        position: {
+          y: -1260,
+          x: -1085,
+        },
+        kind: "node",
+      },
+    };
+
+    const output = await generateWorkflowPreview(svg, false, node);
+
+    const outputEl = createElementFromOutput(output);
+    expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 -1535");
+  });
+
   it('should remove all elements with the attribute "data-hide-in-workflow-preview"', async () => {
     const { svg } = setup();
 
