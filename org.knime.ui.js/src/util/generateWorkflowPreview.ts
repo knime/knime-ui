@@ -112,7 +112,6 @@ const getSVGElementClone = (
 ): WorkflowPreviewReturnType => {
   const div = document.createElement("div");
   div.id = "NODE_PREVIEW_CONTAINER";
-  // console.log("original", element);
 
   const svgClone = element.cloneNode(true) as SVGSVGElement;
 
@@ -137,6 +136,7 @@ const getSVGElementClone = (
  *
  * @param svgClone
  * @param workflowSheet
+ * @param edges
  * @returns {void}
  */
 const updateViewBox = (
