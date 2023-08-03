@@ -137,7 +137,7 @@ final class SaveWorkflowCopy {
         final var result = DesktopAPUtil.runWithProgress("Saving workflow locally", LOGGER, monitor -> { // NOSONAR
             try {
                 workflowManager.saveAs(newContext, DesktopAPUtil.toExecutionMonitor(monitor));
-                SaveWorkflow.saveWorkflowSvg(workflowName, workflowSvg, newPath);
+                SaveWorkflow.saveWorkflowSvg(fileName, workflowSvg, newPath);
                 return true;
             } catch (IOException | LockFailedException e) {
                 throw ExceptionUtils.<RuntimeException>rethrow(e);
@@ -150,7 +150,6 @@ final class SaveWorkflowCopy {
             // saving has failed
             FileUtil.deleteRecursively(newPath.toFile());
         } else {
-            FileUtil.deleteRecursively(srcPath.toFile());
             // update the `WorkflowProject` origin
             final var localItemId = localWorkspace.getItemId(newPath);
             final var relativePath = localWorkspace.getLocalRootPath().relativize(newPath).toString();
