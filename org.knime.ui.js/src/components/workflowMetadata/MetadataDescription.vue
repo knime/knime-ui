@@ -101,6 +101,7 @@ watch(toRef(props, "editable"), async (next) => {
 
     /* Firefox shows scrollbar on growth, you can hide like this. */
     overflow: hidden;
+    color: var(--knime-masala);
   }
 
   & > textarea,
