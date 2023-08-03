@@ -191,13 +191,12 @@ final class SpaceAPI {
             return false;
         }
 
-        final var destInfoOptional = SpaceDestinationPicker.promptForTargetLocation(mountIds,
-            isUpload ? Operation.UPLOAD : Operation.DOWNLOAD);
-        if (!destInfoOptional.isPresent()) {
+        final var destPicker = new SpaceDestinationPicker(mountIds, isUpload ? Operation.UPLOAD : Operation.DOWNLOAD);
+        if (!destPicker.open()) {
             return false;
         }
+        final var destInfo = destPicker.getSelectedDestination();
 
-        final var destInfo = destInfoOptional.get();
         final var destinationStore = destInfo.getDestination();
         final var excludeData = destInfo.isExcludeData();
         final var targetMountId = destinationStore.getMountID();

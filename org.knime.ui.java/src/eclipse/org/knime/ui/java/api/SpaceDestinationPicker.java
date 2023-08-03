@@ -48,8 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import java.util.Optional;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.PlatformUI;
@@ -87,7 +85,7 @@ final class SpaceDestinationPicker {
 
     private SelectedDestination m_destination;
 
-    private SpaceDestinationPicker(final String[] spaceProviders, final Operation operation) {
+    public SpaceDestinationPicker(final String[] spaceProviders, final Operation operation) {
         m_spaceProviders = spaceProviders;
         m_operation = operation;
     }
@@ -100,7 +98,7 @@ final class SpaceDestinationPicker {
     /**
      * Displays a modal dialog for picking a target folder or space.
      *
-     * @return true if something is selected, false otherwise or cancelled
+     * @return true if the dialog was closed and something is selected, false otherwise or cancelled
      */
     public boolean open() {
         final var workbench = PlatformUI.getWorkbench();
@@ -132,45 +130,11 @@ final class SpaceDestinationPicker {
         });
     }
 
-    public Optional<SelectedDestination> getSelectedDestination() {
-        return m_destination != null ? Optional.of(m_destination) : Optional.empty();
+    public SelectedDestination getSelectedDestination() {
+        return m_destination;
     }
 
     public String getTextInput() {
         return m_dialog.getNameFieldValue();
-    }
-
-    /**
-     * Displays a modal dialog for picking a target folder or space.
-     *
-     * @param spaceProviders space providers to allow selections from
-     * @param operation type of operation, determines text in the dialog
-     * @return destination if selected, {@link Optional#empty()} otherwise
-     */
-    static Optional<SelectedDestination> promptForTargetLocation(final String[] spaceProviders,
-        final Operation operation) {
-        final var workbench = PlatformUI.getWorkbench();
-        return workbench.getDisplay().syncCall(() -> { // NOSONAR
-            final var shell = workbench.getModalDialogShellProvider().getShell();
-            final var destinationDialog = new DestinationSelectionDialog(shell, spaceProviders, null,
-                "Destination", operation.m_title, "Select the destination folder.",
-                "Select the destination folder to which the selected element will be " + operation.m_desc);
-            destinationDialog.setShowExcludeDataOption(operation == Operation.UPLOAD);
-            while (destinationDialog.open() == Window.OK) {
-                final var destGroup = destinationDialog.getSelectedDestination();
-                final var destGroupInfo = destGroup.getDestination().fetchInfo();
-                if (!destGroupInfo.isWriteable()) {
-                    if (MessageDialog.openConfirm(shell, "Not writable",
-                            "The selected folder is not writable.\n\nChoose a new location.")) {
-                        continue;
-                    } else {
-                        // user has chosen to abort
-                        return Optional.empty();
-                    }
-                }
-                return Optional.of(destGroup);
-            }
-            return Optional.empty();
-        });
     }
 }

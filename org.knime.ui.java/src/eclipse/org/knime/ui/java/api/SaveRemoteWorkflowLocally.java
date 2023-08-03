@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -69,8 +68,6 @@ import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
-import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.SelectedDestination;
-
 
 /**
  * Helper class to save an opened remote workflow locally
@@ -154,21 +151,20 @@ final class SaveRemoteWorkflowLocally {
     }
 
     private static String askForDestinationWorkflowGroupAndGetId(final SpaceDestinationPicker picker) {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        return picker.getSelectedDestination()//
-            .map(SelectedDestination::getDestination)//
-            .map(fileStore -> {
-                try {
-                    return fileStore.resolveToLocalFile();
-                } catch (CoreException e) {
-                    DesktopAPUtil.showWarningAndLogError("Workflow save attempt",
-                        "Saving the workflow locally didn't work", LOGGER, e);
-                    return null;
-                }
-            })//
-            .map(File::toPath)//
-            .map(localWorkspace::getItemId)//
-            .orElse(null);
+        final var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+        final var dest = picker.getSelectedDestination();
+        if (dest == null) {
+            return null;
+        }
+
+        try {
+            final var localFile = dest.getDestination().resolveToLocalFile();
+            return localWorkspace.getItemId(localFile.toPath());
+        } catch (CoreException e) {
+            DesktopAPUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow locally didn't work",
+                LOGGER, e);
+            return null;
+        }
     }
 
     private static NameCollisionHandling getNameCollisionStrategy(final String fileName,
