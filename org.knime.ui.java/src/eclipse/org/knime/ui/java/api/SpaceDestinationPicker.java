@@ -77,7 +77,67 @@ final class SpaceDestinationPicker {
         }
     }
 
-    private SpaceDestinationPicker() {
+    private final Operation m_operation;
+
+    private final String[] m_spaceProviders;
+
+    private String m_fileName = null;
+
+    private DestinationSelectionDialog m_dialog;
+
+    private SelectedDestination m_destination;
+
+    private SpaceDestinationPicker(final String[] spaceProviders, final Operation operation) {
+        m_spaceProviders = spaceProviders;
+        m_operation = operation;
+    }
+
+    public SpaceDestinationPicker(final String[] spaceProviders, final Operation operation, final String defaultName) {
+        this(spaceProviders, operation);
+        m_fileName = defaultName;
+    }
+
+    /**
+     * Displays a modal dialog for picking a target folder or space.
+     *
+     * @return true if something is selected, false otherwise or cancelled
+     */
+    public boolean open() {
+        final var workbench = PlatformUI.getWorkbench();
+        return workbench.getDisplay().syncCall(() -> { // NOSONAR
+            final var shell = workbench.getModalDialogShellProvider().getShell();
+            m_dialog = new DestinationSelectionDialog(shell, m_spaceProviders, null,
+                "Destination", m_operation.m_title, "Select the destination folder.",
+                "Select the destination folder to which the selected element will be " + m_operation.m_desc);
+            m_dialog.setShowExcludeDataOption(m_operation == Operation.UPLOAD);
+            m_dialog.setNameFieldEnabled(m_operation == Operation.SAVE);
+            // take some sensible default when op is not SAVE
+            m_dialog.setNameFieldDefaultValue(m_fileName);
+            while (m_dialog.open() == Window.OK) {
+                final var destGroup = m_dialog.getSelectedDestination();
+                final var destGroupInfo = destGroup.getDestination().fetchInfo();
+                if (!destGroupInfo.isWriteable()) {
+                    if (MessageDialog.openConfirm(shell, "Not writable",
+                            "The selected folder is not writable.\n\nChoose a new location.")) {
+                        continue;
+                    } else {
+                        // user has chosen to abort
+                        return false;
+                    }
+                }
+                m_destination = destGroup;
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public Optional<SelectedDestination> getSelectedDestination() {
+        return m_destination != null ? Optional.of(m_destination) : Optional.empty();
+    }
+
+    public String getTextInput() {
+        return m_dialog.getNameFieldValue();
     }
 
     /**

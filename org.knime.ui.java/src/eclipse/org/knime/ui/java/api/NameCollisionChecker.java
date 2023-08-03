@@ -87,7 +87,7 @@ final class NameCollisionChecker {
      * @return List of already existing names
      */
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
-            final Object[] itemIds) {
+        final Object[] itemIds) {
         return Arrays.stream(itemIds) //
             .map(String.class::cast) //
             .map(space::getItemName) //
@@ -121,7 +121,7 @@ final class NameCollisionChecker {
      * @throws IOException If it couldn't extract the *.zip file properly.
      */
     static Optional<String> checkForNameCollisionInZip(final Space space, final Path srcPath,
-            final String destWorkflowGroupItemId) throws IOException {
+        final String destWorkflowGroupItemId) throws IOException {
         try (final var zipFile = new ZipFile(srcPath.toFile())) {
             final var rootNames = zipFile.stream() //
                 .map(entry -> forPosix(entry.toString()).segment(0)) //
@@ -130,7 +130,7 @@ final class NameCollisionChecker {
                 throw new IOException("Expected one item in archive '" + srcPath + "', found " + rootNames + ".");
             }
             return Optional.of(rootNames.iterator().next()) //
-                    .filter(name -> space.containsItemWithName(destWorkflowGroupItemId, name));
+                .filter(name -> space.containsItemWithName(destWorkflowGroupItemId, name));
         }
     }
 
@@ -145,7 +145,20 @@ final class NameCollisionChecker {
      */
     static Optional<String> checkForNameCollisionInDir(final Space space, final Path srcPath,
         final String destWorkflowGroupItemId) {
-        var fileName = srcPath.getFileName().toString();
+        return checkForNameCollisionInDir(space, srcPath.getFileName().toString(), destWorkflowGroupItemId);
+    }
+
+    /**
+     * Checks for name collisions before something is written to the destination workflow group.
+     *
+     * @param space surrounding space
+     * @param fileName The filename as it appears on the directory
+     * @param destWorkflowGroupItemId The destination workflow group ID
+     *
+     * @return The optional name of the existing workflow group.
+     */
+    static Optional<String> checkForNameCollisionInDir(final Space space, final String fileName,
+        final String destWorkflowGroupItemId) {
         if (space.containsItemWithName(destWorkflowGroupItemId, fileName)) {
             return Optional.of(fileName);
         } else {

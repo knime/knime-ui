@@ -50,7 +50,6 @@ package org.knime.ui.java.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -72,6 +71,7 @@ import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.SelectedDestination;
 
+
 /**
  * Helper class to save an opened remote workflow locally
  *
@@ -92,23 +92,29 @@ final class SaveRemoteWorkflowLocally {
                     String.format("No local workflow path found for <%s>", projectId)));
 
         final var workflowManager = workflowProject.openProject();
-        final var workflowGroupItemId = askForDestinationWorkflowGroupAndGetId();
+        final var oldContext = CheckUtils.checkArgumentNotNull(workflowManager.getContextV2());
+        final var execInfo = oldContext.getExecutorInfo();
+        final var srcPath = execInfo.getLocalWorkflowPath();
+        final var workflowName = srcPath.getFileName().toString();
+
+        var destPicker = new SpaceDestinationPicker(new String[]{"LOCAL"}, Operation.SAVE, workflowName);
+        if (!destPicker.open()) {
+            return;
+        }
+
+        final var workflowGroupItemId = askForDestinationWorkflowGroupAndGetId(destPicker);
         if (workflowGroupItemId == null) {
             return;
         }
 
-        final var oldContext = CheckUtils.checkArgumentNotNull(workflowManager.getContextV2());
-        final var execInfo = oldContext.getExecutorInfo();
-        final var srcPath = execInfo.getLocalWorkflowPath();
-
-        final var collisionHandling = getNameCollisionStrategy(srcPath, workflowGroupItemId);
+        var fileName = destPicker.getTextInput();
+        final var collisionHandling = getNameCollisionStrategy(fileName, workflowGroupItemId);
         if (collisionHandling == null) {
             return;
         }
 
         var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        final var workflowName = srcPath.getFileName().toString();
-        final var newPath = localWorkspace.createWorkflowDir(workflowGroupItemId, workflowName, collisionHandling);
+        final var newPath = localWorkspace.createWorkflowDir(workflowGroupItemId, fileName, collisionHandling);
 
         final WorkflowContextV2 newContext = WorkflowContextV2.builder() //
                 .withAnalyticsPlatformExecutor(exec -> exec //
@@ -147,9 +153,9 @@ final class SaveRemoteWorkflowLocally {
         }
     }
 
-    private static String askForDestinationWorkflowGroupAndGetId() {
+    private static String askForDestinationWorkflowGroupAndGetId(final SpaceDestinationPicker picker) {
         var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
-        return SpaceDestinationPicker.promptForTargetLocation(new String[] { "LOCAL" }, Operation.SAVE)//
+        return picker.getSelectedDestination()//
             .map(SelectedDestination::getDestination)//
             .map(fileStore -> {
                 try {
@@ -165,11 +171,11 @@ final class SaveRemoteWorkflowLocally {
             .orElse(null);
     }
 
-    private static NameCollisionHandling getNameCollisionStrategy(final Path srcPath,
+    private static NameCollisionHandling getNameCollisionStrategy(final String fileName,
         final String workflowGroupItemId) {
         var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         var nameCollisions = NameCollisionChecker//
-            .checkForNameCollisionInDir(localWorkspace, srcPath, workflowGroupItemId)//
+            .checkForNameCollisionInDir(localWorkspace, fileName, workflowGroupItemId)//
             .stream()//
             .collect(Collectors.toList());
         if (nameCollisions.isEmpty()) {
