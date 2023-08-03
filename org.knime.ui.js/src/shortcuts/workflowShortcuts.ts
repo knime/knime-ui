@@ -92,7 +92,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   saveAs: {
     title: "Save workflow as",
-    text: "Save as …",
+    text: "Save as…",
     icon: SaveAsIcon,
     execute: ({ $store }) => $store.dispatch("workflow/saveWorkflowAs"),
   },
@@ -132,7 +132,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     execute: ({ $store }) =>
       $store.dispatch(
         "workflow/openFlowVariableConfiguration",
-        $store.getters["selection/singleSelectedNode"].id
+        $store.getters["selection/singleSelectedNode"].id,
       ),
     condition: ({ $store }) =>
       $store.getters["selection/singleSelectedNode"]?.allowedActions
@@ -144,11 +144,11 @@ const workflowShortcuts: WorkflowShortcuts = {
     execute: ({ $store }) =>
       $store.dispatch(
         "workflow/openNameEditor",
-        $store.getters["selection/singleSelectedNode"].id
+        $store.getters["selection/singleSelectedNode"].id,
       ),
     condition: ({ $store }) =>
       ["metanode", "component"].includes(
-        $store.getters["selection/singleSelectedNode"]?.kind
+        $store.getters["selection/singleSelectedNode"]?.kind,
       ) &&
       !$store.getters["selection/singleSelectedNode"]?.link &&
       $store.getters["workflow/isWritable"],
@@ -159,7 +159,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     execute: ({ $store }) =>
       $store.dispatch(
         "workflow/openLabelEditor",
-        $store.getters["selection/singleSelectedNode"].id
+        $store.getters["selection/singleSelectedNode"].id,
       ),
     condition: ({ $store }) => {
       const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
@@ -197,7 +197,7 @@ const workflowShortcuts: WorkflowShortcuts = {
       const allSelectedDeletable =
         selectedNodes.every((node) => node.allowedActions.canDelete) &&
         selectedConnections.every(
-          (connection) => connection.allowedActions.canDelete
+          (connection) => connection.allowedActions.canDelete,
         );
 
       // enabled, if all selected objects are not deletable
@@ -223,7 +223,7 @@ const workflowShortcuts: WorkflowShortcuts = {
       }
 
       return $store.getters["selection/selectedNodes"].every(
-        (node) => node.allowedActions.canCollapse !== "false"
+        (node) => node.allowedActions.canCollapse !== "false",
       );
     },
   },
@@ -245,7 +245,7 @@ const workflowShortcuts: WorkflowShortcuts = {
       }
 
       return $store.getters["selection/selectedNodes"].every(
-        (node) => node.allowedActions.canCollapse !== "false"
+        (node) => node.allowedActions.canCollapse !== "false",
       );
     },
   },
@@ -322,7 +322,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     condition: ({ $store }) => {
       const kanvas = $store.state.canvas.getScrollContainerElement();
       const selectedNodes = Object.keys(
-        $store.getters["selection/selectedNodes"]
+        $store.getters["selection/selectedNodes"],
       );
       const selectedAnnotations =
         $store.getters["selection/selectedAnnotations"];
@@ -345,7 +345,7 @@ const workflowShortcuts: WorkflowShortcuts = {
       $store.dispatch("workflow/copyOrCutWorkflowParts", { command: "cut" }),
     condition: ({ $store }) => {
       const selectedNodes = Object.keys(
-        $store.getters["selection/selectedNodes"]
+        $store.getters["selection/selectedNodes"],
       );
       const selectedAnnotations =
         $store.getters["selection/selectedAnnotations"];
