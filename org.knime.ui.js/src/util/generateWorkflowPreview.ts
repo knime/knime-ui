@@ -387,7 +387,13 @@ export const generateWorkflowPreview = async (
     ".workflow-sheet"
   ) as HTMLElement;
 
-  const edges = nodes ? findEdges(nodes) : null;
+  const edges = nodes
+    ? findEdges(nodes)
+    : {
+        minX: { id: null, position: { x: null, y: null } },
+        maxY: { id: null, position: { x: null, y: null } },
+        maxX: { id: null, position: { x: null, y: null } },
+      };
 
   // inline custom fonts to the svg element clone
   await addFontStyles(svgClone);
@@ -415,7 +421,7 @@ export const generateWorkflowPreview = async (
         .getBoundingClientRect(),
       position: edges.maxY.position,
     },
-    length: Object.keys(nodes).length,
+    length: nodes ? Object.keys(nodes).length : 0,
   });
 
   // remove all portal-targets
