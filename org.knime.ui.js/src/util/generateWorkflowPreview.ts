@@ -324,31 +324,28 @@ const addFontStyles = async (svgElement: SVGElement) => {
   svgElement.getElementsByTagName("defs")[0].appendChild(styleTag);
 };
 
-const findEdges = (nodes: any) => {
-  const objectValues: any = Object.values(nodes);
-  if (!Array.isArray(objectValues) || objectValues.length === 0) {
-    return { minX: null, maxY: null, maxX: null };
-  }
+const findEdges = (nodesObject: any) => {
+  const nodes: any = Object.values(nodesObject);
 
-  const { minX, maxX, maxY } = objectValues.reduce(
-    (result, obj) => {
-      if (obj.annotation) {
-        if (obj.position.x < result.minX.position.x) {
-          result.minX = obj;
+  const { minX, maxX, maxY } = nodes.reduce(
+    (result, node) => {
+      if (node.annotation) {
+        if (node.position.x < result.minX.position.x) {
+          result.minX = node;
         }
-        if (obj.position.x > result.maxX.position.x) {
-          result.maxX = obj;
+        if (node.position.x > result.maxX.position.x) {
+          result.maxX = node;
         }
-        if (obj.position.y > result.maxY.position.y) {
-          result.maxY = obj;
+        if (node.position.y > result.maxY.position.y) {
+          result.maxY = node;
         }
       }
       return result;
     },
     {
-      minX: objectValues[0], // left edge
-      maxX: objectValues[0], // right edge
-      maxY: objectValues[0], // bottom edge
+      minX: nodes[0], // left edge
+      maxX: nodes[0], // right edge
+      maxY: nodes[0], // bottom edge
     }
   );
 
@@ -387,7 +384,7 @@ export const generateWorkflowPreview = async (
     ".workflow-sheet"
   ) as HTMLElement;
 
-  const edges = findEdges(nodes);
+  const edges = nodes ? findEdges(nodes) : null;
 
   // inline custom fonts to the svg element clone
   await addFontStyles(svgClone);
