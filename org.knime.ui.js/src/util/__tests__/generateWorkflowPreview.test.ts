@@ -260,6 +260,21 @@ describe("generateWorkflowPreview", () => {
     expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 -1535");
   });
 
+  it("should set the correct viewbox for no nodes", async () => {
+    const workflowSheetDimensions = {
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 200,
+    };
+    const { svg } = setup({ workflowSheetDimensions });
+
+    const output = await generateWorkflowPreview(svg, false, null);
+
+    const outputEl = createElementFromOutput(output);
+    expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 200");
+  });
+
   it('should remove all elements with the attribute "data-hide-in-workflow-preview"', async () => {
     const { svg } = setup();
 
