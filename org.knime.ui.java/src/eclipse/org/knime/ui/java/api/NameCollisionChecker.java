@@ -106,7 +106,8 @@ final class NameCollisionChecker {
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
         final List<Path> srcPaths) {
         return srcPaths.stream() //
-            .map(srcPath -> checkForNameCollisionInDir(space, srcPath.getFileName().toString(), destWorkflowGroupItemId))//
+            .map(srcPath ->
+                checkForNameCollisionInDir(space, srcPath.getFileName().toString(), destWorkflowGroupItemId))//
             .flatMap(Optional::stream)//
             .collect(Collectors.toList());
     }

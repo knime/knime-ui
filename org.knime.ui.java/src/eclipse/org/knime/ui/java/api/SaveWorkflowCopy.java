@@ -54,14 +54,11 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.core.runtime.CoreException;
-import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
-import org.knime.core.util.LockFailedException;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
@@ -112,24 +109,25 @@ final class SaveWorkflowCopy {
             return;
         }
 
-        final var workflowGroupItemId = askForDestinationWorkflowGroupAndGetId(destPicker);
-        if (workflowGroupItemId == null) {
+        final var destWorkflowGroupPath = getDestinationWorkflowGroupPath(destPicker);
+        if (destWorkflowGroupPath == null) {
             return;
         }
+        final var destWorkflowGroupItemId = LocalSpaceUtil.getLocalWorkspace().getItemId(destWorkflowGroupPath);
 
         var fileName = destPicker.getTextInput();
-        final var collisionHandling = getNameCollisionStrategy(fileName, workflowGroupItemId);
+        final var collisionHandling = getNameCollisionStrategy(fileName, destWorkflowGroupItemId);
         if (collisionHandling == null) {
             return;
         }
 
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         if (collisionHandling == NameCollisionHandling.OVERWRITE
-                && areOriginAndDestinyEqual(srcPath, workflowGroupItemId, fileName, localWorkspace)) {
+            && areOriginAndDestinationEqual(srcPath, destWorkflowGroupPath, fileName)) {
             SaveWorkflow.saveWorkflow(projectId, workflowSvg, false);
             return;
         }
-        final var newPath = localWorkspace.createWorkflowDir(workflowGroupItemId, fileName, collisionHandling);
+        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+        final var newPath = localWorkspace.createWorkflowDir(destWorkflowGroupItemId, fileName, collisionHandling);
 
         final WorkflowContextV2 newContext = WorkflowContextV2.builder() //
                 .withAnalyticsPlatformExecutor(exec -> exec //
@@ -140,22 +138,16 @@ final class SaveWorkflowCopy {
                 .withLocalLocation()
                 .build();
 
-        final var result = DesktopAPUtil.runWithProgress("Saving workflow locally", LOGGER, monitor -> { // NOSONAR
-            try {
-                workflowManager.saveAs(newContext, DesktopAPUtil.toExecutionMonitor(monitor));
-                SaveWorkflow.saveWorkflowSvg(fileName, workflowSvg, newPath);
-                return true;
-            } catch (IOException | LockFailedException e) {
-                throw ExceptionUtils.<RuntimeException>rethrow(e);
-            } catch (CanceledExecutionException e) { // NOSONAR user cancelled
-                return null;
-            }
-        });
+        final var result = DesktopAPUtil.runWithProgress("Saving workflow", LOGGER, monitor -> // NOSONAR
+            SaveWorkflow.saveWorkflowAs(newContext, monitor, workflowManager, workflowSvg));
 
-        if (result.isEmpty()) {
+        if (result.isEmpty() || !result.get().booleanValue()) {
             // saving has failed
             FileUtil.deleteRecursively(newPath.toFile());
         } else {
+            if (oldContext.isTemporyWorkflowCopyMode()) {
+                FileUtil.deleteRecursively(srcPath.toFile());
+            }
             // update the `WorkflowProject` origin
             final var localItemId = localWorkspace.getItemId(newPath);
             final var relativePath = localWorkspace.getLocalRootPath().relativize(newPath).toString();
@@ -167,21 +159,20 @@ final class SaveWorkflowCopy {
         }
     }
 
-    public static boolean areOriginAndDestinyEqual(final Path srcPath, final String workflowGroupItemId,
-        final String fileName, final LocalWorkspace localWorkspace) {
-        final var destPath = localWorkspace.getAbsolutePath(workflowGroupItemId).resolve(fileName);
+    private static boolean areOriginAndDestinationEqual(final Path srcPath, final Path destWorkflowGroupPath,
+        final String fileName) {
+        final var destPath = destWorkflowGroupPath.resolve(fileName);
         return srcPath.equals(destPath);
     }
 
-    private static String askForDestinationWorkflowGroupAndGetId(final SpaceDestinationPicker picker) {
+    private static Path getDestinationWorkflowGroupPath(final SpaceDestinationPicker picker) {
         final var dest = picker.getSelectedDestination();
         if (dest == null) {
             return null;
         }
 
         try {
-            final var localFile = dest.getDestination().resolveToLocalFile();
-            return LocalSpaceUtil.getLocalWorkspace().getItemId(localFile.toPath());
+            return dest.getDestination().resolveToLocalFile().toPath();
         } catch (CoreException e) {
             DesktopAPUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow locally didn't work",
                 LOGGER, e);

@@ -72,6 +72,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.entity.NodeIDEnt;
@@ -129,6 +130,29 @@ final class SaveWorkflow {
     private static boolean isExecutionInProgress(final WorkflowManager wfm) {
         var state = wfm.getNodeContainerState();
         return state.isExecutionInProgress() || state.isExecutingRemotely();
+    }
+
+    /**
+     * Save regular workflow as
+     * @param context The context with the information about the new workflow
+     * @param monitor The monitor to show the progress of this operation
+     * @param wfm The Workflowmanager that will save the workflow
+     * @param svg workflow SVG
+     */
+    static boolean saveWorkflowAs(final WorkflowContextV2 context, final IProgressMonitor monitor,
+        final WorkflowManager wfm, final String svg) {
+        monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
+
+        try {
+            wfm.saveAs(context, DesktopAPUtil.toExecutionMonitor(monitor));
+        } catch (final IOException | CanceledExecutionException | LockFailedException e) {
+            DesktopAPUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow didn't work", LOGGER, e);
+            monitor.done();
+            return false;
+        }
+        saveWorkflowSvg(wfm.getName(), svg, context.getExecutorInfo().getLocalWorkflowPath());
+        monitor.done();
+        return true;
     }
 
     /**
