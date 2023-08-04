@@ -1,5 +1,6 @@
 import { camelCase } from "lodash";
 import robotoCondensed from "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff";
+import type { KnimeNode } from "@/api/custom-types";
 
 const LICENSE = `<!--
 The embedded fonts are based on open source fonts
@@ -130,6 +131,17 @@ const getSVGElementClone = (
   return { svgClone, teardown };
 };
 
+interface edgeObject {
+  dimension: {
+    width: number;
+    height: number;
+  };
+  position: {
+    x: number;
+    y: number;
+  };
+}
+
 /**
  * Updates the viewBox property on the SVG element by using the same size as
  * the workflow sheet (actual workspace size)
@@ -142,7 +154,12 @@ const getSVGElementClone = (
 const updateViewBox = (
   svgClone: SVGSVGElement,
   workflowSheet: HTMLElement,
-  edges: any
+  edges: {
+    bottomEdge: edgeObject;
+    rightEdge: edgeObject;
+    leftEdge: edgeObject;
+    length: number;
+  }
 ) => {
   let minX = parseInt(workflowSheet.getAttribute("x"), 10);
   const minY = parseInt(workflowSheet.getAttribute("y"), 10);
@@ -327,21 +344,23 @@ const addFontStyles = async (svgElement: SVGElement) => {
   svgElement.getElementsByTagName("defs")[0].appendChild(styleTag);
 };
 
-const findEdges = (nodesObject: any) => {
-  const nodes: any = Object.values(nodesObject);
+const findEdges = (nodesObject: Record<string, KnimeNode>) => {
+  const nodes = Object.values(nodesObject);
 
   const { minX, maxX, maxY } = nodes.reduce(
     (result, node) => {
-      if (node.annotation) {
-        if (node.position.x < result.minX.position.x) {
-          result.minX = node;
-        }
-        if (node.position.x > result.maxX.position.x) {
-          result.maxX = node;
-        }
-        if (node.position.y > result.maxY.position.y) {
-          result.maxY = node;
-        }
+      if (!node.annotation) {
+        return result;
+      }
+
+      if (node.position.x < result.minX.position.x) {
+        result.minX = node;
+      }
+      if (node.position.x > result.maxX.position.x) {
+        result.maxX = node;
+      }
+      if (node.position.y > result.maxY.position.y) {
+        result.maxY = node;
       }
       return result;
     },
@@ -368,7 +387,7 @@ const findEdges = (nodesObject: any) => {
 export const generateWorkflowPreview = async (
   svgElement: SVGSVGElement,
   isEmpty: boolean,
-  nodes: Object
+  nodes: Record<string, KnimeNode>
 ) => {
   if (!svgElement) {
     return null;

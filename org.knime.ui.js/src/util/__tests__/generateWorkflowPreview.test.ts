@@ -1,4 +1,5 @@
 import { expect, describe, beforeAll, it, vi } from "vitest";
+import { createNativeNode } from "@/test/factories";
 import { generateWorkflowPreview } from "../generateWorkflowPreview";
 
 vi.mock(
@@ -6,40 +7,40 @@ vi.mock(
   () => "font data"
 );
 
+const node1 = createNativeNode({
+  id: "root:1",
+  annotation: {
+    text: {
+      value:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
+    },
+  },
+  position: {
+    y: -1260,
+    x: -1085,
+  },
+});
+const node2 = createNativeNode({
+  id: "root:2",
+  annotation: null,
+  position: {
+    y: -1515,
+    x: -1880,
+  },
+});
+const node3 = createNativeNode({
+  id: "root:3",
+  annotation: null,
+  position: {
+    y: -1790,
+    x: -1665,
+  },
+});
+
 const nodes = {
-  "root:1": {
-    annotation: {
-      text: {
-        value:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
-        contentType: "text/plain",
-      },
-      textAlign: "center",
-      styleRanges: [],
-    },
-    id: "root:1",
-    position: {
-      y: -1260,
-      x: -1085,
-    },
-    kind: "node",
-  },
-  "root:2": {
-    id: "root:2",
-    position: {
-      y: -1515,
-      x: -1880,
-    },
-    kind: "node",
-  },
-  "root:3": {
-    id: "root:3",
-    position: {
-      y: -1790,
-      x: -1665,
-    },
-    kind: "node",
-  },
+  [node1.id]: node1,
+  [node2.id]: node2,
+  [node3.id]: node3,
 };
 
 describe("generateWorkflowPreview", () => {
@@ -192,27 +193,23 @@ describe("generateWorkflowPreview", () => {
       height: 200,
     };
     const { svg } = setup({ workflowSheetDimensions });
-    const node = {
-      "root:1": {
-        annotation: {
-          text: {
-            value:
-              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
-            contentType: "text/plain",
-          },
-          textAlign: "center",
-          styleRanges: [],
+    const node = createNativeNode({
+      id: "root:1",
+      annotation: {
+        text: {
+          value:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
         },
-        id: "root:1",
-        position: {
-          y: -1260,
-          x: -1085,
-        },
-        kind: "node",
       },
-    };
+      position: {
+        y: -1260,
+        x: -1085,
+      },
+    });
 
-    const output = await generateWorkflowPreview(svg, false, node);
+    const output = await generateWorkflowPreview(svg, false, {
+      [node.id]: node,
+    });
 
     const outputEl = createElementFromOutput(output);
     expect(outputEl.getAttribute("viewBox")).toBe("80 20 20 -1280");
@@ -226,35 +223,33 @@ describe("generateWorkflowPreview", () => {
       height: 200,
     };
     const { svg } = setup({ workflowSheetDimensions });
-    const node = {
-      "root:1": {
-        annotation: {
-          text: {
-            value:
-              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
-            contentType: "text/plain",
-          },
-          textAlign: "center",
-          styleRanges: [],
+    const node1 = createNativeNode({
+      id: "root:1",
+      annotation: {
+        text: {
+          value:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
         },
-        id: "root:1",
-        position: {
-          y: -1515,
-          x: -1880,
-        },
-        kind: "node",
       },
-      "root:2": {
-        id: "root:2",
-        position: {
-          y: -1260,
-          x: -1085,
-        },
-        kind: "node",
+      position: {
+        y: -1515,
+        x: -1880,
       },
+    });
+    const node2 = createNativeNode({
+      id: "root:2",
+      annotation: null,
+      position: {
+        y: -1260,
+        x: -1085,
+      },
+    });
+    const nodes = {
+      [node1.id]: node1,
+      [node2.id]: node2,
     };
 
-    const output = await generateWorkflowPreview(svg, false, node);
+    const output = await generateWorkflowPreview(svg, false, nodes);
 
     const outputEl = createElementFromOutput(output);
     expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 -1535");
