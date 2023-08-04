@@ -129,7 +129,7 @@ public final class ImportURI {
 
         if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
-            return OpenWorkflow.openWorkflowFromURI(repoObjectImport);
+            return OpenWorkflow.openWorkflowCopy(repoObjectImport);
         } else {
             var cursorLocation = cursorLocationSupplier.get();
             return sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
@@ -217,7 +217,7 @@ public final class ImportURI {
             ImportAPI.importComponent(projectId, workflowId, repoObjectImport.getKnimeURI(), true, canvasX, canvasY);
         } else if (entityImport instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
-            return OpenWorkflow.openWorkflowFromURI(repoObjectImport);
+            return OpenWorkflow.openWorkflowCopy(repoObjectImport);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
             return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId,
                 workflowId, canvasX, canvasY);
