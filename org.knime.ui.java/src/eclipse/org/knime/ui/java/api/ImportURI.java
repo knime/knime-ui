@@ -83,6 +83,7 @@ import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
+import org.knime.workbench.core.imports.ExtensionImport;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.core.imports.RepoObjectImport.RepoObjectType;
@@ -130,6 +131,10 @@ public final class ImportURI {
         if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
             return OpenWorkflow.openWorkflowCopy(repoObjectImport);
+        } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
+            startInstallationJob(extensionImport.getName(), extensionImport.getSymbolicName(),
+                extensionImport.getUpdateSiteInfo());
+            return true;
         } else {
             var cursorLocation = cursorLocationSupplier.get();
             return sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
