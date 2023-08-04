@@ -239,8 +239,8 @@ public final class AppStatePersistor {
                         "No workflow project found at " + absolutePath);
                     return null;
                 }
-                return DesktopAPUtil.runWithProgress("Loading workflow", LOGGER, monitor -> {// NOSONAR better than inline class
-                    var wfm = DesktopAPUtil.loadWorkflow(localSpace, itemId, monitor);
+                return DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {// NOSONAR better than inline class
+                    var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, itemId, monitor);
                     if (wfm == null) {
                         DesktopAPUtil.showWarning("Failed to load workflow",
                             "The workflow at '" + absolutePath + "' couldn't be loaded.");
@@ -248,7 +248,6 @@ public final class AppStatePersistor {
                     return wfm;
                 }).orElse(null);
             }
-
         };
     }
 

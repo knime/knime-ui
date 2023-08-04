@@ -58,16 +58,24 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
+import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.ProgressMonitorAdapter;
@@ -75,6 +83,14 @@ import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
+import org.knime.workbench.editor2.WorkflowEditor;
+import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.workbench.explorer.RemoteWorkflowInput;
+import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
+import org.knime.workbench.explorer.filesystem.LocalExplorerFileStore;
+import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
+import org.knime.workbench.explorer.view.actions.DownloadAndOpenWorkflowAction;
+import org.knime.workbench.explorer.view.actions.WorkflowDownload;
 
 /**
  * Summarizes shared utility methods which are only relevant if the Web UI is run within the desktop AP. Those methods,
@@ -82,9 +98,11 @@ import org.knime.workbench.editor2.LoadWorkflowRunnable;
  *
  * @author Leonard Wörteler, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  */
 public final class DesktopAPUtil {
 
+    public static final String LOADING_WORKFLOW_PROGRESS_MSG = "Loading workflow...";
     private static final NodeLogger LOGGER = NodeLogger.getLogger(DesktopAPUtil.class);
 
     private DesktopAPUtil() {
@@ -92,20 +110,31 @@ public final class DesktopAPUtil {
     }
 
     /**
-     * Loads the workflow for the given item-id from the given space.
+     * Loads the workflow for the given item-id from the given space while reporting progress to the given monitor.
      *
      * @param space the space
      * @param itemId the item ID of the workflow
      * @param monitor progress monitor
      * @return the loaded workflow
      */
-    public static WorkflowManager loadWorkflow(final Space space, final String itemId, final IProgressMonitor monitor) {
-        monitor.beginTask("Loading workflow...", IProgressMonitor.UNKNOWN);
+    public static WorkflowManager fetchAndLoadWorkflowWithTask(final Space space, final String itemId,
+        final IProgressMonitor monitor) {
+        monitor.beginTask(LOADING_WORKFLOW_PROGRESS_MSG, IProgressMonitor.UNKNOWN);
         final var path = space.toLocalAbsolutePath(DesktopAPUtil.toExecutionMonitor(monitor), itemId);
         monitor.done();
-
         final var workflowContext = createWorkflowContext(space, itemId, path);
         return loadWorkflow(monitor, path, workflowContext);
+    }
+
+    /**
+     * Loads the workflow from the given context while displaying an SWT modal loading indicator
+     * 
+     * @param ctx The workflow context
+     * @return The optional workflow manager that has been loaded.
+     */
+    public static Optional<WorkflowManager> loadWorkflowWithProgress(WorkflowContextV2 ctx) {
+        return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+            progress -> loadWorkflow(progress, ctx.getExecutorInfo().getLocalWorkflowPath(), ctx));
     }
 
     /**
@@ -126,7 +155,7 @@ public final class DesktopAPUtil {
                 try {
                     var exec = DesktopAPUtil.toExecutionMonitor(monitor);
                     wfm.save(workflowPath.toFile(), exec, true);
-                } catch (final IOException | CanceledExecutionException | LockFailedException e) {
+                } catch (final IOException | CanceledExecutionException | LockFailedException e) { // NOSONAR: logged
                     // should never happen
                     LOGGER.error(e);
                 }
@@ -263,6 +292,106 @@ public final class DesktopAPUtil {
             Thread.currentThread().interrupt();
         }
         return Optional.empty();
+    }
+
+    public static Optional<RemoteWorkflowInput>
+        downloadWorkflowWithProgress(final RemoteExplorerFileStore remoteFileStore, HubSpaceLocationInfo locationInfo) {
+        return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+            progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
+    }
+
+    private static Optional<RemoteWorkflowInput>
+        downloadWorkflowWithProgress(final RemoteExplorerFileStore remoteFileStore) {
+        return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+            progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, null));
+    }
+
+    /**
+     * Downloads a remote workflow into a temporary directory. This code is heavily inspired by the
+     * {@link DownloadAndOpenWorkflowAction}.
+     *
+     * @param progress
+     * @param source source file store
+     * @param locationInfo inferred from {@code source} if null.
+     * @return
+     */
+    static RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
+        final RemoteExplorerFileStore source, final LocationInfo locationInfo) {
+        final LocalExplorerFileStore tmpDestDir;
+        try {
+            // fetch the actual name from the remote side because `source.getName()` may only return the repository ID
+            // at that is not always a valid directory name
+            final var name = source.fetchInfo().getName();
+            tmpDestDir = ExplorerMountTable.createExplorerTempDir(name).getChild(name);
+            tmpDestDir.mkdir(EFS.NONE, progress);
+        } catch (CoreException e1) {
+            throw new IllegalStateException(e1);
+        }
+
+        final String[] content;
+        try {
+            new WorkflowDownload(source, tmpDestDir, false, null, progress).runSync(progress);
+            content = tmpDestDir.childNames(EFS.NONE, progress);
+            if (content == null || content.length == 0) {
+                tmpDestDir.delete(EFS.NONE, progress);
+                throw new IllegalStateException("Error during download: No content available.");
+            }
+        } catch (CoreException e) {
+            throw new IllegalStateException(e);
+
+        }
+
+        // it is weird if the length is not 1 (because we downloaded one item)
+        var workflowDir = content.length == 1 ? tmpDestDir.getChild(content[0]) : tmpDestDir;
+        if (workflowDir.fetchInfo().isDirectory()) {
+            final LocalExplorerFileStore wf = workflowDir.getChild(WorkflowPersistor.WORKFLOW_FILE);
+            if (wf.fetchInfo().exists()) {
+                workflowDir = wf;
+            } else {
+                // directories that are not workflows cannot be opened
+                throw new IllegalStateException("Cannot open downloaded content: Directory doesn't contain a workflow");
+            }
+        }
+
+        final WorkflowContextV2 context;
+        try {
+            final var localWorkflowPath = workflowDir.getParent().toLocalFile().toPath();
+            final var mountpointRoot = workflowDir.getContentProvider().getRootStore().toLocalFile().toPath();
+            var effectiveLocationInfo = locationInfo == null ? source.locationInfo().orElse(null) : locationInfo;
+            CheckUtils.checkNotNull(effectiveLocationInfo, "Location info could not be determined for " + source);
+            context = WorkflowContextV2.builder() //
+                .withAnalyticsPlatformExecutor(builder -> builder //
+                    .withCurrentUserAsUserId() //
+                    .withLocalWorkflowPath(localWorkflowPath) //
+                    .withMountpoint(source.getMountID(), mountpointRoot)) //
+                .withLocation(effectiveLocationInfo) //
+                .build(); //
+        } catch (CoreException e) {
+            throw new IllegalStateException(e);
+        }
+
+        return new RemoteWorkflowInput(workflowDir, context);
+    }
+
+    /**
+     * Open an editor for the given file store in the shared editor area.
+     *
+     * @param fileStore The file store for the editor.
+     * @throws PartInitException If the editor part could not be initialized.
+     */
+    public static void openEditor(final AbstractExplorerFileStore fileStore) throws PartInitException {
+        var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        final IEditorInput input;
+        if (fileStore instanceof RemoteExplorerFileStore remoteFileStore) {
+            final var tempInput = downloadWorkflowWithProgress(remoteFileStore);
+            if (tempInput.isEmpty()) {
+                return;
+            }
+            input = tempInput.get();
+        } else {
+            input = new FileStoreEditorInput(fileStore.getChild(WorkflowPersistor.WORKFLOW_FILE));
+        }
+        page.openEditor(input, WorkflowEditor.ID, false);
     }
 
 }

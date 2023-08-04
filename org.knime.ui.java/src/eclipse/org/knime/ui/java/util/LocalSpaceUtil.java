@@ -164,14 +164,6 @@ public final class LocalSpaceUtil {
     }
 
     /**
-     * @param projectName
-     * @return a globally unique project id combined with the given project name
-     */
-    public static String getUniqueProjectId(final String projectName) {
-        return projectName + "_" + UUID.randomUUID();
-    }
-
-    /**
      * @param spaceProviderId
      * @param spaceId
      * @return Returns {@code true} if both parameters indicate we work within the {@link LocalWorkspace}, {@code false}
@@ -179,5 +171,13 @@ public final class LocalSpaceUtil {
      */
     public static boolean isLocalSpace(final String spaceProviderId, final String spaceId) {
         return spaceProviderId.equals(LOCAL_SPACE_PROVIDER_ID) && spaceId.equals(LocalWorkspace.LOCAL_WORKSPACE_ID);
+    }
+
+    /**
+     * @param projectName
+     * @return a globally unique project id combined with the given project name
+     */
+    public static String getUniqueProjectId(final String projectName) {
+        return projectName + "_" + UUID.randomUUID();
     }
 }
