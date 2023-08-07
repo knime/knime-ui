@@ -102,7 +102,9 @@ import org.knime.workbench.explorer.view.actions.WorkflowDownload;
  */
 public final class DesktopAPUtil {
 
+    @SuppressWarnings("javadoc")
     public static final String LOADING_WORKFLOW_PROGRESS_MSG = "Loading workflow...";
+
     private static final NodeLogger LOGGER = NodeLogger.getLogger(DesktopAPUtil.class);
 
     private DesktopAPUtil() {
@@ -128,11 +130,11 @@ public final class DesktopAPUtil {
 
     /**
      * Loads the workflow from the given context while displaying an SWT modal loading indicator
-     * 
+     *
      * @param ctx The workflow context
      * @return The optional workflow manager that has been loaded.
      */
-    public static Optional<WorkflowManager> loadWorkflowWithProgress(WorkflowContextV2 ctx) {
+    public static Optional<WorkflowManager> loadWorkflowWithProgress(final WorkflowContextV2 ctx) {
         return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> loadWorkflow(progress, ctx.getExecutorInfo().getLocalWorkflowPath(), ctx));
     }
@@ -294,8 +296,15 @@ public final class DesktopAPUtil {
         return Optional.empty();
     }
 
-    public static Optional<RemoteWorkflowInput>
-        downloadWorkflowWithProgress(final RemoteExplorerFileStore remoteFileStore, HubSpaceLocationInfo locationInfo) {
+    /**
+     * Downloads a remote workflow into a temporary directory.
+     *
+     * @param remoteFileStore
+     * @param locationInfo
+     * @return an empty optional if the download or opening the workflow failed
+     */
+    public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgress(
+        final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
         return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
     }
@@ -315,7 +324,7 @@ public final class DesktopAPUtil {
      * @param locationInfo inferred from {@code source} if null.
      * @return
      */
-    static RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
+    private static RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
         final RemoteExplorerFileStore source, final LocationInfo locationInfo) {
         final LocalExplorerFileStore tmpDestDir;
         try {
@@ -380,7 +389,6 @@ public final class DesktopAPUtil {
      * @throws PartInitException If the editor part could not be initialized.
      */
     public static void openEditor(final AbstractExplorerFileStore fileStore) throws PartInitException {
-        var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         final IEditorInput input;
         if (fileStore instanceof RemoteExplorerFileStore remoteFileStore) {
             final var tempInput = downloadWorkflowWithProgress(remoteFileStore);
@@ -391,6 +399,7 @@ public final class DesktopAPUtil {
         } else {
             input = new FileStoreEditorInput(fileStore.getChild(WorkflowPersistor.WORKFLOW_FILE));
         }
+        var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         page.openEditor(input, WorkflowEditor.ID, false);
     }
 
