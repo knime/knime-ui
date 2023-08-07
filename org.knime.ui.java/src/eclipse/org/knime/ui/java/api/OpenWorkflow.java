@@ -82,7 +82,7 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
  */
 final class OpenWorkflow {
 
-    static final NodeLogger LOGGER = NodeLogger.getLogger(OpenWorkflow.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenWorkflow.class);
 
     private OpenWorkflow() {
        // utility
@@ -90,7 +90,7 @@ final class OpenWorkflow {
 
     /**
      * Open a workflow project from a mounted space
-     * 
+     *
      * @param spaceId The ID of the space the item is in
      * @param itemId The item ID of the workflow to open
      * @param spaceProviderId The ID of the space provider of the space
@@ -111,7 +111,7 @@ final class OpenWorkflow {
 
     /**
      * Fetch and open a local copy of a workflow sourced from the given import (e.g. by dropping an URI)
-     * 
+     *
      * @apiNote While opening a workflow form a mounted remote space may also open them as local copies, the behaviour
      *          of these two cases is different w.r.t. interaction with the space explorer, opening and saving.
      * @param repoObjectImport The source of the workflow
@@ -135,7 +135,7 @@ final class OpenWorkflow {
      *
      * @param knimeUrl The knime:// URI identifying the source of the workflow to load
      */
-    private static void openWorkflowInClassicAndWebUI(URI knimeUrl) {
+    private static void openWorkflowInClassicAndWebUI(final URI knimeUrl) {
         try {
             DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl));
             hideSharedEditorArea();
@@ -149,7 +149,7 @@ final class OpenWorkflow {
     /**
      * Fetch, load, and open the workflow in the Modern/Web UI. Those workflows won't be available in the classic UI
      * when switching to it.
-     * 
+     *
      * @implNote Needs to be standalone (not wrapped in progress manager) to be testable.
      * @param spaceId
      * @param itemId
@@ -174,7 +174,7 @@ final class OpenWorkflow {
     }
 
     private static void openWorkflowInWebUIOnly(final WorkflowManager wfm, final WorkflowProject wfProj,
-        WorkflowType type) {
+        final WorkflowType type) {
         // register workflow project
         var wpm = WorkflowProjectManager.getInstance();
         wpm.addWorkflowProject(wfProj.getID(), wfProj);
