@@ -131,7 +131,7 @@ const getSVGElementClone = (
   return { svgClone, teardown };
 };
 
-interface edgeObject {
+interface EdgeObject {
   dimension: {
     width: number;
     height: number;
@@ -155,9 +155,9 @@ const updateViewBox = (
   svgClone: SVGSVGElement,
   workflowSheet: HTMLElement,
   edges: {
-    bottomEdge: edgeObject;
-    rightEdge: edgeObject;
-    leftEdge: edgeObject;
+    bottomEdge: EdgeObject;
+    rightEdge: EdgeObject;
+    leftEdge: EdgeObject;
     length: number;
   }
 ) => {
