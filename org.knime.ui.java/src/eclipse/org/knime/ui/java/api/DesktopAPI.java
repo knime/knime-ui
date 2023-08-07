@@ -84,6 +84,7 @@ public final class DesktopAPI {
 
     private static final List<Class<?>> CONTRIBUTING_CLASSES = List.of( //
         NodeAPI.class, //
+        PortAPI.class, //
         WorkflowAPI.class, //
         SpaceAPI.class, //
         ImportAPI.class, //
