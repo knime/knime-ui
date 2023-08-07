@@ -2,9 +2,8 @@ import { expect, describe, it } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 
-import type { DeepPartial } from "@/test/utils";
-
-import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
+import { createNativeNode, createPort } from "@/test/factories";
+import type { AvailablePortTypes } from "@/api/custom-types";
 import { NodeState, PortType } from "@/api/gateway-api/generated-api";
 import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
 
@@ -12,7 +11,7 @@ import PortViewTabOutput from "../PortViewTabOutput.vue";
 import PortViewTabToggles from "../PortViewTabToggles.vue";
 
 describe("PortViewTabOutput.vue", () => {
-  const dummyNode: DeepPartial<KnimeNode> = {
+  const dummyNode = createNativeNode({
     id: "node1",
     outPorts: [
       { typeId: "flowVariable", portContentVersion: 456 },
@@ -24,7 +23,7 @@ describe("PortViewTabOutput.vue", () => {
     allowedActions: {
       canExecute: false,
     },
-  };
+  });
 
   const availablePortTypes: AvailablePortTypes = {
     table: {
@@ -256,7 +255,9 @@ describe("PortViewTabOutput.vue", () => {
             ...dummyNode,
             state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
             allowedActions: { canExecute: true },
-            outPorts: dummyNode.outPorts.concat({ typeId: "table" }),
+            outPorts: dummyNode.outPorts.concat(
+              createPort({ typeId: "table", portContentVersion: undefined })
+            ),
           },
           selectedPortIndex: 2,
         },
@@ -304,7 +305,10 @@ describe("PortViewTabOutput.vue", () => {
 
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
-          message: "Output is available after execution.",
+          error: expect.objectContaining({
+            type: "NODE",
+            code: "NODE_BUSY",
+          }),
           loading: true,
         }),
       );

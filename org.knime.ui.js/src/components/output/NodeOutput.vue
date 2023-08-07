@@ -180,7 +180,7 @@ export default defineComponent({
         {{ outputState.message }}
         <div
           v-if="outputState?.error?.code === 'NO_SUPPORTED_VIEW'"
-          class="execute-open-legacy-view-action"
+          data-testid="execute-open-legacy-view-action"
         >
           <Button
             class="action-button"

@@ -7,6 +7,7 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import * as selectionStore from "@/store/selection";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import Button from "webapps-common/ui/components/Button.vue";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
@@ -65,6 +66,7 @@ describe("NodeOutput.vue", () => {
     selectedNodeIds = ["node1"],
     isDragging = false,
     executeNodes = vi.fn(),
+    executeNodeAndOpenLegacyPortView = vi.fn(),
   } = {}) => {
     const workflow = {
       mutations: {
@@ -82,7 +84,7 @@ describe("NodeOutput.vue", () => {
         },
         isDragging,
       },
-      actions: { executeNodes },
+      actions: { executeNodes, executeNodeAndOpenLegacyPortView },
     };
 
     const application = {
@@ -152,7 +154,7 @@ describe("NodeOutput.vue", () => {
     const wrapper = doMount();
     const viewComponent = wrapper.findComponent(PortViewTabOutput);
 
-    viewComponent.vm.$emit("output-state-change", { message: "Some message" });
+    viewComponent.vm.$emit("outputStateChange", { message: "Some message" });
 
     await Vue.nextTick();
     expect(placeholderMessage(wrapper)).toBe("Some message");
@@ -164,7 +166,7 @@ describe("NodeOutput.vue", () => {
     await Vue.nextTick();
 
     const viewComponent = wrapper.findComponent(NodeViewTabOutput);
-    viewComponent.vm.$emit("output-state-change", { message: "Some message" });
+    viewComponent.vm.$emit("outputStateChange", { message: "Some message" });
 
     await Vue.nextTick();
     expect(placeholderMessage(wrapper)).toBe("Some message");
@@ -174,7 +176,7 @@ describe("NodeOutput.vue", () => {
     const wrapper = doMount();
     const portView = wrapper.findComponent(PortViewTabOutput);
 
-    portView.vm.$emit("output-state-change", {
+    portView.vm.$emit("outputStateChange", {
       loading: true,
       message: "Loading data",
     });
@@ -287,11 +289,23 @@ describe("NodeOutput.vue", () => {
         });
 
       it("shows button if no supported view available", async () => {
-        const wrapper = doMount(storeWithNode(nodePartial));
+        const $store = storeWithNode(nodePartial);
+        const dispatchSpy = vi.spyOn($store, "dispatch");
+        const wrapper = doMount($store);
         await triggerOutputStateChange(wrapper, outputState);
         await nextTick();
-        expect(wrapper.find(".execute-open-legacy-view-action").exists()).toBe(
-          true
+        const buttonWrapper = wrapper.find(
+          '[data-testid="execute-open-legacy-view-action"]'
+        );
+
+        expect(buttonWrapper.exists()).toBe(true);
+        await buttonWrapper.findComponent(Button).trigger("click");
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          "workflow/executeNodeAndOpenLegacyPortView",
+          {
+            nodeId: "1",
+            portIdx: 0,
+          }
         );
       });
 

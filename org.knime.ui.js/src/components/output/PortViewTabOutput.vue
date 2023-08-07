@@ -191,14 +191,17 @@ export default defineComponent({
         return false;
       }
 
-      const canEx = canExecute(this.selectedNode, this.selectedPortIndex);
+      const canSelectedNodeExecute = canExecute(
+        this.selectedNode,
+        this.selectedPortIndex
+      );
 
       if (this.hasNoDataValidationError) {
-        return canEx;
+        return canSelectedNodeExecute;
       }
 
       const isFlowVariable = this.fullPortObject.kind === "flowVariable";
-      return canEx && !isFlowVariable;
+      return canSelectedNodeExecute && !isFlowVariable;
     },
   },
 
