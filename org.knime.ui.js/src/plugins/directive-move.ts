@@ -88,6 +88,8 @@ interface MoveState {
   startPosition?: XY;
   /** Store the position of the previous move (if any) */
   previousPosition?: XY;
+  /** Store if a onMove event has been triggered */
+  hasFirstOnMoveOccurred: boolean;
 }
 
 const stateMap: WeakMap<HTMLElement, MoveState> = new WeakMap();
@@ -115,6 +117,7 @@ const createPointerdownHandler =
     const { clientX, clientY } = event;
     delete state.previousPosition;
     state.startPosition = { x: clientX, y: clientY };
+    state.hasFirstOnMoveOccurred = false;
   };
 
 const createPointermoveHandler =
@@ -122,6 +125,13 @@ const createPointermoveHandler =
     const state = stateMap.get(srcElement);
 
     if (!state.startPosition) {
+      return;
+    }
+
+    // skip first onMove event
+    // on windows touchpads a single onMove is triggered when the user meant a double tap
+    if (!state.hasFirstOnMoveOccurred) {
+      state.hasFirstOnMoveOccurred = true;
       return;
     }
 
@@ -220,6 +230,7 @@ const initializeState = (el: HTMLElement, value: DirectiveBinding) => {
     pointerdownHandler: createPointerdownHandler(el),
     pointermoveHandler: createPointermoveHandler(el),
     pointerupHandler: createPointerupHandler(el),
+    hasFirstOnMoveOccurred: false,
   };
 
   el.addEventListener("pointerdown", state.pointerdownHandler);
