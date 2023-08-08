@@ -73,7 +73,9 @@ export default ({ $store, $router }) => {
 
   API.desktop.registerEventHandlers({
     async SaveAndCloseWorkflowsEvent({ projectIds, params = [] }) {
-      $store.dispatch("application/updateGlobalLoader", { loading: true });
+      await $store.dispatch("application/updateGlobalLoader", {
+        loading: true,
+      });
 
       const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
       const nodes = $store.state.activeWorkflow.nodes;
@@ -100,6 +102,20 @@ export default ({ $store, $router }) => {
         // send over any parameters that are sent in the event payload, or empty in case none
         ...params,
       );
+
+      for (const closingProjectId of projectIds) {
+        await $store.dispatch(
+          "application/removeCanvasState",
+          closingProjectId,
+          { root: true },
+        );
+
+        await $store.dispatch(
+          "application/removeFromRootWorkflowSnapshots",
+          { projectId: closingProjectId },
+          { root: true },
+        );
+      }
     },
 
     ImportURIEvent({ x, y }) {

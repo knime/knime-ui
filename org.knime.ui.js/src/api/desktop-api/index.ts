@@ -6,7 +6,7 @@ export interface DesktopEventHandlers {
   SaveAndCloseWorkflowsEvent(payload: {
     projectIds: Array<string>;
     params: unknown[];
-  }): void;
+  }): void | Promise<any>;
 
   ImportURIEvent(payload: { x: number; y: number }): void;
 
