@@ -100,7 +100,7 @@ final class OpenWorkflow {
             final var space =
                 SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
             var knimeUrl = space.toKnimeUrl(itemId);
-            openWorkflowInClassicAndWebUI(knimeUrl);
+            openWorkflowInClassicAndWebUI(knimeUrl, null);
         } else {
             DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> { // NOSONAR better than inline class
                 OpenWorkflow.fetchAndOpenWorkflowInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
@@ -119,7 +119,8 @@ final class OpenWorkflow {
      */
     static boolean openWorkflowCopy(final RepoObjectImport repoObjectImport) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            openWorkflowInClassicAndWebUI(repoObjectImport.getKnimeURI());
+            openWorkflowInClassicAndWebUI(repoObjectImport.getKnimeURI(), repoObjectImport.locationInfo()
+                .filter(HubSpaceLocationInfo.class::isInstance).map(HubSpaceLocationInfo.class::cast).orElse(null));
         } else {
             var wfm = fetchAndLoadWorkflowWithProgress(repoObjectImport);
             if (wfm == null) {
@@ -135,9 +136,9 @@ final class OpenWorkflow {
      *
      * @param knimeUrl The knime:// URI identifying the source of the workflow to load
      */
-    private static void openWorkflowInClassicAndWebUI(final URI knimeUrl) {
+    private static void openWorkflowInClassicAndWebUI(final URI knimeUrl, final HubSpaceLocationInfo locationInfo) {
         try {
-            DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl));
+            DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl), locationInfo);
             hideSharedEditorArea();
             ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors();
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();

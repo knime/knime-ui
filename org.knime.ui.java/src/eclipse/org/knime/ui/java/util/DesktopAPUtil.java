@@ -300,19 +300,13 @@ public final class DesktopAPUtil {
      * Downloads a remote workflow into a temporary directory.
      *
      * @param remoteFileStore
-     * @param locationInfo
+     * @param locationInfo if {@code null} it will be inferred from 'remoteFileStore'
      * @return an empty optional if the download or opening the workflow failed
      */
     public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgress(
         final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
         return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
-    }
-
-    private static Optional<RemoteWorkflowInput>
-        downloadWorkflowWithProgress(final RemoteExplorerFileStore remoteFileStore) {
-        return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
-            progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, null));
     }
 
     /**
@@ -386,12 +380,14 @@ public final class DesktopAPUtil {
      * Open an editor for the given file store in the shared editor area.
      *
      * @param fileStore The file store for the editor.
+     * @param locationInfo if {@code null} it will be inferred from 'fileStore'
      * @throws PartInitException If the editor part could not be initialized.
      */
-    public static void openEditor(final AbstractExplorerFileStore fileStore) throws PartInitException {
+    public static void openEditor(final AbstractExplorerFileStore fileStore, final HubSpaceLocationInfo locationInfo)
+        throws PartInitException {
         final IEditorInput input;
         if (fileStore instanceof RemoteExplorerFileStore remoteFileStore) {
-            final var tempInput = downloadWorkflowWithProgress(remoteFileStore);
+            final var tempInput = downloadWorkflowWithProgress(remoteFileStore, locationInfo);
             if (tempInput.isEmpty()) {
                 return;
             }
