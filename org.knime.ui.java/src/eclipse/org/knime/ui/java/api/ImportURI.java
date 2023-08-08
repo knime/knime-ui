@@ -60,8 +60,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.eclipse.core.runtime.IBundleGroup;
+import org.eclipse.core.runtime.IBundleGroupProvider;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.KNIMEComponentInformation;
 import org.knime.core.node.NodeLogger;
@@ -83,6 +88,7 @@ import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
+import org.knime.workbench.core.imports.ExtensionImport;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.core.imports.RepoObjectImport.RepoObjectType;
@@ -130,6 +136,8 @@ public final class ImportURI {
         if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
             return OpenWorkflow.openWorkflowCopy(repoObjectImport);
+        } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
+            return checkAndInstallExtension(extensionImport);
         } else {
             var cursorLocation = cursorLocationSupplier.get();
             return sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
@@ -171,6 +179,34 @@ public final class ImportURI {
         if (entityImport instanceof NodeImport && uri.startsWith("http")) {
             NodeTimer.GLOBAL_TIMER.incNodeCreatedVia(NodeCreationType.WEB_UI_HUB);
         }
+    }
+
+    private static boolean checkAndInstallExtension(final ExtensionImport extensionImport) {
+        final var symbolicName = extensionImport.getSymbolicName();
+        final var featureName = extensionImport.getName();
+        if (isFeatureInstalled(symbolicName)) {
+            showPopup("Extension cannot be installed!", "Extension " + featureName + " is already installed",
+                SWT.ICON_INFORMATION);
+            return false;
+        } else {
+            final String[] dialogButtonLabels = {IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL};
+            MessageDialog dialog = new MessageDialog(SWTUtilities.getActiveShell(), "Install Extension?", null,
+                "Do you want to search and install the extension '" + featureName + "'?", MessageDialog.QUESTION,
+                dialogButtonLabels, 0);
+            if ((dialog.open() == 0) && AbstractP2Action.checkSDKAndReadOnly()) {
+                //try installing the missing extension
+                startInstallationJob(featureName, symbolicName, extensionImport.getUpdateSiteInfo());
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private static void showPopup(final String text, final String msg, final int swtIcon) {
+        MessageBox mb = new MessageBox(SWTUtilities.getActiveShell(), swtIcon);
+        mb.setText(text);
+        mb.setMessage(msg);
+        mb.open();
     }
 
     private static boolean sendImportURIEvent(final int x, final int y) {
@@ -273,6 +309,26 @@ public final class ImportURI {
             }
         }), siteInfo);
         DesktopAPUtil.runWithProgress(job.getName(), LOGGER, job::run);
+    }
+
+    /**
+     * Checks whether the provided feature is already installed or not.
+     *
+     * @param featureSymbolicName the feature's symbolic name
+     * @return {@code true} if the feature is already installed, {@code false} otherwise
+     */
+    private static boolean isFeatureInstalled(final String featureSymbolicName) {
+        final String featureName = featureSymbolicName.endsWith(FEATURE_GROUP_SUFFIX)
+            ? featureSymbolicName.substring(0, featureSymbolicName.length() - FEATURE_GROUP_SUFFIX.length())
+            : featureSymbolicName;
+        for (IBundleGroupProvider provider : Platform.getBundleGroupProviders()) {
+            for (IBundleGroup feature : provider.getBundleGroups()) {
+                if (feature.getIdentifier().equals(featureName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean importNodeFromFileURI(final String uri, final String projectId, final String workflowId,
