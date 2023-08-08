@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.util.function.BiConsumer;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.knime.core.webui.node.dialog.NodeDialogManager;
@@ -73,7 +74,10 @@ import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.AppStatePersistorTest;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.mockito.Mockito;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
+import com.equo.comm.api.ICommService;
 import com.equo.middleware.api.IMiddlewareService;
 
 /**
@@ -82,6 +86,13 @@ import com.equo.middleware.api.IMiddlewareService;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 class LifeCycleTest {
+
+    @BeforeEach
+    void initICommService() {
+      BundleContext ctx = FrameworkUtil.getBundle(ICommService.class).getBundleContext();
+      var commServiceMock = Mockito.mock(ICommService.class);
+      ctx.registerService(ICommService.class, commServiceMock, null);
+    }
 
     @Test
     void testHappyPath() throws IOException {
