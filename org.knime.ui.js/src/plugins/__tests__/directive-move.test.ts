@@ -95,7 +95,7 @@ describe("directive-move", () => {
     expect(onMove).not.toHaveBeenCalled();
   });
 
-  it("should handle moving elements", async () => {
+  it("should handle moving elements", () => {
     const { wrapper, setPointerCapture, onMoveStart, onMove } = doMount();
 
     dispatchPointerEvent(wrapper, "pointerdown", {
@@ -103,12 +103,16 @@ describe("directive-move", () => {
       clientY: 50,
     });
 
+    // we ignore on purpose the first on move event after pointerDown
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 0,
+      clientY: 0,
+    });
+
     const moveEvent = dispatchPointerEvent(wrapper, "pointermove", {
       clientX: 100,
       clientY: 100,
     });
-
-    await Vue.nextTick();
 
     expect(onMoveStart).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -172,6 +176,12 @@ describe("directive-move", () => {
       clientY: 50,
     });
 
+    // we ignore on purpose the first on move event after pointerDown
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 0,
+      clientY: 0,
+    });
+
     dispatchPointerEvent(wrapper, "pointermove", {
       clientX: 100,
       clientY: 100,
@@ -230,6 +240,12 @@ describe("directive-move", () => {
       clientY: 50,
     });
 
+    // we ignore on purpose the first on move event after pointerDown
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 0,
+      clientY: 0,
+    });
+
     dispatchPointerEvent(wrapper, "pointermove", {
       clientX: 100,
       clientY: 100,
@@ -249,6 +265,12 @@ describe("directive-move", () => {
     dispatchPointerEvent(wrapper, "pointerdown", {
       clientX: 50,
       clientY: 50,
+    });
+
+    // we ignore on purpose the first on move event after pointerDown
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 0,
+      clientY: 0,
     });
 
     dispatchPointerEvent(wrapper, "pointermove", {
