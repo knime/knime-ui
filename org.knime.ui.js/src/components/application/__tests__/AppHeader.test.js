@@ -74,7 +74,7 @@ describe("AppHeader.vue", () => {
       wrapper.findAllComponents(CloseButton).at(1).trigger("click");
       expect(storeConfig.workflow.actions.closeWorkflow).toHaveBeenCalledWith(
         expect.anything(),
-        "2"
+        "2",
       );
     });
 
@@ -139,7 +139,7 @@ describe("AppHeader.vue", () => {
 
     await Vue.nextTick();
     expect(
-      wrapper.findAllComponents(AppHeaderTab).at(0).props("windowWidth")
+      wrapper.findAllComponents(AppHeaderTab).at(0).props("windowWidth"),
     ).toBe(100);
   });
 
@@ -161,14 +161,14 @@ describe("AppHeader.vue", () => {
     it("hides the switch button when dev mode is disabled", async () => {
       const { wrapper, $store } = doMount();
       expect(
-        wrapper.find('[data-testid="switch-classic"]').exists()
+        wrapper.find('[data-testid="switch-classic"]').exists(),
       ).toBeFalsy();
 
       $store.state.application.devMode = true;
       await wrapper.vm.$nextTick();
 
       expect(
-        wrapper.find('[data-testid="switch-classic"]').exists()
+        wrapper.find('[data-testid="switch-classic"]').exists(),
       ).toBeTruthy();
     });
   });

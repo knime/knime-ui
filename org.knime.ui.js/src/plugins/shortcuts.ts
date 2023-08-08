@@ -28,7 +28,7 @@ export const createShortcutsService = ({
 }) => {
   // get the whole shortcut by name
   const get: ShortcutsService["get"] = (shortcutName) =>
-    ({ ...shortcuts[shortcutName] } as FormattedShortcut);
+    ({ ...shortcuts[shortcutName] }) as FormattedShortcut;
 
   // find the name of the matching shortcut
   // currently only the first match is returned, assuming no two shortcuts share the same hotkey
@@ -93,7 +93,7 @@ export const createShortcutsService = ({
   // execute a shortcut
   const dispatch: ShortcutsService["dispatch"] = (
     shortcutName,
-    payload = {}
+    payload = {},
   ) => {
     const shortcut = shortcuts[shortcutName];
     if (!shortcut) {

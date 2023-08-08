@@ -12,7 +12,7 @@ import { APP_ROUTES } from "./appRoutes";
 
 const registerRoute = (
   env: typeof environment,
-  route: RouteRecordRaw
+  route: RouteRecordRaw,
 ): [RouteRecordRaw] | [] => {
   return env === environment ? [route] : [];
 };

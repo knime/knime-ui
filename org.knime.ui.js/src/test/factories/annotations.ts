@@ -21,18 +21,18 @@ const createAnnotation = (data: DeepPartial<Annotation> = {}): Annotation => {
       },
       styleRanges: [{ start: 0, length: 2, fontSize: 14 }],
     },
-    data
+    data,
   );
 };
 
 export const createNodeAnnotation = (
-  data: Partial<NodeAnnotation> = {}
+  data: Partial<NodeAnnotation> = {},
 ): NodeAnnotation => {
   return createAnnotation(data);
 };
 
 export const createWorkflowAnnotation = (
-  data: DeepPartial<WorkflowAnnotation> = {}
+  data: DeepPartial<WorkflowAnnotation> = {},
 ): WorkflowAnnotation => {
   const baseAnnotation = createAnnotation(data);
 
@@ -45,6 +45,6 @@ export const createWorkflowAnnotation = (
       borderColor: annotationColorPresets.SilverSand,
       bounds: createBounds({ x: 0, y: 0, width: 100, height: 50 }),
     },
-    data
+    data,
   );
 };

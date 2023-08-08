@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
+. "$(dirname -- "$0")/_/husky.sh"
 
-source ./org.knime.ui.js/webapps-common/scripts/prepare-commit-msg
+cd org.knime.ui.js && npm exec knime-eslint-config-prepare-commit-msg "$@"

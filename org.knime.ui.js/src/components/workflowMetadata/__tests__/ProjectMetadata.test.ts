@@ -59,24 +59,24 @@ describe("ProjectMetadata.vue", () => {
 
     expect(wrapper.findAllComponents(FunctionButton).length).toBe(1);
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
-      false
+      false,
     );
     expect(wrapper.findComponent(MetadataDescription).props("modelValue")).toBe(
-      description.value
+      description.value,
     );
 
     expect(wrapper.findComponent(ExternalResourcesList).props("editable")).toBe(
-      false
+      false,
     );
     expect(
-      wrapper.findComponent(ExternalResourcesList).props("modelValue")
+      wrapper.findComponent(ExternalResourcesList).props("modelValue"),
     ).toEqual(links);
 
     expect(wrapper.findComponent(ProjectMetadataTags).props("editable")).toBe(
-      false
+      false,
     );
     expect(
-      wrapper.findComponent(ProjectMetadataTags).props("modelValue")
+      wrapper.findComponent(ProjectMetadataTags).props("modelValue"),
     ).toEqual(tags);
   });
 
@@ -86,15 +86,15 @@ describe("ProjectMetadata.vue", () => {
     await wrapper.findComponent(FunctionButton).find("button").trigger("click");
 
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
-      true
+      true,
     );
 
     expect(wrapper.findComponent(ExternalResourcesList).props("editable")).toBe(
-      true
+      true,
     );
 
     expect(wrapper.findComponent(ProjectMetadataTags).props("editable")).toBe(
-      true
+      true,
     );
   });
 
@@ -110,7 +110,7 @@ describe("ProjectMetadata.vue", () => {
 
     descriptionComponent.vm.$emit(
       "update:modelValue",
-      "<p>This is a new description</>"
+      "<p>This is a new description</>",
     );
 
     linksComponent.vm.$emit("update:modelValue", [
@@ -142,7 +142,7 @@ describe("ProjectMetadata.vue", () => {
       wrapper
         .findComponent(FunctionButton)
         .find("button")
-        .attributes("disabled")
+        .attributes("disabled"),
     ).toBeUndefined();
 
     wrapper.findComponent(ExternalResourcesList).vm.$emit("valid", false);
@@ -153,7 +153,7 @@ describe("ProjectMetadata.vue", () => {
       wrapper
         .findComponent(FunctionButton)
         .find("button")
-        .attributes("disabled")
+        .attributes("disabled"),
     ).toBeDefined();
   });
 
@@ -170,7 +170,7 @@ describe("ProjectMetadata.vue", () => {
 
     descriptionComponent.vm.$emit(
       "update:modelValue",
-      "<p>This is a new description</>"
+      "<p>This is a new description</>",
     );
 
     linksComponent.vm.$emit("update:modelValue", [
@@ -227,13 +227,13 @@ describe("ProjectMetadata.vue", () => {
     const tagsComponent = wrapper.findComponent(ProjectMetadataTags);
 
     expect(descriptionComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.description.value
+      customWorkflow1.projectMetadata.description.value,
     );
     expect(linksComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.links
+      customWorkflow1.projectMetadata.links,
     );
     expect(tagsComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.tags
+      customWorkflow1.projectMetadata.tags,
     );
 
     // switch to workflow 2
@@ -241,13 +241,13 @@ describe("ProjectMetadata.vue", () => {
     await nextTick();
 
     expect(descriptionComponent.props("modelValue")).toEqual(
-      customWorkflow2.projectMetadata.description.value
+      customWorkflow2.projectMetadata.description.value,
     );
     expect(linksComponent.props("modelValue")).toEqual(
-      customWorkflow2.projectMetadata.links
+      customWorkflow2.projectMetadata.links,
     );
     expect(tagsComponent.props("modelValue")).toEqual(
-      customWorkflow2.projectMetadata.tags
+      customWorkflow2.projectMetadata.tags,
     );
 
     // switch back to workflow 1
@@ -255,13 +255,13 @@ describe("ProjectMetadata.vue", () => {
     await nextTick();
 
     expect(descriptionComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.description.value
+      customWorkflow1.projectMetadata.description.value,
     );
     expect(linksComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.links
+      customWorkflow1.projectMetadata.links,
     );
     expect(tagsComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.tags
+      customWorkflow1.projectMetadata.tags,
     );
   });
 
@@ -308,19 +308,19 @@ describe("ProjectMetadata.vue", () => {
       const tagsComponent = wrapper.findComponent(ProjectMetadataTags);
 
       expect(descriptionComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.description.value
+        customWorkflow1.projectMetadata.description.value,
       );
       expect(linksComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.links
+        customWorkflow1.projectMetadata.links,
       );
       expect(tagsComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.tags
+        customWorkflow1.projectMetadata.tags,
       );
 
       // update description
       descriptionComponent.vm.$emit(
         "update:modelValue",
-        "<p>This is an updated description for workflow1</>"
+        "<p>This is an updated description for workflow1</>",
       );
 
       // update links
@@ -353,7 +353,7 @@ describe("ProjectMetadata.vue", () => {
 
       expect(wrapper.find('button[title="Edit metadata"]').exists()).toBe(true);
       expect(wrapper.find('button[title="Save metadata"]').exists()).toBe(
-        false
+        false,
       );
     });
 
@@ -398,19 +398,19 @@ describe("ProjectMetadata.vue", () => {
       const tagsComponent = wrapper.findComponent(ProjectMetadataTags);
 
       expect(descriptionComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.description.value
+        customWorkflow1.projectMetadata.description.value,
       );
       expect(linksComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.links
+        customWorkflow1.projectMetadata.links,
       );
       expect(tagsComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.tags
+        customWorkflow1.projectMetadata.tags,
       );
 
       // update description
       descriptionComponent.vm.$emit(
         "update:modelValue",
-        "<p>This is an updated description for workflow1</>"
+        "<p>This is an updated description for workflow1</>",
       );
 
       // update links
@@ -434,7 +434,7 @@ describe("ProjectMetadata.vue", () => {
 
       expect(wrapper.find('button[title="Edit metadata"]').exists()).toBe(true);
       expect(wrapper.find('button[title="Save metadata"]').exists()).toBe(
-        false
+        false,
       );
     });
   });

@@ -102,7 +102,7 @@ export default defineComponent({
       // use node with padding as minimum
       const currentWidthWithMinimum = Math.max(
         this.latestDimensions.width,
-        this.$shapes.nodeWidthWithPadding
+        this.$shapes.nodeWidthWithPadding,
       );
       return {
         x: this.nodePosition.x + halfNodeSize - currentWidthWithMinimum / 2,
@@ -118,7 +118,7 @@ export default defineComponent({
   methods: {
     handleDimensionChange(
       dimensionName: "width" | "height",
-      dimensionValue: number
+      dimensionValue: number,
     ) {
       // keep a reference of the dimensions so that we can emit the most recent
       // value upon saving. These values can be later provided so that the editor

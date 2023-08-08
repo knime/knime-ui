@@ -74,7 +74,7 @@ describe("findItemsInsideOfRectangle", () => {
 
     // forwards
     expect(
-      findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow })
+      findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow }),
     ).toStrictEqual({
       nodesInside: ["up-left", "down-left", "down-right", "up-right"],
       nodesOutside: [],
@@ -84,7 +84,7 @@ describe("findItemsInsideOfRectangle", () => {
 
     // backwards
     expect(
-      findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow })
+      findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow }),
     ).toStrictEqual({
       nodesInside: ["up-left", "down-left", "down-right", "up-right"],
       nodesOutside: [],
@@ -99,7 +99,7 @@ describe("findItemsInsideOfRectangle", () => {
 
     // forwards
     expect(
-      findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow })
+      findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow }),
     ).toStrictEqual({
       nodesInside: [],
       nodesOutside: ["up-left", "down-left", "down-right", "up-right"],
@@ -109,7 +109,7 @@ describe("findItemsInsideOfRectangle", () => {
 
     // backwards
     expect(
-      findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow })
+      findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow }),
     ).toStrictEqual({
       nodesInside: [],
       nodesOutside: ["up-left", "down-left", "down-right", "up-right"],
@@ -124,7 +124,7 @@ describe("findItemsInsideOfRectangle", () => {
 
     // forwards
     expect(
-      findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow })
+      findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow }),
     ).toStrictEqual({
       nodesInside: ["up-left", "down-left", "down-right", "up-right"],
       nodesOutside: [],
@@ -134,7 +134,7 @@ describe("findItemsInsideOfRectangle", () => {
 
     // backwards
     expect(
-      findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow })
+      findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow }),
     ).toStrictEqual({
       nodesInside: ["up-left", "down-left", "down-right", "up-right"],
       nodesOutside: [],
@@ -149,7 +149,7 @@ describe("findItemsInsideOfRectangle", () => {
 
     // forwards
     expect(
-      findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow })
+      findItemsInsideOfRectangle({ startPos: p1, endPos: p2, workflow }),
     ).toStrictEqual({
       nodesInside: ["up-right"],
       nodesOutside: ["up-left", "down-left", "down-right"],
@@ -159,7 +159,7 @@ describe("findItemsInsideOfRectangle", () => {
 
     // backwards
     expect(
-      findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow })
+      findItemsInsideOfRectangle({ startPos: p2, endPos: p1, workflow }),
     ).toStrictEqual({
       nodesInside: ["up-right"],
       nodesOutside: ["up-left", "down-left", "down-right"],

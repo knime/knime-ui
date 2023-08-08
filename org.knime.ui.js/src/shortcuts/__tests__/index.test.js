@@ -70,21 +70,21 @@ describe("Shortcuts", () => {
           res[key] = shortcuts[key];
           return res;
         },
-        {}
+        {},
       );
       const resultWithoutWorkflow = Object.keys(workflowShortcuts).filter((c) =>
-        workflowShortcuts[c].condition({ $store })
+        workflowShortcuts[c].condition({ $store }),
       );
       expect(resultWithoutWorkflow).not.toStrictEqual(
-        expect.arrayContaining(["save", "undo"])
+        expect.arrayContaining(["save", "undo"]),
       );
 
       $store.state.workflow.activeWorkflow = {};
       const resultWithWorkflow = Object.keys(workflowShortcuts).filter((c) =>
-        workflowShortcuts[c].condition({ $store })
+        workflowShortcuts[c].condition({ $store }),
       );
       expect(resultWithWorkflow).toStrictEqual(
-        expect.arrayContaining(["save", "undo"])
+        expect.arrayContaining(["save", "undo"]),
       );
     });
 
@@ -94,28 +94,28 @@ describe("Shortcuts", () => {
           res[key] = shortcuts[key];
           return res;
         },
-        {}
+        {},
       );
 
       // we need workflow and interactions
       $store.state.workflow.activeWorkflow = {};
 
       const resultNoInteractions = Object.keys(canvasShortcuts).filter((c) =>
-        canvasShortcuts[c].condition({ $store })
+        canvasShortcuts[c].condition({ $store }),
       );
       expect(resultNoInteractions).not.toStrictEqual(
-        expect.arrayContaining(["fitToScreen", "zoomTo100"])
+        expect.arrayContaining(["fitToScreen", "zoomTo100"]),
       );
 
       $store.state.canvas.interactionsEnabled = true;
       $store.state.canvas.isEmpty = false;
 
       const resultInteractions = Object.keys(canvasShortcuts).filter((c) =>
-        canvasShortcuts[c].condition({ $store })
+        canvasShortcuts[c].condition({ $store }),
       );
 
       expect(resultInteractions).toStrictEqual(
-        expect.arrayContaining(["fitToScreen", "zoomTo100"])
+        expect.arrayContaining(["fitToScreen", "zoomTo100"]),
       );
     });
 
@@ -125,27 +125,27 @@ describe("Shortcuts", () => {
           res[key] = shortcuts[key];
           return res;
         },
-        {}
+        {},
       );
 
       // we need workflow and interactions
       $store.state.workflow.activeWorkflow = {};
 
       const resultNoInteractions = Object.keys(selectionShortcuts).filter((c) =>
-        selectionShortcuts[c].condition({ $store })
+        selectionShortcuts[c].condition({ $store }),
       );
       expect(resultNoInteractions).not.toStrictEqual(
-        expect.arrayContaining(["selectAll", "deselectAll"])
+        expect.arrayContaining(["selectAll", "deselectAll"]),
       );
 
       $store.state.canvas.interactionsEnabled = true;
 
       const resultInteractions = Object.keys(selectionShortcuts).filter((c) =>
-        selectionShortcuts[c].condition({ $store })
+        selectionShortcuts[c].condition({ $store }),
       );
 
       expect(resultInteractions).toStrictEqual(
-        expect.arrayContaining(["selectAll", "deselectAll"])
+        expect.arrayContaining(["selectAll", "deselectAll"]),
       );
     });
   });

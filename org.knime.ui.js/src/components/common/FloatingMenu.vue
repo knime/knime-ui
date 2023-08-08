@@ -143,7 +143,7 @@ export default {
     setAbsolutePosition() {
       // get position relative to the window
       let { x: left, y: top } = this.screenFromCanvasCoordinates(
-        this.canvasPosition
+        this.canvasPosition,
       );
 
       // if the target point is outside the canvas, first reduce opacity then close menu

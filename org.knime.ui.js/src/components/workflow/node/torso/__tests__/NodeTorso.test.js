@@ -78,7 +78,7 @@ describe("NodeTorso.vue", () => {
       executionState: "EXECUTED",
     });
     expect(
-      wrapper.findComponent(NodeTorsoMetanode).props("executionState")
+      wrapper.findComponent(NodeTorsoMetanode).props("executionState"),
     ).toBe("EXECUTED");
   });
 
@@ -100,7 +100,7 @@ describe("NodeTorso.vue", () => {
       });
       expect(wrapper.findComponent(NodeTorsoUnknown).exists()).toBeTruthy();
       expect(wrapper.findComponent(NodeTorsoNormal).exists()).toBeFalsy();
-    }
+    },
   );
 
   it.each(["node", "metanode", "component"])(
@@ -110,9 +110,9 @@ describe("NodeTorso.vue", () => {
         {
           kind,
         },
-        { writable: false }
+        { writable: false },
       );
       expect(wrapper.find(".grabbable").exists()).toBe(false);
-    }
+    },
   );
 });

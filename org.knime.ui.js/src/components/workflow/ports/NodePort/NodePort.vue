@@ -45,21 +45,21 @@ const emit = defineEmits<{
 const anchorPoint = inject<XY>("anchorPoint");
 
 const availablePortTypes = computed<AvailablePortTypes>(
-  () => store.state.application.availablePortTypes
+  () => store.state.application.availablePortTypes,
 );
 
 const portTemplate = computed(() => {
   const template = toPortObject(availablePortTypes.value)(props.port.typeId);
   if (!template) {
     throw new Error(
-      `port template ${props.port.typeId} not available in application`
+      `port template ${props.port.typeId} not available in application`,
     );
   }
   return template;
 });
 
 const isFlowVariable = computed(
-  () => portTemplate.value.kind === "flowVariable"
+  () => portTemplate.value.kind === "flowVariable",
 );
 
 const tooltip = computed<TooltipDefinition>(() => {

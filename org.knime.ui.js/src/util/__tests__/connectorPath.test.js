@@ -20,7 +20,7 @@ describe("Connector Path", () => {
       sourcePort.x,
       sourcePort.y,
       destPort.x,
-      destPort.y
+      destPort.y,
     );
 
     const expectedPath = "M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5";
@@ -32,7 +32,7 @@ describe("Connector Path", () => {
       sourcePort.x,
       sourcePort.y,
       destPort.x,
-      destPort.y
+      destPort.y,
     );
 
     const expectedPath = "M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5";

@@ -42,7 +42,7 @@
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
-    "@knime/eslint-config": "8.0.1",
+    "@knime/eslint-config": "8.0.7",
     "@types/node": "^18.14.4",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vitest/coverage-c8": "^0.29.2",
@@ -57,7 +57,7 @@
     "npm-run-all": "4.1.5",
     "postcss-mixins": "^9.0.4",
     "postcss-preset-env": "8.0.0",
-    "prettier": "2.8.8",
+    "prettier": "3.0.1",
     "stylelint": "15.8.0",
     "typescript": "^4.9.5",
     "vite": "^4.1.4",

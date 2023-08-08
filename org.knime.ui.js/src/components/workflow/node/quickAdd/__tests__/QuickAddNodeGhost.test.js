@@ -8,7 +8,7 @@ describe("QuickAddNodeGhost.vue", () => {
   const doMount = (
     props = {
       position: [5, 8],
-    }
+    },
   ) =>
     shallowMount(QuickAddNodeGhost, {
       props,

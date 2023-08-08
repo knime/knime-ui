@@ -53,7 +53,7 @@ export class WebSocketTransport extends BaseWebSocketTransport {
         this.connection.send(
           JSON.stringify({
             workflowProjectId: this.jobId,
-          })
+          }),
         );
 
         // immediately remove the handler since it's not needed after this
@@ -68,7 +68,7 @@ export class WebSocketTransport extends BaseWebSocketTransport {
 
   public sendData(
     data: JSONRPCRequestData,
-    timeout: number | null = DEFAULT_TIMEOUT
+    timeout: number | null = DEFAULT_TIMEOUT,
   ): Promise<any> {
     const promise = super.sendData(data, timeout);
 

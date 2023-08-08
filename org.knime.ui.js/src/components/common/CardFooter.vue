@@ -12,7 +12,7 @@ export default {
 
   render() {
     const icons = (this.$slots.icons || []).map((vnode) =>
-      createElement(vnode.tag, { class: "icon" }, vnode.children)
+      createElement(vnode.tag, { class: "icon" }, vnode.children),
     );
 
     const footerChildren = this.avatar

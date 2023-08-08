@@ -138,11 +138,11 @@ describe("WorkflowMetadata.vue", () => {
       expect(wrapper.findComponent(NodePreview).exists()).toBe(true);
 
       expect(wrapper.findComponent(MetadataDescription).text()).toMatch(
-        "Description"
+        "Description",
       );
 
       expect(
-        wrapper.findComponent(ComponentMetadataNodeFeatures).exists()
+        wrapper.findComponent(ComponentMetadataNodeFeatures).exists(),
       ).toBe(true);
     });
 

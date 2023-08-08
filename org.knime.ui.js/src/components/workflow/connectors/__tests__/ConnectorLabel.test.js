@@ -73,7 +73,7 @@ describe("ConnectorLabel.vue", () => {
       expect(initialPosition).toBe("translate(-480.25,-33.25)");
 
       isNodeSelectedMock.mockReturnValue(
-        (nodeId) => ({ "root:1": true, "root:2": true }[nodeId])
+        (nodeId) => ({ "root:1": true, "root:2": true })[nodeId],
       );
       $store.commit("workflow/setState", {
         movePreviewDelta: { x: 200, y: 200 },

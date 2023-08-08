@@ -4,7 +4,7 @@ import { generateWorkflowPreview } from "../generateWorkflowPreview";
 
 vi.mock(
   "@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff",
-  () => "font data"
+  () => "font data",
 );
 
 const node1 = createNativeNode({
@@ -47,7 +47,7 @@ describe("generateWorkflowPreview", () => {
   const mockFetch = vi.fn(() =>
     Promise.resolve({
       blob: () => new Blob(["mock"]),
-    })
+    }),
   );
 
   beforeAll(() => {
@@ -77,7 +77,7 @@ describe("generateWorkflowPreview", () => {
       document.createTextNode(`
             .dummy-class { stroke: rgb(123, 123, 123); }
             .annotation-editor { border: rgb(123, 123, 123); overflow-x: scroll; overflow-y: scroll; }
-            `)
+            `),
     );
     defs.appendChild(styleTag);
     svg.appendChild(defs);
@@ -155,7 +155,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
 
     expect(output).toMatch(
-      /url\("data:application\/font-woff;charset=utf-8;base64,.+/g
+      /url\("data:application\/font-woff;charset=utf-8;base64,.+/g,
     );
   });
 
@@ -165,7 +165,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     const workflowSheet = outputEl.querySelector(
-      ".workflow-sheet"
+      ".workflow-sheet",
     ) as HTMLElement;
     expect(workflowSheet.style.fill).toBe("transparent");
   });
@@ -277,7 +277,7 @@ describe("generateWorkflowPreview", () => {
     const outputEl = createElementFromOutput(output);
 
     expect(
-      outputEl.querySelectorAll("[data-hide-in-workflow-preview]").length
+      outputEl.querySelectorAll("[data-hide-in-workflow-preview]").length,
     ).toBe(0);
   });
 
@@ -287,11 +287,11 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     const emptyGTags = Array.from(outputEl.querySelectorAll("g")).filter(
-      (el) => el.hasChildNodes
+      (el) => el.hasChildNodes,
     );
     expect(emptyGTags).toEqual([]);
     expect(outputEl.querySelectorAll('[style*="display: none"]').length).toBe(
-      0
+      0,
     );
   });
 
@@ -301,7 +301,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     const connectorEl = outputEl.querySelector(
-      "[data-connector-id]"
+      "[data-connector-id]",
     ) as HTMLElement;
     expect(connectorEl.style.stroke).toBe("rgb(123, 123, 123)");
   });
@@ -312,7 +312,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     expect(outputEl.querySelector("foreignObject").style.stroke).toBe(
-      "rgb(123, 123, 123)"
+      "rgb(123, 123, 123)",
     );
   });
 
@@ -322,7 +322,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
     const outputEl = createElementFromOutput(output);
     const annotationEl = outputEl.querySelector(
-      ".annotation-editor"
+      ".annotation-editor",
     ) as HTMLElement;
     expect(annotationEl.style.border).toBe("rgb(123, 123, 123)");
     expect(annotationEl.style.overflowX).toBe("hidden");

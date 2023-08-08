@@ -78,11 +78,11 @@ export type ValidationResult = {
 };
 
 type NextFn<T = any> = (
-  context: T & Record<string, any>
+  context: T & Record<string, any>,
 ) => ValidationResult | null;
 export type ValidationFn<T = any> = (
   context: T,
-  next: NextFn<T>
+  next: NextFn<T>,
 ) => ValidationResult | null;
 
 /**
@@ -91,7 +91,7 @@ export type ValidationFn<T = any> = (
  */
 export const validateDragging: ValidationFn<{ isDragging: boolean }> = (
   context,
-  next
+  next,
 ) => {
   if (context.isDragging) {
     return {
@@ -172,7 +172,7 @@ export const validateOutputPorts: ValidationFn<{
 
   if (
     !selectedNode.outPorts.some((port) =>
-      canDisplayPortView({ portTypes, port })
+      canDisplayPortView({ portTypes, port }),
     )
   ) {
     return {
@@ -288,7 +288,7 @@ export const validateNodeConfigurationState: ValidationFn<{
 
   const validate = (
     isNodeIdle: boolean,
-    _selectedPort: NodePort
+    _selectedPort: NodePort,
   ): ValidationResult => {
     if (isNodeIdle && !isFlowVariablePort({ portTypes, port: _selectedPort })) {
       return {
@@ -349,11 +349,11 @@ export const validateNodeExecutionState: ValidationFn<{
 
 type MiddlewareFn<TEnv, TCxt> = (
   environment: TEnv,
-  next: NextFn<TCxt>
+  next: NextFn<TCxt>,
 ) => (context: TCxt) => ReturnType<ValidationFn<TCxt>>;
 
 type MiddlewareMappingFn<TEnv, TCxt> = (
-  fn: ValidationFn<TCxt>
+  fn: ValidationFn<TCxt>,
 ) => MiddlewareFn<TEnv, TCxt>;
 
 type MiddlewarePipe = () => ValidationResult | null;

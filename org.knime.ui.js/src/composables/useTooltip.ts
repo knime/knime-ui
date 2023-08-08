@@ -39,7 +39,7 @@ export const useTooltip = (params: {
       if (value === null) {
         removeTooltipWatcher?.();
       }
-    }
+    },
   );
 
   const showTooltip = () => {
@@ -49,7 +49,7 @@ export const useTooltip = (params: {
       (value) => {
         store.commit("workflow/setTooltip", value);
       },
-      { immediate: true }
+      { immediate: true },
     );
     // provide method to remove the "tooltip" watcher
     removeTooltipWatcher = () => {
@@ -62,7 +62,7 @@ export const useTooltip = (params: {
     removeTooltipWatcher?.();
     if (!params.tooltip) {
       consola.error(
-        "Tooltip cannot be used without providing a tooltip property"
+        "Tooltip cannot be used without providing a tooltip property",
       );
       return;
     }
@@ -76,7 +76,7 @@ export const useTooltip = (params: {
       "mouse left to:",
       relatedTarget?.tagName,
       relatedTarget?.id,
-      relatedTarget?.classList
+      relatedTarget?.classList,
     );
     // if the tooltip hasn't been opened yet, cancel timer and return
     if (!removeTooltipWatcher) {

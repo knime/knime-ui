@@ -263,9 +263,9 @@ describe("workflow store", () => {
         });
 
         expect(store.getters["workflow/workflowBounds"]).toEqual(
-          expect.objectContaining(expected.workflowBounds)
+          expect.objectContaining(expected.workflowBounds),
         );
-      }
+      },
     );
   });
 });

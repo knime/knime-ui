@@ -44,7 +44,7 @@ export const mutations: MutationTree<WorkflowState> = {
 export const actions: ActionTree<WorkflowState, RootStoreState> = {
   async copyOrCutWorkflowParts(
     { state, rootGetters, dispatch, commit },
-    { command }
+    { command },
   ) {
     if (!["copy", "cut"].includes(command)) {
       throw new Error("command has to be 'copy' or 'cut'");
@@ -104,7 +104,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   async pasteWorkflowParts(
     { state, getters: { isWorkflowEmpty }, dispatch, rootGetters, commit },
-    { position: customPosition } = { position: null }
+    { position: customPosition } = { position: null },
   ) {
     const { activeWorkflow } = state;
     let clipboardContent, clipboardText;
@@ -113,7 +113,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       clipboardText = await navigator.clipboard.readText();
     } catch (e) {
       consola.info(
-        "Could not read from clipboard. Maybe the user did not permit it?"
+        "Could not read from clipboard. Maybe the user did not permit it?",
       );
       return;
     }
@@ -127,7 +127,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
           clipboardText,
           activeWorkflow,
           customPosition,
-          rootGetters["canvas/getVisibleFrame"]()
+          rootGetters["canvas/getVisibleFrame"](),
         )
       ) {
         consola.info("Could not parse json or URI from clipboard.");

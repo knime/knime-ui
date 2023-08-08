@@ -30,7 +30,7 @@ describe("applicationShortcuts", () => {
       {
         isOpen: true,
         projectId: "1",
-      }
+      },
     );
   });
 
@@ -42,11 +42,11 @@ describe("applicationShortcuts", () => {
   describe("condition", () => {
     it("closeWorkflow", () => {
       expect(applicationShortcuts.closeWorkflow.condition({ $store })).toBe(
-        true
+        true,
       );
       $store.state.workflow.activeWorkflow.projectId = null;
       expect(
-        applicationShortcuts.closeWorkflow.condition({ $store })
+        applicationShortcuts.closeWorkflow.condition({ $store }),
       ).toBeFalsy();
     });
   });

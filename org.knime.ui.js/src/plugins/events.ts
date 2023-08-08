@@ -84,7 +84,7 @@ export default ({ $store, $router }) => {
             ? await $store.dispatch("application/getActiveWorkflowSnapshot")
             : await $store.dispatch(
                 "application/getRootWorkflowSnapshotByProjectId",
-                { projectId }
+                { projectId },
               );
 
         return generateWorkflowPreview(svgElement, isCanvasEmpty, nodes);
@@ -98,7 +98,7 @@ export default ({ $store, $router }) => {
         ...projectIds,
         ...svgSnapshots,
         // send over any parameters that are sent in the event payload, or empty in case none
-        ...params
+        ...params,
       );
     },
 

@@ -45,7 +45,7 @@ describe("output-validator", () => {
 
   const runNodeValidationChecks = ({ params, validations }) => {
     const runMiddleware = outputValidator.buildMiddleware(...validations)(
-      params
+      params,
     );
 
     return runMiddleware();
@@ -337,6 +337,6 @@ describe("output-validator", () => {
           message: "Output is available after execution.",
         },
       });
-    }
+    },
   );
 });

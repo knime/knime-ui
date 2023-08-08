@@ -171,7 +171,7 @@ describe("AnnotationRectangle", () => {
           width: 10,
           height: 13,
         },
-      })
+      }),
     );
   });
 });

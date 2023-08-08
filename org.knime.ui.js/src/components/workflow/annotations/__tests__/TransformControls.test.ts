@@ -100,7 +100,7 @@ describe("TransformControls.vue", () => {
 
   const startDraggingControl = (
     wrapper: VueWrapper<any>,
-    controlDirection: Directions
+    controlDirection: Directions,
   ) => {
     const control = wrapper.find(`.transform-control-${controlDirection}`);
     control.element.setPointerCapture = vi.fn();
@@ -109,7 +109,7 @@ describe("TransformControls.vue", () => {
 
   const stopDraggingControl = (
     wrapper: VueWrapper<any>,
-    controlDirection: Directions
+    controlDirection: Directions,
   ) => {
     const control = wrapper.find(`.transform-control-${controlDirection}`);
     control.element.releasePointerCapture = vi.fn();
@@ -130,10 +130,10 @@ describe("TransformControls.vue", () => {
     expect(transformBox.attributes("x")).toBe(offsetBounds.x.toString());
     expect(transformBox.attributes("y")).toBe(offsetBounds.y.toString());
     expect(transformBox.attributes("width")).toBe(
-      offsetBounds.width.toString()
+      offsetBounds.width.toString(),
     );
     expect(transformBox.attributes("height")).toBe(
-      offsetBounds.height.toString()
+      offsetBounds.height.toString(),
     );
   });
 
@@ -142,7 +142,7 @@ describe("TransformControls.vue", () => {
 
     const { initialValue: bounds } = defaultProps;
     expect(wrapper.findAll(".transform-control").length).toBe(
-      DIRECTIONS.length
+      DIRECTIONS.length,
     );
 
     DIRECTIONS.forEach((direction) => {
@@ -199,7 +199,7 @@ describe("TransformControls.vue", () => {
         origHeight: bounds.height,
         origWidth: bounds.width,
       });
-    }
+    },
   );
 
   it("should emit a transformEnd event", () => {
@@ -211,7 +211,7 @@ describe("TransformControls.vue", () => {
 
     expect(wrapper.emitted("transformEnd")[0][0]).toEqual({ bounds });
     expect(
-      wrapper.find(".transform-control-n").element.releasePointerCapture
+      wrapper.find(".transform-control-n").element.releasePointerCapture,
     ).toHaveBeenCalled();
   });
 

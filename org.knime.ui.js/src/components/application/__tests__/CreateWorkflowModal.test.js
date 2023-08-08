@@ -118,7 +118,7 @@ describe("CreateWorkflowModal.vue", () => {
       expect(wrapper.find("input").isVisible()).toBe(false);
       expect(commitSpy).toHaveBeenCalledWith(
         "spaces/setCreateWorkflowModalConfig",
-        { isOpen: false, projectId: null }
+        { isOpen: false, projectId: null },
       );
     });
 
@@ -145,7 +145,7 @@ describe("CreateWorkflowModal.vue", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/updateGlobalLoader",
-        expect.objectContaining({ loading: false })
+        expect.objectContaining({ loading: false }),
       );
 
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/openWorkflow", {
@@ -169,7 +169,7 @@ describe("CreateWorkflowModal.vue", () => {
           projectId: "someProject",
           workflowName: newName,
         });
-      }
+      },
     );
 
     it("should disable button when name is invalid", async () => {
@@ -240,7 +240,7 @@ describe("CreateWorkflowModal.vue", () => {
           {
             projectId: "someProject",
             workflowName: newName,
-          }
+          },
         );
       });
 

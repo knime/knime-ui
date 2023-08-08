@@ -136,7 +136,7 @@ describe("detectConnectionCircle", () => {
           workflow,
         });
         expect([...compatibleNodes].includes("metanode")).toBe(false);
-      }
+      },
     );
 
     it.each([true, false])(
@@ -148,7 +148,7 @@ describe("detectConnectionCircle", () => {
           workflow,
         });
         expect([...compatibleNodes]).toStrictEqual(["A", "B", "C", "D", "E"]);
-      }
+      },
     );
   });
 });
@@ -189,7 +189,7 @@ describe("Port Compatibility", () => {
 
   it("checks compatible ports", () => {
     expect(
-      checkPortCompatibility({ fromPort, toPort, availablePortTypes })
+      checkPortCompatibility({ fromPort, toPort, availablePortTypes }),
     ).toBeTruthy();
 
     // matching typeIds should still result in compatibility
@@ -198,7 +198,7 @@ describe("Port Compatibility", () => {
     ].compatibleTypes = ["not.compatible.type"];
 
     expect(
-      checkPortCompatibility({ fromPort, toPort, availablePortTypes })
+      checkPortCompatibility({ fromPort, toPort, availablePortTypes }),
     ).toBeTruthy();
   });
 });

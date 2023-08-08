@@ -13,7 +13,7 @@ interface CustomLinkOptions {
 
 export const addCustomLink = (
   editor: Editor,
-  { isEditing, url, urlText, text }: CustomLinkOptions
+  { isEditing, url, urlText, text }: CustomLinkOptions,
 ) => {
   if (isEditing) {
     editor

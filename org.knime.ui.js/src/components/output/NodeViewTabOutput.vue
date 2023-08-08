@@ -21,7 +21,7 @@ import {
 export const runNodeValidationChecks = ({ selectedNode, portTypes }) => {
   const validationMiddleware = buildMiddleware(
     validateNodeConfigurationState,
-    validateNodeExecutionState
+    validateNodeExecutionState,
   );
 
   const result = validationMiddleware({ selectedNode, portTypes })();

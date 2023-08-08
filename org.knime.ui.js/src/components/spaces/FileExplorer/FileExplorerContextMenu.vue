@@ -79,7 +79,7 @@ const { popperInstance } = usePopper(
     placement: "top-start",
     strategy: "fixed",
     modifiers: [popperOffsetModifier.value],
-  }
+  },
 );
 
 const repositionPopper = async () => {
@@ -98,7 +98,7 @@ watch(
   async () => {
     await repositionPopper();
   },
-  { deep: true }
+  { deep: true },
 );
 
 const emit = defineEmits<{
@@ -108,7 +108,7 @@ const emit = defineEmits<{
 
 const createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption = (
   item,
-  customProps = {}
+  customProps = {},
 ) => ({
   id: "rename",
   text: "Rename",
@@ -122,10 +122,10 @@ const createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption = (
 
 const createDeleteOption: FileExplorerContextMenu.CreateDefaultMenuOption = (
   item,
-  customProps = {}
+  customProps = {},
 ) => {
   const hasNonDeletableItem = props.selectedItems.some(
-    (item) => !item.canBeDeleted
+    (item) => !item.canBeDeleted,
   );
 
   return {

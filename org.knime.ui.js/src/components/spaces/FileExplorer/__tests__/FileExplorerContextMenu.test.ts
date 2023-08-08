@@ -164,6 +164,6 @@ describe("FileExplorerContextMenu.vue", () => {
         anchorItem: defaultProps.anchor.item,
         ...payloadProps,
       });
-    }
+    },
   );
 });

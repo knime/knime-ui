@@ -75,7 +75,7 @@ describe("AddPortPlaceholder.vue", () => {
 
       expect(addPortButton.classes()).not.toContain("active");
       expect(addPortButton.find("path").attributes("d")).toBe(
-        addPortPlaceholderPath
+        addPortPlaceholderPath,
       );
     });
 
@@ -141,7 +141,7 @@ describe("AddPortPlaceholder.vue", () => {
 
       expect(wrapper.find(".add-port-icon").exists()).toBe(false);
       expect(wrapper.findComponent(Port).props("port")).toStrictEqual(
-        targetPort
+        targetPort,
       );
     });
 

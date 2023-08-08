@@ -35,7 +35,7 @@ describe("server-events", () => {
 
   it("verifies and calls composite event successfully", () => {
     serverEventHandler(
-      '{"eventType":"WorkingEvent:WorkingEvent","payload":{"events":[null,null]}}'
+      '{"eventType":"WorkingEvent:WorkingEvent","payload":{"events":[null,null]}}',
     );
     expect(eventHandlers.CompositeEvent).toHaveBeenCalledWith({
       eventHandlers: expect.anything(),
@@ -77,7 +77,7 @@ describe("server-events", () => {
     it("returns an error for non-existing methods", () => {
       expect(() => {
         serverEventHandler(
-          '{"jsonrpc":"2.0","eventType":"invalidAction","params":["foo"]}'
+          '{"jsonrpc":"2.0","eventType":"invalidAction","params":["foo"]}',
         );
       }).toThrow();
     });
@@ -85,7 +85,7 @@ describe("server-events", () => {
     it("returns an error for non-function handlers", () => {
       expect(() => {
         serverEventHandler(
-          '{"jsonrpc":"2.0","eventType":"NotFunction","params":["foo"]}'
+          '{"jsonrpc":"2.0","eventType":"NotFunction","params":["foo"]}',
         );
       }).toThrow();
     });

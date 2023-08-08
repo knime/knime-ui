@@ -25,7 +25,7 @@ const showAddNodeGhost = computed(
   () =>
     props.direction === "out" &&
     !props.didDragToCompatibleTarget &&
-    !props.disableQuickNodeAdd
+    !props.disableQuickNodeAdd,
 );
 
 /*
@@ -52,13 +52,13 @@ watch(indicateConnectorReplacement, (indicateReplacement) => {
   }
   const [incomingConnection] = props.port.connectedVia;
   const incomingConnector = document.querySelector(
-    `[data-connector-id="${incomingConnection}"]`
+    `[data-connector-id="${incomingConnection}"]`,
   );
 
   incomingConnector.dispatchEvent(
     new CustomEvent("indicate-replacement", {
       detail: { state: indicateReplacement },
-    })
+    }),
   );
 });
 </script>

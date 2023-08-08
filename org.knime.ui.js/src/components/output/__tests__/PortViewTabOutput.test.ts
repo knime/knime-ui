@@ -94,7 +94,7 @@ describe("PortViewTabOutput.vue", () => {
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
           message: "The selected node has no output ports.",
-        })
+        }),
       );
     });
 
@@ -111,7 +111,7 @@ describe("PortViewTabOutput.vue", () => {
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
           message: "The selected node has no supported output port.",
-        })
+        }),
       );
     });
 
@@ -132,7 +132,7 @@ describe("PortViewTabOutput.vue", () => {
         expect.objectContaining({
           message:
             "The data at the output port is not supported by any viewer.",
-        })
+        }),
       );
     });
 
@@ -152,7 +152,7 @@ describe("PortViewTabOutput.vue", () => {
         expect.objectContaining({
           message:
             "This output port is inactive and therefore no output data is available for display.",
-        })
+        }),
       );
     });
   });
@@ -169,7 +169,7 @@ describe("PortViewTabOutput.vue", () => {
       expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
         expect.objectContaining({
           message: "Please first configure the selected node.",
-        })
+        }),
       );
     });
 
@@ -293,7 +293,7 @@ describe("PortViewTabOutput.vue", () => {
         expect.objectContaining({
           message: "Output is available after execution.",
           loading: true,
-        })
+        }),
       );
     });
 
@@ -312,7 +312,7 @@ describe("PortViewTabOutput.vue", () => {
         });
 
         expect(wrapper.emitted("outputStateChange")[0][0]).toBeNull();
-      }
+      },
     );
   });
 
@@ -335,7 +335,7 @@ describe("PortViewTabOutput.vue", () => {
     expect(wrapper.emitted("outputStateChange")[1][0]).toEqual(
       expect.objectContaining({
         loading: true,
-      })
+      }),
     );
 
     wrapper
@@ -344,7 +344,7 @@ describe("PortViewTabOutput.vue", () => {
     expect(wrapper.emitted("outputStateChange")[2][0]).toEqual(
       expect.objectContaining({
         message: "Error message",
-      })
+      }),
     );
   });
 });

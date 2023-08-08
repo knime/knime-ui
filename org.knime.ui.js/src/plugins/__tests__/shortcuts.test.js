@@ -57,7 +57,7 @@ describe("Shortcuts Plugin", () => {
           $shortcuts.findByHotkey({
             ctrlKey: true,
             key: "a",
-          })
+          }),
         ).toBeFalsy();
       });
 
@@ -66,7 +66,7 @@ describe("Shortcuts Plugin", () => {
           $shortcuts.findByHotkey({
             metaKey: true,
             key: "a",
-          })
+          }),
         ).toBe("selectAll");
       });
 
@@ -77,7 +77,7 @@ describe("Shortcuts Plugin", () => {
             shiftKey: true,
             altKey: true,
             key: "Backspace",
-          })
+          }),
         ).toBe("crazyHotkey");
       });
     });
@@ -91,7 +91,7 @@ describe("Shortcuts Plugin", () => {
 
     it("hotkeyText formatted", () => {
       expect($shortcuts.get("crazyHotkey").hotkeyText).toBe(
-        "Ctrl Alt Shift Delete"
+        "Ctrl Alt Shift Delete",
       );
     });
 
@@ -145,7 +145,7 @@ describe("Shortcuts Plugin", () => {
             shiftKey: true,
             altKey: true,
             key: "Delete",
-          })
+          }),
         ).toBe("crazyHotkey");
       });
 
@@ -154,7 +154,7 @@ describe("Shortcuts Plugin", () => {
           $shortcuts.findByHotkey({
             ctrlKey: true,
             key: "a",
-          })
+          }),
         ).toBe("selectAll");
       });
 
@@ -163,7 +163,7 @@ describe("Shortcuts Plugin", () => {
           $shortcuts.findByHotkey({
             metaKey: true,
             key: "a",
-          })
+          }),
         ).toBeFalsy();
       });
     });

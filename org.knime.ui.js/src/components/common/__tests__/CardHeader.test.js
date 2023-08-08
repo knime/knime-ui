@@ -17,6 +17,6 @@ describe("CardHeader.vue", () => {
       const { wrapper } = doMount({ props: { color } });
 
       expect(wrapper.classes()).toContain(color);
-    }
+    },
   );
 });

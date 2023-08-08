@@ -276,7 +276,7 @@ describe("json-patch plugin", () => {
       expect(store.commit).toHaveBeenCalledWith(
         "myStore/patch.apply",
         patch,
-        undefined
+        undefined,
       );
     });
   });

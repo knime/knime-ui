@@ -33,7 +33,7 @@ const initDesktopClient = () => {
   window.EquoCommService.on(
     JAVA_EVENT_ACTION_ID,
     (event) => serverEventHandler(event),
-    (error) => consola.error(error)
+    (error) => consola.error(error),
   );
 
   if (jsonRPCClient) {
@@ -58,7 +58,7 @@ const initBrowserClient = (connectionInfo: ConnectionInfo) =>
 
       const transport = new WebSocketTransport(
         connectionInfo.url,
-        connectionInfo.jobId
+        connectionInfo.jobId,
       );
       const { connection } = transport;
 
@@ -94,7 +94,7 @@ const initBrowserClient = (connectionInfo: ConnectionInfo) =>
 
 const initJSONRPCClient = async (
   mode: "BROWSER" | "DESKTOP",
-  connectionInfo: ConnectionInfo
+  connectionInfo: ConnectionInfo,
 ) => {
   try {
     const clientInitializer =

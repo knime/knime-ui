@@ -253,7 +253,7 @@ describe("Node", () => {
 
     it("displays icon", () => {
       expect(wrapper.findComponent(NodeTorso).props().icon).toBe(
-        "data:image/icon"
+        "data:image/icon",
       );
     });
 
@@ -264,7 +264,7 @@ describe("Node", () => {
     it("renders node state", () => {
       expect(wrapper.findComponent(NodeState).exists()).toBe(true);
       expect(wrapper.findComponent(NodeState).attributes("transform")).toBe(
-        `translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`
+        `translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`,
       );
     });
 
@@ -272,7 +272,7 @@ describe("Node", () => {
       props = { ...metaNode };
       doMount();
       expect(wrapper.findComponent(NodeTorso).props("executionState")).toBe(
-        "EXECUTED"
+        "EXECUTED",
       );
     });
 
@@ -286,7 +286,7 @@ describe("Node", () => {
       ports.forEach((port, index) => {
         // eslint-disable-next-line vitest/no-conditional-tests
         expect(port.props("direction")).toBe(
-          index < commonNode.inPorts.length ? "in" : "out"
+          index < commonNode.inPorts.length ? "in" : "out",
         );
       });
     });
@@ -315,7 +315,7 @@ describe("Node", () => {
     await wrapper.findComponent(NodeTorso).trigger("click");
 
     expect(
-      storeConfig.workflow.actions.openNodeConfiguration
+      storeConfig.workflow.actions.openNodeConfiguration,
     ).toHaveBeenCalledWith(expect.anything(), "root:1");
   });
 
@@ -396,10 +396,10 @@ describe("Node", () => {
       doMount();
 
       expect(wrapper.findComponent(NodeTorso).attributes("filter")).toBe(
-        "false"
+        "false",
       );
       expect(
-        wrapper.findComponent(NodeState).attributes("filter")
+        wrapper.findComponent(NodeState).attributes("filter"),
       ).toBeUndefined();
     });
 
@@ -422,7 +422,7 @@ describe("Node", () => {
         canOpenView: true,
       });
       expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe(
-        "translate(516, 161)"
+        "translate(516, 161)",
       );
     });
 
@@ -431,11 +431,11 @@ describe("Node", () => {
       await wrapper.find(".mouse-clickable").trigger("click", { button: 0 });
 
       expect(
-        storeConfig.selection.actions.deselectAllObjects
+        storeConfig.selection.actions.deselectAllObjects,
       ).toHaveBeenCalled();
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:1")
+        expect.stringMatching("root:1"),
       );
     });
 
@@ -451,7 +451,7 @@ describe("Node", () => {
 
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:1")
+        expect.stringMatching("root:1"),
       );
     });
 
@@ -467,7 +467,7 @@ describe("Node", () => {
 
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:1")
+        expect.stringMatching("root:1"),
       );
     });
 
@@ -484,9 +484,9 @@ describe("Node", () => {
           .trigger("click", { button: 0, [`${mod}Key`]: true });
         expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(
           expect.anything(),
-          expect.stringMatching("root:1")
+          expect.stringMatching("root:1"),
         );
-      }
+      },
     );
 
     it("meta click removes to selection", async () => {
@@ -500,7 +500,7 @@ describe("Node", () => {
         .trigger("click", { button: 0, metaKey: true });
       expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:1")
+        expect.stringMatching("root:1"),
       );
     });
 
@@ -517,12 +517,12 @@ describe("Node", () => {
 
         expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
           expect.anything(),
-          expect.stringMatching("root:1")
+          expect.stringMatching("root:1"),
         );
         expect(
-          storeConfig.application.actions.toggleContextMenu
+          storeConfig.application.actions.toggleContextMenu,
         ).toHaveBeenCalled();
-      }
+      },
     );
 
     it.each(["shift", "ctrl", "meta"])(
@@ -536,9 +536,9 @@ describe("Node", () => {
           .find(".mouse-clickable")
           .trigger("contextmenu", { [`${mod}Key`]: true });
         expect(
-          storeConfig.selection.actions.deselectNode
+          storeConfig.selection.actions.deselectNode,
         ).toHaveBeenCalledTimes(0);
-      }
+      },
     );
 
     it("right click to select node", async () => {
@@ -551,22 +551,22 @@ describe("Node", () => {
         .trigger("pointerdown", { button: 2 });
 
       expect(
-        storeConfig.selection.actions.deselectAllObjects
+        storeConfig.selection.actions.deselectAllObjects,
       ).toHaveBeenCalled();
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:1")
+        expect.stringMatching("root:1"),
       );
     });
 
     it("forwards hover state to children", () => {
       storeConfig.selection.getters.singleSelectedNode.mockReturnValue(
-        commonNode
+        commonNode,
       );
       doMount();
 
       expect(wrapper.findComponent(NodePorts).props("isSingleSelected")).toBe(
-        true
+        true,
       );
     });
   });
@@ -587,14 +587,14 @@ describe("Node", () => {
       await Vue.nextTick();
 
       const smallHoverWidth = Number(
-        wrapper.find(".hover-area").attributes("width")
+        wrapper.find(".hover-area").attributes("width"),
       );
 
       triggerHover(wrapper, true);
       await Vue.nextTick();
 
       const largeHoverWidth = Number(
-        wrapper.find(".hover-area").attributes("width")
+        wrapper.find(".hover-area").attributes("width"),
       );
 
       expect(largeHoverWidth > smallHoverWidth).toBe(true);
@@ -660,7 +660,7 @@ describe("Node", () => {
         await Vue.nextTick();
 
         expect(wrapper.findComponent(NodeTorso).classes()).not.toContain(
-          "hover"
+          "hover",
         );
       });
     });
@@ -670,7 +670,7 @@ describe("Node", () => {
       await Vue.nextTick();
 
       const previousHoverHeight = Number(
-        wrapper.find(".hover-area").attributes("height")
+        wrapper.find(".hover-area").attributes("height"),
       );
       expect(previousHoverHeight).toBe(89);
 
@@ -682,7 +682,7 @@ describe("Node", () => {
       await Vue.nextTick();
 
       const currentHoverHeight = Number(
-        wrapper.find(".hover-area").attributes("height")
+        wrapper.find(".hover-area").attributes("height"),
       );
       expect(currentHoverHeight).toBe(165);
     });
@@ -711,10 +711,10 @@ describe("Node", () => {
       await Vue.nextTick();
 
       const connectorSnappingProvider = wrapper.findComponent(
-        ConnectorSnappingProvider
+        ConnectorSnappingProvider,
       );
       expect(connectorSnappingProvider.props("portPositions")).toEqual(
-        mockPortPositions
+        mockPortPositions,
       );
     });
 
@@ -726,7 +726,7 @@ describe("Node", () => {
       await Vue.nextTick();
 
       expect(wrapper.findComponent(NodePorts).props("connectorHover")).toBe(
-        true
+        true,
       );
     });
 
@@ -879,7 +879,7 @@ describe("Node", () => {
 
       it("illegal", async () => {
         doMount(
-          getConnectorSnappingProviderStub({ connectionForbidden: true })
+          getConnectorSnappingProviderStub({ connectionForbidden: true }),
         );
 
         await Vue.nextTick();
@@ -892,7 +892,7 @@ describe("Node", () => {
           getConnectorSnappingProviderStub({
             connectionForbidden: true,
             isConnectionSource: true,
-          })
+          }),
         );
 
         await Vue.nextTick();
@@ -926,7 +926,7 @@ describe("Node", () => {
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
       expect(
-        storeConfig.application.actions.switchWorkflow
+        storeConfig.application.actions.switchWorkflow,
       ).not.toHaveBeenCalled();
     });
 
@@ -956,7 +956,7 @@ describe("Node", () => {
       });
 
       expect(
-        storeConfig.application.actions.switchWorkflow
+        storeConfig.application.actions.switchWorkflow,
       ).not.toHaveBeenCalled();
     });
 
@@ -1004,9 +1004,9 @@ describe("Node", () => {
         await wrapper.setProps({ kind });
 
         expect(wrapper.findComponent(NodeName).props("editable")).toBe(
-          expectedValue
+          expectedValue,
         );
-      }
+      },
     );
 
     it("should handle contextmenu events", async () => {
@@ -1014,10 +1014,10 @@ describe("Node", () => {
       await Vue.nextTick();
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:1")
+        expect.stringMatching("root:1"),
       );
       expect(
-        storeConfig.application.actions.toggleContextMenu
+        storeConfig.application.actions.toggleContextMenu,
       ).toHaveBeenCalled();
     });
 
@@ -1026,7 +1026,7 @@ describe("Node", () => {
       await Vue.nextTick();
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:1")
+        expect.stringMatching("root:1"),
       );
     });
 
@@ -1039,7 +1039,7 @@ describe("Node", () => {
       await Vue.nextTick();
 
       expect(wrapper.findComponent(NodeSelectionPlane).props("width")).toBe(
-        expectedSelectionWidth
+        expectedSelectionWidth,
       );
     });
 
@@ -1050,7 +1050,7 @@ describe("Node", () => {
       await Vue.nextTick();
 
       expect(
-        wrapper.findComponent(NodeSelectionPlane).props("extraHeight")
+        wrapper.findComponent(NodeSelectionPlane).props("extraHeight"),
       ).toBe(mockHeight);
     });
   });
@@ -1102,7 +1102,7 @@ describe("Node", () => {
         await Vue.nextTick();
         expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
           expect.anything(),
-          { nodeFactory: { className: "test" }, targetNodeId: "root:1" }
+          { nodeFactory: { className: "test" }, targetNodeId: "root:1" },
         );
       });
 
@@ -1166,7 +1166,7 @@ describe("Node", () => {
           {
             targetNodeId: "root:1",
             replacementNodeId: "test",
-          }
+          },
         );
       });
     });

@@ -25,7 +25,7 @@ type SidebarSection = {
 
 const registerSidebarSection = (
   condition: boolean,
-  sectionData: SidebarSection
+  sectionData: SidebarSection,
 ) => {
   return condition ? [sectionData] : [];
 };
@@ -34,19 +34,19 @@ export default defineComponent({
   components: {
     LeftCollapsiblePanel,
     ContextAwareDescription: defineAsyncComponent(
-      () => import("@/components/sidebar/ContextAwareDescription.vue")
+      () => import("@/components/sidebar/ContextAwareDescription.vue"),
     ),
     NodeRepository: defineAsyncComponent(
-      () => import("@/components/nodeRepository/NodeRepository.vue")
+      () => import("@/components/nodeRepository/NodeRepository.vue"),
     ),
     NodeDialogWrapper: defineAsyncComponent(
-      () => import("@/components/embeddedViews/NodeDialogWrapper.vue")
+      () => import("@/components/embeddedViews/NodeDialogWrapper.vue"),
     ),
     SidebarSpaceExplorer: defineAsyncComponent(
-      () => import("@/components/sidebar/SidebarSpaceExplorer.vue")
+      () => import("@/components/sidebar/SidebarSpaceExplorer.vue"),
     ),
     AiAssistant: defineAsyncComponent(
-      () => import("@/components/sidebar/aiAssistant/AiAssistant.vue")
+      () => import("@/components/sidebar/aiAssistant/AiAssistant.vue"),
     ),
   },
   data() {
@@ -87,7 +87,7 @@ export default defineComponent({
             isActive: this.isTabActive(TABS.NODE_DIALOG),
             isExpanded: this.expanded,
             onClick: () => this.clickItem(TABS.NODE_DIALOG),
-          }
+          },
         ),
 
         ...registerSidebarSection(environment === "DESKTOP", {
@@ -108,7 +108,7 @@ export default defineComponent({
             isActive: this.isTabActive(TABS.AI_CHAT),
             isExpanded: this.expanded,
             onClick: () => this.clickItem(TABS.AI_CHAT),
-          }
+          },
         ),
       ];
     },

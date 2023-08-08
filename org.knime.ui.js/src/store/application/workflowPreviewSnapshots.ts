@@ -26,7 +26,7 @@ export const mutations: MutationTree<ApplicationState> = {};
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
   updatePreviewSnapshot(
     { rootState, state, dispatch },
-    { isChangingProject, newWorkflow }
+    { isChangingProject, newWorkflow },
   ) {
     const isCurrentlyOnRoot =
       rootState.workflow?.activeWorkflow?.info.containerId === "root";

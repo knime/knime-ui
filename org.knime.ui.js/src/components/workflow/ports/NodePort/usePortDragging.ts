@@ -33,7 +33,7 @@ type ConnectorMoveEvent = {
 
 const createConnectorFromEvent = (
   params: Params,
-  absolutePoint: [number, number]
+  absolutePoint: [number, number],
 ): DragConnector => {
   const relatedNode = params.direction === "out" ? "sourceNode" : "destNode";
   const relatedPort = params.direction === "out" ? "sourcePort" : "destPort";
@@ -96,10 +96,10 @@ export const usePortDragging = (params: Params) => {
   const { shouldPortSnap } = usePortSnapping();
 
   const screenToCanvasCoordinates = computed(
-    () => store.getters["canvas/screenToCanvasCoordinates"]
+    () => store.getters["canvas/screenToCanvasCoordinates"],
   );
   const isWorkflowWritable = computed(
-    () => store.getters["workflow/isWritable"]
+    () => store.getters["workflow/isWritable"],
   );
 
   let startPosition: XY | null = null;
@@ -136,7 +136,7 @@ export const usePortDragging = (params: Params) => {
     // set up connector
     dragConnector.value = createConnectorFromEvent(
       params,
-      screenToCanvasCoordinates.value([event.x, event.y])
+      screenToCanvasCoordinates.value([event.x, event.y]),
     );
 
     // find compatible nodes
@@ -235,7 +235,7 @@ export const usePortDragging = (params: Params) => {
           new CustomEvent("connector-leave", {
             detail: { relatedTarget: hitTarget },
             bubbles: true,
-          })
+          }),
         );
       }
 
@@ -248,7 +248,7 @@ export const usePortDragging = (params: Params) => {
           new CustomEvent("connector-enter", {
             bubbles: true,
             cancelable: true,
-          })
+          }),
         );
 
         // cancelling signals, that hit target allows dropping a connector
@@ -297,7 +297,7 @@ export const usePortDragging = (params: Params) => {
           },
           bubbles: true,
           cancelable: true,
-        })
+        }),
       );
 
       if (dropped) {
@@ -329,7 +329,7 @@ export const usePortDragging = (params: Params) => {
 
     if (lastHitTarget && lastHitTarget.allowsDrop) {
       lastHitTarget.element.dispatchEvent(
-        new CustomEvent("connector-leave", { bubbles: true })
+        new CustomEvent("connector-leave", { bubbles: true }),
       );
     }
 

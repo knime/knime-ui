@@ -90,7 +90,7 @@ describe("NodeLabelEditor", () => {
     expect(wrapper.emitted("save")[0][0]).toEqual(
       expect.objectContaining({
         newLabel: "new value",
-      })
+      }),
     );
   });
 
@@ -181,18 +181,18 @@ describe("NodeLabelEditor", () => {
     expect(wrapper.emitted("save")[0][0]).toEqual(
       expect.objectContaining({
         newLabel: emittedValue.trim(),
-      })
+      }),
     );
   });
 
   it("updates value of textarea on value prop change", async () => {
     const { wrapper } = doMount();
     expect(wrapper.findComponent(NodeLabelTextArea).props("modelValue")).toBe(
-      "test"
+      "test",
     );
     await wrapper.setProps({ value: "newValue" });
     expect(wrapper.findComponent(NodeLabelTextArea).props("modelValue")).toBe(
-      "newValue"
+      "newValue",
     );
   });
 });

@@ -31,7 +31,7 @@ describe("useWorkflowNameValidator", () => {
 
     expect(isValid.value).toBe(false);
     expect(errorMessage.value).toMatch(
-      "Name is already taken by another workflow"
+      "Name is already taken by another workflow",
     );
   });
 
@@ -63,6 +63,6 @@ describe("useWorkflowNameValidator", () => {
 
       expect(isValid.value).toBe(true);
       expect(cleanName(name.value)).toMatch("some text");
-    }
+    },
   );
 });

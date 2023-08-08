@@ -97,7 +97,7 @@ class OpenWorkflowTest {
             eventConsumer, null);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
-        OpenWorkflow.openWorkflowInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
+        OpenWorkflow.fetchAndOpenWorkflowInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
 
         var wpm = WorkflowProjectManager.getInstance();
         var projectIds = wpm.getWorkflowProjectsIds();

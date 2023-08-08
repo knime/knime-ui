@@ -37,7 +37,7 @@ describe("ViewLoader.vue", () => {
           id: "MockComponent",
         },
         initialData: initialData || JSON.stringify({ result: {} }),
-      })
+      }),
     );
 
     loadAsyncComponent.mockImplementation(() => MockComponent);
@@ -79,7 +79,7 @@ describe("ViewLoader.vue", () => {
       } else {
         expect(viewConfigLoaderFn).toHaveBeenCalled();
       }
-    }
+    },
   );
 
   it("should reload view when renderKey changes", async () => {
@@ -197,7 +197,7 @@ describe("ViewLoader.vue", () => {
 
     expect(resourceLocationResolver).toHaveBeenCalled();
     expect(loadAsyncComponent).toHaveBeenCalledWith(
-      expect.objectContaining({ resourceLocation: "dummy-location" })
+      expect.objectContaining({ resourceLocation: "dummy-location" }),
     );
   });
 
@@ -214,10 +214,10 @@ describe("ViewLoader.vue", () => {
     await flushRender();
 
     expect(wrapper.findComponent({ name: "MockComponent" }).exists()).toBe(
-      false
+      false,
     );
     expect(wrapper.findComponent({ name: "OtherComponent" }).exists()).toBe(
-      true
+      true,
     );
   });
 

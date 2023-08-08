@@ -60,10 +60,10 @@ describe("SidebarSearchResults", () => {
 
     let results = wrapper.findComponent(SearchResults);
     expect(results.props("topNodes")).toStrictEqual(
-      $store.state.nodeRepository.topNodes
+      $store.state.nodeRepository.topNodes,
     );
     expect(results.props("query")).toStrictEqual(
-      $store.state.nodeRepository.query
+      $store.state.nodeRepository.query,
     );
   });
 
@@ -72,7 +72,7 @@ describe("SidebarSearchResults", () => {
 
     let results = wrapper.findComponent(SearchResults);
     expect(results.props("searchScrollPosition")).toBe(
-      $store.state.nodeRepository.searchScrollPosition
+      $store.state.nodeRepository.searchScrollPosition,
     );
 
     results.vm.$emit("update:searchScrollPosition", 57);
@@ -80,7 +80,7 @@ describe("SidebarSearchResults", () => {
 
     expect(commitSpy).toBeCalledWith(
       "nodeRepository/setSearchScrollPosition",
-      57
+      57,
     );
   });
 });

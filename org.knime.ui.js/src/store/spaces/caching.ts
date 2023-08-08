@@ -45,7 +45,7 @@ export const state = (): State => ({
 export const mutations: MutationTree<SpacesState> = {
   setProjectPath(
     state,
-    { projectId, value }: { projectId: string; value: PathTriplet }
+    { projectId, value }: { projectId: string; value: PathTriplet },
   ) {
     state.projectPath = {
       ...state.projectPath,
@@ -61,13 +61,13 @@ export const mutations: MutationTree<SpacesState> = {
 
   updateProjectPath(
     state,
-    { projectId, value }: { projectId: string; value: Partial<PathTriplet> }
+    { projectId, value }: { projectId: string; value: Partial<PathTriplet> },
   ) {
     const oldValue = state.projectPath[projectId];
     if (!oldValue) {
       consola.warn(
         "updateProjectPath failed project was never added",
-        projectId
+        projectId,
       );
       return false;
     }
@@ -81,7 +81,10 @@ export const mutations: MutationTree<SpacesState> = {
 
   setWorkflowGroupContent(
     state,
-    { projectId, content }: { projectId: string; content: WorkflowGroupContent }
+    {
+      projectId,
+      content,
+    }: { projectId: string; content: WorkflowGroupContent },
   ) {
     const key = state.projectPath[projectId];
     state.workflowGroupCache.set(key, content);
@@ -93,7 +96,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     { commit, state },
     {
       openProjects,
-    }: { openProjects: { projectId: string; origin: SpaceItemReference }[] }
+    }: { openProjects: { projectId: string; origin: SpaceItemReference }[] },
   ) {
     // add
     openProjects.forEach(({ projectId, origin }) => {
@@ -121,7 +124,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     // remove
     const openProjectIds = openProjects.map((project) => project.projectId);
     const unknownProjectIds = Object.keys(state.projectPath).filter(
-      (id) => !specialProjectIds.includes(id) && !openProjectIds.includes(id)
+      (id) => !specialProjectIds.includes(id) && !openProjectIds.includes(id),
     );
     unknownProjectIds.forEach((projectId) => {
       commit("removeProjectPath", projectId);

@@ -152,7 +152,7 @@ describe("DraggableNodeTemplate", () => {
 
     expect(setSelectedNodeMock).not.toHaveBeenCalledWith(
       expect.anything(),
-      null
+      null,
     );
     expect(closeDescriptionPanelMock).not.toHaveBeenCalled();
   });
@@ -185,7 +185,7 @@ describe("DraggableNodeTemplate", () => {
 
       expect(addNodeMock).toHaveBeenCalledWith(
         expect.anything(),
-        expect.objectContaining({ position: { x: 234, y: 171.5 } })
+        expect.objectContaining({ position: { x: 234, y: 171.5 } }),
       );
     });
 
@@ -203,7 +203,7 @@ describe("DraggableNodeTemplate", () => {
 
       expect(addNodeMock).toHaveBeenCalledWith(
         expect.anything(),
-        expect.objectContaining({ position: { x: 354, y: 291.5 } })
+        expect.objectContaining({ position: { x: 354, y: 291.5 } }),
       );
     });
 
@@ -261,7 +261,7 @@ describe("DraggableNodeTemplate", () => {
       expect(testEvent.dataTransfer.setDragImage).toHaveBeenCalledWith(
         wrapper.vm.dragGhost,
         35,
-        35
+        35,
       );
     });
 
@@ -271,14 +271,14 @@ describe("DraggableNodeTemplate", () => {
 
       expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith(
         "text/plain",
-        "node-id"
+        "node-id",
       );
       expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith(
         KnimeMIME,
         JSON.stringify({
           className: "class-name",
           settings: "encoded-settings",
-        })
+        }),
       );
     });
 
@@ -334,7 +334,7 @@ describe("DraggableNodeTemplate", () => {
 
       expect(setSelectedNodeMock).toHaveBeenCalledWith(
         expect.anything(),
-        props.nodeTemplate
+        props.nodeTemplate,
       );
       expect(openDescriptionPanelMock).toHaveBeenCalled();
     });
@@ -368,7 +368,7 @@ describe("DraggableNodeTemplate", () => {
 
       expect(setDraggingNodeTemplateMock).toHaveBeenCalledWith(
         expect.anything(),
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -378,7 +378,7 @@ describe("DraggableNodeTemplate", () => {
 
       expect(setDraggingNodeTemplateMock).toHaveBeenCalledWith(
         expect.anything(),
-        null
+        null,
       );
     });
   });

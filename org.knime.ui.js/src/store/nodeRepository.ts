@@ -163,7 +163,7 @@ export const getters = {
 
   nodesPerCategoryContainSelectedNode(state) {
     return state.nodesPerCategory.some((category) =>
-      category.nodes.some((node) => node.id === state.selectedNode?.id)
+      category.nodes.some((node) => node.id === state.selectedNode?.id),
     );
   },
   isSelectedNodeVisible: (state, getters) =>

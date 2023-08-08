@@ -9,7 +9,7 @@ type YTransform = { startY: number; moveY: number; origHeight: number };
 type TransformParams = XTransform & YTransform;
 type DirectionHandler = (
   currentBounds: Bounds,
-  params: TransformParams
+  params: TransformParams,
 ) => Bounds;
 
 const MIN_DIMENSIONS = { width: 0, height: 0 };
@@ -23,8 +23,10 @@ const isValidWidth = (value: number) => value > MIN_DIMENSIONS.width;
  * @param flushed whether the delta should account for the width
  * @returns the new delta
  */
-const getDeltaX = ({ startX, moveX, origWidth }: XTransform, flushed = false) =>
-  flushed ? moveX - (startX + origWidth) : moveX - startX;
+const getDeltaX = (
+  { startX, moveX, origWidth }: XTransform,
+  flushed = false,
+) => (flushed ? moveX - (startX + origWidth) : moveX - startX);
 
 /**
  *
@@ -34,14 +36,14 @@ const getDeltaX = ({ startX, moveX, origWidth }: XTransform, flushed = false) =>
  */
 const getDeltaY = (
   { startY, moveY, origHeight }: YTransform,
-  flushed = false
+  flushed = false,
 ) => (flushed ? moveY - (startY + origHeight) : moveY - startY);
 
 const directionHandlers: Record<Directions, DirectionHandler> = {
   // north-west
   nw: (
     currentBounds,
-    { startX, startY, moveX, moveY, origWidth, origHeight }
+    { startX, startY, moveX, moveY, origWidth, origHeight },
   ) => {
     const deltaX = getDeltaX({ startX, moveX, origWidth });
     const deltaY = getDeltaY({ startY, moveY, origHeight });
@@ -75,7 +77,7 @@ const directionHandlers: Record<Directions, DirectionHandler> = {
   // north-east
   ne: (
     currentBounds,
-    { startX, startY, moveX, moveY, origHeight, origWidth }
+    { startX, startY, moveX, moveY, origHeight, origWidth },
   ) => {
     const deltaX = getDeltaX({ startX, moveX, origWidth }, true);
     const deltaY = getDeltaY({ startY, moveY, origHeight });
@@ -107,7 +109,7 @@ const directionHandlers: Record<Directions, DirectionHandler> = {
   // south-east
   se: (
     currentBounds,
-    { startX, startY, origWidth, origHeight, moveX, moveY }
+    { startX, startY, origWidth, origHeight, moveX, moveY },
   ) => {
     const deltaX = getDeltaX({ startX, moveX, origWidth }, true);
     const deltaY = getDeltaY({ startY, moveY, origHeight }, true);
@@ -137,7 +139,7 @@ const directionHandlers: Record<Directions, DirectionHandler> = {
   // south-west
   sw: (
     currentBounds,
-    { startX, startY, moveX, moveY, origWidth, origHeight }
+    { startX, startY, moveX, moveY, origWidth, origHeight },
   ) => {
     const deltaX = getDeltaX({ startX, moveX, origWidth });
     const deltaY = getDeltaY({ startY, moveY, origHeight }, true);
@@ -185,7 +187,7 @@ export const transformBounds = (
     origWidth,
     origHeight,
     direction,
-  }: TransformParams & { direction: Directions }
+  }: TransformParams & { direction: Directions },
 ) => {
   const defaultHandler = () => currentBounds;
   const directionHandler = directionHandlers[direction] || defaultHandler;

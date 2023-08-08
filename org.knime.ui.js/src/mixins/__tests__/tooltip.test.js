@@ -47,11 +47,11 @@ describe("Tooltip Mixin", () => {
     wrapper.unmount();
     expect(spy).toHaveBeenCalledWith(
       "mouseenter",
-      wrapper.vm.onTooltipMouseEnter
+      wrapper.vm.onTooltipMouseEnter,
     );
     expect(spy).toHaveBeenCalledWith(
       "mouseleave",
-      wrapper.vm.onTooltipMouseLeave
+      wrapper.vm.onTooltipMouseLeave,
     );
   });
 
@@ -78,7 +78,7 @@ describe("Tooltip Mixin", () => {
     expect(setTimeoutMock).toHaveBeenCalledWith(expect.anything(), entryDelay);
     expect(setTooltipMock).toHaveBeenCalledWith(
       expect.anything(),
-      "hello there"
+      "hello there",
     );
   });
 
@@ -104,7 +104,7 @@ describe("Tooltip Mixin", () => {
     expect(setTooltipMock).toHaveBeenNthCalledWith(
       2,
       expect.anything(),
-      "hello there"
+      "hello there",
     );
   });
 
@@ -124,7 +124,7 @@ describe("Tooltip Mixin", () => {
       expect(setTooltipMock).toHaveBeenNthCalledWith(
         2,
         expect.anything(),
-        null
+        null,
       );
 
       wrapper.setData({ tooltip: "this shouldn't update" });
@@ -155,7 +155,7 @@ describe("Tooltip Mixin", () => {
 
     expect(setTooltipMock).toHaveBeenCalledWith(
       expect.anything(),
-      "this should update"
+      "this should update",
     );
   });
 });

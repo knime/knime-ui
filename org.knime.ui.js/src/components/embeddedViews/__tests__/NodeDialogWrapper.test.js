@@ -96,7 +96,7 @@ describe("NodeDialogWrapper.vue", () => {
     await Vue.nextTick();
 
     expect(wrapper.find(".placeholder").text()).toMatch(
-      "Node dialog cannot be displayed. Please open the configuration from the action bar"
+      "Node dialog cannot be displayed. Please open the configuration from the action bar",
     );
   });
 });

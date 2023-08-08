@@ -30,7 +30,7 @@ describe("workflow::annotationInteractions", () => {
     });
 
     expect(
-      mockedAPI.workflowCommand.TransformWorkflowAnnotation
+      mockedAPI.workflowCommand.TransformWorkflowAnnotation,
     ).toHaveBeenCalledWith({
       projectId: "foo",
       workflowId: "root",
@@ -60,7 +60,7 @@ describe("workflow::annotationInteractions", () => {
     await store.dispatch("workflow/addWorkflowAnnotation", { bounds });
 
     expect(
-      mockedAPI.workflowCommand.AddWorkflowAnnotation
+      mockedAPI.workflowCommand.AddWorkflowAnnotation,
     ).toHaveBeenCalledWith({
       projectId: "foo",
       workflowId: "root",
@@ -97,7 +97,7 @@ describe("workflow::annotationInteractions", () => {
     store.dispatch("workflow/reorderWorkflowAnnotation", { action });
 
     expect(
-      mockedAPI.workflowCommand.ReorderWorkflowAnnotations
+      mockedAPI.workflowCommand.ReorderWorkflowAnnotations,
     ).toHaveBeenCalledWith({
       projectId: "foo",
       workflowId: "root",
@@ -135,7 +135,7 @@ describe("workflow::annotationInteractions", () => {
       });
 
       expect(
-        mockedAPI.workflowCommand.UpdateWorkflowAnnotation
+        mockedAPI.workflowCommand.UpdateWorkflowAnnotation,
       ).toHaveBeenCalledWith({
         projectId: "foo",
         workflowId: "root",
@@ -146,18 +146,18 @@ describe("workflow::annotationInteractions", () => {
 
       const updatedAnnotation =
         store.state.workflow.activeWorkflow.workflowAnnotations.find(
-          (annotation) => annotation.id === annotationId
+          (annotation) => annotation.id === annotationId,
         );
       expect(updatedAnnotation.text.value).toEqual(newText);
       expect(updatedAnnotation.text.contentType).toEqual(
-        TypedText.ContentTypeEnum.Html
+        TypedText.ContentTypeEnum.Html,
       );
     });
 
     it("should handle failure", async () => {
       const { store } = await loadStore();
       mockedAPI.workflowCommand.UpdateWorkflowAnnotation.mockRejectedValueOnce(
-        new Error("random error")
+        new Error("random error"),
       );
 
       const annotationId = "mock-annotation-id";
@@ -181,18 +181,18 @@ describe("workflow::annotationInteractions", () => {
           text: "<p>new annotation text</p>",
           annotationId,
           borderColor: "#123456",
-        })
+        }),
       ).rejects.toThrowError("random error");
 
       const updatedAnnotation =
         store.state.workflow.activeWorkflow.workflowAnnotations.find(
-          (annotation) => annotation.id === annotationId
+          (annotation) => annotation.id === annotationId,
         );
 
       expect(updatedAnnotation.text.value).toBe("legacy plain text");
       expect(updatedAnnotation.borderColor).toBe("#000000");
       expect(updatedAnnotation.text.contentType).toEqual(
-        TypedText.ContentTypeEnum.Plain
+        TypedText.ContentTypeEnum.Plain,
       );
     });
   });

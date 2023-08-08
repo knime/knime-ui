@@ -54,19 +54,19 @@ const fileExplorerContextMenuItems = computed(() => {
 
   const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
     props.projectId,
-    props.selectedItemIds
+    props.selectedItemIds,
   );
 
   const downloadToLocalSpace = buildHubDownloadMenuItem(
     store.dispatch,
     props.projectId,
-    props.selectedItemIds
+    props.selectedItemIds,
   );
 
   const openInHub = buildOpenInHubMenuItem(
     store.dispatch,
     props.projectId,
-    props.selectedItemIds
+    props.selectedItemIds,
   );
 
   const uploadAndConnectToHub = buildHubUploadMenuItems(
@@ -74,7 +74,7 @@ const fileExplorerContextMenuItems = computed(() => {
     store.getters["spaces/hasActiveHubSession"],
     props.projectId,
     props.selectedItemIds,
-    store.state.spaces.spaceProviders
+    store.state.spaces.spaceProviders,
   );
 
   const getHubActions = () => {
@@ -92,7 +92,7 @@ const fileExplorerContextMenuItems = computed(() => {
   const createExportItemOption = (
     dispatch: Dispatch,
     projectId: string,
-    selectedItems: Array<string>
+    selectedItems: Array<string>,
   ) => {
     const isSelectionMultiple = selectedItems.length > 1;
     return {
@@ -138,7 +138,7 @@ const fileExplorerContextMenuItems = computed(() => {
           createExportItemOption(
             store.dispatch,
             props.projectId,
-            props.selectedItemIds
+            props.selectedItemIds,
           ),
         ]
       : []),

@@ -8,7 +8,7 @@ import {
 import { PORT_TYPE_IDS, type PortTypeId } from "./common";
 
 export const createNodePortTemplate = (
-  data: Partial<NodePortTemplate & { typeId: PortTypeId }> = {}
+  data: Partial<NodePortTemplate & { typeId: PortTypeId }> = {},
 ): NodePortTemplate => {
   return {
     typeId: PORT_TYPE_IDS.BufferedDataTable,
@@ -19,7 +19,7 @@ export const createNodePortTemplate = (
 };
 
 export const createNodeTemplate = (
-  data: Partial<NodeTemplate> = {}
+  data: Partial<NodeTemplate> = {},
 ): NodeTemplate => {
   return merge(
     {
@@ -38,6 +38,6 @@ export const createNodeTemplate = (
       id: "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
       type: NativeNodeInvariants.TypeEnum.Manipulator,
     },
-    data
+    data,
   );
 };

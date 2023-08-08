@@ -95,7 +95,7 @@ const executionShortcuts: ExecutionShortcuts = {
     },
     condition: ({ $store }) =>
       $store.getters["selection/selectedNodes"].some(
-        (node) => node.allowedActions.canExecute
+        (node) => node.allowedActions.canExecute,
       ),
   },
   executeAndOpenView: {
@@ -131,7 +131,7 @@ const executionShortcuts: ExecutionShortcuts = {
     },
     condition: ({ $store }) =>
       $store.getters["selection/selectedNodes"].some(
-        (node) => node.allowedActions.canCancel
+        (node) => node.allowedActions.canCancel,
       ),
   },
   resetSelected: {
@@ -147,7 +147,7 @@ const executionShortcuts: ExecutionShortcuts = {
     },
     condition: ({ $store }) =>
       $store.getters["selection/selectedNodes"].some(
-        (node) => node.allowedActions.canReset
+        (node) => node.allowedActions.canReset,
       ),
   },
 

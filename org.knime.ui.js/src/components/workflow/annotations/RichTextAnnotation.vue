@@ -30,7 +30,7 @@ const emit = defineEmits<{
 }>();
 
 const activeBorderColor = computed(
-  () => previewBorderColor.value || props.initialBorderColor
+  () => previewBorderColor.value || props.initialBorderColor,
 );
 
 const customExtensions = [

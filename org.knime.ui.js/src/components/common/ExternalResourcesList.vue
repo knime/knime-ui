@@ -41,7 +41,7 @@ watch(
   () => {
     emit("valid", !hasInvalidUrl.value);
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const addLink = () => {
@@ -51,20 +51,20 @@ const addLink = () => {
 const removeLink = (index: number) => {
   emit(
     "update:modelValue",
-    props.modelValue.filter((_, _index) => _index !== index)
+    props.modelValue.filter((_, _index) => _index !== index),
   );
 };
 
 const updateField = <K extends keyof Link, V = Link[K]>(
   property: K,
   value: V,
-  index: number
+  index: number,
 ) => {
   emit(
     "update:modelValue",
     props.modelValue.map((link, _index) => {
       return index === _index ? { ...link, [property]: value } : link;
-    })
+    }),
   );
 };
 </script>

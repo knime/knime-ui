@@ -79,7 +79,7 @@ export default {
         // if portBarBottom + margin is larger, then extend hover bounds
         hoverBounds.bottom = Math.max(
           this.portBarBottom + margin,
-          hoverBounds.bottom
+          hoverBounds.bottom,
         );
       }
 

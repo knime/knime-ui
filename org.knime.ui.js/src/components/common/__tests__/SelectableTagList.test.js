@@ -27,7 +27,7 @@ const checkTagTexts = (wrappers, expectedTags, numInitialTags) => {
     }
     // last wrapper is expander tag
     expect(wrappers.at(i).text()).toBe(
-      `+${expectedTags.length - numInitialTags}`
+      `+${expectedTags.length - numInitialTags}`,
     );
   } else {
     expect(wrappers.length).toEqual(expectedTags.length);
@@ -102,7 +102,7 @@ describe("SelectableTagList.vue", () => {
       });
 
       expect(wrapper.findAllComponents(Tag).length).toBe(
-        defaultInitialTagCount + 1
+        defaultInitialTagCount + 1,
       ); // one is + sign
 
       await wrapper.setProps({ showAll: true });

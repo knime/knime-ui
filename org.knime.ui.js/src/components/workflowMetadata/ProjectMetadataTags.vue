@@ -23,17 +23,17 @@ const currentTags = computed(() =>
   props.modelValue.map((tag) => ({
     id: tag,
     text: tag,
-  }))
+  })),
 );
 
 const initialSelectedIds = computed(() =>
-  currentTags.value.map(({ id }) => id)
+  currentTags.value.map(({ id }) => id),
 );
 
 const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
   emit(
     "update:modelValue",
-    tags.map(({ text }) => text)
+    tags.map(({ text }) => text),
   );
 };
 </script>

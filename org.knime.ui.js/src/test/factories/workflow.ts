@@ -182,7 +182,7 @@ export const createWorkflow = (data: DeepPartial<Workflow> = {}): Workflow => {
 
     baseWorkflow.nodeTemplates = arrayToDictionary(
       extractNodeTemplates(Object.values(nodes)),
-      "type"
+      "type",
     );
   }
 

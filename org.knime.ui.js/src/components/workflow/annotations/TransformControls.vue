@@ -53,14 +53,14 @@ export default defineComponent({
 
       return Math.max(
         CONTROL_SIZE / MAX_FACTOR,
-        CONTROL_SIZE / this.zoomFactor
+        CONTROL_SIZE / this.zoomFactor,
       );
     },
 
     transformRectStrokeWidth() {
       return Math.max(
         this.$shapes.selectedAnnotationStrokeWidth / 2,
-        this.$shapes.selectedAnnotationStrokeWidth / this.zoomFactor
+        this.$shapes.selectedAnnotationStrokeWidth / this.zoomFactor,
       );
     },
 

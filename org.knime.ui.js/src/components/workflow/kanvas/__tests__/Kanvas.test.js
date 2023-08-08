@@ -172,7 +172,7 @@ describe("Kanvas", () => {
     const { wrapper, actions } = doShallowMount();
     expect(actions.canvas.initScrollContainerElement).toHaveBeenCalledWith(
       expect.anything(),
-      wrapper.element
+      wrapper.element,
     );
   });
 
@@ -185,7 +185,7 @@ describe("Kanvas", () => {
     wrapper.vm.$options.watch.contentBounds.call(
       wrapper.vm,
       { left: 0, top: 0 },
-      { left: 10, top: 10 }
+      { left: 10, top: 10 },
     );
     await Vue.nextTick();
 
@@ -194,7 +194,7 @@ describe("Kanvas", () => {
       [
         { left: 0, top: 0 },
         { left: 10, top: 10 },
-      ]
+      ],
     );
   });
 
@@ -206,7 +206,7 @@ describe("Kanvas", () => {
 
       expect(mockBus.emit).toHaveBeenCalledWith(
         "selection-pointerdown",
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -217,7 +217,7 @@ describe("Kanvas", () => {
 
       expect(mockBus.emit).toHaveBeenCalledWith(
         "selection-pointermove",
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -228,7 +228,7 @@ describe("Kanvas", () => {
 
       expect(mockBus.emit).toHaveBeenCalledWith(
         "selection-pointerup",
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -248,7 +248,7 @@ describe("Kanvas", () => {
 
       expect(mockBus.emit).toHaveBeenCalledWith(
         "selection-pointerdown",
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -268,7 +268,7 @@ describe("Kanvas", () => {
 
       expect(mockBus.emit).toHaveBeenCalledWith(
         "selection-pointerdown",
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -282,7 +282,7 @@ describe("Kanvas", () => {
       expect(commitSpy).toHaveBeenCalledWith(
         "canvas/setIsMoveLocked",
         true,
-        undefined
+        undefined,
       );
     });
 
@@ -296,7 +296,7 @@ describe("Kanvas", () => {
       expect(commitSpy).toHaveBeenCalledWith(
         "canvas/setIsMoveLocked",
         true,
-        undefined
+        undefined,
       );
     });
 
@@ -309,7 +309,7 @@ describe("Kanvas", () => {
       expect(commitSpy).toHaveBeenCalledWith(
         "canvas/setIsMoveLocked",
         true,
-        undefined
+        undefined,
       );
 
       document.dispatchEvent(new KeyboardEvent("keyup", { key: "Shift" }));
@@ -318,7 +318,7 @@ describe("Kanvas", () => {
       expect(commitSpy).toHaveBeenCalledWith(
         "canvas/setIsMoveLocked",
         false,
-        undefined
+        undefined,
       );
     });
   });
@@ -333,13 +333,13 @@ describe("Kanvas", () => {
 
           document.body.appendChild(element);
           element.dispatchEvent(
-            new KeyboardEvent("keypress", { code: "Space", bubbles: true })
+            new KeyboardEvent("keypress", { code: "Space", bubbles: true }),
           );
 
           await Vue.nextTick();
 
           expect(wrapper.classes()).not.toContain("panning");
-        }
+        },
       );
 
       it("adds and removes the panning cursor with space", async () => {
@@ -348,7 +348,7 @@ describe("Kanvas", () => {
         expect(wrapper.classes()).not.toContain("panning");
 
         document.dispatchEvent(
-          new KeyboardEvent("keypress", { code: "Space" })
+          new KeyboardEvent("keypress", { code: "Space" }),
         );
         await Vue.nextTick();
         expect(wrapper.classes()).toContain("panning");
@@ -362,7 +362,7 @@ describe("Kanvas", () => {
         const { wrapper } = doShallowMount({ scrollLeft: 100, scrollTop: 100 });
 
         document.dispatchEvent(
-          new KeyboardEvent("keypress", { code: "Space" })
+          new KeyboardEvent("keypress", { code: "Space" }),
         );
         await Vue.nextTick();
 
@@ -390,7 +390,7 @@ describe("Kanvas", () => {
         $store.state.canvas.interactionsEnabled = false;
 
         document.dispatchEvent(
-          new KeyboardEvent("keypress", { code: "Space" })
+          new KeyboardEvent("keypress", { code: "Space" }),
         );
         await Vue.nextTick();
 
@@ -619,7 +619,7 @@ describe("Kanvas", () => {
         expect.objectContaining({
           deselectAllObjects: true,
           event: expect.anything(),
-        })
+        }),
       );
     });
   });
@@ -673,7 +673,7 @@ describe("Kanvas", () => {
           ctrlKey: true,
           clientX: 10,
           clientY: 10,
-        })
+        }),
       );
       expect(actions.canvas.zoomAroundPointer).toHaveBeenCalledWith(
         expect.anything(),
@@ -681,7 +681,7 @@ describe("Kanvas", () => {
           delta: 1,
           cursorX: 5,
           cursorY: 0,
-        }
+        },
       );
     });
 
@@ -695,7 +695,7 @@ describe("Kanvas", () => {
           ctrlKey: true,
           clientX: 10,
           clientY: 10,
-        })
+        }),
       );
       expect(actions.canvas.zoomAroundPointer).not.toHaveBeenCalled();
     });
@@ -710,7 +710,7 @@ describe("Kanvas", () => {
           ctrlKey: true,
           clientX: 10,
           clientY: 10,
-        })
+        }),
       );
       expect(actions.canvas.zoomAroundPointer).not.toHaveBeenCalled();
     });

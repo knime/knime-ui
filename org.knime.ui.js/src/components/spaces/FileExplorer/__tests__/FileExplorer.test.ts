@@ -231,7 +231,7 @@ describe("FileExplorer.vue", () => {
       _srcItemWrapper: DOMWrapper<Element>,
       _tgtItemWrapper: DOMWrapper<Element> | null,
       dropEffect: "move" | "none" = "move",
-      skipDrop = false
+      skipDrop = false,
     ) => {
       const dataTransfer = { setDragImage: vi.fn() };
       await _srcItemWrapper.trigger("dragstart", { dataTransfer });
@@ -297,7 +297,7 @@ describe("FileExplorer.vue", () => {
       await dragAndDropItem(secondItem, firstItem);
 
       expect(
-        document.body.querySelectorAll('[data-id="drag-ghost"]').length
+        document.body.querySelectorAll('[data-id="drag-ghost"]').length,
       ).toBe(2);
     });
 
@@ -349,7 +349,7 @@ describe("FileExplorer.vue", () => {
       await dragAndDropItem(secondItem, firstItem);
 
       expect(wrapper.emitted("moveItems")[0][0]).toEqual(
-        expect.objectContaining({ onComplete: expect.any(Function) })
+        expect.objectContaining({ onComplete: expect.any(Function) }),
       );
 
       // @ts-ignore
@@ -362,7 +362,7 @@ describe("FileExplorer.vue", () => {
 
       // ghosts are removed
       expect(
-        document.body.querySelectorAll('[data-id="drag-ghost"]').length
+        document.body.querySelectorAll('[data-id="drag-ghost"]').length,
       ).toBe(0);
 
       getRenderedItems(wrapper).forEach((item) => {
@@ -485,7 +485,7 @@ describe("FileExplorer.vue", () => {
     const items = getRenderedItems(wrapper);
     expect(items.at(0).find(".open-indicator").exists()).toBe(false);
     expect(
-      items.at(indexOfItemWithIndicator).find(".open-indicator").exists()
+      items.at(indexOfItemWithIndicator).find(".open-indicator").exists(),
     ).toBe(true);
   });
 
@@ -493,7 +493,7 @@ describe("FileExplorer.vue", () => {
     const openContextMenu = (
       _wrapper: VueWrapper<any>,
       itemIndex: number,
-      position = { clientX: 100, clientY: 100 }
+      position = { clientX: 100, clientY: 100 },
     ) => {
       const item = getRenderedItems(_wrapper).at(itemIndex);
 
@@ -517,22 +517,22 @@ describe("FileExplorer.vue", () => {
       await openContextMenu(wrapper, 0);
 
       expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(
-        true
+        true,
       );
 
       expect(
-        wrapper.findComponent(FileExplorerContextMenu).props("position")
+        wrapper.findComponent(FileExplorerContextMenu).props("position"),
       ).toEqual({
         x: 100,
         y: 100,
       });
 
       expect(
-        wrapper.findComponent(FileExplorerContextMenu).props("selectedItems")
+        wrapper.findComponent(FileExplorerContextMenu).props("selectedItems"),
       ).toEqual([MOCK_DATA[0], MOCK_DATA[1]]);
 
       expect(
-        wrapper.findComponent(FileExplorerContextMenu).props("anchor")
+        wrapper.findComponent(FileExplorerContextMenu).props("anchor"),
       ).toEqual({
         element: firstItem.element,
         index: 0,
@@ -547,7 +547,7 @@ describe("FileExplorer.vue", () => {
 
       await closeContextMenu(wrapper);
       expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(
-        false
+        false,
       );
     });
 
@@ -562,11 +562,11 @@ describe("FileExplorer.vue", () => {
       await openContextMenu(wrapper, 0);
 
       expect(
-        wrapper.findComponent(FileExplorerContextMenu).props("selectedItems")
+        wrapper.findComponent(FileExplorerContextMenu).props("selectedItems"),
       ).toEqual([MOCK_DATA[0]]);
 
       expect(
-        wrapper.findComponent(FileExplorerContextMenu).props("anchor")
+        wrapper.findComponent(FileExplorerContextMenu).props("anchor"),
       ).toEqual({
         element: firstItem.element,
         index: 0,
@@ -580,7 +580,7 @@ describe("FileExplorer.vue", () => {
 
       const triggerRename = async (
         _wrapper: VueWrapper<any>,
-        itemIndex: number
+        itemIndex: number,
       ) => {
         await openContextMenu(_wrapper, itemIndex);
 
@@ -596,7 +596,7 @@ describe("FileExplorer.vue", () => {
 
         // all items' names except the first one, whose rename has been activated
         const expectedBlacklistedNames = MOCK_DATA.slice(1).map(
-          ({ name }) => name
+          ({ name }) => name,
         );
 
         const firstItemComponent = wrapper
@@ -604,7 +604,7 @@ describe("FileExplorer.vue", () => {
           .at(renamedItemIndex);
         expect(firstItemComponent.props("isRenameActive")).toBe(true);
         expect(firstItemComponent.props("blacklistedNames")).toEqual(
-          expectedBlacklistedNames
+          expectedBlacklistedNames,
         );
       });
 
@@ -673,7 +673,7 @@ describe("FileExplorer.vue", () => {
 
         // this one is not disabled
         expect(
-          getRenameOptionElement(wrapper).find("button").classes()
+          getRenameOptionElement(wrapper).find("button").classes(),
         ).not.toContain("disabled");
       });
 
@@ -755,7 +755,7 @@ describe("FileExplorer.vue", () => {
 
         // this one is not disabled
         expect(
-          getDeleteOptionElement(wrapper).find("button").classes()
+          getDeleteOptionElement(wrapper).find("button").classes(),
         ).not.toContain("disabled");
       });
 
@@ -837,7 +837,7 @@ describe("FileExplorer.vue", () => {
               id: "delete",
               disabled: false,
             }),
-          ])
+          ]),
         );
         expect(getSlottedStubProp({ wrapper, propName: "anchor" })).toEqual({
           item: MOCK_DATA.at(0),
@@ -845,7 +845,7 @@ describe("FileExplorer.vue", () => {
           index: 0,
         });
         expect(
-          getSlottedStubProp({ wrapper, propName: "isContextMenuVisible" })
+          getSlottedStubProp({ wrapper, propName: "isContextMenuVisible" }),
         ).toBe(true);
         expect(getSlottedStubProp({ wrapper, propName: "position" })).toEqual({
           x: 200,
@@ -876,7 +876,7 @@ describe("FileExplorer.vue", () => {
           expect(typeof getOptionFn === "function").toBe(true);
           const optionValue = getOptionFn(MOCK_DATA.at(0));
           expect(optionValue).toEqual(expectedReturnValue);
-        }
+        },
       );
 
       it("should set the correct `disabled` value to the rename option", async () => {
@@ -963,7 +963,7 @@ describe("FileExplorer.vue", () => {
             title: "custom title",
             disabled: true,
           });
-        }
+        },
       );
 
       it('should expose an "onItemClick" function on the slot', async () => {

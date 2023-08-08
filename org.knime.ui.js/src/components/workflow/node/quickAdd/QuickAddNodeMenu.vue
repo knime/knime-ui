@@ -26,7 +26,7 @@ const calculatePortOffset = ({
       fromPort: sourcePort,
       toPort,
       availablePortTypes,
-    })
+    }),
   );
 
   const portCount = targetPorts.length + 1; // +1 for the mickey mouse port
@@ -99,7 +99,7 @@ export default defineComponent({
     },
     isContainerNode() {
       return ["metanode", "component"].includes(
-        this.getNodeById(this.nodeId)?.kind
+        this.getNodeById(this.nodeId)?.kind,
       );
     },
     fakePortConnector(): DragConnector {

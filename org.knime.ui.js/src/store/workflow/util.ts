@@ -35,7 +35,7 @@ export const getNextProjectId = ({
   }
 
   const remainingProjects = openProjects.filter(
-    (project) => !closingProjectIds.includes(project.projectId)
+    (project) => !closingProjectIds.includes(project.projectId),
   );
 
   if (remainingProjects.length === 0) {

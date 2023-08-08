@@ -17,7 +17,7 @@ const COLORS = {
  */
 const applyStyles = (
   element: HTMLElement,
-  styles: Partial<CSSStyleDeclaration>
+  styles: Partial<CSSStyleDeclaration>,
 ): void => {
   Object.entries(styles).forEach(([property, value]) => {
     element.style[property] = value;
@@ -297,7 +297,7 @@ export const createDragGhosts = ({
     };
 
   const removeGhosts: CreateDragGhostsReturnType["removeGhosts"] = (
-    animateOut = true
+    animateOut = true,
   ) => {
     const removeGhost = ({ ghost }: { ghost: HTMLElement }) => {
       if (!animateOut) {

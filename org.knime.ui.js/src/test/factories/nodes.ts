@@ -39,7 +39,7 @@ export const isNativeNode = (node: KnimeNode): node is NativeNode => {
 
 const createBaseNode = (
   kind: Node.KindEnum,
-  data: DeepPartial<Node> = {}
+  data: DeepPartial<Node> = {},
 ): Node => {
   const defaultVariablePort = createPort({
     index: 0,
@@ -84,7 +84,7 @@ type NodeTemplateIds =
   | Omit<string, (typeof TEMPLATE_IDS)[number]>;
 
 export const createNativeNode = (
-  data: DeepPartial<NativeNode & { templateId: NodeTemplateIds }> = {}
+  data: DeepPartial<NativeNode & { templateId: NodeTemplateIds }> = {},
 ): NativeNode => {
   const baseNode = createBaseNode(Node.KindEnum.Node, data);
 
@@ -104,7 +104,7 @@ export const createNativeNode = (
 };
 
 export const createComponentNode = (
-  data: DeepPartial<ComponentNode> = {}
+  data: DeepPartial<ComponentNode> = {},
 ): ComponentNode => {
   const baseNode = createBaseNode(Node.KindEnum.Component, data);
 

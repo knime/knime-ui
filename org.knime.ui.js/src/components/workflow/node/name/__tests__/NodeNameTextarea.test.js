@@ -55,7 +55,7 @@ describe("NodeNameTextarea", () => {
         .vm.$emit(eventName, emittedValue);
 
       expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
-    }
+    },
   );
 
   it("should emit an update:modelValue event when text changes", () => {
@@ -111,7 +111,7 @@ describe("NodeNameTextarea", () => {
 
     expect(wrapper.emitted("invalidInput")).toBeDefined();
     expect(wrapper.emitted("update:modelValue")[0][0]).toBe(
-      "New name!-test_12()"
+      "New name!-test_12()",
     );
   });
 

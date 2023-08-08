@@ -345,7 +345,7 @@ describe("NodePort", () => {
 
     const setupIncomingConnector = () => {
       const incomingConnector = document.createElement(
-        "div"
+        "div",
       ) as HTMLDivElement & {
         _indicateReplacementEvent?: CustomEvent;
       };
@@ -491,7 +491,7 @@ describe("NodePort", () => {
             startNodeId: "node:1",
             startPort: defaultProps.port,
           });
-        }
+        },
       );
 
       // eslint-disable-next-line vitest/max-nested-describe
@@ -508,7 +508,7 @@ describe("NodePort", () => {
           // connector doesn't receive pointer-events
 
           const nodePortActiveConnector = wrapper.findComponent(
-            NodePortActiveConnector
+            NodePortActiveConnector,
           );
           const connector = nodePortActiveConnector.findComponent(Connector);
 
@@ -516,7 +516,7 @@ describe("NodePort", () => {
             expect.objectContaining({
               id: wrapper.vm.dragConnector.id,
               allowedActions: wrapper.vm.dragConnector.allowedActions,
-            })
+            }),
           );
 
           expect(connector.attributes("class")).toMatch("non-interactive");
@@ -1063,7 +1063,7 @@ describe("NodePort", () => {
           expect.objectContaining({
             startNode: "node:1",
             startPort: 0,
-          })
+          }),
         );
 
         const lastDispatchedEvent = mockBus.emit.mock.calls.pop();
@@ -1074,7 +1074,7 @@ describe("NodePort", () => {
         const { wrapper } = doMount({ isWorkflowWritable: false });
         await startDragging({ wrapper });
         expect(wrapper.element.releasePointerCapture).not.toHaveBeenCalledWith(
-          -1
+          -1,
         );
       });
 
@@ -1089,7 +1089,7 @@ describe("NodePort", () => {
           expect.objectContaining({
             startNode: "node:1",
             startPort: 0,
-          })
+          }),
         );
 
         const lastDispatchedEvent = mockBus.emit.mock.calls.pop();
@@ -1229,7 +1229,7 @@ describe("NodePort", () => {
                   y: 0,
                 },
               },
-            })
+            }),
           );
         });
 
@@ -1338,7 +1338,7 @@ describe("NodePort", () => {
       const { wrapper } = doMount({ props: { selected: true } });
 
       expect(wrapper.findComponent(Port).classes()).not.toContain(
-        "hoverable-port"
+        "hoverable-port",
       );
     });
 

@@ -24,16 +24,16 @@ export type PortSnapCallback = (params: {
 };
 
 const isPlaceholderPort = (
-  port: NodePort | PlaceholderPort
+  port: NodePort | PlaceholderPort,
 ): port is PlaceholderPort => (port as PlaceholderPort).isPlaceHolderPort;
 
 export const usePortSnapping = () => {
   const store = useStore();
   const connections = computed(
-    () => store.state.workflow.activeWorkflow.connections
+    () => store.state.workflow.activeWorkflow.connections,
   );
   const availablePortTypes = computed<AvailablePortTypes>(
-    () => store.state.application.availablePortTypes
+    () => store.state.application.availablePortTypes,
   );
 
   const shouldPortSnap = ({

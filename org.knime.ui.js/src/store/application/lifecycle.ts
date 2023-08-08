@@ -123,7 +123,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
    */
   async switchWorkflow(
     { commit, dispatch, rootState, state },
-    { newWorkflow = null }
+    { newWorkflow = null },
   ) {
     const isChangingProject =
       rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
@@ -185,7 +185,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       workflow,
       projectId,
       snapshotId,
-    }: { workflow: Workflow; projectId: string; snapshotId: string }
+    }: { workflow: Workflow; projectId: string; snapshotId: string },
   ) {
     commit("setActiveProjectId", projectId);
     commit(
@@ -194,7 +194,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
         ...workflow,
         projectId,
       },
-      { root: true }
+      { root: true },
     );
 
     commit("workflow/setActiveSnapshotId", snapshotId, { root: true });
@@ -212,7 +212,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
   async unloadActiveWorkflow(
     { commit, rootState, dispatch },
-    { clearWorkflow }
+    { clearWorkflow },
   ) {
     const { activeWorkflow } = rootState.workflow;
 

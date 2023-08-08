@@ -78,7 +78,7 @@ const addLink = (text: string, urlText: string) => {
 
   if (urlText) {
     const containsHttp = ["http://", "https://"].some((protocol) =>
-      urlText.includes(protocol)
+      urlText.includes(protocol),
     );
     const url = containsHttp ? urlText : `https://${urlText}`;
 
@@ -109,11 +109,11 @@ const linkTool = {
 };
 
 const customTools = computed(() =>
-  props.tools.filter(({ secondary }) => !secondary).concat(linkTool)
+  props.tools.filter(({ secondary }) => !secondary).concat(linkTool),
 );
 
 const secondaryTools = computed(() =>
-  props.tools.filter(({ secondary }) => secondary)
+  props.tools.filter(({ secondary }) => secondary),
 );
 
 const secondaryToolsMenuItems = computed(() =>
@@ -123,7 +123,7 @@ const secondaryToolsMenuItems = computed(() =>
     hotkeyText: formatHotkeys(tool.hotkey ?? []),
     icon: tool.icon,
     id: tool.id,
-  }))
+  })),
 );
 
 const onSecondaryToolClick = (_: any, { id }: { id: string }) => {
@@ -166,7 +166,7 @@ const headingPresets = computed(() => {
 });
 
 const selectedHeadingText = computed(
-  () => headingPresets.value.find((heading) => heading.selected)?.text
+  () => headingPresets.value.find((heading) => heading.selected)?.text,
 );
 
 const zoomFactor = computed(() => store.state.canvas.zoomFactor);

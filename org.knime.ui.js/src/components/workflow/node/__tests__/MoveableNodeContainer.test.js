@@ -286,15 +286,15 @@ describe("MoveableNodeContainer", () => {
 
       expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-enter" })
+        expect.objectContaining({ type: "node-dragging-enter" }),
       );
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-leave" })
+        expect.objectContaining({ type: "node-dragging-leave" }),
       );
 
       expect(otherTarget.dispatchEvent).toHaveBeenCalledTimes(1);
       expect(otherTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-enter" })
+        expect.objectContaining({ type: "node-dragging-enter" }),
       );
     });
 
@@ -303,10 +303,10 @@ describe("MoveableNodeContainer", () => {
 
       expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-enter" })
+        expect.objectContaining({ type: "node-dragging-enter" }),
       );
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-end" })
+        expect.objectContaining({ type: "node-dragging-end" }),
       );
     });
 
@@ -316,10 +316,10 @@ describe("MoveableNodeContainer", () => {
 
       expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-enter" })
+        expect.objectContaining({ type: "node-dragging-enter" }),
       );
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-leave" })
+        expect.objectContaining({ type: "node-dragging-leave" }),
       );
     });
   });

@@ -27,7 +27,7 @@ describe("workflow preview snapshot", () => {
 
       const svgElement = document.createElementNS(
         "http://www.w3.org/2000/svg",
-        "svg"
+        "svg",
       );
 
       store.state.application.rootWorkflowSnapshots.set("foo--root", {
@@ -36,7 +36,7 @@ describe("workflow preview snapshot", () => {
       });
 
       const result = await store.dispatch(
-        "application/getActiveWorkflowSnapshot"
+        "application/getActiveWorkflowSnapshot",
       );
       expect(result.svgElement).toBe(svgElement);
     });
@@ -58,8 +58,8 @@ describe("workflow preview snapshot", () => {
 
     expect(
       store.state.application.rootWorkflowSnapshots.get(
-        `${activeProjectId}--root`
-      )
+        `${activeProjectId}--root`,
+      ),
     ).toBeDefined();
   });
 
@@ -97,8 +97,8 @@ describe("workflow preview snapshot", () => {
     expect(getSnapshotKeys(store).length).toBe(1);
     expect(
       store.state.application.rootWorkflowSnapshots.get(
-        getSnapshotKeys(store)[0]
-      )
+        getSnapshotKeys(store)[0],
+      ),
     ).toEqual({
       svgElement: canvasMockEl,
       isCanvasEmpty: store.state.canvas.isEmpty,

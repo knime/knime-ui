@@ -58,14 +58,11 @@ import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
-import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 final class WorkflowAPI {
-
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(WorkflowAPI.class);
 
     private WorkflowAPI() {
         // stateless
@@ -82,11 +79,7 @@ final class WorkflowAPI {
      */
     @API
     static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            OpenWorkflow.openWorkflowInClassicAndWebUI(spaceProviderId, spaceId, itemId);
-        } else {
-            OpenWorkflow.openWorkflowInWebUIWithProgress(spaceProviderId, spaceId, itemId);
-        }
+        OpenWorkflow.openWorkflow(spaceId, itemId, spaceProviderId);
     }
 
     /**

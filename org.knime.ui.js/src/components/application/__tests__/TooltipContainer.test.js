@@ -160,7 +160,7 @@ describe("TooltipContainer", () => {
 
       expect(kanvasElement.addEventListener).toHaveBeenCalledWith(
         "scroll",
-        wrapper.vm.onCanvasScroll
+        wrapper.vm.onCanvasScroll,
       );
 
       // test that it doesn't set another scroll listener
@@ -183,7 +183,7 @@ describe("TooltipContainer", () => {
 
       expect(kanvasElement.removeEventListener).toHaveBeenCalledWith(
         "scroll",
-        wrapper.vm.onCanvasScroll
+        wrapper.vm.onCanvasScroll,
       );
     });
 
@@ -193,7 +193,7 @@ describe("TooltipContainer", () => {
 
       expect(kanvasElement.removeEventListener).toHaveBeenCalledWith(
         "scroll",
-        wrapper.vm.onCanvasScroll
+        wrapper.vm.onCanvasScroll,
       );
     });
 

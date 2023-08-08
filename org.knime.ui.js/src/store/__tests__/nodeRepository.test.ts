@@ -96,13 +96,13 @@ describe("Node Repository store", () => {
 
     mockedAPI.noderepository.searchNodes.mockReturnValue(searchNodesResponse);
     mockedAPI.noderepository.getNodesGroupedByTags.mockReturnValue(
-      getNodesGroupedByTagsResponse
+      getNodesGroupedByTagsResponse,
     );
     mockedAPI.node.getNodeDescription.mockReturnValue(
-      getNodeDescriptionResponse
+      getNodeDescriptionResponse,
     );
     mockedAPI.noderepository.getNodeTemplates.mockReturnValue(
-      getNodeTemplatesResponse
+      getNodeTemplatesResponse,
     );
 
     const store = mockVuexStore({
@@ -132,7 +132,7 @@ describe("Node Repository store", () => {
     const nodeSearchStateKeys = Object.keys(nodeSearchState());
 
     expect(
-      withoutKeys(store.state.nodeRepository, nodeSearchStateKeys)
+      withoutKeys(store.state.nodeRepository, nodeSearchStateKeys),
     ).toStrictEqual({
       nodesPerCategory: [],
       totalNumCategories: null,
@@ -150,17 +150,17 @@ describe("Node Repository store", () => {
     it("returns proper value for nodesPerCategoryContainSelectedNode", async () => {
       const { store } = await createStore();
       expect(
-        store.getters["nodeRepository/nodesPerCategoryContainSelectedNode"]
+        store.getters["nodeRepository/nodesPerCategoryContainSelectedNode"],
       ).toBe(false);
       store.state.nodeRepository.nodesPerCategory = [
         { tag: "tag:1", nodes: [{ id: 1 }, { id: 2 }] },
       ];
       expect(
-        store.getters["nodeRepository/nodesPerCategoryContainSelectedNode"]
+        store.getters["nodeRepository/nodesPerCategoryContainSelectedNode"],
       ).toBe(false);
       store.state.nodeRepository.selectedNode = { id: 1, name: "Node" };
       expect(
-        store.getters["nodeRepository/nodesPerCategoryContainSelectedNode"]
+        store.getters["nodeRepository/nodesPerCategoryContainSelectedNode"],
       ).toBe(true);
     });
 
@@ -199,7 +199,7 @@ describe("Node Repository store", () => {
         groupedNodes: [{ tag: "MyTag1", nodes: [{ id: "node1" }] }],
       });
       expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(
-        categories
+        categories,
       );
     });
 
@@ -217,7 +217,7 @@ describe("Node Repository store", () => {
       categories.push(category);
 
       expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(
-        categories
+        categories,
       );
     });
 
@@ -257,7 +257,7 @@ describe("Node Repository store", () => {
         expect(store.state.nodeRepository.categoryPage).toBe(1);
 
         expect(
-          mockedAPI.noderepository.getNodesGroupedByTags
+          mockedAPI.noderepository.getNodesGroupedByTags,
         ).toHaveBeenCalledWith({
           numNodesPerTag: 8,
           tagsOffset: 6,
@@ -286,7 +286,7 @@ describe("Node Repository store", () => {
         expect(store.state.nodeRepository.categoryPage).toBe(0);
         expect(store.state.nodeRepository.topNodeSearchPage).toBe(0);
         expect(
-          mockedAPI.noderepository.getNodesGroupedByTags
+          mockedAPI.noderepository.getNodesGroupedByTags,
         ).toHaveBeenCalledWith({
           numNodesPerTag: 8,
           tagsOffset: 0,
@@ -321,12 +321,12 @@ describe("Node Repository store", () => {
 
         const result = await store.dispatch(
           "nodeRepository/getNodeDescription",
-          { selectedNode }
+          { selectedNode },
         );
 
         expect(mockedAPI.node.getNodeDescription).toHaveBeenCalled();
         expect(result).toEqual(
-          withPorts([getNodeDescriptionResponse], availablePortTypes)[0]
+          withPorts([getNodeDescriptionResponse], availablePortTypes)[0],
         );
       });
 
@@ -354,15 +354,15 @@ describe("Node Repository store", () => {
         await store.dispatch("nodeRepository/resetSearchAndCategories");
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeRepository/clearSearchResults",
-          undefined
+          undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeRepository/searchTopAndBottomNodes",
-          undefined
+          undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeRepository/clearCategoryResults",
-          undefined
+          undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith("nodeRepository/getAllNodes", {
           append: false,
@@ -374,15 +374,15 @@ describe("Node Repository store", () => {
         await store.dispatch("nodeRepository/resetSearchAndCategories");
         expect(dispatchSpy).not.toHaveBeenCalledWith(
           "nodeRepository/clearSearchResults",
-          undefined
+          undefined,
         );
         expect(dispatchSpy).not.toHaveBeenCalledWith(
           "nodeRepository/searchTopAndBottomNodes",
-          undefined
+          undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeRepository/clearCategoryResults",
-          undefined
+          undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith("nodeRepository/getAllNodes", {
           append: false,
@@ -407,16 +407,16 @@ describe("Node Repository store", () => {
       const { store } = await createStore();
       const nodeTemplate = await store.dispatch(
         "nodeRepository/getNodeTemplate",
-        "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory"
+        "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory",
       );
 
       expect(nodeTemplate).toEqual(
         getNodeTemplatesResponse[
           "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory"
-        ]
+        ],
       );
       expect(store.state.nodeRepository.nodeTemplates).toEqual(
-        getNodeTemplatesResponse
+        getNodeTemplatesResponse,
       );
     });
 
@@ -425,12 +425,12 @@ describe("Node Repository store", () => {
       const mockNodeTemplate = { factory: "testFactory" };
       await store.dispatch(
         "nodeRepository/setDraggingNodeTemplate",
-        mockNodeTemplate
+        mockNodeTemplate,
       );
 
       expect(store.state.nodeRepository.isDraggingNode).toBeTruthy();
       expect(store.state.nodeRepository.draggedNodeData).toEqual(
-        mockNodeTemplate
+        mockNodeTemplate,
       );
 
       await store.dispatch("nodeRepository/setDraggingNodeTemplate", null);

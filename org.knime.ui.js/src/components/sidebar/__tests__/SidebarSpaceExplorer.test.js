@@ -30,7 +30,7 @@ describe("SidebarSpaceExplorer.vue", () => {
     const { wrapper } = doMount();
 
     expect(wrapper.findComponent(SpaceExplorer).props().projectId).toBe(
-      "proj1"
+      "proj1",
     );
   });
 });

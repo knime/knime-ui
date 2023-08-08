@@ -128,10 +128,10 @@ describe("KnimeUI.vue", () => {
     });
     expect(document.fonts.load).toHaveBeenCalledWith("400 1em Roboto");
     expect(document.fonts.load).toHaveBeenCalledWith(
-      "400 1em Roboto Condensed"
+      "400 1em Roboto Condensed",
     );
     expect(document.fonts.load).toHaveBeenCalledWith(
-      "700 1em Roboto Condensed"
+      "700 1em Roboto Condensed",
     );
     expect(document.fonts.load).toHaveBeenCalledWith("400 1em Roboto Mono");
   });
@@ -156,9 +156,9 @@ describe("KnimeUI.vue", () => {
         const { setHasClipboardSupport } = await doShallowMount();
         expect(setHasClipboardSupport).toHaveBeenCalledWith(
           expect.anything(),
-          expectedValue
+          expectedValue,
         );
-      }
+      },
     );
 
     it("should set the clipboard support flag to false when permission request throws", async () => {
@@ -175,7 +175,7 @@ describe("KnimeUI.vue", () => {
       const { setHasClipboardSupport } = await doShallowMount();
       expect(setHasClipboardSupport).toHaveBeenCalledWith(
         expect.anything(),
-        false
+        false,
       );
     });
 
@@ -194,7 +194,7 @@ describe("KnimeUI.vue", () => {
       const { setHasClipboardSupport } = await doShallowMount();
       expect(setHasClipboardSupport).toHaveBeenCalledWith(
         expect.anything(),
-        true
+        true,
       );
     });
   });

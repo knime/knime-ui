@@ -106,13 +106,13 @@ export const actions = {
   selectAllObjects({ commit, rootState }) {
     commit(
       "addNodesToSelection",
-      Object.keys(rootState.workflow.activeWorkflow.nodes)
+      Object.keys(rootState.workflow.activeWorkflow.nodes),
     );
     commit(
       "addAnnotationToSelection",
       rootState.workflow.activeWorkflow.workflowAnnotations.map(
-        (annotation) => annotation.id
-      )
+        (annotation) => annotation.id,
+      ),
     );
   },
 
@@ -164,7 +164,7 @@ export const actions = {
 
   async toggleAnnotationSelection(
     { state, dispatch, commit },
-    { annotationId, isMultiselect, isSelected }
+    { annotationId, isMultiselect, isSelected },
   ) {
     // Prevents selecting/deselecting the annotation that the rectangle selection started from but was not included
     // in a rectangle selection
@@ -206,7 +206,7 @@ export const getters = {
     }
     return rootState.workflow.activeWorkflow.workflowAnnotations.filter(
       (annotation) =>
-        Object.keys(state.selectedAnnotations).includes(annotation.id)
+        Object.keys(state.selectedAnnotations).includes(annotation.id),
     );
   },
 

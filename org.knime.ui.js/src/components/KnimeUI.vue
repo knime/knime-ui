@@ -17,7 +17,7 @@ import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vu
 export default defineComponent({
   components: {
     AppHeader: defineAsyncComponent(
-      () => import("@/components/application/AppHeader.vue")
+      () => import("@/components/application/AppHeader.vue"),
     ),
     UpdateBanner,
     HotkeyHandler,
@@ -109,7 +109,7 @@ export default defineComponent({
 
       this.$store.commit(
         "application/setHasClipboardSupport",
-        hasClipboardSupport
+        hasClipboardSupport,
       );
     },
 

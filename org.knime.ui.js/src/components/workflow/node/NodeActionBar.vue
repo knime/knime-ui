@@ -72,7 +72,7 @@ export default defineComponent({
           title: () =>
             this.hoverTitle(
               "Configure",
-              this.$shortcuts.get("configureNode").hotkeyText
+              this.$shortcuts.get("configureNode").hotkeyText,
             ),
           disabled: !this.canOpenDialog,
           icon: OpenDialogIcon,
@@ -82,7 +82,7 @@ export default defineComponent({
           title: () =>
             this.hoverTitle(
               "Pause",
-              this.$shortcuts.get("pauseLoopExecution").hotkeyText
+              this.$shortcuts.get("pauseLoopExecution").hotkeyText,
             ),
           disabled: false,
           icon: PauseIcon,
@@ -92,7 +92,7 @@ export default defineComponent({
           title: () =>
             this.hoverTitle(
               "Resume",
-              this.$shortcuts.get("resumeLoopExecution").hotkeyText
+              this.$shortcuts.get("resumeLoopExecution").hotkeyText,
             ),
           disabled: false,
           icon: ResumeIcon,
@@ -102,7 +102,7 @@ export default defineComponent({
           title: () =>
             this.hoverTitle(
               "Execute",
-              this.$shortcuts.get("executeSelected").hotkeyText
+              this.$shortcuts.get("executeSelected").hotkeyText,
             ),
           disabled: !this.canExecute,
           icon: ExecuteIcon,
@@ -112,7 +112,7 @@ export default defineComponent({
           title: () =>
             this.hoverTitle(
               "Step",
-              this.$shortcuts.get("stepLoopExecution").hotkeyText
+              this.$shortcuts.get("stepLoopExecution").hotkeyText,
             ),
           disabled: !this.canStep,
           icon: StepIcon,
@@ -122,7 +122,7 @@ export default defineComponent({
           title: () =>
             this.hoverTitle(
               "Cancel",
-              this.$shortcuts.get("cancelSelected").hotkeyText
+              this.$shortcuts.get("cancelSelected").hotkeyText,
             ),
           disabled: !this.canCancel,
           icon: CancelIcon,
@@ -132,7 +132,7 @@ export default defineComponent({
           title: () =>
             this.hoverTitle(
               "Reset",
-              this.$shortcuts.get("resetSelected").hotkeyText
+              this.$shortcuts.get("resetSelected").hotkeyText,
             ),
           disabled: !this.canReset,
           icon: ResetIcon,
@@ -142,7 +142,7 @@ export default defineComponent({
           title: () =>
             this.hoverTitle(
               this.canExecute ? "Execute and open view" : "Open View",
-              this.$shortcuts.get("executeAndOpenView").hotkeyText
+              this.$shortcuts.get("executeAndOpenView").hotkeyText,
             ),
           disabled: !this.canOpenView && !this.canExecute,
           icon: OpenViewIcon,
@@ -205,7 +205,9 @@ export default defineComponent({
 
 <style scoped>
 .node-id {
-  font: normal 10px "Roboto Condensed", sans-serif;
+  font:
+    normal 10px "Roboto Condensed",
+    sans-serif;
   pointer-events: none;
 }
 </style>

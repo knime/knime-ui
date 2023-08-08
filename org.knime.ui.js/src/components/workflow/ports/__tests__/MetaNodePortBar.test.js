@@ -64,18 +64,18 @@ describe("MetaNodePortBar.vue", () => {
 
       // global positioning
       expect(wrapper.find("g").attributes("transform")).toBe(
-        `translate(${x}, ${y})`
+        `translate(${x}, ${y})`,
       );
 
       // visible port bar
       let portBar = wrapper.find(".port-bar");
       expect(Number(portBar.attributes("width"))).toEqual(
-        $shapes.metaNodeBarWidth
+        $shapes.metaNodeBarWidth,
       );
       expect(Number(portBar.attributes("height"))).toEqual(height);
       if (type === "in") {
         expect(Number(portBar.attributes("x"))).toEqual(
-          -$shapes.metaNodeBarWidth
+          -$shapes.metaNodeBarWidth,
         );
       } else {
         expect(Number(portBar.attributes("x"))).toBe(0);
@@ -84,16 +84,16 @@ describe("MetaNodePortBar.vue", () => {
       // invisible hover-area
       let hoverArea = wrapper.find(".hover-area");
       expect(Number(hoverArea.attributes("width"))).toEqual(
-        $shapes.metaNodeBarWidth + $shapes.metaNodeBarHorizontalPadding * 2
+        $shapes.metaNodeBarWidth + $shapes.metaNodeBarHorizontalPadding * 2,
       );
       expect(Number(hoverArea.attributes("height"))).toEqual(height);
       if (type === "in") {
         expect(Number(hoverArea.attributes("x"))).toEqual(
-          -$shapes.metaNodeBarWidth - $shapes.metaNodeBarHorizontalPadding
+          -$shapes.metaNodeBarWidth - $shapes.metaNodeBarHorizontalPadding,
         );
       } else {
         expect(Number(hoverArea.attributes("x"))).toEqual(
-          -$shapes.metaNodeBarHorizontalPadding
+          -$shapes.metaNodeBarHorizontalPadding,
         );
       }
     });
@@ -126,7 +126,7 @@ describe("MetaNodePortBar.vue", () => {
             549 / (ports.length + 1),
           ],
           targeted: false,
-        })
+        }),
       );
 
       expect(port1.props()).toStrictEqual(
@@ -139,7 +139,7 @@ describe("MetaNodePortBar.vue", () => {
             (2 * 549) / (ports.length + 1),
           ],
           targeted: false,
-        })
+        }),
       );
     });
 

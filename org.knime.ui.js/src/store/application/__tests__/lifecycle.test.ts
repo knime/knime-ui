@@ -31,16 +31,16 @@ describe("application::lifecycle", () => {
       expect(API.application.getState).toHaveBeenCalled();
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/replaceApplicationState",
-        applicationState
+        applicationState,
       );
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "spaces/loadLocalSpace",
-        expect.anything()
+        expect.anything(),
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "spaces/fetchAllSpaceProviders",
-        expect.anything()
+        expect.anything(),
       );
       expect(dispatchSpy).toHaveBeenCalledWith("application/setActiveProject", {
         $router: router,
@@ -58,16 +58,16 @@ describe("application::lifecycle", () => {
 
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "spaces/loadLocalSpace",
-        expect.anything()
+        expect.anything(),
       );
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "spaces/fetchAllSpaceProviders",
-        expect.anything()
+        expect.anything(),
       );
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/replaceApplicationState",
-        applicationState
+        applicationState,
       );
       expect(dispatchSpy).toHaveBeenCalledWith("application/setActiveProject", {
         $router: router,
@@ -81,7 +81,7 @@ describe("application::lifecycle", () => {
       expect(unsubscribeEventListener).toHaveBeenCalled();
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/unloadActiveWorkflow",
-        { clearWorkflow: true }
+        { clearWorkflow: true },
       );
     });
   });
@@ -98,10 +98,10 @@ describe("application::lifecycle", () => {
       await store.dispatch("application/loadWorkflow", { projectId: "wf1" });
 
       expect(loadWorkflow).toHaveBeenCalledWith(
-        expect.objectContaining({ workflowId: "root", projectId: "wf1" })
+        expect.objectContaining({ workflowId: "root", projectId: "wf1" }),
       );
       expect(
-        deepMocked(API).desktop.setProjectActiveAndEnsureItsLoaded
+        deepMocked(API).desktop.setProjectActiveAndEnsureItsLoaded,
       ).toHaveBeenCalledWith({ projectId: "wf1" });
       expect(store.state.workflow.activeWorkflow).toStrictEqual({
         info: { containerId: "root" },
@@ -128,7 +128,7 @@ describe("application::lifecycle", () => {
       });
 
       expect(loadWorkflow).toHaveBeenCalledWith(
-        expect.objectContaining({ workflowId: "root:0:123", projectId: "wf2" })
+        expect.objectContaining({ workflowId: "root:0:123", projectId: "wf2" }),
       );
 
       expect(store.state.workflow.activeWorkflow).toStrictEqual({
@@ -207,10 +207,10 @@ describe("application::lifecycle", () => {
       });
 
       expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "application/saveCanvasState"
+        "application/saveCanvasState",
       );
       expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "workflow/unloadActiveWorkflow"
+        "workflow/unloadActiveWorkflow",
       );
 
       expect(dispatchSpy).toHaveBeenCalledWith("application/loadWorkflow", {
@@ -220,7 +220,7 @@ describe("application::lifecycle", () => {
       expect(store.state.application.activeProjectId).toBe("1");
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/restoreCanvasState",
-        undefined
+        undefined,
       );
     });
   });
@@ -245,7 +245,7 @@ describe("application::lifecycle", () => {
       });
 
       expect(router.currentRoute.value.name).toBe(
-        APP_ROUTES.EntryPage.GetStartedPage
+        APP_ROUTES.EntryPage.GetStartedPage,
       );
     });
 
@@ -282,7 +282,7 @@ describe("application::lifecycle", () => {
       });
 
       expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "application/switchWorkflow"
+        "application/switchWorkflow",
       );
       expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
     });

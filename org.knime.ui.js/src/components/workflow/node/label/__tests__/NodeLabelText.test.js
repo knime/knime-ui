@@ -84,7 +84,7 @@ describe("NodeLabelText.vue", () => {
   it("changes background", () => {
     const { wrapper } = doShallowMount();
     expect(
-      wrapper.findComponent(AutoSizeForeignObject).attributes().style
+      wrapper.findComponent(AutoSizeForeignObject).attributes().style,
     ).toBe("background-color: rgb(255, 216, 0);");
   });
 
@@ -114,15 +114,15 @@ describe("NodeLabelText.vue", () => {
 
     expect(texts.at(0).attributes().style).toBeUndefined();
     expect(texts.at(1).attributes().style).toBe(
-      "color: red; font-weight: bold;"
+      "color: red; font-weight: bold;",
     );
     expect(texts.at(2).attributes().style).toBeUndefined();
     expect(texts.at(3).attributes().style).toBe(
-      "font-weight: bold; font-style: italic;"
+      "font-weight: bold; font-style: italic;",
     );
     expect(texts.at(4).attributes().style).toBeUndefined();
     expect(texts.at(5).attributes().style).toBe(
-      "font-size: 17.3329px; font-weight: bold; font-style: italic; line-height: 1.1;"
+      "font-size: 17.3329px; font-weight: bold; font-style: italic; line-height: 1.1;",
     );
     expect(texts.at(6).attributes().style).toBeUndefined();
   });
@@ -133,7 +133,7 @@ describe("NodeLabelText.vue", () => {
     };
     let { wrapper } = doShallowMount({ props });
     expect(wrapper.findComponent(AutoSizeForeignObject).props().yOffset).toBe(
-      69
+      69,
     );
   });
 });

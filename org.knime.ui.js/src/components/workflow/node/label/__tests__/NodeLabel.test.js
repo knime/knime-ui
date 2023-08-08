@@ -71,7 +71,7 @@ describe("NodeLabel", () => {
           kind: defaultProps.kind,
           nodeId: defaultProps.nodeId,
           annotation: defaultProps.annotation,
-        })
+        }),
       );
     });
 
@@ -137,7 +137,7 @@ describe("NodeLabel", () => {
           value: defaultProps.annotation.text,
           kind: defaultProps.kind,
           nodePosition: defaultProps.nodePosition,
-        })
+        }),
       );
     });
 
@@ -151,7 +151,7 @@ describe("NodeLabel", () => {
         expect.objectContaining({
           nodeId: defaultProps.nodeId,
           label: saveEventPayload.newLabel,
-        })
+        }),
       );
 
       vi.runAllTimers();

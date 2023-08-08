@@ -26,7 +26,7 @@ describe("application::index", () => {
     expect(commitSpy).toHaveBeenCalledWith(
       "application/setExampleProjects",
       exampleProjects,
-      undefined
+      undefined,
     );
   });
 
@@ -49,7 +49,7 @@ describe("application::index", () => {
       const { store } = loadStore();
       await store.dispatch(
         "application/replaceApplicationState",
-        applicationState
+        applicationState,
       );
 
       expect(store.state.application.openProjects).toStrictEqual([
@@ -72,7 +72,7 @@ describe("application::index", () => {
       store.commit("application/setActiveProjectId", "baz");
       await store.dispatch(
         "application/replaceApplicationState",
-        applicationState
+        applicationState,
       );
 
       expect(dispatchSpy).not.toHaveBeenCalledWith("application/setWorkflow");
@@ -97,7 +97,7 @@ describe("application::index", () => {
       });
       await store.dispatch(
         "application/replaceApplicationState",
-        applicationState
+        applicationState,
       );
       await store.dispatch("application/setActiveProject", { $router: router });
 
@@ -116,7 +116,7 @@ describe("application::index", () => {
       });
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "nodeRepository/resetSearchAndCategories",
-        expect.anything()
+        expect.anything(),
       );
 
       // second call sets the flag from `true` to `false`, triggers a refetch
@@ -125,7 +125,7 @@ describe("application::index", () => {
       });
       expect(dispatchSpy).toHaveBeenCalledWith(
         "nodeRepository/resetSearchAndCategories",
-        expect.anything()
+        expect.anything(),
       );
     });
   });
@@ -201,7 +201,7 @@ describe("application::index", () => {
       await store.dispatch("application/toggleContextMenu", { event });
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "selection/deselectAllObjects",
-        null
+        null,
       );
       expect(store.state.application.contextMenu.isOpen).toBe(true);
       expect(mockedGetters.canvas.screenToCanvasCoordinates).toHaveBeenCalled();
@@ -226,7 +226,7 @@ describe("application::index", () => {
       });
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/deselectAllObjects",
-        null
+        null,
       );
       expect(store.state.application.contextMenu.isOpen).toBe(true);
       expect(mockedGetters.canvas.screenToCanvasCoordinates).toHaveBeenCalled();
@@ -274,7 +274,7 @@ describe("application::index", () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
-        undefined
+        undefined,
       );
     });
 
@@ -297,7 +297,7 @@ describe("application::index", () => {
         await store.dispatch("application/toggleContextMenu", { event });
         expect(store.state.application.contextMenu.isOpen).toBe(true);
         expect(menuCloseMock).toHaveBeenCalled();
-      }
+      },
     );
   });
 

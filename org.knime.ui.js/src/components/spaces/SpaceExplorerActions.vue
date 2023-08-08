@@ -74,7 +74,7 @@ export default {
       const downloadToLocalSpace = buildHubDownloadMenuItem(
         this.$store.dispatch,
         this.projectId,
-        this.selectedItemIds
+        this.selectedItemIds,
       );
 
       const uploadAndConnectToHub = buildHubUploadMenuItems(
@@ -82,13 +82,13 @@ export default {
         this.hasActiveHubSession,
         this.projectId,
         this.selectedItemIds,
-        this.spaceProviders
+        this.spaceProviders,
       );
 
       const openInHub = buildOpenInHubMenuItem(
         this.$store.dispatch,
         this.projectId,
-        this.selectedItemIds
+        this.selectedItemIds,
       );
 
       const getHubActions = () => {

@@ -56,22 +56,22 @@ describe("workflow store", () => {
 
     it("adding connections to selection", () => {
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(0);
       $store.commit("selection/addConnectionsToSelection", ["root:1"]);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(1);
     });
 
     it("removes connections from selection", () => {
       $store.commit("selection/addConnectionsToSelection", ["root:1"]);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(1);
       $store.commit("selection/removeConnectionsFromSelection", ["root:1"]);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(0);
     });
 
@@ -84,41 +84,41 @@ describe("workflow store", () => {
 
       expect($store.state.selection.selectedNodes).toBe(selectedNodes);
       expect($store.state.selection.selectedConnections).toBe(
-        selectedConnections
+        selectedConnections,
       );
       expect($store.state.selection.selectedAnnotations).toBe(
-        selectedAnnotations
+        selectedAnnotations,
       );
     });
 
     it("adding annotations to selection", () => {
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(0);
       $store.commit("selection/addAnnotationToSelection", ["root:1"]);
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(1);
     });
 
     it("removes annotations from selection", () => {
       $store.commit("selection/addAnnotationToSelection", ["root:1"]);
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(1);
       $store.commit("selection/removeAnnotationFromSelection", ["root:1"]);
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(0);
     });
 
     it("sets id of annotation that rectangle selection was started from", () => {
       expect(
-        $store.state.selection.startedSelectionFromAnnotationId
+        $store.state.selection.startedSelectionFromAnnotationId,
       ).toBeNull();
       $store.commit("selection/setStartedSelectionFromAnnotationId", "root:1");
       expect($store.state.selection.startedSelectionFromAnnotationId).toBe(
-        "root:1"
+        "root:1",
       );
     });
 
@@ -169,10 +169,10 @@ describe("workflow store", () => {
       $store.dispatch("selection/deselectAllObjects");
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(0);
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(0);
     });
 
@@ -180,10 +180,10 @@ describe("workflow store", () => {
       $store.dispatch("selection/selectAllObjects");
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(2);
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(2);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(1);
     });
 
@@ -192,7 +192,7 @@ describe("workflow store", () => {
       $store.dispatch("selection/selectNode", "root:1");
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(0);
     });
 
@@ -201,7 +201,7 @@ describe("workflow store", () => {
       $store.dispatch("selection/selectNodes", ["root:1", "root:2"]);
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(2);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(0);
     });
 
@@ -209,7 +209,7 @@ describe("workflow store", () => {
       $store.dispatch("selection/deselectNode", "root:1");
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(1);
     });
 
@@ -219,7 +219,7 @@ describe("workflow store", () => {
       $store.dispatch("selection/deselectNodes", ["root:1", "root:2"]);
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(1);
     });
 
@@ -228,7 +228,7 @@ describe("workflow store", () => {
       $store.dispatch("selection/selectConnection", "root:1_1");
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(1);
     });
 
@@ -236,7 +236,7 @@ describe("workflow store", () => {
       $store.dispatch("selection/deselectConnection", "root:1_1");
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
       expect(
-        Object.keys($store.state.selection.selectedConnections).length
+        Object.keys($store.state.selection.selectedConnections).length,
       ).toBe(0);
     });
 
@@ -244,7 +244,7 @@ describe("workflow store", () => {
       $store.dispatch("selection/deselectAllObjects");
       $store.dispatch("selection/selectAnnotation", "root:3_1");
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(1);
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
     });
@@ -253,7 +253,7 @@ describe("workflow store", () => {
       $store.dispatch("selection/deselectAllObjects");
       $store.dispatch("selection/selectAnnotations", ["root:3_1", "root:3_2"]);
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(2);
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
     });
@@ -261,7 +261,7 @@ describe("workflow store", () => {
     it("deselects a specific annotation", () => {
       $store.dispatch("selection/deselectAnnotation", "root:2_1");
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(0);
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
     });
@@ -274,7 +274,7 @@ describe("workflow store", () => {
         "root:3_1",
       ]);
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(0);
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
     });
@@ -290,10 +290,10 @@ describe("workflow store", () => {
         isSelected,
       });
       expect(Object.keys($store.state.selection.selectedAnnotations)).toContain(
-        annotationId
+        annotationId,
       );
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(2);
     });
 
@@ -308,10 +308,10 @@ describe("workflow store", () => {
         isSelected,
       });
       expect(
-        Object.keys($store.state.selection.selectedAnnotations)
+        Object.keys($store.state.selection.selectedAnnotations),
       ).toStrictEqual([annotationId]);
       expect(
-        Object.keys($store.state.selection.selectedAnnotations).length
+        Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(1);
     });
 
@@ -325,7 +325,7 @@ describe("workflow store", () => {
         isSelected: false,
       });
       expect(
-        $store.state.selection.startedSelectionFromAnnotationId
+        $store.state.selection.startedSelectionFromAnnotationId,
       ).toBeNull();
     });
   });
@@ -357,7 +357,7 @@ describe("workflow store", () => {
 
     it("get multiple selected nodes", () => {
       expect($store.getters["selection/selectedNodes"]).toStrictEqual(
-        expect.objectContaining([{ id: "root:1" }, { id: "root:2" }])
+        expect.objectContaining([{ id: "root:1" }, { id: "root:2" }]),
       );
       expect($store.getters["selection/singleSelectedNode"]).toBeNull();
     });
@@ -397,10 +397,10 @@ describe("workflow store", () => {
 
     it("test if connection is selected", () => {
       expect($store.getters["selection/isConnectionSelected"]("root:2_2")).toBe(
-        true
+        true,
       );
       expect($store.getters["selection/isConnectionSelected"]("root:2_3")).toBe(
-        false
+        false,
       );
     });
 
@@ -420,10 +420,10 @@ describe("workflow store", () => {
 
     it("test if annotations is selected", () => {
       expect($store.getters["selection/isAnnotationSelected"]("root:3_2")).toBe(
-        true
+        true,
       );
       expect($store.getters["selection/isAnnotationSelected"]("root:3_3")).toBe(
-        false
+        false,
       );
     });
 

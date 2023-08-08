@@ -43,7 +43,7 @@ describe("spaces::providers", () => {
 
       expect(store.state.spaces.isLoadingProvider).toBe(false);
       expect(store.state.spaces.spaceProviders).toEqual(
-        mockFetchAllProvidersResponse
+        mockFetchAllProvidersResponse,
       );
       expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
         spaceProviderId: "local",
@@ -108,7 +108,7 @@ describe("spaces::providers", () => {
         expect.objectContaining({
           connected: true,
           spaces: [mockSpace],
-        })
+        }),
       );
     });
   });

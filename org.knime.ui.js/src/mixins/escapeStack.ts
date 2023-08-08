@@ -55,7 +55,7 @@ const getLastEntry = (_stack: Stack) => stack[stack.length - 1];
 
 const runAllEntries = (
   _stack: Stack,
-  predicateFn: (stackItem: StackItem) => boolean
+  predicateFn: (stackItem: StackItem) => boolean,
 ) => {
   stack
     .filter(predicateFn)
@@ -80,13 +80,13 @@ const handleGroupStackEntries = (_stack: Stack): Stack => {
   runAllEntries(
     _stack,
     ([_, entryData]) =>
-      entryData.group === lastEntryData.group && !entryData.alwaysActive
+      entryData.group === lastEntryData.group && !entryData.alwaysActive,
   );
 
   // remove all handlers on the group, except `alwaysActive` ones
   return _stack.filter(
     ([_, entryData]) =>
-      entryData.group !== lastEntryData.group || entryData.alwaysActive
+      entryData.group !== lastEntryData.group || entryData.alwaysActive,
   );
 };
 
@@ -109,7 +109,7 @@ const handleSingleStackEntry = (_stack: Stack): Stack => {
 export const escapePressed = () => {
   if (stack.length) {
     const hasAlwaysActiveEntries = stack.some(
-      ([, { alwaysActive }]) => alwaysActive
+      ([, { alwaysActive }]) => alwaysActive,
     );
 
     // Entries that do not remove their handler after call are considered as "always active"

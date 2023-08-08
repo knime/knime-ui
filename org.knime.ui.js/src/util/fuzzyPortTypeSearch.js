@@ -46,7 +46,7 @@ export const makeTypeSearch = ({
 }) => {
   const includeType = false;
   const suggestedPorts = suggestedTypeIds.map(
-    toPortObject(availablePortTypes, includeType)
+    toPortObject(availablePortTypes, includeType),
   );
 
   const otherPorts = typeIds
@@ -58,7 +58,7 @@ export const makeTypeSearch = ({
     suggestedPorts // place suggested ports at the top of the list
       .concat(otherPorts)
       // decide whether to hidden ports
-      .filter((portType) => showHidden || !portType.hidden)
+      .filter((portType) => showHidden || !portType.hidden),
   );
 
   const searchEngine = new Fuse(allPortTypes, {

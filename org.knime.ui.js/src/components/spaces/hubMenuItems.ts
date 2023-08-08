@@ -14,7 +14,7 @@ export type ActionMenuItem = MenuItem & {
 export const buildHubDownloadMenuItem = (
   dispatch: Dispatch,
   projectId: string,
-  selectedItems: Array<string>
+  selectedItems: Array<string>,
 ): ActionMenuItem => {
   const isSelectionEmpty = selectedItems.length === 0;
   return {
@@ -38,7 +38,7 @@ export const buildHubUploadMenuItems = (
   hasActiveHubSession: boolean,
   projectId: string,
   selectedItems: string[],
-  spaceProviders: Record<string, SpaceProvider>
+  spaceProviders: Record<string, SpaceProvider>,
   // eslint-disable-next-line max-params
 ): ActionMenuItem[] => {
   const isSelectionEmpty = selectedItems.length === 0;
@@ -71,17 +71,17 @@ export const buildHubUploadMenuItems = (
   };
 
   const remoteSpaceProviders = Object.values(spaceProviders || {}).filter(
-    (provider) => provider.id !== "local"
+    (provider) => provider.id !== "local",
   );
 
   const disconnectedSpaceProviders = remoteSpaceProviders.filter(
-    (provider) => !provider.connected
+    (provider) => !provider.connected,
   );
 
   const hasSingleRemoteSpaceProvider = remoteSpaceProviders.length === 1;
 
   const connectToHubItems = disconnectedSpaceProviders.map(
-    createConnectToHubItem
+    createConnectToHubItem,
   );
 
   const connectToHub = {
@@ -107,7 +107,7 @@ export const buildHubUploadMenuItems = (
 export const buildOpenInHubMenuItem = (
   dispatch: Dispatch,
   projectId: string,
-  selectedItems: Array<string>
+  selectedItems: Array<string>,
 ): ActionMenuItem => {
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;

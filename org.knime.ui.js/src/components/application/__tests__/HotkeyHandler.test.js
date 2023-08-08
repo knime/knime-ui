@@ -92,7 +92,7 @@ describe("HotKeys", () => {
 
     // random key combination
     document.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "b", ctrlKey: true })
+      new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
     );
 
     expect($shortcuts.isEnabled).toHaveBeenCalledWith("shortcut");
@@ -108,7 +108,7 @@ describe("HotKeys", () => {
 
     // random key combination
     document.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "b", ctrlKey: true })
+      new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
     );
 
     expect($shortcuts.dispatch).not.toHaveBeenCalled();
@@ -122,7 +122,7 @@ describe("HotKeys", () => {
       document.dispatchEvent(new KeyboardEvent("keydown", { key }));
 
       expectEventNotHandled();
-    }
+    },
   );
 
   it("shortcut found but is not enabled", () => {
@@ -133,7 +133,7 @@ describe("HotKeys", () => {
 
     // random key combination
     document.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "b", ctrlKey: true })
+      new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
     );
 
     expect($shortcuts.isEnabled).toHaveBeenCalledWith("shortcut");
@@ -150,7 +150,7 @@ describe("HotKeys", () => {
 
     // random key combination
     document.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "b", ctrlKey: true })
+      new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
     );
 
     expect($shortcuts.isEnabled).toHaveBeenCalledWith("shortcut");

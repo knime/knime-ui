@@ -83,7 +83,7 @@ describe("MoveableAnnotationContainer.vue", () => {
   const startAnnotationDrag = (
     wrapper: VueWrapper<any>,
     moveDirective,
-    { clientX, clientY, shiftKey = false }
+    { clientX, clientY, shiftKey = false },
   ) => {
     const moveStartEvent = new CustomEvent("movestart", {
       detail: { event: { shiftKey } },
@@ -223,7 +223,7 @@ describe("MoveableAnnotationContainer.vue", () => {
 
     expect(commitSpy).toHaveBeenCalledWith(
       "selection/setStartedSelectionFromAnnotationId",
-      defaultProps.id
+      defaultProps.id,
     );
   });
 });

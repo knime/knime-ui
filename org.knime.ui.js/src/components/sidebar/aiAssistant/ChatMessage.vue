@@ -36,8 +36,8 @@ watchEffect(async () => {
 
   nodeTemplates.value = await Promise.all(
     props.nodes.map((nodeId) =>
-      store.dispatch("nodeRepository/getNodeTemplate", nodeId)
-    )
+      store.dispatch("nodeRepository/getNodeTemplate", nodeId),
+    ),
   );
 });
 

@@ -40,10 +40,10 @@ describe("FileExplorerItem.vue", () => {
     const { wrapper } = doMount();
 
     expect(wrapper.find(".item-content").text()).toMatch(
-      defaultProps.item.name
+      defaultProps.item.name,
     );
     expect(wrapper.find(".item-content").attributes("title")).toEqual(
-      defaultProps.item.name
+      defaultProps.item.name,
     );
   });
 
@@ -66,10 +66,10 @@ describe("FileExplorerItem.vue", () => {
     });
 
     expect(
-      wrapper.findComponent(FileExplorerItemBase).props("isDragging")
+      wrapper.findComponent(FileExplorerItemBase).props("isDragging"),
     ).toBe(true);
     expect(
-      wrapper.findComponent(FileExplorerItemBase).props("isSelected")
+      wrapper.findComponent(FileExplorerItemBase).props("isSelected"),
     ).toBe(true);
   });
 

@@ -112,13 +112,13 @@ describe("SpaceSelectionDropdown.vue", () => {
       expect.objectContaining({
         text: "Local Space",
         selected: true,
-      })
+      }),
     );
     expect(menuItems[1]).toStrictEqual(
       expect.objectContaining({
         text: "Hub 1",
         sectionHeadline: true,
-      })
+      }),
     );
   });
 

@@ -104,7 +104,7 @@ describe("AppHeaderTab.vue", () => {
 
         // +2 to account for the " …"
         expect(nameElement.text().length).toBe(maxChars + 2);
-      }
+      },
     );
   });
 });

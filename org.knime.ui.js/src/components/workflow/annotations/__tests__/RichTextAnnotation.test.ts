@@ -117,10 +117,10 @@ describe("RichTextAnnotation.vue", () => {
     const { wrapper } = doMount();
 
     expect(
-      wrapper.findAllComponents(FunctionButton).at(1).props("active")
+      wrapper.findAllComponents(FunctionButton).at(1).props("active"),
     ).toBe(true);
     expect(
-      wrapper.findAllComponents(FunctionButton).at(2).props("active")
+      wrapper.findAllComponents(FunctionButton).at(2).props("active"),
     ).toBe(false);
   });
 
@@ -134,7 +134,7 @@ describe("RichTextAnnotation.vue", () => {
 
     expect(mockEditor.value.chain().focus().toggleBold).toHaveBeenCalled();
     expect(
-      mockEditor.value.chain().focus().toggleBulletList
+      mockEditor.value.chain().focus().toggleBulletList,
     ).not.toHaveBeenCalled();
   });
 
@@ -143,7 +143,7 @@ describe("RichTextAnnotation.vue", () => {
       const { wrapper } = doMount();
 
       expect(wrapper.findAllComponents(FunctionButton).at(0).text()).toBe(
-        "Normal text"
+        "Normal text",
       );
     });
 
@@ -152,7 +152,7 @@ describe("RichTextAnnotation.vue", () => {
       const { wrapper } = doMount();
 
       expect(wrapper.findAllComponents(FunctionButton).at(0).text()).toBe(
-        "Heading 1"
+        "Heading 1",
       );
     });
 
@@ -166,7 +166,7 @@ describe("RichTextAnnotation.vue", () => {
 
       expect(mockEditor.value.chain().focus().setHeading).toHaveBeenCalled();
       expect(
-        mockEditor.value.chain().focus().toggleBulletList
+        mockEditor.value.chain().focus().toggleBulletList,
       ).not.toHaveBeenCalled();
     });
   });
@@ -180,14 +180,14 @@ describe("RichTextAnnotation.vue", () => {
         .vm.$emit("addLink", "test text", "https://test.url");
 
       expect(
-        mockEditor.value.chain().focus().extendMarkRange().unsetLink
+        mockEditor.value.chain().focus().extendMarkRange().unsetLink,
       ).toHaveBeenCalled();
       expect(
-        mockEditor.value.chain().focus().insertContent
+        mockEditor.value.chain().focus().insertContent,
       ).toHaveBeenCalledWith([{ text: " ", type: "text" }]);
 
       expect(
-        mockEditor.value.chain().focus().insertContentAt
+        mockEditor.value.chain().focus().insertContentAt,
       ).toHaveBeenCalledWith(5, [{ type: "text", text: "test text" }]);
       expect(mockEditor.value.commands.setTextSelection).toHaveBeenCalledWith({
         from: 5,
@@ -217,7 +217,7 @@ describe("RichTextAnnotation.vue", () => {
       await openDialog(wrapper);
       expect(wrapper.findComponent(ColorSelectionDialog).exists()).toBe(true);
       expect(
-        wrapper.findComponent(ColorSelectionDialog).props("activeColor")
+        wrapper.findComponent(ColorSelectionDialog).props("activeColor"),
       ).toBe($colors.Aquamarine);
     });
 
@@ -236,13 +236,13 @@ describe("RichTextAnnotation.vue", () => {
       await someColorButton.trigger("mouseenter");
 
       expect(
-        getDialogToggle(wrapper).findComponent(ColorIcon).props("color")
+        getDialogToggle(wrapper).findComponent(ColorIcon).props("color"),
       ).toBe(someColor);
 
       expect(
         wrapper
           .findComponent(RichTextAnnotationToolbar)
-          .emitted("previewBorderColor")[0][0]
+          .emitted("previewBorderColor")[0][0],
       ).toEqual(someColor);
     });
 

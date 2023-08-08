@@ -38,7 +38,7 @@ export const tooltip = {
       // eslint-disable-next-line no-undefined
       if (this.tooltip === undefined) {
         consola.error(
-          "Tooltip mixin is used without providing a tooltip property"
+          "Tooltip mixin is used without providing a tooltip property",
         );
         return;
       }
@@ -51,7 +51,7 @@ export const tooltip = {
       let removeWatcher = this.$watch(
         "tooltip",
         (value) => this.$store.commit("workflow/setTooltip", value),
-        { immediate: true }
+        { immediate: true },
       );
 
       // provide method to remove the "tooltip" watcher
@@ -65,7 +65,7 @@ export const tooltip = {
         "mouse left to:",
         relatedTarget?.tagName,
         relatedTarget?.id,
-        relatedTarget?.classList
+        relatedTarget?.classList,
       );
 
       // if the tooltip hasn't been opened yet, cancel timer and return

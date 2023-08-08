@@ -88,9 +88,9 @@ export default {
       const width = Math.min(
         Math.max(
           this.$refs.ghost.scrollWidth + 2,
-          this.$shapes.nodeNameEditorMinWidth
+          this.$shapes.nodeNameEditorMinWidth,
         ),
-        this.$shapes.maxNodeNameWidth
+        this.$shapes.maxNodeNameWidth,
       );
       textarea.style.width = `${width}px`;
 

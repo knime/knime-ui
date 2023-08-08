@@ -146,7 +146,7 @@ describe("workflow::moving", () => {
         translation: { x: 50, y: 50 },
         annotationIds,
       });
-    }
+    },
   );
 
   it("should skip moving objects if translation is 0", async () => {

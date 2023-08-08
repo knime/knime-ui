@@ -70,7 +70,7 @@ export default {
           .concat(
             this.hasViewTab && this.$features.shouldDisplayEmbeddedViews()
               ? { value: "view", label: "View", icon: Eye }
-              : null
+              : null,
           )
           // all ports go before the flow variables
           .concat(ports)
@@ -78,7 +78,7 @@ export default {
           .concat(
             isMetanode
               ? null
-              : { value: "0", label: "Flow Variables", icon: FlowVarTabIcon }
+              : { value: "0", label: "Flow Variables", icon: FlowVarTabIcon },
           )
           .filter(Boolean)
       );

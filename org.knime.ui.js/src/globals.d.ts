@@ -8,7 +8,7 @@ interface Window {
     on: (
       eventName: string,
       handler: (notification: any) => any,
-      errorHandler: (error: any) => any
+      errorHandler: (error: any) => any,
     ) => any;
   };
 

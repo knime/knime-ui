@@ -22,7 +22,7 @@ type UseWorkflowNameValidatorOptions = {
 };
 
 export const useWorkflowNameValidator = (
-  options: UseWorkflowNameValidatorOptions
+  options: UseWorkflowNameValidatorOptions,
 ) => {
   const cleanName = (value: string) =>
     value.trim().replace(INVALID_PREFIX, "").replace(INVALID_SUFFIX, "");
@@ -36,7 +36,7 @@ export const useWorkflowNameValidator = (
   });
 
   const isNameAvailable = computed(
-    () => !options.blacklistedNames.value.includes(options.name.value)
+    () => !options.blacklistedNames.value.includes(options.name.value),
   );
 
   const isValid = computed(() => isValidName.value && isNameAvailable.value);

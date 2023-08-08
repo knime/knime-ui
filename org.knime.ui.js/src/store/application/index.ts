@@ -150,7 +150,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     if (applicationState.hasOwnProperty("hasNodeRecommendationsEnabled")) {
       commit(
         "setHasNodeRecommendationsEnabled",
-        applicationState.hasNodeRecommendationsEnabled
+        applicationState.hasNodeRecommendationsEnabled,
       );
     }
 
@@ -163,7 +163,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       dispatch(
         "spaces/syncPathWithOpenProjects",
         { openProjects: applicationState.openProjects },
-        { root: true }
+        { root: true },
       );
     }
 
@@ -183,7 +183,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       // we always set the state to init the value based on the saved user preference
       commit(
         "setHasNodeCollectionActive",
-        applicationState.hasNodeCollectionActive
+        applicationState.hasNodeCollectionActive,
       );
 
       if (
@@ -203,7 +203,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     if (applicationState.fileExtensionToNodeTemplateId) {
       commit(
         "setFileExtensionToNodeTemplateId",
-        applicationState.fileExtensionToNodeTemplateId
+        applicationState.fileExtensionToNodeTemplateId,
       );
     }
   },
@@ -222,7 +222,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
   async toggleContextMenu(
     { state, commit, dispatch, rootGetters, rootState },
-    { event = null, deselectAllObjects = false } = {}
+    { event = null, deselectAllObjects = false } = {},
   ) {
     // close other menus if they are open
     if (rootState.workflow.quickAddNodeMenu.isOpen) {
@@ -285,7 +285,7 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
     }
 
     const activeProject = openProjects.find(
-      (project) => project.projectId === activeProjectId
+      (project) => project.projectId === activeProjectId,
     );
 
     if (!activeProject) {

@@ -153,11 +153,11 @@ export default {
         // adjust the deltas using `nodeSize` to make sure the reference is from the center of the node
         x: geometry.utils.snapToGrid(
           canvasX - this.startPos.x - nodeSize / 2,
-          snapSize
+          snapSize,
         ),
         y: geometry.utils.snapToGrid(
           canvasY - this.startPos.y - nodeSize / 2,
-          snapSize
+          snapSize,
         ),
       };
 
@@ -193,7 +193,7 @@ export default {
             new CustomEvent("node-dragging-leave", {
               bubbles: true,
               cancelable: true,
-            })
+            }),
           );
         }
         return;
@@ -210,7 +210,7 @@ export default {
               clientY: endY,
               onError: this.moveNode,
             },
-          })
+          }),
         );
         return;
       }
@@ -229,7 +229,7 @@ export default {
           new CustomEvent("node-dragging-leave", {
             bubbles: true,
             cancelable: true,
-          })
+          }),
         );
       }
 
@@ -244,7 +244,7 @@ export default {
               inPorts,
               outPorts,
             },
-          })
+          }),
         );
         this.lastHitTarget = isEventIgnored ? null : hitTarget;
       }

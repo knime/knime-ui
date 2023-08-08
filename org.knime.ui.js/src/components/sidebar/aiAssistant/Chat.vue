@@ -20,18 +20,18 @@ const messageArea = ref(null);
 
 const store = useStore();
 const messages = computed(
-  () => store.state.aiAssistant[props.chainType].messages
+  () => store.state.aiAssistant[props.chainType].messages,
 );
 const isProcessing = computed(
-  () => store.state.aiAssistant[props.chainType].isProcessing
+  () => store.state.aiAssistant[props.chainType].isProcessing,
 );
 const statusUpdate = computed(
-  () => store.state.aiAssistant[props.chainType].statusUpdate
+  () => store.state.aiAssistant[props.chainType].statusUpdate,
 );
 const lastUserMessage = computed(() => {
   const messages = store.state.aiAssistant[props.chainType].messages;
   const lastUserMessage = messages.findLast(
-    (message) => message.role === "user"
+    (message) => message.role === "user",
   );
   return lastUserMessage?.content ?? "";
 });
@@ -45,7 +45,7 @@ const sendMessage = (message) => {
 const abort = () => {
   if (
     confirm(
-      "Are you sure you want to abort the request to the KNIME AI Assistant?"
+      "Are you sure you want to abort the request to the KNIME AI Assistant?",
     )
   ) {
     store.dispatch("aiAssistant/abortAiRequest", {
@@ -61,7 +61,7 @@ watch(
       messageArea.value.scrollTop = messageArea.value.scrollHeight;
     });
   },
-  { deep: true }
+  { deep: true },
 );
 </script>
 

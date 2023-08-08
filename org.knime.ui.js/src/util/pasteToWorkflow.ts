@@ -17,7 +17,7 @@ const getRandomNoise = () => (Math.random() * 2 - 1) * 25;
 export const centerStrategy = ({ visibleFrame, clipboardContent }) => {
   const { x, y } = geometry.utils.getCenteredPositionInVisibleFrame(
     visibleFrame,
-    clipboardContent.objectBounds
+    clipboardContent.objectBounds,
   );
 
   const centerPosition = {
@@ -48,7 +48,7 @@ export const offsetStrategy = ({ clipboardContent, visibleFrame }) => {
       width: objectBounds.width,
       height: objectBounds.height,
     },
-    visibleFrame
+    visibleFrame,
   );
 
   if (visibility >= geometry.constants.VISIBILITY_THRESHOLD) {
@@ -86,7 +86,7 @@ export const pasteURI = (
   uri: string,
   activeWorkflow: WorkflowState["activeWorkflow"],
   position: XY,
-  visibleFrame: GeometryBounds
+  visibleFrame: GeometryBounds,
 ) => {
   const {
     projectId,

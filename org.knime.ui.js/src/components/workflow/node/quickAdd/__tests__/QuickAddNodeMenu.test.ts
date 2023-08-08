@@ -105,13 +105,13 @@ describe("QuickAddNodeMenu.vue", () => {
     };
 
     mockedAPI.noderepository.getNodeRecommendations.mockReturnValue(
-      nodeRecommendationsResponse
+      nodeRecommendationsResponse,
     );
     mockedAPI.noderepository.searchNodes.mockImplementation(
       ({ nodesPartition }) =>
         nodesPartition === "IN_COLLECTION"
           ? searchNodesResponse
-          : notInCollectionSearchResult
+          : notInCollectionSearchResult,
     );
 
     const storeConfig = {
@@ -218,7 +218,7 @@ describe("QuickAddNodeMenu.vue", () => {
       const { wrapper } = doMount();
 
       expect(
-        wrapper.findComponent(FloatingMenuStub).props("canvasPosition")
+        wrapper.findComponent(FloatingMenuStub).props("canvasPosition"),
       ).toStrictEqual({
         x: 15,
         y: 10,
@@ -265,7 +265,7 @@ describe("QuickAddNodeMenu.vue", () => {
       const { wrapper, $store } = doMount();
       await Vue.nextTick();
       expect($store.state.quickAddNodes.portTypeId).toBe(
-        "org.knime.core.node.BufferedDataTable"
+        "org.knime.core.node.BufferedDataTable",
       );
 
       // update props
@@ -280,10 +280,10 @@ describe("QuickAddNodeMenu.vue", () => {
       await new Promise((r) => setTimeout(r, 0));
 
       expect($store.state.quickAddNodes.portTypeId).toBe(
-        "org.some.otherPorType"
+        "org.some.otherPorType",
       );
       expect(API.noderepository.getNodeRecommendations).toHaveBeenCalledTimes(
-        2
+        2,
       );
     });
 
@@ -309,7 +309,7 @@ describe("QuickAddNodeMenu.vue", () => {
           },
           sourceNodeId: null,
           sourcePortIdx: null,
-        })
+        }),
       );
     });
 
@@ -391,15 +391,15 @@ describe("QuickAddNodeMenu.vue", () => {
           getNodeByIdMock: vi.fn().mockReturnValue({ kind: nodeKind }),
         });
         const recommendations = wrapper.findComponent(
-          QuickAddNodeRecommendations
+          QuickAddNodeRecommendations,
         );
         expect(recommendations.props("disableRecommendations")).toBe(true);
         expect(wrapper.find(".no-recommendations-message").exists()).toBe(true);
         await Vue.nextTick();
         expect(API.noderepository.getNodeRecommendations).toHaveBeenCalledTimes(
-          0
+          0,
         );
-      }
+      },
     );
   });
 
@@ -477,9 +477,9 @@ describe("QuickAddNodeMenu.vue", () => {
               position: expect.anything(),
               sourceNodeId: "node-id",
               sourcePortIdx: 1,
-            })
+            }),
           );
-        }
+        },
       );
 
       it.each(["click", "keydown.enter"])(
@@ -509,9 +509,9 @@ describe("QuickAddNodeMenu.vue", () => {
               position: expect.anything(),
               sourceNodeId: "node-id",
               sourcePortIdx: 1,
-            })
+            }),
           );
-        }
+        },
       );
     });
   });

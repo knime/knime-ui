@@ -19,7 +19,7 @@ export default {
     updateMessage() {
       if (this.availableUpdates.newReleases) {
         const availableUpdate = this.availableUpdates.newReleases.find(
-          ({ isUpdatePossible }) => isUpdatePossible
+          ({ isUpdatePossible }) => isUpdatePossible,
         );
         const { shortName: updateVersion } = availableUpdate;
 

@@ -87,7 +87,7 @@ describe("workflow store: AP Interactions", () => {
       store.dispatch("workflow/openFlowVariableConfiguration", "node x");
 
       expect(
-        mockedAPI.desktop.openLegacyFlowVariableDialog
+        mockedAPI.desktop.openLegacyFlowVariableDialog,
       ).toHaveBeenCalledWith({
         nodeId: "node x",
         projectId: "foo",
@@ -121,7 +121,7 @@ describe("workflow store: AP Interactions", () => {
         await store.dispatch("workflow/saveWorkflow");
 
         expect(mockedAPI.desktop.saveWorkflow).toHaveBeenCalledWith(
-          expect.objectContaining({ projectId: "foo" })
+          expect.objectContaining({ projectId: "foo" }),
         );
       });
 
@@ -140,7 +140,7 @@ describe("workflow store: AP Interactions", () => {
         expect(mockedAPI.desktop.saveWorkflow).toHaveBeenCalledWith(
           expect.objectContaining({
             workflowPreviewSvg: "mock svg preview",
-          })
+          }),
         );
       });
 
@@ -156,11 +156,11 @@ describe("workflow store: AP Interactions", () => {
           `${projectId}--root`,
           {
             svgElement: dummyEl,
-          }
+          },
         );
 
         mockedGenerateWorkflowPreview.mockImplementation((input) =>
-          Promise.resolve(input.outerHTML)
+          Promise.resolve(input.outerHTML),
         );
 
         store.commit("workflow/setActiveWorkflow", {
@@ -173,7 +173,7 @@ describe("workflow store: AP Interactions", () => {
         expect(mockedAPI.desktop.saveWorkflow).toHaveBeenCalledWith(
           expect.objectContaining({
             workflowPreviewSvg: dummyEl.outerHTML,
-          })
+          }),
         );
       });
     });
@@ -206,11 +206,11 @@ describe("workflow store: AP Interactions", () => {
           "application/removeFromRootWorkflowSnapshots",
           {
             projectId: closingProjectId,
-          }
+          },
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
           "application/removeCanvasState",
-          closingProjectId
+          closingProjectId,
         );
       });
 
@@ -258,9 +258,9 @@ describe("workflow store: AP Interactions", () => {
           });
           expect(dispatchSpy).toHaveBeenCalledWith(
             "application/removeCanvasState",
-            closingProjectId
+            closingProjectId,
           );
-        }
+        },
       );
 
       it("does not remove canvasState nor workflowPreviewSnapshot if closeWorkflow is cancelled", async () => {
@@ -270,11 +270,11 @@ describe("workflow store: AP Interactions", () => {
         await store.dispatch("workflow/closeWorkflow", "foo");
 
         expect(dispatchSpy).not.toHaveBeenCalledWith(
-          "application/removeRootWorkflowSnapshot"
+          "application/removeRootWorkflowSnapshot",
         );
         expect(dispatchSpy).not.toHaveBeenCalledWith(
           "application/removeCanvasState",
-          "foo"
+          "foo",
         );
       });
     });
@@ -292,7 +292,7 @@ describe("workflow store: AP Interactions", () => {
       await store.dispatch("workflow/saveWorkflowAs");
 
       expect(mockedAPI.desktop.saveWorkflowAs).toHaveBeenCalledWith(
-        expect.objectContaining({ projectId: "foo" })
+        expect.objectContaining({ projectId: "foo" }),
       );
     });
 
@@ -311,7 +311,7 @@ describe("workflow store: AP Interactions", () => {
       expect(mockedAPI.desktop.saveWorkflowAs).toHaveBeenCalledWith(
         expect.objectContaining({
           workflowPreviewSvg: "mock svg preview",
-        })
+        }),
       );
     });
   });

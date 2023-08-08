@@ -145,16 +145,16 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     if (nonDeletableNodeIds.length) {
       messages.push(
         `The following nodes can’t be deleted: [${nonDeletableNodeIds.join(
-          ", "
-        )}]`
+          ", ",
+        )}]`,
       );
     }
 
     if (nonDeletableConnectionIds.length) {
       messages.push(
         `The following connections can’t be deleted: [${nonDeletableConnectionIds.join(
-          ", "
-        )}]`
+          ", ",
+        )}]`,
       );
     }
 
@@ -165,7 +165,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   async collapseToContainer(
     { state, rootGetters, dispatch },
-    { containerType }
+    { containerType },
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     const selectedNodeIds = rootGetters["selection/selectedNodeIds"];
@@ -173,13 +173,13 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const selectedAnnotationIds =
       rootGetters["selection/selectedAnnotationIds"];
     const isResetRequired = selectedNodes.some(
-      (node) => node.allowedActions.canCollapse === "resetRequired"
+      (node) => node.allowedActions.canCollapse === "resetRequired",
     );
 
     if (isResetRequired) {
       if (
         !window.confirm(
-          `Creating this ${containerType} will reset executed nodes.`
+          `Creating this ${containerType} will reset executed nodes.`,
         )
       ) {
         return;
@@ -212,7 +212,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     if (selectedNode.allowedActions.canExpand === "resetRequired") {
       if (
         !window.confirm(
-          `Expanding this ${selectedNode.kind} will reset executed nodes.`
+          `Expanding this ${selectedNode.kind} will reset executed nodes.`,
         )
       ) {
         return;
@@ -241,7 +241,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   async updateWorkflowMetadata(
     _,
-    { description, tags, links, projectId, workflowId }
+    { description, tags, links, projectId, workflowId },
   ) {
     await API.workflowCommand.UpdateProjectMetadata({
       projectId,
@@ -292,7 +292,7 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
   isWritable(
     state,
     { isLinked, isInsideLinked, projectAndWorkflowIds },
-    rootState
+    rootState,
   ) {
     // annotation mode (cross hair mouse cursor)
     if (rootState.application.canvasMode === "annotation") {
@@ -311,7 +311,7 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
       rootState.aiAssistant.build.isProcessing &&
       isEqual(
         rootState.aiAssistant.build.projectAndWorkflowIds,
-        projectAndWorkflowIds
+        projectAndWorkflowIds,
       );
 
     // TODO: document better under which conditions a workflow is not writable

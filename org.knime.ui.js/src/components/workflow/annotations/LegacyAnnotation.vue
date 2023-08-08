@@ -16,13 +16,13 @@ export default defineComponent({
       const { styleRanges, text } = this.annotation;
       const { textRanges, isValid } = applyStyleRanges(
         styleRanges,
-        text.value || ""
+        text.value || "",
       );
       if (!isValid) {
         consola.warn(
           `Invalid styleRanges: ${JSON.stringify(
-            styleRanges
-          )}. Using default style.`
+            styleRanges,
+          )}. Using default style.`,
         );
       }
       return textRanges;

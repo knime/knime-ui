@@ -36,13 +36,13 @@ const currentWorkflowId = computed(() => workflow.value.info.containerId);
 const lastEdit = computed(() => projectMetadata.value.lastEdit.toString());
 
 const currentDraftID = computed(
-  () => `${currentProjectId.value}${ID_SEPARATOR}${currentWorkflowId.value}`
+  () => `${currentProjectId.value}${ID_SEPARATOR}${currentWorkflowId.value}`,
 );
 
 const metadataDrafts = reactive<Record<string, MetadataDraft>>({});
 
 const isEditing = computed(
-  () => metadataDrafts[currentDraftID.value].isEditing
+  () => metadataDrafts[currentDraftID.value].isEditing,
 );
 
 const getInitialDraftData = () => {
@@ -89,14 +89,14 @@ const onCancelEdit = () => {
 };
 
 const getMetadataFieldValue = <K extends keyof MetadataDraft["data"]>(
-  fieldName: K
+  fieldName: K,
 ) => {
   return metadataDrafts[currentDraftID.value].data[fieldName];
 };
 
 const updateMetadataField = <K extends keyof MetadataDraft["data"]>(
   fieldName: K,
-  value: MetadataDraft["data"][K]
+  value: MetadataDraft["data"][K],
 ) => {
   metadataDrafts[currentDraftID.value].data[fieldName] = value;
   metadataDrafts[currentDraftID.value].hasEdited = true;
@@ -135,7 +135,7 @@ watch(currentDraftID, (_, prev) => {
     metadataDrafts[prev].isValid
   ) {
     const result = window.confirm(
-      "You are still editing the Workflow metadata, do you want to save your changes?"
+      "You are still editing the Workflow metadata, do you want to save your changes?",
     );
 
     if (result) {
@@ -155,7 +155,7 @@ watch(
 
     createNewDraft(currentDraftID.value);
   },
-  { deep: true, immediate: true }
+  { deep: true, immediate: true },
 );
 </script>
 

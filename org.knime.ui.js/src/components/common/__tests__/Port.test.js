@@ -133,7 +133,7 @@ describe("Port", () => {
         expect(bgColor).toBe($colors.trafficLight.yellow);
         expect(d).toContain("h");
         expect(transform).toBe("rotate(90)");
-      }
+      },
     );
 
     it.each(["HALTED", "EXECUTED"])(
@@ -151,7 +151,7 @@ describe("Port", () => {
         expect(bgColor).toBe($colors.trafficLight.green);
         expect(d).toContain("h");
         expect(transform).toBeUndefined();
-      }
+      },
     );
 
     it.each(["EXECUTING"])(
@@ -169,7 +169,7 @@ describe("Port", () => {
         expect(bgColor).toBe($colors.trafficLight.blue);
         expect(d).not.toContain("h");
         expect(transform).toBeUndefined();
-      }
+      },
     );
 
     describe("selection", () => {

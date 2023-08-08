@@ -34,7 +34,7 @@ describe("AutoSizeForeignObject.vue", () => {
 
       const disconnect = vi.fn();
       ResizeObserverMock.__trigger__ = (
-        mockContentRect = { width: mockRectWidth, height: mockRectHeight }
+        mockContentRect = { width: mockRectWidth, height: mockRectHeight },
       ) => {
         this.callbackRef([{ contentRect: mockContentRect }]);
       };
@@ -76,7 +76,7 @@ describe("AutoSizeForeignObject.vue", () => {
     expect(wrapper.attributes()).toEqual(
       expect.objectContaining({
         y: "0",
-      })
+      }),
     );
 
     await wrapper.setProps({ yOffset: 12 });
@@ -84,7 +84,7 @@ describe("AutoSizeForeignObject.vue", () => {
     expect(wrapper.attributes()).toEqual(
       expect.objectContaining({
         y: "12",
-      })
+      }),
     );
   });
 
@@ -116,7 +116,7 @@ describe("AutoSizeForeignObject.vue", () => {
         height: mockRectHeight.toString(),
         width: mockRectWidth.toString(),
         x: ((defaultProps.parentWidth - mockRectWidth) / 2).toString(),
-      })
+      }),
     );
   });
 
@@ -135,7 +135,7 @@ describe("AutoSizeForeignObject.vue", () => {
     expect(wrapper.attributes()).toEqual(
       expect.objectContaining({
         y: expectedY.toString(),
-      })
+      }),
     );
   });
 });

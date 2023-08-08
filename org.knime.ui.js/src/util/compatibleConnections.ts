@@ -157,7 +157,7 @@ const groupAddablePortTypesByPortGroup = ({
   const filterProp =
     targetPortDirection === "in" ? "canAddInPort" : "canAddOutPort";
   const portGroupsForTargetDirection = portGroupEntries.filter(
-    ([_, portGroup]) => portGroup[filterProp]
+    ([_, portGroup]) => portGroup[filterProp],
   );
 
   return portGroupsForTargetDirection.map(([groupName, portGroup]) => [
@@ -175,7 +175,7 @@ const groupAddablePortTypesByPortGroup = ({
  */
 const transformToPortGroupObject = (
   groupArray: GroupedPortTypes,
-  canAddPortKey: "canAddInPort" | "canAddOutPort"
+  canAddPortKey: "canAddInPort" | "canAddOutPort",
 ): NodePortGroups => {
   const mapped = groupArray.map(([groupName, supportedPortTypeIds]) => ({
     [groupName]: {
@@ -248,7 +248,7 @@ export const generateValidPortGroupsForPlaceholderPort = ({
     ([groupName, supportedIds]) =>
       supportedIds.includes(fromPort.typeId)
         ? [[groupName || "default", [fromPort.typeId]]]
-        : []
+        : [],
   );
   const canAddPortKey =
     targetPortDirection === "in" ? "canAddInPort" : "canAddOutPort";
@@ -266,10 +266,10 @@ export const generateValidPortGroupsForPlaceholderPort = ({
           fromPort,
           toPort: { typeId },
           availablePortTypes,
-        })
+        }),
       );
       return compatibleTypeIds.length > 0 ? [[group, compatibleTypeIds]] : [];
-    }
+    },
   );
 
   if (compatibleMatches.length > 0) {

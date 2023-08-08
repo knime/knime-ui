@@ -44,7 +44,7 @@ describe("NodeDecorators.vue", () => {
 
     let streamingDecorator = wrapper.findComponent(StreamingDecorator);
     expect(streamingDecorator.attributes("transform")).toBe(
-      "translate(21, 21)"
+      "translate(21, 21)",
     );
     expect(streamingDecorator.props("executionInfo")).toStrictEqual({
       jobManager: "sampleJobManager",
@@ -56,7 +56,7 @@ describe("NodeDecorators.vue", () => {
 
     let reexecutionDecorator = wrapper.findComponent(ReexecutionDecorator);
     expect(reexecutionDecorator.attributes("transform")).toBe(
-      "translate(20, 0)"
+      "translate(20, 0)",
     );
 
     wrapper.setProps({ isReexecutable: false });
@@ -89,10 +89,10 @@ describe("NodeDecorators.vue", () => {
     });
 
     expect(wrapper.findComponent(LinkDecorator).props("backgroundType")).toBe(
-      expectedType
+      expectedType,
     );
     expect(
-      wrapper.findComponent(StreamingDecorator).props("backgroundType")
+      wrapper.findComponent(StreamingDecorator).props("backgroundType"),
     ).toBe(expectedType);
   });
 

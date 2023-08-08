@@ -122,7 +122,7 @@ export default defineComponent({
 
     config: {
       type: Object as PropType<GlobalLoaderConfig>,
-      default: () => ({} as GlobalLoaderConfig),
+      default: () => ({}) as GlobalLoaderConfig,
     },
   },
 

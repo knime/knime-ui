@@ -58,7 +58,7 @@ export const loadStore = () => {
         getScrollContainerElement: vi.fn(() => {
           const div = document.createElement("div");
           div.appendChild(
-            document.createElementNS("http://www.w3.org/2000/svg", "svg")
+            document.createElementNS("http://www.w3.org/2000/svg", "svg"),
           );
           return div;
         }),

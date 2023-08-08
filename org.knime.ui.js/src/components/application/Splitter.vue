@@ -51,7 +51,7 @@ export default {
       if (this.supportLocalStorage()) {
         localStorage.setItem(
           `ui-splitter-${this.id}`,
-          this.currentSecondarySize
+          this.currentSecondarySize,
         );
       }
     },

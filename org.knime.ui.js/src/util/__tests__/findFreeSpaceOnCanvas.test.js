@@ -30,7 +30,7 @@ describe("findFreeSpaceOnCanvas", () => {
           },
           startPosition: { x: -10, y: -10 },
           step: { x: 1, y: 1 },
-        })
+        }),
       ).toStrictEqual({
         x: 0,
         y: 0,
@@ -62,7 +62,7 @@ describe("findFreeSpaceOnCanvas", () => {
           },
           startPosition: { x: -10, y: -10 },
           step: { x: 1, y: 1 },
-        })
+        }),
       ).toStrictEqual({
         x: 10 + nodeSize + 2 * geometry.constants.NODE_PADDING,
         y: 10 + nodeSize + 2 * geometry.constants.NODE_PADDING,

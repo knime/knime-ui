@@ -112,7 +112,7 @@ export const findFreeSpaceFrom =
         width: objectBounds.width,
         height: objectBounds.height,
       },
-      visibleFrame
+      visibleFrame,
     );
 
     return {
@@ -141,7 +141,7 @@ export const findFreeSpaceAroundPointWithFallback = ({
       {
         left: x + offsetX,
         top: y,
-      }
+      },
     );
 
     if (fromCenter.visibility >= VISIBILITY_THRESHOLD) {
@@ -184,7 +184,7 @@ export const findFreeSpaceAroundCenterWithFallback = ({
 }: findFreeSpaceAroundCenterWithFallbackOptions): XY => {
   const startPoint = getCenteredPositionInVisibleFrame(
     visibleFrame,
-    objectBounds
+    objectBounds,
   );
   return findFreeSpaceAroundPointWithFallback({
     startPoint,

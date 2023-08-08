@@ -178,7 +178,7 @@ export default defineComponent({
           text: pathItem.name,
           id: pathItem.id,
           clickable: index !== lastPathIndex,
-        }))
+        })),
       );
     },
 
@@ -248,7 +248,7 @@ export default defineComponent({
         .catch(() => {
           // TODO replace with a better notification alternative when available
           window.alert(
-            `Could not rename the selected item with the new name "${newName}". Check for duplicates.`
+            `Could not rename the selected item with the new name "${newName}". Check for duplicates.`,
           );
         });
     },
@@ -267,7 +267,7 @@ export default defineComponent({
 
       const itemIds = this.deleteModal.items.map((item) => item.id);
       const relevantProjects = this.openProjects.filter(({ origin }) =>
-        itemIds.includes(origin.itemId)
+        itemIds.includes(origin.itemId),
       );
       const projectIds = relevantProjects.map(({ projectId }) => projectId);
       let nextProjectId;
@@ -299,20 +299,20 @@ export default defineComponent({
      */
     async onMoveItems({ sourceItems, targetItem, onComplete }) {
       const openedWorkflows = this.openProjects.filter((workflow) =>
-        sourceItems.includes(workflow.origin.itemId)
+        sourceItems.includes(workflow.origin.itemId),
       );
       const isInsideFolder = this.openProjects.filter((project) =>
         project.origin.ancestorItemIds.some((ancestorId) =>
-          sourceItems.includes(ancestorId)
-        )
+          sourceItems.includes(ancestorId),
+        ),
       );
 
       if (openedWorkflows.length || isInsideFolder.length) {
         const openedWorkflowsNames = openedWorkflows.map(
-          (workflow) => workflow.name
+          (workflow) => workflow.name,
         );
         const isInsideFolderNames = isInsideFolder.map(
-          (workflow) => workflow.name
+          (workflow) => workflow.name,
         );
         const extraSpace =
           openedWorkflows.length && isInsideFolder.length ? "\n" : "";
@@ -332,7 +332,7 @@ export default defineComponent({
 
       const destWorkflowGroupItemId = this.pathToItemId(
         this.projectId,
-        targetItem
+        targetItem,
       );
       const collisionStrategy = API.desktop.getNameCollisionStrategy({
         spaceProviderId: this.activeSpacePath?.spaceProviderId,
@@ -463,7 +463,7 @@ export default defineComponent({
 
     getNodeTemplateId(sourceItem: FileExplorerItemWithMeta) {
       const sourceFileExtension = Object.keys(
-        this.fileExtensionToNodeTemplateId
+        this.fileExtensionToNodeTemplateId,
       ).find((extension) => sourceItem.name.endsWith(extension));
 
       return this.fileExtensionToNodeTemplateId[sourceFileExtension];

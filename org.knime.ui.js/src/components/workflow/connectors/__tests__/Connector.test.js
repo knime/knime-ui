@@ -139,7 +139,7 @@ describe("Connector.vue", () => {
           },
         },
       },
-      customStoreConfig
+      customStoreConfig,
     );
   };
 
@@ -184,13 +184,13 @@ describe("Connector.vue", () => {
       await wrapper.find("g path").trigger("click", { button: 0 });
 
       expect(
-        storeConfig.selection.actions.deselectAllObjects
+        storeConfig.selection.actions.deselectAllObjects,
       ).toHaveBeenCalled();
       expect(
-        storeConfig.selection.actions.selectConnection
+        storeConfig.selection.actions.selectConnection,
       ).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:2_2")
+        expect.stringMatching("root:2_2"),
       );
     });
 
@@ -200,16 +200,16 @@ describe("Connector.vue", () => {
       await wrapper.find("g path").trigger("pointerdown", { button: 2 });
 
       expect(
-        storeConfig.application.actions.toggleContextMenu
+        storeConfig.application.actions.toggleContextMenu,
       ).toHaveBeenCalled();
       expect(
-        storeConfig.selection.actions.deselectAllObjects
+        storeConfig.selection.actions.deselectAllObjects,
       ).toHaveBeenCalled();
       expect(
-        storeConfig.selection.actions.selectConnection
+        storeConfig.selection.actions.selectConnection,
       ).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:2_2")
+        expect.stringMatching("root:2_2"),
       );
     });
 
@@ -221,13 +221,13 @@ describe("Connector.vue", () => {
         .trigger("click", { button: 0, shiftKey: true });
 
       expect(
-        storeConfig.selection.actions.deselectConnection
+        storeConfig.selection.actions.deselectConnection,
       ).not.toHaveBeenCalled();
       expect(
-        storeConfig.selection.actions.selectConnection
+        storeConfig.selection.actions.selectConnection,
       ).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:2_2")
+        expect.stringMatching("root:2_2"),
       );
     });
 
@@ -239,16 +239,16 @@ describe("Connector.vue", () => {
         .trigger("pointerdown", { button: 2, shiftKey: true });
 
       expect(
-        storeConfig.application.actions.toggleContextMenu
+        storeConfig.application.actions.toggleContextMenu,
       ).toHaveBeenCalled();
       expect(
-        storeConfig.selection.actions.deselectConnection
+        storeConfig.selection.actions.deselectConnection,
       ).not.toHaveBeenCalled();
       expect(
-        storeConfig.selection.actions.selectConnection
+        storeConfig.selection.actions.selectConnection,
       ).toHaveBeenCalledWith(
         expect.anything(),
-        expect.stringMatching("root:2_2")
+        expect.stringMatching("root:2_2"),
       );
     });
 
@@ -269,10 +269,10 @@ describe("Connector.vue", () => {
         .trigger("click", { button: 0, shiftKey: true });
 
       expect(
-        storeConfig.selection.actions.deselectConnection
+        storeConfig.selection.actions.deselectConnection,
       ).toHaveBeenCalled();
       expect(
-        storeConfig.selection.actions.selectConnection
+        storeConfig.selection.actions.selectConnection,
       ).not.toHaveBeenCalled();
     });
 
@@ -826,7 +826,7 @@ describe("Connector.vue", () => {
           connectionId: "root:2_2",
           position: { x: 5, y: 5 },
           nodeId: null,
-        }
+        },
       );
     });
 
@@ -915,7 +915,7 @@ describe("Connector.vue", () => {
           position: { x: 5, y: 5 },
           nodeId: "test",
           nodeFactory: null,
-        }
+        },
       );
     });
 

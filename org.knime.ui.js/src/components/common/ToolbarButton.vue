@@ -15,7 +15,7 @@ export default {
 </script>
 
 <template>
-  <button :class="{ 'with-text': withText, primary }" tabindex="1">
+  <button :class="['button', { 'with-text': withText, primary }]" tabindex="1">
     <slot />
   </button>
 </template>
