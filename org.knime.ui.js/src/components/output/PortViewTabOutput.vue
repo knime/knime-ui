@@ -7,7 +7,6 @@ import PlayIcon from "@/assets/execute.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
-import { MetaNodePort, NodeState } from "@/api/gateway-api/generated-api";
 import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
 import type { ViewStateChangeEvent } from "@/components/embeddedViews/ViewLoader.vue";
 import { toPortObject } from "@/util/portDataMapper";
@@ -22,7 +21,7 @@ import {
   type ValidationResult,
 } from "./output-validator";
 
-import { canExecute, isNodeMetaNode } from "@/util/nodeUtil";
+import { canExecute, getNodeStateForPortIndex } from "@/util/nodeUtil";
 import PortViewTabToggles from "./PortViewTabToggles.vue";
 
 /**
@@ -170,20 +169,10 @@ export default defineComponent({
     },
 
     currentNodeState(): "configured" | "executed" {
-      // metanodes have no configured state so they use the state of the selected output port
-      if (isNodeMetaNode(this.selectedNode)) {
-        const portState =
-          this.selectedNode.outPorts[this.selectedPortIndex].nodeState;
-
-        return portState === MetaNodePort.NodeStateEnum.CONFIGURED
-          ? "configured"
-          : "executed";
-      }
-
-      return this.selectedNode.state.executionState ===
-        NodeState.ExecutionStateEnum.CONFIGURED
-        ? "configured"
-        : "executed";
+      return getNodeStateForPortIndex(
+        this.selectedNode,
+        this.selectedPortIndex,
+      );
     },
 
     shouldShowExecuteAction() {
@@ -245,6 +234,17 @@ export default defineComponent({
         }
       }
     },
+    openViewInNewWindow(viewIndex) {
+      const data = {
+        projectId: this.projectId,
+        nodeId: this.selectedNode.id,
+        viewIndex,
+        portIndex: this.selectedPortIndex,
+      };
+      // TODO: call store action or desktop API
+      consola.log("openViewInNewWindow", data);
+      // API.desktop.openPortView(data);
+    },
   },
 });
 </script>
@@ -256,6 +256,7 @@ export default defineComponent({
     :unique-port-key="uniquePortKey"
     :view-descriptors="portViews.descriptors"
     :view-descriptor-mapping="portViews.descriptorMapping"
+    @open-view-in-new-window="openViewInNewWindow"
   >
     <template #default="{ activeView }">
       <PortViewLoader

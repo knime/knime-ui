@@ -1,17 +1,21 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
-import { mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { PortViews, XY } from "@/api/gateway-api/generated-api";
 import type {
   FormattedShortcut,
   ShortcutName,
   ShortcutsService,
 } from "@/shortcuts";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
+import { AvailablePortTypes } from "@/api/custom-types";
+import { toPortObject } from "@/util/portDataMapper";
+import { mapPortViewDescriptorsToItems } from "@/util/mapPortViewDescriptorsToItems";
+import { getNodeStateForPortIndex } from "@/util/nodeUtil";
 
 type Base = { isVisible: boolean };
 type ItemWithName = Base & { name: ShortcutName; text?: string };
@@ -20,7 +24,9 @@ type ContextMenuActionsGroupItem =
   | ItemWithName
   | (Base & { children: ContextMenuActionsGroupItem[]; text: string });
 
-type MenuItemWithName = Pick<FormattedShortcut, "name"> & MenuItem;
+type MenuItemWithName = Pick<FormattedShortcut, "name"> & {
+  type?: "shortcut" | "openPortView";
+} & MenuItem;
 
 type ContextMenuActionsGroup = Array<
   ContextMenuActionsGroupItem & { separator?: boolean }
@@ -107,6 +113,11 @@ export default defineComponent({
       "singleSelectedNode",
       "isSelectionEmpty",
     ]),
+    ...mapState("application", {
+      projectId: (state) => state.activeProjectId as string | null,
+      availablePortTypes: (state) =>
+        state.availablePortTypes as AvailablePortTypes,
+    }),
 
     // map visible items to menu items and add shortcut information
     menuItems(): Array<MenuItemWithName> {
@@ -119,6 +130,10 @@ export default defineComponent({
             separator: item.separator,
             children: item.children.map(contextToMenuItemMapping),
           };
+        }
+
+        if (item.type === "openPortView") {
+          return item;
         }
 
         const shortcut = this.$shortcuts.get(item.name);
@@ -160,10 +175,19 @@ export default defineComponent({
   methods: {
     onItemClick(event: MouseEvent, item: MenuItemWithName) {
       this.$emit("menuClose");
+
+      if (item.type === "openPortView") {
+        // TODO: call store action / desktop API
+        consola.log("openPortView", item.userData);
+        // API.desktop.openPortView(item.userData);
+        return;
+      }
+
       // do nothing for submenu items
       if (item.name === null) {
         return;
       }
+
       this.$shortcuts.dispatch(item.name, {
         event,
         metadata: { position: this.position },
@@ -171,6 +195,44 @@ export default defineComponent({
     },
     setActiveDescendant(itemId: string | null) {
       this.activeDescendant = itemId;
+    },
+    portViews() {
+      const node = this.singleSelectedNode;
+      if (!node) {
+        return [];
+      }
+
+      const nodeId = node.id;
+      const allOutPortViewData: Array<PortViews> = node.outPorts.map(
+        (port) => toPortObject(this.availablePortTypes)(port.typeId).views,
+      );
+
+      const mapFullPortToItem = (
+        portViewData: PortViews,
+        portIndex: number,
+      ) => {
+        const portViewItems = mapPortViewDescriptorsToItems(
+          portViewData,
+          getNodeStateForPortIndex(node, portIndex),
+        );
+
+        const mappedPortViewItems = portViewItems.map((item) => ({
+          name: null,
+          type: "openPortView",
+          text: `${portIndex}: ${node.outPorts[portIndex].name} – ${item.text}`,
+          disabled: item.disabled,
+          userData: {
+            nodeId,
+            portIndex,
+            viewIndex: Number(item.id),
+          },
+        }));
+
+        mappedPortViewItems.at(-1).separator = true;
+        return mappedPortViewItems;
+      };
+
+      return allOutPortViewData.flatMap(mapFullPortToItem);
     },
     setMenuItems() {
       const areNodesSelected = this.selectedNodes.length > 0;
@@ -276,6 +338,16 @@ export default defineComponent({
         .append(annotationsGroup)
         .append(metanodeAndComponentGroup)
         .value();
+
+      // skip the magic for the special non-shortcut case
+      const openDetachedPortViews = this.portViews();
+      if (openDetachedPortViews.length > 0) {
+        this.visibleItems.push({
+          text: "Open port view",
+          children: openDetachedPortViews,
+          isVisible: true,
+        });
+      }
     },
   },
 });

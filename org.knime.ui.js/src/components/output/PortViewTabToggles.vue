@@ -4,35 +4,11 @@ import type {
   PortViewDescriptorMapping,
 } from "@/api/gateway-api/generated-api";
 import { defineComponent, type PropType } from "vue";
+import { mapPortViewDescriptorsToItems } from "@/util/mapPortViewDescriptorsToItems";
 
-import ValueSwitch, {
-  type ValueSwitchItem,
-} from "webapps-common/ui/components/forms/ValueSwitch.vue";
-
-const getTabTogglesFromViewDescriptors = (
-  data: {
-    viewDescriptors: Array<PortViewDescriptor>;
-    viewDescriptorMapping: PortViewDescriptorMapping;
-  },
-  currentNodeState: "configured" | "executed",
-): Array<ValueSwitchItem> => {
-  const descriptorIndexes = data.viewDescriptorMapping[currentNodeState];
-
-  // non-spec views are disabled at the configured state
-  const isDisabled = (item: PortViewDescriptor) =>
-    !item.isSpecView && currentNodeState === "configured";
-
-  return descriptorIndexes.map((index) => {
-    const descriptor = data.viewDescriptors.at(index);
-
-    return {
-      // tab id will be the descriptor index
-      id: index.toString(),
-      text: descriptor.label,
-      disabled: isDisabled(descriptor),
-    };
-  });
-};
+import OpenInNewWindowIcon from "webapps-common/ui/assets/img/icons/open-in-new-window.svg";
+import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
+import Button from "webapps-common/ui/components/Button.vue";
 
 interface ComponentData {
   activeView: number | null;
@@ -41,6 +17,8 @@ interface ComponentData {
 
 export default defineComponent({
   components: {
+    Button,
+    OpenInNewWindowIcon,
     ValueSwitch,
   },
 
@@ -66,6 +44,8 @@ export default defineComponent({
     },
   },
 
+  emits: ["openViewInNewWindow"],
+
   data(): ComponentData {
     return {
       activeView: null,
@@ -78,10 +58,10 @@ export default defineComponent({
 
   computed: {
     tabToggles() {
-      return getTabTogglesFromViewDescriptors(
+      return mapPortViewDescriptorsToItems(
         {
-          viewDescriptors: this.viewDescriptors,
-          viewDescriptorMapping: this.viewDescriptorMapping,
+          descriptors: this.viewDescriptors,
+          descriptorMapping: this.viewDescriptorMapping,
         },
         this.currentNodeState,
       );
@@ -108,25 +88,91 @@ export default defineComponent({
     resetActiveView() {
       this.activeView = null;
     },
+
+    openInNewWindow(item = null) {
+      const viewIndex = item === null ? this.activeView : Number(item.id);
+      this.$emit("openViewInNewWindow", viewIndex);
+    },
   },
 });
 </script>
 
 <template>
-  <ValueSwitch
-    v-show="tabToggles.length > 1"
-    ref="tabToggles"
-    class="tab-toggles"
-    compact
-    :model-value="activeView === null ? null : activeView.toString()"
-    :possible-values="tabToggles"
-    @update:model-value="activeView = Number($event)"
-  />
+  <div class="tab-toggles">
+    <ValueSwitch
+      v-if="tabToggles.length > 1"
+      ref="tabToggles"
+      compact
+      :model-value="activeView === null ? null : activeView.toString()"
+      :possible-values="tabToggles"
+      @update:model-value="activeView = Number($event)"
+    >
+      <template #default="{ item }">
+        <Button
+          class="open-window"
+          title="Open port view in new window"
+          @click="openInNewWindow(item)"
+        >
+          <OpenInNewWindowIcon />
+        </Button>
+      </template>
+    </ValueSwitch>
+    <Button
+      v-else
+      class="fallback-open-window"
+      title="Open port view in new window"
+      @click="openInNewWindow"
+    >
+      <OpenInNewWindowIcon />
+      <span>Open in new window</span>
+    </Button>
+  </div>
   <slot :active-view="activeView" />
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .tab-toggles {
+  display: flex;
+  width: max-content;
+  height: calc(var(--wrapper-height) * 1px);
+
+  & .fallback-open-window {
+    height: 20px;
+    padding: 0 3px;
+    margin-left: 5px;
+    font-size: 13px;
+    line-height: 0.1;
+    border-color: var(--knime-silver-sand);
+
+    & svg {
+      margin-left: 7px;
+
+      @mixin svg-icon-size 14;
+    }
+  }
+
+  & .open-window {
+    width: 25px;
+    padding: 0;
+    margin: 0 8px;
+
+    & svg {
+      &:hover {
+        background: white;
+      }
+
+      margin-left: 3px;
+
+      @mixin svg-icon-size 14;
+    }
+
+    & :deep(input:checked) svg {
+      stroke: var(--knime-white);
+    }
+  }
+
   position: absolute;
   inset: 50px 0 0;
   margin: 0 auto;
