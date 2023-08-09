@@ -103,12 +103,14 @@ export default defineComponent({
   }
 
   & .text {
+    min-width: 60px;
     font-family: "Roboto Condensed", sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: calc(v-bind("$shapes.nodeNameFontSize") * 1px);
     margin: 0;
     text-align: inherit;
+    -webkit-font-smoothing: antialiased;
   }
 
   &.text-ellipsis .text {
@@ -120,7 +122,6 @@ export default defineComponent({
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: v-bind("$shapes.nodeNameMaxLines");
-    overflow: hidden;
   }
 
   & .node-name {
