@@ -295,7 +295,7 @@ describe("NodeOutput.vue", () => {
         await triggerOutputStateChange(wrapper, outputState);
         await nextTick();
         const buttonWrapper = wrapper.find(
-          '[data-testid="execute-open-legacy-view-action"]'
+          '[data-testid="execute-open-legacy-view-action"]',
         );
 
         expect(buttonWrapper.exists()).toBe(true);
@@ -305,7 +305,7 @@ describe("NodeOutput.vue", () => {
           {
             nodeId: "1",
             portIdx: 0,
-          }
+          },
         );
       });
 

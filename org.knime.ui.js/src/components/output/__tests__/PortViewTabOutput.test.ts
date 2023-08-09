@@ -256,7 +256,7 @@ describe("PortViewTabOutput.vue", () => {
             state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
             allowedActions: { canExecute: true },
             outPorts: dummyNode.outPorts.concat(
-              createPort({ typeId: "table", portContentVersion: undefined })
+              createPort({ typeId: "table", portContentVersion: undefined }),
             ),
           },
           selectedPortIndex: 2,

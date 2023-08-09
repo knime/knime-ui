@@ -137,7 +137,7 @@ export const executeNodeAndOpenLegacyPortView = ({
     window.executeNodeAndOpenLegacyPortView,
     [projectId, nodeId, portIdx],
     `Could not execute and open view of node ${nodeId}`,
-    false
+    false,
   );
 };
 

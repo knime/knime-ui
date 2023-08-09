@@ -193,7 +193,7 @@ export default defineComponent({
 
       const canSelectedNodeExecute = canExecute(
         this.selectedNode,
-        this.selectedPortIndex
+        this.selectedPortIndex,
       );
 
       if (this.hasNoDataValidationError) {
