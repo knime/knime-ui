@@ -1,260 +1,308 @@
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { ref, computed, toRef, watch } from "vue";
 import gsap from "gsap";
-import { mapState, mapGetters, mapActions } from "vuex";
+import { useStore } from "@/composables/useStore";
+import { useConnectorPosition } from "@/composables/useConnectorPosition";
 
-import { portBar, connectorPosition } from "@/mixins";
-import { checkPortCompatibility } from "@/util/compatibleConnections";
-import connectorPath from "@/util/connectorPath";
+import * as $shapes from "@/style/shapes.mjs";
 import { getMetaOrCtrlKey } from "@/util/navigator";
+import { checkPortCompatibility } from "@/util/compatibleConnections";
 
 import { KnimeMIME } from "@/mixins/dropNode";
+import connectorPath from "@/util/connectorPath";
 
-/**
- * A curved line, connecting one node's output with another node's input port.
- * Must be embedded in an `<svg>` element.
- * Uses the connectorPosition mixin to get the start and end position of the connector.
- */
-export default defineComponent({
-  mixins: [portBar, connectorPosition],
-  inheritAttrs: false,
-  props: {
-    /**
-     * Determines whether this connector is streamed at the moment
-     */
-    streaming: { type: Boolean, default: false },
+interface Props {
+  /**
+   * Connector id
+   */
+  id: string;
+  /**
+   * Node ID of the connector's source node
+   */
+  sourceNode?: string | null;
+  /**
+   * Index of the source node's output port that this connector is attached to
+   */
+  sourcePort?: number | null;
+  /**
+   * Node ID of the connector's target node
+   */
+  destNode?: string | null;
+  /**
+   * Index of the target node's input port that this connector is attached to
+   */
+  destPort?: number | null;
+  /**
+   * If either destNode or sourceNode is unspecified the connector will be drawn up to this point
+   */
+  absolutePoint?: [number, number];
+  /**
+   * Determines whether the connection can be deleted
+   */
+  allowedActions: { canDelete: boolean };
+  /**
+   * Determines whether this connector is streamed at the moment
+   */
+  streaming?: boolean;
+  /**
+   * Determines whether this connector is rendered in alternative color
+   */
+  flowVariableConnection?: boolean;
+  /**
+   * Whether the connector can be interacted with or not
+   */
+  interactive?: boolean;
+}
 
-    /**
-     * Determines whether this connector is rendered in alternative color
-     */
-    flowVariableConnection: { type: Boolean, default: false },
+defineOptions({ inheritAttrs: false });
 
-    /**
-     * Connector id
-     */
-    id: {
-      type: String,
-      required: true,
-    },
-    allowedActions: {
-      type: Object,
-      required: true,
-      validate(o) {
-        return o.hasOwnProperty("canDelete");
-      },
-    },
-    interactive: {
-      type: Boolean,
-      default: true,
-    },
-  },
-  data: () => ({
-    suggestDelete: false,
-    hover: false,
-    isDraggedOver: false,
-  }),
-  computed: {
-    ...mapState("workflow", {
-      workflow: "activeWorkflow",
-      movePreviewDelta: "movePreviewDelta",
-      isDragging: "isDragging",
-    }),
-    ...mapState("nodeRepository", {
-      draggedNodeTemplate: "draggedNodeData",
-    }),
-    ...mapGetters("workflow", {
-      isWorkflowWritable: "isWritable",
-    }),
-    ...mapGetters("selection", [
-      "isConnectionSelected",
-      "isNodeSelected",
-      "singleSelectedNode",
-      "selectedConnections",
-    ]),
-    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    ...mapState("application", ["availablePortTypes"]),
-    path() {
-      let {
-        start: [x1, y1],
-        end: [x2, y2],
-      } = this;
-      // Update position of source or destination node is being moved
-      if (this.isDragging) {
-        if (this.isNodeSelected(this.sourceNode)) {
-          x1 += this.movePreviewDelta.x;
-          y1 += this.movePreviewDelta.y;
-        }
-        if (this.isNodeSelected(this.destNode)) {
-          x2 += this.movePreviewDelta.x;
-          y2 += this.movePreviewDelta.y;
-        }
-      }
-
-      return connectorPath(x1, y1, x2, y2);
-    },
-    isHighlighted() {
-      // if only one node and no connections are selected, highlight the connections from and to that node
-      return (
-        Boolean(this.singleSelectedNode) &&
-        this.selectedConnections.length === 0 &&
-        (this.isNodeSelected(this.sourceNode) ||
-          this.isNodeSelected(this.destNode))
-      );
-    },
-  },
-  watch: {
-    /*
-     * if suggestDelete changes to 'true' the connector will animate away from its target port
-     * if suggestDelete changes back to 'false' the connector will move back
-     */
-    suggestDelete(newValue, oldValue) {
-      const visiblePath = this.$refs.visiblePath as HTMLElement;
-      if (newValue && !oldValue) {
-        const shiftX = -12;
-        const shiftY = -6;
-        let {
-          start: [x1, y1],
-          end: [x2, y2],
-        } = this;
-        let newPath = connectorPath(x1, y1, x2 + shiftX, y2 + shiftY);
-
-        gsap.to(visiblePath, {
-          attr: { d: newPath },
-          duration: 0.2,
-          ease: "power2.out",
-        });
-      } else if (!newValue && oldValue) {
-        gsap.to(visiblePath, {
-          attr: { d: this.path },
-          duration: 0.2,
-          ease: "power2.out",
-        });
-      }
-    },
-  },
-  methods: {
-    ...mapActions("selection", [
-      "selectConnection",
-      "deselectConnection",
-      "deselectAllObjects",
-    ]),
-    ...mapActions("application", ["toggleContextMenu"]),
-
-    onContextMenu(event: MouseEvent) {
-      // right click should work same as left click
-      this.onMouseClick(event);
-      this.toggleContextMenu({ event });
-    },
-    onMouseClick(event: MouseEvent) {
-      if (event.shiftKey || event[getMetaOrCtrlKey()]) {
-        // Multi select
-        if (this.isConnectionSelected(this.id)) {
-          this.deselectConnection(this.id);
-        } else {
-          this.selectConnection(this.id);
-        }
-      } else {
-        // Single select
-        this.deselectAllObjects();
-        this.selectConnection(this.id);
-      }
-    },
-    onIndicateReplacement({ detail: { state } }) {
-      this.suggestDelete = state;
-    },
-    hasCompatiblePorts(replacementInPorts, replacementOutPorts) {
-      const hasCompatibleSrcPort =
-        this.sourceNodeObject &&
-        replacementInPorts.some((toPort) =>
-          checkPortCompatibility({
-            fromPort: this.sourceNodeObject.outPorts[this.sourcePort],
-            toPort,
-            availablePortTypes: this.availablePortTypes,
-          }),
-        );
-      const hasCompatibleDestPort =
-        this.destNodeObject &&
-        replacementOutPorts.some((fromPort) =>
-          checkPortCompatibility({
-            fromPort,
-            toPort: this.destNodeObject.inPorts[this.destPort],
-            availablePortTypes: this.availablePortTypes,
-          }),
-        );
-      return hasCompatibleSrcPort || hasCompatibleDestPort;
-    },
-    onRepositoryNodeDragEnter(dragEvent: DragEvent) {
-      if (!this.isWorkflowWritable) {
-        return;
-      }
-
-      if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
-        const { inPorts, outPorts } = this.draggedNodeTemplate;
-
-        if (this.hasCompatiblePorts(inPorts, outPorts)) {
-          this.isDraggedOver = true;
-        }
-      }
-    },
-    onWorkflowNodeDragEnter(event: CustomEvent) {
-      const { isNodeConnected, inPorts, outPorts } = event.detail;
-
-      if (!this.hasCompatiblePorts(inPorts, outPorts)) {
-        return;
-      }
-
-      if (isNodeConnected) {
-        return;
-      }
-      event.preventDefault();
-      this.isDraggedOver = true;
-    },
-    onNodeDragLeave() {
-      this.isDraggedOver = false;
-    },
-    onRepositoryNodeDrop(dragEvent: DragEvent) {
-      const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
-      this.insertNode({
-        clientX: dragEvent.clientX,
-        clientY: dragEvent.clientY,
-        nodeFactory,
-        event: dragEvent,
-      });
-    },
-    onWorkflowNodeDragLeave(dragEvent: CustomEvent) {
-      this.insertNode({
-        clientX: dragEvent.detail.clientX,
-        clientY: dragEvent.detail.clientY,
-        nodeId: dragEvent.detail.id,
-        event: dragEvent,
-      });
-    },
-    insertNode({ clientX, clientY, event, nodeId = null, nodeFactory = null }) {
-      if (!this.isWorkflowWritable) {
-        return;
-      }
-
-      const [x, y] = this.screenToCanvasCoordinates([
-        clientX - this.$shapes.nodeSize / 2,
-        clientY - this.$shapes.nodeSize / 2,
-      ]);
-      if (this.allowedActions.canDelete) {
-        this.$store.dispatch("workflow/insertNode", {
-          connectionId: this.id,
-          position: { x, y },
-          nodeFactory,
-          nodeId,
-        });
-      } else {
-        window.alert(
-          "Cannot delete connection at this point. Insert node operation aborted.",
-        );
-        event.detail.onError();
-      }
-      this.isDraggedOver = false;
-    },
-  },
+const props = withDefaults(defineProps<Props>(), {
+  sourceNode: null,
+  sourcePort: null,
+  destNode: null,
+  destPort: null,
+  absolutePoint: null,
 });
+
+const store = useStore();
+const hover = ref(false);
+const visiblePath = ref<SVGPathElement | null>(null);
+const isDraggedOver = ref(false);
+const suggestDelete = ref(false);
+
+const { start, end, sourceNodeObject, destNodeObject } = useConnectorPosition({
+  sourceNode: toRef(props, "sourceNode"),
+  destNode: toRef(props, "destNode"),
+  sourcePort: toRef(props, "sourcePort"),
+  destPort: toRef(props, "destPort"),
+  absolutePoint: toRef(props, "absolutePoint"),
+});
+
+const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
+const isDragging = computed(() => store.state.workflow.isDragging);
+const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
+
+const isNodeSelected = computed(
+  () => store.getters["selection/isNodeSelected"],
+);
+
+const path = computed(() => {
+  let x1 = start.value.at(0);
+  let y1 = start.value.at(1);
+  let x2 = end.value.at(0);
+  let y2 = end.value.at(1);
+
+  // Update position of source or destination node is being moved
+  if (isDragging.value) {
+    if (isNodeSelected.value(props.sourceNode)) {
+      x1 += movePreviewDelta.value.x;
+      y1 += movePreviewDelta.value.y;
+    }
+    if (isNodeSelected.value(props.destNode)) {
+      x2 += movePreviewDelta.value.x;
+      y2 += movePreviewDelta.value.y;
+    }
+  }
+
+  return connectorPath(x1, y1, x2, y2);
+});
+
+/*
+ * if suggestDelete changes to 'true' the connector will animate away from its target port
+ * if suggestDelete changes back to 'false' the connector will move back
+ */
+watch(suggestDelete, (newValue, oldValue) => {
+  if (!visiblePath.value) {
+    return;
+  }
+
+  if (newValue && !oldValue) {
+    const shiftX = -12;
+    const shiftY = -6;
+    const x1 = start.value.at(0);
+    const y1 = start.value.at(1);
+    const x2 = end.value.at(0);
+    const y2 = end.value.at(1);
+
+    const newPath = connectorPath(x1, y1, x2 + shiftX, y2 + shiftY);
+
+    gsap.to(visiblePath.value, {
+      attr: { d: newPath },
+      duration: 0.2,
+      ease: "power2.out",
+    });
+  } else if (!newValue && oldValue) {
+    gsap.to(visiblePath.value, {
+      attr: { d: path.value },
+      duration: 0.2,
+      ease: "power2.out",
+    });
+  }
+});
+
+const draggedNodeTemplate = computed(
+  () => store.state.nodeRepository.draggedNodeData,
+);
+
+const isConnectionSelected = computed(
+  () => store.getters["selection/isConnectionSelected"],
+);
+
+const singleSelectedNode = computed(
+  () => store.getters["selection/singleSelectedNode"],
+);
+const selectedConnections = computed(
+  () => store.getters["selection/selectedConnections"],
+);
+
+const screenToCanvasCoordinates = computed(
+  () => store.getters["canvas/screenToCanvasCoordinates"],
+);
+
+const availablePortTypes = computed(
+  () => store.state.application.availablePortTypes,
+);
+
+const isHighlighted = computed(() => {
+  // if only one node and no connections are selected, highlight the connections from and to that node
+  return (
+    Boolean(singleSelectedNode.value) &&
+    selectedConnections.value.length === 0 &&
+    (isNodeSelected.value(props.sourceNode) ||
+      isNodeSelected.value(props.destNode))
+  );
+});
+
+const onMouseClick = (event: MouseEvent) => {
+  if (event.shiftKey || event[getMetaOrCtrlKey()]) {
+    // Multi select
+    if (isConnectionSelected.value(props.id)) {
+      store.dispatch("selection/deselectConnection", props.id);
+    } else {
+      store.dispatch("selection/selectConnection", props.id);
+    }
+  } else {
+    store.dispatch("selection/deselectAllObjects");
+    store.dispatch("selection/selectConnection", props.id);
+  }
+};
+
+const onContextMenu = (event: MouseEvent) => {
+  // right click should work same as left click
+  onMouseClick(event);
+  store.dispatch("application/toggleContextMenu", { event });
+};
+
+const onIndicateReplacement = ({ detail: { state } }) => {
+  suggestDelete.value = state;
+};
+
+const hasCompatiblePorts = (replacementInPorts, replacementOutPorts) => {
+  const hasCompatibleSrcPort =
+    sourceNodeObject.value &&
+    replacementInPorts.some((toPort) =>
+      checkPortCompatibility({
+        fromPort: sourceNodeObject.value.outPorts[props.sourcePort],
+        toPort,
+        availablePortTypes: availablePortTypes.value,
+      }),
+    );
+
+  const hasCompatibleDestPort =
+    destNodeObject.value &&
+    replacementOutPorts.some((fromPort) =>
+      checkPortCompatibility({
+        fromPort,
+        toPort: destNodeObject.value.inPorts[props.destPort],
+        availablePortTypes: availablePortTypes.value,
+      }),
+    );
+
+  return hasCompatibleSrcPort || hasCompatibleDestPort;
+};
+
+const onNodeDragLeave = () => {
+  isDraggedOver.value = false;
+};
+
+const insertNode = ({
+  clientX,
+  clientY,
+  event,
+  nodeId = null,
+  nodeFactory = null,
+}) => {
+  if (!isWorkflowWritable.value) {
+    return;
+  }
+
+  const [x, y] = screenToCanvasCoordinates.value([
+    clientX - $shapes.nodeSize / 2,
+    clientY - $shapes.nodeSize / 2,
+  ]);
+
+  if (props.allowedActions.canDelete) {
+    store.dispatch("workflow/insertNode", {
+      connectionId: props.id,
+      position: { x, y },
+      nodeFactory,
+      nodeId,
+    });
+  } else {
+    window.alert(
+      "Cannot delete connection at this point. Insert node operation aborted.",
+    );
+    event.detail.onError();
+  }
+  isDraggedOver.value = false;
+};
+
+const onRepositoryNodeDragEnter = (dragEvent: DragEvent) => {
+  if (!isWorkflowWritable.value) {
+    return;
+  }
+
+  if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
+    const { inPorts, outPorts } = draggedNodeTemplate.value;
+
+    if (hasCompatiblePorts(inPorts, outPorts)) {
+      isDraggedOver.value = true;
+    }
+  }
+};
+
+const onRepositoryNodeDrop = (dragEvent: DragEvent) => {
+  const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
+  insertNode({
+    clientX: dragEvent.clientX,
+    clientY: dragEvent.clientY,
+    nodeFactory,
+    event: dragEvent,
+  });
+};
+
+const onWorkflowNodeDragEnter = (event: CustomEvent) => {
+  const { isNodeConnected, inPorts, outPorts } = event.detail;
+
+  if (!hasCompatiblePorts(inPorts, outPorts)) {
+    return;
+  }
+
+  if (isNodeConnected) {
+    return;
+  }
+  event.preventDefault();
+  isDraggedOver.value = true;
+};
+
+const onWorkflowNodeDragLeave = (dragEvent: CustomEvent) => {
+  insertNode({
+    clientX: dragEvent.detail.clientX,
+    clientY: dragEvent.detail.clientY,
+    nodeId: dragEvent.detail.id,
+    event: dragEvent,
+  });
+};
 </script>
 
 <template>

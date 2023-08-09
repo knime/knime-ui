@@ -1,5 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { nodeSize, portSize } from "@/style/shapes.mjs";
+import type { XYTuple } from "@/api/custom-types";
 
 /**
  * Calculates the position of the center of a port on a node depending on its index and the total number
@@ -7,14 +8,19 @@ import { nodeSize, portSize } from "@/style/shapes.mjs";
  *
  * Returns the offset in regard to the upper left corner of the node
  *
- * @param {Number} portIndex
- * @param {Number} portCount Total number of ports on the same side of the node
- * @param {Boolean} isMetanode `true` if this port is attached to a metanode
- * @param {Boolean} isOutPort `true` for an output port, `false` for an input port
- * @returns {[Number, Number]} [x-shift, y-shift]
+ * @param portIndex
+ * @param portCount Total number of ports on the same side of the node
+ * @param isMetanode `true` if this port is attached to a metanode
+ * @param isOutPort `true` for an output port, `false` for an input port
+ * @returns [x-shift, y-shift]
  */
-const portShift = (portIndex, portCount, isMetanode, isOutPort) => {
-  let x = isOutPort ? nodeSize + portSize / 2 : -portSize / 2;
+const portShift = (
+  portIndex: number,
+  portCount: number,
+  isMetanode: boolean,
+  isOutPort: boolean,
+): XYTuple => {
+  const x = isOutPort ? nodeSize + portSize / 2 : -portSize / 2;
 
   if (isMetanode) {
     // Metanodes don't have Mickey Mouse ears, so all ports are attached to the side, not to the top
@@ -46,7 +52,7 @@ const portShift = (portIndex, portCount, isMetanode, isOutPort) => {
     portIndex = 3;
   }
 
-  let dy = middleY + (portIndex - middleIndex) * (portSize + portMargin);
+  const dy = middleY + (portIndex - middleIndex) * (portSize + portMargin);
   return [x, dy];
 };
 
@@ -55,14 +61,15 @@ export const placeholderPosition = ({
   isOutport = false,
   isMetanode = false,
 }) => {
-  isMetanode = Number(isMetanode); // cast to 1 or 0
+  const castedIsMetanode = Number(isMetanode); // cast to 1 or 0
+
   switch (portCount) {
-    case 1 - isMetanode:
+    case 1 - castedIsMetanode:
       return portShift(portCount, portCount + 1, isMetanode, isOutport);
     default:
       return portShift(
-        Math.max(4 - isMetanode, portCount),
-        Math.max(4 - isMetanode, portCount) + 1,
+        Math.max(4 - castedIsMetanode, portCount),
+        Math.max(4 - castedIsMetanode, portCount) + 1,
         isMetanode,
         isOutport,
       );
