@@ -3,8 +3,8 @@ import { createNativeNode } from "@/test/factories";
 import { generateWorkflowPreview } from "../generateWorkflowPreview";
 
 vi.mock(
-  "@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff",
-  () => "font data"
+  "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff",
+  () => ({ default: "font data" })
 );
 
 const node1 = createNativeNode({
@@ -212,7 +212,7 @@ describe("generateWorkflowPreview", () => {
     });
 
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("80 20 20 -1280");
+    expect(outputEl.getAttribute("viewBox")).toBe("80 20 20 -1260");
   });
 
   it("should set the correct viewbox for node with label on left", async () => {
@@ -337,12 +337,12 @@ describe("generateWorkflowPreview", () => {
 
     await generateWorkflowPreview(svg, false, nodes);
 
-    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+    expect(localStorage.setItem).toHaveBeenCalledTimes(2);
 
     await generateWorkflowPreview(svg, false, nodes);
 
     expect(localStorage.getItem).toHaveBeenCalled();
-    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+    expect(localStorage.setItem).toHaveBeenCalledTimes(2);
   });
 
   it("should return empty svg when canvas is empty", async () => {
