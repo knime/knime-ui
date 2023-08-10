@@ -2,8 +2,9 @@ import { API } from "@api";
 import { notifyPatch } from "@/util/event-syncer";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 import { nodeSize } from "@/style/shapes.mjs";
+import type { PluginInitFunction } from ".";
 
-export default ({ $store, $router }) => {
+export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
   API.event.registerEventHandlers({
     /**
      * Is a generic event, that holds multiple events (names separated by ':')
@@ -78,7 +79,7 @@ export default ({ $store, $router }) => {
       });
 
       const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
-      const nodes = $store.state.activeWorkflow.nodes;
+      const nodes = $store.state.workflow.activeWorkflow.nodes;
 
       const resolveSVGSnapshots = projectIds.map(async (projectId) => {
         const { svgElement, isCanvasEmpty } =

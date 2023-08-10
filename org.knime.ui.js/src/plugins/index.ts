@@ -4,6 +4,7 @@ import type { Router } from "vue-router";
 
 import Portal from "@/components/common/Portal.vue";
 import PortalTarget from "@/components/common/PortalTarget.vue";
+import type { RootStoreState } from "@/store/types";
 
 import shortcuts from "./shortcuts";
 import constants from "./constants";
@@ -14,7 +15,7 @@ import featureFlags from "./feature-flags";
 
 export type PluginInitFunction = (payload: {
   app: App<Element>;
-  $store: Store<any>;
+  $store: Store<RootStoreState>;
   $router: Router;
 }) => void;
 
