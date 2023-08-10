@@ -102,6 +102,7 @@ export default defineComponent({
     <ValueSwitch
       v-if="tabToggles.length > 1"
       ref="tabToggles"
+      class="value-switch"
       compact
       :model-value="activeView === null ? null : activeView.toString()"
       :possible-values="tabToggles"
@@ -110,7 +111,7 @@ export default defineComponent({
       <template #default="{ item }">
         <Button
           class="open-window"
-          title="Open port view in new window"
+          :title="`Open ${item.text} view in new window`"
           @click="openInNewWindow(item)"
         >
           <OpenInNewWindowIcon />
@@ -119,6 +120,7 @@ export default defineComponent({
     </ValueSwitch>
     <Button
       v-else
+      with-border
       class="fallback-open-window"
       title="Open port view in new window"
       @click="openInNewWindow"
@@ -137,45 +139,66 @@ export default defineComponent({
   display: flex;
   width: max-content;
   height: calc(var(--wrapper-height) * 1px);
+  position: absolute;
+  inset: 50px 0 0;
+  margin: 0 auto;
+  z-index: 3;
 
   & .fallback-open-window {
     height: 20px;
-    padding: 0 3px;
-    margin-left: 5px;
+    padding: 0 10px 0 5px;
     font-size: 13px;
     line-height: 0.1;
     border-color: var(--knime-silver-sand);
 
     & svg {
-      margin-left: 7px;
+      margin-left: 5px;
 
-      @mixin svg-icon-size 14;
+      @mixin svg-icon-size 12;
     }
   }
 
   & .open-window {
-    width: 25px;
+    width: 20px;
+    height: 20px;
     padding: 0;
-    margin: 0 8px;
+    background: transparent;
+    margin: 0;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
 
-    & svg {
-      &:hover {
-        background: white;
-      }
-
-      margin-left: 3px;
-
-      @mixin svg-icon-size 14;
+    &:hover {
+      background-color: var(--theme-value-switch-background-color-hover);
     }
 
-    & :deep(input:checked) svg {
-      stroke: var(--knime-white);
+    & svg {
+      margin-left: 3px;
+
+      @mixin svg-icon-size 12;
     }
   }
 
-  position: absolute;
-  inset: 50px 0 0;
-  margin: 0 auto;
-  z-index: 3;
+  & .value-switch {
+    & :deep(input):checked ~ .open-window {
+      background: var(--theme-value-switch-background-color-checked);
+
+      & svg {
+        stroke: var(--theme-value-switch-background-color);
+      }
+
+      &:hover {
+        & svg {
+          stroke: var(--theme-value-switch-background-color-checked);
+        }
+
+        background-color: var(--theme-value-switch-background-color-hover);
+      }
+    }
+
+    & :deep(label > span) {
+      padding-right: 5px;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
 }
 </style>
