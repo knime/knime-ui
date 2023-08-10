@@ -78,6 +78,8 @@ export default defineComponent({
         start: [x1, y1],
         end: [x2, y2],
       } = this;
+      console.log("x1", x1);
+      console.log("this.movePreviewDelta.x", this.movePreviewDelta.x);
       // Update position of source or destination node is being moved
       if (this.isDragging) {
         if (this.isNodeSelected(this.sourceNode)) {

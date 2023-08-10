@@ -1,15 +1,23 @@
 <script setup lang="ts">
-import { ref, computed, toRef, watch } from "vue";
-import gsap from "gsap";
+import { ref, computed, toRefs } from "vue";
+
+import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
-
-import * as $shapes from "@/style/shapes.mjs";
+import { geometry } from "@/util/geometry";
 import { getMetaOrCtrlKey } from "@/util/navigator";
-import { checkPortCompatibility } from "@/util/compatibleConnections";
 
-import { KnimeMIME } from "@/mixins/dropNode";
-import connectorPath from "@/util/connectorPath";
+import ConnectorPathSegment from "./ConnectorPathSegment.vue";
+import { useConnectionReplacement } from "./useConnectionReplacement";
+import type { PathSegment } from "./types";
+
+const MOCK_BENDPOINTS: Array<XY> = [
+  { x: -1458, y: -638 },
+  { x: -1258, y: -638 },
+  { x: -1198, y: -638 },
+];
+
+const BENDPOINTS = ref(MOCK_BENDPOINTS);
 
 interface Props {
   /**
@@ -62,35 +70,38 @@ const props = withDefaults(defineProps<Props>(), {
   destNode: null,
   destPort: null,
   absolutePoint: null,
+  interactive: true,
 });
 
 const store = useStore();
-const hover = ref(false);
-const visiblePath = ref<SVGPathElement | null>(null);
-const isDraggedOver = ref(false);
 const suggestDelete = ref(false);
+const isDraggingBendPoint = ref(false);
+const bendPointDragDelta = ref({ x: 0, y: 0, index: -1 });
 
-const { start, end, sourceNodeObject, destNodeObject } = useConnectorPosition({
-  sourceNode: toRef(props, "sourceNode"),
-  destNode: toRef(props, "destNode"),
-  sourcePort: toRef(props, "sourcePort"),
-  destPort: toRef(props, "destPort"),
-  absolutePoint: toRef(props, "absolutePoint"),
-});
-
-const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
 const isDragging = computed(() => store.state.workflow.isDragging);
-const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
+const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
 
 const isNodeSelected = computed(
   () => store.getters["selection/isNodeSelected"],
 );
 
-const path = computed(() => {
-  let x1 = start.value.at(0);
-  let y1 = start.value.at(1);
-  let x2 = end.value.at(0);
-  let y2 = end.value.at(1);
+const { sourceNode, sourcePort, destNode, destPort, id, absolutePoint } =
+  toRefs(props);
+
+const { start: startSegmentPosition, end: endSegmentPosition } =
+  useConnectorPosition({
+    sourceNode,
+    destNode,
+    sourcePort,
+    destPort,
+    absolutePoint,
+  });
+
+const pathSegments = computed<Array<PathSegment>>(() => {
+  let x1 = startSegmentPosition.value.at(0);
+  let y1 = startSegmentPosition.value.at(1);
+  let x2 = endSegmentPosition.value.at(0);
+  let y2 = endSegmentPosition.value.at(1);
 
   // Update position of source or destination node is being moved
   if (isDragging.value) {
@@ -104,45 +115,66 @@ const path = computed(() => {
     }
   }
 
-  return connectorPath(x1, y1, x2, y2);
-});
-
-/*
- * if suggestDelete changes to 'true' the connector will animate away from its target port
- * if suggestDelete changes back to 'false' the connector will move back
- */
-watch(suggestDelete, (newValue, oldValue) => {
-  if (!visiblePath.value) {
-    return;
+  // when there are no bendpoints or we have an absolutePoint means we should
+  // treat this connector as a single unsegmented path
+  if (BENDPOINTS.value.length === 0 || props.absolutePoint) {
+    return [
+      {
+        isStart: true,
+        isEnd: true,
+        start: { x: x1, y: y1 },
+        end: { x: x2, y: y2 },
+      },
+    ];
   }
 
-  if (newValue && !oldValue) {
-    const shiftX = -12;
-    const shiftY = -6;
-    const x1 = start.value.at(0);
-    const y1 = start.value.at(1);
-    const x2 = end.value.at(0);
-    const y2 = end.value.at(1);
+  // include the "start" and "end" coordinates as points
+  const allPoints: Array<XY> = [
+    { x: x1, y: y1 },
+    ...BENDPOINTS.value,
+    { x: x2, y: y2 },
+  ];
 
-    const newPath = connectorPath(x1, y1, x2 + shiftX, y2 + shiftY);
+  const segments: Array<PathSegment> = [];
+  // then create all the segments in-between those points
+  for (let i = 0; i < allPoints.length - 1; i++) {
+    const isStart = i === 0;
+    const isEnd = i + 1 === allPoints.length - 1;
 
-    gsap.to(visiblePath.value, {
-      attr: { d: newPath },
-      duration: 0.2,
-      ease: "power2.out",
-    });
-  } else if (!newValue && oldValue) {
-    gsap.to(visiblePath.value, {
-      attr: { d: path.value },
-      duration: 0.2,
-      ease: "power2.out",
+    const start = allPoints[i];
+    const end = allPoints[i + 1];
+
+    // when a given bendpoint is being dragged,
+    // we need to adjust the "start" of the current path segment's position
+    const startWithDelta: XY =
+      bendPointDragDelta.value.index === i
+        ? {
+            x: start.x + bendPointDragDelta.value.x,
+            y: start.y + bendPointDragDelta.value.y,
+          }
+        : start;
+
+    // and we also need to adjust the "end" of the previous path segment
+    const endWithDelta: XY =
+      bendPointDragDelta.value.index - 1 === i
+        ? {
+            x: end.x + bendPointDragDelta.value.x,
+            y: end.y + bendPointDragDelta.value.y,
+          }
+        : end;
+
+    segments.push({
+      start: startWithDelta,
+      end: endWithDelta,
+      isStart,
+      isEnd,
     });
   }
+
+  return segments;
 });
 
-const draggedNodeTemplate = computed(
-  () => store.state.nodeRepository.draggedNodeData,
-);
+const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
 
 const isConnectionSelected = computed(
   () => store.getters["selection/isConnectionSelected"],
@@ -159,10 +191,6 @@ const screenToCanvasCoordinates = computed(
   () => store.getters["canvas/screenToCanvasCoordinates"],
 );
 
-const availablePortTypes = computed(
-  () => store.state.application.availablePortTypes,
-);
-
 const isHighlighted = computed(() => {
   // if only one node and no connections are selected, highlight the connections from and to that node
   return (
@@ -173,18 +201,69 @@ const isHighlighted = computed(() => {
   );
 });
 
-const onMouseClick = (event: MouseEvent) => {
-  if (event.shiftKey || event[getMetaOrCtrlKey()]) {
-    // Multi select
-    if (isConnectionSelected.value(props.id)) {
-      store.dispatch("selection/deselectConnection", props.id);
-    } else {
-      store.dispatch("selection/selectConnection", props.id);
-    }
-  } else {
-    store.dispatch("selection/deselectAllObjects");
-    store.dispatch("selection/selectConnection", props.id);
+const {
+  isDraggedOver,
+  onRepositoryNodeDragEnter,
+  onRepositoryNodeDrop,
+  onWorkflowNodeDragEnter,
+  onWorkflowNodeDragLeave,
+} = useConnectionReplacement({
+  id,
+  sourceNode,
+  sourcePort,
+  destNode,
+  destPort,
+  allowedActions: props.allowedActions,
+});
+
+const addBendpoint = (event: MouseEvent) => {
+  const [clickX, clickY] = screenToCanvasCoordinates.value([
+    event.clientX,
+    event.clientY,
+  ]);
+
+  const clickCoords = { x: clickX, y: clickY };
+
+  const foundIndex = pathSegments.value.findIndex((path) => {
+    const { start, end } = path;
+    return geometry.isPointInRange(start, end, clickCoords);
+  });
+
+  if (foundIndex === -1) {
+    return;
   }
+
+  // TODO: simulate adding bendpoints
+  BENDPOINTS.value = [
+    ...BENDPOINTS.value.slice(0, foundIndex),
+    clickCoords,
+    ...BENDPOINTS.value.slice(foundIndex),
+  ];
+};
+
+const removeBendpoint = (index: number) => {
+  BENDPOINTS.value = [
+    ...BENDPOINTS.value.slice(0, index - 1),
+    ...BENDPOINTS.value.slice(index),
+  ];
+};
+
+const onMouseClick = (event: MouseEvent) => {
+  if (event.altKey) {
+    addBendpoint(event);
+    return;
+  }
+
+  const isMultiselect = event.shiftKey || event[getMetaOrCtrlKey()];
+
+  if (!isMultiselect) {
+    store.dispatch("selection/deselectAllObjects");
+  }
+
+  const action = isConnectionSelected.value(props.id)
+    ? "deselectConnection"
+    : "selectConnection";
+  store.dispatch(`selection/${action}`, props.id);
 };
 
 const onContextMenu = (event: MouseEvent) => {
@@ -193,212 +272,74 @@ const onContextMenu = (event: MouseEvent) => {
   store.dispatch("application/toggleContextMenu", { event });
 };
 
-const onIndicateReplacement = ({ detail: { state } }) => {
-  suggestDelete.value = state;
-};
-
-const hasCompatiblePorts = (replacementInPorts, replacementOutPorts) => {
-  const hasCompatibleSrcPort =
-    sourceNodeObject.value &&
-    replacementInPorts.some((toPort) =>
-      checkPortCompatibility({
-        fromPort: sourceNodeObject.value.outPorts[props.sourcePort],
-        toPort,
-        availablePortTypes: availablePortTypes.value,
-      }),
-    );
-
-  const hasCompatibleDestPort =
-    destNodeObject.value &&
-    replacementOutPorts.some((fromPort) =>
-      checkPortCompatibility({
-        fromPort,
-        toPort: destNodeObject.value.inPorts[props.destPort],
-        availablePortTypes: availablePortTypes.value,
-      }),
-    );
-
-  return hasCompatibleSrcPort || hasCompatibleDestPort;
-};
-
 const onNodeDragLeave = () => {
   isDraggedOver.value = false;
 };
 
-const insertNode = ({
-  clientX,
-  clientY,
-  event,
-  nodeId = null,
-  nodeFactory = null,
-}) => {
-  if (!isWorkflowWritable.value) {
+const dragBendPoint = (event: PointerEvent, index: number, position: XY) => {
+  if (event.altKey) {
+    removeBendpoint(index);
     return;
   }
 
-  const [x, y] = screenToCanvasCoordinates.value([
-    clientX - $shapes.nodeSize / 2,
-    clientY - $shapes.nodeSize / 2,
-  ]);
+  isDraggingBendPoint.value = true;
+  event.stopPropagation();
+  const onMove = ({ clientX, clientY }) => {
+    const [moveX, moveY] = screenToCanvasCoordinates.value([clientX, clientY]);
 
-  if (props.allowedActions.canDelete) {
-    store.dispatch("workflow/insertNode", {
-      connectionId: props.id,
-      position: { x, y },
-      nodeFactory,
-      nodeId,
-    });
-  } else {
-    window.alert(
-      "Cannot delete connection at this point. Insert node operation aborted.",
-    );
-    event.detail.onError();
-  }
-  isDraggedOver.value = false;
-};
+    const deltaX = moveX - position.x;
+    const deltaY = moveY - position.y;
+    bendPointDragDelta.value = { x: deltaX, y: deltaY, index };
+  };
 
-const onRepositoryNodeDragEnter = (dragEvent: DragEvent) => {
-  if (!isWorkflowWritable.value) {
-    return;
-  }
+  const onUp = () => {
+    // TODO: remove - simulate saving to BE
+    BENDPOINTS.value[index - 1] = {
+      x: BENDPOINTS.value.at(index - 1).x + bendPointDragDelta.value.x,
+      y: BENDPOINTS.value.at(index - 1).y + bendPointDragDelta.value.y,
+    };
 
-  if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
-    const { inPorts, outPorts } = draggedNodeTemplate.value;
-
-    if (hasCompatiblePorts(inPorts, outPorts)) {
-      isDraggedOver.value = true;
-    }
-  }
-};
-
-const onRepositoryNodeDrop = (dragEvent: DragEvent) => {
-  const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
-  insertNode({
-    clientX: dragEvent.clientX,
-    clientY: dragEvent.clientY,
-    nodeFactory,
-    event: dragEvent,
-  });
-};
-
-const onWorkflowNodeDragEnter = (event: CustomEvent) => {
-  const { isNodeConnected, inPorts, outPorts } = event.detail;
-
-  if (!hasCompatiblePorts(inPorts, outPorts)) {
-    return;
-  }
-
-  if (isNodeConnected) {
-    return;
-  }
-  event.preventDefault();
-  isDraggedOver.value = true;
-};
-
-const onWorkflowNodeDragLeave = (dragEvent: CustomEvent) => {
-  insertNode({
-    clientX: dragEvent.detail.clientX,
-    clientY: dragEvent.detail.clientY,
-    nodeId: dragEvent.detail.id,
-    event: dragEvent,
-  });
+    bendPointDragDelta.value = { x: 0, y: 0, index: -1 };
+    document.removeEventListener("mousemove", onMove);
+    document.removeEventListener("mouseup", onUp);
+  };
+  document.addEventListener("mousemove", onMove);
+  document.addEventListener("mouseup", onUp);
 };
 </script>
 
 <template>
-  <g :data-connector-id="id" @indicate-replacement.stop="onIndicateReplacement">
-    <path
-      v-if="interactive"
-      :d="path"
-      class="hover-area"
-      data-hide-in-workflow-preview
-      @mouseenter="hover = true"
-      @mouseleave="hover = false"
-      @click.left="onMouseClick"
-      @pointerdown.right="onContextMenu"
-      @dragenter="onRepositoryNodeDragEnter"
-      @dragleave="onNodeDragLeave"
-      @drop.stop="onRepositoryNodeDrop"
-      @node-dragging-enter="onWorkflowNodeDragEnter"
-      @node-dragging-leave.prevent="onNodeDragLeave"
-      @node-dragging-end.prevent="onWorkflowNodeDragLeave"
-    />
-    <path
-      ref="visiblePath"
-      :d="path"
-      :class="{
-        'flow-variable': flowVariableConnection,
-        'read-only': !isWorkflowWritable,
-        highlighted: isHighlighted,
-        dashed: streaming,
-        selected: isConnectionSelected(id) && !isDragging,
-        'is-dragged-over': isDraggedOver,
-      }"
-      fill="none"
-    />
+  <g
+    :data-connector-id="id"
+    @indicate-replacement.stop="suggestDelete = $event.detail.state"
+  >
+    <template v-for="(segment, index) of pathSegments" :key="index">
+      <ConnectorPathSegment
+        :segment="segment"
+        :is-flowvariable-connection="flowVariableConnection"
+        :is-highlighted="isHighlighted"
+        :is-dragged-over="isDraggedOver"
+        :is-readonly="!isWorkflowWritable"
+        :is-selected="isConnectionSelected(id) && !isDragging"
+        :interactive="interactive"
+        :streaming="streaming"
+        :suggest-delete="segment.isEnd && suggestDelete"
+        @click.left="onMouseClick"
+        @pointerdown.right="onContextMenu"
+        @dragenter="onRepositoryNodeDragEnter"
+        @dragleave="onNodeDragLeave"
+        @drop.stop="onRepositoryNodeDrop"
+        @node-dragging-enter="onWorkflowNodeDragEnter"
+        @node-dragging-leave.prevent="onNodeDragLeave"
+        @node-dragging-end.prevent="onWorkflowNodeDragLeave"
+      />
+      <circle
+        v-if="index !== 0"
+        r="4"
+        :transform="`translate(${segment.start.x}, ${segment.start.y})`"
+        :cx="0"
+        @pointerdown="dragBendPoint($event, index, pathSegments[index].start)"
+      />
+    </template>
   </g>
 </template>
-
-<style lang="postcss" scoped>
-@keyframes dash {
-  from {
-    stroke-dashoffset: 100;
-  }
-
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-path:not(.hover-area) {
-  pointer-events: none;
-  stroke-width: v-bind("$shapes.connectorWidth");
-  stroke: var(--knime-stone-gray);
-  transition:
-    stroke-width 0.1s ease-in,
-    stroke 0.1s ease-in;
-
-  &:not(.read-only) {
-    cursor: grab;
-  }
-
-  &.selected {
-    stroke-width: v-bind("$shapes.selectedConnectorWidth");
-    stroke: var(--knime-cornflower);
-  }
-
-  &.highlighted {
-    stroke-width: v-bind("$shapes.highlightedConnectorWidth");
-    stroke: var(--knime-masala);
-  }
-
-  &.is-dragged-over {
-    stroke-width: v-bind("$shapes.selectedConnectorWidth");
-    stroke: var(--knime-meadow-dark);
-  }
-
-  &.dashed {
-    stroke-dasharray: 5;
-    stroke-dashoffset: 50;
-    animation: dash 3s linear infinite;
-  }
-
-  &.flow-variable {
-    stroke: var(--knime-coral);
-
-    &.selected {
-      stroke: var(--knime-cornflower);
-    }
-  }
-}
-
-.hover-area {
-  stroke: transparent;
-  stroke-width: 8px;
-  fill: none;
-
-  &:hover + path {
-    stroke-width: v-bind("$shapes.selectedConnectorWidth");
-  }
-}
-</style>

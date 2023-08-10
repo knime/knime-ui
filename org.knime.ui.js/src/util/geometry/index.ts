@@ -12,6 +12,7 @@ import {
   rectangleIntersection,
   snapToGrid,
   getCenteredPositionInVisibleFrame,
+  isPointInRange,
 } from "./geometry";
 import getWorkflowObjectBounds, { nodePadding } from "./workflowObjectBounds";
 
@@ -32,4 +33,5 @@ export const geometry = {
     NODE_PADDING,
     VISIBILITY_THRESHOLD,
   },
+  isPointInRange,
 };

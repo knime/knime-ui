@@ -6,6 +6,7 @@ import * as $shapes from "@/style/shapes.mjs";
 import { useStore } from "./useStore";
 import { usePortBarPositions } from "./usePortBarPositions";
 import type { KnimeNode, XYTuple } from "@/api/custom-types";
+import { useConnectedNodeObjects } from "./useConnectedNodeObjects";
 
 type UseConnectorPositionOptions = {
   /**
@@ -38,17 +39,10 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
 
   const { portBarXPos, portBarItemYPos } = usePortBarPositions();
 
-  const sourceNodeObject = computed(
-    () => workflow.value.nodes[options.sourceNode.value],
-  );
-  const destNodeObject = computed(
-    () => workflow.value.nodes[options.destNode.value],
-  );
-
-  const referenceNodes = {
-    sourceNodeObject,
-    destNodeObject,
-  };
+  const referenceNodes = useConnectedNodeObjects({
+    sourceNode: options.sourceNode,
+    destNode: options.destNode,
+  });
 
   const getRegularNodePortPosition = (
     sourceNodeIndex: number,
@@ -101,14 +95,16 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
     }
   };
 
-  const start = computed<[] | XYTuple>(
+  // @ts-ignore
+  const start = computed<XYTuple>(
     () =>
       (options.sourceNode.value && getEndPointCoordinates("source")) ||
       options.absolutePoint.value ||
       [],
   );
 
-  const end = computed<[] | XYTuple>(
+  // @ts-ignore
+  const end = computed<XYTuple>(
     () =>
       (options.destNode.value && getEndPointCoordinates("dest")) ||
       options.absolutePoint.value ||
@@ -118,7 +114,6 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
   return {
     start,
     end,
-    sourceNodeObject,
-    destNodeObject,
+    ...referenceNodes,
   };
 };
