@@ -168,10 +168,13 @@ final class OpenWorkflow {
         if (space instanceof LocalWorkspace localWorkspace) {
             var wfPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
             relativePath = localWorkspace.getLocalRootPath().relativize(wfPath).toString();
+            var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
+            openWorkflowInWebUIOnly(wfm, wfProj, WorkflowType.LOCAL);
+        } else {
+            var wfProj = createWorkflowProject(wfm);
+            // Do not provide origin. This is to handle inconsistencies until we support versioning. See NXT-140.
+            openWorkflowInWebUIOnly(wfm, wfProj, WorkflowType.REMOTE);
         }
-        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
-        openWorkflowInWebUIOnly(wfm, wfProj,
-            space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
     }
 
     private static void openWorkflowInWebUIOnly(final WorkflowManager wfm, final WorkflowProject wfProj,

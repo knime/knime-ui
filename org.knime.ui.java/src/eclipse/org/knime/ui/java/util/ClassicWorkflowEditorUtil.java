@@ -76,7 +76,6 @@ import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor.WorkflowLoadResult;
-import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LoadVersion;
@@ -235,32 +234,13 @@ public final class ClassicWorkflowEditorUtil {
                     // we assume that we are on a local AP executor
                     final var locationInfo = context.getLocationInfo();
 
-                    if (!(locationInfo instanceof HubSpaceLocationInfo)) {
-                        // local workflow is identified by its path
+                    if (locationInfo instanceof HubSpaceLocationInfo) {
+                        // This is to avoid inconsistencies until we properly handle versioning, see NXT-140.
+                        return Optional.empty();
+                    } else {
                         final var path = context.getExecutorInfo().getLocalWorkflowPath();
                         return Optional.of(LocalSpaceUtil.getLocalOrigin(path));
                     }
-
-                    final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
-                    final var hubLocation = (HubSpaceLocationInfo)locationInfo;
-                    return Optional.of(new WorkflowProject.Origin() {
-                        @Override
-                        public String getProviderId() {
-                            final var mountpoint = apExecInfo.getMountpoint().orElseThrow(() ->
-                                    new IllegalStateException("Missing Mount ID for Hub workflow '" + wfm + "'"));
-                            return mountpoint.getFirst().getAuthority();
-                        }
-
-                        @Override
-                        public String getSpaceId() {
-                            return hubLocation.getSpaceItemId();
-                        }
-
-                        @Override
-                        public String getItemId() {
-                            return hubLocation.getWorkflowItemId();
-                        }
-                    });
                 }
             };
         }
