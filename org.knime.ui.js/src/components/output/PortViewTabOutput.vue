@@ -23,6 +23,7 @@ import {
 
 import { canExecute, getNodeStateForPortIndex } from "@/util/nodeUtil";
 import PortViewTabToggles from "./PortViewTabToggles.vue";
+import { API } from "@api";
 
 /**
  * Runs a set of validations that qualify whether a port from a node is able
@@ -241,9 +242,7 @@ export default defineComponent({
         viewIndex,
         portIndex: this.selectedPortIndex,
       };
-      // TODO: call store action or desktop API
-      consola.log("openViewInNewWindow", data);
-      // API.desktop.openPortView(data);
+      API.desktop.openPortView(data);
     },
   },
 });

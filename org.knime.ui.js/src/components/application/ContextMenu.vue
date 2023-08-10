@@ -16,6 +16,7 @@ import { AvailablePortTypes } from "@/api/custom-types";
 import { toPortObject } from "@/util/portDataMapper";
 import { mapPortViewDescriptorsToItems } from "@/util/mapPortViewDescriptorsToItems";
 import { getNodeStateForPortIndex } from "@/util/nodeUtil";
+import { API } from "@api";
 
 type Base = { isVisible: boolean };
 type ItemWithName = Base & { name: ShortcutName; text?: string };
@@ -177,9 +178,7 @@ export default defineComponent({
       this.$emit("menuClose");
 
       if (item.type === "openPortView") {
-        // TODO: call store action / desktop API
-        consola.log("openPortView", item.userData);
-        // API.desktop.openPortView(item.userData);
+        API.desktop.openPortView(item.userData);
         return;
       }
 

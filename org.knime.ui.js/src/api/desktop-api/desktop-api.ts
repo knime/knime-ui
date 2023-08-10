@@ -156,6 +156,25 @@ export const executeNodeAndOpenView = ({
   );
 };
 
+export const openPortView = ({
+  projectId,
+  nodeId,
+  portIndex,
+  viewIndex,
+}: {
+  projectId: string;
+  nodeId: string;
+  portIndex: number;
+  viewIndex: number;
+}) => {
+  callBrowserFunction(
+    window.openPortView,
+    [projectId, nodeId, portIndex, viewIndex],
+    "TODO",
+    false,
+  );
+};
+
 export const saveWorkflow = ({
   projectId,
   workflowPreviewSvg,
