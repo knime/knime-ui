@@ -181,6 +181,7 @@ export default defineComponent({
     }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
+    class="annotation"
     @pointerdown.left="onPointerDown($event)"
   >
     <slot />

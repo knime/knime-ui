@@ -160,6 +160,7 @@ const updateViewBox = (
     rightEdge: EdgeObject;
     leftEdge: EdgeObject;
     length: number;
+    annotationLength: number;
   },
 ) => {
   let minX = parseInt(workflowSheet.getAttribute("x"), 10);
@@ -181,8 +182,15 @@ const updateViewBox = (
   }
 
   if (edges.length === 1) {
-    width = edges.leftEdge.dimension.width + padding;
-    minX = minX - edges.leftEdge.dimension.width / 2 + nodeSize;
+    width =
+      edges.annotationLength >= 1
+        ? edges.leftEdge.dimension.width + width
+        : edges.leftEdge.dimension.width + padding;
+    minX =
+      edges.annotationLength >= 1
+        ? minX - edges.leftEdge.dimension.width / 2 - padding
+        : minX - edges.leftEdge.dimension.width / 2 + nodeSize;
+    height = edges.annotationLength >= 1 ? height : nodeLabelHeight + padding;
     svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
     return;
   }
@@ -299,7 +307,7 @@ const fileToBase64 = async (filepath): Promise<string> => {
  * further use
  * @returns
  */
-const getFontData = async (font) => {
+const getFontData = async (font: string) => {
   // TODO: NXT-1493 - This cache is never invalidated (updates to the font files) nor is it ever reset or deleted.
   //       We should consider making the base64 encode a build step
   const fontCacheKey = `workflow-preview-font-${font}`;
@@ -450,6 +458,7 @@ export const generateWorkflowPreview = async (
       position: edges.maxY.position,
     },
     length: nodes ? Object.keys(nodes).length : 0,
+    annotationLength: svgClone.querySelectorAll(".annotation").length,
   });
 
   // remove all portal-targets
