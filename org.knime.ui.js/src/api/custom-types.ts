@@ -69,3 +69,5 @@ export namespace SpaceProviderNS {
 export type ComponentMetadata = ComponentNodeAndDescription & NodeDescription;
 
 export type XYTuple = [x: number, y: number];
+
+export type BendpointData = { connectionId: string; index: number };

@@ -91,6 +91,43 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       commit("resetMovePreview");
     }
   },
+
+  async moveBendpoints({ state, dispatch, rootGetters }) {
+    const translation = {
+      x: state.movePreviewDelta.x,
+      y: state.movePreviewDelta.y,
+    };
+
+    if (translation.x === 0 && translation.y === 0) {
+      await dispatch("resetDragState");
+      return;
+    }
+
+    const selectedBendpoints = rootGetters["selection/selectedBendpoints"];
+
+    // simulate command call, making it async by adding a certain delay
+    // eslint-disable-next-line no-magic-numbers
+    await new Promise((r) => setTimeout(r, 500));
+    Object.keys(selectedBendpoints).forEach((connectionId) => {
+      const bendpoints = selectedBendpoints[connectionId];
+      const { bendpoints: currentBendpoints } =
+        state.activeWorkflow.connections[connectionId];
+
+      const updatedBendpoints = currentBendpoints.map((coords, index) =>
+        bendpoints[index]
+          ? {
+              x: coords.x + translation.x,
+              y: coords.y + translation.y,
+            }
+          : coords,
+      );
+
+      state.activeWorkflow.connections[connectionId] = {
+        ...state.activeWorkflow.connections[connectionId],
+        bendpoints: updatedBendpoints,
+      };
+    });
+  },
 };
 
 export const getters: GetterTree<WorkflowState, RootStoreState> = {};
