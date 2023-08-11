@@ -4,6 +4,7 @@ import { shallowMount, VueWrapper } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import {
+  createAvailablePortTypes,
   createComponentNode,
   createMetanode,
   createNativeNode,
@@ -21,6 +22,7 @@ import * as selectionStore from "@/store/selection";
 import * as canvasStore from "@/store/canvas";
 
 import ContextMenu from "../ContextMenu.vue";
+import { PortType } from "@/api/gateway-api/generated-api";
 
 describe("ContextMenu.vue", () => {
   const createStore = (
@@ -36,6 +38,13 @@ describe("ContextMenu.vue", () => {
       application: {
         state: {
           hasClipboardSupport: true,
+          availablePortTypes: createAvailablePortTypes({
+            "org.some.otherPorType": {
+              kind: PortType.KindEnum.Other,
+              color: "blue",
+              name: "Some other port",
+            },
+          }),
         },
       },
       aiAssistant: {
@@ -153,7 +162,9 @@ describe("ContextMenu.vue", () => {
 
     await $store.dispatch("selection/selectNode", "root:1");
 
-    expect(renderedMenuItems(wrapper).map((item) => item.name)).toStrictEqual([
+    expect(
+      renderedMenuItems(wrapper).map((item) => item.metadata.shortcutName),
+    ).toStrictEqual([
       "executeAll",
       "resetAll",
       "paste",
@@ -169,7 +180,7 @@ describe("ContextMenu.vue", () => {
     expect(renderedMenuItems(wrapper)).toEqual(
       expect.arrayContaining([
         {
-          name: "executeAll",
+          metadata: { shortcutName: "executeAll" },
           text: "Execute all",
           hotkeyText: "Shift F7",
           disabled: false,
@@ -181,9 +192,9 @@ describe("ContextMenu.vue", () => {
   it("fires correct action based on store data and passes optional event detail and metadata", () => {
     const { wrapper, shortcutsSpy } = doMount();
     const mockEvent = { mock: true };
-    wrapper
-      .findComponent(MenuItems)
-      .vm.$emit("item-click", mockEvent, { name: "executeAll" });
+    wrapper.findComponent(MenuItems).vm.$emit("item-click", mockEvent, {
+      metadata: { shortcutName: "executeAll" },
+    });
 
     expect(shortcutsSpy).toHaveBeenCalledWith("executeAll", {
       event: mockEvent,
@@ -195,9 +206,9 @@ describe("ContextMenu.vue", () => {
     const { wrapper } = doMount();
 
     expect(wrapper.emitted("menuClose")).toBeFalsy();
-    wrapper
-      .findComponent(MenuItems)
-      .vm.$emit("item-click", null, { name: "executeAll" });
+    wrapper.findComponent(MenuItems).vm.$emit("item-click", null, {
+      metadata: { shortcutName: "executeAll" },
+    });
 
     expect(wrapper.emitted("menuClose")).toBeTruthy();
   });
@@ -205,9 +216,10 @@ describe("ContextMenu.vue", () => {
   describe("visibility of menu items", () => {
     const assertItems = (
       items: Array<{
-        name?: ShortcutName | Omit<string, ShortcutName>;
+        metadata?: { shortcutName: ShortcutName | Omit<string, ShortcutName> };
         text?: string;
         separator?: boolean;
+        children?: Array<any>;
       }>,
     ) => items.map((item) => expect.objectContaining(item));
 
@@ -220,11 +232,11 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "executeAll" },
-          { name: "cancelAll" },
-          { name: "resetAll", separator: true },
-          { name: "paste", separator: true },
-          { name: "addWorkflowAnnotation" },
+          { metadata: { shortcutName: "executeAll" } },
+          { metadata: { shortcutName: "cancelAll" } },
+          { metadata: { shortcutName: "resetAll" }, separator: true },
+          { metadata: { shortcutName: "paste" }, separator: true },
+          { metadata: { shortcutName: "addWorkflowAnnotation" } },
         ]),
       );
     });
@@ -238,13 +250,14 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "configureNode", separator: true },
-          { name: "editNodeLabel", separator: true },
-          { name: "cut" },
-          { name: "copy" },
-          { name: "deleteSelected", separator: true },
-          { name: "createMetanode" },
-          { name: "createComponent" },
+          { metadata: { shortcutName: "configureNode" } },
+          { text: "Open port view", children: expect.anything() },
+          { metadata: { shortcutName: "editNodeLabel" }, separator: true },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
+          { metadata: { shortcutName: "createMetanode" } },
+          { metadata: { shortcutName: "createComponent" } },
         ]),
       );
     });
@@ -269,19 +282,20 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "configureNode" },
-          { name: "executeSelected" },
-          { name: "resumeLoopExecution" },
-          { name: "pauseLoopExecution" },
-          { name: "stepLoopExecution" },
-          { name: "cancelSelected" },
-          { name: "resetSelected" },
-          { name: "editNodeLabel", separator: true },
-          { name: "cut" },
-          { name: "copy" },
-          { name: "deleteSelected", separator: true },
-          { name: "createMetanode" },
-          { name: "createComponent" },
+          { metadata: { shortcutName: "configureNode" } },
+          { metadata: { shortcutName: "executeSelected" } },
+          { text: "Open port view", children: expect.anything() },
+          { metadata: { shortcutName: "resumeLoopExecution" } },
+          { metadata: { shortcutName: "pauseLoopExecution" } },
+          { metadata: { shortcutName: "stepLoopExecution" } },
+          { metadata: { shortcutName: "cancelSelected" } },
+          { metadata: { shortcutName: "resetSelected" } },
+          { metadata: { shortcutName: "editNodeLabel" }, separator: true },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
+          { metadata: { shortcutName: "createMetanode" } },
+          { metadata: { shortcutName: "createComponent" } },
         ]),
       );
     });
@@ -300,15 +314,20 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "configureNode" },
-          { name: "executeSelected" },
-          { name: "executeAndOpenView", separator: true },
-          { name: "editNodeLabel" },
-          { name: "cut" },
-          { name: "copy" },
-          { name: "deleteSelected", separator: true },
-          { name: "createMetanode" },
-          { name: "createComponent" },
+          { metadata: { shortcutName: "configureNode" } },
+          { metadata: { shortcutName: "executeSelected" } },
+          { metadata: { shortcutName: "executeAndOpenView" } },
+          {
+            text: "Open port view",
+            children: expect.anything(),
+            separator: true,
+          },
+          { metadata: { shortcutName: "editNodeLabel" } },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
+          { metadata: { shortcutName: "createMetanode" } },
+          { metadata: { shortcutName: "createComponent" } },
         ]),
       );
     });
@@ -331,16 +350,21 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "configureNode" },
-          { name: "configureFlowVariables" },
-          { name: "executeSelected" },
-          { name: "executeAndOpenView", separator: true },
-          { name: "editNodeLabel", separator: true },
-          { name: "cut" },
-          { name: "copy" },
-          { name: "deleteSelected", separator: true },
-          { name: "createMetanode" },
-          { name: "createComponent" },
+          { metadata: { shortcutName: "configureNode" } },
+          { metadata: { shortcutName: "configureFlowVariables" } },
+          { metadata: { shortcutName: "executeSelected" } },
+          { metadata: { shortcutName: "executeAndOpenView" } },
+          {
+            text: "Open port view",
+            children: expect.anything(),
+            separator: true,
+          },
+          { metadata: { shortcutName: "editNodeLabel" }, separator: true },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
+          { metadata: { shortcutName: "createMetanode" } },
+          { metadata: { shortcutName: "createComponent" } },
         ]),
       );
     });
@@ -383,12 +407,12 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "executeSelected", separator: true },
-          { name: "cut" },
-          { name: "copy" },
-          { name: "deleteSelected", separator: true },
-          { name: "createMetanode" },
-          { name: "createComponent" },
+          { metadata: { shortcutName: "executeSelected" }, separator: true },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
+          { metadata: { shortcutName: "createMetanode" } },
+          { metadata: { shortcutName: "createComponent" } },
         ]),
       );
     });
@@ -408,7 +432,7 @@ describe("ContextMenu.vue", () => {
       await Vue.nextTick();
 
       expect(renderedMenuItems(wrapper)).toEqual(
-        assertItems([{ name: "deleteSelected" }]),
+        assertItems([{ metadata: { shortcutName: "deleteSelected" } }]),
       );
     });
 
@@ -425,7 +449,7 @@ describe("ContextMenu.vue", () => {
       await Vue.nextTick();
 
       expect(renderedMenuItems(wrapper)).toEqual(
-        assertItems([{ name: "deleteSelected" }]),
+        assertItems([{ metadata: { shortcutName: "deleteSelected" } }]),
       );
     });
 
@@ -440,13 +464,18 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "configureNode" },
-          { name: "editNodeLabel", separator: true },
-          { name: "cut" },
-          { name: "copy" },
-          { name: "deleteSelected", separator: true },
-          { name: "createMetanode" },
-          { name: "createComponent" },
+          { metadata: { shortcutName: "configureNode" } },
+          {
+            text: "Open port view",
+            children: expect.anything(),
+            separator: true,
+          },
+          { metadata: { shortcutName: "editNodeLabel" } },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
+          { metadata: { shortcutName: "createMetanode" } },
+          { metadata: { shortcutName: "createComponent" } },
           { text: "Metanode" },
         ]),
       );
@@ -463,13 +492,18 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "configureNode", separator: true },
-          { name: "editNodeLabel", separator: true },
-          { name: "cut" },
-          { name: "copy" },
-          { name: "deleteSelected", separator: true },
-          { name: "createMetanode" },
-          { name: "createComponent" },
+          { metadata: { shortcutName: "configureNode" } },
+          {
+            text: "Open port view",
+            children: expect.anything(),
+            separator: true,
+          },
+          { metadata: { shortcutName: "editNodeLabel" }, separator: true },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
+          { metadata: { shortcutName: "createMetanode" } },
+          { metadata: { shortcutName: "createComponent" } },
           { text: "Component" },
         ]),
       );
@@ -484,9 +518,9 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "cut" },
-          { name: "copy" },
-          { name: "deleteSelected", separator: true },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { text: "Arrange annotations" },
         ]),
       );
@@ -502,12 +536,12 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { name: "cut" },
-          { name: "copy" },
-          { name: "deleteSelected", separator: true },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { text: "Arrange annotations", separator: true },
-          { name: "createMetanode" },
-          { name: "createComponent" },
+          { metadata: { shortcutName: "createMetanode" } },
+          { metadata: { shortcutName: "createComponent" } },
         ]),
       );
     });

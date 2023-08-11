@@ -183,7 +183,7 @@ export default defineComponent({
 
       const nodeId = node.id;
       const allOutPortViewData = node.outPorts.map(
-        (port) => toPortObject(this.availablePortTypes)(port.typeId).views,
+        (port) => toPortObject(this.availablePortTypes)(port).views,
       );
 
       const mapFullPortToItem = (
@@ -268,6 +268,8 @@ export default defineComponent({
       const isMetanode = this.singleSelectedNode?.kind === "metanode";
       const isComponent = this.singleSelectedNode?.kind === "component";
 
+      const portViewItems = this.portViews();
+
       const basicOperationsGroup: Array<MenuItem> = [
         ...this.mapToShortcut([
           {
@@ -281,10 +283,13 @@ export default defineComponent({
           { name: "executeSelected", isVisible: this.selectedNodes.length },
           { name: "executeAndOpenView", isVisible: isView },
         ]),
-        {
-          text: "Open port view",
-          children: this.portViews(),
-        },
+        ...filterItemVisibility(
+          {
+            text: "Open port view",
+            children: portViewItems,
+          },
+          portViewItems.length > 0,
+        ),
         // Loop nodes
         ...this.mapToShortcut([
           { name: "resumeLoopExecution", isVisible: isLoopEnd },
