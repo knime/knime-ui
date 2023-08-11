@@ -236,13 +236,12 @@ export default defineComponent({
       }
     },
     openViewInNewWindow(viewIndex) {
-      const data = {
+      API.desktop.openPortView({
         projectId: this.projectId,
         nodeId: this.selectedNode.id,
         viewIndex,
         portIndex: this.selectedPortIndex,
-      };
-      API.desktop.openPortView(data);
+      });
     },
   },
 });
