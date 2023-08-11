@@ -11,6 +11,7 @@ interface Props {
   isHighlighted: boolean;
   isDraggedOver: boolean;
   suggestDelete: boolean;
+  isHovered: boolean;
   isReadonly?: boolean;
   isSelected?: boolean;
   interactive?: boolean;
@@ -72,7 +73,7 @@ watch(toRef(props, "suggestDelete"), (newValue, oldValue) => {
   <path
     v-if="interactive"
     :d="path"
-    class="hover-area"
+    :class="['hover-area', { hovered: isHovered }]"
     data-hide-in-workflow-preview
     v-bind="$attrs"
   />
@@ -150,7 +151,8 @@ path:not(.hover-area) {
   stroke-width: 8px;
   fill: none;
 
-  &:hover + path {
+  &:hover + path,
+  &.hovered + path {
     stroke-width: v-bind("$shapes.selectedConnectorWidth");
   }
 }
