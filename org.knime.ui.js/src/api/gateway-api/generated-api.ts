@@ -2863,10 +2863,30 @@ export interface SpaceProvider {
      * @memberof SpaceProvider
      */
     spaces: Array<Space>;
+    /**
+     * Original location of the provided spaces. If local, this property is absent.
+     * @type {string}
+     * @memberof SpaceProvider
+     */
+    remoteLocation?: SpaceProvider.RemoteLocationEnum;
 
 }
 
 
+/**
+ * @export
+ * @namespace SpaceProvider
+ */
+export namespace SpaceProvider {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum RemoteLocationEnum {
+        HUB = 'HUB',
+        SERVER = 'SERVER'
+    }
+}
 /**
  * Defines the style of a range (e.g. within a workflow annotation).
  * @export
@@ -3523,11 +3543,11 @@ export interface WorkflowInfo {
      */
     linked?: boolean;
     /**
-     * True if the workflow is a temporary copy from a Hub. If not, this property is absent.
-     * @type {boolean}
+     * Original location of the workflow. If local, this property is absent.
+     * @type {string}
      * @memberof WorkflowInfo
      */
-    onHub?: boolean;
+    remoteLocation?: WorkflowInfo.RemoteLocationEnum;
     /**
      *
      * @type {JobManager}
@@ -3551,6 +3571,14 @@ export namespace WorkflowInfo {
         Component = 'component',
         Metanode = 'metanode',
         Project = 'project'
+    }
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum RemoteLocationEnum {
+        HUB = 'HUB',
+        SERVER = 'SERVER'
     }
 }
 /**

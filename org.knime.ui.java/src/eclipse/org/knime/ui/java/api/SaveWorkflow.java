@@ -72,8 +72,8 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
+import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
-import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
@@ -189,7 +189,7 @@ final class SaveWorkflow {
             final boolean localOnly) {
         if (wfm.isComponentProjectWFM()) {
             throw new UnsupportedOperationException("Saving a component project is not yet implemented");
-        } else if (!localOnly && wfm.getContextV2().getLocationType() == LocationType.HUB_SPACE) {
+        } else if (!localOnly && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo) {
             saveBackToHub(monitor, wfm, svg);
         } else {
             saveRegularWorkflow(monitor, wfm, svg);
