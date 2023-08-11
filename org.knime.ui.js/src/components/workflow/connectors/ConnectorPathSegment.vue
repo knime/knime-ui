@@ -44,28 +44,23 @@ watch(toRef(props, "suggestDelete"), (newValue, oldValue) => {
     return;
   }
 
-  if (newValue && !oldValue) {
-    const shiftX = -12;
-    const shiftY = -6;
-    const x1 = props.segment.start.x;
-    const y1 = props.segment.start.y;
-    const x2 = props.segment.end.x;
-    const y2 = props.segment.end.y;
+  const shiftX = -12;
+  const shiftY = -6;
+  const x1 = props.segment.start.x;
+  const y1 = props.segment.start.y;
+  const x2 = props.segment.end.x;
+  const y2 = props.segment.end.y;
 
-    const newPath = connectorPath(x1, y1, x2 + shiftX, y2 + shiftY);
+  const newPath =
+    newValue && !oldValue
+      ? connectorPath(x1, y1, x2 + shiftX, y2 + shiftY)
+      : path.value;
 
-    gsap.to(visiblePath.value, {
-      attr: { d: newPath },
-      duration: 0.2,
-      ease: "power2.out",
-    });
-  } else if (!newValue && oldValue) {
-    gsap.to(visiblePath.value, {
-      attr: { d: path.value },
-      duration: 0.2,
-      ease: "power2.out",
-    });
-  }
+  gsap.to(visiblePath.value, {
+    attr: { d: newPath },
+    duration: 0.2,
+    ease: "power2.out",
+  });
 });
 </script>
 

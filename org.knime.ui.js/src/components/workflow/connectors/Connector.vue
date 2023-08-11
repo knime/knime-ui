@@ -3,16 +3,15 @@ import { ref, computed, toRefs, watch, toRef } from "vue";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import type { BendpointData } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
 import { getMetaOrCtrlKey } from "@/util/navigator";
+import { getBendpointId } from "@/util/connectorUtil";
 
-import ConnectorPathSegment from "./ConnectorPathSegment.vue";
-import { useConnectionReplacement } from "./useConnectionReplacement";
 import type { PathSegment } from "./types";
-
-const BENDPOINT_SIZE = 6;
+import { useConnectionReplacement } from "./useConnectionReplacement";
+import ConnectorPathSegment from "./ConnectorPathSegment.vue";
+import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 
 interface Props {
   /**
@@ -55,7 +54,9 @@ interface Props {
    * Whether the connector can be interacted with or not
    */
   interactive?: boolean;
-
+  /**
+   * List of coordinates of this connector's bendpoints
+   */
   bendpoints?: Array<XY>;
 }
 
@@ -73,7 +74,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const store = useStore();
 const suggestDelete = ref(false);
-const isDraggingBendPoint = ref(false);
 
 const isHovered = ref(false);
 const isDragging = computed(() => store.state.workflow.isDragging);
@@ -100,10 +100,6 @@ const { start: startSegmentPosition, end: endSegmentPosition } =
     destPort,
     absolutePoint,
   });
-
-const getBendpointData = (index: number): BendpointData => {
-  return { ...props.bendpoints[index], connectionId: props.id, index };
-};
 
 const pathSegments = computed<Array<PathSegment>>(() => {
   let x1 = startSegmentPosition.value.at(0);
@@ -155,7 +151,7 @@ const pathSegments = computed<Array<PathSegment>>(() => {
     // when a given bendpoint is being dragged,
     // we need to adjust the "start" of the current path segment's position
     const startWithDelta: XY =
-      !isStart && isBendpointSelected.value(getBendpointData(i - 1))
+      !isStart && isBendpointSelected.value(getBendpointId(props.id, i - 1))
         ? {
             x: start.x + movePreviewDelta.value.x,
             y: start.y + movePreviewDelta.value.y,
@@ -164,7 +160,7 @@ const pathSegments = computed<Array<PathSegment>>(() => {
 
     // and we also need to adjust the "end" of the previous path segment
     const endWithDelta: XY =
-      !isEnd && isBendpointSelected.value(getBendpointData(i))
+      !isEnd && isBendpointSelected.value(getBendpointId(props.id, i))
         ? {
             x: end.x + movePreviewDelta.value.x,
             y: end.y + movePreviewDelta.value.y,
@@ -255,15 +251,16 @@ const onBendpointPointerdown = (
     return;
   }
 
-  const bendpointData = getBendpointData(index - 1);
-  if (!isBendpointSelected.value(bendpointData)) {
+  const eventTarget = event.target as HTMLElement;
+
+  const bendpointId = getBendpointId(props.id, index - 1);
+  if (!isBendpointSelected.value(bendpointId)) {
     store.dispatch("selection/deselectAllObjects");
   }
-  store.dispatch("selection/selectBendpoint", bendpointData);
+  store.dispatch("selection/selectBendpoint", bendpointId);
 
-  isDraggingBendPoint.value = true;
   event.stopPropagation();
-  (event.target as HTMLElement).setPointerCapture(event.pointerId);
+  eventTarget.setPointerCapture(event.pointerId);
 
   const onMove = throttle(({ clientX, clientY }) => {
     const [moveX, moveY] = screenToCanvasCoordinates.value([clientX, clientY]);
@@ -278,7 +275,7 @@ const onBendpointPointerdown = (
   });
 
   const onUp = () => {
-    (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+    eventTarget.releasePointerCapture(event.pointerId);
     store.dispatch("workflow/moveBendpoints");
     event.target.removeEventListener("pointermove", onMove);
     event.target.removeEventListener("pointerup", onUp);
@@ -303,16 +300,16 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
     return;
   }
 
-  const bendpointData = getBendpointData(index - 1);
+  const bendpointId = getBendpointId(props.id, index - 1);
 
   if (isMultiselect(event)) {
-    const action = isBendpointSelected.value(bendpointData)
+    const action = isBendpointSelected.value(bendpointId)
       ? "deselect"
       : "select";
-    store.dispatch(`selection/${action}Bendpoint`, bendpointData);
+    store.dispatch(`selection/${action}Bendpoint`, bendpointId);
   } else {
     store.dispatch("selection/deselectAllObjects");
-    store.dispatch("selection/selectBendpoint", bendpointData);
+    store.dispatch("selection/selectBendpoint", bendpointId);
   }
 };
 </script>
@@ -346,23 +343,14 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
         @node-dragging-end.prevent="onWorkflowNodeDragLeave"
       />
 
-      <rect
+      <ConnectorBendpoint
         v-if="index !== 0"
-        :class="{
-          bendpoint: true,
-          selected: isBendpointSelected({
-            ...bendpoints[index - 1],
-            connectionId: id,
-            index: index - 1,
-          }),
-          'flow-variable': flowVariableConnection,
-        }"
-        :transform="`translate(
-          ${segment.start.x - BENDPOINT_SIZE / 2},
-          ${segment.start.y - BENDPOINT_SIZE / 2}
-        )`"
-        :width="BENDPOINT_SIZE"
-        :height="BENDPOINT_SIZE"
+        :is-selected="isBendpointSelected(getBendpointId(id, index - 1))"
+        :is-dragging="isDragging"
+        :is-flow-variable-connection="flowVariableConnection"
+        :position="pathSegments[index].start"
+        :index="index - 1"
+        :connection-id="id"
         @pointerdown="
           onBendpointPointerdown($event, index, pathSegments[index].start)
         "
@@ -371,20 +359,3 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
     </template>
   </g>
 </template>
-
-<style>
-.bendpoint {
-  --fill-color: var(--knime-stone-gray);
-
-  fill: var(--fill-color);
-  stroke: var(--knime-white);
-
-  &.selected {
-    --fill-color: var(--knime-cornflower);
-  }
-
-  &.flow-variable:not(.selected) {
-    --fill-color: var(--knime-coral);
-  }
-}
-</style>

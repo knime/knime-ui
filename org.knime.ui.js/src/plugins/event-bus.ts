@@ -14,6 +14,12 @@ type BusEvents = {
   };
   "connector-dropped": null;
   "connector-end": null;
+
+  // bendpoint-selection-preview-{connectionId}__{bendpointIndex}
+  [key: `bendpoint-selection-preview-${string}__${string}`]: {
+    index: number;
+    preview: "show" | "hide" | "clear" | null;
+  };
 };
 
 const emitter = mitt<BusEvents>();

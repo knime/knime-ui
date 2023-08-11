@@ -1,13 +1,13 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import type { BendpointData } from "@/api/custom-types";
 import type { RootStoreState } from "./types";
+import { parseBendpointId } from "@/util/connectorUtil";
 
 export interface SelectionState {
   selectedNodes: Record<string, boolean>;
   selectedConnections: Record<string, boolean>;
   selectedAnnotations: Record<string, boolean>;
-  selectedBendpoints: Record<string, Record<number, boolean>>;
+  selectedBendpoints: Record<string, boolean>;
 
   startedSelectionFromAnnotationId: string | null;
   didStartRectangleSelection: boolean;
@@ -95,24 +95,15 @@ export const mutations: MutationTree<SelectionState> = {
     });
   },
 
-  addBendpointsToSelection(state, bendpoints: Array<BendpointData>) {
-    bendpoints.forEach((bendpoint) => {
-      const { connectionId, index } = bendpoint;
-
-      state.selectedBendpoints[connectionId] = {
-        ...(state.selectedBendpoints[connectionId] ?? {}),
-        [index]: true,
-      };
+  addBendpointsToSelection(state, bendpoints: Array<string>) {
+    bendpoints.forEach((bendpointId) => {
+      state.selectedBendpoints[bendpointId] = true;
     });
   },
 
-  removeBendpointsFromSelection(state, bendpoints: Array<BendpointData>) {
-    bendpoints.forEach((bendpoint) => {
-      const { connectionId, index } = bendpoint;
-      delete state.selectedBendpoints[connectionId][index];
-      if (Object.keys(state.selectedBendpoints[connectionId]).length === 0) {
-        delete state.selectedBendpoints[connectionId];
-      }
+  removeBendpointsFromSelection(state, bendpoints: Array<string>) {
+    bendpoints.forEach((bendpointId) => {
+      delete state.selectedBendpoints[bendpointId];
     });
   },
 
@@ -200,6 +191,15 @@ export const actions: ActionTree<SelectionState, RootStoreState> = {
     commit("removeBendpointsFromSelection", [bendpoint]);
   },
 
+  selectBendpoints({ commit }, bendpoints) {
+    commit("addBendpointsToSelection", bendpoints);
+  },
+
+  // Deselects the given connection.
+  deselectBendpoints({ commit }, bendpoints) {
+    commit("removeBendpointsFromSelection", bendpoints);
+  },
+
   async toggleAnnotationSelection(
     { state, dispatch, commit },
     { annotationId, isMultiselect, isSelected },
@@ -263,13 +263,9 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
       return [];
     }
 
-    return Object.keys(state.selectedBendpoints).flatMap((connectionId) => {
-      const connectionBendpoints = state.selectedBendpoints[connectionId];
-      const bendpointIndices = Object.keys(connectionBendpoints).filter(
-        (index) => connectionBendpoints[index],
-      );
-      return bendpointIndices.map((index) => ({ connectionId, index }));
-    });
+    return Object.keys(state.selectedBendpoints).map((bendpointId) =>
+      parseBendpointId(bendpointId),
+    );
   },
 
   // Returns an array of all selected node ids.
@@ -307,19 +303,15 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
   isConnectionSelected: (state) => (connectionId: string) =>
     Reflect.has(state.selectedConnections, connectionId),
 
-  isBendpointSelected: (state) => (bendpoint: BendpointData) => {
-    if (!state.selectedBendpoints[bendpoint.connectionId]) {
-      return false;
-    }
-
-    return state.selectedBendpoints[bendpoint.connectionId][bendpoint.index];
-  },
+  isBendpointSelected: (state) => (bendpointId: string) =>
+    Reflect.has(state.selectedBendpoints, bendpointId),
 
   isSelectionEmpty(_, getters) {
     return (
       getters.selectedNodeIds.length === 0 &&
       getters.selectedConnections.length === 0 &&
-      getters.selectedAnnotationIds.length === 0
+      getters.selectedAnnotationIds.length === 0 &&
+      getters.selectedBendpointIds.length === 0
     );
   },
 };

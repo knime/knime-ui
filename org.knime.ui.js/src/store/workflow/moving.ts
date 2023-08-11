@@ -78,6 +78,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       return;
     }
 
+    if (rootGetters["selection/selectedBendpoints"].length > 0) {
+      dispatch("moveBendpoints");
+    }
+
     try {
       await API.workflowCommand.Translate({
         projectId,
@@ -103,18 +107,19 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       return;
     }
 
-    const selectedBendpoints = rootGetters["selection/selectedBendpoints"];
+    const selectedBendpoints: Array<{ connectionId: string; index: number }> =
+      rootGetters["selection/selectedBendpoints"];
 
     // simulate command call, making it async by adding a certain delay
     // eslint-disable-next-line no-magic-numbers
-    await new Promise((r) => setTimeout(r, 500));
-    Object.keys(selectedBendpoints).forEach((connectionId) => {
-      const bendpoints = selectedBendpoints[connectionId];
+    await new Promise((r) => setTimeout(r, 0));
+    selectedBendpoints.forEach(({ connectionId, index }) => {
+      // const bendpoints = selectedBendpoints[connectionId];
       const { bendpoints: currentBendpoints } =
         state.activeWorkflow.connections[connectionId];
 
-      const updatedBendpoints = currentBendpoints.map((coords, index) =>
-        bendpoints[index]
+      const updatedBendpoints = currentBendpoints.map((coords, _index) =>
+        Number(index) === _index
           ? {
               x: coords.x + translation.x,
               y: coords.y + translation.y,
