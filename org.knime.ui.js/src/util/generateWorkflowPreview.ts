@@ -1,6 +1,5 @@
 import { camelCase } from "lodash";
 import robotoCondensed from "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff";
-import robotoCondensedBold from "@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff";
 import type { KnimeNode } from "@/api/custom-types";
 
 const LICENSE = `<!--
@@ -307,17 +306,17 @@ const fileToBase64 = async (filepath): Promise<string> => {
  * further use
  * @returns
  */
-const getFontData = async (font: string) => {
+const getFontData = async () => {
   // TODO: NXT-1493 - This cache is never invalidated (updates to the font files) nor is it ever reset or deleted.
   //       We should consider making the base64 encode a build step
-  const fontCacheKey = `workflow-preview-font-${font}`;
+  const fontCacheKey = `workflow-preview-font-${robotoCondensed}`;
   const cachedFont = localStorage.getItem(fontCacheKey);
 
   if (cachedFont) {
     return Promise.resolve(cachedFont);
   }
 
-  const fontBase64 = await fileToBase64(font);
+  const fontBase64 = await fileToBase64(robotoCondensed);
   localStorage.setItem(fontCacheKey, fontBase64);
 
   return fontBase64;
@@ -333,24 +332,16 @@ const getFontData = async (font: string) => {
 const addFontStyles = async (svgElement: SVGElement) => {
   const styleTag = document.createElement("style");
 
-  const fontBase64 = await getFontData(robotoCondensed);
+  const fontBase64 = await getFontData();
 
   styleTag.appendChild(
     document.createTextNode(`@font-face {
       font-family: "Roboto Condensed";
+      font-weight: bold;
       src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}") format('woff');
     }`),
   );
 
-  const fontBase64Bold = await getFontData(robotoCondensedBold);
-  styleTag.appendChild(
-    document.createTextNode(`@font-face {
-      font-family: "Roboto Condensed";
-      font-weight: 700;
-      font-style: normal;
-      src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64Bold}") format('woff');
-    }`),
-  );
   // Make sure the list item markers are displayed
   styleTag.appendChild(
     document.createTextNode("li { overflow: initial !important; }"),
