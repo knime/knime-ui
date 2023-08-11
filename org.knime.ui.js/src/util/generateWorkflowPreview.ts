@@ -280,9 +280,11 @@ const addFontStyles = async (svgElement: SVGElement) => {
   styleTag.appendChild(
     document.createTextNode(`@font-face {
       font-family: "Roboto Condensed";
-      src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}");
+      font-weight: bold;
+      src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}") format('woff');
     }`),
   );
+
   // Make sure the list item markers are displayed
   styleTag.appendChild(
     document.createTextNode("li { overflow: initial !important; }"),
