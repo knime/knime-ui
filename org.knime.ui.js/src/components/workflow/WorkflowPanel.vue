@@ -33,7 +33,7 @@ export default defineComponent({
       "insideLinkedType",
       "isWritable",
       "isStreaming",
-      "isOnHub",
+      "isRemoteWorkflow",
     ]),
     ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
     ...mapGetters("selection", ["selectedNodeIds"]),
@@ -103,11 +103,11 @@ export default defineComponent({
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
-      v-if="isLinked || isStreaming || isInsideLinked || isOnHub"
+      v-if="isLinked || isStreaming || isInsideLinked || isRemoteWorkflow"
       :class="[
         'workflow-info',
         { 'only-streaming': isStreaming && !isLinked },
-        { 'only-on-hub': isOnHub },
+        { 'temporary-copy': isRemoteWorkflow },
       ]"
     >
       <span v-if="isInsideLinked">
@@ -118,7 +118,7 @@ export default defineComponent({
         This is a linked {{ workflow.info.containerType }} and can therefore not
         be edited.
       </span>
-      <div v-if="isOnHub" class="banner">
+      <div v-if="isRemoteWorkflow" class="banner">
         <span>
           This is a temporary copy. Once you are done,
           {{ hasActiveProjectAnOrigin ? "save to re-upload or" : "" }} save a
@@ -181,7 +181,7 @@ export default defineComponent({
     margin-right: 0;
   }
 
-  &.only-on-hub {
+  &.temporary-copy {
     background-color: rgba(255 216 0 / 20%);
   }
 

@@ -318,8 +318,8 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     return !linkage && !isAiProcessingCurrentWorkflow;
   },
 
-  isOnHub({ activeWorkflow }) {
-    return Boolean(activeWorkflow?.info.onHub);
+  isRemoteWorkflow({ activeWorkflow }) {
+    return Boolean(activeWorkflow?.info.remoteLocation);
   },
 
   /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */

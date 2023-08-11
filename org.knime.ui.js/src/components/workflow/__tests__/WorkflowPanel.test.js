@@ -60,10 +60,10 @@ describe("WorkflowPanel", () => {
             activeWorkflow.parents.some(({ linked }) => linked)
           );
         },
-        isOnHub({ activeWorkflow }) {
+        isRemoteWorkflow({ activeWorkflow }) {
           return (
-            activeWorkflow.info.onHub ||
-            activeWorkflow.parents.some(({ onHub }) => onHub)
+            activeWorkflow.info.remoteLocation ||
+            activeWorkflow.parents.some(({ remoteLocation }) => remoteLocation)
           );
         },
       },
@@ -153,7 +153,7 @@ describe("WorkflowPanel", () => {
   describe("on the hub", () => {
     it("shows banner if workflow is on the hub", async () => {
       const { wrapper, $store } = doShallowMount();
-      $store.state.workflow.activeWorkflow.info.onHub = true;
+      $store.state.workflow.activeWorkflow.info.remoteLocation = "HUB";
       await Vue.nextTick();
       await Vue.nextTick();
       await Vue.nextTick();
@@ -162,7 +162,7 @@ describe("WorkflowPanel", () => {
 
     it("saves workflow locally when button is clicked", async () => {
       const { wrapper, $store, dispatchSpy } = doShallowMount();
-      $store.state.workflow.activeWorkflow.info.onHub = true;
+      $store.state.workflow.activeWorkflow.info.remoteLocation = "HUB";
       await Vue.nextTick();
       const button = wrapper.findComponent(Button);
       expect(button.exists()).toBe(true);
