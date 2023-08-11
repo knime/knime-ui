@@ -1,75 +1,54 @@
 <script lang="ts">
-import { defineComponent, type PropType } from "vue";
+import { defineComponent, markRaw, type PropType } from "vue";
 import { mapGetters, mapState } from "vuex";
 
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import type { PortViews, XY } from "@/api/gateway-api/generated-api";
-import type {
-  FormattedShortcut,
-  ShortcutName,
-  ShortcutsService,
-} from "@/shortcuts";
+import type { ShortcutName } from "@/shortcuts";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import { AvailablePortTypes } from "@/api/custom-types";
+import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import { toPortObject } from "@/util/portDataMapper";
 import { mapPortViewDescriptorsToItems } from "@/util/mapPortViewDescriptorsToItems";
 import { getNodeStateForPortIndex } from "@/util/nodeUtil";
 import { API } from "@api";
+import portIcon from "@/components/common/PortIconRenderer";
 
-type Base = { isVisible: boolean };
-type ItemWithName = Base & { name: ShortcutName; text?: string };
-
-type ContextMenuActionsGroupItem =
-  | ItemWithName
-  | (Base & { children: ContextMenuActionsGroupItem[]; text: string });
-
-type MenuItemWithName = Pick<FormattedShortcut, "name"> & {
-  type?: "shortcut" | "openPortView";
-} & MenuItem;
-
-type ContextMenuActionsGroup = Array<
-  ContextMenuActionsGroupItem & { separator?: boolean }
->;
+type ShortcutItem = { name: ShortcutName; isVisible: boolean };
 
 type ComponentData = {
-  visibleItems: ContextMenuActionsGroup;
+  visibleItems: Array<MenuItem>;
   activeDescendant: string | null;
 };
 
-const isItemWithName = (
-  item: ContextMenuActionsGroupItem,
-): item is ItemWithName => "name" in item;
+const portIconSize = 9;
 
 /**
  * Helper fn that enables easily creating separators between the different context menu action groups
  */
-const menuGroups = function (shortcuts: ShortcutsService) {
-  let currItems: ContextMenuActionsGroup = [];
+const menuGroups = function () {
+  let currItems: Array<MenuItem> = [];
 
-  const onlyVisible = ({ isVisible }: ContextMenuActionsGroupItem) => isVisible;
-  const onlyEnabled = (item: ContextMenuActionsGroupItem) =>
-    isItemWithName(item) ? shortcuts.isEnabled(item.name) : true;
+  const onlyEnabled = (item: MenuItem) => !item.disabled;
 
-  const removeInvalidItems = (items: Array<ContextMenuActionsGroupItem>) => {
+  const removeInvalidItems = (items: Array<MenuItem>) => {
     return items
-      .filter(onlyVisible)
       .filter(onlyEnabled)
       .map((item) =>
-        isItemWithName(item)
-          ? item
-          : { ...item, children: removeInvalidItems(item.children) },
+        item.children
+          ? { ...item, children: removeInvalidItems(item.children) }
+          : item,
       );
   };
 
   return {
-    append(groupItems: Array<ContextMenuActionsGroupItem>) {
+    append(groupItems: Array<MenuItem>) {
       const newItems = removeInvalidItems(groupItems);
 
       if (currItems.length !== 0 && newItems.length > 0) {
         // add separator to last item of previous group
-        currItems[currItems.length - 1].separator = true;
+        currItems.at(-1).separator = true;
       }
 
       currItems = currItems.concat(newItems);
@@ -80,6 +59,13 @@ const menuGroups = function (shortcuts: ShortcutsService) {
 
     value: () => currItems,
   };
+};
+
+const filterItemVisibility = <T,>(item: T, isVisible: boolean) => {
+  if (!isVisible) {
+    return [];
+  }
+  return [item];
 };
 
 /**
@@ -119,42 +105,6 @@ export default defineComponent({
       availablePortTypes: (state) =>
         state.availablePortTypes as AvailablePortTypes,
     }),
-
-    // map visible items to menu items and add shortcut information
-    menuItems(): Array<MenuItemWithName> {
-      const contextToMenuItemMapping = (item) => {
-        // special handling for sub menus
-        if (item.children?.length) {
-          return {
-            name: null,
-            text: item.text,
-            separator: item.separator,
-            children: item.children.map(contextToMenuItemMapping),
-          };
-        }
-
-        if (item.type === "openPortView") {
-          return item;
-        }
-
-        const shortcut = this.$shortcuts.get(item.name);
-
-        const shortcutText =
-          typeof shortcut.text === "function"
-            ? shortcut.text({ $store: this.$store })
-            : shortcut.text;
-
-        return {
-          name: item.name,
-          text: item.text || shortcutText,
-          hotkeyText: shortcut.hotkeyText,
-          disabled: !this.$shortcuts.isEnabled(item.name),
-          separator: item.separator,
-        };
-      };
-
-      return this.visibleItems.map(contextToMenuItemMapping);
-    },
   },
   watch: {
     // set menu items on mounted,
@@ -174,20 +124,50 @@ export default defineComponent({
     window?.getSelection().removeAllRanges();
   },
   methods: {
-    onItemClick(event: MouseEvent, item: MenuItemWithName) {
+    mapToShortcut(
+      shortcutItem: ShortcutItem | Array<ShortcutItem>,
+    ): Array<MenuItem> {
+      const mapSingleItem = (shortcutItem: ShortcutItem) => {
+        if (!shortcutItem.isVisible) {
+          return []; // end early
+        }
+
+        const shortcut = this.$shortcuts.get(shortcutItem.name);
+
+        const shortcutText =
+          typeof shortcut.text === "function"
+            ? shortcut.text({ $store: this.$store })
+            : shortcut.text;
+
+        return [
+          {
+            text: shortcutText,
+            hotkeyText: shortcut.hotkeyText,
+            disabled: !this.$shortcuts.isEnabled(shortcutItem.name),
+            metadata: { shortcutName: shortcutItem.name },
+          },
+        ];
+      };
+      return Array.isArray(shortcutItem)
+        ? shortcutItem.flatMap(mapSingleItem)
+        : mapSingleItem(shortcutItem);
+    },
+    onItemClick(event: MouseEvent, item: MenuItem) {
       this.$emit("menuClose");
 
-      if (item.type === "openPortView") {
-        API.desktop.openPortView(item.userData);
+      if (typeof item.metadata.handler === "function") {
+        item.metadata.handler();
         return;
       }
 
-      // do nothing for submenu items
-      if (item.name === null) {
+      const shortcutName = item.metadata?.shortcutName;
+
+      // do nothing if we don't have a shortcut name
+      if (!shortcutName) {
         return;
       }
 
-      this.$shortcuts.dispatch(item.name, {
+      this.$shortcuts.dispatch(shortcutName, {
         event,
         metadata: { position: this.position },
       });
@@ -196,13 +176,13 @@ export default defineComponent({
       this.activeDescendant = itemId;
     },
     portViews() {
-      const node = this.singleSelectedNode;
+      const node = this.singleSelectedNode as KnimeNode;
       if (!node) {
         return [];
       }
 
       const nodeId = node.id;
-      const allOutPortViewData: Array<PortViews> = node.outPorts.map(
+      const allOutPortViewData = node.outPorts.map(
         (port) => toPortObject(this.availablePortTypes)(port.typeId).views,
       );
 
@@ -215,19 +195,54 @@ export default defineComponent({
           getNodeStateForPortIndex(node, portIndex),
         );
 
-        const mappedPortViewItems = portViewItems.map((item) => ({
-          name: null,
-          type: "openPortView",
-          text: `${portIndex}: ${node.outPorts[portIndex].name} – ${item.text}`,
-          disabled: item.disabled,
-          userData: {
-            nodeId,
+        const hasMultipleViewItems = portViewItems.length > 1;
+
+        const buildPortNameAndIndex = (portName, portIndex) => {
+          return portIndex > 0 ? `${portIndex}: ${portName}` : portName;
+        };
+
+        const buildPortViewText = (portName, portIndex, portViewText) => {
+          return hasMultipleViewItems
+            ? portViewText
+            : `${buildPortNameAndIndex(portName, portIndex)} – ${portViewText}`;
+        };
+
+        let mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
+          text: buildPortViewText(
+            node.outPorts[portIndex].name,
             portIndex,
-            viewIndex: Number(item.id),
+            item.text,
+          ),
+          disabled: item.disabled,
+          metadata: {
+            handler: () => {
+              API.desktop.openPortView({
+                projectId: this.projectId,
+                nodeId,
+                portIndex,
+                viewIndex: Number(item.id),
+              });
+            },
           },
         }));
 
-        mappedPortViewItems.at(-1).separator = true;
+        if (mappedPortViewItems.length > 1) {
+          const headline: MenuItem = {
+            text: buildPortNameAndIndex(
+              node.outPorts[portIndex].name,
+              portIndex,
+            ),
+            icon: markRaw(portIcon(node.outPorts[portIndex], portIconSize)),
+            separator: true,
+            sectionHeadline: true,
+          };
+
+          mappedPortViewItems = [headline, ...mappedPortViewItems];
+        } else if (mappedPortViewItems.length === 1) {
+          mappedPortViewItems[0].icon = markRaw(
+            portIcon(node.outPorts[portIndex], portIconSize),
+          );
+        }
         return mappedPortViewItems;
       };
 
@@ -253,100 +268,130 @@ export default defineComponent({
       const isMetanode = this.singleSelectedNode?.kind === "metanode";
       const isComponent = this.singleSelectedNode?.kind === "component";
 
-      const basicOperationsGroup: Array<ContextMenuActionsGroupItem> = [
-        { name: "configureNode", isVisible: this.singleSelectedNode },
+      const basicOperationsGroup: Array<MenuItem> = [
+        ...this.mapToShortcut([
+          {
+            name: "configureNode",
+            isVisible: this.singleSelectedNode,
+          },
+          {
+            name: "configureFlowVariables",
+            isVisible: hasLegacyFlowVariableDialog,
+          },
+          { name: "executeSelected", isVisible: this.selectedNodes.length },
+          { name: "executeAndOpenView", isVisible: isView },
+        ]),
         {
-          name: "configureFlowVariables",
-          isVisible: hasLegacyFlowVariableDialog,
+          text: "Open port view",
+          children: this.portViews(),
         },
-        { name: "executeSelected", isVisible: this.selectedNodes.length },
-        { name: "executeAndOpenView", isVisible: isView },
         // Loop nodes
-        { name: "resumeLoopExecution", isVisible: isLoopEnd },
-        { name: "pauseLoopExecution", isVisible: isLoopEnd },
-        { name: "stepLoopExecution", isVisible: isLoopEnd },
-        { name: "cancelSelected", isVisible: this.selectedNodes.length },
-        { name: "resetSelected", isVisible: this.selectedNodes.length },
+        ...this.mapToShortcut([
+          { name: "resumeLoopExecution", isVisible: isLoopEnd },
+          { name: "pauseLoopExecution", isVisible: isLoopEnd },
+          { name: "stepLoopExecution", isVisible: isLoopEnd },
+          { name: "cancelSelected", isVisible: this.selectedNodes.length },
+          { name: "resetSelected", isVisible: this.selectedNodes.length },
+        ]),
       ];
 
-      const emptySelectionGroup: Array<ContextMenuActionsGroupItem> = [
-        // no nodes selected
-        { name: "executeAll", isVisible: this.isSelectionEmpty },
-        { name: "cancelAll", isVisible: this.isSelectionEmpty },
-        { name: "resetAll", isVisible: this.isSelectionEmpty },
+      const emptySelectionGroup: Array<MenuItem> = [
+        ...this.mapToShortcut([
+          // no nodes selected
+          { name: "executeAll", isVisible: this.isSelectionEmpty },
+          { name: "cancelAll", isVisible: this.isSelectionEmpty },
+          { name: "resetAll", isVisible: this.isSelectionEmpty },
+        ]),
       ];
 
-      const clipboardOperationsGroup: Array<ContextMenuActionsGroupItem> = [
-        { name: "cut", isVisible: areNodesSelected || areAnnotationsSelected },
-        { name: "copy", isVisible: areNodesSelected || areAnnotationsSelected },
-        { name: "paste", isVisible: this.isSelectionEmpty },
-        { name: "deleteSelected", isVisible: !this.isSelectionEmpty },
+      const clipboardOperationsGroup: Array<MenuItem> = [
+        ...this.mapToShortcut([
+          {
+            name: "cut",
+            isVisible: areNodesSelected || areAnnotationsSelected,
+          },
+          {
+            name: "copy",
+            isVisible: areNodesSelected || areAnnotationsSelected,
+          },
+          { name: "paste", isVisible: this.isSelectionEmpty },
+          { name: "deleteSelected", isVisible: !this.isSelectionEmpty },
+        ]),
       ];
 
-      const annotationsGroup: Array<ContextMenuActionsGroupItem> = [
-        { name: "addWorkflowAnnotation", isVisible: !isAnythingSelected },
-        {
-          text: "Arrange annotations",
-          isVisible: areAnnotationsSelected,
-          children: [
-            {
-              name: "bringAnnotationToFront",
-              isVisible: areAnnotationsSelected,
-            },
-            {
-              name: "bringAnnotationForward",
-              isVisible: areAnnotationsSelected,
-            },
-            {
-              name: "sendAnnotationBackward",
-              isVisible: areAnnotationsSelected,
-            },
-            { name: "sendAnnotationToBack", isVisible: areAnnotationsSelected },
-          ],
-        },
+      const annotationsGroup: Array<MenuItem> = [
+        ...this.mapToShortcut({
+          name: "addWorkflowAnnotation",
+          isVisible: !isAnythingSelected,
+        }),
+        ...filterItemVisibility(
+          {
+            text: "Arrange annotations",
+            children: this.mapToShortcut([
+              {
+                name: "bringAnnotationToFront",
+                isVisible: areAnnotationsSelected,
+              },
+              {
+                name: "bringAnnotationForward",
+                isVisible: areAnnotationsSelected,
+              },
+              {
+                name: "sendAnnotationBackward",
+                isVisible: areAnnotationsSelected,
+              },
+              {
+                name: "sendAnnotationToBack",
+                isVisible: areAnnotationsSelected,
+              },
+            ]),
+          },
+          areAnnotationsSelected,
+        ),
       ];
 
-      const metanodeAndComponentGroup: Array<ContextMenuActionsGroupItem> = [
-        { name: "createMetanode", isVisible: this.selectedNodes.length },
-        { name: "createComponent", isVisible: this.selectedNodes.length },
-        {
-          text: "Metanode",
-          isVisible: isMetanode,
-          children: [
-            { name: "expandMetanode", isVisible: true },
-            { name: "openComponentOrMetanode", isVisible: true },
-            { name: "editName", isVisible: true },
-          ],
-        },
-        {
-          text: "Component",
-          isVisible: isComponent,
-          children: [
-            { name: "expandComponent", isVisible: true },
-            { name: "openComponentOrMetanode", isVisible: true },
-            { name: "editName", isVisible: true },
-          ],
-        },
+      const metanodeAndComponentGroup: Array<MenuItem> = [
+        ...this.mapToShortcut([
+          { name: "createMetanode", isVisible: this.selectedNodes.length },
+          { name: "createComponent", isVisible: this.selectedNodes.length },
+        ]),
+        ...filterItemVisibility(
+          {
+            text: "Metanode",
+            children: this.mapToShortcut([
+              { name: "expandMetanode", isVisible: true },
+              { name: "openComponentOrMetanode", isVisible: true },
+              { name: "editName", isVisible: true },
+            ]),
+          },
+          isMetanode,
+        ),
+        ...filterItemVisibility(
+          {
+            text: "Component",
+            children: this.mapToShortcut([
+              { name: "expandComponent", isVisible: true },
+              { name: "openComponentOrMetanode", isVisible: true },
+              { name: "editName", isVisible: true },
+            ]),
+          },
+          isComponent,
+        ),
       ];
 
-      this.visibleItems = menuGroups(this.$shortcuts)
+      this.visibleItems = menuGroups()
         .append(basicOperationsGroup)
-        .append([{ name: "editNodeLabel", isVisible: this.singleSelectedNode }])
+        .append(
+          this.mapToShortcut({
+            name: "editNodeLabel",
+            isVisible: this.singleSelectedNode,
+          }),
+        )
         .append(emptySelectionGroup)
         .append(clipboardOperationsGroup)
         .append(annotationsGroup)
         .append(metanodeAndComponentGroup)
         .value();
-
-      // skip the magic for the special non-shortcut case
-      const openDetachedPortViews = this.portViews();
-      if (openDetachedPortViews.length > 0) {
-        this.visibleItems.push({
-          text: "Open port view",
-          children: openDetachedPortViews,
-          isVisible: true,
-        });
-      }
     },
   },
 });
@@ -367,7 +412,7 @@ export default defineComponent({
       ref="menuItems"
       class="menu-items"
       register-keydown
-      :items="menuItems"
+      :items="visibleItems"
       menu-aria-label="Context Menu"
       @item-click="onItemClick"
       @item-focused="setActiveDescendant"
@@ -379,5 +424,10 @@ export default defineComponent({
 .context-menu {
   min-width: 200px;
   max-width: 320px;
+
+  & :deep(.list-item.section-headline) {
+    font-size: 12px;
+    color: var(--knime-masala);
+  }
 }
 </style>
