@@ -105,15 +105,12 @@ export const distanceBetweenPoints = (
   y2: number,
 ) => Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 
-export const isPointInRange = (start: XY, end: XY, reference: XY) => {
-  const { x: x1, y: y1 } = start;
-  const { x: x2, y: y2 } = end;
-  const { x: x3, y: y3 } = reference;
+export const getCenterPoint = (start: XY, end: XY): XY => {
+  const centerX = (end.x + start.x) / 2;
+  const centerY = (end.y + start.y) / 2;
 
-  const startToEndDistance = distanceBetweenPoints(x1, y1, x2, y2);
-  const directionVector = startToEndDistance / Math.abs(startToEndDistance);
-  const referenceToStartDistance = distanceBetweenPoints(x1, y1, x3, y3);
-
-  const result = directionVector * referenceToStartDistance;
-  return result >= 0 && result <= Math.abs(startToEndDistance);
+  return {
+    x: centerX,
+    y: centerY,
+  };
 };

@@ -7,13 +7,7 @@ import {
   VISIBILITY_THRESHOLD,
 } from "./findFreeSpaceOnCanvas";
 
-import {
-  areaCoverage,
-  rectangleIntersection,
-  snapToGrid,
-  getCenteredPositionInVisibleFrame,
-  isPointInRange,
-} from "./geometry";
+import * as utils from "./utils";
 import getWorkflowObjectBounds, { nodePadding } from "./workflowObjectBounds";
 
 export const geometry = {
@@ -23,15 +17,9 @@ export const geometry = {
   findFreeSpaceAroundCenterWithFallback,
   getWorkflowObjectBounds,
   nodePadding,
-  utils: {
-    areaCoverage,
-    rectangleIntersection,
-    snapToGrid,
-    getCenteredPositionInVisibleFrame,
-  },
+  utils,
   constants: {
     NODE_PADDING,
     VISIBILITY_THRESHOLD,
   },
-  isPointInRange,
 };

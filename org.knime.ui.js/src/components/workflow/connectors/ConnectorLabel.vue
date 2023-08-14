@@ -1,61 +1,137 @@
-<script>
-import { mapState, mapGetters } from "vuex";
-import { connectorPosition } from "@/mixins";
+<script setup lang="ts">
+import { computed, toRefs } from "vue";
 
-/**
- * A label displaying the amount of processed rows on the middle of two set points.
- * Uses the connectorPosition mixin to get the start and end position of the connector.
- */
-export default {
-  mixins: [connectorPosition],
-  props: {
-    /**
-     * Defines the text value of the label
-     */
-    label: { type: String, default: "" },
-  },
-  data() {
-    return {
-      // An arbitrary high value to always show the full label.
-      labelWidth: 1000,
-      // An arbitrary height value to make the label visible
-      labelHeight: 60,
-      // A value that defines the offset from the label to the actual middle point.
-      // This prevents the label from overlapping the connector line.
-      offsetY: 16,
-    };
-  },
-  computed: {
-    ...mapState("workflow", ["movePreviewDelta", "isDragging"]),
-    ...mapGetters("selection", ["isNodeSelected"]),
-    /**
-     * Find the position between two connectors and add some offset to let the label
-     * appear above the connector line
-     * @returns {Array} coordinates [x, y]
-     */
-    halfWayPosition() {
-      // Calculates the middle point and subtracts half of the length of the text element
-      let offset = { x: 0, y: 0 };
-      if (
-        this.isDragging &&
-        (this.isNodeSelected(this.sourceNode) ||
-          this.isNodeSelected(this.destNode))
-      ) {
-        offset = this.movePreviewDelta;
-      }
+import type { XY } from "@/api/gateway-api/generated-api";
+import type { XYTuple } from "@/api/custom-types";
+import { useStore } from "@/composables/useStore";
+import { geometry } from "@/util/geometry";
+import type { ConnectorProps } from "./types";
+import { useConnectorPathSegments } from "./useConnectorPathSegments";
 
-      return [
-        this.start[0] +
-          (this.end[0] - this.start[0] + offset.x) / 2 -
-          this.labelWidth / 2,
-        this.start[1] +
-          (this.end[1] - this.start[1] + offset.y) / 2 -
-          this.offsetY -
-          this.labelHeight / 2,
-      ];
-    },
-  },
+type ConnectorLabelProps = {
+  label?: string;
 };
+
+const props = withDefaults(
+  defineProps<ConnectorProps & ConnectorLabelProps>(),
+  { label: "", bendpoints: () => [] },
+);
+const labelWidth = 1000;
+const labelHeight = 60;
+const offsetY = 16;
+
+const store = useStore();
+const isDragging = computed(() => store.state.workflow.isDragging);
+
+const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
+const isNodeSelected = computed(
+  () => store.getters["selection/isNodeSelected"],
+);
+
+const {
+  sourceNode,
+  sourcePort,
+  destNode,
+  destPort,
+  absolutePoint,
+  bendpoints,
+} = toRefs(props);
+
+const { pathSegments, startSegmentPosition, endSegmentPosition } =
+  useConnectorPathSegments({
+    id: props.id,
+    sourceNode,
+    sourcePort,
+    destNode,
+    destPort,
+    absolutePoint,
+    bendpoints,
+  });
+
+const getLabelPosition = (start: XY, end: XY, offset: XY): XYTuple => {
+  const { x: startX, y: startY } = start;
+  const { x: endX, y: endY } = end;
+
+  return [
+    startX + (endX - startX + offset.x) / 2 - labelWidth / 2,
+    startY + (endY - startY + offset.y) / 2 - offsetY - labelHeight / 2,
+  ];
+};
+
+const isConnectionAffectedByDrag = computed(
+  () =>
+    isDragging.value &&
+    (isNodeSelected.value(props.sourceNode) ||
+      isNodeSelected.value(props.destNode)),
+);
+
+const halfWayPosition = computed(() => {
+  // Calculates the middle point and subtracts half of the length of the text element
+
+  const startX = startSegmentPosition.value.at(0);
+  const startY = startSegmentPosition.value.at(1);
+  const endX = endSegmentPosition.value.at(0);
+  const endY = endSegmentPosition.value.at(1);
+
+  if (bendpoints.value.length > 0) {
+    // When there are bendpoints we cannot predict the curve of the connection path
+    // therfore, to place the label, we must:
+    // (1) Find the main path's center, which is the center point of the vector between the
+    // source port's coords (x, y) and the destination port's coords (x, y)
+    const mainPathCenter = geometry.utils.getCenterPoint(
+      { x: startX, y: startY },
+      { x: endX, y: endY },
+    );
+
+    // (2) For every path segment we have (determined by the bendpoints) we try to find the
+    // closest distance to the main path's center. To do so, we optimize for the smallest delta possible using
+    // the euclidian distance when compared with the segment's center point (x, y)
+    const { index: centermostPathSegmentIndex } = pathSegments.value.reduce(
+      (acc, segment, index) => {
+        const segmentCenter = geometry.utils.getCenterPoint(
+          segment.start,
+          segment.end,
+        );
+
+        const deltaCenter = geometry.utils.distanceBetweenPoints(
+          mainPathCenter.x,
+          mainPathCenter.y,
+          segmentCenter.x,
+          segmentCenter.y,
+        );
+
+        const minDelta = Math.min(deltaCenter);
+
+        if (minDelta < acc.x) {
+          acc.index = index;
+          acc.x = minDelta;
+        }
+
+        return acc;
+      },
+      { x: Infinity, index: -1 },
+    );
+
+    // Once we have the segment which is "closest" to the center, we place the label
+    // with respect to it
+    const centermostSegment = pathSegments.value[centermostPathSegmentIndex];
+
+    return getLabelPosition(centermostSegment.start, centermostSegment.end, {
+      x: 0,
+      y: 0,
+    });
+  }
+
+  const offset = isConnectionAffectedByDrag.value
+    ? movePreviewDelta.value
+    : { x: 0, y: 0 };
+
+  return getLabelPosition(
+    { x: startX, y: startY },
+    { x: endX, y: endY },
+    offset,
+  );
+});
 </script>
 
 <template>

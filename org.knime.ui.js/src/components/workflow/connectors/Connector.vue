@@ -4,65 +4,18 @@ import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import { useConnectorPosition } from "@/composables/useConnectorPosition";
 import { getMetaOrCtrlKey } from "@/util/navigator";
 import { getBendpointId } from "@/util/connectorUtil";
 
-import type { PathSegment } from "./types";
 import { useConnectionReplacement } from "./useConnectionReplacement";
 import ConnectorPathSegment from "./ConnectorPathSegment.vue";
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
-
-interface Props {
-  /**
-   * Connector id
-   */
-  id: string;
-  /**
-   * Node ID of the connector's source node
-   */
-  sourceNode?: string | null;
-  /**
-   * Index of the source node's output port that this connector is attached to
-   */
-  sourcePort?: number | null;
-  /**
-   * Node ID of the connector's target node
-   */
-  destNode?: string | null;
-  /**
-   * Index of the target node's input port that this connector is attached to
-   */
-  destPort?: number | null;
-  /**
-   * If either destNode or sourceNode is unspecified the connector will be drawn up to this point
-   */
-  absolutePoint?: [number, number];
-  /**
-   * Determines whether the connection can be deleted
-   */
-  allowedActions: { canDelete: boolean };
-  /**
-   * Determines whether this connector is streamed at the moment
-   */
-  streaming?: boolean;
-  /**
-   * Determines whether this connector is rendered in alternative color
-   */
-  flowVariableConnection?: boolean;
-  /**
-   * Whether the connector can be interacted with or not
-   */
-  interactive?: boolean;
-  /**
-   * List of coordinates of this connector's bendpoints
-   */
-  bendpoints?: Array<XY>;
-}
+import { useConnectorPathSegments } from "./useConnectorPathSegments";
+import type { ConnectorProps } from "./types";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<ConnectorProps>(), {
   sourceNode: null,
   sourcePort: null,
   destNode: null,
@@ -77,7 +30,6 @@ const suggestDelete = ref(false);
 
 const isHovered = ref(false);
 const isDragging = computed(() => store.state.workflow.isDragging);
-const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
 
 const isNodeSelected = computed(
   () => store.getters["selection/isNodeSelected"],
@@ -89,93 +41,24 @@ const isBendpointSelected = computed(
   () => store.getters["selection/isBendpointSelected"],
 );
 
-const { sourceNode, sourcePort, destNode, destPort, id, absolutePoint } =
-  toRefs(props);
+const {
+  sourceNode,
+  sourcePort,
+  destNode,
+  destPort,
+  id,
+  absolutePoint,
+  bendpoints,
+} = toRefs(props);
 
-const { start: startSegmentPosition, end: endSegmentPosition } =
-  useConnectorPosition({
-    sourceNode,
-    destNode,
-    sourcePort,
-    destPort,
-    absolutePoint,
-  });
-
-const pathSegments = computed<Array<PathSegment>>(() => {
-  let x1 = startSegmentPosition.value.at(0);
-  let y1 = startSegmentPosition.value.at(1);
-  let x2 = endSegmentPosition.value.at(0);
-  let y2 = endSegmentPosition.value.at(1);
-
-  // Update position of source or destination node is being moved
-  if (isDragging.value) {
-    if (isNodeSelected.value(props.sourceNode)) {
-      x1 += movePreviewDelta.value.x;
-      y1 += movePreviewDelta.value.y;
-    }
-    if (isNodeSelected.value(props.destNode)) {
-      x2 += movePreviewDelta.value.x;
-      y2 += movePreviewDelta.value.y;
-    }
-  }
-
-  // when there are no bendpoints or we have an absolutePoint means we should
-  // treat this connector as a single unsegmented path
-  if (props.bendpoints.length === 0 || props.absolutePoint) {
-    return [
-      {
-        isStart: true,
-        isEnd: true,
-        start: { x: x1, y: y1 },
-        end: { x: x2, y: y2 },
-      },
-    ];
-  }
-
-  // include the "start" and "end" coordinates as points
-  const allPoints: Array<XY> = [
-    { x: x1, y: y1 },
-    ...props.bendpoints,
-    { x: x2, y: y2 },
-  ];
-
-  const segments: Array<PathSegment> = [];
-  // then create all the segments in-between those points
-  for (let i = 0; i < allPoints.length - 1; i++) {
-    const isStart = i === 0;
-    const isEnd = i + 1 === allPoints.length - 1;
-
-    const start = allPoints[i];
-    const end = allPoints[i + 1];
-
-    // when a given bendpoint is being dragged,
-    // we need to adjust the "start" of the current path segment's position
-    const startWithDelta: XY =
-      !isStart && isBendpointSelected.value(getBendpointId(props.id, i - 1))
-        ? {
-            x: start.x + movePreviewDelta.value.x,
-            y: start.y + movePreviewDelta.value.y,
-          }
-        : start;
-
-    // and we also need to adjust the "end" of the previous path segment
-    const endWithDelta: XY =
-      !isEnd && isBendpointSelected.value(getBendpointId(props.id, i))
-        ? {
-            x: end.x + movePreviewDelta.value.x,
-            y: end.y + movePreviewDelta.value.y,
-          }
-        : end;
-
-    segments.push({
-      start: startWithDelta,
-      end: endWithDelta,
-      isStart,
-      isEnd,
-    });
-  }
-
-  return segments;
+const { pathSegments } = useConnectorPathSegments({
+  id: props.id,
+  sourceNode,
+  destNode,
+  sourcePort,
+  destPort,
+  absolutePoint,
+  bendpoints,
 });
 
 const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
@@ -276,13 +159,13 @@ const onBendpointPointerdown = (
 
   const onUp = () => {
     eventTarget.releasePointerCapture(event.pointerId);
-    store.dispatch("workflow/moveBendpoints");
-    event.target.removeEventListener("pointermove", onMove);
-    event.target.removeEventListener("pointerup", onUp);
+    store.dispatch("workflow/moveObjects");
+    eventTarget.removeEventListener("pointermove", onMove);
+    eventTarget.removeEventListener("pointerup", onUp);
   };
 
-  event.target.addEventListener("pointermove", onMove);
-  event.target.addEventListener("pointerup", onUp);
+  eventTarget.addEventListener("pointermove", onMove);
+  eventTarget.addEventListener("pointerup", onUp);
 };
 
 watch(
