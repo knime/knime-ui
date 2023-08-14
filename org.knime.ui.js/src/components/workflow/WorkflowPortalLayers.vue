@@ -9,13 +9,13 @@
   <!-- Node Selection Plane Layer -->
   <PortalTarget tag="g" name="node-select" />
 
-  <!-- Connectors Layer -->
-  <slot name="connector" />
-
   <!-- Metanode Port Bars (Inside of Metanodes) -->
   <slot name="metaNodePortBars" />
 
   <slot name="nodes" />
+
+  <!-- Connectors Layer -->
+  <slot name="connector" />
 
   <!-- Editor Layer; only one editor is open at a time -->
   <PortalTarget tag="g" name="node-text-editor" />
