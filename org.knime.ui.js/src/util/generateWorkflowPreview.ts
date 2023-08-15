@@ -132,14 +132,11 @@ const getSVGElementClone = (
 };
 
 interface EdgeObject {
-  dimension: {
-    width: number;
-    height: number;
-  };
-  position: {
-    x: number;
-    y: number;
-  };
+  nodeId: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 /**
@@ -155,9 +152,9 @@ const updateViewBox = (
   svgClone: SVGSVGElement,
   workflowSheet: HTMLElement,
   edges: {
-    bottomEdge: EdgeObject;
-    rightEdge: EdgeObject;
-    leftEdge: EdgeObject;
+    maxX: EdgeObject;
+    minX: EdgeObject;
+    maxY: EdgeObject;
     length: number;
     annotationLength: number;
   }
@@ -168,37 +165,26 @@ const updateViewBox = (
   let height = parseInt(workflowSheet.getAttribute("height"), 10);
   const padding = 20;
   const nodeSize = 70;
-  const isNodeLabelHigher =
-    height + minY <
-    edges.bottomEdge.dimension.height + Math.abs(edges.bottomEdge.position.y);
-  const nodeLabelHeight =
-    edges.bottomEdge.dimension.height + (edges.bottomEdge.position.y - minY);
+  const isNodeLabelHigher = height + minY < edges.maxY.height + edges.maxY.y;
+  const nodeLabelHeight = edges.maxY.height + edges.maxY.y + nodeSize;
   const isNodeWithLabelOnLeftEdge =
-    minX === edges.rightEdge.position.x - nodeSize;
+    minX === edges.maxY.x - nodeSize || edges.minX.x - nodeSize;
 
   if (isNodeLabelHigher) {
-    height = nodeLabelHeight;
+    height = nodeLabelHeight - minY;
   }
 
   if (edges.length === 1) {
-    width =
-      edges.annotationLength >= 1
-        ? edges.leftEdge.dimension.width + width
-        : edges.leftEdge.dimension.width + padding;
-    minX =
-      edges.annotationLength >= 1
-        ? minX - edges.leftEdge.dimension.width / 2 - padding
-        : minX - edges.leftEdge.dimension.width / 2 + nodeSize;
-    height = edges.annotationLength >= 1 ? height : nodeLabelHeight + padding;
+    width = edges.minX.width + padding;
+    minX = minX - edges.minX.width / 2 + nodeSize;
     svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
     return;
   }
 
-  width = edges.leftEdge.dimension.width / 2 + width;
+  width = edges.minX.width / 2 + width;
 
   if (isNodeWithLabelOnLeftEdge && isNodeLabelHigher) {
-    height = nodeLabelHeight;
-    minX -= edges.leftEdge.dimension.width / 2;
+    minX -= edges.minX.width / 2;
   }
 
   svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
@@ -352,25 +338,51 @@ const addFontStyles = async (svgElement: SVGElement) => {
   svgElement.getElementsByTagName("defs")[0].appendChild(styleTag);
 };
 
-const findEdges = (nodesObject: Record<string, KnimeNode>) => {
-  const nodes = Object.values(nodesObject);
+const findEdges = (
+  nodesObject: Record<string, KnimeNode>,
+  svgClone: SVGSVGElement,
+) => {
+  const length = Object.values(nodesObject).length;
+  const annotationLength = svgClone.querySelectorAll(".annotation").length;
+
+  if (length === 0) {
+    return { minX: null, maxX: null, maxY: null, length, annotationLength };
+  }
+
+  const nodes = Object.values(nodesObject).map((node) => {
+    const nodeSize = 90;
+    const nodeLabelElement = svgClone.querySelector(
+      `[data-node-id="${node.id}"] .node-label-text-container`,
+    );
+
+    return {
+      nodeId: node.id,
+      x: node.position.x,
+      y: node.position.y,
+      width: nodeLabelElement
+        ? parseInt(nodeLabelElement.getAttribute("width"), 10)
+        : nodeSize,
+      height: nodeLabelElement
+        ? parseInt(nodeLabelElement.getAttribute("height"), 10)
+        : nodeSize,
+    };
+  });
 
   const { minX, maxX, maxY } = nodes.reduce(
-    (result, node) => {
-      if (!node.annotation) {
-        return result;
+    (acc, node) => {
+      if (node.x - node.width / 2 < acc.minX.x - acc.minX.width / 2) {
+        acc.minX = node;
       }
 
-      if (node.position.x < result.minX.position.x) {
-        result.minX = node;
+      if (node.x + node.width / 2 > acc.maxX.x + acc.maxX.width / 2) {
+        acc.maxX = node;
       }
-      if (node.position.x > result.maxX.position.x) {
-        result.maxX = node;
+
+      if (node.y + node.height > acc.maxY.y + acc.maxY.height) {
+        acc.maxY = node;
       }
-      if (node.position.y > result.maxY.position.y) {
-        result.maxY = node;
-      }
-      return result;
+
+      return acc;
     },
     {
       minX: nodes[0], // left edge
@@ -379,7 +391,7 @@ const findEdges = (nodesObject: Record<string, KnimeNode>) => {
     }
   );
 
-  return { minX, maxX, maxY };
+  return { minX, maxX, maxY, length, annotationLength };
 };
 
 /**
@@ -414,13 +426,7 @@ export const generateWorkflowPreview = async (
     ".workflow-sheet"
   ) as HTMLElement;
 
-  const edges = nodes
-    ? findEdges(nodes)
-    : {
-        minX: { id: null, position: { x: null, y: null } },
-        maxY: { id: null, position: { x: null, y: null } },
-        maxX: { id: null, position: { x: null, y: null } },
-      };
+  const edges = findEdges(nodes, svgClone);
 
   // inline custom fonts to the svg element clone
   await addFontStyles(svgClone);
@@ -429,28 +435,7 @@ export const generateWorkflowPreview = async (
   setElementFill(workflowSheet, "transparent");
 
   // Set the viewbox to only the visible content
-  updateViewBox(svgClone, workflowSheet, {
-    rightEdge: {
-      dimension: svgClone
-        .querySelector(`[data-node-id="${edges.maxX.id}"]`)
-        .getBoundingClientRect(),
-      position: edges.maxX.position,
-    },
-    leftEdge: {
-      dimension: svgClone
-        .querySelector(`[data-node-id="${edges.minX.id}"]`)
-        .getBoundingClientRect(),
-      position: edges.minX.position,
-    },
-    bottomEdge: {
-      dimension: svgClone
-        .querySelector(`[data-node-id="${edges.maxY.id}"]`)
-        .getBoundingClientRect(),
-      position: edges.maxY.position,
-    },
-    length: nodes ? Object.keys(nodes).length : 0,
-    annotationLength: svgClone.querySelectorAll(".annotation").length,
-  });
+  updateViewBox(svgClone, workflowSheet, edges);
 
   // remove all portal-targets
   removeElements(svgClone.querySelectorAll("[data-portal-target]"));
