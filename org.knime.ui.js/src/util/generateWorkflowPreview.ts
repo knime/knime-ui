@@ -168,23 +168,30 @@ const updateViewBox = (
   const isNodeLabelHigher = height + minY < edges.maxY.height + edges.maxY.y;
   const nodeLabelHeight = edges.maxY.height + edges.maxY.y + nodeSize;
   const isNodeWithLabelOnLeftEdge =
-    minX === edges.maxY.x - nodeSize || edges.minX.x - nodeSize;
+    minX === edges.maxY.x - nodeSize || minX === edges.minX.x - nodeSize;
+  const isThereAnnotation = edges.annotationLength >= 1;
 
   if (isNodeLabelHigher) {
     height = nodeLabelHeight - minY;
   }
 
-  if (edges.length === 1) {
-    width = edges.minX.width + padding;
-    minX = minX - edges.minX.width / 2 + nodeSize;
+  width = edges.maxX.width / 2 + width;
+
+  if (isNodeWithLabelOnLeftEdge) {
+    width = edges.minX.width / 2 + width;
+    minX -= edges.minX.width / 2;
     svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
     return;
   }
 
-  width = edges.minX.width / 2 + width;
+  if (edges.length === 1) {
+    width = isThereAnnotation
+      ? edges.minX.width / 2 + width
+      : edges.minX.width + padding;
+    minX = isThereAnnotation ? minX : minX - edges.minX.width / 2 + nodeSize;
 
-  if (isNodeWithLabelOnLeftEdge && isNodeLabelHigher) {
-    minX -= edges.minX.width / 2;
+    svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
+    return;
   }
 
   svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
