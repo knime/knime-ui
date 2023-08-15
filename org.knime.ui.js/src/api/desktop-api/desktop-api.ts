@@ -170,7 +170,7 @@ export const openPortView = ({
   callBrowserFunction(
     window.openPortView,
     [projectId, nodeId, portIndex, viewIndex],
-    "TODO",
+    `Could not open detached view for node ${nodeId} and port #${portIndex}`,
     false,
   );
 };

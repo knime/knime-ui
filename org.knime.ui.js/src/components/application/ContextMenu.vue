@@ -5,14 +5,14 @@ import { mapGetters, mapState } from "vuex";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
-import type { PortViews, XY } from "@/api/gateway-api/generated-api";
-import type { ShortcutName } from "@/shortcuts";
-import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
-import { toPortObject } from "@/util/portDataMapper";
-import { mapPortViewDescriptorsToItems } from "@/util/mapPortViewDescriptorsToItems";
-import { getNodeStateForPortIndex } from "@/util/nodeUtil";
 import { API } from "@api";
+import type { PortViews, XY } from "@/api/gateway-api/generated-api";
+import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
+import type { ShortcutName } from "@/shortcuts";
+import { toPortObject } from "@/util/portDataMapper";
+import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
+import { getNodeState } from "@/util/nodeUtil";
+import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
@@ -66,6 +66,21 @@ const filterItemVisibility = <T,>(item: T, isVisible: boolean) => {
     return [];
   }
   return [item];
+};
+
+const buildPortNameAndIndex = (portName: string, portIndex: number) => {
+  return portIndex > 0 ? `${portIndex}: ${portName}` : portName;
+};
+
+const buildPortViewText = (
+  portName: string,
+  portIndex: number,
+  portViewText: string,
+  hasMultipleViewItems: boolean,
+) => {
+  return hasMultipleViewItems
+    ? portViewText
+    : `${buildPortNameAndIndex(portName, portIndex)} – ${portViewText}`;
 };
 
 /**
@@ -186,67 +201,63 @@ export default defineComponent({
         (port) => toPortObject(this.availablePortTypes)(port).views,
       );
 
-      const mapFullPortToItem = (
-        portViewData: PortViews,
-        portIndex: number,
-      ) => {
-        const portViewItems = mapPortViewDescriptorsToItems(
-          portViewData,
-          getNodeStateForPortIndex(node, portIndex),
-        );
+      return allOutPortViewData.flatMap(
+        (portViewData: PortViews, portIndex: number) => {
+          const isDefaultFlowVariablePort = portIndex === 0;
+          if (
+            getNodeState(node, portIndex) !== "EXECUTED" &&
+            !isDefaultFlowVariablePort
+          ) {
+            return [];
+          }
 
-        const hasMultipleViewItems = portViewItems.length > 1;
-
-        const buildPortNameAndIndex = (portName, portIndex) => {
-          return portIndex > 0 ? `${portIndex}: ${portName}` : portName;
-        };
-
-        const buildPortViewText = (portName, portIndex, portViewText) => {
-          return hasMultipleViewItems
-            ? portViewText
-            : `${buildPortNameAndIndex(portName, portIndex)} – ${portViewText}`;
-        };
-
-        let mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
-          text: buildPortViewText(
-            node.outPorts[portIndex].name,
+          const portViewItems = getPortViewByViewDescriptors(
+            portViewData,
+            node,
             portIndex,
-            item.text,
-          ),
-          disabled: item.disabled,
-          metadata: {
-            handler: () => {
-              API.desktop.openPortView({
-                projectId: this.projectId,
-                nodeId,
-                portIndex,
-                viewIndex: Number(item.id),
-              });
-            },
-          },
-        }));
+          );
 
-        if (mappedPortViewItems.length > 1) {
-          const headline: MenuItem = {
-            text: buildPortNameAndIndex(
+          let mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
+            text: buildPortViewText(
               node.outPorts[portIndex].name,
               portIndex,
+              item.text,
+              portViewItems.length > 1,
             ),
-            icon: markRaw(portIcon(node.outPorts[portIndex], portIconSize)),
-            separator: true,
-            sectionHeadline: true,
-          };
+            disabled: item.disabled,
+            metadata: {
+              handler: () => {
+                API.desktop.openPortView({
+                  projectId: this.projectId,
+                  nodeId,
+                  portIndex,
+                  viewIndex: Number(item.id),
+                });
+              },
+            },
+          }));
 
-          mappedPortViewItems = [headline, ...mappedPortViewItems];
-        } else if (mappedPortViewItems.length === 1) {
-          mappedPortViewItems[0].icon = markRaw(
-            portIcon(node.outPorts[portIndex], portIconSize),
-          );
-        }
-        return mappedPortViewItems;
-      };
+          if (mappedPortViewItems.length > 1) {
+            const headline: MenuItem = {
+              text: buildPortNameAndIndex(
+                node.outPorts[portIndex].name,
+                portIndex,
+              ),
+              icon: markRaw(portIcon(node.outPorts[portIndex], portIconSize)),
+              sectionHeadline: true,
+              separator: true,
+            };
 
-      return allOutPortViewData.flatMap(mapFullPortToItem);
+            mappedPortViewItems = [headline, ...mappedPortViewItems];
+          } else if (mappedPortViewItems.length === 1) {
+            mappedPortViewItems[0].icon = markRaw(
+              portIcon(node.outPorts[portIndex], portIconSize),
+            );
+          }
+
+          return mappedPortViewItems;
+        },
+      );
     },
     setMenuItems() {
       const areNodesSelected = this.selectedNodes.length > 0;
@@ -431,7 +442,6 @@ export default defineComponent({
   max-width: 320px;
 
   & :deep(.list-item.section-headline) {
-    font-size: 12px;
     color: var(--knime-masala);
   }
 }

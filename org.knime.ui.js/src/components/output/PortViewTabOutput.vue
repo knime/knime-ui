@@ -1,15 +1,15 @@
 <script lang="ts">
-/* eslint-disable valid-jsdoc */
-/* eslint-disable object-curly-newline  */
 import { defineComponent, type PropType } from "vue";
 
 import PlayIcon from "@/assets/execute.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
+import { API } from "@api";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
 import type { ViewStateChangeEvent } from "@/components/embeddedViews/ViewLoader.vue";
 import { toPortObject } from "@/util/portDataMapper";
+import { canExecute } from "@/util/nodeUtil";
 
 import {
   buildMiddleware,
@@ -21,9 +21,7 @@ import {
   type ValidationResult,
 } from "./output-validator";
 
-import { canExecute, getNodeStateForPortIndex } from "@/util/nodeUtil";
 import PortViewTabToggles from "./PortViewTabToggles.vue";
-import { API } from "@api";
 
 /**
  * Runs a set of validations that qualify whether a port from a node is able
@@ -169,13 +167,6 @@ export default defineComponent({
       return this.fullPortObject.views;
     },
 
-    currentNodeState(): "configured" | "executed" {
-      return getNodeStateForPortIndex(
-        this.selectedNode,
-        this.selectedPortIndex,
-      );
-    },
-
     shouldShowExecuteAction() {
       if (this.validationError && !this.hasNoDataValidationError) {
         return false;
@@ -250,7 +241,8 @@ export default defineComponent({
 <template>
   <PortViewTabToggles
     v-if="!validationError"
-    :current-node-state="currentNodeState"
+    :selected-node="selectedNode"
+    :selected-port-index="selectedPortIndex"
     :unique-port-key="uniquePortKey"
     :view-descriptors="portViews.descriptors"
     :view-descriptor-mapping="portViews.descriptorMapping"

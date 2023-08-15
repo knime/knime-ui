@@ -1,14 +1,16 @@
 <script lang="ts">
-import type {
-  PortViewDescriptor,
-  PortViewDescriptorMapping,
-} from "@/api/gateway-api/generated-api";
 import { defineComponent, type PropType } from "vue";
-import { mapPortViewDescriptorsToItems } from "@/util/mapPortViewDescriptorsToItems";
 
 import OpenInNewWindowIcon from "webapps-common/ui/assets/img/icons/open-in-new-window.svg";
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
 import Button from "webapps-common/ui/components/Button.vue";
+
+import type {
+  PortViewDescriptor,
+  PortViewDescriptorMapping,
+} from "@/api/gateway-api/generated-api";
+import type { KnimeNode } from "@/api/custom-types";
+import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 
 interface ComponentData {
   activeView: number | null;
@@ -38,8 +40,13 @@ export default defineComponent({
       required: true,
     },
 
-    currentNodeState: {
-      type: String as PropType<"configured" | "executed">,
+    selectedNode: {
+      type: Object as PropType<KnimeNode>,
+      required: true,
+    },
+
+    selectedPortIndex: {
+      type: Number,
       required: true,
     },
   },
@@ -58,12 +65,13 @@ export default defineComponent({
 
   computed: {
     tabToggles() {
-      return mapPortViewDescriptorsToItems(
+      return getPortViewByViewDescriptors(
         {
           descriptors: this.viewDescriptors,
           descriptorMapping: this.viewDescriptorMapping,
         },
-        this.currentNodeState,
+        this.selectedNode,
+        this.selectedPortIndex,
       );
     },
   },
@@ -123,7 +131,7 @@ export default defineComponent({
       with-border
       class="fallback-open-window"
       title="Open port view in new window"
-      @click="openInNewWindow"
+      @click="openInNewWindow(null)"
     >
       <OpenInNewWindowIcon />
       <span>Open in new window</span>

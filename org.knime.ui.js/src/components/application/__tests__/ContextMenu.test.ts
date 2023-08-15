@@ -10,10 +10,11 @@ import {
   createNativeNode,
   createWorkflow,
 } from "@/test/factories";
+import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import type { AllowedWorkflowActions } from "@/api/gateway-api/generated-api";
+import { PortType } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 
-import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import type { ShortcutName } from "@/shortcuts";
 import { createShortcutsService } from "@/plugins/shortcuts";
@@ -22,7 +23,6 @@ import * as selectionStore from "@/store/selection";
 import * as canvasStore from "@/store/canvas";
 
 import ContextMenu from "../ContextMenu.vue";
-import { PortType } from "@/api/gateway-api/generated-api";
 
 describe("ContextMenu.vue", () => {
   const createStore = (
