@@ -12,6 +12,7 @@ type BrowserFunctionDescriptor = {
 
 const browserFunctions: BrowserFunctionDescriptor[] = [
   { name: "switchToJavaUI" },
+  { name: "switchWorkspace" },
   { name: "openAboutDialog" },
   { name: "openUpdateDialog" },
   { name: "openUrlInExternalBrowser", params: [["url", "http://www.url.com"]] },

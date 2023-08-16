@@ -60,6 +60,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.internal.ide.actions.OpenWorkspaceAction;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.ui.workflowcoach.data.NodeTripleProviderFactory;
 import org.knime.core.webui.WebUIUtil;
@@ -208,6 +209,15 @@ final class EclipseUIAPI {
             // should never happen
             throw new RuntimeException(e); // NOSONAR
         }
+    }
+
+    /**
+     * Function that opens the dialog to switch workspace.
+     */
+    @API
+    static void switchWorkspace() { // NOSONAR
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        new OpenWorkspaceAction(window).run();
     }
 
     /**

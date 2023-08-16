@@ -31,6 +31,10 @@ export default defineComponent({
       API.desktop.switchToJavaUI();
     },
 
+    switchWorkspace() {
+      API.desktop.switchWorkspace();
+    },
+
     openAboutDialog() {
       API.desktop.openAboutDialog();
     },
@@ -175,6 +179,26 @@ export default defineComponent({
           </p>
           <Button with-border @click="switchToJavaUI">
             <strong>Switch to KNIME classic user interface</strong>
+          </Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workspace switch section -->
+    <section>
+      <div class="grid-container">
+        <div class="grid-item-3 category">
+          <SphereIcon />
+          <h3>Switch workspace</h3>
+        </div>
+
+        <div class="grid-item-9 body">
+          <p>
+            Switch workspace to access KNIME workflows and data produced by your
+            workflows stored in a different folder on your computer.
+          </p>
+          <Button with-border @click="switchWorkspace">
+            <strong>Switch workspace</strong>
           </Button>
         </div>
       </div>

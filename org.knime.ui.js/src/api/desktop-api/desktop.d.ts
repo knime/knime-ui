@@ -1,4 +1,5 @@
 declare function switchToJavaUI(): void;
+declare function switchWorkspace(): void;
 declare function openAboutDialog(): void;
 declare function openUpdateDialog(): void;
 declare function openUrlInExternalBrowser(url: string): void;

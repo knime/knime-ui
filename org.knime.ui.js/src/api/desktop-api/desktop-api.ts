@@ -49,6 +49,15 @@ export const switchToJavaUI = () => {
   );
 };
 
+export const switchWorkspace = () => {
+  callBrowserFunction(
+    window.switchWorkspace,
+    [],
+    "Could not switch workspace",
+    false,
+  );
+};
+
 export const openAboutDialog = () => {
   callBrowserFunction(
     window.openAboutDialog,
