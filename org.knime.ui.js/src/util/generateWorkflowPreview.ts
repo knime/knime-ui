@@ -165,21 +165,26 @@ const updateViewBox = (
   let height = parseInt(workflowSheet.getAttribute("height"), 10);
   const padding = 20;
   const nodeSize = 70;
-  const isNodeLabelHigher = height + minY <= edges.maxY.height;
+  const isNodeLabelHigher = height + minY <= edges.maxY.height + edges.maxY.y;
   const nodeLabelHeight = edges.maxY.height + edges.maxY.y + nodeSize;
   const isNodeWithLabelOnLeftEdge =
     minX === edges.maxY.x - nodeSize || minX === edges.minX.x - nodeSize;
   const isThereAnnotation = edges.annotationLength >= 1;
+  let initialMinX = minX;
 
   if (isNodeLabelHigher) {
     height = nodeLabelHeight - minY;
   }
 
-  width = edges.maxX.width / 2 + width;
+  if (width < edges.maxX.width / 2 + width) {
+    initialMinX = minX - edges.minX.x / 2;
+  }
+
+  width += edges.maxX.width / 2;
 
   if (isNodeWithLabelOnLeftEdge) {
-    width = edges.minX.width / 2 + width;
     minX -= edges.minX.width / 2;
+    width = edges.minX.width / 2 + width;
     svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
     return;
   }
@@ -194,6 +199,7 @@ const updateViewBox = (
     return;
   }
 
+  minX = initialMinX;
   svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
 };
 
