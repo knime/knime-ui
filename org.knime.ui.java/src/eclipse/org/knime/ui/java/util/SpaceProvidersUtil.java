@@ -53,6 +53,7 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 
@@ -78,14 +79,15 @@ public final class SpaceProvidersUtil {
         try {
             CompletableFuture.supplyAsync(() -> { // NOSONAR
                 var result = MAPPER.createObjectNode();
+                var type = spaceProviders.getType();
                 for (var sp : spaceProviders.getProvidersMap().values()) {
-                    var isLocalSpaceProvider = sp.isLocal();
+                    var isLocalSpaceProvider = type == TypeEnum.LOCAL;
                     var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
                     result.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
                         .put("name", sp.getName()) //
+                        .put("type", type.toString()) //
                         .put("connected", isLocalSpaceProvider || sp.getConnection(false).isPresent()) //
-                        .put("connectionMode", connectionMode) //
-                        .put("local", isLocalSpaceProvider));
+                        .put("connectionMode", connectionMode));
                 }
                 return MAPPER.createObjectNode().set("result", result);
             }) //
