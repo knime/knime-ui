@@ -6,7 +6,6 @@ import { loadAsyncComponent } from "webapps-common/ui/util/loadComponentLibrary"
 
 // At the moment this component has to be directly provided because no dynamic counterparts
 // that can be loaded exists. Eventually this view will also be loaded dynamically
-import FlowVariablePortView from "@/components/output/FlowVariablePortView.vue";
 import IFramePortView from "@/components/output/IFramePortView.vue";
 import ImagePortView from "@/components/output/ImagePortView.vue";
 import type { ViewConfig, ResourceInfo } from "@/api/custom-types";
@@ -35,7 +34,6 @@ let mostRecentlyLoadedViewKey = null;
  */
 export default defineComponent({
   components: {
-    FlowVariablePortView,
     ImagePortView,
     IFramePortView,
   },

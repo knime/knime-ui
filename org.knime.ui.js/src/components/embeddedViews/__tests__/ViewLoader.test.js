@@ -3,7 +3,6 @@ import * as Vue from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { loadAsyncComponent } from "webapps-common/ui/util/loadComponentLibrary";
-import FlowVariablePortView from "@/components/output/FlowVariablePortView.vue";
 import ViewLoader from "../ViewLoader.vue";
 
 vi.mock("webapps-common/ui/util/loadComponentLibrary", () => ({
@@ -219,20 +218,5 @@ describe("ViewLoader.vue", () => {
     expect(wrapper.findComponent({ name: "OtherComponent" }).exists()).toBe(
       true,
     );
-  });
-
-  it("should load views for component reference", async () => {
-    const viewConfigLoaderFn = vi.fn(() => ({
-      resourceInfo: {
-        id: "FlowVariablePortView",
-        type: "VUE_COMPONENT_REFERENCE",
-      },
-      initialData: JSON.stringify({ result: [] }),
-    }));
-    const wrapper = doMount({ viewConfigLoaderFn });
-
-    await flushRender();
-
-    expect(wrapper.findComponent(FlowVariablePortView).exists()).toBe(true);
   });
 });
