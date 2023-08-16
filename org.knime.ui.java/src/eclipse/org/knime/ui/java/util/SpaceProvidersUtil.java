@@ -79,8 +79,8 @@ public final class SpaceProvidersUtil {
         try {
             CompletableFuture.supplyAsync(() -> { // NOSONAR
                 var result = MAPPER.createObjectNode();
-                var type = spaceProviders.getType();
                 for (var sp : spaceProviders.getProvidersMap().values()) {
+                    var type = sp.getType();
                     var isLocalSpaceProvider = type == TypeEnum.LOCAL;
                     var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
                     result.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //

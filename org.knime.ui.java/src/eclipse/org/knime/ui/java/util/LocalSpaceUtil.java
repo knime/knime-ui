@@ -103,7 +103,7 @@ public final class LocalSpaceUtil {
 
             @Override
             public SpaceProviderEnt toEntity() {
-                return EntityFactory.Space.buildSpaceProviderEnt(null, List.of(localSpace.toEntity()));
+                return EntityFactory.Space.buildSpaceProviderEnt(SpaceProviderEnt.TypeEnum.LOCAL, List.of(localSpace.toEntity()));
             }
 
             @Override
