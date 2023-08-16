@@ -10,7 +10,6 @@ import PortViewLoader from "../PortViewLoader.vue";
 const mockedAPI = deepMocked(API);
 
 const RESOURCE_TYPES = {
-  VUE_COMPONENT_REFERENCE: "VUE_COMPONENT_REFERENCE",
   VUE_COMPONENT_LIB: "VUE_COMPONENT_LIB",
 };
 
@@ -127,27 +126,6 @@ describe("PortViewLoader.vue", () => {
           viewIdx: 2,
         }),
       );
-    });
-  });
-
-  it("should emit the port view state", async () => {
-    setupGetPortViewMock(
-      RESOURCE_TYPES.VUE_COMPONENT_REFERENCE,
-      "FlowVariablePortView",
-      [],
-    );
-    const wrapper = doMount();
-
-    expect(wrapper.emitted("stateChange")[0][0]).toEqual({
-      state: "loading",
-      portKey: "",
-    });
-
-    await flushRender();
-
-    expect(wrapper.emitted("stateChange")[1][0]).toEqual({
-      state: "ready",
-      portKey: "",
     });
   });
 });

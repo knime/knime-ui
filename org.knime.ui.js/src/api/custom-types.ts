@@ -25,7 +25,7 @@ export type NodePortGroups = Record<string, PortGroup>;
 // TODO: UIEXT-932 remove types once they can be generated automatically
 export type ResourceInfo = {
   id: string;
-  type: "VUE_COMPONENT_LIB" | "VUE_COMPONENT_REFERENCE" | "HTML";
+  type: "VUE_COMPONENT_LIB" | "HTML";
 };
 export type ViewConfig = {
   initialData: string;

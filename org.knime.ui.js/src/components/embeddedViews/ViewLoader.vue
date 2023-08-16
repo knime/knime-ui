@@ -157,8 +157,7 @@ export default defineComponent({
 
     /*
      * Renders a view dynamically based on the resource type inside the viewConfig object.
-     * Resources can be (for now) either:
-     * - Local component references (VUE_COMPONENT_REFERENCE)
+     * Resources can be (for now):
      * - Remote component library scripts (VUE_COMPONENT_LIB) fetched over the network
      */
     async renderDynamicViewComponent(viewConfig: ViewConfig) {
@@ -169,6 +168,8 @@ export default defineComponent({
       // set up component, if dynamically loaded
       if (viewConfig.resourceInfo.type === "VUE_COMPONENT_LIB") {
         await this.setupDynamicComponent(viewConfig);
+      } else {
+        throw new Error("unknown resoruce type");
       }
 
       // set initial data and component
