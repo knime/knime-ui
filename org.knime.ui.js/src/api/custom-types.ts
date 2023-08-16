@@ -7,6 +7,7 @@ import type {
   Space,
   ComponentNodeAndDescription,
   NodeDescription,
+  SpaceProvider as _SpaceProvider,
 } from "./gateway-api/generated-api";
 
 /**
@@ -41,13 +42,15 @@ export type FullSpacePath = SpaceProviderId & SpaceId & SpaceItemId;
 export interface SpaceUser {
   name: string;
 }
-export interface SpaceProvider {
+
+export interface SpaceProvider extends _SpaceProvider {
   id: string;
   name: string;
   connected: boolean;
   connectionMode: "AUTHENTICATED" | "ANONYMOUS" | "AUTOMATIC";
+  local: boolean;
+  spaces: Array<Space & { private: boolean }>;
   user?: SpaceUser;
-  spaces?: Array<Space & { private: boolean }>; // TODO: check type Space should contain private
 }
 
 export type ComponentMetadata = ComponentNodeAndDescription & NodeDescription;

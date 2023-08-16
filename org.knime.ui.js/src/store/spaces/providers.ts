@@ -99,8 +99,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       const connectedProviderIds = Object.values(spaceProviders)
         .filter(
           ({ connected, connectionMode }) =>
-            // skip loading local space
-            // id !== localRootProjectPath.spaceProviderId &&
             connected || connectionMode === "AUTOMATIC",
         )
         .map(({ id }) => id);
@@ -141,6 +139,18 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 };
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {
+  getProviderInfo: (state) => (projectId: string) => {
+    // spaces data has not been cached or providers are not yet loaded
+    if (!state.projectPath.hasOwnProperty(projectId) || !state.spaceProviders) {
+      return {};
+    }
+
+    const { spaceProviderId: activeSpaceProviderId } =
+      state.projectPath[projectId];
+
+    return state.spaceProviders[activeSpaceProviderId];
+  },
+
   getSpaceInfo: (state) => (projectId: string) => {
     // spaces data has not been cached or providers are not yet loaded
     if (!state.projectPath.hasOwnProperty(projectId) || !state.spaceProviders) {

@@ -43,6 +43,7 @@ export default {
   computed: {
     ...mapGetters("spaces", [
       "getSpaceInfo",
+      "getProviderInfo",
       "hasActiveHubSession",
       "selectionContainsFile",
     ]),
@@ -89,6 +90,7 @@ export default {
         this.$store.dispatch,
         this.projectId,
         this.selectedItemIds,
+        this.getProviderInfo(projectId),
       );
 
       const getHubActions = () => {

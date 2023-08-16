@@ -1,23 +1,26 @@
 <script lang="ts" setup>
+import { computed } from "vue";
+import { type Dispatch, useStore } from "vuex";
+
 import MenuItems, {
   type MenuItem,
 } from "webapps-common/ui/components/MenuItems.vue";
-
-import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
-import { SpaceItem } from "@/api/gateway-api/generated-api";
-import { computed } from "vue";
-import { type Dispatch, useStore } from "vuex";
-import type { RootStoreState } from "@/store/types";
 import DeleteIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import RenameIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import ExportIcon from "webapps-common/ui/assets/img/icons/export.svg";
+
+import { SpaceItem } from "@/api/gateway-api/generated-api";
+import type { RootStoreState } from "@/store/types";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
   buildOpenInHubMenuItem,
 } from "@/components/spaces/hubMenuItems";
+import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 
 const store = useStore<RootStoreState>();
+
+const getProviderInfo = computed(() => store.getters["spaces/getProviderInfo"]);
 
 interface Props {
   createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption;
@@ -41,6 +44,9 @@ const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
   // use file explorers default impl
   props.onItemClick(item);
 };
+
+const valueOrEmpty = <T,>(condition: boolean, value: T) =>
+  condition ? [value] : [];
 
 const fileExplorerContextMenuItems = computed(() => {
   const {
@@ -67,6 +73,7 @@ const fileExplorerContextMenuItems = computed(() => {
     store.dispatch,
     props.projectId,
     props.selectedItemIds,
+    getProviderInfo.value(props.projectId),
   );
 
   const uploadAndConnectToHub = buildHubUploadMenuItems(
@@ -120,28 +127,28 @@ const fileExplorerContextMenuItems = computed(() => {
 
   const contextMenuItems = [
     // hide rename for multiple selected items
-    ...(isMultipleSelectionActive
-      ? []
-      : [
-          createRenameOption(anchorItem, {
-            title: renameOptionTitle,
-            icon: RenameIcon,
-          }),
-        ]),
+    ...valueOrEmpty(
+      !isMultipleSelectionActive,
+      createRenameOption(anchorItem, {
+        title: renameOptionTitle,
+        icon: RenameIcon,
+      }),
+    ),
 
     createDeleteOption(anchorItem, {
       title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
       icon: DeleteIcon,
     }),
-    ...(isLocal
-      ? [
-          createExportItemOption(
-            store.dispatch,
-            props.projectId,
-            props.selectedItemIds,
-          ),
-        ]
-      : []),
+
+    ...valueOrEmpty(
+      isLocal,
+      createExportItemOption(
+        store.dispatch,
+        props.projectId,
+        props.selectedItemIds,
+      ),
+    ),
+
     ...getHubActions(),
   ];
 
