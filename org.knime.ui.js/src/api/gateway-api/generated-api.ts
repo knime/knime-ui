@@ -4070,6 +4070,38 @@ const space = function(rpcClient: RPCClient) {
            return rpcClient.call('SpaceService.getSpaceProvider', { ...defaultParams, ...params });
         },
         /**
+         * Lists the available jobs for the given workflow.
+         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} spaceProviderId Identifies a space-provider.
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listJobsForWorkflow(
+        	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
+        ): Promise<Array<any>> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('SpaceService.listJobsForWorkflow', { ...defaultParams, ...params });
+        },
+        /**
+         * Lists the available schedules for the given workflow.
+         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} spaceProviderId Identifies a space-provider.
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listSchedulesForWorkflow(
+        	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
+        ): Promise<Array<any>> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('SpaceService.listSchedulesForWorkflow', { ...defaultParams, ...params });
+        },
+        /**
          * Get shallow list of workflows, components and data-files within a given workflow group.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
