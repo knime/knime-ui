@@ -185,7 +185,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
 
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("10 20 475 -960");
+    expect(outputEl.getAttribute("viewBox")).toBe("950 20 475 200");
   });
 
   it("should set the correct viewbox for single node", async () => {
@@ -215,7 +215,7 @@ describe("generateWorkflowPreview", () => {
     });
 
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("-295 20 770 -960");
+    expect(outputEl.getAttribute("viewBox")).toBe("-295 20 770 200");
   });
 
   it("should set the correct viewbox for node with label on left", async () => {
@@ -255,7 +255,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
 
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("10 20 135 200");
+    expect(outputEl.getAttribute("viewBox")).toBe("950 20 135 200");
   });
 
   it("should set the correct viewbox for no nodes", async () => {
