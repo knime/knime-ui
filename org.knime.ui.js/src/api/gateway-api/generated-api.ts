@@ -850,12 +850,6 @@ export interface Connection {
      * @memberof Connection
      */
     allowedActions?: AllowedConnectionActions;
-    /**
-     * List of bendpoint coordinates.
-     * @type {Array<XY>}
-     * @memberof Connection
-     */
-    bendpoints?: Array<XY>;
 
 }
 
@@ -3550,11 +3544,11 @@ export interface WorkflowInfo {
      */
     linked?: boolean;
     /**
-     * Original location of the workflow. If local, this property is absent.
+     * Type of the surrounding space&#39;s provider.
      * @type {string}
      * @memberof WorkflowInfo
      */
-    remoteLocation?: WorkflowInfo.RemoteLocationEnum;
+    providerType?: WorkflowInfo.ProviderTypeEnum;
     /**
      *
      * @type {JobManager}
@@ -3583,7 +3577,8 @@ export namespace WorkflowInfo {
      * @export
      * @enum {string}
      */
-    export enum RemoteLocationEnum {
+    export enum ProviderTypeEnum {
+        LOCAL = 'LOCAL',
         HUB = 'HUB',
         SERVER = 'SERVER'
     }
