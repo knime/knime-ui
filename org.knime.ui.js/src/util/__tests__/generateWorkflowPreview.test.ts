@@ -133,9 +133,12 @@ describe("generateWorkflowPreview", () => {
     svg.appendChild(foreignObject);
 
     // add nodes
-    Object.values(nodes).forEach((node) => {
+    Object.values(nodes).forEach((node, i) => {
+      const width = [750, 70, 70];
+      const height = [250, 70, 70];
       const n = document.createElementNS(svgNS, "div");
       n.setAttribute("data-node-id", node.id);
+      n.innerHTML = `<foreignObject class='node-label-text-container' width=${width[i]} height=${height[i]}></foreignObject>`;
       svg.appendChild(n);
     });
 
@@ -182,7 +185,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
 
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 -1280");
+    expect(outputEl.getAttribute("viewBox")).toBe("10 20 475 -960");
   });
 
   it("should set the correct viewbox for single node", async () => {
@@ -212,7 +215,7 @@ describe("generateWorkflowPreview", () => {
     });
 
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("80 20 20 -1260");
+    expect(outputEl.getAttribute("viewBox")).toBe("-295 20 770 -960");
   });
 
   it("should set the correct viewbox for node with label on left", async () => {
@@ -252,7 +255,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false, nodes);
 
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 -1535");
+    expect(outputEl.getAttribute("viewBox")).toBe("10 20 135 200");
   });
 
   it("should set the correct viewbox for no nodes", async () => {

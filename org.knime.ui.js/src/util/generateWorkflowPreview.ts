@@ -165,7 +165,7 @@ const updateViewBox = (
   let height = parseInt(workflowSheet.getAttribute("height"), 10);
   const padding = 20;
   const nodeSize = 70;
-  const isNodeLabelHigher = height + minY < edges.maxY.height + edges.maxY.y;
+  const isNodeLabelHigher = height + minY <= edges.maxY.height;
   const nodeLabelHeight = edges.maxY.height + edges.maxY.y + nodeSize;
   const isNodeWithLabelOnLeftEdge =
     minX === edges.maxY.x - nodeSize || minX === edges.minX.x - nodeSize;
@@ -349,13 +349,19 @@ const findEdges = (
   nodesObject: Record<string, KnimeNode>,
   svgClone: SVGSVGElement,
 ) => {
-  const length = Object.values(nodesObject).length;
   const annotationLength = svgClone.querySelectorAll(".annotation").length;
 
-  if (length === 0) {
-    return { minX: null, maxX: null, maxY: null, length, annotationLength };
+  if (!nodesObject) {
+    return {
+      minX: { nodeId: null, x: null, y: null, width: null, height: null },
+      maxX: { nodeId: null, x: null, y: null, width: null, height: null },
+      maxY: { nodeId: null, x: null, y: null, width: null, height: null },
+      length: 0,
+      annotationLength,
+    };
   }
 
+  const length = Object.values(nodesObject).length;
   const nodes = Object.values(nodesObject).map((node) => {
     const nodeSize = 90;
     const nodeLabelElement = svgClone.querySelector(
