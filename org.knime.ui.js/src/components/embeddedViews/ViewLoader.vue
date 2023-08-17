@@ -140,14 +140,19 @@ export default defineComponent({
           return;
         }
 
-        if (viewConfig.resourceInfo.type === "HTML") {
+        const resourceType = viewConfig.resourceInfo.type;
+        if (resourceType === "HTML") {
           this.initialData = {
             src: this.resourceLocationResolver(viewConfig),
             style: viewConfig.iframeStyle,
           };
           this.componentName = "IFramePortView";
+        } else if (resourceType === "VUE_COMPONENT_LIB") {
+          this.componentName = await this.renderDynamicViewComponent(
+            viewConfig,
+          );
         } else {
-          await this.renderDynamicViewComponent(viewConfig);
+          throw new Error("unknown resource type");
         }
         this.$emit("stateChange", { state: "ready", portKey });
       } catch (e) {
@@ -156,9 +161,7 @@ export default defineComponent({
     },
 
     /*
-     * Renders a view dynamically based on the resource type inside the viewConfig object.
-     * Resources can be (for now):
-     * - Remote component library scripts (VUE_COMPONENT_LIB) fetched over the network
+     * Renders a view dynamically by fetching the component library script over the network.
      */
     async renderDynamicViewComponent(viewConfig: ViewConfig) {
       // create knime service and update provide/inject
@@ -166,18 +169,13 @@ export default defineComponent({
       this.getKnimeService = () => knimeService;
 
       // set up component, if dynamically loaded
-      if (viewConfig.resourceInfo.type === "VUE_COMPONENT_LIB") {
-        await this.setupDynamicComponent(viewConfig);
-      } else {
-        throw new Error("unknown resoruce type");
-      }
+      await this.setupDynamicComponent(viewConfig);
 
       // set initial data and component
       if (viewConfig.initialData) {
         this.initialData = JSON.parse(viewConfig.initialData).result;
       }
-      this.componentName =
-        this.overrideComponentName || viewConfig.resourceInfo.id;
+      return this.overrideComponentName || viewConfig.resourceInfo.id;
     },
 
     /**
