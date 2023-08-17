@@ -197,9 +197,10 @@ export default defineComponent({
       }
 
       const nodeId = node.id;
-      const allOutPortViewData = node.outPorts.map(
-        (port) => toPortObject(this.availablePortTypes)(port).views,
-      );
+      const allOutPortViewData = node.outPorts
+        .map((port) => toPortObject(this.availablePortTypes)(port).views)
+        // remove ports that don't have a supported viewer
+        .filter(Boolean);
 
       return allOutPortViewData.flatMap(
         (portViewData: PortViews, portIndex: number) => {
