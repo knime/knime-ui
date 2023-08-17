@@ -2,7 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { isEqual } from "lodash";
 
 import { API } from "@api";
-import type { Workflow } from "@/api/gateway-api/generated-api";
+import { WorkflowInfo, type Workflow } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 
 import {
@@ -319,7 +319,9 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
   },
 
   isRemoteWorkflow({ activeWorkflow }) {
-    return Boolean(activeWorkflow?.info.remoteLocation);
+    return Boolean(
+      activeWorkflow?.info.providerType !== WorkflowInfo.ProviderTypeEnum.LOCAL,
+    );
   },
 
   /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */

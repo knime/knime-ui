@@ -11,7 +11,7 @@ import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import type { RootStoreState } from "@/store/types";
-import type { SpaceProvider } from "@/api/custom-types";
+import type { SpaceProviderNS } from "@/api/custom-types";
 import type { Space } from "@/api/gateway-api/generated-api";
 
 interface Props {
@@ -60,7 +60,9 @@ const spacesDropdownData = computed((): MenuItem[] => {
   const activeSpacePath = store.state.spaces.projectPath[props.projectId];
   const spaceProviders = store.state.spaces.spaceProviders;
 
-  const providerHeadlineMenuItem = (provider: SpaceProvider): MenuItem => ({
+  const providerHeadlineMenuItem = (
+    provider: SpaceProviderNS.SpaceProvider,
+  ): MenuItem => ({
     text: provider.name,
     selected: false,
     sectionHeadline: true,
@@ -71,7 +73,7 @@ const spacesDropdownData = computed((): MenuItem[] => {
   });
 
   const spaceMenuItem =
-    (provider: SpaceProvider) =>
+    (provider: SpaceProviderNS.SpaceProvider) =>
     (space: Space): MenuItem => ({
       text:
         provider.local || space.owner === ""
@@ -92,7 +94,9 @@ const spacesDropdownData = computed((): MenuItem[] => {
       },
     });
 
-  const signInMenuItem = (provider: SpaceProvider): MenuItem => ({
+  const signInMenuItem = (
+    provider: SpaceProviderNS.SpaceProvider,
+  ): MenuItem => ({
     text: "Sign in",
     selected: false,
     sectionHeadline: false,

@@ -5,7 +5,7 @@ import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download
 import LinkExternal from "webapps-common/ui/assets/img/icons/link-external.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
-import type { SpaceProvider } from "@/api/custom-types";
+import type { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
 
 export type ActionMenuItem = MenuItem & {
@@ -41,7 +41,7 @@ export const buildHubUploadMenuItems = (
   hasActiveHubSession: boolean,
   projectId: string,
   selectedItems: string[],
-  spaceProviders: Record<string, SpaceProvider>,
+  spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
   // eslint-disable-next-line max-params
 ): ActionMenuItem[] => {
   const isSelectionEmpty = selectedItems.length === 0;
@@ -63,7 +63,7 @@ export const buildHubUploadMenuItems = (
   };
 
   const remoteSpaceProviders = Object.values(spaceProviders || {}).filter(
-    (provider) => provider.id !== "local",
+    (provider) => !provider.local,
   );
 
   const disconnectedSpaceProviders = remoteSpaceProviders.filter(
@@ -71,7 +71,7 @@ export const buildHubUploadMenuItems = (
   );
 
   const connectToHubItems = disconnectedSpaceProviders.map(
-    (provider: SpaceProvider) => ({
+    (provider: SpaceProviderNS.SpaceProvider) => ({
       id: `connectToHub-${provider.id}`,
       text: provider.name,
       execute: () => {
@@ -120,7 +120,7 @@ export const buildOpenInHubMenuItem = (
   dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
-  provider: SpaceProvider,
+  provider: SpaceProviderNS.SpaceProvider,
 ): ActionMenuItem => {
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;

@@ -205,7 +205,7 @@ describe("SpaceBrowsingPage", () => {
 
     await wrapper.vm.$nextTick();
 
-    wrapper.find("#uploadToHub").trigger("click");
+    wrapper.find("#upload").trigger("click");
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/copyBetweenSpaces", {
       projectId: globalSpaceBrowserProjectId,
       itemIds: ["1", "2"],

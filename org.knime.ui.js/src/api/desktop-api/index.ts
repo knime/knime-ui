@@ -1,4 +1,4 @@
-import type { SpaceProvider } from "../custom-types";
+import type { SpaceProviderNS } from "../custom-types";
 import { registerEventHandler } from "../json-rpc-client";
 import * as desktopAPIMethods from "./desktop-api";
 
@@ -18,7 +18,9 @@ export interface DesktopEventHandlers {
   AiAssistantEvent(payload: { chainType: "qa" | "build"; data: {} }): void;
 
   SpaceProvidersChangedEvent(
-    payload: { result: Record<string, SpaceProvider> } | { error: string },
+    payload:
+      | { result: Record<string, SpaceProviderNS.SpaceProvider> }
+      | { error: string },
   ): void;
 }
 

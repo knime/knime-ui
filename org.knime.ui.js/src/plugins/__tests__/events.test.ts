@@ -14,7 +14,7 @@ import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 import type { EventHandlers } from "@/api/gateway-api/generated-api";
 import type { DesktopEventHandlers } from "@/api/desktop-api";
-import type { SpaceProvider } from "@/api/custom-types";
+import type { SpaceProviderNS } from "@/api/custom-types";
 
 import eventsPlugin from "../events";
 
@@ -250,7 +250,7 @@ describe("Event Plugin", () => {
 
     describe("spaceProvidersChangedEvent", () => {
       it("should set the loaded space providers (success)", () => {
-        const mockProvider: SpaceProvider = {
+        const mockProvider: SpaceProviderNS.SpaceProvider = {
           connected: false,
           connectionMode: "AUTOMATIC",
           id: "providerId",

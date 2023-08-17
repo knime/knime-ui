@@ -28,6 +28,7 @@ const applicationShortcuts: ApplicationShortcuts = {
         isOpen: true,
         projectId: $store.state.application.activeProjectId,
       }),
+    condition: ({ $store }) => !$store.state.spaces.isLoadingContent,
   },
 };
 

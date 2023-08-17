@@ -3,6 +3,7 @@ import type { Router } from "vue-router";
 import type { Store } from "vuex";
 
 import type { ShortcutsRegistry } from ".";
+import type { RootStoreState } from "@/store/types";
 
 type Keys =
   | "F1"
@@ -35,8 +36,7 @@ export type Hotkey = Keys | Modifiers;
 export type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers>>;
 
 export type ShortcutExecuteContext = {
-  // TODO type the store once the types are available
-  $store: Store<any>;
+  $store: Store<RootStoreState>;
   $router: Router;
   payload: { event?: Event; metadata?: any };
 };

@@ -1,21 +1,22 @@
 import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
-import { merge } from "lodash";
 import { shallowMount } from "@vue/test-utils";
 
+import { createWorkflow } from "@/test/factories";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { createShortcutsService } from "@/plugins/shortcuts";
 
 import Button from "webapps-common/ui/components/Button.vue";
 
+import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
 
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
+import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
 
 import WorkflowPanel from "../WorkflowPanel.vue";
-import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
 
 describe("WorkflowPanel", () => {
   const doShallowMount = ({ props = {}, workflow = {} } = {}) => {
@@ -23,56 +24,18 @@ describe("WorkflowPanel", () => {
       info: {
         containerType: "project",
         containerId: "root",
+        providerType: "LOCAL",
       },
       parents: [],
     };
 
-    const workflowStoreConfig = {
-      state: {
-        activeWorkflow: merge(baseWorkflow, workflow),
-        portTypeMenu: {
-          isOpen: false,
-        },
-        quickAddNodeMenu: {
-          isOpen: false,
-        },
-      },
-      actions: {
-        saveWorkflowAs: () => {},
-      },
-      getters: {
-        isLinked({ activeWorkflow }) {
-          return activeWorkflow.info.linked;
-        },
-        isInsideLinked({ activeWorkflow }) {
-          return activeWorkflow.parents.some(({ linked }) => linked);
-        },
-        insideLinkedType({ activeWorkflow }) {
-          return activeWorkflow.parents.find(({ linked }) => linked)
-            .containerType;
-        },
-        isStreaming({ activeWorkflow }) {
-          return activeWorkflow.info.jobManager;
-        },
-        isWritable({ activeWorkflow }) {
-          return !(
-            activeWorkflow.info.linked ||
-            activeWorkflow.parents.some(({ linked }) => linked)
-          );
-        },
-        isRemoteWorkflow({ activeWorkflow }) {
-          return (
-            activeWorkflow.info.remoteLocation ||
-            activeWorkflow.parents.some(({ remoteLocation }) => remoteLocation)
-          );
-        },
-      },
-    };
-
     const storeConfig = {
-      workflow: workflowStoreConfig,
+      workflow: workflowStore,
       application: applicationStore,
       canvas: {
+        state: {
+          getScrollContainerElement: () => document.createElement("div"),
+        },
         getters: {
           screenToCanvasCoordinates: () => (position) => position,
         },
@@ -81,6 +44,14 @@ describe("WorkflowPanel", () => {
     };
 
     const $store = mockVuexStore(storeConfig);
+
+    $store.commit(
+      "workflow/setActiveWorkflow",
+      createWorkflow({
+        ...baseWorkflow,
+        ...workflow,
+      }),
+    );
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
 
@@ -150,19 +121,32 @@ describe("WorkflowPanel", () => {
     });
   });
 
-  describe("on the hub", () => {
-    it("shows banner if workflow is on the hub", async () => {
-      const { wrapper, $store } = doShallowMount();
-      $store.state.workflow.activeWorkflow.info.remoteLocation = "HUB";
-      await Vue.nextTick();
-      await Vue.nextTick();
-      await Vue.nextTick();
+  describe("remote workflow", () => {
+    it("should not show banner if workflow is local", () => {
+      const { wrapper } = doShallowMount({
+        workflow: { info: { providerType: "LOCAL" } },
+      });
+      expect(wrapper.find(".banner").exists()).toBe(false);
+    });
+
+    it("shows banner if workflow is on the hub", () => {
+      const { wrapper } = doShallowMount({
+        workflow: { info: { providerType: "HUB" } },
+      });
+      expect(wrapper.find(".banner").exists()).toBe(true);
+    });
+
+    it("shows banner if workflow is on server", () => {
+      const { wrapper } = doShallowMount({
+        workflow: { info: { providerType: "SERVER" } },
+      });
       expect(wrapper.find(".banner").exists()).toBe(true);
     });
 
     it("saves workflow locally when button is clicked", async () => {
-      const { wrapper, $store, dispatchSpy } = doShallowMount();
-      $store.state.workflow.activeWorkflow.info.remoteLocation = "HUB";
+      const { wrapper, dispatchSpy } = doShallowMount({
+        workflow: { info: { providerType: "HUB" } },
+      });
       await Vue.nextTick();
       const button = wrapper.findComponent(Button);
       expect(button.exists()).toBe(true);

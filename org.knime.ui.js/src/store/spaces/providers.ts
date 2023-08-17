@@ -1,5 +1,5 @@
 import { API } from "@api";
-import type { SpaceProvider } from "@/api/custom-types";
+import type { SpaceProviderNS } from "@/api/custom-types";
 
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "../types";
@@ -7,7 +7,7 @@ import type { SpacesState } from "./index";
 import { localRootProjectPath } from "./caching";
 
 export interface State {
-  spaceProviders?: Record<string, SpaceProvider>;
+  spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider>;
   isLoadingProvider: boolean;
   hasLoadedProviders: boolean;
 }
@@ -33,7 +33,10 @@ export const mutations: MutationTree<SpacesState> = {
     state.hasLoadedProviders = value;
   },
 
-  setSpaceProviders(state, value: Record<string, SpaceProvider>) {
+  setSpaceProviders(
+    state,
+    value: Record<string, SpaceProviderNS.SpaceProvider>,
+  ) {
     state.spaceProviders = value;
   },
 };
@@ -93,7 +96,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async setAllSpaceProviders(
     { commit, state, dispatch },
-    spaceProviders: Record<string, SpaceProvider>,
+    spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
   ) {
     try {
       const connectedProviderIds = Object.values(spaceProviders)
@@ -148,7 +151,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     const { spaceProviderId: activeSpaceProviderId } =
       state.projectPath[projectId];
 
-    return state.spaceProviders[activeSpaceProviderId];
+    return state.spaceProviders[activeSpaceProviderId] || {};
   },
 
   getSpaceInfo: (state) => (projectId: string) => {
