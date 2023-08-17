@@ -53,6 +53,7 @@ import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -112,8 +113,8 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public boolean isLocal() {
-                return true;
+            public TypeEnum getType() {
+                return TypeEnum.LOCAL;
             }
 
             @Override

@@ -59,6 +59,7 @@ import java.util.function.Predicate;
 
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.webui.WebUIUtil;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
@@ -181,7 +182,7 @@ final class SpaceAPI {
         final var isUpload = sourceSpace instanceof LocalWorkspace;
         final var mountIds = !isUpload ? new String[] { LocalWorkspace.LOCAL_WORKSPACE_ID.toUpperCase(Locale.ROOT) }
             : spaceProviders.getProvidersMap().entrySet().stream() //
-                .filter(provider -> !provider.getValue().isLocal()
+                .filter(provider -> provider.getValue().getType() != TypeEnum.LOCAL
                     && provider.getValue().getConnection(false).isPresent()) //
                 .map(Entry::getKey) //
                 .toArray(String[]::new);

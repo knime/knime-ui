@@ -61,6 +61,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
@@ -85,11 +86,11 @@ class SpaceAPITest {
         var localSpaceProvider = mock(SpaceProvider.class);
         when(localSpaceProvider.getId()).thenReturn(localProviderId);
         when(localSpaceProvider.getName()).thenReturn(localProviderName);
-        when(localSpaceProvider.isLocal()).thenReturn(true);
+        when(localSpaceProvider.getType()).thenReturn(TypeEnum.LOCAL);
         var connectedSpaceProvider = mock(SpaceProvider.class);
         when(connectedSpaceProvider.getId()).thenReturn(connectedProviderId);
         when(connectedSpaceProvider.getName()).thenReturn(connectedProviderName);
-        when(connectedSpaceProvider.isLocal()).thenReturn(false);
+        when(connectedSpaceProvider.getType()).thenReturn(TypeEnum.HUB);
         when(connectedSpaceProvider.getConnection(false)).thenReturn(Optional.of(mock(SpaceProviderConnection.class)));
 
         // make mocks available by mocking `SpaceProviders`
