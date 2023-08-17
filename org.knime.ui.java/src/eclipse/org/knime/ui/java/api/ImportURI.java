@@ -308,7 +308,11 @@ public final class ImportURI {
                 return Optional.empty();
             }
         }), siteInfo);
-        DesktopAPUtil.runWithProgress(job.getName(), LOGGER, job::run);
+        final var resultStatus = DesktopAPUtil.runWithProgress(job.getName(), LOGGER, job::run);
+        if (resultStatus.isPresent() && !resultStatus.get().isOK()) {
+            showPopup("Installation Error", resultStatus.get().getMessage() + ". " + resultStatus.get().getException().getMessage(), SWT.ICON_ERROR);
+            resultStatus.get().getException().getMessage();
+        }
     }
 
     /**
