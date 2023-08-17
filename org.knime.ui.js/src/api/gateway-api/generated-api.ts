@@ -850,6 +850,12 @@ export interface Connection {
      * @memberof Connection
      */
     allowedActions?: AllowedConnectionActions;
+    /**
+     * List of bendpoint coordinates.
+     * @type {Array<XY>}
+     * @memberof Connection
+     */
+    bendpoints?: Array<XY>;
 
 }
 
