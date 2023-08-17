@@ -113,13 +113,13 @@ class SpaceAPITest {
         localProvider.put("name", localProviderName);
         localProvider.put("connected", true);
         localProvider.put("connectionMode", "AUTOMATIC");
-        localProvider.put("local", true);
+        localProvider.put("type", "LOCAL");
         var connectedProvider = MAPPER.createObjectNode();
         connectedProvider.put("id", connectedProviderId);
         connectedProvider.put("name", connectedProviderName);
         connectedProvider.put("connected", true);
         connectedProvider.put("connectionMode", "AUTHENTICATED");
-        connectedProvider.put("local", false);
+        connectedProvider.put("type", "HUB");
         var result = MAPPER.createObjectNode();
         result.set(localProviderId, localProvider);
         result.set(connectedProviderId, connectedProvider);
