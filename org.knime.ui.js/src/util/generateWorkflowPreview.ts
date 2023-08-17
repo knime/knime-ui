@@ -25,6 +25,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->`;
+const nodeSize = 70;
 
 /**
  * Outputs the given SVG Element as a string
@@ -164,7 +165,6 @@ const updateViewBox = (
   let width = parseInt(workflowSheet.getAttribute("width"), 10);
   let height = parseInt(workflowSheet.getAttribute("height"), 10);
   const padding = 20;
-  const nodeSize = 70;
   const isNodeLabelHigher = height + minY <= edges.maxY.height + edges.maxY.y;
   const nodeLabelHeight = edges.maxY.height + edges.maxY.y + nodeSize;
   const isNodeWithLabelOnLeftEdge =
@@ -369,7 +369,6 @@ const findEdges = (
 
   const length = Object.values(nodesObject).length;
   const nodes = Object.values(nodesObject).map((node) => {
-    const nodeSize = 90;
     const nodeLabelElement = svgClone.querySelector(
       `[data-node-id="${node.id}"] .node-label-text-container`,
     );
