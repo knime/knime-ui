@@ -9,23 +9,7 @@ import PortViewLoader from "../PortViewLoader.vue";
 
 const mockedAPI = deepMocked(API);
 
-const RESOURCE_TYPES = {
-  VUE_COMPONENT_LIB: "VUE_COMPONENT_LIB",
-};
-
 describe("PortViewLoader.vue", () => {
-  const setupGetPortViewMock = (resourceType, componentId, initialData = {}) =>
-    mockedAPI.port.getPortView.mockResolvedValue({
-      resourceInfo: {
-        id: componentId,
-        type: resourceType,
-      },
-      initialData: JSON.stringify({ result: initialData }),
-    });
-
-  // flush awaited api call
-  const flushRender = () => new Promise((r) => setTimeout(r, 0));
-
   const dummyNode = {
     id: "node1",
     selected: true,
