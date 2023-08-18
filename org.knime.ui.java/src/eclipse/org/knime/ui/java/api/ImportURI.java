@@ -63,6 +63,8 @@ import java.util.function.Supplier;
 import org.eclipse.core.runtime.IBundleGroup;
 import org.eclipse.core.runtime.IBundleGroupProvider;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -86,7 +88,6 @@ import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAl
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
-import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.ExtensionImport;
 import org.knime.workbench.core.imports.NodeImport;
@@ -308,11 +309,19 @@ public final class ImportURI {
                 return Optional.empty();
             }
         }), siteInfo);
-        final var resultStatus = DesktopAPUtil.runWithProgress(job.getName(), LOGGER, job::run);
-        if (resultStatus.isPresent() && !resultStatus.get().isOK()) {
-            showPopup("Installation Error", resultStatus.get().getMessage() + ". " + resultStatus.get().getException().getMessage(), SWT.ICON_ERROR);
-            resultStatus.get().getException().getMessage();
-        }
+        job.setUser(true);
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(final IJobChangeEvent event) {
+                final var result = event.getResult();
+                if (!result.isOK()) {
+                    showPopup("Installation Error", result.getMessage() + ". " + result.getException().getMessage(),
+                        SWT.ICON_ERROR);
+                    result.getException().getMessage();
+                }
+            }
+        });
+        job.schedule();
     }
 
     /**
