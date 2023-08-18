@@ -88,6 +88,7 @@ const openNodeInBrowser = (factoryName: string) => {
 
       & .dropdown-icon {
         @mixin svg-icon-size 18;
+
         stroke: var(--knime-masala);
         transition: transform 0.4s ease-in-out;
 
@@ -118,6 +119,7 @@ const openNodeInBrowser = (factoryName: string) => {
 
           & svg {
             @mixin svg-icon-size 18;
+
             stroke: var(--knime-masala);
             margin-right: 12px;
             margin-bottom: -3px;
