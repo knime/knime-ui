@@ -50,10 +50,10 @@ export const useConnectorPathSegments = (
     useConnectorPosition(options);
 
   const pathSegments = computed(() => {
-    let x1 = startSegmentPosition.value.at(0);
-    let y1 = startSegmentPosition.value.at(1);
-    let x2 = endSegmentPosition.value.at(0);
-    let y2 = endSegmentPosition.value.at(1);
+    let x1 = startSegmentPosition.value.x;
+    let y1 = startSegmentPosition.value.y;
+    let x2 = endSegmentPosition.value.x;
+    let y2 = endSegmentPosition.value.y;
 
     // Update position of source or destination node is being moved
     if (isDragging.value) {

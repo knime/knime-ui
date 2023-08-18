@@ -1,11 +1,12 @@
 import { computed, type Ref } from "vue";
 
+import type { XY } from "@/api/gateway-api/generated-api";
+import type { KnimeNode } from "@/api/custom-types";
 import portShift from "@/util/portShift";
 import * as $shapes from "@/style/shapes.mjs";
 
 import { useStore } from "./useStore";
 import { usePortBarPositions } from "./usePortBarPositions";
-import type { KnimeNode, XYTuple } from "@/api/custom-types";
 import { useConnectedNodeObjects } from "./useConnectedNodeObjects";
 
 type UseConnectorPositionOptions = {
@@ -48,7 +49,7 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
     sourceNodeIndex: number,
     type: SourceOrDest,
     node: KnimeNode,
-  ): XYTuple => {
+  ): XY => {
     const allPorts = type === "source" ? node.outPorts : node.inPorts;
     const [dx, dy] = portShift(
       sourceNodeIndex,
@@ -58,13 +59,16 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
     );
     const { x, y } = node.position;
 
-    return [x + dx, y + dy];
+    return {
+      x: x + dx,
+      y: y + dy,
+    };
   };
 
   const getMetaNodePortPosition = (
     sourceNodeIndex: number,
     type: SourceOrDest,
-  ): XYTuple => {
+  ): XY => {
     const allPorts =
       type === "source"
         ? workflow.value.metaInPorts
@@ -76,10 +80,10 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
 
     const y = portBarItemYPos(sourceNodeIndex, allPorts.ports, true);
 
-    return [x, y];
+    return { x, y };
   };
 
-  const getEndPointCoordinates = (type: SourceOrDest = "dest"): XYTuple => {
+  const getEndPointCoordinates = (type: SourceOrDest = "dest"): XY => {
     const sourceNodeIndex = options[`${type}Port`];
     const node = referenceNodes[`${type}NodeObject`];
     if (node.value) {
@@ -95,20 +99,20 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
     }
   };
 
-  // @ts-ignore
-  const start = computed<XYTuple>(
+  const start = computed<XY>(
     () =>
-      (options.sourceNode.value && getEndPointCoordinates("source")) ||
-      options.absolutePoint.value ||
-      [],
+      (options.sourceNode.value && getEndPointCoordinates("source")) || {
+        x: options.absolutePoint.value.at(0),
+        y: options.absolutePoint.value.at(1),
+      } || { x: 0, y: 0 },
   );
 
-  // @ts-ignore
-  const end = computed<XYTuple>(
+  const end = computed<XY>(
     () =>
-      (options.destNode.value && getEndPointCoordinates("dest")) ||
-      options.absolutePoint.value ||
-      [],
+      (options.destNode.value && getEndPointCoordinates("dest")) || {
+        x: options.absolutePoint.value.at(0),
+        y: options.absolutePoint.value.at(1),
+      } || { x: 0, y: 0 },
   );
 
   return {

@@ -2,7 +2,6 @@
 import { computed, toRefs } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import type { XYTuple } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
 import { geometry } from "@/util/geometry";
 import type { ConnectorProps } from "./types";
@@ -48,14 +47,14 @@ const { pathSegments, startSegmentPosition, endSegmentPosition } =
     bendpoints,
   });
 
-const getLabelPosition = (start: XY, end: XY, offset: XY): XYTuple => {
+const getLabelPosition = (start: XY, end: XY, offset: XY): XY => {
   const { x: startX, y: startY } = start;
   const { x: endX, y: endY } = end;
 
-  return [
-    startX + (endX - startX + offset.x) / 2 - labelWidth / 2,
-    startY + (endY - startY + offset.y) / 2 - offsetY - labelHeight / 2,
-  ];
+  return {
+    x: startX + (endX - startX + offset.x) / 2 - labelWidth / 2,
+    y: startY + (endY - startY + offset.y) / 2 - offsetY - labelHeight / 2,
+  };
 };
 
 const isConnectionAffectedByDrag = computed(
@@ -68,10 +67,10 @@ const isConnectionAffectedByDrag = computed(
 const halfWayPosition = computed(() => {
   // Calculates the middle point and subtracts half of the length of the text element
 
-  const startX = startSegmentPosition.value.at(0);
-  const startY = startSegmentPosition.value.at(1);
-  const endX = endSegmentPosition.value.at(0);
-  const endY = endSegmentPosition.value.at(1);
+  const startX = startSegmentPosition.value.x;
+  const startY = startSegmentPosition.value.y;
+  const endX = endSegmentPosition.value.x;
+  const endY = endSegmentPosition.value.y;
 
   if (bendpoints.value.length > 0) {
     // When there are bendpoints we cannot predict the curve of the connection path
@@ -140,7 +139,7 @@ const halfWayPosition = computed(() => {
     class="foreign-object"
     :width="labelWidth"
     :height="labelHeight"
-    :transform="`translate(${halfWayPosition})`"
+    :transform="`translate(${halfWayPosition.x}, ${halfWayPosition.y})`"
   >
     <p class="text-wrapper">
       <span class="streaming-label">

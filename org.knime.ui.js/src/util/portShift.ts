@@ -1,6 +1,5 @@
 /* eslint-disable no-magic-numbers */
 import { nodeSize, portSize } from "@/style/shapes.mjs";
-import type { XYTuple } from "@/api/custom-types";
 
 /**
  * Calculates the position of the center of a port on a node depending on its index and the total number
@@ -19,7 +18,7 @@ const portShift = (
   portCount: number,
   isMetanode: boolean,
   isOutPort: boolean,
-): XYTuple => {
+): [number, number] => {
   const x = isOutPort ? nodeSize + portSize / 2 : -portSize / 2;
 
   if (isMetanode) {
