@@ -4,16 +4,24 @@ import { useStore } from "vuex";
 
 import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
-import type { NativeNode } from "@/api/gateway-api/generated-api";
 import LoadingIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
+import InstallableExtension from "./InstallableExtension.vue";
+
+interface Node {
+  title: string;
+  factoryName: string;
+  featureSymbolicName: string;
+  featureName: string;
+  featureVendor: string;
+}
 
 interface Props {
   role: string;
   content?: string;
-  nodes?: NativeNode[];
+  nodes?: Node[];
   statusUpdate?: string;
   isError?: boolean;
 }
@@ -26,6 +34,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const nodeTemplates = ref([]);
+const uninstalledExtensions = ref({});
 
 const store = useStore();
 
@@ -34,10 +43,45 @@ watchEffect(async () => {
     return;
   }
 
-  nodeTemplates.value = await Promise.all(
-    props.nodes.map((nodeId) =>
-      store.dispatch("nodeRepository/getNodeTemplate", nodeId),
-    ),
+  // These are the nodes that are already installed.
+  nodeTemplates.value = [];
+  // These are the extensions of nodes that are not installed yet.
+  uninstalledExtensions.value = {};
+  // Both are populated asynchronously here.
+  await Promise.all(
+    props.nodes.map(async (node) => {
+      const { factoryName } = node;
+      // Try to fetch node from store.
+      const nodeTemplate = await store.dispatch(
+        "nodeRepository/getNodeTemplate",
+        factoryName,
+      );
+
+      if (nodeTemplate) {
+        // Node exists in store and is already installed.
+        nodeTemplates.value.push(nodeTemplate);
+      } else {
+        // Node does not exist in store and is not installed yet.
+
+        // Add extension to list of uninstalled extensions.
+        let extension = uninstalledExtensions.value[node.featureSymbolicName];
+        if (!extension) {
+          extension = {
+            featureSymbolicName: node.featureSymbolicName,
+            featureName: node.featureName,
+            featureVendor: node.featureVendor,
+            nodes: [],
+          };
+          uninstalledExtensions.value[node.featureSymbolicName] = extension;
+        }
+
+        // Add node to extension.
+        extension.nodes.push({
+          factoryName: node.factoryName,
+          title: node.title,
+        });
+      }
+    }),
   );
 });
 
@@ -70,6 +114,13 @@ const isAssistant = computed(() => props.role === "assistant");
         <DraggableNodeTemplate v-bind="slotProps" />
       </template>
     </NodeList>
+    <div v-if="Object.keys(uninstalledExtensions).length">
+      <InstallableExtension
+        v-for="(extension, featureSymbolicName) in uninstalledExtensions"
+        v-bind="extension"
+        :key="featureSymbolicName"
+      />
+    </div>
     <hr />
     <div v-if="props.statusUpdate" class="status-update">
       <LoadingIcon class="loading-icon" />
