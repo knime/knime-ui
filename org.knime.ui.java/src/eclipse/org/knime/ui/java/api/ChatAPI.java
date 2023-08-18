@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -60,6 +61,7 @@ import org.knime.gateway.impl.service.events.EventConsumer;
  *
  * @author Adrian Nembach, KNIME GmbH, Konstanz, Germany
  */
+@SuppressWarnings("restriction")
 public final class ChatAPI {
 
     /**
@@ -91,6 +93,10 @@ public final class ChatAPI {
          * @return the http(s) address of the server
          */
         String getServerAddress();
+        /**
+         * @return the ID of the hub that provides the ai-service
+         */
+        String getHubID();
     }
 
     private static final Set<ChatListener> LISTENERS = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -149,11 +155,19 @@ public final class ChatAPI {
      */
     @API
     public static String getAiServerAddress() {
-        if (LISTENERS.isEmpty()) {
-            return null;
-        } else {
-            return LISTENERS.iterator().next().getServerAddress();
-        }
+        return getListener().map(ChatListener::getServerAddress).orElse(null);
+    }
+
+    private static Optional<ChatListener> getListener() {
+        return LISTENERS.stream().findFirst();
+    }
+
+    /**
+     * @return the ID of the hub that provides the ai-service
+     */
+    @API
+    public static String getHubID() {
+        return getListener().map(ChatListener::getHubID).orElse(null);
     }
 
 
