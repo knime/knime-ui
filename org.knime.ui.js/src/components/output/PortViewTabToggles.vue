@@ -119,6 +119,7 @@ export default defineComponent({
       <template #default="{ item }">
         <Button
           class="open-window"
+          :disabled="!item.canDetach || item.disabled"
           :title="`Open ${item.text} view in new window`"
           @click="openInNewWindow(item)"
         >
@@ -146,7 +147,7 @@ export default defineComponent({
 .tab-toggles {
   display: flex;
   width: max-content;
-  height: calc(var(--wrapper-height) * 1px);
+  height: min-content;
   position: absolute;
   inset: 50px 0 0;
   margin: 0 auto;
@@ -172,7 +173,7 @@ export default defineComponent({
     padding: 0;
     background: transparent;
     margin: 0;
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    border-radius: 0;
 
     &:hover {
       background-color: var(--theme-value-switch-background-color-hover);
