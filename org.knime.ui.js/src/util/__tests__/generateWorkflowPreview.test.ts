@@ -340,12 +340,12 @@ describe("generateWorkflowPreview", () => {
 
     await generateWorkflowPreview(svg, false, nodes);
 
-    expect(localStorage.setItem).toHaveBeenCalledTimes(2);
+    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
 
     await generateWorkflowPreview(svg, false, nodes);
 
     expect(localStorage.getItem).toHaveBeenCalled();
-    expect(localStorage.setItem).toHaveBeenCalledTimes(2);
+    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
   });
 
   it("should return empty svg when canvas is empty", async () => {

@@ -77,7 +77,7 @@ export default ({ $store, $router }) => {
       $store.dispatch("application/updateGlobalLoader", { loading: true });
 
       const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
-      const nodes = $store.state.activeWorkflow.nodes;
+      const nodes = $store.state.workflow.activeWorkflow.nodes;
 
       const resolveSVGSnapshots = projectIds.map(async (projectId) => {
         const { svgElement, isCanvasEmpty } =

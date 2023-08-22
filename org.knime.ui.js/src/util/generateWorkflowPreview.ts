@@ -353,7 +353,7 @@ const addFontStyles = async (svgElement: SVGElement) => {
 
 const findEdges = (
   nodesObject: Record<string, KnimeNode>,
-  svgClone: SVGSVGElement,
+  svgClone: SVGSVGElement
 ) => {
   const annotationLength = svgClone.querySelectorAll(".annotation").length;
 
@@ -370,7 +370,7 @@ const findEdges = (
   const length = Object.values(nodesObject).length;
   const nodes = Object.values(nodesObject).map((node) => {
     const nodeLabelElement = svgClone.querySelector(
-      `[data-node-id="${node.id}"] .node-label-text-container`,
+      `[data-node-id="${node.id}"] .node-label-text-container`
     );
 
     return {
