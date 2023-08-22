@@ -78,9 +78,15 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       return;
     }
 
-    if (rootGetters["selection/selectedBendpoints"].length > 0) {
-      dispatch("moveBendpoints");
-    }
+    const connectionBendpoints = rootGetters[
+      "selection/selectedBendpoints"
+    ].reduce((acc, item) => {
+      const { connectionId, index } = item;
+      const indexes = acc[connectionId] ?? [];
+      indexes.push(index);
+      acc[connectionId] = indexes;
+      return acc;
+    }, {});
 
     try {
       await API.workflowCommand.Translate({
@@ -88,50 +94,13 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         workflowId,
         nodeIds: selectedNodes,
         annotationIds: selectedAnnotations,
+        connectionBendpoints,
         translation,
       });
     } catch (e) {
       consola.log("The following error occured: ", e);
       commit("resetMovePreview");
     }
-  },
-
-  async moveBendpoints({ state, dispatch, rootGetters }) {
-    const translation = {
-      x: state.movePreviewDelta.x,
-      y: state.movePreviewDelta.y,
-    };
-
-    if (translation.x === 0 && translation.y === 0) {
-      await dispatch("resetDragState");
-      return;
-    }
-
-    const selectedBendpoints: Array<{ connectionId: string; index: number }> =
-      rootGetters["selection/selectedBendpoints"];
-
-    // simulate command call, making it async by adding a certain delay
-    // eslint-disable-next-line no-magic-numbers
-    await new Promise((r) => setTimeout(r, 0));
-    selectedBendpoints.forEach(({ connectionId, index }) => {
-      // const bendpoints = selectedBendpoints[connectionId];
-      const { bendpoints: currentBendpoints } =
-        state.activeWorkflow.connections[connectionId];
-
-      const updatedBendpoints = currentBendpoints.map((coords, _index) =>
-        Number(index) === _index
-          ? {
-              x: coords.x + translation.x,
-              y: coords.y + translation.y,
-            }
-          : coords,
-      );
-
-      state.activeWorkflow.connections[connectionId] = {
-        ...state.activeWorkflow.connections[connectionId],
-        bendpoints: updatedBendpoints,
-      };
-    });
   },
 };
 

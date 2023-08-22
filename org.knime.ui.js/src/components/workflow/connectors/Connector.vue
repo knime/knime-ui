@@ -63,6 +63,26 @@ const { pathSegments } = useConnectorPathSegments({
 
 const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
 
+const sourceAndDestinationSelected = computed(() => {
+  return (
+    isNodeSelected.value(sourceNode.value) &&
+    isNodeSelected.value(destNode.value)
+  );
+});
+
+watch(sourceAndDestinationSelected, (value) => {
+  if (value) {
+    const bendpoints = Array(pathSegments.value.length - 1)
+      .fill(null)
+      .map((_, i) => getBendpointId(props.id, i));
+    if (bendpoints.every((id) => !isBendpointSelected.value(id))) {
+      bendpoints.forEach((id) => {
+        store.dispatch("selection/selectBendpoint", id);
+      });
+    }
+  }
+});
+
 const singleSelectedNode = computed(
   () => store.getters["selection/singleSelectedNode"],
 );
@@ -137,7 +157,9 @@ const onBendpointPointerdown = (
   const eventTarget = event.target as HTMLElement;
 
   const bendpointId = getBendpointId(props.id, index - 1);
-  if (!isBendpointSelected.value(bendpointId)) {
+  if (
+    !isBendpointSelected.value(bendpointId, props.sourceNode, props.destNode)
+  ) {
     store.dispatch("selection/deselectAllObjects");
   }
   store.dispatch("selection/selectBendpoint", bendpointId);
@@ -186,7 +208,11 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
   const bendpointId = getBendpointId(props.id, index - 1);
 
   if (isMultiselect(event)) {
-    const action = isBendpointSelected.value(bendpointId)
+    const action = isBendpointSelected.value(
+      bendpointId,
+      props.sourceNode,
+      props.destNode,
+    )
       ? "deselect"
       : "select";
     store.dispatch(`selection/${action}Bendpoint`, bendpointId);
@@ -228,7 +254,13 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
 
       <ConnectorBendpoint
         v-if="index !== 0"
-        :is-selected="isBendpointSelected(getBendpointId(id, index - 1))"
+        :is-selected="
+          isBendpointSelected(
+            getBendpointId(id, index - 1),
+            sourceNode,
+            destNode,
+          )
+        "
         :is-dragging="isDragging"
         :is-flow-variable-connection="flowVariableConnection"
         :position="pathSegments[index].start"
