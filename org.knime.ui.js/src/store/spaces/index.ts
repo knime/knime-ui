@@ -13,11 +13,16 @@ interface CreateWorkflowModalConfig {
   projectId: string;
 }
 
+interface DisplayJobModal {
+  isOpen: boolean;
+}
+
 export * from "./common";
 export * from "./types";
 
 export interface SpacesState {
   createWorkflowModalConfig: CreateWorkflowModalConfig;
+  displayJobModal: DisplayJobModal;
 }
 
 export const state = (): SpacesState => ({
@@ -31,6 +36,9 @@ export const state = (): SpacesState => ({
     isOpen: false,
     projectId: null,
   },
+  displayJobModal: {
+    isOpen: false,
+  },
 });
 
 export const mutations: MutationTree<SpacesState> = {
@@ -41,6 +49,10 @@ export const mutations: MutationTree<SpacesState> = {
 
   setCreateWorkflowModalConfig(state, value: CreateWorkflowModalConfig) {
     state.createWorkflowModalConfig = value;
+  },
+
+  setDisplayJobModal(state, value: DisplayJobModal) {
+    state.displayJobModal = value;
   },
 };
 

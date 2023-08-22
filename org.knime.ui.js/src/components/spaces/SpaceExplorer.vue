@@ -24,11 +24,12 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import SmartLoader from "@/components/common/SmartLoader.vue";
+import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
 
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import FileExplorer from "./FileExplorer/FileExplorer.vue";
 import type { FileExplorerItem } from "./FileExplorer/types";
-import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
+import DisplayJobModal from "./DisplayJobModal.vue";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
 
@@ -60,6 +61,7 @@ export default defineComponent({
     Modal,
     Button,
     TrashIcon,
+    DisplayJobModal,
   },
 
   props: {
@@ -571,6 +573,7 @@ export default defineComponent({
         </template>
       </Modal>
     </div>
+    <DisplayJobModal />
   </div>
 </template>
 

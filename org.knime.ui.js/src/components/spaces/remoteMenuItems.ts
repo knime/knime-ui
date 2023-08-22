@@ -1,7 +1,8 @@
-import type { Dispatch } from "vuex";
+import type { Dispatch, Commit } from "vuex";
 import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg";
 import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
 import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
+import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
 import LinkExternal from "webapps-common/ui/assets/img/icons/link-external.svg";
 import KeyIcon from "webapps-common/ui/assets/img/icons/key.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
@@ -185,6 +186,27 @@ export const buildOpenPermissionsDialog = (
       dispatch("spaces/openPermissionsDialog", {
         projectId,
         itemId: selectedItems[0],
+      });
+    },
+  };
+};
+
+export const buildDisplayJobMenuItem = (
+  commit: Commit,
+  projectId: string,
+  selectedItems: Array<string>,
+): ActionMenuItem => {
+  const isSelectionEmpty = selectedItems.length === 0;
+  const isSelectionMultiple = selectedItems.length > 1;
+  return {
+    id: "displayJob",
+    text: "Display job",
+    icon: CirclePlayIcon,
+    disabled: isSelectionEmpty || isSelectionMultiple,
+    title: isSelectionEmpty ? "Select a file to display a job." : null,
+    execute: () => {
+      commit("spaces/setDisplayJobModal", {
+        isOpen: true,
       });
     },
   };
