@@ -2,8 +2,9 @@
 import { defineComponent } from "vue";
 import { mapGetters, mapState, mapActions } from "vuex";
 import throttle from "raf-throttle";
-import { findItemsInsideOfRectangle } from "@/util/rectangleSelection";
+
 import { parseBendpointId } from "@/util/connectorUtil";
+import { findObjectsForSelection } from "./findObjectsForSelection";
 
 /**
  * SelectionRectangle - select multiple nodes by drawing a rectangle with by mouse (pointer) movement
@@ -231,7 +232,7 @@ export default defineComponent({
         annotationsOutside,
         bendpointsInside,
         bendpointsOutside,
-      } = findItemsInsideOfRectangle({
+      } = findObjectsForSelection({
         startPos,
         endPos,
         workflow: this.activeWorkflow,

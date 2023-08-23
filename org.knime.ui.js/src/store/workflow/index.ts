@@ -2,8 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { isEqual } from "lodash";
 
 import { API } from "@api";
-import { WorkflowInfo, type Workflow } from "@/api/gateway-api/generated-api";
-import type { KnimeNode } from "@/api/custom-types";
+import type { Workflow } from "@/api/custom-types";
 
 import {
   actions as jsonPatchActions,
@@ -24,12 +23,7 @@ import * as annotationInteractions from "./annotationInteractions";
 import * as clipboardInteractions from "./clipboardInteractions";
 
 export interface WorkflowState {
-  activeWorkflow:
-    | (Omit<Workflow, "nodes"> & {
-        projectId: string;
-        nodes: Record<string, KnimeNode>;
-      })
-    | null;
+  activeWorkflow: Workflow | null;
   activeSnapshotId: string | null;
   tooltip: TooltipDefinition | null;
 }

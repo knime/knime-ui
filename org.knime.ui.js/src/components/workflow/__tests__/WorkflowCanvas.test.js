@@ -7,7 +7,7 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { TABS } from "@/store/panel";
 import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
 import Workflow from "../Workflow.vue";
-import SelectionRectangle from "../SelectionRectangle.vue";
+import SelectionRectangle from "../SelectionRectangle/SelectionRectangle.vue";
 import WorkflowEmpty from "../WorkflowEmpty.vue";
 import WorkflowCanvas from "../WorkflowCanvas.vue";
 

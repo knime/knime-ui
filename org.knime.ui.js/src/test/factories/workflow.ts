@@ -1,9 +1,8 @@
 import merge from "lodash/merge";
 
-import type { KnimeNode } from "@/api/custom-types";
+import type { KnimeNode, Workflow } from "@/api/custom-types";
 import {
   NativeNodeInvariants,
-  type Workflow,
   WorkflowInfo,
   MetaNodePort,
   TypedText,
@@ -172,6 +171,7 @@ export const createWorkflow = (data: DeepPartial<Workflow> = {}): Workflow => {
       canReset: false,
     },
     workflowAnnotations: [],
+    projectId: "project1",
   };
 
   if (!hasNodes && !hasConnections) {

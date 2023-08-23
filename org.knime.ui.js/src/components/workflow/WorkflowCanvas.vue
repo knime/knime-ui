@@ -3,7 +3,7 @@ import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
 import { TABS } from "@/store/panel";
 import Workflow from "@/components/workflow/Workflow.vue";
 import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
-import SelectionRectangle from "@/components/workflow/SelectionRectangle.vue";
+import SelectionRectangle from "@/components/workflow/SelectionRectangle/SelectionRectangle.vue";
 import AnnotationRectangle from "@/components/workflow/annotations/AnnotationRectangle.vue";
 import WorkflowEmpty from "@/components/workflow/WorkflowEmpty.vue";
 import KanvasFilters from "@/components/workflow/kanvas/KanvasFilters.vue";

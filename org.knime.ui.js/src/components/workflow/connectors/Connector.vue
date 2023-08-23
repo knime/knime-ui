@@ -75,10 +75,9 @@ watch(sourceAndDestinationSelected, (value) => {
     const bendpoints = Array(pathSegments.value.length - 1)
       .fill(null)
       .map((_, i) => getBendpointId(props.id, i));
+
     if (bendpoints.every((id) => !isBendpointSelected.value(id))) {
-      bendpoints.forEach((id) => {
-        store.dispatch("selection/selectBendpoint", id);
-      });
+      store.dispatch("selection/selectBendpoints", bendpoints);
     }
   }
 });

@@ -8,6 +8,7 @@ import type {
   ComponentNodeAndDescription,
   NodeDescription,
   SpaceProvider as _SpaceProvider,
+  Workflow as _Workflow,
 } from "./gateway-api/generated-api";
 
 import { SpaceProvider as _SpaceProviderNS } from "./gateway-api/generated-api";
@@ -69,3 +70,9 @@ export namespace SpaceProviderNS {
 export type ComponentMetadata = ComponentNodeAndDescription & NodeDescription;
 
 export type BendpointData = { connectionId: string; index: number };
+
+// TODO: remove once API codegen properly types the workflow nodes
+export type Workflow = Omit<_Workflow, "nodes"> & {
+  projectId: string;
+  nodes: Record<string, KnimeNode>;
+};

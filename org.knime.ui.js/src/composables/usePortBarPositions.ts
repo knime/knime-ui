@@ -1,8 +1,8 @@
 import { computed } from "vue";
 
 import { metaNodeBarWidth } from "@/style/shapes.mjs";
-import { useStore } from "./useStore";
 import type { MetaPorts } from "@/api/gateway-api/generated-api";
+import { useStore } from "./useStore";
 
 export const usePortBarPositions = () => {
   const store = useStore();

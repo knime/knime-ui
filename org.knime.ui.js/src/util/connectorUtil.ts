@@ -1,4 +1,6 @@
-const ID_SEPARATOR = "__";
+const ID_SEPARATOR = "__" as const;
+
+export type BendpointId = `${string}${typeof ID_SEPARATOR}${string}`;
 
 export const getBendpointId = (connectionId: string, bendpointIndex: number) =>
   `${connectionId}${ID_SEPARATOR}${bendpointIndex}`;
