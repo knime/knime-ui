@@ -283,10 +283,8 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
     return selectedAnnotations.map((annotation) => annotation.id);
   },
 
-  selectedBendpointIds(_state, { selectedBendpoints }) {
-    return selectedBendpoints.map(
-      ({ connectionId, index }) => `${connectionId}__${index}`,
-    );
+  selectedBendpointIds(state) {
+    return Object.keys(state.selectedBendpoints);
   },
 
   // Returns null if none or multiple nodes are selected, otherwise returns the selected node

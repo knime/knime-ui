@@ -6,6 +6,7 @@ import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
 import { geometry } from "@/util/geometry";
+import { createConnection } from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
@@ -196,6 +197,17 @@ describe("workflow::index", () => {
           { id: "root:2_1", text: "Test" },
           { id: "root:2_2", text: "Test1" },
         ],
+        connections: {
+          connection1: createConnection({
+            bendpoints: [
+              { x: 10, y: 10 },
+              { x: 20, y: 20 },
+            ],
+          }),
+          connection2: createConnection({
+            bendpoints: [{ x: 10, y: 10 }],
+          }),
+        },
       });
       return result;
     };
@@ -207,6 +219,11 @@ describe("workflow::index", () => {
 
       const { store } = await loadStoreWithNodes();
       await store.dispatch("selection/selectAllObjects");
+      store.dispatch("selection/selectBendpoints", [
+        "connection1__0",
+        "connection1__1",
+        "connection2__0",
+      ]);
 
       await store.dispatch("workflow/collapseToContainer", {
         containerType: "metanode",
@@ -218,6 +235,10 @@ describe("workflow::index", () => {
         nodeIds: ["foo", "bar"],
         containerType: "metanode",
         annotationIds: ["root:2_1", "root:2_2"],
+        connectionBendpoints: {
+          connection1: [0, 1],
+          connection2: [0],
+        },
       });
     });
 

@@ -530,16 +530,17 @@ describe("workflow store", () => {
         ]);
       });
 
-      it("returns selected bendpoint (as objects)", () => {
+      it("returns selected bendpoints", () => {
         $store.commit("selection/addBendpointsToSelection", [
           "connection1__0",
+          "connection1__1",
           "connection2__1",
         ]);
 
-        expect($store.getters["selection/selectedBendpoints"]).toEqual([
-          { connectionId: "connection1", index: 0 },
-          { connectionId: "connection2", index: 1 },
-        ]);
+        expect($store.getters["selection/selectedBendpoints"]).toEqual({
+          connection1: [0, 1],
+          connection2: [1],
+        });
       });
     });
 
