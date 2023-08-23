@@ -13,9 +13,12 @@ interface Props {
   isFlowVariableConnection: boolean;
   isSelected: boolean;
   isDragging: boolean;
+  interactive?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  interactive: true,
+});
 
 const bendpointSelectionPreview = ref<string | null>(null);
 
@@ -43,28 +46,59 @@ const showSelectionPreview = computed(() => {
 
   return bendpointSelectionPreview.value === "show" || props.isSelected;
 });
+
+const translateX = computed(() => props.position.x - BENDPOINT_SIZE / 2);
+const translateY = computed(() => props.position.y - BENDPOINT_SIZE / 2);
+
+const transform = computed(
+  () => `translate(${translateX.value}, ${translateY.value})`,
+);
+
+const transformOrigin = computed(
+  () => `${BENDPOINT_SIZE / 2}px ${BENDPOINT_SIZE / 2}px`,
+);
 </script>
 
 <template>
-  <rect
-    :class="{
-      selected: showSelectionPreview,
-      bendpoint: true,
-      'flow-variable': isFlowVariableConnection,
-    }"
-    :transform="`translate(
-      ${position.x - BENDPOINT_SIZE / 2},
-      ${position.y - BENDPOINT_SIZE / 2}
-    )`"
-    :width="BENDPOINT_SIZE"
-    :height="BENDPOINT_SIZE"
-  />
+  <g :transform="transform">
+    <rect
+      v-if="interactive"
+      :width="BENDPOINT_SIZE"
+      :height="BENDPOINT_SIZE"
+      class="hover-area"
+      data-hide-in-workflow-preview
+    />
+    <rect
+      :class="{
+        selected: showSelectionPreview,
+        bendpoint: true,
+        'flow-variable': isFlowVariableConnection,
+      }"
+      :width="BENDPOINT_SIZE"
+      :height="BENDPOINT_SIZE"
+    />
+  </g>
 </template>
 
 <style lang="postcss" scoped>
+.hover-area {
+  fill: none;
+  stroke-width: 8px;
+  stroke: transparent;
+  cursor: grab;
+
+  &:hover + rect {
+    stroke: var(--fill-color);
+    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
+    transform-origin: v-bind(transformOrigin);
+    transform: scale(1.2);
+  }
+}
+
 .bendpoint {
   --fill-color: var(--knime-stone-gray);
 
+  pointer-events: none;
   fill: var(--fill-color);
   stroke: var(--knime-white);
 

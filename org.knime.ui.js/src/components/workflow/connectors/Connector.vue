@@ -265,6 +265,7 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
         :position="pathSegments[index].start"
         :index="index - 1"
         :connection-id="id"
+        :interactive="interactive"
         @pointerdown="
           onBendpointPointerdown($event, index, pathSegments[index].start)
         "
