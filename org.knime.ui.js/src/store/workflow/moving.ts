@@ -67,6 +67,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     const selectedNodes = rootGetters["selection/selectedNodeIds"];
     const selectedAnnotations = rootGetters["selection/selectedAnnotationIds"];
+    const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
 
     const translation = {
       x: state.movePreviewDelta.x,
@@ -77,16 +78,6 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       await dispatch("resetDragState");
       return;
     }
-
-    const connectionBendpoints = rootGetters[
-      "selection/selectedBendpoints"
-    ].reduce((acc, item) => {
-      const { connectionId, index } = item;
-      const indexes = acc[connectionId] ?? [];
-      indexes.push(index);
-      acc[connectionId] = indexes;
-      return acc;
-    }, {});
 
     try {
       await API.workflowCommand.Translate({

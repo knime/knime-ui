@@ -2,6 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { isEqual } from "lodash";
 
 import { API } from "@api";
+import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import type { Workflow } from "@/api/custom-types";
 
 import {
@@ -166,6 +167,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const selectedNodes = rootGetters["selection/selectedNodes"];
     const selectedAnnotationIds =
       rootGetters["selection/selectedAnnotationIds"];
+    const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
+
     const isResetRequired = selectedNodes.some(
       (node) => node.allowedActions.canCollapse === "resetRequired",
     );
@@ -190,6 +193,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       workflowId,
       nodeIds: selectedNodeIds,
       annotationIds: selectedAnnotationIds,
+      connectionBendpoints,
     });
 
     // 3. select new container node, if user hasn't selected something else in the meantime

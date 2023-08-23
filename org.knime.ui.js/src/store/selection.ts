@@ -263,9 +263,15 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
       return [];
     }
 
-    return Object.keys(state.selectedBendpoints).map((bendpointId) =>
-      parseBendpointId(bendpointId),
-    );
+    return Object.keys(state.selectedBendpoints)
+      .map((bendpointId) => parseBendpointId(bendpointId))
+      .reduce((acc, item) => {
+        const { connectionId, index } = item;
+        const indexes = acc[connectionId] ?? [];
+        indexes.push(index);
+        acc[connectionId] = indexes;
+        return acc;
+      }, {});
   },
 
   // Returns an array of all selected node ids.
