@@ -69,11 +69,13 @@ const transformOrigin = computed(
       data-hide-in-workflow-preview
     />
     <rect
-      :class="{
-        selected: showSelectionPreview,
-        bendpoint: true,
-        'flow-variable': isFlowVariableConnection,
-      }"
+      :class="[
+        'bendpoint',
+        {
+          selected: showSelectionPreview,
+          'flow-variable': isFlowVariableConnection,
+        },
+      ]"
       :width="BENDPOINT_SIZE"
       :height="BENDPOINT_SIZE"
     />

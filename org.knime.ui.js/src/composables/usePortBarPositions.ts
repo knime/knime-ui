@@ -17,15 +17,15 @@ export const usePortBarPositions = () => {
   /**
    * Get the horizontal position of a metanode's port bar from the store.
    * @param  ports as returned from the API
-   * @param isOut `true` if the `ports` input represents the input ports, `false` for the output ports.
+   * @param isOutgoing `true` if the `ports` input represents the input ports, `false` for the output ports.
    * @returns  The horizontal position
    */
-  const portBarXPos = (ports: MetaPorts, isOut: boolean) => {
+  const portBarXPos = (ports: MetaPorts, isOutgoing: boolean) => {
     if (ports.xPos) {
       return ports.xPos;
     }
 
-    if (isOut) {
+    if (isOutgoing) {
       return workflowBounds.value.right - metaNodeBarWidth;
     }
 

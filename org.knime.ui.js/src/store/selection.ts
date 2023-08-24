@@ -27,7 +27,6 @@ export const state = (): SelectionState => ({
 });
 
 export const mutations: MutationTree<SelectionState> = {
-  // Add nodeIds to selection
   addNodesToSelection(state, nodeIds: string[]) {
     // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
     const selectedNodes = { ...state.selectedNodes };
@@ -38,7 +37,6 @@ export const mutations: MutationTree<SelectionState> = {
     state.selectedNodes = selectedNodes;
   },
 
-  // Removes each node of the provided nodeIds array from the selected nodes
   removeNodesFromSelection(state, nodeIds: string[]) {
     // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
     const selectedNodes = { ...state.selectedNodes };
@@ -49,9 +47,8 @@ export const mutations: MutationTree<SelectionState> = {
     state.selectedNodes = selectedNodes;
   },
 
-  // Clear the selected nodes and the selected connections at once
   clearSelection(state) {
-    // dont override selectedNodes/Connections-object, in case there is nothing selected
+    // dont override selection objects in case there is nothing selected
     // prevents unnecessary slowdown.
     if (Object.keys(state.selectedNodes).length > 0) {
       state.selectedNodes = {};
@@ -67,28 +64,24 @@ export const mutations: MutationTree<SelectionState> = {
     }
   },
 
-  //  Add connectionIds to selection.
   addConnectionsToSelection(state, connectionIds: string[]) {
     connectionIds.forEach((id) => {
       state.selectedConnections[id] = true;
     });
   },
 
-  // Removes each connection of the provided connections object to the selected connection object.
   removeConnectionsFromSelection(state, connectionIds: string[]) {
     connectionIds.forEach((id) => {
       delete state.selectedConnections[id];
     });
   },
 
-  //  Add annotationIds to selection.
   addAnnotationToSelection(state, annotationIds: string[]) {
     annotationIds.forEach((id) => {
       state.selectedAnnotations[id] = true;
     });
   },
 
-  // Removes each annotation of the provided annotation object to the selected annotation object.
   removeAnnotationFromSelection(state, annotationIds: string[]) {
     annotationIds.forEach((id) => {
       delete state.selectedAnnotations[id];
@@ -117,12 +110,10 @@ export const mutations: MutationTree<SelectionState> = {
 };
 
 export const actions: ActionTree<SelectionState, RootStoreState> = {
-  // Deselect all objects, this includes connections and nodes.
   deselectAllObjects({ commit }) {
     commit("clearSelection");
   },
 
-  // Selects all nodes and annotations that are present in the current workflow store.
   selectAllObjects({ commit, rootState }) {
     commit(
       "addNodesToSelection",
@@ -136,32 +127,26 @@ export const actions: ActionTree<SelectionState, RootStoreState> = {
     );
   },
 
-  // Selects the given node.
   selectNode({ commit }, nodeId) {
     commit("addNodesToSelection", [nodeId]);
   },
 
-  // Selects all nodeIds
   selectNodes({ commit }, nodeIds) {
     commit("addNodesToSelection", nodeIds);
   },
 
-  // Deselects the given node.
   deselectNode({ commit }, nodeId) {
     commit("removeNodesFromSelection", [nodeId]);
   },
 
-  // Deselects all nodeIds
   deselectNodes({ commit }, nodeIds) {
     commit("removeNodesFromSelection", nodeIds);
   },
 
-  // Selects the given connection.
   selectConnection({ commit }, connectionId) {
     commit("addConnectionsToSelection", [connectionId]);
   },
 
-  // Deselects the given connection.
   deselectConnection({ commit }, connectionId) {
     commit("removeConnectionsFromSelection", [connectionId]);
   },
@@ -186,7 +171,6 @@ export const actions: ActionTree<SelectionState, RootStoreState> = {
     commit("addBendpointsToSelection", [bendpoint]);
   },
 
-  // Deselects the given connection.
   deselectBendpoint({ commit }, bendpoint) {
     commit("removeBendpointsFromSelection", [bendpoint]);
   },
@@ -195,7 +179,6 @@ export const actions: ActionTree<SelectionState, RootStoreState> = {
     commit("addBendpointsToSelection", bendpoints);
   },
 
-  // Deselects the given connection.
   deselectBendpoints({ commit }, bendpoints) {
     commit("removeBendpointsFromSelection", bendpoints);
   },
@@ -274,7 +257,6 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
       }, {});
   },
 
-  // Returns an array of all selected node ids.
   selectedNodeIds(_state, { selectedNodes }) {
     return selectedNodes.map((node) => node.id);
   },
@@ -287,7 +269,6 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
     return Object.keys(state.selectedBendpoints);
   },
 
-  // Returns null if none or multiple nodes are selected, otherwise returns the selected node
   singleSelectedNode(_state, { selectedNodes }) {
     if (selectedNodes.length !== 1) {
       return null;
@@ -296,14 +277,11 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
     return selectedNodes[0];
   },
 
-  // Checks if a given node id is present in the selected object.
   isNodeSelected: (state) => (nodeId: string) => nodeId in state.selectedNodes,
 
-  // Checks if a given annotation id is present in the selected object.
   isAnnotationSelected: (state) => (annotationId: string) =>
     annotationId in state.selectedAnnotations,
 
-  // Checks if a given connection id is present in the selected object.
   isConnectionSelected: (state) => (connectionId: string) =>
     Reflect.has(state.selectedConnections, connectionId),
 

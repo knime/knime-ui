@@ -15,9 +15,9 @@ const props = withDefaults(
   defineProps<ConnectorProps & ConnectorLabelProps>(),
   { label: "", bendpoints: () => [] },
 );
-const labelWidth = 1000;
-const labelHeight = 60;
-const offsetY = 16;
+const LABEL_WIDTH = 1000;
+const LABEL_HEIGHT = 60;
+const OFFSET_Y = 16;
 
 const store = useStore();
 const isDragging = computed(() => store.state.workflow.isDragging);
@@ -52,8 +52,8 @@ const getLabelPosition = (start: XY, end: XY, offset: XY): XY => {
   const { x: endX, y: endY } = end;
 
   return {
-    x: startX + (endX - startX + offset.x) / 2 - labelWidth / 2,
-    y: startY + (endY - startY + offset.y) / 2 - offsetY - labelHeight / 2,
+    x: startX + (endX - startX + offset.x) / 2 - LABEL_WIDTH / 2,
+    y: startY + (endY - startY + offset.y) / 2 - OFFSET_Y - LABEL_HEIGHT / 2,
   };
 };
 
@@ -137,8 +137,8 @@ const halfWayPosition = computed(() => {
   <foreignObject
     v-if="label.length > 0"
     class="foreign-object"
-    :width="labelWidth"
-    :height="labelHeight"
+    :width="LABEL_WIDTH"
+    :height="LABEL_HEIGHT"
     :transform="`translate(${halfWayPosition.x}, ${halfWayPosition.y})`"
   >
     <p class="text-wrapper">
