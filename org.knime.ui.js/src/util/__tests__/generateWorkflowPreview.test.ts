@@ -1,47 +1,10 @@
 import { expect, describe, beforeAll, it, vi } from "vitest";
-import { createNativeNode } from "@/test/factories";
 import { generateWorkflowPreview } from "../generateWorkflowPreview";
 
 vi.mock(
   "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff",
   () => ({ default: "font data" })
 );
-
-const node1 = createNativeNode({
-  id: "root:1",
-  annotation: {
-    text: {
-      value:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
-    },
-  },
-  position: {
-    y: -1260,
-    x: -1085,
-  },
-});
-const node2 = createNativeNode({
-  id: "root:2",
-  annotation: null,
-  position: {
-    y: -1515,
-    x: -1880,
-  },
-});
-const node3 = createNativeNode({
-  id: "root:3",
-  annotation: null,
-  position: {
-    y: -1790,
-    x: -1665,
-  },
-});
-
-const nodes = {
-  [node1.id]: node1,
-  [node2.id]: node2,
-  [node3.id]: node3,
-};
 
 describe("generateWorkflowPreview", () => {
   const mockFetch = vi.fn(() =>
@@ -132,16 +95,6 @@ describe("generateWorkflowPreview", () => {
     foreignObject.classList.add("dummy-class");
     svg.appendChild(foreignObject);
 
-    // add nodes
-    Object.values(nodes).forEach((node, i) => {
-      const width = [750, 70, 70];
-      const height = [250, 70, 70];
-      const n = document.createElementNS(svgNS, "div");
-      n.setAttribute("data-node-id", node.id);
-      n.innerHTML = `<foreignObject class='node-label-text-container' width=${width[i]} height=${height[i]}></foreignObject>`;
-      svg.appendChild(n);
-    });
-
     const foreignObject2 = document.createElementNS(svgNS, "foreignObject");
     const annotation = document.createElement("div");
     annotation.classList.add("annotation-editor");
@@ -155,7 +108,7 @@ describe("generateWorkflowPreview", () => {
 
   it("should add fonts", async () => {
     const { svg } = setup();
-    const output = await generateWorkflowPreview(svg, false, nodes);
+    const output = await generateWorkflowPreview(svg, false);
 
     expect(output).toMatch(
       /url\("data:application\/font-woff;charset=utf-8;base64,.+/g
@@ -165,7 +118,7 @@ describe("generateWorkflowPreview", () => {
   it("should set transparency on the workflow sheet", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false, nodes);
+    const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
     const workflowSheet = outputEl.querySelector(
       ".workflow-sheet"
@@ -182,92 +135,7 @@ describe("generateWorkflowPreview", () => {
     };
     const { svg } = setup({ workflowSheetDimensions });
 
-    const output = await generateWorkflowPreview(svg, false, nodes);
-
-    const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("950 20 475 200");
-  });
-
-  it("should set the correct viewbox for single node", async () => {
-    const workflowSheetDimensions = {
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    };
-    const { svg } = setup({ workflowSheetDimensions });
-    const node = createNativeNode({
-      id: "root:1",
-      annotation: {
-        text: {
-          value:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
-        },
-      },
-      position: {
-        y: -1260,
-        x: -1085,
-      },
-    });
-
-    const output = await generateWorkflowPreview(svg, false, {
-      [node.id]: node,
-    });
-
-    const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("-295 20 770 200");
-  });
-
-  it("should set the correct viewbox for node with label on left", async () => {
-    const workflowSheetDimensions = {
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    };
-    const { svg } = setup({ workflowSheetDimensions });
-    const node1 = createNativeNode({
-      id: "root:1",
-      annotation: {
-        text: {
-          value:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at sodales justo, ac eleifend sem. Ut orci mi, venenatis sit amet augue ac, commodo aliquam diam. Sed gravida pharetra mauris ut ultrices. Pellentesque non quam ut neque suscipit mattis. Cras.",
-        },
-      },
-      position: {
-        y: -1515,
-        x: -1880,
-      },
-    });
-    const node2 = createNativeNode({
-      id: "root:2",
-      annotation: null,
-      position: {
-        y: -1260,
-        x: -1085,
-      },
-    });
-    const nodes = {
-      [node1.id]: node1,
-      [node2.id]: node2,
-    };
-
-    const output = await generateWorkflowPreview(svg, false, nodes);
-
-    const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("950 20 135 200");
-  });
-
-  it("should set the correct viewbox for no nodes", async () => {
-    const workflowSheetDimensions = {
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    };
-    const { svg } = setup({ workflowSheetDimensions });
-
-    const output = await generateWorkflowPreview(svg, false, null);
+    const output = await generateWorkflowPreview(svg, false);
 
     const outputEl = createElementFromOutput(output);
     expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 200");
@@ -276,7 +144,7 @@ describe("generateWorkflowPreview", () => {
   it('should remove all elements with the attribute "data-hide-in-workflow-preview"', async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false, nodes);
+    const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
 
     expect(
@@ -287,7 +155,7 @@ describe("generateWorkflowPreview", () => {
   it("should remove empty and hidden elements", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false, nodes);
+    const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
     const emptyGTags = Array.from(outputEl.querySelectorAll("g")).filter(
       (el) => el.hasChildNodes
@@ -301,7 +169,7 @@ describe("generateWorkflowPreview", () => {
   it("should inline the styles of the connectors", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false, nodes);
+    const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
     const connectorEl = outputEl.querySelector(
       "[data-connector-id]"
@@ -312,7 +180,7 @@ describe("generateWorkflowPreview", () => {
   it("should inline the styles of the foreignObjects", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false, nodes);
+    const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
     expect(outputEl.querySelector("foreignObject").style.stroke).toBe(
       "rgb(123, 123, 123)"
@@ -322,7 +190,7 @@ describe("generateWorkflowPreview", () => {
   it("should inline the styles of the workflow annotations", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, false, nodes);
+    const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
     const annotationEl = outputEl.querySelector(
       ".annotation-editor"
@@ -338,11 +206,11 @@ describe("generateWorkflowPreview", () => {
     vi.spyOn(Storage.prototype, "setItem");
     vi.spyOn(Storage.prototype, "getItem");
 
-    await generateWorkflowPreview(svg, false, nodes);
+    await generateWorkflowPreview(svg, false);
 
     expect(localStorage.setItem).toHaveBeenCalledTimes(1);
 
-    await generateWorkflowPreview(svg, false, nodes);
+    await generateWorkflowPreview(svg, false);
 
     expect(localStorage.getItem).toHaveBeenCalled();
     expect(localStorage.setItem).toHaveBeenCalledTimes(1);
@@ -351,7 +219,7 @@ describe("generateWorkflowPreview", () => {
   it("should return empty svg when canvas is empty", async () => {
     const { svg } = setup();
 
-    const output = await generateWorkflowPreview(svg, true, nodes);
+    const output = await generateWorkflowPreview(svg, true);
     const outputEl = createElementFromOutput(output);
     expect(outputEl.childNodes.length).toBe(0);
   });

@@ -1,6 +1,5 @@
 import { camelCase } from "lodash";
 import robotoCondensed from "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff";
-import type { KnimeNode } from "@/api/custom-types";
 
 const LICENSE = `<!--
 The embedded fonts are based on open source fonts
@@ -25,7 +24,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->`;
-const nodeSize = 70;
 
 /**
  * Outputs the given SVG Element as a string
@@ -132,14 +130,6 @@ const getSVGElementClone = (
   return { svgClone, teardown };
 };
 
-interface EdgeObject {
-  nodeId: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 /**
  * Updates the viewBox property on the SVG element by using the same size as
  * the workflow sheet (actual workspace size)
@@ -149,57 +139,12 @@ interface EdgeObject {
  * @param edges
  * @returns {void}
  */
-const updateViewBox = (
-  svgClone: SVGSVGElement,
-  workflowSheet: HTMLElement,
-  edges: {
-    maxX: EdgeObject;
-    minX: EdgeObject;
-    maxY: EdgeObject;
-    length: number;
-    annotationLength: number;
-  }
-) => {
-  let minX = parseInt(workflowSheet.getAttribute("x"), 10);
+const updateViewBox = (svgClone: SVGSVGElement, workflowSheet: HTMLElement) => {
+  const minX = parseInt(workflowSheet.getAttribute("x"), 10);
   const minY = parseInt(workflowSheet.getAttribute("y"), 10);
-  let width = parseInt(workflowSheet.getAttribute("width"), 10);
-  let height = parseInt(workflowSheet.getAttribute("height"), 10);
-  const padding = 20;
-  const isNodeLabelHigher = height + minY <= edges.maxY.height + edges.maxY.y;
-  const nodeLabelHeight = edges.maxY.height + edges.maxY.y + nodeSize;
-  const isNodeWithLabelOnLeftEdge =
-    minX === edges.maxY.x - nodeSize || minX === edges.minX.x - nodeSize;
-  const isThereAnnotation = edges.annotationLength >= 1;
-  let initialMinX = minX;
+  const width = parseInt(workflowSheet.getAttribute("width"), 10);
+  const height = parseInt(workflowSheet.getAttribute("height"), 10);
 
-  if (isNodeLabelHigher) {
-    height = nodeLabelHeight - minY;
-  }
-
-  if (width < edges.maxX.width / 2 + width) {
-    initialMinX = minX - edges.minX.x / 2;
-  }
-
-  width += edges.maxX.width / 2;
-
-  if (isNodeWithLabelOnLeftEdge) {
-    minX -= edges.minX.width / 2;
-    width = edges.minX.width / 2 + width;
-    svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
-    return;
-  }
-
-  if (edges.length === 1) {
-    width = isThereAnnotation
-      ? edges.minX.width / 2 + width
-      : edges.minX.width + padding;
-    minX = isThereAnnotation ? minX : minX - edges.minX.width / 2 + nodeSize;
-
-    svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
-    return;
-  }
-
-  minX = initialMinX;
   svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
 };
 
@@ -351,67 +296,6 @@ const addFontStyles = async (svgElement: SVGElement) => {
   svgElement.getElementsByTagName("defs")[0].appendChild(styleTag);
 };
 
-const findEdges = (
-  nodesObject: Record<string, KnimeNode>,
-  svgClone: SVGSVGElement
-) => {
-  const annotationLength = svgClone.querySelectorAll(".annotation").length;
-
-  if (!nodesObject) {
-    return {
-      minX: { nodeId: null, x: null, y: null, width: null, height: null },
-      maxX: { nodeId: null, x: null, y: null, width: null, height: null },
-      maxY: { nodeId: null, x: null, y: null, width: null, height: null },
-      length: 0,
-      annotationLength,
-    };
-  }
-
-  const length = Object.values(nodesObject).length;
-  const nodes = Object.values(nodesObject).map((node) => {
-    const nodeLabelElement = svgClone.querySelector(
-      `[data-node-id="${node.id}"] .node-label-text-container`
-    );
-
-    return {
-      nodeId: node.id,
-      x: node.position.x,
-      y: node.position.y,
-      width: nodeLabelElement
-        ? parseInt(nodeLabelElement.getAttribute("width"), 10)
-        : nodeSize,
-      height: nodeLabelElement
-        ? parseInt(nodeLabelElement.getAttribute("height"), 10)
-        : nodeSize,
-    };
-  });
-
-  const { minX, maxX, maxY } = nodes.reduce(
-    (acc, node) => {
-      if (node.x - node.width / 2 < acc.minX.x - acc.minX.width / 2) {
-        acc.minX = node;
-      }
-
-      if (node.x + node.width / 2 > acc.maxX.x + acc.maxX.width / 2) {
-        acc.maxX = node;
-      }
-
-      if (node.y + node.height > acc.maxY.y + acc.maxY.height) {
-        acc.maxY = node;
-      }
-
-      return acc;
-    },
-    {
-      minX: nodes[0], // left edge
-      maxX: nodes[0], // right edge
-      maxY: nodes[0], // bottom edge
-    }
-  );
-
-  return { minX, maxX, maxY, length, annotationLength };
-};
-
 /**
  * Generate the preview of a workflow based on the provided SVG element which
  * represents the rendered workflow content.
@@ -424,8 +308,7 @@ const findEdges = (
  */
 export const generateWorkflowPreview = async (
   svgElement: SVGSVGElement,
-  isEmpty: boolean,
-  nodes: Record<string, KnimeNode>
+  isEmpty: boolean
 ) => {
   if (!svgElement) {
     return null;
@@ -444,8 +327,6 @@ export const generateWorkflowPreview = async (
     ".workflow-sheet"
   ) as HTMLElement;
 
-  const edges = findEdges(nodes, svgClone);
-
   // inline custom fonts to the svg element clone
   await addFontStyles(svgClone);
 
@@ -453,7 +334,7 @@ export const generateWorkflowPreview = async (
   setElementFill(workflowSheet, "transparent");
 
   // Set the viewbox to only the visible content
-  updateViewBox(svgClone, workflowSheet, edges);
+  updateViewBox(svgClone, workflowSheet);
 
   // remove all portal-targets
   removeElements(svgClone.querySelectorAll("[data-portal-target]"));
