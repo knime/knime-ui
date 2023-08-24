@@ -15,6 +15,7 @@ interface CreateWorkflowModalConfig {
 
 interface DisplayJobModal {
   isOpen: boolean;
+  name: string;
 }
 
 export * from "./common";
@@ -23,6 +24,7 @@ export * from "./types";
 export interface SpacesState {
   createWorkflowModalConfig: CreateWorkflowModalConfig;
   displayJobModal: DisplayJobModal;
+  jobs: any;
 }
 
 export const state = (): SpacesState => ({
@@ -38,7 +40,9 @@ export const state = (): SpacesState => ({
   },
   displayJobModal: {
     isOpen: false,
+    name: null,
   },
+  jobs: [],
 });
 
 export const mutations: MutationTree<SpacesState> = {
@@ -53,6 +57,10 @@ export const mutations: MutationTree<SpacesState> = {
 
   setDisplayJobModal(state, value: DisplayJobModal) {
     state.displayJobModal = value;
+  },
+
+  setJobs(state, value) {
+    state.jobs = value;
   },
 };
 
@@ -75,6 +83,19 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   openAPIDefinition({ state }, { projectId, itemId }) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     API.desktop.openAPIDefinition({ spaceProviderId, spaceId, itemId });
+  },
+
+  async displayJob({ state, commit }, { projectId, itemId, itemName }) {
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+
+    const jobs = await API.space.listJobsForWorkflow({
+      spaceId,
+      spaceProviderId,
+      itemId,
+    });
+    commit("setJobs", jobs);
+    commit("setDisplayJobModal", { isOpen: true, name: itemName });
+    console.log(jobs);
   },
 };
 

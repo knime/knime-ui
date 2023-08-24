@@ -1,4 +1,4 @@
-import type { Dispatch, Commit } from "vuex";
+import type { Dispatch } from "vuex";
 import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg";
 import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
 import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
@@ -192,9 +192,10 @@ export const buildOpenPermissionsDialog = (
 };
 
 export const buildDisplayJobMenuItem = (
-  commit: Commit,
+  dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
+  itemName: string,
 ): ActionMenuItem => {
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;
@@ -205,8 +206,10 @@ export const buildDisplayJobMenuItem = (
     disabled: isSelectionEmpty || isSelectionMultiple,
     title: isSelectionEmpty ? "Select a file to display a job." : null,
     execute: () => {
-      commit("spaces/setDisplayJobModal", {
-        isOpen: true,
+      dispatch("spaces/displayJob", {
+        projectId,
+        itemId: selectedItems[0],
+        itemName,
       });
     },
   };
