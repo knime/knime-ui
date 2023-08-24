@@ -28,7 +28,10 @@ export const createConnectedNodes = (
   node2: KnimeNode | string = "root:2",
   sourcePort: number,
   destPort: number,
-  connectionData?: Pick<Connection, "allowedActions">,
+  connectionData?: Omit<
+    Connection,
+    "id" | "sourceNode" | "sourcePort" | "destNode" | "destPort"
+  >,
   // eslint-disable-next-line max-params
 ) => {
   const sourceNode =

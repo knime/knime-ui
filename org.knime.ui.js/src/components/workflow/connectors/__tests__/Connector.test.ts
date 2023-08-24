@@ -9,6 +9,7 @@ import {
   beforeEach,
 } from "vitest";
 import { nextTick } from "vue";
+import type { Store } from "vuex";
 import gsap from "gsap";
 import { mount } from "@vue/test-utils";
 
@@ -39,6 +40,7 @@ import * as connectorPath from "@/util/connectorPath";
 import type { ConnectorProps } from "../types";
 import Connector from "../Connector.vue";
 import ConnectorPathSegment from "../ConnectorPathSegment.vue";
+import ConnectorBendpoint from "../ConnectorBendpoint.vue";
 
 vi.mock("gsap", () => ({ default: { to: vi.fn() } }));
 const mockedAPI = deepMocked(API);
@@ -128,26 +130,27 @@ describe("Connector.vue", () => {
       },
     );
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-
     return {
       $store,
-      dispatchSpy,
       connection,
       sourceNode,
       destNode,
     };
   };
 
-  const doMount = ({ props = {}, customStore = null } = {}) => {
-    const { $store, dispatchSpy, connection } = createStore();
+  const doMount = ({
+    props = null,
+    customStore = null,
+  }: { props?: Partial<ConnectorProps>; customStore?: Store<any> } = {}) => {
+    const { $store: _$store, connection } = createStore();
 
-    const _props = { ...connection, ...props } as ConnectorProps;
+    const $store = customStore || _$store;
+    const dispatchSpy = vi.spyOn($store, "dispatch");
 
     const wrapper = mount(Connector, {
-      props: _props,
+      props: { ...connection, ...props } as ConnectorProps,
       global: {
-        plugins: [customStore || $store],
+        plugins: [$store],
         mocks: { $colors, $shapes, $bus },
       },
     });
@@ -744,6 +747,150 @@ describe("Connector.vue", () => {
       expect(errorCallback).toBeCalled();
 
       expect(mockedAPI.workflowCommand.InsertNode).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("bendpoints", () => {
+    const doMountWithBendpoints = () => {
+      const { sourceNode, destNode, connection } = createConnectedNodes(
+        createNativeNode({
+          id: "root:1",
+          position: { x: 2, y: 8 },
+        }),
+
+        createNativeNode({ id: "root:2", position: { x: 20, y: 12 } }),
+        0,
+        0,
+        {
+          bendpoints: [
+            { x: 5, y: 8 },
+            { x: 12, y: 10 },
+            { x: 18, y: 12 },
+          ],
+        },
+      );
+
+      const workflow = createWorkflow({
+        nodes: {
+          [sourceNode.id]: sourceNode,
+          [destNode.id]: destNode,
+        },
+        connections: {
+          [connection.id]: connection,
+        },
+      });
+      const { $store } = createStore({ workflow });
+
+      return doMount({ customStore: $store, props: connection });
+    };
+
+    it("renders multiple bendpoints", () => {
+      const { wrapper } = doMountWithBendpoints();
+
+      expect(wrapper.findAllComponents(ConnectorPathSegment).length).toBe(4);
+      expect(wrapper.findAllComponents(ConnectorBendpoint).length).toBe(3);
+    });
+
+    it("passes the right props to the segments", () => {
+      const { wrapper } = doMountWithBendpoints();
+
+      const segmentComponents = wrapper.findAllComponents(ConnectorPathSegment);
+
+      const startCoord = { x: 34, y: 3.5 };
+      const endCoord = { x: 20, y: 7.5 };
+      const totalSegments = segmentComponents.length;
+
+      segmentComponents.forEach((comp, i) => {
+        const segment = comp.props("segment");
+        // eslint-disable-next-line vitest/no-conditional-tests
+        if (i === 0) {
+          expect(segment.start).toEqual(startCoord);
+          expect(segment.isStart).toBe(true);
+          expect(segment.isEnd).toBe(false);
+          return;
+        }
+
+        // eslint-disable-next-line vitest/no-conditional-tests
+        if (i === totalSegments - 1) {
+          expect(segment.end).toEqual(endCoord);
+          expect(segment.isStart).toBe(false);
+          expect(segment.isEnd).toBe(true);
+          return;
+        }
+
+        const previousSegment = segmentComponents.at(i - 1).props("segment");
+
+        expect(segment.start).toEqual(previousSegment.end);
+        expect(segment.isStart).toBe(false);
+        expect(segment.isEnd).toBe(false);
+      });
+    });
+
+    it("handles dragging bendpoints", async () => {
+      // const setPointerCapture = vi.fn();
+      HTMLElement.prototype.setPointerCapture = vi.fn();
+      HTMLElement.prototype.releasePointerCapture = vi.fn();
+
+      const { wrapper, $store, dispatchSpy } = doMountWithBendpoints();
+
+      const bendpoint = wrapper.findAllComponents(ConnectorBendpoint).at(1);
+
+      // moving without first pressing down does nothing
+      bendpoint.trigger("pointermove", { clientX: 100, clientY: 100 });
+      expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
+      expect($store.state.workflow.isDragging).toBe(false);
+
+      // start the drag
+      bendpoint.trigger("pointerdown", {
+        stopPropagation: vi.fn(),
+      });
+
+      // bendpoint gets selected
+      await nextTick();
+      expect(bendpoint.props("isSelected")).toBe(true);
+
+      expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
+      expect($store.state.workflow.isDragging).toBe(false);
+
+      // move the bendpoint
+      bendpoint.trigger("pointermove", { clientX: 100, clientY: 100 });
+      await nextTick();
+
+      expect($store.state.workflow.movePreviewDelta).toEqual({ x: -7, y: -5 });
+      expect($store.state.workflow.isDragging).toBe(true);
+
+      bendpoint.trigger("pointerup", {});
+      await nextTick();
+
+      expect(dispatchSpy).toHaveBeenCalledWith("workflow/moveObjects");
+    });
+
+    it("automatically selects all bendpoints when nodes are selected", async () => {
+      const { wrapper, $store, connection } = doMountWithBendpoints();
+
+      const bendpoints = wrapper.findAllComponents(ConnectorBendpoint);
+
+      // every bendpoint is NOT selected
+      expect(bendpoints.every((comp) => !comp.props("isSelected"))).toBe(true);
+
+      // select the 2 nodes of this connector
+      await $store.dispatch("selection/selectNodes", ["root:1", "root:2"]);
+
+      // every bendpoint IS selected now that the 2 nodes are selected
+      expect(bendpoints.every((comp) => comp.props("isSelected"))).toBe(true);
+
+      // start over - deselect nodes and select a single bendpoint
+      await $store.dispatch("selection/deselectAllObjects");
+      await $store.dispatch("selection/selectBendpoint", `${connection.id}__1`);
+
+      // select the 2 nodes of this connector
+      await $store.dispatch("selection/selectNodes", ["root:1", "root:2"]);
+
+      // only the bendpoint at index 1 is selected
+      bendpoints.forEach((comp, i) => {
+        const isSelected = i === 1;
+        expect(comp.props("isSelected")).toEqual(isSelected);
+      });
     });
   });
 });

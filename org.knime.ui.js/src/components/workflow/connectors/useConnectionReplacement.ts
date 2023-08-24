@@ -30,7 +30,7 @@ type UseConnectionReplacementOptions = {
   /**
    * Determines whether the connection can be deleted
    */
-  allowedActions: { canDelete: boolean };
+  allowedActions: { canDelete?: boolean };
 };
 
 export const useConnectionReplacement = (

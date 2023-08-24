@@ -118,10 +118,11 @@ const {
   allowedActions: props.allowedActions,
 });
 
-const onConnectionSegmentClick = (event: MouseEvent) => {
-  const isMultiselect = event.shiftKey || event[getMetaOrCtrlKey()];
+const isMultiselect = (event: MouseEvent | PointerEvent) =>
+  event.shiftKey || event[getMetaOrCtrlKey()];
 
-  if (!isMultiselect) {
+const onConnectionSegmentClick = (event: MouseEvent) => {
+  if (!isMultiselect(event)) {
     store.dispatch("selection/deselectAllObjects");
   }
 
@@ -140,9 +141,6 @@ const onContextMenu = (event: MouseEvent) => {
 const onNodeDragLeave = () => {
   isDraggedOver.value = false;
 };
-
-const isMultiselect = (event: MouseEvent | PointerEvent) =>
-  event.shiftKey || event[getMetaOrCtrlKey()];
 
 const onBendpointPointerdown = (
   event: PointerEvent,
