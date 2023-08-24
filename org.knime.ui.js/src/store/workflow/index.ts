@@ -27,6 +27,7 @@ export interface WorkflowState {
   activeWorkflow: Workflow | null;
   activeSnapshotId: string | null;
   tooltip: TooltipDefinition | null;
+  isWorkflowPanelFocused: boolean;
 }
 
 /**
@@ -50,6 +51,7 @@ export const state = (): WorkflowState => ({
   // TODO: NXT-1143 find a better place for the tooltip logic
   // maybe use an event that bubbles to the top (workflow canvas?)
   tooltip: null,
+  isWorkflowPanelFocused: false,
 });
 
 export const mutations: MutationTree<WorkflowState> = {
@@ -70,6 +72,9 @@ export const mutations: MutationTree<WorkflowState> = {
   },
   setTooltip(state, tooltip) {
     state.tooltip = tooltip;
+  },
+  setIsWorkflowPanelFocused(state, value) {
+    state.isWorkflowPanelFocused = value;
   },
 };
 

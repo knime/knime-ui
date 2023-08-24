@@ -50,7 +50,21 @@ export default defineComponent({
       }
     },
   },
+  mounted() {
+    this.$el.addEventListener("focusin", this.onFocusIn);
+    this.$el.addEventListener("focusout", this.onFocusOut);
+  },
+  beforeUnmount() {
+    this.$el.removeEventListener("focusin", this.onFocusIn);
+    this.$el.removeEventListener("focusout", this.onFocusOut);
+  },
   methods: {
+    onFocusIn() {
+      this.$store.commit("workflow/setIsWorkflowPanelFocused", true);
+    },
+    onFocusOut() {
+      this.$store.commit("workflow/setIsWorkflowPanelFocused", false);
+    },
     toggleContextMenu(event) {
       // this is not the only place where it is activated, look into Kanvas
       // where an unsuccessful pan by right click also opens it
