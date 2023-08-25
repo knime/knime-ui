@@ -69,6 +69,8 @@ describe("ContextMenu.vue", () => {
       }),
     );
 
+    $store.commit("workflow/setIsWorkflowPanelFocused", true);
+
     return { $store };
   };
 
