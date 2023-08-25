@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, toRefs, watch, toRef } from "vue";
+import { ref, computed, toRefs, watch, toRef, nextTick } from "vue";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -142,6 +142,42 @@ const onNodeDragLeave = () => {
   isDraggedOver.value = false;
 };
 
+const virtualBendpoint = ref<{ index: number; position: XY }>(null);
+const itemRefs = ref<{ $el: HTMLElement }[]>([]);
+
+const onVirtualBendpointAdded = async ({ position, index, event }) => {
+  await store.dispatch("workflow/addVirtualBendpoint", {
+    position,
+    connectionId: props.id,
+    index,
+  });
+
+  await nextTick();
+
+  const [x, y] = screenToCanvasCoordinates.value([
+    event.clientX,
+    event.clientY,
+  ]);
+
+  virtualBendpoint.value = {
+    index,
+    position: { x, y },
+  };
+
+  // after virtual bendpoints are added to the store they will be rendered
+  // as if they were real bendpoints. But since the original pointer event
+  // happened on a different element we now redispatch it to the correct
+  // element so that the normal click&drag logic can happen
+  event.stopPropagation();
+  const ptrEvent = new PointerEvent("pointerdown", {
+    clientX: event.clientX,
+    clientY: event.clientY,
+    pointerId: event.pointerId,
+  });
+
+  itemRefs.value[index].$el.dispatchEvent(ptrEvent);
+};
+
 const onBendpointPointerdown = (
   event: PointerEvent,
   index: number,
@@ -178,7 +214,18 @@ const onBendpointPointerdown = (
 
   const onUp = () => {
     eventTarget.releasePointerCapture(event.pointerId);
-    store.dispatch("workflow/moveObjects");
+
+    if (virtualBendpoint.value) {
+      store.dispatch("workflow/addBendpoint", {
+        connectionId: props.id,
+        position: virtualBendpoint.value.position,
+        index: virtualBendpoint.value.index,
+      });
+      virtualBendpoint.value = null;
+    } else {
+      store.dispatch("workflow/moveObjects");
+    }
+
     eventTarget.removeEventListener("pointermove", onMove);
     eventTarget.removeEventListener("pointerup", onUp);
   };
@@ -227,7 +274,9 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
   >
     <template v-for="(segment, index) of pathSegments" :key="index">
       <ConnectorPathSegment
+        :connection-id="id"
         :segment="segment"
+        :index="index"
         :is-flowvariable-connection="flowVariableConnection"
         :is-highlighted="isHighlighted"
         :is-dragged-over="isDraggedOver"
@@ -236,7 +285,7 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
         :interactive="interactive"
         :streaming="streaming"
         :suggest-delete="segment.isEnd && suggestDelete"
-        :is-hovered="isHovered"
+        :is-connection-hovered="isHovered"
         @mouseenter="isHovered = true"
         @mouseleave="isHovered = false"
         @click.left="onConnectionSegmentClick"
@@ -247,10 +296,12 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
         @node-dragging-enter="onWorkflowNodeDragEnter"
         @node-dragging-leave.prevent="onNodeDragLeave"
         @node-dragging-end.prevent="onWorkflowNodeDragLeave"
+        @add-virtual-bendpoint="onVirtualBendpointAdded({ ...$event, index })"
       />
 
       <ConnectorBendpoint
         v-if="index !== 0"
+        ref="itemRefs"
         :is-selected="
           isBendpointSelected(
             getBendpointId(id, index - 1),
@@ -264,7 +315,7 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
         :index="index - 1"
         :connection-id="id"
         :interactive="interactive"
-        @pointerdown="
+        @pointerdown.left="
           onBendpointPointerdown($event, index, pathSegments[index].start)
         "
         @click="onBendpointClick($event, index)"

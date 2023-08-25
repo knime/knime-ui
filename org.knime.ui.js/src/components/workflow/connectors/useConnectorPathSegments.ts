@@ -36,6 +36,17 @@ export const useConnectorPathSegments = (
 ) => {
   const store = useStore();
   const isDragging = computed(() => store.state.workflow.isDragging);
+
+  const virtualBendpoints = computed(
+    () => store.state.workflow.virtualBendpoints[options.id] ?? {},
+  );
+
+  const totalVirtualBendpoints = computed(
+    () => Object.keys(virtualBendpoints.value).length,
+  );
+
+  const hasVirtualBendpoints = computed(() => totalVirtualBendpoints.value > 0);
+
   const movePreviewDelta = computed(
     () => store.state.workflow.movePreviewDelta,
   );
@@ -50,76 +61,139 @@ export const useConnectorPathSegments = (
     useConnectorPosition(options);
 
   const pathSegments = computed(() => {
-    let x1 = startSegmentPosition.value.x;
-    let y1 = startSegmentPosition.value.y;
-    let x2 = endSegmentPosition.value.x;
-    let y2 = endSegmentPosition.value.y;
+    let startX = startSegmentPosition.value.x;
+    let startY = startSegmentPosition.value.y;
+    let endX = endSegmentPosition.value.x;
+    let endY = endSegmentPosition.value.y;
 
     // Update position of source or destination node is being moved
     if (isDragging.value) {
       if (isNodeSelected.value(options.sourceNode.value)) {
-        x1 += movePreviewDelta.value.x;
-        y1 += movePreviewDelta.value.y;
+        startX += movePreviewDelta.value.x;
+        startY += movePreviewDelta.value.y;
       }
       if (isNodeSelected.value(options.destNode.value)) {
-        x2 += movePreviewDelta.value.x;
-        y2 += movePreviewDelta.value.y;
+        endX += movePreviewDelta.value.x;
+        endY += movePreviewDelta.value.y;
       }
     }
 
     // when there are no bendpoints or we have an absolutePoint means we should
     // treat this connector as a single unsegmented path
-    if (options.bendpoints.value.length === 0 || options.absolutePoint.value) {
+    if (
+      (options.bendpoints.value.length === 0 && !hasVirtualBendpoints.value) ||
+      options.absolutePoint.value
+    ) {
       return [
         {
           isStart: true,
           isEnd: true,
-          start: { x: x1, y: y1 },
-          end: { x: x2, y: y2 },
+          start: { x: startX, y: startY },
+          end: { x: endX, y: endY },
         },
       ];
     }
 
     // include the "start" and "end" coordinates as points
-    const allPoints: Array<XY> = [
-      { x: x1, y: y1 },
-      ...options.bendpoints.value,
-      { x: x2, y: y2 },
+    const allPoints: Array<XY & { virtual?: boolean }> = [
+      // add "start" coordinate point
+      { x: startX, y: startY },
+
+      // add all the points in-between:
+      // (1) Consider all real bendpoints (BP) + virtual bendpoints (VBP) (the ones being added)
+      ...Array(options.bendpoints.value.length + totalVirtualBendpoints.value)
+        .fill(null)
+        .flatMap((_, index) => {
+          const bendpoint = options.bendpoints.value.at(index);
+          const virtualBendpoint = virtualBendpoints.value[index];
+
+          // (2) if the current index does not have a VBP associated with it
+          // then it's only the BP we need to consider as a point
+          if (!virtualBendpoint) {
+            return [bendpoint];
+          }
+
+          // (3) here we do have a VBP but we still need to make sure that the
+          // total amount of BPs matches the one the VBP was aware of at the time it
+          // was created. If the amount differs, this means a new and real BP has
+          // already been added and so this VBP is now stale and should not be considered
+          const shouldAddVirtual =
+            virtualBendpoint.currentBendpointCount ===
+            options.bendpoints.value.length;
+
+          return [
+            shouldAddVirtual ? { ...virtualBendpoint, virtual: true } : null,
+
+            // we always consider the real BP, but only after we add a virtual one.
+            // Note that this iteration could go beyond the total amount of BPs
+            // (e.g there were no BPs but we're creating one via a VBP)
+            // so the `bendpoint` variable could be undefined
+            bendpoint,
+          ];
+        })
+        .filter(Boolean),
+
+      // add "end" coordinate point
+      { x: endX, y: endY },
     ];
 
+    const shouldAddTranslationDelta = (
+      bendpointIndex: number,
+      isVirtual: boolean,
+      isStartOrEnd: boolean,
+    ) => {
+      const bendpointId = getBendpointId(options.id, bendpointIndex);
+
+      const isSelectedOrVirtual =
+        isBendpointSelected.value(bendpointId) || isVirtual;
+
+      // translation delta is only added for segments that are NOT the first or last
+      // and only if the bendpoint is selected or if it's virtual
+      // (since those cannot be selected because they're not real)
+      return !isStartOrEnd && isSelectedOrVirtual;
+    };
+
     const segments: Array<PathSegment> = [];
-    // then create all the segments in-between those points
+    // create all the segments in-between all the reference points
     for (let i = 0; i < allPoints.length - 1; i++) {
-      const isStart = i === 0;
-      const isEnd = i + 1 === allPoints.length - 1;
+      const isStartSegment = i === 0;
+      const isEndSegment = i + 1 === allPoints.length - 1;
 
       const start = allPoints[i];
       const end = allPoints[i + 1];
 
-      // when a given bendpoint is being dragged,
-      // we need to adjust the "start" of the current path segment's position
-      const startWithDelta: XY =
-        !isStart && isBendpointSelected.value(getBendpointId(options.id, i - 1))
-          ? {
-              x: start.x + movePreviewDelta.value.x,
-              y: start.y + movePreviewDelta.value.y,
-            }
-          : start;
+      // When a given bendpoint is being dragged:
+      // (1) we need to adjust the "start" of the current path segment's position
+      // if it's connected to the bendpoint that's being dragged
+      const startWithDelta: XY = shouldAddTranslationDelta(
+        i - 1,
+        start.virtual,
+        isStartSegment,
+      )
+        ? {
+            x: start.x + movePreviewDelta.value.x,
+            y: start.y + movePreviewDelta.value.y,
+          }
+        : start;
 
-      // and we also need to adjust the "end" of the previous path segment
-      const endWithDelta: XY =
-        !isEnd && isBendpointSelected.value(getBendpointId(options.id, i))
-          ? {
-              x: end.x + movePreviewDelta.value.x,
-              y: end.y + movePreviewDelta.value.y,
-            }
-          : end;
+      // (2) and we need to also adjust the "end" of the current path segment
+      // if it's connected to the bendpoint that's being dragged
+      const endWithDelta: XY = shouldAddTranslationDelta(
+        i,
+        end.virtual,
+        isEndSegment,
+      )
+        ? {
+            x: end.x + movePreviewDelta.value.x,
+            y: end.y + movePreviewDelta.value.y,
+          }
+        : end;
 
       segments.push({
         start: startWithDelta,
         end: endWithDelta,
-        isStart,
-        isEnd,
+        isStart: isStartSegment,
+        isEnd: isEndSegment,
       });
     }
 

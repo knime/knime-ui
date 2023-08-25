@@ -25,6 +25,29 @@ export interface AddAnnotationResult extends CommandResult {
 export namespace AddAnnotationResult {
 }
 /**
+ * Insert a new bendpoint on a given connection.
+ * @export
+ * @interface AddBendpointCommand
+ */
+export interface AddBendpointCommand extends BendpointCommand {
+
+    /**
+     *
+     * @type {XY}
+     * @memberof AddBendpointCommand
+     */
+    position: XY;
+
+}
+
+
+/**
+ * @export
+ * @namespace AddBendpointCommand
+ */
+export namespace AddBendpointCommand {
+}
+/**
  * Adds a new node to the workflow.
  * @export
  * @interface AddNodeCommand
@@ -499,6 +522,35 @@ export interface AppStateChangedEventType extends EventType {
 }
 
 
+/**
+ *
+ * @export
+ * @interface BendpointCommand
+ */
+export interface BendpointCommand extends WorkflowCommand {
+
+    /**
+     * The connection id to remove a bendpoint from.
+     * @type {string}
+     * @memberof BendpointCommand
+     */
+    connectionId: string;
+    /**
+     * The index of the bendpoint to be removed
+     * @type {number}
+     * @memberof BendpointCommand
+     */
+    index: number;
+
+}
+
+
+/**
+ * @export
+ * @namespace BendpointCommand
+ */
+export namespace BendpointCommand {
+}
 /**
  *
  * @export
@@ -2178,7 +2230,7 @@ export interface PartBasedCommand extends WorkflowCommand {
      * @type {{ [key: string]: Array<number>; }}
      * @memberof PartBasedCommand
      */
-    connectionBendpoints: { [key: string]: Array<number>; };
+    connectionBendpoints?: { [key: string]: Array<number>; };
 
 }
 
@@ -2591,6 +2643,23 @@ export interface ProjectMetadata {
 }
 
 
+/**
+ * Remove a bendpoint on a given connection.
+ * @export
+ * @interface RemoveBendpointCommand
+ */
+export interface RemoveBendpointCommand extends BendpointCommand {
+
+
+}
+
+
+/**
+ * @export
+ * @namespace RemoveBendpointCommand
+ */
+export namespace RemoveBendpointCommand {
+}
 /**
  * Remove a port from a node
  * @export
@@ -3498,7 +3567,9 @@ export namespace WorkflowCommand {
         UpdateWorkflowAnnotation = 'update_workflow_annotation',
         ReorderWorkflowAnnotations = 'reorder_workflow_annotations',
         AddWorkflowAnnotation = 'add_workflow_annotation',
-        UpdateProjectMetadata = 'update_project_metadata'
+        UpdateProjectMetadata = 'update_project_metadata',
+        AddBendpoint = 'add_bendpoint',
+        RemoveBendpoint = 'remove_bendpoint'
     }
 }
 /**
@@ -4304,6 +4375,36 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddNode }
 		}) as Promise<AddNodeResult>;
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Insert a new bendpoint on a given connection.
+     */
+	AddBendpoint(
+		params: { projectId: string, workflowId: string } & Omit<AddBendpointCommand, 'kind'>
+    ): Promise<CommandResult> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddBendpoint }
+		}) as Promise<CommandResult>;
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Remove a bendpoint on a given connection.
+     */
+	RemoveBendpoint(
+		params: { projectId: string, workflowId: string } & Omit<RemoveBendpointCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.RemoveBendpoint }
+		});
 		return postProcessCommandResponse(commandResponse);
 	},	
 

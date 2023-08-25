@@ -4,8 +4,6 @@ import { computed, ref, onBeforeUnmount } from "vue";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
 
-const BENDPOINT_SIZE = 6;
-
 interface Props {
   position: XY;
   connectionId: string;
@@ -14,24 +12,31 @@ interface Props {
   isSelected: boolean;
   isDragging: boolean;
   interactive?: boolean;
+  virtual?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   interactive: true,
+  virtual: false,
 });
 
 const bendpointSelectionPreview = ref<string | null>(null);
+if (!props.virtual) {
+  $bus.on(
+    `bendpoint-selection-preview-${props.connectionId}__${props.index}`,
+    ({ preview }) => {
+      bendpointSelectionPreview.value = preview;
+    },
+  );
 
-$bus.on(
-  `bendpoint-selection-preview-${props.connectionId}__${props.index}`,
-  ({ preview }) => {
-    bendpointSelectionPreview.value = preview;
-  },
-);
+  onBeforeUnmount(() => {
+    $bus.off(
+      `bendpoint-selection-preview-${props.connectionId}__${props.index}`,
+    );
+  });
+}
 
-onBeforeUnmount(() => {
-  $bus.off(`bendpoint-selection-preview-${props.connectionId}__${props.index}`);
-});
+const bendpointSize = computed(() => (props.virtual ? 4 : 6));
 
 const showSelectionPreview = computed(() => {
   // no preview
@@ -47,15 +52,15 @@ const showSelectionPreview = computed(() => {
   return bendpointSelectionPreview.value === "show" || props.isSelected;
 });
 
-const translateX = computed(() => props.position.x - BENDPOINT_SIZE / 2);
-const translateY = computed(() => props.position.y - BENDPOINT_SIZE / 2);
+const translateX = computed(() => props.position.x - bendpointSize.value / 2);
+const translateY = computed(() => props.position.y - bendpointSize.value / 2);
 
 const transform = computed(
   () => `translate(${translateX.value}, ${translateY.value})`,
 );
 
 const transformOrigin = computed(
-  () => `${BENDPOINT_SIZE / 2}px ${BENDPOINT_SIZE / 2}px`,
+  () => `${bendpointSize.value / 2}px ${bendpointSize.value / 2}px`,
 );
 </script>
 
@@ -63,9 +68,9 @@ const transformOrigin = computed(
   <g :transform="transform">
     <rect
       v-if="interactive"
-      :width="BENDPOINT_SIZE"
-      :height="BENDPOINT_SIZE"
-      class="hover-area"
+      :width="bendpointSize"
+      :height="bendpointSize"
+      :class="['hover-area', { dragging: isDragging, virtual }]"
       data-hide-in-workflow-preview
     />
     <rect
@@ -74,10 +79,11 @@ const transformOrigin = computed(
         {
           selected: showSelectionPreview,
           'flow-variable': isFlowVariableConnection,
+          virtual,
         },
       ]"
-      :width="BENDPOINT_SIZE"
-      :height="BENDPOINT_SIZE"
+      :width="bendpointSize"
+      :height="bendpointSize"
     />
   </g>
 </template>
@@ -89,7 +95,11 @@ const transformOrigin = computed(
   stroke: transparent;
   cursor: grab;
 
-  &:hover + rect {
+  &.dragging {
+    cursor: grabbing;
+  }
+
+  &:not(.virtual):hover + rect {
     stroke: var(--fill-color);
     transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
     transform-origin: v-bind(transformOrigin);
@@ -106,6 +116,12 @@ const transformOrigin = computed(
 
   &.selected {
     --fill-color: var(--knime-cornflower);
+  }
+
+  &.virtual {
+    --fill-color: var(--knime-white);
+
+    stroke: var(--knime-stone-gray);
   }
 
   &.flow-variable:not(.selected) {

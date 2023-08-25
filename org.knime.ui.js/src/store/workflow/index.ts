@@ -22,6 +22,7 @@ import * as moving from "./moving";
 import * as nodeInteractions from "./nodeInteractions";
 import * as annotationInteractions from "./annotationInteractions";
 import * as clipboardInteractions from "./clipboardInteractions";
+import * as connectionInteractions from "./connectionInteractions";
 
 export interface WorkflowState {
   activeWorkflow: Workflow | null;
@@ -45,6 +46,7 @@ export const state = (): WorkflowState => ({
   ...nodeInteractions.state(),
   ...clipboardInteractions.state(),
   ...annotationInteractions.state(),
+  ...connectionInteractions.state(),
   activeWorkflow: null,
   activeSnapshotId: null,
   // TODO: NXT-1143 find a better place for the tooltip logic
@@ -61,6 +63,7 @@ export const mutations: MutationTree<WorkflowState> = {
   ...nodeInteractions.mutations,
   ...clipboardInteractions.mutations,
   ...annotationInteractions.mutations,
+  ...connectionInteractions.mutations,
 
   setActiveWorkflow(state, workflow) {
     state.activeWorkflow = workflow;
@@ -82,6 +85,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   ...nodeInteractions.actions,
   ...clipboardInteractions.actions,
   ...annotationInteractions.actions,
+  ...connectionInteractions.actions,
 
   undo({ state }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
@@ -259,6 +263,7 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
   ...nodeInteractions.getters,
   ...clipboardInteractions.getters,
   ...annotationInteractions.getters,
+  ...connectionInteractions.getters,
 
   /* Workflow is empty if it doesn't contain nodes */
   isWorkflowEmpty({ activeWorkflow }) {

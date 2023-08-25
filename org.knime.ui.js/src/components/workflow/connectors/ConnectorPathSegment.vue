@@ -4,14 +4,19 @@ import gsap from "gsap";
 
 import connectorPath from "@/util/connectorPath";
 import type { PathSegment } from "./types";
+import { geometry } from "@/util/geometry";
+import ConnectorBendpoint from "./ConnectorBendpoint.vue";
+import type { XY } from "@/api/gateway-api/generated-api";
 
 interface Props {
+  connectionId: string;
   segment: PathSegment;
   isFlowvariableConnection: boolean;
   isHighlighted: boolean;
   isDraggedOver: boolean;
   suggestDelete: boolean;
-  isHovered: boolean;
+  isConnectionHovered: boolean;
+  index: number;
   isReadonly?: boolean;
   isSelected?: boolean;
   interactive?: boolean;
@@ -25,6 +30,13 @@ const props = withDefaults(defineProps<Props>(), {
   streaming: false,
 });
 
+const emit = defineEmits<{
+  (
+    e: "addVirtualBendpoint",
+    params: { position: XY; event: PointerEvent },
+  ): void;
+}>();
+
 const path = computed(() => {
   const x1 = props.segment.start.x;
   const y1 = props.segment.start.y;
@@ -33,6 +45,10 @@ const path = computed(() => {
 
   return connectorPath(x1, y1, x2, y2);
 });
+
+const centerPoint = computed(() =>
+  geometry.utils.getCenterPoint(props.segment.start, props.segment.end),
+);
 
 const visiblePath = ref<SVGPathElement>(null);
 /*
@@ -62,15 +78,19 @@ watch(toRef(props, "suggestDelete"), (newValue, oldValue) => {
     ease: "power2.out",
   });
 });
+
+const isSegmentHovered = ref(false);
 </script>
 
 <template>
   <path
     v-if="interactive"
     :d="path"
-    :class="['hover-area', { hovered: isHovered }]"
+    :class="['hover-area', { hovered: isConnectionHovered }]"
     data-hide-in-workflow-preview
     v-bind="$attrs"
+    @mouseenter="isSegmentHovered = true"
+    @mouseleave="isSegmentHovered = false"
   />
   <path
     v-bind="$attrs"
@@ -85,6 +105,21 @@ watch(toRef(props, "suggestDelete"), (newValue, oldValue) => {
       'is-dragged-over': isDraggedOver,
     }"
     fill="none"
+  />
+  <ConnectorBendpoint
+    v-show="isSegmentHovered"
+    :connection-id="connectionId"
+    :is-flow-variable-connection="false"
+    :is-selected="false"
+    :is-dragging="false"
+    :index="-1"
+    :position="centerPoint"
+    virtual
+    @mouseenter="isSegmentHovered = true"
+    @mouseleave="isSegmentHovered = false"
+    @pointerdown.left="
+      emit('addVirtualBendpoint', { position: centerPoint, event: $event })
+    "
   />
 </template>
 
