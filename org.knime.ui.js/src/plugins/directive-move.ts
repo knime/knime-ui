@@ -107,7 +107,6 @@ const createPointerdownHandler =
     }
 
     event.stopPropagation();
-    event.preventDefault();
 
     const { pointerId } = event;
     state.pointerId = pointerId;
