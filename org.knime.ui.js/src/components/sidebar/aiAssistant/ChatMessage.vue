@@ -9,19 +9,12 @@ import LoadingIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 import InstallableExtension from "./InstallableExtension.vue";
-
-interface Node {
-  title: string;
-  factoryName: string;
-  featureSymbolicName: string;
-  featureName: string;
-  featureVendor: string;
-}
+import type { NodeWithExtensionInfo } from "./types";
 
 interface Props {
   role: string;
   content?: string;
-  nodes?: Node[];
+  nodes?: NodeWithExtensionInfo[];
   statusUpdate?: string;
   isError?: boolean;
 }

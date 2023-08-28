@@ -1,22 +1,14 @@
 <script setup lang="ts">
+import { computed, ref } from "vue";
+
 import ExpandTransition from "webapps-common/ui/components/transitions/ExpandTransition.vue";
 import BaseButton from "webapps-common/ui/components/BaseButton.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
 import ArrowIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
 
-import { computed, ref } from "vue";
+import type { ExtensionWithNodes } from "./types";
 
-interface Props {
-  featureSymbolicName: string;
-  featureName: string;
-  featureVendor: string;
-  nodes: {
-    factoryName: string;
-    title: string;
-  }[];
-}
-
-const props = defineProps<Props>();
+const props = defineProps<ExtensionWithNodes>();
 
 const isExpanded = ref(false);
 
@@ -72,7 +64,6 @@ const openNodeInBrowser = (factoryName: string) => {
   & .header {
     padding: 8px 0;
     display: flex;
-    flex-direction: row;
     align-items: center;
 
     & a {
