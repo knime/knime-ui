@@ -74,7 +74,7 @@ describe("ContextMenu.vue", () => {
     return { $store };
   };
 
-  const doMount = ({ props = {}, store = null } = {}) => {
+  const doMount = async ({ props = {}, store = null } = {}) => {
     const defaultProps = {
       position: {
         x: 10,
@@ -101,6 +101,8 @@ describe("ContextMenu.vue", () => {
       },
     });
 
+    await new Promise((r) => setTimeout(r, 0));
+
     return { wrapper, $store, shortcutsSpy };
   };
 
@@ -108,8 +110,8 @@ describe("ContextMenu.vue", () => {
     wrapper.findComponent(MenuItems).props("items");
 
   describe("menu", () => {
-    it("sets position", () => {
-      const { wrapper } = doMount();
+    it("sets position", async () => {
+      const { wrapper } = await doMount();
       expect(
         wrapper.findComponent(FloatingMenu).props("canvasPosition"),
       ).toStrictEqual({ x: 10, y: 10 });
@@ -118,8 +120,8 @@ describe("ContextMenu.vue", () => {
       );
     });
 
-    it("re-emits menu-close", () => {
-      const { wrapper } = doMount();
+    it("re-emits menu-close", async () => {
+      const { wrapper } = await doMount();
       wrapper.findComponent(FloatingMenu).vm.$emit("menu-close");
       expect(wrapper.emitted("menuClose")).toBeTruthy();
     });
@@ -129,38 +131,38 @@ describe("ContextMenu.vue", () => {
 
       await $store.dispatch("selection/selectNode", "root:1");
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       const focusMock = vi.fn();
 
       wrapper.findComponent(MenuItems).vm.$el.focus = focusMock;
-      wrapper.setProps({ position: { x: 2, y: 3 } });
-      await Vue.nextTick();
+      await wrapper.setProps({ position: { x: 2, y: 3 } });
+      await new Promise((r) => setTimeout(r, 0));
 
       expect(focusMock).toHaveBeenCalled();
     });
   });
 
-  it("sets items on mounted", () => {
-    const { wrapper } = doMount();
+  it("sets items on mounted", async () => {
+    const { wrapper } = await doMount();
 
     expect(renderedMenuItems(wrapper).length).toBe(4);
   });
 
   it("sets items on position change", async () => {
-    const { wrapper, $store } = doMount();
+    const { wrapper, $store } = await doMount();
 
     const totalItemsBefore = renderedMenuItems(wrapper).length;
 
-    $store.dispatch("selection/selectNode", "root:1");
-
+    await $store.dispatch("selection/selectNode", "root:1");
     await wrapper.setProps({ position: { x: 2, y: 3 } });
+    await new Promise((r) => setTimeout(r, 0));
 
     expect(renderedMenuItems(wrapper).length).not.toBe(totalItemsBefore);
   });
 
   it("items are not set reactively", async () => {
-    const { wrapper, $store } = doMount();
+    const { wrapper, $store } = await doMount();
 
     await $store.dispatch("selection/selectNode", "root:1");
 
@@ -175,7 +177,7 @@ describe("ContextMenu.vue", () => {
   });
 
   it("uses right format for MenuItems", async () => {
-    const { wrapper } = doMount();
+    const { wrapper } = await doMount();
 
     await Vue.nextTick();
 
@@ -191,8 +193,8 @@ describe("ContextMenu.vue", () => {
     );
   });
 
-  it("fires correct action based on store data and passes optional event detail and metadata", () => {
-    const { wrapper, shortcutsSpy } = doMount();
+  it("fires correct action based on store data and passes optional event detail and metadata", async () => {
+    const { wrapper, shortcutsSpy } = await doMount();
     const mockEvent = { mock: true };
     wrapper.findComponent(MenuItems).vm.$emit("item-click", mockEvent, {
       metadata: { shortcutName: "executeAll" },
@@ -204,8 +206,8 @@ describe("ContextMenu.vue", () => {
     });
   });
 
-  it("closes menu after item has been clicked", () => {
-    const { wrapper } = doMount();
+  it("closes menu after item has been clicked", async () => {
+    const { wrapper } = await doMount();
 
     expect(wrapper.emitted("menuClose")).toBeFalsy();
     wrapper.findComponent(MenuItems).vm.$emit("item-click", null, {
@@ -225,12 +227,12 @@ describe("ContextMenu.vue", () => {
       }>,
     ) => items.map((item) => expect.objectContaining(item));
 
-    it("shows correct menu items if nothing is selected", () => {
+    it("shows correct menu items if nothing is selected", async () => {
       const { $store } = createStore({
         allowedWorkflowActions: { canCancel: true },
       });
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
@@ -248,7 +250,7 @@ describe("ContextMenu.vue", () => {
 
       await $store.dispatch("selection/selectNode", "root:1");
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
@@ -280,7 +282,7 @@ describe("ContextMenu.vue", () => {
 
       await $store.dispatch("selection/selectNode", "root:0");
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
@@ -312,7 +314,7 @@ describe("ContextMenu.vue", () => {
 
       await $store.dispatch("selection/selectNode", "root:0");
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
@@ -348,7 +350,7 @@ describe("ContextMenu.vue", () => {
 
       await $store.dispatch("selection/selectNode", "root:0");
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
@@ -405,7 +407,7 @@ describe("ContextMenu.vue", () => {
         "root:3",
       ]);
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
@@ -429,7 +431,7 @@ describe("ContextMenu.vue", () => {
           $store.dispatch("selection/selectConnection", id);
         });
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       await Vue.nextTick();
 
@@ -446,7 +448,7 @@ describe("ContextMenu.vue", () => {
         Object.keys(connections).at(0),
       );
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       await Vue.nextTick();
 
@@ -462,7 +464,7 @@ describe("ContextMenu.vue", () => {
 
       await $store.dispatch("selection/selectNode", "root:0");
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
@@ -490,7 +492,7 @@ describe("ContextMenu.vue", () => {
 
       await $store.dispatch("selection/selectNode", "root:0");
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
@@ -511,12 +513,12 @@ describe("ContextMenu.vue", () => {
       );
     });
 
-    it("shows correct menu items if one annotation is selected", () => {
+    it("shows correct menu items if one annotation is selected", async () => {
       const { $store } = createStore();
 
       $store.dispatch("selection/selectAnnotation", "annotation:1");
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
@@ -534,7 +536,7 @@ describe("ContextMenu.vue", () => {
       await $store.dispatch("selection/selectAnnotation", "annotation:1");
       await $store.dispatch("selection/selectNodes", ["root:1", "root:2"]);
 
-      const { wrapper } = doMount({ store: $store });
+      const { wrapper } = await doMount({ store: $store });
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
