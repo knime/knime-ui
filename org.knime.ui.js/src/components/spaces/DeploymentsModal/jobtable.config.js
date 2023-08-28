@@ -1,6 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import { columnTypes } from "@knime/knime-ui-table";
 import { caseFormatter } from "webapps-common/util/capitalize";
+import { formatTime } from "../../../util/time";
 
 // Supported wizardExecutionStates.
 export const wizardExecutionStates = {
@@ -38,12 +39,7 @@ export const jobStates = {
   [undefined]: "Interaction required", // fallback job state
 };
 
-export const defaultColumns = [
-  "createdAt",
-  "creatorName",
-  "state",
-  "nodeMessages",
-];
+export const defaultColumns = ["createdAt", "owner", "state", "nodeMessages"];
 
 export const defaultSortColumn = 0; // createdAt
 
@@ -57,7 +53,7 @@ export const jobHeaders = {
   actions: "Actions",
   configuration: "Configuration",
   createdVia: "Created by",
-  creatorName: "Owner",
+  owner: "Owner",
   state: "State",
   nodeMessages: "Node messages",
   isOutdated: "Is outdated",
@@ -79,7 +75,7 @@ export const jobTypes = {
   actions: columnTypes.Array,
   configuration: columnTypes.Object,
   createdVia: columnTypes.Nominal,
-  creatorName: columnTypes.String,
+  owner: columnTypes.String,
   state: columnTypes.Nominal,
   nodeMessages: columnTypes.Array,
   isOutdated: columnTypes.Boolean,
@@ -118,18 +114,11 @@ export const jobFormatters = () => ({
   discardAfterFailedExec: (bool) => booleanMap[bool],
   isSwapped: (bool) => booleanMap[bool],
   hasReport: (bool) => booleanMap[bool],
+  createdAt: (createdAt) => formatTime(createdAt),
 });
 
 export const jobClassGenerators = {
-  state: [
-    "state",
-    (state) => {
-      console.log("jobStates", jobStates);
-      console.log("state", state);
-      return state.toLowerCase().replace(" ", "-");
-      //   return jobStates[state].toLowerCase().replace(" ", "-");
-    },
-  ],
+  state: ["state", (state) => state.toLowerCase().replace(" ", "-")],
   workflow: ["workflow-path"],
 };
 
@@ -154,33 +143,34 @@ export const popoverRenderers = {
 export const slottedColumns = [];
 
 export const jobSubMenuItems = [
-  {
-    name: "open",
-    text: "Open",
-    callback: async (row, context) => {
-      consola.trace("Open job submenu action.");
-      context.$store.dispatch("notification/show", {
-        message: "Execution opened in new tab.",
-        type: "success",
-        showCollapser: false,
-        autoRemove: false,
-        details: {
-          text: "If it does not open automatically, ",
-          link: {
-            text: "click here.",
-            href: await context.$api.forwardToExecutionApp({ jobId: row.id }),
-            newTab: true,
-          },
-        },
-      });
-    },
-  },
-  {
-    name: "delete",
-    text: "Delete",
-    callback: (row, context) => {
-      consola.trace("Discard job submenu action.");
-      context.$store.dispatch("deployments/deleteJob", { jobId: row.id });
-    },
-  },
+  // TODO Add sub menu items
+  // {
+  //   name: "open",
+  //   text: "Open",
+  //   callback: async (row, context) => {
+  //     consola.trace("Open job submenu action.");
+  //     context.$store.dispatch("notification/show", {
+  //       message: "Execution opened in new tab.",
+  //       type: "success",
+  //       showCollapser: false,
+  //       autoRemove: false,
+  //       details: {
+  //         text: "If it does not open automatically, ",
+  //         link: {
+  //           text: "click here.",
+  //           href: await context.$api.forwardToExecutionApp({ jobId: row.id }),
+  //           newTab: true,
+  //         },
+  //       },
+  //     });
+  //   },
+  // },
+  // {
+  //   name: "delete",
+  //   text: "Delete",
+  //   callback: (row, context) => {
+  //     consola.trace("Discard job submenu action.");
+  //     context.$store.dispatch("deployments/deleteJob", { jobId: row.id });
+  //   },
+  // },
 ];

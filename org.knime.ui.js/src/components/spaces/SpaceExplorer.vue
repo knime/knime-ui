@@ -29,7 +29,7 @@ import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMe
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import FileExplorer from "./FileExplorer/FileExplorer.vue";
 import type { FileExplorerItem } from "./FileExplorer/types";
-import DisplayJobModal from "./DisplayJobModal.vue";
+import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
 
@@ -61,7 +61,7 @@ export default defineComponent({
     Modal,
     Button,
     TrashIcon,
-    DisplayJobModal,
+    DeploymentsModal,
   },
 
   props: {
@@ -573,7 +573,7 @@ export default defineComponent({
         </template>
       </Modal>
     </div>
-    <DisplayJobModal />
+    <DeploymentsModal />
   </div>
 </template>
 

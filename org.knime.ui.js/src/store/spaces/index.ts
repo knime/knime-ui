@@ -13,7 +13,7 @@ interface CreateWorkflowModalConfig {
   projectId: string;
 }
 
-interface DisplayJobModal {
+interface DisplayDeploymentsModal {
   isOpen: boolean;
   name: string;
 }
@@ -23,7 +23,7 @@ export * from "./types";
 
 export interface SpacesState {
   createWorkflowModalConfig: CreateWorkflowModalConfig;
-  displayJobModal: DisplayJobModal;
+  displayDeploymentsModal: DisplayDeploymentsModal;
   jobs: any;
 }
 
@@ -38,7 +38,7 @@ export const state = (): SpacesState => ({
     isOpen: false,
     projectId: null,
   },
-  displayJobModal: {
+  displayDeploymentsModal: {
     isOpen: false,
     name: null,
   },
@@ -55,8 +55,8 @@ export const mutations: MutationTree<SpacesState> = {
     state.createWorkflowModalConfig = value;
   },
 
-  setDisplayJobModal(state, value: DisplayJobModal) {
-    state.displayJobModal = value;
+  setDisplayDeploymentsModal(state, value: DisplayDeploymentsModal) {
+    state.displayDeploymentsModal = value;
   },
 
   setJobs(state, value) {
@@ -94,8 +94,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       itemId,
     });
     commit("setJobs", jobs);
-    commit("setDisplayJobModal", { isOpen: true, name: itemName });
-    console.log(jobs);
+    commit("setDisplayDeploymentsModal", { isOpen: true, name: itemName });
   },
 };
 

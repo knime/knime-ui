@@ -191,7 +191,7 @@ export const buildOpenPermissionsDialog = (
   };
 };
 
-export const buildDisplayJobMenuItem = (
+export const buildDisplayDeploymentsMenuItem = (
   dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
@@ -200,11 +200,11 @@ export const buildDisplayJobMenuItem = (
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;
   return {
-    id: "displayJob",
-    text: "Display job",
+    id: "displayDeployments",
+    text: "Display deployments",
     icon: CirclePlayIcon,
     disabled: isSelectionEmpty || isSelectionMultiple,
-    title: isSelectionEmpty ? "Select a file to display a job." : null,
+    title: isSelectionEmpty ? "Select a file to display deployments." : null,
     execute: () => {
       dispatch("spaces/displayJob", {
         projectId,
