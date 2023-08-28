@@ -50,6 +50,7 @@ package org.knime.ui.java.api;
 
 import java.util.regex.Pattern;
 
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 
@@ -77,7 +78,7 @@ final class ClassicAPBuildHubURL {
      * @return The built hub URL
      */
     static String getHubURL(final String itemId, final SpaceProvider sourceSpaceProvider, final Space sourceSpace) {
-        assert !sourceSpaceProvider.isLocal();
+        assert sourceSpaceProvider.getType() != TypeEnum.LOCAL;
         var serverAddress = getServerAddress(sourceSpaceProvider);
 
         var connection = sourceSpaceProvider.getConnection(true).orElseThrow();

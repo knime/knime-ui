@@ -43,10 +43,11 @@ export default {
   computed: {
     ...mapGetters("spaces", [
       "getSpaceInfo",
+      "getProviderInfo",
       "hasActiveHubSession",
       "selectionContainsFile",
     ]),
-    ...mapState("spaces", ["spaceProviders"]),
+    ...mapState("spaces", ["spaceProviders", "isLoadingContent"]),
 
     isLocal() {
       return this.getSpaceInfo(this.projectId).local;
@@ -59,6 +60,7 @@ export default {
         id: "createWorkflow",
         text: "Create workflow",
         icon: PlusIcon,
+        disabled: this.isLoadingContent,
         hidden: this.mode !== "mini",
         execute: () => {
           this.$store.commit("spaces/setCreateWorkflowModalConfig", {
@@ -89,6 +91,7 @@ export default {
         this.$store.dispatch,
         this.projectId,
         this.selectedItemIds,
+        this.getProviderInfo(projectId),
       );
 
       const getHubActions = () => {
@@ -159,6 +162,7 @@ export default {
           v-for="action in actions"
           :id="action.id"
           :key="action.id"
+          :disabled="isLoadingContent"
           :item="action"
           @click="(item) => (item.execute ? item.execute() : null)"
         />
@@ -178,6 +182,7 @@ export default {
       <div class="toolbar-actions-mini">
         <SubMenu
           :items="actions"
+          :disabled="isLoadingContent"
           class="more-actions"
           button-title="More actions"
           @toggle.stop

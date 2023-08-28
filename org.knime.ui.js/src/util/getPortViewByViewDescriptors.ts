@@ -40,7 +40,12 @@ export const getPortViewByViewDescriptors = (
   },
   node: KnimeNode,
   portIndex: number,
-): Array<{ id: string; text: string; disabled: boolean }> => {
+): Array<{
+  id: string;
+  text: string;
+  disabled: boolean;
+  canDetach?: boolean;
+}> => {
   const descriptorKey = getDescriptorMappingKeyForPortView(node, portIndex);
 
   const descriptorIndexes = data.descriptorMapping[descriptorKey];
@@ -57,6 +62,7 @@ export const getPortViewByViewDescriptors = (
       id: index.toString(),
       text: descriptor.label,
       disabled: isDisabled(descriptor),
+      canDetach: !descriptor.isSpecView,
     };
   });
 };

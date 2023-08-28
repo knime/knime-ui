@@ -19,14 +19,16 @@ This is an experimental service, USE AT YOUR OWN RISK.
 `;
 
 const store = useStore();
+const hubId = API.desktop.getHubID();
+
 const showChat = computed(() => {
   const spaceProviders = store.state.spaces.spaceProviders;
-  const communityHubProvider = spaceProviders?.["My-KNIME-Hub"];
+  const communityHubProvider = spaceProviders?.[hubId];
   return communityHubProvider?.connected;
 });
 
 const loginToCommunityHub = () => {
-  store.dispatch("spaces/connectProvider", { spaceProviderId: "My-KNIME-Hub" });
+  store.dispatch("spaces/connectProvider", { spaceProviderId: hubId });
 };
 
 const chainType = ref<"qa" | "build">("qa");
@@ -85,7 +87,7 @@ onBeforeMount(async () => {
         <span role="button" class="login-button" @click="loginToCommunityHub">
           login</span
         >
-        to KNIME Community Hub.
+        to {{ hubId }}.
       </div>
     </div>
   </div>

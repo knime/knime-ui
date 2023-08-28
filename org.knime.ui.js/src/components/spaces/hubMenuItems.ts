@@ -1,10 +1,12 @@
+import type { Dispatch } from "vuex";
 import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg";
-import CloudLoginIcon from "../../../webapps-common/ui/assets/img/icons/cloud-login.svg";
+import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
 import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
 import LinkExternal from "webapps-common/ui/assets/img/icons/link-external.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
-import type { SpaceProvider } from "@/api/custom-types";
-import type { Dispatch } from "vuex";
+
+import type { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
 
 export type ActionMenuItem = MenuItem & {
   id: string;
@@ -17,6 +19,7 @@ export const buildHubDownloadMenuItem = (
   selectedItems: Array<string>,
 ): ActionMenuItem => {
   const isSelectionEmpty = selectedItems.length === 0;
+
   return {
     id: "downloadToLocalSpace",
     text: "Download to local space",
@@ -38,13 +41,14 @@ export const buildHubUploadMenuItems = (
   hasActiveHubSession: boolean,
   projectId: string,
   selectedItems: string[],
-  spaceProviders: Record<string, SpaceProvider>,
+  spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
   // eslint-disable-next-line max-params
 ): ActionMenuItem[] => {
   const isSelectionEmpty = selectedItems.length === 0;
-  const uploadToHub = {
-    id: "uploadToHub",
-    text: "Upload to Hub",
+
+  const uploadToRemote = {
+    id: "upload",
+    text: "Upload",
     icon: CloudUploadIcon,
     disabled: !hasActiveHubSession || isSelectionEmpty,
     title: hasActiveHubSession
@@ -58,8 +62,16 @@ export const buildHubUploadMenuItems = (
     },
   };
 
-  const createConnectToHubItem = (provider: SpaceProvider) => {
-    return {
+  const remoteSpaceProviders = Object.values(spaceProviders || {}).filter(
+    (provider) => !provider.local,
+  );
+
+  const disconnectedSpaceProviders = remoteSpaceProviders.filter(
+    (provider) => !provider.connected,
+  );
+
+  const connectToHubItems = disconnectedSpaceProviders.map(
+    (provider: SpaceProviderNS.SpaceProvider) => ({
       id: `connectToHub-${provider.id}`,
       text: provider.name,
       execute: () => {
@@ -67,56 +79,63 @@ export const buildHubUploadMenuItems = (
           spaceProviderId: provider.id,
         });
       },
-    };
+    }),
+  );
+
+  // hide connectToHub if we don't have any items
+  if (connectToHubItems.length === 0) {
+    return [uploadToRemote];
+  }
+
+  const hasSingleDisconnectedProvider = disconnectedSpaceProviders.length === 1;
+
+  const [firstItem] = connectToHubItems;
+
+  const getConnectToHubText = () => {
+    if (!hasSingleDisconnectedProvider) {
+      return "Connect to";
+    }
+
+    const [provider] = disconnectedSpaceProviders;
+
+    return provider.type === BaseSpaceProvider.TypeEnum.HUB
+      ? "Connect to Hub"
+      : "Connect to Server";
   };
-
-  const remoteSpaceProviders = Object.values(spaceProviders || {}).filter(
-    (provider) => provider.id !== "local",
-  );
-
-  const disconnectedSpaceProviders = remoteSpaceProviders.filter(
-    (provider) => !provider.connected,
-  );
-
-  const hasSingleRemoteSpaceProvider = remoteSpaceProviders.length === 1;
-
-  const connectToHubItems = disconnectedSpaceProviders.map(
-    createConnectToHubItem,
-  );
 
   const connectToHub = {
     id: "connectToHub",
-    text: "Connect to Hub",
+    text: getConnectToHubText(),
     icon: CloudLoginIcon,
     // connect on click without submenu if there is only one remote hub known
-    execute: hasSingleRemoteSpaceProvider
-      ? connectToHubItems[0]?.execute
-      : null,
+    execute: hasSingleDisconnectedProvider ? firstItem.execute : null,
     // show list of disconnected hubs if we have multiple configured
-    children: hasSingleRemoteSpaceProvider ? null : connectToHubItems,
+    children: hasSingleDisconnectedProvider ? null : connectToHubItems,
   };
 
-  // hide connectToHub is we don't have any items
-  if (connectToHubItems.length === 0) {
-    return [uploadToHub];
-  }
-
-  return [uploadToHub, connectToHub];
+  return [uploadToRemote, connectToHub];
 };
 
 export const buildOpenInHubMenuItem = (
   dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
+  provider: SpaceProviderNS.SpaceProvider,
 ): ActionMenuItem => {
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;
+
+  const providerType =
+    provider.type === BaseSpaceProvider.TypeEnum.HUB ? "Hub" : "Server";
+
   return {
     id: "openInHub",
-    text: "Open in Hub",
+    text: `Open in ${providerType}`,
     icon: LinkExternal,
     disabled: isSelectionEmpty || isSelectionMultiple,
-    title: isSelectionEmpty ? "Select at least one file to open in HUB." : null,
+    title: isSelectionEmpty
+      ? `Select at least one file to open in ${providerType}.`
+      : null,
     execute: () => {
       dispatch("spaces/openInHub", {
         projectId,

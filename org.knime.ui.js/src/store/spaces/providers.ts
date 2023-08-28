@@ -1,5 +1,5 @@
 import { API } from "@api";
-import type { SpaceProvider } from "@/api/custom-types";
+import type { SpaceProviderNS } from "@/api/custom-types";
 
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "../types";
@@ -7,7 +7,7 @@ import type { SpacesState } from "./index";
 import { localRootProjectPath } from "./caching";
 
 export interface State {
-  spaceProviders?: Record<string, SpaceProvider>;
+  spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider>;
   isLoadingProvider: boolean;
   hasLoadedProviders: boolean;
 }
@@ -33,7 +33,10 @@ export const mutations: MutationTree<SpacesState> = {
     state.hasLoadedProviders = value;
   },
 
-  setSpaceProviders(state, value: Record<string, SpaceProvider>) {
+  setSpaceProviders(
+    state,
+    value: Record<string, SpaceProviderNS.SpaceProvider>,
+  ) {
     state.spaceProviders = value;
   },
 };
@@ -93,14 +96,12 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async setAllSpaceProviders(
     { commit, state, dispatch },
-    spaceProviders: Record<string, SpaceProvider>,
+    spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
   ) {
     try {
       const connectedProviderIds = Object.values(spaceProviders)
         .filter(
           ({ connected, connectionMode }) =>
-            // skip loading local space
-            // id !== localRootProjectPath.spaceProviderId &&
             connected || connectionMode === "AUTOMATIC",
         )
         .map(({ id }) => id);
@@ -141,6 +142,18 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 };
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {
+  getProviderInfo: (state) => (projectId: string) => {
+    // spaces data has not been cached or providers are not yet loaded
+    if (!state.projectPath.hasOwnProperty(projectId) || !state.spaceProviders) {
+      return {};
+    }
+
+    const { spaceProviderId: activeSpaceProviderId } =
+      state.projectPath[projectId];
+
+    return state.spaceProviders[activeSpaceProviderId] || {};
+  },
+
   getSpaceInfo: (state) => (projectId: string) => {
     // spaces data has not been cached or providers are not yet loaded
     if (!state.projectPath.hasOwnProperty(projectId) || !state.spaceProviders) {

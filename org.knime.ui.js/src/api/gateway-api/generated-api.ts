@@ -850,6 +850,12 @@ export interface Connection {
      * @memberof Connection
      */
     allowedActions?: AllowedConnectionActions;
+    /**
+     * List of bendpoint coordinates.
+     * @type {Array<XY>}
+     * @memberof Connection
+     */
+    bendpoints?: Array<XY>;
 
 }
 
@@ -2864,11 +2870,11 @@ export interface SpaceProvider {
      */
     spaces: Array<Space>;
     /**
-     * Original location of the provided spaces. If local, this property is absent.
+     * Type of the space provider.
      * @type {string}
      * @memberof SpaceProvider
      */
-    remoteLocation?: SpaceProvider.RemoteLocationEnum;
+    type: SpaceProvider.TypeEnum;
 
 }
 
@@ -2882,7 +2888,8 @@ export namespace SpaceProvider {
      * @export
      * @enum {string}
      */
-    export enum RemoteLocationEnum {
+    export enum TypeEnum {
+        LOCAL = 'LOCAL',
         HUB = 'HUB',
         SERVER = 'SERVER'
     }
@@ -3543,11 +3550,11 @@ export interface WorkflowInfo {
      */
     linked?: boolean;
     /**
-     * Original location of the workflow. If local, this property is absent.
+     * Type of the surrounding space&#39;s provider.
      * @type {string}
      * @memberof WorkflowInfo
      */
-    remoteLocation?: WorkflowInfo.RemoteLocationEnum;
+    providerType?: WorkflowInfo.ProviderTypeEnum;
     /**
      *
      * @type {JobManager}
@@ -3576,7 +3583,8 @@ export namespace WorkflowInfo {
      * @export
      * @enum {string}
      */
-    export enum RemoteLocationEnum {
+    export enum ProviderTypeEnum {
+        LOCAL = 'LOCAL',
         HUB = 'HUB',
         SERVER = 'SERVER'
     }
@@ -3928,7 +3936,7 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {number} [offset] Number of nodes/components to be skipped in the search result (for pagination).
          * @param {number} [limit] The maximum number of nodes/components in the search result (mainly for pagination).
          * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
-         * @param {'IN_COLLECTION' | 'NOT_IN_COLLECTION' | 'ALL'} [nodesPartition] If &#39;IN_COLLECTION&#39; then only nodes that are part of the collection are returned. If &#39;NOT_IN_COLLECTION&#39;  then only nodes that are not part of the active collection are returned. If &#39;ALL&#39; then all nodes (ignoring  collections) are returned. Defaults to &#39;ALL&#39;.
+         * @param {'IN_COLLECTION' | 'NOT_IN_COLLECTION' | 'ALL'} [nodesPartition] If &#39;IN_COLLECTION&#39; then only nodes that are part of the collection are returned. If &#39;NOT_IN_COLLECTION&#39; then only nodes that are not part of the active collection are returned. If &#39;ALL&#39; then all nodes (ignoring collections) are returned. Defaults to &#39;ALL&#39;.
          * @param {string} [portTypeId] The port type ID of the port type all returned nodes (and components) have to be compatible with.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}

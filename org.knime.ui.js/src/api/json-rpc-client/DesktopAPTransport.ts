@@ -28,9 +28,7 @@ export class DesktopAPTransport extends Transport {
         JSON.stringify(this.parseData(data)),
       );
 
-      const responseErr = this.transportRequestManager.resolveResponse(
-        JSON.stringify(result),
-      );
+      const responseErr = this.transportRequestManager.resolveResponse(result);
 
       if (responseErr) {
         return Promise.reject(responseErr);

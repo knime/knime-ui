@@ -3,7 +3,7 @@ import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 
 import { loadStore } from "./loadStore";
-import type { SpaceProvider } from "@/api/custom-types";
+import type { SpaceProviderNS } from "@/api/custom-types";
 
 const mockedAPI = deepMocked(API);
 
@@ -64,7 +64,7 @@ describe("spaces::auth", () => {
     it("should disconnect provider and clear spaces and user data", async () => {
       const { store } = loadStore();
 
-      const fullProvider: SpaceProvider = {
+      const fullProvider: SpaceProviderNS.SpaceProvider = {
         name: "Hub 1",
         id: "hub1",
         connected: true,

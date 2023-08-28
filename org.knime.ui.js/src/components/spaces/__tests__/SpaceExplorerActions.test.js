@@ -4,10 +4,12 @@ import { mount } from "@vue/test-utils";
 import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
-import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import * as spacesStore from "@/store/spaces";
 import { API } from "@api";
+import { createSpaceProvider } from "@/test/factories";
+import { SpaceProviderNS } from "@/api/custom-types";
+import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 
 const mockedAPI = deepMocked(API);
 
@@ -42,10 +44,11 @@ describe("SpaceExplorerActions.vue", () => {
     });
 
     store.commit("spaces/setSpaceProviders", {
-      [projectPathWithDefaults.spaceProviderId]: {
+      [projectPathWithDefaults.spaceProviderId]: createSpaceProvider({
         id: projectPathWithDefaults.spaceProviderId,
         name: "Space Prov",
         connected: true,
+        type: SpaceProviderNS.TypeEnum.HUB,
         spaces: [
           {
             id: projectPathWithDefaults.spaceId,
@@ -56,7 +59,7 @@ describe("SpaceExplorerActions.vue", () => {
           },
         ],
         ...spaceProvider,
-      },
+      }),
       ...moreSpaceProviders,
     });
 
@@ -91,7 +94,7 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.find(".toolbar-actions-normal").exists()).toBe(true);
       expect(wrapper.find(".toolbar-actions-mini").exists()).toBe(false);
 
-      expect(wrapper.text()).toMatch("Upload to Hub");
+      expect(wrapper.text()).toMatch("Upload");
       expect(wrapper.text()).toMatch("Create folder");
       expect(wrapper.text()).toMatch("Import workflow");
       expect(wrapper.text()).toMatch("Add files");
@@ -190,7 +193,7 @@ describe("SpaceExplorerActions.vue", () => {
 
       const allItems = items.map((item) => item.text).join("\n");
 
-      expect(allItems).toMatch("Upload to Hub");
+      expect(allItems).toMatch("Upload");
       expect(allItems).toMatch("Create folder");
       expect(allItems).toMatch("Import workflow");
       expect(allItems).toMatch("Create workflow");
@@ -247,20 +250,24 @@ describe("SpaceExplorerActions.vue", () => {
           hub3: {
             id: "hub3",
             name: "Hub 3",
-            connected: true,
+            connected: false,
             spaces: [],
           },
         },
       });
 
-      expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
+      const items = wrapper.findComponent(SubMenu).props("items");
+
+      expect(items).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             id: "connectToHub",
             children: [
-              // no hub 3 as its connect, but we get still the submenu (children)
               expect.objectContaining({
                 text: "Hub 2",
+              }),
+              expect.objectContaining({
+                text: "Hub 3",
               }),
             ],
           }),
@@ -322,7 +329,7 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            id: "uploadToHub",
+            id: "upload",
             disabled: true,
           }),
         ]),
@@ -353,7 +360,7 @@ describe("SpaceExplorerActions.vue", () => {
 
     it.each([
       ["createFolder", "spaces/createFolder", {}],
-      ["uploadToHub", "spaces/copyBetweenSpaces", { itemIds: ["934383"] }],
+      ["upload", "spaces/copyBetweenSpaces", { itemIds: ["934383"] }],
       ["importFiles", "spaces/importToWorkflowGroup", { importType: "FILES" }],
       [
         "importWorkflow",

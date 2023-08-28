@@ -5,3 +5,4 @@ export * from "./nodes";
 export * from "./nodeRepository";
 export * from "./ports";
 export * from "./workflow";
+export * from "./spaces";

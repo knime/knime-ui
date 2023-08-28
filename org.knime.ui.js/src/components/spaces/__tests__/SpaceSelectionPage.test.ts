@@ -7,25 +7,19 @@ import { mount } from "@vue/test-utils";
 import * as spacesStore from "@/store/spaces";
 
 import { API } from "@api";
+import { SpaceProviderNS } from "@/api/custom-types";
 import { APP_ROUTES } from "@/router/appRoutes";
-import SpaceSelectionPage from "../SpaceSelectionPage.vue";
-import SpaceCard from "../SpaceCard.vue";
-import type { SpaceProvider, SpaceUser } from "@/api/custom-types";
+import { createSpaceProvider } from "@/test/factories";
 import {
   cachedLocalSpaceProjectId,
   globalSpaceBrowserProjectId,
 } from "@/store/spaces";
 
-const mockSpaceProviders: Record<
-  string,
-  SpaceProvider & Partial<{ user: SpaceUser }>
-> = {
-  local: {
-    id: "local",
-    connected: true,
-    connectionMode: "AUTOMATIC",
-    name: "Local Space",
-  },
+import SpaceSelectionPage from "../SpaceSelectionPage.vue";
+import SpaceCard from "../SpaceCard.vue";
+
+const mockSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
+  local: createSpaceProvider(),
 };
 
 const mockedAPI = deepMocked(API);
@@ -130,12 +124,13 @@ describe("SpaceSelectionPage.vue", () => {
   it("should handle login for spaces that require authentication", async () => {
     const { wrapper, dispatchSpy } = await doMount({
       mockProvidersResponse: {
-        hub1: {
+        hub1: createSpaceProvider({
           id: "hub1",
           connected: false,
           connectionMode: "AUTHENTICATED",
           name: "Hub 1",
-        },
+          type: SpaceProviderNS.TypeEnum.HUB,
+        }),
       },
     });
 
@@ -153,12 +148,15 @@ describe("SpaceSelectionPage.vue", () => {
   it("should display more information on special knime community hub", async () => {
     const { wrapper } = await doMount({
       mockProvidersResponse: {
-        hub1: {
+        hub1: createSpaceProvider({
           id: "My-KNIME-Hub",
           connected: false,
           connectionMode: "AUTHENTICATED",
           name: "My-KNIME-Hub (https://api.hub.knime.com)",
-        },
+          local: false,
+          type: SpaceProviderNS.TypeEnum.HUB,
+          spaces: null,
+        }),
       },
     });
 
@@ -179,7 +177,7 @@ describe("SpaceSelectionPage.vue", () => {
   it("should links to hub profile for community hub", async () => {
     const { wrapper } = await doMount({
       mockProvidersResponse: {
-        hub1: {
+        hub1: createSpaceProvider({
           id: "My-KNIME-Hub",
           connected: false,
           user: {
@@ -187,7 +185,8 @@ describe("SpaceSelectionPage.vue", () => {
           },
           connectionMode: "AUTHENTICATED",
           name: "My-KNIME-Hub (https://api.hub.knime.com)",
-        },
+          type: SpaceProviderNS.TypeEnum.HUB,
+        }),
       },
     });
 
@@ -202,12 +201,13 @@ describe("SpaceSelectionPage.vue", () => {
   it("should handle logout for spaces that require authentication", async () => {
     const { wrapper, dispatchSpy } = await doMount({
       mockProvidersResponse: {
-        hub1: {
+        hub1: createSpaceProvider({
           id: "hub1",
           connected: true,
           connectionMode: "AUTHENTICATED",
           name: "Hub 1",
-        },
+          type: SpaceProviderNS.TypeEnum.HUB,
+        }),
       },
     });
 
@@ -225,12 +225,13 @@ describe("SpaceSelectionPage.vue", () => {
   it("should navigate to space browsing page", async () => {
     const { wrapper, $store, $router } = await doMount({
       mockProvidersResponse: {
-        hub1: {
+        hub1: createSpaceProvider({
           id: "hub1",
           connected: true,
           connectionMode: "AUTHENTICATED",
           name: "Hub 1",
-        },
+          type: SpaceProviderNS.TypeEnum.HUB,
+        }),
       },
     });
 

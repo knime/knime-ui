@@ -510,3 +510,7 @@ export const getAiServerAddress = () => {
     true,
   );
 };
+
+export const getHubID = () => {
+  return callBrowserFunction(window.getHubID, [], "Could not get hub id", true);
+};

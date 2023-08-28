@@ -1,20 +1,22 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
-import { mockVuexStore } from "@/test/utils";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
-import * as spacesStore from "@/store/spaces";
-
-import type { SpaceProvider } from "@/api/custom-types";
+import { mockVuexStore } from "@/test/utils";
+import { createSpaceProvider } from "@/test/factories";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
+import * as spacesStore from "@/store/spaces";
+import { SpaceProviderNS } from "@/api/custom-types";
 import SpaceSelectionContextMenu from "../SpaceExplorerContextMenu.vue";
-import { nextTick } from "vue";
 
-const startSpaceProviders: Record<string, SpaceProvider> = {
-  local: {
+const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
+  local: createSpaceProvider({
     id: "local",
     connected: true,
     connectionMode: "AUTOMATIC",
     name: "Local Space",
+    local: true,
+    type: SpaceProviderNS.TypeEnum.LOCAL,
     spaces: [
       {
         id: "local",
@@ -23,14 +25,23 @@ const startSpaceProviders: Record<string, SpaceProvider> = {
         private: false,
       },
     ],
-  },
-  hub1: {
+  }),
+  hub1: createSpaceProvider({
     id: "hub1",
     connected: false,
     connectionMode: "AUTOMATIC",
     name: "Hub 1",
-    spaces: [],
-  },
+    local: false,
+    type: SpaceProviderNS.TypeEnum.HUB,
+  }),
+  server1: createSpaceProvider({
+    id: "server1",
+    connected: false,
+    connectionMode: "AUTOMATIC",
+    name: "Server 1",
+    local: false,
+    type: SpaceProviderNS.TypeEnum.SERVER,
+  }),
 };
 
 describe("SpaceSelectionContextMenu.vue", () => {
@@ -76,6 +87,8 @@ describe("SpaceSelectionContextMenu.vue", () => {
               type: "workflows",
             },
           },
+          index: 0,
+          element: document.createElement("div"),
         },
         closeContextMenu: vi.fn(),
         onItemClick: vi.fn(),
@@ -103,8 +116,8 @@ describe("SpaceSelectionContextMenu.vue", () => {
       "rename",
       "delete",
       "Export",
-      "Upload to Hub",
-      "Connect to Hub",
+      "Upload",
+      "Connect to",
     ]);
   });
 
@@ -120,8 +133,8 @@ describe("SpaceSelectionContextMenu.vue", () => {
     expect(items.map((item) => item.text)).toStrictEqual([
       "delete",
       "Export",
-      "Upload to Hub",
-      "Connect to Hub",
+      "Upload",
+      "Connect to",
     ]);
   });
 
@@ -131,14 +144,23 @@ describe("SpaceSelectionContextMenu.vue", () => {
         selectedItemIds: ["2342", "3432"],
         isMultipleSelectionActive: true,
       },
-      spaceProviders: {},
+      spaceProviders: {
+        hub1: createSpaceProvider({
+          id: "hub1",
+          connected: true,
+          connectionMode: "AUTHENTICATED",
+          name: "Hub 1",
+          local: false,
+          type: SpaceProviderNS.TypeEnum.HUB,
+        }),
+      },
     });
 
     const items = wrapper.findComponent(MenuItems).props("items");
     expect(items.map((item) => item.text)).toStrictEqual([
       "delete",
       "Export",
-      "Upload to Hub",
+      "Upload",
     ]);
   });
 
@@ -158,7 +180,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     expect(items[2]).toStrictEqual(
       expect.objectContaining({
         disabled: true,
-        text: "Upload to Hub",
+        text: "Upload",
       }),
     );
   });
@@ -179,7 +201,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     expect(items[2]).toStrictEqual(
       expect.objectContaining({
         disabled: false,
-        text: "Upload to Hub",
+        text: "Upload",
       }),
     );
   });
@@ -192,29 +214,27 @@ describe("SpaceSelectionContextMenu.vue", () => {
       },
       spaceProviders: {
         local: startSpaceProviders.local,
-        hub1: { ...startSpaceProviders.hub1, connected: true },
-        hub2: {
+        hub1: { ...startSpaceProviders.hub1, connected: false },
+        hub2: createSpaceProvider({
           name: "Hub 2",
           id: "hub2",
           connectionMode: "AUTOMATIC",
           connected: false,
-          spaces: [],
-        },
+          local: false,
+          type: SpaceProviderNS.TypeEnum.HUB,
+        }),
       },
     });
 
     const items = wrapper.findComponent(MenuItems).props("items");
     expect(items[3]).toStrictEqual(
       expect.objectContaining({
-        text: "Connect to Hub",
+        text: "Connect to",
         execute: null,
-        children: [
-          {
-            execute: expect.anything(),
-            id: "connectToHub-hub2",
-            text: "Hub 2",
-          },
-        ],
+        children: expect.arrayContaining([
+          expect.objectContaining({ text: startSpaceProviders.hub1.name }),
+          expect.objectContaining({ text: "Hub 2" }),
+        ]),
       }),
     );
   });
@@ -229,7 +249,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
       },
       spaceProviders: {
         local: startSpaceProviders.local,
-        hub1: { ...startSpaceProviders.hub1, connected: true },
+        hub1: { ...startSpaceProviders.hub1, connected: false },
         hub2: {
           name: "Hub 2",
           id: "hub2",
@@ -247,7 +267,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     await nextTick();
 
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
-      spaceProviderId: "hub2",
+      spaceProviderId: "hub1",
     });
     expect(closeContextMenu).toHaveBeenCalled();
   });

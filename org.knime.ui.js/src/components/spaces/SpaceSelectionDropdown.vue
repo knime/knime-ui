@@ -11,7 +11,7 @@ import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import type { RootStoreState } from "@/store/types";
-import type { SpaceProvider } from "@/api/custom-types";
+import type { SpaceProviderNS } from "@/api/custom-types";
 import type { Space } from "@/api/gateway-api/generated-api";
 
 interface Props {
@@ -23,8 +23,8 @@ const store = useStore<RootStoreState>();
 const props = withDefaults(defineProps<Props>(), { showText: true });
 
 const onSpaceChange = async ({
-  data: { spaceId, spaceProviderId, requestSignIn = false },
-}) => {
+  metadata: { spaceId, spaceProviderId, requestSignIn = false },
+}: MenuItem) => {
   const { projectId } = props;
 
   // handle sign in request
@@ -60,36 +60,49 @@ const spacesDropdownData = computed((): MenuItem[] => {
   const activeSpacePath = store.state.spaces.projectPath[props.projectId];
   const spaceProviders = store.state.spaces.spaceProviders;
 
-  const providerHeadlineMenuItem = (provider: SpaceProvider) => ({
-    id: provider.id,
+  const providerHeadlineMenuItem = (
+    provider: SpaceProviderNS.SpaceProvider,
+  ): MenuItem => ({
     text: provider.name,
     selected: false,
     sectionHeadline: true,
     separator: true,
-  });
-
-  const spaceMenuItem = (provider: SpaceProvider) => (space: Space) => ({
-    text: space.id === "local" ? space.name : `${space.owner} – ${space.name}`,
-    id: `${provider.id}__${space.id}`,
-    selected:
-      provider.id === activeSpacePath?.spaceProviderId &&
-      space.id === activeSpacePath?.spaceId,
-    sectionHeadline: false,
-    separator: false,
-    data: {
-      spaceId: space.id,
-      spaceProviderId: provider.id,
-      requestSignIn: false,
+    metadata: {
+      id: provider.id,
     },
   });
 
-  const signInMenuItem = (provider: SpaceProvider) => ({
+  const spaceMenuItem =
+    (provider: SpaceProviderNS.SpaceProvider) =>
+    (space: Space): MenuItem => ({
+      text:
+        provider.local || space.owner === ""
+          ? space.name
+          : `${space.owner} – ${space.name}`,
+
+      selected:
+        provider.id === activeSpacePath?.spaceProviderId &&
+        space.id === activeSpacePath?.spaceId,
+
+      sectionHeadline: false,
+      separator: false,
+      metadata: {
+        id: `${provider.id}__${space.id}`,
+        spaceId: space.id,
+        spaceProviderId: provider.id,
+        requestSignIn: false,
+      },
+    });
+
+  const signInMenuItem = (
+    provider: SpaceProviderNS.SpaceProvider,
+  ): MenuItem => ({
     text: "Sign in",
-    id: `${provider.id}__SIGN_IN`,
     selected: false,
     sectionHeadline: false,
     separator: false,
-    data: {
+    metadata: {
+      id: `${provider.id}__SIGN_IN`,
       spaceId: null,
       spaceProviderId: provider.id,
       requestSignIn: true,
@@ -97,18 +110,20 @@ const spacesDropdownData = computed((): MenuItem[] => {
   });
 
   const providers = spaceProviders ? Object.values(spaceProviders) : [];
-  return providers.flatMap((provider) =>
-    // no headline for local spaces but for all others
-    (provider.id === "local"
+
+  return providers.flatMap((provider) => {
+    // headline for all spaces except local
+    const witHeadline = provider.local
       ? []
-      : [providerHeadlineMenuItem(provider)]
-    ).concat(
+      : [providerHeadlineMenuItem(provider)];
+
+    return witHeadline.concat(
       // create a menu item for each space, offer to sign in if we are not connected
       provider.connected
         ? provider.spaces?.map(spaceMenuItem(provider)) || []
         : [signInMenuItem(provider)],
-    ),
-  );
+    );
+  });
 });
 
 const selectedText = computed(() => {

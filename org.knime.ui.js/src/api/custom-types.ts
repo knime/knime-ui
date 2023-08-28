@@ -4,10 +4,13 @@ import type {
   NativeNode,
   PortGroup,
   PortType,
-  Space,
+  Space as _Space,
   ComponentNodeAndDescription,
   NodeDescription,
+  SpaceProvider as _SpaceProvider,
 } from "./gateway-api/generated-api";
+
+import { SpaceProvider as _SpaceProviderNS } from "./gateway-api/generated-api";
 
 /**
  * Dictionary of all available port types that are installed in the AP for the use.
@@ -41,13 +44,26 @@ export type FullSpacePath = SpaceProviderId & SpaceId & SpaceItemId;
 export interface SpaceUser {
   name: string;
 }
-export interface SpaceProvider {
-  id: string;
-  name: string;
-  connected: boolean;
-  connectionMode: "AUTHENTICATED" | "ANONYMOUS" | "AUTOMATIC";
-  user?: SpaceUser;
-  spaces?: Array<Space & { private: boolean }>; // TODO: check type Space should contain private
+
+// This is re-exported due to the mixture of desktop and gateway functionality.
+// So that we have the types in the same location
+export namespace SpaceProviderNS {
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  export import TypeEnum = _SpaceProviderNS.TypeEnum;
+
+  export interface Space extends _Space {
+    private: boolean;
+  }
+
+  export interface SpaceProvider extends _SpaceProvider {
+    id: string;
+    name: string;
+    connected: boolean;
+    connectionMode: "AUTHENTICATED" | "ANONYMOUS" | "AUTOMATIC";
+    local: boolean;
+    spaces: Array<Space>;
+    user?: SpaceUser;
+  }
 }
 
 export type ComponentMetadata = ComponentNodeAndDescription & NodeDescription;

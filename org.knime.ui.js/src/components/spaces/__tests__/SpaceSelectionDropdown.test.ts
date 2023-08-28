@@ -2,18 +2,21 @@ import { expect, describe, beforeEach, it, vi } from "vitest";
 import { mockVuexStore } from "@/test/utils";
 import { mount } from "@vue/test-utils";
 
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { createSpaceProvider } from "@/test/factories";
+import { SpaceProviderNS } from "@/api/custom-types";
 import * as spacesStore from "@/store/spaces";
 
-import type { SpaceProvider } from "@/api/custom-types";
 import SpaceSelectionDropdown from "../SpaceSelectionDropdown.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
-const startSpaceProviders: Record<string, SpaceProvider> = {
-  local: {
+const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
+  local: createSpaceProvider({
     id: "local",
     connected: true,
     connectionMode: "AUTOMATIC",
     name: "Local Space",
+    type: SpaceProviderNS.TypeEnum.LOCAL,
+    local: true,
     spaces: [
       {
         id: "local",
@@ -22,12 +25,14 @@ const startSpaceProviders: Record<string, SpaceProvider> = {
         private: false,
       },
     ],
-  },
-  hub1: {
+  }),
+  hub1: createSpaceProvider({
     id: "hub1",
     connected: true,
     connectionMode: "AUTOMATIC",
     name: "Hub 1",
+    local: false,
+    type: SpaceProviderNS.TypeEnum.HUB,
     spaces: [
       {
         id: "hub1space1",
@@ -42,7 +47,7 @@ const startSpaceProviders: Record<string, SpaceProvider> = {
         private: true,
       },
     ],
-  },
+  }),
 };
 
 describe("SpaceSelectionDropdown.vue", () => {

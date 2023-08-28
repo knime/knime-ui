@@ -79,7 +79,6 @@ export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
       });
 
       const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
-      const nodes = $store.state.workflow.activeWorkflow.nodes;
 
       const resolveSVGSnapshots = projectIds.map(async (projectId) => {
         const { svgElement, isCanvasEmpty } =
@@ -90,7 +89,7 @@ export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
                 { projectId },
               );
 
-        return generateWorkflowPreview(svgElement, isCanvasEmpty, nodes);
+        return generateWorkflowPreview(svgElement, isCanvasEmpty);
       });
 
       const svgSnapshots = await Promise.all(resolveSVGSnapshots);
