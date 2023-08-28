@@ -1,8 +1,9 @@
 import { nodeSize } from "@/style/shapes.mjs";
 import type { KnimeNode } from "@/api/custom-types";
-import { areaCoverage, getCenteredPositionInVisibleFrame } from "./geometry";
-import type { GeometryArea, GeometryBounds } from "./types";
 import type { XY } from "@/api/gateway-api/generated-api";
+
+import { areaCoverage, getCenteredPositionInVisibleFrame } from "./utils";
+import type { GeometryArea, GeometryBounds } from "./types";
 
 export const NODE_PADDING = 50;
 export const VISIBILITY_THRESHOLD = 0.7;

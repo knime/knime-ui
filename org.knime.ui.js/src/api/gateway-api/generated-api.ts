@@ -2173,6 +2173,12 @@ export interface PartBasedCommand extends WorkflowCommand {
      * @memberof PartBasedCommand
      */
     annotationIds: Array<string>;
+    /**
+     * Map from connection ID to indices of bendpoints on that connection
+     * @type {{ [key: string]: Array<number>; }}
+     * @memberof PartBasedCommand
+     */
+    connectionBendpoints: { [key: string]: Array<number>; };
 
 }
 

@@ -67,6 +67,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     const selectedNodes = rootGetters["selection/selectedNodeIds"];
     const selectedAnnotations = rootGetters["selection/selectedAnnotationIds"];
+    const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
 
     const translation = {
       x: state.movePreviewDelta.x,
@@ -84,6 +85,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         workflowId,
         nodeIds: selectedNodes,
         annotationIds: selectedAnnotations,
+        connectionBendpoints,
         translation,
       });
     } catch (e) {

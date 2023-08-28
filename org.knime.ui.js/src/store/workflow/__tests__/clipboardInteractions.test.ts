@@ -13,6 +13,7 @@ import { API } from "@api";
 import { pastePartsAt } from "@/util/pasteToWorkflow";
 
 import { loadStore } from "./loadStore";
+import { createConnection } from "@/test/factories";
 
 vi.mock("@/util/pasteToWorkflow");
 
@@ -79,6 +80,17 @@ describe("workflow::clipboardInteractions", () => {
           position: { x: 50, y: 50 },
         },
       },
+      connections: {
+        connection1: createConnection({
+          bendpoints: [
+            { x: 10, y: 10 },
+            { x: 20, y: 20 },
+          ],
+        }),
+        connection2: createConnection({
+          bendpoints: [{ x: 10, y: 10 }],
+        }),
+      },
       workflowAnnotations: [
         {
           id: "root:2_1",
@@ -94,6 +106,11 @@ describe("workflow::clipboardInteractions", () => {
     });
 
     store.dispatch("selection/selectAllObjects");
+    store.dispatch("selection/selectBendpoints", [
+      "connection1__0",
+      "connection1__1",
+      "connection2__0",
+    ]);
     await nextTick();
     await store.dispatch("workflow/copyOrCutWorkflowParts", {
       command: command.toLowerCase(),
@@ -104,6 +121,10 @@ describe("workflow::clipboardInteractions", () => {
       workflowId: "root",
       nodeIds: ["foo", "bar"],
       annotationIds: ["root:2_1", "root:2_2"],
+      connectionBendpoints: {
+        connection1: [0, 1],
+        connection2: [0],
+      },
     });
 
     expect(clipboardMock.getContent()).toStrictEqual({

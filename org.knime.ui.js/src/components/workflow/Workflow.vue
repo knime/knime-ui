@@ -92,6 +92,7 @@ export default defineComponent({
         <Connector
           v-for="connector of workflow.connections"
           :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
+          :ref="`connector-${connector.id}`"
           :class="{ disabled: hasAnnotationModeEnabled }"
           v-bind="connector"
         />

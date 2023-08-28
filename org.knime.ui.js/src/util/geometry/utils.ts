@@ -97,3 +97,20 @@ export const getCenteredPositionInVisibleFrame = (
     y: top + (height / 2) * eyePleasingVerticalOffset - objectBounds.height / 2,
   };
 };
+
+export const distanceBetweenPoints = (
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+) => Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+
+export const getCenterPoint = (start: XY, end: XY): XY => {
+  const centerX = (end.x + start.x) / 2;
+  const centerY = (end.y + start.y) / 2;
+
+  return {
+    x: centerX,
+    y: centerY,
+  };
+};

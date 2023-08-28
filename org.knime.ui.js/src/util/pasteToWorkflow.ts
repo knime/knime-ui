@@ -1,10 +1,10 @@
 import { API } from "@api";
 import type { XY } from "@/api/gateway-api/generated-api";
-import type { WorkflowState } from "@/store/workflow";
 import { nodeSize } from "@/style/shapes.mjs";
 
 import type { GeometryBounds } from "@/util/geometry/types";
 import { geometry } from "@/util/geometry";
+import type { Workflow } from "@/api/custom-types";
 
 // eslint-disable-next-line no-magic-numbers
 const getRandomNoise = () => (Math.random() * 2 - 1) * 25;
@@ -84,7 +84,7 @@ export const pastePartsAt = ({
 
 export const pasteURI = (
   uri: string,
-  activeWorkflow: WorkflowState["activeWorkflow"],
+  activeWorkflow: Workflow,
   position: XY,
   visibleFrame: GeometryBounds,
 ) => {

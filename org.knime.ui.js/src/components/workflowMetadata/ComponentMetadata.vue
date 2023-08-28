@@ -2,16 +2,19 @@
 import { computed } from "vue";
 
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import type { AvailablePortTypes, ComponentMetadata } from "@/api/custom-types";
+import type {
+  AvailablePortTypes,
+  ComponentMetadata,
+  Workflow,
+} from "@/api/custom-types";
 
-import type { WorkflowState } from "@/store/workflow";
 import { toPortObject } from "@/util/portDataMapper";
 
 import MetadataDescription from "./MetadataDescription.vue";
 import ComponentMetadataNodeFeatures from "./ComponentMetadataNodeFeatures.vue";
 
 interface Props {
-  workflow: WorkflowState["activeWorkflow"];
+  workflow: Workflow;
   availablePortTypes: AvailablePortTypes;
 }
 

@@ -67,11 +67,14 @@ export default defineComponent({
     },
   },
   watch: {
-    activeProjectId() {
-      // prevent tab color flashing when switching workflows
-      if (this.activeProjectId) {
-        this.activeProjectTab = this.activeProjectId;
-      }
+    activeProjectId: {
+      handler() {
+        // prevent tab color flashing when switching workflows
+        if (this.activeProjectId) {
+          this.activeProjectTab = this.activeProjectId;
+        }
+      },
+      immediate: true,
     },
   },
   created() {

@@ -26,7 +26,13 @@ export const createConnection = (
 export const createConnectedNodes = (
   node1: KnimeNode | string = "root:1",
   node2: KnimeNode | string = "root:2",
-  connectionData?: Pick<Connection, "allowedActions">,
+  sourcePort: number,
+  destPort: number,
+  connectionData?: Omit<
+    Connection,
+    "id" | "sourceNode" | "sourcePort" | "destNode" | "destPort"
+  >,
+  // eslint-disable-next-line max-params
 ) => {
   const sourceNode =
     typeof node1 === "string"
@@ -55,11 +61,11 @@ export const createConnectedNodes = (
       : node2;
 
   const connection = createConnection({
-    id: `root:${sourceNode.id}_${destNode.id}`,
+    id: `${destNode.id}_${destPort}`,
     sourceNode: sourceNode.id,
-    sourcePort: 1,
+    sourcePort,
     destNode: destNode.id,
-    destPort: 1,
+    destPort,
     ...connectionData,
   });
 
@@ -76,14 +82,14 @@ export const connectMultipleNodes = (
 ): Record<string, Connection> => {
   const connections: Connection[] = [];
 
-  for (const [index, nodeConnection] of nodeConnections.entries()) {
+  for (const [_, nodeConnection] of nodeConnections.entries()) {
     const { nodes, ports } = nodeConnection;
     const [sourceNode, destNode] = nodes;
     const [sourcePort, destPort] = ports;
 
     if (sourceNode.outPorts.at(sourcePort) && destNode.inPorts.at(destPort)) {
       const connection = createConnection({
-        id: `root:${sourceNode.id}_${destNode.id}_${index}`,
+        id: `${destNode.id}_${destPort}`,
         sourceNode: sourceNode.id,
         sourcePort,
         destNode: destNode.id,

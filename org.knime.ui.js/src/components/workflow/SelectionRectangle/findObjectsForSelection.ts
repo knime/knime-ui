@@ -1,7 +1,18 @@
+import type { Workflow } from "@/api/custom-types";
+import type { XY } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes.mjs";
+import type { BendpointId } from "@/util/connectorUtil";
 
 // find nodes that are fully or partly inside the rectangle defined by startPos and endPos
-export const findItemsInsideOfRectangle = ({ startPos, endPos, workflow }) => {
+export const findObjectsForSelection = ({
+  startPos,
+  endPos,
+  workflow,
+}: {
+  startPos: XY;
+  endPos: XY;
+  workflow: Workflow;
+}) => {
   // normalize rectangle
   const rectangle = {
     x1: Math.min(startPos.x, endPos.x), // x left
@@ -11,8 +22,8 @@ export const findItemsInsideOfRectangle = ({ startPos, endPos, workflow }) => {
   };
 
   // divide nodes
-  const nodesInside = [];
-  const nodesOutside = [];
+  const nodesInside: string[] = [];
+  const nodesOutside: string[] = [];
   Object.values(workflow.nodes).forEach(({ position, id }) => {
     const { nodeSize } = $shapes;
 
@@ -31,8 +42,8 @@ export const findItemsInsideOfRectangle = ({ startPos, endPos, workflow }) => {
   });
 
   // divide annotations
-  const annotationsInside = [];
-  const annotationsOutside = [];
+  const annotationsInside: string[] = [];
+  const annotationsOutside: string[] = [];
   Object.values(workflow.workflowAnnotations).forEach(({ bounds, id }) => {
     const annotationX1 = bounds.x; // x left
     const annotationX2 = bounds.x + bounds.width; // x right
@@ -57,10 +68,29 @@ export const findItemsInsideOfRectangle = ({ startPos, endPos, workflow }) => {
     }
   });
 
+  // divide bendpoints
+  const bendpointsInside: Array<BendpointId> = [];
+  const bendpointsOutside: Array<BendpointId> = [];
+  Object.values(workflow.connections).forEach(({ bendpoints = [], id }) => {
+    bendpoints.forEach(({ x, y }, index) => {
+      const xInside = rectangle.x1 <= x && rectangle.x2 >= x;
+      const yInside = rectangle.y1 <= y && rectangle.y2 >= y;
+
+      // create lists with bendpoint ids
+      if (xInside && yInside) {
+        bendpointsInside.push(`${id}__${index}`);
+      } else {
+        bendpointsOutside.push(`${id}__${index}`);
+      }
+    });
+  });
+
   return {
     nodesInside,
     nodesOutside,
     annotationsInside,
     annotationsOutside,
+    bendpointsInside,
+    bendpointsOutside,
   };
 };

@@ -1,31 +1,35 @@
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
+import type { RootStoreState } from "./types";
+import { parseBendpointId } from "@/util/connectorUtil";
+
+export interface SelectionState {
+  selectedNodes: Record<string, boolean>;
+  selectedConnections: Record<string, boolean>;
+  selectedAnnotations: Record<string, boolean>;
+  selectedBendpoints: Record<string, boolean>;
+
+  startedSelectionFromAnnotationId: string | null;
+  didStartRectangleSelection: boolean;
+}
+
 /**
  * Store that holds selected objects (nodes, connections)
  */
-
 // WARNING: Do not use this state directly. Use getters that filter non existent workflow objects.
-export const state = () => ({
-  /**
-   * Selected nodes object. If key exists it means it is selected.
-   * @type {Object.<string, boolean>}
-   */
+export const state = (): SelectionState => ({
   selectedNodes: {},
-  /**
-   * @type {Object.<string, boolean>}
-   */
   selectedConnections: {},
-  /**
-   * @type {Object.<string, boolean>}
-   */
   selectedAnnotations: {},
   startedSelectionFromAnnotationId: null,
   didStartRectangleSelection: false,
+  selectedBendpoints: {},
 });
 
-export const mutations = {
-  // Add nodeIds to selection
-  addNodesToSelection(state, nodeIds) {
+export const mutations: MutationTree<SelectionState> = {
+  addNodesToSelection(state, nodeIds: string[]) {
     // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
-    let selectedNodes = { ...state.selectedNodes };
+    const selectedNodes = { ...state.selectedNodes };
     nodeIds.forEach((id) => {
       selectedNodes[id] = true;
     });
@@ -33,10 +37,9 @@ export const mutations = {
     state.selectedNodes = selectedNodes;
   },
 
-  // Removes each node of the provided nodeIds array from the selected nodes
-  removeNodesFromSelection(state, nodeIds) {
+  removeNodesFromSelection(state, nodeIds: string[]) {
     // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
-    let selectedNodes = { ...state.selectedNodes };
+    const selectedNodes = { ...state.selectedNodes };
     nodeIds.forEach((id) => {
       delete selectedNodes[id];
     });
@@ -44,9 +47,8 @@ export const mutations = {
     state.selectedNodes = selectedNodes;
   },
 
-  // Clear the selected nodes and the selected connections at once
   clearSelection(state) {
-    // dont override selectedNodes/Connections-object, in case there is nothing selected
+    // dont override selection objects in case there is nothing selected
     // prevents unnecessary slowdown.
     if (Object.keys(state.selectedNodes).length > 0) {
       state.selectedNodes = {};
@@ -57,33 +59,44 @@ export const mutations = {
     if (Object.keys(state.selectedAnnotations).length > 0) {
       state.selectedAnnotations = {};
     }
+    if (Object.keys(state.selectedBendpoints).length > 0) {
+      state.selectedBendpoints = {};
+    }
   },
 
-  //  Add connectionIds to selection.
-  addConnectionsToSelection(state, connectionIds) {
+  addConnectionsToSelection(state, connectionIds: string[]) {
     connectionIds.forEach((id) => {
       state.selectedConnections[id] = true;
     });
   },
 
-  // Removes each connection of the provided connections object to the selected connection object.
-  removeConnectionsFromSelection(state, connectionIds) {
+  removeConnectionsFromSelection(state, connectionIds: string[]) {
     connectionIds.forEach((id) => {
       delete state.selectedConnections[id];
     });
   },
 
-  //  Add annotationIds to selection.
-  addAnnotationToSelection(state, annotationIds) {
+  addAnnotationToSelection(state, annotationIds: string[]) {
     annotationIds.forEach((id) => {
       state.selectedAnnotations[id] = true;
     });
   },
 
-  // Removes each annotation of the provided annotation object to the selected annotation object.
-  removeAnnotationFromSelection(state, annotationIds) {
+  removeAnnotationFromSelection(state, annotationIds: string[]) {
     annotationIds.forEach((id) => {
       delete state.selectedAnnotations[id];
+    });
+  },
+
+  addBendpointsToSelection(state, bendpoints: Array<string>) {
+    bendpoints.forEach((bendpointId) => {
+      state.selectedBendpoints[bendpointId] = true;
+    });
+  },
+
+  removeBendpointsFromSelection(state, bendpoints: Array<string>) {
+    bendpoints.forEach((bendpointId) => {
+      delete state.selectedBendpoints[bendpointId];
     });
   },
 
@@ -96,13 +109,11 @@ export const mutations = {
   },
 };
 
-export const actions = {
-  // Deselect all objects, this includes connections and nodes.
+export const actions: ActionTree<SelectionState, RootStoreState> = {
   deselectAllObjects({ commit }) {
     commit("clearSelection");
   },
 
-  // Selects all nodes and annotations that are present in the current workflow store.
   selectAllObjects({ commit, rootState }) {
     commit(
       "addNodesToSelection",
@@ -116,32 +127,26 @@ export const actions = {
     );
   },
 
-  // Selects the given node.
   selectNode({ commit }, nodeId) {
     commit("addNodesToSelection", [nodeId]);
   },
 
-  // Selects all nodeIds
   selectNodes({ commit }, nodeIds) {
     commit("addNodesToSelection", nodeIds);
   },
 
-  // Deselects the given node.
   deselectNode({ commit }, nodeId) {
     commit("removeNodesFromSelection", [nodeId]);
   },
 
-  // Deselects all nodeIds
   deselectNodes({ commit }, nodeIds) {
     commit("removeNodesFromSelection", nodeIds);
   },
 
-  // Selects the given connection.
   selectConnection({ commit }, connectionId) {
     commit("addConnectionsToSelection", [connectionId]);
   },
 
-  // Deselects the given connection.
   deselectConnection({ commit }, connectionId) {
     commit("removeConnectionsFromSelection", [connectionId]);
   },
@@ -160,6 +165,22 @@ export const actions = {
 
   deselectAnnotations({ commit }, annotationId) {
     commit("removeAnnotationFromSelection", annotationId);
+  },
+
+  selectBendpoint({ commit }, bendpoint) {
+    commit("addBendpointsToSelection", [bendpoint]);
+  },
+
+  deselectBendpoint({ commit }, bendpoint) {
+    commit("removeBendpointsFromSelection", [bendpoint]);
+  },
+
+  selectBendpoints({ commit }, bendpoints) {
+    commit("addBendpointsToSelection", bendpoints);
+  },
+
+  deselectBendpoints({ commit }, bendpoints) {
+    commit("removeBendpointsFromSelection", bendpoints);
   },
 
   async toggleAnnotationSelection(
@@ -188,10 +209,10 @@ export const actions = {
   },
 };
 
-export const getters = {
+export const getters: GetterTree<SelectionState, RootStoreState> = {
   // Returns an array of selected node objects.
   // This getter filters non-existent selected nodes
-  selectedNodes(state, getters, rootState) {
+  selectedNodes(state, _getters, rootState) {
     if (!rootState.workflow.activeWorkflow) {
       return [];
     }
@@ -200,7 +221,7 @@ export const getters = {
       .filter(Boolean);
   },
 
-  selectedAnnotations(state, getters, rootState) {
+  selectedAnnotations(state, _getters, rootState) {
     if (!rootState.workflow.activeWorkflow) {
       return [];
     }
@@ -210,32 +231,7 @@ export const getters = {
     );
   },
 
-  // Returns an array of all selected node ids.
-  selectedNodeIds(state, { selectedNodes }) {
-    return selectedNodes.map((node) => node.id);
-  },
-
-  selectedAnnotationIds(state, { selectedAnnotations }) {
-    return selectedAnnotations.map((annotation) => annotation.id);
-  },
-
-  // Returns null if none or multiple nodes are selected, otherwise returns the selected node
-  singleSelectedNode(state, { selectedNodes }) {
-    if (selectedNodes.length !== 1) {
-      return null;
-    }
-    return selectedNodes[0];
-  },
-
-  // Checks if a given node id is present in the selected object.
-  isNodeSelected: (state) => (nodeId) => nodeId in state.selectedNodes,
-
-  // Checks if a given annotation id is present in the selected object.
-  isAnnotationSelected: (state) => (annotationId) =>
-    annotationId in state.selectedAnnotations,
-
-  // Returns an array of selected connection objects.
-  selectedConnections(state, getters, { workflow: { activeWorkflow } }) {
+  selectedConnections(state, _getters, { workflow: { activeWorkflow } }) {
     if (!activeWorkflow) {
       return [];
     }
@@ -245,15 +241,59 @@ export const getters = {
       .filter(Boolean); // after deleting a selected connection, it will be undefined
   },
 
-  // Checks if a given connection id is present in the selected object.
-  isConnectionSelected: (state) => (connectionId) =>
+  selectedBendpoints(state, _getters, rootState) {
+    if (!rootState.workflow.activeWorkflow) {
+      return [];
+    }
+
+    return Object.keys(state.selectedBendpoints)
+      .map((bendpointId) => parseBendpointId(bendpointId))
+      .reduce((acc, item) => {
+        const { connectionId, index } = item;
+        const indexes = acc[connectionId] ?? [];
+        indexes.push(index);
+        acc[connectionId] = indexes;
+        return acc;
+      }, {});
+  },
+
+  selectedNodeIds(_state, { selectedNodes }) {
+    return selectedNodes.map((node) => node.id);
+  },
+
+  selectedAnnotationIds(_state, { selectedAnnotations }) {
+    return selectedAnnotations.map((annotation) => annotation.id);
+  },
+
+  selectedBendpointIds(state) {
+    return Object.keys(state.selectedBendpoints);
+  },
+
+  singleSelectedNode(_state, { selectedNodes }) {
+    if (selectedNodes.length !== 1) {
+      return null;
+    }
+
+    return selectedNodes[0];
+  },
+
+  isNodeSelected: (state) => (nodeId: string) => nodeId in state.selectedNodes,
+
+  isAnnotationSelected: (state) => (annotationId: string) =>
+    annotationId in state.selectedAnnotations,
+
+  isConnectionSelected: (state) => (connectionId: string) =>
     Reflect.has(state.selectedConnections, connectionId),
+
+  isBendpointSelected: (state) => (bendpointId: string) =>
+    Reflect.has(state.selectedBendpoints, bendpointId),
 
   isSelectionEmpty(_, getters) {
     return (
       getters.selectedNodeIds.length === 0 &&
       getters.selectedConnections.length === 0 &&
-      getters.selectedAnnotationIds.length === 0
+      getters.selectedAnnotationIds.length === 0 &&
+      getters.selectedBendpointIds.length === 0
     );
   },
 };

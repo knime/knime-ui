@@ -11,10 +11,12 @@ describe("ConnectorLabel.vue", () => {
 
   beforeEach(() => {
     props = {
+      id: "",
       sourceNode: "root:1",
       destNode: "root:2",
       sourcePort: 0,
       destPort: 2,
+      allowedActions: { canDelete: true },
     };
   });
 
@@ -70,7 +72,7 @@ describe("ConnectorLabel.vue", () => {
       doMount();
 
       const initialPosition = wrapper.attributes().transform;
-      expect(initialPosition).toBe("translate(-480.25,-33.25)");
+      expect(initialPosition).toBe("translate(-480.25, -33.25)");
 
       isNodeSelectedMock.mockReturnValue(
         (nodeId) => ({ "root:1": true, "root:2": true })[nodeId],
@@ -84,7 +86,7 @@ describe("ConnectorLabel.vue", () => {
       const endPosition = wrapper.attributes().transform;
 
       expect(endPosition).toContain("translate");
-      expect(endPosition).not.toBe("translate(-480.25,-33.25)");
+      expect(endPosition).not.toBe("translate(-480.25, -33.25)");
     });
 
     it("dragging not connected node does not move label", async () => {
@@ -92,7 +94,7 @@ describe("ConnectorLabel.vue", () => {
       doMount();
 
       const initialPosition = wrapper.attributes().transform;
-      expect(initialPosition).toBe("translate(-480.25,-33.25)");
+      expect(initialPosition).toBe("translate(-480.25, -33.25)");
 
       isNodeSelectedMock.mockReturnValue(false);
       $store.commit("workflow/setState", {
@@ -104,7 +106,7 @@ describe("ConnectorLabel.vue", () => {
       const endPosition = wrapper.attributes().transform;
 
       expect(endPosition).toContain("translate");
-      expect(endPosition).toBe("translate(-480.25,-33.25)");
+      expect(endPosition).toBe("translate(-480.25, -33.25)");
     });
   });
 });
