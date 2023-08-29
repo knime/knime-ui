@@ -55,6 +55,7 @@ export default defineComponent({
     this.$el.addEventListener("focusout", this.onFocusOut);
   },
   beforeUnmount() {
+    this.$store.commit("workflow/setIsWorkflowPanelFocused", false);
     this.$el.removeEventListener("focusin", this.onFocusIn);
     this.$el.removeEventListener("focusout", this.onFocusOut);
   },
