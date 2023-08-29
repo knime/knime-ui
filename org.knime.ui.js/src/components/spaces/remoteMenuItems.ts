@@ -201,12 +201,14 @@ export const buildDisplayDeploymentsMenuItem = (
   const isSelectionMultiple = selectedItems.length > 1;
   return {
     id: "displayDeployments",
-    text: "Display deployments",
+    text: "Display schedules and jobs",
     icon: CirclePlayIcon,
     disabled: isSelectionEmpty || isSelectionMultiple,
-    title: isSelectionEmpty ? "Select a file to display deployments." : null,
+    title: isSelectionEmpty
+      ? "Select a file to display schedules and jobs."
+      : null,
     execute: () => {
-      dispatch("spaces/displayJob", {
+      dispatch("spaces/displayDeployments", {
         projectId,
         itemId: selectedItems[0],
         itemName,

@@ -6,6 +6,7 @@ import * as auth from "./auth";
 import * as caching from "./caching";
 import * as providers from "./providers";
 import * as spaceOperations from "./spaceOperations";
+import * as deployments from "./deployments";
 import type { RootStoreState } from "../types";
 
 interface CreateWorkflowModalConfig {
@@ -24,7 +25,6 @@ export * from "./types";
 export interface SpacesState {
   createWorkflowModalConfig: CreateWorkflowModalConfig;
   displayDeploymentsModal: DisplayDeploymentsModal;
-  jobs: any;
 }
 
 export const state = (): SpacesState => ({
@@ -32,6 +32,7 @@ export const state = (): SpacesState => ({
   ...caching.state(),
   ...providers.state(),
   ...spaceOperations.state(),
+  ...deployments.state(),
 
   // modal open state
   createWorkflowModalConfig: {
@@ -42,7 +43,6 @@ export const state = (): SpacesState => ({
     isOpen: false,
     name: null,
   },
-  jobs: [],
 });
 
 export const mutations: MutationTree<SpacesState> = {
@@ -50,6 +50,7 @@ export const mutations: MutationTree<SpacesState> = {
   ...caching.mutations,
   ...providers.mutations,
   ...spaceOperations.mutations,
+  ...deployments.mutations,
 
   setCreateWorkflowModalConfig(state, value: CreateWorkflowModalConfig) {
     state.createWorkflowModalConfig = value;
@@ -58,10 +59,6 @@ export const mutations: MutationTree<SpacesState> = {
   setDisplayDeploymentsModal(state, value: DisplayDeploymentsModal) {
     state.displayDeploymentsModal = value;
   },
-
-  setJobs(state, value) {
-    state.jobs = value;
-  },
 };
 
 export const actions: ActionTree<SpacesState, RootStoreState> = {
@@ -69,6 +66,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   ...caching.actions,
   ...providers.actions,
   ...spaceOperations.actions,
+  ...deployments.actions,
 
   copyBetweenSpaces({ state }, { projectId, itemIds }) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
@@ -83,18 +81,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   openAPIDefinition({ state }, { projectId, itemId }) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     API.desktop.openAPIDefinition({ spaceProviderId, spaceId, itemId });
-  },
-
-  async displayJob({ state, commit }, { projectId, itemId, itemName }) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-
-    const jobs = await API.space.listJobsForWorkflow({
-      spaceId,
-      spaceProviderId,
-      itemId,
-    });
-    commit("setJobs", jobs);
-    commit("setDisplayDeploymentsModal", { isOpen: true, name: itemName });
   },
 };
 

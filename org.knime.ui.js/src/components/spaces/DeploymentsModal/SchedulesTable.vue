@@ -9,11 +9,10 @@ import {
   jobHeaders,
   jobTypes,
   jobFormatters,
-  jobClassGenerators,
   popoverRenderers,
   slottedColumns,
   jobSubMenuItems,
-} from "./jobtable.config";
+} from "./schedulestable.config";
 
 const defaultAttributes = {
   showSorting: true,
@@ -27,16 +26,14 @@ const defaultAttributes = {
 export default defineComponent({
   components: {
     Table,
-    // Table: defineAsyncComponent(() => import("@knime/knime-ui-table")),
   },
   props: {
-    selectedItemJobs: { type: Array, default: () => [] },
+    selectedItemSchedules: { type: Array, default: () => [] },
   },
   data() {
     return {
       columnTypes: jobTypes,
       columnFormatters: jobFormatters(),
-      columnClassGenerators: jobClassGenerators,
       timeFilterColumn: "createdAt",
       currentSelection: [],
       popoverRenderers,
@@ -61,16 +58,14 @@ export default defineComponent({
 
 <template>
   <div class="modal-wrapper">
-    <h2>Jobs</h2>
+    <h2>Schedules</h2>
     <Table
-      ref="jobsTable"
-      :all-data="selectedItemJobs"
+      ref="schedulesTable"
+      :all-data="selectedItemSchedules"
       :all-column-headers="columnHeaders"
-      v-bind="tableAttributes"
       :all-column-keys="columnKeys"
       :all-column-types="columnTypes"
       :all-formatters="columnFormatters"
-      :all-class-generators="columnClassGenerators"
       :all-popover-renderers="popoverRenderers"
       :all-slotted-columns="slottedColumnConfig"
       :time-filter-key="timeFilterColumn"
@@ -78,6 +73,7 @@ export default defineComponent({
       :default-sort-column="defaultSortColumn"
       :default-sort-column-direction="defaultSortDirection"
       :sub-menu-items="subMenuItems"
+      v-bind="tableAttributes"
     />
   </div>
 </template>

@@ -3,7 +3,7 @@ export const addLeadingZero = (number) => (number < 10 ? `0${number}` : number);
 
 export const formatTime = (timeInMs) => {
   const formattedTime = new Date(timeInMs * 1000).toLocaleDateString("en-US", {
-    month: "long",
+    month: "short",
     day: "numeric",
     year: "numeric",
   });
