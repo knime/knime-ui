@@ -8,6 +8,7 @@ import MenuItems, {
 import DeleteIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import RenameIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import ExportIcon from "webapps-common/ui/assets/img/icons/export.svg";
+import KeyIcon from "webapps-common/ui/assets/img/icons/key.svg";
 
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
@@ -15,6 +16,7 @@ import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
   buildOpenInHubMenuItem,
+type ActionMenuItem,
 } from "@/components/spaces/hubMenuItems";
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 
@@ -57,6 +59,7 @@ const fileExplorerContextMenuItems = computed(() => {
   } = props;
 
   const isLocal = store.getters["spaces/getSpaceInfo"](props.projectId).local;
+  const isServer = getProviderInfo.value(props.projectId).type === "SERVER";
 
   const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
     props.projectId,
@@ -84,6 +87,21 @@ const fileExplorerContextMenuItems = computed(() => {
     store.state.spaces.spaceProviders,
   );
 
+  // TODO: Is this the right place to put this object?
+  const openPermissionsDialog : ActionMenuItem = {
+      id: "openPermissionsDialog",
+      text: "Permissions",
+      icon: KeyIcon,
+      disabled: false,
+      title: "View and display Server permissions",
+      execute: () => {
+        store.dispatch("spaces/openPermissionsDialog", {
+          projectId: props.projectId,
+          itemId: props.selectedItemIds[0]
+        });
+      },
+  };
+
   const getHubActions = () => {
     if (isLocal) {
       return uploadAndConnectToHub;
@@ -95,6 +113,13 @@ const fileExplorerContextMenuItems = computed(() => {
 
     return [downloadToLocalSpace, openInHub];
   };
+
+  const getServerActions = () => {
+    if (isServer) {
+      return [openPermissionsDialog];
+    }
+    return [];
+  }
 
   const createExportItemOption = (
     dispatch: Dispatch,
@@ -150,6 +175,8 @@ const fileExplorerContextMenuItems = computed(() => {
     ),
 
     ...getHubActions(),
+
+    ...getServerActions(),
   ];
 
   return contextMenuItems;

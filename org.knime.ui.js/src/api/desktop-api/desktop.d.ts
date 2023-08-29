@@ -133,7 +133,14 @@ declare function makeAiRequest(
   nodeId: string,
   messages: string,
 ): void;
+
 declare function abortAiRequest(chainType: string): void;
 declare function isAiAssistantBackendAvailable(): boolean;
 declare function getAiServerAddress(): string;
 declare function getHubID(): string;
+
+declare function openPermissionsDialog(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string
+): void;

@@ -59,6 +59,12 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     API.desktop.openInHub({ spaceProviderId, spaceId, itemId });
   },
+
+  // TODO: Is this the right place to put this function?
+  openPermissionsDialog({ state }, { projectId, itemId }) {
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    API.desktop.openPermissionsDialog({ spaceProviderId, spaceId, itemId });
+  }
 };
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {

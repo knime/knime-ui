@@ -514,3 +514,16 @@ export const getAiServerAddress = () => {
 export const getHubID = () => {
   return callBrowserFunction(window.getHubID, [], "Could not get hub id", true);
 };
+
+export const openPermissionsDialog = ({
+  spaceProviderId,
+  spaceId,
+  itemId
+}) => {
+  return callBrowserFunction(
+    window.openPermissionsDialog,
+    [spaceProviderId, spaceId, itemId],
+    "Could not open server permission dialog",
+    false
+  );
+};
