@@ -43,8 +43,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       spaceProviderId,
       itemId,
     });
-    console.log("schedules", schedules);
-    console.log("jobs", jobs);
 
     commit("setJobs", jobs);
     commit("setSchedules", schedules);

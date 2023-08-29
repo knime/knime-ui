@@ -1,5 +1,5 @@
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { computed, ref } from "vue";
 
 import { Table } from "@knime/knime-ui-table";
 import {
@@ -24,39 +24,24 @@ const defaultAttributes = {
   showPopovers: true,
 };
 
-export default defineComponent({
-  components: {
-    Table,
-    // Table: defineAsyncComponent(() => import("@knime/knime-ui-table")),
-  },
-  props: {
-    selectedItemJobs: { type: Array, default: () => [] },
-  },
-  data() {
-    return {
-      columnTypes: jobTypes,
-      columnFormatters: jobFormatters(),
-      columnClassGenerators: jobClassGenerators,
-      timeFilterColumn: "createdAt",
-      currentSelection: [],
-      popoverRenderers,
-      defaultColumns,
-      defaultSortColumn,
-      defaultSortDirection,
-      slottedColumnConfig: slottedColumns,
-      columnHeaders: Object.values(jobHeaders),
-      columnKeys: Object.keys(jobHeaders),
-    };
-  },
-  computed: {
-    tableAttributes() {
-      return defaultAttributes;
-    },
-    subMenuItems() {
-      return jobSubMenuItems;
-    },
+const props = defineProps({
+  selectedItemJobs: {
+    type: Array,
+    required: true,
+    default: () => [],
   },
 });
+
+const columnTypes = ref(jobTypes);
+const columnFormatters = ref(jobFormatters());
+const columnClassGenerators = ref(jobClassGenerators);
+const timeFilterColumn = ref("createdAt");
+const slottedColumnConfig = ref(slottedColumns);
+const columnHeaders = ref(Object.values(jobHeaders));
+const columnKeys = ref(Object.keys(jobHeaders));
+
+const tableAttributes = computed(() => defaultAttributes);
+const subMenuItems = computed(() => jobSubMenuItems);
 </script>
 
 <template>
@@ -64,7 +49,7 @@ export default defineComponent({
     <h2>Jobs</h2>
     <Table
       ref="jobsTable"
-      :all-data="selectedItemJobs"
+      :all-data="props.selectedItemJobs"
       :all-column-headers="columnHeaders"
       v-bind="tableAttributes"
       :all-column-keys="columnKeys"

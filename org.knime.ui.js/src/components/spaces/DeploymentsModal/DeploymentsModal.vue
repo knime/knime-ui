@@ -1,6 +1,6 @@
-<script lang="ts">
-import { defineComponent } from "vue";
-import { mapState } from "vuex";
+<script setup lang="ts">
+import { computed } from "vue";
+import { useStore } from "vuex";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
 import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
@@ -8,31 +8,24 @@ import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
 import JobsTable from "./JobsTable.vue";
 import SchedulesTable from "./SchedulesTable.vue";
 
-export default defineComponent({
-  components: {
-    Modal,
-    CirclePlayIcon,
-    JobsTable,
-    SchedulesTable,
-  },
-  computed: {
-    ...mapState("spaces", ["displayDeploymentsModal", "jobs", "schedules"]),
-    isDisplayDeploymentsModalOpen() {
-      return this.displayDeploymentsModal.isOpen;
-    },
-    selectedItemName() {
-      return `Schedules and jobs of "${this.displayDeploymentsModal.name}"`;
-    },
-  },
-  methods: {
-    closeModal() {
-      this.$store.commit("spaces/setDisplayDeploymentsModal", {
-        isOpen: false,
-        name: null,
-      });
-    },
-  },
-});
+const store = useStore();
+
+const isDisplayDeploymentsModalOpen = computed(
+  () => store.state.spaces.displayDeploymentsModal.isOpen,
+);
+const selectedItemName = computed(
+  () =>
+    `Schedules and jobs of “${store.state.spaces.displayDeploymentsModal.name}”`,
+);
+const jobs = computed(() => store.state.spaces.jobs);
+const schedules = computed(() => store.state.spaces.schedules);
+
+const closeModal = () => {
+  store.commit("spaces/setDisplayDeploymentsModal", {
+    isOpen: false,
+    name: null,
+  });
+};
 </script>
 
 <template>
@@ -54,7 +47,7 @@ export default defineComponent({
         />
         <JobsTable v-if="jobs.length > 0" :selected-item-jobs="jobs" />
       </div>
-      <h2 v-else class="no-data">No data to display</h2>
+      <h2 v-else class="no-data">There are no schedules or jobs to display.</h2>
     </template>
   </Modal>
 </template>
