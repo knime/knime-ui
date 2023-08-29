@@ -48,13 +48,14 @@
  */
 package org.knime.ui.java.api;
 
+import static java.util.function.Predicate.not;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -63,16 +64,10 @@ import org.knime.core.util.Version;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
-
-import com.knime.enterprise.client.filesystem.KnimeRemoteFileSystem;
-import com.knime.enterprise.client.filesystem.RemoteFileSystem;
-import com.knime.enterprise.client.rest.RestServerContent;
-import com.knime.explorer.server.ExplorerServerContentProvider;
-import com.knime.explorer.server.rest.RestServerExplorerFileStore;
 
 /**
- * Adaptation of 'OpenInWebPortalAction' from explorer server to build the URL of an item in the webportal
+ * Adaptation of 'OpenInWebPortalAction' and 'ShowAPIDefinitionAction' from explorer server to build the URL of an item
+ * in the webportal and it swagger API definition
  *
  * @author baqueroj
  */
@@ -82,7 +77,7 @@ final class ClassicAPBuildServerURL {
 
     private static final Version MINIMUM_WEBPORTAL_VERSION = new Version(4, 14, 0);
 
-    private static final String WEBPPORTAL_URL_PREFIX = "webportal/space";
+    private static final String WEBPPORTAL_URL_PREFIX = "webportal/space/";
 
     private static final String LEGACY_WEBPORTAL_URL_PREFIX = "#";
 
@@ -94,87 +89,71 @@ final class ClassicAPBuildServerURL {
      * @param itemId
      * @param sourceSpaceProvider a 'non-local' space provider
      * @param sourceSpace
-     * @return The built hub URL
-     * @throws Exception
-     * @throws URISyntaxException
+     * @return The built server URL
      */
     static String getWebPortalURL(final String itemId, final SpaceProvider sourceSpaceProvider,
         final Space sourceSpace) {
-        final StringBuilder urlBuilder = new StringBuilder();
-        var serverAddress = sourceSpaceProvider.getServerAddress().orElseThrow();
-        final RemoteFileSystem knimeServerFileSystem = getRemoteFileSystem(sourceSpace.toKnimeUrl(itemId));
+        final var urlBuilder = new StringBuilder();
+        final var serverAddress = sourceSpaceProvider.getServerAddress().orElseThrow();
         int ordinalIndexOf = StringUtils.ordinalIndexOf(serverAddress, "/", 3);
         ordinalIndexOf = ordinalIndexOf > 0 ? ordinalIndexOf : serverAddress.length();
         urlBuilder.append(serverAddress.substring(0, ordinalIndexOf));
-        // get webportal path
-        final Optional<String> restPath = knimeServerFileSystem.getRESTPath();
+        final var restPath = sourceSpaceProvider.getRESTPath();
         if (!restPath.isPresent()) {
             LOGGER.error("For the selected element there is no REST path available.");
             throw new NoSuchElementException("No REST path available");
         }
-        var serverVersion = getServerVersion(serverAddress, restPath.get());
+        final var serverVersion = sourceSpaceProvider.getServerVersion();
         urlBuilder.append(restPath.get().substring(0, StringUtils.indexOf(restPath.get(), "rest")));
         urlBuilder.append(serverVersion.isSameOrNewer(MINIMUM_WEBPORTAL_VERSION) ? WEBPPORTAL_URL_PREFIX
             : LEGACY_WEBPORTAL_URL_PREFIX);
-        // get the path of the selected element and encode the individual path elements
-        //        final String workflowName = ((ContentObject)getFirstSelection()).getFileStore().getFullName();
-        final String workflowName = sourceSpace.getItemName(itemId);
-        urlBuilder.append(Arrays.stream(workflowName.split("/")).map((part) -> {
+        final var workflowPath = buildWorkflowPath(sourceSpace, itemId);
+
+        urlBuilder.append(Arrays.stream(workflowPath.toString().split("/")).map((part) -> {
             try {
-                return URLEncoder.encode(part, "UTF-8").replaceAll("\\+", "%20");
+                return URLEncoder.encode(part, "UTF-8").replace("+", "%20");
             } catch (UnsupportedEncodingException e) {
-                LOGGER.error("The workflow name could not be encoded: " + workflowName);
+                LOGGER.error("The workflow name could not be encoded: " + workflowPath);
                 return "";
             }
         }).collect(Collectors.joining("/")));
 
-        return urlBuilder.toString();
+        return urlBuilder.toString() + "/";
     }
 
+    /**
+     * @param itemId
+     * @param sourceSpaceProvider a 'non-local' space provider
+     * @param sourceSpace
+     * @return The built server API definition URL
+     */
     static String getAPIDefinition(final String itemId, final SpaceProvider sourceSpaceProvider,
         final Space sourceSpace) {
         assert sourceSpaceProvider.getType() != TypeEnum.LOCAL;
-        final RemoteFileSystem knimeServerFileSystem = getRemoteFileSystem(sourceSpace.toKnimeUrl(itemId));
-        URI targetUri = null;
         try {
-            URI serverAddress = new URI(knimeServerFileSystem.getServerAddress());
-            String workflowPath = sourceSpace.getItemName(itemId);
-            String restPath = knimeServerFileSystem.getRESTPath()
+            final var serverAddress = new URI(sourceSpaceProvider.getServerAddress().orElseThrow());
+            final var workflowPath = buildWorkflowPath(sourceSpace, itemId);
+            final var restPath = sourceSpaceProvider.getRESTPath()
                 .orElseThrow(() -> new IllegalStateException("Action is run although no REST path is available"));
-            targetUri = new URI(serverAddress.getScheme(), serverAddress.getAuthority(),
-                restPath + "/v4/repository" + workflowPath + ":openapi", "showInUI=true", null);
+            final var targetUri = new URI(serverAddress.getScheme(), serverAddress.getAuthority(),
+                restPath + "/v4/repository/" + workflowPath + ":openapi", "showInUI=true", null);
 
             return targetUri.toString();
         } catch (URISyntaxException e) {
-            LOGGER.error("Invalid URL could not be opened: " + targetUri.toString(), e);
+            LOGGER.error("Invalid URL could not be parsed", e);
             return "";
         }
     }
 
-    /**
-     * Returns the remote file system that is being used. This is either the {@link KnimeRemoteFileSystem} (in case of
-     * EJB) or the {@link RestServerContent} (in case of REST).
-     *
-     * @return The remote file system that is being used.
-     *
-     * @see #getKnimeServerFileSystem()
-     *
-     * @since 4.8
-     */
-    static private RemoteFileSystem getRemoteFileSystem(final URI itemPath) {
-        var fileSystem = (RestServerExplorerFileStore)ExplorerFileSystem.INSTANCE.getStore(itemPath);
-
-        return fileSystem.getRemoteFileSystem();
-    }
-
-    static private Version getServerVersion(final String serverAddress, final String restPath) {
-        try {
-            var address = new URI(serverAddress + restPath);
-            return ExplorerServerContentProvider.fetchServerInformation(address).getVersion();
-        } catch (Exception e) {
-            LOGGER.error("Error during fetch of server information", e);
-            return null;
+    private static String buildWorkflowPath(final Space sourceSpace, final String itemId) {
+        final var workflowName = sourceSpace.getItemName(itemId);
+        final var itemPathNames = sourceSpace.getAncestorItemIds(itemId).stream().filter(not("root"::equals))
+            .map(sourceSpace::getItemName).toList();
+        final var workflowPath = new StringBuilder(workflowName);
+        for (String part : itemPathNames) {
+            workflowPath.insert(0, part + "/");
         }
+        return workflowPath.toString();
     }
 
 }

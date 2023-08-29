@@ -16,6 +16,7 @@ import {
   buildOpenInBrowserMenuItem,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
+import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
 
 export default {
   components: {
@@ -47,6 +48,7 @@ export default {
       "getProviderInfo",
       "hasActiveHubSession",
       "selectionContainsFile",
+      "selectionContainsWorkflow",
     ]),
     ...mapState("spaces", ["spaceProviders", "isLoadingContent"]),
 
@@ -55,6 +57,12 @@ export default {
     },
     isFileSelected() {
       return this.selectionContainsFile(this.projectId, this.selectedItemIds);
+    },
+    isWorkflowSelected() {
+      return this.selectionContainsWorkflow(
+        this.projectId,
+        this.selectedItemIds,
+      );
     },
     createWorkflowAction() {
       return {
@@ -110,7 +118,22 @@ export default {
           return [downloadToLocalSpace];
         }
 
-        return [downloadToLocalSpace, openInBrowser, openAPIDefinition];
+        return [downloadToLocalSpace, openInBrowser];
+      };
+
+      const getServerActions = () => {
+        if (
+          this.getProviderInfo(projectId).type !==
+          BaseSpaceProvider.TypeEnum.SERVER
+        ) {
+          return [];
+        }
+
+        if (!this.isWorkflowSelected) {
+          return [];
+        }
+
+        return [openAPIDefinition];
       };
 
       return [
@@ -150,6 +173,7 @@ export default {
           },
         },
         ...getHubActions(),
+        ...getServerActions(),
       ];
     },
 

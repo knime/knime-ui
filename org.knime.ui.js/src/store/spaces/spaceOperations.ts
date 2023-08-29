@@ -409,4 +409,17 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         .filter((item) => selectedItemIds.includes(item.id))
         .some((selectedItem) => selectedItem.type === SpaceItem.TypeEnum.Data);
     },
+
+  selectionContainsWorkflow:
+    (state, getters) => (projectId: string, selectedItemIds: string[]) => {
+      const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
+      if (!workflowGroupContent) {
+        return false;
+      }
+      return workflowGroupContent.items
+        .filter((item) => selectedItemIds.includes(item.id))
+        .some(
+          (selectedItem) => selectedItem.type === SpaceItem.TypeEnum.Workflow,
+        );
+    },
 };

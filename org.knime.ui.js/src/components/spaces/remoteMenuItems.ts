@@ -135,7 +135,7 @@ export const buildOpenInBrowserMenuItem = (
     icon: LinkExternal,
     disabled: isSelectionEmpty || isSelectionMultiple,
     title: isSelectionEmpty
-      ? `Select at least one file to open in ${providerType}.`
+      ? `Select one file to open in ${providerType}.`
       : null,
     execute: () => {
       dispatch("spaces/openInBrowser", {
@@ -158,9 +158,7 @@ export const buildOpenAPIDefinitionMenuItem = (
     text: "Open API Definition",
     icon: LinkExternal,
     disabled: isSelectionEmpty || isSelectionMultiple,
-    title: isSelectionEmpty
-      ? "Select at least one file to open in server."
-      : null,
+    title: isSelectionEmpty ? "Select one workflow to open in server." : null,
     execute: () => {
       dispatch("spaces/openAPIDefinition", {
         projectId,

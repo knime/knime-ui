@@ -9,7 +9,10 @@ import DeleteIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import RenameIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import ExportIcon from "webapps-common/ui/assets/img/icons/export.svg";
 
-import { SpaceItem } from "@/api/gateway-api/generated-api";
+import {
+  SpaceItem,
+  SpaceProvider as BaseSpaceProvider,
+} from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
 import {
   buildHubDownloadMenuItem,
@@ -66,6 +69,10 @@ const fileExplorerContextMenuItems = computed(() => {
     props.selectedItemIds,
   );
 
+  const selectionContainsWorkflow = store.getters[
+    "spaces/selectionContainsWorkflow"
+  ](props.projectId, props.selectedItemIds);
+
   const downloadToLocalSpace = buildHubDownloadMenuItem(
     store.dispatch,
     props.projectId,
@@ -102,7 +109,22 @@ const fileExplorerContextMenuItems = computed(() => {
       return [downloadToLocalSpace];
     }
 
-    return [downloadToLocalSpace, openInBrowser, openAPIDefinition];
+    return [downloadToLocalSpace, openInBrowser];
+  };
+
+  const getServerActions = () => {
+    if (
+      getProviderInfo.value(props.projectId).type !==
+      BaseSpaceProvider.TypeEnum.SERVER
+    ) {
+      return [];
+    }
+
+    if (!selectionContainsWorkflow) {
+      return [];
+    }
+
+    return [openAPIDefinition];
   };
 
   // --- Build Server actions

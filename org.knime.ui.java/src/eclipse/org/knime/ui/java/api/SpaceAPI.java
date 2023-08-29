@@ -214,7 +214,7 @@ final class SpaceAPI {
     }
 
     /**
-     * Opens the webpage of an item in the web browser
+     * Opens the website of an item in the web browser
      *
      * @param spaceProviderId provider ID of the source space
      * @param spaceId ID of the source space
@@ -230,22 +230,23 @@ final class SpaceAPI {
         }
         if (sourceSpaceProvider.getType() == TypeEnum.HUB) {
             final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
-            var url = ClassicAPBuildHubURL.getHubURL(itemId, sourceSpaceProvider, sourceSpace);
+            final var url = ClassicAPBuildHubURL.getHubURL(itemId, sourceSpaceProvider, sourceSpace);
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
             return;
         }
 
         if (sourceSpaceProvider.getType() == TypeEnum.SERVER) {
             final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
-            var url = ClassicAPBuildServerURL.getWebPortalURL(itemId, sourceSpaceProvider, sourceSpace);
+            final var url = ClassicAPBuildServerURL.getWebPortalURL(itemId, sourceSpaceProvider, sourceSpace);
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
             return;
         }
+
         throw new NoSuchElementException("Operation not supported for local items");
     }
 
     /**
-     * Opens the API definition of a workflow (swagger)
+     * Opens the API definition of a workflow (Swagger)
      *
      * @param spaceProviderId provider ID of the source space
      * @param spaceId ID of the source space
@@ -261,7 +262,7 @@ final class SpaceAPI {
         }
 
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
-        var url = ClassicAPBuildServerURL.getAPIDefinition(itemId, sourceSpaceProvider, sourceSpace);
+        final var url = ClassicAPBuildServerURL.getAPIDefinition(itemId, sourceSpaceProvider, sourceSpace);
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
     }
 }
