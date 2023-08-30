@@ -8,7 +8,6 @@ import MenuItems, {
 import DeleteIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import RenameIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import ExportIcon from "webapps-common/ui/assets/img/icons/export.svg";
-import KeyIcon from "webapps-common/ui/assets/img/icons/key.svg";
 
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
@@ -16,8 +15,8 @@ import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
   buildOpenInHubMenuItem,
-type ActionMenuItem,
 } from "@/components/spaces/hubMenuItems";
+import { buildOpenPermissionsDialog } from "./serverMenuItems";
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 
 const store = useStore<RootStoreState>();
@@ -58,9 +57,9 @@ const fileExplorerContextMenuItems = computed(() => {
     isMultipleSelectionActive,
   } = props;
 
+  // --- Build Hub actions
   const isLocal = store.getters["spaces/getSpaceInfo"](props.projectId).local;
-  const isServer = getProviderInfo.value(props.projectId).type === "SERVER";
-
+  
   const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
     props.projectId,
     props.selectedItemIds,
@@ -87,21 +86,6 @@ const fileExplorerContextMenuItems = computed(() => {
     store.state.spaces.spaceProviders,
   );
 
-  // TODO: Is this the right place to put this object?
-  const openPermissionsDialog : ActionMenuItem = {
-      id: "openPermissionsDialog",
-      text: "Permissions",
-      icon: KeyIcon,
-      disabled: false,
-      title: "View and display Server permissions",
-      execute: () => {
-        store.dispatch("spaces/openPermissionsDialog", {
-          projectId: props.projectId,
-          itemId: props.selectedItemIds[0]
-        });
-      },
-  };
-
   const getHubActions = () => {
     if (isLocal) {
       return uploadAndConnectToHub;
@@ -113,6 +97,15 @@ const fileExplorerContextMenuItems = computed(() => {
 
     return [downloadToLocalSpace, openInHub];
   };
+
+  // --- Build Server actions
+  const isServer = getProviderInfo.value(props.projectId).type === "SERVER";
+  
+  const openPermissionsDialog = buildOpenPermissionsDialog(
+    store.dispatch,
+    props.projectId,
+    props.selectedItemIds[0]
+  );
 
   const getServerActions = () => {
     if (isServer) {
@@ -150,6 +143,7 @@ const fileExplorerContextMenuItems = computed(() => {
     ? `Open ${openFileType} cannot be renamed`
     : "";
 
+  // --- Finally build context menu items  
   const contextMenuItems = [
     // hide rename for multiple selected items
     ...valueOrEmpty(
@@ -175,7 +169,6 @@ const fileExplorerContextMenuItems = computed(() => {
     ),
 
     ...getHubActions(),
-
     ...getServerActions(),
   ];
 

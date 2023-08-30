@@ -289,6 +289,17 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       commit("setIsLoadingContent", false);
     }
   },
+
+  /**
+   * Opens the permission dialog for Server items
+   * 
+   * @param projectId
+   * @param itemId
+   */
+  openPermissionsDialog({ state }, { projectId, itemId }) {
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    API.desktop.openPermissionsDialog({ spaceProviderId, spaceId, itemId });
+  }
 };
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {

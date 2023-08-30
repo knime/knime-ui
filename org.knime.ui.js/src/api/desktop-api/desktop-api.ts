@@ -519,7 +519,11 @@ export const openPermissionsDialog = ({
   spaceProviderId,
   spaceId,
   itemId
-}) => {
+}: 
+  SpaceProviderId &
+  SpaceId & 
+  SpaceItemId
+) => {
   return callBrowserFunction(
     window.openPermissionsDialog,
     [spaceProviderId, spaceId, itemId],
