@@ -104,7 +104,7 @@ const fileExplorerContextMenuItems = computed(() => {
   const openPermissionsDialog = buildOpenPermissionsDialog(
     store.dispatch,
     props.projectId,
-    props.selectedItemIds[0]
+    props.selectedItemIds
   );
 
   const getServerActions = () => {

@@ -6,17 +6,21 @@ import KeyIcon from "webapps-common/ui/assets/img/icons/key.svg";
 export const buildOpenPermissionsDialog = (
     dispatch: Dispatch,
     projectId: string,
-    itemId: string
-): ActionMenuItem => ({
+    selectedItems: Array<string>
+): ActionMenuItem => {
+    const isSelectionEmpty = selectedItems.length === 0;
+    const isSelectionMultiple = selectedItems.length > 1;
+    return {
     id: "openPermissionsDialog",
-    text: "Permissions",
-    icon: KeyIcon,
-    disabled: false,
-    title: "View and edit access permissions",
-    execute: () => {
-        dispatch("spaces/openPermissionsDialog", {
-        projectId,
-        itemId
-        });
-    }
-});
+        text: "Permissions",
+        icon: KeyIcon,
+        disabled: isSelectionEmpty || isSelectionMultiple,
+        title: isSelectionEmpty ? "View and edit access permissions" : null,
+        execute: () => {
+            dispatch("spaces/openPermissionsDialog", {
+            projectId,
+            itemId: selectedItems[0]
+            });
+        }
+    };
+};
