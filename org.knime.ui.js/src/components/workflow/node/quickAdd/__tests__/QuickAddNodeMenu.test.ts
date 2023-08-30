@@ -21,6 +21,7 @@ import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
 
 import * as quickAddNodesStore from "@/store/quickAddNodes";
+import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import { searchNodesResponse } from "@/store/common/__tests__/nodeSearch.test";
 
@@ -145,6 +146,7 @@ describe("QuickAddNodeMenu.vue", () => {
       selection: selectionStore,
       workflow: {
         state: {
+          ...workflowStore.state(),
           activeWorkflow: {
             info: {
               containerId: "container0",

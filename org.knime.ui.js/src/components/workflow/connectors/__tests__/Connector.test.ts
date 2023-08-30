@@ -397,7 +397,7 @@ describe("Connector.vue", () => {
 
   describe("follows pointer", () => {
     it("draw connector forward", () => {
-      const props = {
+      const props: ConnectorProps = {
         sourceNode: "root:1",
         sourcePort: 1,
         destNode: null,
@@ -417,7 +417,7 @@ describe("Connector.vue", () => {
     });
 
     it("draw connector backwards", () => {
-      const props = {
+      const props: ConnectorProps = {
         sourceNode: null,
         sourcePort: null,
         destNode: "root:2",
@@ -788,7 +788,19 @@ describe("Connector.vue", () => {
       const { wrapper } = doMountWithBendpoints();
 
       expect(wrapper.findAllComponents(ConnectorPathSegment).length).toBe(4);
-      expect(wrapper.findAllComponents(ConnectorBendpoint).length).toBe(3);
+      // non-virtual bendpoints
+      expect(
+        wrapper
+          .findAllComponents(ConnectorBendpoint)
+          .filter((comp) => !comp.props("virtual")).length,
+      ).toBe(3);
+
+      // virtual bendpoints. 1 for each segment
+      expect(
+        wrapper
+          .findAllComponents(ConnectorBendpoint)
+          .filter((comp) => comp.props("virtual")).length,
+      ).toBe(4);
     });
 
     it("passes the right props to the segments", () => {
@@ -827,13 +839,12 @@ describe("Connector.vue", () => {
     });
 
     it("handles dragging bendpoints", async () => {
-      // const setPointerCapture = vi.fn();
       HTMLElement.prototype.setPointerCapture = vi.fn();
       HTMLElement.prototype.releasePointerCapture = vi.fn();
 
       const { wrapper, $store, dispatchSpy } = doMountWithBendpoints();
 
-      const bendpoint = wrapper.findAllComponents(ConnectorBendpoint).at(1);
+      const bendpoint = wrapper.findAllComponents(ConnectorBendpoint).at(4);
 
       // moving without first pressing down does nothing
       bendpoint.trigger("pointermove", { clientX: 100, clientY: 100 });
@@ -868,7 +879,9 @@ describe("Connector.vue", () => {
     it("automatically selects all bendpoints when nodes are selected", async () => {
       const { wrapper, $store, connection } = doMountWithBendpoints();
 
-      const bendpoints = wrapper.findAllComponents(ConnectorBendpoint);
+      const bendpoints = wrapper
+        .findAllComponents(ConnectorBendpoint)
+        .filter((comp) => !comp.props("virtual"));
 
       // every bendpoint is NOT selected
       expect(bendpoints.every((comp) => !comp.props("isSelected"))).toBe(true);
@@ -890,6 +903,78 @@ describe("Connector.vue", () => {
       bendpoints.forEach((comp, i) => {
         const isSelected = i === 1;
         expect(comp.props("isSelected")).toEqual(isSelected);
+      });
+    });
+
+    it("adds bendpoint via virtual bendpoints", async () => {
+      class MockPointerEvent extends Event {}
+      window.PointerEvent = MockPointerEvent as any;
+      HTMLElement.prototype.setPointerCapture = vi.fn();
+      HTMLElement.prototype.releasePointerCapture = vi.fn();
+
+      const { wrapper, $store, connection, dispatchSpy } =
+        doMountWithBendpoints();
+
+      const firstVirtualBendpoint = wrapper
+        .findAllComponents(ConnectorBendpoint)
+        .filter((comp) => comp.props("virtual"))
+        .at(0);
+
+      const totalBendpointsBefore = wrapper
+        .findAllComponents(ConnectorBendpoint)
+        .filter((comp) => !comp.props("virtual")).length;
+
+      expect($store.state.workflow.virtualBendpoints).toEqual({});
+      await firstVirtualBendpoint.trigger("pointerdown", {
+        clientX: 100,
+        clientY: 100,
+        button: 0,
+      });
+      await nextTick();
+
+      expect($store.state.workflow.virtualBendpoints).toEqual({
+        [connection.id]: {
+          0: {
+            x: 19.5,
+            y: 5.75,
+            currentBendpointCount: 3,
+          },
+        },
+      });
+
+      const totalBendpointsAfter = wrapper
+        .findAllComponents(ConnectorBendpoint)
+        .filter((comp) => !comp.props("virtual")).length;
+
+      expect(totalBendpointsAfter).toBe(totalBendpointsBefore + 1);
+
+      const addedBendpoint = wrapper
+        .findAllComponents(ConnectorBendpoint)
+        .filter((comp) => !comp.props("virtual"))
+        .at(0);
+
+      await nextTick();
+      await nextTick();
+      expect(addedBendpoint.props("isSelected")).toBe(true);
+
+      await addedBendpoint.trigger("pointermove", {
+        clientX: 100,
+        clientY: 100,
+      });
+
+      expect($store.state.workflow.movePreviewDelta).toEqual({
+        x: -14.5,
+        y: -0.75,
+      });
+      expect($store.state.workflow.isDragging).toBe(true);
+
+      addedBendpoint.trigger("pointerup", {});
+      await nextTick();
+
+      expect(dispatchSpy).toHaveBeenCalledWith("workflow/addBendpoint", {
+        connectionId: connection.id,
+        position: { x: 5, y: 5 }, // as returned by the canvas getter
+        index: 0,
       });
     });
   });

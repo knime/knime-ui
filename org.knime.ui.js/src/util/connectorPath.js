@@ -17,7 +17,6 @@ export default (x1, y1, x2, y2) => {
   const widthHalf = width / 2;
   const heightThird = height / 3;
 
-  // TODO: include bendpoints NXT-78 NXT-191
   // Currently, this is creates just an arbitrary curve that seems to work in most cases
   return (
     `M${x1},${y1} ` +
