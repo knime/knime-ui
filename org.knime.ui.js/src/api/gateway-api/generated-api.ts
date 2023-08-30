@@ -1029,6 +1029,12 @@ export interface DeleteCommand extends WorkflowCommand {
      * @memberof DeleteCommand
      */
     connectionIds: Array<string>;
+    /**
+     * Map from connection ID to indices of bendpoints on that connection
+     * @type {{ [key: string]: Array<number>; }}
+     * @memberof DeleteCommand
+     */
+    connectionBendpoints?: { [key: string]: Array<number>; };
 
 }
 
