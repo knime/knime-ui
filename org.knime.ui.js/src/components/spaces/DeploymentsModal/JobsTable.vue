@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 
 import { Table } from "@knime/knime-ui-table";
+import type { Job } from "@/api/custom-types";
 
 import {
   defaultColumns,
@@ -16,13 +17,11 @@ import {
   jobSubMenuItems,
 } from "./jobsTable.config";
 
-const props = defineProps({
-  selectedItemJobs: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
-});
+type Props = {
+  selectedItemJobs: Job[];
+};
+
+const props = defineProps<Props>();
 
 const defaultAttributes = {
   showSorting: true,

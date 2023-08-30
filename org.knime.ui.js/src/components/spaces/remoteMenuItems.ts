@@ -199,6 +199,7 @@ export const buildDisplayDeploymentsMenuItem = (
 ): ActionMenuItem => {
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;
+
   return {
     id: "displayDeployments",
     text: "Display schedules and jobs",

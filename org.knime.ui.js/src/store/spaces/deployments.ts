@@ -1,13 +1,14 @@
 import type { MutationTree, ActionTree } from "vuex";
 
 import { API } from "@api";
+import type { Job, Schedule } from "@/api/custom-types";
 
 import type { RootStoreState } from "../types";
 import type { SpacesState } from "./index";
 
 interface State {
-  jobs: any;
-  schedules: any;
+  jobs: Job[];
+  schedules: Schedule[];
 }
 
 declare module "./index" {

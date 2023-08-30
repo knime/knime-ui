@@ -73,3 +73,57 @@ export type Workflow = Omit<_Workflow, "nodes"> & {
   projectId: string;
   nodes: Record<string, KnimeNode>;
 };
+
+export interface Job {
+  configuration: Object;
+  createdAt: number;
+  createdVia: string;
+  discard: boolean;
+  discardAfterFailedExec: boolean;
+  discardAfterSuccessfulExec: boolean;
+  finishedExecutionAt: number;
+  hasReport: boolean;
+  id: string;
+  isOutdated: boolean;
+  isSwapped: boolean;
+  name: string;
+  notifications: object;
+  owner: string;
+  schedulerId: string;
+  startedExecutionAt: number;
+  state: string;
+  workflow: string;
+  nodeMessages: [];
+}
+
+export interface Schedule {
+  configuration: Object;
+  configurationWithPasswords: Object;
+  discard: boolean;
+  discardAfterFailedExec: boolean;
+  discardAfterSuccessfulExec: boolean;
+  executionRetries: number;
+  id: string;
+  lastJob: string;
+  lastRun: number;
+  notifications: object;
+  numFailures: number;
+  reset: boolean;
+  schedule: {
+    delay: number;
+    delayType: string;
+    disabled: boolean;
+    filter: {
+      days: number[];
+      daysOfWeek: string[];
+      months: string[];
+      times: Array<{ start: number[]; end: number[] }>;
+    };
+    nextScheduledExecution: number;
+    skipIfPreviousJobStillRunning: boolean;
+    startTime: number;
+  };
+  targetName: string;
+  user: string;
+  workflowPath: string;
+}
