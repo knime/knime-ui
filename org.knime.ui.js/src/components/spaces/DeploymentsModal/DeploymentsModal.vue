@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { defineAsyncComponent, computed } from "vue";
 import { useStore } from "vuex";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
 import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
 
-import JobsTable from "./JobsTable.vue";
-import SchedulesTable from "./SchedulesTable.vue";
+const JobsTable = defineAsyncComponent(() => import("./JobsTable.vue"));
+const SchedulesTable = defineAsyncComponent(
+  () => import("./SchedulesTable.vue"),
+);
 
 const store = useStore();
 
@@ -44,10 +46,13 @@ const closeModal = () => {
         <SchedulesTable
           v-if="schedules.length > 0"
           :selected-item-schedules="schedules"
+          :selected-item-jobs="jobs"
         />
         <JobsTable v-if="jobs.length > 0" :selected-item-jobs="jobs" />
       </div>
-      <h2 v-else class="no-data">There are no schedules or jobs to display.</h2>
+      <span v-else class="no-data"
+        >There are no schedules or jobs to display.</span
+      >
     </template>
   </Modal>
 </template>
@@ -60,6 +65,9 @@ const closeModal = () => {
 .no-data {
   display: flex;
   justify-content: center;
+  font-size: 16px;
+  font-style: italic;
+  padding-top: 10px;
   color: var(--knime-masala);
 }
 

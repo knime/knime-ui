@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 
 import { Table } from "@knime/knime-ui-table";
+
 import {
   defaultColumns,
   defaultSortColumn,
@@ -13,16 +14,7 @@ import {
   popoverRenderers,
   slottedColumns,
   jobSubMenuItems,
-} from "./jobtable.config";
-
-const defaultAttributes = {
-  showSorting: true,
-  showTimeFilter: true,
-  showSearch: true,
-  showColumnFilters: true,
-  showBottomControls: true,
-  showPopovers: true,
-};
+} from "./jobsTable.config";
 
 const props = defineProps({
   selectedItemJobs: {
@@ -31,6 +23,13 @@ const props = defineProps({
     default: () => [],
   },
 });
+
+const defaultAttributes = {
+  showSorting: true,
+  showSearch: true,
+  showColumnFilters: true,
+  showPopovers: true,
+};
 
 const columnTypes = ref(jobTypes);
 const columnFormatters = ref(jobFormatters());

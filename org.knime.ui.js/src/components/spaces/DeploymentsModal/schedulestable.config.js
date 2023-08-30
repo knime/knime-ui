@@ -1,52 +1,59 @@
-/* eslint-disable no-nested-ternary */
 import { columnTypes } from "@knime/knime-ui-table";
+import { getIntervalFromSchedule } from "../../../util/internvalFromSchedule";
+import { formatTime } from "../../../util/time";
 
-export const defaultColumns = ["startTime", "user", "state", "nodeMessages"];
+export const defaultScheduleColumns = [
+  "lastRun",
+  "nextScheduledExecution",
+  "user",
+  "schedule",
+  "disabled",
+  "id",
+];
 
-export const defaultSortColumn = 0; // createdAt
-
-export const defaultSortDirection = -1; // descending
-
-export const jobHeaders = {
-  startTime: "Created at",
-  id: "Schedule ID",
-  actions: "Actions",
-  configuration: "Configuration",
-  user: "Owner",
-  state: "State",
-  nodeMessages: "Node messages",
-  notifications: "Notifications",
+export const scheduleHeaders = {
+  lastRun: "Last run",
+  nextScheduledExecution: "Next run",
   targetName: "Workflow",
-  schedule: "Schedule",
-  lastJob: "Last job",
-  discardAfterFailedExec: "Discard after failed execution",
-  discardAfterSuccessfulExec: "Discard after Successful Execution",
+  workflowPath: "Workflow Path",
+  user: "User",
+  schedule: "Interval",
+  inputParameters: "Parameters",
+  reset: "Reset",
+  discard: "Discard",
+  numFailures: "Fail count",
+  discardAfterSuccessfulExec: "Discard after success",
+  discardAfterFailedExec: "Discard after fail",
+  notifications: "Notifications",
+  actions: "Actions",
+  configurationWithPasswords: "Auth properties",
+  lastJob: "Last job ID",
+  configuration: "Configuration",
+  disabled: "Status",
+  id: "Schedule ID",
 };
 
-export const jobTypes = {
-  startTime: columnTypes.DateTime,
-  id: columnTypes.String,
+export const scheduleTypes = {
+  lastRun: columnTypes.DateTime,
+  targetName: columnTypes.Nominal,
+  workflowPath: columnTypes.String,
+  user: columnTypes.Nominal,
+  schedule: columnTypes.Object,
+  nextScheduledExecution: columnTypes.DateTime,
+  inputParameters: columnTypes.Object,
+  numFailures: columnTypes.Number,
+  reset: columnTypes.Boolean,
+  discard: columnTypes.Boolean,
   discardAfterSuccessfulExec: columnTypes.Boolean,
   discardAfterFailedExec: columnTypes.Boolean,
-  actions: columnTypes.Array,
-  configuration: columnTypes.Object,
-  user: columnTypes.String,
-  state: columnTypes.Nominal,
-  nodeMessages: columnTypes.Array,
   notifications: columnTypes.Object,
-  targetName: columnTypes.String,
-  schedules: columnTypes.Object,
+  actions: columnTypes.Array,
+  configurationWithPasswords: columnTypes.Object,
   lastJob: columnTypes.String,
+  configuration: columnTypes.Object,
+  disabled: columnTypes.Boolean,
+  id: columnTypes.String,
 };
-
-// export const createdViaConfig = {
-//   "generic client": "Generic client",
-//   schedule: "Schedule",
-//   webportal: "WebPortal",
-//   "rest api": "REST API",
-//   [null]: "-",
-//   [undefined]: "-", // eslint-disable-line no-undefined
-// };
 
 const booleanMap = {
   [true]: "Yes",
@@ -54,69 +61,86 @@ const booleanMap = {
   [undefined]: "-", // eslint-disable-line no-undefined
 };
 
-export const jobFormatters = () => ({
-  actions: (actions) => (actions?.length ? `${actions.length} Actions` : "-"),
-  //   state: (state) => caseFormatter({ string: state, format: "snakeFormat" }),
-  nodeMessages: (messages) =>
-    messages?.length ? `${messages.length} Messages` : "-",
+export const scheduleFormatters = {
+  numFailures: (failures) => (failures ? `${failures} Failures` : "-"),
+  reset: (bool) => booleanMap[bool],
+  discard: (bool) => booleanMap[bool],
   discardAfterSuccessfulExec: (bool) => booleanMap[bool],
   discardAfterFailedExec: (bool) => booleanMap[bool],
-});
-
-// export const jobClassGenerators = {
-//   state: ["state", (state) => state.toLowerCase().replace(" ", "-")],
-//   workflow: ["workflow-path"],
-// };
-
-export const popoverRenderers = {
-  actions: true,
-  configuration: true,
-  nodeMessages: {
-    type: "MessageRenderer",
-    process: (data) =>
-      data?.map((item) => ({
-        type: item.messageType,
-        item: item.node,
-        message: item.message,
-        itemTitle: "Node",
-        messageTitle: "Message",
-      })),
-  },
-  notifications: true,
-  properties: true,
+  schedule: (schedule) => getIntervalFromSchedule(schedule),
+  actions: (actions) => (actions?.length ? `${actions.length} Actions` : "-"),
+  disabled: (disabled) => (disabled ? "Inactive" : "Active"),
+  lastRun: (lastRun) => (lastRun ? formatTime(lastRun) : ""),
+  nextScheduledExecution: (nextScheduledExecution) =>
+    formatTime(nextScheduledExecution),
 };
 
-export const slottedColumns = [];
+export const scheduleClassGenerators = {
+  workflowPath: ["workflow-path"],
+};
 
-export const jobSubMenuItems = [
+export const schedulePopoverRenderers = {
+  schedule: true,
+  inputParameters: true,
+  notifications: true,
+  actions: true,
+  configurationWithPasswords: true,
+  configuration: true,
+  disabled: {
+    type: "StringRenderer",
+    process: (disabled) => (disabled ? "Active" : "Inactive"),
+  },
+};
+
+export const slottedColumns = ["status"];
+
+export const scheduleSubMenuItems = [
   // TODO Add sub menu items
-  // {
-  //   name: "open",
-  //   text: "Open",
-  //   callback: async (row, context) => {
-  //     consola.trace("Open job submenu action.");
-  //     context.$store.dispatch("notification/show", {
-  //       message: "Execution opened in new tab.",
-  //       type: "success",
-  //       showCollapser: false,
-  //       autoRemove: false,
-  //       details: {
-  //         text: "If it does not open automatically, ",
-  //         link: {
-  //           text: "click here.",
-  //           href: await context.$api.forwardToExecutionApp({ jobId: row.id }),
-  //           newTab: true,
-  //         },
-  //       },
-  //     });
-  //   },
-  // },
   // {
   //   name: "delete",
   //   text: "Delete",
+  //   icon: DeleteIcon,
   //   callback: (row, context) => {
-  //     consola.trace("Discard job submenu action.");
-  //     context.$store.dispatch("deployments/deleteJob", { jobId: row.id });
+  //     consola.debug("Delete scheduled job submenu action.");
+  //     context.$store.dispatch("schedule/delete", { id: row.id });
+  //   },
+  // },
+  // {
+  //   name: "copy",
+  //   text: "Copy link",
+  //   icon: LinkIcon,
+  //   callback: (schedule, context) => {
+  //     consola.debug("Copy link to workflow schedule submenu action.");
+  //     let link = `${window.location.origin}${buildWorkflowPath({
+  //       path: schedule.workflowPath,
+  //       withBasePath: true,
+  //     })}`;
+  //     copyText(link);
+  //     context.$store.dispatch(
+  //       "notification/show",
+  //       {
+  //         message: "Link copied to clipboard",
+  //         type: "success",
+  //         autoRemove: true,
+  //       },
+  //       { root: true }
+  //     );
+  //   },
+  // },
+];
+
+export const scheduleGroupSubMenuItems = [
+  // {
+  //   name: "delete",
+  //   text: "Delete all",
+  //   icon: DeleteIcon,
+  //   callback: (group, context) => {
+  //     consola.debug("Discard schedule group submenu action.");
+  //     batchDelete({
+  //       ids: group.map((row) => row?.id),
+  //       module: "schedule",
+  //       context,
+  //     });
   //   },
   // },
 ];
