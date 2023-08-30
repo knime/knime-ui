@@ -50,6 +50,7 @@ package org.knime.ui.java.api;
 
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map.Entry;
@@ -57,6 +58,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
@@ -233,4 +235,21 @@ final class SpaceAPI {
         var url = ClassicAPBuildHubURL.getHubURL(itemId, sourceSpaceProvider, sourceSpace);
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
     }
+
+    /**
+     * Opens the permissions dialog on KNIME Server items only.
+     *
+     * @param spaceProviderId
+     * @param spaceId
+     * @param itemId
+     * @throws NotImplementedException Thrown if called for space items not on a KNIME Server (should not happen).
+     * @throws IOException Thrown if there was an error fetching the space item.
+     */
+    @API
+    static void openPermissionsDialog(final String spaceProviderId, final String spaceId, final String itemId)
+        throws NotImplementedException, IOException {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        space.openPermissionsDialogForItem(itemId); // Method call might throw a `NotImplementedException` exception.
+    }
+
 }
