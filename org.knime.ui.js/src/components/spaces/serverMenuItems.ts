@@ -12,7 +12,7 @@ export const buildOpenPermissionsDialog = (
     text: "Permissions",
     icon: KeyIcon,
     disabled: false,
-    title: "View and display Server permissions",
+    title: "View and edit access permissions",
     execute: () => {
         dispatch("spaces/openPermissionsDialog", {
         projectId,
