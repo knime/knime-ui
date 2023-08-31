@@ -212,20 +212,6 @@ class SpaceAPITest {
 
     }
 
-    @Test
-    void testOpenPermissionsDialog() throws Exception {
-        var spaceProviders = mock(SpaceProviders.class);
-        var spaceProvider = mock(SpaceProvider.class);
-        var space = mock(Space.class);
-        when(spaceProvider.getSpace("spaceId")).thenReturn(space);
-        when(spaceProviders.getProvidersMap()).thenReturn(Map.of("spaceProviderId", spaceProvider));
-
-        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null, null);
-        SpaceAPI.openPermissionsDialog("spaceProviderId", "spaceId", "itemId");
-
-        verify(space).openPermissionsDialogForItem("itemId");
-    }
-
     @AfterEach
     void disposeDesktopAPIDependencies() {
         DesktopAPI.disposeDependencies();

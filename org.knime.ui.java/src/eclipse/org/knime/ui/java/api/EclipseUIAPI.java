@@ -48,6 +48,7 @@
  */
 package org.knime.ui.java.api;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -67,6 +68,7 @@ import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -226,6 +228,21 @@ final class EclipseUIAPI {
     @API
     static void openUrlInExternalBrowser(final String url) {
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
+    }
+
+    /**
+     * Opens the permissions dialog on KNIME Server items only.
+     *
+     * @param spaceProviderId
+     * @param spaceId
+     * @param itemId
+     * @throws IOException Thrown if there was an error fetching the space item.
+     */
+    @API
+    static void openPermissionsDialog(final String spaceProviderId, final String spaceId, final String itemId)
+        throws IOException {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        space.openPermissionsDialogForItem(itemId); // Method call might throw a `NotImplementedException` exception.
     }
 
 }
