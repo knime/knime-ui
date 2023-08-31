@@ -4,9 +4,9 @@ import { describe, expect, it } from "vitest";
 import TagList from "webapps-common/ui/components/TagList.vue";
 import ComboBox from "webapps-common/ui/components/forms/ComboBox.vue";
 
-import ProjectMetadataTags from "../ProjectMetadataTags.vue";
+import ProjectMetadataTags from "../MetadataTags.vue";
 
-describe("ProjectMetadataTags.vue", () => {
+describe("MetadataTags.vue", () => {
   const doMount = ({ props = {} } = {}) => {
     const defaultProps = {
       modelValue: ["tag1", "tag2"],

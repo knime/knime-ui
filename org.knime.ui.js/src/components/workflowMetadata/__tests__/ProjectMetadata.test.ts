@@ -12,7 +12,7 @@ import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue
 
 import ProjectMetadata from "../ProjectMetadata.vue";
 import MetadataDescription from "../MetadataDescription.vue";
-import ProjectMetadataTags from "../ProjectMetadataTags.vue";
+import MetadataTags from "../MetadataTags.vue";
 
 describe("ProjectMetadata.vue", () => {
   const doMount = ({
@@ -72,12 +72,10 @@ describe("ProjectMetadata.vue", () => {
       wrapper.findComponent(ExternalResourcesList).props("modelValue"),
     ).toEqual(links);
 
-    expect(wrapper.findComponent(ProjectMetadataTags).props("editable")).toBe(
-      false,
+    expect(wrapper.findComponent(MetadataTags).props("editable")).toBe(false);
+    expect(wrapper.findComponent(MetadataTags).props("modelValue")).toEqual(
+      tags,
     );
-    expect(
-      wrapper.findComponent(ProjectMetadataTags).props("modelValue"),
-    ).toEqual(tags);
   });
 
   it("should go into edit mode", async () => {
@@ -93,9 +91,7 @@ describe("ProjectMetadata.vue", () => {
       true,
     );
 
-    expect(wrapper.findComponent(ProjectMetadataTags).props("editable")).toBe(
-      true,
-    );
+    expect(wrapper.findComponent(MetadataTags).props("editable")).toBe(true);
   });
 
   // eslint-disable-next-line vitest/no-disabled-tests
@@ -106,7 +102,7 @@ describe("ProjectMetadata.vue", () => {
 
     const descriptionComponent = wrapper.findComponent(MetadataDescription);
     const linksComponent = wrapper.findComponent(ExternalResourcesList);
-    const tagsComponent = wrapper.findComponent(ProjectMetadataTags);
+    const tagsComponent = wrapper.findComponent(MetadataTags);
 
     descriptionComponent.vm.$emit(
       "update:modelValue",
@@ -166,7 +162,7 @@ describe("ProjectMetadata.vue", () => {
 
     const descriptionComponent = wrapper.findComponent(MetadataDescription);
     const linksComponent = wrapper.findComponent(ExternalResourcesList);
-    const tagsComponent = wrapper.findComponent(ProjectMetadataTags);
+    const tagsComponent = wrapper.findComponent(MetadataTags);
 
     descriptionComponent.vm.$emit(
       "update:modelValue",
@@ -224,7 +220,7 @@ describe("ProjectMetadata.vue", () => {
 
     const descriptionComponent = wrapper.findComponent(MetadataDescription);
     const linksComponent = wrapper.findComponent(ExternalResourcesList);
-    const tagsComponent = wrapper.findComponent(ProjectMetadataTags);
+    const tagsComponent = wrapper.findComponent(MetadataTags);
 
     expect(descriptionComponent.props("modelValue")).toEqual(
       customWorkflow1.projectMetadata.description.value,
@@ -305,7 +301,7 @@ describe("ProjectMetadata.vue", () => {
 
       const descriptionComponent = wrapper.findComponent(MetadataDescription);
       const linksComponent = wrapper.findComponent(ExternalResourcesList);
-      const tagsComponent = wrapper.findComponent(ProjectMetadataTags);
+      const tagsComponent = wrapper.findComponent(MetadataTags);
 
       expect(descriptionComponent.props("modelValue")).toEqual(
         customWorkflow1.projectMetadata.description.value,
@@ -395,7 +391,7 @@ describe("ProjectMetadata.vue", () => {
 
       const descriptionComponent = wrapper.findComponent(MetadataDescription);
       const linksComponent = wrapper.findComponent(ExternalResourcesList);
-      const tagsComponent = wrapper.findComponent(ProjectMetadataTags);
+      const tagsComponent = wrapper.findComponent(MetadataTags);
 
       expect(descriptionComponent.props("modelValue")).toEqual(
         customWorkflow1.projectMetadata.description.value,

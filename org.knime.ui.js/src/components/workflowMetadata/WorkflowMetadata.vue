@@ -28,7 +28,7 @@ const isMetanode = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode,
 );
 
-const updateMetadata = ({
+const updateProjectMetadata = ({
   description,
   links,
   tags,
@@ -43,19 +43,24 @@ const updateMetadata = ({
     tags,
   });
 };
+
+const updateComponentMetadata = (data) => {
+  consola.warn("TODO: implement updateComponentMetadata", data);
+};
 </script>
 
 <template>
   <div v-if="workflow && !isMetanode" class="metadata">
     <ProjectMetadata
       v-if="isProject && workflow.projectMetadata"
-      @save="updateMetadata"
+      @save="updateProjectMetadata"
     />
 
     <ComponentMetadata
       v-if="isComponent && workflow.componentMetadata"
       :workflow="workflow"
       :available-port-types="availablePortTypes"
+      @save="updateComponentMetadata"
     />
   </div>
 
