@@ -6,3 +6,4 @@ export * from "./nodeRepository";
 export * from "./ports";
 export * from "./workflow";
 export * from "./spaces";
+export * from "./deployments";

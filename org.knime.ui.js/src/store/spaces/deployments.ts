@@ -47,6 +47,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     commit("setJobs", jobs);
     commit("setSchedules", schedules);
-    commit("setDisplayDeploymentsModal", { isOpen: true, name: itemName });
+    commit("setDeploymentsModalConfig", { isOpen: true, name: itemName });
   },
 };

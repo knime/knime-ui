@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent, computed } from "vue";
-import { useStore } from "vuex";
+import { useStore } from "@/composables/useStore";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
 import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
@@ -13,17 +13,17 @@ const SchedulesTable = defineAsyncComponent(
 const store = useStore();
 
 const isDisplayDeploymentsModalOpen = computed(
-  () => store.state.spaces.displayDeploymentsModal.isOpen,
+  () => store.state.spaces.deploymentsModalConfig.isOpen,
 );
 const selectedItemName = computed(
   () =>
-    `Schedules and jobs of “${store.state.spaces.displayDeploymentsModal.name}”`,
+    `Schedules and jobs of “${store.state.spaces.deploymentsModalConfig.name}”`,
 );
 const jobs = computed(() => store.state.spaces.jobs);
 const schedules = computed(() => store.state.spaces.schedules);
 
 const closeModal = () => {
-  store.commit("spaces/setDisplayDeploymentsModal", {
+  store.commit("spaces/setDeploymentsModalConfig", {
     isOpen: false,
     name: null,
   });
@@ -33,7 +33,6 @@ const closeModal = () => {
 <template>
   <Modal
     v-show="isDisplayDeploymentsModalOpen"
-    ref="modalRef"
     :active="isDisplayDeploymentsModalOpen"
     :title="selectedItemName"
     style-type="info"
@@ -42,15 +41,13 @@ const closeModal = () => {
   >
     <template #icon><CirclePlayIcon /></template>
     <template #confirmation>
-      <div v-if="jobs.length > 0 || schedules.length > 0">
-        <SchedulesTable
-          v-if="schedules.length > 0"
-          :selected-item-schedules="schedules"
-          :selected-item-jobs="jobs"
-        />
-        <JobsTable v-if="jobs.length > 0" :selected-item-jobs="jobs" />
-      </div>
-      <span v-else class="no-data"
+      <SchedulesTable
+        v-if="schedules.length > 0"
+        :selected-item-schedules="schedules"
+        :selected-item-jobs="jobs"
+      />
+      <JobsTable v-if="jobs.length > 0" :selected-item-jobs="jobs" />
+      <span v-if="jobs.length === 0 && schedules.length === 0" class="no-data"
         >There are no schedules or jobs to display.</span
       >
     </template>
@@ -108,6 +105,12 @@ const closeModal = () => {
       top: -1px;
       margin-right: 8px;
     }
+  }
+
+  & .node-messages {
+    display: inline-block;
+    padding-left: 20px;
+    margin-left: 20px;
   }
 
   & .execution-finished {

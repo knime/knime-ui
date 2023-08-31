@@ -1,43 +1,8 @@
 /* eslint-disable no-nested-ternary */
 import { columnTypes } from "@knime/knime-ui-table";
 import { caseFormatter } from "webapps-common/util/capitalize";
-import { formatTime } from "../../../util/time";
-
-// Supported wizardExecutionStates.
-export const wizardExecutionStates = {
-  LOADING: "LOADING",
-  EXECUTING: "EXECUTING",
-  INTERACTION_REQUIRED: "INTERACTION_REQUIRED",
-  FINISHED: "EXECUTION_FINISHED",
-  FINISHED_WITH_ERRORS: "EXECUTION_FAILED_WITH_CONTENT",
-  FAILED: "EXECUTION_FAILED",
-  NOT_EXECUTABLE: "NOT_EXECUTABLE",
-  CANCELLED: "EXECUTION_CANCELLED",
-  STOPPING: "STOPPING_EXECUTION", // used for error handling; frontend only
-  MISSING: "MISSING_JOB", // used for error handling; frontend only
-};
-
-// Job states mapped to their job list status.
-export const jobStates = {
-  [wizardExecutionStates.LOADING]: "Loading",
-  CONFIGURED: "Interaction required",
-  [wizardExecutionStates.EXECUTING]: "Running",
-  EXECUTED: "Interaction required", // deprecated in favor of INTERACTION_REQUIRED or FINISHED
-  [wizardExecutionStates.FINISHED]: "Success",
-  [wizardExecutionStates.FINISHED_WITH_ERRORS]: "Success",
-  [wizardExecutionStates.FAILED]: "Failed",
-  [wizardExecutionStates.CANCELLED]: "Failed",
-  [wizardExecutionStates.INTERACTION_REQUIRED]: "Interaction required",
-  RUNNING: "Interaction required",
-  IDLE: "Failed", // something happened to the underlying workflow which left it in an un-configured state.
-  DISCARDED: "Failed",
-  UNDEFINED: "Failed",
-  LOAD_ERROR: "Failed",
-  VANISHED: "Failed",
-  NOT_EXECUTABLE: "Not executable",
-  // eslint-disable-next-line no-undefined
-  [undefined]: "Interaction required", // fallback job state
-};
+import { formatTime } from "@/util/time";
+import { booleanMap } from "./util";
 
 export const defaultColumns = ["createdAt", "owner", "state", "nodeMessages"];
 
@@ -98,16 +63,11 @@ export const createdViaConfig = {
   [undefined]: "-", // eslint-disable-line no-undefined
 };
 
-const booleanMap = {
-  [true]: "Yes",
-  [false]: "No",
-  [undefined]: "-", // eslint-disable-line no-undefined
-};
-
 export const jobFormatters = () => ({
   actions: (actions) => (actions?.length ? `${actions.length} Actions` : "-"),
   createdVia: (createdVia) => createdViaConfig[createdVia?.toLowerCase()],
-  state: (state) => caseFormatter({ string: state, format: "snakeFormat" }),
+  state: (state) =>
+    caseFormatter({ string: state, format: "snakeFormat", delimiter: "" }),
   nodeMessages: (messages) =>
     messages?.length ? `${messages.length} Messages` : "-",
   discardAfterSuccessfulExec: (bool) => booleanMap[bool],
@@ -120,6 +80,7 @@ export const jobFormatters = () => ({
 export const jobClassGenerators = {
   state: ["state", (state) => state.toLowerCase().replace(" ", "-")],
   workflow: ["workflow-path"],
+  nodeMessages: ["node-messages"],
 };
 
 export const popoverRenderers = {
@@ -144,33 +105,4 @@ export const slottedColumns = [];
 
 export const jobSubMenuItems = [
   // TODO Add sub menu items
-  // {
-  //   name: "open",
-  //   text: "Open",
-  //   callback: async (row, context) => {
-  //     consola.trace("Open job submenu action.");
-  //     context.$store.dispatch("notification/show", {
-  //       message: "Execution opened in new tab.",
-  //       type: "success",
-  //       showCollapser: false,
-  //       autoRemove: false,
-  //       details: {
-  //         text: "If it does not open automatically, ",
-  //         link: {
-  //           text: "click here.",
-  //           href: await context.$api.forwardToExecutionApp({ jobId: row.id }),
-  //           newTab: true,
-  //         },
-  //       },
-  //     });
-  //   },
-  // },
-  // {
-  //   name: "delete",
-  //   text: "Delete",
-  //   callback: (row, context) => {
-  //     consola.trace("Discard job submenu action.");
-  //     context.$store.dispatch("deployments/deleteJob", { jobId: row.id });
-  //   },
-  // },
 ];

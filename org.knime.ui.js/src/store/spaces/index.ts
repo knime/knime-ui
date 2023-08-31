@@ -14,7 +14,7 @@ interface CreateWorkflowModalConfig {
   projectId: string;
 }
 
-interface DisplayDeploymentsModal {
+interface DeploymentsModalConfig {
   isOpen: boolean;
   name: string;
 }
@@ -24,7 +24,7 @@ export * from "./types";
 
 export interface SpacesState {
   createWorkflowModalConfig: CreateWorkflowModalConfig;
-  displayDeploymentsModal: DisplayDeploymentsModal;
+  deploymentsModalConfig: DeploymentsModalConfig;
 }
 
 export const state = (): SpacesState => ({
@@ -39,7 +39,7 @@ export const state = (): SpacesState => ({
     isOpen: false,
     projectId: null,
   },
-  displayDeploymentsModal: {
+  deploymentsModalConfig: {
     isOpen: false,
     name: null,
   },
@@ -56,8 +56,8 @@ export const mutations: MutationTree<SpacesState> = {
     state.createWorkflowModalConfig = value;
   },
 
-  setDisplayDeploymentsModal(state, value: DisplayDeploymentsModal) {
-    state.displayDeploymentsModal = value;
+  setDeploymentsModalConfig(state, value: DeploymentsModalConfig) {
+    state.deploymentsModalConfig = value;
   },
 };
 

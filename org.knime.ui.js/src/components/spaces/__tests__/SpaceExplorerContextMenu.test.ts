@@ -3,7 +3,7 @@ import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
-import { createSpaceProvider } from "@/test/factories";
+import { createSpace, createSpaceProvider } from "@/test/factories";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import * as spacesStore from "@/store/spaces";
 import { SpaceProviderNS } from "@/api/custom-types";
@@ -41,6 +41,7 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     name: "Server 1",
     local: false,
     type: SpaceProviderNS.TypeEnum.SERVER,
+    spaces: [createSpace({ id: "serverSpace1" })],
   }),
 };
 
@@ -82,6 +83,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
           .mockReturnValue({ id: "delete", text: "delete" }),
         anchor: {
           item: {
+            name: "item-name",
             isOpen: false,
             meta: {
               type: "workflows",
@@ -321,6 +323,46 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
       spaceProviderId: "hub1",
+    });
+    expect(closeContextMenu).toHaveBeenCalled();
+  });
+
+  it("calls display deployments action on store if clicked", async () => {
+    const closeContextMenu = vi.fn();
+    const projectIdServer = "server1";
+    const { wrapper, dispatchSpy, $store } = doMount({
+      props: {
+        selectedItemId: ["2342"],
+        isMultipleSelectionActive: false,
+        closeContextMenu,
+        projectId: projectIdServer,
+      },
+      spaceProviders: {
+        local: startSpaceProviders.local,
+        server1: { ...startSpaceProviders.server1, connected: true },
+      },
+    });
+    $store.commit("spaces/setProjectPath", {
+      projectId: projectIdServer,
+      value: {
+        spaceId: startSpaceProviders.server1.spaces[0].id,
+        spaceProviderId: projectIdServer,
+        itemId: "root",
+      },
+    });
+
+    await nextTick();
+
+    const menuItems = wrapper.findComponent(MenuItems);
+    const items = menuItems.props("items");
+    const displayDeployments = items[4];
+    menuItems.vm.$emit("item-click", null, displayDeployments);
+    await nextTick();
+
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/displayDeployments", {
+      itemId: "2342",
+      projectId: projectIdServer,
+      itemName: "item-name",
     });
     expect(closeContextMenu).toHaveBeenCalled();
   });

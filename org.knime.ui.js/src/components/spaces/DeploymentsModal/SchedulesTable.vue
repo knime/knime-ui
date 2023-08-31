@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { Table } from "@knime/knime-ui-table";
+import { Table as KnimeUiTable } from "@knime/knime-ui-table";
 import type { Job, Schedule } from "@/api/custom-types";
 
+import JobsTable from "./JobsTable.vue";
 import {
   defaultScheduleColumns,
   scheduleHeaders,
@@ -15,14 +16,6 @@ import {
   schedulePopoverRenderers,
   scheduleClassGenerators,
 } from "./schedulesTable.config";
-import {
-  defaultColumns,
-  jobClassGenerators,
-  popoverRenderers,
-  jobHeaders,
-  jobTypes,
-  jobFormatters,
-} from "./jobsTable.config";
 
 type Props = {
   selectedItemSchedules: Schedule[];
@@ -45,14 +38,10 @@ const columnFormatters = ref(scheduleFormatters);
 const slottedColumnConfig = ref(slottedColumns);
 const columnHeaders = Object.values(scheduleHeaders);
 const columnKeys = ref(Object.keys(scheduleHeaders));
-const tableAttributes = computed(() => defaultAttributes);
 
+const tableAttributes = computed(() => defaultAttributes);
 const subMenuItems = computed(() => scheduleSubMenuItems);
 const groupSubMenuItems = computed(() => scheduleGroupSubMenuItems);
-const jobColumnHeaders = computed(() => Object.values(jobHeaders));
-const jobColumnKeys = computed(() => Object.keys(jobHeaders));
-const jobColumnTypes = computed(() => jobTypes);
-const jobColumnFormatters = computed(() => jobFormatters());
 const selectedItemFormattedData = computed(() =>
   props.selectedItemSchedules.map((schedule) => {
     return {
@@ -70,7 +59,7 @@ const getScheduleJobs = (id) =>
 <template>
   <div class="modal-wrapper">
     <h2>Schedules</h2>
-    <Table
+    <KnimeUiTable
       ref="schedulesTable"
       :all-data="selectedItemFormattedData"
       :all-column-headers="columnHeaders"
@@ -86,28 +75,20 @@ const getScheduleJobs = (id) =>
       v-bind="tableAttributes"
     >
       <template #collapserContent="{ row }">
-        <Table
+        <JobsTable
           v-if="row.data.id && getScheduleJobs(row.data.id).length"
-          class="table"
-          :all-data="getScheduleJobs(row.data.id)"
-          :all-column-headers="jobColumnHeaders"
-          :all-column-keys="jobColumnKeys"
-          :all-column-types="jobColumnTypes"
-          :all-formatters="jobColumnFormatters"
-          :all-class-generators="jobClassGenerators"
-          :all-popover-renderers="popoverRenderers"
-          :time-filter-key="'createdAt'"
-          :default-columns="defaultColumns"
+          :show-header="false"
+          :show-search="false"
+          :show-column-filters="false"
           :page-size="5"
-          :action-button-text="'Show full details'"
-          show-sorting
-          show-popovers
+          class="table"
+          :selected-item-jobs="getScheduleJobs(row.data.id)"
         />
         <div v-else class="empty-message">
           No jobs available for this schedule.
         </div>
       </template>
-    </Table>
+    </KnimeUiTable>
   </div>
 </template>
 

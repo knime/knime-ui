@@ -1,6 +1,7 @@
 import { columnTypes } from "@knime/knime-ui-table";
-import { getIntervalFromSchedule } from "../../../util/internvalFromSchedule";
-import { formatTime } from "../../../util/time";
+import { getIntervalFromSchedule } from "@/util/internvalFromSchedule";
+import { formatTime } from "@/util/time";
+import { booleanMap } from "./util";
 
 export const defaultScheduleColumns = [
   "lastRun",
@@ -55,12 +56,6 @@ export const scheduleTypes = {
   id: columnTypes.String,
 };
 
-const booleanMap = {
-  [true]: "Yes",
-  [false]: "No",
-  [undefined]: "-", // eslint-disable-line no-undefined
-};
-
 export const scheduleFormatters = {
   numFailures: (failures) => (failures ? `${failures} Failures` : "-"),
   reset: (bool) => booleanMap[bool],
@@ -96,51 +91,6 @@ export const slottedColumns = ["status"];
 
 export const scheduleSubMenuItems = [
   // TODO Add sub menu items
-  // {
-  //   name: "delete",
-  //   text: "Delete",
-  //   icon: DeleteIcon,
-  //   callback: (row, context) => {
-  //     consola.debug("Delete scheduled job submenu action.");
-  //     context.$store.dispatch("schedule/delete", { id: row.id });
-  //   },
-  // },
-  // {
-  //   name: "copy",
-  //   text: "Copy link",
-  //   icon: LinkIcon,
-  //   callback: (schedule, context) => {
-  //     consola.debug("Copy link to workflow schedule submenu action.");
-  //     let link = `${window.location.origin}${buildWorkflowPath({
-  //       path: schedule.workflowPath,
-  //       withBasePath: true,
-  //     })}`;
-  //     copyText(link);
-  //     context.$store.dispatch(
-  //       "notification/show",
-  //       {
-  //         message: "Link copied to clipboard",
-  //         type: "success",
-  //         autoRemove: true,
-  //       },
-  //       { root: true }
-  //     );
-  //   },
-  // },
 ];
 
-export const scheduleGroupSubMenuItems = [
-  // {
-  //   name: "delete",
-  //   text: "Delete all",
-  //   icon: DeleteIcon,
-  //   callback: (group, context) => {
-  //     consola.debug("Discard schedule group submenu action.");
-  //     batchDelete({
-  //       ids: group.map((row) => row?.id),
-  //       module: "schedule",
-  //       context,
-  //     });
-  //   },
-  // },
-];
+export const scheduleGroupSubMenuItems = [];

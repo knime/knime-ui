@@ -75,7 +75,6 @@ export type Workflow = Omit<_Workflow, "nodes"> & {
 };
 
 export interface Job {
-  configuration: Object;
   createdAt: number;
   createdVia: string;
   discard: boolean;
@@ -87,18 +86,15 @@ export interface Job {
   isOutdated: boolean;
   isSwapped: boolean;
   name: string;
-  notifications: object;
   owner: string;
   schedulerId: string;
   startedExecutionAt: number;
   state: string;
   workflow: string;
-  nodeMessages: [];
+  nodeMessages: Array<{ message: string; messageType: string; node: string }>;
 }
 
 export interface Schedule {
-  configuration: Object;
-  configurationWithPasswords: Object;
   discard: boolean;
   discardAfterFailedExec: boolean;
   discardAfterSuccessfulExec: boolean;
@@ -106,7 +102,6 @@ export interface Schedule {
   id: string;
   lastJob: string;
   lastRun: number;
-  notifications: object;
   numFailures: number;
   reset: boolean;
   schedule: {

@@ -29,9 +29,9 @@ export const getIntervalFromSchedule = (schedule) => {
     }
 
     // minutes, hours, days
-    let delayUnit = schedule.delayType.toLowerCase();
+    const delayUnit = schedule.delayType.toLowerCase();
     // singularize for proper english
-    let parsedUnit =
+    const parsedUnit =
       schedule.delay === 1 && delayUnit.endsWith("s")
         ? delayUnit.slice(0, -1)
         : delayUnit;

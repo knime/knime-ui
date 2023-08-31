@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { Table } from "@knime/knime-ui-table";
+import { Table as KnimeUiTable } from "@knime/knime-ui-table";
 import type { Job } from "@/api/custom-types";
 
 import {
@@ -19,14 +19,23 @@ import {
 
 type Props = {
   selectedItemJobs: Job[];
+  showHeader: boolean;
+  showSearch: boolean;
+  showColumnFilters: boolean;
+  pageSize: number;
 };
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showHeader: true,
+  showSearch: true,
+  showColumnFilters: true,
+  pageSize: 10,
+});
 
 const defaultAttributes = {
   showSorting: true,
-  showSearch: true,
-  showColumnFilters: true,
+  showSearch: props.showSearch,
+  showColumnFilters: props.showColumnFilters,
   showPopovers: true,
 };
 
@@ -44,8 +53,8 @@ const subMenuItems = computed(() => jobSubMenuItems);
 
 <template>
   <div class="modal-wrapper">
-    <h2>Jobs</h2>
-    <Table
+    <h2 v-if="showHeader">Jobs</h2>
+    <KnimeUiTable
       ref="jobsTable"
       :all-data="props.selectedItemJobs"
       :all-column-headers="columnHeaders"
@@ -61,6 +70,7 @@ const subMenuItems = computed(() => jobSubMenuItems);
       :default-sort-column="defaultSortColumn"
       :default-sort-column-direction="defaultSortDirection"
       :sub-menu-items="subMenuItems"
+      :page-size="props.pageSize"
     />
   </div>
 </template>
