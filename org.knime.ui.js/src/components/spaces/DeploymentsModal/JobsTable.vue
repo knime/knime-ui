@@ -19,10 +19,10 @@ import {
 
 type Props = {
   selectedItemJobs: Job[];
-  showHeader: boolean;
-  showSearch: boolean;
-  showColumnFilters: boolean;
-  pageSize: number;
+  showHeader?: boolean;
+  showSearch?: boolean;
+  showColumnFilters?: boolean;
+  pageSize?: number;
 };
 
 const props = withDefaults(defineProps<Props>(), {
