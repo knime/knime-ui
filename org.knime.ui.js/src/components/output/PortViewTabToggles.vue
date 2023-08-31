@@ -173,7 +173,7 @@ export default defineComponent({
     padding: 0;
     background: transparent;
     margin: 0;
-    border-radius: 0;
+    border-radius: 0 100% 100% 0;
 
     &:hover {
       background-color: var(--theme-value-switch-background-color-hover);
@@ -183,6 +183,15 @@ export default defineComponent({
       margin-left: 3px;
 
       @mixin svg-icon-size 12;
+    }
+
+    /* keep the background of disabled buttons */
+    &[disabled] {
+      opacity: 1;
+
+      & svg {
+        opacity: 0.5;
+      }
     }
   }
 
