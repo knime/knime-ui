@@ -112,23 +112,9 @@ const fileExplorerContextMenuItems = computed(() => {
     return [downloadToLocalSpace, openInBrowser];
   };
 
-  const getServerActions = () => {
-    if (
-      getProviderInfo.value(props.projectId).type !==
-      BaseSpaceProvider.TypeEnum.SERVER
-    ) {
-      return [];
-    }
-
-    if (!selectionContainsWorkflow) {
-      return [];
-    }
-
-    return [openAPIDefinition];
-  };
-
-  // --- Build Server actions
-  const isServer = getProviderInfo.value(props.projectId).type === "SERVER";
+  const isServer =
+    getProviderInfo.value(props.projectId).type ===
+    BaseSpaceProvider.TypeEnum.SERVER;
 
   const openPermissionsDialog = buildOpenPermissionsDialog(
     store.dispatch,
@@ -137,10 +123,15 @@ const fileExplorerContextMenuItems = computed(() => {
   );
 
   const getServerActions = () => {
-    if (isServer) {
+    if (!isServer) {
+      return [];
+    }
+
+    if (!selectionContainsWorkflow) {
       return [openPermissionsDialog];
     }
-    return [];
+
+    return [openPermissionsDialog, openAPIDefinition];
   };
 
   const createExportItemOption = (

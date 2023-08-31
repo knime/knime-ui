@@ -385,7 +385,7 @@ export const openInBrowser = ({
   return callBrowserFunction(
     window.openInBrowser,
     [spaceProviderId, spaceId, itemId],
-    "Error opening in Hub",
+    "Error opening in browser",
     false,
   );
 };

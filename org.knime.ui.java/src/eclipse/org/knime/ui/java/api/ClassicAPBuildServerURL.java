@@ -64,6 +64,7 @@ import org.knime.core.util.Version;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
+import org.knime.ui.java.util.DesktopAPUtil;
 
 /**
  * Adaptation of 'OpenInWebPortalAction' and 'ShowAPIDefinitionAction' from explorer server to build the URL of an item
@@ -101,6 +102,7 @@ final class ClassicAPBuildServerURL {
         final var restPath = sourceSpaceProvider.getRESTPath();
         if (!restPath.isPresent()) {
             LOGGER.error("For the selected element there is no REST path available.");
+            showURLBuildError("No REST path available");
             throw new NoSuchElementException("No REST path available");
         }
         final var serverVersion = sourceSpaceProvider.getServerVersion();
@@ -113,8 +115,9 @@ final class ClassicAPBuildServerURL {
             try {
                 return URLEncoder.encode(part, "UTF-8").replace("+", "%20");
             } catch (UnsupportedEncodingException e) {
-                LOGGER.error("The workflow name could not be encoded: " + workflowPath);
-                return "";
+                LOGGER.error("The workflow name could not be encoded: " + urlBuilder + workflowPath);
+                showURLBuildError("Error when encoding the workflow name, check the logs for details.");
+                throw new RuntimeException(e);
             }
         }).collect(Collectors.joining("/")));
 
@@ -141,6 +144,7 @@ final class ClassicAPBuildServerURL {
             return targetUri.toString();
         } catch (URISyntaxException e) {
             LOGGER.error("Invalid URL could not be parsed", e);
+            showURLBuildError("Invalid URL could not be parsed");
             return "";
         }
     }
@@ -154,6 +158,10 @@ final class ClassicAPBuildServerURL {
             workflowPath.insert(0, part + "/");
         }
         return workflowPath.toString();
+    }
+
+    private static void showURLBuildError(final String message) {
+        DesktopAPUtil.showError("Error when building URL", message);
     }
 
 }
