@@ -109,7 +109,7 @@ final class ClassicAPBuildServerURL {
             : LEGACY_WEBPORTAL_URL_PREFIX);
         final var workflowPath = buildWorkflowPath(sourceSpace, itemId);
 
-        urlBuilder.append(Arrays.stream(workflowPath.toString().split("/")).map((part) -> {
+        urlBuilder.append(Arrays.stream(workflowPath.split("/")).map((part) -> {
             try {
                 return URLEncoder.encode(part, "UTF-8").replace("+", "%20");
             } catch (UnsupportedEncodingException e) {

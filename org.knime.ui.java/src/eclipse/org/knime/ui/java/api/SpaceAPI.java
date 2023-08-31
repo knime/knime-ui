@@ -228,21 +228,18 @@ final class SpaceAPI {
         if (sourceSpaceProvider == null) {
             throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
         }
+
+        String url;
+        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         if (sourceSpaceProvider.getType() == TypeEnum.HUB) {
-            final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
-            final var url = ClassicAPBuildHubURL.getHubURL(itemId, sourceSpaceProvider, sourceSpace);
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
-            return;
+            url = ClassicAPBuildHubURL.getHubURL(itemId, sourceSpaceProvider, sourceSpace);
+        } else if (sourceSpaceProvider.getType() == TypeEnum.SERVER) {
+            url = ClassicAPBuildServerURL.getWebPortalURL(itemId, sourceSpaceProvider, sourceSpace);
+        } else {
+            throw new NoSuchElementException("Operation not supported for local items");
         }
 
-        if (sourceSpaceProvider.getType() == TypeEnum.SERVER) {
-            final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
-            final var url = ClassicAPBuildServerURL.getWebPortalURL(itemId, sourceSpaceProvider, sourceSpace);
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
-            return;
-        }
-
-        throw new NoSuchElementException("Operation not supported for local items");
+        WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
     }
 
     /**
