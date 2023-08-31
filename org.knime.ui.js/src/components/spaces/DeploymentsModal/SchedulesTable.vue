@@ -18,8 +18,8 @@ import {
 } from "./schedulesTable.config";
 
 type Props = {
-  selectedItemSchedules: Schedule[];
-  selectedItemJobs: Job[];
+  schedules: Schedule[];
+  jobs: Job[];
 };
 
 const props = defineProps<Props>();
@@ -43,7 +43,7 @@ const tableAttributes = computed(() => defaultAttributes);
 const subMenuItems = computed(() => scheduleSubMenuItems);
 const groupSubMenuItems = computed(() => scheduleGroupSubMenuItems);
 const selectedItemFormattedData = computed(() =>
-  props.selectedItemSchedules.map((schedule) => {
+  props.schedules.map((schedule) => {
     return {
       ...schedule,
       nextScheduledExecution: schedule.schedule.nextScheduledExecution,
@@ -52,8 +52,8 @@ const selectedItemFormattedData = computed(() =>
   }),
 );
 
-const getScheduleJobs = (id) =>
-  props.selectedItemJobs.filter((job) => job.schedulerId === id);
+const getScheduleJobs = (id: string) =>
+  props.jobs.filter((job) => job.schedulerId === id);
 </script>
 
 <template>
@@ -82,7 +82,7 @@ const getScheduleJobs = (id) =>
           :show-column-filters="false"
           :page-size="5"
           class="table"
-          :selected-item-jobs="getScheduleJobs(row.data.id)"
+          :jobs="getScheduleJobs(row.data.id)"
         />
         <div v-else class="empty-message">
           No jobs available for this schedule.

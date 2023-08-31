@@ -43,10 +43,10 @@ const closeModal = () => {
     <template #confirmation>
       <SchedulesTable
         v-if="schedules.length > 0"
-        :selected-item-schedules="schedules"
-        :selected-item-jobs="jobs"
+        :schedules="schedules"
+        :jobs="jobs"
       />
-      <JobsTable v-if="jobs.length > 0" :selected-item-jobs="jobs" />
+      <JobsTable v-if="jobs.length > 0" :jobs="jobs" />
       <span v-if="jobs.length === 0 && schedules.length === 0" class="no-data"
         >There are no schedules or jobs to display.</span
       >

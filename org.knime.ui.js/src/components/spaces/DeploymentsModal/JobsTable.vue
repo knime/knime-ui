@@ -18,7 +18,7 @@ import {
 } from "./jobsTable.config";
 
 type Props = {
-  selectedItemJobs: Job[];
+  jobs: Job[];
   showHeader?: boolean;
   showSearch?: boolean;
   showColumnFilters?: boolean;
@@ -56,7 +56,7 @@ const subMenuItems = computed(() => jobSubMenuItems);
     <h2 v-if="showHeader">Jobs</h2>
     <KnimeUiTable
       ref="jobsTable"
-      :all-data="props.selectedItemJobs"
+      :all-data="jobs"
       :all-column-headers="columnHeaders"
       v-bind="tableAttributes"
       :all-column-keys="columnKeys"
@@ -70,7 +70,7 @@ const subMenuItems = computed(() => jobSubMenuItems);
       :default-sort-column="defaultSortColumn"
       :default-sort-column-direction="defaultSortDirection"
       :sub-menu-items="subMenuItems"
-      :page-size="props.pageSize"
+      :page-size="pageSize"
     />
   </div>
 </template>
