@@ -628,19 +628,38 @@ describe("workflowShortcuts", () => {
     });
 
     it("copy", () => {
-      const { $store } = createStore();
+      const nodeOutputEl = document.createElement("div");
+      nodeOutputEl.id = "node-output";
+      nodeOutputEl.setAttribute("tabIndex", "0");
+      document.body.appendChild(nodeOutputEl);
 
-      expect(workflowShortcuts.copy.condition({ $store })).toBeFalsy();
-      $store.getters["selection/selectedNodes"] = [{ allowedActions: {} }];
+      // mock kanvas element and make it the activeElement
+      const kanvasElement = document.createElement("div");
+      kanvasElement.id = "kanvas";
+      kanvasElement.setAttribute("tabIndex", "0");
+      document.body.appendChild(kanvasElement);
+      kanvasElement.focus();
 
-      $store.state.workflow.isWorkflowPanelFocused = false;
+      expect(document.activeElement).toBe(kanvasElement);
+      let getScrollContainerElement = vi.fn().mockReturnValue(kanvasElement);
+
+      const { $store } = createStore({ getScrollContainerElement });
+
       expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
 
-      $store.state.workflow.isWorkflowPanelFocused = true;
+      $store.getters["selection/selectedNodes"] = [{ allowedActions: {} }];
       expect(workflowShortcuts.copy.condition({ $store })).toBe(true);
 
+      nodeOutputEl.focus();
+      expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
+
+      kanvasElement.focus();
+
       $store.state.application.hasClipboardSupport = false;
-      expect(workflowShortcuts.copy.condition({ $store })).toBeFalsy();
+      expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
+
+      getScrollContainerElement.mockReturnValue({});
+      expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
     });
 
     describe("cut", () => {

@@ -161,7 +161,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="output-container">
+  <div id="node-output" class="output-container">
     <PortTabs
       v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
       v-model="selectedTab"

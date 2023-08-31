@@ -69,7 +69,9 @@ describe("ContextMenu.vue", () => {
       }),
     );
 
-    $store.commit("workflow/setIsWorkflowPanelFocused", true);
+    const nodeOutputEl = document.createElement("div");
+    nodeOutputEl.id = "node-output";
+    document.body.appendChild(nodeOutputEl);
 
     return { $store };
   };

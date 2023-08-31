@@ -260,9 +260,7 @@ export default defineComponent({
         },
       );
     },
-    async setMenuItems() {
-      // await to flush all browser events before continueing (needed to get the workflowpanel as active element)
-      await new Promise((r) => setTimeout(r, 0));
+    setMenuItems() {
       const areNodesSelected = this.selectedNodes.length > 0;
       const areAnnotationsSelected = this.selectedAnnotations.length > 0;
       const areConnectionsSelected = this.selectedConnections.length > 0;

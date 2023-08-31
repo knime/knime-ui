@@ -321,19 +321,28 @@ const workflowShortcuts: WorkflowShortcuts = {
     execute: ({ $store }) =>
       $store.dispatch("workflow/copyOrCutWorkflowParts", { command: "copy" }),
     condition: ({ $store }) => {
+      const nodeOutput = document.querySelector("#node-output");
+
+      if (nodeOutput.contains(document.activeElement)) {
+        return false;
+      }
+
       const selectedNodes = Object.keys(
         $store.getters["selection/selectedNodes"],
       );
       const selectedAnnotations =
         $store.getters["selection/selectedAnnotations"];
-      const { isWorkflowPanelFocused } = $store.state.workflow;
+
+      const kanvas = $store.state.canvas.getScrollContainerElement();
+      const kanvasIsActiveElement = document.activeElement === kanvas;
+      const textSelectionIsEmpty = window?.getSelection().toString() === "";
       const isSomethingSelected =
         selectedNodes.length !== 0 || selectedAnnotations.length !== 0;
 
       return (
         isSomethingSelected &&
         $store.state.application.hasClipboardSupport &&
-        isWorkflowPanelFocused
+        (textSelectionIsEmpty || kanvasIsActiveElement)
       );
     },
   },

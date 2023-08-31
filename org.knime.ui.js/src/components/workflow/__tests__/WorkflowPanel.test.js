@@ -121,27 +121,6 @@ describe("WorkflowPanel", () => {
     });
   });
 
-  describe("focus", () => {
-    it("should signal to the store when the component element gets focused in/out", async () => {
-      const { wrapper, $store } = doShallowMount();
-      expect($store.state.workflow.isWorkflowPanelFocused).toBe(false);
-      await wrapper.trigger("focusin");
-      expect($store.state.workflow.isWorkflowPanelFocused).toBe(true);
-
-      await wrapper.trigger("focusout");
-      expect($store.state.workflow.isWorkflowPanelFocused).toBe(false);
-    });
-
-    it("should set focus to false on unmount", async () => {
-      const { wrapper, $store } = doShallowMount();
-      await wrapper.trigger("focusin");
-
-      wrapper.unmount();
-
-      expect($store.state.workflow.isWorkflowPanelFocused).toBe(false);
-    });
-  });
-
   describe("remote workflow", () => {
     it("should not show banner if workflow is local", () => {
       const { wrapper } = doShallowMount({
