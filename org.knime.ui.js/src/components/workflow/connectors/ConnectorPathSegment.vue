@@ -107,6 +107,7 @@ const isSegmentHovered = ref(false);
     fill="none"
   />
   <ConnectorBendpoint
+    v-if="!isReadonly"
     v-show="isSegmentHovered"
     :connection-id="connectionId"
     :is-flow-variable-connection="false"

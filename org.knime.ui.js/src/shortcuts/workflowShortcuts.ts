@@ -186,22 +186,26 @@ const workflowShortcuts: WorkflowShortcuts = {
         $store.getters["selection/selectedConnections"];
       const selectedAnnotations =
         $store.getters["selection/selectedAnnotations"];
+      const selectedBendpoints =
+        $store.getters["selection/selectedBendpointIds"];
 
       // disable if nothing selected
       if (
         selectedNodes.length === 0 &&
         selectedConnections.length === 0 &&
-        selectedAnnotations.length === 0
+        selectedAnnotations.length === 0 &&
+        selectedBendpoints.length === 0
       ) {
         return false;
       }
+
       const allSelectedDeletable =
         selectedNodes.every((node) => node.allowedActions.canDelete) &&
         selectedConnections.every(
           (connection) => connection.allowedActions.canDelete,
         );
 
-      // enabled, if all selected objects are not deletable
+      // enabled, if all selected objects are deletable
       return allSelectedDeletable;
     },
   },

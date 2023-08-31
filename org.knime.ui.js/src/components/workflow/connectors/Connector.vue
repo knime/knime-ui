@@ -314,7 +314,7 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
         :position="pathSegments[index].start"
         :index="index - 1"
         :connection-id="id"
-        :interactive="interactive"
+        :interactive="interactive && isWorkflowWritable"
         @pointerdown.left="
           onBendpointPointerdown($event, index, pathSegments[index].start)
         "

@@ -106,6 +106,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const selectedConnections = rootGetters["selection/selectedConnections"];
     const selectedAnnotationIds =
       rootGetters["selection/selectedAnnotationIds"];
+    const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
 
     const deletableNodeIds = selectedNodes
       .filter((node) => node.allowedActions.canDelete)
@@ -120,10 +121,25 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       .filter((connection) => !connection.allowedActions.canDelete)
       .map((connection) => connection.id);
 
+    const deleteableBendpoints = Object.keys(connectionBendpoints).reduce(
+      (acc, connectionId) => {
+        const connection = state.activeWorkflow.connections[connectionId];
+        return connection.allowedActions.canDelete
+          ? {
+              ...acc,
+              [connectionId]: connectionBendpoints[connectionId],
+            }
+          : acc;
+      },
+      {},
+    );
+    const hasBendpointsToDelete = Object.keys(deleteableBendpoints).length > 0;
+
     if (
       deletableNodeIds.length ||
       deletableConnectionIds.length ||
-      selectedAnnotationIds.length
+      selectedAnnotationIds.length ||
+      hasBendpointsToDelete
     ) {
       await API.workflowCommand.Delete({
         projectId,
@@ -135,6 +151,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         annotationIds: selectedAnnotationIds.length
           ? selectedAnnotationIds
           : [],
+        connectionBendpoints: deleteableBendpoints,
       });
 
       await dispatch("selection/deselectAllObjects", null, { root: true });
