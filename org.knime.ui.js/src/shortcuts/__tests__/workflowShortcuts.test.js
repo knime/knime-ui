@@ -414,6 +414,7 @@ describe("workflowShortcuts", () => {
         const { $store } = createStore({ singleSelectedNode: null });
         $store.getters["selection/selectedNodes"] = [];
         $store.getters["selection/selectedConnections"] = [];
+        $store.getters["selection/selectedBendpointIds"] = [];
         expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
           false,
         );

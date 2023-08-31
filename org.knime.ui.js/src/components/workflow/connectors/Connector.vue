@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, toRefs, watch, toRef, nextTick } from "vue";
+import { ref, computed, toRefs, watch, toRef } from "vue";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -152,7 +152,7 @@ const onVirtualBendpointAdded = async ({ position, index, event }) => {
     index,
   });
 
-  await nextTick();
+  // await nextTick();
 
   const [x, y] = screenToCanvasCoordinates.value([
     event.clientX,

@@ -40,6 +40,7 @@ describe("workflow::index", () => {
       const nodeIds = [];
       const connectionIds = [];
       const annotationIds = [];
+      const connectionBendpoints = {};
 
       for (let i = 0; i < amount / 2; i++) {
         const id = `node-${i}`;
@@ -62,6 +63,13 @@ describe("workflow::index", () => {
         annotationIds.push(id);
       }
 
+      for (let i = 0; i < amount / 2; i++) {
+        const connectionId = `connection-${i}`;
+        const id = `${connectionId}__0`;
+        store.dispatch("selection/selectBendpoint", id);
+        connectionBendpoints[connectionId] = [0];
+      }
+
       store.commit("workflow/setActiveWorkflow", {
         nodes: nodesArray,
         connections: connectionsArray,
@@ -81,6 +89,7 @@ describe("workflow::index", () => {
         nodeIds,
         connectionIds,
         annotationIds,
+        connectionBendpoints,
       });
     });
 
