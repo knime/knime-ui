@@ -54,12 +54,12 @@ export const getIntervalFromSchedule = (schedule) => {
     const startTimeMinutes = Object.values(
       schedule.filter?.times?.[0]?.start,
     )[1];
-    const isStartTimeException = startTimeHour !== 0 && startTimeMinutes !== 0;
+    const isStartTimeException = startTimeHour !== 0 || startTimeMinutes !== 0;
     const endTimeHour = Object.values(schedule.filter?.times?.[0]?.end)[0];
     const endTimeMinutes = Object.values(schedule.filter?.times?.[0]?.end)[1];
     const endTimeSeconds = Object.values(schedule.filter?.times?.[0]?.end)[2];
     const isEndTimeException =
-      endTimeHour !== 23 && endTimeMinutes !== 59 && endTimeSeconds !== 59;
+      endTimeHour !== 23 || endTimeMinutes !== 59 || endTimeSeconds !== 59;
 
     // Check for exceptions
     if (schedule.filter?.times?.length > 1) {

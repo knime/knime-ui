@@ -2,7 +2,6 @@
 import { columnTypes } from "@knime/knime-ui-table";
 import { caseFormatter } from "webapps-common/util/capitalize";
 import { formatTime } from "@/util/time";
-import { booleanMap } from "./util";
 
 export const defaultColumns = ["createdAt", "owner", "state", "nodeMessages"];
 
@@ -54,26 +53,12 @@ export const jobTypes = {
   properties: columnTypes.Object,
 };
 
-export const createdViaConfig = {
-  "generic client": "Generic client",
-  schedule: "Schedule",
-  webportal: "WebPortal",
-  "rest api": "REST API",
-  [null]: "-",
-  [undefined]: "-", // eslint-disable-line no-undefined
-};
-
 export const jobFormatters = () => ({
   actions: (actions) => (actions?.length ? `${actions.length} Actions` : "-"),
-  createdVia: (createdVia) => createdViaConfig[createdVia?.toLowerCase()],
   state: (state) =>
-    caseFormatter({ string: state, format: "snakeFormat", delimiter: "" }),
+    caseFormatter({ string: state, format: "snakeFormat", delimiter: null }),
   nodeMessages: (messages) =>
     messages?.length ? `${messages.length} Messages` : "-",
-  discardAfterSuccessfulExec: (bool) => booleanMap[bool],
-  discardAfterFailedExec: (bool) => booleanMap[bool],
-  isSwapped: (bool) => booleanMap[bool],
-  hasReport: (bool) => booleanMap[bool],
   createdAt: (createdAt) => formatTime(createdAt),
 });
 

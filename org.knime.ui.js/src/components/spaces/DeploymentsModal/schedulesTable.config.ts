@@ -1,7 +1,6 @@
 import { columnTypes } from "@knime/knime-ui-table";
-import { getIntervalFromSchedule } from "@/util/internvalFromSchedule";
+import { getIntervalFromSchedule } from "@/util/intervalFromSchedule";
 import { formatTime } from "@/util/time";
-import { booleanMap } from "./util";
 
 export const defaultScheduleColumns = [
   "lastRun",
@@ -58,10 +57,6 @@ export const scheduleTypes = {
 
 export const scheduleFormatters = {
   numFailures: (failures) => (failures ? `${failures} Failures` : "-"),
-  reset: (bool) => booleanMap[bool],
-  discard: (bool) => booleanMap[bool],
-  discardAfterSuccessfulExec: (bool) => booleanMap[bool],
-  discardAfterFailedExec: (bool) => booleanMap[bool],
   schedule: (schedule) => getIntervalFromSchedule(schedule),
   actions: (actions) => (actions?.length ? `${actions.length} Actions` : "-"),
   disabled: (disabled) => (disabled ? "Inactive" : "Active"),
