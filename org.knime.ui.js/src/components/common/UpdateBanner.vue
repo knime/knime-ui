@@ -1,8 +1,13 @@
-<script>
+<script lang="ts">
+import { type PropType, defineComponent } from "vue";
+
 import Button from "webapps-common/ui/components/Button.vue";
 import { API } from "@api";
+import type { UpdateAvailableEvent } from "@/api/gateway-api/generated-api";
 
-export default {
+const DOWNLOAD_URL = "https://www.knime.com/downloads?src=knimeapp";
+
+export default defineComponent({
   components: {
     Button,
   },
@@ -11,38 +16,79 @@ export default {
      * Object containing available updates
      */
     availableUpdates: {
-      type: Object,
-      default: () => {},
+      type: Object as PropType<UpdateAvailableEvent>,
+      default: () => ({}) as UpdateAvailableEvent,
     },
   },
   computed: {
+    hasBugFixes() {
+      return (
+        this.availableUpdates.bugfixes &&
+        this.availableUpdates.bugfixes.length > 0
+      );
+    },
+
+    hasNewReleases() {
+      return (
+        this.availableUpdates.newReleases &&
+        this.availableUpdates.newReleases.length > 0
+      );
+    },
+
+    hasReleaseAndIsUpdatePossible() {
+      if (!this.hasNewReleases) {
+        return false;
+      }
+
+      const { newReleases } = this.availableUpdates;
+
+      return newReleases.every(({ isUpdatePossible }) => isUpdatePossible);
+    },
+
+    buttonText() {
+      return this.hasBugFixes || this.hasReleaseAndIsUpdatePossible
+        ? "Update"
+        : "Download";
+    },
+
     updateMessage() {
-      if (this.availableUpdates.newReleases) {
-        const availableUpdate = this.availableUpdates.newReleases.find(
-          ({ isUpdatePossible }) => isUpdatePossible,
-        );
-        const { shortName: updateVersion } = availableUpdate;
+      if (this.hasBugFixes) {
+        const totalBugFixes = this.availableUpdates.bugfixes.length;
+        const isPlural = totalBugFixes > 1;
 
-        return `Get the latest features and enhancements! Update now to ${updateVersion}`;
+        if (isPlural) {
+          return `There are updates for ${totalBugFixes} extensions available`;
+        }
+
+        return "There is an update for 1 extension available";
       }
 
-      if (this.availableUpdates.bugfixes.length === 1) {
-        return "There is an update for 1 extension available.";
-      }
+      if (this.hasNewReleases) {
+        const { newReleases } = this.availableUpdates;
 
-      if (this.availableUpdates.bugfixes.length > 1) {
-        return `There are updates for ${this.availableUpdates.bugfixes.length} extensions available.`;
+        const { shortName } = newReleases.at(0);
+        const baseMessage = "Get the latest features and enhancements!";
+        const updateMessage = `${baseMessage} Update now to ${shortName}`;
+        const downloadMessage = `${baseMessage} Download ${shortName} now`;
+
+        return this.hasReleaseAndIsUpdatePossible
+          ? updateMessage
+          : downloadMessage;
       }
 
       return null;
     },
   },
   methods: {
-    openUpdateDialog() {
-      API.desktop.openUpdateDialog();
+    onUpdateAction() {
+      if (this.hasBugFixes || this.hasReleaseAndIsUpdatePossible) {
+        API.desktop.openUpdateDialog();
+      } else {
+        window.open(DOWNLOAD_URL);
+      }
     },
   },
-};
+});
 </script>
 
 <template>
@@ -52,7 +98,9 @@ export default {
         <span class="text">
           {{ updateMessage }}
         </span>
-        <Button with-border @click="openUpdateDialog"> Update now </Button>
+        <Button with-border @click="onUpdateAction">
+          {{ buttonText }}
+        </Button>
       </div>
     </div>
   </section>
