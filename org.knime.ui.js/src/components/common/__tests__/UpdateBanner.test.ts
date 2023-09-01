@@ -43,7 +43,7 @@ describe("UpdateBanner", () => {
       });
 
       expect(getUpdateText(wrapper)).toBe(
-        "There is an update for 1 extension available",
+        "There is an update for 1 extension available.",
       );
     });
 
@@ -59,7 +59,7 @@ describe("UpdateBanner", () => {
       });
 
       expect(getUpdateText(wrapper)).toBe(
-        `There are updates for ${totalBugfixes} extensions available`,
+        `There are updates for ${totalBugfixes} extensions available.`,
       );
     });
 
@@ -95,7 +95,7 @@ describe("UpdateBanner", () => {
       });
 
       expect(getUpdateText(wrapper)).toBe(
-        "Get the latest features and enhancements! Update now to 5.2.0",
+        "Get the latest features and enhancements! Update to 5.2.0 now.",
       );
 
       expect(getButtonText(wrapper)).toBe("Update");
@@ -124,7 +124,7 @@ describe("UpdateBanner", () => {
       });
 
       expect(getUpdateText(wrapper)).toBe(
-        "Get the latest features and enhancements! Update now to 5.2.0",
+        "Get the latest features and enhancements! Update to 5.2.0 now.",
       );
 
       expect(getButtonText(wrapper)).toBe("Update");
@@ -155,7 +155,7 @@ describe("UpdateBanner", () => {
       });
 
       expect(getUpdateText(wrapper)).toBe(
-        "Get the latest features and enhancements! Download 5.2.0 now",
+        "Get the latest features and enhancements! Download 5.2.0 now.",
       );
 
       expect(getButtonText(wrapper)).toBe("Download");
@@ -186,7 +186,7 @@ describe("UpdateBanner", () => {
     });
 
     expect(getUpdateText(wrapper)).toBe(
-      "There is an update for 1 extension available",
+      "There is an update for 1 extension available.",
     );
     expect(getButtonText(wrapper)).toBe("Update");
   });
