@@ -137,7 +137,7 @@ describe("SpaceExplorerActions.vue", () => {
         "spaces/copyBetweenSpaces",
         { itemIds: ["934383"] },
       ],
-      ["openInHub", "spaces/openInHub", { itemId: "934383" }],
+      ["openInBrowser", "spaces/openInBrowser", { itemId: "934383" }],
       ["importFiles", "spaces/importToWorkflowGroup", { importType: "FILES" }],
       [
         "importWorkflow",
@@ -336,7 +336,7 @@ describe("SpaceExplorerActions.vue", () => {
       );
     });
 
-    it("should disable actions that require selected items (download and openInHub)", () => {
+    it("should disable actions that require selected items (download and openInBrowser)", () => {
       const { wrapper } = doMount({
         props: {
           mode: "mini",
@@ -351,7 +351,7 @@ describe("SpaceExplorerActions.vue", () => {
             disabled: true,
           }),
           expect.objectContaining({
-            id: "openInHub",
+            id: "openInBrowser",
             disabled: true,
           }),
         ]),

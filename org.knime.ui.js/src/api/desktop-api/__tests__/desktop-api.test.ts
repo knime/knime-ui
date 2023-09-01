@@ -126,7 +126,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
-    name: "openInHub",
+    name: "openInBrowser",
     params: [
       ["spaceProviderId", "provider1"],
       ["spaceId", "space1"],
