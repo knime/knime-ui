@@ -57,10 +57,10 @@ export default defineComponent({
         const isPlural = totalBugFixes > 1;
 
         if (isPlural) {
-          return `There are updates for ${totalBugFixes} extensions available`;
+          return `There are updates for ${totalBugFixes} extensions available.`;
         }
 
-        return "There is an update for 1 extension available";
+        return "There is an update for 1 extension available.";
       }
 
       if (this.hasNewReleases) {
@@ -68,8 +68,8 @@ export default defineComponent({
 
         const { shortName } = newReleases.at(0);
         const baseMessage = "Get the latest features and enhancements!";
-        const updateMessage = `${baseMessage} Update now to ${shortName}`;
-        const downloadMessage = `${baseMessage} Download ${shortName} now`;
+        const updateMessage = `${baseMessage} Update to ${shortName} now.`;
+        const downloadMessage = `${baseMessage} Download ${shortName} now.`;
 
         return this.hasReleaseAndIsUpdatePossible
           ? updateMessage
