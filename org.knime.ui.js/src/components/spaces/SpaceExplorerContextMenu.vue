@@ -59,7 +59,7 @@ const fileExplorerContextMenuItems = computed(() => {
 
   // --- Build Hub actions
   const isLocal = store.getters["spaces/getSpaceInfo"](props.projectId).local;
-  
+
   const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
     props.projectId,
     props.selectedItemIds,
@@ -100,11 +100,11 @@ const fileExplorerContextMenuItems = computed(() => {
 
   // --- Build Server actions
   const isServer = getProviderInfo.value(props.projectId).type === "SERVER";
-  
+
   const openPermissionsDialog = buildOpenPermissionsDialog(
     store.dispatch,
     props.projectId,
-    props.selectedItemIds
+    props.selectedItemIds,
   );
 
   const getServerActions = () => {
@@ -112,7 +112,7 @@ const fileExplorerContextMenuItems = computed(() => {
       return [openPermissionsDialog];
     }
     return [];
-  }
+  };
 
   const createExportItemOption = (
     dispatch: Dispatch,
@@ -143,7 +143,7 @@ const fileExplorerContextMenuItems = computed(() => {
     ? `Open ${openFileType} cannot be renamed`
     : "";
 
-  // --- Finally build context menu items  
+  // --- Finally build context menu items
   const contextMenuItems = [
     // hide rename for multiple selected items
     ...valueOrEmpty(

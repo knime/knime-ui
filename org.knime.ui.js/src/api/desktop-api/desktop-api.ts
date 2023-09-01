@@ -518,16 +518,12 @@ export const getHubID = () => {
 export const openPermissionsDialog = ({
   spaceProviderId,
   spaceId,
-  itemId
-}: 
-  SpaceProviderId &
-  SpaceId & 
-  SpaceItemId
-) => {
+  itemId,
+}: SpaceProviderId & SpaceId & SpaceItemId) => {
   return callBrowserFunction(
     window.openPermissionsDialog,
     [spaceProviderId, spaceId, itemId],
     "Could not open server permission dialog",
-    false
+    false,
   );
 };

@@ -142,5 +142,5 @@ declare function getHubID(): string;
 declare function openPermissionsDialog(
   spaceProviderId: string,
   spaceId: string,
-  itemId: string
+  itemId: string,
 ): void;
