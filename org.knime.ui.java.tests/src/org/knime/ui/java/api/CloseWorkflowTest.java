@@ -58,6 +58,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.InvalidSettingsException;
@@ -107,6 +108,7 @@ class CloseWorkflowTest {
         m_wfms = List.of(wfm1, wfm2);
     }
 
+    @Disabled("Fails in build system: 'Can't load library: /home/jenkins/.swt/lib/linux/x86_64/libswt-pi4-gtk.so ...'")
     @Test
     void testCloseWorkflow() {
         assertThat(CloseWorkflow.closeWorkflow("projectId1", "projectId2")).isTrue();
