@@ -165,6 +165,10 @@ export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
       });
     },
 
+    AiAssistantServerChangedEvent() {
+      $store.dispatch("aiAssistant/getHubID");
+    },
+
     SpaceProvidersChangedEvent(payload) {
       if ("error" in payload) {
         consola.error("Error fetching space providers", payload.error);

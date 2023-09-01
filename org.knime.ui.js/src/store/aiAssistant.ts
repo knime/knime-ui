@@ -16,6 +16,7 @@ interface ProjectAndWorkflowIds {
 }
 
 export interface AiAssistantState {
+  hubID: string | null;
   qa: {
     messages: Message[];
     statusUpdate: string | null;
@@ -31,6 +32,7 @@ export interface AiAssistantState {
 }
 
 export const state = (): AiAssistantState => ({
+  hubID: null,
   qa: {
     messages: [],
     statusUpdate: null,
@@ -46,6 +48,9 @@ export const state = (): AiAssistantState => ({
 });
 
 export const mutations = {
+  setHubID(state, hubID) {
+    state["hubID"] = hubID;
+  },
   pushMessage(state, { chainType, role, content, nodes, isError = false }) {
     state[chainType].messages.push({ role, content, nodes, isError });
   },
@@ -66,6 +71,9 @@ export const mutations = {
 };
 
 export const actions = {
+  getHubID({ commit }) {
+    commit("setHubID", API.desktop.getHubID());
+  },
   makeAiRequest({ commit, state, rootGetters }, { chainType, message }) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
     const nodeId = rootGetters["selection/singleSelectedNode"]?.id;

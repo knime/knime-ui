@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onBeforeMount } from "vue";
+import { computed, ref, onBeforeMount, watch } from "vue";
 import { useStore } from "vuex";
 import { API } from "@api";
 
@@ -19,16 +19,17 @@ This is an experimental service, USE AT YOUR OWN RISK.
 `;
 
 const store = useStore();
-const hubId = API.desktop.getHubID();
+store.dispatch("aiAssistant/getHubID");
+const hubId = computed(() => store.state.aiAssistant.hubID);
 
 const showChat = computed(() => {
   const spaceProviders = store.state.spaces.spaceProviders;
-  const communityHubProvider = spaceProviders?.[hubId];
+  const communityHubProvider = spaceProviders?.[hubId.value];
   return communityHubProvider?.connected;
 });
 
 const loginToCommunityHub = () => {
-  store.dispatch("spaces/connectProvider", { spaceProviderId: hubId });
+  store.dispatch("spaces/connectProvider", { spaceProviderId: hubId.value });
 };
 
 const chainType = ref<"qa" | "build">("qa");

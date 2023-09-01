@@ -73,6 +73,7 @@ describe("Event Plugin", () => {
       "ImportURIEvent",
       "ProgressEvent",
       "AiAssistantEvent",
+      "AiAssistantServerChangedEvent",
       "SpaceProvidersChangedEvent",
     ]);
   });
