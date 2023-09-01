@@ -16,6 +16,7 @@ import {
   buildHubUploadMenuItems,
   buildOpenInBrowserMenuItem,
   buildOpenPermissionsDialog,
+  buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 
@@ -78,6 +79,12 @@ const fileExplorerContextMenuItems = computed(() => {
     getProviderInfo.value(props.projectId),
   );
 
+  const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
+    store.dispatch,
+    props.projectId,
+    props.selectedItemIds,
+  );
+
   const uploadAndConnectToHub = buildHubUploadMenuItems(
     store.dispatch,
     store.getters["spaces/hasActiveHubSession"],
@@ -95,7 +102,7 @@ const fileExplorerContextMenuItems = computed(() => {
       return [downloadToLocalSpace];
     }
 
-    return [downloadToLocalSpace, openInBrowser];
+    return [downloadToLocalSpace, openInBrowser, openAPIDefinition];
   };
 
   // --- Build Server actions

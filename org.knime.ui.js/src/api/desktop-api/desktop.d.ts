@@ -98,6 +98,12 @@ declare function openInBrowser(
   itemId: string,
 ): void;
 
+declare function openAPIDefinition(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string,
+): void;
+
 declare function saveWorkflowAs(
   projectId: string,
   workflowPreviewSvg: string,

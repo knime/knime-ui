@@ -390,6 +390,19 @@ export const openInBrowser = ({
   );
 };
 
+export const openAPIDefinition = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+}: SpaceProviderId & SpaceId & { itemId: string }) => {
+  return callBrowserFunction(
+    window.openAPIDefinition,
+    [spaceProviderId, spaceId, itemId],
+    "Error opening in Hub",
+    false,
+  );
+};
+
 export const saveWorkflowAs = ({
   projectId,
   workflowPreviewSvg,

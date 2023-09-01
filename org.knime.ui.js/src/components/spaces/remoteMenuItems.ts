@@ -146,6 +146,30 @@ export const buildOpenInBrowserMenuItem = (
   };
 };
 
+export const buildOpenAPIDefinitionMenuItem = (
+  dispatch: Dispatch,
+  projectId: string,
+  selectedItems: Array<string>,
+): ActionMenuItem => {
+  const isSelectionEmpty = selectedItems.length === 0;
+  const isSelectionMultiple = selectedItems.length > 1;
+  return {
+    id: "openAPIDefinition",
+    text: "Open API Definition",
+    icon: LinkExternal,
+    disabled: isSelectionEmpty || isSelectionMultiple,
+    title: isSelectionEmpty
+      ? "Select at least one file to open in server."
+      : null,
+    execute: () => {
+      dispatch("spaces/openAPIDefinition", {
+        projectId,
+        itemId: selectedItems[0],
+      });
+    },
+  };
+};
+
 export const buildOpenPermissionsDialog = (
   dispatch: Dispatch,
   projectId: string,

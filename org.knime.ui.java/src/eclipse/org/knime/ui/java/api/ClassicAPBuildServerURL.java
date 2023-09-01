@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.util.Version;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
@@ -128,6 +129,26 @@ final class ClassicAPBuildServerURL {
         }).collect(Collectors.joining("/")));
 
         return urlBuilder.toString();
+    }
+
+    static String getAPIDefinition(final String itemId, final SpaceProvider sourceSpaceProvider,
+        final Space sourceSpace) {
+        assert sourceSpaceProvider.getType() != TypeEnum.LOCAL;
+        final RemoteFileSystem knimeServerFileSystem = getRemoteFileSystem(sourceSpace.toKnimeUrl(itemId));
+        URI targetUri = null;
+        try {
+            URI serverAddress = new URI(knimeServerFileSystem.getServerAddress());
+            String workflowPath = sourceSpace.getItemName(itemId);
+            String restPath = knimeServerFileSystem.getRESTPath()
+                .orElseThrow(() -> new IllegalStateException("Action is run although no REST path is available"));
+            targetUri = new URI(serverAddress.getScheme(), serverAddress.getAuthority(),
+                restPath + "/v4/repository" + workflowPath + ":openapi", "showInUI=true", null);
+
+            return targetUri.toString();
+        } catch (URISyntaxException e) {
+            LOGGER.error("Invalid URL could not be opened: " + targetUri.toString(), e);
+            return "";
+        }
     }
 
     /**

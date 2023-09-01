@@ -14,6 +14,7 @@ import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
   buildOpenInBrowserMenuItem,
+  buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
 
 export default {
@@ -94,6 +95,12 @@ export default {
         this.getProviderInfo(projectId),
       );
 
+      const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
+        this.$store.dispatch,
+        this.projectId,
+        this.selectedItemIds,
+      );
+
       const getHubActions = () => {
         if (this.isLocal) {
           return uploadAndConnectToHub;
@@ -103,7 +110,7 @@ export default {
           return [downloadToLocalSpace];
         }
 
-        return [downloadToLocalSpace, openInBrowser];
+        return [downloadToLocalSpace, openInBrowser, openAPIDefinition];
       };
 
       return [

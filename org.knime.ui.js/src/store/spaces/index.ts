@@ -59,6 +59,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     API.desktop.openInBrowser({ spaceProviderId, spaceId, itemId });
   },
+
+  openAPIDefinition({ state }, { projectId, itemId }) {
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    API.desktop.openAPIDefinition({ spaceProviderId, spaceId, itemId });
+  },
 };
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {

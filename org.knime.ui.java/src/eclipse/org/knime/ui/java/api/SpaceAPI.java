@@ -243,4 +243,25 @@ final class SpaceAPI {
         }
         throw new NoSuchElementException("Operation not supported for local items");
     }
+
+    /**
+     * Opens the API definition of a workflow (swagger)
+     *
+     * @param spaceProviderId provider ID of the source space
+     * @param spaceId ID of the source space
+     * @param itemId ID of the selected item
+     * @throws NoSuchElementException if there is no space provider, space or item for the given id
+     */
+    @API
+    static void openAPIDefinition(final String spaceProviderId, final String spaceId, final String itemId) {
+        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+        final var sourceSpaceProvider = spaceProviders.getProvidersMap().get(spaceProviderId);
+        if (sourceSpaceProvider == null) {
+            throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
+        }
+
+        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
+        var url = ClassicAPBuildServerURL.getAPIDefinition(itemId, sourceSpaceProvider, sourceSpace);
+        WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
+    }
 }
