@@ -179,4 +179,11 @@ public final class ChatAPI {
         return m -> eventConsumer.accept("AiAssistantEvent", m);
     }
 
+    /**
+     * Notifies the frontend that the AI server changed.
+     */
+    public static void notifyAiServerChanged() {
+        DesktopAPI.getDeps(EventConsumer.class).accept("AiAssistantServerChangedEvent", "");
+    }
+
 }
