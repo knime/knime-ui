@@ -131,7 +131,7 @@ const fileExplorerContextMenuItems = computed(() => {
       return [openPermissionsDialog];
     }
 
-    return [openPermissionsDialog, openAPIDefinition];
+    return [openAPIDefinition, openPermissionsDialog];
   };
 
   const createExportItemOption = (
