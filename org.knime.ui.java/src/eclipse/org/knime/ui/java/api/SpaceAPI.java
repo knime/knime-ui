@@ -214,7 +214,7 @@ final class SpaceAPI {
     }
 
     /**
-     * Opens an item in a web browser
+     * Opens the webpage of an item in the web browser
      *
      * @param spaceProviderId provider ID of the source space
      * @param spaceId ID of the source space
@@ -222,7 +222,7 @@ final class SpaceAPI {
      * @throws NoSuchElementException if there is no space provider, space or item for the given id
      */
     @API
-    static void openInHub(final String spaceProviderId, final String spaceId, final String itemId) {
+    static void openInBrowser(final String spaceProviderId, final String spaceId, final String itemId) {
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
         final var sourceSpaceProvider = spaceProviders.getProvidersMap().get(spaceProviderId);
         if (sourceSpaceProvider == null) {

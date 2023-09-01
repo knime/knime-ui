@@ -13,8 +13,8 @@ import AddFileIcon from "@/assets/add-file.svg";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
-  buildOpenInHubMenuItem,
-} from "@/components/spaces/hubMenuItems";
+  buildOpenInBrowserMenuItem,
+} from "@/components/spaces/remoteMenuItems";
 
 export default {
   components: {
@@ -87,7 +87,7 @@ export default {
         this.spaceProviders,
       );
 
-      const openInHub = buildOpenInHubMenuItem(
+      const openInBrowser = buildOpenInBrowserMenuItem(
         this.$store.dispatch,
         this.projectId,
         this.selectedItemIds,
@@ -103,7 +103,7 @@ export default {
           return [downloadToLocalSpace];
         }
 
-        return [downloadToLocalSpace, openInHub];
+        return [downloadToLocalSpace, openInBrowser];
       };
 
       return [

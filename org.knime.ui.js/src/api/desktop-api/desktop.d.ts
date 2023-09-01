@@ -92,7 +92,7 @@ declare function copyBetweenSpaces(
   itemIds: string[],
 ): boolean;
 
-declare function openInHub(
+declare function openInBrowser(
   spaceProviderId: string,
   spaceId: string,
   itemId: string,

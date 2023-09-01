@@ -3,6 +3,7 @@ import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg
 import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
 import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
 import LinkExternal from "webapps-common/ui/assets/img/icons/link-external.svg";
+import KeyIcon from "webapps-common/ui/assets/img/icons/key.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import type { SpaceProviderNS } from "@/api/custom-types";
@@ -116,7 +117,7 @@ export const buildHubUploadMenuItems = (
   return [uploadToRemote, connectToHub];
 };
 
-export const buildOpenInHubMenuItem = (
+export const buildOpenInBrowserMenuItem = (
   dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
@@ -129,7 +130,7 @@ export const buildOpenInHubMenuItem = (
     provider.type === BaseSpaceProvider.TypeEnum.HUB ? "Hub" : "Server";
 
   return {
-    id: "openInHub",
+    id: "openInBrowser",
     text: `Open in ${providerType}`,
     icon: LinkExternal,
     disabled: isSelectionEmpty || isSelectionMultiple,
@@ -137,7 +138,29 @@ export const buildOpenInHubMenuItem = (
       ? `Select at least one file to open in ${providerType}.`
       : null,
     execute: () => {
-      dispatch("spaces/openInHub", {
+      dispatch("spaces/openInBrowser", {
+        projectId,
+        itemId: selectedItems[0],
+      });
+    },
+  };
+};
+
+export const buildOpenPermissionsDialog = (
+  dispatch: Dispatch,
+  projectId: string,
+  selectedItems: Array<string>,
+): ActionMenuItem => {
+  const isSelectionEmpty = selectedItems.length === 0;
+  const isSelectionMultiple = selectedItems.length > 1;
+  return {
+    id: "openPermissionsDialog",
+    text: "Permissions",
+    icon: KeyIcon,
+    disabled: isSelectionEmpty || isSelectionMultiple,
+    title: isSelectionEmpty ? "View and edit access permissions" : null,
+    execute: () => {
+      dispatch("spaces/openPermissionsDialog", {
         projectId,
         itemId: selectedItems[0],
       });

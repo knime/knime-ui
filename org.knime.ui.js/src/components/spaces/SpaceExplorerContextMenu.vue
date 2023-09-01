@@ -14,9 +14,9 @@ import type { RootStoreState } from "@/store/types";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
-  buildOpenInHubMenuItem,
-} from "@/components/spaces/hubMenuItems";
-import { buildOpenPermissionsDialog } from "./serverMenuItems";
+  buildOpenInBrowserMenuItem,
+  buildOpenPermissionsDialog,
+} from "@/components/spaces/remoteMenuItems";
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 
 const store = useStore<RootStoreState>();
@@ -71,7 +71,7 @@ const fileExplorerContextMenuItems = computed(() => {
     props.selectedItemIds,
   );
 
-  const openInHub = buildOpenInHubMenuItem(
+  const openInBrowser = buildOpenInBrowserMenuItem(
     store.dispatch,
     props.projectId,
     props.selectedItemIds,
@@ -95,7 +95,7 @@ const fileExplorerContextMenuItems = computed(() => {
       return [downloadToLocalSpace];
     }
 
-    return [downloadToLocalSpace, openInHub];
+    return [downloadToLocalSpace, openInBrowser];
   };
 
   // --- Build Server actions

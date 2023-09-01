@@ -377,13 +377,13 @@ export const copyBetweenSpaces = ({
   );
 };
 
-export const openInHub = ({
+export const openInBrowser = ({
   spaceProviderId,
   spaceId,
   itemId,
 }: SpaceProviderId & SpaceId & { itemId: string }) => {
   return callBrowserFunction(
-    window.openInHub,
+    window.openInBrowser,
     [spaceProviderId, spaceId, itemId],
     "Error opening in Hub",
     false,
