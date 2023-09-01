@@ -236,7 +236,7 @@ final class SpaceAPI {
         } else if (sourceSpaceProvider.getType() == TypeEnum.SERVER) {
             url = ClassicAPBuildServerURL.getWebPortalURL(itemId, sourceSpaceProvider, sourceSpace);
         } else {
-            throw new NoSuchElementException("Operation not supported for local items");
+            throw new IllegalStateException("Operation not supported for local items");
         }
 
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);

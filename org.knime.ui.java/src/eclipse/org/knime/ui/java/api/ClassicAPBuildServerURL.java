@@ -74,7 +74,7 @@ import org.knime.ui.java.util.DesktopAPUtil;
  */
 final class ClassicAPBuildServerURL {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(DesktopAPI.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(ClassicAPBuildServerURL.class);
 
     private static final Version MINIMUM_WEBPORTAL_VERSION = new Version(4, 14, 0);
 
