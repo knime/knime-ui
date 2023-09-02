@@ -15,6 +15,9 @@ interface Props {
   role: string;
   content?: string;
   nodes?: NodeWithExtensionInfo[];
+  references?: {
+    [key: string]: string[];
+  };
   statusUpdate?: string;
   isError?: boolean;
 }
@@ -22,6 +25,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   content: "",
   nodes: () => [],
+  references: () => ({}),
   statusUpdate: "",
   isError: false,
 });
@@ -80,6 +84,7 @@ watchEffect(async () => {
 
 const isUser = computed(() => props.role === "user");
 const isAssistant = computed(() => props.role === "assistant");
+const hasReferences = computed(() => props.references && Object.keys(props.references).length > 0);
 </script>
 
 <template>
@@ -95,6 +100,17 @@ const isAssistant = computed(() => props.role === "assistant");
         <div v-else>
           <div class="placeholder" />
           <div class="placeholder" />
+        </div>
+        <div v-if="hasReferences" class="references">
+          <div v-for="(urls, reference_name) in references" :key="reference_name">
+            <span class="reference-name">{{ reference_name }}</span>:
+            <template v-for="(url, index) in urls" :key="url">
+              <a :href="url">
+                [{{ index + 1 }}]
+              </a>
+              <span v-if="index < Object.keys(references).length - 1">, </span>
+            </template>
+          </div>
         </div>
       </div>
     </div>
@@ -202,6 +218,18 @@ const isAssistant = computed(() => props.role === "assistant");
         background-size: 200px 20px;
         background-position: -50px 0;
         animation: knight-rider 2s linear infinite;
+      }
+
+      & .references {
+        padding-top: 15px;
+
+        & .reference-name {
+          font-weight: bold;
+        }
+
+        & a {
+          text-decoration: none;
+        }
       }
     }
   }

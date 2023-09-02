@@ -8,6 +8,9 @@ interface Message {
   role: "assistant" | "user";
   content: string;
   nodes?: string[];
+  references?: {
+    [key: string]: string[];
+  };
 }
 
 interface ProjectAndWorkflowIds {
@@ -51,8 +54,8 @@ export const mutations = {
   setHubID(state, hubID) {
     state.hubID = hubID;
   },
-  pushMessage(state, { chainType, role, content, nodes, isError = false }) {
-    state[chainType].messages.push({ role, content, nodes, isError });
+  pushMessage(state, { chainType, role, content, nodes, references, isError = false }) {
+    state[chainType].messages.push({ role, content, nodes, references, isError });
   },
   setStatusUpdate(state, { chainType, statusUpdate }) {
     state[chainType].statusUpdate = statusUpdate;
@@ -118,6 +121,7 @@ export const actions = {
             role: "assistant",
             content: payload.message,
             nodes: payload.nodes,
+            references: payload.references,
           });
         }
         break;
