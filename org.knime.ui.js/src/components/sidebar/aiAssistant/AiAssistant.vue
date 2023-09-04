@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onBeforeMount, watch } from "vue";
+import { computed, ref, onBeforeMount } from "vue";
 import { useStore } from "vuex";
 import { API } from "@api";
 

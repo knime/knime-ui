@@ -49,7 +49,7 @@ export const state = (): AiAssistantState => ({
 
 export const mutations = {
   setHubID(state, hubID) {
-    state["hubID"] = hubID;
+    state.hubID = hubID;
   },
   pushMessage(state, { chainType, role, content, nodes, isError = false }) {
     state[chainType].messages.push({ role, content, nodes, isError });
