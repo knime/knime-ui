@@ -108,7 +108,7 @@ const hasReferences = computed(() => props.references && Object.keys(props.refer
               <a :href="url">
                 [{{ index + 1 }}]
               </a>
-              <span v-if="index < Object.keys(references).length - 1">, </span>
+              <span v-if="index < Object.keys(urls).length - 1">, </span>
             </template>
           </div>
         </div>
