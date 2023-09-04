@@ -25,6 +25,9 @@ const messages = computed(
 const isProcessing = computed(
   () => store.state.aiAssistant[props.chainType].isProcessing,
 );
+const incomingTokens = computed(
+  () => store.state.aiAssistant[props.chainType].incomingTokens,
+);
 const statusUpdate = computed(
   () => store.state.aiAssistant[props.chainType].statusUpdate,
 );
@@ -54,15 +57,13 @@ const abort = () => {
   }
 };
 
-watch(
-  () => messages.value,
-  () => {
-    nextTick(() => {
-      messageArea.value.scrollTop = messageArea.value.scrollHeight;
-    });
-  },
-  { deep: true },
-);
+const scrollToBottomAfterNextTick = () => {
+  nextTick(() => {
+    messageArea.value.scrollTop = messageArea.value.scrollHeight;
+  });
+};
+watch(() => incomingTokens.value, scrollToBottomAfterNextTick);
+watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
 </script>
 
 <template>
@@ -83,6 +84,7 @@ watch(
         v-if="isProcessing"
         key="processing"
         role="assistant"
+        :content="incomingTokens"
         :status-update="statusUpdate"
       />
     </div>

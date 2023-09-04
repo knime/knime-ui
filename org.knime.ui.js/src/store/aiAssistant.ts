@@ -24,12 +24,14 @@ export interface AiAssistantState {
     messages: Message[];
     statusUpdate: string | null;
     isProcessing: boolean;
+    incomingTokens: string;
     projectAndWorkflowIds: ProjectAndWorkflowIds | null;
   };
   build: {
     messages: Message[];
     statusUpdate: string | null;
     isProcessing: boolean;
+    incomingTokens: string;
     projectAndWorkflowIds: ProjectAndWorkflowIds | null;
   };
 }
@@ -40,12 +42,14 @@ export const state = (): AiAssistantState => ({
     messages: [],
     statusUpdate: null,
     isProcessing: false,
+    incomingTokens: "",
     projectAndWorkflowIds: null,
   },
   build: {
     messages: [],
     statusUpdate: null,
     isProcessing: false,
+    incomingTokens: "",
     projectAndWorkflowIds: null,
   },
 });
@@ -63,11 +67,15 @@ export const mutations = {
   setIsProcessing(state, { chainType, isProcessing }) {
     state[chainType].isProcessing = isProcessing;
   },
+  addToken(state, { chainType, token }) {
+    state[chainType].incomingTokens += token;
+  },
   setProjectAndWorkflowIds(state, { chainType, projectAndWorkflowIds }) {
     state[chainType].projectAndWorkflowIds = projectAndWorkflowIds;
   },
   clearChain(state, { chainType }) {
     state[chainType].isProcessing = false;
+    state[chainType].incomingTokens = "";
     state[chainType].statusUpdate = false;
     state[chainType].projectAndWorkflowIds = null;
   },
@@ -112,6 +120,9 @@ export const actions = {
   },
   handleAiAssistantEvent({ commit }, { chainType, data: { type, payload } }) {
     switch (type) {
+      case "token":
+        commit("addToken", { chainType, token: payload });
+        break;
       case "result":
         commit("clearChain", { chainType });
 
