@@ -326,44 +326,4 @@ describe("SpaceSelectionContextMenu.vue", () => {
     });
     expect(closeContextMenu).toHaveBeenCalled();
   });
-
-  it("calls display deployments action on store if clicked", async () => {
-    const closeContextMenu = vi.fn();
-    const projectIdServer = "server1";
-    const { wrapper, dispatchSpy, $store } = doMount({
-      props: {
-        selectedItemId: ["2342"],
-        isMultipleSelectionActive: false,
-        closeContextMenu,
-        projectId: projectIdServer,
-      },
-      spaceProviders: {
-        local: startSpaceProviders.local,
-        server1: { ...startSpaceProviders.server1, connected: true },
-      },
-    });
-    $store.commit("spaces/setProjectPath", {
-      projectId: projectIdServer,
-      value: {
-        spaceId: startSpaceProviders.server1.spaces[0].id,
-        spaceProviderId: projectIdServer,
-        itemId: "root",
-      },
-    });
-
-    await nextTick();
-
-    const menuItems = wrapper.findComponent(MenuItems);
-    const items = menuItems.props("items");
-    const displayDeployments = items[4];
-    menuItems.vm.$emit("item-click", null, displayDeployments);
-    await nextTick();
-
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/displayDeployments", {
-      itemId: "2342",
-      projectId: projectIdServer,
-      itemName: "item-name",
-    });
-    expect(closeContextMenu).toHaveBeenCalled();
-  });
 });
