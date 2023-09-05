@@ -58,8 +58,17 @@ export const mutations = {
   setHubID(state, hubID) {
     state.hubID = hubID;
   },
-  pushMessage(state, { chainType, role, content, nodes, references, isError = false }) {
-    state[chainType].messages.push({ role, content, nodes, references, isError });
+  pushMessage(
+    state,
+    { chainType, role, content, nodes, references, isError = false },
+  ) {
+    state[chainType].messages.push({
+      role,
+      content,
+      nodes,
+      references,
+      isError,
+    });
   },
   setStatusUpdate(state, { chainType, statusUpdate }) {
     state[chainType].statusUpdate = statusUpdate;

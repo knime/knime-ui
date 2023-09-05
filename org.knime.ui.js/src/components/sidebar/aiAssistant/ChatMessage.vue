@@ -84,7 +84,9 @@ watchEffect(async () => {
 
 const isUser = computed(() => props.role === "user");
 const isAssistant = computed(() => props.role === "assistant");
-const hasReferences = computed(() => props.references && Object.keys(props.references).length > 0);
+const hasReferences = computed(
+  () => props.references && Object.keys(props.references).length > 0,
+);
 </script>
 
 <template>
@@ -102,12 +104,14 @@ const hasReferences = computed(() => props.references && Object.keys(props.refer
           <div class="placeholder" />
         </div>
         <div v-if="hasReferences" class="references">
-          <div v-for="(urls, reference_name) in references" :key="reference_name">
-            <span class="reference-name">{{ reference_name }}</span>:
+          <div
+            v-for="(urls, reference_name) in references"
+            :key="reference_name"
+          >
+            <span class="reference-name">{{ reference_name }}</span
+            >:
             <template v-for="(url, index) in urls" :key="url">
-              <a :href="url">
-                [{{ index + 1 }}]
-              </a>
+              <a :href="url"> [{{ index + 1 }}] </a>
               <span v-if="index < Object.keys(urls).length - 1">, </span>
             </template>
           </div>
