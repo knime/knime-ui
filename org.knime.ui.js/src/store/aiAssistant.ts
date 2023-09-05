@@ -9,7 +9,7 @@ interface Message {
   content: string;
   nodes?: string[];
   references?: {
-    [key: string]: string[];
+    [refName: string]: string[];
   };
 }
 

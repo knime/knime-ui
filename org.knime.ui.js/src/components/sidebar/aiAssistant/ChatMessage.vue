@@ -16,7 +16,7 @@ interface Props {
   content?: string;
   nodes?: NodeWithExtensionInfo[];
   references?: {
-    [key: string]: string[];
+    [refName: string]: string[];
   };
   statusUpdate?: string;
   isError?: boolean;
