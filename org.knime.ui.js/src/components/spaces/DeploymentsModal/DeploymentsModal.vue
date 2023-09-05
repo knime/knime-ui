@@ -12,7 +12,7 @@ const SchedulesTable = defineAsyncComponent(
 
 const store = useStore();
 
-const isDisplayDeploymentsModalOpen = computed(
+const isDeploymentModalOpen = computed(
   () => store.state.spaces.deploymentsModalConfig.isOpen,
 );
 const selectedItemName = computed(
@@ -32,8 +32,8 @@ const closeModal = () => {
 
 <template>
   <Modal
-    v-show="isDisplayDeploymentsModalOpen"
-    :active="isDisplayDeploymentsModalOpen"
+    v-show="isDeploymentModalOpen"
+    :active="isDeploymentModalOpen"
     :title="selectedItemName"
     style-type="info"
     class="modal"

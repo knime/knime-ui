@@ -18,9 +18,12 @@ import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
   buildOpenInBrowserMenuItem,
-  buildOpenPermissionsDialog,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
+import {
+  buildOpenPermissionsDialog,
+  buildDisplayDeploymentsMenuItem,
+} from "./serverMenuItems";
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 
 const store = useStore<RootStoreState>();
@@ -116,6 +119,13 @@ const fileExplorerContextMenuItems = computed(() => {
     getProviderInfo.value(props.projectId).type ===
     BaseSpaceProvider.TypeEnum.SERVER;
 
+  const displayDeployments = buildDisplayDeploymentsMenuItem(
+    store.dispatch,
+    props.projectId,
+    props.selectedItemIds,
+    anchorItem.name,
+  );
+
   const openPermissionsDialog = buildOpenPermissionsDialog(
     store.dispatch,
     props.projectId,
@@ -131,7 +141,7 @@ const fileExplorerContextMenuItems = computed(() => {
       return [openPermissionsDialog];
     }
 
-    return [openAPIDefinition, openPermissionsDialog];
+    return [displayDeployments, openAPIDefinition, openPermissionsDialog];
   };
 
   const createExportItemOption = (
