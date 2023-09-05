@@ -108,11 +108,11 @@ const fileExplorerContextMenuItems = computed(() => {
       return uploadAndConnectToHub;
     }
 
-    if (selectionContainsFile) {
-      return [downloadToLocalSpace];
+    if (isServer) {
+      return [];
     }
 
-    if (isServer) {
+    if (selectionContainsFile) {
       return [downloadToLocalSpace];
     }
 
@@ -142,6 +142,7 @@ const fileExplorerContextMenuItems = computed(() => {
     }
 
     return [
+      downloadToLocalSpace,
       displayDeployments,
       openInBrowser,
       openAPIDefinition,
