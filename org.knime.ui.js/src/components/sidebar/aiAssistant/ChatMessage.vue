@@ -105,10 +105,10 @@ const hasReferences = computed(
         </div>
         <div v-if="hasReferences" class="references">
           <div
-            v-for="(urls, reference_name) in references"
-            :key="reference_name"
+            v-for="(urls, refName) in references"
+            :key="refName"
           >
-            <span class="reference-name">{{ reference_name }}</span
+            <span class="reference-name">{{ refName }}</span
             >:
             <template v-for="(url, index) in urls" :key="url">
               <a :href="url"> [{{ index + 1 }}] </a>
