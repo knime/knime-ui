@@ -4,6 +4,7 @@ import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
 import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
 import LinkExternal from "webapps-common/ui/assets/img/icons/link-external.svg";
 import KeyIcon from "webapps-common/ui/assets/img/icons/key.svg";
+import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import type { SpaceProviderNS } from "@/api/custom-types";
@@ -185,6 +186,33 @@ export const buildOpenPermissionsDialog = (
       dispatch("spaces/openPermissionsDialog", {
         projectId,
         itemId: selectedItems[0],
+      });
+    },
+  };
+};
+
+export const buildDisplayDeploymentsMenuItem = (
+  dispatch: Dispatch,
+  projectId: string,
+  selectedItems: Array<string>,
+  itemName: string,
+): ActionMenuItem => {
+  const isSelectionEmpty = selectedItems.length === 0;
+  const isSelectionMultiple = selectedItems.length > 1;
+
+  return {
+    id: "displayDeployments",
+    text: "Display schedules and jobs",
+    icon: CirclePlayIcon,
+    disabled: isSelectionEmpty || isSelectionMultiple,
+    title: isSelectionEmpty
+      ? "Select a file to display schedules and jobs."
+      : null,
+    execute: () => {
+      dispatch("spaces/displayDeployments", {
+        projectId,
+        itemId: selectedItems[0],
+        itemName,
       });
     },
   };

@@ -19,11 +19,9 @@ import {
   buildHubUploadMenuItems,
   buildOpenInBrowserMenuItem,
   buildOpenAPIDefinitionMenuItem,
-} from "@/components/spaces/remoteMenuItems";
-import {
   buildOpenPermissionsDialog,
   buildDisplayDeploymentsMenuItem,
-} from "./serverMenuItems";
+} from "@/components/spaces/remoteMenuItems";
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 
 const store = useStore<RootStoreState>();
