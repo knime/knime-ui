@@ -62,8 +62,10 @@ const fileExplorerContextMenuItems = computed(() => {
     isMultipleSelectionActive,
   } = props;
 
-  // --- Build Hub actions
   const isLocal = store.getters["spaces/getSpaceInfo"](props.projectId).local;
+  const isServer =
+    getProviderInfo.value(props.projectId).type ===
+    BaseSpaceProvider.TypeEnum.SERVER;
 
   const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
     props.projectId,
@@ -110,12 +112,12 @@ const fileExplorerContextMenuItems = computed(() => {
       return [downloadToLocalSpace];
     }
 
+    if (isServer) {
+      return [downloadToLocalSpace];
+    }
+
     return [downloadToLocalSpace, openInBrowser];
   };
-
-  const isServer =
-    getProviderInfo.value(props.projectId).type ===
-    BaseSpaceProvider.TypeEnum.SERVER;
 
   const displayDeployments = buildDisplayDeploymentsMenuItem(
     store.dispatch,
@@ -139,7 +141,12 @@ const fileExplorerContextMenuItems = computed(() => {
       return [openPermissionsDialog];
     }
 
-    return [displayDeployments, openAPIDefinition, openPermissionsDialog];
+    return [
+      displayDeployments,
+      openInBrowser,
+      openAPIDefinition,
+      openPermissionsDialog,
+    ];
   };
 
   const createExportItemOption = (
@@ -171,7 +178,6 @@ const fileExplorerContextMenuItems = computed(() => {
     ? `Open ${openFileType} cannot be renamed`
     : "";
 
-  // --- Finally build context menu items
   const contextMenuItems = [
     // hide rename for multiple selected items
     ...valueOrEmpty(
