@@ -3,7 +3,7 @@ import { ref, computed, toRefs, watch, toRef } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import { getMetaOrCtrlKey } from "@/util/navigator";
+import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 import { getBendpointId } from "@/util/connectorUtil";
 
 import { useConnectionReplacement } from "./useConnectionReplacement";

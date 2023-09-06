@@ -2,7 +2,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { getAttributes } from "@tiptap/core";
 import type { Editor } from "@tiptap/vue-3";
 import Link from "@tiptap/extension-link";
-import { getMetaOrCtrlKey, isMac } from "@/util/navigator";
+import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";
 
 interface CustomLinkOptions {
   isEditing: boolean;

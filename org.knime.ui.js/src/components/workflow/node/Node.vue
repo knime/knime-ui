@@ -6,7 +6,7 @@ import { mapActions, mapState, mapGetters } from "vuex";
 
 import NodePorts from "@/components/workflow/ports/NodePorts.vue";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
-import { getMetaOrCtrlKey } from "@/util/navigator";
+import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
 import NodeTorso from "./torso/NodeTorso.vue";
 import NodeDecorators from "./decorators/NodeDecorators.vue";

@@ -1,4 +1,4 @@
-import { isMac } from "@/util/navigator";
+import { isMac } from "webapps-common/util/navigator";
 import type { Hotkey, Hotkeys } from "@/shortcuts";
 
 /**

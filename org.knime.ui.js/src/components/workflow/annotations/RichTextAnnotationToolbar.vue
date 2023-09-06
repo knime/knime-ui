@@ -15,7 +15,7 @@ import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import * as $shapes from "@/style/shapes.mjs";
 import { formatHotkeys } from "@/util/formatHotkeys";
-import { getMetaOrCtrlKey } from "@/util/navigator";
+import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
 import ColorIcon from "./ColorIcon.vue";
 import RichTextAnnotationToolbarDialog from "./RichTextAnnotationToolbarDialog.vue";

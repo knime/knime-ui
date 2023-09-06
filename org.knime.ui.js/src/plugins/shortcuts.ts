@@ -5,7 +5,7 @@ import shortcuts from "@/shortcuts";
 import type { ShortcutsService, FormattedShortcut } from "@/shortcuts/types";
 import type { PluginInitFunction } from ".";
 import { formatHotkeys } from "@/util/formatHotkeys";
-import { isMac } from "@/util/navigator";
+import { isMac } from "webapps-common/util/navigator";
 
 // Shortcut setup:
 // - add string representation of hotkeys

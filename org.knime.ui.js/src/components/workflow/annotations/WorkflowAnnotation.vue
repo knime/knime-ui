@@ -10,7 +10,7 @@ import type {
 import { TypedText } from "@/api/gateway-api/generated-api";
 
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
-import { getMetaOrCtrlKey } from "@/util/navigator";
+import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
 import TransformControls from "./TransformControls.vue";
 import LegacyAnnotation from "./LegacyAnnotation.vue";

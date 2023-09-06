@@ -1,5 +1,5 @@
 <script>
-import { getMetaOrCtrlKey } from "@/util/navigator";
+import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 import NodeLabelText from "./NodeLabelText.vue";
 
 export default {

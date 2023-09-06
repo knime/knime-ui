@@ -1,6 +1,6 @@
 import { computed, ref, type ComputedRef, type Ref } from "vue";
 import * as multiSelectionService from "./multiSelectionStateService";
-import { getMetaOrCtrlKey } from "@/util/navigator";
+import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
 export type UseMultiSelectionReturn = {
   multiSelectionState: Ref<multiSelectionService.MultiSelectionState>;

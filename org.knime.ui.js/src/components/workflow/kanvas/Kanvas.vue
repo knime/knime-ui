@@ -3,7 +3,7 @@ import { mapState, mapGetters, mapMutations, mapActions } from "vuex";
 import { debounce } from "lodash";
 import throttle from "raf-throttle";
 
-import { getMetaOrCtrlKey, isMac } from "@/util/navigator";
+import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";
 import { isInputElement } from "@/util/isInputElement";
 
 export const RESIZE_DEBOUNCE = 100;
