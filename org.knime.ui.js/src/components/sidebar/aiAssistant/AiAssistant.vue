@@ -69,7 +69,7 @@ onBeforeMount(async () => {
       />
     </div>
     <hr />
-    <Disclaimer :text="uiStrings.disclaimer" />
+    <Disclaimer v-if="uiStrings.disclaimer" :text="uiStrings.disclaimer" />
     <template v-if="showChat">
       <Chat
         v-show="chainType === 'qa'"
