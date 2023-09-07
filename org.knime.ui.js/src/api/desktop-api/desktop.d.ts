@@ -135,6 +135,7 @@ declare function importComponent(
 ): string | null;
 
 declare function makeAiRequest(
+  conversationId: string | null,
   chainType: string,
   projectId: string,
   workflowId: string,
@@ -142,7 +143,10 @@ declare function makeAiRequest(
   messages: string,
 ): void;
 
-declare function abortAiRequest(chainType: string): void;
+declare function abortAiRequest(
+  conversationId: string | null,
+  chainType: string,
+): void;
 declare function isAiAssistantBackendAvailable(): boolean;
 declare function getAiServerAddress(): string;
 declare function getHubID(): string;

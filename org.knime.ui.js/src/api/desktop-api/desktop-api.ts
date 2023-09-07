@@ -493,16 +493,17 @@ export const importURIAtWorkflowCanvas = ({
   );
 };
 
-export const abortAiRequest = ({ chainType }) => {
+export const abortAiRequest = ({ conversationId, chainType }) => {
   return callBrowserFunction(
     window.abortAiRequest,
-    [chainType],
+    [conversationId, chainType],
     "Could not abort AI request",
     false,
   );
 };
 
 export const makeAiRequest = ({
+  conversationId,
   chainType,
   projectId,
   workflowId,
@@ -511,7 +512,7 @@ export const makeAiRequest = ({
 }) => {
   return callBrowserFunction(
     window.makeAiRequest,
-    [chainType, projectId, workflowId, nodeId, JSON.stringify(messages)],
+    [conversationId, chainType, projectId, workflowId, nodeId, JSON.stringify(messages)],
     "Could not make AI request",
     false,
   );
