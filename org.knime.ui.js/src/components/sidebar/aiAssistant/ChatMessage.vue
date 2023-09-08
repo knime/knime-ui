@@ -173,7 +173,7 @@ const hasBuildingBlocks = computed(
   }
 
   & .content {
-    padding: 10px 2px;
+    padding: 10px 0;
     overflow: hidden;
     overflow-wrap: break-word;
     white-space: pre-wrap;
