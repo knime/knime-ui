@@ -81,7 +81,7 @@ const updateField = <
   }
 
   & .port-header {
-    margin: 16px 0 8px;
+    margin: 20px 0 10px;
     display: flex;
 
     & :deep(svg) {
@@ -94,7 +94,7 @@ const updateField = <
   }
 
   & .label {
-    padding-top: 8px;
+    margin-top: 10px;
   }
 }
 </style>

@@ -39,9 +39,8 @@ const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
 </script>
 
 <template>
-  <div class="tags">
-    <h2>Tags</h2>
-    <hr />
+  <div :class="['tags', { editable }]">
+    <h2 :class="['section', { form: editable }]">Tags</h2>
 
     <template v-if="!editable">
       <TagList v-if="modelValue.length" :tags="modelValue" />
@@ -63,26 +62,6 @@ const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
 
 <style lang="postcss" scoped>
 .tags {
-  margin-bottom: 15px;
-  padding-top: 5px;
-
-  & h2 {
-    margin: 0;
-    font-weight: 400;
-    font-size: 18px;
-    line-height: 36px;
-  }
-
-  & hr {
-    border: none;
-    border-top: 1px solid var(--knime-silver-sand);
-    margin: 0;
-  }
-
-  & .tag-editor {
-    margin-top: 8px;
-  }
-
   & .wrapper {
     padding: 13px 0;
   }

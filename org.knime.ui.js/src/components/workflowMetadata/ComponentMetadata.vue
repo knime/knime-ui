@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, toRaw, watch } from "vue";
-
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import type {
-  AvailablePortTypes,
-  ComponentMetadata,
-  Workflow,
-} from "@/api/custom-types";
+import type { AvailablePortTypes, ComponentMetadata } from "@/api/custom-types";
 
 import { toExtendedPortObject } from "@/util/portDataMapper";
 
@@ -16,37 +11,27 @@ import MetadataHeaderButtons from "./MetadataHeaderButtons.vue";
 import MetadataTags from "./MetadataTags.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
-import type { Link, TypedText } from "@/api/gateway-api/generated-api";
-import type { NodeFeatures } from "./ComponentMetadataNodeFeatures.vue";
-import { ComponentNodeAndDescription } from "@/api/gateway-api/generated-api";
+import { TypedText } from "@/api/gateway-api/generated-api";
+
+import type {
+  Link,
+  ComponentNodeAndDescription,
+} from "@/api/gateway-api/generated-api";
+import ComponentTypeEditor from "@/components/workflowMetadata/ComponentTypeEditor.vue";
+import ComponentIconEditor from "@/components/workflowMetadata/ComponentIconEditor.vue";
 
 interface Props {
-  workflow: Workflow;
+  componentMetadata: ComponentMetadata;
+  projectId: string;
+  componentId: string; // this is the same as the workflowId if the component is "open"
   availablePortTypes: AvailablePortTypes;
 }
 
 const props = defineProps<Props>();
 
 const componentMetadata = computed<ComponentMetadata>(
-  () => props.workflow.componentMetadata,
+  () => props.componentMetadata,
 );
-
-const currentProjectId = computed(() => props.workflow.projectId);
-const currentWorkflowId = computed(() => props.workflow.info.containerId);
-
-// node icon preview
-const nodePreview = computed(() => {
-  const { inPorts = [], outPorts = [], type, icon } = componentMetadata.value;
-
-  return {
-    inPorts: inPorts.map(toExtendedPortObject(props.availablePortTypes)),
-    outPorts: outPorts.map(toExtendedPortObject(props.availablePortTypes)),
-    icon,
-    type,
-    isComponent: true,
-    hasDynPorts: false,
-  };
-});
 
 const nodeFeatures = computed(() => {
   const {
@@ -74,14 +59,15 @@ type MetadataDraft = {
     description: string;
     links: Link[];
     tags: string[];
-    nodeFeatures: NodeFeatures;
+    inPorts: Array<{ name: string; description: string }>;
+    outPorts: Array<{ name: string; description: string }>;
     icon: string; // base64 url-encoded
     type: ComponentNodeAndDescription.TypeEnum;
   };
 };
 
 const currentDraftID = computed(
-  () => `${currentProjectId.value}${ID_SEPARATOR}${currentWorkflowId.value}`,
+  () => `${props.projectId}${ID_SEPARATOR}${props.componentId}`,
 );
 
 const metadataDrafts = reactive<Record<string, MetadataDraft>>({});
@@ -91,11 +77,22 @@ const isEditing = computed(
 );
 
 const getInitialDraftData = () => {
+  const inPorts = (nodeFeatures.value.inPorts || []).map((port) => ({
+    name: port.name,
+    description: port.description,
+  }));
+
+  const outPorts = (nodeFeatures.value.outPorts || []).map((port) => ({
+    name: port.name,
+    description: port.description,
+  }));
+
   return {
     description: componentMetadata.value.description,
     links: structuredClone(toRaw(componentMetadata.value.links || [])),
     tags: structuredClone(toRaw(componentMetadata.value.tags || [])),
-    nodeFeatures: nodeFeatures.value,
+    inPorts,
+    outPorts,
     icon: componentMetadata.value.icon,
     type: componentMetadata.value.type,
   };
@@ -116,7 +113,8 @@ type SaveEventPayload = {
   description: TypedText;
   links: Array<Link>;
   tags: Array<string>;
-  nodeFeatures: NodeFeatures;
+  inPorts: Array<{ name: string; description: string }>;
+  outPorts: Array<{ name: string; description: string }>;
   icon: string; // base64 url-encoded
   type: ComponentNodeAndDescription.TypeEnum;
 };
@@ -144,6 +142,24 @@ const getMetadataFieldValue = <K extends keyof MetadataDraft["data"]>(
 ) => {
   return metadataDrafts[currentDraftID.value].data[fieldName];
 };
+
+// node icon preview
+const nodePreview = computed(() => {
+  const { inPorts = [], outPorts = [] } = componentMetadata.value;
+
+  // use data that might be changed due to the edit process
+  const type = getMetadataFieldValue("type");
+  const icon = getMetadataFieldValue("icon");
+
+  return {
+    inPorts: inPorts.map(toPortObject(props.availablePortTypes)),
+    outPorts: outPorts.map(toPortObject(props.availablePortTypes)),
+    icon,
+    type,
+    isComponent: true,
+    hasDynPorts: false,
+  };
+});
 
 const updateMetadataField = <K extends keyof MetadataDraft["data"]>(
   fieldName: K,
@@ -175,11 +191,22 @@ const onSave = (draftId: string) => {
       value: draft.data.description,
       contentType: TypedText.ContentTypeEnum.Plain,
     },
-    nodeFeatures: draft.data.nodeFeatures,
+    inPorts: draft.data.inPorts,
+    outPorts: draft.data.outPorts,
     icon: draft.data.icon,
     type: draft.data.type,
   });
 };
+
+const componentTypes = [
+  "Source",
+  "Sink",
+  "Learner",
+  "Predictor",
+  "Manipulator",
+  "Visualizer",
+  "Other",
+];
 
 watch(currentDraftID, (_, prev) => {
   if (
@@ -242,6 +269,18 @@ watch(
   />
 
   <!-- Type and Icon -->
+  <template v-if="isEditing">
+    <h2 class="section form">Type and icon</h2>
+    <ComponentIconEditor
+      :model-value="getMetadataFieldValue('icon')"
+      @update:model-value="updateMetadataField('icon', $event)"
+    />
+    <ComponentTypeEditor
+      :component-types="componentTypes"
+      :model-value="getMetadataFieldValue('type')"
+      @update:model-value="updateMetadataField('type', $event)"
+    />
+  </template>
 
   <ExternalResourcesList
     :model-value="getMetadataFieldValue('links')"
@@ -257,9 +296,12 @@ watch(
   />
 
   <ComponentMetadataNodeFeatures
-    :model-value="nodeFeatures"
+    :node-features="nodeFeatures"
+    :in-ports="getMetadataFieldValue('inPorts')"
+    :out-ports="getMetadataFieldValue('outPorts')"
     :editable="isEditing"
-    @update:model-value="updateMetadataField('nodeFeatures', $event)"
+    @update:in-ports="updateMetadataField('inPorts', $event)"
+    @update:out-ports="updateMetadataField('outPorts', $event)"
   />
 </template>
 
@@ -268,13 +310,6 @@ watch(
   display: flex;
   align-items: center;
   margin-bottom: 12px;
-}
-
-h2 {
-  margin: 0;
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 36px; /* TODO: NXT-1164 maybe make line height smaller */
 }
 
 .component-name {

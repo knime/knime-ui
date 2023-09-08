@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
+import { computed } from "vue";
+
 import type {
   NodeDialogOptionGroup,
   NodePortDescription,
   NodeViewDescription,
 } from "@/api/gateway-api/generated-api";
+
+import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 import MetadataPortEditor from "@/components/workflowMetadata/MetadataPortEditor.vue";
 
 export interface NodeFeatures {
@@ -17,7 +20,12 @@ export interface NodeFeatures {
 }
 
 interface Props {
-  modelValue: NodeFeatures;
+  // actual editable data
+  inPorts: Array<{ name: string; description: string }>;
+  outPorts: Array<{ name: string; description: string }>;
+
+  // all metadata
+  nodeFeatures: NodeFeatures;
   editable?: boolean;
 }
 
@@ -25,70 +33,71 @@ const props = withDefaults(defineProps<Props>(), {
   editable: false,
 });
 
+// join together editable data (might be changed) with non-editable metadata
+const fullPortValue = computed(() => {
+  return {
+    inPorts: props.nodeFeatures.inPorts.map((port, index) => ({
+      ...port,
+      ...props.inPorts[index],
+    })),
+    outPorts: props.nodeFeatures.outPorts.map((port, index) => ({
+      ...port,
+      ...props.outPorts[index],
+    })),
+  };
+});
+
 const emit = defineEmits<{
-  (e: "update:modelValue", nodeFeatures: NodeFeatures): void;
+  (
+    e: "update:inPorts",
+    value: Array<{ name: string; description: string }>,
+  ): void;
+  (
+    e: "update:outPorts",
+    value: Array<{ name: string; description: string }>,
+  ): void;
 }>();
 
-const updateField = <K extends keyof NodeFeatures, V = NodeFeatures[K]>(
-  property: K,
-  value: V,
-) => {
-  emit("update:modelValue", { ...props.modelValue, [property]: value });
-};
+const filterPortData = (fullPorts) =>
+  fullPorts.map(({ name, description }) => ({
+    name,
+    description,
+  }));
 </script>
 
 <template>
   <div v-if="editable" class="node-feature-editor">
-    <template v-if="modelValue.inPorts && modelValue.inPorts.length > 0">
-      <h2>Input ports</h2>
-      <hr />
+    <template v-if="inPorts && inPorts.length > 0">
+      <h2 class="section form">Input ports</h2>
       <MetadataPortEditor
-        :model-value="modelValue.inPorts"
-        @update:model-value="updateField('inPorts', $event)"
+        :model-value="fullPortValue.inPorts"
+        @update:model-value="emit('update:inPorts', filterPortData($event))"
       />
     </template>
-    <template v-if="modelValue.outPorts && modelValue.outPorts.length > 0">
-      <h2>Output ports</h2>
-      <hr />
+    <template v-if="outPorts && outPorts.length > 0">
+      <h2 class="section form">Output ports</h2>
       <MetadataPortEditor
-        :model-value="modelValue.outPorts"
-        @update:model-value="updateField('outPorts', $event)"
+        :model-value="fullPortValue.outPorts"
+        @update:model-value="emit('update:outPorts', filterPortData($event))"
       />
     </template>
   </div>
   <NodeFeatureList
     v-else
-    :in-ports="modelValue.inPorts"
-    :dyn-in-ports="modelValue.dynInPorts"
-    :out-ports="modelValue.outPorts"
-    :dyn-out-ports="modelValue.dynOutPorts"
-    :views="modelValue.views"
-    :options="modelValue.options"
+    :in-ports="nodeFeatures.inPorts"
+    :dyn-in-ports="nodeFeatures.dynInPorts"
+    :out-ports="nodeFeatures.outPorts"
+    :dyn-out-ports="nodeFeatures.dynOutPorts"
+    :views="nodeFeatures.views"
+    :options="nodeFeatures.options"
     sanitize-content
     class="node-feature-list"
   />
 </template>
 
 <style lang="postcss" scoped>
-.node-feature-editor {
-  margin-bottom: 40px;
-
-  & h2 {
-    margin: 0;
-    font-weight: 400;
-    font-size: 18px;
-    line-height: 36px;
-  }
-
-  & hr {
-    border: none;
-    border-top: 1px solid var(--knime-silver-sand);
-    margin: 0;
-  }
-}
-
 .node-feature-list {
-  margin-bottom: 40px;
+  margin-top: 20px; /* no h2 in this case */
 
   & :deep(.shadow-wrapper::after),
   & :deep(.shadow-wrapper::before) {

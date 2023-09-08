@@ -58,25 +58,27 @@ watch(toRef(props, "editable"), async (next) => {
 .description {
   margin-bottom: 20px;
   font-size: 16px;
-}
 
-.description-editor {
-  border: 1px solid transparent;
-  --rich-text-editor-font-size: 16;
+  & .description-editor {
+    border: 1px solid transparent;
+    --rich-text-editor-font-size: 13;
 
-  width: 100%;
-  min-height: 150px;
-  resize: none;
-  background-color: transparent;
-  outline: transparent;
+    width: 100%;
+    min-height: 150px;
+    resize: none;
+    background-color: transparent;
+    outline: transparent;
+    line-height: 150%;
+    font-size: 13px;
 
-  &.editable {
-    padding: 10px;
-    border: 1px solid var(--knime-stone-gray);
-    background-color: var(--knime-white);
+    &.editable {
+      padding: 10px;
+      border: 1px solid var(--knime-stone-gray);
+      background-color: var(--knime-white);
 
-    &:focus {
-      border: 1px solid var(--knime-masala);
+      &:focus {
+        border: 1px solid var(--knime-masala);
+      }
     }
   }
 }

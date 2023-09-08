@@ -58,7 +58,9 @@ const updateComponentMetadata = (data) => {
 
     <ComponentMetadata
       v-if="isComponent && workflow.componentMetadata"
-      :workflow="workflow"
+      :component-metadata="workflow.componentMetadata"
+      :project-id="workflow.projectId"
+      :component-id="workflow.info.containerId"
       :available-port-types="availablePortTypes"
       @save="updateComponentMetadata"
     />
@@ -74,9 +76,23 @@ const updateComponentMetadata = (data) => {
   overflow-x: hidden;
   height: 100%;
   padding: 8px 20px 20px;
-  font-family: "Roboto Condensed", sans-serif;
   font-size: 16px;
   color: var(--knime-masala);
+
+  & :deep(h2) {
+    margin: 15px 0 5px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 36px;
+  }
+
+  & :deep(h2.section) {
+    border-bottom: 1px solid var(--knime-silver-sand);
+  }
+
+  & :deep(h2.form) {
+    margin: 30px 0 20px;
+  }
 
   & > *:last-child {
     margin-bottom: 0;

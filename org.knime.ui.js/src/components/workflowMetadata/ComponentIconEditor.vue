@@ -1,0 +1,47 @@
+<script setup lang="ts">
+import IconBase64UploadButton from "@/components/common/IconBase64UploadButton.vue";
+import Label from "webapps-common/ui/components/forms/Label.vue";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
+
+interface Props {
+  modelValue: string;
+}
+
+const emit = defineEmits<{
+  (e: "update:modelValue", componentTpye: string): void;
+}>();
+
+defineProps<Props>();
+</script>
+
+<template>
+  <Label text="Icon" compact class="label">
+    <div>
+      <IconBase64UploadButton
+        :model-value="modelValue"
+        @update:model-value="emit('update:modelValue', $event)"
+      />
+      <FunctionButton
+        class="delete-link-btn"
+        @click="emit('update:modelValue', '')"
+      >
+        <TrashIcon />
+      </FunctionButton>
+    </div>
+  </Label>
+</template>
+
+<style scoped lang="postcss">
+.label {
+  margin-bottom: 10px;
+
+  & div {
+    display: flex;
+
+    & .delete-link-btn {
+      margin-left: auto;
+    }
+  }
+}
+</style>

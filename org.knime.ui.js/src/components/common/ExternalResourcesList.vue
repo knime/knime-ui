@@ -71,8 +71,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
 
 <template>
   <div class="external-resources-list">
-    <h2>External resources</h2>
-    <hr />
+    <h2 :class="['section', { form: editable }]">External resources</h2>
     <template v-if="!editable">
       <LinkList v-if="modelValue.length" :links="modelValue" />
       <!-- Use MetadataPlaceholder? -->
@@ -131,19 +130,12 @@ const updateField = <K extends keyof Link, V = Link[K]>(
 
 <style lang="postcss" scoped>
 .external-resources-list {
-  margin-bottom: 15px;
-
   & h2 {
     margin: 0;
-    font-weight: 400;
-    font-size: 18px;
+    font-size: 16px;
+    font-weight: 500;
     line-height: 36px;
-  }
-
-  & hr {
-    border: none;
-    border-top: 1px solid var(--knime-silver-sand);
-    margin: 0;
+    border-bottom: 1px solid var(--knime-silver-sand);
   }
 
   & ul {
@@ -164,12 +156,9 @@ const updateField = <K extends keyof Link, V = Link[K]>(
     color: var(--knime-dove-gray);
   }
 
-  & .add-link-btn {
-    margin-top: 20px;
-  }
-
   & .edit-link {
-    padding: 8px 0;
+    padding: 0;
+    margin-top: 10px;
 
     & .edit-link-header {
       display: flex;
@@ -182,7 +171,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
 
     & .edit-link-text,
     & .edit-link-url {
-      padding-top: 8px;
+      margin-top: 10px;
     }
 
     & .item-error {
