@@ -72,17 +72,21 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
       <ChatMessage
         v-if="props.systemPrompt"
         key="system_prompt"
+        class="chat-message"
         role="assistant"
         :content="props.systemPrompt"
       />
       <ChatMessage
         v-for="(message, index) in messages"
         :key="index"
+        class="chat-message"
         v-bind="message"
+        @node-templates-loaded="scrollToBottomAfterNextTick"
       />
       <ChatMessage
         v-if="isProcessing"
         key="processing"
+        class="chat-message"
         role="assistant"
         :content="incomingTokens"
         :status-update="statusUpdate"
@@ -111,6 +115,10 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
     flex: 1;
     overflow-x: hidden;
     overflow-y: auto;
+
+    & .chat-message {
+      margin-top: 10px;
+    }
   }
 
   & .chat-controls {
