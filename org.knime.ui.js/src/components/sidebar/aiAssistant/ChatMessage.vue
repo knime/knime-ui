@@ -81,8 +81,8 @@ const hasBuildingBlocks = computed(
       </div>
       <div v-if="hasReferences" class="references">
         <div v-for="(urls, refName) in references" :key="refName">
-          <Button class="ref-button" @click="openReferences(urls)">
-            <ExternalLinkIcon /> Source in {{ refName }}
+          <Button class="ref-button" @click="openReferences(urls)"
+            >Sources in {{ refName }} <ExternalLinkIcon />
           </Button>
         </div>
       </div>
@@ -211,6 +211,11 @@ const hasBuildingBlocks = computed(
       & .ref-button {
         padding: 0;
         font-size: 12px;
+
+        & svg {
+          margin-left: 2px;
+          margin-bottom: -1px;
+        }
       }
     }
   }
