@@ -130,6 +130,10 @@ const updateField = <K extends keyof Link, V = Link[K]>(
 
 <style lang="postcss" scoped>
 .external-resources-list {
+  & .edit-link-url {
+    margin-bottom: 10px;
+  }
+
   & h2 {
     margin: 0;
     font-size: 16px;
