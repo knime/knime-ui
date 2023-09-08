@@ -1,6 +1,18 @@
 import { ref, watchEffect } from "vue";
 import { useStore } from "vuex";
 
+// TODO: AP-20131 Node identifier in node stats and modern node repo can have clashes
+// This is a temporary fix to avoid problems with the factory name for dynamic factories:
+// Data from the hub looks like this: ...$DynamicExtensionNodeFactory:ffae4570 but in
+// knime-ui ...$DynamicExtensionNodeFactory#LLM+Prompter is needed to get the node template.
+const getInternalFactoryName = (factoryName, title) => {
+  const pattern = /(\$DynamicExtensionNodeFactory):[\w\d]+/;
+  if (pattern.test(factoryName)) {
+    return factoryName.replace(pattern, "$1#") + title.replace(/ /g, "+");
+  }
+  return factoryName;
+};
+
 /**
  * A Vue composition function that provides node templates based on given role and nodes.
  * @param {Object} params - An object containing role and nodes.
@@ -28,11 +40,10 @@ const useNodeTemplates = ({ role, nodes }) => {
     // Fetching node templates concurrently.
     await Promise.all(
       nodes.map(async (node) => {
-        const { factoryName } = node;
         // Dispatching a Vuex action to get a node template.
         const nodeTemplate = await store.dispatch(
           "nodeRepository/getNodeTemplate",
-          factoryName,
+          getInternalFactoryName(node.factoryName, node.title),
         );
 
         if (nodeTemplate) {
