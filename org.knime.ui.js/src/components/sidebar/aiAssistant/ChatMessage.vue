@@ -47,7 +47,6 @@ watch(
 const openReferences = (urls) => urls.forEach((url) => window.open(url));
 
 const isUser = computed(() => props.role === "user");
-const isAssistant = computed(() => props.role === "assistant");
 const hasReferences = computed(
   () => props.references && Object.keys(props.references).length > 0,
 );
@@ -67,9 +66,9 @@ const hasBuildingBlocks = computed(
 <template>
   <div class="chat-message">
     <div class="header">
-      <div class="icon" :class="{ assistant: isAssistant }">
+      <div class="icon">
         <UserIcon v-if="isUser" />
-        <KnimeIcon v-else />
+        <KnimeIcon v-else class="assistant" />
       </div>
       <div class="name">{{ isUser ? "User" : "K-AI" }}</div>
     </div>
@@ -159,12 +158,10 @@ const hasBuildingBlocks = computed(
         @mixin svg-icon-size 18;
       }
 
-      &.assistant {
-        & svg {
-          margin-top: -4px;
+      & svg.assistant {
+        margin-top: -4px;
 
-          @mixin svg-icon-size 16;
-        }
+        @mixin svg-icon-size 16;
       }
     }
 
@@ -174,6 +171,7 @@ const hasBuildingBlocks = computed(
       font-weight: bold;
     }
   }
+
   & .content {
     padding: 10px 2px;
     overflow: hidden;
@@ -205,8 +203,9 @@ const hasBuildingBlocks = computed(
       padding-top: 13px;
 
       & svg {
-        @mixin svg-icon-size 10;
         margin-right: 3px;
+
+        @mixin svg-icon-size 10;
       }
 
       & .ref-button {
@@ -218,6 +217,7 @@ const hasBuildingBlocks = computed(
 
   & .building-blocks {
     margin-top: 4px;
+
     & .title {
       font-weight: 600;
     }
@@ -245,7 +245,7 @@ const hasBuildingBlocks = computed(
     flex-direction: row;
     align-items: center;
     gap: 5px;
-    padding: 0 5px 5px 5px;
+    padding: 0 5px 5px;
     font-size: 14px;
 
     & svg.loading-icon {
