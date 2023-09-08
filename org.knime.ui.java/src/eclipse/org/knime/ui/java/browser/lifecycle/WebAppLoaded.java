@@ -60,8 +60,11 @@ final class WebAppLoaded {
         //
     }
 
-    static void run() {
-        // does nothing for now
+    static void run(final LifeCycleStateInternal state) {
+        var updateStateProvider = state.getUpdateStateProvider();
+        if (updateStateProvider != null) {
+            updateStateProvider.checkForUpdates();
+        }
     }
 
 }

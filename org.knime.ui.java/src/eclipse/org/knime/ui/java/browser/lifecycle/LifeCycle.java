@@ -166,7 +166,7 @@ public final class LifeCycle {
      * Runs the state transition required once the web app (web page) is loaded.
      */
     public void webAppLoaded() {
-        doStateTransition(StateTransition.WEB_APP_LOADED, WebAppLoaded::run, StateTransition.INIT,
+        doStateTransition(StateTransition.WEB_APP_LOADED, () -> WebAppLoaded.run(m_state), StateTransition.INIT,
             StateTransition.RELOAD);
     }
 
