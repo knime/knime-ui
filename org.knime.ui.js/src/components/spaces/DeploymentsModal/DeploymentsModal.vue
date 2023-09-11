@@ -57,6 +57,7 @@ const closeModal = () => {
 <style lang="postcss" scoped>
 .modal {
   --modal-width: 80%;
+  z-index: 55;
 }
 
 .no-data {

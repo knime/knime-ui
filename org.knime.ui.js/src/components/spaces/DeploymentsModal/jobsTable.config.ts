@@ -89,5 +89,18 @@ export const popoverRenderers = {
 export const slottedColumns = [];
 
 export const jobSubMenuItems = [
-  // TODO Add sub menu items
+  {
+    name: "save",
+    text: "Save as workflow",
+    callback: (row, context) => {
+      console.log(row);
+    },
+  },
+  {
+    name: "delete",
+    text: "Delete",
+    callback: (row, context) => {
+      console.log(row);
+    },
+  },
 ];
