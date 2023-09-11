@@ -467,6 +467,12 @@ export interface AppState {
      */
     suggestedPortTypeIds?: Array<string>;
     /**
+     * Available component node types.
+     * @type {Array<string>}
+     * @memberof AppState
+     */
+    availableComponentTypes?: Array<string>;
+    /**
      * If true, node recommendation features can be used, otherwise they have to be disabled.
      * @type {boolean}
      * @memberof AppState
@@ -766,6 +772,29 @@ export interface ComponentNodeDescription extends ComponentNodeAndDescription {
  */
 export namespace ComponentNodeDescription {
 }
+/**
+ * The (user-editable) description of a component&#39;s port. Asummed to be Plaintext.
+ * @export
+ * @interface ComponentPortDescription
+ */
+export interface ComponentPortDescription {
+
+    /**
+     *
+     * @type {string}
+     * @memberof ComponentPortDescription
+     */
+    name?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof ComponentPortDescription
+     */
+    description?: string;
+
+}
+
+
 /**
  * Event that can consist of multiple generic events.
  * @export
@@ -1076,6 +1105,35 @@ export interface DynamicPortGroupDescription {
      * @memberof DynamicPortGroupDescription
      */
     supportedPortTypes?: Array<NodePortTemplate>;
+
+}
+
+
+/**
+ * Metadata properties of a project (workflow or component) that can be edited
+ * @export
+ * @interface EditableProjectMetadata
+ */
+export interface EditableProjectMetadata {
+
+    /**
+     *
+     * @type {TypedText}
+     * @memberof EditableProjectMetadata
+     */
+    description: TypedText;
+    /**
+     * A collection of tags the user chose to describe the workflow
+     * @type {Array<string>}
+     * @memberof EditableProjectMetadata
+     */
+    tags: Array<string>;
+    /**
+     * A collection of URLs attached to the workflow
+     * @type {Array<Link>}
+     * @memberof EditableProjectMetadata
+     */
+    links: Array<Link>;
 
 }
 
@@ -1538,6 +1596,12 @@ export interface NativeNodeDescription extends NodeDescription {
      */
     shortDescription?: string;
     /**
+     * The freeform description text of the node. Sometimes also referred to as \&quot;intro text\&quot;. May contain HTML markup tags.
+     * @type {string}
+     * @memberof NativeNodeDescription
+     */
+    description?: string;
+    /**
      *
      * @type {Array<DynamicPortGroupDescription>}
      * @memberof NativeNodeDescription
@@ -1736,12 +1800,6 @@ export namespace NodeAnnotation {
  */
 export interface NodeDescription {
 
-    /**
-     * The freeform description text of the node. Sometimes also referred to as \&quot;intro text\&quot;. May contain HTML markup tags.
-     * @type {string}
-     * @memberof NodeDescription
-     */
-    description?: string;
     /**
      * List of dialog option groups. In case the dialog options are actually ungrouped, this is a singleton list containing a group with no name or description.
      * @type {Array<NodeDialogOptionGroup>}
@@ -2598,30 +2656,12 @@ export interface ProjectDirtyStateEvent extends Event {
 
 
 /**
- * The metadata for a workflow project, i.e. for the root-workflow.
+ * Workflow Metadata
  * @export
  * @interface ProjectMetadata
  */
-export interface ProjectMetadata {
+export interface ProjectMetadata extends EditableProjectMetadata {
 
-    /**
-     *
-     * @type {TypedText}
-     * @memberof ProjectMetadata
-     */
-    description: TypedText;
-    /**
-     * A collection of tags the user chose to describe the workflow
-     * @type {Array<string>}
-     * @memberof ProjectMetadata
-     */
-    tags: Array<string>;
-    /**
-     * A collection of URLs attached to the workflow
-     * @type {Array<Link>}
-     * @memberof ProjectMetadata
-     */
-    links: Array<Link>;
     /**
      * The date and time of the last change made to this workflow
      * @type {Date}
@@ -3184,6 +3224,64 @@ export interface UpdateComponentLinkInformationCommand extends WorkflowCommand {
  */
 export namespace UpdateComponentLinkInformationCommand {
 }
+
+
+/**
+ * Update component metadata.
+ * @export
+ * @interface UpdateComponentMetadataCommand
+ */
+export interface UpdateComponentMetadataCommand extends WorkflowCommand {
+
+    /**
+     *
+     * @type {Array<ComponentPortDescription>}
+     * @memberof UpdateComponentMetadataCommand
+     */
+    inPorts: Array<ComponentPortDescription>;
+    /**
+     *
+     * @type {Array<ComponentPortDescription>}
+     * @memberof UpdateComponentMetadataCommand
+     */
+    outPorts: Array<ComponentPortDescription>;
+    /**
+     * null
+     * @type {string}
+     * @memberof UpdateComponentMetadataCommand
+     */
+    icon?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof UpdateComponentMetadataCommand
+     */
+    type?: UpdateComponentMetadataCommand.TypeEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace UpdateComponentMetadataCommand
+ */
+export namespace UpdateComponentMetadataCommand {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum TypeEnum {
+        Source = 'Source',
+        Sink = 'Sink',
+        Learner = 'Learner',
+        Predictor = 'Predictor',
+        Manipulator = 'Manipulator',
+        Visualizer = 'Visualizer',
+        Other = 'Other'
+    }
+}
+
+
 /**
  * Updates the name of a component or metanode
  * @export
@@ -3272,30 +3370,12 @@ export interface UpdateNodeLabelCommand extends WorkflowCommand {
 export namespace UpdateNodeLabelCommand {
 }
 /**
- * Updates a projects metadata. At least one property must be set.
+ * Updates a projects metadata.
  * @export
  * @interface UpdateProjectMetadataCommand
  */
 export interface UpdateProjectMetadataCommand extends WorkflowCommand {
 
-    /**
-     *
-     * @type {TypedText}
-     * @memberof UpdateProjectMetadataCommand
-     */
-    description: TypedText;
-    /**
-     * A collection of tags the user chose to describe the workflow
-     * @type {Array<string>}
-     * @memberof UpdateProjectMetadataCommand
-     */
-    tags: Array<string>;
-    /**
-     * A collection of URLs attached to the workflow
-     * @type {Array<Link>}
-     * @memberof UpdateProjectMetadataCommand
-     */
-    links: Array<Link>;
 
 }
 
@@ -3581,7 +3661,8 @@ export namespace WorkflowCommand {
         ReorderWorkflowAnnotations = 'reorder_workflow_annotations',
         AddWorkflowAnnotation = 'add_workflow_annotation',
         UpdateProjectMetadata = 'update_project_metadata',
-        AddBendpoint = 'add_bendpoint',
+        UpdateComponentMetadata = 'update_component_metadata',
+        AddBendpoint = 'add_bendpoint'
         UpdateComponentLinkInformation = 'update_component_link_information'
     }
 }
@@ -4649,7 +4730,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
-     * Updates a projects metadata. At least one property must be set.
+     * Updates a projects metadata.
      */
 	UpdateProjectMetadata(
 		params: { projectId: string, workflowId: string } & Omit<UpdateProjectMetadataCommand, 'kind'>
@@ -4664,6 +4745,23 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
+     * Update component metadata.
+     */
+	UpdateComponentMetadata(
+		params: { projectId: string, workflowId: string } & Omit<UpdateComponentMetadataCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentMetadata }
+		});
+		return postProcessCommandResponse(commandResponse);
+	},
+
+
+
+ 	/**
      * Updates a components link information or unlinks a component
      */
 	UpdateComponentLinkInformation(
@@ -4676,7 +4774,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentLinkInformation }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
   }
 }
