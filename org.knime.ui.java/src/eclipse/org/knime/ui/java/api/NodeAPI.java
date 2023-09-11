@@ -76,24 +76,12 @@ import org.knime.workbench.editor2.editparts.NodeContainerEditPart;
  * Functions around nodes.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 final class NodeAPI {
 
     private NodeAPI() {
         // stateless
-    }
-
-    /**
-     * Opens the swing dialog or CEF-based dialog of a node.
-     *
-     * @param projectId
-     * @param nodeId
-     */
-    @API
-    static void openNodeDialog(final String projectId, final String nodeId) {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        checkIsNotNull(nc, projectId, nodeId);
-        NodeContainerEditPart.openNodeDialog(wrap(nc));
     }
 
     /**
@@ -115,7 +103,8 @@ final class NodeAPI {
      * @param nodeId The node to act on
      * @param task The task to run
      */
-    static void executeNodeThenRun(final String projectId, final String nodeId, final Runnable task) {
+
+    private static void executeNodeThenRun(final String projectId, final String nodeId, final Runnable task) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
 
@@ -198,8 +187,7 @@ final class NodeAPI {
     static String openLayoutEditor(final String projectId, final String nodeId) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
-        if (nc instanceof SubNodeContainer) {
-            final var subnode = (SubNodeContainer)nc;
+        if (nc instanceof SubNodeContainer subnode) {
             SubnodeLayoutAction.openLayoutEditor(subnode);
             return null;
         } else {
@@ -212,5 +200,4 @@ final class NodeAPI {
     static void checkIsNotNull(final NodeContainer nc, final String projectId, final String nodeId) {
         CheckUtils.checkArgument(nc != null, "Node with id '%s' not found in workflow with id '%s'", projectId, nodeId);
     }
-
 }

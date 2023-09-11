@@ -53,7 +53,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -94,24 +93,24 @@ class ImportFiles extends AbstractImportItems {
 
     @Override
     protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final Space space,
-            final String workflowGroupItemId, final List<Path> srcPaths,
-            final Space.NameCollisionHandling collisionHandling) {
+        final String workflowGroupItemId, final List<Path> srcPaths,
+        final Space.NameCollisionHandling collisionHandling) {
         final var name = ClassUtils.castOptional(LocalWorkspace.class, space) //
-                .map(local -> local.getItemName(workflowGroupItemId)) //
-                .orElse(space.getName());
+            .map(local -> local.getItemName(workflowGroupItemId)) //
+            .orElse(space.getName());
         monitor.beginTask(String.format("Importing %d files into \"%s\"", srcPaths.size(), name),
             IProgressMonitor.UNKNOWN);
         var importedSpaceItems = srcPaths.stream()//
-                .map(srcPath -> { // Import every single file
-                    try {
-                        return space.importFile(srcPath, workflowGroupItemId, collisionHandling, monitor);
+            .map(srcPath -> { // Import every single file
+                try {
+                    return space.importFile(srcPath, workflowGroupItemId, collisionHandling, monitor);
                 } catch (IOException e) {
                     LOGGER.error(String.format("Could not import <%s>", srcPath), e);
                     return null;
                 }
             })//
             .filter(Objects::nonNull) // Exclude the failed ones from the result
-            .collect(Collectors.toList());
+            .toList();
         monitor.done();
         return importedSpaceItems;
     }

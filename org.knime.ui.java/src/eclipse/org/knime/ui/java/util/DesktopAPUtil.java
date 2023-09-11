@@ -56,8 +56,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
+import org.apache.commons.lang3.Functions;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -280,7 +280,7 @@ public final class DesktopAPUtil {
      * @return returned value
      */
     public static <T> Optional<T> runWithProgress(final String name, final NodeLogger logger,
-            final Function<IProgressMonitor, T> func) {
+            final Functions.FailableFunction<IProgressMonitor, T, InvocationTargetException> func) {
         try {
             final var ref = new AtomicReference<T>();
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> ref.set(func.apply(monitor)));
