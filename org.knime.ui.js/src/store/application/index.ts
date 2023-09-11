@@ -38,6 +38,10 @@ export interface ApplicationState {
    */
   suggestedPortTypes: Array<string>;
   /**
+   * A list of component types
+   */
+  availableComponentTypes: Array<string>;
+  /**
    * Workflow Context Menu state
    */
   contextMenu: {
@@ -78,6 +82,7 @@ export const state = (): ApplicationState => ({
   activeProjectId: null,
   availablePortTypes: {},
   suggestedPortTypes: [],
+  availableComponentTypes: [],
   contextMenu: {
     isOpen: false,
     position: null,
@@ -112,6 +117,9 @@ export const mutations: MutationTree<ApplicationState> = {
   setSuggestedPortTypes(state, portTypesIds) {
     state.suggestedPortTypes = portTypesIds;
   },
+  setAvailableComponentTypes(state, componentTypes) {
+    state.availableComponentTypes = componentTypes;
+  },
   setFeatureFlags(state, featureFlags) {
     state.featureFlags = featureFlags;
   },
@@ -144,6 +152,13 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     if (applicationState.suggestedPortTypeIds) {
       commit("setSuggestedPortTypes", applicationState.suggestedPortTypeIds);
+    }
+
+    if (applicationState.availableComponentTypes) {
+      commit(
+        "setAvailableComponentTypes",
+        applicationState.availableComponentTypes,
+      );
     }
 
     // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set

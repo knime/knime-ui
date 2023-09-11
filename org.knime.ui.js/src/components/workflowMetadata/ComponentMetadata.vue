@@ -19,6 +19,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import ComponentTypeEditor from "@/components/workflowMetadata/ComponentTypeEditor.vue";
 import ComponentIconEditor from "@/components/workflowMetadata/ComponentIconEditor.vue";
+import { useStore } from "@/composables/useStore";
 
 interface Props {
   componentMetadata: ComponentMetadata;
@@ -88,7 +89,7 @@ const getInitialDraftData = () => {
   }));
 
   return {
-    description: componentMetadata.value.description,
+    description: componentMetadata.value.description.value,
     links: structuredClone(toRaw(componentMetadata.value.links || [])),
     tags: structuredClone(toRaw(componentMetadata.value.tags || [])),
     inPorts,
@@ -198,15 +199,10 @@ const onSave = (draftId: string) => {
   });
 };
 
-const componentTypes = [
-  "Source",
-  "Sink",
-  "Learner",
-  "Predictor",
-  "Manipulator",
-  "Visualizer",
-  "Other",
-];
+const store = useStore();
+const componentTypes = computed(
+  () => store.state.application.availableComponentTypes,
+);
 
 watch(currentDraftID, (_, prev) => {
   if (
@@ -262,7 +258,7 @@ watch(
   </div>
 
   <MetadataDescription
-    :original-description="componentMetadata.description"
+    :original-description="componentMetadata.description.value"
     :model-value="getMetadataFieldValue('description')"
     :editable="isEditing"
     @update:model-value="updateMetadataField('description', $event)"

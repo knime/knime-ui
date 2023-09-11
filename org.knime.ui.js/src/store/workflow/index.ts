@@ -260,6 +260,35 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }
   },
 
+  async updateComponentMetadata(
+    _,
+    {
+      projectId,
+      workflowId,
+      componentId,
+      description,
+      type,
+      icon,
+      inPorts,
+      outPorts,
+      links,
+      tags,
+    },
+  ) {
+    await API.workflowCommand.UpdateComponentMetadata({
+      projectId,
+      workflowId,
+      componentId,
+      description,
+      type,
+      icon,
+      inPorts,
+      outPorts,
+      links,
+      tags,
+    });
+  },
+
   async updateWorkflowMetadata(
     _,
     { description, tags, links, projectId, workflowId },

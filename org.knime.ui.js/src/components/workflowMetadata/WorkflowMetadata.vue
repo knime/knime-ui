@@ -44,8 +44,28 @@ const updateProjectMetadata = ({
   });
 };
 
-const updateComponentMetadata = (data) => {
-  consola.warn("TODO: implement updateComponentMetadata", data);
+const updateComponentMetadata = ({
+  projectId,
+  workflowId,
+  description,
+  type,
+  icon,
+  inPorts,
+  outPorts,
+  links,
+  tags,
+}) => {
+  store.dispatch("workflow/updateComponentMetadata", {
+    projectId,
+    workflowId, // in this case the componentId
+    description,
+    type,
+    icon,
+    inPorts,
+    outPorts,
+    links,
+    tags,
+  });
 };
 </script>
 
