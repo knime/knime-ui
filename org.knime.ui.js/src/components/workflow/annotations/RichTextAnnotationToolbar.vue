@@ -358,6 +358,10 @@ onUnmounted(() => {
       align-items: center;
     }
 
+    & :deep(.submenu-toggle) svg {
+      @mixin svg-icon-size 12;
+    }
+
     & :deep(.submenu-toggle.expanded) svg {
       transform: scaleY(-1);
     }

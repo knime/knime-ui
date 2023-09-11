@@ -163,9 +163,14 @@ const spaceIcon = computed(() => {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .space-path-breadcrumb {
   & .dropdown-icon {
     margin-left: 5px;
+    margin-top: 3px;
+
+    @mixin svg-icon-size 12;
 
     &.flip {
       transform: scaleY(-1);

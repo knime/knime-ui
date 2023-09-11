@@ -64,6 +64,11 @@ withDefaults(defineProps<Props>(), {
 .submenu-button {
   & .dropdown-icon {
     margin-left: 5px;
+    margin-top: 3px;
+
+    @mixin svg-icon-size 12;
+
+    stroke: var(--knime-masala);
 
     &.flip {
       transform: scaleY(-1);
@@ -78,7 +83,7 @@ withDefaults(defineProps<Props>(), {
   padding: 5px 14px;
   color: var(--knime-masala);
 
-  & svg {
+  & svg:not(.dropdown-icon) {
     @mixin svg-icon-size 18;
 
     stroke: var(--knime-masala);
