@@ -85,6 +85,19 @@ final class NodeAPI {
     }
 
     /**
+     * Opens the swing dialog or CEF-based dialog of a node.
+     *
+     * @param projectId
+     * @param nodeId
+     */
+    @API
+    static void openNodeDialog(final String projectId, final String nodeId) {
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        checkIsNotNull(nc, projectId, nodeId);
+        NodeContainerEditPart.openNodeDialog(wrap(nc));
+    }
+
+    /**
      * Executes the node and opens the node view as soon as the node is executed.
      *
      * @param projectId
