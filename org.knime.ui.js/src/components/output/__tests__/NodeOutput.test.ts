@@ -66,7 +66,7 @@ describe("NodeOutput.vue", () => {
     selectedNodeIds = ["node1"],
     isDragging = false,
     executeNodes = vi.fn(),
-    executeNodeAndOpenLegacyPortView = vi.fn(),
+    openLegacyPortView = vi.fn(),
   } = {}) => {
     const workflow = {
       mutations: {
@@ -84,7 +84,7 @@ describe("NodeOutput.vue", () => {
         },
         isDragging,
       },
-      actions: { executeNodes, executeNodeAndOpenLegacyPortView },
+      actions: { executeNodes, openLegacyPortView },
     };
 
     const application = {
@@ -301,10 +301,10 @@ describe("NodeOutput.vue", () => {
         expect(buttonWrapper.exists()).toBe(true);
         await buttonWrapper.findComponent(Button).trigger("click");
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "workflow/executeNodeAndOpenLegacyPortView",
+          "workflow/openLegacyPortView",
           {
             nodeId: "1",
-            portIdx: 0,
+            portIndex: 0,
           },
         );
       });

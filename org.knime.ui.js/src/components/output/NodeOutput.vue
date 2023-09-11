@@ -150,10 +150,10 @@ export default defineComponent({
       this.selectedTab = outPorts.length > 1 ? "1" : "0";
     },
 
-    executeNodeAndOpenLegacyPortView() {
-      this.$store.dispatch("workflow/executeNodeAndOpenLegacyPortView", {
+    openLegacyPortView() {
+      this.$store.dispatch("workflow/openLegacyPortView", {
         nodeId: this.singleSelectedNode.id,
-        portIdx: this.selectedPortIndex,
+        portIndex: this.selectedPortIndex,
       });
     },
   },
@@ -186,7 +186,7 @@ export default defineComponent({
             class="action-button"
             primary
             compact
-            @click="executeNodeAndOpenLegacyPortView"
+            @click="openLegacyPortView"
           >
             <PlayIcon v-if="canExecute" />
             {{ canExecute ? "Execute and open" : "Open" }} legacy port view

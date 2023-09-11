@@ -17,7 +17,7 @@ declare function executeNodeAndOpenView(
   nodeId: string,
 ): void;
 
-declare function executeNodeAndOpenLegacyPortView(
+declare function openLegacyPortView(
   projectId: string,
   nodeId: string,
   portIdx: number,

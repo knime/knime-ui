@@ -6,7 +6,7 @@ import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import { API } from "@api";
-import type { PortViews, XY } from "@/api/gateway-api/generated-api";
+import type { XY } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import type { ShortcutName } from "@/shortcuts";
 import { toPortObject } from "@/util/portDataMapper";
@@ -197,68 +197,74 @@ export default defineComponent({
       }
 
       const nodeId = node.id;
-      const allOutPortViewData = node.outPorts
-        .map((port) => toPortObject(this.availablePortTypes)(port).views)
-        // remove ports that don't have a supported viewer
-        .filter(Boolean);
+      const allOutPorts = node.outPorts.map((port) =>
+        toPortObject(this.availablePortTypes)(port),
+      );
 
-      return allOutPortViewData.flatMap(
-        (portViewData: PortViews, portIndex: number) => {
-          const isDefaultFlowVariablePort = portIndex === 0;
-          if (
-            getNodeState(node, portIndex) !== "EXECUTED" &&
-            !isDefaultFlowVariablePort
-          ) {
-            return [];
-          }
-
-          const portViewItems = getPortViewByViewDescriptors(
-            portViewData,
-            node,
-            portIndex,
-          );
-
-          let mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
-            text: buildPortViewText(
-              node.outPorts[portIndex].name,
-              portIndex,
-              item.text,
-              portViewItems.length > 1,
-            ),
-            disabled: item.disabled,
-            metadata: {
-              handler: () => {
-                API.desktop.openPortView({
-                  projectId: this.projectId,
-                  nodeId,
-                  portIndex,
-                  viewIndex: Number(item.id),
-                });
+      return allOutPorts.flatMap((port, portIndex) => {
+        if (!port.views) {
+          return [
+            {
+              text: port.name,
+              icon: markRaw(portIcon(port, portIconSize)),
+              metadata: {
+                handler: () => {
+                  this.$store.dispatch("workflow/openLegacyPortView", {
+                    nodeId,
+                    portIndex,
+                  });
+                },
               },
             },
-          }));
+          ];
+        }
 
-          if (mappedPortViewItems.length > 1) {
-            const headline: MenuItem = {
-              text: buildPortNameAndIndex(
-                node.outPorts[portIndex].name,
+        // TODO: add follow-up ticket to show port views at configure time
+        if (getNodeState(node, portIndex) !== "EXECUTED") {
+          return [];
+        }
+
+        const portViewItems = getPortViewByViewDescriptors(
+          port.views,
+          node,
+          portIndex,
+        );
+
+        let mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
+          text: buildPortViewText(
+            node.outPorts[portIndex].name,
+            portIndex,
+            item.text,
+            portViewItems.length > 1,
+          ),
+          disabled: item.disabled,
+          metadata: {
+            handler: () => {
+              API.desktop.openPortView({
+                projectId: this.projectId,
+                nodeId,
                 portIndex,
-              ),
-              icon: markRaw(portIcon(node.outPorts[portIndex], portIconSize)),
-              sectionHeadline: true,
-              separator: true,
-            };
+                viewIndex: Number(item.id),
+              });
+            },
+          },
+        }));
 
-            mappedPortViewItems = [headline, ...mappedPortViewItems];
-          } else if (mappedPortViewItems.length === 1) {
-            mappedPortViewItems[0].icon = markRaw(
-              portIcon(node.outPorts[portIndex], portIconSize),
-            );
-          }
+        if (mappedPortViewItems.length > 1) {
+          const headline: MenuItem = {
+            text: buildPortNameAndIndex(port.name, portIndex),
+            icon: markRaw(portIcon(port, portIconSize)),
+            sectionHeadline: true,
+            separator: true,
+          };
 
-          return mappedPortViewItems;
-        },
-      );
+          mappedPortViewItems = [headline, ...mappedPortViewItems];
+        } else if (mappedPortViewItems.length === 1) {
+          mappedPortViewItems[0].icon = markRaw(portIcon(port, portIconSize));
+        }
+
+        return mappedPortViewItems;
+      });
     },
     setMenuItems() {
       const areNodesSelected = this.selectedNodes.length > 0;

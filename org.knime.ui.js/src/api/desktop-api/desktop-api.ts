@@ -133,7 +133,7 @@ export const openLegacyFlowVariableDialog = ({
   );
 };
 
-export const executeNodeAndOpenLegacyPortView = ({
+export const openLegacyPortView = ({
   projectId,
   nodeId,
   portIdx,
@@ -143,7 +143,7 @@ export const executeNodeAndOpenLegacyPortView = ({
   portIdx: number;
 }) => {
   callBrowserFunction(
-    window.executeNodeAndOpenLegacyPortView,
+    window.openLegacyPortView,
     [projectId, nodeId, portIdx],
     `Could not execute and open view of node ${nodeId}`,
     false,
