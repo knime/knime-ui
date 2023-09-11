@@ -26,6 +26,7 @@ export default {
 
   &.padded {
     margin-top: 10px;
+    font-size: 13px;
   }
 }
 </style>

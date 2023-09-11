@@ -148,6 +148,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
     column-count: 1;
     margin-bottom: -6px;
     line-height: 18px;
+    font-size: 13px;
 
     & :deep(svg) {
       top: 2px;
@@ -157,6 +158,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
   & .placeholder {
     padding-top: 10px;
     font-style: italic;
+    font-size: 13px;
     color: var(--knime-dove-gray);
   }
 

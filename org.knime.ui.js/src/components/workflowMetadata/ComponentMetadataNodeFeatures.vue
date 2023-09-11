@@ -105,46 +105,91 @@ const filterPortData = (fullPorts) =>
   }
 
   & :deep(h6) {
-    font-size: 16px;
+    font-size: 13px;
     margin-bottom: 0;
   }
 
   & :deep(.description) {
-    font-size: 16px;
+    font-size: 13px;
   }
 
   /* Style refinement for Options */
-  & :deep(.options .panel) {
-    padding-left: 0;
-    margin-left: 52px;
+  & :deep(.options) {
+    padding: 20px;
 
-    & li > * {
-      margin-left: 8px;
-    }
+    .panel {
+      padding-left: 0;
+      margin-left: 14px;
+      font-size: 13px;
 
-    & .option-field-name {
-      margin-bottom: 5px;
+      & li > * {
+        margin-left: 8px;
+        font-size: 13px;
+      }
+
+      & .option-field-name {
+        margin-bottom: 5px;
+        margin-left: 0;
+      }
+
+      & .option-description {
+        margin-left: 0;
+      }
     }
   }
 
   /* Style refinement for Views */
   & :deep(.views-list) {
+    & li {
+      padding: 20px;
+    }
+
     & .content {
       margin-top: 5px;
-      margin-left: 30px;
+      margin-left: 25px;
     }
 
     & svg {
       margin-right: 8px;
     }
+
+    & .name {
+      font-size: 13px;
+    }
   }
 
   /* Style refinement for Ports */
   & :deep(.ports-list) {
+    & .wrapper {
+      padding: 20px;
+    }
+
+    & h6 {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
     & .content {
       & ol {
-        margin-left: 28px;
+        margin-left: 20px;
         margin-top: 22px;
+
+        & svg {
+          width: 9px;
+          height: 9px;
+          top: 5px;
+          left: -17px;
+        }
+
+        & .port-type {
+          font-size: 13px;
+        }
+
+        & .port-name,
+        & .port-description {
+          margin: 5px 0;
+          font-size: 13px;
+        }
       }
 
       & .dyn-ports-description {
