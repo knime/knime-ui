@@ -8,6 +8,30 @@ declare function openInstallExtensionsDialog(): void;
 declare function openWebUIPreferencePage(): void;
 declare function openNodeDialog(projectId: string, nodeId: string): void;
 
+declare function openLinkComponentDialog(
+  projectId: string,
+  workflowId: string,
+  nodeId: string,
+): boolean;
+
+declare function updateComponent(
+  projectId: string,
+  workflowId: string,
+  nodeId: string,
+): void;
+
+declare function openChangeComponentHubItemVersionDialog(
+  projectId: string,
+  workflowId: string,
+  nodeId: string,
+): void;
+
+declare function openChangeComponentLinkTypeDialog(
+  projectId: string,
+  workflowId: string,
+  nodeId: string,
+): void;
+
 declare function openLegacyFlowVariableDialog(
   projectId: string,
   nodeId: string,

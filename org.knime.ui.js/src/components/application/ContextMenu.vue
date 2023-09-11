@@ -388,7 +388,7 @@ export default defineComponent({
         ),
       ];
 
-      const metanodeAndComponentGroup: Array<MenuItem> = [
+      const metanodeAndComponentGroup: Array<MenuItem>= [
         ...this.mapToShortcut([
           { name: "createMetanode", isVisible: this.selectedNodes.length },
           { name: "createComponent", isVisible: this.selectedNodes.length },
@@ -397,21 +397,28 @@ export default defineComponent({
           {
             text: "Metanode",
             children: this.mapToShortcut([
-              { name: "expandMetanode", isVisible: true },
               { name: "openComponentOrMetanode", isVisible: true },
               { name: "editName", isVisible: true },
+              { name: "expandMetanode", isVisible: true },
             ]),
           },
           isMetanode,
         ),
-        ...filterItemVisibility(
+        ...filterItemVisibility( // TODO: Add the lines by adding nested groups
           {
             text: "Component",
             children: this.mapToShortcut([
-              { name: "expandComponent", isVisible: true },
+              // First group
               { name: "openComponentOrMetanode", isVisible: true },
               { name: "editName", isVisible: true },
-            ]),
+              { name: "expandComponent", isVisible: true },
+              // Second group
+              { name: "linkComponent", isVisible: !this.singleSelectedNode?.link },
+              { name: "updateComponent", isVisible: this.singleSelectedNode?.link },
+              { name: "changeComponentLinkType", isVisible: this.singleSelectedNode?.link },
+              { name: "changeHubItemVersion", isVisible: this.singleSelectedNode?.link },        
+               { name: "unlinkComponent", isVisible: this.singleSelectedNode?.link },
+            ])
           },
           isComponent,
         ),

@@ -270,6 +270,60 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       links,
     });
   },
+
+  async linkComponent(
+    { state },
+    { nodeId }
+  ) {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    const success = API.desktop.openLinkComponentDialog({
+      projectId, workflowId, nodeId
+    });
+    if (success) { // Reload the page if the component linking was successful
+      await this.dispatch("spaces/fetchWorkflowGroupContent", { projectId }, { root: true});
+    }
+  },
+
+  updateComponent(
+    { state },
+    { nodeId }
+  ) {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    API.desktop.updateComponent({
+      projectId, workflowId, nodeId
+    });
+  },
+
+  async unlinkComponent(
+    { state },
+    { nodeId }
+  ) {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    await API.workflowCommand.SetComponentLinkInformation({
+      projectId, workflowId,
+      nodeId
+    });
+  },
+
+  changeHubItemVersion(
+    { state },
+    { nodeId }
+  ) {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    API.desktop.openChangeComponentHubItemVersionDialog({
+      projectId, workflowId, nodeId
+    })
+  },
+
+  changeComponentLinkType(
+    { state },
+    { nodeId }
+  ) {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    API.desktop.openChangeComponentLinkTypeDialog({
+      projectId, workflowId, nodeId
+    })
+  },
 };
 
 export const getters: GetterTree<WorkflowState, RootStoreState> = {

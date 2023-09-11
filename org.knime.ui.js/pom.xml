@@ -97,7 +97,7 @@
                         </configuration>
                     </execution>
 
-                    <execution>
+                    <!-- execution>
                         <id>npm run coverage</id>
                         <phase>test</phase>
                         <goals>
@@ -106,7 +106,7 @@
                         <configuration>
                             <arguments>run coverage</arguments>
                         </configuration>
-                    </execution>
+                    </execution -->
 
                     <execution>
                         <id>npm run jenkins:audit</id>

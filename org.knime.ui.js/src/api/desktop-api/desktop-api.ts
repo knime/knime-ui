@@ -127,6 +127,74 @@ export const openNodeDialog = ({
   );
 };
 
+export const openLinkComponentDialog = ({
+  projectId,
+  workflowId,
+  nodeId,
+}: {
+  projectId: string;
+  workflowId: string;
+  nodeId: string;
+}) => {
+  return callBrowserFunction(
+    window.openLinkComponentDialog,
+    [projectId, workflowId, nodeId],
+    `Could not open linking dialog of component ${nodeId}`,
+    true,
+  );
+};
+
+export const updateComponent = ({
+  projectId,
+  workflowId,
+  nodeId,
+}: {
+  projectId: string;
+  workflowId: string;
+  nodeId: string;
+}) => {
+  callBrowserFunction(
+    window.updateComponent,
+    [projectId, workflowId, nodeId],
+    `Could not update component ${nodeId}`,
+    false,
+  );
+};
+
+export const openChangeComponentHubItemVersionDialog = ({
+  projectId,
+  workflowId,
+  nodeId,
+}: {
+  projectId: string;
+  workflowId: string;
+  nodeId: string;
+}) => {
+  callBrowserFunction(
+    window.openChangeComponentHubItemVersionDialog,
+    [projectId, workflowId, nodeId],
+    `Could not change Hub item version of component ${nodeId}`,
+    false,
+  );
+};
+
+export const openChangeComponentLinkTypeDialog = ({
+  projectId,
+  workflowId,
+  nodeId,
+}: {
+  projectId: string;
+  workflowId: string;
+  nodeId: string;
+}) => {
+  callBrowserFunction(
+    window.openChangeComponentLinkTypeDialog,
+    [projectId, workflowId, nodeId],
+    `Could not change link type of component ${nodeId}`,
+    false,
+  );
+};
+
 export const openLegacyFlowVariableDialog = ({
   projectId,
   nodeId,

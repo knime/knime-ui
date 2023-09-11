@@ -40,6 +40,11 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "openParentWorkflow"
   | "expandMetanode"
   | "expandComponent"
+  | "linkComponent"
+  | "updateComponent"
+  | "unlinkComponent"
+  | "changeHubItemVersion"
+  | "changeComponentLinkType"
   | "openLayoutEditor"
   | "copy"
   | "cut"
@@ -144,7 +149,8 @@ const workflowShortcuts: WorkflowShortcuts = {
         .canOpenLegacyFlowVariableDialog,
   },
   editName: {
-    text: "Rename",
+    text: ({ $store }) =>
+    `Rename ${$store.getters["selection/singleSelectedNode"]?.kind}`,
     hotkey: ["Shift", "F2"],
     execute: ({ $store }) =>
       $store.dispatch(
@@ -310,6 +316,59 @@ const workflowShortcuts: WorkflowShortcuts = {
     hotkey: ["Ctrl", "Shift", "J"],
     execute: ({ $store }) => $store.dispatch("workflow/expandContainerNode"),
     condition: canExpand("component"),
+  },
+  linkComponent: {
+    text: "Share...",
+    title: "Share component",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/linkComponent", { nodeId: selectedNodeId });
+    }
+  },
+  updateComponent: {
+    text: "Update component",
+    title: "Update component",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/updateComponent", { nodeId: selectedNodeId });
+    }
+  },
+  unlinkComponent: {
+    text: "Disconnect link",
+    title: "Unlink component",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/unlinkComponent", { nodeId: selectedNodeId });
+    },
+  },
+  changeHubItemVersion: {
+    text: "Change KNIME Hub Item Version",
+    title: "Change KNIME Hub Item Version",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/changeHubItemVersion", { nodeId: selectedNodeId });
+    },
+  },
+  changeComponentLinkType: {
+    text: "Change link type",
+    title: "Change Component Link Type",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/changeComponentLinkType", { nodeId: selectedNodeId });
+    },
+    condition: ({ $store }) => {
+      return $store.getters["selection/singleSelectedNode"].link?.isLinkTypeChangable;
+    }
   },
   openLayoutEditor: {
     text: "Open layout editor",
