@@ -100,12 +100,21 @@ final class PortAPI {
      * @param projectId
      * @param nodeId
      * @param portIdx
+     * @param execute whether to execute and wait until the node is executed before opening the legacy port view
      */
     @API
-    static void openLegacyPortView(final String projectId, final String nodeId, final Double portIdx) {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        checkIsNotNull(nc, projectId, nodeId);
-        NodeOutPort port = nc.getOutPort(portIdx.intValue());
-        port.openPortView(port.getPortName(), getAppBoundsAsAWTRec());
+    static void openLegacyPortView(final String projectId, final String nodeId, final Double portIdx,
+        final Boolean execute) {
+        Runnable action = () -> {
+            final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+            checkIsNotNull(nc, projectId, nodeId);
+            NodeOutPort port = nc.getOutPort(portIdx.intValue());
+            port.openPortView(port.getPortName(), getAppBoundsAsAWTRec());
+        };
+        if (Boolean.TRUE.equals(execute)) {
+            NodeAPI.executeNodeThenRun(projectId, nodeId, action);
+        } else {
+            action.run();
+        }
     }
 }
