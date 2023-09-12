@@ -43,7 +43,7 @@ public class KnimeBrowserView {
 
     static final String EMPTY_PAGE = "about:blank";
 
-    private static final String DEV_URL_PROP = "org.knime.ui.dev.url";
+    static final String DEV_URL_PROP = "org.knime.ui.dev.url";
 
     private static final String HTTP = "http";
 
