@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import type {
+  ComponentPortDescription,
   NodeDialogOptionGroup,
   NodePortDescription,
   NodeViewDescription,
@@ -21,8 +22,8 @@ export interface NodeFeatures {
 
 interface Props {
   // actual editable data
-  inPorts: Array<{ name: string; description: string }>;
-  outPorts: Array<{ name: string; description: string }>;
+  inPorts: Array<ComponentPortDescription>;
+  outPorts: Array<ComponentPortDescription>;
 
   // all metadata
   nodeFeatures: NodeFeatures;
@@ -48,14 +49,8 @@ const fullPortValue = computed(() => {
 });
 
 const emit = defineEmits<{
-  (
-    e: "update:inPorts",
-    value: Array<{ name: string; description: string }>,
-  ): void;
-  (
-    e: "update:outPorts",
-    value: Array<{ name: string; description: string }>,
-  ): void;
+  (e: "update:inPorts", value: Array<ComponentPortDescription>): void;
+  (e: "update:outPorts", value: Array<ComponentPortDescription>): void;
 }>();
 
 const filterPortData = (fullPorts) =>
@@ -117,7 +112,7 @@ const filterPortData = (fullPorts) =>
   & :deep(.options) {
     padding: 20px;
 
-    .panel {
+    & .panel {
       padding-left: 0;
       margin-left: 14px;
       font-size: 13px;

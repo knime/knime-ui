@@ -57,7 +57,7 @@ defineProps<Props>();
   margin-left: auto;
 
   & .cancel-edit-button {
-    --theme-button-function-background-color: white;
+    --theme-button-function-background-color: var(--knime-white);
   }
 }
 </style>
