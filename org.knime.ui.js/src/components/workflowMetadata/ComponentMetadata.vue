@@ -144,6 +144,8 @@ const getMetadataFieldValue = <K extends keyof MetadataDraft["data"]>(
   return metadataDrafts[currentDraftID.value].data[fieldName];
 };
 
+const icon = computed(() => getMetadataFieldValue("icon"));
+
 // node icon preview
 const nodePreview = computed(() => {
   const { inPorts = [], outPorts = [] } = componentMetadata.value;
@@ -268,7 +270,7 @@ watch(
   <template v-if="isEditing">
     <h2 class="section form">Type and icon</h2>
     <ComponentIconEditor
-      :model-value="getMetadataFieldValue('icon')"
+      :model-value="icon"
       @update:model-value="updateMetadataField('icon', $event)"
     />
     <ComponentTypeEditor

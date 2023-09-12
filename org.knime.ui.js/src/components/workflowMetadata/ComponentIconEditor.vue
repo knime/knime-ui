@@ -5,7 +5,7 @@ import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 
 interface Props {
-  modelValue: string;
+  modelValue: string | null;
 }
 
 const emit = defineEmits<{
@@ -24,7 +24,7 @@ defineProps<Props>();
       />
       <FunctionButton
         class="delete-link-btn"
-        @click="emit('update:modelValue', '')"
+        @click="emit('update:modelValue', null)"
       >
         <TrashIcon />
       </FunctionButton>

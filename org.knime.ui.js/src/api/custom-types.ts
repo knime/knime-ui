@@ -9,6 +9,7 @@ import type {
   NodeDescription,
   SpaceProvider as _SpaceProvider,
   Workflow as _Workflow,
+  EditableProjectMetadata,
 } from "./gateway-api/generated-api";
 
 import { SpaceProvider as _SpaceProviderNS } from "./gateway-api/generated-api";
@@ -67,7 +68,11 @@ export namespace SpaceProviderNS {
   }
 }
 
-export type ComponentMetadata = ComponentNodeAndDescription & NodeDescription;
+// TODO: remove if API codegen supports multiple inheritance:
+// TODO: see https://bitbucket.org/KNIME/knime-com-shared/src/4af0ebfcb4232593119415299504f22ded303b9c/com.knime.gateway.codegen/src-gen/api/web-ui/gateway.yaml#lines-1493:1496
+export type ComponentMetadata = ComponentNodeAndDescription &
+  NodeDescription &
+  EditableProjectMetadata;
 // TODO: remove once API codegen properly types the workflow nodes
 export type Workflow = Omit<_Workflow, "nodes"> & {
   projectId: string;

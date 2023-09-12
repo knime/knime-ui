@@ -35,8 +35,10 @@ const componentTypeMenuItems = computed(() => [
 ]);
 
 const activeComponentType = computed(() => {
-  return componentTypeMenuItems.value.find(
-    (type) => type.metadata.id === props.modelValue,
+  return (
+    componentTypeMenuItems.value.find(
+      (type) => type.metadata.id === props.modelValue,
+    ) || {}
   );
 });
 
