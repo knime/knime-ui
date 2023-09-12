@@ -138,12 +138,13 @@ const fileExplorerContextMenuItems = computed(() => {
     }
 
     if (!selectionContainsWorkflow) {
-      return [openPermissionsDialog, openInBrowser];
+      return [openInBrowser, openPermissionsDialog];
     }
 
     return [
       downloadToLocalSpace,
       displayDeployments,
+      openInBrowser,
       openAPIDefinition,
       openPermissionsDialog,
     ];
