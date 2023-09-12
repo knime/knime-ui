@@ -5,7 +5,7 @@ import { mapState, mapGetters } from "vuex";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import type { AvailablePortTypes } from "@/api/custom-types";
 import Button from "webapps-common/ui/components/Button.vue";
-import PlayIcon from "@/assets/execute.svg";
+import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 
 import PortTabs from "./PortTabs.vue";
 import PortViewTabOutput from "./PortViewTabOutput.vue";
@@ -17,7 +17,7 @@ import {
   validateSelection,
   type ValidationResult,
 } from "./output-validator";
-import { canExecute } from "@/util/nodeUtil";
+import { canExecute, getNodeState } from "@/util/nodeUtil";
 
 export const runValidationChecks = ({ selectedNodes, isDragging }) => {
   const validationMiddleware = buildMiddleware(
@@ -104,6 +104,14 @@ export default defineComponent({
     canExecute() {
       return canExecute(this.singleSelectedNode, this.selectedPortIndex);
     },
+
+    isExecuted() {
+      const state = getNodeState(
+        this.singleSelectedNode,
+        this.selectedPortIndex,
+      );
+      return state === "EXECUTED";
+    },
   },
   watch: {
     validationErrors: {
@@ -150,10 +158,11 @@ export default defineComponent({
       this.selectedTab = outPorts.length > 1 ? "1" : "0";
     },
 
-    openLegacyPortView() {
+    openLegacyPortView(executeNode = false) {
       this.$store.dispatch("workflow/openLegacyPortView", {
         nodeId: this.singleSelectedNode.id,
         portIndex: this.selectedPortIndex,
+        executeNode,
       });
     },
   },
@@ -183,13 +192,24 @@ export default defineComponent({
           data-testid="execute-open-legacy-view-action"
         >
           <Button
-            class="action-button"
+            v-if="!isExecuted"
+            class="action-button action-execute"
             primary
+            :disabled="!canExecute"
             compact
-            @click="openLegacyPortView"
+            @click="openLegacyPortView(true)"
           >
-            <PlayIcon v-if="canExecute" />
-            {{ canExecute ? "Execute and open" : "Open" }} legacy port view
+            <PlayIcon />
+            Execute and open legacy port view
+          </Button>
+          <Button
+            :with-border="!isExecuted"
+            :class="['action-button', { 'dim-border': !isExecuted }]"
+            :primary="isExecuted"
+            compact
+            @click="openLegacyPortView(false)"
+          >
+            Open legacy port view
           </Button>
         </div>
       </span>
@@ -322,12 +342,13 @@ export default defineComponent({
 
 .action-button {
   margin-top: 20px;
+}
 
-  & :deep(svg) {
-    border-radius: 12px;
-    background: var(--knime-white);
-    border: 1px solid var(--knime-masala);
-    stroke: var(--knime-masala) !important;
-  }
+.action-execute {
+  margin-right: 5px;
+}
+
+.dim-border {
+  --theme-button-small-border-color: var(--knime-silver-sand);
 }
 </style>

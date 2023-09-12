@@ -172,6 +172,15 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["y", 10],
     ],
   },
+  {
+    name: "openLegacyPortView",
+    params: [
+      ["projectId", "project1"],
+      ["nodeId", "root:1"],
+      ["portIdx", 0],
+      ["executeNode", false],
+    ],
+  },
 ];
 
 describe("desktop-api", () => {

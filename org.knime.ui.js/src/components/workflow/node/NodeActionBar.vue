@@ -141,7 +141,7 @@ export default defineComponent({
         openView: {
           title: () =>
             this.hoverTitle(
-              this.canExecute ? "Execute and open view" : "Open View",
+              this.canExecute ? "Execute and open view" : "Open view",
               this.$shortcuts.get("executeAndOpenView").hotkeyText,
             ),
           disabled: !this.canOpenView && !this.canExecute,

@@ -8,6 +8,7 @@ import * as selectionStore from "@/store/selection";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import Button from "webapps-common/ui/components/Button.vue";
+import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
@@ -25,7 +26,6 @@ import {
 } from "@/test/factories";
 import type { KnimeNode } from "@/api/custom-types";
 import { nextTick } from "vue";
-import PlayIcon from "@/assets/execute.svg";
 
 vi.mock("@knime/ui-extension-service");
 
@@ -305,6 +305,7 @@ describe("NodeOutput.vue", () => {
           {
             nodeId: "1",
             portIndex: 0,
+            executeNode: true,
           },
         );
       });

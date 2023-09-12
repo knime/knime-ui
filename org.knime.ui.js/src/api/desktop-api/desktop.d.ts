@@ -21,6 +21,7 @@ declare function openLegacyPortView(
   projectId: string,
   nodeId: string,
   portIdx: number,
+  executeNode: boolean,
 ): void;
 
 declare function openPortView(

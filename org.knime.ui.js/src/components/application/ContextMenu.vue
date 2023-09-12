@@ -1,19 +1,25 @@
 <script lang="ts">
-import { defineComponent, markRaw, type PropType } from "vue";
+import { defineComponent, h, markRaw, type PropType } from "vue";
 import { mapGetters, mapState } from "vuex";
 
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import FlowVariableIcon from "webapps-common/ui/assets/img/icons/expose-flow-variables.svg";
 
 import { API } from "@api";
 import type { XY } from "@/api/gateway-api/generated-api";
-import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
+import type {
+  AvailablePortTypes,
+  ExtendedPortType,
+  KnimeNode,
+} from "@/api/custom-types";
 import type { ShortcutName } from "@/shortcuts";
 import { toPortObject } from "@/util/portDataMapper";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-import { getNodeState } from "@/util/nodeUtil";
+import { getNodeState, isNodeMetaNode } from "@/util/nodeUtil";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
+import * as $shapes from "@/style/shapes.mjs";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
 
@@ -21,8 +27,6 @@ type ComponentData = {
   visibleItems: Array<MenuItem>;
   activeDescendant: string | null;
 };
-
-const portIconSize = 9;
 
 /**
  * Helper fn that enables easily creating separators between the different context menu action groups
@@ -72,15 +76,28 @@ const buildPortNameAndIndex = (portName: string, portIndex: number) => {
   return portIndex > 0 ? `${portIndex}: ${portName}` : portName;
 };
 
-const buildPortViewText = (
-  portName: string,
+const defaultFlowVariableIcon = () =>
+  h(FlowVariableIcon, {
+    style: {
+      width: "14px",
+      marginTop: "-1px",
+      marginRight: " 4px",
+      marginLeft: "-2px",
+    },
+  });
+
+const buildPortViewIcon = (
+  node: KnimeNode,
+  port: ExtendedPortType,
   portIndex: number,
-  portViewText: string,
-  hasMultipleViewItems: boolean,
 ) => {
-  return hasMultipleViewItems
-    ? portViewText
-    : `${buildPortNameAndIndex(portName, portIndex)} – ${portViewText}`;
+  if (isNodeMetaNode(node)) {
+    return markRaw(portIcon(port, $shapes.portSize));
+  }
+
+  return portIndex === 0
+    ? markRaw(defaultFlowVariableIcon())
+    : markRaw(portIcon(port, $shapes.portSize));
 };
 
 /**
@@ -202,11 +219,21 @@ export default defineComponent({
       );
 
       return allOutPorts.flatMap((port, portIndex) => {
+        // TODO: NXT-2024 show port views at configure time
+        if (getNodeState(node, portIndex) !== "EXECUTED") {
+          return [];
+        }
+
         if (!port.views) {
           return [
             {
-              text: port.name,
-              icon: markRaw(portIcon(port, portIconSize)),
+              text: buildPortNameAndIndex(port.name, portIndex),
+              icon: markRaw(portIcon(port, this.$shapes.portSize)),
+              sectionHeadline: true,
+              separator: true,
+            },
+            {
+              text: "Open legacy port view",
               metadata: {
                 handler: () => {
                   this.$store.dispatch("workflow/openLegacyPortView", {
@@ -219,11 +246,6 @@ export default defineComponent({
           ];
         }
 
-        // TODO: add follow-up ticket to show port views at configure time
-        if (getNodeState(node, portIndex) !== "EXECUTED") {
-          return [];
-        }
-
         const portViewItems = getPortViewByViewDescriptors(
           port.views,
           node,
@@ -231,12 +253,7 @@ export default defineComponent({
         );
 
         let mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
-          text: buildPortViewText(
-            node.outPorts[portIndex].name,
-            portIndex,
-            item.text,
-            portViewItems.length > 1,
-          ),
+          text: item.text,
           disabled: item.disabled,
           metadata: {
             handler: () => {
@@ -250,20 +267,14 @@ export default defineComponent({
           },
         }));
 
-        if (mappedPortViewItems.length > 1) {
-          const headline: MenuItem = {
-            text: buildPortNameAndIndex(port.name, portIndex),
-            icon: markRaw(portIcon(port, portIconSize)),
-            sectionHeadline: true,
-            separator: true,
-          };
+        const headline: MenuItem = {
+          text: buildPortNameAndIndex(port.name, portIndex),
+          icon: buildPortViewIcon(node, port, portIndex),
+          sectionHeadline: true,
+          separator: true,
+        };
 
-          mappedPortViewItems = [headline, ...mappedPortViewItems];
-        } else if (mappedPortViewItems.length === 1) {
-          mappedPortViewItems[0].icon = markRaw(portIcon(port, portIconSize));
-        }
-
-        return mappedPortViewItems;
+        return [headline, ...mappedPortViewItems];
       });
     },
     setMenuItems() {
@@ -303,7 +314,7 @@ export default defineComponent({
         ]),
         ...filterItemVisibility(
           {
-            text: "Open port view",
+            text: "Open output port",
             children: portViewItems,
           },
           portViewItems.length > 0,
@@ -450,6 +461,16 @@ export default defineComponent({
 
   & :deep(.list-item.section-headline) {
     color: var(--knime-masala);
+  }
+
+  /* select every item is a separator and contains a headline. */
+  & :deep(.separator:has(.section-headline)) {
+    /* then style all of its siblings, except other headlines */
+    & ~ li:not(:has(.section-headline)) {
+      & button {
+        padding-left: 28px;
+      }
+    }
   }
 }
 </style>

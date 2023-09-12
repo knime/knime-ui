@@ -137,14 +137,16 @@ export const openLegacyPortView = ({
   projectId,
   nodeId,
   portIdx,
+  executeNode,
 }: {
   projectId: string;
   nodeId: string;
   portIdx: number;
+  executeNode: boolean;
 }) => {
   callBrowserFunction(
     window.openLegacyPortView,
-    [projectId, nodeId, portIdx],
+    [projectId, nodeId, portIdx, executeNode],
     `Could not execute and open view of node ${nodeId}`,
     false,
   );
