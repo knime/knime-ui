@@ -65,8 +65,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.gateway.api.util.ExtPointUtil;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.InvalidRequestException;
-import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
@@ -77,7 +75,6 @@ import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
@@ -87,7 +84,6 @@ import org.knime.js.cef.commservice.CEFCommService;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseWorkflows;
 import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
-import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
@@ -126,16 +122,6 @@ final class Init {
         DefaultServicesUtil.setDefaultServiceDependencies(workflowProjectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects(),
             createNodeFactoryProvider());
-
-        if (updateStateProvider != null) {
-            // Check for updates and notify UI
-            try {
-                DefaultEventService.getInstance().addEventListener(EntityFactory.UpdateState.buildEventTypeEnt());
-            } catch (InvalidRequestException e) {
-                KnimeBrowserView.LOGGER.error("Could not add update state changed event listener to event service", e);
-            }
-            updateStateProvider.checkForUpdates();
-        }
 
         DesktopAPI.injectDependencies(workflowProjectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware);

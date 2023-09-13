@@ -63,9 +63,12 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.ui.workflowcoach.data.NodeTripleProviderFactory;
 import org.knime.core.webui.WebUIUtil;
+import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.UpdateStateProvider;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -123,6 +126,14 @@ final class EclipseUIAPI {
     @API
     static void openUpdateDialog() {
         new InvokeUpdateAction().run();
+    }
+
+    /**
+     * Checks for updates. If there is one, an {@link UpdateAvailableEventEnt} will be sent.
+     */
+    @API
+    static void checkForUpdates() {
+        DesktopAPI.getDeps(UpdateStateProvider.class).checkForUpdates();
     }
 
     /**
