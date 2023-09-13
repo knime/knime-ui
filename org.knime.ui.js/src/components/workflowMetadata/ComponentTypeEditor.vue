@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { computed, h } from "vue";
+
 import Label from "webapps-common/ui/components/forms/Label.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import { computed, h } from "vue";
 import ComponentTypeSvgIcon from "@/components/workflowMetadata/ComponentTypeSvgIcon.vue";
 import * as nodeBackgroundColors from "webapps-common/ui/colors/nodeColors.mjs";
 import { HibiscusDark as colorHibiscusDark } from "webapps-common/ui/colors/knimeColors.mjs";

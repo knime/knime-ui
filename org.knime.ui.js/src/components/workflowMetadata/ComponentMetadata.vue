@@ -197,7 +197,7 @@ const onSave = (draftId: string) => {
     },
     inPorts: draft.data.inPorts,
     outPorts: draft.data.outPorts,
-    icon: draft.data.icon,
+    icon: draft.data.icon || null,
     type: draft.data.type,
   });
 };
