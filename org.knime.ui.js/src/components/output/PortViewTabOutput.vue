@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
 
-import PlayIcon from "@/assets/execute.svg";
+import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import { API } from "@api";
@@ -290,15 +290,5 @@ export default defineComponent({
 
 .action-button {
   margin-top: 20px;
-
-  & svg {
-    border-radius: 12px;
-    background: var(--knime-white);
-    border: 1px solid var(--knime-masala);
-  }
-
-  &:hover > svg {
-    stroke: var(--knime-masala) !important;
-  }
 }
 </style>

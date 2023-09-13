@@ -128,7 +128,7 @@ export const buildOpenInBrowserMenuItem = (
   const isSelectionMultiple = selectedItems.length > 1;
 
   const providerType =
-    provider.type === BaseSpaceProvider.TypeEnum.HUB ? "Hub" : "Server";
+    provider.type === BaseSpaceProvider.TypeEnum.HUB ? "Hub" : "WebPortal";
 
   return {
     id: "openInBrowser",

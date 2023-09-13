@@ -1,19 +1,13 @@
 import type {
-  PortType,
   DynamicPortGroupDescription,
   NativeNodeDescription,
 } from "@/api/gateway-api/generated-api";
-import type { AvailablePortTypes } from "@/api/custom-types";
+import type { AvailablePortTypes, ExtendedPortType } from "@/api/custom-types";
 
-type FullPortType = PortType & {
-  typeId: string;
-  type?: string;
-  description: string;
-};
 type PortGroupDescription = {
   groupName: string;
   groupDescription: string;
-  types: Array<FullPortType & { typeName: string }>;
+  types: Array<ExtendedPortType & { typeName: string }>;
 };
 
 /**
@@ -29,13 +23,13 @@ type PortGroupDescription = {
  */
 export const toPortObject =
   (availablePortTypes: AvailablePortTypes, includeType = true) =>
-  (input: string | { typeId: string }): FullPortType => {
+  (input: string | { typeId: string }): ExtendedPortType => {
     const isStringInput = typeof input === "string";
     const fullPortObject = isStringInput
       ? availablePortTypes[input]
       : availablePortTypes[input.typeId];
 
-    const result: FullPortType = {
+    const result: ExtendedPortType = {
       ...fullPortObject,
       description: "No description available",
       typeId: isStringInput ? input : input?.typeId,

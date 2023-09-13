@@ -76,6 +76,15 @@ export const openUpdateDialog = () => {
   );
 };
 
+export const checkForUpdates = () => {
+  callBrowserFunction(
+    window.checkForUpdates,
+    [],
+    "Could not check for updates",
+    false,
+  );
+};
+
 export const openUrlInExternalBrowser = ({ url }: { url: string }) => {
   callBrowserFunction(
     window.openUrlInExternalBrowser,
@@ -133,18 +142,20 @@ export const openLegacyFlowVariableDialog = ({
   );
 };
 
-export const executeNodeAndOpenLegacyPortView = ({
+export const openLegacyPortView = ({
   projectId,
   nodeId,
   portIdx,
+  executeNode,
 }: {
   projectId: string;
   nodeId: string;
   portIdx: number;
+  executeNode: boolean;
 }) => {
   callBrowserFunction(
-    window.executeNodeAndOpenLegacyPortView,
-    [projectId, nodeId, portIdx],
+    window.openLegacyPortView,
+    [projectId, nodeId, portIdx, executeNode],
     `Could not execute and open view of node ${nodeId}`,
     false,
   );

@@ -138,7 +138,7 @@ const fileExplorerContextMenuItems = computed(() => {
     }
 
     if (!selectionContainsWorkflow) {
-      return [openPermissionsDialog];
+      return [openInBrowser, openPermissionsDialog];
     }
 
     return [

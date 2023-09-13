@@ -2,6 +2,7 @@ declare function switchToJavaUI(): void;
 declare function switchWorkspace(): void;
 declare function openAboutDialog(): void;
 declare function openUpdateDialog(): void;
+declare function checkForUpdates(): void;
 declare function openUrlInExternalBrowser(url: string): void;
 declare function openInstallExtensionsDialog(): void;
 declare function openWebUIPreferencePage(): void;
@@ -17,10 +18,11 @@ declare function executeNodeAndOpenView(
   nodeId: string,
 ): void;
 
-declare function executeNodeAndOpenLegacyPortView(
+declare function openLegacyPortView(
   projectId: string,
   nodeId: string,
   portIdx: number,
+  executeNode: boolean,
 ): void;
 
 declare function openPortView(

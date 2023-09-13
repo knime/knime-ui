@@ -122,3 +122,9 @@ export interface Schedule {
   user: string;
   workflowPath: string;
 }
+
+export type ExtendedPortType = PortType & {
+  typeId: string;
+  type?: string;
+  description: string;
+};

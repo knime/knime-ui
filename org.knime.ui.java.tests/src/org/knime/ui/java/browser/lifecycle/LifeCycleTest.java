@@ -120,7 +120,7 @@ class LifeCycleTest {
 
         lc.init(true);
         assertStateTransition(lc, StateTransition.INIT, StateTransition.WEB_APP_LOADED);
-        assertThat(ServiceInstances.areServicesInitialized()).isTrue();
+        assertThat(ServiceInstances.areServicesInitialized()).isFalse();
         assertThat(DesktopAPI.areDependenciesInjected()).isTrue();
         assertThat(lc.getState().workflowsSaved()).isFalse();
 

@@ -59,7 +59,6 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
-import org.knime.core.node.workflow.NodeOutPort;
 import org.knime.core.node.workflow.NodeStateChangeListener;
 import org.knime.core.node.workflow.NodeStateEvent;
 import org.knime.core.node.workflow.SubNodeContainer;
@@ -108,25 +107,15 @@ final class NodeAPI {
         executeNodeThenRun(projectId, nodeId, () -> NodeAPI.openNodeView(projectId, nodeId));
     }
 
-    @API
-    static void executeNodeAndOpenLegacyPortView(final String projectId, final String nodeId, final Double portIdx) {
-        executeNodeThenRun(projectId, nodeId, () -> {
-            final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-            checkIsNotNull(nc, projectId, nodeId);
-            NodeOutPort port = nc.getOutPort(portIdx.intValue());
-            port.openPortView(port.getPortName(), getAppBoundsAsAWTRec());
-        });
-    }
-
     /**
      * If the node is already executed, run the given task. If the node is not already executed, execute the workflow up
      * to the node and attach a listener to run the given task once executed.
-     * 
+     *
      * @param projectId The project containing the workflow
      * @param nodeId The node to act on
      * @param task The task to run
      */
-    private static void executeNodeThenRun(final String projectId, final String nodeId, Runnable task) {
+    static void executeNodeThenRun(final String projectId, final String nodeId, final Runnable task) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
 
@@ -181,7 +170,7 @@ final class NodeAPI {
         }
     }
 
-    private static java.awt.Rectangle getAppBoundsAsAWTRec() {
+    static java.awt.Rectangle getAppBoundsAsAWTRec() {
         final var knimeWindowBounds = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getBounds();
         return new java.awt.Rectangle(knimeWindowBounds.x, knimeWindowBounds.y, knimeWindowBounds.width,
             knimeWindowBounds.height);
@@ -220,7 +209,7 @@ final class NodeAPI {
         }
     }
 
-    private static void checkIsNotNull(final NodeContainer nc, final String projectId, final String nodeId) {
+    static void checkIsNotNull(final NodeContainer nc, final String projectId, final String nodeId) {
         CheckUtils.checkArgument(nc != null, "Node with id '%s' not found in workflow with id '%s'", projectId, nodeId);
     }
 

@@ -1,5 +1,5 @@
 <script>
-import FlowVarTabIcon from "webapps-common/ui/assets/img/icons/both-flow-variables.svg";
+import FlowVarTabIcon from "webapps-common/ui/assets/img/icons/expose-flow-variables.svg";
 import TabBar from "webapps-common/ui/components/TabBar.vue";
 import Eye from "webapps-common/ui/assets/img/icons/eye.svg";
 
