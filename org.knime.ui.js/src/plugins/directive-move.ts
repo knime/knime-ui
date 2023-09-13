@@ -47,6 +47,7 @@ type DirectiveBinding = {
   onMoveStart?: (event: CustomEvent<MoveStartEventDetail>) => any;
   onMove?: (event: CustomEvent<MoveEventDetail>) => any;
   onMoveEnd?: (event: CustomEvent<MoveEndEventDetail>) => any;
+  dragReferenceElementSelector?: string;
 };
 
 interface MoveState {
@@ -90,9 +91,41 @@ interface MoveState {
   previousPosition?: XY;
   /** Store if a onMove event has been triggered */
   hasFirstOnMoveOccurred: boolean;
+
+  dragReferenceElementSelector?: string;
 }
 
 const stateMap: WeakMap<HTMLElement, MoveState> = new WeakMap();
+
+const canDrag = (
+  srcElement: HTMLElement,
+  event: PointerEvent,
+  state: MoveState,
+) => {
+  if (state.isProtected) {
+    return false;
+  }
+
+  const dragReferenceElement = srcElement.querySelector(
+    state.dragReferenceElementSelector,
+  );
+
+  if (!dragReferenceElement) {
+    consola.warn("Could not find drag reference element. Falling back to root");
+    return true;
+  }
+
+  const rect = dragReferenceElement.getBoundingClientRect();
+
+  const { clientX, clientY } = event;
+  const isClickInsideReference =
+    clientX > rect.left &&
+    clientX < rect.right &&
+    clientY > rect.top &&
+    clientY < rect.bottom;
+
+  return isClickInsideReference;
+};
 
 const createPointerdownHandler =
   (srcElement: HTMLElement) => (event: PointerEvent) => {
@@ -105,7 +138,7 @@ const createPointerdownHandler =
     event.stopPropagation();
     event.preventDefault();
 
-    if (state.isProtected) {
+    if (!canDrag(srcElement, event, state)) {
       return;
     }
 
@@ -231,6 +264,7 @@ const initializeState = (el: HTMLElement, value: DirectiveBinding) => {
     pointermoveHandler: createPointermoveHandler(el),
     pointerupHandler: createPointerupHandler(el),
     hasFirstOnMoveOccurred: false,
+    dragReferenceElementSelector: value.dragReferenceElementSelector,
   };
 
   el.addEventListener("pointerdown", state.pointerdownHandler);

@@ -37,6 +37,8 @@ export default {
     // Start position of the dragging
     startPos: null,
     lastHitTarget: null,
+    cursorPosition: null,
+    dragReferenceElementSelector: ".node-torso",
   }),
   computed: {
     ...mapGetters("workflow", ["isWritable", "isNodeConnected", "getNodeById"]),
@@ -48,7 +50,7 @@ export default {
       "hasAbortedDrag",
       "isDragging",
     ]),
-    ...mapState("canvas", ["isMoveLocked"]),
+    ...mapState("canvas", ["isMoveLocked", "zoomFactor"]),
 
     // Combined position of original position + the dragged amount
     combinedPosition() {
@@ -91,6 +93,18 @@ export default {
       if (this.isDragging) {
         await this.$store.dispatch("workflow/resetDragState");
       }
+    },
+
+    initCursorPosition(event) {
+      event.stopPropagation();
+      const rect = this.$refs.container
+        .querySelector(this.dragReferenceElementSelector)
+        .getBoundingClientRect();
+
+      this.cursorPosition = {
+        x: Math.floor(event.clientX - rect.left) / this.zoomFactor,
+        y: Math.floor(event.clientY - rect.top) / this.zoomFactor,
+      };
     },
 
     /**
@@ -139,7 +153,6 @@ export default {
       // Notify elements under the cursor
       this.notifyNodeDraggingListeners(clientX, clientY);
 
-      const { nodeSize } = this.$shapes;
       const snapSize = altKey ? 1 : this.$shapes.gridSize.x;
 
       // get absolute coordinates
@@ -152,11 +165,11 @@ export default {
       const deltas = {
         // adjust the deltas using `nodeSize` to make sure the reference is from the center of the node
         x: geometry.utils.snapToGrid(
-          canvasX - this.startPos.x - nodeSize / 2,
+          canvasX - this.startPos.x - this.cursorPosition.x,
           snapSize,
         ),
         y: geometry.utils.snapToGrid(
-          canvasY - this.startPos.y - nodeSize / 2,
+          canvasY - this.startPos.y - this.cursorPosition.y,
           snapSize,
         ),
       };
@@ -263,15 +276,18 @@ export default {
 
 <template>
   <g
+    ref="container"
     v-move="{
       onMove,
       onMoveStart,
       onMoveEnd,
       isProtected: !isWritable || isMoveLocked,
+      dragReferenceElementSelector,
     }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :data-node-id="id"
     :class="[{ dragging: isDragging && isNodeSelected(id) }]"
+    @pointerdown.left="initCursorPosition($event)"
   >
     <slot :position="translationAmount" />
   </g>
