@@ -64,7 +64,7 @@ type MetadataDraft = {
     inPorts: Array<ComponentPortDescription>;
     outPorts: Array<ComponentPortDescription>;
     icon: string; // base64 url-encoded
-    type: ComponentNodeAndDescription.TypeEnum;
+    type: ComponentNodeAndDescription.TypeEnum | string;
   };
 };
 
@@ -95,8 +95,8 @@ const getInitialDraftData = () => {
     tags: structuredClone(toRaw(componentMetadata.value.tags || [])),
     inPorts,
     outPorts,
-    icon: componentMetadata.value.icon,
-    type: componentMetadata.value.type,
+    icon: componentMetadata.value.icon || "",
+    type: componentMetadata.value.type || "Component",
   };
 };
 
@@ -118,7 +118,7 @@ type SaveEventPayload = {
   inPorts: Array<ComponentPortDescription>;
   outPorts: Array<ComponentPortDescription>;
   icon: string; // base64 url-encoded
-  type: ComponentNodeAndDescription.TypeEnum;
+  type: ComponentNodeAndDescription.TypeEnum | string;
 };
 
 const emit = defineEmits<{
@@ -153,7 +153,7 @@ const nodePreview = computed(() => {
 
   // use data that might be changed due to the edit process
   const type = getMetadataFieldValue("type");
-  const icon = getMetadataFieldValue("icon");
+  const icon = getMetadataFieldValue("icon") || null;
 
   return {
     inPorts: inPorts.map(toPortObject(props.availablePortTypes)),
@@ -308,28 +308,32 @@ watch(
 .header {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
-}
+  margin-bottom: 20px;
 
-.component-name {
-  display: flex;
-  align-items: center;
+  & .component-name {
+    display: flex;
+    align-items: center;
 
-  & .component-title {
-    text-overflow: ellipsis;
-    overflow-wrap: initial;
-    white-space: nowrap;
-    max-width: 160px;
-    overflow: hidden;
-  }
+    &:is(h2) {
+      margin: 0;
+    }
 
-  & .node-preview {
-    display: block;
-    height: 80px;
-    width: 80px;
-    margin-right: 9px;
-    background-color: white;
-    flex-shrink: 0;
+    & .component-title {
+      text-overflow: ellipsis;
+      overflow-wrap: initial;
+      white-space: nowrap;
+      max-width: 160px;
+      overflow: hidden;
+    }
+
+    & .node-preview {
+      display: block;
+      height: 80px;
+      width: 80px;
+      margin-right: 9px;
+      background-color: white;
+      flex-shrink: 0;
+    }
   }
 }
 </style>
