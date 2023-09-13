@@ -116,8 +116,7 @@ final class NodeAPI {
      * @param nodeId The node to act on
      * @param task The task to run
      */
-
-    private static void executeNodeThenRun(final String projectId, final String nodeId, final Runnable task) {
+    static void executeNodeThenRun(final String projectId, final String nodeId, final Runnable task) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
 

@@ -73,15 +73,12 @@ import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.hub.HubItemVersion;
-import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.api.webui.entity.WorkflowCommandEnt;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
-import org.knime.gateway.impl.webui.entity.DefaultSetComponentLinkInformationCommandEnt;
-import org.knime.gateway.impl.webui.service.commands.SetComponentLinkInformation;
+import org.knime.gateway.impl.webui.service.commands.UpdateComponentLinkInformation;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.editor2.actions.ChangeComponentHubVersionAction;
 import org.knime.workbench.editor2.actions.ChangeComponentHubVersionDialog;
@@ -144,21 +141,6 @@ final class ManipulateComponents {
         final var cmd = workflowMiddleware.getCommands();
         cmd.setCommandToExecute(getUpdateComponentCommand(component));
         cmd.execute(wfKey, null);
-
-        // TODO: invalidating middleware caches _must_ be handled by the framework at this point, everything else is
-        //       brittle and unmaintainable
-
-        final var wfm = component.getParent();
-        try (final var lock = wfm.lock()) {
-            // lock workflow before accessing middleware caches,
-            // to at least avoid deadlock with workflow change listener for now
-            //
-            // TODO: NXT-1039. This will be solved, once the `WorkflowMiddleware` clears its caches properly.
-            //
-            // in addition to clearing the subtree cache below the changed component,
-            // some other caches must be invalidated. Ideally, the UI should not care about updates to entities
-            // that are already discarded (e.g. possibly the whole subtree under the updated component)
-        }
     }
 
     static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
@@ -225,16 +207,13 @@ final class ManipulateComponents {
 
         final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
         final var cmd = workflowMiddleware.getCommands();
-        cmd.setCommandToExecute(getSetComponentLinkInformationCommand(component));
+        cmd.setCommandToExecute(getUpdateComponentLinkInformationCommand(component));
         cmd.execute(wfKey, null);
 
         // ChangeComponentHubVersionCommand does not check canExecute of the actual update command
         cmd.setCommandToExecute(getUpdateComponentCommand(component));
         try {
             cmd.execute(wfKey, null);
-            try (final var lock = wfm.lock()) {
-                // TODO: NXT-1039. This will be solved, once the `WorkflowMiddleware` clears its caches properly.
-            }
         } catch (final OperationNotAllowedException | NotASubWorkflowException | NodeNotFoundException e) {
             // undo setLink if we could not update the component
             cmd.undo(wfKey);
@@ -242,9 +221,12 @@ final class ManipulateComponents {
         }
     }
 
-    private static void assertLinkedComponent(final SubNodeContainer component, final boolean isLinked) {
+    private static void assertLinkedComponent(final SubNodeContainer component, final boolean isLinked)
+        throws OperationNotAllowedException {
         final BiPredicate<Role, Role> predicate = (left, right) -> isLinked ? (left == right) : (left != right);
-        assert predicate.test(component.getTemplateInformation().getRole(), Role.Link);
+        if (!predicate.test(component.getTemplateInformation().getRole(), Role.Link)) {
+            throw new OperationNotAllowedException("The componet is " + (isLinked ? "not " : "") + "linked.");
+        }
     }
 
     private static String[] getAllValidMountPoint(final Map<String, AbstractContentProvider> contentProviders)
@@ -305,24 +287,22 @@ final class ManipulateComponents {
         return new WorkflowCommandAdapter(linkCmd, true);
     }
 
-    private static SetComponentLinkInformation getSetComponentLinkInformationCommand(final SubNodeContainer component) {
-        final var componentIdEnt = new NodeIDEnt(component.getID());
-        final var newUri = component.getTemplateInformation().getSourceURI();
-        final var commandEnt = new DefaultSetComponentLinkInformationCommandEnt(
-            WorkflowCommandEnt.KindEnum.SET_COMPONENT_LINK_INFORMATION, componentIdEnt, newUri.toString());
-        return new SetComponentLinkInformation(commandEnt);
+    private static UpdateComponentLinkInformation
+        getUpdateComponentLinkInformationCommand(final SubNodeContainer component) {
+        final var componentId = component.getID();
+        final var targetUri = component.getTemplateInformation().getSourceURI();
+        return new UpdateComponentLinkInformation(componentId, targetUri);
     }
 
     /**
      * Copied from {@link ChangeComponentHubVersionAction}.
+     *
+     * TODO: NXT-2038, Easily determine whether a file store is a Hub file store.
      */
     private static boolean isHubUri(final URI uri) {
         if (uri == null) {
             return false;
         }
-        // TODO getting the explorer file store can take in the order of ~100ms, so pretty expensive
-        // inspecting the mount ID won't be enough, since for custom mounted hub instances the user can select an
-        // arbitrary mount ID
         final var explorerFileStore = ExplorerFileSystem.INSTANCE.getStore(uri);
         if (explorerFileStore == null) {
             return false;

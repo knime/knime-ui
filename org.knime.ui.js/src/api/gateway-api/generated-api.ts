@@ -919,7 +919,7 @@ export interface ConvertContainerResult extends CommandResult {
 export namespace ConvertContainerResult {
 }
 /**
- * Copy selected workflow parts and serialize to workflow definition format.  This command only returns the serialized workflow parts.
+ * Copy selected workflow parts and serialize to workflow definition format. This command only returns the serialized workflow parts.
  * @export
  * @interface CopyCommand
  */
@@ -1503,7 +1503,7 @@ export interface NativeNode extends Node {
      */
     portGroups?: { [key: string]: PortGroup; };
     /**
-     * Indicates whether the node has a view.  Not present, if the node has no view.
+     * Indicates whether the node has a view. Not present, if the node has no view.
      * @type {boolean}
      * @memberof NativeNode
      */
@@ -2409,13 +2409,13 @@ export namespace PortCommand {
 export interface PortGroup {
 
     /**
-     * Which input ports (identified by index position) belong to the port group. Either this or the  &#39;outputRange&#39; is required for a port group.
+     * Which input ports (identified by index position) belong to the port group. Either this or the &#39;outputRange&#39; is required for a port group.
      * @type {Array<number>}
      * @memberof PortGroup
      */
     inputRange?: Array<number>;
     /**
-     * Which output ports (identified by index position) belong to the port group. Either this or the  &#39;inputRange&#39; is required for a port group.
+     * Which output ports (identified by index position) belong to the port group. Either this or the &#39;inputRange&#39; is required for a port group.
      * @type {Array<number>}
      * @memberof PortGroup
      */
@@ -2669,7 +2669,7 @@ export interface ReorderWorkflowAnnotationsCommand extends WorkflowCommand {
      */
     annotationIds: Array<string>;
     /**
-     * The specific reorder action to perform, can be one of four: &#39;bring_forward&#39; brings the selected  annotation forward by one relative-to-other-annotations position; &#39;bring_to_front&#39; moves the  selected annotation in front of all other annotations; &#39;send_backward&#39; sends the selected  annotation backward by one relative-to-other-annotations position; &#39;send_to_back&#39; sends the  selected annotation back of all other annotations.
+     * The specific reorder action to perform, can be one of four: &#39;bring_forward&#39; brings the selected annotation forward by one relative-to-other-annotations position; &#39;bring_to_front&#39; moves the selected annotation in front of all other annotations; &#39;send_backward&#39; sends the selected annotation backward by one relative-to-other-annotations position; &#39;send_to_back&#39; sends the selected annotation back of all other annotations.
      * @type {string}
      * @memberof ReorderWorkflowAnnotationsCommand
      */
@@ -3007,6 +3007,12 @@ export interface TemplateLink {
      * @memberof TemplateLink
      */
     updateStatus?: TemplateLink.UpdateStatusEnum;
+    /**
+     * Whether this link type can be changed or not.
+     * @type {boolean}
+     * @memberof TemplateLink
+     */
+    isLinkTypeChangable?: boolean;
 
 }
 
@@ -3144,6 +3150,35 @@ export interface UpdateAvailableEventType extends EventType {
 
 
 /**
+ * Updates a components link information or unlinks a component
+ * @export
+ * @interface UpdateComponentLinkInformationCommand
+ */
+export interface UpdateComponentLinkInformationCommand extends WorkflowCommand {
+
+    /**
+     * Id of component which link inforation is to be updated
+     * @type {string}
+     * @memberof UpdateComponentLinkInformationCommand
+     */
+    nodeId: string;
+    /**
+     * New link URL, empty if you want to unlink the component
+     * @type {string}
+     * @memberof UpdateComponentLinkInformationCommand
+     */
+    newUrl?: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace UpdateComponentLinkInformationCommand
+ */
+export namespace UpdateComponentLinkInformationCommand {
+}
+/**
  * Updates the name of a component or metanode
  * @export
  * @interface UpdateComponentOrMetanodeNameCommand
@@ -3266,7 +3301,7 @@ export interface UpdateProjectMetadataCommand extends WorkflowCommand {
 export namespace UpdateProjectMetadataCommand {
 }
 /**
- * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;,  but never both of them.
+ * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;, but never both of them.
  * @export
  * @interface UpdateWorkflowAnnotationCommand
  */
@@ -3540,7 +3575,8 @@ export namespace WorkflowCommand {
         ReorderWorkflowAnnotations = 'reorder_workflow_annotations',
         AddWorkflowAnnotation = 'add_workflow_annotation',
         UpdateProjectMetadata = 'update_project_metadata',
-        AddBendpoint = 'add_bendpoint'
+        AddBendpoint = 'add_bendpoint',
+        UpdateComponentLinkInformation = 'update_component_link_information'
     }
 }
 /**
@@ -3551,7 +3587,7 @@ export namespace WorkflowCommand {
 export interface WorkflowGroupContent {
 
     /**
-     * The path (id and name per path-segment) of all workflow groups along the path-hierarchy with the last entry  in the list being the id of the direct parent of these space items. Empty list if at root-level.
+     * The path (id and name per path-segment) of all workflow groups along the path-hierarchy with the last entry in the list being the id of the direct parent of these space items. Empty list if at root-level.
      * @type {Array<SpacePathSegment>}
      * @memberof WorkflowGroupContent
      */
@@ -3918,7 +3954,7 @@ const node = function(rpcClient: RPCClient) {
 const noderepository = function(rpcClient: RPCClient) {
     return {
         /**
-         * Given a node and a port, it recommends a certain number of compatible successor nodes the user might want to add next to its workflow. If queried with no node and no port, it recommends the  most relevant source nodes, that naturally have no predecessor.
+         * Given a node and a port, it recommends a certain number of compatible successor nodes the user might want to add next to its workflow. If queried with no node and no port, it recommends the most relevant source nodes, that naturally have no predecessor.
          * @param {string} projectId ID of the workflow-project.
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} [nodeId] The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
@@ -3956,7 +3992,7 @@ const noderepository = function(rpcClient: RPCClient) {
            return rpcClient.call('NodeRepositoryService.getNodeTemplates', { ...defaultParams, ...params });
         },
         /**
-         * Returns a pre-defined set of groups (defined by tags) and nodes per group (the most frequently used  ones in that group).
+         * Returns a pre-defined set of groups (defined by tags) and nodes per group (the most frequently used ones in that group).
          * @param {number} [numNodesPerTag] The number of nodes per tag/group to be returned.
          * @param {number} [tagsOffset] The number of tags to be skipped (for pagination).
          * @param {number} [tagsLimit] The maximum number of tags to be returned (mainly for pagination).
@@ -4066,7 +4102,7 @@ const space = function(rpcClient: RPCClient) {
          * Create a new workflow within a given workflow group.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {string} itemName Name given to a space item.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4083,7 +4119,7 @@ const space = function(rpcClient: RPCClient) {
          * Create a new workflow group within a given workflow group.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4129,7 +4165,7 @@ const space = function(rpcClient: RPCClient) {
          * Lists the available jobs for the given workflow.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4145,7 +4181,7 @@ const space = function(rpcClient: RPCClient) {
          * Lists the available schedules for the given workflow.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4161,7 +4197,7 @@ const space = function(rpcClient: RPCClient) {
          * Get shallow list of workflows, components and data-files within a given workflow group.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4195,7 +4231,7 @@ const space = function(rpcClient: RPCClient) {
          * Rename a space Item
          * @param {string} spaceProviderId Identifies a space-provider.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {string} itemName Name given to a space item.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4485,7 +4521,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
-     * Copy selected workflow parts and serialize to workflow definition format.  This command only returns the serialized workflow parts.
+     * Copy selected workflow parts and serialize to workflow definition format. This command only returns the serialized workflow parts.
      */
 	Copy(
 		params: { projectId: string, workflowId: string } & Omit<CopyCommand, 'kind'>
@@ -4545,7 +4581,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
-     * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;,  but never both of them.
+     * Updates the text and/or the border color of a workflow annotation. Either one can be &#39;null&#39;, but never both of them.
      */
 	UpdateWorkflowAnnotation(
 		params: { projectId: string, workflowId: string } & Omit<UpdateWorkflowAnnotationCommand, 'kind'>
@@ -4600,6 +4636,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateProjectMetadata }
+		});
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Updates a components link information or unlinks a component
+     */
+	UpdateComponentLinkInformation(
+		params: { projectId: string, workflowId: string } & Omit<UpdateComponentLinkInformationCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentLinkInformation }
 		});
 		return postProcessCommandResponse(commandResponse);
 	},	
