@@ -266,8 +266,8 @@ export default defineComponent({
       this.deleteModal.deleteModalActive = false;
 
       const itemIds = this.deleteModal.items.map((item) => item.id);
-      const relevantProjects = this.openProjects.filter(({ origin }) =>
-        itemIds.includes(origin.itemId)
+      const relevantProjects = this.openProjects.filter((project) =>
+        itemIds.includes(project?.origin?.itemId)
       );
       const projectIds = relevantProjects.map(({ projectId }) => projectId);
       let nextProjectId;
@@ -298,14 +298,19 @@ export default defineComponent({
      * @returns {Void}
      */
     async onMoveItems({ sourceItems, targetItem, onComplete }) {
-      const openedWorkflows = this.openProjects.filter((workflow) =>
-        sourceItems.includes(workflow.origin.itemId)
+      const openedWorkflows = this.openProjects.filter((project) =>
+        sourceItems.includes(project?.origin?.itemId)
       );
-      const isInsideFolder = this.openProjects.filter((project) =>
-        project.origin.ancestorItemIds.some((ancestorId) =>
+
+      const isInsideFolder = this.openProjects.filter((project) => {
+        if (!project.origin) {
+          return false;
+        }
+
+        return project.origin.ancestorItemIds.some((ancestorId) =>
           sourceItems.includes(ancestorId)
-        )
-      );
+        );
+      });
 
       if (openedWorkflows.length || isInsideFolder.length) {
         const openedWorkflowsNames = openedWorkflows.map(
