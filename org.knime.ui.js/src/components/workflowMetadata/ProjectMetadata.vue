@@ -193,15 +193,5 @@ watch(
   display: flex;
   align-items: center;
   margin-bottom: 12px;
-
-  & .buttons {
-    display: flex;
-    gap: 4px;
-    margin-left: auto;
-
-    & .cancel-edit-button {
-      --theme-button-function-background-color: var(--knime-white);
-    }
-  }
 }
 </style>
