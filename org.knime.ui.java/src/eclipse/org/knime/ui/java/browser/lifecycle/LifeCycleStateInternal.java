@@ -52,7 +52,6 @@ import java.util.function.IntSupplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
-import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.ui.java.api.SaveAndCloseWorkflows;
 
 /**
@@ -82,13 +81,6 @@ public interface LifeCycleStateInternal extends LifeCycleState {
      * @return The job change listener that was registered to the {@link IJobManager}
      */
     default IJobChangeListener getJobChangeListener() {
-        return null;
-    }
-
-    /**
-     * @return the update state provider
-     */
-    default UpdateStateProvider getUpdateStateProvider() {
         return null;
     }
 

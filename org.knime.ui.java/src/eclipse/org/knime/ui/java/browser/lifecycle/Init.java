@@ -128,11 +128,13 @@ final class Init {
             createNodeFactoryProvider());
 
         if (updateStateProvider != null) {
+            // Check for updates and notify UI
             try {
                 DefaultEventService.getInstance().addEventListener(EntityFactory.UpdateState.buildEventTypeEnt());
             } catch (InvalidRequestException e) {
                 KnimeBrowserView.LOGGER.error("Could not add update state changed event listener to event service", e);
             }
+            updateStateProvider.checkForUpdates();
         }
 
         DesktopAPI.injectDependencies(workflowProjectManager, appStateUpdater, spaceProviders, updateStateProvider,
@@ -156,11 +158,6 @@ final class Init {
             @Override
             public IJobChangeListener getJobChangeListener() {
                 return listener;
-            }
-
-            @Override
-            public UpdateStateProvider getUpdateStateProvider() {
-                return updateStateProvider;
             }
         };
 
