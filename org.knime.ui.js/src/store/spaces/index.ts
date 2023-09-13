@@ -17,6 +17,8 @@ interface CreateWorkflowModalConfig {
 interface DeploymentsModalConfig {
   isOpen: boolean;
   name: string;
+  projectId: string;
+  itemId: string;
 }
 
 export * from "./common";
@@ -42,6 +44,8 @@ export const state = (): SpacesState => ({
   deploymentsModalConfig: {
     isOpen: false,
     name: null,
+    projectId: null,
+    itemId: null,
   },
 });
 

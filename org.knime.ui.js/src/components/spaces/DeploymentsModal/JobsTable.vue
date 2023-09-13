@@ -19,17 +19,17 @@ import {
 
 type Props = {
   jobs: Job[];
-  showHeader?: boolean;
+  isInsideSchedule?: boolean;
   showSearch?: boolean;
   showColumnFilters?: boolean;
   pageSize?: number;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  showHeader: true,
   showSearch: true,
   showColumnFilters: true,
   pageSize: 10,
+  isInsideSchedule: false,
 });
 
 const defaultAttributes = {
@@ -48,12 +48,14 @@ const columnHeaders = ref(Object.values(jobHeaders));
 const columnKeys = ref(Object.keys(jobHeaders));
 
 const tableAttributes = computed(() => defaultAttributes);
-const subMenuItems = computed(() => jobSubMenuItems);
+const subMenuItems = computed(() =>
+  props.isInsideSchedule ? [] : jobSubMenuItems,
+);
 </script>
 
 <template>
   <div class="modal-wrapper">
-    <h2 v-if="showHeader">Jobs</h2>
+    <h2 v-if="!isInsideSchedule">Jobs</h2>
     <KnimeUiTable
       ref="jobsTable"
       :all-data="jobs"

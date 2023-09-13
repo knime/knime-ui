@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { columnTypes } from "@knime/knime-ui-table";
 import { caseFormatter } from "webapps-common/util/capitalize";
 import { formatTime } from "@/util/time";
@@ -93,14 +92,17 @@ export const jobSubMenuItems = [
     name: "save",
     text: "Save as workflow",
     callback: (row, context) => {
-      console.log(row);
+      context.$store.dispatch("spaces/saveJobAsWorkflow", { jobId: row.id });
     },
   },
   {
     name: "delete",
     text: "Delete",
     callback: (row, context) => {
-      console.log(row);
+      context.$store.dispatch("spaces/deleteJob", {
+        jobId: row.id,
+        schedulerId: row.schedulerId ? row.schedulerId : null,
+      });
     },
   },
 ];
