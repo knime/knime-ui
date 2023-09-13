@@ -36,8 +36,7 @@ const chainType = ref<"qa" | "build">("qa");
 
 const uiStrings = ref({
   disclaimer: DISCLAIMER_DEFAULT_TEXT.trim(),
-  // eslint-disable-next-line camelcase
-  welcome_message: {
+  welcomeMessage: {
     qa: "Hi! I am K-AI, your KNIME Q&A Assistant. What would you like to know?",
     build:
       "Hi! I am K-AI, your KNIME Build Assistant. What would you like to build?",
@@ -74,12 +73,12 @@ onBeforeMount(async () => {
       <Chat
         v-show="chainType === 'qa'"
         chain-type="qa"
-        :system-prompt="uiStrings.welcome_message.qa"
+        :system-prompt="uiStrings.welcomeMessage.qa"
       />
       <Chat
         v-show="chainType === 'build'"
         chain-type="build"
-        :system-prompt="uiStrings.welcome_message.build"
+        :system-prompt="uiStrings.welcomeMessage.build"
       />
     </template>
     <div v-else class="login-notice">
