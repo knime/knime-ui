@@ -20,7 +20,7 @@ describe("ComponentMetadata.vue", () => {
   const doMount = ({
     customComponentMetadata = null,
   }: { customComponentMetadata?: ComponentMetadata } = {}) => {
-    const componentMetadata = {
+    const componentMetadata: ComponentMetadata = {
       description: {
         value: "This is a dummy description",
         contentType: TypedText.ContentTypeEnum.Plain,

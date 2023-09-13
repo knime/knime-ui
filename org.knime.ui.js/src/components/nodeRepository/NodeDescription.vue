@@ -127,6 +127,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .node-description {
   height: 100%;
   padding-right: 8px;
@@ -282,8 +284,8 @@ export default {
       padding: 20px;
 
       & svg {
-        width: 9px;
-        height: 9px;
+        @mixin svg-icon-size 9;
+
         top: 5px;
       }
     }
@@ -319,8 +321,8 @@ export default {
         }
 
         & svg {
-          width: 9px;
-          height: 9px;
+          @mixin svg-icon-size 9;
+
           top: 5px;
           left: -17px;
         }

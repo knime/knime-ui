@@ -2,22 +2,25 @@
 import Label from "webapps-common/ui/components/forms/Label.vue";
 import TextArea from "webapps-common/ui/components/forms/TextArea.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
-import PortIcon from "webapps-common/ui/components/node/PortIcon.vue";
-import { NodePortDescription } from "@/api/gateway-api/generated-api";
+import type {
+  NodePortDescription,
+  PortType,
+} from "@/api/gateway-api/generated-api";
+import portIconRenderer from "@/components/common/PortIconRenderer";
+
+type PortEditorData = Pick<PortType, "color"> &
+  NodePortDescription & { type: string };
 
 interface Props {
-  modelValue: Array<NodePortDescription>;
+  modelValue: Array<PortEditorData>;
 }
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: "update:modelValue", ports: Array<NodePortDescription>): void;
+  (e: "update:modelValue", ports: Array<PortEditorData>): void;
 }>();
 
-const updateField = <
-  K extends keyof NodePortDescription,
-  V = NodePortDescription[K],
->(
+const updateField = <K extends keyof PortEditorData, V = PortEditorData[K]>(
   property: K,
   value: V,
   index: number,
@@ -34,16 +37,10 @@ const updateField = <
 <template>
   <div v-for="(port, index) in modelValue" :key="index" class="port-editor">
     <div class="port-header">
-      <svg viewBox="-4.5 -4.5 9 9" width="12" height="12">
-        <PortIcon
-          :color="port.color"
-          :filled="!port.optional"
-          :type="port.type"
-        />
-      </svg>
+      <Component :is="portIconRenderer(port, 12)" />
       <div class="port-title">{{ index + 1 }}: Type: {{ port.typeName }}</div>
     </div>
-    <Label text="Name" compact class="label">
+    <Label text="Name" class="label">
       <div>
         <InputField
           :model-value="port.name"
@@ -53,12 +50,11 @@ const updateField = <
         />
       </div>
     </Label>
-    <Label text="Description" compact class="label">
+    <Label text="Description" class="label">
       <div>
         <TextArea
           :model-value="port.description"
           class="port-description-editor"
-          type="text"
           title="Port description"
           @update:model-value="updateField('description', $event, index)"
         />
@@ -83,10 +79,6 @@ const updateField = <
   & .port-header {
     margin: 20px 0 10px;
     display: flex;
-
-    & :deep(svg) {
-      margin-top: 2px;
-    }
 
     & .port-title {
       margin-left: 5px;

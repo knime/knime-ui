@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import TagList from "webapps-common/ui/components/TagList.vue";
 import ComboBox from "webapps-common/ui/components/forms/ComboBox.vue";
 
-import ProjectMetadataTags from "../MetadataTags.vue";
+import MetadataTags from "../MetadataTags.vue";
 
 describe("MetadataTags.vue", () => {
   const doMount = ({ props = {} } = {}) => {
@@ -13,7 +13,7 @@ describe("MetadataTags.vue", () => {
       editable: false,
     };
 
-    const wrapper = mount(ProjectMetadataTags, {
+    const wrapper = mount(MetadataTags, {
       props: { ...defaultProps, ...props },
     });
 

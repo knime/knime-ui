@@ -10,9 +10,9 @@ interface Props {
 }
 
 interface Emits {
-  (e: "start-edit"): void;
+  (e: "startEdit"): void;
   (e: "save"): void;
-  (e: "cancel-edit"): void;
+  (e: "cancelEdit"): void;
 }
 
 defineEmits<Emits>();
@@ -24,7 +24,7 @@ defineProps<Props>();
     <FunctionButton
       v-if="!isEditing"
       title="Edit metadata"
-      @click="$emit('start-edit')"
+      @click="$emit('startEdit')"
     >
       <PencilIcon />
     </FunctionButton>
@@ -43,7 +43,7 @@ defineProps<Props>();
       v-if="isEditing"
       class="cancel-edit-button"
       title="Cancel edit"
-      @click="$emit('cancel-edit')"
+      @click="$emit('cancelEdit')"
     >
       <CloseIcon />
     </FunctionButton>

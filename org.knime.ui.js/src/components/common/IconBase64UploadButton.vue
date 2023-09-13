@@ -5,7 +5,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 // eslint-disable-next-line no-magic-numbers
 const maxFileSize = 1024 * 250; // 50kb
 
-const file2Base64 = (file: File): Promise<string> => {
+const fileToBase64 = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -34,7 +34,7 @@ const onChange = async (e) => {
   if (!e.target) {
     return null;
   }
-  let file = e.target.files[0];
+  const [file] = e.target.files;
 
   if (!file) {
     return null;
@@ -50,7 +50,7 @@ const onChange = async (e) => {
     return null;
   }
 
-  const base64 = await file2Base64(file);
+  const base64 = await fileToBase64(file);
 
   emit("update:modelValue", base64);
 

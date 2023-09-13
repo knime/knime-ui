@@ -91,8 +91,10 @@ const filterPortData = (fullPorts) =>
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .node-feature-list {
-  margin-top: 20px; /* no h2 in this case */
+  margin-top: 20px; /* no h2 (that has a margin-top) in this case */
 
   & :deep(.shadow-wrapper::after),
   & :deep(.shadow-wrapper::before) {
@@ -170,8 +172,8 @@ const filterPortData = (fullPorts) =>
         margin-top: 22px;
 
         & svg {
-          width: 9px;
-          height: 9px;
+          @mixin svg-icon-size 9;
+
           top: 5px;
           left: -17px;
         }
