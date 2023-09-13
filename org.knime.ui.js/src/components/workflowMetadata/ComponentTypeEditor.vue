@@ -6,6 +6,7 @@ import { computed, h } from "vue";
 import ComponentTypeSvgIcon from "@/components/workflowMetadata/ComponentTypeSvgIcon.vue";
 import * as nodeBackgroundColors from "webapps-common/ui/colors/nodeColors.mjs";
 import { HibiscusDark as colorHibiscusDark } from "webapps-common/ui/colors/knimeColors.mjs";
+import type { ComponentNodeAndDescription } from "@/api/gateway-api/generated-api";
 
 interface Props {
   componentTypes: Array<string>;
@@ -38,12 +39,15 @@ const activeComponentType = computed(() => {
   return (
     componentTypeMenuItems.value.find(
       (type) => type.metadata.id === props.modelValue,
-    ) || {}
+    ) || { icon: "", text: "" }
   );
 });
 
 const emit = defineEmits<{
-  (e: "update:modelValue", componentTpye: string): void;
+  (
+    e: "update:modelValue",
+    componentType: ComponentNodeAndDescription.TypeEnum,
+  ): void;
 }>();
 </script>
 

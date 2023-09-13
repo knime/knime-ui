@@ -7,6 +7,7 @@ import type { RootStoreState } from "@/store/types";
 
 import ProjectMetadata from "./ProjectMetadata.vue";
 import ComponentMetadata from "./ComponentMetadata.vue";
+import type { ComponentMetadata as ComponentMetadataType } from "@/api/custom-types";
 
 const store = useStore<RootStoreState>();
 
@@ -78,7 +79,7 @@ const updateComponentMetadata = ({
 
     <ComponentMetadata
       v-if="isComponent && workflow.componentMetadata"
-      :component-metadata="workflow.componentMetadata"
+      :component-metadata="workflow.componentMetadata as ComponentMetadataType"
       :project-id="workflow.projectId"
       :component-id="workflow.info.containerId"
       :available-port-types="availablePortTypes"

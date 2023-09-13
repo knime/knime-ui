@@ -265,7 +265,6 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     {
       projectId,
       workflowId,
-      componentId,
       description,
       type,
       icon,
@@ -278,7 +277,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     await API.workflowCommand.UpdateComponentMetadata({
       projectId,
       workflowId,
-      componentId,
+      // TODO: NXT-2023: remove when types are correctly generated
+      // @ts-expect-error
       description,
       type,
       icon,
@@ -296,6 +296,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     await API.workflowCommand.UpdateProjectMetadata({
       projectId,
       workflowId,
+      // TODO: NXT-2023: remove when types are correctly generated
+      // @ts-expect-error
       description,
       tags,
       links,

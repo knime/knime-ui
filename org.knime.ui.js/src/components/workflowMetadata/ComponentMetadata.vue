@@ -16,6 +16,7 @@ import { TypedText } from "@/api/gateway-api/generated-api";
 import type {
   Link,
   ComponentNodeAndDescription,
+  ComponentPortDescription,
 } from "@/api/gateway-api/generated-api";
 import ComponentTypeEditor from "@/components/workflowMetadata/ComponentTypeEditor.vue";
 import ComponentIconEditor from "@/components/workflowMetadata/ComponentIconEditor.vue";
@@ -60,8 +61,8 @@ type MetadataDraft = {
     description: string;
     links: Link[];
     tags: string[];
-    inPorts: Array<{ name: string; description: string }>;
-    outPorts: Array<{ name: string; description: string }>;
+    inPorts: Array<ComponentPortDescription>;
+    outPorts: Array<ComponentPortDescription>;
     icon: string; // base64 url-encoded
     type: ComponentNodeAndDescription.TypeEnum;
   };
@@ -114,8 +115,8 @@ type SaveEventPayload = {
   description: TypedText;
   links: Array<Link>;
   tags: Array<string>;
-  inPorts: Array<{ name: string; description: string }>;
-  outPorts: Array<{ name: string; description: string }>;
+  inPorts: Array<ComponentPortDescription>;
+  outPorts: Array<ComponentPortDescription>;
   icon: string; // base64 url-encoded
   type: ComponentNodeAndDescription.TypeEnum;
 };
