@@ -76,6 +76,15 @@ export const openUpdateDialog = () => {
   );
 };
 
+export const checkForUpdates = () => {
+  callBrowserFunction(
+    window.checkForUpdates,
+    [],
+    "Could not check for updates",
+    false,
+  );
+};
+
 export const openUrlInExternalBrowser = ({ url }: { url: string }) => {
   callBrowserFunction(
     window.openUrlInExternalBrowser,
