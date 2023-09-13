@@ -165,6 +165,8 @@ export const actions = {
    */
   async initializeApplication({ dispatch }, { $router }) {
     await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
+    await API.event.subscribeEvent({ typeId: "UpdateAvailableEventType" });
+    API.desktop.checkForUpdates();
 
     $router.beforeEach(async (to, from, next) => {
       const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;

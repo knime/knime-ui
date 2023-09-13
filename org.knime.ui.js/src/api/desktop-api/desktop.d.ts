@@ -122,3 +122,5 @@ declare function makeAiRequest(
 declare function abortAiRequest(chainType: string): void;
 declare function isAiAssistantBackendAvailable(): boolean;
 declare function getAiServerAddress(): string;
+
+declare function checkForUpdates(): void;

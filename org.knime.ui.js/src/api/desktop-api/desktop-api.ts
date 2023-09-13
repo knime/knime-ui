@@ -459,3 +459,12 @@ export const getAiServerAddress = () => {
     true
   );
 };
+
+export const checkForUpdates = () => {
+  callBrowserFunction(
+    window.checkForUpdates,
+    [],
+    "Could not check for updates",
+    false
+  );
+};
