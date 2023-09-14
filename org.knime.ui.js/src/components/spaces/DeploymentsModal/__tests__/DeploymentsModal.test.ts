@@ -94,6 +94,8 @@ describe("DeploymentsModal.vue", () => {
     expect(commitSpy).toHaveBeenCalledWith("spaces/setDeploymentsModalConfig", {
       isOpen: false,
       name: null,
+      projectId: null,
+      itemId: null,
     });
   });
 
