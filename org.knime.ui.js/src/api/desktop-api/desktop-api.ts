@@ -6,7 +6,7 @@ import type {
   SpaceId,
   FullSpacePath,
   SpaceItemId,
-  SpaceUser,
+  SpaceProviderNS,
 } from "../custom-types";
 
 const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
@@ -368,7 +368,7 @@ export const getSpaceProviders = () => {
 
 export const connectSpaceProvider = ({
   spaceProviderId,
-}: SpaceProviderId): SpaceUser => {
+}: SpaceProviderId): SpaceProviderNS.SpaceProvider => {
   const user = callBrowserFunction(
     window.connectSpaceProvider,
     [spaceProviderId],

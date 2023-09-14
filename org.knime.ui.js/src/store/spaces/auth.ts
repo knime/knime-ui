@@ -15,12 +15,21 @@ export const state = (): State => ({});
 export const mutations: MutationTree<SpacesState> = {};
 
 export const actions: ActionTree<SpacesState, RootStoreState> = {
-  connectProvider({ commit }, { spaceProviderId }) {
+  async connectProvider({ dispatch, commit }, { spaceProviderId }) {
     try {
       commit("setIsLoadingProvider", true);
-      API.desktop.connectSpaceProvider({ spaceProviderId });
-      // refetch all space providers and their spaces ensures a correct state (esp. for server connections)
-      API.desktop.getSpaceProviders();
+      // returns the provider metadata (but no spaces)
+      const spaceProvider = API.desktop.connectSpaceProvider({
+        spaceProviderId,
+      });
+      // fetch the spaces (and the type)
+      const spacesData = await dispatch("fetchProviderSpaces", {
+        id: spaceProviderId,
+      });
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: { ...spaceProvider, ...spacesData },
+      });
     } catch (error) {
       consola.error("Error connecting to provider", { error });
       throw error;

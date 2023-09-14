@@ -33,6 +33,19 @@ export const mutations: MutationTree<SpacesState> = {
     state.hasLoadedProviders = value;
   },
 
+  updateSpaceProvider(
+    state,
+    {
+      id,
+      value,
+    }: { id: string; value: Partial<SpaceProviderNS.SpaceProvider> },
+  ) {
+    state.spaceProviders = {
+      ...state.spaceProviders,
+      [id]: { ...state.spaceProviders[id], ...value },
+    };
+  },
+
   setSpaceProviders(
     state,
     value: Record<string, SpaceProviderNS.SpaceProvider>,
