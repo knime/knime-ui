@@ -23,6 +23,7 @@ import * as nodeInteractions from "./nodeInteractions";
 import * as annotationInteractions from "./annotationInteractions";
 import * as clipboardInteractions from "./clipboardInteractions";
 import * as connectionInteractions from "./connectionInteractions";
+import * as componentInteractions from "./componentInteractions";
 
 export interface WorkflowState {
   activeWorkflow: Workflow | null;
@@ -86,6 +87,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   ...clipboardInteractions.actions,
   ...annotationInteractions.actions,
   ...connectionInteractions.actions,
+  ...componentInteractions.actions,
 
   undo({ state }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
@@ -268,59 +270,6 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       description,
       tags,
       links,
-    });
-  },
-
-  async linkComponent({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const success = API.desktop.openLinkComponentDialog({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-    if (success) {
-      // Reload the page if the component linking was successful
-      await this.dispatch(
-        "spaces/fetchWorkflowGroupContent",
-        { projectId },
-        { root: true },
-      );
-    }
-  },
-
-  updateComponent({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    API.desktop.updateComponent({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-  },
-
-  async unlinkComponent({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    await API.workflowCommand.UpdateComponentLinkInformation({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-  },
-
-  changeHubItemVersion({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    API.desktop.openChangeComponentHubItemVersionDialog({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-  },
-
-  changeComponentLinkType({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    API.desktop.openChangeComponentLinkTypeDialog({
-      projectId,
-      workflowId,
-      nodeId,
     });
   },
 };

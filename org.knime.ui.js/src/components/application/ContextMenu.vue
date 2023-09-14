@@ -404,7 +404,7 @@ export default defineComponent({
           },
           isMetanode,
         ),
-        ...filterItemVisibility( // TODO: Add the lines by adding nested groups
+        ...filterItemVisibility( // TODO: Add separators by adding nested groups
           {
             text: "Component",
             children: this.mapToShortcut([

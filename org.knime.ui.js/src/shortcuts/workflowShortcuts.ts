@@ -327,6 +327,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         $store.getters["selection/singleSelectedNode"].id;
       $store.dispatch("workflow/linkComponent", { nodeId: selectedNodeId });
     },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   updateComponent: {
     text: "Update component",
@@ -337,6 +338,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         $store.getters["selection/singleSelectedNode"].id;
       $store.dispatch("workflow/updateComponent", { nodeId: selectedNodeId });
     },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   unlinkComponent: {
     text: "Disconnect link",
@@ -347,6 +349,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         $store.getters["selection/singleSelectedNode"].id;
       $store.dispatch("workflow/unlinkComponent", { nodeId: selectedNodeId });
     },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   changeHubItemVersion: {
     text: "Change KNIME Hub item version",
@@ -359,6 +362,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         nodeId: selectedNodeId,
       });
     },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   changeComponentLinkType: {
     text: "Change link type",
@@ -372,8 +376,11 @@ const workflowShortcuts: WorkflowShortcuts = {
       });
     },
     condition: ({ $store }) => {
-      return $store.getters["selection/singleSelectedNode"].link
-        ?.isLinkTypeChangable;
+      const isWritable = $store.getters["workflow/isWritable"];
+      const isLinkTypeChangable =
+        $store.getters["selection/singleSelectedNode"].link
+          ?.isLinkTypeChangable;
+      return isWritable && isLinkTypeChangable;
     },
   },
   openLayoutEditor: {
