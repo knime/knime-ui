@@ -10,10 +10,16 @@ import type { NodeTemplate } from "@/api/gateway-api/generated-api";
  * @param params.nodes - A list of nodes.
  * @returns - An object containing refs to nodeTemplates and uninstalledExtensions.
  */
-const useNodeTemplates = ({ role, nodes }: { role: string, nodes: NodeWithExtensionInfo[]}) => {
+const useNodeTemplates = ({
+  role,
+  nodes,
+}: {
+  role: string;
+  nodes: NodeWithExtensionInfo[];
+}) => {
   // Reactive references to hold the node templates.
   const nodeTemplates = ref<NodeTemplate[]>([]);
-  const uninstalledExtensions = ref<{[key: string]: ExtensionWithNodes}>({});
+  const uninstalledExtensions = ref<{ [key: string]: ExtensionWithNodes }>({});
 
   const store = useStore();
 
@@ -24,15 +30,15 @@ const useNodeTemplates = ({ role, nodes }: { role: string, nodes: NodeWithExtens
     }
 
     // Temporary variables to hold the values for this effect run.
-    const _nodeTemplates : NodeTemplate[] = [];
-    const _uninstalledExtensions : {[key: string]: ExtensionWithNodes} = {};
+    const _nodeTemplates: NodeTemplate[] = [];
+    const _uninstalledExtensions: { [key: string]: ExtensionWithNodes } = {};
 
     // Fetching node templates concurrently.
     await Promise.all(
       nodes.map(async (node) => {
         const { factoryName } = node;
         // Dispatching a Vuex action to get a node template.
-        const nodeTemplate : NodeTemplate = await store.dispatch(
+        const nodeTemplate: NodeTemplate = await store.dispatch(
           "nodeRepository/getNodeTemplate",
           factoryName,
         );
