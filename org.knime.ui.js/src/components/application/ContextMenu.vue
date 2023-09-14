@@ -408,16 +408,14 @@ export default defineComponent({
           {
             text: "Component",
             children: this.mapToShortcut([
-              // First group
               { name: "openComponentOrMetanode", isVisible: true },
               { name: "editName", isVisible: true },
               { name: "expandComponent", isVisible: true },
-              // Second group
               { name: "linkComponent", isVisible: !this.singleSelectedNode?.link },
               { name: "updateComponent", isVisible: this.singleSelectedNode?.link },
               { name: "changeComponentLinkType", isVisible: this.singleSelectedNode?.link },
               { name: "changeHubItemVersion", isVisible: this.singleSelectedNode?.link },        
-               { name: "unlinkComponent", isVisible: this.singleSelectedNode?.link },
+              { name: "unlinkComponent", isVisible: this.singleSelectedNode?.link },
             ])
           },
           isComponent,

@@ -1,3 +1,4 @@
+// TODO: NXT-2040, Split that file up
 import RedoIcon from "webapps-common/ui/assets/img/icons/redo.svg";
 import UndoIcon from "webapps-common/ui/assets/img/icons/undo.svg";
 import DeleteIcon from "@/assets/delete.svg";
@@ -150,7 +151,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   editName: {
     text: ({ $store }) =>
-    `Rename ${$store.getters["selection/singleSelectedNode"]?.kind}`,
+      `Rename ${$store.getters["selection/singleSelectedNode"]?.kind}`,
     hotkey: ["Shift", "F2"],
     execute: ({ $store }) =>
       $store.dispatch(
@@ -325,7 +326,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         payload?.metadata?.nodeId ||
         $store.getters["selection/singleSelectedNode"].id;
       $store.dispatch("workflow/linkComponent", { nodeId: selectedNodeId });
-    }
+    },
   },
   updateComponent: {
     text: "Update component",
@@ -335,7 +336,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         payload?.metadata?.nodeId ||
         $store.getters["selection/singleSelectedNode"].id;
       $store.dispatch("workflow/updateComponent", { nodeId: selectedNodeId });
-    }
+    },
   },
   unlinkComponent: {
     text: "Disconnect link",
@@ -348,27 +349,32 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
   },
   changeHubItemVersion: {
-    text: "Change KNIME Hub Item Version",
-    title: "Change KNIME Hub Item Version",
+    text: "Change KNIME Hub item version",
+    title: "Change KNIME Hub item version",
     execute: ({ $store, payload = null }) => {
       const selectedNodeId =
         payload?.metadata?.nodeId ||
         $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/changeHubItemVersion", { nodeId: selectedNodeId });
+      $store.dispatch("workflow/changeHubItemVersion", {
+        nodeId: selectedNodeId,
+      });
     },
   },
   changeComponentLinkType: {
     text: "Change link type",
-    title: "Change Component Link Type",
+    title: "Change component link type",
     execute: ({ $store, payload = null }) => {
       const selectedNodeId =
         payload?.metadata?.nodeId ||
         $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/changeComponentLinkType", { nodeId: selectedNodeId });
+      $store.dispatch("workflow/changeComponentLinkType", {
+        nodeId: selectedNodeId,
+      });
     },
     condition: ({ $store }) => {
-      return $store.getters["selection/singleSelectedNode"].link?.isLinkTypeChangable;
-    }
+      return $store.getters["selection/singleSelectedNode"].link
+        ?.isLinkTypeChangable;
+    },
   },
   openLayoutEditor: {
     text: "Open layout editor",
