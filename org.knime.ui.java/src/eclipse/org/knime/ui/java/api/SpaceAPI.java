@@ -48,14 +48,11 @@
  */
 package org.knime.ui.java.api;
 
-import static org.knime.ui.java.api.DesktopAPI.MAPPER;
-
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.webui.WebUIUtil;
@@ -103,13 +100,12 @@ final class SpaceAPI {
      */
     @API
     static String connectSpaceProvider(final String spaceProviderId) {
-        var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
+        final var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
         if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return spaceProvider.getConnection(true)//
-                .map(SpaceProviderConnection::getUsername)//
-                .filter(Predicate.not(String::isEmpty))//
-                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
-                .orElse(null);
+            final var userObjectNode = SpaceProvidersUtil.buildUserObjectNode(spaceProvider, true);
+            if (userObjectNode != null) {
+                return userObjectNode.toPrettyString();
+            }
         }
         return null;
     }
