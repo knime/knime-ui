@@ -117,7 +117,15 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   {
     name: "connectSpaceProvider",
     params: [["spaceProviderId", "1"]],
-    returnValue: JSON.stringify({ name: "user" }),
+    returnValue: JSON.stringify({
+      id: "1",
+      name: "Space Provider",
+      connected: true,
+      connectionMode: "AUTHENTICATED",
+      local: false,
+      spaces: [],
+      user: { name: "user" },
+    }),
   },
   {
     name: "disconnectSpaceProvider",
