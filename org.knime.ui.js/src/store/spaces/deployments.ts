@@ -69,13 +69,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     const itemId = state.deploymentsModalConfig.itemId;
 
-    // await API.space.deleteJobsForWorkflow(
-    //   spaceId,
-    //   spaceProviderId,
-    //   itemId,
-    //   jobId,
-    // );
-    console.log("deleted job:", jobId);
+    await API.space.deleteJobsForWorkflow(
+      spaceId,
+      spaceProviderId,
+      itemId,
+      jobId,
+    );
+    // console.log("deleted job:", jobId);
 
     dispatch("fetchJobs", { projectId, itemId });
     if (schedulerId) {
@@ -83,11 +83,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  saveJobAsWorkflow({ state, dispatch }, { jobId }) {
+  saveJobAsWorkflow({ state }, { jobId }) {
     const projectId = state.deploymentsModalConfig.projectId;
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
 
-    console.log("saved job:", jobId);
-    // API.space.saveJobAsWorkflow(spaceId, spaceProviderId, jobId);
+    // console.log("saved job:", jobId);
+    API.space.saveJobAsWorkflow(spaceId, spaceProviderId, jobId);
   },
 };
