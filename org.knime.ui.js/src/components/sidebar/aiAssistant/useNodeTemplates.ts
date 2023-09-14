@@ -1,17 +1,19 @@
 import { ref, watchEffect } from "vue";
-import { useStore } from "vuex";
+import { useStore } from "@/composables/useStore";
+import type { ExtensionWithNodes, NodeWithExtensionInfo } from "./types";
+import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 
 /**
  * A Vue composition function that provides node templates based on given role and nodes.
- * @param {Object} params - An object containing role and nodes.
- * @param {string} params.role - The role of the current user.
- * @param {Array} params.nodes - A list of nodes.
- * @returns {Object} - An object containing refs to nodeTemplates and uninstalledExtensions.
+ * @param params - An object containing role and nodes.
+ * @param params.role - The role of the current user.
+ * @param params.nodes - A list of nodes.
+ * @returns - An object containing refs to nodeTemplates and uninstalledExtensions.
  */
-const useNodeTemplates = ({ role, nodes }) => {
+const useNodeTemplates = ({ role, nodes }: { role: string, nodes: NodeWithExtensionInfo[]}) => {
   // Reactive references to hold the node templates.
-  const nodeTemplates = ref([]);
-  const uninstalledExtensions = ref({});
+  const nodeTemplates = ref<NodeTemplate[]>([]);
+  const uninstalledExtensions = ref<{[key: string]: ExtensionWithNodes}>({});
 
   const store = useStore();
 
