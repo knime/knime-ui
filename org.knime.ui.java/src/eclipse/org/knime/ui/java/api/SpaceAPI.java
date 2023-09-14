@@ -96,16 +96,13 @@ final class SpaceAPI {
     /**
      * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
      *
-     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
+     * @return A JSON object with all the space information. Returns {@code null} otherwise.
      */
     @API
     static String connectSpaceProvider(final String spaceProviderId) {
         final var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
         if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            final var userObjectNode = SpaceProvidersUtil.buildUserObjectNode(spaceProvider, true);
-            if (userObjectNode != null) {
-                return userObjectNode.toPrettyString();
-            }
+            return SpaceProvidersUtil.buildSpaceProviderObjectNode(spaceProvider, true).toPrettyString();
         }
         return null;
     }

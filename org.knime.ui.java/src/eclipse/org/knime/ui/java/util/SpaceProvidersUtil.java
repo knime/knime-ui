@@ -66,11 +66,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Utilities around {@link SpaceProviders}
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 public final class SpaceProvidersUtil {
 
     private SpaceProvidersUtil() {
-        // util
+        // Utility class
     }
 
     /**
@@ -85,7 +86,7 @@ public final class SpaceProvidersUtil {
             CompletableFuture.supplyAsync(() -> { // NOSONAR
                 final var result = MAPPER.createObjectNode();
                 spaceProviders.getProvidersMap().values().forEach(sp -> {
-                    result.set(sp.getId(), buildSpaceProvidersObjectNode(sp));
+                    result.set(sp.getId(), buildSpaceProviderObjectNode(sp, false));
                 });
                 return MAPPER.createObjectNode().set("result", result);
             }) //
@@ -99,33 +100,34 @@ public final class SpaceProvidersUtil {
     }
 
     /**
-     * @return The space providers object.
+     * Build the space provider object optionally connecting to the space provider first.
+     *
+     * @param spaceProvider
+     * @param doConnect
+     *
+     * @return The complete space provider object,
      */
-    private static ObjectNode buildSpaceProvidersObjectNode(final SpaceProvider spaceProvider) {
+    public static ObjectNode buildSpaceProviderObjectNode(final SpaceProvider spaceProvider, final boolean doConnect) {
         final var type = spaceProvider.getType();
         final var isLocalSpaceProvider = type == TypeEnum.LOCAL;
         final var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
-        final var objectNode = MAPPER.createObjectNode()//
+        final var userObjectNode = buildUserObjectNode(spaceProvider, doConnect); // To connect if necessary
+        final var spaceProviderObjectNode = MAPPER.createObjectNode()//
             .put("id", spaceProvider.getId()) //
             .put("name", spaceProvider.getName()) //
             .put("type", type.toString()) //
             .put("connected", isLocalSpaceProvider || spaceProvider.getConnection(false).isPresent()) //
             .put("connectionMode", connectionMode);
-        if (!isLocalSpaceProvider) { // Do not set user name for local space provider
-            objectNode.set("user", buildUserObjectNode(spaceProvider, false));
+        if (!isLocalSpaceProvider) { // Do not set user object node in local space
+            spaceProviderObjectNode.set("user", userObjectNode);
         }
-        return objectNode;
+        return spaceProviderObjectNode;
     }
 
     /**
-     * Builds the user object node using the space provider and optionally connects.
-     *
-     * @param spaceProvider The space provider to use
-     * @param doConnect Whether to connect to that space provider first or not
-     *
      * @return The user object node if connection present {@code null} otherwise.
      */
-    public static ObjectNode buildUserObjectNode(final SpaceProvider spaceProvider, final boolean doConnect) {
+    private static ObjectNode buildUserObjectNode(final SpaceProvider spaceProvider, final boolean doConnect) {
         return spaceProvider.getConnection(doConnect)//
             .map(SpaceProviderConnection::getUsername)//
             .filter(Predicate.not(String::isEmpty))//
