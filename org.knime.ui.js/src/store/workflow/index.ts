@@ -299,7 +299,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     { nodeId }
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    await API.workflowCommand.SetComponentLinkInformation({
+    await API.workflowCommand.UpdateComponentLinkInformation({
       projectId, workflowId,
       nodeId
     });
