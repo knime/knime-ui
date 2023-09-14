@@ -24,15 +24,15 @@ const useNodeTemplates = ({ role, nodes }: { role: string, nodes: NodeWithExtens
     }
 
     // Temporary variables to hold the values for this effect run.
-    const _nodeTemplates = [];
-    const _uninstalledExtensions = {};
+    const _nodeTemplates : NodeTemplate[] = [];
+    const _uninstalledExtensions : {[key: string]: ExtensionWithNodes} = {};
 
     // Fetching node templates concurrently.
     await Promise.all(
       nodes.map(async (node) => {
         const { factoryName } = node;
         // Dispatching a Vuex action to get a node template.
-        const nodeTemplate = await store.dispatch(
+        const nodeTemplate : NodeTemplate = await store.dispatch(
           "nodeRepository/getNodeTemplate",
           factoryName,
         );
