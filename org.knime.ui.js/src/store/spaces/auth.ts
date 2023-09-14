@@ -23,21 +23,15 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         spaceProviderId,
       });
       // fetch the spaces if we are now connected
-      if (spaceProvider?.connected) {
-        const spacesData = await dispatch("fetchProviderSpaces", {
-          id: spaceProviderId,
-        });
-        commit("updateSpaceProvider", {
-          id: spaceProviderId,
-          value: { ...spaceProvider, ...spacesData },
-        });
-      } else {
-        // update metadata anyway
-        commit("updateSpaceProvider", {
-          id: spaceProviderId,
-          value: spaceProvider,
-        });
-      }
+      const spacesData = spaceProvider?.connected
+        ? await dispatch("fetchProviderSpaces", {
+            id: spaceProviderId,
+          })
+        : {};
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: { ...spaceProvider, ...spacesData },
+      });
     } catch (error) {
       consola.error("Error connecting to provider", { error });
       throw error;
