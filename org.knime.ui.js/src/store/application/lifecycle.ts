@@ -38,8 +38,14 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
     await runInEnvironment({
       DESKTOP: async () => {
-        await API.event.subscribeEvent({ typeId: "UpdateAvailableEventType" });
-        API.desktop.checkForUpdates();
+        try {
+          await API.event.subscribeEvent({
+            typeId: "UpdateAvailableEventType",
+          });
+          API.desktop.checkForUpdates();
+        } catch (error) {
+          consola.log(error);
+        }
       },
     });
 
