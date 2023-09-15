@@ -26,7 +26,7 @@ export default {
   },
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
-    ...mapGetters("workflow", ["isWorkflowEmpty", "isWritable"]),
+    ...mapGetters("workflow", ["isWorkflowEmpty"]),
     ...mapGetters("selection", ["selectedNodes"]),
     ...mapGetters("application", [
       "hasAnnotationModeEnabled",

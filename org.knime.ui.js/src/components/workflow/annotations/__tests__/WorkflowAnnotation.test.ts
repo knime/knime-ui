@@ -237,7 +237,9 @@ describe("WorkflowAnnotation.vue", () => {
 
       expect($store.state.workflow.editableAnnotationId).toBeNull();
       wrapper.findComponent(RichTextAnnotation).vm.$emit("editStart");
-      expect(wrapper);
+      expect(wrapper.findComponent(RichTextEditor).props("editable")).toBe(
+        false,
+      );
       expect($store.state.workflow.editableAnnotationId).toBeNull();
     });
 
