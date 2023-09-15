@@ -56,8 +56,31 @@ export default defineComponent({
         portIdx: this.selectedPortIndex,
         viewIdx: this.selectedViewIndex,
       });
-
+      this.modifyPortViewSettings(portView);
       return portView;
+    },
+
+    modifyPortViewSettings(portView) {
+      // Introduced with NXT-2044 because selection is enabled for the detached
+      // table port view (via the table port view settings) but not yet
+      // supported by the _embedded_ (this) table port view. Hence, we modify
+      // the table port view settings to _not_ show the selection checkboxes.
+      // Workaround to be removed with NXT-2042.
+
+      if (!portView.initialData) {
+        return;
+      }
+      const initialData = JSON.parse(portView.initialData);
+      const settings = initialData?.result?.settings;
+      if (
+        settings &&
+        settings.subscribeToSelection &&
+        settings.publishSelection
+      ) {
+        settings.subscribeToSelection = false;
+        settings.publishSelection = false;
+        portView.initialData = JSON.stringify(initialData);
+      }
     },
 
     resourceLocationResolver({ resourceInfo }) {
