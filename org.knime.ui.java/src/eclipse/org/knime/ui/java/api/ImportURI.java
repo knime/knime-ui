@@ -169,9 +169,9 @@ public final class ImportURI {
         }
         var message = "Can't import object from URI '" + uriString + "'. Not a valid URL nor a valid path.";
         if (exception == null) {
-            LOGGER.warn(message);
+            LOGGER.debug(message);
         } else {
-            LOGGER.warn(message, exception);
+            LOGGER.debug(message, exception);
         }
         return null;
     }
