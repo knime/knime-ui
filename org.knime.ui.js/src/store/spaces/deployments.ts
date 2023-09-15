@@ -69,6 +69,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     const itemId = state.deploymentsModalConfig.itemId;
 
+    // Finish up implementation once the backend is done
     await API.space.deleteJobsForWorkflow(
       spaceId,
       spaceProviderId,
@@ -88,6 +89,21 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
 
     // console.log("saved job:", jobId);
+    // Finish up implementation once the backend is done
     API.space.saveJobAsWorkflow(spaceId, spaceProviderId, jobId);
+  },
+
+  async editSchedule({ state }, { scheduleId }) {
+    // TODO Call backend to edit the schedule
+  },
+
+  async deleteSchedule({ state }, { scheduleId }) {
+    // TODO Call backend to delete the schedule
+  },
+
+  async executeWorkflow({ state }, { projectId, itemId }) {
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+
+    // TODO Call backend to execute a workflow
   },
 };

@@ -97,109 +97,109 @@ describe("spaces::deployments", () => {
       });
     });
 
-    // it("should delete job and fetch schedules if job was created by a schedule", async () => {
-    //   const itemId = ["id1"];
-    //   const itemName = "Item name";
-    //   const jobId = "job1";
-    //   const schedulerId = "scheduler1";
-    //   const { store } = loadStore();
+    it.skip("should delete job and fetch schedules if job was created by a schedule", async () => {
+      const itemId = ["id1"];
+      const itemName = "Item name";
+      const jobId = "job1";
+      const schedulerId = "scheduler1";
+      const { store } = loadStore();
 
-    //   const projectId = "project2";
-    //   store.state.spaces.projectPath[projectId] = {
-    //     spaceProviderId: "server",
-    //     spaceId: "local",
-    //     itemId: "level2",
-    //   };
+      const projectId = "project2";
+      store.state.spaces.projectPath[projectId] = {
+        spaceProviderId: "server",
+        spaceId: "local",
+        itemId: "level2",
+      };
 
-    //   await store.dispatch("spaces/displayDeployments", {
-    //     projectId,
-    //     itemId,
-    //     itemName,
-    //   });
+      await store.dispatch("spaces/displayDeployments", {
+        projectId,
+        itemId,
+        itemName,
+      });
 
-    //   await store.dispatch("spaces/deleteJob", { jobId, schedulerId });
-    //   expect(mockedAPI.space.deleteJobsForWorkflow).toHaveBeenCalledWith({
-    //     spaceId: "local",
-    //     spaceProviderId: "server",
-    //     jobId,
-    //   });
-    //   expect(mockedAPI.space.listJobsForWorkflow).toHaveBeenCalledWith({
-    //     spaceId: "local",
-    //     spaceProviderId: "server",
-    //     itemId,
-    //   });
-    //   expect(mockedAPI.space.listSchedulesForWorkflow).toHaveBeenCalledWith({
-    //     spaceId: "local",
-    //     spaceProviderId: "server",
-    //     itemId,
-    //   });
-    // });
+      await store.dispatch("spaces/deleteJob", { jobId, schedulerId });
+      expect(mockedAPI.space.deleteJobsForWorkflow).toHaveBeenCalledWith({
+        spaceId: "local",
+        spaceProviderId: "server",
+        jobId,
+      });
+      expect(mockedAPI.space.listJobsForWorkflow).toHaveBeenCalledWith({
+        spaceId: "local",
+        spaceProviderId: "server",
+        itemId,
+      });
+      expect(mockedAPI.space.listSchedulesForWorkflow).toHaveBeenCalledWith({
+        spaceId: "local",
+        spaceProviderId: "server",
+        itemId,
+      });
+    });
 
-    // it("should delete job and fetch only jobs", async () => {
-    //   const itemId = ["id1"];
-    //   const itemName = "Item name";
-    //   const jobId = "job1";
-    //   const schedulerId = null;
-    //   const { store } = loadStore();
+    it.skip("should delete job and fetch only jobs", async () => {
+      const itemId = ["id1"];
+      const itemName = "Item name";
+      const jobId = "job1";
+      const schedulerId = null;
+      const { store } = loadStore();
 
-    //   const projectId = "project2";
-    //   store.state.spaces.projectPath[projectId] = {
-    //     spaceProviderId: "server",
-    //     spaceId: "local",
-    //     itemId: "level2",
-    //   };
+      const projectId = "project2";
+      store.state.spaces.projectPath[projectId] = {
+        spaceProviderId: "server",
+        spaceId: "local",
+        itemId: "level2",
+      };
 
-    //   await store.dispatch("spaces/displayDeployments", {
-    //     projectId,
-    //     itemId,
-    //     itemName,
-    //   });
+      await store.dispatch("spaces/displayDeployments", {
+        projectId,
+        itemId,
+        itemName,
+      });
 
-    //   await store.dispatch("spaces/deleteJob", { jobId, schedulerId });
-    //   expect(mockedAPI.space.deleteJobsForWorkflow).toHaveBeenCalledWith({
-    //     spaceId: "local",
-    //     spaceProviderId: "server",
-    //     jobId,
-    //   });
-    // expect(mockedAPI.space.listJobsForWorkflow).toHaveBeenCalledWith({
-    //   spaceId: "local",
-    //   spaceProviderId: "server",
-    //   itemId,
-    // });
-    //   expect(mockedAPI.space.listSchedulesForWorkflow).not.toHaveBeenCalledWith(
-    //     {
-    //       spaceId: "local",
-    //       spaceProviderId: "server",
-    //       itemId,
-    //     },
-    //   );
-    // });
+      await store.dispatch("spaces/deleteJob", { jobId, schedulerId });
+      expect(mockedAPI.space.deleteJobsForWorkflow).toHaveBeenCalledWith({
+        spaceId: "local",
+        spaceProviderId: "server",
+        jobId,
+      });
+      expect(mockedAPI.space.listJobsForWorkflow).toHaveBeenCalledWith({
+        spaceId: "local",
+        spaceProviderId: "server",
+        itemId,
+      });
+      expect(mockedAPI.space.listSchedulesForWorkflow).not.toHaveBeenCalledWith(
+        {
+          spaceId: "local",
+          spaceProviderId: "server",
+          itemId,
+        },
+      );
+    });
 
-    // it("should save job as a workflow", async () => {
-    //   const itemId = ["id1"];
-    //   const itemName = "Item name";
-    //   const jobId = "job1";
-    //   const { store } = loadStore();
+    it.skip("should save job as a workflow", async () => {
+      const itemId = ["id1"];
+      const itemName = "Item name";
+      const jobId = "job1";
+      const { store } = loadStore();
 
-    //   const projectId = "project2";
-    //   store.state.spaces.projectPath[projectId] = {
-    //     spaceProviderId: "server",
-    //     spaceId: "local",
-    //     itemId: "level2",
-    //   };
+      const projectId = "project2";
+      store.state.spaces.projectPath[projectId] = {
+        spaceProviderId: "server",
+        spaceId: "local",
+        itemId: "level2",
+      };
 
-    //   await store.dispatch("spaces/displayDeployments", {
-    //     projectId,
-    //     itemId,
-    //     itemName,
-    //   });
-    //   store.dispatch("spaces/saveJobAsWorkflow", { jobId });
+      await store.dispatch("spaces/displayDeployments", {
+        projectId,
+        itemId,
+        itemName,
+      });
+      store.dispatch("spaces/saveJobAsWorkflow", { jobId });
 
-    //   expect(mockedAPI.space.saveJobAsWorkflow).toHaveBeenCalledWith({
-    //     spaceId: "local",
-    //     spaceProviderId: "server",
-    //     itemId,
-    //   });
-    // });
+      expect(mockedAPI.space.saveJobAsWorkflow).toHaveBeenCalledWith({
+        spaceId: "local",
+        spaceProviderId: "server",
+        itemId,
+      });
+    });
   });
 });

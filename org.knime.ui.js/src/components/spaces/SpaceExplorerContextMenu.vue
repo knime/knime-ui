@@ -21,6 +21,7 @@ import {
   buildOpenAPIDefinitionMenuItem,
   buildOpenPermissionsDialog,
   buildDisplayDeploymentsMenuItem,
+  buildExecuteWorkflowMenuItem,
 } from "@/components/spaces/remoteMenuItems";
 import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 
@@ -132,6 +133,12 @@ const fileExplorerContextMenuItems = computed(() => {
     props.selectedItemIds,
   );
 
+  const executeWorkflow = buildExecuteWorkflowMenuItem(
+    store.dispatch,
+    props.projectId,
+    props.selectedItemIds,
+  );
+
   const getServerActions = () => {
     if (!isServer) {
       return [];
@@ -143,6 +150,7 @@ const fileExplorerContextMenuItems = computed(() => {
 
     return [
       downloadToLocalSpace,
+      executeWorkflow,
       displayDeployments,
       openInBrowser,
       openAPIDefinition,
