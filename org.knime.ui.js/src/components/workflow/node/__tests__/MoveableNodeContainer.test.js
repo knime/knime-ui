@@ -2,7 +2,7 @@ import { expect, describe, it, vi, beforeEach } from "vitest";
 import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
 import { API } from "@api";
 import { escapeStack as escapeStackMock } from "@/mixins/escapeStack";
@@ -22,8 +22,8 @@ const commonNode = {
 };
 
 vi.mock("@/mixins/escapeStack", () => {
+  // eslint-disable-next-line func-style
   function escapeStack({ onEscape }) {
-    // eslint-disable-line func-style
     escapeStack.onEscape = onEscape;
     return {
       /* empty mixin */
@@ -39,6 +39,7 @@ describe("MoveableNodeContainer", () => {
     props = {},
     screenToCanvasCoordinates = () => [0, 0],
     isDragging = false,
+    slots = {},
   } = {}) => {
     const defaultProps = {
       ...commonNode,
@@ -111,6 +112,7 @@ describe("MoveableNodeContainer", () => {
           [directiveMove.name]: mockMoveDirective,
         },
       },
+      slots,
     });
 
     return { wrapper, $store, mockMoveDirective };
@@ -198,21 +200,35 @@ describe("MoveableNodeContainer", () => {
         y: initialPosition.y + 100,
       };
 
-      const { mockMoveDirective, $store } = doMount({
+      const rect = { left: 5, top: 8 };
+      const eventCoords = { clientX: 10, clientY: 10 };
+      mockBoundingRect(rect);
+
+      const { mockMoveDirective, $store, wrapper } = doMount({
         isDragging: true,
         screenToCanvasCoordinates: vi.fn(() => [
           positionAfterMove.x,
           positionAfterMove.y,
         ]),
+        slots: {
+          default: '<div class="node-torso-wrapper"></div>',
+        },
       });
 
+      await wrapper.trigger("pointerdown.left", eventCoords);
       await startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
 
       moveNodeTo(mockMoveDirective, { clientX: 250, clientY: 250, altKey });
 
       const initialDelta = {
-        x: positionAfterMove.x - initialPosition.x - $shapes.nodeSize / 2,
-        y: positionAfterMove.y - initialPosition.y - $shapes.nodeSize / 2,
+        x:
+          positionAfterMove.x -
+          initialPosition.x -
+          (eventCoords.clientX - rect.left),
+        y:
+          positionAfterMove.y -
+          initialPosition.y -
+          (eventCoords.clientY - rect.top),
       };
 
       const expectedDelta = {

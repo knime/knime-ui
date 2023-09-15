@@ -3,6 +3,7 @@ import * as Vue from "vue";
 import { mount, config, VueWrapper } from "@vue/test-utils";
 
 import { directiveMove } from "../directive-move";
+import { mockBoundingRect } from "@/test/utils";
 
 describe("directive-move", () => {
   beforeAll(() => {
@@ -24,20 +25,22 @@ describe("directive-move", () => {
     onMoveStart = vi.fn(),
     onMoveEnd = vi.fn(),
     isProtected = false,
+    dragReferenceElementSelector = null,
   } = {}) => {
     const template = `
     <div v-move="{
       onMove,
       onMoveStart,
       onMoveEnd,
-      isProtected
-    }"></div>
+      isProtected,
+      dragReferenceElementSelector,
+    }"><div class="inner-reference"></div></div>
     `;
 
     const wrapper = mount({
       methods: { onMove, onMoveStart, onMoveEnd },
       template,
-      data: () => ({ isProtected }),
+      data: () => ({ isProtected, dragReferenceElementSelector }),
     });
 
     const hasPointerCapture = vi.fn();
@@ -154,6 +157,50 @@ describe("directive-move", () => {
         }),
       }),
     );
+  });
+
+  it("should use drag reference selector for moving", () => {
+    mockBoundingRect({ top: 10, left: 10, right: 30, bottom: 40 });
+    const { wrapper, onMoveStart } = doMount({
+      dragReferenceElementSelector: ".inner-reference",
+    });
+
+    dispatchPointerEvent(wrapper, "pointerdown", {
+      clientX: 50,
+      clientY: 50,
+    });
+
+    // we ignore on purpose the first on move event after pointerDown
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 0,
+      clientY: 0,
+    });
+
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 100,
+      clientY: 100,
+    });
+
+    // move does not get called because it's not inside the reference's rect
+    expect(onMoveStart).not.toHaveBeenCalled();
+
+    dispatchPointerEvent(wrapper, "pointerdown", {
+      clientX: 17,
+      clientY: 28,
+    });
+
+    // we ignore on purpose the first on move event after pointerDown
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 0,
+      clientY: 0,
+    });
+
+    dispatchPointerEvent(wrapper, "pointermove", {
+      clientX: 100,
+      clientY: 100,
+    });
+
+    expect(onMoveStart).toHaveBeenCalled();
   });
 
   it("should only work with the left button", () => {
