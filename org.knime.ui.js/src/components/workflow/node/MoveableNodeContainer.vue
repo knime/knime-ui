@@ -37,8 +37,8 @@ export default {
     // Start position of the dragging
     startPos: null,
     lastHitTarget: null,
-    cursorPosition: null,
-    dragReferenceElementSelector: ".node-torso",
+    cursorPosition: { x: 0, y: 0 },
+    dragReferenceElementSelector: ".node-torso-wrapper",
   }),
   computed: {
     ...mapGetters("workflow", ["isWritable", "isNodeConnected", "getNodeById"]),
@@ -163,7 +163,8 @@ export default {
 
       // Adjusted For Grid Snapping
       const deltas = {
-        // adjust the deltas using `nodeSize` to make sure the reference is from the center of the node
+        // adjust the deltas using `cursorPosition` to make sure the reference
+        // is from where the user clicked to move the node
         x: geometry.utils.snapToGrid(
           canvasX - this.startPos.x - this.cursorPosition.x,
           snapSize
