@@ -37,13 +37,17 @@ const menuGroups = function () {
   const onlyEnabled = (item: MenuItem) => !item.disabled;
 
   const removeInvalidItems = (items: Array<MenuItem>) => {
-    return items
-      .filter(onlyEnabled)
-      .map((item) =>
-        item.children
-          ? { ...item, children: removeInvalidItems(item.children) }
-          : item,
-      );
+    return (
+      items
+        .filter(onlyEnabled)
+        .map((item) =>
+          item.children
+            ? { ...item, children: removeInvalidItems(item.children) }
+            : item,
+        )
+        // also remove items whose children were all filtered out
+        .filter((item) => (item.children ? item.children.length > 0 : true))
+    );
   };
 
   return {
