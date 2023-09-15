@@ -97,10 +97,6 @@ const stateMap: WeakMap<HTMLElement, MoveState> = new WeakMap();
 const createPointerdownHandler =
   (srcElement: HTMLElement) => (event: PointerEvent) => {
     const state = stateMap.get(srcElement);
-    if (state.isProtected) {
-      return;
-    }
-
     // only left mouse button can move
     if (event.button !== 0) {
       return;
@@ -108,6 +104,10 @@ const createPointerdownHandler =
 
     event.stopPropagation();
     event.preventDefault();
+
+    if (state.isProtected) {
+      return;
+    }
 
     const { pointerId } = event;
     state.pointerId = pointerId;
