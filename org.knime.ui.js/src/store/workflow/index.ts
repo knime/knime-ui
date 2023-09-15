@@ -314,11 +314,6 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     { isLinked, isInsideLinked, projectAndWorkflowIds },
     rootState,
   ) {
-    // annotation mode (cross hair mouse cursor)
-    if (rootState.application.canvasMode === "annotation") {
-      return false;
-    }
-
     // linking state
     const linkage = isLinked || isInsideLinked;
 

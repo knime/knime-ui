@@ -8,6 +8,10 @@ import CreateMetanode from "webapps-common/ui/assets/img/icons/metanode-add.svg"
 import CreateComponent from "webapps-common/ui/assets/img/icons/component.svg";
 import LayoutIcon from "webapps-common/ui/assets/img/icons/layout-editor.svg";
 
+import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
+import SelectionModeIcon from "@/assets/selection-mode.svg";
+import AnnotationModeIcon from "@/assets/annotation-mode.svg";
+
 import type {
   ShortcutConditionContext,
   UnionToShortcutRegistry,
@@ -405,6 +409,8 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   switchToAnnotationMode: {
     hotkey: ["T"],
+    text: "Annotation mode",
+    icon: AnnotationModeIcon,
     execute: ({ $store }) => {
       $store.dispatch("application/switchCanvasMode", "annotation");
     },
@@ -412,6 +418,8 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   switchToPanMode: {
     hotkey: ["P"],
+    text: "Pan mode",
+    icon: ArrowMoveIcon,
     execute: ({ $store }) => {
       $store.dispatch("application/switchCanvasMode", "pan");
     },
@@ -419,6 +427,8 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   switchToSelectionMode: {
     hotkey: ["V"],
+    text: "Selection mode",
+    icon: SelectionModeIcon,
     execute: ({ $store }) => {
       $store.dispatch("application/switchCanvasMode", "selection");
     },

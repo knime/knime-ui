@@ -11,8 +11,8 @@ const $shortcuts = useShortcuts();
 
 interface Props {
   name: ShortcutName;
-  withText: boolean;
-  dropdown: ShortcutName[];
+  withText?: boolean;
+  dropdown?: ShortcutName[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
