@@ -229,6 +229,18 @@ describe("WorkflowAnnotation.vue", () => {
       );
     });
 
+    it("should not allow editing when for non-writable workflows", () => {
+      const { wrapper, $store } = doMount({
+        props: { annotation: modernAnnotation },
+      });
+      $store.state.workflow.activeWorkflow.info.linked = true;
+
+      expect($store.state.workflow.editableAnnotationId).toBeNull();
+      wrapper.findComponent(RichTextAnnotation).vm.$emit("editStart");
+      expect(wrapper);
+      expect($store.state.workflow.editableAnnotationId).toBeNull();
+    });
+
     it("should render RichTextEditor when annotation is editable", async () => {
       const { wrapper, $store } = doMount();
 
