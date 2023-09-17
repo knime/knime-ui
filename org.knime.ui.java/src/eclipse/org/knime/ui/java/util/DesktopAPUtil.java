@@ -61,7 +61,11 @@ import org.apache.commons.lang3.Functions;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
@@ -78,6 +82,7 @@ import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
+import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -91,6 +96,7 @@ import org.knime.workbench.explorer.filesystem.LocalExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 import org.knime.workbench.explorer.view.actions.DownloadAndOpenWorkflowAction;
 import org.knime.workbench.explorer.view.actions.WorkflowDownload;
+import org.knime.workbench.explorer.view.dialogs.SnapshotPanel;
 
 /**
  * Summarizes shared utility methods which are only relevant if the Web UI is run within the desktop AP. Those methods,
@@ -216,6 +222,60 @@ public final class DesktopAPUtil {
             var sh = org.knime.core.ui.util.SWTUtilities.getActiveShell();
             MessageDialog.openWarning(sh, title, message);
         });
+    }
+
+    /** Answer to the question dialog asking whether a remote workflow should be overwritten. */
+    public enum OverwriteRemotelyResult {
+        /** Abort upload. */
+        CANCEL,
+        /** Overwrite workflow without creating a snapshot. */
+        OVERWRITE,
+        /** First create a snapshot and then upload the workflow. */
+        OVERWRITE_WITH_SNAPSHOT
+    }
+
+    /**
+     * Opens a dialog asking whether a remote workflow should be overwritten.
+     *
+     * @param remoteStore file store representing the remote workflow
+     * @param location location name, either {@code "Hub"} or {@code "Server"}
+     * @return pair of answer and the comment to be used if the answer is
+     *        {@link OverwriteRemotelyResult#OVERWRITE_WITH_SNAPSHOT}
+     */
+    public static Pair<OverwriteRemotelyResult, String> openOverwriteRemotelyDialog(
+            final AbstractExplorerFileStore remoteStore, final String location) {
+        final var snapshotPanelRef = new AtomicReference<SnapshotPanel>();
+        @SuppressWarnings("restriction")
+        final var shell = org.knime.core.ui.util.SWTUtilities.getActiveShell();
+        final var dialog = new MessageDialog(shell, "Overwrite on " + location + "?", null,
+            "The workflow\n\n\t" + remoteStore.getMountIDWithFullPath()
+                + "\n\nalready exists on the " + location + ". Do you want to overwrite it?\n",
+            MessageDialog.QUESTION, new String[] { IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL }, 1) {
+            @Override
+            protected Control createCustomArea(final Composite parent) {
+                final var contentProvider = remoteStore.getContentProvider();
+                if (contentProvider.supportsSnapshots()) {
+                    final var forceSnapshot = contentProvider.isForceSnapshotCreation();
+                    final var panel = new SnapshotPanel(parent, SWT.NONE, forceSnapshot);
+                    panel.setEnabled(true);
+                    snapshotPanelRef.set(panel);
+                    return panel;
+                } else {
+                    return null;
+                }
+            }
+        };
+
+        if (dialog.open() != 1) {
+            return Pair.create(OverwriteRemotelyResult.CANCEL, null);
+        }
+
+        final var snapshotPanel = snapshotPanelRef.get();
+        if (snapshotPanel != null && snapshotPanel.createSnapshot()) {
+            return Pair.create(OverwriteRemotelyResult.OVERWRITE_WITH_SNAPSHOT, snapshotPanel.getComment());
+        } else {
+            return Pair.create(OverwriteRemotelyResult.OVERWRITE, null);
+        }
     }
 
     /**
