@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
 import { shallowMount, VueWrapper } from "@vue/test-utils";
@@ -18,6 +19,7 @@ import {
   MetaNodePort,
   NodeState,
   PortType,
+  TemplateLink,
 } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 
@@ -504,40 +506,98 @@ describe("ContextMenu.vue", () => {
       );
     });
 
-    it("shows options for components", async () => {
-      const node = createComponentNode({
-        id: "root:0",
-        state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
-        outPorts: [
-          createPort({
-            typeId: "org.some.otherPorType",
-          }),
-        ],
+    describe("components", () => {
+      it("shows options for components", async () => {
+        const node = createComponentNode({
+          id: "root:0",
+          state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+          outPorts: [
+            createPort({
+              typeId: "org.some.otherPorType",
+            }),
+          ],
+        });
+
+        const { $store } = createStore({ nodes: { [node.id]: node } });
+
+        await $store.dispatch("selection/selectNode", "root:0");
+
+        const { wrapper } = await doMount({ store: $store });
+
+        expect(renderedMenuItems(wrapper)).toEqual(
+          assertItems([
+            { metadata: { shortcutName: "configureNode" } },
+            {
+              text: "Open output port",
+              children: expect.anything(),
+              separator: true,
+            },
+            { metadata: { shortcutName: "editNodeLabel" }, separator: true },
+            { metadata: { shortcutName: "cut" } },
+            { metadata: { shortcutName: "copy" } },
+            { metadata: { shortcutName: "deleteSelected" }, separator: true },
+            { metadata: { shortcutName: "createMetanode" } },
+            { metadata: { shortcutName: "createComponent" } },
+            {
+              text: "Component",
+              children: assertItems([
+                { text: "Open component" },
+                { text: "Rename component" },
+                { text: "Share" },
+              ]),
+            },
+          ]),
+        );
       });
 
-      const { $store } = createStore({ nodes: { [node.id]: node } });
-
-      await $store.dispatch("selection/selectNode", "root:0");
-
-      const { wrapper } = await doMount({ store: $store });
-
-      expect(renderedMenuItems(wrapper)).toEqual(
-        assertItems([
-          { metadata: { shortcutName: "configureNode" } },
-          {
-            text: "Open output port",
-            children: expect.anything(),
-            separator: true,
+      it("shows options for linked components", async () => {
+        const node = createComponentNode({
+          id: "root:0",
+          state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+          link: {
+            url: "some:uri",
+            isLinkTypeChangable: false,
+            updateStatus: TemplateLink.UpdateStatusEnum.UPTODATE,
           },
-          { metadata: { shortcutName: "editNodeLabel" }, separator: true },
-          { metadata: { shortcutName: "cut" } },
-          { metadata: { shortcutName: "copy" } },
-          { metadata: { shortcutName: "deleteSelected" }, separator: true },
-          { metadata: { shortcutName: "createMetanode" } },
-          { metadata: { shortcutName: "createComponent" } },
-          { text: "Component" },
-        ]),
-      );
+          outPorts: [
+            createPort({
+              typeId: "org.some.otherPorType",
+            }),
+          ],
+        });
+
+        const { $store } = createStore({ nodes: { [node.id]: node } });
+
+        await $store.dispatch("selection/selectNode", "root:0");
+
+        const { wrapper } = await doMount({ store: $store });
+
+        expect(renderedMenuItems(wrapper)).toEqual(
+          assertItems([
+            { metadata: { shortcutName: "configureNode" } },
+            {
+              text: "Open output port",
+              children: expect.anything(),
+              separator: true,
+            },
+            { metadata: { shortcutName: "editNodeLabel" }, separator: true },
+            { metadata: { shortcutName: "cut" } },
+            { metadata: { shortcutName: "copy" } },
+            { metadata: { shortcutName: "deleteSelected" }, separator: true },
+            { metadata: { shortcutName: "createMetanode" } },
+            { metadata: { shortcutName: "createComponent" } },
+            {
+              text: "Component",
+              children: assertItems([
+                { text: "Open component" },
+                { text: "Update component" },
+                { text: "Change KNIME Hub item version" },
+                { text: "Disconnect link" },
+              ]),
+            },
+          ]),
+        );
+      });
     });
 
     it("shows correct menu items if one annotation is selected", async () => {

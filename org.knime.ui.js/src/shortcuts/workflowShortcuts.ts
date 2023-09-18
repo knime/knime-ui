@@ -319,7 +319,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     condition: canExpand("component"),
   },
   linkComponent: {
-    text: "Share...",
+    text: "Share",
     title: "Share component",
     execute: ({ $store, payload = null }) => {
       const selectedNodeId =
