@@ -3012,7 +3012,7 @@ export interface TemplateLink {
      * @type {boolean}
      * @memberof TemplateLink
      */
-    isLinkTypeChangable?: boolean;
+    isLinkTypeChangeable?: boolean;
 
 }
 

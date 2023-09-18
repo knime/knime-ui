@@ -388,7 +388,7 @@ export default defineComponent({
         ),
       ];
 
-      const metanodeAndComponentGroup: Array<MenuItem>= [
+      const metanodeAndComponentGroup: Array<MenuItem> = [
         ...this.mapToShortcut([
           { name: "createMetanode", isVisible: this.selectedNodes.length },
           { name: "createComponent", isVisible: this.selectedNodes.length },
@@ -404,19 +404,35 @@ export default defineComponent({
           },
           isMetanode,
         ),
-        ...filterItemVisibility( // TODO: Add separators by adding nested groups
+        ...filterItemVisibility(
+          // TODO: Add separators by adding nested groups
           {
             text: "Component",
             children: this.mapToShortcut([
               { name: "openComponentOrMetanode", isVisible: true },
               { name: "editName", isVisible: true },
               { name: "expandComponent", isVisible: true },
-              { name: "linkComponent", isVisible: !this.singleSelectedNode?.link },
-              { name: "updateComponent", isVisible: this.singleSelectedNode?.link },
-              { name: "changeComponentLinkType", isVisible: this.singleSelectedNode?.link },
-              { name: "changeHubItemVersion", isVisible: this.singleSelectedNode?.link },        
-              { name: "unlinkComponent", isVisible: this.singleSelectedNode?.link },
-            ])
+              {
+                name: "linkComponent",
+                isVisible: !this.singleSelectedNode?.link,
+              },
+              {
+                name: "updateComponent",
+                isVisible: this.singleSelectedNode?.link,
+              },
+              {
+                name: "changeComponentLinkType",
+                isVisible: this.singleSelectedNode?.link,
+              },
+              {
+                name: "changeHubItemVersion",
+                isVisible: this.singleSelectedNode?.link,
+              },
+              {
+                name: "unlinkComponent",
+                isVisible: this.singleSelectedNode?.link,
+              },
+            ]),
           },
           isComponent,
         ),

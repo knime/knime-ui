@@ -377,10 +377,10 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     condition: ({ $store }) => {
       const isWritable = $store.getters["workflow/isWritable"];
-      const isLinkTypeChangable =
+      const isLinkTypeChangeable =
         $store.getters["selection/singleSelectedNode"].link
-          ?.isLinkTypeChangable;
-      return isWritable && isLinkTypeChangable;
+          ?.isLinkTypeChangeable;
+      return isWritable && isLinkTypeChangeable;
     },
   },
   openLayoutEditor: {
