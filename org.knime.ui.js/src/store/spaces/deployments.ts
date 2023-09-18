@@ -71,10 +71,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     // Finish up implementation once the backend is done
     await API.space.deleteJobsForWorkflow(
-      spaceId,
-      spaceProviderId,
-      itemId,
-      jobId,
+      { spaceId,
+        spaceProviderId,
+        itemId,
+        jobId
+      }
     );
     // console.log("deleted job:", jobId);
 

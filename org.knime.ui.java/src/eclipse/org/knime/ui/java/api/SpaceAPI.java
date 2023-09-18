@@ -74,6 +74,7 @@ import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
  * Functions around spaces.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 final class SpaceAPI {
 
@@ -254,5 +255,22 @@ final class SpaceAPI {
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         final var url = ClassicAPBuildServerURL.getAPIDefinition(itemId, sourceSpaceProvider, sourceSpace);
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
+    }
+
+    /**
+     * Saves a job as a workflow on the same space.
+     *
+     * @param spaceProviderId
+     * @param spaceId
+     * @param itemId
+     * @param jobId
+     * @return The location/path the workflow was save to
+     * @throws NoSuchElementException if there is no job for the given ids
+     */
+    @API
+    static String saveJobAsWorkflow(final String spaceProviderId, final String spaceId, final String itemId,
+        final String jobId) {
+        // TODO: NXT-2025, implement this.
+        return "This is a demo";
     }
 }

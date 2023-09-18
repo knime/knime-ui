@@ -4154,6 +4154,23 @@ const space = function(rpcClient: RPCClient) {
            return rpcClient.call('SpaceService.deleteItems', { ...defaultParams, ...params });
         },
         /**
+         * Deletes job from the space.
+         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} spaceProviderId Identifies a space-provider.
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {string} jobId The ID of the job to delete
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteJobsForWorkflow(
+        	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  jobId: string  }
+        ): Promise<Response> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('SpaceService.deleteJobsForWorkflow', { ...defaultParams, ...params });
+        },
+        /**
          * Mainly returns the spaces provided by this space-provider.
          * @param {string} spaceProviderId Identifies a space-provider.
          * @param {*} [options] Override http request option.
