@@ -9,6 +9,7 @@ import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 interface Props {
   item: MenuItem;
+  hideDropdown?: boolean;
 }
 
 interface Emits {
@@ -16,7 +17,9 @@ interface Emits {
 }
 
 defineEmits<Emits>();
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  hideDropdown: false,
+});
 </script>
 
 <template>
@@ -34,7 +37,11 @@ defineProps<Props>();
     <template #default="{ expanded }">
       <Component :is="item.icon" class="icon" />
       {{ item.text }}
-      <DropdownIcon class="dropdown-icon" :class="{ flip: expanded }" />
+      <DropdownIcon
+        v-if="!hideDropdown"
+        class="dropdown-icon"
+        :class="{ flip: expanded }"
+      />
     </template>
   </SubMenu>
   <Button
@@ -83,9 +90,9 @@ defineProps<Props>();
   &:focus,
   &.expanded {
     cursor: pointer;
-    color: var(--knime-white);
-    background-color: var(--knime-masala);
-    border-color: var(--knime-masala);
+    border-color: var(--theme-button-function-background-color-hover);
+    color: var(--theme-button-function-foreground-color-hover);
+    background-color: var(--theme-button-function-background-color-hover);
 
     & svg {
       stroke: var(--knime-white);

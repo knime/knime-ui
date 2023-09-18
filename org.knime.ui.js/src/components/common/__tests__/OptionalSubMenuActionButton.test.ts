@@ -2,12 +2,12 @@ import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import { expect, describe, beforeEach, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import SpaceSelectionActionButton from "../SpaceExplorerActionButton.vue";
+import OptionalSubMenuActionButton from "./OptionalSubMenuActionButton.vue";
 import { nextTick } from "vue";
 
-describe("SpaceSelectionActionButton.vue", () => {
+describe("OptionalSubMenuActionButton.vue", () => {
   const doMount = ({ props = {} } = {}) => {
-    const wrapper = mount(SpaceSelectionActionButton, {
+    const wrapper = mount(OptionalSubMenuActionButton, {
       props,
     });
 

@@ -4,11 +4,12 @@ import { mapActions, mapState } from "vuex";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import Carousel from "webapps-common/ui/components/Carousel.vue";
+import HelpMenu from "./HelpMenu.vue";
+import AppMenu from "./AppMenu.vue";
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
-import SwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
+import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import CodeHtmlIcon from "webapps-common/ui/assets/img/icons/code-html.svg";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
-import InfoIcon from "@/assets/info.svg";
 
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -16,7 +17,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import AppHeaderTab from "./AppHeaderTab.vue";
 
 /**
- * Header Bar containing Logo, Open project tabs, and switch to Info page Button
+ * Header Bar containing Logo, Open project tabs, and the 3 buttons Help, Preferences and Menu
  */
 export default defineComponent({
   components: {
@@ -24,9 +25,10 @@ export default defineComponent({
     KnimeIcon,
     FunctionButton,
     Carousel,
-    InfoIcon,
-    SwitchIcon,
-    CloseIcon,
+    HelpMenu,
+    AppMenu,
+    ReloadIcon,
+    CodeHtmlIcon,
     CogIcon,
   },
   data() {
@@ -46,19 +48,11 @@ export default defineComponent({
       "dirtyProjectsMap",
     ]),
 
-    isInfoPageActive() {
-      return this.$route.name === APP_ROUTES.InfoPage;
-    },
-
     isGetStartedPageActive() {
       return this.$route.name === APP_ROUTES.EntryPage.GetStartedPage;
     },
 
     isLogoActive() {
-      if (this.isInfoPageActive) {
-        return false;
-      }
-
       return (
         this.openProjects.length === 0 ||
         (!this.activeProjectId && !this.isLoadingWorkflow) ||
@@ -92,17 +86,12 @@ export default defineComponent({
       onResize();
     },
 
-    switchToJavaUI() {
-      window.switchToJavaUI();
+    reloadApp() {
+      location.reload();
     },
 
-    switchToInfoPage() {
-      if (this.isInfoPageActive) {
-        this.$router.back();
-      } else {
-        this.activeProjectTab = null;
-        this.$router.push({ name: APP_ROUTES.InfoPage });
-      }
+    openInspector() {
+      window.open("http://localhost:8888/", "_blank");
     },
 
     setGetStartedPageTab() {
@@ -161,13 +150,25 @@ export default defineComponent({
       <div class="buttons">
         <FunctionButton
           v-if="devMode"
-          class="header-button"
-          title="Open KNIME Modern UI"
-          data-testid="switch-classic"
-          @click="switchToJavaUI"
+          class="header-button no-text"
+          data-testid="dev-mode-only"
+          title="Inspect Code (DEV MODE ONLY)"
+          @click="openInspector()"
         >
-          <SwitchIcon />
+          <CodeHtmlIcon />
         </FunctionButton>
+
+        <FunctionButton
+          v-if="devMode"
+          class="header-button no-text"
+          data-testid="dev-mode-only"
+          title="Reload App (DEV MODE ONLY)"
+          @click="reloadApp()"
+        >
+          <ReloadIcon />
+        </FunctionButton>
+
+        <HelpMenu data-testid="app-header-help-menu" />
 
         <FunctionButton
           class="header-button"
@@ -176,17 +177,10 @@ export default defineComponent({
           @click="openKnimeUIPreferencePage"
         >
           <CogIcon />
+          Preferences
         </FunctionButton>
 
-        <FunctionButton
-          class="header-button"
-          title="Go to info page"
-          data-testid="switch-info-page"
-          @click="switchToInfoPage"
-        >
-          <CloseIcon v-if="isInfoPageActive" />
-          <InfoIcon v-else />
-        </FunctionButton>
+        <AppMenu data-testid="app-header-app-menu" />
       </div>
     </div>
   </header>
@@ -223,7 +217,7 @@ header {
     align-items: center;
     align-content: center;
 
-    /* Switch to info page button */
+    /* right button bar: help, preferences and menu */
     & .buttons {
       display: flex;
       align-items: center;
@@ -231,20 +225,32 @@ header {
       flex-shrink: 0;
       margin-left: 30px;
 
-      & .header-button {
+      & .header-button,
+      &:deep(.submenu-toggle) {
         border: 1px solid var(--knime-dove-gray);
         display: flex;
+        margin-left: 0;
         margin-right: 5px;
         align-items: center;
         justify-content: center;
-        width: 26px;
+        color: var(--knime-white);
         height: 26px;
-        padding: 4px;
+        padding: 10px;
 
         & svg {
           @mixin svg-icon-size 18;
 
+          margin-right: 5px;
           stroke: var(--knime-white);
+        }
+
+        &.no-text {
+          width: 26px;
+          padding: 4px;
+
+          & svg {
+            margin: 0;
+          }
         }
       }
     }

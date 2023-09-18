@@ -49,12 +49,6 @@ export const routes: Array<RouteRecordRaw> = [
     path: "/space-browsing",
     component: () => import("@/components/spaces/SpaceBrowsingPage.vue"),
   }),
-
-  ...registerRoute("DESKTOP", {
-    name: APP_ROUTES.InfoPage,
-    path: "/info",
-    component: () => import("@/components/infoPage/InfoPage.vue"),
-  }),
 ];
 
 export const getPathFromRouteName = (name) => {
