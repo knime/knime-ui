@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { environment } from "@/environment";
 
 import type {

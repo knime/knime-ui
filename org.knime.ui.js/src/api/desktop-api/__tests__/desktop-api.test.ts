@@ -27,6 +27,38 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
+    name: "openLinkComponentDialog",
+    params: [
+      ["projectId", "project1"],
+      ["workflowId", "root"],
+      ["nodeId", "1"],
+    ],
+  },
+  {
+    name: "updateComponent",
+    params: [
+      ["projectId", "project1"],
+      ["workflowId", "root"],
+      ["nodeId", "1"],
+    ],
+  },
+  {
+    name: "openChangeComponentHubItemVersionDialog",
+    params: [
+      ["projectId", "project1"],
+      ["workflowId", "root"],
+      ["nodeId", "1"],
+    ],
+  },
+  {
+    name: "openChangeComponentLinkTypeDialog",
+    params: [
+      ["projectId", "project1"],
+      ["workflowId", "root"],
+      ["nodeId", "1"],
+    ],
+  },
+  {
     name: "openLegacyFlowVariableDialog",
     params: [
       ["projectId", "project1"],
