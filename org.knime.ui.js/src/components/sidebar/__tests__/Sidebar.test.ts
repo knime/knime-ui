@@ -1,9 +1,9 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { expect, describe, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
-import * as panelStoreConfig from "@/store/panel";
-import * as nodeRepositoryStoreConfig from "@/store/nodeRepository";
+import * as panelStore from "@/store/panel";
+import * as nodeRepositoryStore from "@/store/nodeRepository";
 
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import Metainfo from "@/assets/metainfo.svg";
@@ -12,58 +12,61 @@ import NodeDialogWrapper from "@/components/embeddedViews/NodeDialogWrapper.vue"
 import Sidebar from "../Sidebar.vue";
 
 describe("Sidebar", () => {
-  let store, workflow, wrapper, doShallowMount;
-
-  const mockFeatureFlags = {
-    shouldDisplayEmbeddedDialogs: vi.fn(() => true),
-    shouldShowAiAssistant: () => false,
-  };
-
-  beforeEach(() => {
-    workflow = {
-      projectMetadata: {
-        title: "title",
-      },
-      info: {
-        name: "fileName",
-        containerType: "project",
-      },
-    };
-
-    store = mockVuexStore({
-      application: {
-        state: {
-          activeProjectId: "activeProject1",
-        },
-      },
+  const doMount = ({
+    props = {},
+    isWorkflowEmptyMock = vi.fn().mockReturnValue(false),
+    mockFeatureFlags = {
+      shouldDisplayEmbeddedDialogs: vi.fn(() => true),
+      shouldShowAiAssistant: () => false,
+    },
+  } = {}) => {
+    const $store = mockVuexStore({
+      panel: panelStore,
+      nodeRepository: nodeRepositoryStore,
       workflow: {
         state: {
-          activeWorkflow: workflow,
-        },
-      },
-      panel: panelStoreConfig,
-      nodeRepository: nodeRepositoryStoreConfig,
-    });
-
-    doShallowMount = () => {
-      wrapper = mount(Sidebar, {
-        global: {
-          plugins: [store],
-          mocks: { $features: mockFeatureFlags },
-          stubs: {
-            ContextAwareDescription: true,
-            NodeRepository: true,
-            NodeDialogWrapper: true,
-            SidebarSpaceExplorer: true,
-            AiAssistant: true,
+          activeWorkflow: {
+            projectMetadata: {
+              title: "title",
+            },
+            info: {
+              name: "fileName",
+              containerType: "project",
+            },
           },
         },
-      });
-    };
-  });
+        getters: {
+          isWorkflowEmpty: isWorkflowEmptyMock,
+        },
+      },
+      application: { state: { activeProjectId: "activeProject1" } },
+    });
+
+    const dispatchSpy = vi.spyOn($store, "dispatch");
+    const commitSpy = vi.spyOn($store, "commit");
+
+    const wrapper = mount(Sidebar, {
+      props: {
+        ...props,
+      },
+      global: {
+        plugins: [$store],
+        mocks: { $features: mockFeatureFlags },
+        stubs: {
+          ContextAwareDescription: true,
+          NodeRepository: true,
+          NodeDialogWrapper: true,
+          SidebarSpaceExplorer: true,
+          AiAssistant: true,
+        },
+      },
+    });
+
+    return { wrapper, $store, dispatchSpy, commitSpy };
+  };
 
   it("renders default", () => {
-    doShallowMount();
+    const { wrapper } = doMount();
     expect(wrapper.exists()).toBe(true);
     expect(wrapper.findComponent(Metainfo).exists()).toBe(true);
     expect(wrapper.findComponent(PlusIcon).exists()).toBe(true);
@@ -79,7 +82,7 @@ describe("Sidebar", () => {
 
   it("expands and activates tab", async () => {
     const tabName = "Node repository";
-    doShallowMount();
+    const { wrapper } = doMount();
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(true);
 
     await wrapper.find(`[title="${tabName}"]`).trigger("click");
@@ -89,7 +92,7 @@ describe("Sidebar", () => {
 
   it("clicking on open tab should close it", async () => {
     const tabName = "Description";
-    doShallowMount();
+    const { wrapper } = doMount();
     await wrapper.find(`[title="${tabName}"]`).trigger("click");
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(
       false,
@@ -100,23 +103,23 @@ describe("Sidebar", () => {
   });
 
   it("click on node repository icon when description panel is open closes both panels", async () => {
-    doShallowMount();
+    const { wrapper, $store } = doMount();
     // open node repository
     await wrapper.find('[title="Node repository"]').trigger("click");
     // emulate opening the description panel
-    await store.dispatch("nodeRepository/openDescriptionPanel");
-    expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
+    await $store.dispatch("nodeRepository/openDescriptionPanel");
+    expect($store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
 
     await wrapper.find('[title="Node repository"]').trigger("click");
-    expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
+    expect($store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
   });
 
   it("click on a different tab when description panel is open, closes the description panel", async () => {
-    doShallowMount();
+    const { wrapper, $store } = doMount();
 
     await wrapper.find('[title="Node repository"]').trigger("click");
     // emulate opening the description panel
-    await store.dispatch("nodeRepository/openDescriptionPanel");
+    await $store.dispatch("nodeRepository/openDescriptionPanel");
 
     // back to Description
     await wrapper.find('[title="Description"]').trigger("click");
@@ -124,22 +127,37 @@ describe("Sidebar", () => {
     // back to node repository
     await wrapper.find('[title="Node repository"]').trigger("click");
 
-    expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
+    expect($store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
   });
 
   it("has portal for extension panel", () => {
-    doShallowMount();
+    const { wrapper } = doMount();
     expect(wrapper.find('[name="extension-panel"').exists()).toBe(true);
   });
 
   it("should not display node dialog section when flag is set to false", () => {
-    mockFeatureFlags.shouldDisplayEmbeddedDialogs.mockImplementation(
-      () => false,
-    );
-
-    doShallowMount();
+    const { wrapper } = doMount({
+      mockFeatureFlags: {
+        shouldDisplayEmbeddedDialogs: vi.fn(() => false),
+        shouldShowAiAssistant: () => false,
+      },
+    });
 
     expect(wrapper.find("ul").findAll("li").length).toBe(3);
     expect(wrapper.findComponent(NodeDialogWrapper).exists()).toBe(false);
+  });
+
+  it("should show node repository if workflow is empty", () => {
+    const { wrapper } = doMount({
+      isWorkflowEmptyMock: vi.fn().mockReturnValue(true),
+    });
+
+    expect(wrapper.find('[title="Node repository"]').classes("active")).toBe(
+      true,
+    );
+    expect(wrapper.find('[title="Description"]').classes("active")).toBe(false);
+    wrapper.findAll("li").forEach((wp) => {
+      expect(wp.classes("expanded")).toBe(true);
+    });
   });
 });

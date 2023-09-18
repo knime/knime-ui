@@ -172,17 +172,6 @@ describe("Kanvas", () => {
       await Vue.nextTick();
 
       expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
-      expect(
-        storeConfig.panel.actions.setCurrentProjectActiveTab,
-      ).toHaveBeenCalledWith(expect.any(Object), TABS.NODE_REPOSITORY);
-    });
-
-    it("sets node repository as active", () => {
-      doShallowMount();
-
-      expect(
-        storeConfig.panel.actions.setCurrentProjectActiveTab,
-      ).toHaveBeenCalledWith(expect.any(Object), TABS.NODE_REPOSITORY);
     });
   });
 

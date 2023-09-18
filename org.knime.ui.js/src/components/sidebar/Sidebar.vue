@@ -58,7 +58,6 @@ export default defineComponent({
     ...mapState("panel", ["activeTab", "expanded"]),
     ...mapState("application", ["activeProjectId"]),
     ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
-
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
 
     sidebarSections(): Array<SidebarSection> {
@@ -119,10 +118,7 @@ export default defineComponent({
     isWorkflowEmpty: {
       handler() {
         if (this.isWorkflowEmpty) {
-          this.$store.dispatch(
-            "panel/setCurrentProjectActiveTab",
-            TABS.NODE_REPOSITORY,
-          );
+          this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
         }
       },
       immediate: true,
