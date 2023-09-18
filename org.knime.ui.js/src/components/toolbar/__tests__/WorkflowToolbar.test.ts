@@ -1,20 +1,22 @@
 import { expect, describe, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+
 import { router } from "@/router";
 import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import { mockVuexStore } from "@/test/utils";
+import { createWorkflow } from "@/test/factories";
 import { createShortcutsService } from "@/plugins/shortcuts";
+import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 
 import WorkflowToolbar from "../WorkflowToolbar.vue";
 import ToolbarShortcutButton from "../ToolbarShortcutButton.vue";
 import ZoomMenu from "../ZoomMenu.vue";
-import { createWorkflow } from "@/test/factories";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
-import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 
 describe("WorkflowToolbar.vue", () => {
   const doMount = ({ workflow = null } = {}) => {
@@ -29,16 +31,18 @@ describe("WorkflowToolbar.vue", () => {
       $store.commit("workflow/setActiveWorkflow", workflow);
     }
 
+    const $shortcuts = createShortcutsService({ $store, $router: router });
+
     const wrapper = mount(WorkflowToolbar, {
       global: {
         plugins: [$store, router],
         mocks: {
-          $shortcuts: createShortcutsService({ $store, $router: router }),
+          $shortcuts,
         },
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, $store, $shortcuts };
   };
 
   const toNameProp = (tab) => tab.props("name");
@@ -192,6 +196,40 @@ describe("WorkflowToolbar.vue", () => {
         "createMetanode",
         "createComponent",
       ]);
+    });
+  });
+
+  describe("canvas modes", () => {
+    it("should show canvas modes", () => {
+      const { wrapper, $shortcuts } = doMount();
+
+      expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
+      expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            disabled: !$shortcuts.isEnabled("switchToSelectionMode"),
+            metadata: { id: "selection" },
+          }),
+          expect.objectContaining({
+            disabled: !$shortcuts.isEnabled("switchToAnnotationMode"),
+            metadata: { id: "annotation" },
+          }),
+          expect.objectContaining({
+            disabled: !$shortcuts.isEnabled("switchToPanMode"),
+            metadata: { id: "pan" },
+          }),
+        ]),
+      );
+    });
+
+    it("should change the canvas mode", () => {
+      const { wrapper, $store } = doMount();
+
+      wrapper
+        .findComponent(SubMenu)
+        .vm.$emit("item-click", {}, { metadata: { id: "annotation" } });
+
+      expect($store.state.application.canvasMode).toBe("annotation");
     });
   });
 });

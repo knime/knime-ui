@@ -35,14 +35,17 @@ export default {
     ]),
 
     canvasModes() {
-      const canvasModeShortcuts: ShortcutName[] = [
-        "switchToSelectionMode",
-        "switchToAnnotationMode",
-        "switchToPanMode",
+      const canvasModeShortcuts: Array<{
+        id: string;
+        shortcutName: ShortcutName;
+      }> = [
+        { id: "selection", shortcutName: "switchToSelectionMode" },
+        { id: "annotation", shortcutName: "switchToAnnotationMode" },
+        { id: "pan", shortcutName: "switchToPanMode" },
       ];
 
       return canvasModeShortcuts
-        .map((shortcutName) => {
+        .map(({ id, shortcutName }) => {
           const shortcut = this.$shortcuts.get(shortcutName);
           if (!shortcut) {
             return null;
@@ -57,7 +60,7 @@ export default {
             text: shortcutText,
             hotkeyText: shortcut.hotkeyText,
             disabled: !this.$shortcuts.isEnabled(shortcutName),
-            metadata: { id: shortcutName },
+            metadata: { id },
           };
         })
         .filter(Boolean);
@@ -112,7 +115,7 @@ export default {
     },
   },
   methods: {
-    onCanvasModeUpdate(_, { id }) {
+    onCanvasModeUpdate(_, { metadata: { id } }) {
       this.$store.dispatch("application/switchCanvasMode", id);
     },
   },
