@@ -91,13 +91,6 @@ describe("canvas store", () => {
     expect(store.state.canvas.interactionsEnabled).toBe(false);
   });
 
-  it("setIsEmpty", () => {
-    expect(store.state.canvas.isEmpty).toBe(false);
-
-    store.commit("canvas/setIsEmpty", true);
-    expect(store.state.canvas.isEmpty).toBe(true);
-  });
-
   it("setIsMoveLocked", () => {
     expect(store.state.canvas.isMoveLocked).toBe(false);
 

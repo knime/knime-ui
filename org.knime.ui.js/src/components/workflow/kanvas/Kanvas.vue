@@ -26,7 +26,8 @@ export default {
   computed: {
     ...mapGetters("canvas", ["canvasSize", "viewBox", "contentBounds"]),
     ...mapGetters("application", ["hasPanModeEnabled"]),
-    ...mapState("canvas", ["zoomFactor", "interactionsEnabled", "isEmpty"]),
+    ...mapGetters("workflow", ["isWorkflowEmpty"]),
+    ...mapState("canvas", ["zoomFactor", "interactionsEnabled"]),
     ...mapState("application", ["scrollToZoomEnabled"]),
     ...mapState("workflow", ["isDragging"]),
   },
@@ -125,7 +126,7 @@ export default {
     }),
 
     onMouseWheel(event) {
-      if (!this.interactionsEnabled || this.isEmpty) {
+      if (!this.interactionsEnabled || this.isWorkflowEmpty) {
         return;
       }
 
@@ -193,7 +194,7 @@ export default {
     },
 
     beginPan(e) {
-      if (!this.interactionsEnabled || this.isEmpty) {
+      if (!this.interactionsEnabled || this.isWorkflowEmpty) {
         return;
       }
       const middleButton = 1;
@@ -316,7 +317,7 @@ export default {
       'scroll-container',
       {
         panning: useMoveCursor || hasPanModeEnabled,
-        empty: isEmpty,
+        empty: isWorkflowEmpty,
         disabled: !interactionsEnabled,
       },
     ]"

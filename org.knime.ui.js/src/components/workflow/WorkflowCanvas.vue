@@ -1,6 +1,5 @@
 <script>
-import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
-import { TABS } from "@/store/panel";
+import { mapGetters, mapActions, mapState } from "vuex";
 import Workflow from "@/components/workflow/Workflow.vue";
 import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
 import SelectionRectangle from "@/components/workflow/SelectionRectangle/SelectionRectangle.vue";
@@ -38,12 +37,8 @@ export default {
       immediate: true,
       async handler(isWorkflowEmpty) {
         // disable zoom & pan if workflow is empty
-        this.setIsEmpty(isWorkflowEmpty);
-
         if (isWorkflowEmpty) {
           // call to action: move nodes onto workflow
-          await this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
-
           // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
           await this.$nextTick();
           this.fillScreen();
@@ -52,10 +47,6 @@ export default {
     },
   },
   mounted() {
-    if (this.isWorkflowEmpty) {
-      this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
-    }
-
     this.$nextTick(() => {
       // put canvas into fillScreen view after loading the workflow
       // if there isn't a saved canvas state for it
@@ -65,10 +56,9 @@ export default {
     });
   },
   methods: {
-    ...mapMutations("canvas", ["setIsEmpty"]),
-    ...mapActions("panel", ["setCurrentProjectActiveTab"]),
     ...mapActions("canvas", ["fillScreen"]),
     ...mapActions("application", ["resetCanvasMode"]),
+
     onNodeSelectionPreview($event) {
       this.$refs.workflow.applyNodeSelectionPreview($event);
     },

@@ -32,9 +32,6 @@ describe("Kanvas", () => {
         actions: {
           fillScreen: vi.fn(),
         },
-        mutations: {
-          setIsEmpty: vi.fn(),
-        },
       },
       selection: {
         actions: {
@@ -140,10 +137,6 @@ describe("Kanvas", () => {
       wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, false);
       await Vue.nextTick();
 
-      expect(storeConfig.canvas.mutations.setIsEmpty).toHaveBeenCalledWith(
-        expect.anything(),
-        false,
-      );
       expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
       expect(
         storeConfig.panel.actions.setCurrentProjectActiveTab,
@@ -178,10 +171,6 @@ describe("Kanvas", () => {
       wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, true);
       await Vue.nextTick();
 
-      expect(storeConfig.canvas.mutations.setIsEmpty).toHaveBeenCalledWith(
-        expect.anything(),
-        true,
-      );
       expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
       expect(
         storeConfig.panel.actions.setCurrentProjectActiveTab,
