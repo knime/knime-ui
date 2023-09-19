@@ -180,12 +180,15 @@ final class ManipulateComponents {
         }
     }
 
+    /**
+     * This will not be callable from the FE until NXT-2038 is solved.
+     */
     static void openChangeComponentHubItemVersionDialog(final SubNodeContainer component, final WorkflowKey wfKey)
         throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException {
         assertLinkedComponent(component, true);
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
-        if (!isHubUri(srcUri)) {
+        if (!isHubUri(srcUri)) {// TODO: This should not be called on non-Hub items, see NXT-2038
             throw new OperationNotAllowedException("""
                     Changing item version is not possible, since the source of this component is not located on a
                     mountpoint that supports item versioning.
@@ -297,7 +300,7 @@ final class ManipulateComponents {
     /**
      * Copied from {@link ChangeComponentHubVersionAction}.
      *
-     * TODO: NXT-2038, Easily determine whether a file store is a Hub file store.
+     * TODO: NXT-2038, Determine whether a Hub item version is changeable in advance
      */
     private static boolean isHubUri(final URI uri) {
         if (uri == null) {

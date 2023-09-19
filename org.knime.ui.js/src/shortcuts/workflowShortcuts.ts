@@ -362,7 +362,13 @@ const workflowShortcuts: WorkflowShortcuts = {
         nodeId: selectedNodeId,
       });
     },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+    condition: ({ $store }) => {
+      const isWritable = $store.getters["workflow/isWritable"];
+      const isHubItemVersionChangeable =
+        $store.getters["selection/singleSelectedNode"].link
+          ?.isHubItemVersionChangeable;
+      return isWritable && isHubItemVersionChangeable;
+    },
   },
   changeComponentLinkType: {
     text: "Change link type",

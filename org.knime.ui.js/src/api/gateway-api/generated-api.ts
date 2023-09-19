@@ -3013,6 +3013,12 @@ export interface TemplateLink {
      * @memberof TemplateLink
      */
     isLinkTypeChangeable?: boolean;
+    /**
+     * Whether this Hub item version can be changed. This can only be true for shared templates on a Hub.
+     * @type {any}
+     * @memberof TemplateLink
+     */
+    isHubItemVersionChangeable?: any;
 
 }
 

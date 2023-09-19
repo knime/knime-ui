@@ -591,7 +591,6 @@ describe("ContextMenu.vue", () => {
               children: assertItems([
                 { text: "Open component" },
                 { text: "Update component" },
-                { text: "Change KNIME Hub item version" },
                 { text: "Disconnect link" },
               ]),
             },
