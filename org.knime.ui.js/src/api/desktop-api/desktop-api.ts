@@ -581,7 +581,14 @@ export const makeAiRequest = ({
 }) => {
   return callBrowserFunction(
     window.makeAiRequest,
-    [conversationId, chainType, projectId, workflowId, nodeId, JSON.stringify(messages)],
+    [
+      conversationId,
+      chainType,
+      projectId,
+      workflowId,
+      nodeId,
+      JSON.stringify(messages),
+    ],
     "Could not make AI request",
     false,
   );
