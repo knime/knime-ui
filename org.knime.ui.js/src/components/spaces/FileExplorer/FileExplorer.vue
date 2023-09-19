@@ -62,7 +62,11 @@ const isDirectory = (item: FileExplorerItemType) => item.isDirectory;
 
 const canOpenFile = (item: FileExplorerItemType) => item.isOpenableFile;
 
-const changeDirectory = (pathId: string) => emit("changeDirectory", pathId);
+const changeDirectory = (pathId: string) => {
+  emit("changeDirectory", pathId);
+  // eslint-disable-next-line no-use-before-define
+  closeContextMenu();
+};
 
 /** MULTISELECTION */
 const multiSelection = useMultiSelection();
