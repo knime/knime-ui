@@ -85,13 +85,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  saveJobAsWorkflow({ state }, { jobId }) {
+  saveJobAsWorkflow({ state }, { jobId, jobName }) {
     const projectId = state.deploymentsModalConfig.projectId;
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    const itemId = state.deploymentsModalConfig.itemId;
 
     // console.log("saved job:", jobId);
     // Finish up implementation once the backend is done
-    API.space.saveJobAsWorkflow(spaceId, spaceProviderId, jobId);
+    API.desktop.saveJobAsWorkflow( { spaceProviderId, spaceId, itemId, jobId, jobName } );
   },
 
   async editSchedule({ state }, { scheduleId }) {

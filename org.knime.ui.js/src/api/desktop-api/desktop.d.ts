@@ -180,3 +180,11 @@ declare function openPermissionsDialog(
   spaceId: string,
   itemId: string,
 ): void;
+
+declare function saveJobAsWorkflow(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string,
+  jobId: string,
+  jobName: string
+): string;

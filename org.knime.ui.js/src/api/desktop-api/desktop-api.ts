@@ -628,3 +628,18 @@ export const openPermissionsDialog = ({
     false,
   );
 };
+
+export const saveJobAsWorkflow = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+  jobId,
+  jobName
+} : SpaceProviderId & SpaceId & SpaceItemId & { jobId : string, jobName : string }) => {
+  return callBrowserFunction(
+    window.saveJobAsWorkflow,
+    [spaceProviderId, spaceId, itemId, jobId, jobName],
+    "Could not save job as workflow",
+    true,
+  );
+};
