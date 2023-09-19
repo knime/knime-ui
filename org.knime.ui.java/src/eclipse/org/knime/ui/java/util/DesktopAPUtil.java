@@ -55,6 +55,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.Functions;
@@ -208,6 +209,22 @@ public final class DesktopAPUtil {
                 return bugfixes;
             }
         };
+    }
+
+    /**
+     * Shows a question dialog.
+     * @param title dialog title
+     * @param message question
+     * @return {@code true} if the user accepted the question, {@code false} otherwise
+     */
+    public static boolean openQuestion(final String title, final String message) {
+        final AtomicBoolean res = new AtomicBoolean();
+        Display.getDefault().syncExec(() -> {
+            @SuppressWarnings("restriction")
+            var sh = org.knime.core.ui.util.SWTUtilities.getActiveShell();
+            res.set(MessageDialog.openQuestion(sh, title, message));
+        });
+        return res.get();
     }
 
     /**
