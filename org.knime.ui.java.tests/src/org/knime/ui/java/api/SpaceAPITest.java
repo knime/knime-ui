@@ -74,7 +74,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 class SpaceAPITest {
 
     @Test
-    void testGetSpaceProviders() throws ExecutionException, InterruptedException { // TODO: NXT-2039
+    void testGetSpaceProviders() throws ExecutionException, InterruptedException { // TODO: NXT-2049
 //        String localProviderId = "local_provider";
 //        String localProviderName = "Local Provider";
 //        String connectedProviderId = "connected_provider";
@@ -143,7 +143,7 @@ class SpaceAPITest {
     }
 
     @Test
-    void testConnectSpaceProvider() { // TODO: NXT-2039
+    void testConnectSpaceProvider() { // TODO: NXT-2049
 //        var connectedSpaceProvider = mock(SpaceProvider.class);
 //        when(connectedSpaceProvider.getId()).thenReturn("connected_provider");
 //        when(connectedSpaceProvider.getName()).thenReturn("Connected Provider");
