@@ -521,7 +521,7 @@ export default {
               <g class="mouse-clickable" @click.left="onLeftMouseClick">
                 <!-- Hover Area, larger than the node torso -->
                 <rect
-                  class="hover-area"
+                  :class="['hover-area', { 'is-dragging': isDragging }]"
                   :width="hoverSize.width"
                   :height="hoverSize.height"
                   :x="hoverSize.x"

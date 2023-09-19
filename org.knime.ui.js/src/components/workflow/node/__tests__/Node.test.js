@@ -1057,6 +1057,13 @@ describe("Node", () => {
         return event;
       };
 
+      it("should add the 'is-dragging' class to the hover-area", () => {
+        props = { ...commonNode };
+        storeConfig.workflow.state.isDragging = true;
+        doMount();
+        expect(wrapper.find(".hover-area").classes()).toContain("is-dragging");
+      });
+
       it("checks if dragged object is compatible", async () => {
         props = { ...commonNode };
         doMount();
