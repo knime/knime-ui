@@ -9,7 +9,7 @@ import type {
   WorkflowInfo,
   NodePort,
 } from "@/api/gateway-api/generated-api";
-import { toPortObject } from "@/util/portDataMapper";
+import { toExtendedPortObject } from "@/util/portDataMapper";
 
 export type Direction = "in" | "out";
 
@@ -107,8 +107,8 @@ export const checkPortCompatibility = ({
   toPort: { typeId: string };
   availablePortTypes: AvailablePortTypes;
 }) => {
-  const fromPortObjectInfo = toPortObject(availablePortTypes)(fromPort);
-  const toPortObjectInfo = toPortObject(availablePortTypes)(toPort);
+  const fromPortObjectInfo = toExtendedPortObject(availablePortTypes)(fromPort);
+  const toPortObjectInfo = toExtendedPortObject(availablePortTypes)(toPort);
   const { compatibleTypes } = toPortObjectInfo;
   const { kind: fromPortKind } = fromPortObjectInfo;
   const { kind: toPortKind } = toPortObjectInfo;

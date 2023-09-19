@@ -1,6 +1,11 @@
 import { API } from "@api";
-import { toNodeWithFullPorts } from "@/util/portDataMapper";
+import {
+  toNodeTemplateWithExtendedPorts,
+  type NodeTemplateWithExtendedPorts,
+} from "@/util/portDataMapper";
 import { debounce } from "lodash";
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import type { RootStoreState } from "../types";
 
 /**
  * This store is not instantiated by Vuex but used by other stores.
@@ -9,7 +14,25 @@ import { debounce } from "lodash";
 const nodeSearchPageSize = 100;
 const searchTopAndBottomNodesDebounceWait = 150; // ms
 
-export const state = () => ({
+export interface CommonNodeSearchState {
+  query: string;
+  selectedTags: string[];
+  portTypeId: string | null;
+  isShowingBottomNodes: boolean;
+  searchScrollPosition: number;
+
+  topNodes: NodeTemplateWithExtendedPorts[];
+  totalNumTopNodes: number;
+  topNodeSearchPage: number;
+  topNodesTags: string[];
+
+  bottomNodes: NodeTemplateWithExtendedPorts[];
+  totalNumBottomNodes: number;
+  bottomNodeSearchPage: number;
+  bottomNodesTags: string[];
+}
+
+export const state = (): CommonNodeSearchState => ({
   /* basic search params */
   query: "",
   selectedTags: [],
@@ -33,7 +56,7 @@ export const state = () => ({
   bottomNodesTags: [],
 });
 
-export const mutations = {
+export const mutations: MutationTree<CommonNodeSearchState> = {
   setTopNodeSearchPage(state, pageNumber) {
     state.topNodeSearchPage = pageNumber;
   },
@@ -43,16 +66,16 @@ export const mutations = {
   },
 
   addTopNodes(state, topNodes) {
-    let existingNodeIds = state.topNodes.map((node) => node.id);
-    let newNodes = topNodes.filter(
+    const existingNodeIds = state.topNodes.map((node) => node.id);
+    const newNodes = topNodes.filter(
       (node) => !existingNodeIds.includes(node.id),
     );
     state.topNodes.push(...newNodes);
   },
 
   addBottomNodes(state, bottomNodes) {
-    let existingNodeIds = state.bottomNodes.map((node) => node.id);
-    let newNodes = bottomNodes.filter(
+    const existingNodeIds = state.bottomNodes.map((node) => node.id);
+    const newNodes = bottomNodes.filter(
       (node) => !existingNodeIds.includes(node.id),
     );
     state.bottomNodes.push(...newNodes);
@@ -105,7 +128,7 @@ export const mutations = {
   },
 };
 
-export const actions = {
+export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   /**
    * Fetch nodes. Used for initial data retrieval, but also for searching via query and/or tag filters.
    *
@@ -150,7 +173,9 @@ export const actions = {
     );
 
     const { availablePortTypes } = rootState.application;
-    const withMappedPorts = nodes.map(toNodeWithFullPorts(availablePortTypes));
+    const withMappedPorts = nodes.map(
+      toNodeTemplateWithExtendedPorts(availablePortTypes),
+    );
 
     commit(`setTotalNum${prefix}Nodes`, totalNumNodes);
     commit(append ? `add${prefix}Nodes` : `set${prefix}Nodes`, withMappedPorts);
@@ -263,7 +288,7 @@ export const actions = {
   },
 };
 
-export const getters = {
+export const getters: GetterTree<CommonNodeSearchState, RootStoreState> = {
   hasSearchParams: (state) =>
     state.query !== "" || state.selectedTags.length > 0,
   searchIsActive: (state) =>

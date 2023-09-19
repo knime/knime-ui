@@ -4,11 +4,12 @@ import type { AiAssistantState } from "./aiAssistant";
 import type { ApplicationState } from "./application";
 import type { SelectionState } from "./selection";
 import type { PanelState } from "./panel";
+import type { NodeRepositoryState } from "./nodeRepository";
 
 export interface RootStoreState {
   application: ApplicationState;
   canvas: any;
-  nodeRepository: any;
+  nodeRepository: NodeRepositoryState;
   panel: PanelState;
   selection: SelectionState;
   workflow: WorkflowState;

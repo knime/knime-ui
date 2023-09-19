@@ -8,7 +8,7 @@ import { API } from "@api";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
 import type { ViewStateChangeEvent } from "@/components/embeddedViews/ViewLoader.vue";
-import { toPortObject } from "@/util/portDataMapper";
+import { toExtendedPortObject } from "@/util/portDataMapper";
 import { canExecute } from "@/util/nodeUtil";
 
 import {
@@ -160,7 +160,9 @@ export default defineComponent({
     },
 
     fullPortObject() {
-      return toPortObject(this.availablePortTypes)(this.selectedPort.typeId);
+      return toExtendedPortObject(this.availablePortTypes)(
+        this.selectedPort.typeId,
+      );
     },
 
     portViews() {

@@ -8,7 +8,7 @@ import type {
   Workflow,
 } from "@/api/custom-types";
 
-import { toPortObject } from "@/util/portDataMapper";
+import { toExtendedPortObject } from "@/util/portDataMapper";
 
 import MetadataDescription from "./MetadataDescription.vue";
 import ComponentMetadataNodeFeatures from "./ComponentMetadataNodeFeatures.vue";
@@ -29,8 +29,8 @@ const nodePreview = computed(() => {
   const { inPorts = [], outPorts = [], type, icon } = componentMetadata.value;
 
   return {
-    inPorts: inPorts.map(toPortObject(props.availablePortTypes)),
-    outPorts: outPorts.map(toPortObject(props.availablePortTypes)),
+    inPorts: inPorts.map(toExtendedPortObject(props.availablePortTypes)),
+    outPorts: outPorts.map(toExtendedPortObject(props.availablePortTypes)),
     icon,
     type,
     isComponent: true,
@@ -49,8 +49,8 @@ const nodeFeatures = computed(() => {
   } = componentMetadata.value;
 
   return {
-    inPorts: inPorts.map(toPortObject(props.availablePortTypes)),
-    outPorts: outPorts.map(toPortObject(props.availablePortTypes)),
+    inPorts: inPorts.map(toExtendedPortObject(props.availablePortTypes)),
+    outPorts: outPorts.map(toExtendedPortObject(props.availablePortTypes)),
     views,
     options,
   };

@@ -1,5 +1,5 @@
 import { API } from "@api";
-import { toNodeWithFullPorts } from "../util/portDataMapper";
+import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
 import * as nodeSearch from "./common/nodeSearch";
 
 /**
@@ -47,7 +47,9 @@ export const actions = {
 
     commit(
       "setRecommendedNodes",
-      recommendedNodesResult.map(toNodeWithFullPorts(availablePortTypes)),
+      recommendedNodesResult.map(
+        toNodeTemplateWithExtendedPorts(availablePortTypes),
+      ),
     );
   },
 

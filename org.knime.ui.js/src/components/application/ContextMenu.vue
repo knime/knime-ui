@@ -14,7 +14,7 @@ import type {
   KnimeNode,
 } from "@/api/custom-types";
 import type { ShortcutName } from "@/shortcuts";
-import { toPortObject } from "@/util/portDataMapper";
+import { toExtendedPortObject } from "@/util/portDataMapper";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 import { getNodeState, isNodeMetaNode } from "@/util/nodeUtil";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
@@ -219,7 +219,7 @@ export default defineComponent({
 
       const nodeId = node.id;
       const allOutPorts = node.outPorts.map((port) =>
-        toPortObject(this.availablePortTypes)(port),
+        toExtendedPortObject(this.availablePortTypes)(port),
       );
 
       return allOutPorts.flatMap((port, portIndex) => {
