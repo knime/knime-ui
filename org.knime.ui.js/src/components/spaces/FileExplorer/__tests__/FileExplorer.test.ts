@@ -180,6 +180,7 @@ describe("FileExplorer.vue", () => {
 
     allItems.at(0).trigger("click");
     expect(wrapper.emitted("changeDirectory")[0][0]).toBe("..");
+    expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(false);
   });
 
   it("should render placeholder for empty directories", () => {

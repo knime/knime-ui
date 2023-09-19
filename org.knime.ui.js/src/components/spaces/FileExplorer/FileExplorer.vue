@@ -62,12 +62,6 @@ const isDirectory = (item: FileExplorerItemType) => item.isDirectory;
 
 const canOpenFile = (item: FileExplorerItemType) => item.isOpenableFile;
 
-const changeDirectory = (pathId: string) => {
-  emit("changeDirectory", pathId);
-  // eslint-disable-next-line no-use-before-define
-  closeContextMenu();
-};
-
 /** MULTISELECTION */
 const multiSelection = useMultiSelection();
 const {
@@ -162,6 +156,11 @@ const contextMenuAnchor = ref<FileExplorerContextMenuNamespace.Anchor | null>(
 const closeContextMenu = () => {
   isContextMenuVisible.value = false;
   contextMenuAnchor.value = null;
+};
+
+const changeDirectory = (pathId: string) => {
+  emit("changeDirectory", pathId);
+  closeContextMenu();
 };
 
 const openContextMenu = (
