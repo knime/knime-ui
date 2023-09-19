@@ -76,7 +76,7 @@ const spacesDropdownData = computed((): MenuItem[] => {
     (provider: SpaceProviderNS.SpaceProvider) =>
     (space: Space): MenuItem => ({
       text:
-        provider.local || space.owner === ""
+        provider.connectionMode === "AUTOMATIC" || space.owner === ""
           ? space.name
           : `${space.owner} – ${space.name}`,
 
