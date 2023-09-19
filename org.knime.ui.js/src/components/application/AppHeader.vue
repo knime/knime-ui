@@ -91,7 +91,9 @@ export default defineComponent({
     },
 
     openInspector() {
-      window.open("http://localhost:8888/", "_blank");
+      const remoteDebuggingPort =
+        import.meta.env.KNIME_CEF_REMOTE_DEBUGGING_PORT || "8888";
+      window.open(`http://localhost:${remoteDebuggingPort}/`, "_blank");
     },
 
     setGetStartedPageTab() {

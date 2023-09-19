@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { API } from "@/api";
-import OptionalSubMenuActionButton from "../common/OptionalSubMenuActionButton.vue";
+import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import OpenSourceCreditsModal from "./OpenSourceCreditsModal.vue";
 
 import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
@@ -47,20 +47,20 @@ const helpMenuItem: MenuItem = {
       text: "About KNIME Analytics Platform",
       icon: InfoIcon,
       metadata: {
-        action: () => API.desktop.openAboutDialog(),
+        handler: () => API.desktop.openAboutDialog(),
       },
     },
     {
       text: "Additional Credits",
       icon: InfoIcon,
       metadata: {
-        action: () => (creditsModalActive.value = true),
+        handler: () => (creditsModalActive.value = true),
       },
     },
   ],
 };
 
-const onItemClick = (_, item) => item.metadata?.action?.();
+const onItemClick = (_, item) => item.metadata?.handler?.();
 </script>
 
 <template>

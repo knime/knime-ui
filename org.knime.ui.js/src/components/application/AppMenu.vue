@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { API } from "@/api";
-import OptionalSubMenuActionButton from "../common/OptionalSubMenuActionButton.vue";
+import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 
 import MenuIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
@@ -19,27 +19,27 @@ const menuItem: MenuItem = {
       icon: ReloadIcon,
       separator: true,
       metadata: {
-        action: () => API.desktop.openUpdateDialog(),
+        handler: () => API.desktop.openUpdateDialog(),
       },
     },
     {
       text: "Install extensions",
       description:
-        "... to access additional functionality, including complex data type processing and advanced algorithms.",
+        "… to access additional functionality, including complex data type processing and advanced algorithms.",
       icon: ExtensionsIcon,
       separator: true,
       metadata: {
-        action: () => API.desktop.openInstallExtensionsDialog(),
+        handler: () => API.desktop.openInstallExtensionsDialog(),
       },
     },
     {
       text: "Switch workspace",
       description:
-        "... to access KNIME workflows and data from a different folder on your computer.",
+        "… to access KNIME workflows and data from a different folder on your computer.",
       icon: SwitchIcon,
       separator: true,
       metadata: {
-        action: () => API.desktop.switchWorkspace(),
+        handler: () => API.desktop.switchWorkspace(),
       },
     },
     {
@@ -49,13 +49,13 @@ const menuItem: MenuItem = {
         "with the button “Open KNIME Modern UI” in the top right corner.",
       icon: PerspectiveSwitchIcon,
       metadata: {
-        action: () => API.desktop.switchToJavaUI(),
+        handler: () => API.desktop.switchToJavaUI(),
       },
     },
   ],
 };
 
-const onItemClick = (_, item) => item.metadata?.action?.();
+const onItemClick = (_, item) => item.metadata?.handler?.();
 </script>
 
 <template>
