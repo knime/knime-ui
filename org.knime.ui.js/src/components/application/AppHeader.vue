@@ -6,10 +6,10 @@ import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import Carousel from "webapps-common/ui/components/Carousel.vue";
 import HelpMenu from "./HelpMenu.vue";
 import AppMenu from "./AppMenu.vue";
-import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import CodeHtmlIcon from "webapps-common/ui/assets/img/icons/code-html.svg";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
+import HouseIcon from "webapps-common/ui/assets/img/icons/house.svg";
 
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -22,11 +22,11 @@ import AppHeaderTab from "./AppHeaderTab.vue";
 export default defineComponent({
   components: {
     AppHeaderTab,
-    KnimeIcon,
     FunctionButton,
     Carousel,
     HelpMenu,
     AppMenu,
+    HouseIcon,
     ReloadIcon,
     CodeHtmlIcon,
     CogIcon,
@@ -122,8 +122,7 @@ export default defineComponent({
       :class="[isLogoActive ? 'active-logo' : null]"
       @click="setGetStartedPageTab()"
     >
-      <KnimeIcon />
-      <span class="text">Home</span>
+      <div class="text"><HouseIcon /> Home</div>
     </div>
     <div class="toolbar">
       <ul v-if="openProjects.length >= 1" class="project-tabs">
@@ -307,47 +306,59 @@ header {
     align-items: center;
     justify-content: left;
     width: auto;
-    background-color: var(--knime-black);
+    background-color: var(--knime-masala);
     height: 100%;
     margin-right: 25px;
     padding: 0 10px;
 
     & .text {
+      display: flex;
+      border: 1px solid var(--knime-dove-gray);
+      border-radius: var(--theme-button-function-border-radius, 9999px);
+      height: 26px;
+      align-self: center;
+      vertical-align: middle;
       font-size: 13px;
       font-weight: 500;
-      padding-left: 5px;
+      padding-left: 10px;
+      padding-right: 10px;
       min-width: 45px;
-      line-height: 21px;
+      line-height: 26px;
       text-align: left;
       color: var(--knime-white);
+
+      & svg {
+        margin-right: 3px;
+        margin-top: 2px;
+
+        @mixin svg-icon-size 18;
+
+        stroke: var(--knime-white);
+      }
     }
 
     &.active-logo .text {
       color: var(--knime-black);
-    }
-
-    & svg {
-      width: 26px;
-      height: 26px;
-    }
-
-    &:hover,
-    &:focus {
-      cursor: pointer;
-      background-color: var(--knime-masala);
-    }
-  }
-
-  & #knime-logo.active-logo {
-    background-color: var(--knime-yellow);
-
-    & svg {
-      fill: var(--knime-black);
-    }
-
-    &:hover,
-    &:focus {
       background-color: var(--knime-yellow);
+      border: 1px solid var(--knime-yellow);
+
+      & svg {
+        stroke: var(--knime-black);
+      }
+    }
+
+    &:hover,
+    &:focus {
+      & .text {
+        cursor: pointer;
+        color: var(--knime-black);
+        background-color: var(--knime-yellow);
+        border: 1px solid var(--knime-yellow);
+
+        & svg {
+          stroke: var(--knime-black);
+        }
+      }
     }
   }
 }

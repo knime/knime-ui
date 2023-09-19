@@ -25,12 +25,12 @@ const helpMenuItem: MenuItem = {
     {
       text: "KNIME Getting started guide",
       icon: GettingStartedIcon,
-      href: buildExternalUrl("https://www.knime.com/getting-started-guide-5-1"),
+      href: buildExternalUrl("https://www.knime.com/getting-started-guide"),
     },
     {
       text: "KNIME Cheat sheets",
       icon: CheatSheetsIcon,
-      href: buildExternalUrl("https://www.knime.com/cheat-sheets-5-1"),
+      href: buildExternalUrl("https://www.knime.com/cheat-sheets"),
     },
     {
       text: "KNIME Documentation",
