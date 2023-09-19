@@ -2,20 +2,28 @@
  * Store that manages the global state of the side-panel (tabs plus expanding drawer).
  */
 
+import type { ActionTree, MutationTree } from "vuex";
+import type { RootStoreState } from "./types";
+
 export const TABS = {
   CONTEXT_AWARE_DESCRIPTION: "description",
   NODE_REPOSITORY: "nodeRepository",
   NODE_DIALOG: "nodeDialog",
   SPACE_EXPLORER: "spaceExplorer",
   AI_CHAT: "aiChat",
-};
+} as const;
 
-export const state = () => ({
+export interface PanelState {
+  expanded: boolean;
+  activeTab: Record<string, keyof typeof TABS>;
+}
+
+export const state = (): PanelState => ({
   expanded: true,
   activeTab: {},
 });
 
-export const actions = {
+export const actions: ActionTree<PanelState, RootStoreState> = {
   setCurrentProjectActiveTab({ commit, rootState }, activeTab) {
     const projectId = rootState.application.activeProjectId;
     if (projectId === null) {
@@ -25,7 +33,7 @@ export const actions = {
   },
 };
 
-export const mutations = {
+export const mutations: MutationTree<PanelState> = {
   setActiveTab(state, { projectId, activeTab }) {
     state.activeTab = {
       ...state.activeTab,

@@ -3,12 +3,13 @@ import type { SpacesState } from "./spaces";
 import type { AiAssistantState } from "./aiAssistant";
 import type { ApplicationState } from "./application";
 import type { SelectionState } from "./selection";
+import type { PanelState } from "./panel";
 
 export interface RootStoreState {
   application: ApplicationState;
   canvas: any;
   nodeRepository: any;
-  panel: any;
+  panel: PanelState;
   selection: SelectionState;
   workflow: WorkflowState;
   spaces: SpacesState;
