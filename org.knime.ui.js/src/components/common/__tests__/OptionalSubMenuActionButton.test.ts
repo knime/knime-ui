@@ -2,7 +2,7 @@ import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import { expect, describe, beforeEach, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import OptionalSubMenuActionButton from "./OptionalSubMenuActionButton.vue";
+import OptionalSubMenuActionButton from "../OptionalSubMenuActionButton.vue";
 import { nextTick } from "vue";
 
 describe("OptionalSubMenuActionButton.vue", () => {
