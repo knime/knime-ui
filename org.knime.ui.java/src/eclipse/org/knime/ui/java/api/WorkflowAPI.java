@@ -57,6 +57,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 
 /**
@@ -170,6 +171,14 @@ final class WorkflowAPI {
     @API
     static void saveWorkflowAs(final String projectId, final String workflowSvg) throws IOException {
         SaveWorkflowCopy.saveCopyOf(projectId, workflowSvg);
+    }
+
+
+    @API
+    static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId)
+        throws IOException {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        space.openRemoteExecution(itemId);
     }
 
 }

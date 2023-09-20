@@ -118,4 +118,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   async executeWorkflow() {
     // TODO Call backend to execute a workflow
   },
+
+  executeOnClassic({ state }, { projectId, itemId }) {
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+
+    API.desktop.executeOnClassic({
+      spaceId,
+      spaceProviderId,
+      itemId,
+    });
+  },
 };

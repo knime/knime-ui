@@ -188,3 +188,9 @@ declare function saveJobAsWorkflow(
   jobId: string,
   jobName: string,
 ): string;
+
+declare function executeOnClassic(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string,
+): void;
