@@ -107,7 +107,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  editSchedule({ state }, { scheduleId }) {
+  async editSchedule({ state, dispatch }, { scheduleId }) {
     const projectId = state.deploymentsModalConfig.projectId;
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     const itemId = state.deploymentsModalConfig.itemId;
@@ -120,7 +120,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     });
 
     if (updatedScheduleId) {
-      // TODO act on successful edit of schedule
+      await dispatch("fetchSchedules", { projectId, itemId });
     }
   },
 
@@ -136,7 +136,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       scheduleId,
     });
 
-    dispatch("fetchSchedules", { projectId, itemId });
+    await dispatch("fetchSchedules", { projectId, itemId });
   },
 
   executeWorkflow({ state }, { projectId, itemId }) {
