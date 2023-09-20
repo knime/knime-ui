@@ -6,10 +6,11 @@ import type { SelectionState } from "./selection";
 import type { PanelState } from "./panel";
 import type { NodeRepositoryState } from "./nodeRepository";
 import type { QuickAddNodesState } from "./quickAddNodes";
+import type { CanvasState } from "./canvas";
 
 export interface RootStoreState {
   application: ApplicationState;
-  canvas: any;
+  canvas: CanvasState;
   nodeRepository: NodeRepositoryState;
   panel: PanelState;
   selection: SelectionState;
