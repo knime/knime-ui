@@ -64,6 +64,10 @@ const isDirectory = (item: FileExplorerItemType) => item.isDirectory;
 
 const canOpenFile = (item: FileExplorerItemType) => item.isOpenableFile;
 
+const changeDirectory = (pathId: string) => {
+  emit("changeDirectory", pathId);
+};
+
 /** MULTISELECTION */
 const multiSelection = useMultiSelection();
 const {
@@ -164,10 +168,6 @@ let { shouldCloseContextMenu } = toRefs(props);
 watch(shouldCloseContextMenu, () => {
   closeContextMenu();
 });
-
-const changeDirectory = (pathId: string) => {
-  emit("changeDirectory", pathId);
-};
 
 const openContextMenu = (
   event: MouseEvent,
