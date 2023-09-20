@@ -5,6 +5,7 @@ import type { ApplicationState } from "./application";
 import type { SelectionState } from "./selection";
 import type { PanelState } from "./panel";
 import type { NodeRepositoryState } from "./nodeRepository";
+import type { QuickAddNodesState } from "./quickAddNodes";
 
 export interface RootStoreState {
   application: ApplicationState;
@@ -14,6 +15,6 @@ export interface RootStoreState {
   selection: SelectionState;
   workflow: WorkflowState;
   spaces: SpacesState;
-  quickAddNodes: any;
+  quickAddNodes: QuickAddNodesState;
   aiAssistant: AiAssistantState;
 }
