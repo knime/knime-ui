@@ -396,4 +396,11 @@ final class SpaceAPI {
         // (e.g. DefaultSpaceItemEnt)
         return ent.getId();
     }
+
+    @API
+    static String editSchedule(final String spaceProviderId, final String spaceId, final String itemId,
+            final String scheduleId) throws ResourceAccessException {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        return space.editScheduleInfo(itemId, scheduleId);
+    }
 }
