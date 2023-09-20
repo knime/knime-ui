@@ -194,3 +194,10 @@ declare function executeOnClassic(
   spaceId: string,
   itemId: string,
 ): void;
+
+declare function editSchedule(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string,
+  scheduleId: string,
+): string;

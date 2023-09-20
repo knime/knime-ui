@@ -658,3 +658,17 @@ export const saveJobAsWorkflow = ({
     true,
   );
 };
+
+export const editSchedule = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+  scheduleId,
+}: SpaceProviderId & SpaceId & SpaceItemId & { scheduleId: string }) => {
+  return callBrowserFunction(
+    window.editSchedule,
+    [spaceProviderId, spaceId, itemId, scheduleId],
+    "Could not edit schedule",
+    true,
+  );
+};

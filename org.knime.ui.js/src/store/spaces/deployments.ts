@@ -107,8 +107,21 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async editSchedule() {
-    // TODO Call backend to edit the schedule
+  editSchedule({ state }, { scheduleId }) {
+    const projectId = state.deploymentsModalConfig.projectId;
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    const itemId = state.deploymentsModalConfig.itemId;
+
+    const updatedScheduleId = API.desktop.editSchedule({
+      spaceProviderId,
+      spaceId,
+      itemId,
+      scheduleId,
+    });
+
+    if (updatedScheduleId) {
+      // TODO act on successful edit of schedule
+    }
   },
 
   async deleteSchedule({ state, dispatch }, { scheduleId }) {
