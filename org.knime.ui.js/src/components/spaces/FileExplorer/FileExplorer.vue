@@ -25,12 +25,14 @@ interface Props {
   items: Array<FileExplorerItemType>;
   itemIconRenderer?: ItemIconRenderer;
   activeRenamedItemId: string;
+  shouldCloseContextMenu: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: "normal",
   fullPath: "",
   itemIconRenderer: null,
+  shouldCloseContextMenu: false,
 });
 
 const emit = defineEmits<{
@@ -158,9 +160,13 @@ const closeContextMenu = () => {
   contextMenuAnchor.value = null;
 };
 
+let { shouldCloseContextMenu } = toRefs(props);
+watch(shouldCloseContextMenu, () => {
+  closeContextMenu();
+});
+
 const changeDirectory = (pathId: string) => {
   emit("changeDirectory", pathId);
-  closeContextMenu();
 };
 
 const openContextMenu = (
