@@ -77,7 +77,6 @@ describe("Kanvas", () => {
           // mock implementation of contentBounds for testing watcher
           __contentBounds: { left: 0, top: 0 },
           interactionsEnabled: true,
-          isEmpty: false,
         },
         getters: {
           viewBox: () => ({ string: "viewbox-string" }),
