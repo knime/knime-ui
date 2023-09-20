@@ -9,7 +9,7 @@ const fileToBase64 = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result?.toString() || "");
+    reader.onload = () => resolve((reader.result as string) ?? "");
     reader.onerror = (error) => reject(error);
   });
 };
@@ -30,14 +30,15 @@ const triggerInput = () => {
   input.value.click();
 };
 
-const onChange = async (e) => {
-  if (!e.target) {
-    return null;
+const onChange = async (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  if (!target) {
+    return;
   }
-  const [file] = e.target.files;
 
+  const [file] = target.files as FileList;
   if (!file) {
-    return null;
+    return;
   }
 
   if (file.size > maxFileSize) {
@@ -47,14 +48,12 @@ const onChange = async (e) => {
         maxFileSize / 1024
       }kb`,
     );
-    return null;
+    return;
   }
 
   const base64 = await fileToBase64(file);
 
   emit("update:modelValue", base64);
-
-  return null;
 };
 
 const { modelValue } = toRefs(props);
