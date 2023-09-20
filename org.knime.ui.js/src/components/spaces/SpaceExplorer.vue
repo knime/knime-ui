@@ -90,7 +90,6 @@ export default defineComponent({
       nodeTemplate: null,
       shouldShowPreview: false,
       itemIconRenderer,
-      shouldCloseContextMenu: false,
     };
   },
 
@@ -223,7 +222,6 @@ export default defineComponent({
     },
 
     async onChangeDirectory(pathId) {
-      this.shouldCloseContextMenu = true;
       const { projectId } = this;
       const { itemId } = await this.$store.dispatch("spaces/changeDirectory", {
         projectId,
@@ -231,7 +229,6 @@ export default defineComponent({
       });
 
       this.$emit("itemChanged", itemId);
-      this.shouldCloseContextMenu = false;
     },
 
     async onOpenFile({ id }) {
@@ -513,7 +510,6 @@ export default defineComponent({
         :full-path="fullPath"
         :item-icon-renderer="itemIconRenderer"
         :active-renamed-item-id="activeRenamedItemId"
-        :should-close-context-menu="shouldCloseContextMenu"
         @change-directory="onChangeDirectory"
         @change-selection="onSelectionChange"
         @open-file="onOpenFile"

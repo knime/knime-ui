@@ -123,7 +123,7 @@ describe("FileExplorer.vue", () => {
       mode: "normal",
       itemIconRenderer,
       activeRenamedItemId: "",
-      shouldCloseContextMenu: false,
+      fullPath: "",
     };
 
     const slots = {
@@ -552,11 +552,11 @@ describe("FileExplorer.vue", () => {
       );
     });
 
-    it("should close context menu if shouldCloseContextMenu is true", async () => {
+    it("should close context menu if fullPath changes", async () => {
       const { wrapper } = doMount();
 
       await openContextMenu(wrapper, 0);
-      await wrapper.setProps({ shouldCloseContextMenu: true });
+      await wrapper.setProps({ fullPath: "root" });
 
       expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(
         false,

@@ -25,14 +25,12 @@ interface Props {
   items: Array<FileExplorerItemType>;
   itemIconRenderer?: ItemIconRenderer;
   activeRenamedItemId: string;
-  shouldCloseContextMenu: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: "normal",
   fullPath: "",
   itemIconRenderer: null,
-  shouldCloseContextMenu: false,
 });
 
 const emit = defineEmits<{
@@ -90,10 +88,6 @@ watch(multiSelectionState, () => {
   emit("changeSelection", selectedItemIds.value);
 });
 
-const { fullPath } = toRefs(props);
-watch(fullPath, () => {
-  resetSelection();
-});
 /** MULTISELECTION */
 
 /** RENAME */
@@ -164,8 +158,9 @@ const closeContextMenu = () => {
   contextMenuAnchor.value = null;
 };
 
-let { shouldCloseContextMenu } = toRefs(props);
-watch(shouldCloseContextMenu, () => {
+const { fullPath } = toRefs(props);
+watch(fullPath, () => {
+  resetSelection();
   closeContextMenu();
 });
 
