@@ -76,9 +76,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       jobId,
     });
 
-    dispatch("fetchJobs", { projectId, itemId });
+    await dispatch("fetchJobs", { projectId, itemId });
+
     if (schedulerId) {
-      dispatch("fetchSchedules", { projectId, itemId });
+      await dispatch("fetchSchedules", { projectId, itemId });
     }
   },
 

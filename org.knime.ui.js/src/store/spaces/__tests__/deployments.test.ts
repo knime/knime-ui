@@ -97,7 +97,7 @@ describe("spaces::deployments", () => {
       });
     });
 
-    it.skip("should delete job and fetch schedules if job was created by a schedule", async () => {
+    it("should delete job and fetch schedules if job was created by a schedule", async () => {
       const itemId = ["id1"];
       const itemName = "Item name";
       const jobId = "job1";
@@ -122,20 +122,23 @@ describe("spaces::deployments", () => {
         spaceId: "local",
         spaceProviderId: "server",
         jobId,
+        itemId,
       });
       expect(mockedAPI.space.listJobsForWorkflow).toHaveBeenCalledWith({
         spaceId: "local",
         spaceProviderId: "server",
         itemId,
       });
-      expect(mockedAPI.space.listSchedulesForWorkflow).toHaveBeenCalledWith({
-        spaceId: "local",
-        spaceProviderId: "server",
-        itemId,
-      });
+      expect(mockedAPI.space.listSchedulesForWorkflow).toHaveBeenLastCalledWith(
+        {
+          spaceId: "local",
+          spaceProviderId: "server",
+          itemId,
+        },
+      );
     });
 
-    it.skip("should delete job and fetch only jobs", async () => {
+    it("should delete job and fetch only jobs", async () => {
       const itemId = ["id1"];
       const itemName = "Item name";
       const jobId = "job1";
@@ -154,11 +157,13 @@ describe("spaces::deployments", () => {
         itemId,
         itemName,
       });
+      expect(mockedAPI.space.listSchedulesForWorkflow).toHaveBeenCalledOnce();
 
       await store.dispatch("spaces/deleteJob", { jobId, schedulerId });
       expect(mockedAPI.space.deleteJobsForWorkflow).toHaveBeenCalledWith({
         spaceId: "local",
         spaceProviderId: "server",
+        itemId,
         jobId,
       });
       expect(mockedAPI.space.listJobsForWorkflow).toHaveBeenCalledWith({
@@ -166,20 +171,17 @@ describe("spaces::deployments", () => {
         spaceProviderId: "server",
         itemId,
       });
-      expect(mockedAPI.space.listSchedulesForWorkflow).not.toHaveBeenCalledWith(
-        {
-          spaceId: "local",
-          spaceProviderId: "server",
-          itemId,
-        },
-      );
+      expect(mockedAPI.space.listSchedulesForWorkflow).toHaveBeenCalledOnce();
     });
 
-    it.skip("should save job as a workflow", async () => {
+    it("should save job as a workflow", async () => {
       const itemId = ["id1"];
       const itemName = "Item name";
       const jobId = "job1";
-      const { store } = loadStore();
+      const jobName = "myjob";
+
+      mockedAPI.desktop.saveJobAsWorkflow.mockReturnValueOnce("newWorkflowId");
+      const { store, dispatchSpy } = loadStore();
 
       const projectId = "project2";
       store.state.spaces.projectPath[projectId] = {
@@ -193,13 +195,20 @@ describe("spaces::deployments", () => {
         itemId,
         itemName,
       });
-      store.dispatch("spaces/saveJobAsWorkflow", { jobId });
+      await store.dispatch("spaces/saveJobAsWorkflow", { jobId, jobName });
 
-      expect(mockedAPI.space.saveJobAsWorkflow).toHaveBeenCalledWith({
+      expect(mockedAPI.desktop.saveJobAsWorkflow).toHaveBeenCalledWith({
         spaceId: "local",
         spaceProviderId: "server",
         itemId,
+        jobId,
+        jobName,
       });
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "spaces/fetchWorkflowGroupContent",
+        { projectId },
+      );
     });
   });
 });

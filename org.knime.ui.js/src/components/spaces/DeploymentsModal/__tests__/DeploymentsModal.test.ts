@@ -4,7 +4,6 @@ import { mount } from "@vue/test-utils";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
-import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
 
 import { API } from "@api";
 import * as spacesStore from "@/store/spaces";
@@ -70,16 +69,14 @@ describe("DeploymentsModal.vue", () => {
   it("opens a deployments modal", async () => {
     const { wrapper, $store } = doMount({ isOpen: false, name: null });
 
-    expect(wrapper.findComponent(CirclePlayIcon).isVisible()).toBe(false);
     expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
 
-    await $store.commit("spaces/setDeploymentsModalConfig", {
+    $store.commit("spaces/setDeploymentsModalConfig", {
       isOpen: true,
       name: "Schedules and jobs of Workflow",
     });
     await Vue.nextTick();
 
-    expect(wrapper.findComponent(CirclePlayIcon).isVisible()).toBe(true);
     expect(wrapper.findComponent(Modal).isVisible()).toBe(true);
   });
 
@@ -89,7 +86,6 @@ describe("DeploymentsModal.vue", () => {
     wrapper.findComponent(Modal).trigger("cancel");
     await Vue.nextTick();
 
-    expect(wrapper.findComponent(CirclePlayIcon).isVisible()).toBe(false);
     expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
     expect(commitSpy).toHaveBeenCalledWith("spaces/setDeploymentsModalConfig", {
       isOpen: false,
