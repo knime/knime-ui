@@ -634,8 +634,10 @@ export const saveJobAsWorkflow = ({
   spaceId,
   itemId,
   jobId,
-  jobName
-} : SpaceProviderId & SpaceId & SpaceItemId & { jobId : string, jobName : string }) => {
+  jobName,
+}: SpaceProviderId &
+  SpaceId &
+  SpaceItemId & { jobId: string; jobName: string }) => {
   return callBrowserFunction(
     window.saveJobAsWorkflow,
     [spaceProviderId, spaceId, itemId, jobId, jobName],

@@ -92,7 +92,10 @@ export const jobSubMenuItems = [
     name: "save",
     text: "Save as workflow",
     callback: (row, context) => {
-      context.$store.dispatch("spaces/saveJobAsWorkflow", { jobId: row.id, jobName: row.name });
+      context.$store.dispatch("spaces/saveJobAsWorkflow", {
+        jobId: row.id,
+        jobName: row.name,
+      });
     },
   },
   {

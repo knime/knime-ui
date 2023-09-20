@@ -69,15 +69,12 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     const itemId = state.deploymentsModalConfig.itemId;
 
-    // Finish up implementation once the backend is done
-    await API.space.deleteJobsForWorkflow(
-      { spaceId,
-        spaceProviderId,
-        itemId,
-        jobId
-      }
-    );
-    // console.log("deleted job:", jobId);
+    await API.space.deleteJobsForWorkflow({
+      spaceId,
+      spaceProviderId,
+      itemId,
+      jobId,
+    });
 
     dispatch("fetchJobs", { projectId, itemId });
     if (schedulerId) {
@@ -85,14 +82,28 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  saveJobAsWorkflow({ state }, { jobId, jobName }) {
+  async saveJobAsWorkflow({ state, dispatch, commit }, { jobId, jobName }) {
     const projectId = state.deploymentsModalConfig.projectId;
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     const itemId = state.deploymentsModalConfig.itemId;
 
-    // console.log("saved job:", jobId);
-    // Finish up implementation once the backend is done
-    API.desktop.saveJobAsWorkflow( { spaceProviderId, spaceId, itemId, jobId, jobName } );
+    const savedWFId = API.desktop.saveJobAsWorkflow({
+      spaceProviderId,
+      spaceId,
+      itemId,
+      jobId,
+      jobName,
+    });
+
+    if (savedWFId) {
+      await dispatch("fetchWorkflowGroupContent", { projectId });
+      commit("setDeploymentsModalConfig", {
+        isOpen: false,
+        name: null,
+        projectId: null,
+        itemId: null,
+      });
+    }
   },
 
   async editSchedule({ state }, { scheduleId }) {

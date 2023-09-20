@@ -282,7 +282,7 @@ final class SpaceAPI {
      * @throws NoSuchElementException if there is no job for the given ids
      */
     @API
-    static SpaceItemEnt saveJobAsWorkflow(final String spaceProviderId, final String spaceId, final String itemId,
+    static String saveJobAsWorkflow(final String spaceProviderId, final String spaceId, final String itemId,
         final String jobId, final String jobName) throws ResourceAccessException {
 
         final var defaultWorkflowName = jobName;
@@ -347,7 +347,7 @@ final class SpaceAPI {
             }
             final var parent = destination.getParent();
             final var parentPath = org.eclipse.core.runtime.Path.forPosix(parent.getFullName());
-            return space.saveJobAsWorkflow(parentPath, destination.getName(), jobId);
+            return encodeSpaceItemEnt(space.saveJobAsWorkflow(parentPath, destination.getName(), jobId));
         }
 
         // selected a workflow group
@@ -367,7 +367,7 @@ final class SpaceAPI {
         final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId,
             Stream.of(name));
         if (nameCollisions.isEmpty()) {
-            return space.saveJobAsWorkflow(groupPath, name, jobId);
+            return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, name, jobId));
         }
 
         final AtomicReference<NameCollisionHandling> collisionHandlingStrategyRef = new AtomicReference<>();
@@ -382,12 +382,18 @@ final class SpaceAPI {
         }
 
         if (NameCollisionHandling.OVERWRITE == strategy) {
-            return space.saveJobAsWorkflow(groupPath, name, jobId);
+            return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, name, jobId));
         }
 
         // It is NameCollisionHandling.AUTORENAME since we got collisions, so it should not be NOOP
         final Predicate<String> taken = testName -> space.containsItemWithName(workflowGroupItemId, testName);
         final var newName = Space.generateUniqueSpaceItemName(taken, name, true);
-        return space.saveJobAsWorkflow(groupPath, newName, jobId);
+        return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, newName, jobId));
+    }
+
+    private static String encodeSpaceItemEnt(final SpaceItemEnt ent) {
+        // This works around the fact that Chromium cannot handle our custom Object return types
+        // (e.g. DefaultSpaceItemEnt)
+        return ent.getId();
     }
 }

@@ -186,5 +186,5 @@ declare function saveJobAsWorkflow(
   spaceId: string,
   itemId: string,
   jobId: string,
-  jobName: string
+  jobName: string,
 ): string;
