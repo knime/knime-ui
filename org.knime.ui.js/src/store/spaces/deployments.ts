@@ -111,8 +111,19 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     // TODO Call backend to edit the schedule
   },
 
-  async deleteSchedule() {
-    // TODO Call backend to delete the schedule
+  async deleteSchedule({ state, dispatch }, { scheduleId }) {
+    const projectId = state.deploymentsModalConfig.projectId;
+    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    const itemId = state.deploymentsModalConfig.itemId;
+
+    await API.space.deleteSchedulesForWorkflow({
+      spaceId,
+      spaceProviderId,
+      itemId,
+      scheduleId,
+    });
+
+    dispatch("fetchSchedules", { projectId, itemId });
   },
 
   executeWorkflow({ state }, { projectId, itemId }) {
