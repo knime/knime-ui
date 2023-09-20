@@ -1,69 +1,52 @@
 <script setup lang="ts">
-/*
- * Renders a button with MenuItems data, if it has children it will open a dropdown menu on click (SubMenu)
- */
-import Button from "webapps-common/ui/components/Button.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 interface Props {
-  item: MenuItem;
-  hideDropdown?: boolean;
+  title?: string;
+  items: MenuItem;
+  noDropdownIcon?: boolean;
 }
 
 interface Emits {
-  (e: "click", item: MenuItem): void;
+  (e: "item-click", item: MenuItem): void;
 }
 
 defineEmits<Emits>();
-withDefaults(defineProps<Props>(), {
-  hideDropdown: false,
-});
+withDefaults(defineProps<Props>(), { noDropdownIcon: false, title: null });
 </script>
 
 <template>
   <SubMenu
-    v-if="item.children"
     v-bind="$attrs"
+    :button-title="title"
     :teleport-to-body="false"
-    :title="item.title"
     orientation="left"
     class="submenu-button"
-    :disabled="item.disabled || null"
-    :items="item.children"
-    @item-click="(_, item) => (item.disabled ? null : $emit('click', item))"
+    :items="items"
+    @item-click="(_, item) => $emit('item-click', item)"
   >
     <template #default="{ expanded }">
-      <Component :is="item.icon" class="icon" />
-      {{ item.text }}
+      <slot />
       <DropdownIcon
-        v-if="!hideDropdown"
+        v-if="!noDropdownIcon"
         class="dropdown-icon"
         :class="{ flip: expanded }"
       />
     </template>
   </SubMenu>
-  <Button
-    v-else
-    v-bind="$attrs"
-    :title="item.title"
-    class="item-button"
-    compact
-    :aria-disabled="item.disabled || null"
-    @click="item.disabled ? null : $emit('click', item)"
-  >
-    <Component :is="item.icon" class="icon" />
-    {{ item.text }}
-  </Button>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
 .submenu-button {
-  & .dropdown-icon {
+  & svg.dropdown-icon {
     margin-left: 5px;
+    margin-top: 3px;
+
+    @mixin svg-icon-size 12;
 
     &.flip {
       transform: scaleY(-1);
@@ -71,14 +54,12 @@ withDefaults(defineProps<Props>(), {
   }
 }
 
-.button.item-button,
 .submenu-button :deep(.submenu-toggle) {
-  margin-left: 5px;
   border: 1px solid var(--knime-silver-sand);
   padding: 5px 14px;
   color: var(--knime-masala);
 
-  & svg {
+  & :slotted(svg) {
     @mixin svg-icon-size 18;
 
     stroke: var(--knime-masala);

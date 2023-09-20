@@ -3,10 +3,11 @@ import { mapGetters, mapState } from "vuex";
 
 import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import Button from "webapps-common/ui/components/Button.vue";
 import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
+import DropdownButton from "@/components/common/DropdownButton.vue";
 import PlusIcon from "@/assets/plus.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import AddFileIcon from "@/assets/add-file.svg";
@@ -20,8 +21,9 @@ import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-
 
 export default {
   components: {
-    OptionalSubMenuActionButton,
+    DropdownButton,
     PlusButton,
+    Button,
     SubMenu,
     MenuOptionsIcon,
   },
@@ -189,14 +191,38 @@ export default {
   <div class="toolbar-buttons">
     <template v-if="mode === 'normal'">
       <div class="toolbar-actions-normal">
-        <OptionalSubMenuActionButton
-          v-for="action in actions"
-          :id="action.id"
-          :key="action.id"
-          :disabled="isLoadingContent"
-          :item="action"
-          @click="(item) => (item.execute ? item.execute() : null)"
-        />
+        <template v-for="action in actions" :key="action.id">
+          <DropdownButton
+            v-if="action.children"
+            :id="action.id"
+            class="toolbar-action-button"
+            :items="action.children"
+            :title="action.title"
+            :disabled="action.disabled || isLoadingContent"
+            @click-item="
+              (item) => (item.execute && !item.disabled ? item.execute() : null)
+            "
+          >
+            <Component :is="action.icon" class="icon" />
+            {{ action.text }}
+          </DropdownButton>
+          <Button
+            v-else
+            v-bind="$attrs"
+            :title="action.title"
+            class="toolbar-action-button"
+            compact
+            with-border
+            :disabled="action.disabled || isLoadingContent"
+            @click="
+              () =>
+                action.execute && !action.disabled ? action.execute() : null
+            "
+          >
+            <Component :is="action.icon" class="icon" />
+            {{ action.text }}
+          </Button>
+        </template>
 
         <div class="create-workflow-btn">
           <PlusButton
@@ -234,6 +260,15 @@ export default {
 
     --theme-button-function-foreground-color-hover: var(--knime-white);
     --theme-button-function-background-color-hover: var(--knime-masala);
+
+    & .toolbar-action-button {
+      margin-left: 5px;
+
+      &:is(button) {
+        /* TODO: move this to a common button component */
+        border: 1px solid var(--knime-silver-sand);
+      }
+    }
 
     & .create-workflow-btn {
       position: absolute;
