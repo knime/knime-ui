@@ -159,8 +159,8 @@ const nodePreview = computed(() => {
   const icon = getMetadataFieldValue("icon") || null;
 
   return {
-    inPorts: inPorts.map(toPortObject(props.availablePortTypes)),
-    outPorts: outPorts.map(toPortObject(props.availablePortTypes)),
+    inPorts: inPorts.map(toExtendedPortObject(props.availablePortTypes)),
+    outPorts: outPorts.map(toExtendedPortObject(props.availablePortTypes)),
     icon,
     type,
     isComponent: true,
