@@ -11,7 +11,10 @@ import MetadataHeaderButtons from "./MetadataHeaderButtons.vue";
 import MetadataTags from "./MetadataTags.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
-import { TypedText } from "@/api/gateway-api/generated-api";
+import {
+  TypedText,
+  UpdateComponentMetadataCommand,
+} from "@/api/gateway-api/generated-api";
 
 import type {
   Link,
@@ -96,7 +99,7 @@ const getInitialDraftData = () => {
     inPorts,
     outPorts,
     icon: componentMetadata.value.icon || "",
-    type: componentMetadata.value.type || "Component",
+    type: componentMetadata.value.type || null,
   };
 };
 
@@ -118,7 +121,7 @@ type SaveEventPayload = {
   inPorts: Array<ComponentPortDescription>;
   outPorts: Array<ComponentPortDescription>;
   icon: string; // base64 url-encoded
-  type: ComponentNodeAndDescription.TypeEnum | string;
+  type: UpdateComponentMetadataCommand.TypeEnum | string | null;
 };
 
 const emit = defineEmits<{

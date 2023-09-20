@@ -7,11 +7,11 @@ import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import ComponentTypeSvgIcon from "@/components/workflowMetadata/ComponentTypeSvgIcon.vue";
 import * as nodeBackgroundColors from "webapps-common/ui/colors/nodeColors.mjs";
 import { HibiscusDark as colorHibiscusDark } from "webapps-common/ui/colors/knimeColors.mjs";
-import type { ComponentNodeAndDescription } from "@/api/gateway-api/generated-api";
+import type { UpdateComponentMetadataCommand } from "@/api/gateway-api/generated-api";
 
 interface Props {
   componentTypes: Array<string>;
-  modelValue: string;
+  modelValue: string | null;
 }
 
 const props = defineProps<Props>();
@@ -27,7 +27,7 @@ const componentTypeMenuItems = computed(() => [
   {
     text: "Default",
     icon: getTypeIcon("Component"),
-    metadata: { id: "Component" },
+    metadata: { id: null },
   },
   ...props.componentTypes.map((type) => ({
     text: type,
@@ -40,14 +40,14 @@ const activeComponentType = computed(() => {
   return (
     componentTypeMenuItems.value.find(
       (type) => type.metadata.id === props.modelValue,
-    ) || { icon: "", text: "" }
+    ) || { icon: getTypeIcon("Component"), text: "Default" }
   );
 });
 
 const emit = defineEmits<{
   (
     e: "update:modelValue",
-    componentType: ComponentNodeAndDescription.TypeEnum,
+    componentType: UpdateComponentMetadataCommand.TypeEnum,
   ): void;
 }>();
 </script>

@@ -1110,7 +1110,7 @@ export interface DynamicPortGroupDescription {
 
 
 /**
- * Metadata properties of a project (workflow or component) that can be edited
+ * Metadata properties of a workflow (project or component) that can be edited
  * @export
  * @interface EditableProjectMetadata
  */
@@ -1121,19 +1121,19 @@ export interface EditableProjectMetadata {
      * @type {TypedText}
      * @memberof EditableProjectMetadata
      */
-    description: TypedText;
+    description?: TypedText;
     /**
      * A collection of tags the user chose to describe the workflow
      * @type {Array<string>}
      * @memberof EditableProjectMetadata
      */
-    tags: Array<string>;
+    tags?: Array<string>;
     /**
      * A collection of URLs attached to the workflow
      * @type {Array<Link>}
      * @memberof EditableProjectMetadata
      */
-    links: Array<Link>;
+    links?: Array<Link>;
 
 }
 
@@ -2656,7 +2656,7 @@ export interface ProjectDirtyStateEvent extends Event {
 
 
 /**
- * Workflow Metadata
+ * Metadata of a workflow project
  * @export
  * @interface ProjectMetadata
  */
@@ -3203,7 +3203,7 @@ export interface UpdateAvailableEventType extends EventType {
 export interface UpdateComponentLinkInformationCommand extends WorkflowCommand {
 
     /**
-     * Id of component which link inforation is to be updated
+     * Id of component which link information is to be updated
      * @type {string}
      * @memberof UpdateComponentLinkInformationCommand
      */
@@ -3224,10 +3224,8 @@ export interface UpdateComponentLinkInformationCommand extends WorkflowCommand {
  */
 export namespace UpdateComponentLinkInformationCommand {
 }
-
-
 /**
- * Update component metadata.
+ * Update the metadata of a component.
  * @export
  * @interface UpdateComponentMetadataCommand
  */
@@ -3246,7 +3244,7 @@ export interface UpdateComponentMetadataCommand extends WorkflowCommand {
      */
     outPorts: Array<ComponentPortDescription>;
     /**
-     * null
+     * The component icon, or null if the default icon should be used.
      * @type {string}
      * @memberof UpdateComponentMetadataCommand
      */
@@ -3280,8 +3278,6 @@ export namespace UpdateComponentMetadataCommand {
         Other = 'Other'
     }
 }
-
-
 /**
  * Updates the name of a component or metanode
  * @export
@@ -3370,7 +3366,7 @@ export interface UpdateNodeLabelCommand extends WorkflowCommand {
 export namespace UpdateNodeLabelCommand {
 }
 /**
- * Updates a projects metadata.
+ * Update the metadata of a workflow project.
  * @export
  * @interface UpdateProjectMetadataCommand
  */
@@ -3662,7 +3658,7 @@ export namespace WorkflowCommand {
         AddWorkflowAnnotation = 'add_workflow_annotation',
         UpdateProjectMetadata = 'update_project_metadata',
         UpdateComponentMetadata = 'update_component_metadata',
-        AddBendpoint = 'add_bendpoint'
+        AddBendpoint = 'add_bendpoint',
         UpdateComponentLinkInformation = 'update_component_link_information'
     }
 }
@@ -4730,7 +4726,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
-     * Updates a projects metadata.
+     * Update the metadata of a workflow project.
      */
 	UpdateProjectMetadata(
 		params: { projectId: string, workflowId: string } & Omit<UpdateProjectMetadataCommand, 'kind'>
@@ -4745,7 +4741,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
-     * Update component metadata.
+     * Update the metadata of a component.
      */
 	UpdateComponentMetadata(
 		params: { projectId: string, workflowId: string } & Omit<UpdateComponentMetadataCommand, 'kind'>
@@ -4757,9 +4753,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentMetadata }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},
-
-
+	},	
 
  	/**
      * Updates a components link information or unlinks a component
@@ -4774,7 +4768,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentLinkInformation }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},
+	},	
 
   }
 }
