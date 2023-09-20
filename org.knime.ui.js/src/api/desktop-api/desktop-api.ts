@@ -629,6 +629,19 @@ export const openPermissionsDialog = ({
   );
 };
 
+export const executeWorkflow = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+}: SpaceProviderId & SpaceId & SpaceItemId) => {
+  return callBrowserFunction(
+    window.executeOnClassic,
+    [spaceProviderId, spaceId, itemId],
+    "Could not remote execute workflow",
+    false,
+  );
+};
+
 export const saveJobAsWorkflow = ({
   spaceProviderId,
   spaceId,

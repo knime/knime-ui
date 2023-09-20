@@ -115,14 +115,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     // TODO Call backend to delete the schedule
   },
 
-  async executeWorkflow() {
-    // TODO Call backend to execute a workflow
-  },
-
-  executeOnClassic({ state }, { projectId, itemId }) {
+  executeWorkflow({ state }, { projectId, itemId }) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
 
-    API.desktop.executeOnClassic({
+    API.desktop.executeWorkflow({
       spaceId,
       spaceProviderId,
       itemId,
