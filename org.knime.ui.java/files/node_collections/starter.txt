@@ -31,6 +31,7 @@ org.knime.base.node.preproc.rounddouble.RoundDoubleNodeFactory
 org.knime.base.node.preproc.rowagg.RowAggregatorNodeFactory
 org.knime.base.node.preproc.rowtocolumnheader.RowToColumnHeaderNodeFactory
 org.knime.base.node.preproc.sorter.SorterNodeFactory
+org.knime.base.node.preproc.stringcleaner.StringCleanerNodeFactory
 org.knime.base.node.preproc.stringmanipulation.StringManipulationNodeFactory
 org.knime.base.node.preproc.stringmanipulation.multicolumn.MultiColumnStringManipulationNodeFactory
 org.knime.base.node.preproc.stringreplacer.StringReplacerNodeFactory
