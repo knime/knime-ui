@@ -4234,7 +4234,7 @@ const space = function(rpcClient: RPCClient) {
          * Deletes job from the space.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory  (workflow group).
+         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {string} jobId The ID of the job to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
