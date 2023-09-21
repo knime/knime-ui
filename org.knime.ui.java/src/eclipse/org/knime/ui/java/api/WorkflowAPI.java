@@ -73,7 +73,7 @@ final class WorkflowAPI {
      * Opens the workflow either in both, the Classic UI and the Modern/Web UI if the classic UI is active (the
      * WorkflowEditor is used in that case to open the workflow). Or it opens and loads the workflow exclusively in the
      * Modern UI. Those workflows won't be available in the classic UI when switching to it.
-     * 
+     *
      * @param spaceId
      * @param itemId
      * @param spaceProviderId {@code local} if absent
@@ -173,7 +173,14 @@ final class WorkflowAPI {
         SaveWorkflowCopy.saveCopyOf(projectId, workflowSvg);
     }
 
-
+    /**
+     * Executes or schedules a job on a Server.
+     *
+     * @param spaceProviderId
+     * @param spaceId
+     * @param itemId
+     * @throws IOException
+     */
     @API
     static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
