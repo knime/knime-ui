@@ -4,7 +4,11 @@ import { mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
 import { createAvailablePortTypes } from "@/test/factories";
-import { PortType, TypedText } from "@/api/gateway-api/generated-api";
+import {
+  ComponentNodeAndDescription,
+  PortType,
+  TypedText,
+} from "@/api/gateway-api/generated-api";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
@@ -15,17 +19,19 @@ import MetadataTags from "../MetadataTags.vue";
 import ComponentIconEditor from "../ComponentIconEditor.vue";
 import ComponentTypeEditor from "../ComponentTypeEditor.vue";
 import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue";
+import type { ComponentMetadata as ComponentMetadataType } from "@/api/custom-types";
 
 describe("ComponentMetadata.vue", () => {
   const doMount = ({
     customComponentMetadata = null,
-  }: { customComponentMetadata?: ComponentMetadata } = {}) => {
-    const componentMetadata: ComponentMetadata = {
+  }: { customComponentMetadata?: ComponentMetadataType } = {}) => {
+    const componentMetadata: ComponentMetadataType = {
+      name: "Component name",
       description: {
         value: "This is a dummy description",
         contentType: TypedText.ContentTypeEnum.Plain,
       },
-      type: "Learner",
+      type: ComponentNodeAndDescription.TypeEnum.Learner,
       icon: "data:image/someImage",
       inPorts: [],
       outPorts: [],
