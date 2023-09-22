@@ -3,7 +3,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
-import { SpaceItem } from "@/api/gateway-api/generated-api";
+import { SpaceItem, WorkflowInfo } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
 
 import type { SpacesState } from "./index";
@@ -169,6 +169,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       ({ origin }) =>
         origin &&
         origin.providerId === spaceProviderId &&
+        // only consider local projects -- see NXT-2062
+        origin.providerId.toUpperCase() ===
+          WorkflowInfo.ProviderTypeEnum.LOCAL &&
         origin.spaceId === spaceId &&
         origin.itemId === workflowItemId,
     );
@@ -363,6 +366,9 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
           ({ origin }) =>
             origin &&
             origin.providerId === spaceProviderId &&
+            // only consider local projects -- see NXT-2062
+            origin.providerId.toUpperCase() ===
+              WorkflowInfo.ProviderTypeEnum.LOCAL &&
             origin.spaceId === spaceId &&
             workflowItemIds.includes(origin.itemId),
         )
