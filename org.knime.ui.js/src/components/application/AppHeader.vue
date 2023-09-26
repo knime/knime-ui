@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, markRaw } from "vue";
 import { mapActions, mapState } from "vuex";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
@@ -13,6 +13,9 @@ import HouseIcon from "webapps-common/ui/assets/img/icons/house.svg";
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
+
+import SunIcon from "@/assets/sun.svg";
+import MoonIcon from "@/assets/moon.svg";
 
 import AppHeaderTab from "./AppHeaderTab.vue";
 
@@ -40,8 +43,8 @@ export default defineComponent({
       lastActiveProject: null,
       activeMode: "light",
       modes: [
-        { id: "light", text: "Light" },
-        { id: "dark", text: "Dark" },
+        { id: "light", icon: markRaw(SunIcon), text: "Light" },
+        { id: "dark", icon: markRaw(MoonIcon), text: "Dark" },
       ],
     };
   },
@@ -263,6 +266,9 @@ header {
         );
 
         --theme-value-switch-background-color-checked: var(--knime-white);
+        --wrapper-height: 26;
+
+        margin-right: 6px;
       }
 
       & .header-button,
