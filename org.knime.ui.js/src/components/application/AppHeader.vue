@@ -10,7 +10,7 @@ import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import CodeHtmlIcon from "webapps-common/ui/assets/img/icons/code-html.svg";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 import HouseIcon from "webapps-common/ui/assets/img/icons/house.svg";
-
+import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
@@ -30,6 +30,7 @@ export default defineComponent({
     ReloadIcon,
     CodeHtmlIcon,
     CogIcon,
+    ValueSwitch,
   },
   data() {
     return {
@@ -37,6 +38,11 @@ export default defineComponent({
       hoveredTab: null,
       activeProjectTab: null,
       lastActiveProject: null,
+      activeMode: "light",
+      modes: [
+        { id: "light", text: "Light" },
+        { id: "dark", text: "Dark" },
+      ],
     };
   },
   computed: {
@@ -149,6 +155,14 @@ export default defineComponent({
       </div>
 
       <div class="buttons">
+
+        <ValueSwitch
+            v-model="activeMode"
+            compact
+            class="mode-switcher"
+            :possible-values="modes"
+          />
+
         <FunctionButton
           v-if="devMode"
           class="header-button no-text"
@@ -225,6 +239,14 @@ header {
       justify-content: center;
       flex-shrink: 0;
       margin-left: 30px;
+
+      & .mode-switcher {
+        --theme-value-switch-background-color: var(--knime-masala);
+
+        --theme-value-switch-background-color-hover: var(--knime-gray-light-semi);
+
+        --theme-value-switch-background-color-checked: var(--knime-white);
+      }
 
       & .header-button,
       &:deep(.submenu-toggle) {
