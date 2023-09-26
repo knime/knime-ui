@@ -52,6 +52,7 @@ export default defineComponent({
       "isLoadingWorkflow",
       "devMode",
       "dirtyProjectsMap",
+      "mode",
     ]),
 
     isGetStartedPageActive() {
@@ -73,6 +74,16 @@ export default defineComponent({
         if (this.activeProjectId) {
           this.activeProjectTab = this.activeProjectId;
         }
+      },
+      immediate: true,
+    },
+    mode: {
+      handler(next, prev) {
+        if (prev) {
+          document.body.classList.remove(prev);
+        }
+
+        document.body.classList.add(next);
       },
       immediate: true,
     },
@@ -117,6 +128,10 @@ export default defineComponent({
     openKnimeUIPreferencePage() {
       API.desktop.openWebUIPreferencePage();
     },
+
+    onModeChange(mode) {
+      this.$store.commit("application/setMode", mode);
+    },
   },
 });
 </script>
@@ -155,13 +170,13 @@ export default defineComponent({
       </div>
 
       <div class="buttons">
-
         <ValueSwitch
-            v-model="activeMode"
-            compact
-            class="mode-switcher"
-            :possible-values="modes"
-          />
+          v-model="activeMode"
+          compact
+          class="mode-switcher"
+          :possible-values="modes"
+          @update:model-value="onModeChange"
+        />
 
         <FunctionButton
           v-if="devMode"
@@ -243,7 +258,9 @@ header {
       & .mode-switcher {
         --theme-value-switch-background-color: var(--knime-masala);
 
-        --theme-value-switch-background-color-hover: var(--knime-gray-light-semi);
+        --theme-value-switch-background-color-hover: var(
+          --knime-gray-light-semi
+        );
 
         --theme-value-switch-background-color-checked: var(--knime-white);
       }

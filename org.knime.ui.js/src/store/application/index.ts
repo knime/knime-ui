@@ -64,6 +64,8 @@ export interface ApplicationState {
    * an object that maps supported file extensions to their node template id
    */
   fileExtensionToNodeTemplateId: Record<string, string>;
+
+  mode: "light" | "dark";
 }
 
 /*
@@ -91,6 +93,7 @@ export const state = (): ApplicationState => ({
   featureFlags: {},
   exampleProjects: [],
   fileExtensionToNodeTemplateId: {},
+  mode: "light",
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -101,6 +104,10 @@ export const mutations: MutationTree<ApplicationState> = {
   ...globalLoader.mutations,
   ...dirtyProjectTracking.mutations,
   ...canvasModes.mutations,
+
+  setMode(state, mode) {
+    state.mode = mode;
+  },
 
   setActiveProjectId(state, projectId) {
     state.activeProjectId = projectId;
