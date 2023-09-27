@@ -116,17 +116,17 @@ export default {
 
 <style scoped>
 #kanvas :deep(svg) {
-  color: var(--knime-masala);
-  background-color: var(--backgrounds-primary);
+  color: var(--texts-text-primary);
+  background-color: var(--backgrounds-base);
   transition: background-color 150ms;
 }
 
 #kanvas.indicate-node-drag :deep(svg) {
-  background-color: var(--backgrounds-secondary);
+  background-color: var(--backgrounds-base);
 }
 
 .workflow-sheet {
-  fill: var(--backgrounds-primary);
+  fill: var(--backgrounds-base);
   pointer-events: none;
 }
 </style>

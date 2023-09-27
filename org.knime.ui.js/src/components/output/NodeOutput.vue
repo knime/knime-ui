@@ -65,6 +65,7 @@ export default defineComponent({
       projectId: (state) => state.activeProjectId as string | null,
       availablePortTypes: (state) =>
         state.availablePortTypes as AvailablePortTypes,
+      mode: (state) => state.mode,
     }),
     ...mapState("workflow", {
       workflowId: (state) => state.activeWorkflow.info.containerId as string,
@@ -170,7 +171,11 @@ export default defineComponent({
 </script>
 
 <template>
-  <div id="node-output" class="output-container">
+  <div
+    id="node-output"
+    class="output-container"
+    :class="{ dark: mode === 'dark' }"
+  >
     <PortTabs
       v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
       v-model="selectedTab"
@@ -265,6 +270,15 @@ export default defineComponent({
 .output {
   flex-shrink: 1;
   overflow-y: auto;
+}
+
+.dark {
+  background: white;
+  filter: invert(75%);
+
+  & * {
+    color: black;
+  }
 }
 
 .placeholder {

@@ -2,6 +2,7 @@
   & * {
     color-scheme: light;
 
+    --backgrounds-base: #ffffff;
     --backgrounds-primary: #ffffff;
     --backgrounds-secondary: #f8f9fa;
     --backgrounds-tertiary: #eff1f2;
@@ -10,7 +11,7 @@
     --backgrounds-orphan: #c0c4c6;
 
     --ui-selection-border: #1e6da8;
-    --ui-selection-background: #d3e8f8;
+    --ui-selection-background: #1e6ca828;
     --ui-separator: #aeabb2;
 
     --buttons-button-primary: #ffd800;

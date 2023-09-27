@@ -1,5 +1,5 @@
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 
 import NodeTorsoNormal from "webapps-common/ui/components/node/NodeTorsoNormal.vue";
 import NodeTorsoMissing from "./NodeTorsoMissing.vue";
@@ -57,6 +57,7 @@ export default {
     },
   },
   computed: {
+    ...mapState("application", ["mode"]),
     ...mapGetters("workflow", ["isWritable"]),
     // Returns false for broken nodes, which can occur during development, but should not occur in production.
     isKnownNode() {
@@ -87,6 +88,7 @@ export default {
       :is-component="kind === 'component'"
       :icon="icon"
       :type="type"
+      :dark="mode === 'dark'"
     />
     <NodeTorsoUnknown v-else />
     <!-- Not using conditional rendering, DOM modifications will trigger DragLeave event -->

@@ -1,4 +1,5 @@
 <script>
+import { mapState } from "vuex";
 /**
  * Colored rect that is used as selection plane for nodes
  */
@@ -35,6 +36,7 @@ export default {
     },
   },
   computed: {
+    ...mapState("application", ["mode"]),
     // Getting the node selection measures and calculate if some additional space is needed for the status bar
     nodeSelectionMeasures() {
       const {
@@ -67,6 +69,13 @@ export default {
         width,
       };
     },
+
+    colors() {
+      return {
+        fill: this.$colors.selection.activeBackground,
+        stroke: this.$colors.selection.activeBorder,
+      };
+    },
   },
 };
 </script>
@@ -76,12 +85,20 @@ export default {
     <rect
       :x="nodeSelectionMeasures.x"
       :y="nodeSelectionMeasures.y"
+      class="selection-plane"
       :width="nodeSelectionMeasures.width"
       :height="nodeSelectionMeasures.height"
-      :fill="$colors.selection.activeBackground"
-      :stroke="$colors.selection.activeBorder"
       :stroke-width="$shapes.selectedNodeStrokeWidth"
       :rx="$shapes.selectedItemBorderRadius"
     />
+    <!-- :fill="colors.fill"
+      :stroke="colors.stroke" -->
   </g>
 </template>
+
+<style lang="postcss" scoped>
+.selection-plane {
+  fill: var(--ui-selection-background);
+  stroke: var(--ui-selection-border);
+}
+</style>

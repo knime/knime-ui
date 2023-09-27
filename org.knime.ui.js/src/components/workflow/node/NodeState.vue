@@ -119,10 +119,9 @@ export default {
     <rect
       :width="$shapes.nodeSize"
       :height="$shapes.nodeStatusHeight"
-      :fill="$colors.trafficLight.background"
-      :stroke="$colors.darkeningMask"
       stroke-width=".3"
       rx="1"
+      class="base"
     />
 
     <!-- node's static states -->
@@ -261,5 +260,10 @@ export default {
   animation-direction: alternate;
   animation-iteration-count: infinite;
   animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+}
+
+.base {
+  fill: var(--backgrounds-quaternary);
+  stroke: var(--ui-separator);
 }
 </style>
