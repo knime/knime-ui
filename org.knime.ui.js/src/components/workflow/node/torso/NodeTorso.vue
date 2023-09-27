@@ -27,6 +27,8 @@ export default {
      */
     type: { type: String, default: null },
 
+    weight: { type: Number, default: null },
+
     /**
      * Node variation.
      * @values 'node', 'metanode', 'component'
@@ -77,19 +79,31 @@ export default {
 
 <template>
   <g>
-    <NodeTorsoMissing v-if="type === 'Missing'" />
-    <NodeTorsoMetanode
-      v-else-if="kind === 'metanode'"
-      :execution-state="executionState"
-    />
-    <NodeTorsoNormal
-      v-else-if="isKnownNode"
-      :is-component="kind === 'component'"
-      :icon="icon"
-      :type="type"
-    />
-    <NodeTorsoUnknown v-else />
-    <!-- Not using conditional rendering, DOM modifications will trigger DragLeave event -->
-    <NodeTorsoReplace :is-dragged-over="isDraggedOver" />
+    <template v-if="weight === null">
+      <NodeTorsoMissing v-if="type === 'Missing'" />
+      <NodeTorsoMetanode
+        v-else-if="kind === 'metanode'"
+        :execution-state="executionState"
+      />
+      <NodeTorsoNormal
+        v-else-if="isKnownNode"
+        :is-component="kind === 'component'"
+        :icon="icon"
+        :type="type"
+      />
+      <NodeTorsoUnknown v-else />
+      <!-- Not using conditional rendering, DOM modifications will trigger DragLeave event -->
+      <NodeTorsoReplace :is-dragged-over="isDraggedOver" />
+    </template>
+    <template v-else>
+      <rect
+        :width="$shapes.nodeSize"
+        :height="$shapes.nodeSize"
+        :x="0"
+        :y="0"
+        data-hide-in-workflow-preview
+        :fill="`hsl(${255 - weight * 255},100%,50%)`"
+      />
+    </template>
   </g>
 </template>

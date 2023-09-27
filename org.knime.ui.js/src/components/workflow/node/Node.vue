@@ -51,6 +51,11 @@ export default {
      */
     id: { type: String, required: true },
 
+    weight: {
+      type: Number,
+      default: null,
+    },
+
     /**
      * Node variation.
      * @values 'node', 'metanode', 'component'
@@ -562,6 +567,7 @@ export default {
                     :type="type"
                     :kind="kind"
                     :icon="icon"
+                    :weight="weight"
                     :is-dragged-over="isDraggedOver"
                     :execution-state="state && state.executionState"
                     :class="['node-torso', { hover: isHovering }]"
