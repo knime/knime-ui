@@ -42,11 +42,17 @@ const isEditing = computed(
 );
 
 const getInitialDraftData = () => {
-  return {
-    description: projectMetadata.value.description.value,
-    links: structuredClone(toRaw(projectMetadata.value.links || [])),
-    tags: structuredClone(toRaw(projectMetadata.value.tags || [])),
-  };
+  return projectMetadata.value
+    ? {
+        description: projectMetadata.value.description.value,
+        links: structuredClone(toRaw(projectMetadata.value.links || [])),
+        tags: structuredClone(toRaw(projectMetadata.value.tags || [])),
+      }
+    : {
+        description: "",
+        links: [],
+        tags: [],
+      };
 };
 
 const createNewDraft = (draftId: string) => {
