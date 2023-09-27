@@ -62,16 +62,16 @@ export default {
     align-items: center;
 
     & .category-title {
-      border: 1px solid var(--knime-silver-sand);
+      border: 1px solid var(--buttons-button-tertiary);
       margin: 0 5px 0 0;
       padding: 3px 5px;
       line-height: 15px;
       display: inline-block;
       font-size: 13px;
-      color: var(--knime-dove-gray);
+      color: var(--buttons-button-tertiary);
       cursor: pointer;
       position: relative;
-      background-color: var(--knime-porcelain);
+      background-color: var(--backgrounds-tertiary);
 
       &:hover {
         color: var(--knime-white);

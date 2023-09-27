@@ -264,7 +264,11 @@ export default {
     }
 
     & :deep(.submenu-toggle) {
-      border: 1px solid var(--knime-silver-sand);
+      border: 1px solid var(--ui-separator);
+    }
+
+    & .open-icon {
+      stroke: var(--texts-text-primary);
     }
 
     /* Aligning text in the submenu */

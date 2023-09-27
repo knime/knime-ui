@@ -192,6 +192,13 @@ const spaceIcon = computed(() => {
 
   & :deep(.submenu-toggle) {
     padding-left: 5px;
+    color: var(--texts-text-primary);
+  }
+
+  & svg {
+    stroke: var(--texts-text-primary);
+
+    /* background-color: red; */
   }
 }
 </style>

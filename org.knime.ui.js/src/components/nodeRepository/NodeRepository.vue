@@ -168,13 +168,17 @@ export default {
   height: 40px;
   font-size: 17px;
 
+  & :deep {
+    background-color: var(--backgrounds-tertiary);
+  }
+
   &:hover {
     background-color: var(--knime-silver-sand-semi);
   }
 
   &:focus-within {
-    background-color: var(--knime-white);
-    border-color: var(--knime-masala);
+    background-color: var(--backgrounds-tertiary);
+    border-color: var(--buttons-button-secondary);
   }
 }
 

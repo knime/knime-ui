@@ -591,7 +591,7 @@ export default defineComponent({
   padding-bottom: 7px;
   margin-top: 5px;
   margin-bottom: 5px;
-  border-bottom: 1px solid var(--knime-silver-sand);
+  border-bottom: 1px solid var(--ui-separator);
 }
 
 .breadcrumb-wrapper {
@@ -619,11 +619,15 @@ export default defineComponent({
     }
 
     & :deep(ul > li > span) {
-      color: var(--knime-dove-gray);
+      color: var(--texts-text-primary);
+
+      & svg {
+        stroke: var(--texts-text-primary);
+      }
 
       &:last-child,
       &:hover {
-        color: var(--knime-masala);
+        color: var(--texts-text-primary);
       }
     }
   }
