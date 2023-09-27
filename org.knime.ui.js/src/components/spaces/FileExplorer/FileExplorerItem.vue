@@ -170,11 +170,11 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
   }
 
   &:not(.selected, .dragging, .dragging-over) .item-content {
-    color: var(--knime-masala);
+    color: var(--texts-text-primary);
 
-    &.light {
-      background-color: var(--knime-white);
-    }
+    /* &.light {
+      background-color: var(--backgrounds-primary);
+    } */
   }
 
   & td.rename-active {

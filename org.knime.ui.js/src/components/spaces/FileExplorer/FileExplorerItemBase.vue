@@ -38,7 +38,7 @@ export default defineComponent({
 .file-explorer-item-base {
   --icon-size: 18;
   --item-padding: 8;
-  --item-bg-color: var(--knime-gray-ultra-light);
+  --item-bg-color: var(--backgrounds-secondary);
   --item-font-size: 13px;
 
   --selection-color: var(--knime-cornflower-dark);
@@ -70,7 +70,7 @@ export default defineComponent({
 
       @mixin svg-icon-size var(--icon-size);
 
-      stroke: var(--knime-masala);
+      stroke: var(--texts-text-primary);
     }
   }
 

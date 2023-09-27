@@ -167,8 +167,10 @@ export default {
   height: var(--app-toolbar-height);
   flex: 0 0 auto;
   padding: 10px;
-  background-color: var(--knime-gray-ultra-light);
-  border-bottom: 1px solid var(--knime-silver-sand);
+  background-color: var(--backgrounds-tertiary);
+  border-bottom: 1px solid var(--ui-separator);
+  /* background-color: var(--knime-gray-ultra-light); */
+  /* border-bottom: 1px solid var(--knime-silver-sand); */
 
   & .control-list {
     display: flex;
@@ -178,6 +180,10 @@ export default {
 
     & .control {
       margin-right: 5px;
+
+      & svg {
+        stroke: var(--texts-text-primary);
+      }
     }
   }
 }

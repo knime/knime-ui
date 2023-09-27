@@ -1,0 +1,23 @@
+:root:has(body.light) {
+  & * {
+    color-scheme: light;
+
+    --backgrounds-primary: #ffffff;
+    --backgrounds-secondary: #f8f9fa;
+    --backgrounds-tertiary: #eff1f2;
+    --backgrounds-quaternary: #e5e5ea;
+
+    --backgrounds-orphan: #c0c4c6;
+
+    --ui-selection-border: #1e6da8;
+    --ui-selection-background: #d3e8f8;
+    --ui-separator: #aeabb2;
+
+    --buttons-button-primary: #ffd800;
+    --buttons-button-secondary: #3e3a39;
+    --buttons-button-tertiary: #6e6e6e;
+
+    --texts-text-primary: #3e3a39;
+    --texts-text-placeholder: #a0a0a0;
+  }
+}

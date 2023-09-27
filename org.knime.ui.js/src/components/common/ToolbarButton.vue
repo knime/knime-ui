@@ -32,8 +32,8 @@ button {
   align-items: center;
   height: calc((var(--icon-box-size) + 2) * 1px);
   border-radius: calc((var(--icon-box-size) + 2) / 2 * 1px);
-  border: 1px solid var(--knime-silver-sand);
-  color: var(--knime-masala);
+  border: 1px solid var(--ui-separator);
+  color: var(--texts-text-primary);
   background: transparent;
   outline: none;
   padding: 0;
@@ -47,14 +47,14 @@ button {
   }
 
   &.primary {
-    background: var(--knime-yellow);
-    border-color: var(--knime-yellow);
+    background: var(--backgrounds-primary);
+    border-color: var(--backgrounds-primary);
   }
 
   & :slotted(svg) {
     @mixin svg-icon-size var(--icon-size);
 
-    stroke: var(--knime-masala);
+    stroke: var(--texts-text-primary);
     margin: calc(var(--icon-margin) * 1px);
   }
 

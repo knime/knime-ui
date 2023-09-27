@@ -248,28 +248,30 @@ nav {
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background-color: var(--knime-silver-sand);
-      border-bottom: 1px var(--knime-black) solid;
+      background-color: var(--backgrounds-orphan);
+      /* border-bottom: 1px var(--knime-black) solid; */
+      margin-bottom: 1px;
       transition: background-color 150ms ease-out;
 
       & svg {
+        stroke: var(--texts-text-primary);
         @mixin svg-icon-size 25;
       }
 
       &.active {
-        background-color: var(--knime-porcelain);
+        background-color: var(--backgrounds-tertiary);
 
         &.expanded {
-          background-color: var(--knime-porcelain);
+          background-color: var(--backgrounds-tertiary);
         }
       }
 
       &:hover {
-        background-color: var(--knime-gray-ultra-light);
+        background-color: var(--backgrounds-tertiary);
         cursor: pointer;
 
         & svg {
-          stroke: var(--knime-masala);
+          stroke: var(--texts-text-primary);
         }
       }
     }
@@ -278,7 +280,7 @@ nav {
 
 #left-panel {
   flex: 0 0 auto;
-  border-right: 1px solid var(--knime-silver-sand);
+  border-right: 1px solid var(--backgrounds-secondary);
 
   & :deep(.container) {
     /* prevent scrollbar jump when switching between tabs in the LeftCollapsiblePanel */

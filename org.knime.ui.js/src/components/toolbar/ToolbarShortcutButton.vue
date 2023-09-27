@@ -118,6 +118,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
     border-radius: var(--theme-button-split-border-radius) 0 0
       var(--theme-button-split-border-radius);
 
+    /* Separator for split button (e.g Save) */
     &::after {
       content: "";
       display: block;
@@ -126,7 +127,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       height: calc(100% - 10px);
       right: 0;
       top: 5px;
-      background-color: var(--knime-silver-sand);
+      background-color: var(--ui-separator);
     }
   }
 
@@ -141,7 +142,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
 
   & .submenu {
     display: inline-flex;
-    border: 1px solid var(--knime-silver-sand);
+    border: 1px solid var(--ui-separator);
     border-left: none;
 
     /* best way to ensure flexible 1/4 corners */
@@ -176,7 +177,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       & svg {
         @mixin svg-icon-size 12;
 
-        stroke: var(--theme-button-split-foreground-color);
+        stroke: var(--texts-text-primary);
         padding: 0;
       }
     }

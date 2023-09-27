@@ -1,0 +1,23 @@
+:root:has(body.dark) {
+  & * {
+    color-scheme: dark;
+
+    --backgrounds-primary: #1c1c1e;
+    --backgrounds-secondary: #2c2c2e;
+    --backgrounds-tertiary: #3a3a3c;
+    --backgrounds-quaternary: #48484a;
+
+    --backgrounds-orphan: #636366;
+
+    --ui-selection-border: #d3e8f8;
+    --ui-selection-background: #1e6da8;
+    --ui-separator: #aeabb2;
+
+    --buttons-button-primary: #ffd800;
+    --buttons-button-secondary: #ffffff;
+    --buttons-button-tertiary: #aeaeb2;
+
+    --texts-text-primary: #ffffff;
+    --texts-text-placeholder: #aeaeb2;
+  }
+}

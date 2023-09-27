@@ -3,6 +3,8 @@
 @import "webapps-common/ui/css/grid";
 @import "./fonts";
 @import "./variables";
+@import "./light";
+@import "./dark";
 
 /* prevent "bounce" effect when scrolling with touch pad */
 body {

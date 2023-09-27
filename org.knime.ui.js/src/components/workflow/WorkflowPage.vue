@@ -53,8 +53,8 @@ export default {
     "sidebar workflow" auto
     / min-content auto;
   height: 100%;
-  background: var(--knime-white);
-  color: var(--knime-masala);
+  /* background: var(--knime-white);
+  color: var(--knime-masala); */
   overflow: hidden;
 }
 
@@ -67,8 +67,8 @@ export default {
   height: var(--app-toolbar-height);
   flex: 0 0 auto;
   padding: 10px;
-  background-color: var(--knime-porcelain);
-  border-bottom: 1px solid var(--knime-silver-sand);
+  /* background-color: var(--knime-porcelain); */
+  /* border-bottom: 1px solid var(--knime-silver-sand); */
 }
 
 main {

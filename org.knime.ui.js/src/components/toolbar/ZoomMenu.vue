@@ -123,7 +123,7 @@ export default {
       background: transparent;
       border: none;
       text-align: right;
-      color: var(--theme-button-foreground-color, var(--knime-masala));
+      color: var(--texts-text-primary);
       width: 54px;
       padding: 8px 4px 8px 16px;
       font-size: 14px;
@@ -136,7 +136,7 @@ export default {
   }
 
   & :deep(.function-button:not(.active) svg) {
-    stroke: var(--theme-button-foreground-color, var(--knime-masala));
+    stroke: var(--texts-text-primary);
   }
 }
 </style>

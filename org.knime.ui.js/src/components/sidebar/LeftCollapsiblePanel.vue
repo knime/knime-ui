@@ -79,7 +79,7 @@ export default {
 }
 
 .container {
-  background-color: var(--knime-porcelain);
+  background-color: var(--backgrounds-tertiary);
   overflow-x: hidden;
   transition: width 0.3s ease;
 }
@@ -92,17 +92,17 @@ button {
   border: none;
   width: 10px;
   padding: 0;
-  background-color: var(--knime-silver-sand-semi);
+  background-color: var(--backgrounds-tertiary);
   cursor: pointer;
 
   &:hover {
-    background-color: var(--knime-silver-sand-semi);
+    background-color: var(--backgrounds-tertiary);
   }
 
   & svg {
     @mixin svg-icon-size 10;
 
-    stroke: var(--knime-masala);
+    stroke: var(--texts-text-primary);
     transition: transform 0.3s ease;
   }
 }
