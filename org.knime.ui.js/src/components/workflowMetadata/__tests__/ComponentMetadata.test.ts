@@ -48,6 +48,11 @@ describe("ComponentMetadata.vue", () => {
           availableComponentTypes: ["Learner", "Type2", "Type3", "Type4"],
         },
       },
+      workflow: {
+        getters: {
+          isWritable: () => true,
+        },
+      },
     });
 
     const wrapper = mount(ComponentMetadata, {

@@ -209,6 +209,7 @@ const store = useStore();
 const componentTypes = computed(
   () => store.state.application.availableComponentTypes,
 );
+const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
 
 watch(currentDraftID, (_, prev) => {
   if (
@@ -255,6 +256,7 @@ watch(
     </h2>
     <!-- <MetadataLastEdit :last-edit="lastEdit" /> -->
     <MetadataHeaderButtons
+      v-if="isWorkflowWritable"
       :is-editing="isEditing"
       :is-valid="isValid"
       @start-edit="onStartEdit"
