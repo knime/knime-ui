@@ -44,6 +44,7 @@ export default defineComponent({
   },
   computed: {
     ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
+    ...mapState("application", ["mode"]),
   },
   methods: {
     getNodePreview() {
@@ -90,6 +91,7 @@ export default defineComponent({
       :in-ports="nodeTemplate.inPorts"
       :out-ports="nodeTemplate.outPorts"
       :icon="nodeTemplate.icon"
+      :dark="mode === 'dark'"
     />
     <FunctionButton
       v-if="showFloatingHelpIcon"
@@ -129,6 +131,7 @@ export default defineComponent({
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
+    color: var(--texts-text-primary);
   }
 
   & .node-preview {
