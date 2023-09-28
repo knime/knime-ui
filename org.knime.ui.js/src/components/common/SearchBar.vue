@@ -68,7 +68,7 @@ export default {
   display: flex;
   align-items: center;
   position: relative;
-  border: 1px solid var(--knime-stone-gray);
+  border: 1px solid var(--buttons-button-tertiary);
   background-color: var(--knime-white);
   font-size: 17px;
 
@@ -80,7 +80,7 @@ export default {
 
     & svg {
       vertical-align: top;
-      stroke: var(--theme-button-function-foreground-color);
+      stroke: var(--buttons-button-tertiary);
 
       @mixin svg-icon-size 18;
     }
@@ -102,11 +102,15 @@ input {
   height: 100%;
   border: 0;
   padding-right: 6px;
-  color: var(--knime-masala);
+  color: var(--texts-text-primary);
   background-color: transparent;
 
   &:focus {
     outline: none;
+  }
+
+  &::placeholder {
+    color: var(--texts-text-secondary);
   }
 
   &:placeholder-shown + button {

@@ -264,7 +264,7 @@ export default defineComponent({
   text-align: center;
   height: 100%;
   font-style: italic;
-  color: var(--knime-dove-gray);
+  color: var(--buttons-button-tertiary);
   flex-direction: column;
   margin-top: 30px;
   margin-bottom: 15px;

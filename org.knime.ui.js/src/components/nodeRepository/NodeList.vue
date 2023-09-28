@@ -222,6 +222,20 @@ export default {
 
   & svg {
     margin: 0;
+    stroke: var(--buttons-button-tertiary);
+  }
+
+  &:hover svg {
+    stroke: var(--buttons-button-secondary);
+  }
+}
+
+& .compact,
+.without-border {
+  color: var(--buttons-button-tertiary);
+
+  &:hover {
+    color: var(--buttons-button-secondary);
   }
 }
 </style>
