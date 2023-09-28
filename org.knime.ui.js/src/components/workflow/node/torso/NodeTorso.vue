@@ -73,6 +73,9 @@ export default {
         Reflect.has(this.$colors.nodeBackgroundColors, this.type)
       );
     },
+    col() {
+      return 255 - this.weight * 255;
+    },
   },
 };
 </script>
@@ -102,7 +105,9 @@ export default {
         :x="0"
         :y="0"
         data-hide-in-workflow-preview
-        :fill="`hsl(${255 - weight * 255},100%,50%)`"
+        :fill="`rgb(255,${col},${col})`"
+        stroke="rgb(0, 0, 0)"
+        stroke-width="1"
       />
     </template>
   </g>
