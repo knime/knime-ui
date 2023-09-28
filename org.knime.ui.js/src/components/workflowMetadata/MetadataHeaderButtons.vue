@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed } from "vue";
+import { useStore } from "@/composables/useStore";
+
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import PencilIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
@@ -14,13 +17,15 @@ interface Emits {
   (e: "save"): void;
   (e: "cancelEdit"): void;
 }
+const store = useStore();
+const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
 
 defineEmits<Emits>();
 defineProps<Props>();
 </script>
 
 <template>
-  <div class="buttons">
+  <div v-if="isWorkflowWritable" class="buttons">
     <FunctionButton
       v-if="!isEditing"
       title="Edit metadata"
