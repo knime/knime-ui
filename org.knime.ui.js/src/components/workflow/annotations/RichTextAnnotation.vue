@@ -87,6 +87,7 @@ const customExtensions = [
   height: 100%;
   background: var(--backgrounds-base);
   --theme-text-normal-color: var(--texts-text-primary);
+  --rich-text-editor-background: var(--backgrounds-base);
 }
 
 .toolbar-wrapper {

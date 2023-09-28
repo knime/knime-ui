@@ -85,7 +85,7 @@ const isActive = (color: string) => {
   }
 
   &.active.none {
-    background-color: white;
+    background-color: var(--floating-background-primary);
     box-shadow: inset 0 0 0 2px var(--knime-cornflower);
   }
 }

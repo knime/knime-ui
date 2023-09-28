@@ -21,10 +21,12 @@
     --texts-text-primary: #ffffff;
     --texts-text-secondary: #aeaeb2;
 
-    --ports-table-color: #ffffff;
+    --ports-table-color: #f5f5f5;
 
     --connection-default: #aeaeb2;
     --connection-active: #ffffff;
     --connection-selected: var(--knime-cornflower);
+
+    --floating-background-primary: #48484a;
   }
 }

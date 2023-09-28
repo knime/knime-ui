@@ -316,7 +316,7 @@ onUnmounted(() => {
 .editor-toolbar {
   display: flex;
   justify-content: center;
-  background: var(--knime-white);
+  background: var(--floating-background-primary);
   gap: calc(v-bind(toolbarItemGap) * 1px);
   padding: calc(v-bind(toolbarItemPadding) * 1px);
   width: calc(v-bind(toolbarWidth) * 1px);
@@ -348,6 +348,7 @@ onUnmounted(() => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      /* color: var(--texts-text-primary); */
     }
 
     & :deep(.submenu-toggle) {

@@ -30,7 +30,7 @@ const isNone = computed(() => props.color === annotationColorPresets.None);
       cy="16"
       r="13"
       :stroke="color"
-      :fill="filled ? color : 'white'"
+      class="circle"
       stroke-width="4"
     />
   </svg>
@@ -40,13 +40,17 @@ const isNone = computed(() => props.color === annotationColorPresets.None);
 @import url("@/assets/mixins.css");
 
 .none {
-  fill: white;
+  fill: var(--floating-background-primary);
 }
 
 svg {
-  outline: 5px solid white;
+  outline: 5px solid var(--floating-background-primary);
   border-radius: 50%;
 
   @mixin svg-icon-size 18;
+}
+
+.circle {
+  fill: v-bind("filled ? props.color : 'var(--floating-background-primary)'");
 }
 </style>

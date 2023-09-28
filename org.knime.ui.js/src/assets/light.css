@@ -26,5 +26,7 @@
     --connection-default: var(--knime-stone-gray);
     --connection-active: var(--knime-masala);
     --connection-selected: var(--knime-cornflower);
+
+    --floating-background-primary: #ffffff;
   }
 }
