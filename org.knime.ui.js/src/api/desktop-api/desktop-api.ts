@@ -672,3 +672,18 @@ export const editSchedule = ({
     true,
   );
 };
+
+export const executeAllWithMonitoring = ({
+  projectId,
+  workflowId,
+}: {
+  projectId: string;
+  workflowId: string;
+}) => {
+  return callBrowserFunction(
+    window.executeAllWithMonitoring,
+    [projectId, workflowId],
+    "Could not execute workflow",
+    false,
+  );
+};

@@ -95,6 +95,7 @@ export default {
 
         // Workflow
         executeAll: !this.selectedNodes.length,
+        executeAllWithMonitoring: !this.selectedNodes.length,
         cancelAll: !this.selectedNodes.length,
         resetAll: !this.selectedNodes.length,
 

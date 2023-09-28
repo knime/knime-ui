@@ -16,6 +16,7 @@ import type {
   ShortcutExecuteContext,
   UnionToShortcutRegistry,
 } from "./types";
+import { API } from "@/api";
 
 const executeAndOpenViewHelper = ({
   $store,
@@ -35,6 +36,7 @@ const canExecuteAndOpenView = ({ $store }: ShortcutConditionContext) =>
 
 type ExecutionShortcuts = UnionToShortcutRegistry<
   | "executeAll"
+  | "executeAllWithMonitoring"
   | "cancelAll"
   | "resetAll"
   | "executeSelected"
@@ -61,6 +63,22 @@ const executionShortcuts: ExecutionShortcuts = {
     condition: ({ $store }) =>
       $store.state.workflow.activeWorkflow?.allowedActions.canExecute,
   },
+
+  executeAllWithMonitoring: {
+    text: "Execute all with monitoring",
+    title: "Execute workflow with monitoring",
+    hotkey: ["Shift", "F11"],
+    icon: ExecuteAllIcon,
+    execute: ({ $store }) => {
+      API.desktop.executeAllWithMonitoring({
+        projectId: $store.state.workflow.activeWorkflow?.projectId,
+        workflowId: $store.state.workflow.activeWorkflow?.info.containerId,
+      });
+    },
+    condition: ({ $store }) =>
+      $store.state.workflow.activeWorkflow?.allowedActions.canExecute,
+  },
+
   cancelAll: {
     text: "Cancel all",
     title: "Cancel workflow execution",

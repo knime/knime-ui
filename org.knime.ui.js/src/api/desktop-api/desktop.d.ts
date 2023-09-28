@@ -201,3 +201,8 @@ declare function editSchedule(
   itemId: string,
   scheduleId: string,
 ): string;
+
+declare function executeAllWithMonitoring(
+  projectId: string,
+  workflowId: string,
+): void;

@@ -55,7 +55,10 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
+import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.util.MonitoringUtil;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
@@ -186,6 +189,13 @@ final class WorkflowAPI {
         throws IOException {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         space.openRemoteExecution(itemId);
+    }
+
+    @API
+    static void executeAllWithMonitoring(final String projectId, final String workflowId) {
+        var wfm = DefaultServiceUtil.getWorkflowManager(projectId, new NodeIDEnt(workflowId));
+        MonitoringUtil.setMonitoringEnabled(wfm.getID(), true);
+        wfm.executeAll();
     }
 
 }
