@@ -20,5 +20,11 @@
 
     --texts-text-primary: #3e3a39;
     --texts-text-secondary: #aeaeb2;
+
+    --ports-table-color: #000000;
+
+    --connection-default: var(--knime-stone-gray);
+    --connection-active: var(--knime-masala);
+    --connection-selected: var(--knime-cornflower);
   }
 }

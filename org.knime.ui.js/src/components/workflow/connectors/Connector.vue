@@ -30,6 +30,7 @@ const suggestDelete = ref(false);
 
 const isHovered = ref(false);
 const isDragging = computed(() => store.state.workflow.isDragging);
+const mode = computed(() => store.state.application.mode);
 
 const isNodeSelected = computed(
   () => store.getters["selection/isNodeSelected"],

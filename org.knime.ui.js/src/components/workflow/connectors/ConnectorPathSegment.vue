@@ -21,6 +21,7 @@ interface Props {
   isSelected?: boolean;
   interactive?: boolean;
   streaming?: boolean;
+  dark?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -28,6 +29,7 @@ const props = withDefaults(defineProps<Props>(), {
   isReadonly: false,
   isSelected: false,
   streaming: false,
+  dark: false,
 });
 
 const emit = defineEmits<{
@@ -138,7 +140,7 @@ const isSegmentHovered = ref(false);
 path:not(.hover-area) {
   pointer-events: none;
   stroke-width: v-bind("$shapes.connectorWidth");
-  stroke: var(--knime-stone-gray);
+  stroke: var(--connection-default);
   transition:
     stroke-width 0.1s ease-in,
     stroke 0.1s ease-in;
@@ -149,17 +151,17 @@ path:not(.hover-area) {
 
   &.selected {
     stroke-width: v-bind("$shapes.selectedConnectorWidth");
-    stroke: var(--knime-cornflower);
+    stroke: var(--connection-selected);
   }
 
   &.highlighted {
     stroke-width: v-bind("$shapes.highlightedConnectorWidth");
-    stroke: var(--knime-masala);
+    stroke: var(--connection-active);
   }
 
   &.is-dragged-over {
     stroke-width: v-bind("$shapes.selectedConnectorWidth");
-    stroke: var(--knime-meadow-dark);
+    stroke: var(--connection-active);
   }
 
   &.dashed {
@@ -172,7 +174,7 @@ path:not(.hover-area) {
     stroke: var(--knime-coral);
 
     &.selected {
-      stroke: var(--knime-cornflower);
+      stroke: var(--connection-selected);
     }
   }
 }

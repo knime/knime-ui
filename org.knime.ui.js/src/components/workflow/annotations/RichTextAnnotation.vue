@@ -85,7 +85,8 @@ const customExtensions = [
 <style lang="postcss" scoped>
 .annotation-editor-wrapper {
   height: 100%;
-  background: var(--knime-white);
+  background: var(--backgrounds-base);
+  --theme-text-normal-color: var(--texts-text-primary);
 }
 
 .toolbar-wrapper {
@@ -98,6 +99,7 @@ const customExtensions = [
 }
 
 .annotation-editor {
+  --rich-text-editor-background: var(--backgrounds-base);
   --border-width: 2px;
 
   height: 100%;
