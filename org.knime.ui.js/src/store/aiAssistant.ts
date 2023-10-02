@@ -21,6 +21,7 @@ interface ProjectAndWorkflowIds {
 export interface AiAssistantState {
   hubID: string | null;
   qa: {
+    conversationId: string | null;
     messages: Message[];
     statusUpdate: string | null;
     isProcessing: boolean;
@@ -28,6 +29,7 @@ export interface AiAssistantState {
     projectAndWorkflowIds: ProjectAndWorkflowIds | null;
   };
   build: {
+    conversationId: string | null;
     messages: Message[];
     statusUpdate: string | null;
     isProcessing: boolean;
@@ -39,6 +41,7 @@ export interface AiAssistantState {
 export const state = (): AiAssistantState => ({
   hubID: null,
   qa: {
+    conversationId: null,
     messages: [],
     statusUpdate: null,
     isProcessing: false,
@@ -46,6 +49,7 @@ export const state = (): AiAssistantState => ({
     projectAndWorkflowIds: null,
   },
   build: {
+    conversationId: null,
     messages: [],
     statusUpdate: null,
     isProcessing: false,
@@ -88,6 +92,9 @@ export const mutations = {
     state[chainType].statusUpdate = false;
     state[chainType].projectAndWorkflowIds = null;
   },
+  setConversationId(state, { chainType, conversationId }) {
+    state[chainType].conversationId = conversationId;
+  },
 };
 
 export const actions = {
@@ -107,9 +114,11 @@ export const actions = {
       content,
     }));
 
+    const conversationId = state[chainType].conversationId;
     const { projectId, workflowId } = projectAndWorkflowIds;
     try {
       API.desktop.makeAiRequest({
+        conversationId,
         chainType,
         projectId,
         workflowId,
@@ -127,13 +136,17 @@ export const actions = {
       });
     }
   },
-  handleAiAssistantEvent({ commit }, { chainType, data: { type, payload } }) {
+  handleAiAssistantEvent(
+    { commit },
+    { chainType, data: { type, payload, conversation_id: conversationId } },
+  ) {
     switch (type) {
       case "token":
         commit("addToken", { chainType, token: payload });
         break;
       case "result":
         commit("clearChain", { chainType });
+        commit("setConversationId", { chainType, conversationId });
 
         if (payload.message) {
           commit("pushMessage", {
@@ -147,6 +160,7 @@ export const actions = {
         break;
       case "error":
         commit("clearChain", { chainType });
+        commit("setConversationId", { chainType, conversationId });
 
         commit("pushMessage", {
           chainType,
@@ -164,8 +178,10 @@ export const actions = {
     }
   },
   abortAiRequest({ commit }, { chainType }) {
+    const conversationId = state[chainType].conversationId;
+
     try {
-      API.desktop.abortAiRequest({ chainType });
+      API.desktop.abortAiRequest({ conversationId, chainType });
     } catch (error) {
       consola.error("abortAiRequest", error);
       commit("clearChain", { chainType });

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineAsyncComponent, defineComponent } from "vue";
 import type { FunctionalComponent, SVGAttributes } from "vue";
-import { mapState, mapActions, mapMutations } from "vuex";
+import { mapState, mapActions, mapMutations, mapGetters } from "vuex";
 
 import NodeCogIcon from "webapps-common/ui/assets/img/icons/node-cog.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
@@ -58,6 +58,7 @@ export default defineComponent({
     ...mapState("panel", ["activeTab", "expanded"]),
     ...mapState("application", ["activeProjectId"]),
     ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
+    ...mapGetters("workflow", ["isWorkflowEmpty"]),
 
     sidebarSections(): Array<SidebarSection> {
       return [
@@ -113,17 +114,35 @@ export default defineComponent({
       ];
     },
   },
+  watch: {
+    isWorkflowEmpty: {
+      handler() {
+        if (this.isWorkflowEmpty) {
+          this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
+        }
+      },
+      immediate: true,
+    },
+  },
   methods: {
     ...mapMutations("panel", ["closePanel", "toggleExpanded"]),
     ...mapActions("panel", ["setCurrentProjectActiveTab"]),
     ...mapActions("nodeRepository", ["closeDescriptionPanel"]),
 
+    getDefaultTab() {
+      return this.isWorkflowEmpty
+        ? TABS.NODE_REPOSITORY
+        : TABS.CONTEXT_AWARE_DESCRIPTION;
+    },
+
     isTabActive(tabName: string) {
       if (!this.activeProjectId) {
         return false;
       }
+
       const activeTab =
-        this.activeTab[this.activeProjectId] || TABS.CONTEXT_AWARE_DESCRIPTION;
+        this.activeTab[this.activeProjectId] || this.getDefaultTab();
+
       return activeTab === tabName;
     },
 

@@ -3,6 +3,9 @@
  * coordinate transformations for the Kanvas component.
  */
 import * as Vue from "vue";
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
+import type { RootStoreState } from "./types";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
@@ -19,35 +22,40 @@ const unsetScrollContainer = () => {
   throw new Error("dom element hasn't been set yet");
 };
 
-export const state = () => ({
+export interface CanvasState {
+  zoomFactor: number;
+  containerSize: { width: number; height: number };
+  getScrollContainerElement: () => HTMLElement;
+  interactionsEnabled: boolean;
+  zoomCache: {
+    invariant: [number, number, number, number];
+    result: string;
+    timestamp: number;
+  } | null;
+  isMoveLocked: boolean;
+}
+
+export const state = (): CanvasState => ({
   zoomFactor: defaultZoomFactor,
   containerSize: { width: 0, height: 0 },
   getScrollContainerElement: unsetScrollContainer,
   interactionsEnabled: true,
-  isEmpty: false,
+  zoomCache: null,
   isMoveLocked: false,
 });
 
-export const mutations = {
+export const mutations: MutationTree<CanvasState> = {
   /*
-        The scroll container is saved in the store state so properties
-        like scrollTop etc. can be accessed quickly
-        Saved as result of function to avoid problems with reactivity
-    */
+    The scroll container is saved in the store state so properties
+    like scrollTop etc. can be accessed quickly
+    Saved as result of function to avoid problems with reactivity
+  */
   setScrollContainerElement(state, el) {
     state.getScrollContainerElement = () => el;
   },
   clearScrollContainerElement(state) {
     state.getScrollContainerElement = unsetScrollContainer;
   },
-  /*
-        if savedState is undefined, restore defaults
-        else restore zoomFactor, overwrite containerScroll with savedContainerScroll
-
-        no need to restore savedContainerScroll, it will be overwritten when setting containerScroll
-        don't restore containerSize, it might have changed
-    */
-
   setFactor(state, newFactor) {
     state.zoomFactor = clampZoomFactor(newFactor);
   },
@@ -58,15 +66,12 @@ export const mutations = {
   setInteractionsEnabled(state, value) {
     state.interactionsEnabled = value;
   },
-  setIsEmpty(state, value) {
-    state.isEmpty = value;
-  },
   setIsMoveLocked(state, value) {
     state.isMoveLocked = value;
   },
 };
 
-export const actions = {
+export const actions: ActionTree<CanvasState, RootStoreState> = {
   initScrollContainerElement({ commit }, kanvas) {
     commit("setScrollContainerElement", kanvas);
     commit("setContainerSize", {
@@ -76,12 +81,12 @@ export const actions = {
   },
 
   contentBoundsChanged({ state }, [newBounds, oldBounds]) {
-    let [deltaX, deltaY] = [
+    const [deltaX, deltaY] = [
       newBounds.left - oldBounds.left,
       newBounds.top - oldBounds.top,
     ];
 
-    let kanvas = state.getScrollContainerElement();
+    const kanvas = state.getScrollContainerElement();
     kanvas.scrollLeft -= deltaX * state.zoomFactor;
     kanvas.scrollTop -= deltaY * state.zoomFactor;
   },
@@ -104,25 +109,25 @@ export const actions = {
 
   fillScreen({ dispatch, commit, getters }) {
     // zoom factor for that at least one axis fits on the screen, but at most 100%
-    let newZoomFactor = Math.min(getters.fitToScreenZoomFactor.max * 0.95, 1); // eslint-disable-line no-magic-numbers
+    const newZoomFactor = Math.min(getters.fitToScreenZoomFactor.max * 0.95, 1); // eslint-disable-line no-magic-numbers
 
     // set zoom
     commit("setFactor", newZoomFactor);
 
     // check whether x-axis and/or y-axis fit on the screen
-    let yAxisFits = getters.fitToScreenZoomFactor.y >= newZoomFactor;
-    let xAxisFits = getters.fitToScreenZoomFactor.x >= newZoomFactor;
+    const yAxisFits = getters.fitToScreenZoomFactor.y >= newZoomFactor;
+    const xAxisFits = getters.fitToScreenZoomFactor.x >= newZoomFactor;
 
     // if an axis fits, center it
     // if an axis doesn't fit, scroll to its beginning (top / left)
 
     // include top and left padding of 20px in screen coordinates
-    let screenPadding = 20; // eslint-disable-line no-magic-numbers
+    const screenPadding = 20; // eslint-disable-line no-magic-numbers
 
-    let scrollX = xAxisFits
+    const scrollX = xAxisFits
       ? { canvasX: "center", toScreenX: "center" }
       : { canvasX: getters.contentBounds.left, toScreenX: screenPadding };
-    let scrollY = yAxisFits
+    const scrollY = yAxisFits
       ? { canvasY: "center", toScreenY: "center" }
       : { canvasY: getters.contentBounds.top, toScreenY: screenPadding };
 
@@ -147,8 +152,8 @@ export const actions = {
     { commit, getters, state },
     { factor, delta, cursorX, cursorY },
   ) {
-    let kanvas = state.getScrollContainerElement();
-    let { scrollLeft, scrollTop } = kanvas;
+    const kanvas = state.getScrollContainerElement();
+    const { scrollLeft, scrollTop } = kanvas;
 
     // caches the calculation for the canvas coordinate point
     // to prevent the content from shifting when zooming in and out quickly due to inprecise calculations
@@ -162,7 +167,7 @@ export const actions = {
     ) {
       canvasCoordinatesPoint = state.zoomCache.result;
     } else {
-      let screenCoordinatesPointer = [
+      const screenCoordinatesPointer = [
         cursorX + scrollLeft,
         cursorY + scrollTop,
       ];
@@ -185,11 +190,11 @@ export const actions = {
       commit("setFactor", factor);
     }
 
-    let newCanvasCoordinatePoint = getters.fromCanvasCoordinates({
+    const newCanvasCoordinatePoint = getters.fromCanvasCoordinates({
       x: canvasCoordinatesPoint[0],
       y: canvasCoordinatesPoint[1],
     });
-    let scrollDelta = [
+    const scrollDelta = [
       newCanvasCoordinatePoint.x - cursorX - scrollLeft,
       newCanvasCoordinatePoint.y - cursorY - scrollTop,
     ];
@@ -210,7 +215,7 @@ export const actions = {
     { getters, state },
     { canvasX = 0, canvasY = 0, toScreenX = 0, toScreenY = 0, smooth = false },
   ) {
-    let kanvas = state.getScrollContainerElement();
+    const kanvas = state.getScrollContainerElement();
 
     if (canvasX === "center") {
       canvasX = getters.contentBounds.centerX;
@@ -225,7 +230,7 @@ export const actions = {
       toScreenY = kanvas.clientHeight / 2;
     }
 
-    let screenCoordinates = getters.fromCanvasCoordinates({
+    const screenCoordinates = getters.fromCanvasCoordinates({
       x: canvasX,
       y: canvasY,
     });
@@ -240,7 +245,7 @@ export const actions = {
   },
 
   async updateContainerSize({ state, getters, commit }) {
-    let kanvas = state.getScrollContainerElement();
+    const kanvas = state.getScrollContainerElement();
 
     // find origin in screen coordinates, relative to upper left corner of canvas
     let { x, y } = getters.fromCanvasCoordinates({ x: 0, y: 0 });
@@ -262,7 +267,7 @@ export const actions = {
     newY -= kanvas.scrollTop;
 
     // scroll by the difference to prevent content from moving
-    let [deltaX, deltaY] = [newX - x, newY - y];
+    const [deltaX, deltaY] = [newX - x, newY - y];
 
     kanvas.scrollLeft += deltaX;
     kanvas.scrollTop += deltaY;
@@ -302,7 +307,7 @@ export const actions = {
   },
 };
 
-export const getters = {
+export const getters: GetterTree<CanvasState, RootStoreState> = {
   getCanvasScrollState(state) {
     const kanvas = state.getScrollContainerElement();
 
@@ -332,11 +337,11 @@ export const getters = {
     top -= padding;
     bottom += padding;
 
-    let width = right - left;
-    let height = bottom - top;
+    const width = right - left;
+    const height = bottom - top;
 
-    let centerX = left + width / 2;
-    let centerY = top + height / 2;
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
 
     return {
       left,
@@ -351,20 +356,20 @@ export const getters = {
   },
 
   contentPadding({ containerSize, zoomFactor }) {
-    let left = containerSize.width / zoomFactor;
-    let top = containerSize.height / zoomFactor;
+    const left = containerSize.width / zoomFactor;
+    const top = containerSize.height / zoomFactor;
 
-    let right = containerSize.width / zoomFactor;
-    let bottom = containerSize.height / zoomFactor;
+    const right = containerSize.width / zoomFactor;
+    const bottom = containerSize.height / zoomFactor;
 
     return { left, right, top, bottom };
   },
 
   paddedBounds(state, { contentBounds, contentPadding }) {
-    let left = contentBounds.left - contentPadding.left;
-    let top = contentBounds.top - contentPadding.top;
-    let right = contentBounds.right + contentPadding.right;
-    let bottom = contentBounds.bottom + contentPadding.bottom;
+    const left = contentBounds.left - contentPadding.left;
+    const top = contentBounds.top - contentPadding.top;
+    const right = contentBounds.right + contentPadding.right;
+    const bottom = contentBounds.bottom + contentPadding.bottom;
 
     return {
       left,
@@ -385,7 +390,7 @@ export const getters = {
   },
 
   viewBox(state, { paddedBounds }) {
-    let { left, top, width, height } = paddedBounds;
+    const { left, top, width, height } = paddedBounds;
 
     return {
       left,
@@ -413,14 +418,14 @@ export const getters = {
     { getScrollContainerElement },
     { fromCanvasCoordinates },
   ) {
-    let scrollContainerElement = getScrollContainerElement();
+    const scrollContainerElement = getScrollContainerElement();
 
     return ({ x, y }) => {
       const { x: offsetLeft, y: offsetTop } =
         scrollContainerElement.getBoundingClientRect();
       const { scrollLeft, scrollTop } = scrollContainerElement;
 
-      let screenCoordinates = fromCanvasCoordinates({ x, y });
+      const screenCoordinates = fromCanvasCoordinates({ x, y });
       screenCoordinates.x = screenCoordinates.x - scrollLeft + offsetLeft;
       screenCoordinates.y = screenCoordinates.y - scrollTop + offsetTop;
 
@@ -445,7 +450,7 @@ export const getters = {
     { getScrollContainerElement },
     { toCanvasCoordinates },
   ) {
-    let scrollContainerElement = getScrollContainerElement();
+    const scrollContainerElement = getScrollContainerElement();
 
     return ([origX, origY]) => {
       const { x: offsetLeft, y: offsetTop } =
@@ -463,11 +468,11 @@ export const getters = {
         largest zoomFactor s.t. the whole workflow fits inside the container
     */
   fitToScreenZoomFactor({ containerSize }, { contentBounds }) {
-    let { width: containerWidth, height: containerHeight } = containerSize;
-    let { width: contentWidth, height: contentHeight } = contentBounds;
+    const { width: containerWidth, height: containerHeight } = containerSize;
+    const { width: contentWidth, height: contentHeight } = contentBounds;
 
-    let xFactor = containerWidth / contentWidth;
-    let yFactor = containerHeight / contentHeight;
+    const xFactor = containerWidth / contentWidth;
+    const yFactor = containerHeight / contentHeight;
 
     return {
       min: Math.min(xFactor, yFactor),
@@ -485,14 +490,14 @@ export const getters = {
     { screenToCanvasCoordinates },
   ) {
     return () => {
-      let container = getScrollContainerElement();
-      let screenBounds = container.getBoundingClientRect();
+      const container = getScrollContainerElement();
+      const screenBounds = container.getBoundingClientRect();
 
-      let [left, top] = screenToCanvasCoordinates([
+      const [left, top] = screenToCanvasCoordinates([
         screenBounds.x,
         screenBounds.y,
       ]);
-      let [right, bottom] = screenToCanvasCoordinates([
+      const [right, bottom] = screenToCanvasCoordinates([
         screenBounds.right,
         screenBounds.bottom,
       ]);

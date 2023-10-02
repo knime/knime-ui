@@ -57,6 +57,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 
 /**
@@ -72,7 +73,7 @@ final class WorkflowAPI {
      * Opens the workflow either in both, the Classic UI and the Modern/Web UI if the classic UI is active (the
      * WorkflowEditor is used in that case to open the workflow). Or it opens and loads the workflow exclusively in the
      * Modern UI. Those workflows won't be available in the classic UI when switching to it.
-     * 
+     *
      * @param spaceId
      * @param itemId
      * @param spaceProviderId {@code local} if absent
@@ -170,6 +171,21 @@ final class WorkflowAPI {
     @API
     static void saveWorkflowAs(final String projectId, final String workflowSvg) throws IOException {
         SaveWorkflowCopy.saveCopyOf(projectId, workflowSvg);
+    }
+
+    /**
+     * Executes or schedules a job on a Server.
+     *
+     * @param spaceProviderId
+     * @param spaceId
+     * @param itemId
+     * @throws IOException
+     */
+    @API
+    static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId)
+        throws IOException {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        space.openRemoteExecution(itemId);
     }
 
 }

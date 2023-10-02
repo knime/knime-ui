@@ -10,7 +10,7 @@ import Kanvas, { RESIZE_DEBOUNCE } from "../Kanvas.vue";
 
 describe("Kanvas", () => {
   const doShallowMount = ({
-    isWorkflowEmpty = true,
+    isWorkflowEmptyMock = vi.fn().mockReturnValue(false),
     isDraggingNode = false,
     scrollLeft = 0,
     scrollTop = 0,
@@ -77,7 +77,6 @@ describe("Kanvas", () => {
           // mock implementation of contentBounds for testing watcher
           __contentBounds: { left: 0, top: 0 },
           interactionsEnabled: true,
-          isEmpty: false,
         },
         getters: {
           viewBox: () => ({ string: "viewbox-string" }),
@@ -96,10 +95,8 @@ describe("Kanvas", () => {
         },
       },
       workflow: {
-        mutations: {
-          isWorkflowEmpty() {
-            return isWorkflowEmpty;
-          },
+        getters: {
+          isWorkflowEmpty: isWorkflowEmptyMock,
         },
       },
       nodeRepository: {
@@ -581,8 +578,9 @@ describe("Kanvas", () => {
     });
 
     it("does not pan if workflow is empty", () => {
-      const { wrapper, $store, setPointerCapture } = doShallowMount();
-      $store.state.canvas.isEmpty = true;
+      const { wrapper, setPointerCapture } = doShallowMount({
+        isWorkflowEmptyMock: vi.fn().mockReturnValue(true),
+      });
 
       wrapper.element.scrollLeft = 100;
       wrapper.element.scrollTop = 100;
@@ -701,8 +699,9 @@ describe("Kanvas", () => {
     });
 
     it("does not zoom on mouse wheel if workflow is empty", () => {
-      const { wrapper, actions, $store } = doShallowMount();
-      $store.state.canvas.isEmpty = true;
+      const { wrapper, actions } = doShallowMount({
+        isWorkflowEmptyMock: vi.fn().mockReturnValue(true),
+      });
 
       wrapper.element.dispatchEvent(
         new WheelEvent("wheel", {

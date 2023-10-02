@@ -48,17 +48,22 @@
  */
 package org.knime.ui.java.api;
 
-import static org.knime.ui.java.api.DesktopAPI.MAPPER;
-
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.ui.util.SWTUtilities;
+import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.webui.WebUIUtil;
+import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -71,12 +76,18 @@ import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.SpaceProvidersUtil;
+import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
+import org.knime.workbench.explorer.dialogs.Validator;
+import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
+import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
+import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 /**
  * Functions around spaces.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 final class SpaceAPI {
 
@@ -99,17 +110,13 @@ final class SpaceAPI {
     /**
      * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
      *
-     * @return A JSON object with a user name if the login was successful. Returns {@code null} otherwise.
+     * @return A JSON object with all the space information. Returns {@code null} otherwise.
      */
     @API
     static String connectSpaceProvider(final String spaceProviderId) {
-        var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
+        final var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
         if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return spaceProvider.getConnection(true)//
-                .map(SpaceProviderConnection::getUsername)//
-                .filter(Predicate.not(String::isEmpty))//
-                .map(username -> MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString())
-                .orElse(null);
+            return SpaceProvidersUtil.buildSpaceProviderObjectNode(spaceProvider, true).toPrettyString();
         }
         return null;
     }
@@ -261,5 +268,139 @@ final class SpaceAPI {
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         final var url = ClassicAPBuildServerURL.getAPIDefinition(itemId, sourceSpaceProvider, sourceSpace);
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
+    }
+
+    /**
+     * Saves a job as a workflow on the same space.
+     *
+     * @param spaceProviderId
+     * @param spaceId
+     * @param itemId
+     * @param jobId
+     * @return the workflow derived from the job or {@code null} if the workflow could not be saved
+     * @throws ResourceAccessException
+     * @throws NoSuchElementException if there is no job for the given ids
+     */
+    @API
+    static String saveJobAsWorkflow(final String spaceProviderId, final String spaceId, final String itemId,
+        final String jobId, final String jobName) throws ResourceAccessException {
+
+        final var defaultWorkflowName = jobName;
+        final AtomicReference<RemoteExplorerFileStore> destRef = new AtomicReference<>();
+        final AtomicReference<String> nameRef = new AtomicReference<>();
+
+        Display.getDefault().syncExec(() -> { // NOSONAR
+            @SuppressWarnings("restriction")
+            final var sh = SWTUtilities.getActiveShell();
+            final var dialog = new SpaceResourceSelectionDialog(sh, new String[] { spaceProviderId }, null);
+            dialog.setNameFieldEnabled(true);
+            dialog.setNameFieldDefaultValue(defaultWorkflowName);
+            dialog.setTitle("Target workflow group selection");
+            dialog.setDescription("Select the location to save the selected job to as a workflow.");
+            dialog.setValidator(new Validator() {
+                @Override
+                public String validateSelectionValue(final AbstractExplorerFileStore selection, final String name) {
+                    if (selection == null) {
+                        return "Select a workflow or workflow group as target";
+                    }
+                    AbstractExplorerFileInfo info = selection.fetchInfo();
+                    boolean isWFG = info.isWorkflowGroup();
+                    boolean isWF = info.isWorkflow();
+
+                    if (!isWF && !isWFG) {
+                        return "Only workflows or workflow groups can be selected as target.";
+                    } else if (!info.isModifiable()) {
+                        return "You have no write permissions for the selected "
+                                + (isWF ? "workflow." : "workflow group.");
+                    }
+
+                    dialog.setNameFieldEnabled(isWFG);
+
+                    // In case a workflow is selected we use _its_ name and not the dialog name
+                    return isWFG ? ExplorerFileSystem.validateFilename(dialog.getNameFieldValue()) : null;
+                }
+            });
+            if (Window.OK != dialog.open()) {
+                return;
+            }
+            destRef.set((RemoteExplorerFileStore)dialog.getSelection());
+            nameRef.set(dialog.getNameFieldValue());
+        });
+
+        final var destination = destRef.get();
+        if (destination == null) {
+            return null;
+        }
+
+        final var destInfo = destination.fetchInfo();
+        final var isWFG = destInfo.isWorkflowGroup();
+        // else it's a Workflow (due to Validator)
+
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+
+        if (!isWFG) {
+            // workflow, ask for overwrite
+            final var ask = DesktopAPUtil.openQuestion("Confirm to overwrite",
+                "The following workflow will be overwritten:\n" + destination + "\nAre you sure?");
+            if (!ask) {
+                return null;
+            }
+            final var parent = destination.getParent();
+            final var parentPath = org.eclipse.core.runtime.Path.forPosix(parent.getFullName());
+            return encodeSpaceItemEnt(space.saveJobAsWorkflow(parentPath, destination.getName(), jobId));
+        }
+
+        // selected a workflow group
+        if (!destInfo.isModifiable()) {
+            DesktopAPUtil.showError("Read-only destination",
+                "The workflow cannot be saved since the selected destination is read-only: \""
+                        + destination.getMountIDWithFullPath() + "\"");
+            return null;
+        }
+        final var name = nameRef.get();
+        if (name == null) {
+            throw new IllegalStateException("Missing workflow name");
+        }
+
+        final var groupPath = org.eclipse.core.runtime.Path.forPosix(destination.getFullName());
+        final var workflowGroupItemId = space.getItemIdByURI(destination.toURI()).orElseThrow();
+        final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId,
+            Stream.of(name));
+        if (nameCollisions.isEmpty()) {
+            return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, name, jobId));
+        }
+
+        final AtomicReference<NameCollisionHandling> collisionHandlingStrategyRef = new AtomicReference<>();
+        Display.getDefault().syncExec(() ->
+            NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions)
+                .ifPresent(collisionHandlingStrategyRef::set)
+        );
+        final var strategy = collisionHandlingStrategyRef.get();
+        if (strategy == null) {
+            // aborted
+            return null;
+        }
+
+        if (NameCollisionHandling.OVERWRITE == strategy) {
+            return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, name, jobId));
+        }
+
+        // It is NameCollisionHandling.AUTORENAME since we got collisions, so it should not be NOOP
+        final Predicate<String> taken = testName -> space.containsItemWithName(workflowGroupItemId, testName);
+        final var newName = Space.generateUniqueSpaceItemName(taken, name, true);
+        return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, newName, jobId));
+    }
+
+    private static String encodeSpaceItemEnt(final SpaceItemEnt ent) {
+        // This works around the fact that Chromium cannot handle our custom Object return types
+        // (e.g. DefaultSpaceItemEnt)
+        return ent.getId();
+    }
+
+    @API
+    static String editSchedule(final String spaceProviderId, final String spaceId, final String itemId,
+            final String scheduleId) throws ResourceAccessException {
+        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        return space.editScheduleInfo(itemId, scheduleId);
     }
 }

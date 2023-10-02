@@ -7,6 +7,7 @@ import type { RootStoreState } from "@/store/types";
 
 import ProjectMetadata from "./ProjectMetadata.vue";
 import ComponentMetadata from "./ComponentMetadata.vue";
+import type { ComponentMetadata as ComponentMetadataType } from "@/api/custom-types";
 
 const store = useStore<RootStoreState>();
 
@@ -28,7 +29,7 @@ const isMetanode = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode,
 );
 
-const updateMetadata = ({
+const updateProjectMetadata = ({
   description,
   links,
   tags,
@@ -43,19 +44,46 @@ const updateMetadata = ({
     tags,
   });
 };
+
+const updateComponentMetadata = ({
+  projectId,
+  workflowId,
+  description,
+  type,
+  icon,
+  inPorts,
+  outPorts,
+  links,
+  tags,
+}) => {
+  store.dispatch("workflow/updateComponentMetadata", {
+    projectId,
+    workflowId, // in this case the componentId
+    description,
+    type,
+    icon,
+    inPorts,
+    outPorts,
+    links,
+    tags,
+  });
+};
 </script>
 
 <template>
   <div v-if="workflow && !isMetanode" class="metadata">
     <ProjectMetadata
       v-if="isProject && workflow.projectMetadata"
-      @save="updateMetadata"
+      @save="updateProjectMetadata"
     />
 
     <ComponentMetadata
       v-if="isComponent && workflow.componentMetadata"
-      :workflow="workflow"
+      :component-metadata="workflow.componentMetadata as ComponentMetadataType"
+      :project-id="workflow.projectId"
+      :component-id="workflow.info.containerId"
       :available-port-types="availablePortTypes"
+      @save="updateComponentMetadata"
     />
   </div>
 
@@ -69,9 +97,23 @@ const updateMetadata = ({
   overflow-x: hidden;
   height: 100%;
   padding: 8px 20px 20px;
-  font-family: "Roboto Condensed", sans-serif;
   font-size: 16px;
   color: var(--knime-masala);
+
+  & :deep(h2) {
+    margin: 15px 0 5px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 36px;
+  }
+
+  & :deep(h2.section) {
+    border-bottom: 1px solid var(--knime-silver-sand);
+  }
+
+  & :deep(h2.form) {
+    margin: 30px 0 20px;
+  }
 
   & > *:last-child {
     margin-bottom: 0;

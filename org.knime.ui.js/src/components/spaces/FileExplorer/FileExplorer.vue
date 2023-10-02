@@ -62,7 +62,9 @@ const isDirectory = (item: FileExplorerItemType) => item.isDirectory;
 
 const canOpenFile = (item: FileExplorerItemType) => item.isOpenableFile;
 
-const changeDirectory = (pathId: string) => emit("changeDirectory", pathId);
+const changeDirectory = (pathId: string) => {
+  emit("changeDirectory", pathId);
+};
 
 /** MULTISELECTION */
 const multiSelection = useMultiSelection();
@@ -86,10 +88,6 @@ watch(multiSelectionState, () => {
   emit("changeSelection", selectedItemIds.value);
 });
 
-const { fullPath } = toRefs(props);
-watch(fullPath, () => {
-  resetSelection();
-});
 /** MULTISELECTION */
 
 /** RENAME */
@@ -159,6 +157,12 @@ const closeContextMenu = () => {
   isContextMenuVisible.value = false;
   contextMenuAnchor.value = null;
 };
+
+const { fullPath } = toRefs(props);
+watch(fullPath, () => {
+  resetSelection();
+  closeContextMenu();
+});
 
 const openContextMenu = (
   event: MouseEvent,

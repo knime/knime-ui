@@ -85,7 +85,22 @@ export const schedulePopoverRenderers = {
 export const slottedColumns = ["status"];
 
 export const scheduleSubMenuItems = [
-  // TODO Add sub menu items
+  {
+    name: "edit",
+    text: "Edit",
+    callback: (row, context) => {
+      context.$store.dispatch("spaces/editSchedule", { scheduleId: row.id });
+    },
+  },
+  {
+    name: "delete",
+    text: "Delete",
+    callback: (row, context) => {
+      context.$store.dispatch("spaces/deleteSchedule", {
+        scheduleId: row.id,
+      });
+    },
+  },
 ];
 
 export const scheduleGroupSubMenuItems = [];

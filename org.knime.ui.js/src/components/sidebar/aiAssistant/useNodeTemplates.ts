@@ -1,5 +1,7 @@
 import { ref, watchEffect } from "vue";
-import { useStore } from "vuex";
+import { useStore } from "@/composables/useStore";
+import type { ExtensionWithNodes, NodeWithExtensionInfo } from "./types";
+import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 
 // TODO: AP-20131 Node identifier in node stats and modern node repo can have clashes
 // This is a temporary fix to avoid problems with the factory name for dynamic factories:
@@ -15,15 +17,21 @@ const getInternalFactoryName = (factoryName, title) => {
 
 /**
  * A Vue composition function that provides node templates based on given role and nodes.
- * @param {Object} params - An object containing role and nodes.
- * @param {string} params.role - The role of the current user.
- * @param {Array} params.nodes - A list of nodes.
- * @returns {Object} - An object containing refs to nodeTemplates and uninstalledExtensions.
+ * @param params - An object containing role and nodes.
+ * @param params.role - The role of the current user.
+ * @param params.nodes - A list of nodes.
+ * @returns - An object containing refs to nodeTemplates and uninstalledExtensions.
  */
-const useNodeTemplates = ({ role, nodes }) => {
+const useNodeTemplates = ({
+  role,
+  nodes,
+}: {
+  role: string;
+  nodes: NodeWithExtensionInfo[];
+}) => {
   // Reactive references to hold the node templates.
-  const nodeTemplates = ref([]);
-  const uninstalledExtensions = ref({});
+  const nodeTemplates = ref<NodeTemplate[]>([]);
+  const uninstalledExtensions = ref<{ [key: string]: ExtensionWithNodes }>({});
 
   const store = useStore();
 
@@ -34,14 +42,14 @@ const useNodeTemplates = ({ role, nodes }) => {
     }
 
     // Temporary variables to hold the values for this effect run.
-    const _nodeTemplates = [];
-    const _uninstalledExtensions = {};
+    const _nodeTemplates: NodeTemplate[] = [];
+    const _uninstalledExtensions: { [key: string]: ExtensionWithNodes } = {};
 
     // Fetching node templates concurrently.
     await Promise.all(
       nodes.map(async (node) => {
         // Dispatching a Vuex action to get a node template.
-        const nodeTemplate = await store.dispatch(
+        const nodeTemplate: NodeTemplate = await store.dispatch(
           "nodeRepository/getNodeTemplate",
           getInternalFactoryName(node.factoryName, node.title),
         );

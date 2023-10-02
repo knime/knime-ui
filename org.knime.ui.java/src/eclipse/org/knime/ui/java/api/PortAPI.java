@@ -48,9 +48,13 @@
  */
 package org.knime.ui.java.api;
 
+import static org.knime.ui.java.api.NodeAPI.checkIsNotNull;
+import static org.knime.ui.java.api.NodeAPI.getAppBoundsAsAWTRec;
+
 import java.io.IOException;
 
 import org.eclipse.swt.widgets.Display;
+import org.knime.core.node.workflow.NodeOutPort;
 import org.knime.core.webui.node.port.PortViewManager;
 import org.knime.core.webui.node.port.PortViewManager.PortViewDescriptor;
 import org.knime.gateway.api.entity.NodeIDEnt;
@@ -90,4 +94,27 @@ final class PortAPI {
         Display.getDefault().asyncExec(() -> OpenNodeViewAction.openNodeView(nc, view, name));
     }
 
+    /**
+     * Open a legacy port view in a separate swing-window.
+     *
+     * @param projectId
+     * @param nodeId
+     * @param portIdx
+     * @param execute whether to execute and wait until the node is executed before opening the legacy port view
+     */
+    @API
+    static void openLegacyPortView(final String projectId, final String nodeId, final Double portIdx,
+        final Boolean execute) {
+        Runnable action = () -> {
+            final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+            checkIsNotNull(nc, projectId, nodeId);
+            NodeOutPort port = nc.getOutPort(portIdx.intValue());
+            port.openPortView(port.getPortName(), getAppBoundsAsAWTRec());
+        };
+        if (Boolean.TRUE.equals(execute)) {
+            NodeAPI.executeNodeThenRun(projectId, nodeId, action);
+        } else {
+            action.run();
+        }
+    }
 }

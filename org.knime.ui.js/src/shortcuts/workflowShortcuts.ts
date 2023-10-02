@@ -1,3 +1,4 @@
+// TODO: NXT-2040, Split that file up
 import RedoIcon from "webapps-common/ui/assets/img/icons/redo.svg";
 import UndoIcon from "webapps-common/ui/assets/img/icons/undo.svg";
 import DeleteIcon from "@/assets/delete.svg";
@@ -7,6 +8,10 @@ import SaveAsIcon from "webapps-common/ui/assets/img/icons/save-as.svg";
 import CreateMetanode from "webapps-common/ui/assets/img/icons/metanode-add.svg";
 import CreateComponent from "webapps-common/ui/assets/img/icons/component.svg";
 import LayoutIcon from "webapps-common/ui/assets/img/icons/layout-editor.svg";
+
+import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
+import SelectionModeIcon from "@/assets/selection-mode.svg";
+import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 
 import type {
   ShortcutConditionContext,
@@ -36,6 +41,11 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "openParentWorkflow"
   | "expandMetanode"
   | "expandComponent"
+  | "linkComponent"
+  | "updateComponent"
+  | "unlinkComponent"
+  | "changeHubItemVersion"
+  | "changeComponentLinkType"
   | "openLayoutEditor"
   | "copy"
   | "cut"
@@ -140,7 +150,8 @@ const workflowShortcuts: WorkflowShortcuts = {
         .canOpenLegacyFlowVariableDialog,
   },
   editName: {
-    text: "Rename",
+    text: ({ $store }) =>
+      `Rename ${$store.getters["selection/singleSelectedNode"]?.kind}`,
     hotkey: ["Shift", "F2"],
     execute: ({ $store }) =>
       $store.dispatch(
@@ -307,6 +318,77 @@ const workflowShortcuts: WorkflowShortcuts = {
     execute: ({ $store }) => $store.dispatch("workflow/expandContainerNode"),
     condition: canExpand("component"),
   },
+  linkComponent: {
+    text: "Share",
+    title: "Share component",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/linkComponent", { nodeId: selectedNodeId });
+    },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+  },
+  updateComponent: {
+    text: "Update component",
+    title: "Update component",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/updateComponent", { nodeId: selectedNodeId });
+    },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+  },
+  unlinkComponent: {
+    text: "Disconnect link",
+    title: "Unlink component",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/unlinkComponent", { nodeId: selectedNodeId });
+    },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+  },
+  changeHubItemVersion: {
+    text: "Change KNIME Hub item version",
+    title: "Change KNIME Hub item version",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/changeHubItemVersion", {
+        nodeId: selectedNodeId,
+      });
+    },
+    condition: ({ $store }) => {
+      const isWritable = $store.getters["workflow/isWritable"];
+      const isHubItemVersionChangeable =
+        $store.getters["selection/singleSelectedNode"].link
+          ?.isHubItemVersionChangeable;
+      return isWritable && isHubItemVersionChangeable;
+    },
+  },
+  changeComponentLinkType: {
+    text: "Change link type",
+    title: "Change component link type",
+    execute: ({ $store, payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("workflow/changeComponentLinkType", {
+        nodeId: selectedNodeId,
+      });
+    },
+    condition: ({ $store }) => {
+      const isWritable = $store.getters["workflow/isWritable"];
+      const isLinkTypeChangeable =
+        $store.getters["selection/singleSelectedNode"].link
+          ?.isLinkTypeChangeable;
+      return isWritable && isLinkTypeChangeable;
+    },
+  },
   openLayoutEditor: {
     text: "Open layout editor",
     title: "Open layout editor",
@@ -405,6 +487,8 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   switchToAnnotationMode: {
     hotkey: ["T"],
+    text: "Annotation mode",
+    icon: AnnotationModeIcon,
     execute: ({ $store }) => {
       $store.dispatch("application/switchCanvasMode", "annotation");
     },
@@ -412,6 +496,8 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   switchToPanMode: {
     hotkey: ["P"],
+    text: "Pan mode",
+    icon: ArrowMoveIcon,
     execute: ({ $store }) => {
       $store.dispatch("application/switchCanvasMode", "pan");
     },
@@ -419,6 +505,8 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   switchToSelectionMode: {
     hotkey: ["V"],
+    text: "Selection mode",
+    icon: SelectionModeIcon,
     execute: ({ $store }) => {
       $store.dispatch("application/switchCanvasMode", "selection");
     },

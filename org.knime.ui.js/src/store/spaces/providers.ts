@@ -33,6 +33,19 @@ export const mutations: MutationTree<SpacesState> = {
     state.hasLoadedProviders = value;
   },
 
+  updateSpaceProvider(
+    state,
+    {
+      id,
+      value,
+    }: { id: string; value: Partial<SpaceProviderNS.SpaceProvider> },
+  ) {
+    state.spaceProviders = {
+      ...state.spaceProviders,
+      [id]: { ...state.spaceProviders[id], ...value },
+    };
+  },
+
   setSpaceProviders(
     state,
     value: Record<string, SpaceProviderNS.SpaceProvider>,
@@ -95,7 +108,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async setAllSpaceProviders(
-    { commit, state, dispatch },
+    { commit, dispatch },
     spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
   ) {
     try {
@@ -108,10 +121,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       for (const id of connectedProviderIds) {
         const spacesData = await dispatch("fetchProviderSpaces", { id });
-        // use current state of store to ensure the user is kept,
-        // it's not part of the response and set by connectProvider
         spaceProviders[id] = {
-          ...state.spaceProviders?.[id],
           ...spaceProviders[id],
           ...spacesData,
         };
@@ -129,11 +139,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async fetchProviderSpaces(_, { id }) {
     try {
-      const providerData = await API.space.getSpaceProvider({
+      return await API.space.getSpaceProvider({
         spaceProviderId: id,
       });
-
-      return { ...providerData, connected: true };
     } catch (error) {
       consola.error("Error fetching provider spaces", { error });
       throw error;

@@ -3,7 +3,7 @@ import { defineAsyncComponent, computed } from "vue";
 import { useStore } from "@/composables/useStore";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
-import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
+import DeploymentIcon from "webapps-common/ui/assets/img/icons/deployment.svg";
 
 const JobsTable = defineAsyncComponent(() => import("./JobsTable.vue"));
 const SchedulesTable = defineAsyncComponent(
@@ -26,6 +26,8 @@ const closeModal = () => {
   store.commit("spaces/setDeploymentsModalConfig", {
     isOpen: false,
     name: null,
+    projectId: null,
+    itemId: null,
   });
 };
 </script>
@@ -39,7 +41,7 @@ const closeModal = () => {
     class="modal"
     @cancel="closeModal"
   >
-    <template #icon><CirclePlayIcon /></template>
+    <template #icon><DeploymentIcon /></template>
     <template #confirmation>
       <SchedulesTable
         v-if="schedules.length > 0"
@@ -57,6 +59,8 @@ const closeModal = () => {
 <style lang="postcss" scoped>
 .modal {
   --modal-width: 80%;
+
+  z-index: 55;
 }
 
 .no-data {

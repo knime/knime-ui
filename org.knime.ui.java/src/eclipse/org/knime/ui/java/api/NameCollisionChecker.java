@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -87,12 +88,25 @@ final class NameCollisionChecker {
      * @return List of already existing names
      */
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
-        final Object[] itemIds) {
-        return Arrays.stream(itemIds) //
+            final Object[] itemIds) {
+        return checkForNameCollisions(space, destWorkflowGroupItemId, Arrays.stream(itemIds) //
             .map(String.class::cast) //
-            .map(space::getItemName) //
+            .map(space::getItemName));
+    }
+
+    /**
+     * Checks for name collisions before something is written to the destination workflow group.
+     *
+     * @param space surrounding space
+     * @param destWorkflowGroupItemId The destination workflow group ID
+     * @param itemIds The list of source item IDs
+     * @return List of already existing names
+     */
+    static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
+            final Stream<String> itemNames) {
+        return itemNames //
             .filter(itemName -> space.containsItemWithName(destWorkflowGroupItemId, itemName)) //
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**

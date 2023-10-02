@@ -49,7 +49,7 @@ describe("Shortcuts", () => {
   });
 
   describe("exported shortcuts with condition groups", () => {
-    let $store;
+    let $store, isWorkflowEmpty;
 
     beforeEach(() => {
       $store = {
@@ -59,6 +59,11 @@ describe("Shortcuts", () => {
           },
           canvas: {
             interactionsEnabled: null,
+          },
+        },
+        getters: {
+          workflow: {
+            isWorkflowEmpty: isWorkflowEmpty ?? (() => false),
           },
         },
       };
@@ -108,7 +113,7 @@ describe("Shortcuts", () => {
       );
 
       $store.state.canvas.interactionsEnabled = true;
-      $store.state.canvas.isEmpty = false;
+      isWorkflowEmpty = () => true;
 
       const resultInteractions = Object.keys(canvasShortcuts).filter((c) =>
         canvasShortcuts[c].condition({ $store }),

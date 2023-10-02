@@ -163,7 +163,10 @@ describe("WorkflowMetadata.vue", () => {
                 "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
             },
           ],
-          description: "Description",
+          description: {
+            value: "Description",
+            contentType: TypedText.ContentTypeEnum.Plain,
+          },
           type: ComponentNodeAndDescription.TypeEnum.Source,
           views: [{ name: "view", description: "description" }],
           options: ["options"],

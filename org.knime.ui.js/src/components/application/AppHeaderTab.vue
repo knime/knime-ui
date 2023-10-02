@@ -147,9 +147,19 @@ li {
   }
 }
 
-li.hovered:last-child:not(.active) {
+li.hovered:only-child:not(.active) {
+  box-shadow:
+    -1px 0 0 1px var(--knime-black-semi),
+    10px 10px 45px 10px var(--knime-black-semi);
+}
+
+li.hovered:last-child:not(.active, :only-child) {
   box-shadow: 10px 10px 45px 10px var(--knime-black-semi);
   clip-path: inset(0 -100px 0 0);
+}
+
+li.hovered:first-child:not(.active, :only-child) {
+  box-shadow: -1px 0 0 45px var(--knime-black-semi);
 }
 
 li.active {

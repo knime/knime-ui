@@ -52,20 +52,26 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.service.events.EventConsumer;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Utilities around {@link SpaceProviders}
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 public final class SpaceProvidersUtil {
 
     private SpaceProvidersUtil() {
-        // util
+        // Utility class
     }
 
     /**
@@ -78,17 +84,10 @@ public final class SpaceProvidersUtil {
         final EventConsumer eventConsumer) {
         try {
             CompletableFuture.supplyAsync(() -> { // NOSONAR
-                var result = MAPPER.createObjectNode();
-                for (var sp : spaceProviders.getProvidersMap().values()) {
-                    var type = sp.getType();
-                    var isLocalSpaceProvider = type == TypeEnum.LOCAL;
-                    var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
-                    result.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
-                        .put("name", sp.getName()) //
-                        .put("type", type.toString()) //
-                        .put("connected", isLocalSpaceProvider || sp.getConnection(false).isPresent()) //
-                        .put("connectionMode", connectionMode));
-                }
+                final var result = MAPPER.createObjectNode();
+                spaceProviders.getProvidersMap().values().forEach(sp -> {
+                    result.set(sp.getId(), buildSpaceProviderObjectNode(sp, false));
+                });
                 return MAPPER.createObjectNode().set("result", result);
             }) //
                 .exceptionally(throwable -> MAPPER.createObjectNode()//
@@ -98,5 +97,41 @@ public final class SpaceProvidersUtil {
         } catch (InterruptedException | ExecutionException e) { // NOSONAR
             throw new IllegalStateException("Problem sending space providers event", e);
         }
+    }
+
+    /**
+     * Build the space provider object optionally connecting to the space provider first.
+     *
+     * @param spaceProvider
+     * @param doConnect
+     *
+     * @return The complete space provider object,
+     */
+    public static ObjectNode buildSpaceProviderObjectNode(final SpaceProvider spaceProvider, final boolean doConnect) {
+        final var type = spaceProvider.getType();
+        final var isLocalSpaceProvider = type == TypeEnum.LOCAL;
+        final var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
+        final var userObjectNode = buildUserObjectNode(spaceProvider, doConnect); // To connect if necessary
+        final var spaceProviderObjectNode = MAPPER.createObjectNode()//
+            .put("id", spaceProvider.getId()) //
+            .put("name", spaceProvider.getName()) //
+            .put("type", type.toString()) //
+            .put("connected", isLocalSpaceProvider || spaceProvider.getConnection(false).isPresent()) //
+            .put("connectionMode", connectionMode);
+        if (!isLocalSpaceProvider) { // Do not set user object node in local space
+            spaceProviderObjectNode.set("user", userObjectNode);
+        }
+        return spaceProviderObjectNode;
+    }
+
+    /**
+     * @return The user object node if connection present {@code null} otherwise.
+     */
+    private static ObjectNode buildUserObjectNode(final SpaceProvider spaceProvider, final boolean doConnect) {
+        return spaceProvider.getConnection(doConnect)//
+            .map(SpaceProviderConnection::getUsername)//
+            .filter(Predicate.not(String::isEmpty))//
+            .map(userName -> MAPPER.createObjectNode().putObject("user").put("name", userName))//
+            .orElse(null);
     }
 }

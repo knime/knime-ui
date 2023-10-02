@@ -6,7 +6,7 @@ import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 
-import SpaceExplorerActionButton from "./SpaceExplorerActionButton.vue";
+import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import PlusIcon from "@/assets/plus.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import AddFileIcon from "@/assets/add-file.svg";
@@ -20,7 +20,7 @@ import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-
 
 export default {
   components: {
-    SpaceExplorerActionButton,
+    OptionalSubMenuActionButton,
     PlusButton,
     SubMenu,
     MenuOptionsIcon,
@@ -189,7 +189,7 @@ export default {
   <div class="toolbar-buttons">
     <template v-if="mode === 'normal'">
       <div class="toolbar-actions-normal">
-        <SpaceExplorerActionButton
+        <OptionalSubMenuActionButton
           v-for="action in actions"
           :id="action.id"
           :key="action.id"
@@ -231,6 +231,9 @@ export default {
   & .toolbar-actions-normal {
     display: flex;
     position: relative;
+
+    --theme-button-function-foreground-color-hover: var(--knime-white);
+    --theme-button-function-background-color-hover: var(--knime-masala);
 
     & .create-workflow-btn {
       position: absolute;

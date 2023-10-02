@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
 import { shallowMount, VueWrapper } from "@vue/test-utils";
@@ -7,12 +8,19 @@ import {
   createAvailablePortTypes,
   createComponentNode,
   createMetanode,
+  createMetanodePort,
   createNativeNode,
+  createPort,
   createWorkflow,
 } from "@/test/factories";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import type { AllowedWorkflowActions } from "@/api/gateway-api/generated-api";
-import { PortType } from "@/api/gateway-api/generated-api";
+import {
+  MetaNodePort,
+  NodeState,
+  PortType,
+  TemplateLink,
+} from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
@@ -21,6 +29,7 @@ import { createShortcutsService } from "@/plugins/shortcuts";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as canvasStore from "@/store/canvas";
+import * as $shapes from "@/style/shapes.mjs";
 
 import ContextMenu from "../ContextMenu.vue";
 
@@ -99,7 +108,7 @@ describe("ContextMenu.vue", () => {
       props: { ...defaultProps, ...props },
       global: {
         plugins: [$store],
-        mocks: { $shortcuts },
+        mocks: { $shortcuts, $shapes },
       },
     });
 
@@ -257,7 +266,6 @@ describe("ContextMenu.vue", () => {
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
           { metadata: { shortcutName: "configureNode" } },
-          { text: "Open port view", children: expect.anything() },
           { metadata: { shortcutName: "editNodeLabel" }, separator: true },
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
@@ -272,6 +280,7 @@ describe("ContextMenu.vue", () => {
       const node = createNativeNode({
         id: "root:0",
         allowedActions: { canExecute: true, canCancel: true, canReset: true },
+        state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
         loopInfo: {
           allowedActions: {
             canPause: true,
@@ -290,7 +299,7 @@ describe("ContextMenu.vue", () => {
         assertItems([
           { metadata: { shortcutName: "configureNode" } },
           { metadata: { shortcutName: "executeSelected" } },
-          { text: "Open port view", children: expect.anything() },
+          { text: "Open output port", children: expect.anything() },
           { metadata: { shortcutName: "resumeLoopExecution" } },
           { metadata: { shortcutName: "pauseLoopExecution" } },
           { metadata: { shortcutName: "stepLoopExecution" } },
@@ -309,6 +318,7 @@ describe("ContextMenu.vue", () => {
     it("shows correct menu items if selected node can be executed and has view", async () => {
       const node = createNativeNode({
         id: "root:0",
+        state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
         allowedActions: { canExecute: true, canOpenView: true },
       });
 
@@ -324,7 +334,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "executeSelected" } },
           { metadata: { shortcutName: "executeAndOpenView" } },
           {
-            text: "Open port view",
+            text: "Open output port",
             children: expect.anything(),
             separator: true,
           },
@@ -341,6 +351,7 @@ describe("ContextMenu.vue", () => {
     it("shows correct menu items if selected node can configure legacy flow variables", async () => {
       const node = createNativeNode({
         id: "root:0",
+        state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
         allowedActions: {
           canOpenLegacyFlowVariableDialog: true,
           canOpenView: true,
@@ -361,7 +372,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "executeSelected" } },
           { metadata: { shortcutName: "executeAndOpenView" } },
           {
-            text: "Open port view",
+            text: "Open output port",
             children: expect.anything(),
             separator: true,
           },
@@ -460,7 +471,15 @@ describe("ContextMenu.vue", () => {
     });
 
     it("shows options for metanodes", async () => {
-      const node = createMetanode({ id: "root:0" });
+      const node = createMetanode({
+        id: "root:0",
+        outPorts: [
+          createMetanodePort({
+            typeId: "org.some.otherPorType",
+            nodeState: MetaNodePort.NodeStateEnum.EXECUTED,
+          }),
+        ],
+      });
 
       const { $store } = createStore({ nodes: { [node.id]: node } });
 
@@ -472,7 +491,7 @@ describe("ContextMenu.vue", () => {
         assertItems([
           { metadata: { shortcutName: "configureNode" } },
           {
-            text: "Open port view",
+            text: "Open output port",
             children: expect.anything(),
             separator: true,
           },
@@ -487,32 +506,97 @@ describe("ContextMenu.vue", () => {
       );
     });
 
-    it("shows options for components", async () => {
-      const node = createComponentNode({ id: "root:0" });
+    describe("components", () => {
+      it("shows options for components", async () => {
+        const node = createComponentNode({
+          id: "root:0",
+          state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+          outPorts: [
+            createPort({
+              typeId: "org.some.otherPorType",
+            }),
+          ],
+        });
 
-      const { $store } = createStore({ nodes: { [node.id]: node } });
+        const { $store } = createStore({ nodes: { [node.id]: node } });
 
-      await $store.dispatch("selection/selectNode", "root:0");
+        await $store.dispatch("selection/selectNode", "root:0");
 
-      const { wrapper } = await doMount({ store: $store });
+        const { wrapper } = await doMount({ store: $store });
 
-      expect(renderedMenuItems(wrapper)).toEqual(
-        assertItems([
-          { metadata: { shortcutName: "configureNode" } },
-          {
-            text: "Open port view",
-            children: expect.anything(),
-            separator: true,
+        expect(renderedMenuItems(wrapper)).toEqual(
+          assertItems([
+            { metadata: { shortcutName: "configureNode" } },
+            {
+              text: "Open output port",
+              children: expect.anything(),
+              separator: true,
+            },
+            { metadata: { shortcutName: "editNodeLabel" }, separator: true },
+            { metadata: { shortcutName: "cut" } },
+            { metadata: { shortcutName: "copy" } },
+            { metadata: { shortcutName: "deleteSelected" }, separator: true },
+            { metadata: { shortcutName: "createMetanode" } },
+            { metadata: { shortcutName: "createComponent" } },
+            {
+              text: "Component",
+              children: assertItems([
+                { text: "Open component" },
+                { text: "Rename component" },
+                { text: "Share" },
+              ]),
+            },
+          ]),
+        );
+      });
+
+      it("shows options for linked components", async () => {
+        const node = createComponentNode({
+          id: "root:0",
+          state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+          link: {
+            url: "some:uri",
+            isLinkTypeChangeable: false,
+            updateStatus: TemplateLink.UpdateStatusEnum.UPTODATE,
           },
-          { metadata: { shortcutName: "editNodeLabel" }, separator: true },
-          { metadata: { shortcutName: "cut" } },
-          { metadata: { shortcutName: "copy" } },
-          { metadata: { shortcutName: "deleteSelected" }, separator: true },
-          { metadata: { shortcutName: "createMetanode" } },
-          { metadata: { shortcutName: "createComponent" } },
-          { text: "Component" },
-        ]),
-      );
+          outPorts: [
+            createPort({
+              typeId: "org.some.otherPorType",
+            }),
+          ],
+        });
+
+        const { $store } = createStore({ nodes: { [node.id]: node } });
+
+        await $store.dispatch("selection/selectNode", "root:0");
+
+        const { wrapper } = await doMount({ store: $store });
+
+        expect(renderedMenuItems(wrapper)).toEqual(
+          assertItems([
+            { metadata: { shortcutName: "configureNode" } },
+            {
+              text: "Open output port",
+              children: expect.anything(),
+              separator: true,
+            },
+            { metadata: { shortcutName: "editNodeLabel" }, separator: true },
+            { metadata: { shortcutName: "cut" } },
+            { metadata: { shortcutName: "copy" } },
+            { metadata: { shortcutName: "deleteSelected" }, separator: true },
+            { metadata: { shortcutName: "createMetanode" } },
+            { metadata: { shortcutName: "createComponent" } },
+            {
+              text: "Component",
+              children: assertItems([
+                { text: "Open component" },
+                { text: "Update component" },
+                { text: "Disconnect link" },
+              ]),
+            },
+          ]),
+        );
+      });
     });
 
     it("shows correct menu items if one annotation is selected", async () => {

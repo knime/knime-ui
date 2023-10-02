@@ -2,18 +2,14 @@
 import { computed, reactive, toRaw, watch } from "vue";
 import { useStore } from "vuex";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
-import PencilIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
-
 import { TypedText, type Link } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
-import ProjectMetadataLastEdit from "./ProjectMetadataLastEdit.vue";
+import MetadataLastEdit from "./MetadataLastEdit.vue";
 import MetadataDescription from "./MetadataDescription.vue";
-import ProjectMetadataTags from "./ProjectMetadataTags.vue";
+import MetadataTags from "./MetadataTags.vue";
+import MetadataHeaderButtons from "./MetadataHeaderButtons.vue";
 
 const ID_SEPARATOR = "#@#";
 
@@ -46,11 +42,17 @@ const isEditing = computed(
 );
 
 const getInitialDraftData = () => {
-  return {
-    description: projectMetadata.value.description.value,
-    links: structuredClone(toRaw(projectMetadata.value.links || [])),
-    tags: structuredClone(toRaw(projectMetadata.value.tags || [])),
-  };
+  return projectMetadata.value
+    ? {
+        description: projectMetadata.value.description.value,
+        links: structuredClone(toRaw(projectMetadata.value.links || [])),
+        tags: structuredClone(toRaw(projectMetadata.value.tags || [])),
+      }
+    : {
+        description: "",
+        links: [],
+        tags: [],
+      };
 };
 
 const createNewDraft = (draftId: string) => {
@@ -161,36 +163,14 @@ watch(
 
 <template>
   <div class="header">
-    <ProjectMetadataLastEdit :last-edit="lastEdit" />
-
-    <div class="buttons">
-      <FunctionButton
-        v-if="!isEditing"
-        title="Edit metadata"
-        @click="onStartEdit"
-      >
-        <PencilIcon />
-      </FunctionButton>
-
-      <FunctionButton
-        v-if="isEditing"
-        :disabled="!isValid"
-        title="Save metadata"
-        primary
-        @click="onSave(currentDraftID)"
-      >
-        <CheckIcon />
-      </FunctionButton>
-
-      <FunctionButton
-        v-if="isEditing"
-        class="cancel-edit-button"
-        title="Cancel edit"
-        @click="onCancelEdit"
-      >
-        <CloseIcon />
-      </FunctionButton>
-    </div>
+    <MetadataLastEdit :last-edit="lastEdit" />
+    <MetadataHeaderButtons
+      :is-editing="isEditing"
+      :is-valid="isValid"
+      @start-edit="onStartEdit"
+      @save="onSave(currentDraftID)"
+      @cancel-edit="onCancelEdit"
+    />
   </div>
 
   <MetadataDescription
@@ -207,7 +187,7 @@ watch(
     @valid="onValidChange"
   />
 
-  <ProjectMetadataTags
+  <MetadataTags
     :editable="isEditing"
     :model-value="getMetadataFieldValue('tags')"
     @update:model-value="updateMetadataField('tags', $event)"
@@ -219,15 +199,5 @@ watch(
   display: flex;
   align-items: center;
   margin-bottom: 12px;
-
-  & .buttons {
-    display: flex;
-    gap: 4px;
-    margin-left: auto;
-
-    & .cancel-edit-button {
-      --theme-button-function-background-color: white;
-    }
-  }
 }
 </style>

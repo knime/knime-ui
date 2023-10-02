@@ -25,7 +25,7 @@ export const mutations: MutationTree<ApplicationState> = {};
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
   updatePreviewSnapshot(
-    { rootState, state, dispatch },
+    { rootState, state, dispatch, rootGetters },
     { isChangingProject, newWorkflow },
   ) {
     const isCurrentlyOnRoot =
@@ -47,7 +47,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       dispatch("addToRootWorkflowSnapshots", {
         projectId: activeProjectId,
         element: canvasElement,
-        isCanvasEmpty: rootState.canvas.isEmpty,
+        isCanvasEmpty: rootGetters["workflow/isWorkflowEmpty"],
       });
 
       return;
@@ -81,8 +81,8 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     return state.rootWorkflowSnapshots.get(snapshotKey);
   },
 
-  async getActiveWorkflowSnapshot({ rootState, dispatch }) {
-    const { getScrollContainerElement, isEmpty } = rootState.canvas;
+  async getActiveWorkflowSnapshot({ rootState, dispatch, rootGetters }) {
+    const { getScrollContainerElement } = rootState.canvas;
     const {
       activeWorkflow: {
         projectId,
@@ -95,7 +95,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     const rootWorkflowSnapshot = isRootWorkflow
       ? {
           svgElement: getScrollContainerElement().firstChild,
-          isCanvasEmpty: isEmpty,
+          isCanvasEmpty: rootGetters["workflow/isWorkflowEmpty"],
         }
       : // when we're on a nested workflow (metanode/component) we then need to use the saved snapshot
         await dispatch("getRootWorkflowSnapshotByProjectId", { projectId });

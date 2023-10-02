@@ -75,12 +75,13 @@ describe("workflow preview snapshot", () => {
     // setup canvas
     store.state.canvas = {
       getScrollContainerElement: () => canvasWrapperMockEl,
-      isEmpty: false,
     };
     // setup activeWorkflow
     store.commit("workflow/setActiveWorkflow", {
       info: { containerId: "root" },
       projectId,
+      nodes: {},
+      workflowAnnotations: [],
     });
     // setup projects
     store.commit("application/setActiveProjectId", projectId);
@@ -101,7 +102,7 @@ describe("workflow preview snapshot", () => {
       ),
     ).toEqual({
       svgElement: canvasMockEl,
-      isCanvasEmpty: store.state.canvas.isEmpty,
+      isCanvasEmpty: true,
     });
 
     // go back to the root workflow
@@ -118,11 +119,19 @@ describe("workflow preview snapshot", () => {
 
     loadWorkflow
       .mockResolvedValueOnce({
-        workflow: { info: { containerId: "root:1" }, nodes: [] },
+        workflow: {
+          info: { containerId: "root:1" },
+          nodes: [],
+          workflowAnnotations: [],
+        },
         snapshotId: "snap",
       })
       .mockResolvedValueOnce({
-        workflow: { info: { containerId: "root" }, nodes: [] },
+        workflow: {
+          info: { containerId: "root" },
+          nodes: [],
+          workflowAnnotations: [],
+        },
         snapshotId: "snap",
       });
 
@@ -143,6 +152,8 @@ describe("workflow preview snapshot", () => {
     store.commit("workflow/setActiveWorkflow", {
       info: { containerId: "root" },
       projectId: project1,
+      nodes: {},
+      workflowAnnotations: [],
     });
 
     // setup projects

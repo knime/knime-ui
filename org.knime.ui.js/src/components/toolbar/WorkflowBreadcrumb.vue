@@ -73,5 +73,9 @@ export default {
 
 nav {
   overflow: hidden;
+
+  & :deep(span) {
+    max-width: 400px;
+  }
 }
 </style>

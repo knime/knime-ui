@@ -36,6 +36,18 @@ export const mutations: MutationTree<ApplicationState> = {
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
   async initializeApplication({ dispatch }, { $router }: { $router: Router }) {
     await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
+    await runInEnvironment({
+      DESKTOP: async () => {
+        try {
+          await API.event.subscribeEvent({
+            typeId: "UpdateAvailableEventType",
+          });
+          API.desktop.checkForUpdates();
+        } catch (error) {
+          consola.log(error);
+        }
+      },
+    });
 
     $router.beforeEach(async (to, from, next) => {
       const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;

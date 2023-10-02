@@ -39,10 +39,10 @@ const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
 </script>
 
 <template>
-  <div class="tags">
-    <h2>Tags</h2>
+  <div :class="['tags', { editable }]">
+    <h2 :class="['section', { form: editable }]">Tags</h2>
+
     <template v-if="!editable">
-      <hr />
       <TagList v-if="modelValue.length" :tags="modelValue" />
       <MetadataPlaceholder v-else padded text="No tags have been set yet" />
     </template>
@@ -53,6 +53,7 @@ const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
         :initial-selected-ids="initialSelectedIds"
         :size-visible-options="3"
         allow-new-values
+        class="tag-editor"
         @change="onTagsChange"
       />
     </template>
@@ -60,22 +61,7 @@ const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
 </template>
 
 <style lang="postcss" scoped>
-h2 {
-  margin: 0;
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 36px;
-}
-
-hr {
-  border: none;
-  border-top: 1px solid var(--knime-silver-sand);
-  margin: 0;
-}
-
 .tags {
-  padding-top: 5px;
-
   & .wrapper {
     padding: 13px 0;
   }

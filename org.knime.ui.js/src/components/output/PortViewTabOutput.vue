@@ -1,14 +1,14 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
 
-import PlayIcon from "@/assets/execute.svg";
+import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import { API } from "@api";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
 import type { ViewStateChangeEvent } from "@/components/embeddedViews/ViewLoader.vue";
-import { toPortObject } from "@/util/portDataMapper";
+import { toExtendedPortObject } from "@/util/portDataMapper";
 import { canExecute } from "@/util/nodeUtil";
 
 import {
@@ -160,7 +160,9 @@ export default defineComponent({
     },
 
     fullPortObject() {
-      return toPortObject(this.availablePortTypes)(this.selectedPort.typeId);
+      return toExtendedPortObject(this.availablePortTypes)(
+        this.selectedPort.typeId,
+      );
     },
 
     portViews() {
@@ -290,15 +292,5 @@ export default defineComponent({
 
 .action-button {
   margin-top: 20px;
-
-  & svg {
-    border-radius: 12px;
-    background: var(--knime-white);
-    border: 1px solid var(--knime-masala);
-  }
-
-  &:hover > svg {
-    stroke: var(--knime-masala) !important;
-  }
 }
 </style>

@@ -1,5 +1,5 @@
 import Fuse from "fuse.js";
-import { toPortObject } from "@/util/portDataMapper";
+import { toExtendedPortObject } from "@/util/portDataMapper";
 
 const fuseOptions = {
   shouldSort: true,
@@ -46,11 +46,11 @@ export const makeTypeSearch = ({
 }) => {
   const includeType = false;
   const suggestedPorts = suggestedTypeIds.map(
-    toPortObject(availablePortTypes, includeType),
+    toExtendedPortObject(availablePortTypes, includeType),
   );
 
   const otherPorts = typeIds
-    .map(toPortObject(availablePortTypes, includeType))
+    .map(toExtendedPortObject(availablePortTypes, includeType))
     // sort non-suggested ports by name
     .sort((a, b) => a.name.localeCompare(b.name));
 

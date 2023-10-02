@@ -414,18 +414,6 @@ describe("workflow::index", () => {
       expect(store.getters["workflow/isWritable"]).toBe(false);
     });
 
-    it("returns false for isWritable if annotation mode is enabled", async () => {
-      const { store } = await loadStore();
-      store.commit("workflow/setActiveWorkflow", {
-        info: {
-          linked: false,
-        },
-      });
-      expect(store.getters["workflow/isWritable"]).toBe(true);
-      await store.commit("application/setCanvasMode", "annotation");
-      expect(store.getters["workflow/isWritable"]).toBe(false);
-    });
-
     it("isInsideLinked defaults to false", async () => {
       const { store } = await loadStore();
       store.commit("workflow/setActiveWorkflow", {

@@ -15,6 +15,7 @@ import { getMetaOrCtrlKey } from "@/util/navigator";
 import TransformControls from "./TransformControls.vue";
 import LegacyAnnotation from "./LegacyAnnotation.vue";
 import RichTextAnnotation from "./RichTextAnnotation.vue";
+import type { WorkflowState } from "@/store/workflow";
 
 /**
  * A workflow annotation, a rectangular box containing text.
@@ -53,12 +54,15 @@ export default defineComponent({
 
   computed: {
     ...mapState("workflow", {
-      projectId: (state) => state.activeWorkflow.projectId,
-      activeWorkflowId: (state) => state.activeWorkflow.info.containerId,
-      editableAnnotationId: (state) => state.editableAnnotationId,
-      isDragging: (state) => state.isDragging,
+      projectId: (state: WorkflowState) => state.activeWorkflow.projectId,
+      activeWorkflowId: (state: WorkflowState) =>
+        state.activeWorkflow.info.containerId,
+      editableAnnotationId: (state: WorkflowState) =>
+        state.editableAnnotationId,
+      isDragging: (state: WorkflowState) => state.isDragging,
     }),
     ...mapState("selection", ["selectedAnnotations"]),
+    ...mapGetters("workflow", ["isWritable"]),
     ...mapGetters("selection", [
       "isAnnotationSelected",
       "selectedNodeIds",
@@ -183,6 +187,10 @@ export default defineComponent({
     },
 
     toggleEdit() {
+      if (!this.isWritable) {
+        return;
+      }
+
       this.$store.dispatch(
         "workflow/setEditableAnnotationId",
         this.isEditing ? null : this.annotation.id,

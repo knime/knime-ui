@@ -13,6 +13,4 @@ export const withPorts = (nodes, availablePortTypes) =>
       type: availablePortTypes[port.typeId].kind,
       description: "No description available",
     })),
-    dynInPorts: [],
-    dynOutPorts: [],
   }));

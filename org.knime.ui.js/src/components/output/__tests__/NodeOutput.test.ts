@@ -8,6 +8,7 @@ import * as selectionStore from "@/store/selection";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import Button from "webapps-common/ui/components/Button.vue";
+import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
@@ -25,7 +26,6 @@ import {
 } from "@/test/factories";
 import type { KnimeNode } from "@/api/custom-types";
 import { nextTick } from "vue";
-import PlayIcon from "@/assets/execute.svg";
 
 vi.mock("@knime/ui-extension-service");
 
@@ -66,7 +66,7 @@ describe("NodeOutput.vue", () => {
     selectedNodeIds = ["node1"],
     isDragging = false,
     executeNodes = vi.fn(),
-    executeNodeAndOpenLegacyPortView = vi.fn(),
+    openLegacyPortView = vi.fn(),
   } = {}) => {
     const workflow = {
       mutations: {
@@ -84,7 +84,7 @@ describe("NodeOutput.vue", () => {
         },
         isDragging,
       },
-      actions: { executeNodes, executeNodeAndOpenLegacyPortView },
+      actions: { executeNodes, openLegacyPortView },
     };
 
     const application = {
@@ -301,10 +301,11 @@ describe("NodeOutput.vue", () => {
         expect(buttonWrapper.exists()).toBe(true);
         await buttonWrapper.findComponent(Button).trigger("click");
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "workflow/executeNodeAndOpenLegacyPortView",
+          "workflow/openLegacyPortView",
           {
             nodeId: "1",
-            portIdx: 0,
+            portIndex: 0,
+            executeNode: true,
           },
         );
       });

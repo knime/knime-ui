@@ -106,7 +106,6 @@ describe("spaces::providers", () => {
 
       expect(data).toEqual(
         expect.objectContaining({
-          connected: true,
           spaces: [mockSpace],
         }),
       );

@@ -4,6 +4,7 @@ import {
   NodeState,
   type PortViewDescriptor,
   type PortViewDescriptorMapping,
+  type PortViews,
 } from "@/api/gateway-api/generated-api";
 import { isNodeMetaNode } from "./nodeUtil";
 
@@ -34,10 +35,7 @@ const getDescriptorMappingKeyForPortView = (
  * the port views that can be displayed for the given parameters
  */
 export const getPortViewByViewDescriptors = (
-  data: {
-    descriptors: Array<PortViewDescriptor>;
-    descriptorMapping: PortViewDescriptorMapping;
-  },
+  data: PortViews,
   node: KnimeNode,
   portIndex: number,
 ): Array<{

@@ -1,6 +1,16 @@
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
 import { API } from "@api";
-import { toNodeWithFullPorts } from "@/util/portDataMapper";
+import type { NodeTemplate } from "@/api/gateway-api/generated-api";
+
+import {
+  toNodeDescriptionWithExtendedPorts,
+  toNodeTemplateWithExtendedPorts,
+  type NodeTemplateWithExtendedPorts,
+} from "@/util/portDataMapper";
+
 import * as nodeSearch from "./common/nodeSearch";
+import type { RootStoreState } from "./types";
 
 /**
  * Store that manages node repository state.
@@ -9,7 +19,24 @@ import * as nodeSearch from "./common/nodeSearch";
 const categoryPageSize = 3;
 const firstLoadOffset = 6;
 
-export const state = () => ({
+export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
+  nodesPerCategory: Array<{
+    tag: string;
+    nodes: NodeTemplateWithExtendedPorts[];
+  }>;
+  totalNumCategories: number | null;
+  categoryPage: number;
+  categoryScrollPosition: number;
+
+  selectedNode: NodeTemplateWithExtendedPorts;
+  isDraggingNode: boolean;
+  draggedNodeData: NodeTemplateWithExtendedPorts;
+  isDescriptionPanelOpen: boolean;
+
+  nodeTemplates: Record<string, NodeTemplate>;
+}
+
+export const state = (): NodeRepositoryState => ({
   ...nodeSearch.state(),
 
   /* categories */
@@ -28,7 +55,7 @@ export const state = () => ({
   nodeTemplates: {},
 });
 
-export const mutations = {
+export const mutations: MutationTree<NodeRepositoryState> = {
   ...nodeSearch.mutations,
 
   setCategoryPage(state, pageNumber) {
@@ -66,7 +93,7 @@ export const mutations = {
   },
 };
 
-export const actions = {
+export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.actions,
 
   async getAllNodes({ commit, state, rootState }, { append }) {
@@ -95,7 +122,7 @@ export const actions = {
 
     const { availablePortTypes } = rootState.application;
     const withMappedPorts = groups.map(({ nodes, tag }) => ({
-      nodes: nodes.map(toNodeWithFullPorts(availablePortTypes)),
+      nodes: nodes.map(toNodeTemplateWithExtendedPorts(availablePortTypes)),
       tag,
     }));
 
@@ -110,7 +137,7 @@ export const actions = {
     });
 
     const { availablePortTypes } = rootState.application;
-    return toNodeWithFullPorts(availablePortTypes)(node);
+    return toNodeDescriptionWithExtendedPorts(availablePortTypes)(node);
   },
 
   clearCategoryResults({ commit }) {
@@ -158,7 +185,7 @@ export const actions = {
   },
 };
 
-export const getters = {
+export const getters: GetterTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.getters,
 
   nodesPerCategoryContainSelectedNode(state) {

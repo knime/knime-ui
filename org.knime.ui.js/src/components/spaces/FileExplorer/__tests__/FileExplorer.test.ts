@@ -123,6 +123,7 @@ describe("FileExplorer.vue", () => {
       mode: "normal",
       itemIconRenderer,
       activeRenamedItemId: "",
+      fullPath: "",
     };
 
     const slots = {
@@ -546,6 +547,17 @@ describe("FileExplorer.vue", () => {
       await openContextMenu(wrapper, 0);
 
       await closeContextMenu(wrapper);
+      expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(
+        false,
+      );
+    });
+
+    it("should close context menu if fullPath changes", async () => {
+      const { wrapper } = doMount();
+
+      await openContextMenu(wrapper, 0);
+      await wrapper.setProps({ fullPath: "root" });
+
       expect(wrapper.findComponent(FileExplorerContextMenu).exists()).toBe(
         false,
       );

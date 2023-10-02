@@ -47,6 +47,19 @@ const getNodeDescriptionResponse = {
   description: "This is a node.",
   inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
   outPorts: [],
+  dynamicInPortGroupDescriptions: [
+    {
+      identifier: "inGroupName",
+      supportedPortTypes: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
+    },
+  ],
+  dynamicOutPortGroupDescriptions: [
+    {
+      identifier: "outGroupName",
+      description: "This is the description",
+      supportedPortTypes: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
+    },
+  ],
 };
 
 const getNodeTemplatesResponse = {
@@ -324,10 +337,43 @@ describe("Node Repository store", () => {
           { selectedNode },
         );
 
+        const data = withPorts(
+          [getNodeDescriptionResponse],
+          availablePortTypes,
+        )[0];
+
         expect(mockedAPI.node.getNodeDescription).toHaveBeenCalled();
-        expect(result).toEqual(
-          withPorts([getNodeDescriptionResponse], availablePortTypes)[0],
-        );
+        expect(result).toEqual({
+          ...data,
+          dynInPorts: [
+            {
+              groupName: "inGroupName",
+              groupDescription: "No description available",
+              types: [
+                expect.objectContaining({
+                  color: "green",
+                  kind: "table",
+                  type: "table",
+                  description: "No description available",
+                }),
+              ],
+            },
+          ],
+          dynOutPorts: [
+            {
+              groupName: "outGroupName",
+              groupDescription: "This is the description",
+              types: [
+                expect.objectContaining({
+                  color: "green",
+                  kind: "table",
+                  type: "table",
+                  description: "No description available",
+                }),
+              ],
+            },
+          ],
+        });
       });
 
       it("opens description panel", async () => {

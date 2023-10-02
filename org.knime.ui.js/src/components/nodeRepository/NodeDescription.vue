@@ -127,11 +127,12 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .node-description {
   height: 100%;
   padding-right: 8px;
   padding-bottom: 8px;
-  font-family: "Roboto Condensed", sans-serif;
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -182,8 +183,13 @@ export default {
   }
 
   & .description {
-    font-size: 16px;
+    font-size: 13px;
+    line-height: 150%;
     width: 310px;
+
+    & :deep(h3) {
+      font-size: 13px;
+    }
   }
 
   & .node-feature-list {
@@ -198,11 +204,20 @@ export default {
     /* Style refinement for Feature List; Ports, Options, Views  */
 
     & :deep(h5) {
-      font-size: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      padding-left: 20px;
     }
 
     & :deep(h6) {
-      font-size: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 0;
+    }
+
+    & :deep(.name) {
+      font-size: 13px;
+      font-weight: 600;
       margin-bottom: 0;
     }
 
@@ -215,11 +230,30 @@ export default {
     & :deep(.options .panel) {
       padding-left: 10px;
       padding-right: 10px;
-      margin-left: 25px;
+      margin-left: 14px;
+      line-height: 150%;
+      font-size: 13px;
+
+      & .option-field-name {
+        font-size: 13px;
+      }
+
+      /* Style refinement list in a collapsible */
+      & .option-description {
+        line-height: 150%;
+
+        & ul {
+          padding: 10px 0 10px 20px;
+        }
+      }
 
       /* Style refinement list in a collapsible */
       & > .panel {
         margin-left: 3px;
+
+        & ul {
+          padding-left: 20px;
+        }
       }
 
       /* Style refinement text outside a collapsible */
@@ -230,6 +264,10 @@ export default {
 
     /* Style refinement for Views */
     & :deep(.views-list) {
+      & li {
+        padding: 20px;
+      }
+
       & .content {
         margin-top: 5px;
         margin-left: 30px;
@@ -241,12 +279,27 @@ export default {
     }
 
     /* Style refinement for Ports */
+    & :deep(.outports),
+    & :deep(.inports) {
+      padding: 20px;
+
+      & svg {
+        @mixin svg-icon-size 9;
+
+        top: 5px;
+      }
+    }
+
     & :deep(.ports-list) {
+      & > .wrapper {
+        padding: 20px;
+      }
+
       & .content {
         max-width: 100%;
 
         & ol {
-          margin-left: 28px;
+          margin-left: 20px;
           margin-top: 22px;
         }
 
@@ -258,6 +311,20 @@ export default {
           text-overflow: ellipsis;
           white-space: nowrap;
           overflow: hidden;
+          font-size: 13px;
+        }
+
+        & .port-name,
+        & .port-description {
+          margin: 5px 0;
+          font-size: 13px;
+        }
+
+        & svg {
+          @mixin svg-icon-size 9;
+
+          top: 5px;
+          left: -17px;
         }
       }
     }
@@ -268,20 +335,20 @@ export default {
   & :deep(pre),
   & :deep(code),
   & :deep(samp) {
-    font-size: 13px;
-    line-height: 24px;
+    font-size: 11px;
+    line-height: 150%;
   }
 
   /* Style refinement for Tables */
   & :deep(table) {
     width: 100%;
-    font-size: 12px;
-    border-spacing: 5px 0;
+    font-size: 11px;
+    border-spacing: 3px 0;
     margin-left: 10px;
 
     & th,
     & td {
-      padding: 4px 0;
+      padding: 2px 0;
     }
   }
 }

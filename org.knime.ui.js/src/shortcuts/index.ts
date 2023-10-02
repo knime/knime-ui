@@ -46,7 +46,7 @@ const shortcuts: ShortcutsRegistry = {
         ({ $store }) =>
           Boolean(
             $store.state.canvas.interactionsEnabled &&
-              !$store.state.canvas.isEmpty,
+              !$store.getters["workflow/isWorkflowEmpty"],
           ),
         canvasShortcuts,
       ),

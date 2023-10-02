@@ -90,7 +90,8 @@ public final class DesktopAPI {
         ImportAPI.class, //
         ExportAPI.class, //
         EclipseUIAPI.class, //
-        ChatAPI.class //
+        ChatAPI.class, //
+        ComponentAPI.class //
     );
 
     // API endpoints which are only being registered when the AP is run for testing purposes.

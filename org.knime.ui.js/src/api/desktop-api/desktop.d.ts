@@ -2,10 +2,35 @@ declare function switchToJavaUI(): void;
 declare function switchWorkspace(): void;
 declare function openAboutDialog(): void;
 declare function openUpdateDialog(): void;
+declare function checkForUpdates(): void;
 declare function openUrlInExternalBrowser(url: string): void;
 declare function openInstallExtensionsDialog(): void;
 declare function openWebUIPreferencePage(): void;
 declare function openNodeDialog(projectId: string, nodeId: string): void;
+
+declare function openLinkComponentDialog(
+  projectId: string,
+  workflowId: string,
+  nodeId: string,
+): boolean;
+
+declare function updateComponent(
+  projectId: string,
+  workflowId: string,
+  nodeId: string,
+): void;
+
+declare function openChangeComponentHubItemVersionDialog(
+  projectId: string,
+  workflowId: string,
+  nodeId: string,
+): void;
+
+declare function openChangeComponentLinkTypeDialog(
+  projectId: string,
+  workflowId: string,
+  nodeId: string,
+): void;
 
 declare function openLegacyFlowVariableDialog(
   projectId: string,
@@ -17,10 +42,11 @@ declare function executeNodeAndOpenView(
   nodeId: string,
 ): void;
 
-declare function executeNodeAndOpenLegacyPortView(
+declare function openLegacyPortView(
   projectId: string,
   nodeId: string,
   portIdx: number,
+  executeNode: boolean,
 ): void;
 
 declare function openPortView(
@@ -133,6 +159,7 @@ declare function importComponent(
 ): string | null;
 
 declare function makeAiRequest(
+  conversationId: string | null,
   chainType: string,
   projectId: string,
   workflowId: string,
@@ -140,7 +167,10 @@ declare function makeAiRequest(
   messages: string,
 ): void;
 
-declare function abortAiRequest(chainType: string): void;
+declare function abortAiRequest(
+  conversationId: string | null,
+  chainType: string,
+): void;
 declare function isAiAssistantBackendAvailable(): boolean;
 declare function getAiServerAddress(): string;
 declare function getHubID(): string;
@@ -150,3 +180,24 @@ declare function openPermissionsDialog(
   spaceId: string,
   itemId: string,
 ): void;
+
+declare function saveJobAsWorkflow(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string,
+  jobId: string,
+  jobName: string,
+): string;
+
+declare function executeOnClassic(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string,
+): void;
+
+declare function editSchedule(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string,
+  scheduleId: string,
+): string;

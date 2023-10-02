@@ -1,6 +1,13 @@
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
 import { API } from "@api";
-import { toNodeWithFullPorts } from "../util/portDataMapper";
+
+import {
+  toNodeTemplateWithExtendedPorts,
+  type NodeTemplateWithExtendedPorts,
+} from "../util/portDataMapper";
 import * as nodeSearch from "./common/nodeSearch";
+import type { RootStoreState } from "./types";
 
 /**
  * Store that manages quick add nodes menu states.
@@ -8,12 +15,16 @@ import * as nodeSearch from "./common/nodeSearch";
 
 const recommendationLimit = 12;
 
-export const state = () => ({
+export interface QuickAddNodesState extends nodeSearch.CommonNodeSearchState {
+  recommendedNodes: Array<NodeTemplateWithExtendedPorts>;
+}
+
+export const state = (): QuickAddNodesState => ({
   ...nodeSearch.state(),
   recommendedNodes: null,
 });
 
-export const mutations = {
+export const mutations: MutationTree<QuickAddNodesState> = {
   ...nodeSearch.mutations,
 
   setRecommendedNodes(state, recommendedNodes) {
@@ -21,7 +32,7 @@ export const mutations = {
   },
 };
 
-export const actions = {
+export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
   ...nodeSearch.actions,
 
   async getNodeRecommendations(
@@ -47,7 +58,9 @@ export const actions = {
 
     commit(
       "setRecommendedNodes",
-      recommendedNodesResult.map(toNodeWithFullPorts(availablePortTypes)),
+      recommendedNodesResult.map(
+        toNodeTemplateWithExtendedPorts(availablePortTypes),
+      ),
     );
   },
 
@@ -57,7 +70,7 @@ export const actions = {
   },
 };
 
-export const getters = {
+export const getters: GetterTree<QuickAddNodesState, RootStoreState> = {
   ...nodeSearch.getters,
 
   getFirstResult: (state, getters) => () => {

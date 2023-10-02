@@ -3,15 +3,19 @@ import type { SpacesState } from "./spaces";
 import type { AiAssistantState } from "./aiAssistant";
 import type { ApplicationState } from "./application";
 import type { SelectionState } from "./selection";
+import type { PanelState } from "./panel";
+import type { NodeRepositoryState } from "./nodeRepository";
+import type { QuickAddNodesState } from "./quickAddNodes";
+import type { CanvasState } from "./canvas";
 
 export interface RootStoreState {
   application: ApplicationState;
-  canvas: any;
-  nodeRepository: any;
-  panel: any;
+  canvas: CanvasState;
+  nodeRepository: NodeRepositoryState;
+  panel: PanelState;
   selection: SelectionState;
   workflow: WorkflowState;
   spaces: SpacesState;
-  quickAddNodes: any;
+  quickAddNodes: QuickAddNodesState;
   aiAssistant: AiAssistantState;
 }

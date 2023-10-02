@@ -121,8 +121,9 @@ public class KnimeBrowserLocationListener implements LocationListener {
 		return url.endsWith(KnimeBrowserView.EMPTY_PAGE);
 	}
 
-	private static boolean isDevPage(final String url) {
-		return url.startsWith("http://localhost");
-	}
+    private static boolean isDevPage(final String url) {
+        var devUrl = System.getProperty(KnimeBrowserView.DEV_URL_PROP);
+        return devUrl == null ? false : url.startsWith(devUrl);
+    }
 
 }

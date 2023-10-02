@@ -74,20 +74,22 @@ public final class ChatAPI {
         /**
          * Invoked when the user sends a message in the chat.
          *
+         * @param conversationId id of the conversation (null if this is the first message of the conversation)
          * @param chainType the type of chain (qa or build) to message
          * @param projectId identifier of the workflow project
          * @param workflowId identifier of the subworkflow (i.e. meta node or component)
          * @param nodeId identifier of the currently selected node
          * @param messages a JSON string in the form [{"role": role, "content": content}, ...]
          */
-        void onNewMessage(String chainType, String projectId, String workflowId, String nodeId, final String messages);
+        void onNewMessage(String conversationId, String chainType, String projectId, String workflowId, String nodeId, final String messages);
 
         /**
          * Invoked if the user cancels the answer of the currently processed message.
          *
+         * @param conversationId id of the conversation
          * @param chainType the type of chain to cancel
          */
-        void onCancel(String chainType);
+        void onCancel(String conversationId, String chainType);
 
         /**
          * @return the http(s) address of the server
@@ -128,6 +130,7 @@ public final class ChatAPI {
     }
 
     /**
+     * @param conversationId id of the conversation (null if this is the first message of the conversation)
      * @param chainType the type of chain to message (qa or build)
      * @param projectId the workflow project identifier
      * @param workflowId the identifier of the subworkflow (
@@ -135,19 +138,20 @@ public final class ChatAPI {
      * @param messages a JSON string in the form [{"role": role, "content": content}, ...]
      */
     @API
-    public static void makeAiRequest(final String chainType, final String projectId,
+    public static void makeAiRequest(final String conversationId, final String chainType, final String projectId,
         final String workflowId, final String nodeId, final String messages) {
-        LISTENERS.forEach(l -> l.onNewMessage(chainType, projectId, workflowId, nodeId, messages));
+        LISTENERS.forEach(l -> l.onNewMessage(conversationId, chainType, projectId, workflowId, nodeId, messages));
     }
 
     /**
      * Aborts the specified chain.
      *
+     * @param conversationId the id of the conversation
      * @param chainType the chain to abort (qa or build)
      */
     @API
-    public static void abortAiRequest(final String chainType) {
-        LISTENERS.forEach(l -> l.onCancel(chainType));
+    public static void abortAiRequest(final String conversationId, final String chainType) {
+        LISTENERS.forEach(l -> l.onCancel(conversationId, chainType));
     }
 
     /**

@@ -27,6 +27,38 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
+    name: "openLinkComponentDialog",
+    params: [
+      ["projectId", "project1"],
+      ["workflowId", "root"],
+      ["nodeId", "1"],
+    ],
+  },
+  {
+    name: "updateComponent",
+    params: [
+      ["projectId", "project1"],
+      ["workflowId", "root"],
+      ["nodeId", "1"],
+    ],
+  },
+  {
+    name: "openChangeComponentHubItemVersionDialog",
+    params: [
+      ["projectId", "project1"],
+      ["workflowId", "root"],
+      ["nodeId", "1"],
+    ],
+  },
+  {
+    name: "openChangeComponentLinkTypeDialog",
+    params: [
+      ["projectId", "project1"],
+      ["workflowId", "root"],
+      ["nodeId", "1"],
+    ],
+  },
+  {
     name: "openLegacyFlowVariableDialog",
     params: [
       ["projectId", "project1"],
@@ -85,7 +117,15 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   {
     name: "connectSpaceProvider",
     params: [["spaceProviderId", "1"]],
-    returnValue: JSON.stringify({ name: "user" }),
+    returnValue: JSON.stringify({
+      id: "1",
+      name: "Space Provider",
+      connected: true,
+      connectionMode: "AUTHENTICATED",
+      local: false,
+      spaces: [],
+      user: { name: "user" },
+    }),
   },
   {
     name: "disconnectSpaceProvider",
@@ -170,6 +210,15 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["workflowId", "workflow1"],
       ["x", 10],
       ["y", 10],
+    ],
+  },
+  {
+    name: "openLegacyPortView",
+    params: [
+      ["projectId", "project1"],
+      ["nodeId", "root:1"],
+      ["portIdx", 0],
+      ["executeNode", false],
     ],
   },
 ];

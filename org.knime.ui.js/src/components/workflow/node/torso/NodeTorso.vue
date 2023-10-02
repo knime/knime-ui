@@ -77,13 +77,9 @@ export default {
 
 <template>
   <g>
-    <NodeTorsoMissing
-      v-if="type === 'Missing'"
-      :class="{ grabbable: isWritable }"
-    />
+    <NodeTorsoMissing v-if="type === 'Missing'" />
     <NodeTorsoMetanode
       v-else-if="kind === 'metanode'"
-      :class="{ grabbable: isWritable }"
       :execution-state="executionState"
     />
     <NodeTorsoNormal
@@ -91,16 +87,9 @@ export default {
       :is-component="kind === 'component'"
       :icon="icon"
       :type="type"
-      :class="{ grabbable: isWritable }"
     />
-    <NodeTorsoUnknown v-else :class="{ grabbable: isWritable }" />
+    <NodeTorsoUnknown v-else />
     <!-- Not using conditional rendering, DOM modifications will trigger DragLeave event -->
     <NodeTorsoReplace :is-dragged-over="isDraggedOver" />
   </g>
 </template>
-
-<style lang="postcss" scoped>
-.grabbable {
-  cursor: grab;
-}
-</style>

@@ -15,7 +15,11 @@ describe("spaces::auth", () => {
   describe("connectProvider", () => {
     it("should fetch user and provider spaces data and update state", async () => {
       const { store } = loadStore();
-      const mockUser = { name: "John Doe" };
+      const mockSpaceProvider = {
+        id: "hub1",
+        connected: true,
+        user: { name: "John Doe" },
+      };
       const mockSpaces = { spaces: [{ name: "test" }] };
 
       store.state.spaces.spaceProviders = {
@@ -23,7 +27,7 @@ describe("spaces::auth", () => {
         hub1: {},
       };
       mockedAPI.space.getSpaceProvider.mockResolvedValue(mockSpaces);
-      mockedAPI.desktop.connectSpaceProvider.mockReturnValue(mockUser);
+      mockedAPI.desktop.connectSpaceProvider.mockReturnValue(mockSpaceProvider);
       await store.dispatch("spaces/connectProvider", {
         spaceProviderId: "hub1",
       });
@@ -34,7 +38,9 @@ describe("spaces::auth", () => {
       expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
-      expect(store.state.spaces.spaceProviders.hub1.user).toEqual(mockUser);
+      expect(store.state.spaces.spaceProviders.hub1.user).toEqual(
+        mockSpaceProvider.user,
+      );
       expect(store.state.spaces.spaceProviders.hub1.spaces).toEqual(
         mockSpaces.spaces,
       );
@@ -48,7 +54,10 @@ describe("spaces::auth", () => {
         hub1: {},
       };
 
-      mockedAPI.desktop.connectSpaceProvider.mockReturnValue(null);
+      mockedAPI.desktop.connectSpaceProvider.mockReturnValue({
+        id: "hub1",
+        connected: false,
+      });
       await store.dispatch("spaces/connectProvider", {
         spaceProviderId: "hub1",
       });

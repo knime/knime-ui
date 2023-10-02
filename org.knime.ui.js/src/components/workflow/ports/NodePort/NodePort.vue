@@ -8,7 +8,7 @@ import type { AvailablePortTypes } from "@/api/custom-types";
 import { useTooltip, type TooltipDefinition } from "@/composables/useTooltip";
 import * as $shapes from "@/style/shapes.mjs";
 
-import { toPortObject } from "@/util/portDataMapper";
+import { toExtendedPortObject } from "@/util/portDataMapper";
 
 import Port from "@/components/common/Port.vue";
 import NodePortActions from "./NodePortActions.vue";
@@ -49,7 +49,9 @@ const availablePortTypes = computed<AvailablePortTypes>(
 );
 
 const portTemplate = computed(() => {
-  const template = toPortObject(availablePortTypes.value)(props.port.typeId);
+  const template = toExtendedPortObject(availablePortTypes.value)(
+    props.port.typeId,
+  );
   if (!template) {
     throw new Error(
       `port template ${props.port.typeId} not available in application`,

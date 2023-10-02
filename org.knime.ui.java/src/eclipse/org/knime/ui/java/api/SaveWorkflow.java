@@ -57,14 +57,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.CanceledExecutionException;
@@ -74,14 +71,18 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
+import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.DesktopAPUtil.OverwriteRemotelyResult;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
+import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 /**
  * Save the project workflow manager identified by a given project ID.
@@ -162,14 +163,14 @@ final class SaveWorkflow {
      */
     private static List<WorkflowManager> getChildWfms(final WorkflowManager parent) {
         return parent.getNodeContainers().stream().map(nodeContainer -> {
-            if (nodeContainer instanceof SubNodeContainer) {
-                return ((SubNodeContainer)nodeContainer).getWorkflowManager();
-            } else if (nodeContainer instanceof WorkflowManager) {
-                return (WorkflowManager)nodeContainer;
+            if (nodeContainer instanceof SubNodeContainer snc) {
+                return snc.getWorkflowManager();
+            } else if (nodeContainer instanceof WorkflowManager wfm) {
+                return wfm;
             } else {  // native nodes etc.
                 return null;
             }
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+        }).filter(Objects::nonNull).toList();
     }
 
     private static void saveWorkflowWithProgressBar(final WorkflowManager wfm, final String svg,
@@ -190,7 +191,7 @@ final class SaveWorkflow {
         if (wfm.isComponentProjectWFM()) {
             throw new UnsupportedOperationException("Saving a component project is not yet implemented");
         } else if (!localOnly && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo) {
-            saveBackToHub(monitor, wfm, svg);
+            saveBackToServerOrHub(monitor, wfm, svg);
         } else {
             saveRegularWorkflow(monitor, wfm, svg);
         }
@@ -255,10 +256,11 @@ final class SaveWorkflow {
             .forEach(WorkflowEditor::unmarkDirty);
     }
 
-    private static boolean saveBackToHub(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
+    private static boolean saveBackToServerOrHub(final IProgressMonitor monitor, final WorkflowManager wfm,
+            final String svg) {
         final var context = wfm.getContextV2();
         if (!context.isTemporyWorkflowCopyMode()) {
-            throw new IllegalStateException("Can only save temporary copies to Hub.");
+            throw new IllegalStateException("Can only save temporary copies to Server or Hub.");
         }
 
         final var remoteMountpointURI = context.getMountpointURI().orElseThrow();
@@ -273,17 +275,28 @@ final class SaveWorkflow {
                 return false;
             }
 
-            final var dialogResult = new AtomicInteger();
-            Display.getDefault().syncExec(() -> {
-                final var display = PlatformUI.getWorkbench().getDisplay();
-                final var dialog = new MessageDialog(display.getActiveShell(), "Overwrite on Hub?", null,
-                    "The workflow\n\n\t" + remoteStore.getMountIDWithFullPath()
-                        + "\n\nalready exists on the Hub. Do you want to overwrite it?\n",
-                    MessageDialog.QUESTION, new String[] { IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL }, 1);
-                dialogResult.set(dialog.open());
-            });
-            if (dialogResult.get() != 1) {
+            final var location = context.getLocationType() == LocationType.SERVER_REPOSITORY ? "Server" : "Hub";
+
+            final var resultRef = new AtomicReference<Pair<OverwriteRemotelyResult, String>>();
+            Display.getDefault().syncExec(
+                () -> resultRef.set(DesktopAPUtil.openOverwriteRemotelyDialog(remoteStore, location)));
+            final var dialogResult = resultRef.get();
+            final var answer = dialogResult.getFirst();
+
+            if (answer == OverwriteRemotelyResult.CANCEL) {
                 return false;
+            }
+
+            if (answer == OverwriteRemotelyResult.OVERWRITE_WITH_SNAPSHOT) {
+                try {
+                    // TODO this should be done in the `SpaceProvider`
+                    ((RemoteExplorerFileStore)remoteStore).createSnapshot(dialogResult.getSecond());
+                } catch (final CoreException e) {
+                    final var msg = "Unable to create snapshot before overwriting the workflow:\n" + e.getMessage()
+                            + "\n\nUpload was canceled.";
+                    DesktopAPUtil.showAndLogError(location + " Error", msg, LOGGER, e);
+                    return false;
+                }
             }
         } else if (!remoteStore.getParent().fetchInfo().isModifiable()) {
             DesktopAPUtil.showError("Workflow not writable", "You don't have permissions to write into the workflow's "
@@ -299,13 +312,14 @@ final class SaveWorkflow {
                 .orElseThrow(() -> new IllegalStateException("Space provider '" + remoteMountpointURI.getAuthority()
                           + "' not found."));
         final var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+        var uploaded = false;
         try {
-             spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, false, false, monitor);
+            spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, false, false, monitor);
+            uploaded = true;
         } catch (final CoreException e) {
             final var message = "Failed to upload the workflow to its remote location\n(" + e.getMessage() + ")";
             DesktopAPUtil.showAndLogError("Upload has failed", message, LOGGER, e);
-            return false;
         }
-        return true;
+        return uploaded;
     }
 }

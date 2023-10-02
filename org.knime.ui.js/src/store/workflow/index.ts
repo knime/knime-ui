@@ -23,6 +23,7 @@ import * as nodeInteractions from "./nodeInteractions";
 import * as annotationInteractions from "./annotationInteractions";
 import * as clipboardInteractions from "./clipboardInteractions";
 import * as connectionInteractions from "./connectionInteractions";
+import * as componentInteractions from "./componentInteractions";
 
 export interface WorkflowState {
   activeWorkflow: Workflow | null;
@@ -86,6 +87,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   ...clipboardInteractions.actions,
   ...annotationInteractions.actions,
   ...connectionInteractions.actions,
+  ...componentInteractions.actions,
 
   undo({ state }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
@@ -258,6 +260,35 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }
   },
 
+  async updateComponentMetadata(
+    _,
+    {
+      projectId,
+      workflowId,
+      description,
+      type,
+      icon,
+      inPorts,
+      outPorts,
+      links,
+      tags,
+    },
+  ) {
+    await API.workflowCommand.UpdateComponentMetadata({
+      projectId,
+      workflowId,
+      // TODO: NXT-2023: remove when types are correctly generated
+      // @ts-expect-error
+      description,
+      type,
+      icon,
+      inPorts,
+      outPorts,
+      links,
+      tags,
+    });
+  },
+
   async updateWorkflowMetadata(
     _,
     { description, tags, links, projectId, workflowId },
@@ -265,6 +296,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     await API.workflowCommand.UpdateProjectMetadata({
       projectId,
       workflowId,
+      // TODO: NXT-2023: remove when types are correctly generated
+      // @ts-expect-error
       description,
       tags,
       links,
@@ -314,11 +347,6 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     { isLinked, isInsideLinked, projectAndWorkflowIds },
     rootState,
   ) {
-    // annotation mode (cross hair mouse cursor)
-    if (rootState.application.canvasMode === "annotation") {
-      return false;
-    }
-
     // linking state
     const linkage = isLinked || isInsideLinked;
 

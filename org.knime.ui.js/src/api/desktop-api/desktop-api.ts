@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { environment } from "@/environment";
 
 import type {
@@ -5,7 +6,7 @@ import type {
   SpaceId,
   FullSpacePath,
   SpaceItemId,
-  SpaceUser,
+  SpaceProviderNS,
 } from "../custom-types";
 
 const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
@@ -76,6 +77,15 @@ export const openUpdateDialog = () => {
   );
 };
 
+export const checkForUpdates = () => {
+  callBrowserFunction(
+    window.checkForUpdates,
+    [],
+    "Could not check for updates",
+    false,
+  );
+};
+
 export const openUrlInExternalBrowser = ({ url }: { url: string }) => {
   callBrowserFunction(
     window.openUrlInExternalBrowser,
@@ -118,6 +128,74 @@ export const openNodeDialog = ({
   );
 };
 
+export const openLinkComponentDialog = ({
+  projectId,
+  workflowId,
+  nodeId,
+}: {
+  projectId: string;
+  workflowId: string;
+  nodeId: string;
+}) => {
+  return callBrowserFunction(
+    window.openLinkComponentDialog,
+    [projectId, workflowId, nodeId],
+    `Could not open linking dialog of component ${nodeId}`,
+    true,
+  );
+};
+
+export const updateComponent = ({
+  projectId,
+  workflowId,
+  nodeId,
+}: {
+  projectId: string;
+  workflowId: string;
+  nodeId: string;
+}) => {
+  callBrowserFunction(
+    window.updateComponent,
+    [projectId, workflowId, nodeId],
+    `Could not update component ${nodeId}`,
+    false,
+  );
+};
+
+export const openChangeComponentHubItemVersionDialog = ({
+  projectId,
+  workflowId,
+  nodeId,
+}: {
+  projectId: string;
+  workflowId: string;
+  nodeId: string;
+}) => {
+  callBrowserFunction(
+    window.openChangeComponentHubItemVersionDialog,
+    [projectId, workflowId, nodeId],
+    `Could not change Hub item version of component ${nodeId}`,
+    false,
+  );
+};
+
+export const openChangeComponentLinkTypeDialog = ({
+  projectId,
+  workflowId,
+  nodeId,
+}: {
+  projectId: string;
+  workflowId: string;
+  nodeId: string;
+}) => {
+  callBrowserFunction(
+    window.openChangeComponentLinkTypeDialog,
+    [projectId, workflowId, nodeId],
+    `Could not change link type of component ${nodeId}`,
+    false,
+  );
+};
+
 export const openLegacyFlowVariableDialog = ({
   projectId,
   nodeId,
@@ -133,18 +211,20 @@ export const openLegacyFlowVariableDialog = ({
   );
 };
 
-export const executeNodeAndOpenLegacyPortView = ({
+export const openLegacyPortView = ({
   projectId,
   nodeId,
   portIdx,
+  executeNode,
 }: {
   projectId: string;
   nodeId: string;
   portIdx: number;
+  executeNode: boolean;
 }) => {
   callBrowserFunction(
-    window.executeNodeAndOpenLegacyPortView,
-    [projectId, nodeId, portIdx],
+    window.openLegacyPortView,
+    [projectId, nodeId, portIdx, executeNode],
     `Could not execute and open view of node ${nodeId}`,
     false,
   );
@@ -288,7 +368,7 @@ export const getSpaceProviders = () => {
 
 export const connectSpaceProvider = ({
   spaceProviderId,
-}: SpaceProviderId): SpaceUser => {
+}: SpaceProviderId): SpaceProviderNS.SpaceProvider => {
   const user = callBrowserFunction(
     window.connectSpaceProvider,
     [spaceProviderId],
@@ -482,16 +562,17 @@ export const importURIAtWorkflowCanvas = ({
   );
 };
 
-export const abortAiRequest = ({ chainType }) => {
+export const abortAiRequest = ({ conversationId, chainType }) => {
   return callBrowserFunction(
     window.abortAiRequest,
-    [chainType],
+    [conversationId, chainType],
     "Could not abort AI request",
     false,
   );
 };
 
 export const makeAiRequest = ({
+  conversationId,
   chainType,
   projectId,
   workflowId,
@@ -500,7 +581,14 @@ export const makeAiRequest = ({
 }) => {
   return callBrowserFunction(
     window.makeAiRequest,
-    [chainType, projectId, workflowId, nodeId, JSON.stringify(messages)],
+    [
+      conversationId,
+      chainType,
+      projectId,
+      workflowId,
+      nodeId,
+      JSON.stringify(messages),
+    ],
     "Could not make AI request",
     false,
   );
@@ -538,5 +626,49 @@ export const openPermissionsDialog = ({
     [spaceProviderId, spaceId, itemId],
     "Could not open server permission dialog",
     false,
+  );
+};
+
+export const executeWorkflow = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+}: SpaceProviderId & SpaceId & SpaceItemId) => {
+  return callBrowserFunction(
+    window.executeOnClassic,
+    [spaceProviderId, spaceId, itemId],
+    "Could not remote execute workflow",
+    false,
+  );
+};
+
+export const saveJobAsWorkflow = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+  jobId,
+  jobName,
+}: SpaceProviderId &
+  SpaceId &
+  SpaceItemId & { jobId: string; jobName: string }) => {
+  return callBrowserFunction(
+    window.saveJobAsWorkflow,
+    [spaceProviderId, spaceId, itemId, jobId, jobName],
+    "Could not save job as workflow",
+    true,
+  );
+};
+
+export const editSchedule = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+  scheduleId,
+}: SpaceProviderId & SpaceId & SpaceItemId & { scheduleId: string }) => {
+  return callBrowserFunction(
+    window.editSchedule,
+    [spaceProviderId, spaceId, itemId, scheduleId],
+    "Could not edit schedule",
+    true,
   );
 };

@@ -1,41 +1,42 @@
 import type {
-  PortType,
   DynamicPortGroupDescription,
   NativeNodeDescription,
+  NodeTemplate,
 } from "@/api/gateway-api/generated-api";
-import type { AvailablePortTypes } from "@/api/custom-types";
+import type { AvailablePortTypes, ExtendedPortType } from "@/api/custom-types";
 
-type FullPortType = PortType & {
-  typeId: string;
-  type?: string;
-  description: string;
-};
-type PortGroupDescription = {
-  groupName: string;
-  groupDescription: string;
-  types: Array<FullPortType & { typeName: string }>;
-};
+/**
+ * The purpose of these helpers is to map all required information on ports that
+ * is not directly provided by the API. Normally, port objects
+ * have limited information and only list their typeId which uniquely identifies that port.
+ * Any other information on ports, such as color, kind, and other properties declared in
+ * PortType are only available by accessing the global dictionary of
+ * installed ports via the global application state property `availablePortTypes` and then
+ * indexing in using the unique port typeId. These mapping utilities provide reusable
+ * functionality to do just that, returning `ExtendedPort`s that contain all the information
+ * from their corresponding PortTypes
+ */
 
 /**
  * Maps a port `typeId` string or a object with a `typeId` property to a port object with all the properties of the
  * PortObject schema from the API
- * @param {AvailablePortTypes} availablePortTypes Dictionary of all available port types and their information
- * @param {Boolean} includeType whether to include a `type` property holding the value of the port kind.
+ * @param availablePortTypes Dictionary of all available port types and their information
+ * @param includeType whether to include a `type` property holding the value of the port kind.
  * This is necessary when the data will injected (down the line) into the PortIcon component from webapps-common
  * which uses a `type` prop instead of a `kind`
- * @returns {Function} mapping function that takes either a string that represents the port type id, or an object
+ * @returns mapping function that takes either a string that represents the port type id, or an object
  * with a `typeId` property. This mapping function will return the whole port object with information about color, kind,
  * etc
  */
-export const toPortObject =
+export const toExtendedPortObject =
   (availablePortTypes: AvailablePortTypes, includeType = true) =>
-  (input: string | { typeId: string }): FullPortType => {
+  (input: string | { typeId: string }): ExtendedPortType => {
     const isStringInput = typeof input === "string";
     const fullPortObject = isStringInput
       ? availablePortTypes[input]
       : availablePortTypes[input.typeId];
 
-    const result: FullPortType = {
+    const result: ExtendedPortType = {
       ...fullPortObject,
       description: "No description available",
       typeId: isStringInput ? input : input?.typeId,
@@ -53,13 +54,41 @@ export const toPortObject =
       : result;
   };
 
+export type NodeTemplateWithExtendedPorts = NodeTemplate & {
+  inPorts: ExtendedPortType[];
+  outPorts: ExtendedPortType[];
+};
+
+/**
+ * Maps a node object and adds to every of its ports all the properties of the PortObject schema from the API
+ * @param availablePortTypes Dictionary of all available port types and their information
+ * @returns mapping function that takes a node to which all the port information will be added
+ */
+export const toNodeTemplateWithExtendedPorts =
+  (availablePortTypes: AvailablePortTypes) =>
+  (node: NodeTemplate): NodeTemplateWithExtendedPorts => {
+    const { inPorts = [], outPorts = [] } = node;
+
+    return {
+      ...node,
+      inPorts: inPorts.map(toExtendedPortObject(availablePortTypes)),
+      outPorts: outPorts.map(toExtendedPortObject(availablePortTypes)),
+    };
+  };
+
+type PortGroupDescription = {
+  groupName: string;
+  groupDescription: string;
+  types: Array<ExtendedPortType & { typeName: string }>;
+};
+
 /**
  * Processes a dynamic port group description so it can be rendered.
- * @param {Object} availablePortTypes Dictionary of all available port types and their information
- * @returns {Function} A function that maps the raw port group description as it was received to the format needed to
+ * @param availablePortTypes Dictionary of all available port types and their information
+ * @returns A function that maps the raw port group description as it was received to the format needed to
  * to render it.
  */
-const toPortGroupDescription =
+const toPortGroupDescriptionWithExtendedPorts =
   (availablePortTypes: AvailablePortTypes) =>
   (portGroupDescription: DynamicPortGroupDescription): PortGroupDescription => {
     const {
@@ -69,7 +98,7 @@ const toPortGroupDescription =
     } = portGroupDescription;
 
     const types: PortGroupDescription["types"] = supportedPortTypes
-      .map(toPortObject(availablePortTypes))
+      .map(toExtendedPortObject(availablePortTypes))
       .map((fullPortType) => ({
         ...fullPortType,
         typeName: fullPortType.name,
@@ -82,25 +111,21 @@ const toPortGroupDescription =
     };
   };
 
-/**
- * Maps over a collection of ports to add information about their color and kind, extracted from the
- * provided dictionary in the parameter `availablePortTypes`
- * @param {Array} ports
- * @param {Record<string, any>} availablePortTypes
- * @returns {Array} ports
- */
-export const mapPortTypes = (
-  ports: Array<string | { typeId: string }> = [],
-  availablePortTypes: AvailablePortTypes = {},
-) => ports.map(toPortObject(availablePortTypes));
+export type NativeNodeDescriptionWithExtendedPorts = NativeNodeDescription & {
+  inPorts: ExtendedPortType[];
+  outPorts: ExtendedPortType[];
+  dynInPorts: PortGroupDescription[];
+  dynOutPorts: PortGroupDescription[];
+};
 
 /**
  * Maps a node object and adds to every of its ports all the properties of the PortObject schema from the API
- * @param {Object} availablePortTypes Dictionary of all available port types and their information
- * @returns {Function} mapping function that takes a node to which all the port information will be added
+ * @param availablePortTypes Dictionary of all available port types and their information
+ * @returns mapping function that takes a node to which all the port information will be added
  */
-export const toNodeWithFullPorts =
-  (availablePortTypes: AvailablePortTypes) => (node: NativeNodeDescription) => {
+export const toNodeDescriptionWithExtendedPorts =
+  (availablePortTypes: AvailablePortTypes) =>
+  (node: NativeNodeDescription): NativeNodeDescriptionWithExtendedPorts => {
     const {
       inPorts = [],
       outPorts = [],
@@ -110,13 +135,13 @@ export const toNodeWithFullPorts =
 
     return {
       ...node,
-      inPorts: inPorts.map(toPortObject(availablePortTypes)),
-      outPorts: outPorts.map(toPortObject(availablePortTypes)),
+      inPorts: inPorts.map(toExtendedPortObject(availablePortTypes)),
+      outPorts: outPorts.map(toExtendedPortObject(availablePortTypes)),
       dynInPorts: dynamicInPortGroupDescriptions.map(
-        toPortGroupDescription(availablePortTypes),
+        toPortGroupDescriptionWithExtendedPorts(availablePortTypes),
       ),
       dynOutPorts: dynamicOutPortGroupDescriptions.map(
-        toPortGroupDescription(availablePortTypes),
+        toPortGroupDescriptionWithExtendedPorts(availablePortTypes),
       ),
     };
   };

@@ -1,12 +1,14 @@
-<script>
+<script lang="ts">
 import { mapState, mapGetters } from "vuex";
 
-import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
+
+import type { ShortcutName } from "@/shortcuts";
+import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
 
 /**
@@ -33,27 +35,35 @@ export default {
     ]),
 
     canvasModes() {
-      return [
-        {
-          id: "selection",
-          icon: SelectionModeIcon,
-          text: "Selection mode",
-          hotkeyText: "V",
-        },
-        {
-          id: "annotation",
-          icon: AnnotationModeIcon,
-          text: "Annotation mode",
-          hotkeyText: "T",
-        },
-        {
-          id: "pan",
-          icon: ArrowMoveIcon,
-          text: "Pan mode",
-          hotkeyText: "P",
-          disabled: this.isWorkflowEmpty,
-        },
+      const canvasModeShortcuts: Array<{
+        id: string;
+        shortcutName: ShortcutName;
+      }> = [
+        { id: "selection", shortcutName: "switchToSelectionMode" },
+        { id: "annotation", shortcutName: "switchToAnnotationMode" },
+        { id: "pan", shortcutName: "switchToPanMode" },
       ];
+
+      return canvasModeShortcuts
+        .map(({ id, shortcutName }) => {
+          const shortcut = this.$shortcuts.get(shortcutName);
+          if (!shortcut) {
+            return null;
+          }
+
+          const shortcutText =
+            typeof shortcut.text === "function"
+              ? shortcut.text({ $store: this.$store })
+              : shortcut.text;
+
+          return {
+            text: shortcutText,
+            hotkeyText: shortcut.hotkeyText,
+            disabled: !this.$shortcuts.isEnabled(shortcutName),
+            metadata: { id },
+          };
+        })
+        .filter(Boolean);
     },
 
     hasBreadcrumb() {
@@ -69,7 +79,7 @@ export default {
     toolbarDropdowns() {
       return { save: ["save", "saveAs"] };
     },
-    toolbarButtons() {
+    toolbarButtons(): ShortcutName[] {
       const isInsideComponent =
         this.workflow?.info.containerType === "component";
 
@@ -77,7 +87,7 @@ export default {
         return [];
       }
 
-      let visibleItems = {
+      const visibleItems: Partial<Record<ShortcutName, boolean>> = {
         // Always visible
         save: true,
         undo: true,
@@ -101,11 +111,11 @@ export default {
 
       return Object.entries(visibleItems)
         .filter(([_, visible]) => visible)
-        .map(([name]) => name);
+        .map(([name]) => name as ShortcutName);
     },
   },
   methods: {
-    onCanvasModeUpdate(_, { id }) {
+    onCanvasModeUpdate(_, { metadata: { id } }) {
       this.$store.dispatch("application/switchCanvasMode", id);
     },
   },
@@ -126,7 +136,7 @@ export default {
           :key="button"
           :name="button"
           :with-text="!hideText[button]"
-          :dropdown="toolbarDropdowns[button]"
+          :dropdown="toolbarDropdowns[button] ?? []"
         />
       </div>
     </transition-group>

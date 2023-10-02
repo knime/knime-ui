@@ -10,6 +10,7 @@ import { deepMocked, mockVuexStore } from "@/test/utils";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 import { API } from "@api";
 import { getNextProjectId } from "../util";
+import { createWorkflow } from "@/test/factories";
 
 vi.mock("@/util/generateWorkflowPreview");
 vi.mock("@/util/encodeString", () => ({
@@ -27,7 +28,7 @@ const mockedGenerateWorkflowPreview = generateWorkflowPreview as MockedFunction<
   typeof generateWorkflowPreview
 >;
 
-describe("workflow store: AP Interactions", () => {
+describe("workflow store: desktop interactions", () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -59,7 +60,10 @@ describe("workflow store: AP Interactions", () => {
   describe("actions", () => {
     it("calls executeNodeAndOpenView from API", async () => {
       const { store } = await loadStore();
-      store.commit("workflow/setActiveWorkflow", { projectId: "foo" });
+      store.commit(
+        "workflow/setActiveWorkflow",
+        createWorkflow({ projectId: "foo" }),
+      );
       store.dispatch("workflow/executeNodeAndOpenView", "root:0");
 
       expect(mockedAPI.desktop.executeNodeAndOpenView).toHaveBeenCalledWith({
@@ -71,7 +75,10 @@ describe("workflow store: AP Interactions", () => {
     it("calls openNodeDialog from API", async () => {
       const { store } = await loadStore();
 
-      store.commit("workflow/setActiveWorkflow", { projectId: "foo" });
+      store.commit(
+        "workflow/setActiveWorkflow",
+        createWorkflow({ projectId: "foo" }),
+      );
       store.dispatch("workflow/openNodeConfiguration", "node x");
 
       expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
@@ -83,7 +90,10 @@ describe("workflow store: AP Interactions", () => {
     it("calls openFlowVariableConfiguration from API", async () => {
       const { store } = await loadStore();
 
-      store.commit("workflow/setActiveWorkflow", { projectId: "foo" });
+      store.commit(
+        "workflow/setActiveWorkflow",
+        createWorkflow({ projectId: "foo" }),
+      );
       store.dispatch("workflow/openFlowVariableConfiguration", "node x");
 
       expect(
@@ -97,10 +107,13 @@ describe("workflow store: AP Interactions", () => {
     it("calls openLayoutEditor from API", async () => {
       const { store } = await loadStore();
 
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "foo",
-        info: { containerId: "root" },
-      });
+      store.commit(
+        "workflow/setActiveWorkflow",
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+        }),
+      );
       store.dispatch("workflow/openLayoutEditor", "node x");
 
       expect(mockedAPI.desktop.openLayoutEditor).toHaveBeenCalledWith({
@@ -113,10 +126,13 @@ describe("workflow store: AP Interactions", () => {
       it("saves the workflow via the API", async () => {
         const { store } = await loadStore();
 
-        store.commit("workflow/setActiveWorkflow", {
-          projectId: "foo",
-          info: { containerId: "root" },
-        });
+        store.commit(
+          "workflow/setActiveWorkflow",
+          createWorkflow({
+            projectId: "foo",
+            info: { containerId: "root" },
+          }),
+        );
 
         await store.dispatch("workflow/saveWorkflow");
 
@@ -130,10 +146,13 @@ describe("workflow store: AP Interactions", () => {
 
         mockedGenerateWorkflowPreview.mockResolvedValue("mock svg preview");
 
-        store.commit("workflow/setActiveWorkflow", {
-          projectId: "foo",
-          info: { containerId: "root" },
-        });
+        store.commit(
+          "workflow/setActiveWorkflow",
+          createWorkflow({
+            projectId: "foo",
+            info: { containerId: "root" },
+          }),
+        );
 
         await store.dispatch("workflow/saveWorkflow");
 
@@ -163,10 +182,13 @@ describe("workflow store: AP Interactions", () => {
           Promise.resolve(input.outerHTML),
         );
 
-        store.commit("workflow/setActiveWorkflow", {
-          projectId,
-          info: { containerId: workflowId },
-        });
+        store.commit(
+          "workflow/setActiveWorkflow",
+          createWorkflow({
+            projectId,
+            info: { containerId: workflowId },
+          }),
+        );
 
         await store.dispatch("workflow/saveWorkflow");
 
@@ -192,10 +214,13 @@ describe("workflow store: AP Interactions", () => {
         const { store, dispatchSpy } = await loadStore();
         store.commit("application/setOpenProjects", openProjects);
         store.commit("application/setActiveProjectId", activeProjectId);
-        store.commit("workflow/setActiveWorkflow", {
-          projectId: "foo",
-          info: { containerId: "root" },
-        });
+        store.commit(
+          "workflow/setActiveWorkflow",
+          createWorkflow({
+            projectId: "foo",
+            info: { containerId: "root" },
+          }),
+        );
 
         await store.dispatch("workflow/closeWorkflow", closingProjectId);
         expect(mockedAPI.desktop.closeWorkflow).toHaveBeenCalledWith({
@@ -246,10 +271,13 @@ describe("workflow store: AP Interactions", () => {
           const { store, dispatchSpy } = await loadStore();
           store.commit("application/setOpenProjects", openProjects);
           store.commit("application/setActiveProjectId", activeProjectId);
-          store.commit("workflow/setActiveWorkflow", {
-            projectId: "foo",
-            info: { containerId: "root" },
-          });
+          store.commit(
+            "workflow/setActiveWorkflow",
+            createWorkflow({
+              projectId: "foo",
+              info: { containerId: "root" },
+            }),
+          );
 
           await store.dispatch("workflow/closeWorkflow", closingProjectId);
           expect(mockedAPI.desktop.closeWorkflow).toHaveBeenCalledWith({
@@ -284,10 +312,13 @@ describe("workflow store: AP Interactions", () => {
     it("saves the workflow locally via the API", async () => {
       const { store } = await loadStore();
 
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "foo",
-        info: { containerId: "root" },
-      });
+      store.commit(
+        "workflow/setActiveWorkflow",
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+        }),
+      );
 
       await store.dispatch("workflow/saveWorkflowAs");
 
@@ -301,10 +332,13 @@ describe("workflow store: AP Interactions", () => {
 
       mockedGenerateWorkflowPreview.mockResolvedValue("mock svg preview");
 
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "foo",
-        info: { containerId: "root" },
-      });
+      store.commit(
+        "workflow/setActiveWorkflow",
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+        }),
+      );
 
       await store.dispatch("workflow/saveWorkflowAs");
 

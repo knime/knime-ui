@@ -4,6 +4,7 @@ import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
 import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
 import LinkExternal from "webapps-common/ui/assets/img/icons/link-external.svg";
 import KeyIcon from "webapps-common/ui/assets/img/icons/key.svg";
+import DeploymentIcon from "webapps-common/ui/assets/img/icons/deployment.svg";
 import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
@@ -128,7 +129,7 @@ export const buildOpenInBrowserMenuItem = (
   const isSelectionMultiple = selectedItems.length > 1;
 
   const providerType =
-    provider.type === BaseSpaceProvider.TypeEnum.HUB ? "Hub" : "Server";
+    provider.type === BaseSpaceProvider.TypeEnum.HUB ? "Hub" : "WebPortal";
 
   return {
     id: "openInBrowser",
@@ -203,7 +204,7 @@ export const buildDisplayDeploymentsMenuItem = (
   return {
     id: "displayDeployments",
     text: "Display schedules and jobs",
-    icon: CirclePlayIcon,
+    icon: DeploymentIcon,
     disabled: isSelectionEmpty || isSelectionMultiple,
     title: isSelectionEmpty
       ? "Select a file to display schedules and jobs."
@@ -213,6 +214,29 @@ export const buildDisplayDeploymentsMenuItem = (
         projectId,
         itemId: selectedItems[0],
         itemName,
+      });
+    },
+  };
+};
+
+export const buildExecuteWorkflowMenuItem = (
+  dispatch: Dispatch,
+  projectId: string,
+  selectedItems: Array<string>,
+): ActionMenuItem => {
+  const isSelectionEmpty = selectedItems.length === 0;
+  const isSelectionMultiple = selectedItems.length > 1;
+
+  return {
+    id: "execute",
+    text: "Execute",
+    icon: CirclePlayIcon,
+    disabled: isSelectionEmpty || isSelectionMultiple,
+    title: isSelectionEmpty ? "Select a file to execute a workflow." : null,
+    execute: () => {
+      dispatch("spaces/executeWorkflow", {
+        projectId,
+        itemId: selectedItems[0],
       });
     },
   };
