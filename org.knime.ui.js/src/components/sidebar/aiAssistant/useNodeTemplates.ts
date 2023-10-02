@@ -8,7 +8,7 @@ import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 // Data from the hub looks like this: ...$DynamicExtensionNodeFactory:ffae4570 but in
 // knime-ui ...$DynamicExtensionNodeFactory#LLM+Prompter is needed to get the node template.
 const getInternalFactoryName = (factoryName:string, title:string) => {
-  const pattern = /(\$DynamicExtensionNodeFactory):[\w\d]+/;
+  const pattern = /(\$DynamicExtensionNodeFactory):[\w]+/;
   if (pattern.test(factoryName)) {
     return factoryName.replace(pattern, "$1#") + title.replace(/ /g, "+");
   }
