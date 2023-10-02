@@ -6,6 +6,8 @@ import SelectionRectangle from "@/components/workflow/SelectionRectangle/Selecti
 import AnnotationRectangle from "@/components/workflow/annotations/AnnotationRectangle.vue";
 import WorkflowEmpty from "@/components/workflow/WorkflowEmpty.vue";
 import KanvasFilters from "@/components/workflow/kanvas/KanvasFilters.vue";
+import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue"
+import ComponentView from "./ComponentView.vue"
 
 import { dropNode } from "@/mixins";
 
@@ -17,8 +19,15 @@ export default {
     AnnotationRectangle,
     WorkflowEmpty,
     KanvasFilters,
+    ValueSwitch,
+    ComponentView
   },
   mixins: [dropNode],
+  data() {
+    return {
+      switchMode: "kanvas",
+    }
+  },
   computed: {
     ...mapGetters("application", [
       "workflowCanvasState",
@@ -78,6 +87,12 @@ export default {
 </script>
 
 <template>
+  <ValueSwitch
+  v-model="switchMode"
+  class="valueSwitch" :possible-values="[
+    { id: 'kanvas', text: 'Kanvas' },
+    { id: 'component', text: 'Component View' },
+  ]"/>
   <Kanvas
     id="kanvas"
     ref="kanvas"
@@ -112,13 +127,33 @@ export default {
       @annotation-selection-preview="onAnnotationPreview"
     />
   </Kanvas>
+  <ComponentView v-if="switchMode !== 'kanvas'" class="pagebuilder"/>
 </template>
 
 <style scoped>
+.container {
+  display: flex;
+}
+
+.pagebuilder {
+  position: absolute;
+  top: 95px;
+  left: 80%;
+  overflow: auto;
+  height: 100%;
+  box-shadow: 10px 5px 5px 10px var(--knime-masala);
+}
+
 #kanvas :deep(svg) {
   color: var(--knime-masala);
   background-color: white;
   transition: background-color 150ms;
+}
+
+.value-switch {
+  position: absolute;
+  top: 53px;
+  left: 500px;
 }
 
 #kanvas.indicate-node-drag :deep(svg) {

@@ -50,6 +50,8 @@ package org.knime.ui.java.api;
 
 import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
+import java.io.IOException;
+
 import javax.swing.SwingUtilities;
 
 import org.eclipse.swt.widgets.Display;
@@ -57,12 +59,15 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.Node;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.core.node.wizard.AbstractWizardNodeView;
 import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.NodeStateChangeListener;
 import org.knime.core.node.workflow.NodeStateEvent;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.webui.node.view.NodeViewManager;
+import org.knime.core.wizard.SubnodeViewableModel;
+import org.knime.core.wizard.SubnodeViewableModel.SubnodeWizardViewCreator;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.js.cef.nodeview.CEFNodeView;
@@ -105,7 +110,29 @@ final class NodeAPI {
      */
     @API
     static void executeNodeAndOpenView(final String projectId, final String nodeId) {
-        executeNodeThenRun(projectId, nodeId, () -> NodeAPI.openNodeView(projectId, nodeId));
+        executeNodeThenRun(projectId, nodeId, () -> NodeAPI.openParentView(projectId, nodeId));
+    }
+
+    /**
+     * Executes the node and opens the node view as soon as the node is executed.
+     *
+     * @param projectId
+     * @param nodeId
+     */
+    @API
+    static void executeComponentAndOpenParentView(final String projectId, final String nodeId) {
+        executeNodeThenRun(projectId, nodeId, () -> NodeAPI.openParentView(projectId, nodeId));
+    }
+
+    /**
+     * Executes the node and opens the node view as soon as the node is executed.
+     *
+     * @param projectId
+     * @param nodeId
+     */
+    @API
+    static String executeComponentAndTransferNodeRepresentation(final String projectId, final String nodeId) {
+        return NodeAPI.getParentRepresentation(projectId, nodeId);
     }
 
     /**
@@ -169,6 +196,44 @@ final class NodeAPI {
             NodeLogger.getLogger(NodeAPI.class).warnWithFormat(
                 "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
         }
+    }
+
+    /**
+     * Opens the node's js-view, if available, in an extra browser window.
+     *
+     * @param projectId
+     * @param nodeId
+     */
+    private static void openParentView(final String projectId, final String nodeId) {
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        if (nc instanceof SubNodeContainer snc) {
+            // composite view
+            OpenSubnodeWebViewAction.openView(snc);
+        }
+    }
+
+    /**
+     * Opens the node's js-view, if available, in an extra browser window.
+     *
+     * @param projectId
+     * @param nodeId
+     */
+    private static String getParentRepresentation(final String projectId, final String nodeId) {
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        AbstractWizardNodeView view = null;
+        if (nc instanceof SubNodeContainer snc) {
+            SubnodeViewableModel model;
+            try {
+                model = new SubnodeViewableModel(snc, nodeId, true, null);
+                model.createPageAndValue(null);
+
+                return new SubnodeWizardViewCreator().getViewRepresentationJSONString(model.getViewRepresentation());
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+            }
+            // composite view
+        }
+        return "";
     }
 
     static java.awt.Rectangle getAppBoundsAsAWTRec() {

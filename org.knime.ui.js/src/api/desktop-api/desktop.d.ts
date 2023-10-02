@@ -42,6 +42,11 @@ declare function executeNodeAndOpenView(
   nodeId: string,
 ): void;
 
+declare function getComponentRepresentation(
+  projectId: string,
+  nodeId: string,
+): string;
+
 declare function openLegacyPortView(
   projectId: string,
   nodeId: string,

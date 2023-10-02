@@ -79,7 +79,10 @@ export default {
     toolbarDropdowns() {
       return { save: ["save", "saveAs"] };
     },
-    toolbarButtons(): ShortcutName[] {
+    isInsideComponent() {
+      return this.workflow?.info.containerType === "component";
+    },
+    toolbarButtons() {
       const isInsideComponent =
         this.workflow?.info.containerType === "component";
 
@@ -118,6 +121,9 @@ export default {
     onCanvasModeUpdate(_, { metadata: { id } }) {
       this.$store.dispatch("application/switchCanvasMode", id);
     },
+    openComponentView() {
+      this.$store.dispatch("workflow/executeNodeAndOpenView", this.workflow.info.containerId);
+    }
   },
 };
 </script>
@@ -139,6 +145,9 @@ export default {
           :dropdown="toolbarDropdowns[button] ?? []"
         />
       </div>
+      <button v-if="isInsideComponent" @click="openComponentView">
+        Open Component View
+        </button>
     </transition-group>
 
     <WorkflowBreadcrumb v-if="hasBreadcrumb" class="breadcrumb" />

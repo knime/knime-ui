@@ -91,7 +91,7 @@ export default {
 </script>
 
 <template>
-  <PageBuilder v-if="isReady" class="page-builder" />
+  <PageBuilder  class="page-builder" />
 </template>
 
 <style lang="postcss" scoped>

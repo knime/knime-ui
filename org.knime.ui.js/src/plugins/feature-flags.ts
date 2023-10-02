@@ -29,7 +29,7 @@ export const features: ($store: Store<any>) => Features = ($store) => ({
     getFlagValue($store, "embedded_views_and_dialogs"),
 
   shouldLoadPageBuilder: () =>
-    getFlagValue($store, "embedded_views_and_dialogs"),
+    true,
 
   shouldShowAiAssistant: () => API.desktop.isAiAssistantBackendAvailable(),
 });

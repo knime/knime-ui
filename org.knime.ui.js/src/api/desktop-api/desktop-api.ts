@@ -25,6 +25,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
     if (returnsValue) {
       return resultOrError;
     }
+    
 
     if (!returnsValue && resultOrError) {
       throw new Error(resultOrError);
@@ -242,6 +243,21 @@ export const executeNodeAndOpenView = ({
     [projectId, nodeId],
     `Could not execute and open view of node ${nodeId}`,
     false,
+  );
+};
+
+export const getComponentRepresentation = ({
+  projectId,
+  nodeId,
+}: {
+  projectId: string;
+  nodeId: string;
+}) => {
+  return callBrowserFunction(
+    window.executeComponentAndTransferNodeRepresentation,
+    [projectId, nodeId],
+    `Could not execute and open view of node ${nodeId}`,
+    true,
   );
 };
 

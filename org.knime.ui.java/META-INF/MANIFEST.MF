@@ -50,3 +50,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.knime.ui.java
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.knime.ui.java.UIPlugin
+Import-Package: org.knime.js.core

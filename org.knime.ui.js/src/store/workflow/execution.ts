@@ -94,6 +94,13 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
+  executeNodeAndOpenParentView({ state }, nodeId) {
+    API.desktop.executeNodeAndOpenParentView({
+      projectId: state.activeWorkflow.projectId,
+      nodeId,
+    });
+  },
+
   resetNodes({ dispatch }, nodes) {
     return dispatch("changeNodeState", { action: "reset", nodes });
   },
@@ -118,4 +125,13 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 };
 
-export const getters: GetterTree<WorkflowState, RootStoreState> = {};
+export const getters: GetterTree<WorkflowState, RootStoreState> = {
+  getComponentRepresentation:
+    ({ activeWorkflow }) =>
+    (nodeId: string) => {
+        return API.desktop.getComponentRepresentation({
+          projectId: activeWorkflow.projectId,
+          nodeId,
+        });
+    },
+};
