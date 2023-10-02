@@ -1,294 +1,158 @@
-<script>
-import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
-import throttle from "raf-throttle";
-import { geometry } from "@/util/geometry";
+<script setup lang="ts">
+import { ref, computed, watch, toRef } from "vue";
 
-import { escapeStack } from "@/mixins";
+import type { XY } from "@/api/gateway-api/generated-api";
+import { useStore } from "@/composables/useStore";
 
-export default {
-  mixins: [
-    escapeStack({
-      group: "NODE_DRAG",
-      alwaysActive: true,
-      onEscape() {
-        if (this.isDragging) {
-          this.$store.dispatch("workflow/abortDrag");
-        }
-      },
-    }),
-  ],
-  props: {
-    /**
-     * Node id, unique to the containing workflow
-     */
-    id: { type: String, required: true },
+import { useMoveObject } from "@/composables/useMoveObject";
+import { useEscapeStack } from "@/mixins/escapeStack";
 
-    /**
-     * The position of the node. Contains of an x and a y parameter
-     */
-    position: {
-      type: Object,
-      required: true,
-      validator: (position) =>
-        typeof position.x === "number" && typeof position.y === "number",
-    },
+interface Props {
+  id: string;
+  position: XY;
+}
+
+const DRAG_TARGET_SELECTOR = ".node-torso-wrapper";
+
+const props = defineProps<Props>();
+let lastHitTarget = null;
+
+const store = useStore();
+const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
+const hasAbortedDrag = computed(() => store.state.workflow.hasAbortedDrag);
+const isDragging = computed(() => store.state.workflow.isDragging);
+
+const isNodeConnected = computed(
+  () => store.getters["workflow/isNodeConnected"],
+);
+const getNodeById = computed(() => store.getters["workflow/getNodeById"]);
+
+const isNodeSelected = computed(
+  () => store.getters["selection/isNodeSelected"],
+);
+
+const container = ref<SVGGElement | null>(null);
+
+const positionWithDelta = computed(() => ({
+  x: props.position.x + movePreviewDelta.value.x,
+  y: props.position.y + movePreviewDelta.value.y,
+}));
+const translationAmount = computed(() => {
+  return isNodeSelected.value(props.id)
+    ? positionWithDelta.value
+    : props.position;
+});
+
+watch(
+  toRef(props, "position"),
+  () => {
+    if (isDragging.value) {
+      store.dispatch("workflow/resetDragState");
+    }
   },
-  data: () => ({
-    // Start position of the dragging
-    startPos: null,
-    lastHitTarget: null,
-    cursorPosition: { x: 0, y: 0 },
-    dragReferenceElementSelector: ".node-torso-wrapper",
-  }),
-  computed: {
-    ...mapGetters("workflow", ["isWritable", "isNodeConnected", "getNodeById"]),
-    ...mapGetters("selection", ["isNodeSelected"]),
-    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    ...mapState("workflow", [
-      "movePreviewDelta",
-      "activeWorkflow",
-      "hasAbortedDrag",
-      "isDragging",
-    ]),
-    ...mapState("canvas", ["isMoveLocked", "zoomFactor"]),
+  { deep: true },
+);
 
-    // Combined position of original position + the dragged amount
-    combinedPosition() {
-      return {
-        x: this.position.x + this.movePreviewDelta.x,
-        y: this.position.y + this.movePreviewDelta.y,
-      };
-    },
-
-    // returns the amount the object should be translated. This is either the position of the objec, or the position + the dragged amount
-    translationAmount() {
-      return this.isNodeSelected(this.id)
-        ? this.combinedPosition
-        : this.position;
-    },
-  },
-  watch: {
-    // If change occurs, position has been updated from the store.
-    // Note that the position is not updated while the node is being dragged, only after it's dropped.
-    position: {
-      deep: true,
-      handler() {
-        this.handleMoveFromStore();
-      },
-    },
-  },
-  methods: {
-    ...mapActions("selection", [
-      "selectNode",
-      "deselectNode",
-      "deselectAllObjects",
-    ]),
-    ...mapMutations("workflow", ["setMovePreview"]),
-    /**
-     * Resets the drag position in the store. This can only happen here, as otherwise the node
-     * will be reset to its position before the actual movement of the store happened.
-     * @returns {void} nothing to return
-     */
-    async handleMoveFromStore() {
-      if (this.isDragging) {
-        await this.$store.dispatch("workflow/resetDragState");
-      }
-    },
-
-    initCursorPosition(event) {
-      event.stopPropagation();
-      const rect = this.$refs.container
-        .querySelector(this.dragReferenceElementSelector)
-        .getBoundingClientRect();
-
-      this.cursorPosition = {
-        x: Math.floor(event.clientX - rect.left) / this.zoomFactor,
-        y: Math.floor(event.clientY - rect.top) / this.zoomFactor,
-      };
-    },
-
-    /**
-     * Handles the start of a move event
-     * @param {Object} e - details of the mousedown event
-     * @returns {void} nothing to return
-     */
-    async onMoveStart() {
-      await this.$store.dispatch("workflow/resetDragState");
-
-      if (!this.isNodeSelected(this.id)) {
-        this.deselectAllObjects();
-      }
-      this.selectNode(this.id);
-
-      const gridAdjustedPosition = {
-        x: geometry.utils.snapToGrid(this.position.x),
-        y: geometry.utils.snapToGrid(this.position.y),
-      };
-
-      this.startPos = {
-        ...gridAdjustedPosition,
-
-        // account for any delta between the current position and its grid-adjusted equivalent.
-        // this is useful for nodes that might be not aligned to the grid, so that they can be brought back in
-        // during the drag operation
-        positionDelta: {
-          x: gridAdjustedPosition.x - this.position.x,
-          y: gridAdjustedPosition.y - this.position.y,
-        },
-      };
-      this.$store.commit("workflow/setIsDragging", true);
-    },
-
-    /**
-     * Handles move events of the node
-     * throttled to limit recalculation
-     * @param {Object} detail - containing the total amount moved in x and y direction
-     */
-    onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
-      /* eslint-disable no-invalid-this */
-      if (!this.startPos || this.hasAbortedDrag) {
-        return;
-      }
-
-      // Notify elements under the cursor
-      this.notifyNodeDraggingListeners(clientX, clientY);
-
-      const snapSize = altKey ? 1 : this.$shapes.gridSize.x;
-
-      // get absolute coordinates
-      const [canvasX, canvasY] = this.screenToCanvasCoordinates([
-        clientX,
-        clientY,
-      ]);
-
-      // Adjusted For Grid Snapping
-      const deltas = {
-        // adjust the deltas using `cursorPosition` to make sure the reference
-        // is from where the user clicked to move the node
-        x: geometry.utils.snapToGrid(
-          canvasX - this.startPos.x - this.cursorPosition.x,
-          snapSize,
-        ),
-        y: geometry.utils.snapToGrid(
-          canvasY - this.startPos.y - this.cursorPosition.y,
-          snapSize,
-        ),
-      };
-
-      // prevent unneeded dispatches if the position hasn't changed
-      if (
-        this.movePreviewDelta.x !== deltas.x ||
-        this.movePreviewDelta.y !== deltas.y
-      ) {
-        this.setMovePreview({
-          // further adjust to snap to grid. e.g if the node had been previously moved
-          // by ignoring the grid we use the start position delta to bring it back to the grid
-          deltaX: deltas.x + this.startPos.positionDelta.x,
-          deltaY: deltas.y + this.startPos.positionDelta.y,
-        });
-      }
-      /* eslint-enable no-invalid-this */
-    }),
-
-    /**
-     * Handles the end of a move event
-     *
-     * Because the onMove function is throttled we also need to throttle the onMoveEnd
-     * function to guarantee order of event handling
-     *
-     */
-    onMoveEnd: throttle(function ({ detail: { endX, endY } }) {
-      /* eslint-disable no-invalid-this */
-      if (this.hasAbortedDrag) {
-        this.$store.dispatch("workflow/resetAbortDrag");
-
-        if (this.lastHitTarget) {
-          this.lastHitTarget.dispatchEvent(
-            new CustomEvent("node-dragging-leave", {
-              bubbles: true,
-              cancelable: true,
-            }),
-          );
-        }
-        return;
-      }
-
-      if (this.lastHitTarget) {
-        this.lastHitTarget.dispatchEvent(
-          new CustomEvent("node-dragging-end", {
-            bubbles: true,
-            cancelable: true,
-            detail: {
-              id: this.id,
-              clientX: endX,
-              clientY: endY,
-              onError: this.moveNode,
-            },
-          }),
-        );
-        return;
-      }
-
-      this.moveNode();
-      /* eslint-enable no-invalid-this */
-    }),
-
-    notifyNodeDraggingListeners(posX, posY) {
-      const hitTarget = document.elementFromPoint(posX, posY);
-
-      const isSameTarget = hitTarget && this.lastHitTarget === hitTarget;
-
-      if (!isSameTarget && this.lastHitTarget) {
-        this.lastHitTarget.dispatchEvent(
-          new CustomEvent("node-dragging-leave", {
-            bubbles: true,
-            cancelable: true,
-          }),
-        );
-      }
-
-      if (!isSameTarget && hitTarget) {
-        const { inPorts = [], outPorts = [] } = this.getNodeById(this.id);
-        const isEventIgnored = hitTarget.dispatchEvent(
-          new CustomEvent("node-dragging-enter", {
-            bubbles: true,
-            cancelable: true,
-            detail: {
-              isNodeConnected: this.isNodeConnected(this.id),
-              inPorts,
-              outPorts,
-            },
-          }),
-        );
-        this.lastHitTarget = isEventIgnored ? null : hitTarget;
-      }
-    },
-
-    moveNode() {
-      this.$store.dispatch("workflow/moveObjects", {
-        projectId: this.activeProjectId,
-        startPos: this.startPos,
-        nodeId: this.id,
-      });
-    },
-  },
+const moveNode = () => {
+  store.dispatch("workflow/moveObjects");
 };
+
+const notifyNodeDraggingListeners = (x: number, y: number) => {
+  const hitTarget = document.elementFromPoint(x, y);
+  const isSameTarget = hitTarget && lastHitTarget === hitTarget;
+  if (!isSameTarget && lastHitTarget) {
+    lastHitTarget.dispatchEvent(
+      new CustomEvent("node-dragging-leave", {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  }
+
+  if (!isSameTarget && hitTarget) {
+    const { inPorts = [], outPorts = [] } = getNodeById.value(props.id);
+    const isEventIgnored = hitTarget.dispatchEvent(
+      new CustomEvent("node-dragging-enter", {
+        bubbles: true,
+        cancelable: true,
+        detail: {
+          isNodeConnected: isNodeConnected.value(props.id),
+          inPorts,
+          outPorts,
+        },
+      }),
+    );
+    lastHitTarget = isEventIgnored ? null : hitTarget;
+  }
+};
+
+const { onPointerDown } = useMoveObject({
+  id: props.id,
+  initialPosition: toRef(props, "position"),
+  objectElement: computed(() => {
+    return container.value.querySelector(DRAG_TARGET_SELECTOR) as HTMLElement;
+  }),
+
+  onMoveStartCallback: () => {
+    if (!isNodeSelected.value(props.id)) {
+      store.dispatch("selection/deselectAllObjects");
+    }
+    store.dispatch("selection/selectNode", props.id);
+  },
+
+  onMoveCallback: (ptrMoveEvent) => {
+    notifyNodeDraggingListeners(ptrMoveEvent.clientX, ptrMoveEvent.clientY);
+  },
+
+  onMoveEndCallback: (ptrUpEvent) => {
+    if (hasAbortedDrag.value && lastHitTarget) {
+      lastHitTarget.dispatchEvent(
+        new CustomEvent("node-dragging-leave", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      return false;
+    }
+
+    if (lastHitTarget) {
+      lastHitTarget.dispatchEvent(
+        new CustomEvent("node-dragging-end", {
+          bubbles: true,
+          cancelable: true,
+          detail: {
+            id: props.id,
+            clientX: ptrUpEvent.clientX,
+            clientY: ptrUpEvent.clientY,
+            onError: moveNode,
+          },
+        }),
+      );
+      return false;
+    }
+
+    return true;
+  },
+});
+
+useEscapeStack({
+  group: "OBJECT_DRAG",
+  alwaysActive: true,
+  onEscape: () => {
+    if (isDragging.value) {
+      store.dispatch("workflow/abortDrag");
+    }
+  },
+});
 </script>
 
 <template>
   <g
     ref="container"
-    v-move="{
-      onMove,
-      onMoveStart,
-      onMoveEnd,
-      isProtected: !isWritable || isMoveLocked,
-      dragReferenceElementSelector,
-    }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :data-node-id="id"
     :class="[{ dragging: isDragging && isNodeSelected(id) }]"
-    @pointerdown.left="initCursorPosition($event)"
+    @pointerdown.left="onPointerDown($event)"
   >
     <slot :position="translationAmount" />
   </g>
@@ -299,8 +163,10 @@ export default {
   cursor: grabbing;
   pointer-events: none;
 
-  & :deep(.port) {
-    pointer-events: none;
+  & :deep() {
+    & * {
+      pointer-events: none;
+    }
   }
 }
 </style>

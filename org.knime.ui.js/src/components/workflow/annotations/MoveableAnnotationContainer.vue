@@ -1,171 +1,63 @@
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
-import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
-import throttle from "raf-throttle";
+<script setup lang="ts">
+import { ref, toRef, watch, computed } from "vue";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import { geometry } from "@/util/geometry";
+import { useMoveObject } from "@/composables/useMoveObject";
+import { useStore } from "@/composables/useStore";
+import { useEscapeStack } from "@/mixins/escapeStack";
 
-export default defineComponent({
-  props: {
-    id: {
-      type: String,
-      required: true,
-    },
+interface Props {
+  id: string;
+  bounds: Bounds;
+}
+const props = defineProps<Props>();
 
-    bounds: {
-      type: Object as PropType<Bounds>,
-      default: () => ({ x: 0, y: 0, width: 0, height: 0 }),
-      required: true,
-    },
+const store = useStore();
+const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
+const isDragging = computed(() => store.state.workflow.isDragging);
+
+const isAnnotationSelected = computed(
+  () => store.getters["selection/isAnnotationSelected"],
+);
+
+const container = ref<HTMLElement | null>(null);
+
+const translationAmount = computed(() => {
+  return isAnnotationSelected.value(props.id)
+    ? movePreviewDelta.value
+    : { x: 0, y: 0 };
+});
+
+watch(
+  toRef(props, "bounds"),
+  () => {
+    if (isDragging.value) {
+      store.dispatch("workflow/resetDragState");
+    }
   },
-  data() {
-    return {
-      startPos: null,
-      cursorPosition: null,
-    };
+  { deep: true },
+);
+
+const { onPointerDown } = useMoveObject({
+  id: props.id,
+  initialPosition: computed(() => ({ x: props.bounds.x, y: props.bounds.y })),
+  objectElement: computed(() => container.value as HTMLElement),
+  onMoveStartCallback: () => {
+    if (!isAnnotationSelected.value(props.id)) {
+      store.dispatch("selection/deselectAllObjects");
+    }
+
+    store.dispatch("selection/selectAnnotation", props.id);
   },
-  computed: {
-    ...mapState("workflow", [
-      "movePreviewDelta",
-      "isDragging",
-      "hasAbortedDrag",
-    ]),
-    ...mapState("canvas", ["zoomFactor", "isMoveLocked"]),
-    ...mapGetters("workflow", ["isWritable"]),
-    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    ...mapGetters("selection", ["isAnnotationSelected"]),
+});
 
-    combinedPosition() {
-      return {
-        x: 0 + this.movePreviewDelta.x,
-        y: 0 + this.movePreviewDelta.y,
-      };
-    },
-
-    translationAmount() {
-      return this.isAnnotationSelected(this.id)
-        ? this.combinedPosition
-        : { x: 0, y: 0 };
-    },
-  },
-  watch: {
-    // If change occurs, position has been updated from the store.
-    // Note that the position is not updated while the node is being dragged, only after it's dropped.
-    bounds: {
-      deep: true,
-      async handler() {
-        await this.handleMoveFromStore();
-      },
-    },
-  },
-  methods: {
-    ...mapActions("selection", ["selectAnnotation", "deselectAllObjects"]),
-    ...mapActions("workflow", ["moveObjects"]),
-    ...mapMutations("workflow", ["setMovePreview", "setIsDragging"]),
-
-    async handleMoveFromStore() {
-      if (this.isDragging) {
-        await this.$store.dispatch("workflow/resetDragState");
-      }
-    },
-
-    initCursorPosition(event: PointerEvent) {
-      event.stopPropagation();
-      const rect = (
-        this.$refs.container as HTMLElement
-      ).getBoundingClientRect();
-
-      this.cursorPosition = {
-        x: Math.floor(event.clientX - rect.left) / this.zoomFactor,
-        y: Math.floor(event.clientY - rect.top) / this.zoomFactor,
-      };
-    },
-
-    async onMoveStart() {
-      await this.$store.dispatch("workflow/resetDragState");
-
-      if (!this.isAnnotationSelected(this.id)) {
-        await this.deselectAllObjects();
-      }
-
-      await this.selectAnnotation(this.id);
-
-      const gridAdjustedPosition = {
-        x: geometry.utils.snapToGrid(this.bounds.x),
-        y: geometry.utils.snapToGrid(this.bounds.y),
-      };
-
-      this.startPos = {
-        x: gridAdjustedPosition.x,
-        y: gridAdjustedPosition.y,
-
-        positionDelta: {
-          x: gridAdjustedPosition.x - this.bounds.x,
-          y: gridAdjustedPosition.y - this.bounds.y,
-        },
-      };
-
-      this.setIsDragging(true);
-    },
-
-    onMove: throttle(function (this: any, { detail: { event, altKey } }) {
-      /* eslint-disable no-invalid-this */
-      if (this.hasAbortedDrag) {
-        return;
-      }
-
-      const [canvasX, canvasY] = this.screenToCanvasCoordinates([
-        event.clientX,
-        event.clientY,
-      ]);
-
-      const snapSize = altKey ? 1 : this.$shapes.gridSize.x;
-
-      const deltas = {
-        x: geometry.utils.snapToGrid(
-          canvasX - this.startPos.x - this.cursorPosition.x,
-          snapSize,
-        ),
-        y: geometry.utils.snapToGrid(
-          canvasY - this.startPos.y - this.cursorPosition.y,
-          snapSize,
-        ),
-      };
-
-      if (
-        this.movePreviewDelta.x !== deltas.x ||
-        this.movePreviewDelta.y !== deltas.y
-      ) {
-        this.setMovePreview({
-          deltaX: deltas.x + this.startPos.positionDelta.x,
-          deltaY: deltas.y + this.startPos.positionDelta.y,
-        });
-      }
-      /* eslint-enable no-invalid-this */
-    }),
-
-    onMoveEnd: throttle(function (this: any) {
-      /* eslint-disable no-invalid-this */
-      if (this.hasAbortedDrag) {
-        this.$store.dispatch("workflow/resetDragState");
-        this.$store.dispatch("workflow/resetAbortDrag");
-        return;
-      }
-
-      this.moveObjects();
-      /* eslint-enable no-invalid-this */
-    }),
-    onPointerDown(event) {
-      if (this.isMoveLocked) {
-        this.$store.commit(
-          "selection/setStartedSelectionFromAnnotationId",
-          this.id,
-        );
-      } else {
-        this.initCursorPosition(event);
-      }
-    },
+useEscapeStack({
+  group: "OBJECT_DRAG",
+  alwaysActive: true,
+  onEscape: () => {
+    if (isDragging.value) {
+      store.dispatch("workflow/abortDrag");
+    }
   },
 });
 </script>
@@ -173,12 +65,6 @@ export default defineComponent({
 <template>
   <g
     ref="container"
-    v-move="{
-      onMoveStart,
-      onMove,
-      onMoveEnd,
-      isProtected: !isWritable || isMoveLocked,
-    }"
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
     class="annotation"
