@@ -13,7 +13,7 @@ const props = defineProps<ExtensionWithNodes>();
 const isExpanded = ref(false);
 
 const extensionUrl = computed(() => {
-  const vendor = encodeURI(`${props.featureVendor.toLowerCase()}`);
+  const vendor = encodeURI(`${props.owner.toLowerCase()}`);
   return `https://hub.knime.com/${vendor}/extensions/${props.featureSymbolicName}/latest`;
 });
 

@@ -65,7 +65,7 @@ const useNodeTemplates = ({
             extension = {
               featureSymbolicName: node.featureSymbolicName,
               featureName: node.featureName,
-              featureVendor: node.featureVendor,
+              owner: node.owner,
               nodes: [],
             };
             _uninstalledExtensions[node.featureSymbolicName] = extension;

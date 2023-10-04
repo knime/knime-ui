@@ -6,7 +6,7 @@ interface Node {
 interface Extension {
   featureSymbolicName: string;
   featureName: string;
-  featureVendor: string;
+  owner: string;
 }
 
 interface NodeWithExtensionInfo extends Node, Extension {}
