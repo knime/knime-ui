@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, toRef } from "vue";
+import { useStore } from "vuex";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 
 import { useMoveObject } from "@/composables/useMoveObject";
 import { useEscapeStack } from "@/mixins/escapeStack";

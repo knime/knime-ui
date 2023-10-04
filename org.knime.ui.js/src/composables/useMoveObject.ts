@@ -4,7 +4,7 @@ import { geometry } from "@/util/geometry";
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes.mjs";
 
-import { useStore } from "./useStore";
+import { useStore } from "vuex";
 
 interface UseMoveObjectOptions {
   id: string;
