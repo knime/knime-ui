@@ -1,4 +1,5 @@
 import { computed, type ComputedRef, type Ref } from "vue";
+import throttle from "raf-throttle";
 
 import { geometry } from "@/util/geometry";
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -89,7 +90,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
       },
     };
 
-    const onMove = (ptrMoveEvent: PointerEvent) => {
+    const onMove = throttle((ptrMoveEvent: PointerEvent) => {
       // skip first onMove event
       // on windows touchpads a single onMove is triggered when the user meant a double tap
       if (!hasFirstOnMoveOccurred) {
@@ -125,10 +126,9 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         deltaX: deltaX + startPosition.positionDelta.x,
         deltaY: deltaY + startPosition.positionDelta.y,
       });
-    };
+    });
 
-    // eslint-disable-next-line func-style
-    function onUp(ptrUpEvent: PointerEvent) {
+    const onUp = (ptrUpEvent: PointerEvent) => {
       hasReleased = true;
 
       const shouldMove = onMoveEndCallback(ptrUpEvent);
@@ -149,7 +149,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         // eslint-disable-next-line no-use-before-define
         onLostPointerCapture,
       );
-    }
+    };
 
     // eslint-disable-next-line func-style
     function onLostPointerCapture(event: PointerEvent) {
