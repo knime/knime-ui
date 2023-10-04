@@ -44,10 +44,6 @@ const useMoveObjectResult = useMoveObject({
   initialPosition: computed(() => ({ x: props.bounds.x, y: props.bounds.y })),
   objectElement: computed(() => container.value as HTMLElement),
   onMoveStartCallback: () => {
-    if (isMoveLocked.value) {
-      store.commit("selection/setStartedSelectionFromAnnotationId", props.id);
-    }
-
     if (!isAnnotationSelected.value(props.id)) {
       store.dispatch("selection/deselectAllObjects");
     }
