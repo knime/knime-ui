@@ -6,6 +6,7 @@ import {
 import { debounce } from "lodash";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "../types";
+import type { NodeSearchResult } from "@/api/gateway-api/generated-api";
 
 /**
  * This store is not instantiated by Vuex but used by other stores.
@@ -30,6 +31,9 @@ export interface CommonNodeSearchState {
   totalNumBottomNodes: number;
   bottomNodeSearchPage: number;
   bottomNodesTags: string[];
+
+  bottomAbortController: AbortController;
+  topAbortController: AbortController;
 }
 
 export const state = (): CommonNodeSearchState => ({
@@ -54,6 +58,9 @@ export const state = (): CommonNodeSearchState => ({
   totalNumBottomNodes: 0,
   bottomNodeSearchPage: 0,
   bottomNodesTags: [],
+
+  topAbortController: new AbortController(),
+  bottomAbortController: new AbortController(),
 });
 
 export const mutations: MutationTree<CommonNodeSearchState> = {
@@ -63,6 +70,14 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
 
   setTotalNumTopNodes(state, totalNumTopNodes) {
     state.totalNumTopNodes = totalNumTopNodes;
+  },
+
+  setBottomAbortController(state, abortController) {
+    state.bottomAbortController = abortController;
+  },
+
+  setTopAbortController(state, abortController) {
+    state.topAbortController = abortController;
   },
 
   addTopNodes(state, topNodes) {
@@ -128,6 +143,22 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
   },
 };
 
+const searchNodesAPI = (
+  params: Parameters<typeof API.noderepository.searchNodes>[0],
+  options?: { signal: AbortSignal },
+): Promise<NodeSearchResult> => {
+  return new Promise((resolve, reject) => {
+    // the actual call
+    API.noderepository.searchNodes(params).then(resolve);
+    // abort logic
+    const abortListener = ({ target }) => {
+      options.signal.removeEventListener("abort", abortListener);
+      reject(target.reason);
+    };
+    options.signal.addEventListener("abort", abortListener);
+  });
+};
+
 export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   /**
    * Fetch nodes. Used for initial data retrieval, but also for searching via query and/or tag filters.
@@ -149,28 +180,55 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       dispatch("clearSearchResults");
       return;
     }
-    const prefix = bottom ? "Bottom" : "Top";
+
     const currentPage = () =>
       bottom ? state.bottomNodeSearchPage : state.topNodeSearchPage;
 
+    if (bottom) {
+      state.bottomAbortController.abort();
+      commit("setBottomAbortController", new AbortController());
+    } else {
+      state.topAbortController.abort();
+      commit("setTopAbortController", new AbortController());
+    }
+
+    let searchResponse: NodeSearchResult = {
+      nodes: [],
+      totalNumNodes: 0,
+      tags: [],
+    };
+    try {
+      searchResponse = await searchNodesAPI(
+        {
+          q: state.query,
+          tags: state.selectedTags,
+          allTagsMatch: true,
+          offset: currentPage() * nodeSearchPageSize,
+          limit: nodeSearchPageSize,
+          fullTemplateInfo: true,
+          nodesPartition: bottom ? "NOT_IN_COLLECTION" : "IN_COLLECTION",
+          portTypeId: state.portTypeId,
+        },
+        bottom ? state.bottomAbortController : state.topAbortController,
+      );
+    } catch (error) {
+      // we aborted the call so just return and do nothing
+      if (error?.name === "AbortError") {
+        return;
+      }
+      throw error;
+    }
+
+    // update current page
+    const prefix = bottom ? "Bottom" : "Top";
     if (append) {
       commit(`set${prefix}NodeSearchPage`, currentPage() + 1);
     } else {
       commit(`set${prefix}NodeSearchPage`, 0);
     }
 
-    const { nodes, totalNumNodes, tags } = await API.noderepository.searchNodes(
-      {
-        q: state.query,
-        tags: state.selectedTags,
-        allTagsMatch: true,
-        offset: currentPage() * nodeSearchPageSize,
-        limit: nodeSearchPageSize,
-        fullTemplateInfo: true,
-        nodesPartition: bottom ? "NOT_IN_COLLECTION" : "IN_COLLECTION",
-        portTypeId: state.portTypeId,
-      },
-    );
+    // update results
+    const { nodes, totalNumNodes, tags } = searchResponse;
 
     const { availablePortTypes } = rootState.application;
     const withMappedPorts = nodes.map(
