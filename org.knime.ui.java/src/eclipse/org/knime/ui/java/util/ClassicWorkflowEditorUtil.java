@@ -78,6 +78,7 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor.WorkflowLoadResult;
 import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
+import org.knime.core.node.workflow.contextv2.LocalLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LoadVersion;
 import org.knime.core.util.LockFailedException;
@@ -234,36 +235,41 @@ public final class ClassicWorkflowEditorUtil {
                     final var context = wfm.getContextV2();
                     // we assume that we are on a local AP executor
                     final var locationInfo = context.getLocationInfo();
-
-                    if (!(locationInfo instanceof final HubSpaceLocationInfo hubLocation)) {
-                        // local workflow is identified by its path
+                    if (locationInfo instanceof LocalLocationInfo) {
                         final var path = context.getExecutorInfo().getLocalWorkflowPath();
                         return Optional.of(LocalSpaceUtil.getLocalOrigin(path));
+                    } else if (locationInfo instanceof HubSpaceLocationInfo hubSpaceLocationInfo) {
+                        return getOriginFromHubSpaceLocationInfo(hubSpaceLocationInfo, wfm);
+                    } else {
+                        return Optional.empty();
                     }
-
-                    final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
-                    return Optional.of(new WorkflowProject.Origin() {
-                        @Override
-                        public String getProviderId() {
-                            final var mountpoint = apExecInfo.getMountpoint().orElseThrow(() ->
-                                    new IllegalStateException("Missing Mount ID for Hub workflow '" + wfm + "'"));
-                            return mountpoint.getFirst().getAuthority();
-                        }
-
-                        @Override
-                        public String getSpaceId() {
-                            return hubLocation.getSpaceItemId();
-                        }
-
-                        @Override
-                        public String getItemId() {
-                            return hubLocation.getWorkflowItemId();
-                        }
-                    });
                 }
             };
         }
         return null;
+    }
+
+    private static Optional<WorkflowProject.Origin> getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation, final WorkflowManager wfm) {
+        final var context = wfm.getContextV2();
+        final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
+        return Optional.of(new WorkflowProject.Origin() {
+            @Override
+            public String getProviderId() {
+                final var mountpoint = apExecInfo.getMountpoint().orElseThrow(() ->
+                        new IllegalStateException("Missing Mount ID for Hub workflow '" + wfm + "'"));
+                return mountpoint.getFirst().getAuthority();
+            }
+
+            @Override
+            public String getSpaceId() {
+                return hubLocation.getSpaceItemId();
+            }
+
+            @Override
+            public String getItemId() {
+                return hubLocation.getWorkflowItemId();
+            }
+        });
     }
 
     private static Optional<WorkflowManager> getProjectManager(final WorkflowManager wfm) {
