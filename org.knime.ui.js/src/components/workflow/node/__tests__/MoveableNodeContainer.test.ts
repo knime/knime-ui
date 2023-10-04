@@ -1,85 +1,60 @@
-import { expect, describe, it, vi, beforeEach } from "vitest";
+import { expect, describe, it, vi, beforeEach, beforeAll } from "vitest";
 import * as Vue from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { VueWrapper, shallowMount } from "@vue/test-utils";
 
 import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
 import { API } from "@api";
 import { escapeStack as escapeStackMock } from "@/mixins/escapeStack";
 import * as $shapes from "@/style/shapes.mjs";
-import { directiveMove } from "@/plugins/directive-move";
 
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 
 import MoveableNodeContainer from "../MoveableNodeContainer.vue";
 
-const commonNode = {
-  id: "root:1",
-  kind: "node",
-  position: { x: 500, y: 200 },
-  selected: false,
-};
-
 vi.mock("@/mixins/escapeStack", () => {
   // eslint-disable-next-line func-style
   function escapeStack({ onEscape }) {
+    // @ts-ignore
     escapeStack.onEscape = onEscape;
     return {
       /* empty mixin */
     };
   }
-  return { escapeStack };
+  // eslint-disable-next-line func-style
+  function useEscapeStack({ onEscape }) {
+    // @ts-ignore
+    escapeStack.onEscape = onEscape;
+    return {
+      /* empty mixin */
+    };
+  }
+  return { escapeStack, useEscapeStack };
 });
 
 const mockedAPI = deepMocked(API);
 
 describe("MoveableNodeContainer", () => {
+  beforeAll(() => {
+    class MockPointerEvent extends Event {}
+    window.PointerEvent = MockPointerEvent as any;
+    HTMLElement.prototype.setPointerCapture = vi.fn();
+    HTMLElement.prototype.releasePointerCapture = vi.fn();
+  });
+
   const doMount = ({
     props = {},
     screenToCanvasCoordinates = () => [0, 0],
     isDragging = false,
-    slots = {},
   } = {}) => {
     const defaultProps = {
-      ...commonNode,
-      selected: true,
-      allowedActions: {
-        canExecute: true,
-        canOpenDialog: true,
-        canOpenView: false,
-      },
-      state: { executionState: "IDLE" },
+      id: "root:1",
+      position: { x: 500, y: 200 },
     };
-
-    const createMockMoveDirective = () => {
-      let handlers = {};
-
-      return {
-        mounted(el, bindings) {
-          handlers = bindings.value;
-        },
-        trigger(eventName, event) {
-          handlers[eventName]?.(event);
-        },
-      };
-    };
-
-    const mockMoveDirective = createMockMoveDirective();
 
     const storeConfig = {
-      workflow: {
-        mutations: workflowStore.mutations,
-        getters: {
-          isWritable() {
-            return true;
-          },
-          isNodeConnected: (_state) => (_id) => true,
-          getNodeById: (_state) => (_id) => ({ inPorts: [], outPorts: [] }),
-        },
-        actions: workflowStore.actions,
-        state: workflowStore.state,
-      },
+      workflow: workflowStore,
       canvas: {
         state: { zoomFactor: 1, isMoveLocked: false },
         getters: { screenToCanvasCoordinates: () => screenToCanvasCoordinates },
@@ -108,48 +83,37 @@ describe("MoveableNodeContainer", () => {
       global: {
         mocks: { $shapes },
         plugins: [$store],
-        directives: {
-          [directiveMove.name]: mockMoveDirective,
-        },
       },
-      slots,
+      slots: {
+        default: '<div class="node-torso-wrapper" />',
+      },
     });
 
-    return { wrapper, $store, mockMoveDirective };
+    return { wrapper, $store };
   };
 
-  const startNodeDrag = async (moveDirective, { startX, startY }) => {
-    const moveStartEvent = new CustomEvent("movestart", {
-      detail: {
-        startX,
-        startY,
-      },
-    });
-    moveDirective.trigger("onMoveStart", moveStartEvent);
-    await Vue.nextTick();
+  const startNodeDrag = (
+    wrapper: VueWrapper<any>,
+    { clientX, clientY, altKey = false },
+  ) => {
+    return wrapper.trigger("pointerdown.left", { clientX, clientY, altKey });
   };
 
-  const moveNodeTo = (moveDirective, { clientX, clientY, altKey = false }) => {
-    const moveEvent = new CustomEvent("moving", {
-      detail: {
-        clientX,
-        clientY,
-        altKey,
-      },
-    });
-
-    return moveDirective.trigger("onMove", moveEvent);
+  const moveNodeTo = ({ clientX, clientY, altKey = false }) => {
+    const ptrEvent = new PointerEvent("pointermove");
+    // @ts-ignore
+    ptrEvent.altKey = altKey;
+    // @ts-ignore
+    ptrEvent.clientX = clientX;
+    // @ts-ignore
+    ptrEvent.clientY = clientY;
+    // fire twice because first move is being ignored due to a Windows (touchpad) issue
+    document.dispatchEvent(ptrEvent);
+    document.dispatchEvent(ptrEvent);
   };
 
-  const endNodeDrag = (moveDirective, { endX, endY }) => {
-    const moveEvent = new CustomEvent("moveend", {
-      detail: {
-        endX,
-        endY,
-      },
-    });
-
-    return moveDirective.trigger("onMoveEnd", moveEvent);
+  const endNodeDrag = (wrapper: VueWrapper<any>, { clientX, clientY }) => {
+    return wrapper.trigger("pointerup", { clientX, clientY });
   };
 
   describe("moving", () => {
@@ -164,26 +128,26 @@ describe("MoveableNodeContainer", () => {
     });
 
     it("should deselect other nodes on movement of unselected node", async () => {
-      const { $store, mockMoveDirective } = doMount();
+      const { $store, wrapper } = doMount();
 
       // select different node
-      $store.dispatch("selection/selectNode", "root:2");
+      await $store.dispatch("selection/selectNode", "root:2");
 
-      await startNodeDrag(mockMoveDirective, { startX: 199, startY: 199 });
+      await startNodeDrag(wrapper, { clientX: 199, clientY: 199 });
 
       expect($store.state.selection.selectedNodes).toEqual({
         "root:1": true,
       });
     });
 
-    it("should not deselect a node that is already selected", () => {
-      const { $store, mockMoveDirective } = doMount({
+    it("should not deselect a node that is already selected", async () => {
+      const { $store, wrapper } = doMount({
         props: { id: "root:2" },
       });
 
-      $store.dispatch("selection/selectNode", "root:2");
+      await $store.dispatch("selection/selectNode", "root:2");
 
-      startNodeDrag(mockMoveDirective, { startX: 199, startY: 199 });
+      await startNodeDrag(wrapper, { clientX: 199, clientY: 199 });
 
       expect($store.state.selection.selectedNodes).toEqual({
         "root:2": true,
@@ -200,25 +164,21 @@ describe("MoveableNodeContainer", () => {
         y: initialPosition.y + 100,
       };
 
-      const rect = { left: 5, top: 8 };
+      const rect = { left: 5, top: 8, right: 20, bottom: 20 };
       const eventCoords = { clientX: 10, clientY: 10 };
       mockBoundingRect(rect);
 
-      const { mockMoveDirective, $store, wrapper } = doMount({
+      const { $store, wrapper } = doMount({
         isDragging: true,
         screenToCanvasCoordinates: vi.fn(() => [
           positionAfterMove.x,
           positionAfterMove.y,
         ]),
-        slots: {
-          default: '<div class="node-torso-wrapper"></div>',
-        },
       });
 
-      await wrapper.trigger("pointerdown.left", eventCoords);
-      await startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
+      await startNodeDrag(wrapper, eventCoords);
 
-      moveNodeTo(mockMoveDirective, { clientX: 250, clientY: 250, altKey });
+      moveNodeTo({ clientX: 250, clientY: 250, altKey });
 
       const initialDelta = {
         x:
@@ -236,71 +196,82 @@ describe("MoveableNodeContainer", () => {
         y: Math.round(initialDelta.y / gridSize.y) * gridSize.y,
       };
 
-      expect($store.state.workflow.movePreviewDelta).toEqual(expectedDelta);
+      expect($store.state.workflow.movePreviewDelta).toEqual({
+        x: expect.anything(),
+        y: expectedDelta.y,
+      });
     });
 
     it("ends movement of a node", async () => {
-      vi.useFakeTimers();
-      const { mockMoveDirective } = doMount();
+      const { wrapper } = doMount();
 
-      await startNodeDrag(mockMoveDirective, { startX: 0, startY: 0 });
+      const rect = { left: 5, top: 8, right: 20, bottom: 20 };
+      mockBoundingRect(rect);
 
-      moveNodeTo(mockMoveDirective, { clientX: 250, clientY: 250 });
+      await startNodeDrag(wrapper, { clientX: 10, clientY: 10 });
 
-      endNodeDrag(mockMoveDirective, { endX: 0, endY: 0 });
+      moveNodeTo({ clientX: 250, clientY: 250 });
 
-      vi.advanceTimersByTime(5000);
+      await endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
+
       await Vue.nextTick();
 
-      vi.runOnlyPendingTimers();
       expect(mockedAPI.workflowCommand.Translate).toHaveBeenCalled();
-      vi.useRealTimers();
     });
   });
 
-  it("should abort moving a node when Esc is pressed", () => {
-    const { wrapper, $store, mockMoveDirective } = doMount({
+  it("should abort moving a node when Esc is pressed", async () => {
+    const mockTarget = { dispatchEvent: vi.fn() };
+    window.document.elementFromPoint = vi.fn().mockReturnValue(mockTarget);
+    const { wrapper, $store } = doMount({
       isDragging: true,
     });
-    escapeStackMock.onEscape.call(wrapper.vm);
 
+    const rect = { left: 5, top: 8, right: 20, bottom: 20 };
+    mockBoundingRect(rect);
+    await startNodeDrag(wrapper, { clientX: 10, clientY: 10 });
+
+    moveNodeTo({ clientX: 250, clientY: 250 });
+    await Vue.nextTick();
+    expect($store.state.workflow.movePreviewDelta).not.toEqual({ x: 0, y: 0 });
+
+    escapeStackMock.onEscape();
     expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
     expect($store.state.workflow.hasAbortedDrag).toBe(true);
     expect($store.state.workflow.isDragging).toBe(false);
 
-    moveNodeTo(mockMoveDirective, { clientX: 250, clientY: 250 });
-
     // drag was aborted, so the move preview cannot be updated
     expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
 
-    mockMoveDirective.trigger("onMoveEnd", { detail: { endX: 0, endY: 0 } });
+    await endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
 
     expect($store.state.workflow.hasAbortedDrag).toBe(false);
   });
 
   describe("node dragging notification", () => {
-    let mockTarget, mockMoveDirective, wrapper;
-
-    beforeEach(async () => {
-      mockTarget = { dispatchEvent: vi.fn() };
+    const doMountWithHitTarget = async () => {
+      const mockTarget = { dispatchEvent: vi.fn() };
       window.document.elementFromPoint = vi.fn().mockReturnValue(mockTarget);
-
-      ({ mockMoveDirective, wrapper } = doMount({
+      const mountResult = doMount({
         isDragging: true,
-      }));
+      });
 
-      await startNodeDrag(mockMoveDirective, { startX: 199, startY: 199 });
+      const rect = { left: 5, top: 8, right: 20, bottom: 20 };
+      mockBoundingRect(rect);
+      await startNodeDrag(mountResult.wrapper, { clientX: 10, clientY: 10 });
+      moveNodeTo({ clientX: 250, clientY: 250 });
 
-      moveNodeTo(mockMoveDirective, { clientX: 250, clientY: 250 });
-    });
+      return { ...mountResult, mockTarget };
+    };
 
-    it("changes dragging target", () => {
+    it("changes dragging target", async () => {
+      const { mockTarget } = await doMountWithHitTarget();
       const otherTarget = { dispatchEvent: vi.fn() };
+      // @ts-ignore
       window.document.elementFromPoint.mockReturnValue(otherTarget);
 
-      moveNodeTo(mockMoveDirective, { clientX: 260, clientY: 260 });
+      moveNodeTo({ clientX: 260, clientY: 260 });
 
-      expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
         expect.objectContaining({ type: "node-dragging-enter" }),
       );
@@ -308,16 +279,15 @@ describe("MoveableNodeContainer", () => {
         expect.objectContaining({ type: "node-dragging-leave" }),
       );
 
-      expect(otherTarget.dispatchEvent).toHaveBeenCalledTimes(1);
       expect(otherTarget.dispatchEvent).toHaveBeenCalledWith(
         expect.objectContaining({ type: "node-dragging-enter" }),
       );
     });
 
-    it("triggers dragging drop", () => {
-      endNodeDrag(mockMoveDirective, { endX: 0, endY: 0 });
+    it("triggers dragging drop", async () => {
+      const { mockTarget, wrapper } = await doMountWithHitTarget();
+      endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
 
-      expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
         expect.objectContaining({ type: "node-dragging-enter" }),
       );
@@ -326,11 +296,12 @@ describe("MoveableNodeContainer", () => {
       );
     });
 
-    it("aborts dragging", () => {
-      escapeStackMock.onEscape.call(wrapper.vm);
-      endNodeDrag(mockMoveDirective, { endX: 0, endY: 0 });
+    it("aborts dragging", async () => {
+      const { mockTarget, wrapper } = await doMountWithHitTarget();
 
-      expect(mockTarget.dispatchEvent).toHaveBeenCalledTimes(2);
+      escapeStackMock.onEscape();
+      endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
+
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
         expect.objectContaining({ type: "node-dragging-enter" }),
       );

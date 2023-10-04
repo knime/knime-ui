@@ -1,9 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import { directiveMove } from "@/plugins/directive-move";
 import * as $shapes from "@/style/shapes.mjs";
 
 import { API } from "@api";
@@ -16,6 +15,13 @@ import { createWorkflow } from "@/test/factories";
 const mockedAPI = deepMocked(API);
 
 describe("MoveableAnnotationContainer.vue", () => {
+  beforeAll(() => {
+    class MockPointerEvent extends Event {}
+    window.PointerEvent = MockPointerEvent as any;
+    HTMLElement.prototype.setPointerCapture = vi.fn();
+    HTMLElement.prototype.releasePointerCapture = vi.fn();
+  });
+
   const defaultProps: { id: String; bounds: Bounds } = {
     id: "annotation:1",
     bounds: { x: 500, y: 200, width: 100, height: 100 },
@@ -61,56 +67,48 @@ describe("MoveableAnnotationContainer.vue", () => {
     const dispatchSpy = vi.spyOn($store, "dispatch");
     const commitSpy = vi.spyOn($store, "commit");
 
+    const finalProps = { ...defaultProps, ...props };
     const wrapper = mount(MoveableAnnotationContainer, {
-      props: { ...defaultProps, ...props },
+      props: finalProps,
       global: {
         mocks: { $shapes, ...mocks },
         plugins: [$store],
-        directives: {
-          [directiveMove.name]: mockMoveDirective,
-        },
       },
+    });
+
+    mockBoundingRect({
+      left: finalProps.bounds.x,
+      top: finalProps.bounds.y,
+      bottom: finalProps.bounds.height,
+      right: finalProps.bounds.width,
     });
 
     return { wrapper, $store, mockMoveDirective, dispatchSpy, commitSpy };
   };
 
-  const mockClientRect = (rect = { top: 0, left: 0 }) => {
-    // @ts-expect-error
-    HTMLElement.prototype.getBoundingClientRect = vi.fn(() => rect);
-  };
-
   const startAnnotationDrag = (
     wrapper: VueWrapper<any>,
-    moveDirective,
     { clientX, clientY, shiftKey = false },
   ) => {
-    const moveStartEvent = new CustomEvent("movestart", {
-      detail: { event: { shiftKey } },
-    });
-
-    wrapper.find("g").trigger("pointerdown", { clientX, clientY });
-
-    moveDirective.trigger("onMoveStart", moveStartEvent);
+    wrapper.find("g").trigger("pointerdown", { clientX, clientY, shiftKey });
   };
 
-  const moveTo = (moveDirective, { clientX, clientY, altKey = false }) => {
-    const moveEvent = new CustomEvent("moving", {
-      detail: {
-        altKey,
-        event: { clientX, clientY },
-      },
-    });
-
-    moveDirective.trigger("onMove", moveEvent);
+  const moveTo = ({ clientX, clientY, altKey = false }) => {
+    const ptrEvent = new PointerEvent("pointermove");
+    // @ts-ignore
+    ptrEvent.altKey = altKey;
+    ptrEvent.clientX = clientX;
+    ptrEvent.clientY = clientY;
+    // fire twice because first move is being ignored due to a Windows (touchpad) issue
+    document.dispatchEvent(ptrEvent);
+    document.dispatchEvent(ptrEvent);
   };
 
-  const endAnnotationDrag = (moveDirective) => {
-    const moveEndEvent = new CustomEvent("moveend", {
-      detail: { event: {} },
-    });
-
-    moveDirective.trigger("onMoveEnd", moveEndEvent);
+  const endAnnotationDrag = (
+    wrapper: VueWrapper<any>,
+    { clientX, clientY },
+  ) => {
+    return wrapper.trigger("pointerup", { clientX, clientY });
   };
 
   describe("moving", () => {
@@ -121,12 +119,12 @@ describe("MoveableAnnotationContainer.vue", () => {
     });
 
     it("deselects all objects on movement of unselected annotation", async () => {
-      const { wrapper, $store, mockMoveDirective } = doMount();
+      const { wrapper, $store } = doMount();
 
       // add something to selection
-      $store.dispatch("selection/selectNode", "root:1");
+      await $store.dispatch("selection/selectNode", "root:1");
 
-      startAnnotationDrag(wrapper, mockMoveDirective, {
+      startAnnotationDrag(wrapper, {
         clientX: 199,
         clientY: 199,
         shiftKey: false,
@@ -140,15 +138,15 @@ describe("MoveableAnnotationContainer.vue", () => {
       });
     });
 
-    it("does not deselect annotation when annotation is already selected", () => {
-      const { wrapper, $store, mockMoveDirective } = doMount();
+    it("does not deselect annotation when annotation is already selected", async () => {
+      const { wrapper, $store } = doMount();
 
-      $store.dispatch("selection/selectAnnotation", "annotation:1");
+      await $store.dispatch("selection/selectAnnotation", "annotation:1");
       expect($store.state.selection.selectedAnnotations).toEqual({
         "annotation:1": true,
       });
 
-      startAnnotationDrag(wrapper, mockMoveDirective, {
+      startAnnotationDrag(wrapper, {
         clientX: 199,
         clientY: 199,
         shiftKey: false,
@@ -170,9 +168,14 @@ describe("MoveableAnnotationContainer.vue", () => {
         height: 100,
       };
 
-      mockClientRect({ left: bounds.x, top: bounds.y });
+      mockBoundingRect({
+        left: bounds.x,
+        top: bounds.y,
+        bottom: bounds.height,
+        right: bounds.width,
+      });
 
-      const { mockMoveDirective, wrapper, $store } = doMount({
+      const { wrapper, $store } = doMount({
         props: { bounds },
         screenToCanvasCoordinatesMock: vi.fn(() => ([x, y]) => [x, y]),
       });
@@ -180,30 +183,34 @@ describe("MoveableAnnotationContainer.vue", () => {
       const clickPosition = { clientX: 85, clientY: 85 };
       const movePosition = { clientX: 213, clientY: 213 };
 
-      startAnnotationDrag(wrapper, mockMoveDirective, clickPosition);
+      startAnnotationDrag(wrapper, clickPosition);
+      moveTo({ clientX: 50, clientY: 50 });
+
       await flushPromises();
 
       expect($store.state.workflow.isDragging).toBe(true);
 
-      moveTo(mockMoveDirective, { ...movePosition, altKey });
+      moveTo({ ...movePosition, altKey });
 
       expect($store.state.workflow.movePreviewDelta).toEqual(expectedDelta);
     });
 
     it("ends movement of an annotation", async () => {
       vi.useFakeTimers();
-      const { wrapper, mockMoveDirective } = doMount();
+      const { wrapper } = doMount({
+        props: { bounds: { x: 0, y: 0, width: 100, height: 100 } },
+      });
 
-      startAnnotationDrag(wrapper, mockMoveDirective, {
+      startAnnotationDrag(wrapper, {
         clientX: 10,
         clientY: 10,
         shiftKey: false,
       });
       await flushPromises();
 
-      moveTo(mockMoveDirective, { clientX: 50, clientY: 50 });
+      moveTo({ clientX: 50, clientY: 50 });
 
-      endAnnotationDrag(mockMoveDirective);
+      endAnnotationDrag(wrapper, { clientX: 50, clientY: 50 });
 
       vi.advanceTimersByTime(5000);
 

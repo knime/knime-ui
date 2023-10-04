@@ -15,6 +15,7 @@ const props = defineProps<Props>();
 const store = useStore();
 const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
 const isDragging = computed(() => store.state.workflow.isDragging);
+const isMoveLocked = computed(() => store.state.canvas.isMoveLocked);
 
 const isAnnotationSelected = computed(
   () => store.getters["selection/isAnnotationSelected"],
@@ -38,11 +39,15 @@ watch(
   { deep: true },
 );
 
-const { onPointerDown } = useMoveObject({
+const useMoveObjectResult = useMoveObject({
   id: props.id,
   initialPosition: computed(() => ({ x: props.bounds.x, y: props.bounds.y })),
   objectElement: computed(() => container.value as HTMLElement),
   onMoveStartCallback: () => {
+    if (isMoveLocked.value) {
+      store.commit("selection/setStartedSelectionFromAnnotationId", props.id);
+    }
+
     if (!isAnnotationSelected.value(props.id)) {
       store.dispatch("selection/deselectAllObjects");
     }
@@ -50,6 +55,15 @@ const { onPointerDown } = useMoveObject({
     store.dispatch("selection/selectAnnotation", props.id);
   },
 });
+
+const onPointerDown = (event: PointerEvent) => {
+  if (isMoveLocked.value) {
+    store.commit("selection/setStartedSelectionFromAnnotationId", props.id);
+    return;
+  }
+
+  useMoveObjectResult.onPointerDown(event);
+};
 
 useEscapeStack({
   group: "OBJECT_DRAG",
