@@ -24,7 +24,6 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/util/geometry";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { isNodeMetaNode } from "@/util/nodeUtil";
-import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -100,10 +99,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     hotkey: ["Ctrl", "S"],
     icon: SaveIcon,
     execute: ({ $store }) => $store.dispatch("workflow/saveWorkflow"),
-    condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.dirty &&
-      $store.state.workflow.activeWorkflow?.info.providerType ===
-        WorkflowInfo.ProviderTypeEnum.LOCAL,
+    condition: ({ $store }) => $store.state.workflow.activeWorkflow?.dirty,
   },
   saveAs: {
     title: "Save workflow as",
