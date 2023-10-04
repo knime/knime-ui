@@ -23,12 +23,12 @@ const hasAbortedDrag = computed(() => store.state.workflow.hasAbortedDrag);
 const isDragging = computed(() => store.state.workflow.isDragging);
 
 const isNodeConnected = computed(
-  () => store.getters["workflow/isNodeConnected"],
+  () => store.getters["workflow/isNodeConnected"]
 );
 const getNodeById = computed(() => store.getters["workflow/getNodeById"]);
 
 const isNodeSelected = computed(
-  () => store.getters["selection/isNodeSelected"],
+  () => store.getters["selection/isNodeSelected"]
 );
 
 const container = ref<SVGGElement | null>(null);
@@ -50,7 +50,7 @@ watch(
       store.dispatch("workflow/resetDragState");
     }
   },
-  { deep: true },
+  { deep: true }
 );
 
 const moveNode = () => {
@@ -65,7 +65,7 @@ const notifyNodeDraggingListeners = (x: number, y: number) => {
       new CustomEvent("node-dragging-leave", {
         bubbles: true,
         cancelable: true,
-      }),
+      })
     );
   }
 
@@ -80,7 +80,7 @@ const notifyNodeDraggingListeners = (x: number, y: number) => {
           inPorts,
           outPorts,
         },
-      }),
+      })
     );
     lastHitTarget = isEventIgnored ? null : hitTarget;
   }
@@ -110,7 +110,7 @@ const { onPointerDown } = useMoveObject({
         new CustomEvent("node-dragging-leave", {
           bubbles: true,
           cancelable: true,
-        }),
+        })
       );
       return false;
     }
@@ -126,7 +126,7 @@ const { onPointerDown } = useMoveObject({
             clientY: ptrUpEvent.clientY,
             onError: moveNode,
           },
-        }),
+        })
       );
       return false;
     }

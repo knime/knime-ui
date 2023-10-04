@@ -18,7 +18,7 @@ const isDragging = computed(() => store.state.workflow.isDragging);
 const isMoveLocked = computed(() => store.state.canvas.isMoveLocked);
 
 const isAnnotationSelected = computed(
-  () => store.getters["selection/isAnnotationSelected"],
+  () => store.getters["selection/isAnnotationSelected"]
 );
 
 const container = ref<HTMLElement | null>(null);
@@ -36,7 +36,7 @@ watch(
       store.dispatch("workflow/resetDragState");
     }
   },
-  { deep: true },
+  { deep: true }
 );
 
 const useMoveObjectResult = useMoveObject({

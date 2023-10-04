@@ -33,7 +33,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
   const zoomFactor = computed(() => store.state.canvas.zoomFactor);
   const isMoveLocked = computed(() => store.state.canvas.isMoveLocked);
   const screenToCanvasCoordinates = computed(
-    () => store.getters["canvas/screenToCanvasCoordinates"],
+    () => store.getters["canvas/screenToCanvasCoordinates"]
   );
 
   const onMoveStartCallback =
@@ -113,11 +113,11 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
 
       const deltaX = geometry.utils.snapToGrid(
         moveX - startPosition.x - clickPosition.x,
-        snapSize,
+        snapSize
       );
       const deltaY = geometry.utils.snapToGrid(
         moveY - startPosition.y - clickPosition.y,
-        snapSize,
+        snapSize
       );
 
       store.commit("workflow/setIsDragging", true);
@@ -147,7 +147,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
       eventTarget.removeEventListener(
         "lostpointercapture",
         // eslint-disable-next-line no-use-before-define
-        onLostPointerCapture,
+        onLostPointerCapture
       );
     }
 
