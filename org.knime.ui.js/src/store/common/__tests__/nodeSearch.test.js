@@ -103,7 +103,7 @@ describe("Node search partial store", () => {
     };
 
     // search is part of the node repo API
-    mockedAPI.noderepository.searchNodes.mockReturnValue(searchNodesResponse);
+    mockedAPI.noderepository.searchNodes.mockResolvedValue(searchNodesResponse);
 
     const store = mockVuexStore({
       nodeSearch: await import("@/store/common/nodeSearch"),
@@ -144,6 +144,8 @@ describe("Node search partial store", () => {
       totalNumBottomNodes: 0,
       bottomNodeSearchPage: 0,
       bottomNodesTags: [],
+      bottomAbortController: expect.anything(),
+      topAbortController: expect.anything(),
     });
   });
 
@@ -436,7 +438,7 @@ describe("Node search partial store", () => {
 
         it("searches for bottomNodes", async () => {
           const { store, availablePortTypes } = await createStore();
-          mockedAPI.noderepository.searchNodes.mockReturnValue(
+          mockedAPI.noderepository.searchNodes.mockResolvedValue(
             searchBottomNodesResponse,
           );
           store.commit("nodeSearch/setQuery", "lookup");
@@ -466,7 +468,7 @@ describe("Node search partial store", () => {
 
         it("searches for bottomNodes with append=true", async () => {
           const { store, availablePortTypes } = await createStore();
-          mockedAPI.noderepository.searchNodes.mockReturnValue(
+          mockedAPI.noderepository.searchNodes.mockResolvedValue(
             searchBottomNodesResponse,
           );
           const dummyNode = { dummy: true };

@@ -107,7 +107,7 @@ describe("Node Repository store", () => {
       },
     };
 
-    mockedAPI.noderepository.searchNodes.mockReturnValue(searchNodesResponse);
+    mockedAPI.noderepository.searchNodes.mockResolvedValue(searchNodesResponse);
     mockedAPI.noderepository.getNodesGroupedByTags.mockReturnValue(
       getNodesGroupedByTagsResponse,
     );

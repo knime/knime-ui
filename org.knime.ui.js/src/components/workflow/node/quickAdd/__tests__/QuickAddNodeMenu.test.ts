@@ -108,11 +108,12 @@ describe("QuickAddNodeMenu.vue", () => {
     mockedAPI.noderepository.getNodeRecommendations.mockReturnValue(
       nodeRecommendationsResponse,
     );
+
     mockedAPI.noderepository.searchNodes.mockImplementation(
       ({ nodesPartition }) =>
         nodesPartition === "IN_COLLECTION"
-          ? searchNodesResponse
-          : notInCollectionSearchResult,
+          ? Promise.resolve(searchNodesResponse)
+          : Promise.resolve(notInCollectionSearchResult),
     );
 
     const storeConfig = {
@@ -409,6 +410,7 @@ describe("QuickAddNodeMenu.vue", () => {
     it("display search results if query was entered", async () => {
       const { wrapper } = doMount();
       await wrapper.find(".search-bar input").setValue("search");
+      await new Promise((r) => setTimeout(r, 0));
 
       const spans = wrapper.findAll(".node > span");
 
@@ -424,8 +426,10 @@ describe("QuickAddNodeMenu.vue", () => {
     it("displays more nodes if button is pressed", async () => {
       const { wrapper } = doMount();
       await wrapper.find(".search-bar input").setValue("search");
+      await new Promise((r) => setTimeout(r, 0));
 
       await wrapper.find(".more-nodes-button").trigger("click");
+      await new Promise((r) => setTimeout(r, 0));
 
       const spans = wrapper.findAll(".node > span");
       expect(spans.length).toBe(3);
@@ -438,6 +442,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
         // trigger search
         await input.setValue("search");
+        await new Promise((r) => setTimeout(r, 0));
 
         // press enter
         await input.trigger("keydown.enter");
@@ -463,6 +468,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
           const input = wrapper.find(".search-bar input");
           await input.setValue(`some-input-for-${event}`);
+          await new Promise((r) => setTimeout(r, 0));
 
           const nodes = wrapper.findAll(".node");
           const node = nodes.at(1);
@@ -491,8 +497,10 @@ describe("QuickAddNodeMenu.vue", () => {
 
           const input = wrapper.find(".search-bar input");
           await input.setValue(`some-input-for-${event}`);
+          await new Promise((r) => setTimeout(r, 0));
 
           await wrapper.find(".more-nodes-button").trigger("click");
+          await new Promise((r) => setTimeout(r, 0));
 
           const nodes = wrapper.findAll(".node");
           expect(nodes.length).toBe(3);

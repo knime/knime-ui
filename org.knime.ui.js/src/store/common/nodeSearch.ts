@@ -181,9 +181,6 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       return;
     }
 
-    const currentPage = () =>
-      bottom ? state.bottomNodeSearchPage : state.topNodeSearchPage;
-
     if (bottom) {
       state.bottomAbortController.abort();
       commit("setBottomAbortController", new AbortController());
@@ -192,18 +189,23 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       commit("setTopAbortController", new AbortController());
     }
 
-    let searchResponse: NodeSearchResult = {
-      nodes: [],
-      totalNumNodes: 0,
-      tags: [],
-    };
+    // determine current search page
+    const lastSearchPage = bottom
+      ? state.bottomNodeSearchPage
+      : state.topNodeSearchPage;
+
+    const nextSearchPage = lastSearchPage + 1;
+    const searchPage = append ? nextSearchPage : 0;
+
+    // call the api
+    let searchResponse: NodeSearchResult;
     try {
       searchResponse = await searchNodesAPI(
         {
           q: state.query,
           tags: state.selectedTags,
           allTagsMatch: true,
-          offset: currentPage() * nodeSearchPageSize,
+          offset: searchPage * nodeSearchPageSize,
           limit: nodeSearchPageSize,
           fullTemplateInfo: true,
           nodesPartition: bottom ? "NOT_IN_COLLECTION" : "IN_COLLECTION",
@@ -219,13 +221,9 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       throw error;
     }
 
-    // update current page
+    // update current page in state AFTER the API call resolved successfully
     const prefix = bottom ? "Bottom" : "Top";
-    if (append) {
-      commit(`set${prefix}NodeSearchPage`, currentPage() + 1);
-    } else {
-      commit(`set${prefix}NodeSearchPage`, 0);
-    }
+    commit(`set${prefix}NodeSearchPage`, searchPage);
 
     // update results
     const { nodes, totalNumNodes, tags } = searchResponse;
