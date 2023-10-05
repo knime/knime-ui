@@ -32,14 +32,17 @@ const props = withDefaults(defineProps<Props>(), {
   parentWidth: null,
 });
 
-const emit = defineEmits(["widthChange", "heightChange"]);
+const emit = defineEmits<{
+  (e: "widthChange", width: number): void;
+  (e: "heightChange", height: number): void;
+}>();
 
 const { maxWidth, parentWidth, offsetByHeight, yOffset } = toRefs(props);
-let width = ref(0);
-let height = ref(1);
-let x = ref(0);
-const wrapper = ref(null);
-let resizeObserver = null;
+const width = ref(0);
+const height = ref(1);
+const x = ref(0);
+const wrapper = ref<HTMLElement | null>(null);
+let resizeObserver: ResizeObserver = null;
 
 const y = computed(() => {
   if (offsetByHeight.value) {
