@@ -198,9 +198,8 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
     const searchPage = append ? nextSearchPage : 0;
 
     // call the api
-    let searchResponse: NodeSearchResult;
     try {
-      searchResponse = await searchNodesAPI(
+      const searchResponse = await searchNodesAPI(
         {
           q: state.query,
           tags: state.selectedTags,
@@ -213,6 +212,25 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
         },
         bottom ? state.bottomAbortController : state.topAbortController,
       );
+
+      // update current page in state AFTER the API call resolved successfully
+      const prefix = bottom ? "Bottom" : "Top";
+      commit(`set${prefix}NodeSearchPage`, searchPage);
+
+      // update results
+      const { nodes, totalNumNodes, tags } = searchResponse;
+
+      const { availablePortTypes } = rootState.application;
+      const withMappedPorts = nodes.map(
+        toNodeTemplateWithExtendedPorts(availablePortTypes),
+      );
+
+      commit(`setTotalNum${prefix}Nodes`, totalNumNodes);
+      commit(
+        append ? `add${prefix}Nodes` : `set${prefix}Nodes`,
+        withMappedPorts,
+      );
+      commit(`set${prefix}NodesTags`, tags);
     } catch (error) {
       // we aborted the call so just return and do nothing
       if (error?.name === "AbortError") {
@@ -220,22 +238,6 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       }
       throw error;
     }
-
-    // update current page in state AFTER the API call resolved successfully
-    const prefix = bottom ? "Bottom" : "Top";
-    commit(`set${prefix}NodeSearchPage`, searchPage);
-
-    // update results
-    const { nodes, totalNumNodes, tags } = searchResponse;
-
-    const { availablePortTypes } = rootState.application;
-    const withMappedPorts = nodes.map(
-      toNodeTemplateWithExtendedPorts(availablePortTypes),
-    );
-
-    commit(`setTotalNum${prefix}Nodes`, totalNumNodes);
-    commit(append ? `add${prefix}Nodes` : `set${prefix}Nodes`, withMappedPorts);
-    commit(`set${prefix}NodesTags`, tags);
   },
 
   /**
