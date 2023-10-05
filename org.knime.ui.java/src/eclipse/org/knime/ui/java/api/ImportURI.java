@@ -99,7 +99,6 @@ import org.knime.workbench.editor2.InstallMissingNodesJob;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 import org.knime.workbench.ui.p2.actions.AbstractP2Action;
 
-
 /**
  * Utility methods for importing URIs (e.g. a node from a hub url).
  *
@@ -126,7 +125,8 @@ public final class ImportURI {
      *
      * @param cursorLocationSupplier
      * @param uriString the URI to import from
-     * @return {@code true} if the import was successful
+     * @return {@code true} if the import was successful or no operation was performed (e.g. an extension is already
+     *         installed), {@code false} otherwise
      */
     public static boolean importURI(final Supplier<int[]> cursorLocationSupplier, final String uriString) {
         entityImportInProgress = getEntityImport(uriString);
@@ -188,7 +188,7 @@ public final class ImportURI {
         if (isFeatureInstalled(symbolicName)) {
             showPopup("Extension cannot be installed!", "Extension " + featureName + " is already installed",
                 SWT.ICON_INFORMATION);
-            return false;
+            return true; // Changed from false with AP-20962 to not open the extension page in a browser again
         } else {
             final String[] dialogButtonLabels = {IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL};
             MessageDialog dialog = new MessageDialog(SWTUtilities.getActiveShell(), "Install Extension?", null,
@@ -262,7 +262,6 @@ public final class ImportURI {
 
         return false;
     }
-
 
     private static boolean isNodeInstalled(final NodeImport nodeImport) {
         var nodeTemplate = NodeTemplateId.callWithNodeTemplateIdVariants(nodeImport.getCanonicalNodeFactory(),
