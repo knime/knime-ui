@@ -2,6 +2,7 @@
 import Description from "webapps-common/ui/components/Description.vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
+import CloseButton from "@/components/common/CloseButton.vue";
 
 import { API } from "@api";
 
@@ -14,6 +15,7 @@ export default {
     Description,
     NodeFeatureList,
     ExternalResourcesList,
+    CloseButton,
   },
   props: {
     selectedNode: {
@@ -24,7 +26,12 @@ export default {
         (typeof node.nodeFactory?.className === "string" &&
           typeof node.name === "string"),
     },
+    showCloseButton: {
+      type: Boolean,
+      default: false,
+    },
   },
+  emits: ["close"],
   data() {
     return {
       descriptionData: null,
@@ -85,7 +92,12 @@ export default {
     <div class="header">
       <div class="header-content">
         <h2>{{ title }}</h2>
-        <slot name="header-action" />
+        <!-- <slot name="header-action" /> -->
+        <CloseButton
+          v-if="showCloseButton"
+          class="close-button"
+          @close="$emit('close')"
+        />
       </div>
       <hr />
     </div>
@@ -181,6 +193,11 @@ export default {
       align-items: center;
       justify-content: center;
     }
+  }
+
+  & .close-button {
+    margin-top: 2px;
+    margin-right: -15px;
   }
 
   & .description {

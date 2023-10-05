@@ -13,9 +13,11 @@ export const TABS = {
   AI_CHAT: "aiChat",
 } as const;
 
+type TabKeys = keyof typeof TABS;
+type TabValues = (typeof TABS)[TabKeys];
 export interface PanelState {
   expanded: boolean;
-  activeTab: Record<string, keyof typeof TABS>;
+  activeTab: Record<string, TabValues>;
   isExtensionPanelOpen: boolean;
 }
 

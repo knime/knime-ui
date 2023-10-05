@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState } from "vuex";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CircleHelp from "webapps-common/ui/assets/img/icons/circle-help.svg";
@@ -37,27 +36,15 @@ export default defineComponent({
       default: false,
     },
   },
+  emits: ["helpIconClick"],
   data() {
     return {
       nodeHovered: false,
     };
   },
-  computed: {
-    ...mapState("panel", ["isExtensionPanelOpen"]),
-  },
   methods: {
     getNodePreview() {
       return this.$refs.nodePreview;
-    },
-
-    onClick() {
-      if (!this.isSelected || !this.isExtensionPanelOpen) {
-        this.$store.dispatch("panel/openExtensionPanel");
-        this.$store.commit("nodeRepository/setSelectedNode", this.nodeTemplate);
-        return;
-      }
-
-      this.$store.dispatch("panel/closeExtensionPanel");
     },
 
     onPointerEnter() {
@@ -97,7 +84,7 @@ export default defineComponent({
         'description-icon',
         { 'selected-icon': isSelected, 'hovered-icon': nodeHovered },
       ]"
-      @click="onClick"
+      @click="$emit('helpIconClick')"
       @dblclick.stop
     >
       <CircleHelp />

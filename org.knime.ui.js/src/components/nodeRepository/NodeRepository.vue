@@ -6,8 +6,8 @@ import SearchBar from "@/components/common/SearchBar.vue";
 import CloseableTagList from "./CloseableTagList.vue";
 import CategoryResults from "./CategoryResults.vue";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
-import CloseButton from "@/components/common/CloseButton.vue";
 import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
+import { TABS } from "@/store/panel";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
@@ -19,7 +19,6 @@ export default {
     SearchBar,
     CategoryResults,
     NodeDescription,
-    CloseButton,
   },
   computed: {
     ...mapState("nodeRepository", [
@@ -27,12 +26,17 @@ export default {
       "nodesPerCategory",
       "selectedNode",
     ]),
-    ...mapState("panel", ["isExtensionPanelOpen"]),
+    ...mapState("application", ["activeProjectId"]),
+    ...mapState("panel", ["activeTab", "isExtensionPanelOpen"]),
     ...mapGetters("nodeRepository", {
       showSearchResults: "searchIsActive",
       isSelectedNodeVisible: "isSelectedNodeVisible",
       tags: "tagsOfVisibleNodes",
     }),
+
+    isNodeRepositoryTabActive() {
+      return this.activeTab[this.activeProjectId] === TABS.NODE_REPOSITORY;
+    },
 
     /* Search and Filter */
     selectedTags: {
@@ -75,6 +79,16 @@ export default {
         this.$store.dispatch("nodeRepository/clearSearchParams");
       }
     },
+
+    toggleNodeDescription({ isSelected, nodeTemplate }) {
+      if (!isSelected || !this.isExtensionPanelOpen) {
+        this.$store.dispatch("panel/openExtensionPanel");
+        this.$store.commit("nodeRepository/setSelectedNode", nodeTemplate);
+        return;
+      }
+
+      this.$store.dispatch("panel/closeExtensionPanel");
+    },
   },
 };
 </script>
@@ -106,20 +120,22 @@ export default {
       />
       <hr v-if="!topNodes || tags.length" />
     </div>
-    <SidebarSearchResults v-if="showSearchResults" ref="searchResults" />
-    <CategoryResults v-else />
-    <Portal v-if="isExtensionPanelOpen" to="extension-panel">
+    <SidebarSearchResults
+      v-if="showSearchResults"
+      ref="searchResults"
+      @show-node-description="toggleNodeDescription"
+    />
+    <CategoryResults v-else @show-node-description="toggleNodeDescription" />
+    <Portal
+      v-if="isExtensionPanelOpen && isNodeRepositoryTabActive"
+      to="extension-panel"
+    >
       <Transition name="extension-panel">
         <NodeDescription
+          show-close-button
           :selected-node="isSelectedNodeVisible ? selectedNode : null"
-        >
-          <template #header-action>
-            <CloseButton
-              class="close-button"
-              @close="$store.dispatch('panel/closeExtensionPanel')"
-            />
-          </template>
-        </NodeDescription>
+          @close="$store.dispatch('panel/closeExtensionPanel')"
+        />
       </Transition>
     </Portal>
   </div>

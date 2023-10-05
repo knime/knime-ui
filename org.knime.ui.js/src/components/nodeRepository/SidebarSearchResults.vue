@@ -12,6 +12,7 @@ export default {
     DraggableNodeTemplate,
     SearchResults,
   },
+  emits: ["showNodeDescription"],
   computed: {
     ...mapState("nodeRepository", [
       "topNodes",
@@ -63,10 +64,16 @@ export default {
     :has-node-collection-active="hasNodeCollectionActive"
   >
     <template #topNodeTemplate="slotProps">
-      <DraggableNodeTemplate v-bind="slotProps" />
+      <DraggableNodeTemplate
+        v-bind="slotProps"
+        @show-node-description="$emit('showNodeDescription', slotProps)"
+      />
     </template>
     <template #bottomNodeTemplate="slotProps">
-      <DraggableNodeTemplate v-bind="slotProps" />
+      <DraggableNodeTemplate
+        v-bind="slotProps"
+        @show-node-description="$emit('showNodeDescription', slotProps)"
+      />
     </template>
   </SearchResults>
 </template>

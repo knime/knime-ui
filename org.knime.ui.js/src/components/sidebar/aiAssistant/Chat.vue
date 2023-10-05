@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import ChatMessage from "./ChatMessage.vue";
-import ChatControls from "./ChatControls.vue";
 import { ref, watch, nextTick, computed } from "vue";
 import { useStore } from "vuex";
+
+import ChatMessage from "./ChatMessage.vue";
+import ChatControls from "./ChatControls.vue";
 
 const props = defineProps({
   chainType: {
@@ -15,6 +16,8 @@ const props = defineProps({
     default: () => "",
   },
 });
+
+const emit = defineEmits(["showNodeDescription"]);
 
 const messageArea = ref(null);
 
@@ -82,6 +85,7 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
         class="chat-message"
         v-bind="message"
         @node-templates-loaded="scrollToBottomAfterNextTick"
+        @show-node-description="emit('showNodeDescription', $event)"
       />
       <ChatMessage
         v-if="isProcessing"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+
 import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import LoadingIcon from "webapps-common/ui/assets/img/icons/reload.svg";
@@ -8,11 +9,12 @@ import Button from "webapps-common/ui/components/Button.vue";
 
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
+
 import InstallableExtension from "./InstallableExtension.vue";
 import useNodeTemplates from "./useNodeTemplates";
 import type { NodeWithExtensionInfo } from "./types";
 
-const emit = defineEmits(["nodeTemplatesLoaded"]);
+const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
 
 interface Props {
   role: string;
@@ -96,7 +98,10 @@ const hasBuildingBlocks = computed(
         class="node-list"
       >
         <template #item="slotProps">
-          <DraggableNodeTemplate v-bind="slotProps" />
+          <DraggableNodeTemplate
+            v-bind="slotProps"
+            @show-node-description="$emit('showNodeDescription', slotProps)"
+          />
         </template>
       </NodeList>
       <div v-if="hasUninstalledExtensions" class="installable-extensions">

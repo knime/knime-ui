@@ -1,4 +1,8 @@
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
+import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import { API } from "@api";
+import type { RootStoreState } from "./types";
 
 /**
  * This file contains the Vuex store module for the AI assistant.
@@ -36,6 +40,7 @@ export interface AiAssistantState {
     incomingTokens: string;
     projectAndWorkflowIds: ProjectAndWorkflowIds | null;
   };
+  selectedNodeTemplate: NodeTemplate | null;
 }
 
 export const state = (): AiAssistantState => ({
@@ -56,9 +61,10 @@ export const state = (): AiAssistantState => ({
     incomingTokens: "",
     projectAndWorkflowIds: null,
   },
+  selectedNodeTemplate: null,
 });
 
-export const mutations = {
+export const mutations: MutationTree<AiAssistantState> = {
   setHubID(state, hubID) {
     state.hubID = hubID;
   },
@@ -95,9 +101,12 @@ export const mutations = {
   setConversationId(state, { chainType, conversationId }) {
     state[chainType].conversationId = conversationId;
   },
+  setSelectedNodeTemplate(state, value) {
+    state.selectedNodeTemplate = value;
+  },
 };
 
-export const actions = {
+export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   getHubID({ commit }) {
     commit("setHubID", API.desktop.getHubID());
   },
@@ -189,4 +198,4 @@ export const actions = {
   },
 };
 
-export const getters = {};
+export const getters: GetterTree<AiAssistantState, RootStoreState> = {};

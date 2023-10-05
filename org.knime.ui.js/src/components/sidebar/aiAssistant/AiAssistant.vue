@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, onBeforeMount } from "vue";
-import { useStore } from "vuex";
+import { computed, ref, onBeforeMount, watch } from "vue";
 import { API } from "@api";
 
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
+import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
+import { useStore } from "@/composables/useStore";
+import { TABS } from "@/store/panel";
+
 import Disclaimer from "./Disclaimer.vue";
 import Chat from "./Chat.vue";
 
@@ -21,6 +24,17 @@ This is an experimental service, USE AT YOUR OWN RISK.
 const store = useStore();
 store.dispatch("aiAssistant/getHubID");
 const hubId = computed(() => store.state.aiAssistant.hubID);
+const selectedNodeTemplate = computed(
+  () => store.state.aiAssistant.selectedNodeTemplate,
+);
+
+const activeProjectId = computed(() => store.state.application.activeProjectId);
+const isExtensionPanelOpen = computed(
+  () => store.state.panel.isExtensionPanelOpen,
+);
+const isAIChatTabActive = computed(
+  () => store.state.panel.activeTab[activeProjectId.value] === TABS.AI_CHAT,
+);
 
 const showChat = computed(() => {
   const spaceProviders = store.state.spaces.spaceProviders;
@@ -53,6 +67,29 @@ onBeforeMount(async () => {
     consola.error("Could not fetch uiStrings.", error);
   }
 });
+
+watch(isExtensionPanelOpen, (isOpen) => {
+  if (!isOpen) {
+    setTimeout(() => {
+      store.commit("aiAssistant/setSelectedNodeTemplate", null);
+      // eslint-disable-next-line no-magic-numbers
+    }, 50);
+  }
+});
+
+const toggleNodeDescription = ({ isSelected, nodeTemplate }) => {
+  if (!isSelected) {
+    store.dispatch("panel/openExtensionPanel");
+    store.commit("aiAssistant/setSelectedNodeTemplate", nodeTemplate);
+    return;
+  }
+
+  store.dispatch("panel/closeExtensionPanel");
+};
+
+const closeNodeDescription = () => {
+  store.dispatch("panel/closeExtensionPanel");
+};
 </script>
 
 <template>
@@ -75,11 +112,13 @@ onBeforeMount(async () => {
         v-show="chainType === 'qa'"
         chain-type="qa"
         :system-prompt="uiStrings.welcome_message.qa"
+        @show-node-description="toggleNodeDescription"
       />
       <Chat
         v-show="chainType === 'build'"
         chain-type="build"
         :system-prompt="uiStrings.welcome_message.build"
+        @show-node-description="toggleNodeDescription"
       />
     </template>
     <div v-else class="login-notice">
@@ -91,6 +130,18 @@ onBeforeMount(async () => {
         to {{ hubId }}.
       </div>
     </div>
+    <Portal
+      v-if="isExtensionPanelOpen && isAIChatTabActive"
+      to="extension-panel"
+    >
+      <Transition name="extension-panel">
+        <NodeDescription
+          show-close-button
+          :selected-node="selectedNodeTemplate"
+          @close="closeNodeDescription"
+        />
+      </Transition>
+    </Portal>
   </div>
 </template>
 

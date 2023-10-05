@@ -9,6 +9,8 @@ export default {
     NodeCategory,
     ScrollViewContainer,
   },
+  emits: ["showNodeDescription"],
+
   computed: {
     ...mapState("nodeRepository", [
       "selectedNode",
@@ -48,6 +50,7 @@ export default {
           :nodes="nodes"
           :selected-node="selectedNode"
           @select-tag="onSelectTag"
+          @show-node-description="$emit('showNodeDescription', $event)"
         />
       </template>
     </div>

@@ -24,7 +24,7 @@ export default {
       required: true,
     },
   },
-  emits: ["selectTag"],
+  emits: ["selectTag", "showNodeDescription"],
   computed: {
     hasMoreNodes() {
       return this.nodes.length >= CATEGORY_LIMIT;
@@ -48,7 +48,10 @@ export default {
       @show-more="$emit('selectTag', tag)"
     >
       <template #item="itemProps">
-        <DraggableNodeTemplate v-bind="itemProps" />
+        <DraggableNodeTemplate
+          v-bind="itemProps"
+          @show-node-description="$emit('showNodeDescription', itemProps)"
+        />
       </template>
       <template #more-button>Show all</template>
     </NodeList>

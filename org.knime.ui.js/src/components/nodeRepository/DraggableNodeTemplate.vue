@@ -26,6 +26,7 @@ export default {
       default: false,
     },
   },
+  emits: ["showNodeDescription"],
   data() {
     return {
       dragGhost: null,
@@ -139,5 +140,6 @@ export default {
     @dragend="onDragEnd"
     @dblclick="onDoubleClick"
     @drag="onDrag"
+    @help-icon-click="$emit('showNodeDescription')"
   />
 </template>
