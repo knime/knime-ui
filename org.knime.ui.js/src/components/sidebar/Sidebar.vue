@@ -13,6 +13,7 @@ import MetainfoIcon from "@/assets/metainfo.svg";
 import { TABS } from "@/store/panel";
 
 import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
+import SidebarExtensionPanel from "./SidebarExtensionPanel.vue";
 
 type SidebarSection = {
   name: string;
@@ -48,6 +49,7 @@ export default defineComponent({
     AiAssistant: defineAsyncComponent(
       () => import("@/components/sidebar/aiAssistant/AiAssistant.vue"),
     ),
+    SidebarExtensionPanel,
   },
   data() {
     return {
@@ -55,9 +57,8 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState("panel", ["activeTab", "expanded"]),
+    ...mapState("panel", ["activeTab", "expanded", "isExtensionPanelOpen"]),
     ...mapState("application", ["activeProjectId"]),
-    ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
 
     sidebarSections(): Array<SidebarSection> {
@@ -126,8 +127,10 @@ export default defineComponent({
   },
   methods: {
     ...mapMutations("panel", ["closePanel", "toggleExpanded"]),
-    ...mapActions("panel", ["setCurrentProjectActiveTab"]),
-    ...mapActions("nodeRepository", ["closeDescriptionPanel"]),
+    ...mapActions("panel", [
+      "setCurrentProjectActiveTab",
+      "closeExtensionPanel",
+    ]),
 
     getDefaultTab() {
       return this.isWorkflowEmpty
@@ -158,7 +161,7 @@ export default defineComponent({
         this.setCurrentProjectActiveTab(tabName);
       }
 
-      this.closeDescriptionPanel();
+      this.closeExtensionPanel();
     },
   },
 });
@@ -185,7 +188,7 @@ export default defineComponent({
       width="360px"
       title="Open sidebar"
       :expanded="expanded"
-      :disabled="isDescriptionPanelOpen && isTabActive(TABS.NODE_REPOSITORY)"
+      :disabled="isExtensionPanelOpen"
       @toggle-expand="toggleExpanded"
     >
       <TransitionGroup name="tab" tag="span">
@@ -221,7 +224,7 @@ export default defineComponent({
       </TransitionGroup>
     </LeftCollapsiblePanel>
 
-    <PortalTarget tag="div" name="extension-panel" />
+    <SidebarExtensionPanel />
   </div>
 </template>
 

@@ -236,7 +236,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await dispatch("resetCanvasMode");
     await dispatch("toggleContextMenu");
     dispatch("workflow/setEditableAnnotationId", null, { root: true });
-    dispatch("nodeRepository/closeDescriptionPanel", null, { root: true });
+    dispatch("panel/closeExtensionPanel", null, { root: true });
 
     // clean up
     const {

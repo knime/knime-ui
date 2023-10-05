@@ -5,7 +5,8 @@ import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
 import CloseableTagList from "./CloseableTagList.vue";
 import CategoryResults from "./CategoryResults.vue";
-import NodeDescriptionOverlay from "./NodeDescriptionOverlay.vue";
+import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
+import CloseButton from "@/components/common/CloseButton.vue";
 import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
@@ -17,14 +18,16 @@ export default {
     CloseableTagList,
     SearchBar,
     CategoryResults,
-    NodeDescriptionOverlay,
+    NodeDescription,
+    CloseButton,
   },
   computed: {
     ...mapState("nodeRepository", [
       "topNodes",
       "nodesPerCategory",
-      "isDescriptionPanelOpen",
+      "selectedNode",
     ]),
+    ...mapState("panel", ["isExtensionPanelOpen"]),
     ...mapGetters("nodeRepository", {
       showSearchResults: "searchIsActive",
       isSelectedNodeVisible: "isSelectedNodeVisible",
@@ -51,8 +54,8 @@ export default {
   },
   watch: {
     // deselect node on panel close
-    isDescriptionPanelOpen(val) {
-      if (val === false) {
+    isExtensionPanelOpen(isOpen) {
+      if (!isOpen) {
         setTimeout(() => {
           this.setSelectedNode(null);
         }, DESELECT_NODE_DELAY);
@@ -105,9 +108,18 @@ export default {
     </div>
     <SidebarSearchResults v-if="showSearchResults" ref="searchResults" />
     <CategoryResults v-else />
-    <Portal to="extension-panel">
+    <Portal v-if="isExtensionPanelOpen" to="extension-panel">
       <Transition name="extension-panel">
-        <NodeDescriptionOverlay v-if="isDescriptionPanelOpen" />
+        <NodeDescription
+          :selected-node="isSelectedNodeVisible ? selectedNode : null"
+        >
+          <template #header-action>
+            <CloseButton
+              class="close-button"
+              @close="$store.dispatch('panel/closeExtensionPanel')"
+            />
+          </template>
+        </NodeDescription>
       </Transition>
     </Portal>
   </div>
@@ -125,6 +137,11 @@ export default {
     border: none;
     margin: 0;
   }
+}
+
+& .close-button {
+  margin-top: 2px;
+  margin-right: -15px;
 }
 
 .header {

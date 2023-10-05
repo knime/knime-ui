@@ -33,24 +33,20 @@ export default {
     };
   },
   computed: {
-    ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
+    ...mapState("panel", ["isExtensionPanelOpen"]),
     ...mapState("workflow", { workflow: "activeWorkflow" }),
     ...mapGetters("workflow", ["isWritable"]),
     ...mapGetters("canvas", ["getVisibleFrame"]),
   },
   methods: {
     ...mapMutations("nodeRepository", ["setSelectedNode"]),
-    ...mapActions("nodeRepository", [
-      "openDescriptionPanel",
-      "closeDescriptionPanel",
-      "setDraggingNodeTemplate",
-    ]),
+    ...mapActions("nodeRepository", ["setDraggingNodeTemplate"]),
     ...mapActions("workflow", { addNodeToWorkflow: "addNode" }),
 
     onDragStart(e) {
       // close description panel
-      this.shouldSelectOnAbort = this.isSelected && this.isDescriptionPanelOpen;
-      this.closeDescriptionPanel();
+      this.shouldSelectOnAbort = this.isSelected && this.isExtensionPanelOpen;
+      this.$store.dispatch("panel/closeExtensionPanel");
       this.setDraggingNodeTemplate(this.nodeTemplate);
 
       // Fix for cursor style for Firefox
@@ -105,7 +101,7 @@ export default {
       // if drag is aborted and node was selected before, select it again
       if (this.shouldSelectOnAbort) {
         this.setSelectedNode(this.nodeTemplate);
-        this.openDescriptionPanel();
+        this.$store.dispatch("panel/openExtensionPanel");
       }
     },
     onDoubleClick() {

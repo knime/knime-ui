@@ -31,7 +31,6 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
   selectedNode: NodeTemplateWithExtendedPorts;
   isDraggingNode: boolean;
   draggedNodeData: NodeTemplateWithExtendedPorts;
-  isDescriptionPanelOpen: boolean;
 
   nodeTemplates: Record<string, NodeTemplate>;
 }
@@ -49,7 +48,6 @@ export const state = (): NodeRepositoryState => ({
   selectedNode: null,
   isDraggingNode: false,
   draggedNodeData: null,
-  isDescriptionPanelOpen: false,
 
   /* node templates */
   nodeTemplates: {},
@@ -86,10 +84,6 @@ export const mutations: MutationTree<NodeRepositoryState> = {
 
   setDraggedNodeData(state, value) {
     state.draggedNodeData = value;
-  },
-
-  setDescriptionPanel(state, value) {
-    state.isDescriptionPanelOpen = value;
   },
 };
 
@@ -145,14 +139,6 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     commit("setTotalNumCategories", null);
     commit("setCategoryPage", 0);
     commit("setCategoryScrollPosition", 0);
-  },
-
-  openDescriptionPanel({ commit }) {
-    commit("setDescriptionPanel", true);
-  },
-
-  closeDescriptionPanel({ commit }) {
-    commit("setDescriptionPanel", false);
   },
 
   async resetSearchAndCategories({ dispatch, getters }) {

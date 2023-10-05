@@ -43,7 +43,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState("nodeRepository", ["isDescriptionPanelOpen"]),
+    ...mapState("panel", ["isExtensionPanelOpen"]),
   },
   methods: {
     getNodePreview() {
@@ -51,13 +51,13 @@ export default defineComponent({
     },
 
     onClick() {
-      if (!this.isSelected || !this.isDescriptionPanelOpen) {
-        this.$store.dispatch("nodeRepository/openDescriptionPanel");
+      if (!this.isSelected || !this.isExtensionPanelOpen) {
+        this.$store.dispatch("panel/openExtensionPanel");
         this.$store.commit("nodeRepository/setSelectedNode", this.nodeTemplate);
         return;
       }
 
-      this.$store.dispatch("nodeRepository/closeDescriptionPanel");
+      this.$store.dispatch("panel/closeExtensionPanel");
     },
 
     onPointerEnter() {

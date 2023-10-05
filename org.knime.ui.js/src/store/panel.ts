@@ -16,11 +16,13 @@ export const TABS = {
 export interface PanelState {
   expanded: boolean;
   activeTab: Record<string, keyof typeof TABS>;
+  isExtensionPanelOpen: boolean;
 }
 
 export const state = (): PanelState => ({
   expanded: true,
   activeTab: {},
+  isExtensionPanelOpen: false,
 });
 
 export const actions: ActionTree<PanelState, RootStoreState> = {
@@ -30,6 +32,14 @@ export const actions: ActionTree<PanelState, RootStoreState> = {
       return;
     }
     commit("setActiveTab", { projectId, activeTab });
+  },
+
+  openExtensionPanel({ commit }) {
+    commit("setExtensionPanelOpen", true);
+  },
+
+  closeExtensionPanel({ commit }) {
+    commit("setExtensionPanelOpen", false);
   },
 };
 
@@ -46,5 +56,8 @@ export const mutations: MutationTree<PanelState> = {
   },
   closePanel(state) {
     state.expanded = false;
+  },
+  setExtensionPanelOpen(state, val) {
+    state.isExtensionPanelOpen = val;
   },
 };
