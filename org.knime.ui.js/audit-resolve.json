@@ -1,0 +1,11 @@
+{
+  "decisions": {
+    "1094239|postcss": {
+      "decision": "ignore",
+      "madeAt": 1696428457613,
+      "expiresAt": 1699020449907
+    }
+  },
+  "rules": {},
+  "version": 1
+}
