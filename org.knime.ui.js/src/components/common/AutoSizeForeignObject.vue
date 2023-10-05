@@ -1,113 +1,92 @@
-<script>
+<script setup lang="ts">
+import {
+  ref,
+  computed,
+  watch,
+  toRefs,
+  onMounted,
+  nextTick,
+  onBeforeUnmount,
+} from "vue";
+
 /**
  * A <foreignObject> that can be used in SVG to render HTML. It automatically updates the size based on the contents.
  * Updates to the contents can be done via `adjustDimensions` method.
  * It offers limits to the size and always centers around a given parentWidth. It issues 'width' and 'height' events
  * when the size is adjusted so other drawings can update.
  */
-export default {
-  props: {
-    /**
-     * content that will be rendered in the wrapper
-     */
-    value: {
-      type: String,
-      default: "",
-    },
-    /**
-     * Max width of the element.
-     */
-    maxWidth: {
-      type: Number,
-      default: 1000,
-    },
-    /**
-     * Optional y-offset relative to the default position.
-     */
-    yOffset: {
-      type: Number,
-      default: 0,
-    },
-    /**
-     * Optional The element is moved on y-axis by the mesaured height (in addition to yOffset).
-     */
-    offsetByHeight: {
-      type: Boolean,
-      default: false,
-    },
-    /**
-     * Optional the width of the (visual) parent to center around.
-     */
-    parentWidth: {
-      type: Number,
-      default: null,
-    },
-  },
 
-  emits: ["widthChange", "heightChange"],
-
-  data() {
-    return {
-      width: this.maxWidth,
-      // A height of at least 1px is required for Firefox
-      // so that the wrapper's bounding rect is calculated correctly
-      height: 1,
-      x: 0,
-    };
-  },
-
-  computed: {
-    y() {
-      if (this.offsetByHeight) {
-        return -this.height + this.yOffset;
-      }
-      return this.yOffset;
-    },
-  },
-
-  watch: {
-    value() {
-      this.width = this.maxWidth;
-    },
-  },
-
-  async mounted() {
-    this.centerAroundParentWidth();
-    await this.$nextTick();
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { contentRect } = entry;
-        this.width = contentRect.width;
-        this.height = contentRect.height;
-
-        this.centerAroundParentWidth();
-        this.emitDimensions();
-      }
-    });
-
-    resizeObserver.observe(this.$refs.wrapper);
-
-    this.resizeObserver = resizeObserver;
-  },
-
-  beforeUnmount() {
-    this.resizeObserver?.disconnect();
-  },
-
-  methods: {
-    centerAroundParentWidth() {
-      if (this.parentWidth !== null) {
-        this.x = (this.parentWidth - this.width) / 2;
-      }
-    },
-
-    emitDimensions() {
-      this.$emit("widthChange", this.width);
-      this.$emit("heightChange", this.height);
-    },
-  },
+type Props = {
+  value?: string;
+  maxWidth?: number;
+  yOffset: number;
+  offsetByHeight?: boolean;
+  parentWidth: number;
 };
+
+const props = withDefaults(defineProps<Props>(), {
+  value: "",
+  maxWidth: 1000,
+  yOffset: 0,
+  offsetByHeight: false,
+  parentWidth: null,
+});
+
+const emit = defineEmits(["widthChange", "heightChange"]);
+
+const { maxWidth, parentWidth, offsetByHeight, yOffset } = toRefs(props);
+let width = ref(0);
+let height = ref(1);
+let x = ref(0);
+const wrapper = ref(null);
+let resizeObserver = null;
+
+const y = computed(() => {
+  if (offsetByHeight.value) {
+    return -height.value + yOffset.value;
+  }
+  return yOffset.value;
+});
+
+watch(
+  maxWidth,
+  () => {
+    width.value = maxWidth.value;
+  },
+  { immediate: true },
+);
+
+const centerAroundParentWidth = () => {
+  if (parentWidth.value !== null) {
+    x.value = (parentWidth.value - width.value) / 2;
+  }
+};
+
+const emitDimensions = () => {
+  emit("widthChange", width.value);
+  emit("heightChange", height.value);
+};
+
+onMounted(async () => {
+  centerAroundParentWidth();
+  await nextTick();
+
+  resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const { contentRect } = entry;
+      width.value = contentRect.width;
+      height.value = contentRect.height;
+      centerAroundParentWidth();
+      emitDimensions();
+    }
+  });
+
+  resizeObserver.observe(wrapper.value);
+});
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+});
 </script>
 
 <template>
