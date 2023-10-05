@@ -2,6 +2,7 @@
 import { mapGetters } from "vuex";
 import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
+import { isNodeComponent } from "@/util/nodeUtil";
 
 /**
  * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)
@@ -15,13 +16,25 @@ export default {
     ...mapGetters("selection", ["singleSelectedNode"]),
     ...mapGetters("workflow", ["getNodeName", "getNodeFactory"]),
     showNodeDescription() {
-      // do not show description for metanodes and components
-      return this.singleSelectedNode && this.singleSelectedNode.kind === "node";
+      // do not show description for metanodes
+      return (
+        this.singleSelectedNode && this.singleSelectedNode.kind !== "metanode"
+      );
+    },
+    isComponentSelected() {
+      return isNodeComponent(this.singleSelectedNode);
     },
     selectedNode() {
+      if (this.isComponentSelected) {
+        const { id, name } = this.singleSelectedNode;
+
+        return { id, name };
+      }
+
       // transform this into a node repo like node object
       const { id } = this.singleSelectedNode;
       return {
+        id,
         name: this.getNodeName(id),
         nodeFactory: this.getNodeFactory(id),
       };
@@ -36,6 +49,7 @@ export default {
       v-if="showNodeDescription"
       class="node-description"
       :selected-node="selectedNode"
+      :is-component="isComponentSelected"
     />
     <WorkflowMetadata v-else key="workflow-metadata" />
   </div>

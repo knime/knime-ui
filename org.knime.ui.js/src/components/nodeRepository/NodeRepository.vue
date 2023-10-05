@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapMutations } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
@@ -61,7 +61,7 @@ export default {
     isExtensionPanelOpen(isOpen) {
       if (!isOpen) {
         setTimeout(() => {
-          this.setSelectedNode(null);
+          this.$store.commit("nodeRepository/setSelectedNode", null);
         }, DESELECT_NODE_DELAY);
       }
     },
@@ -72,7 +72,6 @@ export default {
     }
   },
   methods: {
-    ...mapMutations("nodeRepository", ["setSelectedNode"]),
     /* Navigation */
     onBreadcrumbClick(e) {
       if (e.id === "clear") {

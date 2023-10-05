@@ -1,16 +1,26 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from "vue";
+import { mapState } from "vuex";
+
 import Description from "webapps-common/ui/components/Description.vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import CloseButton from "@/components/common/CloseButton.vue";
 
 import { API } from "@api";
+import type { NodeTemplate } from "@/api/gateway-api/generated-api";
+import { runInEnvironment } from "@/environment";
+
+type SelectedNode = Partial<Pick<NodeTemplate, "nodeFactory">> & {
+  id: string;
+  name: string;
+};
 
 /*
  * Base component for the NodeDescriptionOverlay for the nodeRepo, also used in the ContextAwareDescription for nodes
  * of the workflow
  */
-export default {
+export default defineComponent({
   components: {
     Description,
     NodeFeatureList,
@@ -19,14 +29,14 @@ export default {
   },
   props: {
     selectedNode: {
-      type: Object,
+      type: Object as PropType<SelectedNode | null>,
       default: null,
-      validator: (node) =>
-        node === null ||
-        (typeof node.nodeFactory?.className === "string" &&
-          typeof node.name === "string"),
     },
     showCloseButton: {
+      type: Boolean,
+      default: false,
+    },
+    isComponent: {
       type: Boolean,
       default: false,
     },
@@ -38,10 +48,12 @@ export default {
     };
   },
   computed: {
+    ...mapState("application", ["availablePortTypes"]),
     title() {
       if (!this.selectedNode) {
         return "";
       }
+
       return this.selectedNode.name;
     },
   },
@@ -56,18 +68,43 @@ export default {
           return;
         }
 
-        this.descriptionData = await this.$store.dispatch(
-          "nodeRepository/getNodeDescription",
-          { selectedNode },
-        );
+        if (this.isComponent) {
+          await this.loadComponentDescription();
+          return;
+        }
 
-        this.redirectLinks(API.desktop.openUrlInExternalBrowser);
+        await this.loadNodeDescription();
+
+        runInEnvironment({
+          DESKTOP: () => {
+            this.redirectLinks(API.desktop.openUrlInExternalBrowser);
+          },
+        });
       },
     },
   },
 
   methods: {
-    async redirectLinks(redirect) {
+    async loadNodeDescription() {
+      this.descriptionData = await this.$store.dispatch(
+        "nodeRepository/getNodeDescription",
+        { selectedNode: this.selectedNode },
+      );
+    },
+
+    async loadComponentDescription() {
+      const data = await this.$store.dispatch(
+        "nodeRepository/getComponentDescription",
+        { nodeId: this.selectedNode.id },
+      );
+
+      this.descriptionData = {
+        ...data,
+        description: data.description.value,
+      };
+    },
+
+    async redirectLinks(redirect: (params: { url: string }) => void) {
       await this.$nextTick();
       const descriptionEl = document.querySelector("#node-description-html");
 
@@ -84,7 +121,7 @@ export default {
       });
     },
   },
-};
+});
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapGetters, mapMutations, mapState } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 import { KnimeMIME } from "@/mixins/dropNode";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
 import { geometry } from "@/util/geometry";
@@ -30,7 +30,7 @@ export default {
   data() {
     return {
       dragGhost: null,
-      shouldSelectOnAbort: false,
+      shouldShowDescriptionOnAbort: false,
     };
   },
   computed: {
@@ -40,13 +40,13 @@ export default {
     ...mapGetters("canvas", ["getVisibleFrame"]),
   },
   methods: {
-    ...mapMutations("nodeRepository", ["setSelectedNode"]),
     ...mapActions("nodeRepository", ["setDraggingNodeTemplate"]),
     ...mapActions("workflow", { addNodeToWorkflow: "addNode" }),
 
     onDragStart(e) {
       // close description panel
-      this.shouldSelectOnAbort = this.isSelected && this.isExtensionPanelOpen;
+      this.shouldShowDescriptionOnAbort =
+        this.isSelected && this.isExtensionPanelOpen;
       this.$store.dispatch("panel/closeExtensionPanel");
       this.setDraggingNodeTemplate(this.nodeTemplate);
 
@@ -99,10 +99,9 @@ export default {
       }
     },
     onDragAbort() {
-      // if drag is aborted and node was selected before, select it again
-      if (this.shouldSelectOnAbort) {
-        this.setSelectedNode(this.nodeTemplate);
-        this.$store.dispatch("panel/openExtensionPanel");
+      // if drag is aborted and node was showing the description before, show it again
+      if (this.shouldShowDescriptionOnAbort) {
+        this.$emit("showNodeDescription");
       }
     },
     onDoubleClick() {

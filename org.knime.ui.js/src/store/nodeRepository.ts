@@ -2,11 +2,13 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
+import type { ComponentMetadata } from "@/api/custom-types";
 
 import {
-  toNodeDescriptionWithExtendedPorts,
+  toNativeNodeDescriptionWithExtendedPorts,
   toNodeTemplateWithExtendedPorts,
   type NodeTemplateWithExtendedPorts,
+  toComponentNodeDescriptionWithExtendedPorts,
 } from "@/util/portDataMapper";
 
 import * as nodeSearch from "./common/nodeSearch";
@@ -131,7 +133,23 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     });
 
     const { availablePortTypes } = rootState.application;
-    return toNodeDescriptionWithExtendedPorts(availablePortTypes)(node);
+    return toNativeNodeDescriptionWithExtendedPorts(availablePortTypes)(node);
+  },
+
+  async getComponentDescription({ rootState, rootGetters }, { nodeId }) {
+    const { projectId, workflowId } =
+      rootGetters["workflow/projectAndWorkflowIds"];
+
+    const node = (await API.node.getComponentDescription({
+      nodeId,
+      projectId,
+      workflowId,
+    })) as ComponentMetadata; // TODO: NXT-2023 - remove type cast
+
+    const { availablePortTypes } = rootState.application;
+    return toComponentNodeDescriptionWithExtendedPorts(availablePortTypes)(
+      node,
+    );
   },
 
   clearCategoryResults({ commit }) {

@@ -3,7 +3,11 @@ import type {
   NativeNodeDescription,
   NodeTemplate,
 } from "@/api/gateway-api/generated-api";
-import type { AvailablePortTypes, ExtendedPortType } from "@/api/custom-types";
+import type {
+  AvailablePortTypes,
+  ComponentMetadata,
+  ExtendedPortType,
+} from "@/api/custom-types";
 
 /**
  * The purpose of these helpers is to map all required information on ports that
@@ -123,7 +127,7 @@ export type NativeNodeDescriptionWithExtendedPorts = NativeNodeDescription & {
  * @param availablePortTypes Dictionary of all available port types and their information
  * @returns mapping function that takes a node to which all the port information will be added
  */
-export const toNodeDescriptionWithExtendedPorts =
+export const toNativeNodeDescriptionWithExtendedPorts =
   (availablePortTypes: AvailablePortTypes) =>
   (node: NativeNodeDescription): NativeNodeDescriptionWithExtendedPorts => {
     const {
@@ -143,5 +147,22 @@ export const toNodeDescriptionWithExtendedPorts =
       dynOutPorts: dynamicOutPortGroupDescriptions.map(
         toPortGroupDescriptionWithExtendedPorts(availablePortTypes),
       ),
+    };
+  };
+
+export type ComponentNodeDescriptionWithExtendedPorts = ComponentMetadata & {
+  inPorts: ExtendedPortType[];
+  outPorts: ExtendedPortType[];
+};
+
+export const toComponentNodeDescriptionWithExtendedPorts =
+  (availablePortTypes: AvailablePortTypes) =>
+  (node: ComponentMetadata): ComponentNodeDescriptionWithExtendedPorts => {
+    const { inPorts = [], outPorts = [] } = node;
+
+    return {
+      ...node,
+      inPorts: inPorts.map(toExtendedPortObject(availablePortTypes)),
+      outPorts: outPorts.map(toExtendedPortObject(availablePortTypes)),
     };
   };
