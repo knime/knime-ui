@@ -1,0 +1,10 @@
+{
+  "decisions": {
+    "1094239|postcss": {
+      "decision": "ignore",
+      "madeAt": 1696511607849
+    }
+  },
+  "rules": {},
+  "version": 1
+}
