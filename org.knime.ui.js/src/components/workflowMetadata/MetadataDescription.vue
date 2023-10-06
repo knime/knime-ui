@@ -88,8 +88,9 @@ watch(toRef(props, "editable"), async (next) => {
   display: grid;
 
   &::after {
-    /* Note the weird space! Needed to preventy jumpy behavior */
+    /* Note the weird space! Needed to prevent jumpy behavior */
     content: attr(data-replicated-value) " ";
+    max-width: 320px;
 
     /* This is how textarea text behaves */
     white-space: pre-wrap;
