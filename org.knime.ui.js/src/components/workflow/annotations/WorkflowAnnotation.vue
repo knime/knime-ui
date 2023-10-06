@@ -70,15 +70,15 @@ export default defineComponent({
       "selectedAnnotationIds",
     ]),
 
-    isSelected() {
+    isSelected(): boolean {
       return this.isAnnotationSelected(this.annotation.id);
     },
 
-    isEditing() {
+    isEditing(): boolean {
       return this.annotation.id === this.editableAnnotationId;
     },
 
-    showSelectionPlane() {
+    showSelectionPlane(): boolean {
       if (this.isDragging) {
         return false;
       }
@@ -94,8 +94,8 @@ export default defineComponent({
       return this.selectionPreview === "show" || this.isSelected;
     },
 
-    showTransformControls() {
-      if (this.isDragging) {
+    showTransformControls(): boolean {
+      if (this.isDragging || !this.isWritable) {
         return false;
       }
 
@@ -114,19 +114,19 @@ export default defineComponent({
       );
     },
 
-    isRichTextAnnotation() {
+    isRichTextAnnotation(): boolean {
       return (
         this.annotation.text.contentType === TypedText.ContentTypeEnum.Html
       );
     },
 
-    initialRichTextAnnotationValue() {
+    initialRichTextAnnotationValue(): string {
       return this.isRichTextAnnotation
         ? this.annotation.text.value
         : recreateLinebreaks(this.annotation.text.value);
     },
 
-    initialBorderColor() {
+    initialBorderColor(): string {
       return this.isRichTextAnnotation
         ? this.annotation.borderColor
         : this.$colors.defaultAnnotationBorderColor;
