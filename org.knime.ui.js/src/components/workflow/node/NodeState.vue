@@ -24,9 +24,9 @@ export default {
       type: Number,
       default: null,
     },
-    progressMessage: {
-      type: String,
-      default: null,
+    progressMessages: {
+      type: Array,
+      default: () => [],
     },
     error: {
       type: String,
@@ -98,8 +98,8 @@ export default {
         return { ...tooltip, text: this.error, type: "error" };
       } else if (this.warning) {
         return { ...tooltip, text: this.warning, type: "warning" };
-      } else if (this.progressMessage) {
-        return { ...tooltip, text: this.progressMessage };
+      } else if (this.progressMessages.length) {
+        return { ...tooltip, text: this.progressMessages.join(" – ") };
       }
       return null;
     },
@@ -108,7 +108,8 @@ export default {
       return Math.min(Math.max(this.progress, 0), 1);
     },
     progressDisplayPercentage() {
-      return Math.round(100 * this.clippedProgress);
+      // Use `floor` instead of `round` so that 100% isn't reached too early
+      return Math.floor(100 * this.clippedProgress);
     },
   },
 };

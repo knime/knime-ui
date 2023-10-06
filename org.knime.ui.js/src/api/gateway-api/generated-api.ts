@@ -1121,19 +1121,19 @@ export interface EditableProjectMetadata {
      * @type {TypedText}
      * @memberof EditableProjectMetadata
      */
-    description: TypedText;
+    description?: TypedText;
     /**
      * A collection of tags the user chose to describe the workflow
      * @type {Array<string>}
      * @memberof EditableProjectMetadata
      */
-    tags: Array<string>;
+    tags?: Array<string>;
     /**
      * A collection of URLs attached to the workflow
      * @type {Array<Link>}
      * @memberof EditableProjectMetadata
      */
-    links: Array<Link>;
+    links?: Array<Link>;
 
 }
 
@@ -2139,10 +2139,10 @@ export interface NodeState {
     progress?: number;
     /**
      *
-     * @type {string}
+     * @type {Array<string>}
      * @memberof NodeState
      */
-    progressMessage?: string;
+    progressMessages?: Array<string>;
     /**
      *
      * @type {string}

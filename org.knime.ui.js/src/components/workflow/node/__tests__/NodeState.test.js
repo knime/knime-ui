@@ -151,7 +151,7 @@ describe("NodeState.vue", () => {
     expect(wrapper.find("[clip-path]").attributes("clip-path")).toBe(
       "polygon(0 0, 51.78% 0, 51.78% 100%, 0 100%)",
     );
-    expect(wrapper.text()).toMatch("52%");
+    expect(wrapper.text()).toMatch("51%");
   });
 
   it("handles invalid progress percentage", () => {
@@ -263,14 +263,14 @@ describe("NodeState.vue", () => {
     });
 
     it("updates tooltips on data change", async () => {
-      props.progressMessage = "Progress";
+      props.progressMessages = ["Progress"];
       doShallowMount();
 
       wrapper.find("g").trigger("mouseenter");
       await Vue.nextTick();
 
       wrapper.setProps({
-        progressMessage: "mo Progress",
+        progressMessages: ["mo Progress", "Level 2"],
       });
       await Vue.nextTick();
 
@@ -278,7 +278,7 @@ describe("NodeState.vue", () => {
 
       expect(currentTooltip).toStrictEqual({
         anchorPoint: { x: 123, y: 456 },
-        text: "mo Progress",
+        text: "mo Progress – Level 2",
         position: {
           x: 16,
           y: 52,
