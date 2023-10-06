@@ -9,6 +9,7 @@ import { TABS } from "@/store/panel";
 
 import Disclaimer from "./Disclaimer.vue";
 import Chat from "./Chat.vue";
+import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 
 const DISCLAIMER_DEFAULT_TEXT = `
 This chatbot is designed to help you build workflows.
@@ -24,9 +25,7 @@ This is an experimental service, USE AT YOUR OWN RISK.
 const store = useStore();
 store.dispatch("aiAssistant/getHubID");
 const hubId = computed(() => store.state.aiAssistant.hubID);
-const selectedNodeTemplate = computed(
-  () => store.state.aiAssistant.selectedNodeTemplate,
-);
+const selectedNodeTemplate = ref<NodeTemplate | null>(null);
 
 const activeProjectId = computed(() => store.state.application.activeProjectId);
 const isExtensionPanelOpen = computed(
@@ -71,7 +70,7 @@ onBeforeMount(async () => {
 watch(isExtensionPanelOpen, (isOpen) => {
   if (!isOpen) {
     setTimeout(() => {
-      store.commit("aiAssistant/setSelectedNodeTemplate", null);
+      selectedNodeTemplate.value = null;
       // eslint-disable-next-line no-magic-numbers
     }, 50);
   }
@@ -80,7 +79,7 @@ watch(isExtensionPanelOpen, (isOpen) => {
 const toggleNodeDescription = ({ isSelected, nodeTemplate }) => {
   if (!isSelected) {
     store.dispatch("panel/openExtensionPanel");
-    store.commit("aiAssistant/setSelectedNodeTemplate", nodeTemplate);
+    selectedNodeTemplate.value = nodeTemplate;
     return;
   }
 

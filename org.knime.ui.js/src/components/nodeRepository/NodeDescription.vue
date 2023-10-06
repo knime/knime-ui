@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
-import { mapState } from "vuex";
 
 import Description from "webapps-common/ui/components/Description.vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
@@ -48,7 +47,6 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState("application", ["availablePortTypes"]),
     title() {
       if (!this.selectedNode) {
         return "";

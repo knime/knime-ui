@@ -60,18 +60,4 @@ describe("ContextAwareDescription.vue", () => {
       },
     });
   });
-
-  it.each(["component", "metanode"])(
-    "shows workflow description if %s is selected",
-    (kind) => {
-      const { wrapper } = doMount({
-        singleSelectedNodeMock: vi.fn().mockReturnValue({
-          id: 1,
-          kind,
-        }),
-      });
-      expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(true);
-      expect(wrapper.findComponent(NodeDescription).exists()).toBe(false);
-    },
-  );
 });

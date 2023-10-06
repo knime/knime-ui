@@ -1,6 +1,5 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import { API } from "@api";
 import type { RootStoreState } from "./types";
 
@@ -40,7 +39,6 @@ export interface AiAssistantState {
     incomingTokens: string;
     projectAndWorkflowIds: ProjectAndWorkflowIds | null;
   };
-  selectedNodeTemplate: NodeTemplate | null;
 }
 
 export const state = (): AiAssistantState => ({
@@ -61,7 +59,6 @@ export const state = (): AiAssistantState => ({
     incomingTokens: "",
     projectAndWorkflowIds: null,
   },
-  selectedNodeTemplate: null,
 });
 
 export const mutations: MutationTree<AiAssistantState> = {
@@ -100,9 +97,6 @@ export const mutations: MutationTree<AiAssistantState> = {
   },
   setConversationId(state, { chainType, conversationId }) {
     state[chainType].conversationId = conversationId;
-  },
-  setSelectedNodeTemplate(state, value) {
-    state.selectedNodeTemplate = value;
   },
 };
 

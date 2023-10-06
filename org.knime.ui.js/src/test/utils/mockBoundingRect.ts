@@ -23,4 +23,5 @@ export const mockBoundingRect = ({
   }));
 
   HTMLElement.prototype.getBoundingClientRect = mockFn;
+  SVGElement.prototype.getBoundingClientRect = mockFn;
 };

@@ -10,6 +10,7 @@ import Metainfo from "@/assets/metainfo.svg";
 
 import NodeDialogWrapper from "@/components/embeddedViews/NodeDialogWrapper.vue";
 import Sidebar from "../Sidebar.vue";
+import SidebarExtensionPanel from "../SidebarExtensionPanel.vue";
 
 describe("Sidebar", () => {
   const doMount = ({
@@ -107,19 +108,19 @@ describe("Sidebar", () => {
     // open node repository
     await wrapper.find('[title="Node repository"]').trigger("click");
     // emulate opening the description panel
-    await $store.dispatch("nodeRepository/openDescriptionPanel");
-    expect($store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
+    await $store.dispatch("panel/openExtensionPanel");
+    expect($store.state.panel.isExtensionPanelOpen).toBe(true);
 
     await wrapper.find('[title="Node repository"]').trigger("click");
-    expect($store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
+    expect($store.state.panel.isExtensionPanelOpen).toBe(false);
   });
 
-  it("click on a different tab when description panel is open, closes the description panel", async () => {
+  it("click on a different tab when extension panel is open, closes the extension panel", async () => {
     const { wrapper, $store } = doMount();
 
     await wrapper.find('[title="Node repository"]').trigger("click");
     // emulate opening the description panel
-    await $store.dispatch("nodeRepository/openDescriptionPanel");
+    await $store.dispatch("panel/openExtensionPanel");
 
     // back to Description
     await wrapper.find('[title="Description"]').trigger("click");
@@ -127,12 +128,12 @@ describe("Sidebar", () => {
     // back to node repository
     await wrapper.find('[title="Node repository"]').trigger("click");
 
-    expect($store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
+    expect($store.state.panel.isExtensionPanelOpen).toBe(false);
   });
 
   it("has portal for extension panel", () => {
     const { wrapper } = doMount();
-    expect(wrapper.find('[name="extension-panel"').exists()).toBe(true);
+    expect(wrapper.findComponent(SidebarExtensionPanel).exists()).toBe(true);
   });
 
   it("should not display node dialog section when flag is set to false", () => {

@@ -17,13 +17,6 @@ describe("panel store", () => {
     });
   });
 
-  it("creates an empty store", () => {
-    expect(store.state.panel).toStrictEqual({
-      expanded: true,
-      activeTab: {},
-    });
-  });
-
   it("toggles expanded", () => {
     expect(store.state.panel.expanded).toBe(true);
 

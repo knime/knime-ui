@@ -154,7 +154,6 @@ describe("Node Repository store", () => {
       selectedNode: null,
       isDraggingNode: false,
       draggedNodeData: null,
-      isDescriptionPanelOpen: false,
       nodeTemplates: {},
     });
   });
@@ -374,21 +373,6 @@ describe("Node Repository store", () => {
             },
           ],
         });
-      });
-
-      it("opens description panel", async () => {
-        const { store } = await createStore();
-
-        store.dispatch("nodeRepository/openDescriptionPanel");
-        expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
-      });
-
-      it("closes description panel", async () => {
-        const { store } = await createStore();
-        await store.dispatch("nodeRepository/openDescriptionPanel");
-
-        await store.dispatch("nodeRepository/closeDescriptionPanel");
-        expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
       });
     });
 
