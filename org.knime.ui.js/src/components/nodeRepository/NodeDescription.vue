@@ -213,8 +213,6 @@ export default defineComponent({
   & .node-info {
     padding: 10px 20px;
     display: flex;
-
-    /* min-height: 100%; */
     flex-direction: column;
   }
 

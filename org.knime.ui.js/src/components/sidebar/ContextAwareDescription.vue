@@ -2,7 +2,7 @@
 import { mapGetters } from "vuex";
 import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
-import { isNodeComponent } from "@/util/nodeUtil";
+import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 
 /**
  * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)
@@ -18,7 +18,7 @@ export default {
     showNodeDescription() {
       // do not show description for metanodes
       return (
-        this.singleSelectedNode && this.singleSelectedNode.kind !== "metanode"
+        this.singleSelectedNode && !isNodeMetaNode(this.singleSelectedNode)
       );
     },
     isComponentSelected() {

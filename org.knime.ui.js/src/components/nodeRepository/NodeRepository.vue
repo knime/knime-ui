@@ -154,11 +154,6 @@ export default {
   }
 }
 
-& .close-button {
-  margin-top: 2px;
-  margin-right: -15px;
-}
-
 .header {
   position: sticky;
   background: var(--knime-porcelain);
