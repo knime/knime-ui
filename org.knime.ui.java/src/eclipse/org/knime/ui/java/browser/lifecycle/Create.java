@@ -58,7 +58,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -95,11 +95,11 @@ final class Create {
         //
     }
 
-    static void run(final BiConsumer<String, Function<Object[], Object>> apiFunctionConsumer) {
+    static void run(final BiConsumer<String, Consumer<Object[]>> apiFunctionCaller) {
         // In order for the mechanism to block external requests to work (see CEFPlugin-class)
         // the resource handlers must be registered before the browser initialization
         initializeResourceHandlers();
-        DesktopAPI.forEachAPIFunction(apiFunctionConsumer);
+        DesktopAPI.forEachAPIFunction(apiFunctionCaller);
 
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             IWorkbenchPage page = null;

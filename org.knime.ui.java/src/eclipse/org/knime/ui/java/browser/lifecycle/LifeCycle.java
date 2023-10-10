@@ -50,7 +50,7 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.Arrays;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.LazyInitializer;
@@ -139,10 +139,10 @@ public final class LifeCycle {
     /**
      * Called once at first.
      *
-     * @param apiFunctionConsumer consumer that takes care of registering the API-functions
+     * @param apiFunctionCaller consumer that takes care of calling the API-functions
      */
-    public void create(final BiConsumer<String, Function<Object[], Object>> apiFunctionConsumer) {
-        doStateTransition(StateTransition.CREATE, () -> Create.run(apiFunctionConsumer), StateTransition.STARTUP);
+    public void create(final BiConsumer<String, Consumer<Object[]>> apiFunctionCaller) {
+        doStateTransition(StateTransition.CREATE, () -> Create.run(apiFunctionCaller), StateTransition.STARTUP);
     }
 
     /**

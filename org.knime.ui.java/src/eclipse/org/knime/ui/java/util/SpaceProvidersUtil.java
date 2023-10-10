@@ -50,8 +50,6 @@ package org.knime.ui.java.util;
 
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
@@ -82,21 +80,17 @@ public final class SpaceProvidersUtil {
      */
     public static void sendSpaceProvidersChangedEvent(final SpaceProviders spaceProviders,
         final EventConsumer eventConsumer) {
+        final var result = MAPPER.createObjectNode();
+        Object res;
         try {
-            CompletableFuture.supplyAsync(() -> { // NOSONAR
-                final var result = MAPPER.createObjectNode();
-                spaceProviders.getProvidersMap().values().forEach(sp -> {
-                    result.set(sp.getId(), buildSpaceProviderObjectNode(sp, false));
-                });
-                return MAPPER.createObjectNode().set("result", result);
-            }) //
-                .exceptionally(throwable -> MAPPER.createObjectNode()//
-                    .put("error", throwable.getCause().getMessage())) //
-                .thenAccept(res -> eventConsumer.accept("SpaceProvidersChangedEvent", res)) //
-                .get();
-        } catch (InterruptedException | ExecutionException e) { // NOSONAR
-            throw new IllegalStateException("Problem sending space providers event", e);
+            spaceProviders.getProvidersMap().values().forEach(sp -> {
+                result.set(sp.getId(), buildSpaceProviderObjectNode(sp, false));
+            });
+            res = MAPPER.createObjectNode().set("result", result);
+        } catch (Throwable t) {
+            res = MAPPER.createObjectNode().put("error", t.getCause().getMessage());
         }
+        eventConsumer.accept("SpaceProvidersChangedEvent", res);
     }
 
     /**

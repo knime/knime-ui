@@ -48,7 +48,7 @@
  */
 package org.knime.ui.java.browser;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -60,14 +60,14 @@ import com.equo.chromium.swt.BrowserFunction;
  */
 class KnimeBrowserFunction extends BrowserFunction {
 
-    private final Function<Object[], Object> m_function;
+    private final Consumer<Object[]> m_function;
 
     /**
      * @param browser
      * @param name
      * @param function
      */
-    public KnimeBrowserFunction(final Browser browser, final String name, final Function<Object[], Object> function) {
+    public KnimeBrowserFunction(final Browser browser, final String name, final Consumer<Object[]> function) {
         super(browser, name);
         m_function = function;
     }
@@ -77,7 +77,8 @@ class KnimeBrowserFunction extends BrowserFunction {
      */
     @Override
     public Object function(final Object[] arguments) {
-        return m_function.apply(arguments);
+        m_function.accept(arguments);
+        return null;
     }
 
 }

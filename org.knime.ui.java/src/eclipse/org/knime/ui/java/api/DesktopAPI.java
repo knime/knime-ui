@@ -55,8 +55,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
+import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
@@ -103,6 +104,8 @@ public final class DesktopAPI {
 
     private static Map<Class<?>, Object> dependencies;
 
+    private static final String DESKTOP_API_FUNCTION_RESULT_EVENT_NAME = "DesktopAPIFunctionResultEvent";
+
     /**
      * ObjectMapper to create event objects that can be sent to the UI.
      */
@@ -115,32 +118,45 @@ public final class DesktopAPI {
     /**
      * Iterates through the available desktop API functions.
      *
-     * @param functionConsumer a consumer that receives the function name and the function itself. The function will
-     *            throw a {@link IllegalStateException} if the function-call fails for unexpected reasons.
+     * @param functionCaller a consumer that receives the function name and the function itself and takes care of
+     *            calling them. The function will throw a {@link IllegalStateException} if the function-call fails for
+     *            unexpected reasons.
      */
-    public static void forEachAPIFunction(final BiConsumer<String, Function<Object[], Object>> functionConsumer) {
+    public static void forEachAPIFunction(final BiConsumer<String, Consumer<Object[]>> functionCaller) {
         for (Method m : METHODS) {
             var name = m.getName();
-            functionConsumer.accept(name, args -> { // NOSONAR
-                try {
-                    Object res;
-                    if (m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(Object[].class)) {
-                        res = m.invoke(null, new Object[]{args}); // NOSONAR
-                    } else {
-                        res = m.invoke(null, args);
-                    }
-                    LOGGER.debug("Desktop API function successfully called: " + name);
-                    return res;
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    final var ex = e instanceof InvocationTargetException
-                        ? ((InvocationTargetException)e).getTargetException() : e;
-                    // must never happen
-                    var message = "Desktop API function '" + name
-                        + "' couldn't be called. Most likely an implementation problem.";
-                    LOGGER.error(message, ex);
-                    throw new IllegalStateException(message, ex);
-                }
+            var display = Display.getDefault();
+            functionCaller.accept(name, args -> { // NOSONAR
+                display.asyncExec(() -> {
+                    var res = invokeMethod(m, args);
+                    var event = MAPPER.createObjectNode() //
+                        .put("name", name) //
+                        .set("result", MAPPER.valueToTree(res));
+                    getDeps(EventConsumer.class).accept(DESKTOP_API_FUNCTION_RESULT_EVENT_NAME, event);
+                });
             });
+        }
+    }
+
+    private static Object invokeMethod(final Method m, final Object[] args) {
+        var name = m.getName();
+        try {
+            Object res;
+            if (m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(Object[].class)) {
+                res = m.invoke(null, new Object[]{args}); // NOSONAR
+            } else {
+                res = m.invoke(null, args);
+            }
+            LOGGER.debug("Desktop API function successfully called: " + name);
+            return res;
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            final var ex =
+                e instanceof InvocationTargetException ? ((InvocationTargetException)e).getTargetException() : e;
+            // must never happen
+            var message =
+                "Desktop API function '" + name + "' couldn't be called. Most likely an implementation problem.";
+            LOGGER.error(message, ex);
+            throw new IllegalStateException(message, ex);
         }
     }
 
