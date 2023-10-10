@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
 import { environment } from "@/environment";
+import { $bus } from "@/plugins/event-bus";
 
 import type {
   SpaceProviderId,
@@ -14,27 +15,42 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   params: Parameters<TFunction>,
   messageOnError: string,
   returnsValue: boolean,
-): ReturnType<TFunction> => {
+  blockUi: boolean,
+  // eslint-disable-next-line max-params
+): Promise<ReturnType<TFunction> | null> => {
   if (environment === "BROWSER") {
     return null;
   }
 
   try {
-    const resultOrError = browserFunction(...params);
+    // register for events
+    const result = new Promise<ReturnType<TFunction>>((resolve, reject) => {
+      $bus.on(
+        `desktop-api-function-result-${browserFunction.name}`,
+        (result: string | boolean) => {
+          $bus.off(`desktop-api-function-result-${browserFunction.name}`);
+          if (blockUi) {
+            $bus.emit("desktop-api-function-block-ui", false);
+          }
+          // consider the result an error if we got one even for void functions
+          if (!returnsValue && result) {
+            reject(result);
+          }
+          resolve(result as ReturnType<TFunction>);
+        },
+      );
+    });
 
-    if (returnsValue) {
-      return resultOrError;
+    if (blockUi) {
+      $bus.emit("desktop-api-function-block-ui", true);
     }
-
-    if (!returnsValue && resultOrError) {
-      throw new Error(resultOrError);
-    }
-
-    return null;
+    // call the async browserFunction
+    browserFunction(...params);
+    return result;
   } catch (e) {
     consola.error(messageOnError, e);
     if (returnsValue) {
-      return null;
+      return Promise.resolve(null);
     } else {
       throw e;
     }
@@ -42,73 +58,81 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
 };
 
 export const switchToJavaUI = () => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.switchToJavaUI,
     [],
     "Could not switch to classic UI",
+    false,
     false,
   );
 };
 
 export const switchWorkspace = () => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.switchWorkspace,
     [],
     "Could not switch workspace",
     false,
+    true,
   );
 };
 
 export const openAboutDialog = () => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openAboutDialog,
     [],
     "Could not open about dialog",
     false,
+    true,
   );
 };
 
 export const openUpdateDialog = () => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openUpdateDialog,
     [],
     "Could not open update dialog",
     false,
+    true,
   );
 };
 
 export const checkForUpdates = () => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.checkForUpdates,
     [],
     "Could not check for updates",
+    false,
     false,
   );
 };
 
 export const openUrlInExternalBrowser = ({ url }: { url: string }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openUrlInExternalBrowser,
     [url],
     "Could not open URL in External Browser",
+    false,
     false,
   );
 };
 
 export const openWebUIPreferencePage = () => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openWebUIPreferencePage,
     [],
     "Could not open preferences",
     false,
+    true,
   );
 };
 
 export const openInstallExtensionsDialog = () => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openInstallExtensionsDialog,
     [],
     "Could not open install extensions dialog",
+    false,
     false,
   );
 };
@@ -120,11 +144,12 @@ export const openNodeDialog = ({
   projectId: string;
   nodeId: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openNodeDialog,
     [projectId, nodeId],
     `Could not open dialog of node ${nodeId}`,
     false,
+    true,
   );
 };
 
@@ -142,6 +167,7 @@ export const openLinkComponentDialog = ({
     [projectId, workflowId, nodeId],
     `Could not open linking dialog of component ${nodeId}`,
     true,
+    true,
   );
 };
 
@@ -154,10 +180,11 @@ export const updateComponent = ({
   workflowId: string;
   nodeId: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.updateComponent,
     [projectId, workflowId, nodeId],
     `Could not update component ${nodeId}`,
+    false,
     false,
   );
 };
@@ -171,11 +198,12 @@ export const openChangeComponentHubItemVersionDialog = ({
   workflowId: string;
   nodeId: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openChangeComponentHubItemVersionDialog,
     [projectId, workflowId, nodeId],
     `Could not change Hub item version of component ${nodeId}`,
     false,
+    true,
   );
 };
 
@@ -188,11 +216,12 @@ export const openChangeComponentLinkTypeDialog = ({
   workflowId: string;
   nodeId: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openChangeComponentLinkTypeDialog,
     [projectId, workflowId, nodeId],
     `Could not change link type of component ${nodeId}`,
     false,
+    true,
   );
 };
 
@@ -203,11 +232,12 @@ export const openLegacyFlowVariableDialog = ({
   projectId: string;
   nodeId: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openLegacyFlowVariableDialog,
     [projectId, nodeId],
     `Could not open legacy flow variable dialog of node ${nodeId}`,
     false,
+    true,
   );
 };
 
@@ -222,10 +252,11 @@ export const openLegacyPortView = ({
   portIdx: number;
   executeNode: boolean;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openLegacyPortView,
     [projectId, nodeId, portIdx, executeNode],
     `Could not execute and open view of node ${nodeId}`,
+    false,
     false,
   );
 };
@@ -237,10 +268,11 @@ export const executeNodeAndOpenView = ({
   projectId: string;
   nodeId: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.executeNodeAndOpenView,
     [projectId, nodeId],
     `Could not execute and open view of node ${nodeId}`,
+    false,
     false,
   );
 };
@@ -256,10 +288,11 @@ export const openPortView = ({
   portIndex: number;
   viewIndex: number;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openPortView,
     [projectId, nodeId, portIndex, viewIndex],
     `Could not open detached view for node ${nodeId} and port #${portIndex}`,
+    false,
     false,
   );
 };
@@ -271,11 +304,12 @@ export const saveWorkflow = ({
   projectId: string;
   workflowPreviewSvg: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.saveWorkflow,
     [projectId, workflowPreviewSvg],
     "Could not save workflow",
     false,
+    true,
   );
 };
 
@@ -284,11 +318,12 @@ export const openWorkflow = ({
   itemId,
   spaceProviderId = "local",
 }: FullSpacePath) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openWorkflow,
     [spaceId, itemId, spaceProviderId],
     "Could not open workflow",
     false,
+    true,
   );
 };
 
@@ -304,6 +339,7 @@ export const closeWorkflow = ({
     [closingProjectId, nextProjectId],
     "Could not close workflow",
     true,
+    true,
   );
 };
 
@@ -317,6 +353,7 @@ export const forceCloseWorkflows = ({
     projectIds,
     "Could not close workflow",
     true,
+    false,
   );
 };
 
@@ -325,10 +362,11 @@ export const setProjectActiveAndEnsureItsLoaded = ({
 }: {
   projectId: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.setProjectActiveAndEnsureItsLoaded,
     [projectId],
     "Failed to set project as active in the backend",
+    false,
     false,
   );
 };
@@ -340,52 +378,57 @@ export const openLayoutEditor = ({
   projectId: string;
   workflowId: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openLayoutEditor,
     [projectId, workflowId],
     "Could not open layout editor",
     false,
+    true,
   );
 };
 
 export const openWorkflowCoachPreferencePage = () => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.openWorkflowCoachPreferencePage,
     [],
     "Could not open workflow coach preference page",
     false,
+    true,
   );
 };
 
 export const getSpaceProviders = () => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.getSpaceProviders,
     [],
     "Could not fetch space providers",
     false,
+    false,
   );
 };
 
-export const connectSpaceProvider = ({
+export const connectSpaceProvider = async ({
   spaceProviderId,
-}: SpaceProviderId): SpaceProviderNS.SpaceProvider => {
-  const user = callBrowserFunction(
+}: SpaceProviderId): Promise<SpaceProviderNS.SpaceProvider> => {
+  const providerData = await callBrowserFunction(
     window.connectSpaceProvider,
     [spaceProviderId],
     `Could not connect to provider ${spaceProviderId}`,
     true,
+    true,
   );
 
-  return JSON.parse(user);
+  return JSON.parse(providerData);
 };
 
 export const disconnectSpaceProvider = ({
   spaceProviderId,
 }: SpaceProviderId) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.disconnectSpaceProvider,
     [spaceProviderId],
     `Could not disconnect from provider ${spaceProviderId}`,
+    false,
     false,
   );
 };
@@ -400,6 +443,7 @@ export const importFiles = ({
     [spaceProviderId, spaceId, itemId],
     "Could not disconnect import files",
     true,
+    true,
   );
 };
 
@@ -413,6 +457,7 @@ export const importWorkflows = ({
     [spaceProviderId, spaceId, itemId],
     "Could not import workflows",
     true,
+    true,
   );
 };
 
@@ -425,6 +470,7 @@ export const exportSpaceItem = ({
     window.exportSpaceItem,
     [spaceProviderId, spaceId, itemId],
     "Could not export item",
+    true,
     true,
   );
 };
@@ -441,6 +487,7 @@ export const getNameCollisionStrategy = ({
     [spaceProviderId, spaceId, itemIds, destinationItemId],
     "Could not check for name collisions",
     true,
+    false,
   );
 };
 
@@ -453,6 +500,7 @@ export const copyBetweenSpaces = ({
     window.copyBetweenSpaces,
     [spaceProviderId, spaceId, itemIds],
     "Error uploading to Hub space",
+    true,
     true,
   );
 };
@@ -467,6 +515,7 @@ export const openInBrowser = ({
     [spaceProviderId, spaceId, itemId],
     "Error opening in browser",
     false,
+    false,
   );
 };
 
@@ -480,6 +529,7 @@ export const openAPIDefinition = ({
     [spaceProviderId, spaceId, itemId],
     "Error opening in Hub",
     false,
+    false,
   );
 };
 
@@ -490,11 +540,12 @@ export const saveWorkflowAs = ({
   projectId: string;
   workflowPreviewSvg: string;
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.saveWorkflowAs,
     [projectId, workflowPreviewSvg],
     "Could not save workflow locally",
     false,
+    true,
   );
 };
 
@@ -509,11 +560,12 @@ export const saveAndCloseWorkflows = ({
   svgSnapshots: string[];
   params: any[];
 }) => {
-  callBrowserFunction(
+  return callBrowserFunction(
     window.saveAndCloseWorkflows,
     [totalProjects, ...projectIds, ...svgSnapshots, ...params],
     "Could not save and close all workflows",
     false,
+    true,
   );
 };
 
@@ -538,6 +590,7 @@ export const importComponent = ({
     [spaceProviderId, spaceId, itemId, projectId, workflowId, x, y],
     "Could not import component",
     true,
+    true,
   );
 };
 
@@ -559,6 +612,7 @@ export const importURIAtWorkflowCanvas = ({
     [uri, projectId, workflowId, x, y],
     `Could not import URI at canvas position (${x}, ${y})`,
     false,
+    true,
   );
 };
 
@@ -567,6 +621,7 @@ export const abortAiRequest = ({ conversationId, chainType }) => {
     window.abortAiRequest,
     [conversationId, chainType],
     "Could not abort AI request",
+    false,
     false,
   );
 };
@@ -591,6 +646,7 @@ export const makeAiRequest = ({
     ],
     "Could not make AI request",
     false,
+    false,
   );
 };
 
@@ -600,6 +656,7 @@ export const isAiAssistantBackendAvailable = () => {
     [],
     "Could not open workflow coach preference page",
     true,
+    false,
   );
 };
 
@@ -609,11 +666,18 @@ export const getAiServerAddress = () => {
     [],
     "Could not get AI server address",
     true,
+    false,
   );
 };
 
 export const getHubID = () => {
-  return callBrowserFunction(window.getHubID, [], "Could not get hub id", true);
+  return callBrowserFunction(
+    window.getHubID,
+    [],
+    "Could not get hub id",
+    true,
+    false,
+  );
 };
 
 export const openPermissionsDialog = ({
@@ -626,6 +690,7 @@ export const openPermissionsDialog = ({
     [spaceProviderId, spaceId, itemId],
     "Could not open server permission dialog",
     false,
+    true,
   );
 };
 
@@ -638,6 +703,7 @@ export const executeWorkflow = ({
     window.executeOnClassic,
     [spaceProviderId, spaceId, itemId],
     "Could not remote execute workflow",
+    false,
     false,
   );
 };
@@ -656,6 +722,7 @@ export const saveJobAsWorkflow = ({
     [spaceProviderId, spaceId, itemId, jobId, jobName],
     "Could not save job as workflow",
     true,
+    true,
   );
 };
 
@@ -669,6 +736,7 @@ export const editSchedule = ({
     window.editSchedule,
     [spaceProviderId, spaceId, itemId, scheduleId],
     "Could not edit schedule",
+    true,
     true,
   );
 };

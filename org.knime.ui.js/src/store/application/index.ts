@@ -223,7 +223,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     }
   },
 
-  forceCloseProjects({ state }, { projectIds }) {
+  async forceCloseProjects({ state }, { projectIds }) {
     const { openProjects, activeProjectId } = state;
     const nextProjectId = getNextProjectId({
       openProjects,
@@ -231,7 +231,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       closingProjectIds: projectIds,
     });
 
-    API.desktop.forceCloseWorkflows({ projectIds });
+    await API.desktop.forceCloseWorkflows({ projectIds });
     return nextProjectId;
   },
 

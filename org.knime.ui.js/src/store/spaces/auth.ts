@@ -19,7 +19,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     try {
       commit("setIsLoadingProvider", true);
       // returns the provider metadata (but no spaces)
-      const spaceProvider = API.desktop.connectSpaceProvider({
+      const spaceProvider = await API.desktop.connectSpaceProvider({
         spaceProviderId,
       });
       // fetch the spaces if we are now connected

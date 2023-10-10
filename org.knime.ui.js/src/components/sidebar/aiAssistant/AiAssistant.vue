@@ -59,7 +59,10 @@ const uiStrings = ref({
 
 onBeforeMount(async () => {
   try {
-    const url = new URL("/v1/ui_strings", API.desktop.getAiServerAddress());
+    const url = new URL(
+      "/v1/ui_strings",
+      await API.desktop.getAiServerAddress(),
+    );
     const response = await fetch(url.toString());
     uiStrings.value = await response.json();
   } catch (error) {

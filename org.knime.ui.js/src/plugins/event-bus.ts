@@ -15,6 +15,10 @@ type BusEvents = {
   "connector-dropped": null;
   "connector-end": null;
 
+  [key: `desktop-api-function-result-${string}`]: string | null | boolean;
+
+  "desktop-api-function-block-ui": boolean;
+
   // bendpoint-selection-preview-{connectionId}__{bendpointIndex}
   [key: `bendpoint-selection-preview-${string}__${string}`]: {
     index: number;

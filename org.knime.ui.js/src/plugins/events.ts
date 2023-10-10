@@ -3,6 +3,7 @@ import { notifyPatch } from "@/util/event-syncer";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 import { nodeSize } from "@/style/shapes.mjs";
 import type { PluginInitFunction } from ".";
+import { $bus } from "./event-bus";
 
 export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
   API.event.registerEventHandlers({
@@ -167,6 +168,11 @@ export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
 
     AiAssistantServerChangedEvent() {
       $store.dispatch("aiAssistant/getHubID");
+    },
+
+    DesktopAPIFunctionResultEvent(payload) {
+      // forward to app local event bus, handled in desktop-api promise
+      $bus.emit(`desktop-api-function-result-${payload.name}`, payload.result);
     },
 
     SpaceProvidersChangedEvent(payload) {

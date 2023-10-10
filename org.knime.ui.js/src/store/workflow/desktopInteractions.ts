@@ -43,7 +43,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       closingProjectIds: [closingProjectId],
     });
 
-    const didClose = API.desktop.closeWorkflow({
+    const didClose = await API.desktop.closeWorkflow({
       closingProjectId,
       nextProjectId,
     });

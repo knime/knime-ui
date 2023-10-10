@@ -19,6 +19,11 @@ export interface DesktopEventHandlers {
 
   AiAssistantServerChangedEvent(): void;
 
+  DesktopAPIFunctionResultEvent(payload: {
+    name: string;
+    result: boolean | string | null;
+  }): void;
+
   SpaceProvidersChangedEvent(
     payload:
       | { result: Record<string, SpaceProviderNS.SpaceProvider> }

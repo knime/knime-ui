@@ -341,7 +341,7 @@ export default defineComponent({
         this.projectId,
         targetItem,
       );
-      const collisionStrategy = API.desktop.getNameCollisionStrategy({
+      const collisionStrategy = await API.desktop.getNameCollisionStrategy({
         spaceProviderId: this.activeSpacePath?.spaceProviderId,
         spaceId: this.activeSpacePath?.spaceId,
         itemIds: sourceItems,

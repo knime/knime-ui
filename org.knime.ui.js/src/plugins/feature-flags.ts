@@ -31,6 +31,7 @@ export const features: ($store: Store<any>) => Features = ($store) => ({
   shouldLoadPageBuilder: () =>
     getFlagValue($store, "embedded_views_and_dialogs"),
 
+  // TODO: fix me this will not work anymore with the async desktop API
   shouldShowAiAssistant: () => API.desktop.isAiAssistantBackendAvailable(),
 });
 

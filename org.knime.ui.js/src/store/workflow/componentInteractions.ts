@@ -7,7 +7,7 @@ import { getProjectAndWorkflowIds } from "./util";
 export const actions: ActionTree<WorkflowState, RootStoreState> = {
   async linkComponent({ state }, { nodeId }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const success = API.desktop.openLinkComponentDialog({
+    const success = await API.desktop.openLinkComponentDialog({
       projectId,
       workflowId,
       nodeId,

@@ -100,9 +100,10 @@ export const mutations: MutationTree<AiAssistantState> = {
   },
 };
 
+
 export const actions: ActionTree<AiAssistantState, RootStoreState> = {
-  getHubID({ commit }) {
-    commit("setHubID", API.desktop.getHubID());
+  async getHubID({ commit }) {
+    commit("setHubID", await API.desktop.getHubID());
   },
   makeAiRequest({ commit, state, rootGetters }, { chainType, message }) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];

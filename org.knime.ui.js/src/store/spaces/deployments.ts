@@ -88,7 +88,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     const itemId = state.deploymentsModalConfig.itemId;
 
-    const savedWFId = API.desktop.saveJobAsWorkflow({
+    const savedWFId = await API.desktop.saveJobAsWorkflow({
       spaceProviderId,
       spaceId,
       itemId,
@@ -112,7 +112,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     const itemId = state.deploymentsModalConfig.itemId;
 
-    const updatedScheduleId = API.desktop.editSchedule({
+    const updatedScheduleId = await API.desktop.editSchedule({
       spaceProviderId,
       spaceId,
       itemId,

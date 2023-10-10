@@ -8,6 +8,7 @@ import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import Error from "@/components/application/Error.vue";
 import SmartLoader from "@/components/common/SmartLoader.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
+import BlockUi from "./common/BlockUi.vue";
 
 /**
  * Main page and entry point of KNIME Next
@@ -22,6 +23,7 @@ export default defineComponent({
     UpdateBanner,
     HotkeyHandler,
     Error,
+    BlockUi,
     SmartLoader,
     CreateWorkflowModal,
   },
@@ -30,6 +32,7 @@ export default defineComponent({
     return {
       loaded: false,
       error: null,
+      desktopApiFunctionCallActive: false,
     };
   },
 
@@ -48,9 +51,13 @@ export default defineComponent({
 
   mounted() {
     this.checkClipboardSupport();
+    this.$bus.on("desktop-api-function-block-ui", (block) => {
+      this.desktopApiFunctionCallActive = block;
+    });
   },
 
   async beforeUnmount() {
+    this.$bus.off("desktop-api-function-block-ui");
     await this.destroyApplication();
   },
 
@@ -155,6 +162,8 @@ export default defineComponent({
     />
 
     <CreateWorkflowModal />
+
+    <BlockUi :show-blocker="desktopApiFunctionCallActive" />
   </div>
 </template>
 
