@@ -3,6 +3,10 @@
     "1094239|postcss": {
       "decision": "ignore",
       "madeAt": 1696511607849
+    },
+    "1094304|postcss": {
+      "decision": "ignore",
+      "madeAt": 1697040224397
     }
   },
   "rules": {},
