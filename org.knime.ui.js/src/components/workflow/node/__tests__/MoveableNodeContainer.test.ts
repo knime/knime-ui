@@ -94,7 +94,7 @@ describe("MoveableNodeContainer", () => {
 
   const startNodeDrag = (
     wrapper: VueWrapper<any>,
-    { clientX, clientY, altKey = false }
+    { clientX, clientY, altKey = false },
   ) => {
     return wrapper.trigger("pointerdown.left", { clientX, clientY, altKey });
   };
@@ -273,14 +273,14 @@ describe("MoveableNodeContainer", () => {
       moveNodeTo({ clientX: 260, clientY: 260 });
 
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-enter" })
+        expect.objectContaining({ type: "node-dragging-enter" }),
       );
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-leave" })
+        expect.objectContaining({ type: "node-dragging-leave" }),
       );
 
       expect(otherTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-enter" })
+        expect.objectContaining({ type: "node-dragging-enter" }),
       );
     });
 
@@ -289,10 +289,10 @@ describe("MoveableNodeContainer", () => {
       endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
 
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-enter" })
+        expect.objectContaining({ type: "node-dragging-enter" }),
       );
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-end" })
+        expect.objectContaining({ type: "node-dragging-end" }),
       );
     });
 
@@ -303,10 +303,10 @@ describe("MoveableNodeContainer", () => {
       endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
 
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-enter" })
+        expect.objectContaining({ type: "node-dragging-enter" }),
       );
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-leave" })
+        expect.objectContaining({ type: "node-dragging-leave" }),
       );
     });
   });

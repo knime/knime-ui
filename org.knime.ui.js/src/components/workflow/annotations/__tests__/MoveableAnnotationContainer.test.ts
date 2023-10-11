@@ -87,7 +87,7 @@ describe("MoveableAnnotationContainer.vue", () => {
 
   const startAnnotationDrag = (
     wrapper: VueWrapper<any>,
-    { clientX, clientY, shiftKey = false }
+    { clientX, clientY, shiftKey = false },
   ) => {
     wrapper.find("g").trigger("pointerdown", { clientX, clientY, shiftKey });
   };
@@ -105,7 +105,7 @@ describe("MoveableAnnotationContainer.vue", () => {
 
   const endAnnotationDrag = (
     wrapper: VueWrapper<any>,
-    { clientX, clientY }
+    { clientX, clientY },
   ) => {
     return wrapper.trigger("pointerup", { clientX, clientY });
   };
@@ -229,7 +229,7 @@ describe("MoveableAnnotationContainer.vue", () => {
 
     expect(commitSpy).toHaveBeenCalledWith(
       "selection/setStartedSelectionFromAnnotationId",
-      defaultProps.id
+      defaultProps.id,
     );
   });
 });
