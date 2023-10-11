@@ -3,7 +3,11 @@ import { shallowMount } from "@vue/test-utils";
 import * as $shapes from "@/style/shapes.mjs";
 
 import AutoSizeForeignObject from "../AutoSizeForeignObject.vue";
-import { mockBoundingRect } from "@/test/utils";
+
+const mockBoundingRect = ({ x, y, width, height }) => {
+  const mockFn = vi.fn(() => ({ x, y, width, height }));
+  HTMLElement.prototype.getBoundingClientRect = mockFn;
+};
 
 describe("AutoSizeForeignObject.vue", () => {
   const mockRectWidth = 232;

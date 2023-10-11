@@ -526,65 +526,34 @@ export default {
                   :y="hoverSize.y"
                   data-hide-in-workflow-preview
                 />
-                <g
-                  class="node-torso-wrapper"
-                  :class="{
-                    grabbable: isWritable,
-                    'is-dragging': isDragging,
-                  }"
-                >
-                  <!--
-                    This rect is needed because otherwise when the user
-                    hovers in between the elements inside the .node-torso-wrapper
-                    it won't trigger a proper class change because it's a
-                    <g> element and does not have a fill,
-                    so it will get picked up by the hover-area <rect> instead
-                  -->
-                  <rect
-                    :class="{
-                      grabbable: isWritable,
-                      'is-dragging': isDragging,
-                    }"
-                    :width="$shapes.nodeSize"
-                    :height="
-                      kind === 'metanode'
-                        ? $shapes.nodeSize
-                        : $shapes.nodeSize + 20
-                    "
-                    :x="0"
-                    :y="0"
-                    data-hide-in-workflow-preview
-                    fill="transparent"
-                  />
-                  <NodeTorso
-                    :type="type"
-                    :kind="kind"
-                    :icon="icon"
-                    :is-dragged-over="isDraggedOver"
-                    :execution-state="state && state.executionState"
-                    :class="['node-torso', { hover: isHovering }]"
-                    :filter="isHovering && 'url(#node-torso-shadow)'"
-                    @dblclick.left="onLeftDoubleClick"
-                    @dragenter="onTorsoDragEnter"
-                    @dragleave="onTorsoDragLeave"
-                    @drop.stop="onTorsoDragDrop"
-                    @node-dragging-enter="onNodeDragggingEnter"
-                    @node-dragging-leave.prevent="onNodeDragggingLeave"
-                    @node-dragging-end.prevent="onNodeDragggingEnd"
-                  />
+                <NodeTorso
+                  :type="type"
+                  :kind="kind"
+                  :icon="icon"
+                  :is-dragged-over="isDraggedOver"
+                  :execution-state="state && state.executionState"
+                  :class="['node-torso', { hover: isHovering }]"
+                  :filter="isHovering && 'url(#node-torso-shadow)'"
+                  @dblclick.left="onLeftDoubleClick"
+                  @dragenter="onTorsoDragEnter"
+                  @dragleave="onTorsoDragLeave"
+                  @drop.stop="onTorsoDragDrop"
+                  @node-dragging-enter="onNodeDragggingEnter"
+                  @node-dragging-leave.prevent="onNodeDragggingLeave"
+                  @node-dragging-end.prevent="onNodeDragggingEnd"
+                />
 
-                  <NodeDecorators v-bind="$props" />
+                <NodeDecorators v-bind="$props" />
 
-                  <NodeState
-                    v-if="kind !== 'metanode'"
-                    v-bind="state"
-                    :class="['node-state', { hover: isHovering }]"
-                    :loop-status="loopInfo.status"
-                    :transform="`translate(0, ${
-                      $shapes.nodeSize + $shapes.nodeStatusMarginTop
-                    })`"
-                  />
-                </g>
+                <NodeState
+                  v-if="kind !== 'metanode'"
+                  v-bind="state"
+                  :class="['node-state', { hover: isHovering }]"
+                  :loop-status="loopInfo.status"
+                  :transform="`translate(0, ${
+                    $shapes.nodeSize + $shapes.nodeStatusMarginTop
+                  })`"
+                />
               </g>
 
               <!-- Node Ports -->
@@ -640,14 +609,6 @@ export default {
   &.is-dragging {
     pointer-events: none;
   }
-}
-
-.grabbable {
-  cursor: grab;
-}
-
-.is-grabbing {
-  cursor: grabbing;
 }
 
 .node-torso:hover,

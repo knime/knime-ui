@@ -4,4 +4,3 @@ export * from "./withPorts";
 export * from "./withoutKeys";
 export * from "./mockLodash";
 export * from "./types";
-export * from "./mockBoundingRect";

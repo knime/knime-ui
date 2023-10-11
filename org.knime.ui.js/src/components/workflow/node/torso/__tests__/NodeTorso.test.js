@@ -61,6 +61,7 @@ describe("NodeTorso.vue", () => {
       isComponent: true,
       icon: "data:image/icon",
     });
+    expect(wrapper.find(".grabbable").exists()).toBe(true);
   });
 
   it("renders metanodes", () => {
@@ -68,6 +69,7 @@ describe("NodeTorso.vue", () => {
       kind: "metanode",
     });
     expect(wrapper.findComponent(NodeTorsoMetanode).exists()).toBeTruthy();
+    expect(wrapper.find(".grabbable").exists()).toBe(true);
   });
 
   it("renders metanode state", () => {
@@ -98,6 +100,19 @@ describe("NodeTorso.vue", () => {
       });
       expect(wrapper.findComponent(NodeTorsoUnknown).exists()).toBeTruthy();
       expect(wrapper.findComponent(NodeTorsoNormal).exists()).toBeFalsy();
+    }
+  );
+
+  it.each(["node", "metanode", "component"])(
+    "no grab cursor if write-protected %s",
+    (kind) => {
+      let wrapper = doShallowMount(
+        {
+          kind,
+        },
+        { writable: false }
+      );
+      expect(wrapper.find(".grabbable").exists()).toBe(false);
     }
   );
 });
