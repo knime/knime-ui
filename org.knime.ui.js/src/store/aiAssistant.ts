@@ -105,7 +105,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   async getHubID({ commit }) {
     commit("setHubID", await API.desktop.getHubID());
   },
-  makeAiRequest({ commit, state, rootGetters }, { chainType, message }) {
+  async makeAiRequest({ commit, state, rootGetters }, { chainType, message }) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
     const nodeId = rootGetters["selection/singleSelectedNode"]?.id;
 
@@ -121,7 +121,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     const conversationId = state[chainType].conversationId;
     const { projectId, workflowId } = projectAndWorkflowIds;
     try {
-      API.desktop.makeAiRequest({
+      await API.desktop.makeAiRequest({
         conversationId,
         chainType,
         projectId,
@@ -181,11 +181,11 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         break;
     }
   },
-  abortAiRequest({ commit }, { chainType }) {
+  async abortAiRequest({ commit }, { chainType }) {
     const conversationId = state[chainType].conversationId;
 
     try {
-      API.desktop.abortAiRequest({ conversationId, chainType });
+      await API.desktop.abortAiRequest({ conversationId, chainType });
     } catch (error) {
       consola.error("abortAiRequest", error);
       commit("clearChain", { chainType });
