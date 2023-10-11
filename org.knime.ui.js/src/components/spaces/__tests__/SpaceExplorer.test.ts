@@ -131,6 +131,12 @@ describe("SpaceExplorer.vue", () => {
       },
     };
 
+    store.state.spaces.spaceProviders = {
+      spaceId: "space",
+      spaceProviderId: "provider",
+      itemId: "root",
+    };
+
     const dispatchSpy = vi.spyOn(store, "dispatch");
     const commitSpy = vi.spyOn(store, "commit");
     const mockRouter = { push: () => {} };

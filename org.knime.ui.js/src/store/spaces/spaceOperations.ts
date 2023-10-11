@@ -3,7 +3,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
-import { SpaceItem, WorkflowInfo } from "@/api/gateway-api/generated-api";
+import { SpaceItem } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
 
 import type { SpacesState } from "./index";
@@ -156,22 +156,18 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async openWorkflow(
-    { rootState, state, dispatch },
+    { rootState, state, dispatch, getters },
     { workflowItemId, $router, projectId },
   ) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
-
     const { openProjects } = rootState.application;
-
-    // eslint-disable-next-line no-extra-parens
+    const isLocal = getters.getSpaceInfo(projectId).local;
 
     const foundOpenProject = openProjects.find(
       ({ origin }) =>
         origin &&
         origin.providerId === spaceProviderId &&
-        // only consider local projects -- see NXT-2062
-        origin.providerId.toUpperCase() ===
-          WorkflowInfo.ProviderTypeEnum.LOCAL &&
+        isLocal &&
         origin.spaceId === spaceId &&
         origin.itemId === workflowItemId,
     );
@@ -350,8 +346,8 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     (projectId: string) => {
       const { spaceId, spaceProviderId } = state.projectPath[projectId];
       const { openProjects } = application;
-
       const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
+      const isLocal = getters.getSpaceInfo(projectId).local;
 
       if (workflowGroupContent === null) {
         return [];
@@ -366,9 +362,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
           ({ origin }) =>
             origin &&
             origin.providerId === spaceProviderId &&
-            // only consider local projects -- see NXT-2062
-            origin.providerId.toUpperCase() ===
-              WorkflowInfo.ProviderTypeEnum.LOCAL &&
+            isLocal &&
             origin.spaceId === spaceId &&
             workflowItemIds.includes(origin.itemId),
         )

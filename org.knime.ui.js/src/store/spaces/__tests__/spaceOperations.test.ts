@@ -209,6 +209,12 @@ describe("spaces::spaceOperations", () => {
         spaceId: "local",
         itemId: "folder1",
       };
+      store.state.spaces.spaceProviders = {
+        private: {
+          // @ts-ignore
+          spaces: [{ id: "local" }],
+        },
+      };
 
       const mockRouter = { push: vi.fn() };
       await store.dispatch("spaces/openWorkflow", {
@@ -510,6 +516,12 @@ describe("spaces::spaceOperations", () => {
           // @ts-ignore
           fetchWorkflowGroupContentResponse,
         );
+        store.state.spaces.spaceProviders = {
+          private: {
+            // @ts-ignore
+            spaces: [{ id: "local" }],
+          },
+        };
 
         expect(
           store.getters["spaces/getOpenedWorkflowItems"](projectId),
