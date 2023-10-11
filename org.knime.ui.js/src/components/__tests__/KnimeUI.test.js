@@ -3,6 +3,7 @@ import { mockUserAgent } from "jest-useragent-mock";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
+import { $bus } from "@/plugins/event-bus";
 
 describe("KnimeUI.vue", () => {
   const mockFeatureFlags = {
@@ -73,7 +74,7 @@ describe("KnimeUI.vue", () => {
     const wrapper = shallowMount(KnimeUI, {
       global: {
         plugins: [$store],
-        mocks: { $features: mockFeatureFlags, $router, $route },
+        mocks: { $features: mockFeatureFlags, $router, $route, $bus },
         stubs: { RouterView: true },
       },
     });

@@ -32,7 +32,7 @@ export default defineComponent({
     return {
       loaded: false,
       error: null,
-      desktopApiFunctionCallActive: false,
+      desktopApiFunctionBlockUi: false,
     };
   },
 
@@ -52,7 +52,7 @@ export default defineComponent({
   mounted() {
     this.checkClipboardSupport();
     this.$bus.on("desktop-api-function-block-ui", (block) => {
-      this.desktopApiFunctionCallActive = block;
+      this.desktopApiFunctionBlockUi = block;
     });
   },
 
@@ -163,7 +163,7 @@ export default defineComponent({
 
     <CreateWorkflowModal />
 
-    <BlockUi :show-blocker="desktopApiFunctionCallActive" />
+    <BlockUi :show-blocker="desktopApiFunctionBlockUi" />
   </div>
 </template>
 

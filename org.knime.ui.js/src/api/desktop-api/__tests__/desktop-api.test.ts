@@ -226,7 +226,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
 describe("desktop-api", () => {
   beforeAll(() => {
     browserFunctions.forEach(({ name: fn, returnValue }) => {
-      window[fn] = returnValue ? vi.fn(() => returnValue) : vi.fn();
+      window[fn] = vi.fn(() => Promise.resolve(returnValue || null));
     });
   });
 

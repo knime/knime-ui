@@ -74,6 +74,7 @@ describe("Event Plugin", () => {
       "ProgressEvent",
       "AiAssistantEvent",
       "AiAssistantServerChangedEvent",
+      "DesktopAPIFunctionResultEvent",
       "SpaceProvidersChangedEvent",
     ]);
   });
