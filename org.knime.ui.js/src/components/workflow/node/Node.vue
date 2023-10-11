@@ -533,6 +533,13 @@ export default {
                     'is-dragging': isDragging,
                   }"
                 >
+                  <!--
+                    This rect is needed because otherwise when the user
+                    hovers in between the elements inside the .node-torso-wrapper
+                    it won't trigger a proper class change because it's a
+                    <g> element and does not have a fill,
+                    so it will get picked up by the hover-area <rect> instead
+                  -->
                   <rect
                     :class="{
                       grabbable: isWritable,
