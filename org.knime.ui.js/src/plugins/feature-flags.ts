@@ -1,6 +1,5 @@
 import type { Store } from "vuex";
 import { useStore } from "vuex";
-import { API } from "@api";
 
 export type Features = {
   shouldDisplayEmbeddedDialogs: () => boolean;
@@ -13,6 +12,7 @@ const featureFlagsPrefix = "org.knime.ui.feature";
 
 const featureFlagDefaults = {
   [`${featureFlagsPrefix}.embedded_views_and_dialogs`]: false,
+  [`${featureFlagsPrefix}.ai_assistant`]: false,
 };
 
 const getFlagValue = (store, name) => {
@@ -31,8 +31,7 @@ export const features: ($store: Store<any>) => Features = ($store) => ({
   shouldLoadPageBuilder: () =>
     getFlagValue($store, "embedded_views_and_dialogs"),
 
-  // TODO: fix me this will not work anymore with the async desktop API
-  shouldShowAiAssistant: () => API.desktop.isAiAssistantBackendAvailable(),
+  shouldShowAiAssistant: () => getFlagValue($store, "ai_assistant"),
 });
 
 export const useFeatures: () => Features = () => {

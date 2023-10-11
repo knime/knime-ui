@@ -650,16 +650,6 @@ export const makeAiRequest = ({
   );
 };
 
-export const isAiAssistantBackendAvailable = () => {
-  return callBrowserFunction(
-    window.isAiAssistantBackendAvailable,
-    [],
-    "Could not open workflow coach preference page",
-    true,
-    false,
-  );
-};
-
 export const getAiServerAddress = () => {
   return callBrowserFunction(
     window.getAiServerAddress,

@@ -172,7 +172,6 @@ declare function abortAiRequest(
   conversationId: string | null,
   chainType: string,
 ): void;
-declare function isAiAssistantBackendAvailable(): boolean;
 declare function getAiServerAddress(): string;
 declare function getHubID(): string;
 
