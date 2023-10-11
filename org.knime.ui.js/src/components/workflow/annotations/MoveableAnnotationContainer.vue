@@ -3,7 +3,7 @@ import { ref, toRef, watch, computed } from "vue";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useMoveObject } from "@/composables/useMoveObject";
-import { useStore } from "vuex";
+import { useStore } from "@/composables/useStore";
 import { useEscapeStack } from "@/mixins/escapeStack";
 
 interface Props {
@@ -15,7 +15,6 @@ const props = defineProps<Props>();
 const store = useStore();
 const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
 const isDragging = computed(() => store.state.workflow.isDragging);
-const isMoveLocked = computed(() => store.state.canvas.isMoveLocked);
 
 const isAnnotationSelected = computed(
   () => store.getters["selection/isAnnotationSelected"],
@@ -39,15 +38,11 @@ watch(
   { deep: true },
 );
 
-const useMoveObjectResult = useMoveObject({
+const { onPointerDown } = useMoveObject({
   id: props.id,
   initialPosition: computed(() => ({ x: props.bounds.x, y: props.bounds.y })),
   objectElement: computed(() => container.value as HTMLElement),
   onMoveStartCallback: () => {
-    if (isMoveLocked.value) {
-      store.commit("selection/setStartedSelectionFromAnnotationId", props.id);
-    }
-
     if (!isAnnotationSelected.value(props.id)) {
       store.dispatch("selection/deselectAllObjects");
     }
@@ -55,15 +50,6 @@ const useMoveObjectResult = useMoveObject({
     store.dispatch("selection/selectAnnotation", props.id);
   },
 });
-
-const onPointerDown = (event: PointerEvent) => {
-  if (isMoveLocked.value) {
-    store.commit("selection/setStartedSelectionFromAnnotationId", props.id);
-    return;
-  }
-
-  useMoveObjectResult.onPointerDown(event);
-};
 
 useEscapeStack({
   group: "OBJECT_DRAG",
