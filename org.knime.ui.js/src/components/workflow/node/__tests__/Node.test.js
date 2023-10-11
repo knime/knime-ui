@@ -25,6 +25,8 @@ import Node from "../Node.vue";
 import { KnimeMIME } from "@/mixins/dropNode";
 import { APP_ROUTES } from "@/router/appRoutes";
 
+import "@/plugins/directive-move";
+
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
 
