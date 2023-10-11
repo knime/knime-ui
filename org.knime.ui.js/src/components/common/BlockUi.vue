@@ -10,9 +10,11 @@ const focus = async () => {
 
 interface Props {
   showBlocker?: boolean;
+  darkenBackground?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   showBlocker: false,
+  darkenBackground: false,
 });
 
 // focus on show
@@ -25,7 +27,12 @@ watch(showBlocker, () => {
 </script>
 
 <template>
-  <div v-show="showBlocker" ref="blocker" class="blocker" tabindex="-1" />
+  <div
+    v-show="showBlocker"
+    ref="blocker"
+    :class="['blocker', { 'darken-background': darkenBackground }]"
+    tabindex="-1"
+  />
 </template>
 
 <style lang="postcss" scoped>
@@ -40,6 +47,9 @@ watch(showBlocker, () => {
   position: fixed;
   width: 100vw;
   height: 100vh;
-  background: rgba(0 0 0 / 40%);
+
+  &.darken-background {
+    background: rgba(0 0 0 / 40%);
+  }
 }
 </style>
