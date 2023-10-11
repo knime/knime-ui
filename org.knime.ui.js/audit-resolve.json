@@ -4,6 +4,10 @@
       "decision": "ignore",
       "madeAt": 1696428457613,
       "expiresAt": 1699020449907
+    },
+    "1094304|postcss": {
+      "decision": "ignore",
+      "madeAt": 1697027719222
     }
   },
   "rules": {},
