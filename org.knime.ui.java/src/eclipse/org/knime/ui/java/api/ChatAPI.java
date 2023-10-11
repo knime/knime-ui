@@ -120,16 +120,6 @@ public final class ChatAPI {
     }
 
     /**
-     * Checks if the backend is available i.e. whether the org.knime.ai.chat.java is available.
-     *
-     * @return true if the backend is available
-     */
-    @API
-    public static boolean isAiAssistantBackendAvailable() {
-        return !LISTENERS.isEmpty();
-    }
-
-    /**
      * @param conversationId id of the conversation (null if this is the first message of the conversation)
      * @param chainType the type of chain to message (qa or build)
      * @param projectId the workflow project identifier
