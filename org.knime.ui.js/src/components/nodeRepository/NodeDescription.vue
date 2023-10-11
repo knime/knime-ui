@@ -9,6 +9,7 @@ import CloseButton from "@/components/common/CloseButton.vue";
 import { API } from "@api";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import { runInEnvironment } from "@/environment";
+import MetadataDescription from "@/components/workflowMetadata/MetadataDescription.vue";
 
 type SelectedNode = Partial<Pick<NodeTemplate, "nodeFactory">> & {
   id: string;
@@ -25,6 +26,7 @@ export default defineComponent({
     NodeFeatureList,
     ExternalResourcesList,
     CloseButton,
+    MetadataDescription,
   },
   props: {
     selectedNode: {
@@ -141,12 +143,20 @@ export default defineComponent({
              have some data as the selection is not cleared. -->
       <template v-if="selectedNode">
         <template v-if="descriptionData">
-          <Description
-            v-if="descriptionData.description"
-            id="node-description-html"
-            :text="descriptionData.description"
-            render-as-html
-          />
+          <template v-if="descriptionData.description">
+            <!-- use the same component as in project metadata to avoid different rendering -->
+            <MetadataDescription
+              v-if="isComponent"
+              :original-description="descriptionData.description"
+              :model-value="descriptionData.description"
+            />
+            <Description
+              v-else
+              id="node-description-html"
+              :text="descriptionData.description"
+              render-as-html
+            />
+          </template>
 
           <span v-else class="placeholder">
             There is no description for this node.
@@ -217,6 +227,7 @@ export default defineComponent({
   }
 
   & .placeholder {
+    font-size: 13px;
     font-style: italic;
     color: var(--knime-dove-gray);
 
