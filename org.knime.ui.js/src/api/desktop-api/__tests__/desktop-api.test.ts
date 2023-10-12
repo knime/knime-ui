@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { API } from "../../index";
+import { $bus } from "@/plugins/event-bus";
 
 type BrowserFunctionDescriptor = {
   name: string;
@@ -226,13 +227,19 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
 describe("desktop-api", () => {
   beforeAll(() => {
     browserFunctions.forEach(({ name: fn, returnValue }) => {
-      window[fn] = vi.fn(() => Promise.resolve(returnValue || null));
+      window[fn] = returnValue ? vi.fn(() => returnValue) : vi.fn();
     });
   });
 
   it.each(browserFunctions)(
     "calls %s",
-    ({ name, desktopApiName, params = [], flattenParams }) => {
+    async ({
+      name,
+      desktopApiName,
+      params = [],
+      flattenParams,
+      returnValue,
+    }) => {
       const paramEntries = new Map(params);
       const paramsAsObj = Object.fromEntries(paramEntries);
 
@@ -242,9 +249,25 @@ describe("desktop-api", () => {
         ? [...params].flatMap(mappingFn)
         : [...params].map(mappingFn);
 
-      API.desktop[desktopApiName || name](paramsAsObj);
+      const busOnSpy = vi.spyOn($bus, "on");
+
+      const result = API.desktop[desktopApiName || name](paramsAsObj);
+
+      expect(busOnSpy).toHaveBeenCalledWith(
+        "desktop-api-function-result-spy",
+        expect.anything(),
+      );
 
       expect(window[name]).toHaveBeenCalledWith(...values);
+
+      // test promise
+      let resolved = false;
+      result.then(() => (resolved = true));
+      expect(resolved).toBe(false);
+
+      $bus.emit("desktop-api-function-result-spy", returnValue ? true : null);
+      await new Promise((r) => setTimeout(r, 0));
+      expect(resolved).toBe(true);
     },
   );
 });
