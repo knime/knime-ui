@@ -125,9 +125,8 @@ public final class DesktopAPI {
     public static void forEachAPIFunction(final BiConsumer<String, Consumer<Object[]>> functionCaller) {
         for (Method m : METHODS) {
             var name = m.getName();
-            var display = Display.getDefault();
             functionCaller.accept(name, args -> { // NOSONAR
-                display.asyncExec(() -> {
+                Display.getDefault().asyncExec(() -> {
                     var res = invokeMethod(m, args);
                     var event = MAPPER.createObjectNode() //
                         .put("name", name) //

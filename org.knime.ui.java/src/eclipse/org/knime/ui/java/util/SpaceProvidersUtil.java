@@ -87,8 +87,8 @@ public final class SpaceProvidersUtil {
                 result.set(sp.getId(), buildSpaceProviderObjectNode(sp, false));
             });
             res = MAPPER.createObjectNode().set("result", result);
-        } catch (Throwable t) {
-            res = MAPPER.createObjectNode().put("error", t.getCause().getMessage());
+        } catch (Throwable t) { // NOSONAR
+            res = MAPPER.createObjectNode().put("error", t.getMessage());
         }
         eventConsumer.accept("SpaceProvidersChangedEvent", res);
     }
