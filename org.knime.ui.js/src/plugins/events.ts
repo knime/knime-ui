@@ -96,13 +96,13 @@ export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
       const svgSnapshots = await Promise.all(resolveSVGSnapshots);
       const totalProjects = projectIds.length;
 
-      API.desktop.saveAndCloseWorkflows(
+      await API.desktop.saveAndCloseWorkflows({
         totalProjects,
-        ...projectIds,
-        ...svgSnapshots,
+        projectIds,
+        svgSnapshots,
         // send over any parameters that are sent in the event payload, or empty in case none
-        ...params,
-      );
+        params,
+      });
 
       for (const closingProjectId of projectIds) {
         await $store.dispatch(
