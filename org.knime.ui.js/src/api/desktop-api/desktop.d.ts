@@ -135,7 +135,6 @@ declare function saveWorkflowAs(
   workflowPreviewSvg: string,
 ): void;
 
-// TODO: this is unused, remove it?
 declare function saveAndCloseWorkflows(
   totalProjects: number,
   ...args: unknown[]

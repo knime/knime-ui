@@ -96,7 +96,7 @@ export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
       const svgSnapshots = await Promise.all(resolveSVGSnapshots);
       const totalProjects = projectIds.length;
 
-      window.saveAndCloseWorkflows(
+      API.desktop.saveAndCloseWorkflows(
         totalProjects,
         ...projectIds,
         ...svgSnapshots,
