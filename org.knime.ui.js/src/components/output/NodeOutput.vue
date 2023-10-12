@@ -326,11 +326,6 @@ export default defineComponent({
       font-style: italic;
     }
 
-    /* override width of first th in the filters element */
-    & .table-header + thead th:first-child {
-      width: 40px !important;
-    }
-
     & tr.row.no-sub-menu.compact-mode td:first-child {
       background-color: var(--knime-porcelain);
       font-style: italic;
