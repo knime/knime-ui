@@ -100,7 +100,6 @@ export const mutations: MutationTree<AiAssistantState> = {
   },
 };
 
-
 export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   async getHubID({ commit }) {
     commit("setHubID", await API.desktop.getHubID());
