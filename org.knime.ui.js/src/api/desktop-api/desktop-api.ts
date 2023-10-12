@@ -15,7 +15,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   params: Parameters<TFunction>,
   messageOnError: string,
   returnsValue: boolean,
-  blockUi: boolean,
+  blockUi: { block: boolean; darkenBackground?: boolean },
   // eslint-disable-next-line max-params
 ): Promise<ReturnType<TFunction> | null> => {
   if (environment === "BROWSER") {
@@ -25,12 +25,14 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   try {
     // register for events
     const result = new Promise<ReturnType<TFunction>>((resolve, reject) => {
+      // 'forwarded' backend event from events.ts
       $bus.on(
         `desktop-api-function-result-${browserFunction.name}`,
         (result: string | boolean) => {
           $bus.off(`desktop-api-function-result-${browserFunction.name}`);
-          if (blockUi) {
-            $bus.emit("desktop-api-function-block-ui", false);
+          // unblock UI (if it was blocked) when the desktop function has returned (which is indicated by this event)
+          if (blockUi.block) {
+            $bus.emit("desktop-api-function-block-ui", { block: false });
           }
           // consider the result an error if we got one even for void functions
           if (!returnsValue && result) {
@@ -41,8 +43,11 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
       );
     });
 
-    if (blockUi) {
-      $bus.emit("desktop-api-function-block-ui", true);
+    if (blockUi.block) {
+      $bus.emit("desktop-api-function-block-ui", {
+        block: true,
+        darkenBackground: blockUi.darkenBackground,
+      });
     }
     // call the async browserFunction
     browserFunction(...params);
@@ -63,7 +68,7 @@ export const switchToJavaUI = () => {
     [],
     "Could not switch to classic UI",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -73,7 +78,7 @@ export const switchWorkspace = () => {
     [],
     "Could not switch workspace",
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -83,7 +88,7 @@ export const openAboutDialog = () => {
     [],
     "Could not open about dialog",
     false,
-    true,
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -93,7 +98,7 @@ export const openUpdateDialog = () => {
     [],
     "Could not open update dialog",
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -103,7 +108,7 @@ export const checkForUpdates = () => {
     [],
     "Could not check for updates",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -113,7 +118,7 @@ export const openUrlInExternalBrowser = ({ url }: { url: string }) => {
     [url],
     "Could not open URL in External Browser",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -123,7 +128,7 @@ export const openWebUIPreferencePage = () => {
     [],
     "Could not open preferences",
     false,
-    true,
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -133,7 +138,7 @@ export const openInstallExtensionsDialog = () => {
     [],
     "Could not open install extensions dialog",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -149,7 +154,7 @@ export const openNodeDialog = ({
     [projectId, nodeId],
     `Could not open dialog of node ${nodeId}`,
     false,
-    true,
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -167,7 +172,7 @@ export const openLinkComponentDialog = ({
     [projectId, workflowId, nodeId],
     `Could not open linking dialog of component ${nodeId}`,
     true,
-    true,
+    { block: true },
   );
 };
 
@@ -185,7 +190,7 @@ export const updateComponent = ({
     [projectId, workflowId, nodeId],
     `Could not update component ${nodeId}`,
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -203,7 +208,7 @@ export const openChangeComponentHubItemVersionDialog = ({
     [projectId, workflowId, nodeId],
     `Could not change Hub item version of component ${nodeId}`,
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -221,7 +226,7 @@ export const openChangeComponentLinkTypeDialog = ({
     [projectId, workflowId, nodeId],
     `Could not change link type of component ${nodeId}`,
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -237,7 +242,7 @@ export const openLegacyFlowVariableDialog = ({
     [projectId, nodeId],
     `Could not open legacy flow variable dialog of node ${nodeId}`,
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -257,7 +262,7 @@ export const openLegacyPortView = ({
     [projectId, nodeId, portIdx, executeNode],
     `Could not execute and open view of node ${nodeId}`,
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -273,7 +278,7 @@ export const executeNodeAndOpenView = ({
     [projectId, nodeId],
     `Could not execute and open view of node ${nodeId}`,
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -293,7 +298,7 @@ export const openPortView = ({
     [projectId, nodeId, portIndex, viewIndex],
     `Could not open detached view for node ${nodeId} and port #${portIndex}`,
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -309,7 +314,7 @@ export const saveWorkflow = ({
     [projectId, workflowPreviewSvg],
     "Could not save workflow",
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -323,7 +328,7 @@ export const openWorkflow = ({
     [spaceId, itemId, spaceProviderId],
     "Could not open workflow",
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -339,7 +344,7 @@ export const closeWorkflow = ({
     [closingProjectId, nextProjectId],
     "Could not close workflow",
     true,
-    true,
+    { block: true },
   );
 };
 
@@ -353,7 +358,7 @@ export const forceCloseWorkflows = ({
     projectIds,
     "Could not close workflow",
     true,
-    false,
+    { block: false },
   );
 };
 
@@ -367,7 +372,7 @@ export const setProjectActiveAndEnsureItsLoaded = ({
     [projectId],
     "Failed to set project as active in the backend",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -383,7 +388,7 @@ export const openLayoutEditor = ({
     [projectId, workflowId],
     "Could not open layout editor",
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -393,7 +398,7 @@ export const openWorkflowCoachPreferencePage = () => {
     [],
     "Could not open workflow coach preference page",
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -403,7 +408,7 @@ export const getSpaceProviders = () => {
     [],
     "Could not fetch space providers",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -415,7 +420,7 @@ export const connectSpaceProvider = async ({
     [spaceProviderId],
     `Could not connect to provider ${spaceProviderId}`,
     true,
-    true,
+    { block: true },
   );
 
   return JSON.parse(providerData);
@@ -429,7 +434,7 @@ export const disconnectSpaceProvider = ({
     [spaceProviderId],
     `Could not disconnect from provider ${spaceProviderId}`,
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -443,7 +448,7 @@ export const importFiles = ({
     [spaceProviderId, spaceId, itemId],
     "Could not disconnect import files",
     true,
-    true,
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -457,7 +462,7 @@ export const importWorkflows = ({
     [spaceProviderId, spaceId, itemId],
     "Could not import workflows",
     true,
-    true,
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -471,7 +476,7 @@ export const exportSpaceItem = ({
     [spaceProviderId, spaceId, itemId],
     "Could not export item",
     true,
-    true,
+    { block: true },
   );
 };
 
@@ -487,7 +492,7 @@ export const getNameCollisionStrategy = ({
     [spaceProviderId, spaceId, itemIds, destinationItemId],
     "Could not check for name collisions",
     true,
-    false,
+    { block: false },
   );
 };
 
@@ -501,7 +506,7 @@ export const copyBetweenSpaces = ({
     [spaceProviderId, spaceId, itemIds],
     "Error uploading to Hub space",
     true,
-    true,
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -515,7 +520,7 @@ export const openInBrowser = ({
     [spaceProviderId, spaceId, itemId],
     "Error opening in browser",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -529,7 +534,7 @@ export const openAPIDefinition = ({
     [spaceProviderId, spaceId, itemId],
     "Error opening in Hub",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -545,7 +550,7 @@ export const saveWorkflowAs = ({
     [projectId, workflowPreviewSvg],
     "Could not save workflow locally",
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -565,7 +570,7 @@ export const saveAndCloseWorkflows = ({
     [totalProjects, ...projectIds, ...svgSnapshots, ...params],
     "Could not save and close all workflows",
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -590,7 +595,7 @@ export const importComponent = ({
     [spaceProviderId, spaceId, itemId, projectId, workflowId, x, y],
     "Could not import component",
     true,
-    true,
+    { block: true },
   );
 };
 
@@ -612,7 +617,7 @@ export const importURIAtWorkflowCanvas = ({
     [uri, projectId, workflowId, x, y],
     `Could not import URI at canvas position (${x}, ${y})`,
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -622,7 +627,7 @@ export const abortAiRequest = ({ conversationId, chainType }) => {
     [conversationId, chainType],
     "Could not abort AI request",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -646,7 +651,7 @@ export const makeAiRequest = ({
     ],
     "Could not make AI request",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -656,7 +661,7 @@ export const getAiServerAddress = () => {
     [],
     "Could not get AI server address",
     true,
-    false,
+    { block: false },
   );
 };
 
@@ -666,7 +671,7 @@ export const getHubID = () => {
     [],
     "Could not get hub id",
     true,
-    false,
+    { block: false },
   );
 };
 
@@ -680,7 +685,7 @@ export const openPermissionsDialog = ({
     [spaceProviderId, spaceId, itemId],
     "Could not open server permission dialog",
     false,
-    true,
+    { block: true },
   );
 };
 
@@ -694,7 +699,7 @@ export const executeWorkflow = ({
     [spaceProviderId, spaceId, itemId],
     "Could not remote execute workflow",
     false,
-    false,
+    { block: false },
   );
 };
 
@@ -712,7 +717,7 @@ export const saveJobAsWorkflow = ({
     [spaceProviderId, spaceId, itemId, jobId, jobName],
     "Could not save job as workflow",
     true,
-    true,
+    { block: true },
   );
 };
 
@@ -727,6 +732,6 @@ export const editSchedule = ({
     [spaceProviderId, spaceId, itemId, scheduleId],
     "Could not edit schedule",
     true,
-    true,
+    { block: true },
   );
 };

@@ -17,7 +17,10 @@ type BusEvents = {
 
   [key: `desktop-api-function-result-${string}`]: string | null | boolean;
 
-  "desktop-api-function-block-ui": boolean;
+  "desktop-api-function-block-ui": {
+    block: boolean;
+    darkenBackground?: boolean;
+  };
 
   // bendpoint-selection-preview-{connectionId}__{bendpointIndex}
   [key: `bendpoint-selection-preview-${string}__${string}`]: {
