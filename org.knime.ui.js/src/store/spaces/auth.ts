@@ -40,9 +40,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  disconnectProvider({ commit, state }, { spaceProviderId }) {
+  async disconnectProvider({ commit, state }, { spaceProviderId }) {
     try {
-      API.desktop.disconnectSpaceProvider({ spaceProviderId });
+      await API.desktop.disconnectSpaceProvider({ spaceProviderId });
 
       // update project paths that used this space provider
       const projectsWithDisconnectedProvider = Object.entries(

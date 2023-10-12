@@ -188,7 +188,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       { loading: true, config: { displayMode: "transparent" } },
       { root: true },
     );
-    API.desktop.openWorkflow({
+    await API.desktop.openWorkflow({
       spaceProviderId,
       spaceId,
       itemId: workflowItemId,
