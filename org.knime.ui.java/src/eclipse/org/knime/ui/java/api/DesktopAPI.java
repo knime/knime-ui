@@ -131,7 +131,12 @@ public final class DesktopAPI {
                     var event = MAPPER.createObjectNode() //
                         .put("name", name) //
                         .set("result", MAPPER.valueToTree(res));
-                    getDeps(EventConsumer.class).accept(DESKTOP_API_FUNCTION_RESULT_EVENT_NAME, event);
+                    var eventConsumer = getDeps(EventConsumer.class);
+                    if (eventConsumer != null) {
+                        // eventConsumer is null in case of the 'switchToJavaUI' function
+                        // because it clears all the deps when invoked
+                        eventConsumer.accept(DESKTOP_API_FUNCTION_RESULT_EVENT_NAME, event);
+                    }
                 });
             });
         }
@@ -232,7 +237,7 @@ public final class DesktopAPI {
      */
     @SuppressWarnings("unchecked")
     static <T> T getDeps(final Class<T> clazz) {
-        return (T)dependencies.get(clazz);
+        return dependencies == null ? null : (T)dependencies.get(clazz);
     }
 
 }
