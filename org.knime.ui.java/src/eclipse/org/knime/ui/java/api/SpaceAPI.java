@@ -285,54 +285,13 @@ final class SpaceAPI {
     static String saveJobAsWorkflow(final String spaceProviderId, final String spaceId, final String itemId,
         final String jobId, final String jobName) throws ResourceAccessException {
 
-        final var defaultWorkflowName = jobName;
-        final AtomicReference<RemoteExplorerFileStore> destRef = new AtomicReference<>();
-        final AtomicReference<String> nameRef = new AtomicReference<>();
-
-        Display.getDefault().syncExec(() -> { // NOSONAR
-            @SuppressWarnings("restriction")
-            final var sh = SWTUtilities.getActiveShell();
-            final var dialog = new SpaceResourceSelectionDialog(sh, new String[] { spaceProviderId }, null);
-            dialog.setNameFieldEnabled(true);
-            dialog.setNameFieldDefaultValue(defaultWorkflowName);
-            dialog.setTitle("Target workflow group selection");
-            dialog.setDescription("Select the location to save the selected job to as a workflow.");
-            dialog.setValidator(new Validator() {
-                @Override
-                public String validateSelectionValue(final AbstractExplorerFileStore selection, final String name) {
-                    if (selection == null) {
-                        return "Select a workflow or workflow group as target";
-                    }
-                    AbstractExplorerFileInfo info = selection.fetchInfo();
-                    boolean isWFG = info.isWorkflowGroup();
-                    boolean isWF = info.isWorkflow();
-
-                    if (!isWF && !isWFG) {
-                        return "Only workflows or workflow groups can be selected as target.";
-                    } else if (!info.isModifiable()) {
-                        return "You have no write permissions for the selected "
-                                + (isWF ? "workflow." : "workflow group.");
-                    }
-
-                    dialog.setNameFieldEnabled(isWFG);
-
-                    // In case a workflow is selected we use _its_ name and not the dialog name
-                    return isWFG ? ExplorerFileSystem.validateFilename(dialog.getNameFieldValue()) : null;
-                }
-            });
-            if (Window.OK != dialog.open()) {
-                return;
-            }
-            destRef.set((RemoteExplorerFileStore)dialog.getSelection());
-            nameRef.set(dialog.getNameFieldValue());
-        });
-
-        final var destination = destRef.get();
+        final var destination = promptDestination(jobName, spaceProviderId);
         if (destination == null) {
             return null;
         }
 
-        final var destInfo = destination.fetchInfo();
+        var destinationFileStore = destination.fileStore();
+        final var destInfo = destinationFileStore.fetchInfo();
         final var isWFG = destInfo.isWorkflowGroup();
         // else it's a Workflow (due to Validator)
 
@@ -345,25 +304,25 @@ final class SpaceAPI {
             if (!ask) {
                 return null;
             }
-            final var parent = destination.getParent();
+            final var parent = destinationFileStore.getParent();
             final var parentPath = org.eclipse.core.runtime.Path.forPosix(parent.getFullName());
-            return encodeSpaceItemEnt(space.saveJobAsWorkflow(parentPath, destination.getName(), jobId));
+            return encodeSpaceItemEnt(space.saveJobAsWorkflow(parentPath, destinationFileStore.getName(), jobId));
         }
 
         // selected a workflow group
         if (!destInfo.isModifiable()) {
             DesktopAPUtil.showError("Read-only destination",
                 "The workflow cannot be saved since the selected destination is read-only: \""
-                        + destination.getMountIDWithFullPath() + "\"");
+                        + destinationFileStore.getMountIDWithFullPath() + "\"");
             return null;
         }
-        final var name = nameRef.get();
+        final var name = destination.name();
         if (name == null) {
             throw new IllegalStateException("Missing workflow name");
         }
 
-        final var groupPath = org.eclipse.core.runtime.Path.forPosix(destination.getFullName());
-        final var workflowGroupItemId = space.getItemIdByURI(destination.toURI()).orElseThrow();
+        final var groupPath = org.eclipse.core.runtime.Path.forPosix(destinationFileStore.getFullName());
+        final var workflowGroupItemId = space.getItemIdByURI(destinationFileStore.toURI()).orElseThrow();
         final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId,
             Stream.of(name));
         if (nameCollisions.isEmpty()) {
@@ -395,6 +354,45 @@ final class SpaceAPI {
         // This works around the fact that Chromium cannot handle our custom Object return types
         // (e.g. DefaultSpaceItemEnt)
         return ent.getId();
+    }
+
+    private static record Destination(String name, RemoteExplorerFileStore fileStore) {
+    }
+
+    private static Destination promptDestination(final String defaultWorkflowName, final String spaceProviderId) {
+        final var sh = SWTUtilities.getActiveShell();
+        final var dialog = new SpaceResourceSelectionDialog(sh, new String[]{spaceProviderId}, null);
+        dialog.setNameFieldEnabled(true);
+        dialog.setNameFieldDefaultValue(defaultWorkflowName);
+        dialog.setTitle("Target workflow group selection");
+        dialog.setDescription("Select the location to save the selected job to as a workflow.");
+        dialog.setValidator(new Validator() {
+            @Override
+            public String validateSelectionValue(final AbstractExplorerFileStore selection, final String name) {
+                if (selection == null) {
+                    return "Select a workflow or workflow group as target";
+                }
+                AbstractExplorerFileInfo info = selection.fetchInfo();
+                boolean isWFG = info.isWorkflowGroup();
+                boolean isWF = info.isWorkflow();
+
+                if (!isWF && !isWFG) {
+                    return "Only workflows or workflow groups can be selected as target.";
+                } else if (!info.isModifiable()) {
+                    return "You have no write permissions for the selected " + (isWF ? "workflow." : "workflow group.");
+                }
+
+                dialog.setNameFieldEnabled(isWFG);
+
+                // In case a workflow is selected we use _its_ name and not the dialog name
+                return isWFG ? ExplorerFileSystem.validateFilename(dialog.getNameFieldValue()) : null;
+            }
+        });
+        if (Window.OK == dialog.open()) {
+            return new Destination(dialog.getNameFieldValue(), (RemoteExplorerFileStore)dialog.getSelection());
+        } else {
+            return null;
+        }
     }
 
     @API
