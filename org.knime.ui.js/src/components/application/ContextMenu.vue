@@ -489,7 +489,7 @@ export default defineComponent({
   }
 
   /* select every item is a separator and contains a headline. */
-  & :deep(.separator:has(.section-headline)) {
+  & :deep(.menu-items-sub-level .separator:has(.section-headline)) {
     /* then style all of its siblings, except other headlines */
     & ~ li:not(:has(.section-headline)) {
       & button {
