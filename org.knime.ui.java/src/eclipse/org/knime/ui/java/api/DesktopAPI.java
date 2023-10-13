@@ -127,10 +127,13 @@ public final class DesktopAPI {
             var name = m.getName();
             functionCaller.accept(name, args -> { // NOSONAR
                 Display.getDefault().asyncExec(() -> {
-                    var res = invokeMethod(m, args);
-                    var event = MAPPER.createObjectNode() //
-                        .put("name", name) //
-                        .set("result", MAPPER.valueToTree(res));
+                    var event = MAPPER.createObjectNode().put("name", name);
+                    try {
+                        var res = invokeMethod(m, args);
+                        event.set("result", MAPPER.valueToTree(res));
+                    } catch (Throwable e) {
+                        event.put("error", e.getMessage());
+                    }
                     var eventConsumer = getDeps(EventConsumer.class);
                     if (eventConsumer != null) {
                         // eventConsumer is null in case of the 'switchToJavaUI' function
@@ -142,7 +145,7 @@ public final class DesktopAPI {
         }
     }
 
-    private static Object invokeMethod(final Method m, final Object[] args) {
+    private static Object invokeMethod(final Method m, final Object[] args) throws Throwable {
         var name = m.getName();
         try {
             Object res;
@@ -156,11 +159,7 @@ public final class DesktopAPI {
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             final var ex =
                 e instanceof InvocationTargetException ? ((InvocationTargetException)e).getTargetException() : e;
-            // must never happen
-            var message =
-                "Desktop API function '" + name + "' couldn't be called. Most likely an implementation problem.";
-            LOGGER.error(message, ex);
-            throw new IllegalStateException(message, ex);
+            throw ex;
         }
     }
 
