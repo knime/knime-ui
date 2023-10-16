@@ -52,6 +52,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.api.webui.util.EntityFactory;
@@ -104,7 +105,8 @@ public final class LocalSpaceUtil {
 
             @Override
             public SpaceProviderEnt toEntity() {
-                return EntityFactory.Space.buildSpaceProviderEnt(SpaceProviderEnt.TypeEnum.LOCAL, List.of(localSpace.toEntity()));
+                return EntityFactory.Space.buildSpaceProviderEnt(SpaceProviderEnt.TypeEnum.LOCAL,
+                    List.of(localSpace.toEntity()));
             }
 
             @Override
@@ -133,7 +135,7 @@ public final class LocalSpaceUtil {
      */
     public static WorkflowProject.Origin getLocalOrigin(final Path absolutePath) {
         var relativePath = toRelativePath(absolutePath);
-        return new WorkflowProject.Origin() {
+        return new WorkflowProject.Origin() { // NOSONAR
             @Override
             public String getProviderId() {
                 return LOCAL_SPACE_PROVIDER_ID;
@@ -152,6 +154,11 @@ public final class LocalSpaceUtil {
             @Override
             public Optional<String> getRelativePath() {
                 return Optional.of(relativePath.toString());
+            }
+
+            @Override
+            public ProjectTypeEnum getProjectType() {
+                return getLocalWorkspace().getProjectType(getItemId()).orElseThrow();
             }
         };
     }

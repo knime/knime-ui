@@ -64,6 +64,7 @@ import org.junit.jupiter.api.Test;
 import org.knime.core.node.exec.dataexchange.in.PortObjectInNodeFactory;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.FileUtil;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
@@ -113,7 +114,7 @@ class ImportURITest {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();
             m_wfms.add(wfm);
             WorkflowProjectManager.getInstance().addWorkflowProject("projectId", OpenWorkflow.createWorkflowProject(wfm,
-                "providerID", "spaceId", "itemId", "relativePath", "projectId"));
+                "providerID", "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
                 new WorkflowMiddleware(WorkflowProjectManager.getInstance()));
             var nodeFactoryProvider = mock(NodeFactoryProvider.class);

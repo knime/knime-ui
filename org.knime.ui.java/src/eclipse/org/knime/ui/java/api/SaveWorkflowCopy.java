@@ -59,6 +59,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
@@ -95,8 +96,8 @@ final class SaveWorkflowCopy {
     static void saveCopyOf(final String projectId, final String workflowSvg) throws IOException {
         final var projectManager = WorkflowProjectManager.getInstance();
         final var workflowProject = projectManager.getWorkflowProject(projectId) //
-                .orElseThrow(() -> new NoSuchElementException(
-                    String.format("No local workflow path found for <%s>", projectId)));
+            .orElseThrow(
+                () -> new NoSuchElementException(String.format("No local workflow path found for <%s>", projectId)));
 
         final var workflowManager = workflowProject.openProject();
         final var oldContext = CheckUtils.checkArgumentNotNull(workflowManager.getContextV2());
@@ -130,16 +131,19 @@ final class SaveWorkflowCopy {
         final var newPath = localWorkspace.createWorkflowDir(destWorkflowGroupItemId, fileName, collisionHandling);
 
         final WorkflowContextV2 newContext = WorkflowContextV2.builder() //
-                .withAnalyticsPlatformExecutor(exec -> exec //
-                    .withCurrentUserAsUserId() //
-                    .withLocalWorkflowPath(newPath) //
-                    .withMountpoint(localWorkspace.getId().toUpperCase(Locale.US), localWorkspace.getLocalRootPath()) //
-                    .withTempFolder(execInfo.getTempFolder()))
-                .withLocalLocation()
-                .build();
+            .withAnalyticsPlatformExecutor(exec -> exec //
+                .withCurrentUserAsUserId() //
+                .withLocalWorkflowPath(newPath) //
+                .withMountpoint(localWorkspace.getId().toUpperCase(Locale.US), localWorkspace.getLocalRootPath()) //
+                .withTempFolder(execInfo.getTempFolder()))
+            .withLocalLocation().build();
 
-        final var result = DesktopAPUtil.runWithProgress("Saving workflow", LOGGER, monitor -> // NOSONAR
-            SaveWorkflow.saveWorkflowAs(newContext, monitor, workflowManager, workflowSvg));
+        final var result = DesktopAPUtil.runWithProgress("Saving as", LOGGER, monitor -> {// NOSONAR
+            if (workflowManager.isComponentProjectWFM()) {
+                return SaveWorkflow.saveComponentTemplateAs(monitor, workflowManager, newPath);
+            }
+            return SaveWorkflow.saveWorkflowAs(newContext, monitor, workflowManager, workflowSvg);
+        });
 
         if (result.isEmpty() || !result.get().booleanValue()) {
             // saving has failed
@@ -151,9 +155,11 @@ final class SaveWorkflowCopy {
             // update the `WorkflowProject` origin
             final var localItemId = localWorkspace.getItemId(newPath);
             final var relativePath = localWorkspace.getLocalRootPath().relativize(newPath).toString();
-            final var project = OpenWorkflow.createWorkflowProject(workflowManager,
-                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID, localItemId, relativePath,
-                projectId);
+            final var projectType =
+                workflowManager.isComponentProjectWFM() ? ProjectTypeEnum.COMPONENT : ProjectTypeEnum.WORKFLOW;
+            final var project =
+                OpenWorkflow.createWorkflowProject(workflowManager, LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID,
+                    LocalWorkspace.LOCAL_WORKSPACE_ID, localItemId, relativePath, projectType, projectId);
             projectManager.addWorkflowProject(projectId, project);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }

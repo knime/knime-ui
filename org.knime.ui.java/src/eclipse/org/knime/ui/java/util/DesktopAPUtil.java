@@ -88,6 +88,7 @@ import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.product.rcp.intro.UpdateDetector;
+import org.knime.workbench.editor2.LoadMetaNodeTemplateRunnable;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.ExplorerMountTable;
@@ -155,7 +156,11 @@ public final class DesktopAPUtil {
      */
     public static WorkflowManager loadWorkflow(final IProgressMonitor monitor, final Path path,
         final WorkflowContextV2 workflowContext) {
-        final var wfFile = path.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile();
+        final var wfFile = path.resolve(WorkflowPersistor.WORKFLOW_FILE);
+        var isComponentProject = path.resolve(WorkflowPersistor.TEMPLATE_FILE).toFile().exists();
+        if (isComponentProject) {
+            return loadComponentProject(monitor, wfFile, workflowContext);
+        }
         var wfmRef = new AtomicReference<WorkflowManager>();
         new LoadWorkflowRunnable((wfm, doSave) -> { // NOSONAR
             wfmRef.set(wfm);
@@ -169,8 +174,26 @@ public final class DesktopAPUtil {
                     LOGGER.error(e);
                 }
             }
-        }, wfFile, workflowContext).run(monitor);
+        }, wfFile.toFile(), workflowContext).run(monitor);
         return wfmRef.get();
+    }
+
+    private static WorkflowManager loadComponentProject(final IProgressMonitor monitor, final Path wfFile,
+        final WorkflowContextV2 workflowContext) {
+        var wfmRef = new AtomicReference<WorkflowManager>();
+        new LoadMetaNodeTemplateRunnable(wfmRef::set, CheckUtils.checkNotNull(workflowContext).getTempSourceLocation()
+            .orElse(wfFile.toUri()), workflowContext, false, true).run(monitor);
+        return wfmRef.get();
+        // TODO component encryption
+        //        if (m_manager != null && m_manager.isEncrypted()) {
+        //            WorkflowCipherPrompt prompt = new GUIWorkflowCipherPrompt(true);
+        //            if (!Wrapper.unwrapWFM(m_manager).unlock(prompt)) {
+        //                m_manager = null;
+        //                final var accessDeniedMessage = "Component could not be opened: Access denied";
+        //                openErrorDialogAndCloseEditor(accessDeniedMessage);
+        //                throw new OperationCanceledException(accessDeniedMessage);
+        //            }
+        //        }
     }
 
     private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path) {

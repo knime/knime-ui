@@ -61,6 +61,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 
@@ -228,6 +229,11 @@ public final class AppStatePersistor {
                     @Override
                     public Optional<String> getRelativePath() {
                         return Optional.of(originJson.get(RELATIVE_PATH).asText());
+                    }
+
+                    @Override
+                    public ProjectTypeEnum getProjectType() {
+                        return localSpace.getProjectType(itemId).orElseThrow();
                     }
                 });
             }

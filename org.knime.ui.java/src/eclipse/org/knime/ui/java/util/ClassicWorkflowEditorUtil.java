@@ -83,6 +83,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LoadVersion;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Version;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -249,14 +250,15 @@ public final class ClassicWorkflowEditorUtil {
         return null;
     }
 
-    private static Optional<WorkflowProject.Origin> getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation, final WorkflowManager wfm) {
+    private static Optional<WorkflowProject.Origin>
+        getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation, final WorkflowManager wfm) {
         final var context = wfm.getContextV2();
         final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
         return Optional.of(new WorkflowProject.Origin() {
             @Override
             public String getProviderId() {
-                final var mountpoint = apExecInfo.getMountpoint().orElseThrow(() ->
-                        new IllegalStateException("Missing Mount ID for Hub workflow '" + wfm + "'"));
+                final var mountpoint = apExecInfo.getMountpoint()
+                    .orElseThrow(() -> new IllegalStateException("Missing Mount ID for Hub workflow '" + wfm + "'"));
                 return mountpoint.getFirst().getAuthority();
             }
 
@@ -268,6 +270,11 @@ public final class ClassicWorkflowEditorUtil {
             @Override
             public String getItemId() {
                 return hubLocation.getWorkflowItemId();
+            }
+
+            @Override
+            public ProjectTypeEnum getProjectType() {
+                return ProjectTypeEnum.WORKFLOW; // TODO: Make this dynamic, cannot open Hub components
             }
         });
     }

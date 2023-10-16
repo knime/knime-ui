@@ -60,6 +60,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -169,7 +170,8 @@ final class OpenWorkflow {
             var wfPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
             relativePath = localWorkspace.getLocalRootPath().relativize(wfPath).toString();
         }
-        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath);
+        var projectType = space.getProjectType(itemId).orElseThrow();
+        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
         openWorkflowInWebUIOnly(wfm, wfProj,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
     }
@@ -213,7 +215,8 @@ final class OpenWorkflow {
     }
 
     public static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
-        final String spaceId, final String itemId, final String relativePath, final String oldProjectId) {
+        final String spaceId, final String itemId, final String relativePath, final ProjectTypeEnum projectType,
+        final String oldProjectId) {
         var projectId = oldProjectId == null ? LocalSpaceUtil.getUniqueProjectId(wfm.getName()) : oldProjectId;
         return new WorkflowProject() { // NOSONAR
             @Override
@@ -233,7 +236,7 @@ final class OpenWorkflow {
 
             @Override
             public Optional<Origin> getOrigin() {
-                return Optional.of(new Origin() {
+                return Optional.of(new Origin() { // NOSONAR
                     @Override
                     public String getProviderId() {
                         return providerId;
@@ -253,14 +256,19 @@ final class OpenWorkflow {
                     public Optional<String> getRelativePath() {
                         return Optional.ofNullable(relativePath);
                     }
+
+                    @Override
+                    public ProjectTypeEnum getProjectType() {
+                        return projectType;
+                    }
                 });
             }
         };
     }
 
     public static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String spaceProviderId,
-        final String spaceId, final String itemId, final String relativePath) {
-        return createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, null);
+        final String spaceId, final String itemId, final String relativePath, final ProjectTypeEnum projectType) {
+        return createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType, null);
     }
 
     public static WorkflowProject createWorkflowProject(final WorkflowManager wfm) {

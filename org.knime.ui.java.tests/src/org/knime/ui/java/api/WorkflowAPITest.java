@@ -55,6 +55,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.testing.util.WorkflowManagerUtil;
 
@@ -71,8 +72,8 @@ class WorkflowAPITest {
     void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         var wpm = WorkflowProjectManager.getInstance();
-        wpm.addWorkflowProject("projectId",
-            OpenWorkflow.createWorkflowProject(m_wfm, "providerId", "spaceId", "itemId", "relativePath", "projectId"));
+        wpm.addWorkflowProject("projectId", OpenWorkflow.createWorkflowProject(m_wfm, "providerId", "spaceId", "itemId",
+            "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
 
         WorkflowAPI.setProjectActiveAndEnsureItsLoaded("projectId");
 

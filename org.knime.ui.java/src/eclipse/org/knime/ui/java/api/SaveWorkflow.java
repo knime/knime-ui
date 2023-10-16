@@ -65,6 +65,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.CanceledExecutionException;
+import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -90,6 +91,7 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
  * @author Benjamin Moser, KNIME GmbH, Konstanz
  * @author Kai Franze, KNIME GmbH
  */
+
 final class SaveWorkflow {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveWorkflow.class);
@@ -157,6 +159,27 @@ final class SaveWorkflow {
     }
 
     /**
+     * Save component template as
+     * @param context The context with the information about the new component
+     * @param monitor The monitor to show the progress of this operation
+     * @param wfm The Workflowmanager that will save the component
+     * @param svg workflow SVG
+     */
+    static boolean saveComponentTemplateAs(final IProgressMonitor monitor, final WorkflowManager wfm, final Path path) {
+        monitor.beginTask("Saving a component template", IProgressMonitor.UNKNOWN);
+        try {
+            final var nc = (SubNodeContainer)wfm.getDirectNCParent();
+            nc.saveAsTemplate(path.toFile(), DesktopAPUtil.toExecutionMonitor(monitor));
+        } catch (IOException | CanceledExecutionException | LockFailedException | InvalidSettingsException e) {
+            DesktopAPUtil.showWarningAndLogError("Component save attempt", "Saving the component didn't work", LOGGER, e);
+            monitor.done();
+            return false;
+        }
+        monitor.done();
+        return true;
+    }
+
+    /**
      * Get the {@link WorkflowManager}s of node containers contained in the given workflow manager (no recursion).
      * @param parent The workflow manager whose direct children (contained node containers) to consider
      * @return A list of workflow managers that correspond to node containers appearing in the parent workflow manager.
@@ -189,12 +212,25 @@ final class SaveWorkflow {
     static void saveWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
             final boolean localOnly) {
         if (wfm.isComponentProjectWFM()) {
-            throw new UnsupportedOperationException("Saving a component project is not yet implemented");
+            saveComponentTemplate(monitor, wfm);
         } else if (!localOnly && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo) {
             saveBackToServerOrHub(monitor, wfm, svg);
         } else {
             saveRegularWorkflow(monitor, wfm, svg);
         }
+    }
+
+    private static void saveComponentTemplate(final IProgressMonitor monitor, final WorkflowManager wfm) {
+        var componentPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+        try {
+            ((SubNodeContainer)wfm.getDirectNCParent()).saveAsTemplate(componentPath.toFile(),
+                DesktopAPUtil.toExecutionMonitor(monitor), null);
+        } catch (IOException | CanceledExecutionException | LockFailedException | InvalidSettingsException e) {
+            DesktopAPUtil.showWarningAndLogError("Component save attempt", "Saving the component failed", LOGGER, e);
+            monitor.done();
+            return;
+        }
+        monitor.done();
     }
 
     /**

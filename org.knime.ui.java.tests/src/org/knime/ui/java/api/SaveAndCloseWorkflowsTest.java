@@ -66,6 +66,7 @@ import org.eclipse.ui.progress.IProgressService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.testing.util.WorkflowManagerUtil;
@@ -94,7 +95,7 @@ class SaveAndCloseWorkflowsTest {
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
             wpm.addWorkflowProject(projectId, OpenWorkflow.createWorkflowProject(wfms.get(i - 1), "providerId",
-                "spaceId", "itemId", "relativePath", projectId));
+                "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, projectId));
             wpm.openAndCacheWorkflow(projectId);
         }
 
