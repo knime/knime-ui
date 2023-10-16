@@ -72,13 +72,8 @@ export default defineComponent({
       }
       const initialData = JSON.parse(portView.initialData);
       const settings = initialData?.result?.settings;
-      if (
-        settings &&
-        settings.subscribeToSelection &&
-        settings.publishSelection
-      ) {
-        settings.subscribeToSelection = false;
-        settings.publishSelection = false;
+      if (settings?.selectionMode === "EDIT") {
+        settings.selectionMode = "HIDE";
         portView.initialData = JSON.stringify(initialData);
       }
     },
