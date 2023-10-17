@@ -6,13 +6,12 @@ import { useStore } from "./useStore";
 
 export const usePortBarPositions = () => {
   const store = useStore();
-  const workflowBounds = computed(
-    () => store.getters["workflow/workflowBounds"],
-  );
-  const contentBounds = computed(() => store.getters["canvas/contentBounds"]);
+  // do not update the bounds reactively as this makes the port bars moving around in some cases
+  const workflowBounds = { value: store.getters["workflow/workflowBounds"] };
+  const contentBounds = { value: store.getters["canvas/contentBounds"] };
 
-  const portBarHeight = computed(() => contentBounds.value.height);
-  const portBarYPos = computed(() => contentBounds.value.top);
+  const portBarHeight = computed<number>(() => contentBounds.value.height);
+  const portBarYPos = computed<number>(() => contentBounds.value.top);
 
   /**
    * Get the horizontal position of a metanode's port bar from the store.

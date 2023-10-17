@@ -1,84 +1,73 @@
-<script>
-import { portBar } from "@/mixins";
+<script lang="ts" setup>
+import { usePortBarPositions } from "@/composables/usePortBarPositions";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import NodePort from "./NodePort/NodePort.vue";
+import { computed, provide } from "vue";
+import type {
+  XY,
+  NodePort as NodePortType,
+} from "@/api/gateway-api/generated-api";
+import { portSize, metaNodeBarWidth } from "@/style/shapes.mjs";
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
-export default {
-  components: { NodePort, ConnectorSnappingProvider },
-  mixins: [portBar],
-  provide() {
-    return {
-      // Provide position as anchorPoint for tooltips
-      anchorPoint: this.position,
-    };
-  },
-  props: {
-    /**
-     * The position of the node. Contains of an x and a y parameter
-     * The y coordinate is the topmost edge of the bar.
-     * The x coordinate is the horizontal coordinate of the bar, at the point where the ports are attached.
-     */
-    position: {
-      type: Object,
-      required: true,
-      validator: (position) =>
-        typeof position.x === "number" && typeof position.y === "number",
-    },
-    /**
-     * A list of port configurations, passed-through to `Port`
-     */
-    ports: {
-      type: Array,
-      required: true,
-    },
-    /**
-     * Type of port bar. One of `in`/`out`. Defaults to `in`.
-     * `in` means the bar containing the metanodes input ports, and vice versa.
-     */
-    type: {
-      type: String,
-      default: "in",
-      validator(val) {
-        return ["in", "out"].includes(val);
-      },
-    },
-    /** Id of the metanode, this PortBar is inside of */
-    containerId: {
-      type: String,
-      required: true,
-    },
-  },
-  computed: {
-    portDirection() {
-      return this.type === "out" ? "in" : "out";
-    },
 
-    portPositions() {
-      const delta = this.$shapes.portSize / 2;
-      // horizontal center of ports
-      const positionX = this.type === "out" ? -delta : delta;
+interface Props {
+  /**
+   * The position of the node. Contains of an x and a y parameter
+   * The y coordinate is the topmost edge of the bar.
+   * The x coordinate is the horizontal coordinate of the bar, at the point where the ports are attached.
+   */
+  position: XY;
+  /**
+   * A list of port configurations, passed-through to `Port`
+   */
+  ports: Array<NodePortType>;
+  /**
+   * Type of port bar. One of `in`/`out`. Defaults to `in`.
+   * `in` means the bar containing the metanodes input ports, and vice versa.
+   */
+  type?: "in" | "out";
 
-      // x-coordinate is absolute
-      // y-coordinate is relative to PortBar
-      const mappedPorts = this.ports.map((port) => [
-        positionX,
-        this.portBarItemYPos(port.index, this.ports),
-      ]);
+  /** Id of the metanode, this PortBar is inside of */
+  containerId: string;
+}
 
-      return {
-        in: this.portDirection === "in" ? mappedPorts : [],
-        out: this.portDirection === "out" ? mappedPorts : [],
-      };
-    },
+const portBarPositions = usePortBarPositions();
 
-    barPosition() {
-      return this.type === "out" ? 0 : -this.$shapes.metaNodeBarWidth;
-    },
-  },
-};
+const props = withDefaults(defineProps<Props>(), {
+  type: "in",
+});
+
+// Provide position as anchorPoint for tooltips
+provide("anchorPoint", props.position);
+
+const portDirection = computed(() => (props.type === "out" ? "in" : "out"));
+
+const portPositions = computed(() => {
+  const delta = portSize / 2;
+  // horizontal center of ports
+  const positionX = props.type === "out" ? -delta : delta;
+
+  // x-coordinate is absolute
+  // y-coordinate is relative to PortBar
+  const mappedPorts = props.ports.map<[number, number]>((port) => [
+    positionX,
+    portBarPositions.portBarItemYPos(port.index, props.ports, false),
+  ]);
+
+  return {
+    in: portDirection.value === "in" ? mappedPorts : [],
+    out: portDirection.value === "out" ? mappedPorts : [],
+  };
+});
+
+const portBarHeight = computed(() => portBarPositions.portBarHeight.value);
+
+const barPosition = computed(() =>
+  props.type === "out" ? 0 : -metaNodeBarWidth,
+);
 </script>
 
 <template>
