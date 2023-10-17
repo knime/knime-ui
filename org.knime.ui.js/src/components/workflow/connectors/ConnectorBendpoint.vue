@@ -59,6 +59,7 @@ const transformOrigin = computed(
       ]"
       :width="bendpointSize"
       :height="bendpointSize"
+      data-hide-in-workflow-preview
     />
   </g>
 </template>
