@@ -17,6 +17,7 @@ interface Props {
   suggestDelete: boolean;
   isConnectionHovered: boolean;
   index: number;
+  isLastSegment: boolean;
   isReadonly?: boolean;
   isSelected?: boolean;
   interactive?: boolean;
@@ -43,7 +44,10 @@ const path = computed(() => {
   const x2 = props.segment.end.x;
   const y2 = props.segment.end.y;
 
-  return connectorPath(x1, y1, x2, y2);
+  const shotldOffsetStart = props.index !== 0;
+  const shouldOffsetEnd = !props.isLastSegment;
+
+  return connectorPath(x1, y1, x2, y2, shotldOffsetStart, shouldOffsetEnd);
 });
 
 const centerPoint = computed(() =>

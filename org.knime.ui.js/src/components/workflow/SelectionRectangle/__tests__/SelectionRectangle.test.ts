@@ -21,8 +21,6 @@ const findObjectsForSelectionMock = findObjectsForSelection as Mock<
 >;
 
 describe("SelectionRectangle", () => {
-  const $busEmitSpy = vi.spyOn($bus, "emit");
-
   const doMount = ({
     props = {},
     selectedNodeIds = vi.fn(() => []),
@@ -350,15 +348,6 @@ describe("SelectionRectangle", () => {
         storeConfig.selection.mutations.setDidStartRectangleSelection,
       ).toHaveBeenCalledWith(expect.anything(), false);
     });
-
-    it("selects bendpoints on pointer up", async () => {
-      const { pointerUp, storeConfig } = await mountAndSelect();
-      pointerUp();
-
-      expect(
-        storeConfig.selection.actions.selectBendpoints,
-      ).toHaveBeenCalledWith(expect.anything(), ["connection1__0"]);
-    });
   });
 
   describe("de-Selection with Shift", () => {
@@ -493,44 +482,6 @@ describe("SelectionRectangle", () => {
         ]);
       });
     });
-
-    describe("bendpoints", () => {
-      it("deselects already selected bendpoints with preview", async () => {
-        await mountAndSelect();
-        expect($busEmitSpy).toHaveBeenLastCalledWith(
-          "bendpoint-selection-preview-connection1__0",
-          {
-            preview: "hide",
-            index: 0,
-          },
-        );
-      });
-
-      it("pointerup clears selection preview for bendpoints", async () => {
-        const { pointerUp } = await mountAndSelect();
-        pointerUp();
-
-        expect($busEmitSpy).toHaveBeenLastCalledWith(
-          "bendpoint-selection-preview-connection1__0",
-          {
-            preview: "clear",
-            index: 0,
-          },
-        );
-      });
-
-      it("pointerup deselects bendpoints", async () => {
-        const { pointerUp, storeConfig } = await mountAndSelect();
-        pointerUp();
-
-        expect(
-          storeConfig.selection.actions.selectBendpoints,
-        ).not.toHaveBeenCalled();
-        expect(
-          storeConfig.selection.actions.deselectBendpoints,
-        ).toHaveBeenCalledWith(expect.anything(), ["connection1__0"]);
-      });
-    });
   });
 
   describe("selection with shift", () => {
@@ -564,27 +515,6 @@ describe("SelectionRectangle", () => {
         expect.anything(),
         ["inside-1", "inside-2"],
       );
-    });
-
-    it("adds bendpoints to selection with shift", async () => {
-      const { storeConfig, pointerDown, pointerMove, pointerUp } = doMount();
-
-      pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
-      pointerMove({ clientX: 36, clientY: 36 });
-      await Vue.nextTick();
-
-      expect($busEmitSpy).toHaveBeenLastCalledWith(
-        "bendpoint-selection-preview-connection1__0",
-        {
-          preview: "show",
-          index: 0,
-        },
-      );
-
-      pointerUp();
-      expect(
-        storeConfig.selection.actions.selectBendpoints,
-      ).toHaveBeenCalledWith(expect.anything(), ["connection1__0"]);
     });
 
     it("adds annotations to selection with shift", async () => {

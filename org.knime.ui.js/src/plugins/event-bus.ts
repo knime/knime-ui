@@ -21,12 +21,6 @@ type BusEvents = {
     block: boolean;
     darkenBackground?: boolean;
   };
-
-  // bendpoint-selection-preview-{connectionId}__{bendpointIndex}
-  [key: `bendpoint-selection-preview-${string}__${string}`]: {
-    index: number;
-    preview: "show" | "hide" | "clear" | null;
-  };
 };
 
 const emitter = mitt<BusEvents>();

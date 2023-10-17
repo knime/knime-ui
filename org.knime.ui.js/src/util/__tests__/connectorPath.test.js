@@ -23,7 +23,7 @@ describe("Connector Path", () => {
       destPort.y,
     );
 
-    const expectedPath = "M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5";
+    const expectedPath = "M42.5,7.5 C60.5,7.5 -14.5,40.5 3.5,40.5";
     expect(path).toBe(expectedPath);
   });
 
@@ -35,7 +35,7 @@ describe("Connector Path", () => {
       destPort.y,
     );
 
-    const expectedPath = "M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5";
+    const expectedPath = "M42.5,7.5 C60.5,7.5 -14.5,40.5 3.5,40.5";
     expect(path).toBe(expectedPath);
   });
 });

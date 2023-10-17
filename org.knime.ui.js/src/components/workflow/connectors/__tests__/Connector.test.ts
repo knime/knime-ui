@@ -186,7 +186,7 @@ describe("Connector.vue", () => {
       expect(portShiftMock).toHaveBeenCalledWith(0, 1, false, true);
       expect(portShiftMock).toHaveBeenCalledWith(0, 1, true, false);
       expect(wrapper.find("path").attributes().d).toBe(
-        "M38,-2.5 C63.75,-2.5 -24.25,20 1.5,20",
+        "M38,-2.5 C52.75,-2.5 -13.25,20 1.5,20",
       );
     });
   });
@@ -296,7 +296,7 @@ describe("Connector.vue", () => {
 
       // path for 2 nodes with positions (2,2) -> (12, 14)
       expect(wrapper.find("path").attributes().d).toBe(
-        "M38,-2.5 C57,-2.5 -11,9.5 8,9.5",
+        "M38,-2.5 C48.5,-2.5 -2.5,9.5 8,9.5",
       );
     });
 
@@ -391,7 +391,14 @@ describe("Connector.vue", () => {
 
       doMount({ customStore: $store });
 
-      expect(connectorPathSpy).toHaveBeenCalledWith(104.5, 651, 697.5, 342);
+      expect(connectorPathSpy).toHaveBeenCalledWith(
+        104.5,
+        651,
+        697.5,
+        342,
+        false,
+        false,
+      );
     });
   });
 
@@ -410,9 +417,16 @@ describe("Connector.vue", () => {
       };
       const { wrapper } = doMount({ props });
 
-      expect(connectorPathSpy).toHaveBeenCalledWith(38.5, 18, 30, 18);
+      expect(connectorPathSpy).toHaveBeenCalledWith(
+        38.5,
+        18,
+        30,
+        18,
+        false,
+        false,
+      );
       expect(wrapper.find("path").attributes().d).toBe(
-        "M42.5,18 C50.75,18 17.75,18 26,18",
+        "M42.5,18 C46.625,18 21.875,18 26,18",
       );
     });
 
@@ -430,9 +444,16 @@ describe("Connector.vue", () => {
       };
       const { wrapper } = doMount({ props });
 
-      expect(connectorPathSpy).toHaveBeenCalledWith(0, 18, 7.5, 30);
+      expect(connectorPathSpy).toHaveBeenCalledWith(
+        0,
+        18,
+        7.5,
+        30,
+        false,
+        false,
+      );
       expect(wrapper.find("path").attributes().d).toBe(
-        "M4,18 C8.25,18 -0.75,30 3.5,30",
+        "M4,18 C7.125,18 0.375,30 3.5,30",
       );
     });
   });
@@ -976,6 +997,49 @@ describe("Connector.vue", () => {
         position: { x: 5, y: 5 }, // as returned by the canvas getter
         index: 0,
       });
+    });
+
+    it("should show/hide bendpoints", async () => {
+      const { wrapper, $store } = doMountWithBendpoints();
+
+      const bendpoints = wrapper
+        .findAllComponents(ConnectorBendpoint)
+        .filter((comp) => !comp.props("virtual"));
+
+      // all have the `isVisible` prop set to false
+      expect(bendpoints.every((bp) => !bp.props("isVisible"))).toBe(true);
+
+      await bendpoints.at(0).trigger("mouseenter");
+      expect(bendpoints.at(0).props("isVisible")).toBe(true);
+      await bendpoints.at(0).trigger("mouseleave");
+      expect(bendpoints.at(0).props("isVisible")).toBe(false);
+
+      // when nodes are selected, connections are highlighted and BP are shown
+      await $store.dispatch("selection/selectNodes", ["root:1"]);
+      expect(bendpoints.at(0).props("isVisible")).toBe(true);
+
+      await $store.dispatch("selection/deselectAllObjects");
+      expect(bendpoints.at(0).props("isVisible")).toBe(false);
+
+      // selecting connections also shows bendpoints
+      await $store.dispatch("selection/selectConnection", "root:2_0");
+      expect(bendpoints.at(0).props("isVisible")).toBe(true);
+
+      await $store.dispatch("selection/deselectAllObjects");
+      expect(bendpoints.at(0).props("isVisible")).toBe(false);
+
+      await wrapper
+        .findAllComponents(ConnectorPathSegment)
+        .at(0)
+        .vm.$emit("mouseenter");
+
+      expect(bendpoints.at(0).props("isVisible")).toBe(true);
+
+      await wrapper
+        .findAllComponents(ConnectorPathSegment)
+        .at(0)
+        .vm.$emit("mouseleave");
+      expect(bendpoints.at(0).props("isVisible")).toBe(false);
     });
   });
 });

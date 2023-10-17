@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, onBeforeUnmount } from "vue";
+import { computed } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { $bus } from "@/plugins/event-bus";
 
 interface Props {
   position: XY;
@@ -13,44 +12,16 @@ interface Props {
   isDragging: boolean;
   interactive?: boolean;
   virtual?: boolean;
+  isVisible?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   interactive: true,
   virtual: false,
+  isVisible: false,
 });
-
-const bendpointSelectionPreview = ref<string | null>(null);
-if (!props.virtual) {
-  $bus.on(
-    `bendpoint-selection-preview-${props.connectionId}__${props.index}`,
-    ({ preview }) => {
-      bendpointSelectionPreview.value = preview;
-    },
-  );
-
-  onBeforeUnmount(() => {
-    $bus.off(
-      `bendpoint-selection-preview-${props.connectionId}__${props.index}`,
-    );
-  });
-}
 
 const bendpointSize = computed(() => (props.virtual ? 4 : 6));
-
-const showSelectionPreview = computed(() => {
-  // no preview
-  if (bendpointSelectionPreview.value === null) {
-    return props.isSelected;
-  }
-
-  // preview can override selected state (think: deselect with shift)
-  if (props.isSelected && bendpointSelectionPreview.value === "hide") {
-    return false;
-  }
-
-  return bendpointSelectionPreview.value === "show" || props.isSelected;
-});
 
 const translateX = computed(() => props.position.x - bendpointSize.value / 2);
 const translateY = computed(() => props.position.y - bendpointSize.value / 2);
@@ -70,16 +41,20 @@ const transformOrigin = computed(
       v-if="interactive"
       :width="bendpointSize"
       :height="bendpointSize"
-      :class="['hover-area', { dragging: isDragging, virtual }]"
+      :class="[
+        'hover-area',
+        { dragging: isDragging, virtual, visible: isVisible },
+      ]"
       data-hide-in-workflow-preview
     />
     <rect
       :class="[
         'bendpoint',
         {
-          selected: showSelectionPreview,
+          selected: isSelected,
           'flow-variable': isFlowVariableConnection,
           virtual,
+          visible: isVisible,
         },
       ]"
       :width="bendpointSize"
@@ -108,11 +83,16 @@ const transformOrigin = computed(
 }
 
 .bendpoint {
-  --fill-color: var(--knime-stone-gray);
+  --fill-color: transparent;
 
   pointer-events: none;
   fill: var(--fill-color);
-  stroke: var(--knime-white);
+
+  &.visible {
+    --fill-color: var(--knime-stone-gray);
+
+    stroke: var(--knime-white);
+  }
 
   &.selected {
     --fill-color: var(--knime-cornflower);

@@ -3,7 +3,6 @@ import { defineComponent } from "vue";
 import { mapGetters, mapState, mapActions } from "vuex";
 import throttle from "raf-throttle";
 
-import { parseBendpointId } from "@/util/connectorUtil";
 import { findObjectsForSelection } from "./findObjectsForSelection";
 
 /**
@@ -36,20 +35,11 @@ export default defineComponent({
     annotationIdsToDeselectOnEnd: [],
     selectedAnnotationIdsAtStart: [],
     annotationIdsInsidePreviousSelection: [],
-
-    bendpointIdsToSelectOnEnd: [],
-    bendpointIdsToDeselectOnEnd: [],
-    selectedBendpointIdsAtStart: [],
-    bendpointIdsInsidePreviousSelection: [],
   }),
   computed: {
     ...mapState("workflow", ["activeWorkflow"]),
     ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    ...mapGetters("selection", [
-      "selectedNodeIds",
-      "selectedAnnotationIds",
-      "selectedBendpointIds",
-    ]),
+    ...mapGetters("selection", ["selectedNodeIds", "selectedAnnotationIds"]),
 
     selectionBounds() {
       const { endPos, startPos } = this;
@@ -82,8 +72,6 @@ export default defineComponent({
       "deselectAllObjects",
       "selectAnnotations",
       "deselectAnnotations",
-      "selectBendpoints",
-      "deselectBendpoints",
     ]),
 
     startRectangleSelection(e) {
@@ -102,21 +90,16 @@ export default defineComponent({
       this.annotationIdsToSelectOnEnd = [];
       this.annotationIdsToDeselectOnEnd = [];
 
-      this.bendpointIdsToSelectOnEnd = [];
-      this.bendpointIdsToDeselectOnEnd = [];
-
       // deselect all objects if we do not hold shift or control/meta key
       if (e.shiftKey || e.ctrlKey || e.metaKey) {
         // remember currently selected nodes, the nodes under the rectangle will inverse them
         this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
         this.selectedAnnotationIdsAtStart = [...this.selectedAnnotationIds];
-        this.selectedBendpointIdsAtStart = [...this.selectedBendpointIds];
       } else {
         // TODO: NXT-978 could mock that for faster start of rectangle selection
         this.deselectAllObjects();
         this.selectedNodeIdsAtStart = [];
         this.selectedAnnotationIdsAtStart = [];
-        this.selectedBendpointIdsAtStart = [];
       }
     },
 
@@ -151,35 +134,12 @@ export default defineComponent({
           this.deselectAnnotations(this.annotationIdsToDeselectOnEnd);
         }
 
-        if (this.bendpointIdsToSelectOnEnd.length > 0) {
-          this.selectBendpoints(this.bendpointIdsToSelectOnEnd);
-        }
-
-        if (this.bendpointIdsToDeselectOnEnd.length > 0) {
-          this.deselectBendpoints(this.bendpointIdsToDeselectOnEnd);
-        }
-
         // clear "preview state" of now selected elements
         [...this.nodeIdsToSelectOnEnd, ...this.nodeIdsToDeselectOnEnd].forEach(
           (nodeId) => {
             this.$emit("nodeSelectionPreview", { type: "clear", nodeId });
           },
         );
-
-        // clear "preview state" of now selected elements
-        [
-          ...this.bendpointIdsToSelectOnEnd,
-          ...this.bendpointIdsToDeselectOnEnd,
-        ].forEach((bendpointId) => {
-          const { connectionId, index } = parseBendpointId(bendpointId);
-          this.$bus.emit(
-            `bendpoint-selection-preview-${connectionId}__${index}`,
-            {
-              preview: "clear",
-              index,
-            },
-          );
-        });
 
         [
           ...this.annotationIdsToSelectOnEnd,
@@ -198,10 +158,6 @@ export default defineComponent({
         this.annotationIdsToSelectOnEnd = [];
         this.annotationIdsToDeselectOnEnd = [];
         this.selectedAnnotationIdsAtStart = [];
-
-        this.bendpointIdsToSelectOnEnd = [];
-        this.bendpointIdsToDeselectOnEnd = [];
-        this.selectedBendpointIdsAtStart = [];
 
         this.$store.commit("selection/setDidStartRectangleSelection", false);
       }, 0);
@@ -225,26 +181,18 @@ export default defineComponent({
     }),
 
     previewSelectionForItemsInRectangle(startPos, endPos) {
-      let {
-        nodesInside,
-        nodesOutside,
-        annotationsInside,
-        annotationsOutside,
-        bendpointsInside,
-        bendpointsOutside,
-      } = findObjectsForSelection({
-        startPos,
-        endPos,
-        workflow: this.activeWorkflow,
-      });
+      let { nodesInside, nodesOutside, annotationsInside, annotationsOutside } =
+        findObjectsForSelection({
+          startPos,
+          endPos,
+          workflow: this.activeWorkflow,
+        });
 
       // remember this for the real selection at the end of the movement (pointerup)
       let selectNodes = [];
       let deselectNodes = [];
       let selectAnnotations = [];
       let deselectAnnotations = [];
-      let selectBendpoints = [];
-      let deselectBendpoints = [];
 
       // do the preview
       nodesInside.forEach((nodeId) => {
@@ -292,49 +240,6 @@ export default defineComponent({
         }
       });
 
-      // do the preview
-      bendpointsInside.forEach((bendpointId) => {
-        const [connectionId, index] = bendpointId.split("__");
-
-        // support for shift (remove selection on selected ones)
-        if (this.selectedBendpointIdsAtStart?.includes(bendpointId)) {
-          this.$bus.emit(
-            `bendpoint-selection-preview-${connectionId}__${index}`,
-            {
-              preview: "hide",
-              index: parseInt(index, 10),
-            },
-          );
-          deselectBendpoints.push(bendpointId);
-        } else {
-          this.$bus.emit(
-            `bendpoint-selection-preview-${connectionId}__${index}`,
-            {
-              preview: "show",
-              index: parseInt(index, 10),
-            },
-          );
-          selectBendpoints.push(bendpointId);
-        }
-      });
-
-      // As we update the selection, we need to tell every node that is NOW outside
-      // the selection AND that it used to be inside the previous selection
-      // to clear its selected state
-      bendpointsOutside.forEach((bendpointId) => {
-        if (this.bendpointIdsInsidePreviousSelection?.includes(bendpointId)) {
-          const [connectionId, index] = bendpointId.split("__");
-
-          this.$bus.emit(
-            `bendpoint-selection-preview-${connectionId}__${index}`,
-            {
-              preview: "clear",
-              index: parseInt(index, 10),
-            },
-          );
-        }
-      });
-
       this.nodeIdsInsidePreviousSelection = nodesInside;
       this.nodeIdsToSelectOnEnd = selectNodes;
       this.nodeIdsToDeselectOnEnd = deselectNodes;
@@ -342,10 +247,6 @@ export default defineComponent({
       this.annotationIdsInsidePreviousSelection = annotationsInside;
       this.annotationIdsToSelectOnEnd = selectAnnotations;
       this.annotationIdsToDeselectOnEnd = deselectAnnotations;
-
-      this.bendpointIdsInsidePreviousSelection = bendpointsInside;
-      this.bendpointIdsToSelectOnEnd = selectBendpoints;
-      this.bendpointIdsToDeselectOnEnd = deselectBendpoints;
     },
   },
 });

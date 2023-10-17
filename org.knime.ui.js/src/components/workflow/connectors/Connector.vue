@@ -265,6 +265,20 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
     store.dispatch("selection/selectBendpoint", bendpointId);
   }
 };
+
+const hoveredBendpoint = ref<number | null>(null);
+
+const isBendpointVisible = computed(() => {
+  return (
+    isConnectionSelected.value(props.id) ||
+    isHighlighted.value ||
+    isHovered.value
+  );
+});
+
+const setHoveredBendpoint = (isHovered: boolean, index: number) => {
+  hoveredBendpoint.value = isHovered ? index : null;
+};
 </script>
 
 <template>
@@ -281,6 +295,7 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
         :is-highlighted="isHighlighted"
         :is-dragged-over="isDraggedOver"
         :is-readonly="!isWorkflowWritable"
+        :is-last-segment="index === pathSegments.length - 1"
         :is-selected="isConnectionSelected(id) && !isDragging"
         :interactive="interactive"
         :streaming="streaming"
@@ -315,6 +330,9 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
         :index="index - 1"
         :connection-id="id"
         :interactive="interactive && isWorkflowWritable"
+        :is-visible="isBendpointVisible || hoveredBendpoint === index - 1"
+        @mouseenter="setHoveredBendpoint(true, index - 1)"
+        @mouseleave="setHoveredBendpoint(false, index - 1)"
         @pointerdown.left="
           onBendpointPointerdown($event, index, pathSegments[index].start)
         "
