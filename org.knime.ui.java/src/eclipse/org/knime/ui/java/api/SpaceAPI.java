@@ -170,14 +170,14 @@ final class SpaceAPI {
      * @return {@code true} if all files could be uploaded, {@code false} otherwise
      */
     @API
+    @SuppressWarnings("java:S2440") // false positive for SpaceDestinationPicker
     static boolean copyBetweenSpaces(final String spaceProviderId, final String spaceId, final Object[] arr) {
         if (arr.length == 0) {
             return true;
         }
 
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        final var sourceSpaceProvider = Optional.ofNullable(spaceProviders.getProvidersMap().get(spaceProviderId)) //
-                .orElseThrow(() -> new NoSuchElementException("Space provider '" + spaceProviderId + "' not found."));
+        final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
 
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         final var selection = Arrays.stream(arr) //
@@ -212,8 +212,7 @@ final class SpaceAPI {
         if (targetMountId.equalsIgnoreCase(LocalWorkspace.LOCAL_WORKSPACE_ID)) {
             targetSpaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
         } else {
-            targetSpaceProvider = Optional.ofNullable(spaceProviders.getProvidersMap().get(targetMountId)) //
-                    .orElseThrow(() -> new NoSuchElementException("Space provider '" + targetMountId + "' not found."));
+            targetSpaceProvider = getSpaceProvider(targetMountId);
         }
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
         return ClassicAPCopyMoveLogic.copy(shellProvider, sourceSpaceProvider, selection, targetSpaceProvider,
@@ -230,12 +229,7 @@ final class SpaceAPI {
      */
     @API
     static void openInBrowser(final String spaceProviderId, final String spaceId, final String itemId) {
-        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        final var sourceSpaceProvider = spaceProviders.getProvidersMap().get(spaceProviderId);
-        if (sourceSpaceProvider == null) {
-            throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
-        }
-
+        final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
         String url;
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         if (sourceSpaceProvider.getType() == TypeEnum.HUB) {
@@ -245,7 +239,6 @@ final class SpaceAPI {
         } else {
             throw new IllegalStateException("Operation not supported for local items");
         }
-
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
     }
 
@@ -260,11 +253,7 @@ final class SpaceAPI {
     @API
     static void openAPIDefinition(final String spaceProviderId, final String spaceId, final String itemId) {
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        final var sourceSpaceProvider = spaceProviders.getProvidersMap().get(spaceProviderId);
-        if (sourceSpaceProvider == null) {
-            throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
-        }
-
+        final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         final var url = ClassicAPBuildServerURL.getAPIDefinition(itemId, sourceSpaceProvider, sourceSpace);
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
@@ -292,12 +281,12 @@ final class SpaceAPI {
 
         var destinationFileStore = destination.fileStore();
         final var destInfo = destinationFileStore.fetchInfo();
-        final var isWFG = destInfo.isWorkflowGroup();
+        final var isWorkflowGroup = destInfo.isWorkflowGroup();
         // else it's a Workflow (due to Validator)
 
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
 
-        if (!isWFG) {
+        if (!isWorkflowGroup) {
             // workflow, ask for overwrite
             final var ask = DesktopAPUtil.openQuestion("Confirm to overwrite",
                 "The following workflow will be overwritten:\n" + destination + "\nAre you sure?");
@@ -373,19 +362,19 @@ final class SpaceAPI {
                     return "Select a workflow or workflow group as target";
                 }
                 AbstractExplorerFileInfo info = selection.fetchInfo();
-                boolean isWFG = info.isWorkflowGroup();
-                boolean isWF = info.isWorkflow();
+                boolean isWorkflowGroup = info.isWorkflowGroup();
+                boolean isWorkflow = info.isWorkflow();
 
-                if (!isWF && !isWFG) {
+                if (!isWorkflow && !isWorkflowGroup) {
                     return "Only workflows or workflow groups can be selected as target.";
                 } else if (!info.isModifiable()) {
-                    return "You have no write permissions for the selected " + (isWF ? "workflow." : "workflow group.");
+                    return "You have no write permissions for the selected " + (isWorkflow ? "workflow." : "workflow group.");
                 }
 
-                dialog.setNameFieldEnabled(isWFG);
+                dialog.setNameFieldEnabled(isWorkflowGroup);
 
                 // In case a workflow is selected we use _its_ name and not the dialog name
-                return isWFG ? ExplorerFileSystem.validateFilename(dialog.getNameFieldValue()) : null;
+                return isWorkflowGroup ? ExplorerFileSystem.validateFilename(dialog.getNameFieldValue()) : null;
             }
         });
         if (Window.OK == dialog.open()) {
@@ -400,5 +389,17 @@ final class SpaceAPI {
             final String scheduleId) throws ResourceAccessException {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         return space.editScheduleInfo(itemId, scheduleId);
+    }
+
+    private static SpaceProvider getSpaceProvider(final String spaceProviderId) {
+        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+        if (spaceProviders == null) {
+            throw new NoSuchElementException("Available space providers could not be determined.");
+        }
+        var spaceProvider = spaceProviders.getProvidersMap().get(spaceProviderId);
+        if (spaceProvider == null) {
+            throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
+        }
+        return spaceProvider;
     }
 }

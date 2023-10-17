@@ -145,6 +145,7 @@ public final class DesktopAPI {
         }
     }
 
+    @SuppressWarnings("java:S112")  // generic exception reasonable here
     private static Object invokeMethod(final Method m, final Object[] args) throws Throwable {
         var name = m.getName();
         try {
@@ -156,10 +157,8 @@ public final class DesktopAPI {
             }
             LOGGER.debug("Desktop API function successfully called: " + name);
             return res;
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            final var ex =
-                e instanceof InvocationTargetException ? ((InvocationTargetException)e).getTargetException() : e;
-            throw ex;
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throw ex instanceof InvocationTargetException invocationTargetException ? invocationTargetException.getTargetException() : ex;
         }
     }
 
