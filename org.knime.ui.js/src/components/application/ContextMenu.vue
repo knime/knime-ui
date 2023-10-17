@@ -133,6 +133,7 @@ export default defineComponent({
       "selectedNodes",
       "selectedAnnotations",
       "selectedConnections",
+      "selectedBendpointIds",
       "singleSelectedNode",
       "isSelectionEmpty",
     ]),
@@ -284,9 +285,6 @@ export default defineComponent({
     setMenuItems() {
       const areNodesSelected = this.selectedNodes.length > 0;
       const areAnnotationsSelected = this.selectedAnnotations.length > 0;
-      const areConnectionsSelected = this.selectedConnections.length > 0;
-      const isAnythingSelected =
-        areNodesSelected || areAnnotationsSelected || areConnectionsSelected;
 
       const isLoopEnd = Boolean(
         this.singleSelectedNode?.loopInfo?.allowedActions,
@@ -360,7 +358,7 @@ export default defineComponent({
       const annotationsGroup: Array<MenuItem> = [
         ...this.mapToShortcut({
           name: "addWorkflowAnnotation",
-          isVisible: !isAnythingSelected,
+          isVisible: this.isSelectionEmpty,
         }),
         ...filterItemVisibility(
           {

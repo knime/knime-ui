@@ -279,6 +279,14 @@ const isBendpointVisible = computed(() => {
 const setHoveredBendpoint = (isHovered: boolean, index: number) => {
   hoveredBendpoint.value = isHovered ? index : null;
 };
+
+const onBendpointRightClick = (event: PointerEvent, index: number) => {
+  const bendpointId = getBendpointId(props.id, index - 1);
+
+  hoveredBendpoint.value = index - 1;
+  store.dispatch("selection/selectBendpoint", bendpointId);
+  store.dispatch("application/toggleContextMenu", { event });
+};
 </script>
 
 <template>
@@ -336,6 +344,7 @@ const setHoveredBendpoint = (isHovered: boolean, index: number) => {
         @pointerdown.left="
           onBendpointPointerdown($event, index, pathSegments[index].start)
         "
+        @pointerdown.right="onBendpointRightClick($event, index)"
         @click="onBendpointClick($event, index)"
       />
     </template>
