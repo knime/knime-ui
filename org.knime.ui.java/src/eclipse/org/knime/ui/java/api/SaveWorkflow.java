@@ -160,9 +160,10 @@ final class SaveWorkflow {
 
     /**
      * Save component template as
+     *
      * @param context The context with the information about the new component
      * @param monitor The monitor to show the progress of this operation
-     * @param wfm The Workflowmanager that will save the component
+     * @param wfm The workflow manager that will save the component
      * @param svg workflow SVG
      */
     static boolean saveComponentTemplateAs(final IProgressMonitor monitor, final WorkflowManager wfm, final Path path) {
@@ -171,7 +172,9 @@ final class SaveWorkflow {
             final var nc = (SubNodeContainer)wfm.getDirectNCParent();
             nc.saveAsTemplate(path.toFile(), DesktopAPUtil.toExecutionMonitor(monitor));
         } catch (IOException | CanceledExecutionException | LockFailedException | InvalidSettingsException e) {
-            DesktopAPUtil.showWarningAndLogError("Component save attempt", "Saving the component didn't work", LOGGER, e);
+            final var title = "Component save attempt";
+            final var message = "Saving the component didn't work";
+            DesktopAPUtil.showWarningAndLogError(title, message, LOGGER, e);
             monitor.done();
             return false;
         }
