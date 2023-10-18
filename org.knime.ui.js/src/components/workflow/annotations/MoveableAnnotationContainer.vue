@@ -39,9 +39,12 @@ watch(
   { deep: true },
 );
 
-const useMoveObjectResult = useMoveObject({
-  id: props.id,
-  initialPosition: computed(() => ({ x: props.bounds.x, y: props.bounds.y })),
+const initialPosition = computed(() => ({
+  x: props.bounds.x,
+  y: props.bounds.y,
+}));
+
+const { createPointerDownHandler } = useMoveObject({
   objectElement: computed(() => container.value as HTMLElement),
   onMoveStartCallback: () => {
     if (!isAnnotationSelected.value(props.id)) {
@@ -58,7 +61,8 @@ const onPointerDown = (event: PointerEvent) => {
     return;
   }
 
-  useMoveObjectResult.onPointerDown(event);
+  const handler = createPointerDownHandler(initialPosition);
+  handler(event);
 };
 
 useEscapeStack({

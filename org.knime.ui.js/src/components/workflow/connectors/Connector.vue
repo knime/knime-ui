@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, toRefs, watch, toRef } from "vue";
-import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
@@ -12,6 +11,7 @@ import ConnectorPathSegment from "./ConnectorPathSegment.vue";
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 import { useConnectorPathSegments } from "./useConnectorPathSegments";
 import type { ConnectorProps } from "./types";
+import { useMoveObject } from "@/composables/useMoveObject";
 
 defineOptions({ inheritAttrs: false });
 
@@ -178,6 +178,24 @@ const onVirtualBendpointAdded = async ({ position, index, event }) => {
   itemRefs.value[index].$el.dispatchEvent(ptrEvent);
 };
 
+const { createPointerDownHandler } = useMoveObject({
+  useGridSnapping: false,
+  onMoveEndCallback: () => {
+    if (virtualBendpoint.value) {
+      store.dispatch("workflow/addBendpoint", {
+        connectionId: props.id,
+        position: virtualBendpoint.value.position,
+        index: virtualBendpoint.value.index,
+      });
+      virtualBendpoint.value = null;
+
+      return false;
+    }
+
+    return true;
+  },
+});
+
 const onBendpointPointerdown = (
   event: PointerEvent,
   index: number,
@@ -187,8 +205,6 @@ const onBendpointPointerdown = (
     return;
   }
 
-  const eventTarget = event.target as HTMLElement;
-
   const bendpointId = getBendpointId(props.id, index - 1);
   if (
     !isBendpointSelected.value(bendpointId, props.sourceNode, props.destNode)
@@ -197,41 +213,8 @@ const onBendpointPointerdown = (
   }
   store.dispatch("selection/selectBendpoint", bendpointId);
 
-  event.stopPropagation();
-  eventTarget.setPointerCapture(event.pointerId);
-
-  const onMove = throttle(({ clientX, clientY }) => {
-    const [moveX, moveY] = screenToCanvasCoordinates.value([clientX, clientY]);
-
-    const deltaX = moveX - position.x;
-    const deltaY = moveY - position.y;
-    store.commit("workflow/setIsDragging", true);
-    store.commit("workflow/setMovePreview", {
-      deltaX,
-      deltaY,
-    });
-  });
-
-  const onUp = () => {
-    eventTarget.releasePointerCapture(event.pointerId);
-
-    if (virtualBendpoint.value) {
-      store.dispatch("workflow/addBendpoint", {
-        connectionId: props.id,
-        position: virtualBendpoint.value.position,
-        index: virtualBendpoint.value.index,
-      });
-      virtualBendpoint.value = null;
-    } else {
-      store.dispatch("workflow/moveObjects");
-    }
-
-    eventTarget.removeEventListener("pointermove", onMove);
-    eventTarget.removeEventListener("pointerup", onUp);
-  };
-
-  eventTarget.addEventListener("pointermove", onMove);
-  eventTarget.addEventListener("pointerup", onUp);
+  const handler = createPointerDownHandler(computed(() => position));
+  handler(event);
 };
 
 watch(

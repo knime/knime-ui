@@ -42,7 +42,10 @@ import Connector from "../Connector.vue";
 import ConnectorPathSegment from "../ConnectorPathSegment.vue";
 import ConnectorBendpoint from "../ConnectorBendpoint.vue";
 
-vi.mock("gsap", () => ({ default: { to: vi.fn() } }));
+vi.mock("gsap", () => ({
+  default: { to: vi.fn() },
+  gsap: { utils: { snap: (input) => input } },
+}));
 const mockedAPI = deepMocked(API);
 
 describe("Connector.vue", () => {
@@ -51,6 +54,18 @@ describe("Connector.vue", () => {
 
   beforeAll(() => {
     window.alert = vi.fn();
+    class MockPointerEvent extends Event {
+      clientX = null;
+      clientY = null;
+      constructor(name, args) {
+        super(name, args);
+        this.clientX = args?.clientX;
+        this.clientY = args?.clientY;
+      }
+    }
+    window.PointerEvent = MockPointerEvent as any;
+    HTMLElement.prototype.setPointerCapture = vi.fn();
+    HTMLElement.prototype.releasePointerCapture = vi.fn();
   });
 
   afterEach(() => {
@@ -83,6 +98,7 @@ describe("Connector.vue", () => {
       selection: selectionStore,
       workflow: workflowStore,
       canvas: {
+        state: { zoomFactor: 1 },
         getters: {
           screenToCanvasCoordinates: vi.fn().mockReturnValue(() => [5, 5]),
         },
@@ -860,9 +876,6 @@ describe("Connector.vue", () => {
     });
 
     it("handles dragging bendpoints", async () => {
-      HTMLElement.prototype.setPointerCapture = vi.fn();
-      HTMLElement.prototype.releasePointerCapture = vi.fn();
-
       const { wrapper, $store, dispatchSpy } = doMountWithBendpoints();
 
       const bendpoint = wrapper.findAllComponents(ConnectorBendpoint).at(4);
@@ -875,6 +888,8 @@ describe("Connector.vue", () => {
       // start the drag
       bendpoint.trigger("pointerdown", {
         stopPropagation: vi.fn(),
+        clientX: 0,
+        clientY: 0,
       });
 
       // bendpoint gets selected
@@ -885,7 +900,13 @@ describe("Connector.vue", () => {
       expect($store.state.workflow.isDragging).toBe(false);
 
       // move the bendpoint
-      bendpoint.trigger("pointermove", { clientX: 100, clientY: 100 });
+      const ptrEvent = new PointerEvent("pointermove", {
+        clientX: 100,
+        clientY: 100,
+      });
+      // fire twice because first move is being ignored due to a Windows (touchpad) issue
+      document.dispatchEvent(ptrEvent);
+      document.dispatchEvent(ptrEvent);
       await nextTick();
 
       expect($store.state.workflow.movePreviewDelta).toEqual({ x: -7, y: -5 });
@@ -928,11 +949,6 @@ describe("Connector.vue", () => {
     });
 
     it("adds bendpoint via virtual bendpoints", async () => {
-      class MockPointerEvent extends Event {}
-      window.PointerEvent = MockPointerEvent as any;
-      HTMLElement.prototype.setPointerCapture = vi.fn();
-      HTMLElement.prototype.releasePointerCapture = vi.fn();
-
       const { wrapper, $store, connection, dispatchSpy } =
         doMountWithBendpoints();
 
@@ -946,10 +962,11 @@ describe("Connector.vue", () => {
         .filter((comp) => !comp.props("virtual")).length;
 
       expect($store.state.workflow.virtualBendpoints).toEqual({});
+
       await firstVirtualBendpoint.trigger("pointerdown", {
-        clientX: 100,
-        clientY: 100,
-        button: 0,
+        stopPropagation: vi.fn(),
+        clientX: 0,
+        clientY: 0,
       });
       await nextTick();
 
@@ -978,6 +995,15 @@ describe("Connector.vue", () => {
       await nextTick();
       expect(addedBendpoint.props("isSelected")).toBe(true);
 
+      // move the bendpoint
+      const ptrEvent = new PointerEvent("pointermove", {
+        clientX: 100,
+        clientY: 100,
+      });
+      // fire twice because first move is being ignored due to a Windows (touchpad) issue
+      document.dispatchEvent(ptrEvent);
+      document.dispatchEvent(ptrEvent);
+      await nextTick();
       await addedBendpoint.trigger("pointermove", {
         clientX: 100,
         clientY: 100,

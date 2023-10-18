@@ -85,10 +85,9 @@ const notifyNodeDraggingListeners = (x: number, y: number) => {
     lastHitTarget = isEventIgnored ? null : hitTarget;
   }
 };
+const position = toRef(props, "position");
 
-const { onPointerDown } = useMoveObject({
-  id: props.id,
-  initialPosition: toRef(props, "position"),
+const { createPointerDownHandler } = useMoveObject({
   objectElement: computed(() => {
     return container.value.querySelector(DRAG_TARGET_SELECTOR) as HTMLElement;
   }),
@@ -135,6 +134,8 @@ const { onPointerDown } = useMoveObject({
   },
 });
 
+const onPointerDown = createPointerDownHandler(position);
+
 useEscapeStack({
   group: "OBJECT_DRAG",
   alwaysActive: true,
@@ -152,7 +153,7 @@ useEscapeStack({
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :data-node-id="id"
     :class="[{ dragging: isDragging && isNodeSelected(id) }]"
-    @pointerdown.left="onPointerDown($event)"
+    @pointerdown.left="onPointerDown"
   >
     <slot :position="translationAmount" />
   </g>
