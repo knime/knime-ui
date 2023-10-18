@@ -2886,7 +2886,7 @@ export namespace SpaceItem {
     }
 }
 /**
- * Describes from where a workflow project originates.
+ * Describes from where a workflow or component project originates.
  * @export
  * @interface SpaceItemReference
  */
@@ -2911,6 +2911,12 @@ export interface SpaceItemReference {
      */
     itemId: string;
     /**
+     *
+     * @type {string}
+     * @memberof SpaceItemReference
+     */
+    projectType?: SpaceItemReference.ProjectTypeEnum;
+    /**
      * List of ids of the ancestors. The element at the first position in the list is the direct parent of this item, the second the parent of the parent etc. An empty list if the item is at root level.
      * @type {Array<string>}
      * @memberof SpaceItemReference
@@ -2920,6 +2926,20 @@ export interface SpaceItemReference {
 }
 
 
+/**
+ * @export
+ * @namespace SpaceItemReference
+ */
+export namespace SpaceItemReference {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ProjectTypeEnum {
+        Workflow = 'Workflow',
+        Component = 'Component'
+    }
+}
 /**
  * Holds the id and name of a space path segment.
  * @export
