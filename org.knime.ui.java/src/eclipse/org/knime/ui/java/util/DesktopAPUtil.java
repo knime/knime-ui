@@ -148,7 +148,8 @@ public final class DesktopAPUtil {
     }
 
     /**
-     * Load a workflow from a given local path.
+     * Loads a workflow from a given local path.
+     *
      * @param monitor progress monitor
      * @param path the workflow directory
      * @param workflowContext the workflow context

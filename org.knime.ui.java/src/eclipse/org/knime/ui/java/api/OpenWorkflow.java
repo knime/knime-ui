@@ -170,7 +170,10 @@ final class OpenWorkflow {
             var wfPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
             relativePath = localWorkspace.getLocalRootPath().relativize(wfPath).toString();
         }
-        var projectType = space.getProjectType(itemId).orElseThrow();
+
+        // TODO: NXT-2101, Enable components on the Hub as well
+        var projectType = space.getProjectType(itemId).orElse(ProjectTypeEnum.WORKFLOW);
+
         var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
         openWorkflowInWebUIOnly(wfm, wfProj,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
