@@ -74,12 +74,10 @@ import org.knime.core.node.KNIMEComponentInformation;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.NodeCreationType;
-import org.knime.core.ui.util.NodeTemplateId;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.webui.entity.AddNodeCommandEnt.AddNodeCommandEntBuilder;
 import org.knime.gateway.api.webui.entity.NodeFactoryKeyEnt;
-import org.knime.gateway.api.webui.entity.NodeFactoryKeyEnt.NodeFactoryKeyEntBuilder;
 import org.knime.gateway.api.webui.entity.WorkflowCommandEnt.KindEnum;
 import org.knime.gateway.api.webui.entity.XYEnt.XYEntBuilder;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
@@ -246,8 +244,7 @@ public final class ImportURI {
                 askToInstallExtension(nodeImport);
                 return false;
             }
-            var key = getNodeFactoryKey(nodeImport.getCanonicalNodeFactory(), nodeImport.getNodeName(),
-                nodeImport.isDynamicNode());
+            var key = getNodeFactoryKey(nodeImport.getFactoryId());
             return importNode(key, null, projectId, workflowId, canvasX, canvasY);
         } else if (entityImport instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.WorkflowTemplate) {
@@ -264,10 +261,9 @@ public final class ImportURI {
     }
 
     private static boolean isNodeInstalled(final NodeImport nodeImport) {
-        var nodeTemplate = NodeTemplateId.callWithNodeTemplateIdVariants(nodeImport.getCanonicalNodeFactory(),
-            nodeImport.getNodeName(), templateId -> DefaultNodeRepositoryService.getInstance()
-                .getNodeTemplates(Collections.singletonList(templateId)).get(templateId),
-            true);
+        var factoryId = nodeImport.getFactoryId();
+        var nodeTemplate = DefaultNodeRepositoryService.getInstance()
+            .getNodeTemplates(Collections.singletonList(factoryId)).get(factoryId);
         return nodeTemplate != null;
     }
 
@@ -370,15 +366,9 @@ public final class ImportURI {
         }
     }
 
-    private static NodeFactoryKeyEnt getNodeFactoryKey(final String nodeFactoryClassName, final String nodeName,
-        final boolean isDynamicNode) {
-        if (isDynamicNode) {
-            var templateId = NodeTemplateId.ofDynamicNodeFactory(nodeFactoryClassName, nodeName, true);
-            return DefaultNodeRepositoryService.getInstance().getNodeTemplates(List.of(templateId)).get(templateId)
-                .getNodeFactory();
-        } else {
-            return builder(NodeFactoryKeyEntBuilder.class).setClassName(nodeFactoryClassName).build();
-        }
+    private static NodeFactoryKeyEnt getNodeFactoryKey(final String factoryId) {
+        return DefaultNodeRepositoryService.getInstance().getNodeTemplates(List.of(factoryId)).get(factoryId)
+            .getNodeFactory();
     }
 
     private static class FromFileEntityImport implements EntityImport {

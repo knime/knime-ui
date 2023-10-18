@@ -83,18 +83,13 @@ public class TestURIImporter implements URIImporter {
             return Optional.of(new NodeImport() {
 
                 @Override
-                public boolean isDynamicNode() {
-                    return false;
+                public String getFactoryId() {
+                    return null;
                 }
 
                 @Override
                 public UpdateSiteInfo getUpdateSiteInfo() {
                     return null;
-                }
-
-                @Override
-                public String getNodeName() {
-                    return "Test URI Importer Node Name";
                 }
 
                 @Override
@@ -104,11 +99,6 @@ public class TestURIImporter implements URIImporter {
 
                 @Override
                 public String getFeatureName() {
-                    return null;
-                }
-
-                @Override
-                public String getCanonicalNodeFactory() {
                     return null;
                 }
             });
