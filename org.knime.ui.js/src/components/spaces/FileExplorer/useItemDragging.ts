@@ -87,7 +87,15 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
     __replaceGhostPreview = dragGhostHelpers.replaceGhostPreview;
   };
 
-  const onDragEnter = (index: number, isGoBackItem = false) => {
+  const onDragEnter = (
+    event: DragEvent,
+    index: number,
+    isGoBackItem = false,
+  ) => {
+    if (!isDragging.value) {
+      return;
+    }
+
     if (multiSelection.isSelected(index) && !isGoBackItem) {
       return;
     }
@@ -95,6 +103,12 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
     if (index !== startDragItemIndex.value) {
       const draggedOverEl = getItemElementByRefIndex(index, isGoBackItem);
       draggedOverEl.classList.add("dragging-over");
+    }
+  };
+
+  const onDragOver = (event: DragEvent) => {
+    if (isDragging.value) {
+      event.preventDefault();
     }
   };
 
@@ -113,19 +127,25 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
     }
   });
 
-  const onDragLeave = (index: number, isGoBackItem = false) => {
+  const onDragLeave = (
+    event: DragEvent,
+    index: number,
+    isGoBackItem = false,
+  ) => {
     const draggedOverEl = getItemElementByRefIndex(index, isGoBackItem);
     draggedOverEl.classList.remove("dragging-over");
   };
 
-  const onDragEnd = (
-    event: DragEvent,
-    item: FileExplorerItem,
-  ): {
+  type DragEndReturn = {
     event: DragEvent;
     sourceItem: FileExplorerItem;
     onComplete: (isSuccess: boolean) => void;
-  } | null => {
+  } | null;
+
+  const onDragEnd = (
+    event: DragEvent,
+    item: FileExplorerItem,
+  ): DragEndReturn => {
     isDragging.value = false;
 
     if (event.dataTransfer.dropEffect === "none") {
@@ -146,14 +166,17 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
     return { event, sourceItem: item, onComplete };
   };
 
-  const onDrop = (
-    index: number,
-    isGoBackItem = false,
-  ): {
+  type DropReturn = {
     sourceItems: Array<string>;
     targetItem: string;
     onComplete: (isSuccess: boolean) => void;
-  } | null => {
+  } | null;
+
+  const onDrop = (
+    event: DragEvent,
+    index: number,
+    isGoBackItem = false,
+  ): DropReturn => {
     const droppedEl = getItemElementByRefIndex(index, isGoBackItem);
     droppedEl.classList.remove("dragging-over");
 
@@ -190,6 +213,7 @@ export const useItemDragging = (options: UseItemDraggingOptions) => {
     isDragging,
     onDragStart,
     onDragEnter,
+    onDragOver,
     onDrag,
     onDragLeave,
     onDragEnd,

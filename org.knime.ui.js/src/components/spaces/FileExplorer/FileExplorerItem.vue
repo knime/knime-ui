@@ -35,6 +35,7 @@ interface Emits {
   (e: "click", nativeEvent: MouseEvent): void;
   (e: "dragstart", nativeEvent: DragEvent): void;
   (e: "dragenter", nativeEvent: DragEvent): void;
+  (e: "dragover", nativeEvent: DragEvent): void;
   (e: "drag", nativeEvent: DragEvent): void;
   (e: "dragleave", nativeEvent: DragEvent): void;
   (e: "dragend", nativeEvent: DragEvent): void;
@@ -100,7 +101,7 @@ const onRenameSubmit = (keyupEvent: KeyboardEvent, isClickAway = false) => {
     :draggable="!isRenameActive"
     @dragstart="!isRenameActive && emit('dragstart', $event)"
     @dragenter="!isRenameActive && emit('dragenter', $event)"
-    @dragover.prevent
+    @dragover="emit('dragover', $event)"
     @dragleave="!isRenameActive && emit('dragleave', $event)"
     @dragend="!isRenameActive && emit('dragend', $event)"
     @drag="emit('drag', $event)"

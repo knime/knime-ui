@@ -113,6 +113,7 @@ const {
   isDragging,
   onDragStart,
   onDragEnter,
+  onDragOver,
   onDrag,
   onDragLeave,
   onDragEnd,
@@ -138,11 +139,15 @@ const {
  * This helper simply forwards the emission of the given event name, provided the payload is not null.
  * It's needed because the `useItemDragging` composable doesn't have access to the component emits
  */
-const forwardEmit = (eventName: any, eventPayload: any) => {
-  if (!eventPayload) {
+const forwardEmit = (
+  eventName: "moveItems" | "drag" | "dragend",
+  eventPayload: unknown | null,
+) => {
+  if (eventPayload === null) {
     return;
   }
 
+  // @ts-expect-error
   emit(eventName, eventPayload);
 };
 /** DRAGGING */
@@ -238,10 +243,10 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
         v-if="!isRootFolder"
         ref="itemBack"
         :is-dragging="isDragging"
-        @dragenter="onDragEnter(null, true)"
-        @dragleave="onDragLeave(null, true)"
-        @dragover.prevent
-        @drop.prevent="forwardEmit('moveItems', onDrop(null, true))"
+        @dragenter="onDragEnter($event, null, true)"
+        @dragleave="onDragLeave($event, null, true)"
+        @dragover="onDragOver"
+        @drop.prevent="forwardEmit('moveItems', onDrop($event, null, true))"
         @click="changeDirectory('..')"
       />
 
@@ -256,13 +261,14 @@ const onItemDoubleClick = (item: FileExplorerItemType) => {
         :blacklisted-names="blacklistedNames"
         :item-icon-renderer="itemIconRenderer"
         @dragstart="onDragStart($event, index)"
-        @dragenter="onDragEnter(index)"
-        @dragleave="onDragLeave(index)"
+        @dragenter="onDragEnter($event, index, false)"
+        @dragover="onDragOver"
+        @dragleave="onDragLeave($event, index)"
         @dragend="forwardEmit('dragend', onDragEnd($event, item))"
         @drag="forwardEmit('drag', onDrag($event, item))"
         @click="onItemClick(item, $event, index)"
         @contextmenu="openContextMenu($event, item, index)"
-        @drop="forwardEmit('moveItems', onDrop(index))"
+        @drop="forwardEmit('moveItems', onDrop($event, index, false))"
         @dblclick="onItemDoubleClick(item)"
         @rename:submit="emit('renameFile', $event)"
         @rename:clear="renamedItemId = null"
