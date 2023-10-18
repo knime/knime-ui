@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+/**
+ * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
+ */
 import { usePortBarPositions } from "@/composables/usePortBarPositions";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import NodePort from "./NodePort/NodePort.vue";
@@ -8,10 +11,6 @@ import type {
   NodePort as NodePortType,
 } from "@/api/gateway-api/generated-api";
 import { portSize, metaNodeBarWidth } from "@/style/shapes.mjs";
-
-/**
- * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
- */
 
 interface Props {
   /**
