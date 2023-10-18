@@ -63,16 +63,6 @@ const getSvgContent = (svg: SVGElement, skipLicense: boolean = false) => {
   return source;
 };
 
-/**
- * Sets the fill style on a given element
- * @param element
- * @param fillStyle can be any valid valid for the CSS `fill` property
- * @returns
- */
-const setElementFill = (element: HTMLElement, fillStyle: string): void => {
-  element.style.fill = fillStyle;
-};
-
 type PredicateFn = (el: HTMLElement) => boolean;
 /**
  * Removes all elements that fullfil the predicate function.
@@ -134,18 +124,17 @@ const getSVGElementClone = (
  * Updates the viewBox property on the SVG element by using the same size as
  * the workflow sheet (actual workspace size)
  *
- * @param svgClone
- * @param workflowSheet
- * @param edges
- * @returns {void}
  */
-const updateViewBox = (svgClone: SVGSVGElement, workflowSheet: HTMLElement) => {
-  const minX = parseInt(workflowSheet.getAttribute("x"), 10);
-  const minY = parseInt(workflowSheet.getAttribute("y"), 10);
-  const width = parseInt(workflowSheet.getAttribute("width"), 10);
-  const height = parseInt(workflowSheet.getAttribute("height"), 10);
-
-  svgClone.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
+const updateViewBox = (
+  svgClone: SVGSVGElement,
+  {
+    x,
+    y,
+    width,
+    height,
+  }: { x: number; y: number; width: number; height: number },
+) => {
+  svgClone.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
 };
 
 /**
@@ -320,21 +309,18 @@ export const generateWorkflowPreview = async (
     return getSvgContent(emptySvg, true);
   }
 
+  // obtain size of the real workflow
+  const workflow = svgElement.querySelector(".workflow") as SVGGraphicsElement;
+  const viewBox = workflow.getBBox();
+
   // clone the element so that the original one does not get modified
   const { svgClone, teardown } = getSVGElementClone(svgElement);
-
-  const workflowSheet = svgClone.querySelector(
-    ".workflow-sheet",
-  ) as HTMLElement;
 
   // inline custom fonts to the svg element clone
   await addFontStyles(svgClone);
 
-  // set workflow sheet transparency
-  setElementFill(workflowSheet, "transparent");
-
   // Set the viewbox to only the visible content
-  updateViewBox(svgClone, workflowSheet);
+  updateViewBox(svgClone, viewBox);
 
   // remove all portal-targets
   removeElements(svgClone.querySelectorAll("[data-portal-target]"));

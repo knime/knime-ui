@@ -93,14 +93,6 @@ export default {
 
     <WorkflowEmpty v-if="isWorkflowEmpty" />
     <template v-else>
-      <rect
-        class="workflow-sheet"
-        :x="contentBounds.left"
-        :y="contentBounds.top"
-        :width="contentBounds.width"
-        :height="contentBounds.height"
-      />
-
       <Workflow ref="workflow" />
     </template>
 
@@ -123,10 +115,5 @@ export default {
 
 #kanvas.indicate-node-drag :deep(svg) {
   background-color: var(--knime-gray-ultra-light);
-}
-
-.workflow-sheet {
-  fill: white;
-  pointer-events: none;
 }
 </style>
