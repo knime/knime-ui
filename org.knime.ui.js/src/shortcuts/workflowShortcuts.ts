@@ -33,7 +33,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "configureNode"
   | "configureFlowVariables"
   | "editName"
-  | "editNodeLabel"
+  | "editNodeComment"
   | "deleteSelected"
   | "createMetanode"
   | "createComponent"
@@ -165,8 +165,8 @@ const workflowShortcuts: WorkflowShortcuts = {
       !$store.getters["selection/singleSelectedNode"]?.link &&
       $store.getters["workflow/isWritable"],
   },
-  editNodeLabel: {
-    text: "Edit node label",
+  editNodeComment: {
+    text: "Edit node comment",
     hotkey: ["F2"],
     execute: ({ $store }) =>
       $store.dispatch(

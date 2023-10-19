@@ -131,9 +131,9 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("editNodeLabel", () => {
+    it("editNodeComment", () => {
       const { $store, mockDispatch } = createStore();
-      workflowShortcuts.editNodeLabel.execute({ $store });
+      workflowShortcuts.editNodeComment.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openLabelEditor",
         "root:0",
@@ -374,14 +374,14 @@ describe("workflowShortcuts", () => {
       });
     });
 
-    describe("editNodeLabel", () => {
+    describe("editNodeComment", () => {
       it("cannot edit label if no node is selected", () => {
         const { $store } = createStore({
           isWorkflowWritable: true,
           singleSelectedNode: null,
         });
 
-        expect(workflowShortcuts.editNodeLabel.condition({ $store })).toBe(
+        expect(workflowShortcuts.editNodeComment.condition({ $store })).toBe(
           false,
         );
       });
@@ -395,7 +395,7 @@ describe("workflowShortcuts", () => {
           },
         });
 
-        expect(workflowShortcuts.editNodeLabel.condition({ $store })).toBe(
+        expect(workflowShortcuts.editNodeComment.condition({ $store })).toBe(
           false,
         );
       });

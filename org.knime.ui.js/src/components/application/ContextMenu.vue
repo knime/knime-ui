@@ -440,7 +440,7 @@ export default defineComponent({
         .append(basicOperationsGroup)
         .append(
           this.mapToShortcut({
-            name: "editNodeLabel",
+            name: "editNodeComment",
             isVisible: this.singleSelectedNode,
           }),
         )
