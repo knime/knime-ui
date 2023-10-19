@@ -45,14 +45,14 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
     options.onMoveEndCallback || defaultOptions.onMoveEndCallback;
 
   const onPointerDown = (pointerDownEvent: PointerEvent) => {
+    pointerDownEvent.stopPropagation();
+
     if (!isWritable.value || isMoveLocked.value) {
       return;
     }
 
     const eventTarget = pointerDownEvent.currentTarget as HTMLElement;
     onMoveStartCallback(pointerDownEvent);
-
-    pointerDownEvent.stopPropagation();
 
     let hasReleased = false;
     let hasFirstOnMoveOccurred = false;
