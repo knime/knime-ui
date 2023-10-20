@@ -1,22 +1,20 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { mapState, mapGetters } from "vuex";
-import Button from "webapps-common/ui/components/Button.vue";
-import StreamingIcon from "webapps-common/ui/assets/img/icons/nodes-connect.svg";
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
 import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
 import type { Workflow } from "@/api/gateway-api/generated-api";
+import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 
 export default defineComponent({
   components: {
-    StreamingIcon,
     ContextMenu,
     WorkflowCanvas,
     QuickAddNodeMenu,
     PortTypeMenu,
-    Button,
+    WorkflowInfoBar,
   },
   computed: {
     ...mapState("workflow", {
@@ -101,41 +99,7 @@ export default defineComponent({
 
     <PortalTarget name="annotation-editor-toolbar" tag="div" />
 
-    <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
-    <div
-      v-if="isLinked || isStreaming || isInsideLinked || isRemoteWorkflow"
-      :class="[
-        'workflow-info',
-        { 'only-streaming': isStreaming && !isLinked },
-        { 'temporary-copy': isRemoteWorkflow },
-      ]"
-    >
-      <span v-if="isInsideLinked">
-        This is a {{ workflow.info.containerType }} inside a linked
-        {{ insideLinkedType }} and cannot be edited.
-      </span>
-      <span v-else-if="isLinked">
-        This is a linked {{ workflow.info.containerType }} and can therefore not
-        be edited.
-      </span>
-      <div v-if="isRemoteWorkflow" class="banner">
-        <span>
-          This is a temporary copy. Once you are done,
-          {{ hasActiveProjectAnOrigin ? "save to re-upload or" : "" }} save a
-          local copy.
-        </span>
-        <Button primary compact class="button" @click="onSaveLocalCopy">
-          Save local copy
-        </Button>
-      </div>
-      <span
-        v-if="isStreaming"
-        :class="['streaming-indicator', { 'is-linked': isLinked }]"
-      >
-        <StreamingIcon />
-        Streaming
-      </span>
-    </div>
+    <WorkflowInfoBar />
 
     <!--
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
@@ -157,71 +121,5 @@ export default defineComponent({
 
 .annotation-cursor {
   cursor: crosshair;
-}
-
-.workflow-info {
-  /* positioning */
-  display: flex;
-  margin: 0 10px;
-  min-height: 40px;
-  margin-bottom: -40px;
-  left: 10px;
-  top: 10px;
-  position: sticky;
-  z-index: 1;
-
-  /* appearance */
-  background-color: v-bind("$colors.notificationBackground");
-  pointer-events: none;
-  user-select: none;
-
-  &.only-streaming {
-    background-color: unset;
-    justify-content: flex-end;
-    margin-right: 0;
-  }
-
-  &.temporary-copy {
-    background-color: rgba(255 216 0 / 20%);
-  }
-
-  & .banner {
-    width: 100%;
-    display: flex;
-    padding: 5px 10px;
-  }
-
-  & span {
-    font-size: 16px;
-    align-self: center;
-    flex: 1;
-    display: flex;
-    justify-content: center;
-  }
-
-  & .button {
-    min-width: 120px;
-    pointer-events: all;
-  }
-
-  & .streaming-indicator {
-    pointer-events: none;
-    display: flex;
-    margin-right: 10px;
-    height: 40px;
-    justify-content: flex-end;
-    flex-basis: 80px;
-    flex-shrink: 0;
-    align-items: center;
-
-    & svg {
-      margin-right: 5px;
-      width: 32px;
-    }
-
-    &.is-linked {
-      margin-right: 10px;
-    }
-  }
 }
 </style>

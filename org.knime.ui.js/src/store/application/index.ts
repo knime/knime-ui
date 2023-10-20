@@ -294,9 +294,9 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
   ...dirtyProjectTracking.getters,
   ...canvasModes.getters,
 
-  hasActiveProjectAnOrigin({ openProjects, activeProjectId }) {
+  activeProjectOrigin({ openProjects, activeProjectId }) {
     if (!activeProjectId) {
-      return false;
+      return null;
     }
 
     const activeProject = openProjects.find(
@@ -304,9 +304,9 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
     );
 
     if (!activeProject) {
-      return false;
+      return null;
     }
 
-    return Boolean(activeProject.origin);
+    return activeProject.origin ?? null;
   },
 };
