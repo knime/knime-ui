@@ -30,6 +30,7 @@
     "@knime/knime-ui-table": "0.3.43",
     "@knime/ui-extension-service": "^0.13.0",
     "@open-rpc/client-js": "^1.8.1",
+    "@vueuse/core": "^9.13.0",
     "events": "^3.3.0",
     "fuse.js": "6.6.2",
     "gsap": "3.11.4",
