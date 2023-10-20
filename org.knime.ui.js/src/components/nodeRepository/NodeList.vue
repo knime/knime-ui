@@ -188,6 +188,7 @@ export default {
 
   & .nodes {
     display: grid;
+    font-family: "Roboto Condensed", sans-serif;
     grid-template-columns: repeat(3, 1fr);
 
     /* kill list default styles */
