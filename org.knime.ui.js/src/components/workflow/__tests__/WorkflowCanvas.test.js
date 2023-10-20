@@ -91,16 +91,6 @@ describe("Kanvas", () => {
       expect(wrapper.findComponent(Workflow).exists()).toBe(true);
     });
 
-    it("draws workflow boundary", () => {
-      doShallowMount();
-
-      let workflowSheet = wrapper.find(".workflow-sheet");
-      expect(Number(workflowSheet.attributes("x"))).toBe(5);
-      expect(Number(workflowSheet.attributes("y"))).toBe(10);
-      expect(Number(workflowSheet.attributes("width"))).toBe(20);
-      expect(Number(workflowSheet.attributes("height"))).toBe(30);
-    });
-
     it("clicking on empty canvas deselects all", () => {
       doShallowMount();
 

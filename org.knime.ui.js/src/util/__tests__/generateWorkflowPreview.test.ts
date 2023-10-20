@@ -30,7 +30,9 @@ describe("generateWorkflowPreview", () => {
     return doc.querySelector("svg");
   };
 
-  const setup = ({ workflowSheetDimensions = null } = {}) => {
+  const setup = ({
+    workflowDimensions = {},
+  }: { workflowDimensions?: Partial<SVGRect> } = {}) => {
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
 
@@ -45,17 +47,16 @@ describe("generateWorkflowPreview", () => {
     defs.appendChild(styleTag);
     svg.appendChild(defs);
 
-    const workflowSheet = document.createElementNS(svgNS, "rect");
-    workflowSheet.classList.add("workflow-sheet");
+    const workflow = document.createElementNS(svgNS, "g");
+    workflow.classList.add("workflow");
 
-    if (workflowSheetDimensions) {
-      workflowSheet.setAttribute("x", workflowSheetDimensions.x || 0);
-      workflowSheet.setAttribute("y", workflowSheetDimensions.y || 0);
-      workflowSheet.setAttribute("width", workflowSheetDimensions.width || 0);
-      workflowSheet.setAttribute("height", workflowSheetDimensions.height || 0);
-    }
+    // @ts-ignore the type  in lib.dom.d.ts seems to be wrong it should be SVGRect not DOMRect
+    workflow.getBBox = () => {
+      const { x = 0, y = 0, width = 0, height = 0 } = workflowDimensions;
+      return { x, y, width, height };
+    };
 
-    svg.appendChild(workflowSheet);
+    svg.appendChild(workflow);
 
     // add 1 dummy hover-area
     const hoverArea = document.createElementNS(svgNS, "rect");
@@ -115,25 +116,14 @@ describe("generateWorkflowPreview", () => {
     );
   });
 
-  it("should set transparency on the workflow sheet", async () => {
-    const { svg } = setup();
-
-    const output = await generateWorkflowPreview(svg, false);
-    const outputEl = createElementFromOutput(output);
-    const workflowSheet = outputEl.querySelector(
-      ".workflow-sheet",
-    ) as HTMLElement;
-    expect(workflowSheet.style.fill).toBe("transparent");
-  });
-
   it("should set the correct viewbox", async () => {
-    const workflowSheetDimensions = {
+    const workflowDimensions = {
       x: 10,
       y: 20,
       width: 100,
       height: 200,
     };
-    const { svg } = setup({ workflowSheetDimensions });
+    const { svg } = setup({ workflowDimensions });
 
     const output = await generateWorkflowPreview(svg, false);
 
