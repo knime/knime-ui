@@ -78,7 +78,7 @@ export const switchWorkspace = () => {
     [],
     "Could not switch workspace",
     false,
-    { block: true },
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -172,7 +172,7 @@ export const openLinkComponentDialog = ({
     [projectId, workflowId, nodeId],
     `Could not open linking dialog of component ${nodeId}`,
     true,
-    { block: true },
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -242,7 +242,7 @@ export const openLegacyFlowVariableDialog = ({
     [projectId, nodeId],
     `Could not open legacy flow variable dialog of node ${nodeId}`,
     false,
-    { block: true },
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -388,7 +388,7 @@ export const openLayoutEditor = ({
     [projectId, workflowId],
     "Could not open layout editor",
     false,
-    { block: true },
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -476,7 +476,7 @@ export const exportSpaceItem = ({
     [spaceProviderId, spaceId, itemId],
     "Could not export item",
     true,
-    { block: true },
+    { block: true, darkenBackground: true },
   );
 };
 
@@ -550,7 +550,7 @@ export const saveWorkflowAs = ({
     [projectId, workflowPreviewSvg],
     "Could not save workflow locally",
     false,
-    { block: true },
+    { block: true, darkenBackground: true },
   );
 };
 
