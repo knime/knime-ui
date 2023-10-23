@@ -154,7 +154,7 @@ export const openNodeDialog = ({
     [projectId, nodeId],
     `Could not open dialog of node ${nodeId}`,
     false,
-    { block: true, darkenBackground: true },
+    { block: true, darkenBackground: false },
   );
 };
 
