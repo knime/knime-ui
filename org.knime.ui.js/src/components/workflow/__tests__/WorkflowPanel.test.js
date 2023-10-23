@@ -6,8 +6,6 @@ import { createWorkflow } from "@/test/factories";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { createShortcutsService } from "@/plugins/shortcuts";
 
-import Button from "webapps-common/ui/components/Button.vue";
-
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
@@ -64,97 +62,6 @@ describe("WorkflowPanel", () => {
 
     return { wrapper, $store, dispatchSpy };
   };
-
-  describe("linked and Streaming", () => {
-    it.each(["metanode", "component"])(
-      "write-protects linked %s and shows warning",
-      (containerType) => {
-        const { wrapper } = doShallowMount({
-          workflow: { info: { linked: true, containerType } },
-        });
-        expect(wrapper.find(".read-only").exists()).toBe(true);
-
-        const notification = wrapper.find(".workflow-info").find("span");
-        expect(notification.text()).toBe(
-          `This is a linked ${containerType} and can therefore not be edited.`,
-        );
-        expect(notification.text()).not.toContain("inside a linked");
-      },
-    );
-
-    it.each([
-      ["metanode", "component"],
-      ["component", "metanode"],
-    ])(
-      "write-protects %s inside a linked %s and shows warning",
-      (containerType, insideLinkedType) => {
-        const { wrapper } = doShallowMount({
-          workflow: {
-            parents: [{ linked: true, containerType: insideLinkedType }],
-            info: { containerType },
-          },
-        });
-
-        expect(wrapper.find(".read-only").exists()).toBe(true);
-
-        const notification = wrapper.find(".workflow-info").find("span");
-        expect(notification.text()).toBe(
-          `This is a ${containerType} inside a linked ${insideLinkedType} and cannot be edited.`,
-        );
-        expect(notification.text()).not.toContain(
-          `This is a linked ${containerType}`,
-        );
-      },
-    );
-
-    it("shows decorator in streaming component", () => {
-      const { wrapper } = doShallowMount({
-        workflow: { info: { jobManager: "test" } },
-      });
-      expect(wrapper.find(".streaming-indicator").exists()).toBe(true);
-    });
-
-    it("is not linked", () => {
-      const { wrapper } = doShallowMount();
-      expect(wrapper.find(".read-only").exists()).toBe(false);
-      expect(wrapper.find(".workflow-info").exists()).toBe(false);
-    });
-  });
-
-  describe("remote workflow", () => {
-    it("should not show banner if workflow is local", () => {
-      const { wrapper } = doShallowMount({
-        workflow: { info: { providerType: "LOCAL" } },
-      });
-      expect(wrapper.find(".banner").exists()).toBe(false);
-    });
-
-    it("shows banner if workflow is on the hub", () => {
-      const { wrapper } = doShallowMount({
-        workflow: { info: { providerType: "HUB" } },
-      });
-      expect(wrapper.find(".banner").exists()).toBe(true);
-    });
-
-    it("shows banner if workflow is on server", () => {
-      const { wrapper } = doShallowMount({
-        workflow: { info: { providerType: "SERVER" } },
-      });
-      expect(wrapper.find(".banner").exists()).toBe(true);
-    });
-
-    it("saves workflow locally when button is clicked", async () => {
-      const { wrapper, dispatchSpy } = doShallowMount({
-        workflow: { info: { providerType: "HUB" } },
-      });
-      await Vue.nextTick();
-      const button = wrapper.findComponent(Button);
-      expect(button.exists()).toBe(true);
-      await button.vm.$emit("click");
-
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/saveWorkflowAs");
-    });
-  });
 
   describe("context menu", () => {
     const createEvent = (x, y) => ({

@@ -30,18 +30,20 @@ describe("application::index", () => {
     );
   });
 
-  it("checks the active workflow has origin", () => {
+  it("returns the active project's origin", () => {
     const { store } = loadStore();
     store.commit("application/setOpenProjects", [
-      { projectId: "foo", origin: {} },
+      { projectId: "foo", origin: { mockOrigin: true } },
       { projectId: "bee" },
     ]);
     store.commit("application/setActiveProjectId", "foo");
-    expect(store.getters["application/hasActiveProjectAnOrigin"]).toBe(true);
+    expect(store.getters["application/activeProjectOrigin"]).toEqual({
+      mockOrigin: true,
+    });
     store.commit("application/setActiveProjectId", "bee");
-    expect(store.getters["application/hasActiveProjectAnOrigin"]).toBe(false);
+    expect(store.getters["application/activeProjectOrigin"]).toBeNull();
     store.commit("application/setActiveProjectId", "baz");
-    expect(store.getters["application/hasActiveProjectAnOrigin"]).toBe(false);
+    expect(store.getters["application/activeProjectOrigin"]).toBeNull();
   });
 
   describe("replace application State", () => {

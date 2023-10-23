@@ -33,7 +33,7 @@ const containerType = computed(
     </span>
 
     <span v-else-if="isLinked" class="linked">
-      This is a linked {{ containerType }} and can therefore not be edited.
+      This is a linked {{ containerType }} and therefore cannot be edited.
     </span>
 
     <RemoteWorkflowInfo v-if="isRemoteWorkflow" />
