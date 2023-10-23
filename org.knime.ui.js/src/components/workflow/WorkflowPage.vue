@@ -1,7 +1,7 @@
 <script>
 import { mapState } from "vuex";
 
-import Splitter from "@/components/application/Splitter.vue";
+import SplitPanel from "@/components/application/SplitPanel.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
 import NodeOutput from "@/components/output/NodeOutput.vue";
 
@@ -18,7 +18,7 @@ export default {
     Sidebar,
     WorkflowPanel,
     NodeOutput,
-    Splitter,
+    SplitPanel,
     WorkflowToolbar,
     TooltipContainer,
   },
@@ -35,12 +35,12 @@ export default {
     <Sidebar id="sidebar" />
 
     <main class="workflow-area">
-      <Splitter id="kanvasOutputSplitter" direction="column">
+      <SplitPanel id="kanvasOutputSplitter" direction="down">
         <WorkflowPanel id="workflow-panel" />
         <template #secondary>
           <NodeOutput />
         </template>
-      </Splitter>
+      </SplitPanel>
     </main>
   </div>
 </template>

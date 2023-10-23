@@ -18,6 +18,15 @@ module.exports = {
       },
     },
   },
+  overrides: [
+    // TODO: turn this on again after fixing splitpanes import problems
+    {
+      files: ["**/SplitPanel.vue"],
+      rules: {
+        "import/extensions": ["off"],
+      },
+    },
+  ],
   rules: {
     "new-cap": ["warn", { capIsNewExceptionPattern: "^API\\.." }],
   },
