@@ -105,7 +105,7 @@ const transformOrigin = computed(
     stroke: var(--knime-stone-gray);
   }
 
-  &.flow-variable:not(.selected) {
+  &.flow-variable.visible:not(.selected) {
     --fill-color: var(--knime-coral);
   }
 }
