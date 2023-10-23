@@ -1,13 +1,7 @@
-<script lang="ts">
-import { defineComponent } from "vue";
-import type { PropType } from "vue";
-import BaseButton from "webapps-common/ui/components/BaseButton.vue";
-import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+<script setup lang="ts">
+import { computed, ref, toRefs, watch, nextTick } from "vue";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 
-import { API } from "@api";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 
@@ -23,153 +17,108 @@ export type SearchActions = {
 /**
  * Reusable search results. Please keep this store free.
  */
-export default defineComponent({
-  components: {
-    ScrollViewContainer,
-    NodeList,
-    ReloadIcon,
-    BaseButton,
-    DropdownIcon,
-    FunctionButton,
-    CogIcon,
-  },
-  props: {
-    topNodes: {
-      type: [Array, null] as PropType<Array<NodeTemplate> | null>,
-      required: true,
-    },
-    bottomNodes: {
-      type: [Array, null] as PropType<Array<NodeTemplate> | null>,
-      required: true,
-    },
-    query: {
-      type: String,
-      required: true,
-    },
-    selectedTags: {
-      type: Array as PropType<Array<string>>,
-      default: () => [],
-    },
-    searchScrollPosition: {
-      type: Number,
-      default: 0,
-    },
-    isShowingBottomNodes: {
-      type: Boolean,
-      required: true,
-    },
-    selectedNode: {
-      type: [Object, null] as PropType<KnimeNode | null>,
-      required: true,
-    },
-    searchActions: {
-      type: Object as PropType<SearchActions>,
-      required: true,
-    },
-    hasNodeCollectionActive: {
-      type: Boolean,
-      required: true,
-    },
-    highlightFirst: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: [
-    "navReachedTop",
-    "update:searchScrollPosition",
-    "update:selectedNode",
-    "item-enter-key",
-  ],
-  expose: ["focusFirst"],
-  data() {
-    return {
-      isLoading: false,
-      isLoadingMore: false,
-    };
-  },
-  computed: {
-    isTopListEmpty() {
-      return this.topNodes?.length === 0;
-    },
-    hasNoMoreSearchResults() {
-      // NB: If bottomNodes is null the results are still loading
-      return this.bottomNodes !== null && this.bottomNodes.length === 0;
-    },
-    selectedNodeModel: {
-      get() {
-        return this.selectedNode;
-      },
-      set(value) {
-        this.$emit("update:selectedNode", value);
-      },
-    },
-  },
-  watch: {
-    query() {
-      this.onSearchChanged();
-    },
-    selectedTags() {
-      this.onSearchChanged();
-    },
-  },
-  methods: {
-    // Also currently the NodeRepository isn't destroyed upon closing
-    onSaveScrollPosition(position: number) {
-      this.$emit("update:searchScrollPosition", position);
-    },
-    async onSearchChanged() {
-      let scroller = this.$refs.scroller as InstanceType<
-        typeof ScrollViewContainer
-      >;
+type Props = {
+  topNodes: NodeTemplate[] | null;
+  bottomNodes: NodeTemplate[] | null;
+  query: string;
+  selectedTags?: string[];
+  searchScrollPosition?: number;
+  isShowingBottomNodes: boolean;
+  selectedNode: KnimeNode | null;
+  searchActions: SearchActions;
+  hasNodeCollectionActive: boolean;
+  highlightFirst?: boolean;
+};
 
-      // wait for new content to be displayed, then scroll to top
-      await this.$nextTick();
-      if (scroller) {
-        scroller.$el.scrollTop = 0;
-      }
-    },
-    loadMoreSearchResults() {
-      this.isLoading = true;
-      this.searchActions.searchTopNodesNextPage().then(() => {
-        this.isLoading = false;
-      });
+const props = withDefaults(defineProps<Props>(), {
+  selectedTags: () => [],
+  searchScrollPosition: 0,
+});
 
-      // NB: The store will only load more nodes if isShowingBottomNodes is true
-      this.isLoadingMore = true;
-      this.searchActions.searchBottomNodesNextPage().then(() => {
-        this.isLoadingMore = false;
-      });
-    },
-    async openBottomNodesAndFocusFirst() {
-      if (!this.isShowingBottomNodes) {
-        await this.searchActions.toggleShowingBottomNodes();
-      }
-      await this.$nextTick();
-      const bottomList = this.$refs.bottomList as InstanceType<typeof NodeList>;
-      bottomList?.focusFirst();
-    },
-    focusFirst() {
-      const topList = this.$refs.topList as InstanceType<typeof NodeList>;
-      if (this.topNodes.length > 0) {
-        topList?.focusFirst();
-        return;
-      }
-      this.openBottomNodesAndFocusFirst();
-    },
-    bottomListNavReachedTop() {
-      const topList = this.$refs.topList as InstanceType<typeof NodeList>;
-      if (this.topNodes.length > 0) {
-        topList?.focusLast();
-      } else {
-        this.$emit("navReachedTop");
-      }
-    },
-    openKnimeUIPreferencePage() {
-      API.desktop.openWebUIPreferencePage();
-    },
+const emit = defineEmits<{
+  (e: "navReachedTop"): void;
+  (e: "update:searchScrollPosition", position: number): void;
+  (e: "update:selectedNode", value: any): void;
+  (e: "item-enter-key", event: KeyboardEvent): void;
+}>();
+
+let isLoading = ref(false);
+const isLoadingMore = ref(false);
+const {
+  topNodes,
+  bottomNodes,
+  query,
+  selectedTags,
+  searchActions,
+  isShowingBottomNodes,
+  selectedNode,
+} = toRefs(props);
+
+const isTopListEmpty = computed(() => topNodes?.value.length === 0);
+
+const allNodes = computed(() => [
+  ...topNodes.value,
+  ...(bottomNodes.value ? bottomNodes.value : []),
+]);
+
+const selectedNodeModel = computed({
+  get() {
+    return selectedNode;
+  },
+  set(value) {
+    emit("update:selectedNode", value);
   },
 });
+
+const onSaveScrollPosition = (position: number) => {
+  emit("update:searchScrollPosition", position);
+};
+
+const scroller: InstanceType<typeof ScrollViewContainer> = null;
+const onSearchChanged = async () => {
+  // wait for new content to be displayed, then scroll to top
+  await nextTick();
+  if (scroller) {
+    scroller.$el.scrollTop = 0;
+  }
+};
+
+watch(query, () => onSearchChanged, { immediate: true });
+watch(selectedTags, () => onSearchChanged, { immediate: true });
+
+const loadMoreSearchResults = () => {
+  isLoading.value = true;
+  searchActions.value.searchTopNodesNextPage().then(() => {
+    isLoading.value = false;
+  });
+
+  // NB: The store will only load more nodes if isShowingBottomNodes is true
+  isLoadingMore.value = true;
+  searchActions.value.searchBottomNodesNextPage().then(() => {
+    isLoadingMore.value = false;
+  });
+};
+
+const bottomList: InstanceType<typeof NodeList> = null;
+const openBottomNodesAndFocusFirst = async () => {
+  if (!isShowingBottomNodes.value) {
+    await searchActions.value.toggleShowingBottomNodes();
+  }
+  await nextTick();
+  bottomList?.focusFirst();
+};
+
+const topList: InstanceType<typeof NodeList> = null;
+const focusFirst = () => {
+  if (topNodes.value.length > 0) {
+    topList?.focusFirst();
+    return;
+  }
+  openBottomNodesAndFocusFirst();
+};
+
+defineExpose({ focusFirst });
+// @input="$emit('update:selectedNode', $event.target.value)"
 </script>
 
 <template>
@@ -188,7 +137,7 @@ export default defineComponent({
         <NodeList
           ref="topList"
           v-model:selected-node="selectedNodeModel"
-          :nodes="topNodes"
+          :nodes="allNodes"
           :highlight-first="highlightFirst"
           @nav-reached-top="$emit('navReachedTop')"
           @nav-reached-end="openBottomNodesAndFocusFirst"
@@ -199,50 +148,6 @@ export default defineComponent({
           </template>
         </NodeList>
         <ReloadIcon v-if="isLoading" class="loading-indicator" />
-      </div>
-    </div>
-    <div v-if="hasNodeCollectionActive" class="content">
-      <div class="advanced-buttons">
-        <BaseButton
-          class="more-nodes-button"
-          :aria-expanded="String(isShowingBottomNodes)"
-          @click.prevent="searchActions.toggleShowingBottomNodes"
-        >
-          <div class="more-nodes-dropdown">
-            <DropdownIcon
-              :class="['dropdown-icon', { flip: isShowingBottomNodes }]"
-            />
-          </div>
-          More advanced nodes
-        </BaseButton>
-        <FunctionButton
-          class="preferences-button"
-          title="Set up nodes in the node repo"
-          data-testid="open-preferences"
-          @click="openKnimeUIPreferencePage"
-        >
-          <CogIcon />
-        </FunctionButton>
-      </div>
-      <div v-show="isShowingBottomNodes">
-        <div v-if="hasNoMoreSearchResults" class="no-matching-search">
-          No additional node matching for: {{ query }}
-        </div>
-        <div v-else class="node-list-wrapper">
-          <NodeList
-            ref="bottomList"
-            v-model:selected-node="selectedNodeModel"
-            :highlight-first="isTopListEmpty ? highlightFirst : false"
-            :nodes="bottomNodes"
-            @nav-reached-top="bottomListNavReachedTop"
-            @enter-key="$emit('item-enter-key', $event)"
-          >
-            <template #item="slotProps">
-              <slot name="bottomNodeTemplate" v-bind="slotProps" />
-            </template>
-          </NodeList>
-          <ReloadIcon v-if="isLoadingMore" class="loading-indicator" />
-        </div>
       </div>
     </div>
   </ScrollViewContainer>

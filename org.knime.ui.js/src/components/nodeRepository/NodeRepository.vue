@@ -1,5 +1,9 @@
-<script>
-import { mapState, mapGetters } from "vuex";
+<script setup lang="ts">
+import { computed, watch, onMounted } from "vue";
+import { useStore } from "@/composables/useStore";
+
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
 
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
@@ -8,87 +12,83 @@ import CategoryResults from "./CategoryResults.vue";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
 import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
 import { TABS } from "@/store/panel";
+import { API } from "@api";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
-export default {
-  components: {
-    ActionBreadcrumb,
-    SidebarSearchResults,
-    CloseableTagList,
-    SearchBar,
-    CategoryResults,
-    NodeDescription,
-  },
-  computed: {
-    ...mapState("nodeRepository", [
-      "topNodes",
-      "nodesPerCategory",
-      "selectedNode",
-    ]),
-    ...mapState("application", ["activeProjectId"]),
-    ...mapState("panel", ["activeTab", "isExtensionPanelOpen"]),
-    ...mapGetters("nodeRepository", {
-      showSearchResults: "searchIsActive",
-      isSelectedNodeVisible: "isSelectedNodeVisible",
-      tags: "tagsOfVisibleNodes",
-    }),
+const store = useStore();
+const topNodes = computed(() => store.state.nodeRepository.topNodes);
+const nodesPerCategory = computed(
+  () => store.state.nodeRepository.nodesPerCategory,
+);
+const selectedNode = computed(() => store.state.nodeRepository.selectedNode);
+const activeProjectId = computed(() => store.state.application.activeProjectId);
+const activeTab = computed(() => store.state.panel.activeTab);
+const isExtensionPanelOpen = computed(
+  () => store.state.panel.isExtensionPanelOpen,
+);
 
-    isNodeRepositoryTabActive() {
-      return this.activeTab[this.activeProjectId] === TABS.NODE_REPOSITORY;
-    },
+const showSearchResults = computed(
+  () => store.getters["nodeRepository/searchIsActive"],
+);
+const isSelectedNodeVisible = computed(
+  () => store.getters["nodeRepository/isSelectedNodeVisible"],
+);
+const tags = computed(() => store.getters["nodeRepository/tagsOfVisibleNodes"]);
 
-    /* Search and Filter */
-    selectedTags: {
-      get() {
-        return this.$store.state.nodeRepository.selectedTags;
-      },
-      set(value) {
-        this.$store.dispatch("nodeRepository/setSelectedTags", value);
-      },
-    },
+const isNodeRepositoryTabActive = computed(
+  () => activeTab[activeProjectId.value] === TABS.NODE_REPOSITORY,
+);
+const selectedTags = computed({
+  get() {
+    return store.state.nodeRepository.selectedTags;
+  },
+  set(value) {
+    store.dispatch("nodeRepository/setSelectedTags", value);
+  },
+});
+const breadcrumbItems = computed(() =>
+  showSearchResults.value
+    ? [{ text: "Repository", id: "clear" }, { text: "Results" }]
+    : [{ text: "Repository" }],
+);
 
-    /* Navigation */
-    breadcrumbItems() {
-      // If search results are shown, it's possible to navigate back
-      return this.showSearchResults
-        ? [{ text: "Repository", id: "clear" }, { text: "Results" }]
-        : [{ text: "Repository" }];
-    },
-  },
-  watch: {
-    // deselect node on panel close
-    isExtensionPanelOpen(isOpen) {
-      if (!isOpen) {
-        setTimeout(() => {
-          this.$store.commit("nodeRepository/setSelectedNode", null);
-        }, DESELECT_NODE_DELAY);
-      }
-    },
-  },
-  mounted() {
-    if (!this.nodesPerCategory.length) {
-      this.$store.dispatch("nodeRepository/getAllNodes", { append: false });
+watch(
+  isExtensionPanelOpen,
+  (isOpen) => {
+    if (!isOpen) {
+      setTimeout(() => {
+        store.commit("nodeRepository/setSelectedNode", null);
+      }, DESELECT_NODE_DELAY);
     }
   },
-  methods: {
-    /* Navigation */
-    onBreadcrumbClick(e) {
-      if (e.id === "clear") {
-        this.$store.dispatch("nodeRepository/clearSearchParams");
-      }
-    },
+  { immediate: true },
+);
 
-    toggleNodeDescription({ isSelected, nodeTemplate }) {
-      if (!isSelected || !this.isExtensionPanelOpen) {
-        this.$store.dispatch("panel/openExtensionPanel");
-        this.$store.commit("nodeRepository/setSelectedNode", nodeTemplate);
-        return;
-      }
+onMounted(() => {
+  if (!nodesPerCategory.value.length) {
+    store.dispatch("nodeRepository/getAllNodes", { append: false });
+  }
+});
 
-      this.$store.dispatch("panel/closeExtensionPanel");
-    },
-  },
+const onBreadcrumbClick = (e) => {
+  if (e.id === "clear") {
+    store.dispatch("nodeRepository/clearSearchParams");
+  }
+};
+
+const toggleNodeDescription = ({ isSelected, nodeTemplate }) => {
+  if (!isSelected || !isExtensionPanelOpen.value) {
+    store.dispatch("panel/openExtensionPanel");
+    store.commit("nodeRepository/setSelectedNode", nodeTemplate);
+    return;
+  }
+
+  store.dispatch("panel/closeExtensionPanel");
+};
+
+const openKnimeUIPreferencePage = () => {
+  API.desktop.openWebUIPreferencePage();
 };
 </script>
 
@@ -96,11 +96,20 @@ export default {
   <div class="node-repo">
     <div class="header">
       <div class="title-and-search">
-        <ActionBreadcrumb
-          :items="breadcrumbItems"
-          class="repo-breadcrumb"
-          @click="onBreadcrumbClick"
-        />
+        <div class="search-header">
+          <ActionBreadcrumb
+            :items="breadcrumbItems"
+            class="repo-breadcrumb"
+            @click="onBreadcrumbClick"
+          />
+          <FunctionButton
+            class="filter-button"
+            title="Open search filters"
+            @click="openKnimeUIPreferencePage"
+          >
+            <FilterIcon />
+          </FunctionButton>
+        </div>
         <hr />
         <SearchBar
           :model-value="$store.state.nodeRepository.query"
@@ -141,6 +150,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .node-repo {
   font-family: "Roboto Condensed", sans-serif;
   height: 100%;
@@ -166,6 +177,27 @@ export default {
 
   & .title-and-search {
     padding: 0 20px 5px;
+
+    & .search-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      & .filter-button {
+        width: 30px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 5px;
+
+        & svg {
+          @mixin svg-icon-size 18;
+
+          stroke: var(--knime-masala);
+        }
+      }
+    }
 
     & > hr {
       margin-bottom: 2px;
