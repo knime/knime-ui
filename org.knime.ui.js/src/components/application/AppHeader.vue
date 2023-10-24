@@ -111,6 +111,16 @@ export default defineComponent({
     openKnimeUIPreferencePage() {
       API.desktop.openWebUIPreferencePage();
     },
+
+    onWheelScroll(event: WheelEvent) {
+      event.preventDefault();
+      const delta = Math.abs(event.deltaX) === 0 ? event.deltaY : event.deltaX;
+      const carouselComponent = this.$refs.carousel as InstanceType<
+        typeof Carousel
+      >;
+      const scrollContainer = carouselComponent.$el.querySelector(".carousel");
+      scrollContainer.scrollLeft += delta;
+    },
   },
 });
 </script>
@@ -126,7 +136,7 @@ export default defineComponent({
     </div>
     <div class="toolbar">
       <ul v-if="openProjects.length >= 1" class="project-tabs">
-        <Carousel>
+        <Carousel ref="carousel" @wheel="onWheelScroll">
           <div class="wrapper">
             <AppHeaderTab
               v-for="{
