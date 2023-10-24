@@ -89,9 +89,8 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
  * Save the project workflow manager identified by a given project ID.
  *
  * @author Benjamin Moser, KNIME GmbH, Konstanz
- * @author Kai Franze, KNIME GmbH
+ * @author Kai Franze, KNIME GmbH, Germany
  */
-
 final class SaveWorkflow {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveWorkflow.class);

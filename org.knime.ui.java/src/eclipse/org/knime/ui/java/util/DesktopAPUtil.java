@@ -185,7 +185,8 @@ public final class DesktopAPUtil {
         new LoadMetaNodeTemplateRunnable(wfmRef::set, CheckUtils.checkNotNull(workflowContext).getTempSourceLocation()
             .orElse(wfFile.toUri()), workflowContext, false, true).run(monitor);
         return wfmRef.get();
-        // TODO component encryption
+        // TODO NXT-2116: Enable encrypted components
+        //
         //        if (m_manager != null && m_manager.isEncrypted()) {
         //            WorkflowCipherPrompt prompt = new GUIWorkflowCipherPrompt(true);
         //            if (!Wrapper.unwrapWFM(m_manager).unlock(prompt)) {
