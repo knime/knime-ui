@@ -80,7 +80,8 @@ export default defineComponent({
   props: {
     projectId: {
       type: String,
-      required: true,
+      required: false, // Fixes opening components with double click.
+      default: "Missing project ID", // Fixes opening components with double click.
     },
     workflowId: {
       type: String,

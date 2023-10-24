@@ -3,6 +3,8 @@ import { shallowMount } from "@vue/test-utils";
 
 import AppHeaderTab from "../AppHeaderTab.vue";
 import CloseButton from "@/components/common/CloseButton.vue";
+import ComponentIcon from "webapps-common/ui/assets/img/icons/component.svg";
+import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 
 describe("AppHeaderTab.vue", () => {
   const doMount = (props = {}) => {
@@ -12,6 +14,7 @@ describe("AppHeaderTab.vue", () => {
       isActive: false,
       isHoveredOver: false,
       windowWidth: 1024,
+      projectType: "Workflow",
     };
 
     return shallowMount(AppHeaderTab, { props: { ...defaultProps, ...props } });
@@ -59,8 +62,7 @@ describe("AppHeaderTab.vue", () => {
     const wrapper = doMount({ projectId: "1" });
 
     // testing click with middle click works best with triggering mouseup
-    await wrapper.trigger("mouseup", { button: 1 });
-
+    await wrapper.find("li").trigger("mouseup", { button: 1 });
     expect(wrapper.emitted("closeWorkflow")[0][0]).toBe("1");
   });
 
@@ -106,5 +108,19 @@ describe("AppHeaderTab.vue", () => {
         expect(nameElement.text().length).toBe(maxChars + 2);
       },
     );
+  });
+
+  it("should show the component icon when a component is loaded", () => {
+    const wrapper = doMount({ projectType: "Component" });
+
+    expect(wrapper.findComponent(WorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(ComponentIcon).exists()).toBe(true);
+  });
+
+  it("should show the workflow icon when a workflow is loaded", () => {
+    const wrapper = doMount({ projectType: "Workflow" });
+
+    expect(wrapper.findComponent(WorkflowIcon).exists()).toBe(true);
+    expect(wrapper.findComponent(ComponentIcon).exists()).toBe(false);
   });
 });

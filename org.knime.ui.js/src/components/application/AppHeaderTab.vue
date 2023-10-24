@@ -1,5 +1,6 @@
 <script>
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
+import ComponentIcon from "webapps-common/ui/assets/img/icons/component.svg";
 import CloseButton from "@/components/common/CloseButton.vue";
 
 /* eslint-disable no-magic-numbers */
@@ -23,6 +24,7 @@ export default {
   components: {
     CloseButton,
     WorkflowIcon,
+    ComponentIcon,
   },
   props: {
     name: {
@@ -32,6 +34,10 @@ export default {
     projectId: {
       type: String,
       required: true,
+    },
+    projectType: {
+      type: String,
+      required: false,
     },
     isActive: {
       type: Boolean,
@@ -73,26 +79,39 @@ export default {
 </script>
 
 <template>
-  <li
-    :class="{ active: isActive, hovered: isHoveredOver }"
-    :title="shouldTruncateName ? name : null"
-    @click.stop="isActive ? null : $emit('switchWorkflow', projectId)"
-    @mouseover="onHover(projectId)"
-    @mouseleave="onHover(null)"
-    @click.middle.stop="$emit('closeWorkflow', projectId)"
-  >
-    <WorkflowIcon class="workflow-icon" />
-    <span class="text">{{ truncatedProjectName }}</span>
-    <CloseButton
-      class="close-icon"
-      :has-unsaved-changes="hasUnsavedChanges"
-      @close.stop="$emit('closeWorkflow', projectId)"
-    />
-  </li>
+  <ul>
+    <li
+      :class="{ active: isActive, hovered: isHoveredOver }"
+      :title="shouldTruncateName ? name : null"
+      @click.stop="isActive ? null : $emit('switchWorkflow', projectId)"
+      @mouseover="onHover(projectId)"
+      @mouseleave="onHover(null)"
+      @click.middle.stop="$emit('closeWorkflow', projectId)"
+    >
+      <!-- Workflows are the default unless we explicitely know it is a component -->
+      <ComponentIcon
+        v-if="projectType === 'Component'"
+        class="component-icon"
+      />
+      <WorkflowIcon v-else class="workflow-icon" />
+
+      <span class="text">{{ truncatedProjectName }}</span>
+      <CloseButton
+        class="close-icon"
+        :has-unsaved-changes="hasUnsavedChanges"
+        @close.stop="$emit('closeWorkflow', projectId)"
+      />
+    </li>
+  </ul>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+ul {
+  margin: 0;
+  padding: 0;
+}
 
 li {
   height: 39px;
@@ -116,6 +135,12 @@ li {
     stroke: var(--knime-white);
 
     @mixin svg-icon-size 18;
+  }
+
+  & .component-icon {
+    stroke: var(--knime-white);
+
+    @mixin svg-icon-size 30;
   }
 
   &:hover {
@@ -171,7 +196,8 @@ li.active {
     color: var(--knime-black);
   }
 
-  & .workflow-icon {
+  & .workflow-icon,
+  & .component-icon {
     stroke: var(--knime-black);
   }
 

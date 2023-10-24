@@ -111,15 +111,6 @@ export default defineComponent({
     openKnimeUIPreferencePage() {
       API.desktop.openWebUIPreferencePage();
     },
-
-    onWheelScroll(event: WheelEvent) {
-      event.preventDefault();
-      const carouselComponent = this.$refs.carousel as InstanceType<
-        typeof Carousel
-      >;
-      const scrollContainer = carouselComponent.$el.querySelector(".carousel");
-      scrollContainer.scrollLeft += event.deltaY;
-    },
   },
 });
 </script>
@@ -135,13 +126,18 @@ export default defineComponent({
     </div>
     <div class="toolbar">
       <ul v-if="openProjects.length >= 1" class="project-tabs">
-        <Carousel ref="carousel" @wheel="onWheelScroll">
+        <Carousel>
           <div class="wrapper">
             <AppHeaderTab
-              v-for="{ name, projectId } in openProjects"
+              v-for="{
+                name,
+                projectId,
+                origin = { projectType: null },
+              } in openProjects"
               :key="projectId"
               :name="name"
               :project-id="projectId"
+              :project-type="origin.projectType"
               :window-width="windowWidth"
               :is-active="activeProjectTab === projectId"
               :has-unsaved-changes="Boolean(dirtyProjectsMap[projectId])"
