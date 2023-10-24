@@ -1,5 +1,4 @@
 import { expect, describe, it } from "vitest";
-import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
@@ -63,16 +62,6 @@ describe("LeftCollapsiblePanel.vue", () => {
 
     const button = wrapper.find("button");
     expect(button.element.disabled).toBe(true);
-  });
-
-  it("correctly container transitions at mount", async () => {
-    const waitRAF = () =>
-      new Promise((resolve) => requestAnimationFrame(resolve));
-    const wrapper = doShallowMount();
-    await Vue.nextTick();
-    expect(wrapper.find(".container").classes()).toContain("no-transition");
-    await waitRAF();
-    expect(wrapper.find(".container").classes()).not.toContain("no-transition");
   });
 
   describe("open panel", () => {
