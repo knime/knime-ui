@@ -5,6 +5,7 @@ import type {
   Connection,
   NativeNode,
   NodeTemplate,
+  SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
@@ -105,11 +106,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }: {
       position: XY;
       nodeFactory: { className: string };
-      spaceItemReference: {
-        providerId: string;
-        spaceId: string;
-        itemId: string;
-      };
+      spaceItemReference: SpaceItemReference;
       sourceNodeId: string | null;
       sourcePortIdx: number | null;
       /**

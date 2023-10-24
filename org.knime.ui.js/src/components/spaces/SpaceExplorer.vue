@@ -140,7 +140,9 @@ export default defineComponent({
           ...item,
           isOpen,
           isDirectory: item.type === SpaceItem.TypeEnum.WorkflowGroup,
-          isOpenableFile: item.type === SpaceItem.TypeEnum.Workflow,
+          isOpenableFile:
+            item.type === SpaceItem.TypeEnum.Workflow ||
+            item.type === SpaceItem.TypeEnum.Component,
           canBeRenamed: !isOpen,
           canBeDeleted: !this.openedFolderItems.includes(item.id),
           meta: {

@@ -23,6 +23,7 @@ const mockedAPI = deepMocked(API);
 
 const createMockItem = (
   data: Partial<FileExplorerItem> = {},
+  itemType: SpaceItem.TypeEnum,
 ): FileExplorerItem => {
   return {
     id: "dummy",
@@ -33,11 +34,19 @@ const createMockItem = (
     isOpenableFile: true,
     isOpen: false,
     meta: {
-      type: SpaceItem.TypeEnum.Workflow,
+      type: itemType,
     },
     ...data,
   };
 };
+
+const createMockWorkflow = (
+  data: Partial<FileExplorerItem> = {},
+): FileExplorerItem => createMockItem(data, SpaceItem.TypeEnum.Workflow);
+
+const createMockComponent = (
+  data: Partial<FileExplorerItem> = {},
+): FileExplorerItem => createMockItem(data, SpaceItem.TypeEnum.Component);
 
 const fetchWorkflowGroupContentResponse = {
   id: "root",
@@ -364,10 +373,28 @@ describe("SpaceExplorer.vue", () => {
     });
   });
 
-  it("should open workflows", async () => {
+  it("should open a workflow", async () => {
     const { wrapper, dispatchSpy, mockRouter } = await doMountAndLoad();
 
-    wrapper.findComponent(FileExplorer).vm.$emit("openFile", createMockItem());
+    wrapper
+      .findComponent(FileExplorer)
+      .vm.$emit("openFile", createMockWorkflow());
+
+    await nextTick();
+
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/openWorkflow", {
+      projectId: "someProjectId",
+      workflowItemId: "dummy",
+      $router: mockRouter,
+    });
+  });
+
+  it("should open a shared component", async () => {
+    const { wrapper, dispatchSpy, mockRouter } = await doMountAndLoad();
+
+    wrapper
+      .findComponent(FileExplorer)
+      .vm.$emit("openFile", createMockComponent());
 
     await nextTick();
 
@@ -447,7 +474,7 @@ describe("SpaceExplorer.vue", () => {
 
     it("should show delete modal on deleteItems", async () => {
       const items: FileExplorerItem[] = [
-        createMockItem({
+        createMockWorkflow({
           id: "item0",
           name: "WORKFLOW_NAME",
         }),
@@ -460,7 +487,7 @@ describe("SpaceExplorer.vue", () => {
 
     it("should trigger closeItems before deleteItems onDeleteItems", async () => {
       const items: FileExplorerItem[] = [
-        createMockItem({
+        createMockWorkflow({
           id: "item0",
           name: "WORKFLOW_NAME",
         }),
@@ -496,7 +523,7 @@ describe("SpaceExplorer.vue", () => {
 
     it("should not delete item on negative response", async () => {
       const items: FileExplorerItem[] = [
-        createMockItem({
+        createMockWorkflow({
           id: "item0",
           name: "WORKFLOW_NAME",
         }),
@@ -684,7 +711,7 @@ describe("SpaceExplorer.vue", () => {
 
       const onComplete = vi.fn();
 
-      const sourceItem = createMockItem({
+      const sourceItem = createMockWorkflow({
         id: "0",
         name: "WORKFLOW_NAME",
       });
@@ -731,7 +758,7 @@ describe("SpaceExplorer.vue", () => {
 
       const event = new MouseEvent("dragend") as DragEvent;
 
-      const sourceItem = createMockItem({
+      const sourceItem = createMockWorkflow({
         id: "0",
         name: "file.test",
       });
@@ -778,7 +805,7 @@ describe("SpaceExplorer.vue", () => {
 
       const event = new MouseEvent("dragend") as DragEvent;
 
-      const sourceItem = createMockItem({
+      const sourceItem = createMockWorkflow({
         id: "0",
         name: "file.test",
       });
@@ -831,7 +858,7 @@ describe("SpaceExplorer.vue", () => {
       };
 
       const event = new MouseEvent("dragend") as DragEvent;
-      const sourceItem = createMockItem({
+      const sourceItem = createMockWorkflow({
         id: "0",
         name: "file.test",
         meta: {
@@ -886,7 +913,7 @@ describe("SpaceExplorer.vue", () => {
         id: "local",
       };
 
-      const item = createMockItem({
+      const item = createMockWorkflow({
         id: "0",
         name: "testfile.test",
       });
