@@ -53,7 +53,10 @@ export const metanodeState = knimeColors.Masala;
 export const error = trafficLight.red;
 export const warning = knimeColors.Yellow;
 
-export const notificationBackground = "hsla(206, 42%, 86%, 90%)";
+export const notifications = {
+  info: "hsla(206, 42%, 86%, 90%)",
+  warning: "rgba(255 216 0 / 20%)",
+};
 
 export const annotationColorPresets = {
   None: "#FFFFFF",

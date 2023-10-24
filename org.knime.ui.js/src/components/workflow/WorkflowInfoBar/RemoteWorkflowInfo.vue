@@ -44,13 +44,13 @@ const onSaveLocalCopy = () => {
   >
     <span :class="{ 'flush-left': isUnknownOrigin }">
       <template v-if="isUnknownOrigin">
-        You have opened a workflow that is not part of your spaces. Save as a
+        You have opened a workflow that is not part of your spaces. “Save as” a
         local copy to keep your changes.
       </template>
 
       <template v-if="isServerSpace">
-        You have opened a workflow from a KNIME Server. “Save” saves the
-        workflow back on the KNIME Server
+        You have opened a workflow from a KNIME Server. “Save” the workflow back
+        to KNIME Server to keep your changes.
       </template>
     </span>
 
@@ -61,7 +61,7 @@ const onSaveLocalCopy = () => {
       class="button"
       @click="onSaveLocalCopy"
     >
-      Save local copy
+      Save as
     </Button>
   </div>
 </template>
@@ -73,15 +73,14 @@ const onSaveLocalCopy = () => {
   padding: 5px 10px;
   justify-content: center;
   align-items: center;
-  background: var(--bg-color);
   min-height: 40px;
 
   &.yellow {
-    --bg-color: rgba(255 216 0 / 20%);
+    background: v-bind("$colors.notifications.warning");
   }
 
   &.blue {
-    --bg-color: v-bind("$colors.notificationBackground");
+    background: v-bind("$colors.notifications.info");
   }
 }
 

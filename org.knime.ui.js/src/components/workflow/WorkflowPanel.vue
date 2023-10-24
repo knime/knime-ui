@@ -113,6 +113,7 @@ export default defineComponent({
 .workflow-panel {
   height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 
 .read-only {

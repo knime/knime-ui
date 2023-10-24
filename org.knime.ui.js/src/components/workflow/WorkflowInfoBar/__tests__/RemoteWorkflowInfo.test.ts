@@ -114,7 +114,7 @@ describe("RemoteWorkflowInfo.vue", () => {
     expect(wrapper.find(".banner.blue").exists()).toBe(false);
     expect(wrapper.find(".banner.yellow .flush-left").exists()).toBe(true);
     expect(wrapper.text()).toMatch(
-      "You have opened a workflow that is not part of your spaces. Save as a local copy to keep your changes.",
+      "You have opened a workflow that is not part of your spaces. “Save as” a local copy to keep your changes.",
     );
 
     const saveAsButton = wrapper.find(".button");
@@ -153,7 +153,7 @@ describe("RemoteWorkflowInfo.vue", () => {
     expect(wrapper.find(".banner.yellow").exists()).toBe(false);
     expect(wrapper.find(".banner.blue").exists()).toBe(true);
     expect(wrapper.text()).toMatch(
-      "You have opened a workflow from a KNIME Server. “Save” saves the workflow back on the KNIME Server",
+      "You have opened a workflow from a KNIME Server. “Save” the workflow back to KNIME Server to keep your changes.",
     );
     expect(wrapper.find(".button").exists()).toBe(false);
   });

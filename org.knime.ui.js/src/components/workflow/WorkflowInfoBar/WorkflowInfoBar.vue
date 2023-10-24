@@ -23,32 +23,35 @@ const containerType = computed(
 </script>
 
 <template>
-  <div
-    v-if="isLinked || isStreaming || isInsideLinked || isRemoteWorkflow"
-    :class="['workflow-info', { 'only-streaming': isStreaming && !isLinked }]"
-  >
-    <span v-if="isInsideLinked" class="linked">
-      This is a {{ containerType }} inside a linked {{ insideLinkedType }} and
-      cannot be edited.
-    </span>
+  <div class="stack">
+    <div v-if="isLinked || isInsideLinked" class="workflow-info">
+      <span v-if="isInsideLinked" class="linked">
+        This is a {{ containerType }} inside a linked {{ insideLinkedType }} and
+        cannot be edited.
+      </span>
 
-    <span v-else-if="isLinked" class="linked">
-      This is a linked {{ containerType }} and therefore cannot be edited.
-    </span>
+      <span v-else-if="isLinked" class="linked">
+        This is a linked {{ containerType }} and therefore cannot be edited.
+      </span>
+    </div>
 
-    <RemoteWorkflowInfo v-if="isRemoteWorkflow" />
+    <div v-if="isRemoteWorkflow" class="workflow-info">
+      <RemoteWorkflowInfo />
+    </div>
 
-    <StreamingInfo v-if="isStreaming" />
+    <div
+      v-if="isStreaming"
+      :class="['workflow-info', { 'only-streaming': isStreaming }]"
+    >
+      <StreamingInfo />
+    </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.workflow-info {
+.stack {
   display: flex;
-  margin: 0 24px 0 10px;
-  min-height: 40px;
-  margin-bottom: -40px;
-  left: 10px;
+  flex-direction: column;
   top: 10px;
   position: sticky;
   z-index: 1;
@@ -56,9 +59,19 @@ const containerType = computed(
   user-select: none;
   justify-content: center;
   align-items: center;
+  margin: 0 24px 0 10px;
+  left: 10px;
+}
+
+.workflow-info {
+  min-height: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   &:has(.linked) {
-    background: v-bind("$colors.notificationBackground");
+    background: v-bind("$colors.notifications.info");
   }
 
   &.only-streaming {
