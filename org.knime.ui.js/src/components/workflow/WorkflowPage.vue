@@ -1,7 +1,7 @@
 <script>
 import { mapState } from "vuex";
 
-import SplitPanel from "@/components/application/SplitPanel.vue";
+import SplitPanel from "@/components/common/SplitPanel.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
 import NodeOutput from "@/components/output/NodeOutput.vue";
 
