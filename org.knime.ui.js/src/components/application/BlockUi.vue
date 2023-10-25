@@ -39,6 +39,9 @@ watch(block, () => {
     ref="blocker"
     :class="['blocker', { 'darken-background': darkenBackground }]"
     tabindex="-1"
+    @click.prevent.stop
+    @pointerdown.prevent.stop
+    @keydown.stop.prevent
   />
 </template>
 
@@ -54,6 +57,8 @@ watch(block, () => {
   position: fixed;
   width: 100vw;
   height: 100vh;
+  cursor: not-allowed;
+  background: transparent;
 
   &.darken-background {
     background: var(--knime-black-semi);
