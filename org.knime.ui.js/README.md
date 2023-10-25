@@ -1,18 +1,28 @@
-# org.knime.ui.js
+# KNIME UI (Modern UI) -- org.knime.ui.js
 
 This project contains the web frontend for the KNIME Analytics Platform.
 The frontend is based on the [Vue.js] JavaScript framework.
 
-## Development
+# Development
 
 ### Prerequisites
 
 - Install [Node.js][node], see version in [package.json](package.json)
+- Configure your KNIME Analytics Platform to use the locally running UI
+  - download the AP, e.g. from https://www.knime.com/nightly-build-downloads
+  - add the following arguments to the `<knime-installation-folder>/knime.ini` (For more information see [this page][debugap])
+    | argument | comment |
+    | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+    | `-Dchromium.remote_debugging_port=8888` | Enables debugging the AP's browser from Chrome at http://localhost:8888 |
+    | `-Dorg.knime.ui.dev.url=http://localhost:3000` | Makes the AP use KNIME UI served from localhost instead of using the resources bundled with the KNIME UI Extension |
+    | `-Dchromium.debug` | (Optional) More verbose debugging output for the CEF |
+
+### Initialize submodules
 
 Pull the contained [git submodules](https://stackoverflow.com/a/4438292/5134084) with
 
 ```sh
-git submodule update --init
+git submodule update --init --recursive
 ```
 
 ### Install dependencies
@@ -21,9 +31,7 @@ git submodule update --init
 npm install
 ```
 
-and then use the following commands:
-
-### Launch development server
+## Launch development server
 
 Compiles all JavaScript sources, assets, … and starts a local web server for development. Includes hot-reloading, so
 code changes will be visible in the browser immediately.
@@ -32,7 +40,15 @@ code changes will be visible in the browser immediately.
 npm run dev
 ```
 
-### Git hooks
+## UI running in the browser
+
+In addition to running embedded inside the KNIME Analytics Platform, the new UI can also run in the browser (though this is still in beta at the time of writing). To use this mode, you need to have the proper Eclipse setup, as well as doing a couple extra steps. You can see more information on [this page](debugapbrowser).
+
+After following the steps above, copy the contents of the `.env.example` file over to a `.env` file. Then adjust the value of the `VITE_BROWSER_DEV_WS_URL` variable to match the url and port of the running WSS server (as configured in your Eclipse setup). NOTE: Remember to set `VITE_BROWSER_DEV_MODE` to `true` in your `.env` file, otherwise the `VITE_BROWSER_DEV_WS_URL` variable will have no effect.
+
+When both steps are done, you can open the app in the browser under `http://localhost:3000`
+
+## Git hooks
 
 To set up hooks via [husky] on the repository (recommended for a frontend-focused development setup) you can run the following npm script:
 
@@ -47,7 +63,7 @@ When committing your changes, a couple of commit hooks will run via [husky].
 - `pre-commit` hook to lint and format the changes in your stage zone (via [lintstaged])
 - `prepare-commit-msg` hook to format your commit message to conform with the required format by KNIME. In order for this to work you must set environment variables with your Atlassian email and API token. Refer to [webapps-common/scripts/README.md](webapps-common/scripts/README.md) for more information.
 
-### Testing
+## Testing
 
 #### Running unit tests
 
@@ -70,7 +86,7 @@ npm run coverage
 The output can be found in the `test-results` folder. It contains a browseable html report as well as raw coverage data in
 [LCOV] and [Clover] format, which can be used in analysis software (SonarQube, Jenkins, …).
 
-### Running security audit
+## Running security audit
 
 npm provides a check against known security issues of used dependencies. In most cases it is sufficient to only check
 dependencies that are used in production. Run it by calling
@@ -99,20 +115,13 @@ which takes the exceptions into account.
 
 ## Build production version
 
-While this project is a pure JS project, it comes with a maven file that allows it to be built as a Java library.
-To do so, run
+Run the JS production build via:
 
 ```sh
-mvn package
+npm run build
 ```
 
-to create a package in the `target` folder, or
-
-```sh
-mvn install
-```
-
-to install that package to your local maven repository directly.
+This will also run the `type-check` step to ensure there are no TypeScript errors in the codebase. The output build will be placed in a `/dist` folder in the root of the JS repository
 
 [vue.js]: https://vuejs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
@@ -122,3 +131,5 @@ to install that package to your local maven repository directly.
 [Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file
 [husky]: https://www.npmjs.com/package/husky
 [lintstaged]: https://github.com/okonet/lint-staged
+[debugap]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/1418854401/Debug+the+KNIME+AP+Modern+UI+inside+the+AP
+[debugapbrowser]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/3054895127/Debug+KNIME+AP+Modern+UI+in+browser+w+Eclipse+back+end
