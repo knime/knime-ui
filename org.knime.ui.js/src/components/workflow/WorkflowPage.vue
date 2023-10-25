@@ -81,5 +81,6 @@ main {
 
 .workflow-area {
   grid-area: workflow;
+  overflow: hidden;
 }
 </style>

@@ -2,7 +2,8 @@
 // @ts-ignore
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
-import { computed, ref, onBeforeMount, watch } from "vue";
+import { computed, ref } from "vue";
+import { useStorage } from "@vueuse/core";
 
 interface Props {
   id: string;
@@ -13,8 +14,6 @@ interface Props {
   withTransition?: boolean;
 }
 
-const supportLocalStorage = () => typeof localStorage !== "undefined";
-
 const props = withDefaults(defineProps<Props>(), {
   direction: "left",
   secondarySize: 40,
@@ -24,33 +23,16 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const previousSecondarySize = ref<number | null>(null);
-const currentSecondarySize = ref<number | null>(props.secondarySize);
+
+const currentSecondarySize = useStorage(
+  `ui-split-panel-${props.id}`,
+  props.secondarySize,
+);
+
 const mainSize = computed(() => 100 - currentSecondarySize.value);
 const isClosed = computed(() => mainSize.value === 100);
 
-onBeforeMount(() => {
-  if (supportLocalStorage()) {
-    const localStoreValue = localStorage.getItem(`ui-splitter-${props.id}`);
-    if (localStoreValue !== null) {
-      currentSecondarySize.value = parseFloat(localStoreValue);
-    }
-  }
-});
-
-const onResize = ({ size }: { size: number }) => {
-  currentSecondarySize.value = size;
-};
-
-watch(currentSecondarySize, () => {
-  if (supportLocalStorage()) {
-    localStorage.setItem(
-      `ui-splitter-${props.id}`,
-      String(currentSecondarySize.value),
-    );
-  }
-});
-
-const isSecondaryFirstComponent = computed(
+const isSecondaryReverse = computed(
   () => props.direction === "left" || props.direction === "up",
 );
 
@@ -58,25 +40,45 @@ const isHorizontal = computed(
   () => props.direction === "up" || props.direction === "down",
 );
 
+const closePanel = () => {
+  previousSecondarySize.value = currentSecondarySize.value;
+  currentSecondarySize.value = 0;
+};
+
+const showPanel = () => {
+  currentSecondarySize.value = Math.max(
+    props.secondaryMinSize,
+    previousSecondarySize.value,
+  );
+  previousSecondarySize.value = null;
+};
+
 // hide or show on click
 const onSplitterClick = () => {
   if (isClosed.value) {
-    currentSecondarySize.value =
-      previousSecondarySize.value < 1
-        ? props.secondaryMinSize
-        : previousSecondarySize.value;
-    previousSecondarySize.value = null;
+    showPanel();
   } else {
-    previousSecondarySize.value = currentSecondarySize.value;
-    currentSecondarySize.value = 0;
+    closePanel();
   }
+};
+
+// snapping
+const onResized = ({ size }: { size: number }) => {
+  if (size < props.secondaryMinSize && size > 0) {
+    closePanel();
+  }
+};
+
+// update our current size
+const onResize = ({ size }: { size: number }) => {
+  currentSecondarySize.value = size;
 };
 </script>
 
 <template>
   <splitpanes
     :id="id"
-    class="common-splitter"
+    class="split-panel"
     :dbl-click-splitter="false"
     :horizontal="isHorizontal"
     :class="{
@@ -88,15 +90,24 @@ const onSplitterClick = () => {
       'up-facing-splitter': direction === 'up',
     }"
     @splitter-click="onSplitterClick"
-    @resize="onResize($event[isSecondaryFirstComponent ? 0 : 1])"
+    @resized="onResized($event[isSecondaryReverse ? 0 : 1])"
+    @resize="onResize($event[isSecondaryReverse ? 0 : 1])"
   >
-    <pane v-if="isSecondaryFirstComponent" :size="currentSecondarySize">
+    <pane
+      v-if="isSecondaryReverse"
+      :size="currentSecondarySize"
+      :class="{ 'will-snap': currentSecondarySize < secondaryMinSize }"
+    >
       <slot name="secondary" />
     </pane>
     <pane :size="mainSize" :min-size="mainMinSize">
       <slot />
     </pane>
-    <pane v-if="!isSecondaryFirstComponent" :size="currentSecondarySize">
+    <pane
+      v-if="!isSecondaryReverse"
+      :size="currentSecondarySize"
+      :class="{ 'will-snap': currentSecondarySize < secondaryMinSize }"
+    >
       <slot name="secondary" />
     </pane>
   </splitpanes>
@@ -108,13 +119,61 @@ const onSplitterClick = () => {
 /* NB: we disable the rule because of classes defined by the splitpanes package */
 /* stylelint-disable selector-class-pattern */
 /* stylelint-disable no-descending-specificity */
-.common-splitter {
+.split-panel {
+  /* drag area for splitter */
+  & :deep(> .splitpanes__splitter) {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    &:hover::after {
+      opacity: 1;
+    }
+  }
+
+  &.splitpanes--vertical :deep(> .splitpanes__splitter)::after {
+    left: -5px;
+    right: -5px;
+    height: 100%;
+  }
+
+  &.splitpanes--horizontal :deep(> .splitpanes__splitter)::after {
+    top: -5px;
+    bottom: -5px;
+    width: 100%;
+  }
+
+  /* snap overlay and message */
+  & .will-snap {
+    position: relative;
+
+    &::after {
+      position: absolute;
+      content: "To small to display the content, will close the panel on mouse release.";
+      display: flex;
+      font-style: italic;
+      justify-content: center;
+      align-items: center;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--knime-gray-ultra-light);
+    }
+  }
+
+  /* style open state and some defaults */
   & :deep(.splitpanes__splitter) {
-    min-width: 11px;
-    min-height: 11px;
+    min-width: 1px;
+    min-height: 1px;
     background-color: var(--knime-porcelain);
-    background-repeat: no-repeat;
-    background-position: center;
     border-color: var(--knime-silver-sand);
     border-style: solid;
 
@@ -126,103 +185,103 @@ const onSplitterClick = () => {
       width: 10px;
       height: 10px;
       line-height: 10px;
-      display: block;
+      display: none;
 
       /* down arrow: embedded svg as it needs to have the correct color and size because it is used as image */
       content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='none'%3E%3Cpath stroke='%233E3A39' stroke-linejoin='round' stroke-miterlimit='10' d='M9.125 2.938 5 7.061.875 2.938'/%3E%3C/svg%3E");
     }
   }
-}
-
-.splitpanes--vertical {
-  & :deep(> .splitpanes__splitter) {
-    border-width: 0 1px;
-
-    &::before {
-      position: relative;
-      top: calc(50% - 5px);
-    }
-  }
-}
-
-.splitpanes--horizontal {
-  & :deep(> .splitpanes__splitter) {
-    border-width: 1px 0;
-
-    &::before {
-      margin: auto;
-    }
-  }
-}
-
-.left-facing-splitter {
-  & :deep(> .splitpanes__splitter) {
-    &::before {
-      transform: rotate(90deg);
-    }
-  }
 
   &.is-closed {
     & :deep(> .splitpanes__splitter) {
-      border-left: none;
+      min-width: 11px;
+      min-height: 11px;
 
       &::before {
-        transform: rotate(-90deg);
+        display: block;
       }
     }
   }
-}
 
-.right-facing-splitter {
-  & :deep(> .splitpanes__splitter) {
-    &::before {
-      transform: rotate(-90deg);
+  &.splitpanes--vertical {
+    & :deep(> .splitpanes__splitter) {
+      &::before {
+        position: relative;
+        top: calc(50% - 5px);
+      }
     }
   }
 
-  &.is-closed {
+  &.splitpanes--horizontal {
     & :deep(> .splitpanes__splitter) {
-      border-right: none;
+      &::before {
+        margin: auto;
+      }
+    }
+  }
+
+  &.left-facing-splitter {
+    & :deep(> .splitpanes__splitter) {
+      border-width: 0 1px 0 0;
 
       &::before {
         transform: rotate(90deg);
       }
     }
-  }
-}
 
-.down-facing-splitter {
-  &.is-closed {
-    & :deep(> .splitpanes__splitter) {
-      border-bottom: none;
-
-      &::before {
-        transform: scaleY(-1);
+    &.is-closed {
+      & :deep(> .splitpanes__splitter) {
+        &::before {
+          transform: rotate(-90deg);
+        }
       }
     }
   }
-}
 
-.up-facing-splitter {
-  & :deep(> .splitpanes__splitter) {
-    &::before {
-      transform: scaleY(-1);
-    }
-  }
-
-  &.is-closed {
+  &.right-facing-splitter {
     & :deep(> .splitpanes__splitter) {
-      border-top: none;
+      border-width: 0 0 0 1px;
+    }
 
-      &::before {
-        transform: scaleY(1);
+    &.is-closed {
+      & :deep(> .splitpanes__splitter) {
+        &::before {
+          transform: rotate(90deg);
+        }
       }
     }
   }
-}
 
-.unset-transition .splitpanes__pane {
-  transition: unset;
+  &.down-facing-splitter {
+    & :deep(> .splitpanes__splitter) {
+      border-width: 1px 0 0;
+    }
+
+    &.is-closed {
+      & :deep(> .splitpanes__splitter) {
+        &::before {
+          transform: scaleY(-1);
+        }
+      }
+    }
+  }
+
+  &.up-facing-splitter {
+    & :deep(> .splitpanes__splitter) {
+      border-width: 0 0 1px;
+    }
+
+    &.is-closed {
+      & :deep(> .splitpanes__splitter) {
+        &::before {
+          transform: scaleY(1);
+        }
+      }
+    }
+  }
+
+  &.unset-transition .splitpanes__pane {
+    transition: unset;
+  }
 }
-/* stylelint-enable selector-class-pattern */
 </style>
