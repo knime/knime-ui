@@ -3,7 +3,7 @@ import { shallowMount } from "@vue/test-utils";
 
 import AppHeaderTab from "../AppHeaderTab.vue";
 import CloseButton from "@/components/common/CloseButton.vue";
-import ComponentIcon from "webapps-common/ui/assets/img/icons/component.svg";
+import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 
 describe("AppHeaderTab.vue", () => {
@@ -114,13 +114,13 @@ describe("AppHeaderTab.vue", () => {
     const wrapper = doMount({ projectType: "Component" });
 
     expect(wrapper.findComponent(WorkflowIcon).exists()).toBe(false);
-    expect(wrapper.findComponent(ComponentIcon).exists()).toBe(true);
+    expect(wrapper.findComponent(NodeWorkflowIcon).exists()).toBe(true);
   });
 
   it("should show the workflow icon when a workflow is loaded", () => {
     const wrapper = doMount({ projectType: "Workflow" });
 
     expect(wrapper.findComponent(WorkflowIcon).exists()).toBe(true);
-    expect(wrapper.findComponent(ComponentIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(NodeWorkflowIcon).exists()).toBe(false);
   });
 });

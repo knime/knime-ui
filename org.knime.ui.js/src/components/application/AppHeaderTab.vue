@@ -1,6 +1,6 @@
 <script>
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
-import ComponentIcon from "webapps-common/ui/assets/img/icons/component.svg";
+import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
 import CloseButton from "@/components/common/CloseButton.vue";
 
 /* eslint-disable no-magic-numbers */
@@ -24,7 +24,7 @@ export default {
   components: {
     CloseButton,
     WorkflowIcon,
-    ComponentIcon,
+    NodeWorkflowIcon,
   },
   props: {
     name: {
@@ -89,9 +89,9 @@ export default {
       @click.middle.stop="$emit('closeWorkflow', projectId)"
     >
       <!-- Workflows are the default unless we explicitely know it is a component -->
-      <ComponentIcon
+      <NodeWorkflowIcon
         v-if="projectType === 'Component'"
-        class="component-icon"
+        class="node-workflow-icon"
       />
       <WorkflowIcon v-else class="workflow-icon" />
 
@@ -137,7 +137,7 @@ li {
     @mixin svg-icon-size 18;
   }
 
-  & .component-icon {
+  & .node-workflow-icon {
     stroke: var(--knime-white);
 
     @mixin svg-icon-size 30;
@@ -197,7 +197,7 @@ li.active {
   }
 
   & .workflow-icon,
-  & .component-icon {
+  & .node-workflow-icon {
     stroke: var(--knime-black);
   }
 

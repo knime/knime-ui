@@ -14,8 +14,8 @@ import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 import FolderIcon from "webapps-common/ui/assets/img/icons/folder.svg";
 import FileTextIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
-import ComponentIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
-import MetaNodeIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
+import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
+import WorkflowNodeStackIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
 
 import type { PathTriplet, SpacesState } from "@/store/spaces";
 import {
@@ -41,8 +41,8 @@ const itemIconRenderer = (item: FileExplorerItemWithMeta) => {
   const typeIcons = {
     [SpaceItem.TypeEnum.WorkflowGroup]: FolderIcon,
     [SpaceItem.TypeEnum.Workflow]: WorkflowIcon,
-    [SpaceItem.TypeEnum.Component]: ComponentIcon,
-    [SpaceItem.TypeEnum.WorkflowTemplate]: MetaNodeIcon,
+    [SpaceItem.TypeEnum.Component]: NodeWorkflowIcon,
+    [SpaceItem.TypeEnum.WorkflowTemplate]: WorkflowNodeStackIcon,
     [SpaceItem.TypeEnum.Data]: FileTextIcon,
   };
 
