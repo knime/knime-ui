@@ -153,6 +153,7 @@ describe("WorkflowMetadata.vue", () => {
         info: {
           containerType: WorkflowInfo.ContainerTypeEnum.Component,
         },
+        projectMetadata: null,
         componentMetadata: {
           name: "name",
           // @ts-ignore
@@ -211,6 +212,41 @@ describe("WorkflowMetadata.vue", () => {
         },
       ]);
     });
+  });
+
+  it("should display metadata for Components opened as a project", async () => {
+    const { wrapper, $store } = doMount();
+
+    const workflow = createWorkflow({
+      info: {
+        containerType: WorkflowInfo.ContainerTypeEnum.Project,
+      },
+      projectMetadata: null,
+      componentMetadata: {
+        name: "name",
+        // @ts-ignore
+        inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
+        outPorts: [
+          {
+            typeId:
+              "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+          },
+        ],
+        description: {
+          value: "Description",
+          contentType: TypedText.ContentTypeEnum.Plain,
+        },
+        type: ComponentNodeAndDescription.TypeEnum.Source,
+        views: [{ name: "view", description: "description" }],
+        options: ["options"],
+      },
+    });
+
+    $store.commit("workflow/setActiveWorkflow", workflow);
+    await nextTick();
+
+    expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(false);
+    expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(true);
   });
 
   it("should not display metadata for metanodes", async () => {

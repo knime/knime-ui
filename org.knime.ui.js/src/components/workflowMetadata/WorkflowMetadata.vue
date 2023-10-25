@@ -17,13 +17,28 @@ const availablePortTypes = computed(
 const workflow = computed(() => store.state.workflow.activeWorkflow);
 const containerType = computed(() => workflow.value.info.containerType);
 
-const isProject = computed(
+const isProjectType = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Project,
 );
-
-const isComponent = computed(
+const isComponentType = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Component,
 );
+
+const isProject = computed(() => {
+  return (
+    isProjectType.value &&
+    workflow.value.projectMetadata &&
+    !workflow.value.componentMetadata
+  );
+});
+
+const isComponent = computed(() => {
+  return (
+    (isComponentType.value || isProjectType.value) &&
+    workflow.value.componentMetadata &&
+    !workflow.value.projectMetadata
+  );
+});
 
 const isMetanode = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode,
