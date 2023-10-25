@@ -8,6 +8,7 @@ import MenuItems, {
 import DeleteIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import RenameIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import ExportIcon from "webapps-common/ui/assets/img/icons/export.svg";
+import type { FileExplorerContextMenu } from "webapps-common/ui/components/FileExplorer/types";
 
 import {
   SpaceItem,
@@ -23,7 +24,6 @@ import {
   buildDisplayDeploymentsMenuItem,
   buildExecuteWorkflowMenuItem,
 } from "@/components/spaces/remoteMenuItems";
-import type { FileExplorerContextMenu } from "@/components/spaces/FileExplorer/types";
 
 const store = useStore<RootStoreState>();
 

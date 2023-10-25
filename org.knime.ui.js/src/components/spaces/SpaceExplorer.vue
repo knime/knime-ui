@@ -16,6 +16,8 @@ import FileTextIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
 import WorkflowNodeStackIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
+import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
+import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
 
 import type { PathTriplet, SpacesState } from "@/store/spaces";
 import {
@@ -27,8 +29,6 @@ import SmartLoader from "@/components/common/SmartLoader.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
 
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
-import FileExplorer from "./FileExplorer/FileExplorer.vue";
-import type { FileExplorerItem } from "./FileExplorer/types";
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
@@ -512,6 +512,7 @@ export default defineComponent({
         :full-path="fullPath"
         :item-icon-renderer="itemIconRenderer"
         :active-renamed-item-id="activeRenamedItemId"
+        dragging-animation-mode="manual"
         @change-directory="onChangeDirectory"
         @change-selection="onSelectionChange"
         @open-file="onOpenFile"

@@ -9,15 +9,15 @@ import * as spacesStore from "@/store/spaces";
 import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 import Modal from "webapps-common/ui/components/Modal.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
+import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
+import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
 
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import SpaceExplorer from "../SpaceExplorer.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
-import FileExplorer from "../FileExplorer/FileExplorer.vue";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
-import { FileExplorerItem } from "../FileExplorer/types";
 
 const mockedAPI = deepMocked(API);
 
