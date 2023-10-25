@@ -171,7 +171,7 @@ declare function abortAiRequest(
   conversationId: string | null,
   chainType: string,
 ): void;
-declare function getAiServerAddress(): string;
+declare function getUiStrings(): string;
 declare function getHubID(): string;
 
 declare function openPermissionsDialog(

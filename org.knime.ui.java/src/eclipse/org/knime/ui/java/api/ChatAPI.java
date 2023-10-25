@@ -92,10 +92,12 @@ public final class ChatAPI {
          */
         void onCancel(String conversationId, String chainType);
 
+
         /**
-         * @return the http(s) address of the server
+         * @return the UI strings (disclaimer and welcome messages) in JSON format
          */
-        String getServerAddress();
+        String getUiStrings();
+
         /**
          * @return the ID of the hub that provides the ai-service
          */
@@ -146,13 +148,6 @@ public final class ChatAPI {
         LISTENERS.forEach(l -> l.onCancel(conversationId, chainType));
     }
 
-    /**
-     * @return the http(s) address of the server
-     */
-    @API
-    public static String getAiServerAddress() {
-        return getListener().map(ChatListener::getServerAddress).orElse(null);
-    }
 
     private static Optional<ChatListener> getListener() {
         return LISTENERS.stream().findFirst();
@@ -164,6 +159,14 @@ public final class ChatAPI {
     @API
     public static String getHubID() {
         return getListener().map(ChatListener::getHubID).orElse(null);
+    }
+
+    /**
+     * @return the ID of the hub that provides the ai-service
+     */
+    @API
+    public static String getUiStrings() {
+        return getListener().map(ChatListener::getUiStrings).orElse(null);
     }
 
 

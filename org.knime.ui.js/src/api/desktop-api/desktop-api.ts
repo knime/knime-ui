@@ -655,11 +655,11 @@ export const makeAiRequest = ({
   );
 };
 
-export const getAiServerAddress = () => {
+export const getUiStrings = () => {
   return callBrowserFunction(
-    window.getAiServerAddress,
+    window.getUiStrings,
     [],
-    "Could not get AI server address",
+    "Could not get UI strings",
     true,
     { block: false },
   );
