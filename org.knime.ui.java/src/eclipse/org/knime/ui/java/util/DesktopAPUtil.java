@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.lang3.Functions;
 import org.eclipse.core.filesystem.EFS;
@@ -85,6 +86,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.product.rcp.intro.UpdateDetector;
@@ -159,43 +161,61 @@ public final class DesktopAPUtil {
         final WorkflowContextV2 workflowContext) {
         final var wfFile = path.resolve(WorkflowPersistor.WORKFLOW_FILE);
         var isComponentProject = path.resolve(WorkflowPersistor.TEMPLATE_FILE).toFile().exists();
+
         if (isComponentProject) {
-            return loadComponentProject(monitor, wfFile, workflowContext);
+            try {
+                return loadComponentProject(monitor, wfFile, workflowContext);
+            } catch (OperationNotAllowedException e) { // If a locked component cannot be opened
+                LOGGER.error(e);
+                return null;
+            }
         }
+
         var wfmRef = new AtomicReference<WorkflowManager>();
-        new LoadWorkflowRunnable((wfm, doSave) -> { // NOSONAR
+        final BiConsumer<WorkflowManager, Boolean> wfmLoadedCallback = (wfm, doSave) -> {
             wfmRef.set(wfm);
             if (Boolean.TRUE.equals(doSave)) {
-                var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
-                try {
-                    var exec = DesktopAPUtil.toExecutionMonitor(monitor);
-                    wfm.save(workflowPath.toFile(), exec, true);
-                } catch (final IOException | CanceledExecutionException | LockFailedException e) { // NOSONAR: logged
-                    // should never happen
-                    LOGGER.error(e);
-                }
+                doSaveWorkflowWithWorkflowManager(wfm, monitor);
             }
-        }, wfFile.toFile(), workflowContext).run(monitor);
+        };
+        final var runnable = new LoadWorkflowRunnable(wfmLoadedCallback, wfFile.toFile(), workflowContext);
+        runnable.run(monitor); // Sets the workflow reference using the callback as a side effect
+
         return wfmRef.get();
     }
 
+    private static void doSaveWorkflowWithWorkflowManager(final WorkflowManager wfm, final IProgressMonitor monitor) {
+        var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+        try {
+            var exec = DesktopAPUtil.toExecutionMonitor(monitor);
+            wfm.save(workflowPath.toFile(), exec, true);
+        } catch (final IOException | CanceledExecutionException | LockFailedException e) {
+            // should never happen
+            LOGGER.error(e);
+        }
+    }
+
+    /**
+     * @throws OperationNotAllowedException If a locked component cannot be opened
+     */
     private static WorkflowManager loadComponentProject(final IProgressMonitor monitor, final Path wfFile,
-        final WorkflowContextV2 workflowContext) {
-        var wfmRef = new AtomicReference<WorkflowManager>();
-        new LoadMetaNodeTemplateRunnable(wfmRef::set, CheckUtils.checkNotNull(workflowContext).getTempSourceLocation()
-            .orElse(wfFile.toUri()), workflowContext, false, true).run(monitor);
+        final WorkflowContextV2 workflowContext) throws OperationNotAllowedException {
+        final var wfmRef = new AtomicReference<WorkflowManager>();
+        final var templateURI = CheckUtils.checkNotNull(workflowContext)//
+            .getTempSourceLocation()//
+            .orElse(wfFile.toUri());
+
+        final var runnable = new LoadMetaNodeTemplateRunnable(wfmRef::set, templateURI, workflowContext, false, true);
+        runnable.run(monitor); // Sets the workflow reference using the callback as a side effect
+
+        if (wfmRef.get() != null && wfmRef.get().isEncrypted()) { // In case a locked component is opened
+            final var title = "Workflow could not be opened";
+            final var message = "Component could not be opened: Access denied";
+            showError(title, message);
+            throw new OperationNotAllowedException(message);
+        }
+
         return wfmRef.get();
-        // TODO NXT-2116: Enable encrypted components
-        //
-        //        if (m_manager != null && m_manager.isEncrypted()) {
-        //            WorkflowCipherPrompt prompt = new GUIWorkflowCipherPrompt(true);
-        //            if (!Wrapper.unwrapWFM(m_manager).unlock(prompt)) {
-        //                m_manager = null;
-        //                final var accessDeniedMessage = "Component could not be opened: Access denied";
-        //                openErrorDialogAndCloseEditor(accessDeniedMessage);
-        //                throw new OperationCanceledException(accessDeniedMessage);
-        //            }
-        //        }
     }
 
     private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path) {
