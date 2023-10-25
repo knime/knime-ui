@@ -354,7 +354,7 @@ final class SaveWorkflow {
         try {
             spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, false, false, monitor);
             uploaded = true;
-        } catch (final CoreException e) {
+        } catch (final CoreException | IOException e) {
             final var message = "Failed to upload the workflow to its remote location\n(" + e.getMessage() + ")";
             DesktopAPUtil.showAndLogError("Upload has failed", message, LOGGER, e);
         }
