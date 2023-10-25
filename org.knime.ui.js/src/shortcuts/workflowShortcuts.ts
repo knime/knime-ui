@@ -98,8 +98,16 @@ const workflowShortcuts: WorkflowShortcuts = {
     text: "Save",
     hotkey: ["Ctrl", "S"],
     icon: SaveIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/saveWorkflow"),
-    condition: ({ $store }) => $store.state.workflow.activeWorkflow?.dirty,
+    execute: ({ $store }) => {
+      if ($store.getters["application/activeProjectOrigin"]) {
+        $store.dispatch("workflow/saveWorkflow");
+      } else {
+        $store.dispatch("workflow/saveWorkflowAs");
+      }
+    },
+    condition: ({ $store }) =>
+      $store.state.workflow.activeWorkflow?.dirty ||
+      !$store.getters["application/activeProjectOrigin"],
   },
   saveAs: {
     title: "Save workflow as",

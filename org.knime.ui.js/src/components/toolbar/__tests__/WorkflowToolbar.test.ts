@@ -9,7 +9,7 @@ import * as canvasStore from "@/store/canvas";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import { mockVuexStore } from "@/test/utils";
-import { createWorkflow } from "@/test/factories";
+import { createWorkflow, createWorkflowProject } from "@/test/factories";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 
@@ -19,7 +19,7 @@ import ZoomMenu from "../ZoomMenu.vue";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
 
 describe("WorkflowToolbar.vue", () => {
-  const doMount = ({ workflow = null } = {}) => {
+  const doMount = ({ workflow = null, openProjects = null } = {}) => {
     const $store = mockVuexStore({
       workflow: workflowStore,
       application: applicationStore,
@@ -29,6 +29,25 @@ describe("WorkflowToolbar.vue", () => {
 
     if (workflow) {
       $store.commit("workflow/setActiveWorkflow", workflow);
+
+      const { projectId } = $store.state.workflow.activeWorkflow;
+      $store.commit("application/setActiveProjectId", projectId);
+
+      if (openProjects) {
+        $store.commit("application/setOpenProjects", openProjects);
+      } else {
+        const customOpenProjects = [
+          createWorkflowProject({
+            projectId,
+            origin: {
+              itemId: "1234",
+              spaceId: "space1",
+              providerId: "hub-provider1",
+            },
+          }),
+        ];
+        $store.commit("application/setOpenProjects", customOpenProjects);
+      }
     }
 
     const $shortcuts = createShortcutsService({ $store, $router: router });
@@ -135,6 +154,28 @@ describe("WorkflowToolbar.vue", () => {
 
       expect(toolbarShortcuts).toStrictEqual([
         "save",
+        "undo",
+        "redo",
+        "executeAll",
+        "cancelAll",
+        "resetAll",
+      ]);
+    });
+
+    it("shows menu items if workflow has no origin", () => {
+      const workflow = createWorkflow();
+      const openProjects = [
+        createWorkflowProject({
+          projectId: workflow.projectId,
+        }),
+      ];
+      const { wrapper } = doMount({ workflow, openProjects });
+      const toolbarShortcuts = wrapper
+        .findAllComponents(ToolbarShortcutButton)
+        .map(toNameProp);
+
+      expect(toolbarShortcuts).toStrictEqual([
+        "saveAs",
         "undo",
         "redo",
         "executeAll",

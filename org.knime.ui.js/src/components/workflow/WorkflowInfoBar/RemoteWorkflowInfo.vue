@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import Button from "webapps-common/ui/components/Button.vue";
 import { useStore } from "@/composables/useStore";
 import { SpaceProviderNS } from "@/api/custom-types";
 import * as $colors from "@/style/colors.mjs";
@@ -31,10 +30,6 @@ const shouldShow = computed(() => {
     activeProjectId.value && (isUnknownOrigin.value || isServerSpace.value)
   );
 });
-
-const onSaveLocalCopy = () => {
-  store.dispatch("workflow/saveWorkflowAs");
-};
 </script>
 
 <template>
@@ -42,9 +37,9 @@ const onSaveLocalCopy = () => {
     v-if="shouldShow"
     :class="['banner', { blue: isServerSpace, yellow: isUnknownOrigin }]"
   >
-    <span :class="{ 'flush-left': isUnknownOrigin }">
+    <span>
       <template v-if="isUnknownOrigin">
-        You have opened a workflow that is not part of your spaces. “Save as” a
+        You have opened a workflow that is not part of your spaces. “Save” a
         local copy to keep your changes.
       </template>
 
@@ -53,16 +48,6 @@ const onSaveLocalCopy = () => {
         to KNIME Server to keep your changes.
       </template>
     </span>
-
-    <Button
-      v-if="isUnknownOrigin"
-      primary
-      compact
-      class="button"
-      @click="onSaveLocalCopy"
-    >
-      Save as
-    </Button>
   </div>
 </template>
 
@@ -82,15 +67,5 @@ const onSaveLocalCopy = () => {
   &.blue {
     background: v-bind("$colors.notifications.info");
   }
-}
-
-.button {
-  min-width: 120px;
-  pointer-events: all;
-  margin-left: auto;
-}
-
-.flush-left {
-  margin-left: auto;
 }
 </style>

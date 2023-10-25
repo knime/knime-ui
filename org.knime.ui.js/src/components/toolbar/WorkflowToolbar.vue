@@ -32,6 +32,7 @@ export default {
       "hasAnnotationModeEnabled",
       "hasSelectionModeEnabled",
       "hasPanModeEnabled",
+      "activeProjectOrigin",
     ]),
 
     canvasModes() {
@@ -72,11 +73,16 @@ export default {
     hideText() {
       return {
         save: true,
+        saveAs: true,
         undo: true,
         redo: true,
       };
     },
     toolbarDropdowns() {
+      if (!this.activeProjectOrigin) {
+        return {};
+      }
+
       return { save: ["save", "saveAs"] };
     },
     toolbarButtons(): ShortcutName[] {
@@ -89,7 +95,8 @@ export default {
 
       const visibleItems: Partial<Record<ShortcutName, boolean>> = {
         // Always visible
-        save: true,
+        save: Boolean(this.activeProjectOrigin),
+        saveAs: !this.activeProjectOrigin,
         undo: true,
         redo: true,
 
@@ -109,9 +116,12 @@ export default {
         openLayoutEditor: isInsideComponent,
       };
 
-      return Object.entries(visibleItems)
-        .filter(([_, visible]) => visible)
-        .map(([name]) => name as ShortcutName);
+      return (
+        Object.entries(visibleItems)
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          .filter(([_, visible]) => visible)
+          .map(([name]) => name as ShortcutName)
+      );
     },
   },
   methods: {

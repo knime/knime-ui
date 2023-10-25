@@ -71,6 +71,10 @@ describe("workflowShortcuts", () => {
         "workflow/isWritable": isWorkflowWritable,
         "workflow/getNodeById": getNodeById,
         "canvas/getVisibleFrame": getVisibleFrame,
+        "application/activeProjectOrigin": {
+          providerId: "some-provider",
+          spaceId: "some-space",
+        },
       },
     };
 
@@ -90,6 +94,15 @@ describe("workflowShortcuts", () => {
       const { $store, mockDispatch } = createStore();
       workflowShortcuts.save.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith("workflow/saveWorkflow");
+      expect(mockDispatch).not.toHaveBeenCalledWith("workflow/saveWorkflowAs");
+    });
+
+    it("save when workflow without origin is open", () => {
+      const { $store, mockDispatch } = createStore();
+      $store.getters["application/activeProjectOrigin"] = null;
+      workflowShortcuts.save.execute({ $store });
+      expect(mockDispatch).not.toHaveBeenCalledWith("workflow/saveWorkflow");
+      expect(mockDispatch).toHaveBeenCalledWith("workflow/saveWorkflowAs");
     });
 
     it("undo", () => {

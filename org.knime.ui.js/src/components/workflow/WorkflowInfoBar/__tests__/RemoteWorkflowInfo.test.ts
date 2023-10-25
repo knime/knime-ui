@@ -1,5 +1,5 @@
 import { mockVuexStore } from "@/test/utils";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import {
@@ -45,12 +45,7 @@ describe("RemoteWorkflowInfo.vue", () => {
     activeProjectId: string;
   }) => {
     const $store = mockVuexStore({
-      workflow: {
-        ...workflowStore,
-        actions: {
-          saveWorkflowAs: vi.fn(),
-        },
-      },
+      workflow: workflowStore,
       application: applicationStore,
       spaces: spacesStore,
     });
@@ -87,24 +82,22 @@ describe("RemoteWorkflowInfo.vue", () => {
       };
     }
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-
     const wrapper = mount(RemoteWorkflowInfo, {
       global: {
         plugins: [$store],
       },
     });
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper, $store };
   };
 
-  it("should display banner for workflows with unknown origin correctly", async () => {
+  it("should display banner for workflows with unknown origin correctly", () => {
     const activeProjectId = openProjects.at(0).projectId;
     const workflow = createWorkflow({
       info: { containerId: activeProjectId },
     });
 
-    const { wrapper, dispatchSpy } = doMount({
+    const { wrapper } = doMount({
       workflow,
       activeProjectId,
     });
@@ -112,16 +105,9 @@ describe("RemoteWorkflowInfo.vue", () => {
     expect(wrapper.find(".banner").exists()).toBe(true);
     expect(wrapper.find(".banner.yellow").exists()).toBe(true);
     expect(wrapper.find(".banner.blue").exists()).toBe(false);
-    expect(wrapper.find(".banner.yellow .flush-left").exists()).toBe(true);
     expect(wrapper.text()).toMatch(
-      "You have opened a workflow that is not part of your spaces. “Save as” a local copy to keep your changes.",
+      "You have opened a workflow that is not part of your spaces. “Save” a local copy to keep your changes.",
     );
-
-    const saveAsButton = wrapper.find(".button");
-    expect(saveAsButton.exists()).toBe(true);
-
-    await saveAsButton.trigger("click");
-    expect(dispatchSpy).toHaveBeenCalledWith("workflow/saveWorkflowAs");
   });
 
   it("should not display the banner for hub workflows with known origin", () => {
@@ -155,6 +141,5 @@ describe("RemoteWorkflowInfo.vue", () => {
     expect(wrapper.text()).toMatch(
       "You have opened a workflow from a KNIME Server. “Save” the workflow back to KNIME Server to keep your changes.",
     );
-    expect(wrapper.find(".button").exists()).toBe(false);
   });
 });
