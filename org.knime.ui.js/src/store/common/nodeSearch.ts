@@ -43,7 +43,7 @@ export const state = (): CommonNodeSearchState => ({
   /* filter for compatible port type ids */
   portTypeId: null,
   /* local state of the bottom nodes */
-  isShowingBottomNodes: false,
+  isShowingBottomNodes: true,
   /* ui scroll state */
   searchScrollPosition: 0,
 
@@ -207,7 +207,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
           offset: searchPage * nodeSearchPageSize,
           limit: nodeSearchPageSize,
           fullTemplateInfo: true,
-          nodesPartition: bottom ? "NOT_IN_COLLECTION" : "IN_COLLECTION",
+          nodesPartition: bottom ? "ALL" : "IN_COLLECTION",
           portTypeId: state.portTypeId,
         },
         bottom ? state.bottomAbortController : state.topAbortController,
@@ -247,13 +247,12 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @param {*} context - Vuex context.
    * @returns {Promise<void>}
    */
-  searchTopAndBottomNodes: debounce(async ({ dispatch, state }) => {
-    await Promise.all([
-      dispatch("searchNodes"),
-      state.isShowingBottomNodes
-        ? dispatch("searchNodes", { bottom: true })
-        : dispatch("clearSearchResultsForBottomNodes"),
-    ]);
+  searchStarterAndAllNodes: debounce(async ({ dispatch, rootState }) => {
+    if (rootState.application.hasNodeCollectionActive) {
+      await dispatch("searchNodes");
+    } else {
+      await dispatch("searchNodes", { bottom: true });
+    }
   }, searchTopAndBottomNodesDebounceWait),
 
   /**
@@ -310,7 +309,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    */
   async setSelectedTags({ dispatch, commit }, tags) {
     commit("setSelectedTags", tags);
-    await dispatch("searchTopAndBottomNodes");
+    await dispatch("searchStarterAndAllNodes");
   },
 
   async toggleShowingBottomNodes({ commit, dispatch, state }) {
@@ -329,7 +328,8 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    */
   async updateQuery({ commit, dispatch }, value) {
     commit("setQuery", value);
-    await dispatch("searchTopAndBottomNodes");
+    // await dispatch("searchStarterNodes");
+    await dispatch("searchStarterAndAllNodes");
   },
 
   /**
@@ -350,8 +350,9 @@ export const getters: GetterTree<CommonNodeSearchState, RootStoreState> = {
   hasSearchParams: (state) =>
     state.query !== "" || state.selectedTags.length > 0,
   searchIsActive: (state) =>
-    Boolean(state.query || state.topNodesTags.length) &&
-    state.topNodes !== null,
+    Boolean(
+      state.query || state.topNodesTags.length || state.bottomNodesTags.length,
+    ),
   searchResultsContainNodeId(state) {
     return (selectedNodeId) =>
       Boolean(state.topNodes?.some((node) => node.id === selectedNodeId)) ||

@@ -64,13 +64,7 @@ export default defineComponent({
     @update:selected-node="$emit('update:selectedNode', $event)"
     @item-enter-key="$emit('addNode', $event)"
   >
-    <template #topNodeTemplate="itemProps">
-      <NodeTemplate
-        v-bind="itemProps"
-        @click="$emit('addNode', itemProps.nodeTemplate)"
-      />
-    </template>
-    <template #bottomNodeTemplate="itemProps">
+    <template #nodesTemplate="itemProps">
       <NodeTemplate
         v-bind="itemProps"
         @click="$emit('addNode', itemProps.nodeTemplate)"

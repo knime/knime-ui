@@ -63,13 +63,7 @@ export default {
     :top-nodes="topNodes"
     :has-node-collection-active="hasNodeCollectionActive"
   >
-    <template #topNodeTemplate="slotProps">
-      <DraggableNodeTemplate
-        v-bind="slotProps"
-        @show-node-description="$emit('showNodeDescription', slotProps)"
-      />
-    </template>
-    <template #bottomNodeTemplate="slotProps">
+    <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate
         v-bind="slotProps"
         @show-node-description="$emit('showNodeDescription', slotProps)"

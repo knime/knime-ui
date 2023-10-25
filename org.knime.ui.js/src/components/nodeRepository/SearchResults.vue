@@ -1,6 +1,8 @@
-<script setup lang="ts">
-import { computed, ref, toRefs, watch, nextTick } from "vue";
+<script lang="ts">
+import { defineComponent } from "vue";
+import type { PropType } from "vue";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
 
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
@@ -17,108 +19,133 @@ export type SearchActions = {
 /**
  * Reusable search results. Please keep this store free.
  */
-type Props = {
-  topNodes: NodeTemplate[] | null;
-  bottomNodes: NodeTemplate[] | null;
-  query: string;
-  selectedTags?: string[];
-  searchScrollPosition?: number;
-  isShowingBottomNodes: boolean;
-  selectedNode: KnimeNode | null;
-  searchActions: SearchActions;
-  hasNodeCollectionActive: boolean;
-  highlightFirst?: boolean;
-};
-
-const props = withDefaults(defineProps<Props>(), {
-  selectedTags: () => [],
-  searchScrollPosition: 0,
-});
-
-const emit = defineEmits<{
-  (e: "navReachedTop"): void;
-  (e: "update:searchScrollPosition", position: number): void;
-  (e: "update:selectedNode", value: any): void;
-  (e: "item-enter-key", event: KeyboardEvent): void;
-}>();
-
-let isLoading = ref(false);
-const isLoadingMore = ref(false);
-const {
-  topNodes,
-  bottomNodes,
-  query,
-  selectedTags,
-  searchActions,
-  isShowingBottomNodes,
-  selectedNode,
-} = toRefs(props);
-
-const isTopListEmpty = computed(() => topNodes?.value.length === 0);
-
-const allNodes = computed(() => [
-  ...topNodes.value,
-  ...(bottomNodes.value ? bottomNodes.value : []),
-]);
-
-const selectedNodeModel = computed({
-  get() {
-    return selectedNode;
+export default defineComponent({
+  components: {
+    ScrollViewContainer,
+    NodeList,
+    ReloadIcon,
+    CircleInfoIcon,
   },
-  set(value) {
-    emit("update:selectedNode", value);
+  props: {
+    topNodes: {
+      type: [Array, null] as PropType<Array<NodeTemplate> | null>,
+      required: true,
+    },
+    bottomNodes: {
+      type: [Array, null] as PropType<Array<NodeTemplate> | null>,
+      required: true,
+    },
+    query: {
+      type: String,
+      required: true,
+    },
+    selectedTags: {
+      type: Array as PropType<Array<string>>,
+      default: () => [],
+    },
+    searchScrollPosition: {
+      type: Number,
+      default: 0,
+    },
+    isShowingBottomNodes: {
+      type: Boolean,
+      required: true,
+    },
+    selectedNode: {
+      type: [Object, null] as PropType<KnimeNode | null>,
+      required: true,
+    },
+    searchActions: {
+      type: Object as PropType<SearchActions>,
+      required: true,
+    },
+    hasNodeCollectionActive: {
+      type: Boolean,
+      required: true,
+    },
+    highlightFirst: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: [
+    "navReachedTop",
+    "update:searchScrollPosition",
+    "update:selectedNode",
+    "item-enter-key",
+    "open-preferences",
+  ],
+  expose: ["focusFirst"],
+  data() {
+    return {
+      isLoading: false,
+      isLoadingMore: false,
+    };
+  },
+  computed: {
+    isStarterListEmpty() {
+      return this.topNodes?.length === 0;
+    },
+    isAllNodesListEmpty() {
+      return this.bottomNodes?.length === 0;
+    },
+    hasNoMoreSearchResults() {
+      // NB: If bottomNodes is null the results are still loading
+      return this.bottomNodes !== null && this.bottomNodes.length === 0;
+    },
+    selectedNodeModel: {
+      get() {
+        return this.selectedNode;
+      },
+      set(value) {
+        this.$emit("update:selectedNode", value);
+      },
+    },
+  },
+  watch: {
+    query() {
+      this.onSearchChanged();
+    },
+    selectedTags() {
+      this.onSearchChanged();
+    },
+  },
+  methods: {
+    // Also currently the NodeRepository isn't destroyed upon closing
+    onSaveScrollPosition(position: number) {
+      this.$emit("update:searchScrollPosition", position);
+    },
+    async onSearchChanged() {
+      let scroller = this.$refs.scroller as InstanceType<
+        typeof ScrollViewContainer
+      >;
+
+      // wait for new content to be displayed, then scroll to top
+      await this.$nextTick();
+      if (scroller) {
+        scroller.$el.scrollTop = 0;
+      }
+    },
+    loadMoreSearchResults() {
+      if (this.hasNodeCollectionActive) {
+        this.isLoading = true;
+        this.searchActions.searchTopNodesNextPage().then(() => {
+          this.isLoading = false;
+        });
+        return;
+      }
+
+      this.isLoadingMore = true;
+      this.searchActions.searchBottomNodesNextPage().then(() => {
+        this.isLoadingMore = false;
+      });
+    },
+    focusFirst() {
+      const nodeList = this.$refs.nodeList as InstanceType<typeof NodeList>;
+      nodeList?.focusFirst();
+    },
   },
 });
-
-const onSaveScrollPosition = (position: number) => {
-  emit("update:searchScrollPosition", position);
-};
-
-const scroller: InstanceType<typeof ScrollViewContainer> = null;
-const onSearchChanged = async () => {
-  // wait for new content to be displayed, then scroll to top
-  await nextTick();
-  if (scroller) {
-    scroller.$el.scrollTop = 0;
-  }
-};
-
-watch(query, () => onSearchChanged, { immediate: true });
-watch(selectedTags, () => onSearchChanged, { immediate: true });
-
-const loadMoreSearchResults = () => {
-  isLoading.value = true;
-  searchActions.value.searchTopNodesNextPage().then(() => {
-    isLoading.value = false;
-  });
-
-  // NB: The store will only load more nodes if isShowingBottomNodes is true
-  isLoadingMore.value = true;
-  searchActions.value.searchBottomNodesNextPage().then(() => {
-    isLoadingMore.value = false;
-  });
-};
-
-const bottomList: InstanceType<typeof NodeList> = null;
-const openBottomNodesAndFocusFirst = async () => {
-  if (!isShowingBottomNodes.value) {
-    await searchActions.value.toggleShowingBottomNodes();
-  }
-  await nextTick();
-  bottomList?.focusFirst();
-};
-
-const topList: InstanceType<typeof NodeList> = null;
-const focusFirst = () => {
-  if (topNodes.value.length > 0) {
-    topList?.focusFirst();
-    return;
-  }
-  openBottomNodesAndFocusFirst();
-};
-
-defineExpose({ focusFirst });
-// @input="$emit('update:selectedNode', $event.target.value)"
 </script>
 
 <template>
@@ -130,21 +157,47 @@ defineExpose({ focusFirst });
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
-      <div v-if="isTopListEmpty" class="no-matching-search">
-        No node matching for: {{ query }}
+      <div
+        v-if="isStarterListEmpty || isAllNodesListEmpty"
+        class="no-matching-search"
+      >
+        <span v-if="isStarterListEmpty">
+          There are no nodes matching with your current filter settings.
+        </span>
+        <span v-else> There are no matching nodes. </span>
+        <div class="search-info">
+          <CircleInfoIcon class="info-icon" />
+          <span v-if="isStarterListEmpty"
+            >But there are some in “All nodes“. <br />Change the
+            <a class="search-link" @click="$emit('open-preferences')"
+              >filter settings</a
+            >
+            to see all nodes.</span
+          >
+          <span v-else
+            >Search the
+            <a
+              class="search-link"
+              :href="`https://hub.knime.com/search?q=${encodeURIComponent(
+                query,
+              )}&type=all`"
+              >KNIME Community Hub</a
+            >
+            to find more nodes and extensions.</span
+          >
+        </div>
       </div>
-      <div v-else class="node-list-wrapper">
+      <div class="node-list-wrapper">
         <NodeList
-          ref="topList"
+          ref="nodeList"
           v-model:selected-node="selectedNodeModel"
-          :nodes="allNodes"
+          :nodes="topNodes ? topNodes : bottomNodes"
           :highlight-first="highlightFirst"
           @nav-reached-top="$emit('navReachedTop')"
-          @nav-reached-end="openBottomNodesAndFocusFirst"
           @enter-key="$emit('item-enter-key', $event)"
         >
           <template #item="slotProps">
-            <slot name="topNodeTemplate" v-bind="slotProps" />
+            <slot name="nodesTemplate" v-bind="slotProps" />
           </template>
         </NodeList>
         <ReloadIcon v-if="isLoading" class="loading-indicator" />
@@ -164,15 +217,36 @@ defineExpose({ focusFirst });
 
 .no-matching-search {
   display: flex;
-  align-items: center;
   justify-content: center;
-  text-align: center;
+  align-items: flex-start;
   height: 100%;
   font-style: italic;
-  color: var(--knime-dove-gray);
+  color: var(--knime-masala);
   flex-direction: column;
   margin-top: 30px;
   margin-bottom: 15px;
+  padding: 0 10px;
+
+  & .search-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 20px;
+    width: 100%;
+
+    & .info-icon {
+      @mixin svg-icon-size 20;
+
+      stroke: var(--knime-masala);
+      width: 30px;
+      margin-right: 10px;
+    }
+
+    & .search-link {
+      color: var(--knime-dove-gray);
+      text-decoration: underline;
+    }
+  }
 }
 
 .results {

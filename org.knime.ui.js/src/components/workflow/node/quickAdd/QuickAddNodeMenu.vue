@@ -2,8 +2,13 @@
 import { defineComponent, type PropType } from "vue";
 import { mapActions, mapGetters, mapState } from "vuex";
 
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
+import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
+
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
+import { API } from "@api";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
@@ -55,6 +60,9 @@ export default defineComponent({
     SearchBar,
     NodePortActiveConnector,
     FloatingMenu,
+    FunctionButton,
+    FilterIcon,
+    FilterCheckIcon,
   },
   props: {
     nodeId: {
@@ -224,6 +232,9 @@ export default defineComponent({
         e.stopPropagation();
       }
     },
+    openKnimeUIPreferencePage() {
+      API.desktop.openWebUIPreferencePage();
+    },
   },
 });
 </script>
@@ -261,6 +272,14 @@ export default defineComponent({
           @keydown.down.prevent.stop="searchDownKey"
           @keydown="searchHandleShortcuts"
         />
+        <FunctionButton
+          class="filter-button"
+          title="Open search filters"
+          @click="openKnimeUIPreferencePage"
+        >
+          <FilterCheckIcon v-if="hasNodeCollectionActive" />
+          <FilterIcon v-else />
+        </FunctionButton>
       </div>
       <hr />
       <QuickAddNodeDisabledWorkflowCoach
@@ -290,6 +309,8 @@ export default defineComponent({
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .quick-add-node {
   --quick-add-node-height: 450;
   --quick-add-node-header-height: 73;
@@ -316,7 +337,24 @@ export default defineComponent({
   }
 
   & .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 10px;
+
+    & .filter-button {
+      width: 30px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      & svg {
+        @mixin svg-icon-size 18;
+
+        stroke: var(--knime-masala);
+      }
+    }
   }
 
   /* set margin on all three lists of nodes (2x search, 1x recommendation) */
@@ -347,6 +385,7 @@ export default defineComponent({
     font-family: "Roboto Condensed", sans-serif;
     height: 40px;
     font-size: 17px;
+    flex: 1;
 
     &:hover {
       background-color: var(--knime-silver-sand-semi);

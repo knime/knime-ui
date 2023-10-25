@@ -1,9 +1,9 @@
-<script setup lang="ts">
-import { computed, watch, onMounted } from "vue";
-import { useStore } from "@/composables/useStore";
+<script>
+import { mapState, mapGetters } from "vuex";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
+import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
@@ -16,79 +16,99 @@ import { API } from "@api";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
-const store = useStore();
-const topNodes = computed(() => store.state.nodeRepository.topNodes);
-const nodesPerCategory = computed(
-  () => store.state.nodeRepository.nodesPerCategory,
-);
-const selectedNode = computed(() => store.state.nodeRepository.selectedNode);
-const activeProjectId = computed(() => store.state.application.activeProjectId);
-const activeTab = computed(() => store.state.panel.activeTab);
-const isExtensionPanelOpen = computed(
-  () => store.state.panel.isExtensionPanelOpen,
-);
-
-const showSearchResults = computed(
-  () => store.getters["nodeRepository/searchIsActive"],
-);
-const isSelectedNodeVisible = computed(
-  () => store.getters["nodeRepository/isSelectedNodeVisible"],
-);
-const tags = computed(() => store.getters["nodeRepository/tagsOfVisibleNodes"]);
-
-const isNodeRepositoryTabActive = computed(
-  () => activeTab[activeProjectId.value] === TABS.NODE_REPOSITORY,
-);
-const selectedTags = computed({
-  get() {
-    return store.state.nodeRepository.selectedTags;
+export default {
+  components: {
+    ActionBreadcrumb,
+    SidebarSearchResults,
+    CloseableTagList,
+    SearchBar,
+    CategoryResults,
+    NodeDescription,
+    FunctionButton,
+    FilterIcon,
+    FilterCheckIcon,
   },
-  set(value) {
-    store.dispatch("nodeRepository/setSelectedTags", value);
-  },
-});
-const breadcrumbItems = computed(() =>
-  showSearchResults.value
-    ? [{ text: "Repository", id: "clear" }, { text: "Results" }]
-    : [{ text: "Repository" }],
-);
+  computed: {
+    ...mapState("nodeRepository", [
+      "topNodes",
+      "nodesPerCategory",
+      "selectedNode",
+      "starterNodes",
+    ]),
+    ...mapState("application", ["activeProjectId", "hasNodeCollectionActive"]),
+    ...mapState("panel", ["activeTab", "isExtensionPanelOpen"]),
+    ...mapGetters("nodeRepository", {
+      showSearchResults: "searchIsActive",
+      isSelectedNodeVisible: "isSelectedNodeVisible",
+      tags: "tagsOfVisibleNodes",
+    }),
 
-watch(
-  isExtensionPanelOpen,
-  (isOpen) => {
-    if (!isOpen) {
-      setTimeout(() => {
-        store.commit("nodeRepository/setSelectedNode", null);
-      }, DESELECT_NODE_DELAY);
+    isNodeRepositoryTabActive() {
+      return this.activeTab[this.activeProjectId] === TABS.NODE_REPOSITORY;
+    },
+
+    /* Search and Filter */
+    selectedTags: {
+      get() {
+        return this.$store.state.nodeRepository.selectedTags;
+      },
+      set(value) {
+        this.$store.dispatch("nodeRepository/setSelectedTags", value);
+      },
+    },
+
+    /* Navigation */
+    breadcrumbItems() {
+      // If search results are shown, it's possible to navigate back
+      return this.showSearchResults
+        ? [{ text: "Repository", id: "clear" }, { text: "Results" }]
+        : [{ text: "Repository" }];
+    },
+  },
+  watch: {
+    // deselect node on panel close
+    isExtensionPanelOpen(isOpen) {
+      if (!isOpen) {
+        setTimeout(() => {
+          this.$store.commit("nodeRepository/setSelectedNode", null);
+        }, DESELECT_NODE_DELAY);
+      }
+    },
+    hasNodeCollectionActive(isActive) {
+      if (isActive) {
+        this.$store.dispatch("nodeRepository/clearSearchResultsForBottomNodes");
+      } else {
+        this.$store.dispatch("nodeRepository/clearSearchResults");
+      }
+    },
+  },
+  mounted() {
+    if (!this.nodesPerCategory.length) {
+      this.$store.dispatch("nodeRepository/getAllNodes", { append: false });
     }
   },
-  { immediate: true },
-);
+  methods: {
+    /* Navigation */
+    onBreadcrumbClick(e) {
+      if (e.id === "clear") {
+        this.$store.dispatch("nodeRepository/clearSearchParams");
+      }
+    },
 
-onMounted(() => {
-  if (!nodesPerCategory.value.length) {
-    store.dispatch("nodeRepository/getAllNodes", { append: false });
-  }
-});
+    toggleNodeDescription({ isSelected, nodeTemplate }) {
+      if (!isSelected || !this.isExtensionPanelOpen) {
+        this.$store.dispatch("panel/openExtensionPanel");
+        this.$store.commit("nodeRepository/setSelectedNode", nodeTemplate);
+        return;
+      }
 
-const onBreadcrumbClick = (e) => {
-  if (e.id === "clear") {
-    store.dispatch("nodeRepository/clearSearchParams");
-  }
-};
+      this.$store.dispatch("panel/closeExtensionPanel");
+    },
 
-const toggleNodeDescription = ({ isSelected, nodeTemplate }) => {
-  if (!isSelected || !isExtensionPanelOpen.value) {
-    store.dispatch("panel/openExtensionPanel");
-    store.commit("nodeRepository/setSelectedNode", nodeTemplate);
-    return;
-  }
-
-  store.dispatch("panel/closeExtensionPanel");
-};
-
-const openKnimeUIPreferencePage = () => {
-  API.desktop.openWebUIPreferencePage();
+    openKnimeUIPreferencePage() {
+      API.desktop.openWebUIPreferencePage();
+    },
+  },
 };
 </script>
 
@@ -107,7 +127,8 @@ const openKnimeUIPreferencePage = () => {
             title="Open search filters"
             @click="openKnimeUIPreferencePage"
           >
-            <FilterIcon />
+            <FilterCheckIcon v-if="hasNodeCollectionActive" />
+            <FilterIcon v-else />
           </FunctionButton>
         </div>
         <hr />
@@ -126,12 +147,13 @@ const openKnimeUIPreferencePage = () => {
         v-model="selectedTags"
         :tags="tags"
       />
-      <hr v-if="!topNodes || tags.length" />
+      <hr v-if="!(topNodes || bottomNodes) || tags.length" />
     </div>
     <SidebarSearchResults
       v-if="showSearchResults"
       ref="searchResults"
       @show-node-description="toggleNodeDescription"
+      @open-preferences="openKnimeUIPreferencePage"
     />
     <CategoryResults v-else @show-node-description="toggleNodeDescription" />
     <Portal
