@@ -104,17 +104,23 @@ const onResize = ({ size }: { size: number }) => {
     <pane
       v-if="isSecondaryReverse"
       :size="currentSecondarySize"
-      :class="{ 'will-snap': currentSecondarySize < secondaryMinSize }"
+      :class="[
+        'secondary-panel',
+        { 'will-snap': currentSecondarySize < secondaryMinSize },
+      ]"
     >
       <slot name="secondary" />
     </pane>
-    <pane :size="mainSize" :min-size="mainMinSize">
+    <pane :size="mainSize" :min-size="mainMinSize" class="main-panel">
       <slot />
     </pane>
     <pane
       v-if="!isSecondaryReverse"
       :size="currentSecondarySize"
-      :class="{ 'will-snap': currentSecondarySize < secondaryMinSize }"
+      :class="[
+        'secondary-panel',
+        { 'will-snap': currentSecondarySize < secondaryMinSize },
+      ]"
     >
       <slot name="secondary" />
     </pane>

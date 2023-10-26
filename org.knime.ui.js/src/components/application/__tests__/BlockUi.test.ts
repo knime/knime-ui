@@ -5,7 +5,7 @@ import { $bus } from "@/plugins/event-bus";
 import BlockUi from "../BlockUi.vue";
 import { nextTick } from "vue";
 
-describe("AnnotationRectangle", () => {
+describe("BlockUi", () => {
   const doMount = () => {
     const wrapper = mount(BlockUi, {
       props: {},
