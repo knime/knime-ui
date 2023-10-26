@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/** Blocks the whole UI */
 import { $bus } from "@/plugins/event-bus";
 import { ref, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
 
