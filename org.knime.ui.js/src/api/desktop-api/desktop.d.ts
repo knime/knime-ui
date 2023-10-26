@@ -163,7 +163,7 @@ declare function makeAiRequest(
   chainType: string,
   projectId: string,
   workflowId: string,
-  nodeId: string,
+  selectedNodes: string[],
   messages: string,
 ): void;
 

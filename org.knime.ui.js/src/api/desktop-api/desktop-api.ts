@@ -636,7 +636,7 @@ export const makeAiRequest = ({
   chainType,
   projectId,
   workflowId,
-  nodeId,
+  selectedNodes,
   messages,
 }) => {
   return callBrowserFunction(
@@ -646,7 +646,7 @@ export const makeAiRequest = ({
       chainType,
       projectId,
       workflowId,
-      nodeId,
+      selectedNodes,
       JSON.stringify(messages),
     ],
     "Could not make AI request",
