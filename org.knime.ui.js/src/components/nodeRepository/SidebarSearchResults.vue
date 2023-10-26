@@ -15,8 +15,7 @@ export default {
   emits: ["showNodeDescription"],
   computed: {
     ...mapState("nodeRepository", [
-      "starterNodes",
-      "allNodes",
+      "nodes",
       "query",
       "selectedTags",
       "selectedNode",
@@ -33,18 +32,12 @@ export default {
     },
     searchActions() {
       return {
-        searchTopNodesNextPage: this.searchTopNodesNextPage,
-        searchBottomNodesNextPage: this.searchBottomNodesNextPage,
-        toggleShowingBottomNodes: this.toggleShowingBottomNodes,
+        searchNodesNextPage: this.searchNodesNextPage,
       };
     },
   },
   methods: {
-    ...mapActions("nodeRepository", [
-      "searchTopNodesNextPage",
-      "searchBottomNodesNextPage",
-      "toggleShowingBottomNodes",
-    ]),
+    ...mapActions("nodeRepository", ["searchNodesNextPage"]),
   },
 };
 </script>
@@ -57,8 +50,7 @@ export default {
     :search-actions="searchActions"
     :selected-tags="selectedTags"
     :query="query"
-    :all-nodes="allNodes"
-    :starter-nodes="starterNodes"
+    :nodes="nodes"
     :has-node-collection-active="hasNodeCollectionActive"
   >
     <template #nodesTemplate="slotProps">

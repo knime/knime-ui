@@ -11,9 +11,7 @@ import ScrollViewContainer from "./ScrollViewContainer.vue";
 import NodeList from "./NodeList.vue";
 
 export type SearchActions = {
-  searchTopNodesNextPage: () => Promise<any>;
-  searchBottomNodesNextPage: () => Promise<any>;
-  toggleShowingBottomNodes: () => Promise<any>;
+  searchNodesNextPage: () => Promise<any>;
 };
 
 /**
@@ -27,11 +25,7 @@ export default defineComponent({
     CircleInfoIcon,
   },
   props: {
-    starterNodes: {
-      type: [Array, null] as PropType<Array<NodeTemplate> | null>,
-      required: true,
-    },
-    allNodes: {
+    nodes: {
       type: [Array, null] as PropType<Array<NodeTemplate> | null>,
       required: true,
     },
@@ -75,19 +69,11 @@ export default defineComponent({
   data() {
     return {
       isLoading: false,
-      isLoadingMore: false,
     };
   },
   computed: {
-    isStarterListEmpty() {
-      return this.starterNodes?.length === 0;
-    },
-    isAllNodesListEmpty() {
-      return this.allNodes?.length === 0;
-    },
-    hasNoMoreSearchResults() {
-      // NB: If bottomNodes is null the results are still loading
-      return this.allNodes !== null && this.allNodes.length === 0;
+    isNodeListEmpty() {
+      return this.nodes?.length === 0;
     },
     selectedNodeModel: {
       get() {
@@ -123,17 +109,9 @@ export default defineComponent({
       }
     },
     loadMoreSearchResults() {
-      if (this.hasNodeCollectionActive) {
-        this.isLoading = true;
-        this.searchActions.searchTopNodesNextPage().then(() => {
-          this.isLoading = false;
-        });
-        return;
-      }
-
-      this.isLoadingMore = true;
-      this.searchActions.searchBottomNodesNextPage().then(() => {
-        this.isLoadingMore = false;
+      this.isLoading = true;
+      this.searchActions.searchNodesNextPage().then(() => {
+        this.isLoading = false;
       });
     },
     focusFirst() {
@@ -153,17 +131,14 @@ export default defineComponent({
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
-      <div
-        v-if="isStarterListEmpty || isAllNodesListEmpty"
-        class="no-matching-search"
-      >
-        <span v-if="isStarterListEmpty">
+      <div v-if="isNodeListEmpty" class="no-matching-search">
+        <span v-if="hasNodeCollectionActive">
           There are no nodes matching with your current filter settings.
         </span>
         <span v-else> There are no matching nodes. </span>
         <div class="search-info">
           <CircleInfoIcon class="info-icon" />
-          <span v-if="isStarterListEmpty"
+          <span v-if="hasNodeCollectionActive"
             >But there are some in “All nodes“. <br />Change the
             <a class="search-link" @click="$emit('open-preferences')"
               >filter settings</a
@@ -187,7 +162,7 @@ export default defineComponent({
         <NodeList
           ref="nodeList"
           v-model:selected-node="selectedNodeModel"
-          :nodes="starterNodes ? starterNodes : allNodes"
+          :nodes="nodes"
           :highlight-first="highlightFirst"
           @nav-reached-top="$emit('navReachedTop')"
           @enter-key="$emit('item-enter-key', $event)"

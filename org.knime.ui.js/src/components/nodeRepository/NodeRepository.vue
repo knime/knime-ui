@@ -30,10 +30,9 @@ export default {
   },
   computed: {
     ...mapState("nodeRepository", [
-      "starterNodes",
+      "nodes",
       "nodesPerCategory",
       "selectedNode",
-      "starterNodes",
     ]),
     ...mapState("application", ["activeProjectId", "hasNodeCollectionActive"]),
     ...mapState("panel", ["activeTab", "isExtensionPanelOpen"]),
@@ -72,13 +71,6 @@ export default {
         setTimeout(() => {
           this.$store.commit("nodeRepository/setSelectedNode", null);
         }, DESELECT_NODE_DELAY);
-      }
-    },
-    hasNodeCollectionActive(isActive) {
-      if (isActive) {
-        this.$store.dispatch("nodeRepository/clearSearchResultsForBottomNodes");
-      } else {
-        this.$store.dispatch("nodeRepository/clearSearchResults");
       }
     },
   },
@@ -147,7 +139,7 @@ export default {
         v-model="selectedTags"
         :tags="tags"
       />
-      <hr v-if="!(starterNodes || allNodes) || tags.length" />
+      <hr v-if="!nodes || tags.length" />
     </div>
     <SidebarSearchResults
       v-if="showSearchResults"

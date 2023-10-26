@@ -104,7 +104,7 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     if (append) {
       commit("setCategoryPage", state.categoryPage + 1);
     } else {
-      commit("setTopNodeSearchPage", 0);
+      commit("setNodeSearchPage", 0);
       commit("setCategoryPage", 0);
     }
 
@@ -162,7 +162,7 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   async resetSearchAndCategories({ dispatch, getters }) {
     if (getters.searchIsActive) {
       await dispatch("clearSearchResults");
-      await dispatch("searchStarterAndAllNodes");
+      await dispatch("searchStarterOrAllNodes");
     }
     // Always clear the category results
     await dispatch("clearCategoryResults");

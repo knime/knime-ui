@@ -168,11 +168,7 @@ export default defineComponent({
   },
   methods: {
     ...mapActions("workflow", { addNodeToWorkflow: "addNode" }),
-    ...mapActions("quickAddNodes", [
-      "searchTopNodesNextPage",
-      "searchBottomNodesNextPage",
-      "toggleShowingBottomNodes",
-    ]),
+    ...mapActions("quickAddNodes", ["searchNodesNextPage"]),
     async fetchNodeRecommendations() {
       if (this.isContainerNode) {
         return;
