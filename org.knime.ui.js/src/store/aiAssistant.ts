@@ -106,7 +106,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   },
   async makeAiRequest({ commit, state, rootGetters }, { chainType, message }) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
-    const selectedNodes = rootGetters["selection/selectedNodes"];
+    const selectedNodes = rootGetters["selection/selectedNodes"].map(({ id }) => id);
 
     commit("setIsProcessing", { chainType, isProcessing: true });
     commit("setProjectAndWorkflowIds", { chainType, projectAndWorkflowIds });
