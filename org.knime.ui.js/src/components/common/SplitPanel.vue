@@ -22,13 +22,16 @@ const props = withDefaults(defineProps<Props>(), {
   withTransition: false,
 });
 
-const previousSecondarySize = ref<number | null>(null);
+// start with secondary size to ensure that we open closed ones to a nice size
+const previousSecondarySize = ref<number>(props.secondarySize);
 
+// current size which is saved to local storage
 const currentSecondarySize = useStorage(
   `ui-split-panel-${props.id}`,
   props.secondarySize,
 );
 
+// computed states
 const mainSize = computed(() => 100 - currentSecondarySize.value);
 const isClosed = computed(() => mainSize.value === 100);
 
@@ -41,6 +44,7 @@ const isHorizontal = computed(
 );
 
 const closePanel = () => {
+  // remember current size on a regular close
   previousSecondarySize.value = currentSecondarySize.value;
   currentSecondarySize.value = 0;
 };
@@ -50,7 +54,6 @@ const showPanel = () => {
     props.secondaryMinSize,
     previousSecondarySize.value,
   );
-  previousSecondarySize.value = null;
 };
 
 // hide or show on click
@@ -62,14 +65,18 @@ const onSplitterClick = () => {
   }
 };
 
-// snapping
 const onResized = ({ size }: { size: number }) => {
+  // snapping on release of mouse (resize is done)
   if (size < props.secondaryMinSize && size > 0) {
-    closePanel();
+    // just set to zero on a snapping close (we want to keep the prev value)
+    currentSecondarySize.value = 0;
+    return;
   }
+  // update prev size if it did not snap
+  previousSecondarySize.value = size;
 };
 
-// update our current size
+// update our current size on every resize
 const onResize = ({ size }: { size: number }) => {
   currentSecondarySize.value = size;
 };
