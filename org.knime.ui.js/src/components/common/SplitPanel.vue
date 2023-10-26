@@ -22,15 +22,19 @@ const props = withDefaults(defineProps<Props>(), {
   withTransition: false,
 });
 
-// current size live updated while resize
-const currentSecondarySize = ref<number>(props.secondarySize);
-
-// the last really defined size (which is never 0 for hidden)
-// start with secondary size to ensure that we open closed ones to a nice size
-const previousSecondarySize = useStorage(
+const savedSecondarySize = useStorage(
   `ui-split-panel-${props.id}`,
   props.secondarySize,
 );
+
+// current size live updated while resize
+const currentSecondarySize = ref<number>(
+  savedSecondarySize.value || props.secondarySize,
+);
+
+// the last really defined size (which is never 0 for hidden)
+// start with secondary size to ensure that we open closed ones to a nice size
+const previousSecondarySize = ref<number>(props.secondarySize);
 
 // computed states
 const mainSize = computed(() => 100 - currentSecondarySize.value);
@@ -75,6 +79,7 @@ const onResized = ({ size }: { size: number }) => {
   }
   // update prev size if it did not snap
   previousSecondarySize.value = size;
+  savedSecondarySize.value = size;
 };
 
 // update our current size on every resize
