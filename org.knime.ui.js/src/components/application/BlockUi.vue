@@ -58,7 +58,6 @@ watch(block, () => {
   position: fixed;
   width: 100vw;
   height: 100vh;
-  cursor: not-allowed;
   background: transparent;
 
   &.darken-background {

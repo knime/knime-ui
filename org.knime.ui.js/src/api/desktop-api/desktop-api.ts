@@ -49,8 +49,10 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
         darkenBackground: blockUi.darkenBackground,
       });
     }
-    // call the async browserFunction
-    browserFunction(...params);
+    // call the async browserFunction in the next thread to make sure the block UI is in place
+    setTimeout(() => {
+      browserFunction(...params);
+    }, 1);
     return result;
   } catch (e) {
     consola.error(messageOnError, e);
