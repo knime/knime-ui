@@ -78,10 +78,10 @@ public final class ChatAPI {
          * @param chainType the type of chain (qa or build) to message
          * @param projectId identifier of the workflow project
          * @param workflowId identifier of the subworkflow (i.e. meta node or component)
-         * @param nodeId identifier of the currently selected node
+         * @param selectedNodes identifiers of the currently selected nodes
          * @param messages a JSON string in the form [{"role": role, "content": content}, ...]
          */
-        void onNewMessage(String conversationId, String chainType, String projectId, String workflowId, String nodeId, final String messages);
+        void onNewMessage(String conversationId, String chainType, String projectId, String workflowId, String[] selectedNodes, final String messages);
 
         /**
          * Invoked if the user cancels the answer of the currently processed message.
@@ -124,13 +124,13 @@ public final class ChatAPI {
      * @param chainType the type of chain to message (qa or build)
      * @param projectId the workflow project identifier
      * @param workflowId the identifier of the subworkflow (
-     * @param nodeId the identifier of the currently selected
+     * @param selectedNodes the identifiers of the currently selected nodes
      * @param messages a JSON string in the form [{"role": role, "content": content}, ...]
      */
     @API
     public static void makeAiRequest(final String conversationId, final String chainType, final String projectId,
-        final String workflowId, final String nodeId, final String messages) {
-        LISTENERS.forEach(l -> l.onNewMessage(conversationId, chainType, projectId, workflowId, nodeId, messages));
+        final String workflowId, final String[] selectedNodes, final String messages) {
+        LISTENERS.forEach(l -> l.onNewMessage(conversationId, chainType, projectId, workflowId, selectedNodes, messages));
     }
 
     /**
