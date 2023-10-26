@@ -21,12 +21,7 @@ export default defineComponent({
   expose: ["focusFirst"],
   computed: {
     ...mapState("application", ["hasNodeCollectionActive"]),
-    ...mapState("quickAddNodes", [
-      "topNodes",
-      "bottomNodes",
-      "isShowingBottomNodes",
-      "query",
-    ]),
+    ...mapState("quickAddNodes", ["starterNodes", "allNodes", "query"]),
 
     searchActions() {
       return {
@@ -53,14 +48,13 @@ export default defineComponent({
 <template>
   <SearchResults
     ref="searchResults"
-    :bottom-nodes="bottomNodes"
+    :all-nodes="allNodes"
     :has-node-collection-active="hasNodeCollectionActive"
-    :is-showing-bottom-nodes="isShowingBottomNodes"
     :query="query"
     :search-actions="searchActions"
     :highlight-first="true"
     :selected-node="selectedNode"
-    :top-nodes="topNodes"
+    :starter-nodes="starterNodes"
     @update:selected-node="$emit('update:selectedNode', $event)"
     @item-enter-key="$emit('addNode', $event)"
   >

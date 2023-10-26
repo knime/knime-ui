@@ -15,12 +15,11 @@ export default {
   emits: ["showNodeDescription"],
   computed: {
     ...mapState("nodeRepository", [
-      "topNodes",
-      "bottomNodes",
+      "starterNodes",
+      "allNodes",
       "query",
       "selectedTags",
       "selectedNode",
-      "isShowingBottomNodes",
     ]),
     ...mapState("application", ["hasNodeCollectionActive"]),
 
@@ -56,11 +55,10 @@ export default {
     v-model:search-scroll-position="searchScrollPosition"
     :selected-node="selectedNode"
     :search-actions="searchActions"
-    :is-showing-bottom-nodes="isShowingBottomNodes"
     :selected-tags="selectedTags"
     :query="query"
-    :bottom-nodes="bottomNodes"
-    :top-nodes="topNodes"
+    :all-nodes="allNodes"
+    :starter-nodes="starterNodes"
     :has-node-collection-active="hasNodeCollectionActive"
   >
     <template #nodesTemplate="slotProps">

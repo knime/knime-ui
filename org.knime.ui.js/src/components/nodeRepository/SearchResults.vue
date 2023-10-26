@@ -27,11 +27,11 @@ export default defineComponent({
     CircleInfoIcon,
   },
   props: {
-    topNodes: {
+    starterNodes: {
       type: [Array, null] as PropType<Array<NodeTemplate> | null>,
       required: true,
     },
-    bottomNodes: {
+    allNodes: {
       type: [Array, null] as PropType<Array<NodeTemplate> | null>,
       required: true,
     },
@@ -46,10 +46,6 @@ export default defineComponent({
     searchScrollPosition: {
       type: Number,
       default: 0,
-    },
-    isShowingBottomNodes: {
-      type: Boolean,
-      required: true,
     },
     selectedNode: {
       type: [Object, null] as PropType<KnimeNode | null>,
@@ -84,14 +80,14 @@ export default defineComponent({
   },
   computed: {
     isStarterListEmpty() {
-      return this.topNodes?.length === 0;
+      return this.starterNodes?.length === 0;
     },
     isAllNodesListEmpty() {
-      return this.bottomNodes?.length === 0;
+      return this.allNodes?.length === 0;
     },
     hasNoMoreSearchResults() {
       // NB: If bottomNodes is null the results are still loading
-      return this.bottomNodes !== null && this.bottomNodes.length === 0;
+      return this.allNodes !== null && this.allNodes.length === 0;
     },
     selectedNodeModel: {
       get() {
@@ -191,7 +187,7 @@ export default defineComponent({
         <NodeList
           ref="nodeList"
           v-model:selected-node="selectedNodeModel"
-          :nodes="topNodes ? topNodes : bottomNodes"
+          :nodes="starterNodes ? starterNodes : allNodes"
           :highlight-first="highlightFirst"
           @nav-reached-top="$emit('navReachedTop')"
           @enter-key="$emit('item-enter-key', $event)"

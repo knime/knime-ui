@@ -30,7 +30,7 @@ export default {
   },
   computed: {
     ...mapState("nodeRepository", [
-      "topNodes",
+      "starterNodes",
       "nodesPerCategory",
       "selectedNode",
       "starterNodes",
@@ -147,7 +147,7 @@ export default {
         v-model="selectedTags"
         :tags="tags"
       />
-      <hr v-if="!(topNodes || bottomNodes) || tags.length" />
+      <hr v-if="!(starterNodes || allNodes) || tags.length" />
     </div>
     <SidebarSearchResults
       v-if="showSearchResults"

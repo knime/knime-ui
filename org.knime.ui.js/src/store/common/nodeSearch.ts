@@ -19,18 +19,17 @@ export interface CommonNodeSearchState {
   query: string;
   selectedTags: string[];
   portTypeId: string | null;
-  isShowingBottomNodes: boolean;
   searchScrollPosition: number;
 
-  topNodes: NodeTemplateWithExtendedPorts[];
-  totalNumTopNodes: number;
-  topNodeSearchPage: number;
-  topNodesTags: string[];
+  starterNodes: NodeTemplateWithExtendedPorts[];
+  totalNumStarterNodes: number;
+  starterNodeSearchPage: number;
+  starterNodesTags: string[];
 
-  bottomNodes: NodeTemplateWithExtendedPorts[];
-  totalNumBottomNodes: number;
-  bottomNodeSearchPage: number;
-  bottomNodesTags: string[];
+  allNodes: NodeTemplateWithExtendedPorts[];
+  totalNumAllNodes: number;
+  allNodeSearchPage: number;
+  allNodesTags: string[];
 
   bottomAbortController: AbortController;
   topAbortController: AbortController;
@@ -43,21 +42,20 @@ export const state = (): CommonNodeSearchState => ({
   /* filter for compatible port type ids */
   portTypeId: null,
   /* local state of the bottom nodes */
-  isShowingBottomNodes: true,
   /* ui scroll state */
   searchScrollPosition: 0,
 
-  /* nodes always visible */
-  topNodes: null,
-  totalNumTopNodes: 0,
-  topNodeSearchPage: 0,
-  topNodesTags: [],
+  /* nodes visible if nodeCollection is active */
+  starterNodes: null,
+  totalNumStarterNodes: 0,
+  starterNodeSearchPage: 0,
+  starterNodesTags: [],
 
-  /* nodes that might be hidden if a nodeCollection is active (see application state for that) */
-  bottomNodes: null,
-  totalNumBottomNodes: 0,
-  bottomNodeSearchPage: 0,
-  bottomNodesTags: [],
+  /* nodes visible if nodeCollection in not active */
+  allNodes: null,
+  totalNumAllNodes: 0,
+  allNodeSearchPage: 0,
+  allNodesTags: [],
 
   topAbortController: new AbortController(),
   bottomAbortController: new AbortController(),
@@ -65,11 +63,11 @@ export const state = (): CommonNodeSearchState => ({
 
 export const mutations: MutationTree<CommonNodeSearchState> = {
   setTopNodeSearchPage(state, pageNumber) {
-    state.topNodeSearchPage = pageNumber;
+    state.starterNodeSearchPage = pageNumber;
   },
 
-  setTotalNumTopNodes(state, totalNumTopNodes) {
-    state.totalNumTopNodes = totalNumTopNodes;
+  setTotalNumTopNodes(state, totalNumStarterNodes) {
+    state.totalNumStarterNodes = totalNumStarterNodes;
   },
 
   setBottomAbortController(state, abortController) {
@@ -80,44 +78,44 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
     state.topAbortController = abortController;
   },
 
-  addTopNodes(state, topNodes) {
-    const existingNodeIds = state.topNodes.map((node) => node.id);
-    const newNodes = topNodes.filter(
+  addTopNodes(state, starterNodes) {
+    const existingNodeIds = state.starterNodes.map((node) => node.id);
+    const newNodes = starterNodes.filter(
       (node) => !existingNodeIds.includes(node.id),
     );
-    state.topNodes.push(...newNodes);
+    state.starterNodes.push(...newNodes);
   },
 
-  addBottomNodes(state, bottomNodes) {
-    const existingNodeIds = state.bottomNodes.map((node) => node.id);
-    const newNodes = bottomNodes.filter(
+  addBottomNodes(state, allNodes) {
+    const existingNodeIds = state.allNodes.map((node) => node.id);
+    const newNodes = allNodes.filter(
       (node) => !existingNodeIds.includes(node.id),
     );
-    state.bottomNodes.push(...newNodes);
+    state.allNodes.push(...newNodes);
   },
 
-  setTopNodes(state, topNodes) {
-    state.topNodes = topNodes;
+  setTopNodes(state, starterNodes) {
+    state.starterNodes = starterNodes;
   },
 
-  setTopNodesTags(state, topNodesTags) {
-    state.topNodesTags = topNodesTags;
+  setTopNodesTags(state, starterNodesTags) {
+    state.starterNodesTags = starterNodesTags;
   },
 
   setBottomNodeSearchPage(state, pageNumber) {
-    state.bottomNodeSearchPage = pageNumber;
+    state.allNodeSearchPage = pageNumber;
   },
 
-  setTotalNumBottomNodes(state, totalNumBottomNodes) {
-    state.totalNumBottomNodes = totalNumBottomNodes;
+  setTotalNumBottomNodes(state, totalNumAllNodes) {
+    state.totalNumAllNodes = totalNumAllNodes;
   },
 
-  setBottomNodes(state, bottomNodes) {
-    state.bottomNodes = bottomNodes;
+  setBottomNodes(state, allNodes) {
+    state.allNodes = allNodes;
   },
 
-  setBottomNodesTags(state, bottomNodesTags) {
-    state.bottomNodesTags = bottomNodesTags;
+  setBottomNodesTags(state, allNodesTags) {
+    state.allNodesTags = allNodesTags;
   },
 
   setSelectedTags(state, selectedTags) {
@@ -136,10 +134,6 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
 
   setSearchScrollPosition(state, value) {
     state.searchScrollPosition = value;
-  },
-
-  setShowingBottomNodes(state, value) {
-    state.isShowingBottomNodes = value;
   },
 };
 
@@ -166,13 +160,13 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @param {*} context - Vuex context.
    * @param {Boolean} append - if the results should be added to the current nodes (for pagination) or if the state
    *      should be cleared (for a new search).
-   * @param {Boolean} bottom - if search should be for additional nodes that are displayed on the bottom
+   * @param {Boolean} all - if search should be for all nodes
    * @param {String} [portTypeId] - only results that are compatible with that portTypeId
    * @returns {Promise}
    */
   async searchNodes(
     { commit, state, dispatch, getters, rootState },
-    { append = false, bottom = false } = {},
+    { append = false, all = false } = {},
   ) {
     // only do request if we search for something
     if (!getters.hasSearchParams) {
@@ -181,7 +175,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       return;
     }
 
-    if (bottom) {
+    if (all) {
       state.bottomAbortController.abort();
       commit("setBottomAbortController", new AbortController());
     } else {
@@ -190,9 +184,9 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
     }
 
     // determine current search page
-    const lastSearchPage = bottom
-      ? state.bottomNodeSearchPage
-      : state.topNodeSearchPage;
+    const lastSearchPage = all
+      ? state.allNodeSearchPage
+      : state.starterNodeSearchPage;
 
     const nextSearchPage = lastSearchPage + 1;
     const searchPage = append ? nextSearchPage : 0;
@@ -207,14 +201,14 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
           offset: searchPage * nodeSearchPageSize,
           limit: nodeSearchPageSize,
           fullTemplateInfo: true,
-          nodesPartition: bottom ? "ALL" : "IN_COLLECTION",
+          nodesPartition: all ? "ALL" : "IN_COLLECTION",
           portTypeId: state.portTypeId,
         },
-        bottom ? state.bottomAbortController : state.topAbortController,
+        all ? state.bottomAbortController : state.topAbortController,
       );
 
       // update current page in state AFTER the API call resolved successfully
-      const prefix = bottom ? "Bottom" : "Top";
+      const prefix = all ? "Bottom" : "Top";
       commit(`set${prefix}NodeSearchPage`, searchPage);
 
       // update results
@@ -241,7 +235,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   },
 
   /**
-   * Dispatches the search of nodes. If isShowingBottomNodes is true also a search for more nodes is dispatched.
+   * Dispatches the search of starter nodes. If hasNodeCollectionActive is false search for all nodes instead.
    * Otherwise, the results for more nodes are cleared.
    *
    * @param {*} context - Vuex context.
@@ -251,7 +245,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
     if (rootState.application.hasNodeCollectionActive) {
       await dispatch("searchNodes");
     } else {
-      await dispatch("searchNodes", { bottom: true });
+      await dispatch("searchNodes", { all: true });
     }
   }, searchTopAndBottomNodesDebounceWait),
 
@@ -280,7 +274,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @returns {undefined}
    */
   async searchTopNodesNextPage({ dispatch, state }) {
-    if (state.topNodes?.length !== state.totalNumTopNodes) {
+    if (state.starterNodes?.length !== state.totalNumStarterNodes) {
       await dispatch("searchNodes", { append: true });
     }
   },
@@ -292,10 +286,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @returns {undefined}
    */
   async searchBottomNodesNextPage({ dispatch, state }) {
-    if (
-      state.isShowingBottomNodes &&
-      state.bottomNodes?.length !== state.totalNumBottomNodes
-    ) {
+    if (state.allNodes?.length !== state.totalNumAllNodes) {
       await dispatch("searchNodes", { append: true, bottom: true });
     }
   },
@@ -310,13 +301,6 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   async setSelectedTags({ dispatch, commit }, tags) {
     commit("setSelectedTags", tags);
     await dispatch("searchStarterAndAllNodes");
-  },
-
-  async toggleShowingBottomNodes({ commit, dispatch, state }) {
-    commit("setShowingBottomNodes", !state.isShowingBottomNodes);
-    if (state.isShowingBottomNodes && state.bottomNodes === null) {
-      await dispatch("searchNodes", { bottom: true });
-    }
   },
 
   /**
@@ -351,21 +335,20 @@ export const getters: GetterTree<CommonNodeSearchState, RootStoreState> = {
     state.query !== "" || state.selectedTags.length > 0,
   searchIsActive: (state) =>
     Boolean(
-      state.query || state.topNodesTags.length || state.bottomNodesTags.length,
+      state.query || state.starterNodesTags.length || state.allNodesTags.length,
     ),
   searchResultsContainNodeId(state) {
     return (selectedNodeId) =>
-      Boolean(state.topNodes?.some((node) => node.id === selectedNodeId)) ||
-      (state.isShowingBottomNodes &&
-        Boolean(state.bottomNodes?.some((node) => node.id === selectedNodeId)));
+      Boolean(state.starterNodes?.some((node) => node.id === selectedNodeId)) ||
+      Boolean(state.allNodes?.some((node) => node.id === selectedNodeId));
   },
   getFirstSearchResult: (state) => () =>
-    state.topNodes.at(0) || state.bottomNodes.at(0) || null,
+    state.starterNodes.at(0) || state.allNodes.at(0) || null,
   tagsOfVisibleNodes: (state) => {
     const allTags = [
-      ...state.topNodesTags,
+      ...state.starterNodesTags,
       ...state.selectedTags,
-      ...(state.isShowingBottomNodes ? state.bottomNodesTags : []),
+      ...state.allNodesTags,
     ];
     return [...new Set(allTags)];
   },
