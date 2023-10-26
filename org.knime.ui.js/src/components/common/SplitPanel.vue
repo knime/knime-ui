@@ -156,7 +156,7 @@ const onResize = ({ size }: { size: number }) => {
 
     &::after {
       position: absolute;
-      content: "To small to display the content, will close the panel on mouse release.";
+      content: "Release to hide panel.";
       display: flex;
       font-style: italic;
       justify-content: center;
@@ -165,7 +165,7 @@ const onResize = ({ size }: { size: number }) => {
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: var(--knime-gray-ultra-light);
+      background-color: var(--knime-porcelain);
     }
   }
 
@@ -223,10 +223,6 @@ const onResize = ({ size }: { size: number }) => {
   &.left-facing-splitter {
     & :deep(> .splitpanes__splitter) {
       border-width: 0 1px 0 0;
-
-      &::before {
-        transform: rotate(90deg);
-      }
     }
 
     &.is-closed {
