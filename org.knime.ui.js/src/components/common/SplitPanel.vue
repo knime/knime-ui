@@ -22,11 +22,12 @@ const props = withDefaults(defineProps<Props>(), {
   withTransition: false,
 });
 
-// start with secondary size to ensure that we open closed ones to a nice size
-const previousSecondarySize = ref<number>(props.secondarySize);
+// current size live updated while resize
+const currentSecondarySize = ref<number>(props.secondarySize);
 
-// current size which is saved to local storage
-const currentSecondarySize = useStorage(
+// the last really defined size (which is never 0 for hidden)
+// start with secondary size to ensure that we open closed ones to a nice size
+const previousSecondarySize = useStorage(
   `ui-split-panel-${props.id}`,
   props.secondarySize,
 );
