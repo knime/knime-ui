@@ -49,10 +49,8 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
         darkenBackground: blockUi.darkenBackground,
       });
     }
-    // call the async browserFunction in the next thread to make sure the block UI is in place
-    setTimeout(() => {
-      browserFunction(...params);
-    }, 1);
+    // call the async browserFunction
+    browserFunction(...params);
     return result;
   } catch (e) {
     consola.error(messageOnError, e);
@@ -156,7 +154,7 @@ export const openNodeDialog = ({
     [projectId, nodeId],
     `Could not open dialog of node ${nodeId}`,
     false,
-    { block: true, darkenBackground: true },
+    { block: true, darkenBackground: false },
   );
 };
 
