@@ -3,7 +3,7 @@ import { expect, describe, it, vi, afterEach } from "vitest";
 import { deepMocked, mockVuexStore, withPorts } from "@/test/utils";
 import { API } from "@api";
 
-export const searchNodesResponse = {
+export const searchStarterNodesResponse = {
   tags: ["Analytics", "Integrations", "KNIME Labs"],
   totalNumNodes: 1355,
   nodes: [
@@ -36,7 +36,7 @@ export const searchNodesResponse = {
   ],
 };
 
-const searchBottomNodesResponse = {
+const searchAllNodesResponse = {
   tags: ["H2O Machine Learning", "R"],
   totalNumNodes: 122,
   nodes: [
@@ -86,6 +86,7 @@ const searchBottomNodesResponse = {
 const mockedAPI = deepMocked(API);
 
 describe("Node search partial store", () => {
+  let hasNodeCollectionActive = true;
   const createStore = async () => {
     const availablePortTypes = {
       "org.knime.core.node.BufferedDataTable": {
@@ -103,13 +104,16 @@ describe("Node search partial store", () => {
     };
 
     // search is part of the node repo API
-    mockedAPI.noderepository.searchNodes.mockResolvedValue(searchNodesResponse);
+    mockedAPI.noderepository.searchNodes.mockResolvedValue(
+      searchStarterNodesResponse,
+    );
 
     const store = mockVuexStore({
       nodeSearch: await import("@/store/common/nodeSearch"),
       application: {
         state: {
           availablePortTypes,
+          hasNodeCollectionActive,
         },
       },
     });
@@ -134,18 +138,12 @@ describe("Node search partial store", () => {
       query: "",
       selectedTags: [],
       portTypeId: null,
-      isShowingBottomNodes: false,
       searchScrollPosition: 0,
-      topNodes: null,
-      totalNumTopNodes: 0,
-      topNodeSearchPage: 0,
-      topNodesTags: [],
-      bottomNodes: null,
-      totalNumBottomNodes: 0,
-      bottomNodeSearchPage: 0,
-      bottomNodesTags: [],
-      bottomAbortController: expect.anything(),
-      topAbortController: expect.anything(),
+      nodes: null,
+      totalNumNodes: 0,
+      nodeSearchPage: 0,
+      nodesTags: [],
+      abortController: expect.anything(),
     });
   });
 
@@ -164,7 +162,7 @@ describe("Node search partial store", () => {
     it("returns proper value for searchIsActive", async () => {
       const { store } = await createStore();
       expect(store.getters["nodeSearch/searchIsActive"]).toBe(false);
-      store.state.nodeSearch.topNodes = [{ id: 1, name: "Node" }];
+      store.state.nodeSearch.nodes = [{ id: 1, name: "Node" }];
       expect(store.getters["nodeSearch/searchIsActive"]).toBe(false);
       store.state.nodeSearch.query = "value";
       expect(store.getters["nodeSearch/searchIsActive"]).toBe(true);
@@ -175,7 +173,7 @@ describe("Node search partial store", () => {
       expect(store.getters["nodeSearch/searchResultsContainNodeId"](null)).toBe(
         false,
       );
-      store.state.nodeSearch.topNodes = [{ id: 1, name: "Node" }];
+      store.state.nodeSearch.nodes = [{ id: 1, name: "Node" }];
       expect(store.getters["nodeSearch/searchResultsContainNodeId"](null)).toBe(
         false,
       );
@@ -183,54 +181,30 @@ describe("Node search partial store", () => {
       expect(
         store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id),
       ).toBe(true);
-      store.state.nodeSearch.topNodes = [];
+      store.state.nodeSearch.nodes = [];
       expect(
         store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id),
       ).toBe(false);
-      store.state.nodeSearch.bottomNodes = [{ id: 1, name: "Node" }];
-      expect(
-        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id),
-      ).toBe(false);
-      store.state.nodeSearch.isShowingBottomNodes = true;
-      expect(
-        store.getters["nodeSearch/searchResultsContainNodeId"](selectedNode.id),
-      ).toBe(true);
     });
 
     it("returns proper value for tagsOfVisibleNodes", async () => {
       const { store } = await createStore();
       expect(store.getters["nodeSearch/tagsOfVisibleNodes"]).toEqual([]);
-      store.state.nodeSearch.topNodesTags = ["tag1", "tag2"];
+      store.state.nodeSearch.nodesTags = ["tag1", "tag2"];
       expect(store.getters["nodeSearch/tagsOfVisibleNodes"]).toEqual([
         "tag1",
         "tag2",
       ]);
-      store.state.nodeSearch.bottomNodesTags = ["tag3", "tag1", "tag4"];
-      expect(store.getters["nodeSearch/tagsOfVisibleNodes"]).toEqual([
-        "tag1",
-        "tag2",
-      ]);
-      store.state.nodeSearch.isShowingBottomNodes = true;
-      expect(store.getters["nodeSearch/tagsOfVisibleNodes"]).toEqual([
-        "tag1",
-        "tag2",
-        "tag3",
-        "tag4",
-      ]);
-      store.state.nodeSearch.topNodesTags = [];
-      expect(store.getters["nodeSearch/tagsOfVisibleNodes"]).toEqual([
-        "tag3",
-        "tag1",
-        "tag4",
-      ]);
+      store.state.nodeSearch.nodesTags = [];
+      expect(store.getters["nodeSearch/tagsOfVisibleNodes"]).toEqual([]);
     });
   });
 
   describe("mutations", () => {
-    it("sets topNodeSearchPage", async () => {
+    it("sets nodeSearchPage", async () => {
       const { store } = await createStore();
-      store.commit("nodeSearch/setTopNodeSearchPage", 2);
-      expect(store.state.nodeSearch.topNodeSearchPage).toBe(2);
+      store.commit("nodeSearch/setNodeSearchPage", 2);
+      expect(store.state.nodeSearch.nodeSearchPage).toBe(2);
     });
 
     it("sets portTypeId", async () => {
@@ -239,70 +213,33 @@ describe("Node search partial store", () => {
       expect(store.state.nodeSearch.portTypeId).toBe("org.some.port.typeId");
     });
 
-    it("sets totalNumTopNodes", async () => {
+    it("sets totalNumNodes", async () => {
       const { store } = await createStore();
-      store.commit("nodeSearch/setTotalNumTopNodes", 2);
-      expect(store.state.nodeSearch.totalNumTopNodes).toBe(2);
+      store.commit("nodeSearch/setTotalNumNodes", 2);
+      expect(store.state.nodeSearch.totalNumNodes).toBe(2);
     });
 
-    it("adds topNodes (and skips duplicates)", async () => {
+    it("adds nodes (and skips duplicates)", async () => {
       const { store } = await createStore();
-      const topNodes = [{ id: "node1" }, { id: "node2" }];
-      store.commit("nodeSearch/setTopNodes", topNodes);
+      const nodes = [{ id: "node1" }, { id: "node2" }];
+      store.commit("nodeSearch/setNodes", nodes);
 
-      const moreNodes = [...topNodes, { id: "node3" }];
-      store.commit("nodeSearch/addTopNodes", moreNodes);
-      expect(store.state.nodeSearch.topNodes).toEqual(moreNodes);
+      const moreNodes = [...nodes, { id: "node3" }];
+      store.commit("nodeSearch/addNodes", moreNodes);
+      expect(store.state.nodeSearch.nodes).toEqual(moreNodes);
     });
 
-    it("sets topNodes", async () => {
+    it("sets nodes", async () => {
       const { store } = await createStore();
-      const topNodes = [{ id: "node1" }];
-      store.commit("nodeSearch/setTopNodes", [{ id: "node1" }]);
-      expect(store.state.nodeSearch.topNodes).toEqual(topNodes);
+      const nodes = [{ id: "node1" }];
+      store.commit("nodeSearch/setNodes", [{ id: "node1" }]);
+      expect(store.state.nodeSearch.nodes).toEqual(nodes);
     });
 
-    it("sets topNodesTags", async () => {
+    it("sets nodesTags", async () => {
       const { store } = await createStore();
-      store.commit("nodeSearch/setTopNodesTags", ["myTag", "myTag2"]);
-      expect(store.state.nodeSearch.topNodesTags).toEqual(["myTag", "myTag2"]);
-    });
-
-    it("sets bottomNodeSearchPage", async () => {
-      const { store } = await createStore();
-      expect(store.state.nodeSearch.bottomNodeSearchPage).toBe(0);
-      store.commit("nodeSearch/setBottomNodeSearchPage", 10);
-      expect(store.state.nodeSearch.bottomNodeSearchPage).toBe(10);
-    });
-
-    it("sets totalNumBottomNodes", async () => {
-      const { store } = await createStore();
-      expect(store.state.nodeSearch.totalNumBottomNodes).toBe(0);
-      store.commit("nodeSearch/setTotalNumBottomNodes", 20);
-      expect(store.state.nodeSearch.totalNumBottomNodes).toBe(20);
-    });
-
-    it("adds bottomNodes (and skips duplicates)", async () => {
-      const { store } = await createStore();
-      const bottomNodes = [{ id: "node1" }, { id: "node2" }];
-      store.commit("nodeSearch/setBottomNodes", bottomNodes);
-
-      const newMoreNodes = [...bottomNodes, { id: "node3" }];
-      store.commit("nodeSearch/addBottomNodes", newMoreNodes);
-      expect(store.state.nodeSearch.bottomNodes).toEqual(newMoreNodes);
-    });
-
-    it("sets bottomNodes", async () => {
-      const { store } = await createStore();
-      expect(store.state.nodeSearch.bottomNodes).toBeNull();
-      store.commit("nodeSearch/setBottomNodes", [{ id: "node1" }]);
-      expect(store.state.nodeSearch.bottomNodes).toEqual([{ id: "node1" }]);
-    });
-
-    it("sets bottomNodesTags", async () => {
-      const { store } = await createStore();
-      store.commit("nodeSearch/setBottomNodesTags", ["tag2", "tag3"]);
-      expect(store.state.nodeSearch.bottomNodesTags).toEqual(["tag2", "tag3"]);
+      store.commit("nodeSearch/setNodesTags", ["myTag", "myTag2"]);
+      expect(store.state.nodeSearch.nodesTags).toEqual(["myTag", "myTag2"]);
     });
 
     it("sets selectedTags", async () => {
@@ -328,13 +265,6 @@ describe("Node search partial store", () => {
       store.commit("nodeSearch/setSearchScrollPosition", 22);
       expect(store.state.nodeSearch.searchScrollPosition).toBe(22);
     });
-
-    it("sets isShowingBottomNodes", async () => {
-      const { store } = await createStore();
-      expect(store.state.nodeSearch.isShowingBottomNodes).toBe(false);
-      store.commit("nodeSearch/setShowingBottomNodes", true);
-      expect(store.state.nodeSearch.isShowingBottomNodes).toBe(true);
-    });
   });
 
   describe("actions", () => {
@@ -344,16 +274,16 @@ describe("Node search partial store", () => {
         it("clears search results on empty parameters (tags and query)", async () => {
           const { store } = await createStore();
           await store.dispatch("nodeSearch/searchNodes");
-          expect(store.state.nodeSearch.topNodes).toBeNull();
-          expect(store.state.nodeSearch.topNodesTags).toEqual([]);
+          expect(store.state.nodeSearch.nodes).toBeNull();
+          expect(store.state.nodeSearch.nodesTags).toEqual([]);
         });
 
-        it("searches for topNodes", async () => {
+        it("searches for starter nodes", async () => {
           const { store, availablePortTypes } = await createStore();
           store.commit("nodeSearch/setQuery", "lookup");
           await store.dispatch("nodeSearch/searchNodes");
 
-          expect(store.state.nodeSearch.topNodeSearchPage).toBe(0);
+          expect(store.state.nodeSearch.nodeSearchPage).toBe(0);
           expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith({
             allTagsMatch: true,
             fullTemplateInfo: true,
@@ -364,25 +294,55 @@ describe("Node search partial store", () => {
             portTypeId: null,
             nodesPartition: "IN_COLLECTION",
           });
-          expect(store.state.nodeSearch.totalNumTopNodes).toBe(
-            searchNodesResponse.totalNumNodes,
+          expect(store.state.nodeSearch.totalNumNodes).toBe(
+            searchStarterNodesResponse.totalNumNodes,
           );
-          expect(store.state.nodeSearch.topNodes).toEqual(
-            withPorts(searchNodesResponse.nodes, availablePortTypes),
+          expect(store.state.nodeSearch.nodes).toEqual(
+            withPorts(searchStarterNodesResponse.nodes, availablePortTypes),
           );
-          expect(store.state.nodeSearch.topNodesTags).toEqual(
-            searchNodesResponse.tags,
+          expect(store.state.nodeSearch.nodesTags).toEqual(
+            searchStarterNodesResponse.tags,
           );
         });
 
-        it("searches for topNodes with append=true", async () => {
+        it("searches for all nodes", async () => {
+          const { store, availablePortTypes } = await createStore();
+          mockedAPI.noderepository.searchNodes.mockResolvedValue(
+            searchAllNodesResponse,
+          );
+          store.commit("nodeSearch/setQuery", "lookup");
+          await store.dispatch("nodeSearch/searchNodes", { all: true });
+
+          expect(store.state.nodeSearch.nodeSearchPage).toBe(0);
+          expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith({
+            allTagsMatch: true,
+            fullTemplateInfo: true,
+            limit: 100,
+            offset: 0,
+            q: "lookup",
+            tags: [],
+            portTypeId: null,
+            nodesPartition: "ALL",
+          });
+          expect(store.state.nodeSearch.totalNumNodes).toBe(
+            searchAllNodesResponse.totalNumNodes,
+          );
+          expect(store.state.nodeSearch.nodes).toEqual(
+            withPorts(searchAllNodesResponse.nodes, availablePortTypes),
+          );
+          expect(store.state.nodeSearch.nodesTags).toEqual(
+            searchAllNodesResponse.tags,
+          );
+        });
+
+        it("searches for nodes with append=true", async () => {
           const { store, availablePortTypes } = await createStore();
           const dummyNode = { dummy: true };
-          store.commit("nodeSearch/setTopNodes", [dummyNode]);
+          store.commit("nodeSearch/setNodes", [dummyNode]);
           store.commit("nodeSearch/setQuery", "lookup");
           await store.dispatch("nodeSearch/searchNodes", { append: true });
 
-          expect(store.state.nodeSearch.topNodeSearchPage).toBe(1);
+          expect(store.state.nodeSearch.nodeSearchPage).toBe(1);
           expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith({
             allTagsMatch: true,
             fullTemplateInfo: true,
@@ -393,172 +353,31 @@ describe("Node search partial store", () => {
             portTypeId: null,
             nodesPartition: "IN_COLLECTION",
           });
-          expect(store.state.nodeSearch.totalNumTopNodes).toBe(
-            searchNodesResponse.totalNumNodes,
+          expect(store.state.nodeSearch.totalNumNodes).toBe(
+            searchStarterNodesResponse.totalNumNodes,
           );
-          expect(store.state.nodeSearch.topNodes).toEqual([
+          expect(store.state.nodeSearch.nodes).toEqual([
             dummyNode,
-            ...withPorts(searchNodesResponse.nodes, availablePortTypes),
+            ...withPorts(searchStarterNodesResponse.nodes, availablePortTypes),
           ]);
-          expect(store.state.nodeSearch.topNodesTags).toEqual(
-            searchNodesResponse.tags,
+          expect(store.state.nodeSearch.nodesTags).toEqual(
+            searchStarterNodesResponse.tags,
           );
         });
 
-        it("searches for topNodes next page", async () => {
+        it("searches for nodes next page", async () => {
           const { store, dispatchSpy } = await createStore();
-          await store.dispatch("nodeSearch/searchTopNodesNextPage");
+          await store.dispatch("nodeSearch/searchNodesNextPage");
           expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {
             append: true,
           });
         });
 
-        it("does not search for topNodes next page if all topNodes loaded", async () => {
+        it("does not search for nodes next page if all nodes loaded", async () => {
           const { store, dispatchSpy } = await createStore();
-          store.state.nodeSearch.topNodes = [{ dummy: true }];
-          store.state.nodeSearch.totalNumTopNodes = 1;
-          await store.dispatch("nodeSearch/searchTopNodesNextPage");
-          expect(dispatchSpy).not.toHaveBeenCalledWith(
-            "nodeSearch/searchNodes",
-            expect.anything(),
-          );
-        });
-      });
-
-      // eslint-disable-next-line vitest/max-nested-describe
-      describe("searchBottomNodes", () => {
-        it("clears search results on empty parameters (tags and query)", async () => {
-          const { store, dispatchSpy } = await createStore();
-          await store.dispatch("nodeSearch/searchNodes", { bottom: true });
-          expect(dispatchSpy).toHaveBeenCalledWith(
-            "nodeSearch/clearSearchResultsForBottomNodes",
-            undefined,
-          );
-        });
-
-        it("searches for bottomNodes", async () => {
-          const { store, availablePortTypes } = await createStore();
-          mockedAPI.noderepository.searchNodes.mockResolvedValue(
-            searchBottomNodesResponse,
-          );
-          store.commit("nodeSearch/setQuery", "lookup");
-          await store.dispatch("nodeSearch/searchNodes", { bottom: true });
-
-          expect(store.state.nodeSearch.bottomNodeSearchPage).toBe(0);
-          expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith({
-            allTagsMatch: true,
-            fullTemplateInfo: true,
-            limit: 100,
-            offset: 0,
-            q: "lookup",
-            tags: [],
-            portTypeId: null,
-            nodesPartition: "NOT_IN_COLLECTION",
-          });
-          expect(store.state.nodeSearch.totalNumBottomNodes).toBe(
-            searchBottomNodesResponse.totalNumNodes,
-          );
-          expect(store.state.nodeSearch.bottomNodes).toEqual(
-            withPorts(searchBottomNodesResponse.nodes, availablePortTypes),
-          );
-          expect(store.state.nodeSearch.bottomNodesTags).toEqual(
-            searchBottomNodesResponse.tags,
-          );
-        });
-
-        it("searches for bottomNodes with append=true", async () => {
-          const { store, availablePortTypes } = await createStore();
-          mockedAPI.noderepository.searchNodes.mockResolvedValue(
-            searchBottomNodesResponse,
-          );
-          const dummyNode = { dummy: true };
-          store.commit("nodeSearch/setBottomNodes", [dummyNode]);
-          store.commit("nodeSearch/setQuery", "lookup");
-          await store.dispatch("nodeSearch/searchNodes", {
-            append: true,
-            bottom: true,
-          });
-
-          // expect(store.state.nodeSearch.bottomNodeSearchPage).toBe(1);
-          expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith({
-            allTagsMatch: true,
-            fullTemplateInfo: true,
-            limit: 100,
-            offset: 100,
-            q: "lookup",
-            tags: [],
-            portTypeId: null,
-            nodesPartition: "NOT_IN_COLLECTION",
-          });
-          expect(store.state.nodeSearch.totalNumBottomNodes).toBe(
-            searchBottomNodesResponse.totalNumNodes,
-          );
-          expect(store.state.nodeSearch.bottomNodes).toEqual([
-            dummyNode,
-            ...withPorts(searchBottomNodesResponse.nodes, availablePortTypes),
-          ]);
-          expect(store.state.nodeSearch.bottomNodesTags).toEqual(
-            searchBottomNodesResponse.tags,
-          );
-        });
-
-        it("searches for bottomNodes next page", async () => {
-          const { store, dispatchSpy } = await createStore();
-          store.state.nodeSearch.isShowingBottomNodes = true;
-          await store.dispatch("nodeSearch/searchBottomNodesNextPage");
-          expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {
-            append: true,
-            bottom: true,
-          });
-        });
-
-        it("does not search for bottomNodes next page if hiding bottomNodes", async () => {
-          const { store, dispatchSpy } = await createStore();
-          store.state.nodeSearch.isShowingBottomNodes = false;
-          await store.dispatch("nodeSearch/searchBottomNodesNextPage");
-          expect(dispatchSpy).not.toHaveBeenCalledWith(
-            "nodeSearch/searchNodes",
-            expect.anything(),
-          );
-        });
-
-        it("does not search for bottomNodes next page if all nodes loaded", async () => {
-          const { store, dispatchSpy } = await createStore();
-          store.state.nodeSearch.isShowingBottomNodes = true;
-          store.state.nodeSearch.bottomNodes = [{ dummy: true }];
-          store.state.nodeSearch.totalNumBottomNodes = 1;
-          await store.dispatch("nodeSearch/searchBottomNodesNextPage");
-          expect(dispatchSpy).not.toHaveBeenCalledWith(
-            "nodeSearch/searchNodes",
-            expect.anything(),
-          );
-        });
-      });
-
-      // eslint-disable-next-line vitest/max-nested-describe
-      describe("toggleShowingBottomNodes", () => {
-        it("does toggle isShowingBottomNodes", async () => {
-          const { store } = await createStore();
-          await store.dispatch("nodeSearch/toggleShowingBottomNodes");
-          expect(store.state.nodeSearch.isShowingBottomNodes).toBe(true);
-          await store.dispatch("nodeSearch/toggleShowingBottomNodes");
-          expect(store.state.nodeSearch.isShowingBottomNodes).toBe(false);
-        });
-
-        it("does dispatch searchNodes", async () => {
-          const { store, dispatchSpy } = await createStore();
-          await store.dispatch("nodeSearch/toggleShowingBottomNodes");
-          expect(store.state.nodeSearch.isShowingBottomNodes).toBe(true);
-          expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {
-            bottom: true,
-          });
-        });
-
-        it("does not dispatch searchNodes if there are results already", async () => {
-          const { store, dispatchSpy } = await createStore();
-          store.state.nodeSearch.bottomNodes = [{ dummy: true }];
-          await store.dispatch("nodeSearch/toggleShowingBottomNodes");
-          expect(store.state.nodeSearch.isShowingBottomNodes).toBe(true);
+          store.state.nodeSearch.nodes = [{ dummy: true }];
+          store.state.nodeSearch.totalNumNodes = 1;
+          await store.dispatch("nodeSearch/searchNodesNextPage");
           expect(dispatchSpy).not.toHaveBeenCalledWith(
             "nodeSearch/searchNodes",
             expect.anything(),
@@ -572,7 +391,7 @@ describe("Node search partial store", () => {
 
         expect(store.state.nodeSearch.query).toBe("some value");
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchTopAndBottomNodes",
+          "nodeSearch/searchStarterOrAllNodes",
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
@@ -581,7 +400,22 @@ describe("Node search partial store", () => {
         );
       });
 
-      it("set selected Tags", async () => {
+      it("updates query for all nodes if hasNodeCollectionActive is false", async () => {
+        hasNodeCollectionActive = false;
+        const { store, dispatchSpy } = await createStore();
+        await store.dispatch("nodeSearch/updateQuery", "some value");
+
+        expect(store.state.nodeSearch.query).toBe("some value");
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          "nodeSearch/searchStarterOrAllNodes",
+          undefined,
+        );
+        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {
+          all: true,
+        });
+      });
+
+      it("set selected tags", async () => {
         const { store, dispatchSpy } = await createStore();
         store.dispatch("nodeSearch/setSelectedTags", ["myTag", "myTag2"]);
         expect(store.state.nodeSearch.selectedTags).toEqual([
@@ -590,7 +424,7 @@ describe("Node search partial store", () => {
         ]);
 
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchTopAndBottomNodes",
+          "nodeSearch/searchStarterOrAllNodes",
           undefined,
         );
       });
@@ -600,49 +434,28 @@ describe("Node search partial store", () => {
 
         // Make sure that searchIsActive will return true
         store.commit("nodeSearch/setQuery", "test");
-        store.commit("nodeSearch/setTopNodes", ["dummy value"]);
+        store.commit("nodeSearch/setNodes", ["dummy value"]);
 
         await store.dispatch("nodeSearch/setSelectedTags", []);
         expect(store.state.nodeSearch.selectedTags).toEqual([]);
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchTopAndBottomNodes",
+          "nodeSearch/searchStarterOrAllNodes",
           undefined,
         );
       });
 
-      it("clears search params (topNodesTags and query)", async () => {
+      it("clears search params (nodesTags and query)", async () => {
         const { store, dispatchSpy } = await createStore();
         store.dispatch("nodeSearch/clearSearchParams");
 
         expect(store.state.nodeSearch.selectedTags).toEqual([]);
         expect(store.state.nodeSearch.query).toBe("");
-        expect(store.state.nodeSearch.topNodes).toBeNull();
-        expect(store.state.nodeSearch.topNodesTags).toEqual([]);
+        expect(store.state.nodeSearch.nodes).toBeNull();
+        expect(store.state.nodeSearch.nodesTags).toEqual([]);
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeSearch/clearSearchResults",
           undefined,
         );
-      });
-
-      it("clears search results", async () => {
-        const { store, dispatchSpy } = await createStore();
-
-        store.dispatch("nodeSearch/clearSearchResults");
-        expect(store.state.nodeSearch.topNodes).toBeNull();
-        expect(store.state.nodeSearch.topNodesTags).toEqual([]);
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/clearSearchResultsForBottomNodes",
-          undefined,
-        );
-      });
-
-      it("clears search results for bottomNodes", async () => {
-        const { store } = await createStore();
-
-        store.dispatch("nodeSearch/clearSearchResultsForBottomNodes");
-        expect(store.state.nodeSearch.bottomNodes).toBeNull();
-        expect(store.state.nodeSearch.bottomNodesTags).toEqual([]);
-        expect(store.state.nodeSearch.totalNumBottomNodes).toBe(0);
       });
     });
   });

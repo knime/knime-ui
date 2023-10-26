@@ -1,8 +1,6 @@
 import { API } from "@api";
-import {
-  toNodeTemplateWithExtendedPorts,
-  type NodeTemplateWithExtendedPorts,
-} from "@/util/portDataMapper";
+import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { debounce } from "lodash";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "../types";
