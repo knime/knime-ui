@@ -53,6 +53,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.knime.gateway.impl.service.events.EventConsumer;
 
@@ -129,8 +130,9 @@ public final class ChatAPI {
      */
     @API
     public static void makeAiRequest(final String conversationId, final String chainType, final String projectId,
-        final String workflowId, final String[] selectedNodes, final String messages) {
-        LISTENERS.forEach(l -> l.onNewMessage(conversationId, chainType, projectId, workflowId, selectedNodes, messages));
+        final String workflowId, final Object[] selectedNodes, final String messages) {
+        var selectedNodeIds = Stream.of(selectedNodes).map(String.class::cast).toArray(String[]::new);
+        LISTENERS.forEach(l -> l.onNewMessage(conversationId, chainType, projectId, workflowId, selectedNodeIds, messages));
     }
 
     /**
