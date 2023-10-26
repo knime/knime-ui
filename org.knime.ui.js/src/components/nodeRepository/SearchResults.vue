@@ -135,20 +135,17 @@ export default defineComponent({
         <span v-if="hasNodeCollectionActive">
           There are no nodes matching with your current filter settings.
         </span>
-        <span v-else> There are no matching nodes. </span>
+        <span v-else>There are no matching nodes.</span>
         <div class="search-info">
           <CircleInfoIcon class="info-icon" />
           <span v-if="hasNodeCollectionActive"
-            >But there are some in “All nodes“. <br />Change the
-            <a class="search-link" @click="$emit('open-preferences')"
-              >filter settings</a
-            >
+            >But there are some in “All nodes“.<br />Change the
+            <a @click="$emit('open-preferences')">filter settings</a>
             to see all nodes.</span
           >
           <span v-else
             >Search the
             <a
-              class="search-link"
               :href="`https://hub.knime.com/search?q=${encodeURIComponent(
                 query,
               )}&type=all`"
@@ -213,9 +210,10 @@ export default defineComponent({
       margin-right: 10px;
     }
 
-    & .search-link {
+    & a {
       color: var(--knime-dove-gray);
       text-decoration: underline;
+      cursor: pointer;
     }
   }
 }
