@@ -10,6 +10,7 @@ import type {
   SpaceProvider as _SpaceProvider,
   Workflow as _Workflow,
   EditableProjectMetadata,
+  NodeTemplate,
 } from "./gateway-api/generated-api";
 
 import { SpaceProvider as _SpaceProviderNS } from "./gateway-api/generated-api";
@@ -132,4 +133,9 @@ export type ExtendedPortType = PortType & {
   typeId: string;
   type?: string;
   description: string;
+};
+
+export type NodeTemplateWithExtendedPorts = NodeTemplate & {
+  inPorts: ExtendedPortType[];
+  outPorts: ExtendedPortType[];
 };

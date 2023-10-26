@@ -7,6 +7,7 @@ import type {
   AvailablePortTypes,
   ComponentMetadata,
   ExtendedPortType,
+  NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
 
 /**
@@ -57,11 +58,6 @@ export const toExtendedPortObject =
         }
       : result;
   };
-
-export type NodeTemplateWithExtendedPorts = NodeTemplate & {
-  inPorts: ExtendedPortType[];
-  outPorts: ExtendedPortType[];
-};
 
 /**
  * Maps a node object and adds to every of its ports all the properties of the PortObject schema from the API

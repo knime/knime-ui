@@ -4,7 +4,7 @@ import { mapActions, mapState } from "vuex";
 
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
-import type { KnimeNode } from "@/api/custom-types";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 export default defineComponent({
   components: {
@@ -13,7 +13,7 @@ export default defineComponent({
   },
   props: {
     selectedNode: {
-      type: [Object, null] as PropType<KnimeNode | null>,
+      type: [Object, null] as PropType<NodeTemplateWithExtendedPorts | null>,
       required: true,
     },
   },

@@ -1,11 +1,9 @@
-<script lang="ts">
-import { defineComponent } from "vue";
-import type { PropType } from "vue";
+<script setup lang="ts">
+import { ref, computed, watch, toRefs, nextTick } from "vue";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
 
-import type { NodeTemplate } from "@/api/gateway-api/generated-api";
-import type { KnimeNode } from "@/api/custom-types";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 import ScrollViewContainer from "./ScrollViewContainer.vue";
 import NodeList from "./NodeList.vue";
@@ -17,109 +15,74 @@ export type SearchActions = {
 /**
  * Reusable search results. Please keep this store free.
  */
-export default defineComponent({
-  components: {
-    ScrollViewContainer,
-    NodeList,
-    ReloadIcon,
-    CircleInfoIcon,
-  },
-  props: {
-    nodes: {
-      type: [Array, null] as PropType<Array<NodeTemplate> | null>,
-      required: true,
-    },
-    query: {
-      type: String,
-      required: true,
-    },
-    selectedTags: {
-      type: Array as PropType<Array<string>>,
-      default: () => [],
-    },
-    searchScrollPosition: {
-      type: Number,
-      default: 0,
-    },
-    selectedNode: {
-      type: [Object, null] as PropType<KnimeNode | null>,
-      required: true,
-    },
-    searchActions: {
-      type: Object as PropType<SearchActions>,
-      required: true,
-    },
-    hasNodeCollectionActive: {
-      type: Boolean,
-      required: true,
-    },
-    highlightFirst: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: [
-    "navReachedTop",
-    "update:searchScrollPosition",
-    "update:selectedNode",
-    "item-enter-key",
-    "open-preferences",
-  ],
-  expose: ["focusFirst"],
-  data() {
-    return {
-      isLoading: false,
-    };
-  },
-  computed: {
-    isNodeListEmpty() {
-      return this.nodes?.length === 0;
-    },
-    selectedNodeModel: {
-      get() {
-        return this.selectedNode;
-      },
-      set(value) {
-        this.$emit("update:selectedNode", value);
-      },
-    },
-  },
-  watch: {
-    query() {
-      this.onSearchChanged();
-    },
-    selectedTags() {
-      this.onSearchChanged();
-    },
-  },
-  methods: {
-    // Also currently the NodeRepository isn't destroyed upon closing
-    onSaveScrollPosition(position: number) {
-      this.$emit("update:searchScrollPosition", position);
-    },
-    async onSearchChanged() {
-      let scroller = this.$refs.scroller as InstanceType<
-        typeof ScrollViewContainer
-      >;
+type Props = {
+  nodes: NodeTemplateWithExtendedPorts[] | null;
+  query: string;
+  selectedTags?: string[];
+  searchScrollPosition?: number;
+  selectedNode: NodeTemplateWithExtendedPorts | null;
+  searchActions: SearchActions;
+  hasNodeCollectionActive: boolean;
+  highlightFirst?: boolean;
+};
 
-      // wait for new content to be displayed, then scroll to top
-      await this.$nextTick();
-      if (scroller) {
-        scroller.$el.scrollTop = 0;
-      }
-    },
-    loadMoreSearchResults() {
-      this.isLoading = true;
-      this.searchActions.searchNodesNextPage().then(() => {
-        this.isLoading = false;
-      });
-    },
-    focusFirst() {
-      const nodeList = this.$refs.nodeList as InstanceType<typeof NodeList>;
-      nodeList?.focusFirst();
-    },
+const props = withDefaults(defineProps<Props>(), {
+  selectedTags: () => [],
+  searchScrollPosition: 0,
+  highlightFirst: false,
+});
+
+const emit = defineEmits<{
+  (e: "navReachedTop"): void;
+  (e: "update:searchScrollPosition", position: number): void;
+  (e: "update:selectedNode", value: NodeTemplateWithExtendedPorts): void;
+  (e: "item-enter-key", event: KeyboardEvent): void;
+  (e: "open-preferences"): void;
+}>();
+
+const { nodes, selectedNode, query, selectedTags, searchActions } =
+  toRefs(props);
+let isLoading = ref(false);
+
+const isNodeListEmpty = computed(() => nodes.value?.length === 0);
+const selectedNodeModel = computed({
+  get() {
+    return selectedNode.value;
+  },
+  set(value) {
+    emit("update:selectedNode", value);
   },
 });
+
+const onSaveScrollPosition = (position: number) => {
+  emit("update:searchScrollPosition", position);
+};
+
+const scroller = ref<InstanceType<typeof ScrollViewContainer>>(null);
+const onSearchChanged = async () => {
+  // wait for new content to be displayed, then scroll to top
+  await nextTick();
+  if (scroller.value) {
+    scroller.value.$el.scrollTop = 0;
+  }
+};
+
+const loadMoreSearchResults = () => {
+  isLoading.value = true;
+  searchActions.value.searchNodesNextPage().then(() => {
+    isLoading.value = false;
+  });
+};
+
+const nodeList = ref<InstanceType<typeof NodeList>>(null);
+const focusFirst = () => {
+  nodeList.value?.focusFirst();
+};
+
+watch(query, () => onSearchChanged());
+watch(selectedTags, () => onSearchChanged());
+
+defineExpose({ focusFirst });
 </script>
 
 <template>
@@ -140,7 +103,7 @@ export default defineComponent({
           <CircleInfoIcon class="info-icon" />
           <span v-if="hasNodeCollectionActive"
             >But there are some in “All nodes“.<br />Change the
-            <a @click="$emit('open-preferences')">filter settings</a>
+            <a @click="emit('open-preferences')">filter settings</a>
             to see all nodes.</span
           >
           <span v-else
@@ -161,8 +124,8 @@ export default defineComponent({
           v-model:selected-node="selectedNodeModel"
           :nodes="nodes"
           :highlight-first="highlightFirst"
-          @nav-reached-top="$emit('navReachedTop')"
-          @enter-key="$emit('item-enter-key', $event)"
+          @nav-reached-top="emit('navReachedTop')"
+          @enter-key="emit('item-enter-key', $event)"
         >
           <template #item="slotProps">
             <slot name="nodesTemplate" v-bind="slotProps" />
@@ -198,7 +161,6 @@ export default defineComponent({
   & .search-info {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     padding-top: 20px;
     width: 100%;
 
