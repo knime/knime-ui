@@ -392,16 +392,14 @@ export default defineComponent({
       const el = document.elementFromPoint(screenX, screenY);
       const kanvas = this.getScrollContainerElement();
 
-      if (!this.nodeTemplate) {
-        this.nodeTemplate = isItemAComponent
-          ? {
-              isComponent: true,
-              inPorts: [],
-              outPorts: [],
-              type: item.meta.type,
-            }
-          : await this.getNodeTemplate(nodeTemplateId);
-      }
+      this.nodeTemplate = isItemAComponent
+        ? {
+            isComponent: true,
+            inPorts: [],
+            outPorts: [],
+            type: item.meta.type,
+          }
+        : await this.getNodeTemplate(nodeTemplateId);
 
       this.isAboveCanvas = kanvas.contains(el);
     },
