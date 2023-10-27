@@ -118,7 +118,7 @@ defineExpose({ focusFirst });
           >
         </div>
       </div>
-      <div class="node-list-wrapper">
+      <div v-else class="node-list-wrapper">
         <NodeList
           ref="nodeList"
           v-model:selected-node="selectedNodeModel"

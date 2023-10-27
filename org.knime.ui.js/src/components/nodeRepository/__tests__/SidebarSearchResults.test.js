@@ -11,7 +11,7 @@ describe("SidebarSearchResults", () => {
       nodeRepository: {
         state: {
           query: "",
-          topNodes: [
+          nodes: [
             {
               id: "node1",
               name: "Node 1",
@@ -21,16 +21,12 @@ describe("SidebarSearchResults", () => {
               name: "Node 2",
             },
           ],
-          totalNumTopNodes: 2,
+          totalNumNodes: 2,
           searchScrollPosition: 100,
-          bottomNodes: null,
           selectedNode: { id: "some-node" },
-          isShowingBottomNodes: false,
         },
         actions: {
-          searchTopNodesNextPage: vi.fn(),
-          searchBottomNodesNextPage: vi.fn(),
-          toggleShowingBottomNodes: vi.fn(),
+          searchNodesNextPage: vi.fn(),
         },
         mutations: {
           setSearchScrollPosition: vi.fn(),
@@ -59,8 +55,8 @@ describe("SidebarSearchResults", () => {
     await wrapper.vm.$nextTick();
 
     let results = wrapper.findComponent(SearchResults);
-    expect(results.props("topNodes")).toStrictEqual(
-      $store.state.nodeRepository.topNodes,
+    expect(results.props("nodes")).toStrictEqual(
+      $store.state.nodeRepository.nodes,
     );
     expect(results.props("query")).toStrictEqual(
       $store.state.nodeRepository.query,

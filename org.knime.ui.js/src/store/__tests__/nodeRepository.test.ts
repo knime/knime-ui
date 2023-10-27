@@ -7,7 +7,7 @@ import {
   withoutKeys,
 } from "@/test/utils";
 import { API } from "@api";
-import { searchNodesResponse } from "../common/__tests__/nodeSearch.test";
+import { searchStarterNodesResponse } from "../common/__tests__/nodeSearch.test";
 import { state as nodeSearchState } from "../common/nodeSearch";
 
 const getNodesGroupedByTagsResponse = {
@@ -107,7 +107,9 @@ describe("Node Repository store", () => {
       },
     };
 
-    mockedAPI.noderepository.searchNodes.mockResolvedValue(searchNodesResponse);
+    mockedAPI.noderepository.searchNodes.mockResolvedValue(
+      searchStarterNodesResponse,
+    );
     mockedAPI.noderepository.getNodesGroupedByTags.mockReturnValue(
       getNodesGroupedByTagsResponse,
     );
@@ -178,7 +180,7 @@ describe("Node Repository store", () => {
 
     it("returns proper value for isSelectedNodeVisible for searches", async () => {
       const { store } = await createStore();
-      store.state.nodeRepository.topNodes = [{ id: 1, name: "Node" }];
+      store.state.nodeRepository.nodes = [{ id: 1, name: "Node" }];
       store.state.nodeRepository.query = "value";
       store.state.nodeRepository.selectedNode = { id: 3, name: "Node 3" };
       expect(store.getters["nodeRepository/isSelectedNodeVisible"]).toBe(false);
@@ -296,7 +298,7 @@ describe("Node Repository store", () => {
         await store.dispatch("nodeRepository/getAllNodes", { append: false });
 
         expect(store.state.nodeRepository.categoryPage).toBe(0);
-        expect(store.state.nodeRepository.topNodeSearchPage).toBe(0);
+        expect(store.state.nodeRepository.nodeSearchPage).toBe(0);
         expect(
           mockedAPI.noderepository.getNodesGroupedByTags,
         ).toHaveBeenCalledWith({
@@ -380,14 +382,14 @@ describe("Node Repository store", () => {
       it("resets search results", async () => {
         const { store, dispatchSpy } = await createStore();
         store.state.nodeRepository.query = "foo";
-        store.state.nodeRepository.topNodes = [{ dummy: true }];
+        store.state.nodeRepository.nodes = [{ dummy: true }];
         await store.dispatch("nodeRepository/resetSearchAndCategories");
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeRepository/clearSearchResults",
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeRepository/searchTopAndBottomNodes",
+          "nodeRepository/searchStarterOrAllNodes",
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(

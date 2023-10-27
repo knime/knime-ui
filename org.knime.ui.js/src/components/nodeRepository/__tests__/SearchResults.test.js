@@ -1,30 +1,25 @@
 import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
-import { deepMocked } from "@/test/utils";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
-import { API } from "@api";
 import SearchResults from "../SearchResults.vue";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
 import NodeList from "../NodeList.vue";
 
-const mockedAPI = deepMocked(API);
-
 describe("SearchResults", () => {
-  const doMount = ({ propsOverrides = {} } = {}) => {
+  const doMount = ({
+    propsOverrides = {},
+    hasNodeCollectionActive = true,
+  } = {}) => {
     const searchActions = {
-      searchTopNodesNextPage: vi
+      searchNodesNextPage: vi
         .fn()
         .mockImplementation(() => new Promise((r) => setTimeout(r, 10))),
-      searchBottomNodesNextPage: vi
-        .fn()
-        .mockImplementation(() => new Promise((r) => setTimeout(r, 20))),
-      toggleShowingBottomNodes: vi.fn().mockResolvedValue({}),
     };
 
     const props = {
-      topNodes: [
+      nodes: [
         {
           id: "node1",
           name: "Node 1",
@@ -34,14 +29,12 @@ describe("SearchResults", () => {
           name: "Node 2",
         },
       ],
-      bottomNodes: null,
       query: "",
       selectedTags: [],
       searchScrollPosition: 100,
-      isShowingBottomNodes: false,
       selectedNode: { id: "some-node" },
       searchActions,
-      hasNodeCollectionActive: false,
+      hasNodeCollectionActive,
       ...propsOverrides,
     };
 
@@ -50,31 +43,56 @@ describe("SearchResults", () => {
     return { wrapper, searchActions, props };
   };
 
-  it("shows placeholder for empty result", () => {
+  it("shows placeholder for empty result if hasNodeCollectionActive is true", async () => {
     const { wrapper } = doMount({
       propsOverrides: {
         query: "xxx",
-        topNodes: [],
+        nodes: [],
       },
     });
 
-    expect(wrapper.text()).toMatch("No node matching for: xxx");
+    expect(wrapper.text()).toMatch(
+      "There are no nodes matching with your current filter settings.",
+    );
+    expect(wrapper.text()).toMatch("But there are some in “All nodes“.");
+    await wrapper.find("a").trigger("click");
+    expect(wrapper.emitted("open-preferences")).toBeTruthy();
+    expect(wrapper.findComponent(NodeList).exists()).toBe(false);
+  });
+
+  it("shows placeholder for empty result if hasNodeCollectionActive is false", () => {
+    const query = "xxx xxx";
+    const { wrapper } = doMount({
+      propsOverrides: {
+        query,
+        nodes: [],
+      },
+      hasNodeCollectionActive: false,
+    });
+    const encodedQuery = encodeURIComponent(query);
+
+    expect(wrapper.text()).toMatch("There are no matching nodes.");
+    expect(wrapper.text()).toMatch("Search the KNIME Community Hub");
+    expect(wrapper.find("a").attributes("href")).toBe(
+      `https://hub.knime.com/search?q=${encodedQuery}&type=all`,
+    );
     expect(wrapper.findComponent(NodeList).exists()).toBe(false);
   });
 
   it("displays icon if loading is true", async () => {
     const { wrapper } = doMount();
 
-    await wrapper.setData({ isLoading: true });
+    wrapper.vm.isLoading = true;
+    await wrapper.vm.$nextTick();
     const loadingIcon = wrapper.findComponent(ReloadIcon);
     expect(loadingIcon.exists()).toBe(true);
   });
 
-  it("renders topNodes", () => {
+  it("renders nodes", () => {
     const { wrapper, props } = doMount();
 
     let nodeList = wrapper.findComponent(NodeList);
-    expect(nodeList.props("nodes")).toStrictEqual(props.topNodes);
+    expect(nodeList.props("nodes")).toStrictEqual(props.nodes);
   });
 
   describe("scroll", () => {
@@ -117,82 +135,12 @@ describe("SearchResults", () => {
       scrollViewContainer.vm.$emit("scrollBottom");
       await Vue.nextTick();
 
-      expect(searchActions.searchTopNodesNextPage).toHaveBeenCalled();
-      expect(searchActions.searchBottomNodesNextPage).toHaveBeenCalled();
+      expect(searchActions.searchNodesNextPage).toHaveBeenCalled();
 
       expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
       await vi.runAllTimersAsync();
       await Vue.nextTick();
       expect(wrapper.findComponent(ReloadIcon).exists()).toBe(false);
-    });
-  });
-
-  describe("more advanced (bottom) nodes", () => {
-    it('shows "More advanced nodes" button', async () => {
-      const { wrapper } = doMount({
-        propsOverrides: { hasNodeCollectionActive: true },
-      });
-      await Vue.nextTick();
-
-      const moreNodesButton = wrapper.find(".more-nodes-button");
-      expect(moreNodesButton.text()).toMatch("More advanced nodes");
-    });
-
-    it("clicking show more should toggleShowingBottomNodes", async () => {
-      const { wrapper, searchActions } = doMount({
-        propsOverrides: {
-          hasNodeCollectionActive: true,
-        },
-      });
-      await Vue.nextTick();
-
-      await wrapper.find(".more-nodes-button").trigger("click");
-      expect(searchActions.toggleShowingBottomNodes).toHaveBeenCalled();
-    });
-
-    it("should show more advanced nodes", () => {
-      const propsOverrides = {
-        hasNodeCollectionActive: true,
-        isShowingBottomNodes: true,
-        bottomNodes: [
-          {
-            id: "node_1",
-            name: "Node 1",
-          },
-          {
-            id: "node_2",
-            name: "Node 2",
-          },
-        ],
-      };
-      const { wrapper } = doMount({ propsOverrides });
-
-      const moreNodesList = wrapper.findAllComponents(NodeList).at(1);
-      expect(moreNodesList.props("nodes")).toStrictEqual(
-        propsOverrides.bottomNodes,
-      );
-    });
-
-    it("should show placeholder for empty more nodes", () => {
-      const propsOverrides = {
-        hasNodeCollectionActive: true,
-        query: "xxx",
-        isShowingBottomNodes: true,
-        bottomNodes: [],
-      };
-      const { wrapper } = doMount({ propsOverrides });
-
-      expect(wrapper.findAllComponents(NodeList).length).toBe(1);
-      expect(wrapper.text()).toMatch("No additional node matching for: xxx");
-    });
-
-    it("allows opens preferences", async () => {
-      const { wrapper } = doMount({
-        propsOverrides: { hasNodeCollectionActive: true },
-      });
-      await Vue.nextTick();
-      await wrapper.find('[data-testid="open-preferences"]').trigger("click");
-      expect(mockedAPI.desktop.openWebUIPreferencePage).toHaveBeenCalled();
     });
   });
 });

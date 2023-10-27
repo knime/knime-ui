@@ -2,12 +2,14 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
-import type { ComponentMetadata } from "@/api/custom-types";
+import type {
+  ComponentMetadata,
+  NodeTemplateWithExtendedPorts,
+} from "@/api/custom-types";
 
 import {
   toNativeNodeDescriptionWithExtendedPorts,
   toNodeTemplateWithExtendedPorts,
-  type NodeTemplateWithExtendedPorts,
   toComponentNodeDescriptionWithExtendedPorts,
 } from "@/util/portDataMapper";
 

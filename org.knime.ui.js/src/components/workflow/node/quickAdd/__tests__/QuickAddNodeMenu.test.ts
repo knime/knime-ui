@@ -23,7 +23,7 @@ import * as $colors from "@/style/colors.mjs";
 import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
-import { searchNodesResponse } from "@/store/common/__tests__/nodeSearch.test";
+import { searchStarterNodesResponse } from "@/store/common/__tests__/nodeSearch.test";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import QuickAddNodeRecommendations from "@/components/workflow/node/quickAdd/QuickAddNodeRecommendations.vue";
@@ -55,7 +55,7 @@ const defaultNodeRecommendationsResponse = [
   }),
 ];
 
-const notInCollectionSearchResult = {
+const allNodesSearchResult = {
   tags: [],
   totalNumNodes: 1355,
   nodes: [
@@ -112,8 +112,8 @@ describe("QuickAddNodeMenu.vue", () => {
     mockedAPI.noderepository.searchNodes.mockImplementation(
       ({ nodesPartition }) =>
         nodesPartition === "IN_COLLECTION"
-          ? Promise.resolve(searchNodesResponse)
-          : Promise.resolve(notInCollectionSearchResult),
+          ? Promise.resolve(searchStarterNodesResponse)
+          : Promise.resolve(allNodesSearchResult),
     );
 
     const storeConfig = {
@@ -423,18 +423,6 @@ describe("QuickAddNodeMenu.vue", () => {
       expect(previews.at(0).props("type")).toBe("Visualizer");
     });
 
-    it("displays more nodes if button is pressed", async () => {
-      const { wrapper } = doMount();
-      await wrapper.find(".search-bar input").setValue("search");
-      await new Promise((r) => setTimeout(r, 0));
-
-      await wrapper.find(".more-nodes-button").trigger("click");
-      await new Promise((r) => setTimeout(r, 0));
-
-      const spans = wrapper.findAll(".node > span");
-      expect(spans.length).toBe(3);
-    });
-
     describe("add node", () => {
       it("adds the first search result via enter in the search box to the workflow", async () => {
         const { wrapper, addNodeMock } = doMount();
@@ -481,40 +469,6 @@ describe("QuickAddNodeMenu.vue", () => {
               nodeFactory: {
                 className:
                   "org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3",
-              },
-              position: expect.anything(),
-              sourceNodeId: "node-id",
-              sourcePortIdx: 1,
-            }),
-          );
-        },
-      );
-
-      it.each(["click", "keydown.enter"])(
-        "adds bottom search results via %s to workflow",
-        async (event) => {
-          const { wrapper, addNodeMock } = doMount();
-
-          const input = wrapper.find(".search-bar input");
-          await input.setValue(`some-input-for-${event}`);
-          await new Promise((r) => setTimeout(r, 0));
-
-          await wrapper.find(".more-nodes-button").trigger("click");
-          await new Promise((r) => setTimeout(r, 0));
-
-          const nodes = wrapper.findAll(".node");
-          expect(nodes.length).toBe(3);
-
-          const node = nodes.at(2);
-          expect(node.text()).toBe("Advanced Node");
-
-          await node.trigger(event);
-
-          expect(addNodeMock).toHaveBeenCalledWith(
-            expect.anything(),
-            expect.objectContaining({
-              nodeFactory: {
-                className: "org.knime.ext.advanced.node3",
               },
               position: expect.anything(),
               sourceNodeId: "node-id",
