@@ -196,9 +196,6 @@ public final class DesktopAPUtil {
         }
     }
 
-    /**
-     * @throws OperationCanceledException If a locked component cannot be opened
-     */
     private static WorkflowManager loadComponentProject(final IProgressMonitor monitor, final Path wfFile,
         final WorkflowContextV2 workflowContext) throws OperationCanceledException {
         final var wfmRef = new AtomicReference<WorkflowManager>();
@@ -212,10 +209,9 @@ public final class DesktopAPUtil {
 
         if (wfm != null && wfm.isEncrypted()) { // In case a locked component is opened
             final var prompt = new GUIWorkflowCipherPrompt(true);
-            final var unlockedRef = new AtomicReference<Boolean>();
-            Display.getDefault().syncExec(() -> unlockedRef.set(wfmRef.get().unlock(prompt)));
-            if (Boolean.FALSE.equals(unlockedRef.get())) { // If a locked component cannot be opened
-                final var title = "Workflow could not be opened";
+            var unlocked = Display.getDefault().syncCall(() -> wfm.unlock(prompt));
+            if (!unlocked) { // If a locked component cannot be opened
+                final var title = "Component could not be opened";
                 final var message = "Component could not be opened: Access denied";
                 showError(title, message);
                 throw new OperationCanceledException(message);
