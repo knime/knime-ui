@@ -168,7 +168,7 @@ defineExpose({ focusFirst });
       @mixin svg-icon-size 20;
 
       stroke: var(--knime-masala);
-      width: 30px;
+      min-width: 20px;
       margin-right: 10px;
     }
 

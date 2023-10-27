@@ -180,11 +180,8 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @returns {Promise<void>}
    */
   searchStarterOrAllNodes: debounce(async ({ dispatch, rootState }) => {
-    if (rootState.application.hasNodeCollectionActive) {
-      await dispatch("searchNodes");
-    } else {
-      await dispatch("searchNodes", { all: true });
-    }
+    const searchAllNodes = !rootState.application.hasNodeCollectionActive;
+    await dispatch("searchNodes", { all: searchAllNodes });
   }, searchNodesDebounceWait),
 
   /**

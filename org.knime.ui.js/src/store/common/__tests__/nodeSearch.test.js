@@ -394,10 +394,9 @@ describe("Node search partial store", () => {
           "nodeSearch/searchStarterOrAllNodes",
           undefined,
         );
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchNodes",
-          undefined,
-        );
+        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {
+          all: false,
+        });
       });
 
       it("updates query for all nodes if hasNodeCollectionActive is false", async () => {
