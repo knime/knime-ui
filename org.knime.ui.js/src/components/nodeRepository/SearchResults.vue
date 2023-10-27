@@ -53,6 +53,12 @@ const selectedNodeModel = computed({
     emit("update:selectedNode", value);
   },
 });
+const searchHubLink = computed(
+  () =>
+    `https://hub.knime.com/search?q=${encodeURIComponent(
+      query.value,
+    )}&type=all`,
+);
 
 const onSaveScrollPosition = (position: number) => {
   emit("update:searchScrollPosition", position);
@@ -108,12 +114,7 @@ defineExpose({ focusFirst });
           >
           <span v-else
             >Search the
-            <a
-              :href="`https://hub.knime.com/search?q=${encodeURIComponent(
-                query,
-              )}&type=all`"
-              >KNIME Community Hub</a
-            >
+            <a :href="searchHubLink">KNIME Community Hub</a>
             to find more nodes and extensions.</span
           >
         </div>
