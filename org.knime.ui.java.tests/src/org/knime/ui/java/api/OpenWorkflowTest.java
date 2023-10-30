@@ -72,6 +72,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.testing.util.WorkflowManagerUtil;
+import org.knime.ui.java.util.ProjectUtil;
 
 /**
  * Tests methods in {@link OpenWorkflow}.
@@ -115,7 +116,7 @@ class OpenWorkflowTest {
     @Test
     void testCreateWorkflowProject() throws IOException {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        var project = OpenWorkflow.createWorkflowProject(m_wfm, "providerId", "spaceId", "itemId", "relativePath",
+        var project = ProjectUtil.createWorkflowProject(m_wfm, "providerId", "spaceId", "itemId", "relativePath",
             ProjectTypeEnum.WORKFLOW, "projectId");
         assertThat(project.getName()).isEqualTo("workflow");
         assertThat(project.getID()).isEqualTo("projectId");

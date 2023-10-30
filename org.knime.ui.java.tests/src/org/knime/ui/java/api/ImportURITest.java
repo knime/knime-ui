@@ -72,6 +72,7 @@ import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
 import org.knime.testing.util.WorkflowManagerUtil;
+import org.knime.ui.java.util.ProjectUtil;
 
 /**
  * Tests methods in {@link ImportURI}.
@@ -113,7 +114,7 @@ class ImportURITest {
         try {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();
             m_wfms.add(wfm);
-            WorkflowProjectManager.getInstance().addWorkflowProject("projectId", OpenWorkflow.createWorkflowProject(wfm,
+            WorkflowProjectManager.getInstance().addWorkflowProject("projectId", ProjectUtil.createWorkflowProject(wfm,
                 "providerID", "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
                 new WorkflowMiddleware(WorkflowProjectManager.getInstance()));

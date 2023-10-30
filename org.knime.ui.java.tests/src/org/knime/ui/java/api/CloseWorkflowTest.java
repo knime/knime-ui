@@ -70,6 +70,7 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.testing.util.WorkflowManagerUtil;
+import org.knime.ui.java.util.ProjectUtil;
 
 /**
  * Tests method in {@link CloseWorkflow}.
@@ -97,9 +98,9 @@ class CloseWorkflowTest {
         var wfm1 = WorkflowManagerUtil.loadWorkflow(workflowDir);
         var wfm2 = WorkflowManagerUtil.loadWorkflow(workflowDir);
 
-        wpm.addWorkflowProject("projectId1", OpenWorkflow.createWorkflowProject(wfm1, "providerId", "spaceId", "itemId",
+        wpm.addWorkflowProject("projectId1", ProjectUtil.createWorkflowProject(wfm1, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId1"));
-        wpm.addWorkflowProject("projectId2", OpenWorkflow.createWorkflowProject(wfm2, "providerId", "spaceId", "itemId",
+        wpm.addWorkflowProject("projectId2", ProjectUtil.createWorkflowProject(wfm2, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId2"));
         wpm.openAndCacheWorkflow("projectId1");
         wpm.setWorkflowProjectActive("projectId1");

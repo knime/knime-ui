@@ -66,6 +66,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.CanceledExecutionException;
@@ -75,6 +76,7 @@ import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.WorkflowPersistor.WorkflowLoadResult;
 import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
@@ -87,6 +89,7 @@ import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.workbench.editor2.WorkflowEditor;
+import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
 /**
  * Utility methods around the classic {@link WorkflowEditor}.
@@ -145,7 +148,6 @@ public final class ClassicWorkflowEditorUtil {
 
     private static void registerWorkflowProjects(final EModelService modelService, final MApplication app) {
         List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
-        var wpm = WorkflowProjectManager.getInstance();
         var activeProjectId = new AtomicReference<String>();
         var workflowProjects = editorParts.stream().map(part -> {
             var wp = getOrCreateWorkflowProject(part);
@@ -156,6 +158,7 @@ public final class ClassicWorkflowEditorUtil {
         }) //
             .filter(Objects::nonNull);
 
+        var wpm = WorkflowProjectManager.getInstance();
         var resolved = resolveDuplicates(workflowProjects,
             // Determine duplicates by project ID
             WorkflowProject::getID,
@@ -274,7 +277,7 @@ public final class ClassicWorkflowEditorUtil {
 
             @Override
             public ProjectTypeEnum getProjectType() {
-                return ProjectTypeEnum.WORKFLOW; // TODO: Make this dynamic, cannot open Hub components
+                return ProjectTypeEnum.WORKFLOW; // TODO: NXT-2101, cannot open Hub components
             }
         });
     }
@@ -316,7 +319,7 @@ public final class ClassicWorkflowEditorUtil {
         return getOpenWorkflowEditorParts(modelService, app) //
             .map(p -> getWorkflowEditor((CompatibilityPart)p.getObject())) //
             .flatMap(Optional::stream) //
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -340,8 +343,8 @@ public final class ClassicWorkflowEditorUtil {
         AtomicReference<WorkflowEditor> ref = new AtomicReference<>();
         Display.getDefault().syncExec(() -> {
             IEditorPart editor = ((IEditorReference)part.getReference()).getEditor(true);
-            if (editor instanceof WorkflowEditor) {
-                ref.set((WorkflowEditor)editor);
+            if (editor instanceof WorkflowEditor we) {
+                ref.set(we);
             }
         });
         return Optional.ofNullable(ref.get());
@@ -403,7 +406,7 @@ public final class ClassicWorkflowEditorUtil {
      *         {@code Optional} otherwise.
      */
     private static <V> Optional<V> expectSingleOf(final Stream<V> data) {
-        var els = data.collect(Collectors.toList());
+        var els = data.toList();
         if (els.size() == 1) {
             return Optional.of(els.get(0));
         } else {
@@ -411,4 +414,20 @@ public final class ClassicWorkflowEditorUtil {
         }
     }
 
+    /**
+     * Updates the {@code WorkflowEditor} input for open editors in order to sync the Classic and the Modern UI
+     *
+     * @param origin
+     * @param wfm
+     */
+    public static void updateInputForOpenEditors(final WorkflowProject.Origin origin, final WorkflowManager wfm) {
+        ClassicWorkflowEditorUtil.getOpenWorkflowEditor(wfm).ifPresent(e -> {
+            final var itemId = origin.getItemId();
+            final var knimeUrl = LocalSpaceUtil.getLocalWorkspace().toKnimeUrl(itemId);
+            final var fileStore = ExplorerFileSystem.INSTANCE.getStore(knimeUrl)//
+                .getChild(WorkflowPersistor.WORKFLOW_FILE);
+            final var input = new FileStoreEditorInput(fileStore);
+            e.setInput(input);
+        });
+    }
 }

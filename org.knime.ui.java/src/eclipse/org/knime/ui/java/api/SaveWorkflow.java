@@ -136,6 +136,7 @@ final class SaveWorkflow {
 
     /**
      * Save regular workflow as
+     *
      * @param context The context with the information about the new workflow
      * @param monitor The monitor to show the progress of this operation
      * @param wfm The Workflowmanager that will save the workflow
@@ -165,11 +166,15 @@ final class SaveWorkflow {
      * @param wfm The workflow manager that will save the component
      * @param svg workflow SVG
      */
-    static boolean saveComponentTemplateAs(final IProgressMonitor monitor, final WorkflowManager wfm, final Path path) {
+    static boolean saveComponentTemplateAs(final IProgressMonitor monitor, final WorkflowManager wfm,
+        final WorkflowContextV2 newContext) {
         monitor.beginTask("Saving a component template", IProgressMonitor.UNKNOWN);
         try {
-            final var nc = (SubNodeContainer)wfm.getDirectNCParent();
-            nc.saveAsTemplate(path.toFile(), DesktopAPUtil.toExecutionMonitor(monitor));
+            final var snc = (SubNodeContainer)wfm.getDirectNCParent();
+            final var path = newContext.getExecutorInfo().getLocalWorkflowPath().toFile();
+            snc.saveAsTemplate(path, DesktopAPUtil.toExecutionMonitor(monitor));
+            wfm.setWorkflowContext(newContext);
+            wfm.unsetNameUndirty(); // Since component project do not have names
         } catch (IOException | CanceledExecutionException | LockFailedException | InvalidSettingsException e) {
             final var title = "Component save attempt";
             final var message = "Saving the component didn't work";
@@ -183,6 +188,7 @@ final class SaveWorkflow {
 
     /**
      * Get the {@link WorkflowManager}s of node containers contained in the given workflow manager (no recursion).
+     *
      * @param parent The workflow manager whose direct children (contained node containers) to consider
      * @return A list of workflow managers that correspond to node containers appearing in the parent workflow manager.
      */

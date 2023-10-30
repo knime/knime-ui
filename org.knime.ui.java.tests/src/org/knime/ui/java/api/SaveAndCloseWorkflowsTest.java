@@ -71,6 +71,7 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
+import org.knime.ui.java.util.ProjectUtil;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -94,7 +95,7 @@ class SaveAndCloseWorkflowsTest {
         var wpm = WorkflowProjectManager.getInstance();
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
-            wpm.addWorkflowProject(projectId, OpenWorkflow.createWorkflowProject(wfms.get(i - 1), "providerId",
+            wpm.addWorkflowProject(projectId, ProjectUtil.createWorkflowProject(wfms.get(i - 1), "providerId",
                 "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, projectId));
             wpm.openAndCacheWorkflow(projectId);
         }

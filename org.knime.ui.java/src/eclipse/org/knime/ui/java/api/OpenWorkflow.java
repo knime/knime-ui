@@ -49,7 +49,6 @@ package org.knime.ui.java.api;
 import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
 import java.net.URI;
-import java.util.Optional;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
@@ -68,8 +67,8 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.ui.java.util.ProjectUtil;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.explorer.RemoteWorkflowInput;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
@@ -100,11 +99,11 @@ final class OpenWorkflow {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             final var space =
                 SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-            var knimeUrl = space.toKnimeUrl(itemId);
+            final var knimeUrl = space.toKnimeUrl(itemId);
             openWorkflowInClassicAndWebUI(knimeUrl, null);
         } else {
-            DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> { // NOSONAR better than inline class
-                OpenWorkflow.fetchAndOpenWorkflowInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
+            DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {
+                fetchAndOpenWorkflowInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
                 return null;
             });
         }
@@ -120,14 +119,17 @@ final class OpenWorkflow {
      */
     static boolean openWorkflowCopy(final RepoObjectImport repoObjectImport) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            openWorkflowInClassicAndWebUI(repoObjectImport.getKnimeURI(), repoObjectImport.locationInfo()
-                .filter(HubSpaceLocationInfo.class::isInstance).map(HubSpaceLocationInfo.class::cast).orElse(null));
+            openWorkflowInClassicAndWebUI(repoObjectImport.getKnimeURI(), repoObjectImport.locationInfo()//
+                .filter(HubSpaceLocationInfo.class::isInstance)//
+                .map(HubSpaceLocationInfo.class::cast)//
+                .orElse(null));
         } else {
-            var wfm = fetchAndLoadWorkflowWithProgress(repoObjectImport);
+            final var wfm = fetchAndLoadWorkflowWithProgress(repoObjectImport);
             if (wfm == null) {
                 return false;
             }
-            openWorkflowInWebUIOnly(wfm, createWorkflowProject(wfm), WorkflowType.REMOTE);
+            final var wfProj = ProjectUtil.createWorkflowProject(null);
+            openWorkflowInWebUIOnly(wfm, wfProj, WorkflowType.REMOTE);
         }
         return true;
     }
@@ -174,7 +176,8 @@ final class OpenWorkflow {
         // TODO: NXT-2101, Enable components on the Hub as well
         var projectType = space.getProjectType(itemId).orElse(ProjectTypeEnum.WORKFLOW);
 
-        var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
+        var wfProj =
+            ProjectUtil.createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
         openWorkflowInWebUIOnly(wfm, wfProj,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
     }
@@ -215,82 +218,5 @@ final class OpenWorkflow {
             .map(RemoteWorkflowInput::getWorkflowContext) //
             .flatMap(DesktopAPUtil::loadWorkflowWithProgress) //
             .orElse(null);
-    }
-
-    public static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
-        final String spaceId, final String itemId, final String relativePath, final ProjectTypeEnum projectType,
-        final String oldProjectId) {
-        var projectId = oldProjectId == null ? LocalSpaceUtil.getUniqueProjectId(wfm.getName()) : oldProjectId;
-        return new WorkflowProject() { // NOSONAR
-            @Override
-            public WorkflowManager openProject() {
-                return wfm;
-            }
-
-            @Override
-            public String getName() {
-                return wfm.getName();
-            }
-
-            @Override
-            public String getID() {
-                return projectId;
-            }
-
-            @Override
-            public Optional<Origin> getOrigin() {
-                return Optional.of(new Origin() { // NOSONAR
-                    @Override
-                    public String getProviderId() {
-                        return providerId;
-                    }
-
-                    @Override
-                    public String getSpaceId() {
-                        return spaceId;
-                    }
-
-                    @Override
-                    public String getItemId() {
-                        return itemId;
-                    }
-
-                    @Override
-                    public Optional<String> getRelativePath() {
-                        return Optional.ofNullable(relativePath);
-                    }
-
-                    @Override
-                    public ProjectTypeEnum getProjectType() {
-                        return projectType;
-                    }
-                });
-            }
-        };
-    }
-
-    public static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String spaceProviderId,
-        final String spaceId, final String itemId, final String relativePath, final ProjectTypeEnum projectType) {
-        return createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType, null);
-    }
-
-    public static WorkflowProject createWorkflowProject(final WorkflowManager wfm) {
-        var projectId = LocalSpaceUtil.getUniqueProjectId(wfm.getName());
-        return new WorkflowProject() {
-            @Override
-            public String getName() {
-                return wfm.getName();
-            }
-
-            @Override
-            public String getID() {
-                return projectId;
-            }
-
-            @Override
-            public WorkflowManager openProject() {
-                return wfm;
-            }
-        };
     }
 }

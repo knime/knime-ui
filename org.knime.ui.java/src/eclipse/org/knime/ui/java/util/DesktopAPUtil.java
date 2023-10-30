@@ -150,15 +150,7 @@ public final class DesktopAPUtil {
             progress -> loadWorkflow(progress, ctx.getExecutorInfo().getLocalWorkflowPath(), ctx));
     }
 
-    /**
-     * Loads a workflow from a given local path.
-     *
-     * @param monitor progress monitor
-     * @param path the workflow directory
-     * @param workflowContext the workflow context
-     * @return the loaded workflow
-     */
-    public static WorkflowManager loadWorkflow(final IProgressMonitor monitor, final Path path,
+    private static WorkflowManager loadWorkflow(final IProgressMonitor monitor, final Path path,
         final WorkflowContextV2 workflowContext) {
         final var wfFile = path.resolve(WorkflowPersistor.WORKFLOW_FILE);
         var isComponentProject = path.resolve(WorkflowPersistor.TEMPLATE_FILE).toFile().exists();
