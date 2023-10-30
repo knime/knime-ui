@@ -107,7 +107,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       isCanvasEmpty,
     );
 
-    API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
+    await API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
     // refresh space after save workflow
     dispatch(
       "spaces/fetchWorkflowGroupContent",
