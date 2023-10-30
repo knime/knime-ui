@@ -36,8 +36,8 @@ const emit = defineEmits<{
   (e: "navReachedTop"): void;
   (e: "update:searchScrollPosition", position: number): void;
   (e: "update:selectedNode", value: NodeTemplateWithExtendedPorts): void;
-  (e: "item-enter-key", event: KeyboardEvent): void;
-  (e: "open-preferences"): void;
+  (e: "itemEnterKey", event: KeyboardEvent): void;
+  (e: "openPreferences"): void;
 }>();
 
 const { nodes, selectedNode, query, selectedTags, searchActions } =
@@ -85,8 +85,8 @@ const focusFirst = () => {
   nodeList.value?.focusFirst();
 };
 
-watch(query, () => onSearchChanged());
-watch(selectedTags, () => onSearchChanged());
+watch(query, onSearchChanged);
+watch(selectedTags, onSearchChanged);
 
 defineExpose({ focusFirst });
 </script>
@@ -109,7 +109,7 @@ defineExpose({ focusFirst });
           <CircleInfoIcon class="info-icon" />
           <span v-if="hasNodeCollectionActive"
             >But there are some in “All nodes“.<br />Change the
-            <a @click="emit('open-preferences')">filter settings</a>
+            <a @click="emit('openPreferences')">filter settings</a>
             to see all nodes.</span
           >
           <span v-else
@@ -126,7 +126,7 @@ defineExpose({ focusFirst });
           :nodes="nodes"
           :highlight-first="highlightFirst"
           @nav-reached-top="emit('navReachedTop')"
-          @enter-key="emit('item-enter-key', $event)"
+          @enter-key="emit('itemEnterKey', $event)"
         >
           <template #item="slotProps">
             <slot name="nodesTemplate" v-bind="slotProps" />
