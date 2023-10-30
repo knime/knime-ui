@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed } from "vue";
-import { useStore } from "vuex";
 
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
@@ -10,22 +9,42 @@ import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.s
 import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
-import type { RootStoreState } from "@/store/types";
-import type { SpaceProviderNS } from "@/api/custom-types";
-import type { Space } from "@/api/gateway-api/generated-api";
+import { SpaceProviderNS } from "@/api/custom-types";
+import { useStore } from "@/composables/useStore";
 
 interface Props {
   showText?: boolean;
   projectId: string | null;
 }
 
-const store = useStore<RootStoreState>();
+const store = useStore();
 const props = withDefaults(defineProps<Props>(), { showText: true });
 
+type ProviderMetadata = { active: boolean };
+type SpaceMetadata = {
+  id: string;
+  spaceId?: string;
+  spaceProviderId?: string;
+  requestSignIn?: boolean;
+  space?: SpaceProviderNS.Space;
+};
+
+type MenuItemWithMetadata<T> = Omit<MenuItem, "metadata"> & {
+  metadata?: T;
+};
+
+const isProviderMetadata = (
+  metadata: ProviderMetadata | SpaceMetadata,
+): metadata is ProviderMetadata => {
+  return "active" in metadata;
+};
+
 const onSpaceChange = async ({
-  metadata: { spaceId, spaceProviderId, requestSignIn = false },
-}: MenuItem) => {
+  metadata,
+}: MenuItemWithMetadata<SpaceMetadata>) => {
   const { projectId } = props;
+
+  const { spaceId, spaceProviderId, requestSignIn = false } = metadata;
 
   // handle sign in request
   if (requestSignIn) {
@@ -42,92 +61,195 @@ const onSpaceChange = async ({
       itemId: "root",
     },
   });
+
   await store.dispatch("spaces/fetchWorkflowGroupContent", { projectId });
 };
 
-const spacesDropdownData = computed((): MenuItem[] => {
-  if (store.state.spaces.isLoadingProvider) {
-    return [
-      {
-        text: "Loading…",
-        disabled: true,
-        // @ts-ignore
-        icon: LoadingIcon,
-      },
-    ];
-  }
+const activeSpacePath = computed(
+  () => store.state.spaces.projectPath[props.projectId],
+);
+const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 
-  const activeSpacePath = store.state.spaces.projectPath[props.projectId];
-  const spaceProviders = store.state.spaces.spaceProviders;
+const createProviderHeadlineMenuItem = (
+  provider: SpaceProviderNS.SpaceProvider,
+): [MenuItemWithMetadata<SpaceMetadata>?] => {
+  return provider.local
+    ? []
+    : [
+        {
+          text: provider.name,
+          selected: false,
+          sectionHeadline: true,
+          separator: true,
+          metadata: {
+            id: provider.id,
+          },
+        },
+      ];
+};
 
-  const providerHeadlineMenuItem = (
-    provider: SpaceProviderNS.SpaceProvider,
-  ): MenuItem => ({
-    text: provider.name,
-    selected: false,
-    sectionHeadline: true,
-    separator: true,
-    metadata: {
-      id: provider.id,
+const createSpaceMenuItem = (
+  provider: SpaceProviderNS.SpaceProvider,
+  space: SpaceProviderNS.Space,
+): MenuItemWithMetadata<SpaceMetadata> => ({
+  text: space.name,
+
+  selected:
+    provider.id === activeSpacePath.value?.spaceProviderId &&
+    space.id === activeSpacePath.value?.spaceId,
+
+  icon: space.private ? PrivateSpaceIcon : CubeIcon,
+
+  sectionHeadline: false,
+  separator: false,
+  metadata: {
+    id: `${provider.id}__${space.id}`,
+    spaceId: space.id,
+    spaceProviderId: provider.id,
+    requestSignIn: false,
+    space,
+  },
+});
+
+const createSignInMenuItem = (
+  provider: SpaceProviderNS.SpaceProvider,
+): MenuItemWithMetadata<SpaceMetadata> => ({
+  text: "Sign in",
+  selected: false,
+  sectionHeadline: false,
+  separator: false,
+  metadata: {
+    id: `${provider.id}__SIGN_IN`,
+    spaceId: null,
+    spaceProviderId: provider.id,
+    requestSignIn: true,
+  },
+});
+
+const groupSpacesByOwner = (
+  provider: SpaceProviderNS.SpaceProvider,
+  spaces: SpaceProviderNS.Space[],
+) => {
+  return spaces.reduce<Record<string, MenuItemWithMetadata<SpaceMetadata>[]>>(
+    (groups, space) => {
+      groups[space.owner] = (groups[space.owner] ?? []).concat(
+        createSpaceMenuItem(provider, space),
+      );
+      return groups;
     },
-  });
+    {},
+  );
+};
 
-  const spaceMenuItem =
-    (provider: SpaceProviderNS.SpaceProvider) =>
-    (space: Space): MenuItem => ({
-      text:
-        provider.connectionMode === "AUTOMATIC" || space.owner === ""
-          ? space.name
-          : `${space.owner} – ${space.name}`,
+const mapGroupsToMenuItems = (groups: {
+  provider: SpaceProviderNS.SpaceProvider;
+  spaces: ReturnType<typeof groupSpacesByOwner>;
+}): MenuItemWithMetadata<ProviderMetadata | SpaceMetadata>[] => {
+  const { spaces, provider } = groups;
+  const groupNames = Object.keys(spaces);
 
-      selected:
-        provider.id === activeSpacePath?.spaceProviderId &&
-        space.id === activeSpacePath?.spaceId,
+  // local and server always have a single space, so no need to show a nested menu
+  const shouldHaveChildren = (provider: SpaceProviderNS.SpaceProvider) =>
+    provider.type === SpaceProviderNS.TypeEnum.HUB;
 
-      sectionHeadline: false,
-      separator: false,
+  const getIcon = (
+    provider: SpaceProviderNS.SpaceProvider,
+    space: SpaceProviderNS.Space,
+  ) => {
+    if (provider.type !== SpaceProviderNS.TypeEnum.HUB) {
+      return null;
+    }
+
+    return space.private ? PrivateSpaceIcon : CubeIcon;
+  };
+
+  return groupNames.map((groupName) => {
+    const isActiveProvider =
+      provider.id === activeSpacePath.value?.spaceProviderId;
+
+    if (shouldHaveChildren(provider)) {
+      const containsActiveSpace = spaces[groupName].find(
+        (item) => item.metadata.space.id === activeSpacePath.value?.spaceId,
+      );
+
+      return {
+        text: groupName,
+        children: spaces[groupName],
+        // cannot use the `selected` property because this is a parent item (which spawns  a submenu)
+        // and the `selected` property on these type of items messes up the styles (hover, focused, etc)
+        metadata: { active: Boolean(containsActiveSpace) },
+      };
+    }
+
+    const space = spaces[groupName].at(0).metadata.space;
+
+    return {
+      text: space.name,
+      selected: isActiveProvider,
+      icon: getIcon(provider, space),
       metadata: {
         id: `${provider.id}__${space.id}`,
         spaceId: space.id,
         spaceProviderId: provider.id,
-        requestSignIn: false,
       },
-    });
-
-  const signInMenuItem = (
-    provider: SpaceProviderNS.SpaceProvider,
-  ): MenuItem => ({
-    text: "Sign in",
-    selected: false,
-    sectionHeadline: false,
-    separator: false,
-    metadata: {
-      id: `${provider.id}__SIGN_IN`,
-      spaceId: null,
-      spaceProviderId: provider.id,
-      requestSignIn: true,
-    },
+    };
   });
+};
 
-  const providers = spaceProviders ? Object.values(spaceProviders) : [];
+const spacesDropdownData = computed(
+  (): Array<MenuItemWithMetadata<ProviderMetadata | SpaceMetadata>> => {
+    if (store.state.spaces.isLoadingProvider) {
+      // @ts-ignore
+      return [{ text: "Loading…", disabled: true, icon: LoadingIcon }];
+    }
 
-  return providers.flatMap((provider) => {
-    // headline for all spaces except local
-    const witHeadline = provider.local
-      ? []
-      : [providerHeadlineMenuItem(provider)];
+    const providers = spaceProviders.value
+      ? Object.values(spaceProviders.value)
+      : [];
 
-    return witHeadline.concat(
-      // create a menu item for each space, offer to sign in if we are not connected
-      provider.connected
-        ? provider.spaces?.map(spaceMenuItem(provider)) || []
-        : [signInMenuItem(provider)],
+    const groupedByOwner = providers.map((provider) =>
+      provider.spaces
+        ? { provider, spaces: groupSpacesByOwner(provider, provider.spaces) }
+        : { provider, spaces: {} },
     );
-  });
-});
+
+    return groupedByOwner.flatMap(({ provider, spaces }) => {
+      const withHeadline = createProviderHeadlineMenuItem(provider);
+
+      const items = mapGroupsToMenuItems({ provider, spaces });
+
+      return (
+        []
+          .concat(withHeadline)
+          // only add sign-in option for disconnected providers
+          .concat(provider.connected ? items : [createSignInMenuItem(provider)])
+      );
+    });
+  },
+);
 
 const selectedText = computed(() => {
-  return spacesDropdownData.value.find((item) => item.selected)?.text;
+  const selectedRootItem = spacesDropdownData.value.find((item) =>
+    isProviderMetadata(item.metadata) ? item.metadata.active : item.selected,
+  );
+
+  if (!selectedRootItem) {
+    return "";
+  }
+
+  if (!selectedRootItem.children) {
+    return selectedRootItem.text;
+  }
+
+  const selectedChildItem = (selectedRootItem.children ?? []).find(
+    (item) => item.selected,
+  );
+
+  if (!selectedChildItem) {
+    return "";
+  }
+
+  return `${selectedChildItem.metadata.space.owner} – ${selectedChildItem.metadata.space.name}`;
 });
 
 const spaceIcon = computed(() => {

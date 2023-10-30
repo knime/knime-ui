@@ -40,8 +40,8 @@ export const mutations: MutationTree<SpacesState> = {
 
 export const actions: ActionTree<SpacesState, RootStoreState> = {
   async fetchWorkflowGroupContentByIdTriplet(
-    { commit },
-    { spaceId, spaceProviderId, itemId },
+    { commit, dispatch },
+    { spaceId, spaceProviderId, itemId, retry = true },
   ) {
     try {
       commit("setIsLoadingContent", true);
@@ -53,8 +53,22 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       return content;
     } catch (error) {
-      consola.error("Error trying to fetch workflow group content", { error });
-      throw error;
+      if (retry) {
+        await dispatch("connectProvider", { spaceProviderId });
+        const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
+          spaceId,
+          spaceProviderId,
+          itemId,
+          retry: false,
+        });
+
+        return content;
+      } else {
+        consola.error("Error trying to fetch workflow group content", {
+          error,
+        });
+        throw error;
+      }
     } finally {
       commit("setIsLoadingContent", false);
     }
