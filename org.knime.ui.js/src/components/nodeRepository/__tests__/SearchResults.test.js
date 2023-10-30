@@ -56,7 +56,7 @@ describe("SearchResults", () => {
     );
     expect(wrapper.text()).toMatch("But there are some in “All nodes“.");
     await wrapper.find("a").trigger("click");
-    expect(wrapper.emitted("open-preferences")).toBeTruthy();
+    expect(wrapper.emitted("openPreferences")).toBeTruthy();
     expect(wrapper.findComponent(NodeList).exists()).toBe(false);
   });
 
