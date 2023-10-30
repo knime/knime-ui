@@ -31,7 +31,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       isCanvasEmpty,
     );
 
-    API.desktop.saveWorkflow({ projectId, workflowPreviewSvg });
+    await API.desktop.saveWorkflow({ projectId, workflowPreviewSvg });
   },
 
   /* Tell the backend to unload this workflow from memory */
@@ -107,7 +107,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       isCanvasEmpty,
     );
 
-    await API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
+    API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
     // refresh space after save workflow
     dispatch(
       "spaces/fetchWorkflowGroupContent",
