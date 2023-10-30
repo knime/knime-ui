@@ -73,7 +73,7 @@ const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 const createProviderHeadlineMenuItem = (
   provider: SpaceProviderNS.SpaceProvider,
 ): [MenuItemWithMetadata<SpaceMetadata>?] => {
-  return provider.local
+  return provider.type === SpaceProviderNS.TypeEnum.LOCAL
     ? []
     : [
         {
@@ -230,7 +230,9 @@ const spacesDropdownData = computed(
 
 const selectedText = computed(() => {
   const selectedRootItem = spacesDropdownData.value.find((item) =>
-    isProviderMetadata(item.metadata) ? item.metadata.active : item.selected,
+    item.metadata && isProviderMetadata(item.metadata)
+      ? item.metadata.active
+      : item.selected,
   );
 
   if (!selectedRootItem) {

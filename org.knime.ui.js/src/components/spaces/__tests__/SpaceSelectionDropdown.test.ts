@@ -16,7 +16,6 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     connectionMode: "AUTOMATIC",
     name: "Local Space",
     type: SpaceProviderNS.TypeEnum.LOCAL,
-    local: true,
     spaces: [
       {
         id: "local",
@@ -31,7 +30,6 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     connected: true,
     connectionMode: "AUTOMATIC",
     name: "Hub 1",
-    local: false,
     type: SpaceProviderNS.TypeEnum.HUB,
     spaces: [
       {
@@ -106,12 +104,12 @@ describe("SpaceSelectionDropdown.vue", () => {
     expect(wrapper.find(".selected-text").exists()).toBe(false);
   });
 
-  it("offers all connected spaces to switch to", () => {
+  it("renders connected spaces to switch to grouped by owner", () => {
     const { wrapper } = doMount();
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
-    // local (no heading for local) + heading for hub1 + 2 spaces on hub1 = 4
-    expect(menuItems.length).toBe(4);
+    // local (no heading for local) + heading for hub1 + owner group = 3
+    expect(menuItems.length).toBe(3);
 
     expect(menuItems[0]).toStrictEqual(
       expect.objectContaining({
@@ -123,24 +121,52 @@ describe("SpaceSelectionDropdown.vue", () => {
       expect.objectContaining({
         text: "Hub 1",
         sectionHeadline: true,
+        separator: true,
       }),
     );
+    expect(menuItems[2]).toStrictEqual(
+      expect.objectContaining({
+        text: "someUser",
+        children: expect.any(Array),
+      }),
+    );
+    expect(menuItems[2].children).toStrictEqual([
+      expect.objectContaining({
+        text: "Space 1 on Hub 1",
+      }),
+      expect.objectContaining({
+        text: "Private space of someUser",
+      }),
+    ]);
   });
 
-  it("switches hub  on click", () => {
+  it("switches space on click", () => {
     const { wrapper, commitSpy } = doMount();
 
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
     wrapper
       .findComponent(SubMenu)
-      .vm.$emit("item-click", null, menuItems.at(3));
+      .vm.$emit("item-click", null, menuItems.at(2).children.at(0));
 
     expect(commitSpy).toHaveBeenCalledWith("spaces/setProjectPath", {
       projectId: "someProjectId",
       value: {
-        spaceId: "hub1space2",
+        spaceId: "hub1space1",
         spaceProviderId: "hub1",
+        itemId: "root",
+      },
+    });
+
+    wrapper
+      .findComponent(SubMenu)
+      .vm.$emit("item-click", null, menuItems.at(0));
+
+    expect(commitSpy).toHaveBeenCalledWith("spaces/setProjectPath", {
+      projectId: "someProjectId",
+      value: {
+        spaceId: "local",
+        spaceProviderId: "local",
         itemId: "root",
       },
     });

@@ -5,6 +5,7 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { deepMocked } from "@/test/utils";
 import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
+import { createSpaceProvider } from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
@@ -31,6 +32,74 @@ describe("spaces::spaceOperations", () => {
           store.state.spaces.projectPath.myProject1,
         ),
       ).toEqual(fetchWorkflowGroupContentResponse);
+    });
+
+    it("should retry fetch once", async () => {
+      const { store } = loadStore();
+
+      store.state.spaces.spaceProviders = {
+        // @ts-ignore
+        hub1: {},
+      };
+
+      const mockSpaceProvider = createSpaceProvider({
+        id: "hub1",
+        connected: true,
+        user: { name: "John Doe" },
+      });
+      mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce(
+        mockSpaceProvider,
+      );
+
+      mockedAPI.space.listWorkflowGroup.mockRejectedValueOnce(
+        new Error("Error fetching content"),
+      );
+
+      await store.dispatch("spaces/fetchWorkflowGroupContent", {
+        projectId: "myProject1",
+      });
+      expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
+        spaceProviderId: "mockProviderId",
+        spaceId: "mockSpaceId",
+        itemId: "bar",
+      });
+
+      expect(
+        store.state.spaces.workflowGroupCache.get(
+          store.state.spaces.projectPath.myProject1,
+        ),
+      ).toEqual(fetchWorkflowGroupContentResponse);
+    });
+
+    it("should throw if it fails more than once", () => {
+      const { store } = loadStore();
+
+      // mute consola
+      consola.error = () => {};
+
+      store.state.spaces.spaceProviders = {
+        // @ts-ignore
+        hub1: {},
+      };
+
+      const mockSpaceProvider = createSpaceProvider({
+        id: "hub1",
+        connected: true,
+        user: { name: "John Doe" },
+      });
+      mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce(
+        mockSpaceProvider,
+      );
+
+      mockedAPI.space.listWorkflowGroup
+        .mockRejectedValueOnce(new Error("Error fetching content first time"))
+        .mockRejectedValueOnce(new Error("Error fetching content second time"));
+
+      expect(() =>
+        store.dispatch("spaces/fetchWorkflowGroupContent", {
+          projectId: "myProject1",
+        }),
+      ).rejects.toThrow("Error fetching content second time");
     });
   });
 
