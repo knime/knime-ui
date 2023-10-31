@@ -15,7 +15,7 @@ interface Props {
 const DRAG_TARGET_SELECTOR = ".node-torso-wrapper";
 
 const props = defineProps<Props>();
-let lastHitTarget = null;
+let lastHitTarget: Element | null = null;
 
 const store = useStore();
 const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
@@ -111,6 +111,9 @@ const { createPointerDownHandler } = useMoveObject({
           cancelable: true,
         }),
       );
+
+      lastHitTarget = null;
+
       return false;
     }
 
@@ -127,6 +130,9 @@ const { createPointerDownHandler } = useMoveObject({
           },
         }),
       );
+
+      lastHitTarget = null;
+
       return false;
     }
 
