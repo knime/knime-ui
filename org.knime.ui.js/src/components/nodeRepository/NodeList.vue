@@ -199,7 +199,6 @@ export default {
 
   & .nodes {
     display: grid;
-    font-family: "Roboto Condensed", sans-serif;
 
     & .show-more {
       color: var(--knime-masala);
@@ -215,6 +214,7 @@ export default {
     &.display-list {
       grid-template-columns: 1fr;
       flex-grow: 1;
+      font-family: Roboto, sans-serif;
 
       & .show-more {
         margin: 0;
@@ -225,7 +225,7 @@ export default {
         width: 100%;
         justify-content: center;
 
-        & svg {
+        & .icon {
           margin: 0 5px 0 0;
         }
       }
@@ -238,6 +238,7 @@ export default {
 
     &.display-icon {
       grid-template-columns: repeat(3, 1fr);
+      font-family: "Roboto Condensed", sans-serif;
 
       & .show-more {
         margin: 27px auto 0;
@@ -247,7 +248,7 @@ export default {
           background-color: var(--knime-black);
         }
 
-        & svg {
+        & .icon {
           margin: 0;
         }
       }

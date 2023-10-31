@@ -69,8 +69,8 @@ export default {
     breadcrumbItems() {
       // If search results are shown, it's possible to navigate back
       return this.showSearchResults
-        ? [{ text: "Repository", id: "clear" }, { text: "Results" }]
-        : [{ text: "Repository" }];
+        ? [{ text: "Nodes", id: "clear" }, { text: "Results" }]
+        : [{ text: "Nodes" }];
     },
   },
   watch: {
@@ -195,7 +195,7 @@ export default {
 @import url("@/assets/mixins.css");
 
 .node-repo {
-  font-family: "Roboto Condensed", sans-serif;
+  font-family: Roboto, sans-serif;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -267,7 +267,6 @@ export default {
   }
 
   & .repo-breadcrumb {
-    font-family: "Roboto Condensed", sans-serif;
     cursor: pointer;
     font-size: 18px;
     font-weight: 400;

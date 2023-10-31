@@ -145,7 +145,6 @@ export default defineComponent({
     align-items: center;
     justify-content: left;
 
-    /* node preview */
     & .node-preview {
       width: 25px;
     }
@@ -158,7 +157,8 @@ export default defineComponent({
     }
 
     & .description-icon {
-      margin-right: 8px;
+      position: absolute;
+      right: 5px;
     }
   }
 
