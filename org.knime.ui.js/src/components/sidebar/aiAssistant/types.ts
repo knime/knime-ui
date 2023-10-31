@@ -15,4 +15,6 @@ interface ExtensionWithNodes extends Extension {
   nodes: Node[];
 }
 
-export type { NodeWithExtensionInfo, ExtensionWithNodes };
+type ChainType = "qa" | "build";
+
+export type { NodeWithExtensionInfo, ExtensionWithNodes, ChainType };

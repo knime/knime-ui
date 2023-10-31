@@ -2,7 +2,7 @@ import { ref, watchEffect } from "vue";
 import { useStore } from "@/composables/useStore";
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 
-import type { ExtensionWithNodes, NodeWithExtensionInfo } from "./types";
+import type { ExtensionWithNodes, NodeWithExtensionInfo } from "../types";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
@@ -23,14 +23,17 @@ const getInternalFactoryName = (factoryName: string, title: string) => {
  * @param params - An object containing role and nodes.
  * @param params.role - The role of the current user.
  * @param params.nodes - A list of nodes.
+ * @param params.callback - A callback that is called when all nodetemplates have been fetched.
  * @returns - An object containing refs to nodeTemplates and uninstalledExtensions.
  */
 const useNodeTemplates = ({
   role,
   nodes,
+  callback
 }: {
   role: string;
   nodes: NodeWithExtensionInfo[];
+  callback: () => void;
 }) => {
   // Reactive references to hold the node templates.
   const nodeTemplates = ref<NodeTemplateWithExtendedPorts[]>([]);
@@ -90,6 +93,7 @@ const useNodeTemplates = ({
       ),
     );
     uninstalledExtensions.value = _uninstalledExtensions;
+    callback();
   });
 
   return {

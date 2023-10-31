@@ -1,62 +1,69 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
 import ExpandTransition from "webapps-common/ui/components/transitions/ExpandTransition.vue";
 import BaseButton from "webapps-common/ui/components/BaseButton.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
 import ArrowIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
 
-import type { ExtensionWithNodes } from "./types";
+import type { ExtensionWithNodes } from "../../types";
 
-const props = defineProps<ExtensionWithNodes>();
+defineProps<{ extensions: ExtensionWithNodes[] }>();
 
 const isExpanded = ref(false);
 
-const extensionUrl = computed(() => {
-  const vendor = encodeURI(`${props.owner.toLowerCase()}`);
-  return `https://hub.knime.com/${vendor}/extensions/${props.featureSymbolicName}/latest`;
-});
+const extensionUrl = (extension: ExtensionWithNodes) => {
+  const vendor = encodeURI(`${extension.owner.toLowerCase()}`);
+  return `https://hub.knime.com/${vendor}/extensions/${extension.featureSymbolicName}/latest`;
+};
 
-const openExtensionInBrowser = () => window.open(extensionUrl.value);
-const openNodeInBrowser = (factoryName: string) => {
-  const url = `${extensionUrl.value}/${factoryName}`;
+const openExtensionInBrowser = (extension) => window.open(extensionUrl(extension));
+const openNodeInBrowser = (extension, factoryName: string) => {
+  const url = `${extensionUrl(extension)}/${factoryName}`;
   window.open(url);
 };
 </script>
 
 <template>
-  <div class="installable-extension">
-    <div class="header">
-      <BaseButton
-        class="dropdown-button"
-        :aria-expanded="String(isExpanded)"
-        @click.prevent="isExpanded = !isExpanded"
-      >
-        <DropdownIcon class="dropdown-icon" :class="{ flip: isExpanded }" />
-      </BaseButton>
-      <a @click="openExtensionInBrowser()">
-        {{ featureName }}
-      </a>
-    </div>
-    <ExpandTransition :is-expanded="isExpanded">
-      <div class="body">
-        <ul>
-          <li v-for="node in nodes" :key="node.factoryName">
-            <a @click="openNodeInBrowser(node.factoryName)">
-              <ArrowIcon />
-              {{ node.title }}
-            </a>
-          </li>
-        </ul>
+  <div v-if="extensions">
+    <div
+      v-for="(extension, featureSymbolicName) in extensions"
+      v-bind="extension"
+      :key="featureSymbolicName"
+      class="extension"
+    >
+      <div class="header">
+        <BaseButton
+          class="dropdown-button"
+          :aria-expanded="String(isExpanded)"
+          @click.prevent="isExpanded = !isExpanded"
+        >
+          <DropdownIcon class="dropdown-icon" :class="{ flip: isExpanded }" />
+        </BaseButton>
+        <a @click="openExtensionInBrowser(extension)">
+          {{ extension.featureName }}
+        </a>
       </div>
-    </ExpandTransition>
+      <ExpandTransition :is-expanded="isExpanded">
+        <div class="body">
+          <ul>
+            <li v-for="node in extension.nodes" :key="node.factoryName">
+              <a @click="openNodeInBrowser(extension, node.factoryName)">
+                <ArrowIcon />
+                {{ node.title }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </ExpandTransition>
+    </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.installable-extension {
+.extension {
   background-color: var(--knime-white);
   padding: 0 8px;
   margin-bottom: 8px;
@@ -105,7 +112,6 @@ const openNodeInBrowser = (factoryName: string) => {
 
         & a {
           text-decoration: none;
-          line-height: 1.5;
           cursor: pointer;
 
           & svg {

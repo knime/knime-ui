@@ -6,7 +6,7 @@ import { mapState, mapActions, mapMutations, mapGetters } from "vuex";
 import NodeCogIcon from "webapps-common/ui/assets/img/icons/node-cog.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
-import ChatIcon from "webapps-common/ui/assets/img/icons/forum.svg";
+import AiIcon from "webapps-common/ui/assets/img/icons/ai-general.svg";
 
 import { environment } from "@/environment";
 import MetainfoIcon from "@/assets/metainfo.svg";
@@ -112,7 +112,7 @@ export default defineComponent({
           {
             name: TABS.AI_CHAT,
             title: "AI Chat",
-            icon: ChatIcon,
+            icon: AiIcon,
             isActive: this.isTabActive(TABS.AI_CHAT),
             isExpanded: this.expanded,
             onClick: () => this.clickItem(TABS.AI_CHAT),
