@@ -266,7 +266,7 @@ const spaceIcon = computed(() => {
 </script>
 
 <template>
-  <div class="space-path-breadcrumb">
+  <div class="space-selection-dropdown">
     <SubMenu
       :teleport-to-body="false"
       :items="spacesDropdownData"
@@ -289,7 +289,7 @@ const spaceIcon = computed(() => {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.space-path-breadcrumb {
+.space-selection-dropdown {
   & .dropdown-icon {
     margin-left: 5px;
     margin-top: 3px;
@@ -301,7 +301,8 @@ const spaceIcon = computed(() => {
     }
   }
 
-  & :deep(.menu-items) {
+  & :deep(.menu-items),
+  & :deep(.menu-items-sub-level) {
     max-height: 60vh;
     overflow-y: auto;
   }
