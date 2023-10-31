@@ -24,12 +24,14 @@ type Props = {
   searchActions: SearchActions;
   hasNodeCollectionActive: boolean;
   highlightFirst?: boolean;
+  displayMode: string;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   selectedTags: () => [],
   searchScrollPosition: 0,
   highlightFirst: false,
+  displayMode: "icon",
 });
 
 const emit = defineEmits<{
@@ -125,6 +127,7 @@ defineExpose({ focusFirst });
           v-model:selected-node="selectedNodeModel"
           :nodes="nodes"
           :highlight-first="highlightFirst"
+          :display-mode="displayMode"
           @nav-reached-top="emit('navReachedTop')"
           @enter-key="emit('itemEnterKey', $event)"
         >
@@ -189,12 +192,6 @@ defineExpose({ focusFirst });
 
   & .content {
     padding: 0 10px 10px;
-
-    & .node-list-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
 
     & .loading-indicator {
       @mixin svg-icon-size 40;

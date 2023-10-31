@@ -13,6 +13,10 @@ export default {
     NodeTemplate,
   },
   props: {
+    displayMode: {
+      type: String,
+      default: "icon",
+    },
     nodeTemplate: {
       type: Object,
       default: null,
@@ -132,6 +136,7 @@ export default {
     ref="nodeTemplate"
     draggable="true"
     :node-template="nodeTemplate"
+    :display-mode="displayMode"
     :is-selected="isSelected"
     :is-highlighted="isHighlighted"
     :show-floating-help-icon="true"

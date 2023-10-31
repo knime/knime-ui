@@ -3,7 +3,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import CircleArrowIcon from "webapps-common/ui/assets/img/icons/circle-arrow-right.svg";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
 
-const NODES_PER_ROW = 3;
+const NODES_PER_ROW_ICON_MODE = 3;
 
 export default {
   components: {
@@ -19,6 +19,10 @@ export default {
     hasMoreNodes: {
       type: Boolean,
       default: false,
+    },
+    displayMode: {
+      type: String,
+      default: "icon",
     },
     selectedNode: {
       type: [Object, null],
@@ -36,6 +40,11 @@ export default {
     "navReachedTop",
     "navReachedEnd",
   ],
+  computed: {
+    nodesPerRow() {
+      return this.displayMode === "icon" ? NODES_PER_ROW_ICON_MODE : 1;
+    },
+  },
   watch: {
     selectedNode: {
       immediate: false,
@@ -60,6 +69,7 @@ export default {
         isHighlighted:
           this.selectedNode === null && index === 0 && this.highlightFirst,
         isSelected: this.selectedNode?.id === node.id,
+        displayMode: this.displayMode,
       };
     },
     focusLast() {
@@ -94,14 +104,14 @@ export default {
       );
 
       // switch from items to upper input elements (e.g. search box) on the first row
-      if (activeItemIndex < NODES_PER_ROW && key === "up") {
+      if (activeItemIndex < this.nodesPerRow && key === "up") {
         this.$emit("navReachedTop");
         return;
       }
 
       // switch to next list on down key
       if (
-        activeItemIndex + NODES_PER_ROW > this.nodes.length &&
+        activeItemIndex + this.nodesPerRow > this.nodes.length &&
         key === "down"
       ) {
         this.$emit("navReachedEnd");
@@ -122,12 +132,12 @@ export default {
 
       // items navigation
       if (key === "up") {
-        selectNextNode(-NODES_PER_ROW);
+        selectNextNode(this.nodesPerRow * -1);
         return;
       }
 
       if (key === "down") {
-        selectNextNode(NODES_PER_ROW);
+        selectNextNode(this.nodesPerRow);
         return;
       }
 
@@ -149,6 +159,7 @@ export default {
     <ul
       ref="list"
       class="nodes"
+      :class="`display-${displayMode}`"
       tabindex="-1"
       @keydown.left.stop="onKeyDown('left')"
       @keydown.up.stop.prevent="onKeyDown('up')"
@@ -189,7 +200,63 @@ export default {
   & .nodes {
     display: grid;
     font-family: "Roboto Condensed", sans-serif;
-    grid-template-columns: repeat(3, 1fr);
+
+    & .show-more {
+      color: var(--knime-masala);
+      font-weight: 400;
+    }
+
+    & li {
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &.display-list {
+      grid-template-columns: 1fr;
+      flex-grow: 1;
+
+      & .show-more {
+        margin: 0;
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        border-radius: 0;
+        width: 100%;
+        justify-content: center;
+
+        & svg {
+          margin: 0 5px 0 0;
+        }
+      }
+
+      & li {
+        /* fixes the scrolling to top selected border cut off problem */
+        padding: 1px 0;
+      }
+    }
+
+    &.display-icon {
+      grid-template-columns: repeat(3, 1fr);
+
+      & .show-more {
+        margin: 27px auto 0;
+        display: block;
+
+        &:active {
+          background-color: var(--knime-black);
+        }
+
+        & svg {
+          margin: 0;
+        }
+      }
+
+      & li {
+        /* fixes the scrolling to top selected border cut off problem */
+        padding: 3px 0;
+      }
+    }
 
     /* kill list default styles */
     padding: 0;
@@ -199,30 +266,6 @@ export default {
     &:focus {
       outline: none;
     }
-
-    & li {
-      /* fixes the scrolling to top selected border cut off problem */
-      padding: 3px 0;
-
-      &:focus {
-        outline: none;
-      }
-    }
-  }
-}
-
-.show-more {
-  color: var(--knime-masala);
-  font-weight: 400;
-  margin: 27px auto 0;
-  display: block;
-
-  &:active {
-    background-color: var(--knime-black);
-  }
-
-  & svg {
-    margin: 0;
   }
 }
 </style>

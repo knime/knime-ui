@@ -23,6 +23,10 @@ export default defineComponent({
       type: Object,
       default: null,
     },
+    displayMode: {
+      type: String,
+      default: "icon",
+    },
     isSelected: {
       type: Boolean,
       default: false,
@@ -65,19 +69,12 @@ export default defineComponent({
       selected: isSelected && !showFloatingHelpIcon,
       highlighted: isHighlighted,
       grabbable: showFloatingHelpIcon,
+      'display-icons': displayMode === 'icon',
+      'display-list': displayMode === 'list',
     }"
     @pointerenter="onPointerEnter"
     @pointerleave="onPointerLeave"
   >
-    <span :title="nodeTemplate.name">{{ nodeTemplate.name }}</span>
-    <NodePreview
-      ref="nodePreview"
-      class="node-preview"
-      :type="nodeTemplate.type"
-      :in-ports="nodeTemplate.inPorts"
-      :out-ports="nodeTemplate.outPorts"
-      :icon="nodeTemplate.icon"
-    />
     <FunctionButton
       v-if="showFloatingHelpIcon"
       :class="[
@@ -87,8 +84,17 @@ export default defineComponent({
       @click="$emit('helpIconClick')"
       @dblclick.stop
     >
-      <CircleHelp />
+      <CircleHelp class="info-icon" />
     </FunctionButton>
+    <span :title="nodeTemplate.name">{{ nodeTemplate.name }}</span>
+    <NodePreview
+      ref="nodePreview"
+      class="node-preview"
+      :type="nodeTemplate.type"
+      :in-ports="nodeTemplate.inPorts"
+      :out-ports="nodeTemplate.outPorts"
+      :icon="nodeTemplate.icon"
+    />
   </div>
 </template>
 
@@ -96,37 +102,108 @@ export default defineComponent({
 @import url("@/assets/mixins.css");
 
 .node {
-  width: 100px;
-  height: 78px;
   margin: 0 2px;
-  padding-bottom: 47px;
   position: relative;
   display: flex;
-  flex-direction: column-reverse;
-  align-items: center;
   font-size: 12px;
-  font-weight: 700;
-  text-align: center;
 
-  & span {
-    max-height: 26px;
-    max-width: 90px;
-    /* stylelint-disable-next-line value-no-vendor-prefix */
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
+  & .description-icon {
+    padding: 0;
+    display: none;
+
+    & .info-icon {
+      @mixin svg-icon-size 16;
+    }
+
+    &.hovered-icon {
+      display: flex;
+
+      & .info-icon {
+        fill: var(--knime-white);
+        stroke: var(--knime-masala);
+      }
+    }
+
+    &.selected-icon {
+      display: flex;
+
+      & .info-icon {
+        fill: var(--knime-masala);
+        stroke: var(--knime-white);
+      }
+    }
+
+    &.hovered-icon .info-icon:hover {
+      fill: var(--knime-masala);
+      stroke: var(--knime-white);
+    }
   }
 
-  & .node-preview {
-    padding-bottom: 6px;
+  &.display-list {
+    background-color: var(--knime-white);
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: left;
+
+    /* node preview */
+    & .node-preview {
+      width: 25px;
+    }
+
+    & span {
+      flex-grow: 2;
+      margin-left: 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    & .description-icon {
+      margin-right: 8px;
+    }
   }
 
-  & svg {
-    width: 70px;
-    position: absolute;
-    bottom: -15px;
-    right: 15px;
+  &.display-icons {
+    height: 78px;
+    padding-bottom: 47px;
+    width: 100px;
+    flex-direction: column-reverse;
+    align-items: center;
+    text-align: center;
+    font-weight: 700;
+
+    & span {
+      max-height: 26px;
+      max-width: 90px;
+      /* stylelint-disable-next-line value-no-vendor-prefix */
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+
+    & .node-preview {
+      padding-bottom: 6px;
+      width: 70px;
+      position: absolute;
+      bottom: -15px;
+      right: 15px;
+    }
+
+    & .description-icon {
+      position: absolute;
+      top: 2px;
+      right: -2px;
+
+      &.hovered-icon {
+        align-items: center;
+        justify-content: center;
+      }
+
+      &.selected-icon {
+        align-items: center;
+        justify-content: center;
+      }
+    }
   }
 
   &:hover {
@@ -135,47 +212,6 @@ export default defineComponent({
 
   &.grabbable:hover {
     cursor: grab;
-  }
-
-  & .description-icon {
-    display: none;
-    position: absolute;
-    top: 2px;
-    right: -2px;
-    padding: 0;
-
-    &.hovered-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      & svg {
-        @mixin svg-icon-size 16;
-
-        fill: var(--knime-white);
-        stroke: var(--knime-masala);
-        margin-right: -16px;
-      }
-    }
-
-    &.selected-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      & svg {
-        @mixin svg-icon-size 16;
-
-        fill: var(--knime-masala);
-        stroke: var(--knime-white);
-        margin-right: -16px;
-      }
-    }
-
-    &.hovered-icon svg:hover {
-      fill: var(--knime-masala);
-      stroke: var(--knime-white);
-    }
   }
 }
 

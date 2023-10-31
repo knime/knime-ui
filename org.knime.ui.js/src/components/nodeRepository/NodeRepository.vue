@@ -4,6 +4,8 @@ import { mapState, mapGetters } from "vuex";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
+import ListIconCheck from "webapps-common/ui/assets/img/icons/unordered-list.svg";
+import ListIcon from "webapps-common/ui/assets/img/icons/view-cards.svg";
 
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
@@ -27,6 +29,13 @@ export default {
     FunctionButton,
     FilterIcon,
     FilterCheckIcon,
+    ListIcon,
+    ListIconCheck,
+  },
+  data() {
+    return {
+      displayMode: "icon",
+    };
   },
   computed: {
     ...mapState("nodeRepository", [
@@ -74,6 +83,7 @@ export default {
       }
     },
   },
+
   mounted() {
     if (!this.nodesPerCategory.length) {
       this.$store.dispatch("nodeRepository/getAllNodes", { append: false });
@@ -85,6 +95,9 @@ export default {
       if (e.id === "clear") {
         this.$store.dispatch("nodeRepository/clearSearchParams");
       }
+    },
+    toggleListView() {
+      this.displayMode = this.displayMode === "list" ? "icon" : "list";
     },
 
     toggleNodeDescription({ isSelected, nodeTemplate }) {
@@ -114,14 +127,24 @@ export default {
             class="repo-breadcrumb"
             @click="onBreadcrumbClick"
           />
-          <FunctionButton
-            class="filter-button"
-            title="Open search filters"
-            @click="openKnimeUIPreferencePage"
-          >
-            <FilterCheckIcon v-if="hasNodeCollectionActive" />
-            <FilterIcon v-else />
-          </FunctionButton>
+          <div class="view-settings">
+            <FunctionButton
+              class="list-view-button"
+              title="Switch between icon and list view"
+              @click="toggleListView"
+            >
+              <ListIcon v-if="displayMode === 'list'" />
+              <ListIconCheck v-else />
+            </FunctionButton>
+            <FunctionButton
+              class="filter-button"
+              title="Open search filters"
+              @click="openKnimeUIPreferencePage"
+            >
+              <FilterCheckIcon v-if="hasNodeCollectionActive" />
+              <FilterIcon v-else />
+            </FunctionButton>
+          </div>
         </div>
         <hr />
         <SearchBar
@@ -144,10 +167,15 @@ export default {
     <SidebarSearchResults
       v-if="showSearchResults"
       ref="searchResults"
+      :display-mode="displayMode"
       @show-node-description="toggleNodeDescription"
       @open-preferences="openKnimeUIPreferencePage"
     />
-    <CategoryResults v-else @show-node-description="toggleNodeDescription" />
+    <CategoryResults
+      v-else
+      :display-mode="displayMode"
+      @show-node-description="toggleNodeDescription"
+    />
     <Portal
       v-if="isExtensionPanelOpen && isNodeRepositoryTabActive"
       to="extension-panel"
@@ -197,13 +225,32 @@ export default {
       justify-content: space-between;
       align-items: center;
 
+      & .view-settings {
+        display: flex;
+        margin-top: 5px;
+        gap: 5px;
+      }
+
+      & .list-view-button {
+        width: 30px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        & svg {
+          @mixin svg-icon-size 18;
+
+          stroke: var(--knime-masala);
+        }
+      }
+
       & .filter-button {
         width: 30px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-top: 5px;
 
         & svg {
           @mixin svg-icon-size 18;

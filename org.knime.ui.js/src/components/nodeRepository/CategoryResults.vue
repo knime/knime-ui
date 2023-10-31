@@ -9,6 +9,13 @@ export default {
     NodeCategory,
     ScrollViewContainer,
   },
+  props: {
+    displayMode: {
+      type: String,
+      default: "icon",
+    },
+  },
+
   emits: ["showNodeDescription"],
 
   computed: {
@@ -49,6 +56,7 @@ export default {
           :tag="tag"
           :nodes="nodes"
           :selected-node="selectedNode"
+          :display-mode="displayMode"
           @select-tag="onSelectTag"
           @show-node-description="$emit('showNodeDescription', $event)"
         />

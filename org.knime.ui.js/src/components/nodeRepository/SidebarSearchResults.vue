@@ -12,6 +12,12 @@ export default {
     DraggableNodeTemplate,
     SearchResults,
   },
+  props: {
+    displayMode: {
+      type: String,
+      default: "icon",
+    },
+  },
   emits: ["showNodeDescription"],
   computed: {
     ...mapState("nodeRepository", [
@@ -49,6 +55,7 @@ export default {
     :selected-node="selectedNode"
     :search-actions="searchActions"
     :selected-tags="selectedTags"
+    :display-mode="displayMode"
     :query="query"
     :nodes="nodes"
     :has-node-collection-active="hasNodeCollectionActive"

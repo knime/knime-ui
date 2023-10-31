@@ -19,6 +19,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    displayMode: {
+      type: String,
+      default: "icon",
+    },
     selectedNode: {
       type: [Object, null],
       required: true,
@@ -34,7 +38,7 @@ export default {
 </script>
 
 <template>
-  <div class="category">
+  <div class="category" :class="`display-${displayMode}`">
     <div>
       <span class="category-title" @click="$emit('selectTag', tag)">
         {{ tag }}
@@ -43,8 +47,10 @@ export default {
     </div>
     <NodeList
       :nodes="nodes"
+      class="category-node-list"
       :has-more-nodes="hasMoreNodes"
       :selected-node="selectedNode"
+      :display-mode="displayMode"
       @show-more="$emit('selectTag', tag)"
     >
       <template #item="itemProps">
@@ -60,6 +66,12 @@ export default {
 
 <style lang="postcss" scoped>
 .category {
+  &.display-list {
+    & .category-node-list {
+      padding-top: 5px;
+    }
+  }
+
   & div {
     display: flex;
     align-items: center;
