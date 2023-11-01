@@ -371,8 +371,10 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         return [];
       }
 
-      const workflowItemIds = workflowGroupContent.items
-        .filter((item) => item.type === ITEM_TYPES.Workflow)
+      const projectItemIds = workflowGroupContent.items
+        .filter((item) =>
+          [ITEM_TYPES.Workflow, ITEM_TYPES.Component].includes(item.type),
+        )
         .map((item) => item.id);
 
       return openProjects
@@ -382,7 +384,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
             origin.providerId === spaceProviderId &&
             isLocal &&
             origin.spaceId === spaceId &&
-            workflowItemIds.includes(origin.itemId),
+            projectItemIds.includes(origin.itemId),
         )
         .map(({ origin }) => origin.itemId);
     },
