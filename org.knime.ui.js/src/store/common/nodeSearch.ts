@@ -1,10 +1,12 @@
-import { API } from "@api";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import { debounce } from "lodash";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { debounce } from "lodash";
+
+import { API } from "@api";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import { createAbortablePromise } from "@/api/utils";
+import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+
 import type { RootStoreState } from "../types";
-import type { NodeSearchResult } from "@/api/gateway-api/generated-api";
 
 /**
  * This store is not instantiated by Vuex but used by other stores.
@@ -90,22 +92,6 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
   },
 };
 
-const searchNodesAPI = (
-  params: Parameters<typeof API.noderepository.searchNodes>[0],
-  options?: { signal: AbortSignal },
-): Promise<NodeSearchResult> => {
-  return new Promise((resolve, reject) => {
-    // the actual call
-    API.noderepository.searchNodes(params).then(resolve);
-    // abort logic
-    const abortListener = ({ target }) => {
-      options.signal.removeEventListener("abort", abortListener);
-      reject(target.reason);
-    };
-    options.signal.addEventListener("abort", abortListener);
-  });
-};
-
 export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   /**
    * Fetch nodes. Used for initial data retrieval, but also for searching via query and/or tag filters.
@@ -128,16 +114,18 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       return;
     }
 
+    const { abortController, runAbortablePromise } = createAbortablePromise();
+
     state.abortController.abort();
-    commit("setAbortController", new AbortController());
+    commit("setAbortController", abortController);
 
     const nextSearchPage = state.nodeSearchPage + 1;
     const searchPage = append ? nextSearchPage : 0;
 
     // call the api
     try {
-      const searchResponse = await searchNodesAPI(
-        {
+      const searchResponse = await runAbortablePromise(() =>
+        API.noderepository.searchNodes({
           q: state.query,
           tags: state.selectedTags,
           allTagsMatch: true,
@@ -146,8 +134,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
           fullTemplateInfo: true,
           nodesPartition: all ? "ALL" : "IN_COLLECTION",
           portTypeId: state.portTypeId,
-        },
-        state.abortController,
+        }),
       );
 
       // update current page in state AFTER the API call resolved successfully

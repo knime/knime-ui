@@ -1,6 +1,7 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
+import { createAbortablePromise } from "@/api/utils";
 import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
 import { geometry } from "@/util/geometry";
 
@@ -18,7 +19,19 @@ interface State {
       height: number;
     };
   } | null;
+  isClipboardBusy: boolean;
 }
+
+let copyCutAbortController: AbortController = new AbortController();
+
+let pasteOperation: () => Promise<unknown> | null = null;
+const enqueuePasteOperation = (handler: () => Promise<unknown>) => {
+  pasteOperation = handler;
+};
+const processPasteOperation = () => {
+  pasteOperation?.();
+  pasteOperation = null;
+};
 
 declare module "./index" {
   interface WorkflowState extends State {}
@@ -26,6 +39,7 @@ declare module "./index" {
 
 export const state = (): State => ({
   copyPaste: null,
+  isClipboardBusy: false,
 });
 
 export const mutations: MutationTree<WorkflowState> = {
@@ -38,6 +52,10 @@ export const mutations: MutationTree<WorkflowState> = {
       state.copyPaste = {};
     }
     state.copyPaste.lastPasteBounds = bounds;
+  },
+
+  setIsClipboardBusy(state, value) {
+    state.isClipboardBusy = value;
   },
 };
 
@@ -71,36 +89,51 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const workflowCommand =
       command === "copy" ? API.workflowCommand.Copy : API.workflowCommand.Cut;
 
-    const response = await workflowCommand({
-      projectId,
-      workflowId,
-      nodeIds: selectedNodes,
-      annotationIds: selectedAnnotations,
-      connectionBendpoints,
-    });
+    const { abortController, runAbortablePromise } = createAbortablePromise();
 
-    // @ts-ignore TODO: fix this
-    const payload = JSON.parse(response.content);
-
-    const clipboardContent = {
-      payloadIdentifier: payload.payloadIdentifier,
-      projectId,
-      workflowId,
-      // @ts-ignore TODO: fix this
-      data: response.content,
-      objectBounds,
-    };
+    copyCutAbortController.abort();
+    copyCutAbortController = abortController;
 
     try {
+      commit("setIsClipboardBusy", true);
+
+      const response = await runAbortablePromise(() =>
+        workflowCommand({
+          projectId,
+          workflowId,
+          nodeIds: selectedNodes,
+          annotationIds: selectedAnnotations,
+          connectionBendpoints,
+        }),
+      );
+
+      const payload = JSON.parse(response.content);
+
+      const clipboardContent = {
+        payloadIdentifier: payload.payloadIdentifier,
+        projectId,
+        workflowId,
+        data: response.content,
+        objectBounds,
+      };
+
       await navigator.clipboard.writeText(JSON.stringify(clipboardContent));
 
       commit("setCopyPaste", {
         payloadIdentifier: clipboardContent.payloadIdentifier,
       });
+      commit("setIsClipboardBusy", false);
+      processPasteOperation();
 
       consola.info("Copied workflow parts", clipboardContent);
     } catch (error) {
-      consola.info("Could not write to clipboard.");
+      // we aborted the call so just return and do nothing
+      if (error?.name === "AbortError") {
+        consola.info("Aborting first copy/cut request");
+        return;
+      }
+
+      consola.error("Could not write to clipboard.");
     }
   },
 
@@ -108,6 +141,13 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     { state, getters: { isWorkflowEmpty }, dispatch, rootGetters, commit },
     { position: customPosition } = { position: null },
   ) {
+    if (state.isClipboardBusy) {
+      enqueuePasteOperation(() =>
+        dispatch("pasteWorkflowParts", { position: customPosition }),
+      );
+      return;
+    }
+
     const { activeWorkflow } = state;
     let clipboardContent, clipboardText;
     try {

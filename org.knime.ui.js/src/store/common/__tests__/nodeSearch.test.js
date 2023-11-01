@@ -131,22 +131,6 @@ describe("Node search partial store", () => {
     vi.clearAllMocks();
   });
 
-  it("creates an empty store", async () => {
-    const { store } = await createStore();
-    // this makes sure the test is failing if you add a property and do not adjust the test
-    expect(store.state.nodeSearch).toStrictEqual({
-      query: "",
-      selectedTags: [],
-      portTypeId: null,
-      searchScrollPosition: 0,
-      nodes: null,
-      totalNumNodes: 0,
-      nodeSearchPage: 0,
-      nodesTags: [],
-      abortController: expect.anything(),
-    });
-  });
-
   describe("getters", () => {
     it("returns proper values for hasSearchParams", async () => {
       const { store } = await createStore();

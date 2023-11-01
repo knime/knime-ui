@@ -54,94 +54,97 @@ describe("workflow::clipboardInteractions", () => {
     return clipboardMock;
   };
 
-  it.each([["Copy"], ["Cut"]])("executes <%s> command", async (command) => {
-    const stringifiedPayload = JSON.stringify({
-      payloadIdentifier: "p-id-1",
-      otherData: "is here",
-    });
+  it.each([["Copy"], ["Cut"]])(
+    "executes <%s> command",
+    async (command: "Copy" | "Cut") => {
+      const stringifiedPayload = JSON.stringify({
+        payloadIdentifier: "p-id-1",
+        otherData: "is here",
+      });
 
-    mockedAPI.workflowCommand[command].mockReturnValue({
-      content: stringifiedPayload,
-    });
+      mockedAPI.workflowCommand[command].mockResolvedValue({
+        content: stringifiedPayload,
+      });
 
-    const clipboardMock = createClipboardMock();
-    const { store } = await loadStore();
+      const clipboardMock = createClipboardMock();
+      const { store } = await loadStore();
 
-    store.commit("workflow/setActiveWorkflow", {
-      projectId: "my project",
-      info: { containerId: "root" },
-      nodes: {
-        foo: {
-          id: "foo",
-          position: { x: 0, y: 0 },
+      store.commit("workflow/setActiveWorkflow", {
+        projectId: "my project",
+        info: { containerId: "root" },
+        nodes: {
+          foo: {
+            id: "foo",
+            position: { x: 0, y: 0 },
+          },
+          bar: {
+            id: "bar",
+            position: { x: 50, y: 50 },
+          },
         },
-        bar: {
-          id: "bar",
-          position: { x: 50, y: 50 },
+        connections: {
+          connection1: createConnection({
+            bendpoints: [
+              { x: 10, y: 10 },
+              { x: 20, y: 20 },
+            ],
+          }),
+          connection2: createConnection({
+            bendpoints: [{ x: 10, y: 10 }],
+          }),
         },
-      },
-      connections: {
-        connection1: createConnection({
-          bendpoints: [
-            { x: 10, y: 10 },
-            { x: 20, y: 20 },
-          ],
-        }),
-        connection2: createConnection({
-          bendpoints: [{ x: 10, y: 10 }],
-        }),
-      },
-      workflowAnnotations: [
-        {
-          id: "root:2_1",
-          text: "Test",
-          bounds: { x: 10, y: 10, height: 10, width: 10 },
+        workflowAnnotations: [
+          {
+            id: "root:2_1",
+            text: "Test",
+            bounds: { x: 10, y: 10, height: 10, width: 10 },
+          },
+          {
+            id: "root:2_2",
+            text: "Test1",
+            bounds: { x: 20, y: 20, height: 20, width: 20 },
+          },
+        ],
+      });
+
+      await store.dispatch("selection/selectAllObjects");
+      await store.dispatch("selection/selectBendpoints", [
+        "connection1__0",
+        "connection1__1",
+        "connection2__0",
+      ]);
+      await nextTick();
+      await store.dispatch("workflow/copyOrCutWorkflowParts", {
+        command: command.toLowerCase(),
+      });
+
+      expect(mockedAPI.workflowCommand[command]).toHaveBeenCalledWith({
+        projectId: "my project",
+        workflowId: "root",
+        nodeIds: ["foo", "bar"],
+        annotationIds: ["root:2_1", "root:2_2"],
+        connectionBendpoints: {
+          connection1: [0, 1],
+          connection2: [0],
         },
-        {
-          id: "root:2_2",
-          text: "Test1",
-          bounds: { x: 20, y: 20, height: 20, width: 20 },
+      });
+
+      expect(clipboardMock.getContent()).toStrictEqual({
+        payloadIdentifier: "p-id-1",
+        projectId: "my project",
+        workflowId: "root",
+        data: stringifiedPayload,
+        objectBounds: {
+          left: 0,
+          top: 0,
+          right: 50 + 32,
+          bottom: 50 + 32,
+          width: 50 + 32,
+          height: 50 + 32,
         },
-      ],
-    });
-
-    store.dispatch("selection/selectAllObjects");
-    store.dispatch("selection/selectBendpoints", [
-      "connection1__0",
-      "connection1__1",
-      "connection2__0",
-    ]);
-    await nextTick();
-    await store.dispatch("workflow/copyOrCutWorkflowParts", {
-      command: command.toLowerCase(),
-    });
-
-    expect(mockedAPI.workflowCommand[command]).toHaveBeenCalledWith({
-      projectId: "my project",
-      workflowId: "root",
-      nodeIds: ["foo", "bar"],
-      annotationIds: ["root:2_1", "root:2_2"],
-      connectionBendpoints: {
-        connection1: [0, 1],
-        connection2: [0],
-      },
-    });
-
-    expect(clipboardMock.getContent()).toStrictEqual({
-      payloadIdentifier: "p-id-1",
-      projectId: "my project",
-      workflowId: "root",
-      data: stringifiedPayload,
-      objectBounds: {
-        left: 0,
-        top: 0,
-        right: 50 + 32,
-        bottom: 50 + 32,
-        width: 50 + 32,
-        height: 50 + 32,
-      },
-    });
-  });
+      });
+    },
+  );
 
   describe("executes paste command", () => {
     const setupStoreForPaste = async () => {
