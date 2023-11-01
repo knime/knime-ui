@@ -1,6 +1,9 @@
 import type { Store } from "vuex";
 import { useStore } from "vuex";
 
+import type { RootStoreState } from "@/store/types";
+import type { PluginInitFunction } from "./types";
+
 export type Features = {
   shouldDisplayEmbeddedDialogs: () => boolean;
   shouldDisplayEmbeddedViews: () => boolean;
@@ -21,7 +24,9 @@ const getFlagValue = (store, name) => {
   return featureFlags[`${featureFlagsPrefix}.${name}`];
 };
 
-export const features: ($store: Store<any>) => Features = ($store) => ({
+export const features: ($store: Store<RootStoreState>) => Features = (
+  $store,
+) => ({
   shouldDisplayEmbeddedDialogs: () =>
     getFlagValue($store, "embedded_views_and_dialogs"),
 
@@ -39,6 +44,8 @@ export const useFeatures: () => Features = () => {
   return features(store);
 };
 
-export default ({ app, $store }) => {
+const init: PluginInitFunction = ({ app, $store }) => {
   app.config.globalProperties.$features = features($store);
 };
+
+export default init;

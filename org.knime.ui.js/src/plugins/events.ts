@@ -2,10 +2,10 @@ import { API } from "@api";
 import { notifyPatch } from "@/util/event-syncer";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 import { nodeSize } from "@/style/shapes.mjs";
-import type { PluginInitFunction } from ".";
 import { $bus } from "./event-bus";
+import type { PluginInitFunction } from "./types";
 
-export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
+const init: PluginInitFunction = ({ $store, $router }) => {
   API.event.registerEventHandlers({
     /**
      * Is a generic event, that holds multiple events (names separated by ':')
@@ -188,3 +188,5 @@ export default ({ $store, $router }: Parameters<PluginInitFunction>["0"]) => {
     },
   });
 };
+
+export default init;

@@ -1,4 +1,4 @@
-import { expect, describe, it } from "vitest";
+import { expect, describe, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
@@ -17,6 +17,8 @@ import WorkflowToolbar from "../WorkflowToolbar.vue";
 import ToolbarShortcutButton from "../ToolbarShortcutButton.vue";
 import ZoomMenu from "../ZoomMenu.vue";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
+
+vi.mock("webapps-common/ui/services/toast");
 
 describe("WorkflowToolbar.vue", () => {
   const doMount = ({ workflow = null, openProjects = null } = {}) => {
@@ -50,7 +52,12 @@ describe("WorkflowToolbar.vue", () => {
       }
     }
 
-    const $shortcuts = createShortcutsService({ $store, $router: router });
+    const $shortcuts = createShortcutsService({
+      $store,
+      $router: router,
+      // @ts-expect-error
+      $toast: {},
+    });
 
     const wrapper = mount(WorkflowToolbar, {
       global: {
