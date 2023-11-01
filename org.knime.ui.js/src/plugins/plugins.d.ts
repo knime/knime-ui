@@ -1,6 +1,7 @@
 import { Store } from "vuex";
 import { RouteLocation, Router } from "vue-router";
 
+import type { ToastService } from "webapps-common/ui/services/toast";
 import type { ShortcutsService } from "@/shortcuts/types";
 import * as colors from "@/style/colors.mjs";
 import * as shapes from "@/style/shapes.mjs";
@@ -18,6 +19,7 @@ declare module "vue" {
     $store: Store<RootStoreState>;
     $router: Router;
     $route: RouteLocation;
+    $toast: ToastService;
   }
 }
 

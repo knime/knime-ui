@@ -2,8 +2,9 @@ import type { FunctionalComponent, SVGAttributes } from "vue";
 import type { Router } from "vue-router";
 import type { Store } from "vuex";
 
-import type { ShortcutsRegistry } from ".";
+import type { ToastService } from "webapps-common/ui/services/toast";
 import type { RootStoreState } from "@/store/types";
+import type { ShortcutsRegistry } from ".";
 
 type Keys =
   | "F1"
@@ -38,6 +39,7 @@ export type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers>>;
 export type ShortcutExecuteContext = {
   $store: Store<RootStoreState>;
   $router: Router;
+  $toast: ToastService;
   payload: { event?: Event; metadata?: any };
 };
 

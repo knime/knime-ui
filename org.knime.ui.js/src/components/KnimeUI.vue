@@ -2,6 +2,7 @@
 import { defineComponent, defineAsyncComponent } from "vue";
 import { mapActions, mapState } from "vuex";
 
+import { ToastStack } from "webapps-common/ui/services/toast";
 import { environment } from "@/environment";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
@@ -26,6 +27,7 @@ export default defineComponent({
     BlockUi,
     SmartLoader,
     CreateWorkflowModal,
+    ToastStack,
   },
 
   data() {
@@ -157,6 +159,8 @@ export default defineComponent({
     />
 
     <CreateWorkflowModal />
+
+    <ToastStack />
 
     <BlockUi />
   </div>

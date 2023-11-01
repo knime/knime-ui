@@ -2,6 +2,11 @@ import type { App } from "vue";
 import type { Store } from "vuex";
 import type { Router } from "vue-router";
 
+import {
+  ToastServiceProvider,
+  type ToastService,
+} from "webapps-common/ui/services/toast";
+
 import Portal from "@/components/common/Portal.vue";
 import PortalTarget from "@/components/common/PortalTarget.vue";
 import type { RootStoreState } from "@/store/types";
@@ -11,12 +16,7 @@ import constants from "./constants";
 import events from "./events";
 import eventBus from "./event-bus";
 import featureFlags from "./feature-flags";
-
-export type PluginInitFunction = (payload: {
-  app: App<Element>;
-  $store: Store<RootStoreState>;
-  $router: Router;
-}) => void;
+import type { PluginInitFunction } from "./types";
 
 export const initPlugins = ({
   app,
@@ -24,12 +24,23 @@ export const initPlugins = ({
   router,
 }: {
   app: App<Element>;
-  store: Store<any>;
+  store: Store<RootStoreState>;
   router: Router;
 }) => {
+  const toastServiceProvider = new ToastServiceProvider();
+  const toastPlugin = toastServiceProvider.getToastServicePlugin();
+
+  // use before other plugins so that $toast is available on the app instance
+  app.use(toastPlugin);
+
   const wrapPlugin = (plugin: PluginInitFunction) => ({
-    install(app) {
-      plugin({ app, $store: store, $router: router });
+    install(app: App<Element>) {
+      plugin({
+        app,
+        $store: store,
+        $router: router,
+        $toast: app.config.globalProperties.$toast as ToastService,
+      });
     },
   });
 

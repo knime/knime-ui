@@ -1,11 +1,13 @@
 import { useRouter, type Router } from "vue-router";
 import { useStore, type Store } from "vuex";
 
+import { useToasts, type ToastService } from "webapps-common/ui/services/toast";
+import { isMac } from "webapps-common/util/navigator";
 import shortcuts from "@/shortcuts";
 import type { ShortcutsService, FormattedShortcut } from "@/shortcuts/types";
-import type { PluginInitFunction } from ".";
 import { formatHotkeys } from "@/util/formatHotkeys";
-import { isMac } from "webapps-common/util/navigator";
+import type { RootStoreState } from "@/store/types";
+import type { PluginInitFunction } from "./types";
 
 // Shortcut setup:
 // - add string representation of hotkeys
@@ -22,9 +24,11 @@ Object.freeze(shortcuts);
 export const createShortcutsService = ({
   $store,
   $router,
+  $toast,
 }: {
-  $store: Store<any>;
+  $store: Store<RootStoreState>;
   $router: Router;
+  $toast: ToastService;
 }) => {
   // get the whole shortcut by name
   const get: ShortcutsService["get"] = (shortcutName) =>
@@ -103,6 +107,7 @@ export const createShortcutsService = ({
     shortcut.execute({
       $store,
       $router,
+      $toast,
       payload,
     });
   };
@@ -121,12 +126,14 @@ export const createShortcutsService = ({
 export const useShortcuts = () => {
   const $store = useStore();
   const $router = useRouter();
-  return createShortcutsService({ $store, $router });
+  const $toast = useToasts();
+
+  return createShortcutsService({ $store, $router, $toast });
 };
 
 // define plugin
-const init: PluginInitFunction = ({ app, $store, $router }) => {
-  const $shortcuts = createShortcutsService({ $store, $router });
+const init: PluginInitFunction = ({ app, $store, $router, $toast }) => {
+  const $shortcuts = createShortcutsService({ $store, $router, $toast });
 
   // define global $shortcuts property
   app.config.globalProperties.$shortcuts = $shortcuts;
