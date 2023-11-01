@@ -64,7 +64,7 @@ import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -72,14 +72,14 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.knime.ui.java.util.ProjectUtil;
+import org.knime.ui.java.util.ProjectFactory;
 
 /**
- * Tests methods in {@link OpenWorkflow}.
+ * Tests methods in {@link OpenProject}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-class OpenWorkflowTest {
+class OpenProjectTest {
 
     WorkflowManager m_wfm;
 
@@ -95,16 +95,16 @@ class OpenWorkflowTest {
         var appStateUpdater = new AppStateUpdater();
         var appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
-        DesktopAPI.injectDependencies(WorkflowProjectManager.getInstance(), appStateUpdater, spaceProviders, null,
+        DesktopAPI.injectDependencies(ProjectManager.getInstance(), appStateUpdater, spaceProviders, null,
             eventConsumer, null);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
-        OpenWorkflow.fetchAndOpenWorkflowInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
+        OpenProject.fetchAndOpenProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
 
-        var wpm = WorkflowProjectManager.getInstance();
-        var projectIds = wpm.getWorkflowProjectsIds();
+        var pm = ProjectManager.getInstance();
+        var projectIds = pm.getProjectIds();
         assertThat(projectIds).hasSize(1);
-        var project = wpm.getWorkflowProject(projectIds.iterator().next()).get();
+        var project = pm.getProject(projectIds.iterator().next()).get();
         assertThat(project.getName()).isEqualTo("simple");
         m_wfm = project.openProject();
         assertThat(m_wfm).isNotNull();
@@ -116,7 +116,7 @@ class OpenWorkflowTest {
     @Test
     void testCreateWorkflowProject() throws IOException {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        var project = ProjectUtil.createWorkflowProject(m_wfm, "providerId", "spaceId", "itemId", "relativePath",
+        var project = ProjectFactory.createProject(m_wfm, "providerId", "spaceId", "itemId", "relativePath",
             ProjectTypeEnum.WORKFLOW, "projectId");
         assertThat(project.getName()).isEqualTo("workflow");
         assertThat(project.getID()).isEqualTo("projectId");
@@ -129,13 +129,13 @@ class OpenWorkflowTest {
     }
 
     private static Path getTestWorkspacePath(final String name) throws IOException {
-        return CoreUtil.resolveToFile("/files/" + name, OpenWorkflowTest.class).toPath();
+        return CoreUtil.resolveToFile("/files/" + name, OpenProjectTest.class).toPath();
     }
 
     @AfterEach
     void cleanUp() {
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
+        var pm = ProjectManager.getInstance();
+        pm.getProjectIds().forEach(pm::removeProject);
         DesktopAPI.disposeDependencies();
         WorkflowManagerUtil.disposeWorkflow(m_wfm);
     }

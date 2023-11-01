@@ -65,14 +65,14 @@ import org.knime.core.node.exec.dataexchange.in.PortObjectInNodeFactory;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.knime.ui.java.util.ProjectUtil;
+import org.knime.ui.java.util.ProjectFactory;
 
 /**
  * Tests methods in {@link ImportURI}.
@@ -114,10 +114,10 @@ class ImportURITest {
         try {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();
             m_wfms.add(wfm);
-            WorkflowProjectManager.getInstance().addWorkflowProject("projectId", ProjectUtil.createWorkflowProject(wfm,
+            ProjectManager.getInstance().addProject("projectId", ProjectFactory.createProject(wfm,
                 "providerID", "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
-                new WorkflowMiddleware(WorkflowProjectManager.getInstance()));
+                new WorkflowMiddleware(ProjectManager.getInstance()));
             var nodeFactoryProvider = mock(NodeFactoryProvider.class);
             Class factoryClass = PortObjectInNodeFactory.class;
             when(nodeFactoryProvider.fromFileExtension(endsWith(".txt"))).thenReturn(factoryClass);
@@ -126,7 +126,7 @@ class ImportURITest {
             assertThat(success).isTrue();
             assertThat(wfm.getNodeContainers()).hasSize(1);
         } finally {
-            WorkflowProjectManager.getInstance().removeWorkflowProject("projectId");
+            ProjectManager.getInstance().removeProject("projectId");
             ServiceInstances.disposeAllServiceInstancesAndDependencies();
         }
     }

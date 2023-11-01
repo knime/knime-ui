@@ -55,7 +55,7 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
@@ -80,7 +80,7 @@ final class WorkflowAPI {
      */
     @API
     static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
-        OpenWorkflow.openWorkflow(spaceId, itemId, spaceProviderId);
+        OpenProject.openProject(spaceId, itemId, spaceProviderId);
     }
 
     /**
@@ -93,7 +93,7 @@ final class WorkflowAPI {
      */
     @API
     static boolean closeWorkflow(final String projectIdToClose, final String nextProjectId) {
-        return CloseWorkflow.closeWorkflow(projectIdToClose, nextProjectId);
+        return CloseProject.closeProject(projectIdToClose, nextProjectId);
     }
 
     /**
@@ -104,7 +104,7 @@ final class WorkflowAPI {
      */
     @API
     static boolean forceCloseWorkflows(final Object[] projectIdsToClose) {
-        return CloseWorkflow.forceCloseWorkflows(Arrays.stream(projectIdsToClose).map(String.class::cast).toList());
+        return CloseProject.forceCloseProject(Arrays.stream(projectIdsToClose).map(String.class::cast).toList());
     }
 
     /**
@@ -112,7 +112,7 @@ final class WorkflowAPI {
      */
     @API
     static void saveWorkflow(final String projectId, final String projectSVG) {
-        SaveWorkflow.saveWorkflow(projectId, projectSVG, false);
+        SaveProject.saveProject(projectId, projectSVG, false);
     }
 
     /**
@@ -124,7 +124,7 @@ final class WorkflowAPI {
     @API
     static void saveAndCloseWorkflows(final Object[] projectIdsAndSvgsAndMore) {
         var progressService = PlatformUI.getWorkbench().getProgressService();
-        SaveAndCloseWorkflows.saveAndCloseWorkflows(projectIdsAndSvgsAndMore, postWorkflowCloseAction -> {
+        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgsAndMore, postWorkflowCloseAction -> {
             switch (postWorkflowCloseAction) {
                 case SWITCH_PERSPECTIVE -> EclipseUIAPI.doSwitchToJavaUI();
                 case SHUTDOWN -> {
@@ -144,19 +144,19 @@ final class WorkflowAPI {
      */
     @API
     static void setProjectActiveAndEnsureItsLoaded(final String projectId) {
-        var wpm = WorkflowProjectManager.getInstance();
-        var wfm = wpm.getCachedWorkflow(projectId).orElse(null);
+        var wpm = ProjectManager.getInstance();
+        var wfm = wpm.getCachedProject(projectId).orElse(null);
         if (wfm == null) {
             // workflow hasn't been loaded, yet -> open it
-            wfm = wpm.openAndCacheWorkflow(projectId).orElse(null);
+            wfm = wpm.openAndCacheProject(projectId).orElse(null);
             if (wfm != null) {
                 NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
             }
         }
         if (wfm != null) {
-            wpm.setWorkflowProjectActive(projectId);
+            wpm.setProjectActive(projectId);
         } else {
-            wpm.removeWorkflowProject(projectId);
+            wpm.removeProject(projectId);
             NodeLogger.getLogger(WorkflowAPI.class)
                 .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
@@ -164,14 +164,14 @@ final class WorkflowAPI {
     }
 
     /**
-     * @see SaveWorkflowCopy#saveCopyOf(String, String)
+     * @see SaveProjectCopy#saveCopyOf(String, String)
      *
      * @param projectId The project ID of the open remote workflow
      * @throws IOException if moving the workflow fails
      */
     @API
     static void saveWorkflowAs(final String projectId, final String workflowSvg) throws IOException {
-        SaveWorkflowCopy.saveCopyOf(projectId, workflowSvg);
+        SaveProjectCopy.saveCopyOf(projectId, workflowSvg);
     }
 
     /**

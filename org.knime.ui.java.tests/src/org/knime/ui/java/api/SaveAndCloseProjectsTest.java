@@ -50,7 +50,7 @@ package org.knime.ui.java.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.knime.ui.java.api.SaveWorkflowTest.assertWorkflowSaved;
+import static org.knime.ui.java.api.SaveProjectTest.assertWorkflowSaved;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -67,20 +67,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
-import org.knime.ui.java.util.ProjectUtil;
+import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
+import org.knime.ui.java.util.ProjectFactory;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 /**
- * Tests methods in {@link SaveAndCloseWorkflows}.
+ * Tests methods in {@link SaveAndCloseProjects}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-class SaveAndCloseWorkflowsTest {
+class SaveAndCloseProjectsTest {
 
     private List<WorkflowManager> m_wfms;
 
@@ -92,12 +92,12 @@ class SaveAndCloseWorkflowsTest {
         var wfms = List.of(wfm1, wfm2, wfm3);
         m_wfms = wfms;
         assertThat(wfm1.isDirty()).isTrue();
-        var wpm = WorkflowProjectManager.getInstance();
+        var pm = ProjectManager.getInstance();
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
-            wpm.addWorkflowProject(projectId, ProjectUtil.createWorkflowProject(wfms.get(i - 1), "providerId",
+            pm.addProject(projectId, ProjectFactory.createProject(wfms.get(i - 1), "providerId",
                 "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, projectId));
-            wpm.openAndCacheWorkflow(projectId);
+            pm.openAndCacheProject(projectId);
         }
 
         var appStateUpdater = new AppStateUpdater();
@@ -112,9 +112,9 @@ class SaveAndCloseWorkflowsTest {
             return null;
         }).when(progressService).run(eq(true), eq(false), ArgumentMatchers.any());
 
-        Consumer<PostWorkflowCloseAction> postWorkflowCloseActionConsumer = mock(Consumer.class);
+        Consumer<PostProjectCloseAction> postWorkflowCloseActionConsumer = mock(Consumer.class);
 
-        SaveAndCloseWorkflows.saveAndCloseWorkflows(
+        SaveAndCloseProjects.saveAndCloseProjects(
             new Object[]{3.0, "projectId1", "projectId2", "projectId3", "svg1", "svg2", "svg3", "UPDATE_APP_STATE"},
             postWorkflowCloseActionConsumer, progressService);
 
@@ -125,25 +125,25 @@ class SaveAndCloseWorkflowsTest {
         verify(appStateUpdateListener).run();
 
         // check the other post workflow closed actions
-        SaveAndCloseWorkflows.saveAndCloseWorkflows(new Object[]{1.0, "projectId1", "svg1", "SWITCH_PERSPECTIVE"},
+        SaveAndCloseProjects.saveAndCloseProjects(new Object[]{1.0, "projectId1", "svg1", "SWITCH_PERSPECTIVE"},
             postWorkflowCloseActionConsumer, progressService);
-        verify(postWorkflowCloseActionConsumer).accept(PostWorkflowCloseAction.SWITCH_PERSPECTIVE);
+        verify(postWorkflowCloseActionConsumer).accept(PostProjectCloseAction.SWITCH_PERSPECTIVE);
 
-        SaveAndCloseWorkflows.saveAndCloseWorkflows(new Object[]{1.0, "projectId1", "svg1", "SHUTDOWN"},
+        SaveAndCloseProjects.saveAndCloseProjects(new Object[]{1.0, "projectId1", "svg1", "SHUTDOWN"},
             postWorkflowCloseActionConsumer, progressService);
-        verify(postWorkflowCloseActionConsumer).accept(PostWorkflowCloseAction.SHUTDOWN);
+        verify(postWorkflowCloseActionConsumer).accept(PostProjectCloseAction.SHUTDOWN);
     }
 
     private static void assertWorkflowClosed(final WorkflowManager wfm, final String projectId) {
         assertThatThrownBy(() -> WorkflowManager.ROOT.getNodeContainer(wfm.getID())) // NOSONAR
             .isInstanceOf(IllegalArgumentException.class);
-        assertThat(WorkflowProjectManager.getInstance().getWorkflowProjectsIds()).doesNotContain(projectId);
+        assertThat(ProjectManager.getInstance().getProjectIds()).doesNotContain(projectId);
     }
 
     @AfterEach
     void cleanUp() {
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
+        var pm = ProjectManager.getInstance();
+        pm.getProjectIds().forEach(pm::removeProject);
         DesktopAPI.disposeDependencies();
         m_wfms.forEach(WorkflowManagerUtil::disposeWorkflow);
     }

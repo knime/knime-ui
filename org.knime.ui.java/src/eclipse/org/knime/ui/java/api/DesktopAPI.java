@@ -59,7 +59,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
@@ -173,7 +173,7 @@ public final class DesktopAPI {
      * @param workflowMiddleware
      * @throws IllegalStateException if the dependencies have been already injected
      */
-    public static void injectDependencies(final WorkflowProjectManager workflowProjectManager,
+    public static void injectDependencies(final ProjectManager workflowProjectManager,
         final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
         final WorkflowMiddleware workflowMiddleware) {
@@ -181,7 +181,7 @@ public final class DesktopAPI {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
         dependencies = new HashMap<>();
-        dependencies.put(WorkflowProjectManager.class, workflowProjectManager);
+        dependencies.put(ProjectManager.class, workflowProjectManager);
         dependencies.put(AppStateUpdater.class, appStateUpdater);
         dependencies.put(SpaceProviders.class, spaceProviders);
         dependencies.put(EventConsumer.class, eventConsumer);
@@ -193,7 +193,7 @@ public final class DesktopAPI {
 
     /**
      * @return whether dependencies already have been injected via
-     *         {@link #injectDependencies(WorkflowProjectManager, AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer)}
+     *         {@link #injectDependencies(ProjectManager, AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer)}
      */
     public static boolean areDependenciesInjected() {
         return dependencies != null && !dependencies.isEmpty();

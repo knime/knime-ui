@@ -203,7 +203,7 @@ public final class PerspectiveUtil {
      * The shared editor area is the {@link MArea} with a hardcoded ID and newly opened editors will appear in that area
      * by default. The sash container is configured s.t. the part displaying the shared editor area receives zero space.
      *
-     * @see org.knime.ui.java.browser.function.OpenWorkflow
+     * @see org.knime.ui.java.browser.OpenProject.OpenWorkflow
      */
     public static void addSharedEditorAreaToWebUIPerspective(final EModelService modelService, final MApplication application) {
         MPerspective webUIPerspective = getWebUIPerspective(application, modelService);

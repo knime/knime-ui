@@ -62,11 +62,11 @@ import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.testing.util.WorkflowManagerUtil;
 
 /**
- * Tests methods in {@link SaveWorkflow}.
+ * Tests methods in {@link SaveProject}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-class SaveWorkflowTest {
+class SaveProjectTest {
 
     private WorkflowManager m_wfm;
 
@@ -75,7 +75,7 @@ class SaveWorkflowTest {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         WorkflowManagerUtil.createAndAddNode(m_wfm, new PortObjectInNodeFactory());
 
-        SaveWorkflow.saveWorkflow(new NullProgressMonitor(), m_wfm, "svg img data", true);
+        SaveProject.saveProject(new NullProgressMonitor(), m_wfm, "svg img data", true);
         assertWorkflowSaved(m_wfm, "svg img data");
     }
 

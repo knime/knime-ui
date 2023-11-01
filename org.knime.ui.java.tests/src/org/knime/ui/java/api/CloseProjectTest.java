@@ -66,18 +66,18 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.knime.ui.java.util.ProjectUtil;
+import org.knime.ui.java.util.ProjectFactory;
 
 /**
- * Tests method in {@link CloseWorkflow}.
+ * Tests method in {@link CloseProject}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-class CloseWorkflowTest {
+class CloseProjectTest {
 
     private List<WorkflowManager> m_wfms;
 
@@ -90,37 +90,37 @@ class CloseWorkflowTest {
         var appStateUpdater = new AppStateUpdater();
         m_appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(m_appStateUpdateListener);
-        var wpm = WorkflowProjectManager.getInstance();
-        DesktopAPI.injectDependencies(wpm, appStateUpdater, null, null, eventConsumer, null);
+        var pm = ProjectManager.getInstance();
+        DesktopAPI.injectDependencies(pm, appStateUpdater, null, null, eventConsumer, null);
 
-        var workflowDir = CoreUtil.resolveToFile("/files/test_workspace/simple", OpenWorkflowTest.class);
+        var workflowDir = CoreUtil.resolveToFile("/files/test_workspace/simple", OpenProjectTest.class);
 
         var wfm1 = WorkflowManagerUtil.loadWorkflow(workflowDir);
         var wfm2 = WorkflowManagerUtil.loadWorkflow(workflowDir);
 
-        wpm.addWorkflowProject("projectId1", ProjectUtil.createWorkflowProject(wfm1, "providerId", "spaceId", "itemId",
+        pm.addProject("projectId1", ProjectFactory.createProject(wfm1, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId1"));
-        wpm.addWorkflowProject("projectId2", ProjectUtil.createWorkflowProject(wfm2, "providerId", "spaceId", "itemId",
+        pm.addProject("projectId2", ProjectFactory.createProject(wfm2, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId2"));
-        wpm.openAndCacheWorkflow("projectId1");
-        wpm.setWorkflowProjectActive("projectId1");
-        assertThat(wpm.getWorkflowProjectsIds()).hasSize(2);
+        pm.openAndCacheProject("projectId1");
+        pm.setProjectActive("projectId1");
+        assertThat(pm.getProjectIds()).hasSize(2);
 
         m_wfms = List.of(wfm1, wfm2);
     }
 
     @Test
     void testCloseWorkflow() {
-        assertThat(CloseWorkflow.closeWorkflow("projectId1", "projectId2")).isTrue();
+        assertThat(CloseProject.closeProject("projectId1", "projectId2")).isTrue();
 
         var wfm1 = m_wfms.get(0);
         var wfm2 = m_wfms.get(1);
         assertThatThrownBy(() -> WorkflowManager.ROOT.getNodeContainer(wfm1.getID())) // NOSONAR
             .isInstanceOf(IllegalArgumentException.class);
         assertThat(WorkflowManager.ROOT.getNodeContainer(wfm2.getID()).getName()).isEqualTo("simple");
-        var wpm = WorkflowProjectManager.getInstance();
-        assertThat(wpm.getWorkflowProjectsIds()).hasSize(1);
-        assertThat(wpm.isActiveWorkflowProject("projectId2")).isTrue();
+        var pm = ProjectManager.getInstance();
+        assertThat(pm.getProjectIds()).hasSize(1);
+        assertThat(pm.isActiveProject("projectId2")).isTrue();
         verify(m_appStateUpdateListener).run();
     }
 
@@ -133,23 +133,23 @@ class CloseWorkflowTest {
         var wfm2 = m_wfms.get(1);
         wfm2.setDirty();
         assertThat(wfm2.isDirty()).isTrue();
-        WorkflowProjectManager.getInstance().openAndCacheWorkflow("projectId2");
+        ProjectManager.getInstance().openAndCacheProject("projectId2");
 
-        CloseWorkflow.forceCloseWorkflows(List.of("projectId1", "projectId2", "non-existing-id"));
+        CloseProject.forceCloseProject(List.of("projectId1", "projectId2", "non-existing-id"));
 
         assertThatThrownBy(() -> WorkflowManager.ROOT.getNodeContainer(wfm1.getID())) // NOSONAR
             .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> WorkflowManager.ROOT.getNodeContainer(wfm2.getID())) // NOSONAR
             .isInstanceOf(IllegalArgumentException.class);
-        var wpm = WorkflowProjectManager.getInstance();
-        assertThat(wpm.getWorkflowProjectsIds()).isEmpty();
+        var pm = ProjectManager.getInstance();
+        assertThat(pm.getProjectIds()).isEmpty();
         verify(m_appStateUpdateListener).run();
     }
 
     @AfterEach
     void cleanUp() {
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
+        var pm = ProjectManager.getInstance();
+        pm.getProjectIds().forEach(pm::removeProject);
         m_wfms.forEach(WorkflowManagerUtil::disposeWorkflow);
         DesktopAPI.disposeDependencies();
     }

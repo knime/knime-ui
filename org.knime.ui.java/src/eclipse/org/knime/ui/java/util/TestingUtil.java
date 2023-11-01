@@ -61,8 +61,8 @@ import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.util.DefaultServicesUtil;
@@ -106,8 +106,8 @@ public final class TestingUtil {
     }
 
     private static void addToProjectManagerForTesting(final List<String> projectIds, final String activeProjectId) {
-        var wpm = WorkflowProjectManager.getInstance();
-        projectIds.stream().forEach(projectId -> wpm.addWorkflowProject(projectId, new WorkflowProject() { // NOSONAR
+        var wpm = ProjectManager.getInstance();
+        projectIds.stream().forEach(projectId -> wpm.addProject(projectId, new Project() { // NOSONAR
 
             @Override
             public WorkflowManager openProject() {
@@ -130,8 +130,8 @@ public final class TestingUtil {
             }
         }));
         if (activeProjectId != null) {
-            wpm.openAndCacheWorkflow(activeProjectId);
-            wpm.setWorkflowProjectActive(activeProjectId);
+            wpm.openAndCacheProject(activeProjectId);
+            wpm.setProjectActive(activeProjectId);
         }
 
     }
@@ -155,15 +155,15 @@ public final class TestingUtil {
     private static void disposeLoadedWorkflowsForTesting() {
         if (loadedWorkflowsForTesting != null) {
             for (String id : loadedWorkflowsForTesting) {
-                var wpm = WorkflowProjectManager.getInstance();
-                wpm.openAndCacheWorkflow(id).ifPresent(wfm -> {
+                var wpm = ProjectManager.getInstance();
+                wpm.openAndCacheProject(id).ifPresent(wfm -> {
                     try {
                         CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
                     } catch (InterruptedException ex) { // NOSONAR should never happen
                         throw new IllegalStateException(ex);
                     }
                 });
-                wpm.removeWorkflowProject(id);
+                wpm.removeProject(id);
             }
             loadedWorkflowsForTesting.clear();
         }

@@ -86,8 +86,8 @@ import org.knime.core.util.LoadVersion;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Version;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
@@ -130,16 +130,16 @@ public final class ClassicWorkflowEditorUtil {
         registerWorkflowProjects(modelService, app);
     }
 
-    private static WorkflowProject getOrCreateWorkflowProject(final MPart editorPart) {
+    private static Project getOrCreateWorkflowProject(final MPart editorPart) {
         var wfm = getWorkflowManager(editorPart);
         var projectWfm = wfm.flatMap(ClassicWorkflowEditorUtil::getProjectManager);
         return projectWfm.map(pw -> getOrCreateWorkflowProject(pw, editorPart)).orElse(null);
     }
 
-    private static WorkflowProject getOrCreateWorkflowProject(final WorkflowManager projWfm,
+    private static Project getOrCreateWorkflowProject(final WorkflowManager projWfm,
         final MPart editorPart) {
-        WorkflowProject wp =
-            WorkflowProjectManager.getInstance().getWorkflowProject(projWfm.getNameWithID()).orElse(null);
+        Project wp =
+            ProjectManager.getInstance().getProject(projWfm.getNameWithID()).orElse(null);
         if (wp == null) {
             return createWorkflowProject(editorPart, projWfm);
         }
@@ -158,23 +158,23 @@ public final class ClassicWorkflowEditorUtil {
         }) //
             .filter(Objects::nonNull);
 
-        var wpm = WorkflowProjectManager.getInstance();
+        var wpm = ProjectManager.getInstance();
         var resolved = resolveDuplicates(workflowProjects,
             // Determine duplicates by project ID
-            WorkflowProject::getID,
+            Project::getID,
             // Among duplicates, prefer picking one that is not visible
             group -> group.stream().min( //
-                (p1, p2) -> Boolean.compare(!wpm.isActiveWorkflowProject(p1.getID()),
-                    !wpm.isActiveWorkflowProject(p2.getID())) //
+                (p1, p2) -> Boolean.compare(!wpm.isActiveProject(p1.getID()),
+                    !wpm.isActiveProject(p2.getID())) //
             ).get() // NOSONAR: group is never empty (result of groupBy)
         );
 
         resolved.forEach(p -> {
-            wpm.addWorkflowProject(p.getID(), p);
-            wpm.openAndCacheWorkflow(p.getID());
+            wpm.addProject(p.getID(), p);
+            wpm.openAndCacheProject(p.getID());
         });
         if (activeProjectId.get() != null) {
-            wpm.setWorkflowProjectActive(activeProjectId.get());
+            wpm.setProjectActive(activeProjectId.get());
         }
     }
 
@@ -213,11 +213,11 @@ public final class ClassicWorkflowEditorUtil {
         editorPart.getParent().setSelectedElement(editorPart);
     }
 
-    private static WorkflowProject createWorkflowProject(final MPart editorPart, final WorkflowManager wfm) {
+    private static Project createWorkflowProject(final MPart editorPart, final WorkflowManager wfm) {
         if (editorPart.getObject() instanceof CompatibilityPart) {
             // Editors with no workflow loaded (i.e. opened tabs after
             // the KNIME start which haven't been touched, yet) are ignored atm
-            return new WorkflowProject() { // NOSONAR
+            return new Project() { // NOSONAR
 
                 @Override
                 public String getName() {
@@ -253,11 +253,11 @@ public final class ClassicWorkflowEditorUtil {
         return null;
     }
 
-    private static Optional<WorkflowProject.Origin>
+    private static Optional<Project.Origin>
         getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation, final WorkflowManager wfm) {
         final var context = wfm.getContextV2();
         final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
-        return Optional.of(new WorkflowProject.Origin() {
+        return Optional.of(new Project.Origin() {
             @Override
             public String getProviderId() {
                 final var mountpoint = apExecInfo.getMountpoint()
@@ -420,7 +420,7 @@ public final class ClassicWorkflowEditorUtil {
      * @param origin
      * @param wfm
      */
-    public static void updateInputForOpenEditors(final WorkflowProject.Origin origin, final WorkflowManager wfm) {
+    public static void updateInputForOpenEditors(final Project.Origin origin, final WorkflowManager wfm) {
         ClassicWorkflowEditorUtil.getOpenWorkflowEditor(wfm).ifPresent(e -> {
             final var itemId = origin.getItemId();
             final var knimeUrl = LocalSpaceUtil.getLocalWorkspace().toKnimeUrl(itemId);

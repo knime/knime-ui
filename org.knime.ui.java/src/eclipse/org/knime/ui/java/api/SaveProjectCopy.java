@@ -64,8 +64,8 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
@@ -73,44 +73,40 @@ import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
-import org.knime.ui.java.util.ProjectUtil;
+import org.knime.ui.java.util.ProjectFactory;
 
 /**
  * Helper class to save a copy of a project, for instance
  * <ul>
  *     <li>Save an opened remote workflow project locally</li>
- *     <li>Save a copy of a local workflow project under a different name ("Save As...")</li>
+ *     <li>Save a copy of a local project under a different name ("Save As...")</li>
  * </ul>
- *
- * opened remote workflow locally
- *
- * TODO: Rename this class and maybe others, see WorkflowProject, ComponentProject, OpenWorkflow, CloseWorkflow, etc.
  *
  * @author Kai Franze, KNIME GmbH, Germany
  */
-final class SaveWorkflowCopy {
+final class SaveProjectCopy {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveWorkflowCopy.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveProjectCopy.class);
 
-    private SaveWorkflowCopy() {
+    private SaveProjectCopy() {
         // State-less
     }
 
     /**
-     * Save a copy of the provided workflow project. Prompts the user for the save destination.
+     * Save a copy of the provided project. Prompts the user for the save destination.
      *
-     * @param projectId The ID identifying the workflow project to save
-     * @param workflowSvg The workflow SVG
-     * @throws IOException In case the workflow project could not be saved
+     * @param projectId The ID identifying the project to save
+     * @param projectSVG The project SVG
+     * @throws IOException In case the project could not be saved
      */
-    static void saveCopyOf(final String projectId, final String workflowSvg) throws IOException {
-        final var workflowProject = WorkflowProjectManager.getInstance()//
-            .getWorkflowProject(projectId) //
+    static void saveCopyOf(final String projectId, final String projectSVG) throws IOException {
+        final var project = ProjectManager.getInstance()//
+            .getProject(projectId) //
             .orElseThrow(() -> {
                 final var message = String.format("No local workflow path found for <%s>", projectId);
                 return new NoSuchElementException(message);
             });
-        final var wfm = workflowProject.openProject();
+        final var wfm = project.openProject();
         final var oldContext = CheckUtils.checkArgumentNotNull(wfm.getContextV2());
         final var newContext = pickDestinationAndGetNewContext(oldContext);
 
@@ -119,15 +115,15 @@ final class SaveWorkflowCopy {
             return;
         }
 
-        if (newContext.equals(oldContext)) { // Simply overwrite the old workflow
-            SaveWorkflow.saveWorkflow(projectId, workflowSvg, false);
+        if (newContext.equals(oldContext)) { // Simply overwrite the old project
+            SaveProject.saveProject(projectId, projectSVG, false);
             return;
         }
 
         if (wfm.isComponentProjectWFM()) {
             saveAndOpenComponentProject(oldContext, newContext, wfm, projectId);
         } else {
-            saveAndOpenWorkflowProject(oldContext, newContext, wfm, projectId, workflowSvg);
+            saveAndOpenWorkflowProject(oldContext, newContext, wfm, projectId, projectSVG);
         }
     }
 
@@ -139,9 +135,9 @@ final class SaveWorkflowCopy {
     private static WorkflowContextV2 pickDestinationAndGetNewContext(final WorkflowContextV2 oldContext)
         throws InvalidPathException, IOException {
         final var srcPath = oldContext.getExecutorInfo().getLocalWorkflowPath();
-        final var workflowName = srcPath.getFileName().toString();
+        final var projectName = srcPath.getFileName().toString();
 
-        final var destPicker = new SpaceDestinationPicker(new String[]{"LOCAL"}, Operation.SAVE, workflowName);
+        final var destPicker = new SpaceDestinationPicker(new String[]{"LOCAL"}, Operation.SAVE, projectName);
         if (!destPicker.open()) {
             LOGGER.error("No destion was picked");
             return null;
@@ -211,23 +207,21 @@ final class SaveWorkflowCopy {
 
     private static void saveAndOpenWorkflowProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
-        final String workflowSvg) {
-        final var newPath = newContext.getExecutorInfo().getLocalWorkflowPath();
-        final var project = ProjectUtil.createWorkflowProject(wfm, newPath, ProjectTypeEnum.WORKFLOW, projectId);
+        final String projectSVG) {
+        final var project = ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId);
         saveAndOpenProject(oldContext, newContext, project, projectId,
-            monitor -> SaveWorkflow.saveWorkflowAs(newContext, monitor, wfm, workflowSvg));
+            monitor -> SaveProject.saveWorkflowAs(newContext, monitor, wfm, projectSVG));
     }
 
     private static void saveAndOpenComponentProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId) {
-        final var newPath = newContext.getExecutorInfo().getLocalWorkflowPath();
-        final var project = ProjectUtil.createWorkflowProject(wfm, newPath, ProjectTypeEnum.COMPONENT, projectId);
+        final var project = ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId);
         saveAndOpenProject(oldContext, newContext, project, projectId,
-            monitor -> SaveWorkflow.saveComponentTemplateAs(monitor, wfm, newContext));
+            monitor -> SaveProject.saveComponentTemplateAs(monitor, wfm, newContext));
     }
 
     private static void saveAndOpenProject(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
-        final WorkflowProject project, final String projectId,
+        final Project project, final String projectId,
         final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> func) {
         final var newPath = newContext.getExecutorInfo().getLocalWorkflowPath();
         final var resultOptional = DesktopAPUtil.runWithProgress("Saving as", LOGGER, func);
@@ -240,7 +234,7 @@ final class SaveWorkflowCopy {
                 final var srcPath = execInfo.getLocalWorkflowPath();
                 FileUtil.deleteRecursively(srcPath.toFile());
             }
-            WorkflowProjectManager.getInstance().addWorkflowProject(projectId, project);
+            ProjectManager.getInstance().addProject(projectId, project);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
 

@@ -65,144 +65,143 @@ import org.eclipse.ui.progress.IProgressService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
 import org.knime.ui.java.util.DesktopAPUtil;
 
 /**
- * Called to 'headlessly' (i.e. without any user-interaction) save and close all the workflows specified as parameter.
- * Additionally, a specified {@link PostWorkflowCloseAction} is executed.
+ * Called to 'headlessly' (i.e. without any user-interaction) save and close all the projects specified as parameter.
+ * Additionally, a specified {@link PostProjectCloseAction} is executed.
  *
  * The call of this browser function is usually indirectly triggered by an event sent from the Backend (see
- * {@link #saveAndCloseWorkflowsInteractively(Set, EventConsumer, PostWorkflowCloseAction)}). The event being sent to
- * the Frontend instructs it to generate all the workflow-svg images of the passed workflows (projectIds). Once done,
+ * {@link #saveAndCloseProjectsInteractively(Set, EventConsumer, PostProjectCloseAction)}). The event being sent to
+ * the Frontend instructs it to generate all the project-svg images of the passed projects (projectIds). Once done,
  * the Frontend calls this browser function with all the generated svg-images, project-ids and the forwarded
- * {@link PostWorkflowCloseAction}.
+ * {@link PostProjectCloseAction}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class SaveAndCloseWorkflows {
+public final class SaveAndCloseProjects {
 
-    private SaveAndCloseWorkflows() {
+    private SaveAndCloseProjects() {
         // utility
     }
 
     /**
-     * The action to be carried out after the workflows have been successfully saved and closed.
+     * The action to be carried out after the projects have been successfully saved and closed.
      */
     @SuppressWarnings("javadoc")
-    public enum PostWorkflowCloseAction {
+    public enum PostProjectCloseAction {
             SWITCH_PERSPECTIVE, SHUTDOWN, UPDATE_APP_STATE
     }
 
     /**
-     * Saves and closes the workflows represented by the given project-ids. Project-ids that don't reference an opened
+     * Saves and closes the projects represented by the given project-ids. Project-ids that don't reference an opened
      * workflow will just be ignored.
      *
      * @param projectIdsAndSvgsAndMore array containing the project-ids and svgs of the projects to save. The very first
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
      *            by n svg-strings. And there is one last string at the very end describing the action to be carried out
-     *            after the workflows have been saved ('PostWorkflowCloseAction').
-     * @param runPostWorkflowCloseAction callback to the the provided post-workflow-close-action
+     *            after the projects have been saved ('PostProjectCloseAction').
+     * @param runPostProjectCloseAction callback to the the provided post-project-close-action
      * @param progressService displays the progress
      */
-    static void saveAndCloseWorkflows(final Object[] projectIdsAndSvgsAndMore,
-        final Consumer<PostWorkflowCloseAction> runPostWorkflowCloseAction, final IProgressService progressService) { // NOSONAR
+    static void saveAndCloseProjects(final Object[] projectIdsAndSvgsAndMore,
+        final Consumer<PostProjectCloseAction> runPostProjectCloseAction, final IProgressService progressService) { // NOSONAR
         var count = ((Double)projectIdsAndSvgsAndMore[0]).intValue();
         var firstFailure = new AtomicReference<String>();
         var projectIds = Arrays.copyOfRange(projectIdsAndSvgsAndMore, 1, count + 1, String[].class);
         var svgs = Arrays.copyOfRange(projectIdsAndSvgsAndMore, count + 1, count * 2 + 1, String[].class);
-        saveWorkflowsWithProgressBar(projectIds, svgs, firstFailure, progressService);
+        saveProjectsWithProgressBar(projectIds, svgs, firstFailure, progressService);
 
         if (firstFailure.get() != null) {
             DesktopAPUtil.showWarning("Failed to save workflow", "Workflow could not be saved.\nSee log for details.");
-            // make the first workflow active which couldn't be saved
-            WorkflowProjectManager.getInstance().setWorkflowProjectActive(firstFailure.get());
+            // make the first project active which couldn't be saved
+            ProjectManager.getInstance().setProjectActive(firstFailure.get());
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
 
-        var postWorkflowCloseAction = PostWorkflowCloseAction.valueOf((String)projectIdsAndSvgsAndMore[count * 2 + 1]);
-        if (postWorkflowCloseAction == PostWorkflowCloseAction.UPDATE_APP_STATE) {
+        var postProjectCloseAction = PostProjectCloseAction.valueOf((String)projectIdsAndSvgsAndMore[count * 2 + 1]);
+        if (postProjectCloseAction == PostProjectCloseAction.UPDATE_APP_STATE) {
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         } else {
-            runPostWorkflowCloseAction.accept(postWorkflowCloseAction);
+            runPostProjectCloseAction.accept(postProjectCloseAction);
         }
     }
 
     /**
-     * Closes the given workflows (project-ids) and asks the user to save the workflows with unsaved changes. Also asks
-     * the user to cancel executing workflows.
+     * Closes the given projects (project-ids) and asks the user to save the projects with unsaved changes. Also asks
+     * the user to cancel executing projects.
      *
      * @param projectIds
      * @param eventConsumer
      * @param action
-     * @return {@code 0} if the closing process has been cancelled or failed; {@code 1} if the workflows have been
-     *         closed successfully; {@code 2} if the workflows require to be saved (in which case, an event is triggered
-     *         to save and close the workflows)
+     * @return {@code 0} if the closing process has been cancelled or failed; {@code 1} if the projects have been
+     *         closed successfully; {@code 2} if the projects require to be saved (in which case, an event is triggered
+     *         to save and close the projects)
      */
-    public static int saveAndCloseWorkflowsInteractively(final Set<String> projectIds,
-        final EventConsumer eventConsumer, final PostWorkflowCloseAction action) {
-        var wpm = WorkflowProjectManager.getInstance();
+    public static int saveAndCloseProjectsInteractively(final Set<String> projectIds,
+        final EventConsumer eventConsumer, final PostProjectCloseAction action) {
+        var pm = ProjectManager.getInstance();
         var dirtyProjectIds = projectIds.stream()
-            .filter(id -> wpm.getCachedWorkflow(id).map(WorkflowManager::isDirty).orElse(false)).toArray(String[]::new);
-        var dirtyWfms = Arrays.stream(dirtyProjectIds).flatMap(id -> wpm.getCachedWorkflow(id).stream())
+            .filter(id -> pm.getCachedProject(id).map(WorkflowManager::isDirty).orElse(false)).toArray(String[]::new);
+        var dirtyWfms = Arrays.stream(dirtyProjectIds).flatMap(id -> pm.getCachedProject(id).stream())
             .toArray(WorkflowManager[]::new);
-        var shallSaveWorkflows = promptWhetherToSaveWorkflows(dirtyWfms);
-        switch (shallSaveWorkflows) {
+        var shallSaveProjects = promptWhetherToSaveProjects(dirtyWfms);
+        switch (shallSaveProjects) {
             case 0: // YES
-                if (shallCancelWorkflowsIfNecessary(dirtyWfms)) {
-                    sendSaveAndCloseWorkflowEventToFrontend(dirtyProjectIds, eventConsumer, action);
+                if (shallCancelProjectsIfNecessary(dirtyWfms)) {
+                    sendSaveAndCloseProjectEventToFrontend(dirtyProjectIds, eventConsumer, action);
                 }
                 return 2;
             case 1: // NO
-                return CloseWorkflow.closeWorkflows(projectIds) ? 1 : 0;
+                return CloseProject.closeProject(projectIds) ? 1 : 0;
             default: // CANCEL button or window 'x'
                 return 0;
         }
     }
 
-    private static void saveWorkflowsWithProgressBar(final String[] projectIds, final String[] svgs,
+    private static void saveProjectsWithProgressBar(final String[] projectIds, final String[] svgs,
         final AtomicReference<String> firstFailure, final IProgressService progressService) {
-        IRunnableWithProgress saveRunnable = monitor -> saveWorkflows(projectIds, svgs, firstFailure, monitor);
+        IRunnableWithProgress saveRunnable = monitor -> saveProjects(projectIds, svgs, firstFailure, monitor);
         try {
             progressService.run(true, false, saveRunnable);
         } catch (InvocationTargetException e) {
-            NodeLogger.getLogger(SaveAndCloseWorkflows.class).error("Saving workflow failed", e);
+            NodeLogger.getLogger(SaveAndCloseProjects.class).error("Saving workflow failed", e);
         } catch (InterruptedException e) {
-            NodeLogger.getLogger(SaveAndCloseWorkflows.class).warn("Saving process was interrupted", e);
+            NodeLogger.getLogger(SaveAndCloseProjects.class).warn("Saving process was interrupted", e);
             Thread.currentThread().interrupt();
         }
     }
 
-    private static void saveWorkflows(final String[] projectIds, final String[] svgs,
+    private static void saveProjects(final String[] projectIds, final String[] svgs,
         final AtomicReference<String> firstFailure, final IProgressMonitor monitor) {
-        monitor.beginTask("Saving " + projectIds.length + " workflows", projectIds.length);
+        monitor.beginTask("Saving " + projectIds.length + " projects", projectIds.length);
         for (var i = 0; i < projectIds.length; i++) {
             var projectId = projectIds[i];
             var projectSVG = svgs[i];
-            var projectWfm = WorkflowProjectManager.getInstance().getCachedWorkflow(projectId).orElse(null);
-            var success = saveAndCloseWorkflow(monitor, projectId, projectSVG, projectWfm);
+            var projectWfm = ProjectManager.getInstance().getCachedProject(projectId).orElse(null);
+            var success = saveAndCloseProject(monitor, projectId, projectSVG, projectWfm);
             if (!success) {
                 firstFailure.compareAndExchange(null, projectId);
             }
         }
     }
 
-    private static boolean saveAndCloseWorkflow(final IProgressMonitor monitor, final String projectId,
+    private static boolean saveAndCloseProject(final IProgressMonitor monitor, final String projectId,
         final String projectSVG, final WorkflowManager projectWfm) {
         monitor.subTask("Saving '" + projectId + "'");
         if (projectWfm != null) { // workflow not loaded -> nothing to save
-            SaveWorkflow.saveWorkflow(monitor, projectWfm, projectSVG, false);
+            SaveProject.saveProject(monitor, projectWfm, projectSVG, false);
         }
-        var success = CloseWorkflow.closeWorkflow(projectId);
+        var success = CloseProject.closeProject(projectId);
         monitor.worked(1);
         return success;
     }
 
-    private static void sendSaveAndCloseWorkflowEventToFrontend(final String[] dirtyProjectIds,
-        final EventConsumer eventConsumer, final PostWorkflowCloseAction action) {
+    private static void sendSaveAndCloseProjectEventToFrontend(final String[] dirtyProjectIds,
+        final EventConsumer eventConsumer, final PostProjectCloseAction action) {
         var projectIdsJson = MAPPER.createArrayNode();
         Arrays.stream(dirtyProjectIds).forEach(projectIdsJson::add);
         var paramsJson = MAPPER.createArrayNode();
@@ -213,7 +212,7 @@ public final class SaveAndCloseWorkflows {
         eventConsumer.accept("SaveAndCloseWorkflowsEvent", event);
     }
 
-    private static int promptWhetherToSaveWorkflows(final WorkflowManager... dirtyWfms) {
+    private static int promptWhetherToSaveProjects(final WorkflowManager... dirtyWfms) {
         String title;
         var message = new StringBuilder();
         if (dirtyWfms.length == 0) {
@@ -236,23 +235,23 @@ public final class SaveAndCloseWorkflows {
 
     }
 
-    private static boolean shallCancelWorkflowsIfNecessary(final WorkflowManager... wfms) {
-        var namesOfExecutingWorkflows = Arrays.stream(wfms).filter(Objects::nonNull)
+    private static boolean shallCancelProjectsIfNecessary(final WorkflowManager... wfms) {
+        var namesOfExecutingProjects = Arrays.stream(wfms).filter(Objects::nonNull)
             .filter(wfm -> wfm.getNodeContainerState().isExecutionInProgress()).map(WorkflowManager::getName)
             .toArray(String[]::new);
-        if (namesOfExecutingWorkflows.length == 0) {
+        if (namesOfExecutingProjects.length == 0) {
             return true;
         }
         String title;
         var message = new StringBuilder();
-        if (namesOfExecutingWorkflows.length == 1) {
+        if (namesOfExecutingProjects.length == 1) {
             title = "Workflow in execution";
             message.append("Executing nodes are not saved! Close anyway?");
         } else {
             title = "Workflows in execution";
             message.append("Workflows in execution:\n");
-            for (var i = 0; i < namesOfExecutingWorkflows.length; i++) {
-                message.append("\n" + namesOfExecutingWorkflows[i]);
+            for (var i = 0; i < namesOfExecutingProjects.length; i++) {
+                message.append("\n" + namesOfExecutingProjects[i]);
             }
             message.append("\nExecuting nodes are not saved! Close anyway?");
         }

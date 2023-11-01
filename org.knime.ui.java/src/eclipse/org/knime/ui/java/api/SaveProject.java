@@ -91,11 +91,11 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
  * @author Benjamin Moser, KNIME GmbH, Konstanz
  * @author Kai Franze, KNIME GmbH, Germany
  */
-final class SaveWorkflow {
+final class SaveProject {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveWorkflow.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveProject.class);
 
-    private SaveWorkflow() {
+    private SaveProject() {
         // utility
     }
 
@@ -103,10 +103,10 @@ final class SaveWorkflow {
      * Save the project workflow manager identified by a given project ID.
      *
      * @param projectId ID of the project
-     * @param projectSVG SVG of the workflow, may be {@code null} if the workflow is open in Classic AP
-     * @param localOnly if {@code true}, the workflow is only saved locally even if it is a temporary copy from Hub
+     * @param projectSVG SVG of the project, may be {@code null} if the project is open in Classic AP
+     * @param localOnly if {@code true}, the project is only saved locally even if it is a temporary copy from Hub
      */
-    static void saveWorkflow(final String projectId, final String projectSVG, final boolean localOnly) {
+    static void saveProject(final String projectId, final String projectSVG, final boolean localOnly) {
         var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
 
         if (projectSVG == null) { // No SVG received, workflow editor instance must be present
@@ -122,7 +122,7 @@ final class SaveWorkflow {
                 // Show a warning otherwise
                 DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
             } else {
-                saveWorkflowWithProgressBar(projectWfm, projectSVG, localOnly);
+                saveProjectWithProgressBar(projectWfm, projectSVG, localOnly);
                 ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
                 unmarkDirtyChildWorkflowEditors(projectWfm);
             }
@@ -204,11 +204,11 @@ final class SaveWorkflow {
         }).filter(Objects::nonNull).toList();
     }
 
-    private static void saveWorkflowWithProgressBar(final WorkflowManager wfm, final String svg,
+    private static void saveProjectWithProgressBar(final WorkflowManager wfm, final String svg,
             final boolean localOnly) {
         try {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(
-                monitor -> saveWorkflow(monitor, wfm, svg, localOnly));
+                monitor -> saveProject(monitor, wfm, svg, localOnly));
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving the workflow or saving the SVG failed", e);
         } catch (InterruptedException e) {
@@ -217,7 +217,7 @@ final class SaveWorkflow {
         }
     }
 
-    static void saveWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
+    static void saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
             final boolean localOnly) {
         if (wfm.isComponentProjectWFM()) {
             saveComponentTemplate(monitor, wfm);

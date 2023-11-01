@@ -60,86 +60,86 @@ import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
-import org.knime.ui.java.util.ProjectUtil;
+import org.knime.ui.java.util.ProjectFactory;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.explorer.RemoteWorkflowInput;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 /**
- * Opens a workflow.
+ * Opens a project.
  *
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class OpenWorkflow {
+final class OpenProject {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenWorkflow.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenProject.class);
 
-    private OpenWorkflow() {
+    private OpenProject() {
        // utility
     }
 
     /**
-     * Open a workflow project from a mounted space
+     * Open a project from a mounted space
      *
      * @param spaceId The ID of the space the item is in
      * @param itemId The item ID of the workflow to open
      * @param spaceProviderId The ID of the space provider of the space
      */
-    static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
+    static void openProject(final String spaceId, final String itemId, final String spaceProviderId) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             final var space =
                 SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
             final var knimeUrl = space.toKnimeUrl(itemId);
-            openWorkflowInClassicAndWebUI(knimeUrl, null);
+            openProjectInClassicAndWebUI(knimeUrl, null);
         } else {
             DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {
-                fetchAndOpenWorkflowInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
+                fetchAndOpenProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
                 return null;
             });
         }
     }
 
     /**
-     * Fetch and open a local copy of a workflow sourced from the given import (e.g. by dropping an URI)
+     * Fetch and open a local copy of a project sourced from the given import (e.g. by dropping an URI)
      *
-     * @apiNote While opening a workflow form a mounted remote space may also open them as local copies, the behaviour
+     * @apiNote While opening a project from a mounted remote space may also open them as local copies, the behavior
      *          of these two cases is different w.r.t. interaction with the space explorer, opening and saving.
-     * @param repoObjectImport The source of the workflow
-     * @return Whether the workflow could be fetched and opened
+     * @param repoObjectImport The source of the project
+     * @return Whether the project could be fetched and opened
      */
-    static boolean openWorkflowCopy(final RepoObjectImport repoObjectImport) {
+    static boolean openProjectCopy(final RepoObjectImport repoObjectImport) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            openWorkflowInClassicAndWebUI(repoObjectImport.getKnimeURI(), repoObjectImport.locationInfo()//
+            openProjectInClassicAndWebUI(repoObjectImport.getKnimeURI(), repoObjectImport.locationInfo()//
                 .filter(HubSpaceLocationInfo.class::isInstance)//
                 .map(HubSpaceLocationInfo.class::cast)//
                 .orElse(null));
         } else {
-            final var wfm = fetchAndLoadWorkflowWithProgress(repoObjectImport);
+            final var wfm = fetchAndLoadProjectWithProgress(repoObjectImport);
             if (wfm == null) {
                 return false;
             }
-            final var wfProj = ProjectUtil.createWorkflowProject(null);
-            openWorkflowInWebUIOnly(wfm, wfProj, WorkflowType.REMOTE);
+            final var wfProj = ProjectFactory.createProject(null);
+            openProjectInWebUIOnly(wfm, wfProj, WorkflowType.REMOTE);
         }
         return true;
     }
 
     /**
-     * Opens the workflow in both the Classic UI and the Modern/Web UI
+     * Opens the project in both the Classic UI and the Modern/Web UI
      *
-     * @param knimeUrl The knime:// URI identifying the source of the workflow to load
+     * @param knimeUrl The knime:// URI identifying the source of the project to load
      */
-    private static void openWorkflowInClassicAndWebUI(final URI knimeUrl, final HubSpaceLocationInfo locationInfo) {
+    private static void openProjectInClassicAndWebUI(final URI knimeUrl, final HubSpaceLocationInfo locationInfo) {
         try {
             DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl), locationInfo);
             hideSharedEditorArea();
@@ -151,16 +151,16 @@ final class OpenWorkflow {
     }
 
     /**
-     * Fetch, load, and open the workflow in the Modern/Web UI. Those workflows won't be available in the classic UI
+     * Fetch, load, and open the project in the Modern/Web UI. Those projects won't be available in the classic UI
      * when switching to it.
      *
-     * @implNote Needs to be standalone (not wrapped in progress manager) to be testable.
+     * @implNote Needs to be stand-alone (not wrapped in progress manager) to be testable.
      * @param spaceId
      * @param itemId
      * @param spaceProviderId
      * @param monitor
      */
-    static void fetchAndOpenWorkflowInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
+    static void fetchAndOpenProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
         final IProgressMonitor monitor) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor);
@@ -177,18 +177,18 @@ final class OpenWorkflow {
         var projectType = space.getProjectType(itemId).orElse(ProjectTypeEnum.WORKFLOW);
 
         var wfProj =
-            ProjectUtil.createWorkflowProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
-        openWorkflowInWebUIOnly(wfm, wfProj,
+            ProjectFactory.createProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
+        openProjectInWebUIOnly(wfm, wfProj,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
     }
 
-    private static void openWorkflowInWebUIOnly(final WorkflowManager wfm, final WorkflowProject wfProj,
+    private static void openProjectInWebUIOnly(final WorkflowManager wfm, final Project wfProj,
         final WorkflowType type) {
         // register workflow project
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.addWorkflowProject(wfProj.getID(), wfProj);
-        wpm.openAndCacheWorkflow(wfProj.getID());
-        wpm.setWorkflowProjectActive(wfProj.getID());
+        var wpm = ProjectManager.getInstance();
+        wpm.addProject(wfProj.getID(), wfProj);
+        wpm.openAndCacheProject(wfProj.getID());
+        wpm.setProjectActive(wfProj.getID());
         // instrumentation
         NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, type);
         // update application state
@@ -210,7 +210,7 @@ final class OpenWorkflow {
         areaPlaceholder.setVisible(false);
     }
 
-    private static WorkflowManager fetchAndLoadWorkflowWithProgress(final RepoObjectImport repoObjectImport) {
+    private static WorkflowManager fetchAndLoadProjectWithProgress(final RepoObjectImport repoObjectImport) {
         var knimeUrl = repoObjectImport.getKnimeURI();
         var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
         var fs = (RemoteExplorerFileStore)ExplorerFileSystem.INSTANCE.getStore(knimeUrl);

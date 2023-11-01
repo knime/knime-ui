@@ -62,8 +62,8 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.ProjectManager;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,7 +73,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 /**
  * Utility methods to persist (saven and load) the state of the KNIME UI to a file.
  *
- * An important part of the app state is derived from the {@link WorkflowProjectManager} which keeps track of the opened
+ * An important part of the app state is derived from the {@link ProjectManager} which keeps track of the opened
  * and active workflow projects.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
@@ -110,8 +110,8 @@ public final class AppStatePersistor {
      * @return a string representing the app state
      */
     public static String serializeAppState() {
-        var wpm = WorkflowProjectManager.getInstance();
-        var projectsJson = wpm.getWorkflowProjectsIds().stream().map(id -> wpm.getWorkflowProject(id).orElse(null))
+        var wpm = ProjectManager.getInstance();
+        var projectsJson = wpm.getProjectIds().stream().map(id -> wpm.getProject(id).orElse(null))
             .filter(Objects::nonNull) //
             // only persist local workflow projects
             .filter(wp -> wp.getOrigin().map(o -> o.getProviderId().equals(LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID))
@@ -124,10 +124,10 @@ public final class AppStatePersistor {
             .toPrettyString();
     }
 
-    private static ObjectNode serializeWorkflowProject(final WorkflowProjectManager wpm, final WorkflowProject wp) {
+    private static ObjectNode serializeWorkflowProject(final ProjectManager wpm, final Project wp) {
         var projectJson = MAPPER.createObjectNode() //
             .put(NAME, wp.getName()) //
-            .put(ACTIVE, wpm.isActiveWorkflowProject(wp.getID()));
+            .put(ACTIVE, wpm.isActiveProject(wp.getID()));
         wp.getOrigin().ifPresent(origin -> {
             var originJson = MAPPER.createObjectNode() //
                 .put(PROVIDER_ID, origin.getProviderId()) //
@@ -155,7 +155,7 @@ public final class AppStatePersistor {
 
     /**
      * Loads the app state from a file and registers the opened workflow projects with the
-     * {@link WorkflowProjectManager}.
+     * {@link ProjectManager}.
      */
     public static void loadAppState() {
         if (!Files.exists(APP_STATE_FILE)) {
@@ -169,24 +169,24 @@ public final class AppStatePersistor {
             return;
         }
         var projectsJson = (ArrayNode)appStateJson.get(PROJECTS);
-        var wpm = WorkflowProjectManager.getInstance();
+        var wpm = ProjectManager.getInstance();
         for (var projectJson : projectsJson) {
             var project = createWorkflowProject(projectJson);
             var projectId = project.getID();
-            wpm.addWorkflowProject(projectId, project);
+            wpm.addProject(projectId, project);
             if (projectJson.get(ACTIVE).asBoolean()) {
-                var wfm = wpm.openAndCacheWorkflow(projectId).orElse(null);
+                var wfm = wpm.openAndCacheProject(projectId).orElse(null);
                 if (wfm != null) {
-                    wpm.setWorkflowProjectActive(projectId);
+                    wpm.setProjectActive(projectId);
                     NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
                 } else {
-                    wpm.removeWorkflowProject(projectId);
+                    wpm.removeProject(projectId);
                 }
             }
         }
     }
 
-    private static WorkflowProject createWorkflowProject(final JsonNode projectJson) {
+    private static Project createWorkflowProject(final JsonNode projectJson) {
         var relativePath = Path.of(projectJson.get(ORIGIN).get(RELATIVE_PATH).asText());
         assert !relativePath.isAbsolute();
         var localSpace = LocalSpaceUtil.getLocalWorkspace();
@@ -194,7 +194,7 @@ public final class AppStatePersistor {
         var name = projectJson.get(NAME).asText();
         var projectId = LocalSpaceUtil.getUniqueProjectId(name);
         var itemId = localSpace.getItemId(absolutePath);
-        return new WorkflowProject() { // NOSONAR
+        return new Project() { // NOSONAR
 
             @Override
             public String getName() {

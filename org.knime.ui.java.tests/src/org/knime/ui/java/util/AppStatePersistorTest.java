@@ -61,9 +61,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.KNIMEConstants;
-import org.knime.gateway.impl.project.WorkflowProject;
-import org.knime.gateway.impl.project.WorkflowProject.Origin;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.Project.Origin;
+import org.knime.gateway.impl.project.ProjectManager;
 
 /**
  * Tests methods in {@link AppStatePersistor}.
@@ -79,8 +79,8 @@ public class AppStatePersistorTest {
         AppStatePersistor.saveAppState(appStateString);
         assertAppStateFile();
 
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
+        var wpm = ProjectManager.getInstance();
+        wpm.getProjectIds().forEach(wpm::removeProject);
 
         AppStatePersistor.loadAppState();
         var appStateStringNew = AppStatePersistor.serializeAppState();
@@ -89,14 +89,14 @@ public class AppStatePersistorTest {
 
     @AfterEach
     void cleanUp() {
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
+        var wpm = ProjectManager.getInstance();
+        wpm.getProjectIds().forEach(wpm::removeProject);
     }
 
     @SuppressWarnings("javadoc")
     public static void openWorkflowProject() {
-        var wpm = WorkflowProjectManager.getInstance();
-        var project = mock(WorkflowProject.class);
+        var wpm = ProjectManager.getInstance();
+        var project = mock(Project.class);
         when(project.getID()).thenReturn("test_id");
         when(project.getName()).thenReturn("Test Project");
         var origin = mock(Origin.class);
@@ -104,7 +104,7 @@ public class AppStatePersistorTest {
         when(origin.getProviderId()).thenReturn(LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID);
         when(origin.getRelativePath()).thenReturn(Optional.of("a/relative/path"));
         when(project.getOrigin()).thenReturn(Optional.of(origin));
-        wpm.addWorkflowProject("test_id", project);
+        wpm.addProject("test_id", project);
     }
 
     @SuppressWarnings("javadoc")

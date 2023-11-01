@@ -66,7 +66,7 @@ import org.knime.core.node.NodeFactory;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.gateway.api.util.ExtPointUtil;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ExampleProjects;
@@ -83,8 +83,8 @@ import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.commservice.CEFCommService;
 import org.knime.ui.java.api.DesktopAPI;
-import org.knime.ui.java.api.SaveAndCloseWorkflows;
-import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
+import org.knime.ui.java.api.SaveAndCloseProjects;
+import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -113,8 +113,8 @@ final class Init {
     static LifeCycleStateInternal run(final boolean checkForUpdates) {
 
         // Create and set default service dependencies
-        var workflowProjectManager = WorkflowProjectManager.getInstance();
-        var workflowMiddleware = new WorkflowMiddleware(WorkflowProjectManager.getInstance());
+        var workflowProjectManager = ProjectManager.getInstance();
+        var workflowMiddleware = new WorkflowMiddleware(ProjectManager.getInstance());
         var eventConsumer = createEventConsumer();
         var appStateUpdater = new AppStateUpdater();
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
@@ -135,9 +135,9 @@ final class Init {
             @Override
             public IntSupplier saveAndCloseAllWorkflows() {
                 return () -> {
-                    var projectIds = WorkflowProjectManager.getInstance().getWorkflowProjectsIds();
-                    return SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(projectIds, eventConsumer,
-                        PostWorkflowCloseAction.SHUTDOWN);
+                    var projectIds = ProjectManager.getInstance().getProjectIds();
+                    return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds, eventConsumer,
+                        PostProjectCloseAction.SHUTDOWN);
                 };
             }
 

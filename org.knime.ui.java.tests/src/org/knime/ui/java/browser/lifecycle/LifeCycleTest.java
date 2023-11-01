@@ -65,7 +65,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.knime.core.webui.node.dialog.NodeDialogManager;
 import org.knime.core.webui.node.port.PortViewManager;
 import org.knime.core.webui.node.view.NodeViewManager;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
 import org.knime.js.cef.CEFPlugin;
 import org.knime.ui.java.api.DesktopAPI;
@@ -236,8 +236,8 @@ class LifeCycleTest {
         LifeCycle.get().resetLifeCycleState();
         ServiceInstances.disposeAllServiceInstancesAndDependencies();
         DesktopAPI.disposeDependencies();
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.getWorkflowProjectsIds().forEach(wpm::removeWorkflowProject);
+        var wpm = ProjectManager.getInstance();
+        wpm.getProjectIds().forEach(wpm::removeProject);
     }
 
 }

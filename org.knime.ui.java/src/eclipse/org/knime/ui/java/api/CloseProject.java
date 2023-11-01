@@ -57,22 +57,24 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
+import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 /**
+ * Closes a project.
+ *
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class CloseWorkflow {
+final class CloseProject {
 
-    private CloseWorkflow() {
+    private CloseProject() {
         // utility
     }
 
@@ -84,18 +86,18 @@ final class CloseWorkflow {
      *            omitted if there is no next project ID (e.g. when closing the last tab).
      * @return A boolean indicating whether an editor has been closed.
      */
-    static boolean closeWorkflow(final String projectIdToClose, final String nextProjectId) {
+    static boolean closeProject(final String projectIdToClose, final String nextProjectId) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            return closeWorkflowViaClassicUI(projectIdToClose, nextProjectId, true);
+            return closeProjectViaClassicUI(projectIdToClose, nextProjectId, true);
         } else {
             if (nextProjectId != null) {
-                var wpm = DesktopAPI.getDeps(WorkflowProjectManager.class);
-                wpm.openAndCacheWorkflow(nextProjectId);
-                wpm.setWorkflowProjectActive(nextProjectId);
+                var wpm = DesktopAPI.getDeps(ProjectManager.class);
+                wpm.openAndCacheProject(nextProjectId);
+                wpm.setProjectActive(nextProjectId);
             }
             var success =
-                SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(Collections.singleton(projectIdToClose),
-                    DesktopAPI.getDeps(EventConsumer.class), PostWorkflowCloseAction.UPDATE_APP_STATE) == 1;
+                SaveAndCloseProjects.saveAndCloseProjectsInteractively(Collections.singleton(projectIdToClose),
+                    DesktopAPI.getDeps(EventConsumer.class), PostProjectCloseAction.UPDATE_APP_STATE) == 1;
             if (success) {
                 DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             }
@@ -106,45 +108,45 @@ final class CloseWorkflow {
     /**
      * @param projectIdsToClose
      */
-    static boolean forceCloseWorkflows(final List<String> projectIdsToClose) {
+    static boolean forceCloseProject(final List<String> projectIdsToClose) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             var success = true;
             for (var id : projectIdsToClose) {
-                success &= closeWorkflowViaClassicUI(id, null, false);
+                success &= closeProjectViaClassicUI(id, null, false);
             }
             return success;
         } else {
-            var success = closeWorkflows(projectIdsToClose);
+            var success = closeProject(projectIdsToClose);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             return success;
         }
     }
 
-    static boolean closeWorkflows(final Collection<String> projectIds) {
+    static boolean closeProject(final Collection<String> projectIds) {
         var success = true;
         for (var projectId : projectIds) {
-            success &= closeWorkflow(projectId);
+            success &= closeProject(projectId);
         }
         return success;
     }
 
-    static boolean closeWorkflow(final String projectId) {
-        var wpm = WorkflowProjectManager.getInstance();
-        var wfm = wpm.getCachedWorkflow(projectId).orElse(null);
+    static boolean closeProject(final String projectId) {
+        var wpm = ProjectManager.getInstance();
+        var wfm = wpm.getCachedProject(projectId).orElse(null);
         try {
             if (wfm != null) {
                 CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
             }
-            wpm.removeWorkflowProject(projectId);
+            wpm.removeProject(projectId);
             return true;
         } catch (InterruptedException e) { // NOSONAR
-            NodeLogger.getLogger(SaveAndCloseWorkflows.class)
+            NodeLogger.getLogger(SaveAndCloseProjects.class)
                 .warn("Problem while waiting for the workflow '" + projectId + "' to be cancelled", e);
             return false;
         }
     }
 
-    private static boolean closeWorkflowViaClassicUI(final String projectIdToClose, final String nextProjectId,
+    private static boolean closeProjectViaClassicUI(final String projectIdToClose, final String nextProjectId,
         final boolean save) {
         var editorToClose = getEditor(projectIdToClose);
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -152,13 +154,13 @@ final class CloseWorkflow {
         //  of child workflow managers.
         var wasClosed = page.closeEditor(editorToClose, save);
         if (wasClosed) {
-            var wpm = WorkflowProjectManager.getInstance();
-            wpm.removeWorkflowProject(projectIdToClose);
+            var wpm = ProjectManager.getInstance();
+            wpm.removeProject(projectIdToClose);
 
             // Workaround for keeping the classic and Web UI's editors/tabs in sync
             if (nextProjectId != null) {
-                wpm.openAndCacheWorkflow(nextProjectId);
-                wpm.setWorkflowProjectActive(nextProjectId);
+                wpm.openAndCacheProject(nextProjectId);
+                wpm.setProjectActive(nextProjectId);
                 ClassicWorkflowEditorUtil.setEditorPartActive(getEditorPart(nextProjectId));
             }
 

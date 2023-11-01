@@ -56,9 +56,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.knime.ui.java.util.ProjectUtil;
+import org.knime.ui.java.util.ProjectFactory;
 
 /**
  * Tests some methods in {@link WorkflowAPI}.
@@ -72,19 +72,19 @@ class WorkflowAPITest {
     @Test
     void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.addWorkflowProject("projectId", ProjectUtil.createWorkflowProject(m_wfm, "providerId", "spaceId", "itemId",
+        var wpm = ProjectManager.getInstance();
+        wpm.addProject("projectId", ProjectFactory.createProject(m_wfm, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
 
         WorkflowAPI.setProjectActiveAndEnsureItsLoaded("projectId");
 
-        assertThat(wpm.getCachedWorkflow("projectId")).isNotNull();
-        assertThat(wpm.isActiveWorkflowProject("projectId")).isTrue();
+        assertThat(wpm.getCachedProject("projectId")).isNotNull();
+        assertThat(wpm.isActiveProject("projectId")).isTrue();
     }
 
     @AfterEach
     void cleanUp() {
-        WorkflowProjectManager.getInstance().removeWorkflowProject("projectId");
+        ProjectManager.getInstance().removeProject("projectId");
         WorkflowManagerUtil.disposeWorkflow(m_wfm);
     }
 

@@ -67,7 +67,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
 import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
@@ -201,16 +201,16 @@ public final class PerspectiveSwitchAddon {
     }
 
     private static void disposeAllWorkflowProjects() {
-        var wpm = WorkflowProjectManager.getInstance();
-        wpm.getWorkflowProjectsIds().stream().forEach(projectId -> {
-            wpm.getCachedWorkflow(projectId).ifPresent(t -> {
+        var wpm = ProjectManager.getInstance();
+        wpm.getProjectIds().stream().forEach(projectId -> {
+            wpm.getCachedProject(projectId).ifPresent(t -> {
                 try {
                     CoreUtil.cancelAndCloseLoadedWorkflow(t);
                 } catch (InterruptedException e) { // NOSONAR
                     NodeLogger.getLogger(PerspectiveSwitchAddon.class).error(e);
                 }
             });
-            wpm.removeWorkflowProject(projectId);
+            wpm.removeProject(projectId);
         });
     }
 

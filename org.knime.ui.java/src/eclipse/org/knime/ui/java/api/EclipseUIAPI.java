@@ -66,13 +66,13 @@ import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.ui.workflowcoach.data.NodeTripleProviderFactory;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.PerspectiveSwitchAddon;
-import org.knime.ui.java.api.SaveAndCloseWorkflows.PostWorkflowCloseAction;
+import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.ui.p2.actions.InvokeInstallSiteAction;
 import org.knime.workbench.ui.p2.actions.InvokeUpdateAction;
@@ -199,9 +199,9 @@ final class EclipseUIAPI {
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             // NOTE: if no classic UI has been loaded, yet,
             // all the open workflow projects will be closed on perspective switch
-            var proceed = SaveAndCloseWorkflows.saveAndCloseWorkflowsInteractively(
-                WorkflowProjectManager.getInstance().getWorkflowProjectsIds(), DesktopAPI.getDeps(EventConsumer.class),
-                PostWorkflowCloseAction.SWITCH_PERSPECTIVE) == 1;
+            var proceed = SaveAndCloseProjects.saveAndCloseProjectsInteractively(
+                ProjectManager.getInstance().getProjectIds(), DesktopAPI.getDeps(EventConsumer.class),
+                PostProjectCloseAction.SWITCH_PERSPECTIVE) == 1;
             if (!proceed) {
                 return;
             }

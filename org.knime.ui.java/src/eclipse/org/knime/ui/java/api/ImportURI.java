@@ -134,7 +134,7 @@ public final class ImportURI {
 
         if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
-            return OpenWorkflow.openWorkflowCopy(repoObjectImport);
+            return OpenProject.openProjectCopy(repoObjectImport);
         } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
             return checkAndInstallExtension(extensionImport);
         } else {
@@ -251,7 +251,7 @@ public final class ImportURI {
             ImportAPI.importComponent(projectId, workflowId, repoObjectImport.getKnimeURI(), true, canvasX, canvasY);
         } else if (entityImport instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
-            return OpenWorkflow.openWorkflowCopy(repoObjectImport);
+            return OpenProject.openProjectCopy(repoObjectImport);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
             return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId,
                 workflowId, canvasX, canvasY);
