@@ -5,19 +5,20 @@ import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 
 const selectedNodeTemplate = ref<NodeTemplate | null>(null);
 
-let hasWatcherBeenAdded = false;
-
-const useNodeDescriptionPanel = () => {
+const useNodeDescriptionPanel = (shouldWatch = false) => {
   const store = useStore();
 
   const isSideBarOpen = computed(() => store.state.panel.isExtensionPanelOpen);
 
   const isKaiActive = computed(() => {
     const activeProjectId = store.state.application.activeProjectId;
-    return store.state.panel.activeTab[activeProjectId] === TABS.AI_CHAT;
+    return (
+      isSideBarOpen.value &&
+      store.state.panel.activeTab[activeProjectId] === TABS.AI_CHAT
+    );
   });
 
-  if (!hasWatcherBeenAdded) {
+  if (shouldWatch) {
     watch(isSideBarOpen, (isOpen) => {
       if (!isOpen) {
         setTimeout(() => {
@@ -26,17 +27,15 @@ const useNodeDescriptionPanel = () => {
         }, 50);
       }
     });
-    hasWatcherBeenAdded = true;
   }
 
   const toggleNodeDescription = ({ isSelected, nodeTemplate }) => {
-    if (!isSelected) {
+    if (isSelected) {
+      store.dispatch("panel/closeExtensionPanel");
+    } else {
       store.dispatch("panel/openExtensionPanel");
       selectedNodeTemplate.value = nodeTemplate;
-      return;
     }
-
-    store.dispatch("panel/closeExtensionPanel");
   };
 
   const closeNodeDescription = () => {
@@ -48,6 +47,7 @@ const useNodeDescriptionPanel = () => {
     isKaiActive,
     toggleNodeDescription,
     closeNodeDescription,
+    selectedNodeTemplate,
   };
 };
 

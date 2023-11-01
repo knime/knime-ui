@@ -37,7 +37,7 @@ const props = withDefaults(defineProps<Props>(), {
 const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
   role: props.role,
   nodes: props.nodes,
-  callback: () => emit("nodeTemplatesLoaded")
+  callback: () => emit("nodeTemplatesLoaded"),
 });
 
 const isUser = computed(() => props.role === "user");
@@ -50,13 +50,13 @@ const isUser = computed(() => props.role === "user");
         <UserIcon v-if="isUser" />
         <KnimeIcon v-else />
       </div>
+      <References :references="references" />
     </div>
     <div class="body" :class="{ user: isUser, error: isError }">
       <div class="content">
         <!-- eslint-disable vue/no-v-html  -->
         <div v-if="content" v-html="content" />
         <Placeholder v-else />
-        <References :references="references" />
       </div>
       <Nodes :node-templates="nodeTemplates" />
       <Extensions :extensions="uninstalledExtensions" />
@@ -76,10 +76,14 @@ const isUser = computed(() => props.role === "user");
 
   & .header {
     height: 21px;
+    display: flex;
+    flex-direction: row;
+    flex-direction: row-reverse;
 
     & .icon {
       position: absolute;
       top: 0px;
+      left: 0;
       background-color: var(--knime-white);
       border: 2px solid var(--knime-porcelain);
       border-radius: 100%;
@@ -90,6 +94,7 @@ const isUser = computed(() => props.role === "user");
       align-items: center;
 
       &.user {
+        left: auto;
         right: 0;
       }
 

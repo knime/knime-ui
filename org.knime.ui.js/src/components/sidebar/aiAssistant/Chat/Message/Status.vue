@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import LoadingIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 
-const props = defineProps<{ status: string }>();
+const props = defineProps<{ status?: string }>();
 </script>
 
 <template>
@@ -29,7 +29,6 @@ const props = defineProps<{ status: string }>();
   flex-direction: row;
   align-items: center;
   gap: 5px;
-  padding: 0 5px 5px;
 
   & svg.loading-icon {
     animation: rotate-animation 2s linear infinite;

@@ -3,9 +3,9 @@ import { ref, watch, nextTick, computed } from "vue";
 
 import Message from "./Message/Message.vue";
 import ChatControls from "./ChatControls.vue";
+import NodeDescriptionPortal from "./NodeDescriptionPortal.vue";
 
 import useUiStrings from "../useUiStrings";
-import useNodeDescriptionPanel from "./useNodeDescriptionPanel";
 import useChat from "./useChat";
 import type { ChainType } from "../types";
 
@@ -15,8 +15,6 @@ const props = defineProps<{
 
 const { uiStrings } = useUiStrings();
 const systemPrompt = computed(() => uiStrings.welcome_message[props.chainType]);
-
-const { toggleNodeDescription } = useNodeDescriptionPanel();
 
 const {
   messages,
@@ -53,7 +51,6 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
         :key="index"
         v-bind="message"
         @node-templates-loaded="scrollToBottomAfterNextTick"
-        @show-node-description="toggleNodeDescription($event)"
       />
       <Message
         v-if="isProcessing"
@@ -70,6 +67,7 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
       @send-message="sendMessage"
       @abort="abortSendMessage"
     />
+    <NodeDescriptionPortal />
   </div>
 </template>
 

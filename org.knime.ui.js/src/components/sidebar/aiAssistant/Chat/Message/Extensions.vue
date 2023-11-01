@@ -1,106 +1,79 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed } from "vue";
+import { isEmpty } from "lodash";
 
-import ExpandTransition from "webapps-common/ui/components/transitions/ExpandTransition.vue";
-import BaseButton from "webapps-common/ui/components/BaseButton.vue";
-import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
-import ArrowIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
+import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
+import Collapser from "webapps-common/ui/components/Collapser.vue";
+import Button from "webapps-common/ui/components/Button.vue";
+import LinkIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
 
 import type { ExtensionWithNodes } from "../../types";
 
-defineProps<{ extensions: ExtensionWithNodes[] }>();
+const props = defineProps<{
+  extensions: { [key: string]: ExtensionWithNodes };
+}>();
 
-const isExpanded = ref(false);
+const hasExtensions = computed(() => !isEmpty(props.extensions));
 
-const extensionUrl = (extension: ExtensionWithNodes) => {
+const openNodeInBrowser = (
+  extension: ExtensionWithNodes,
+  factoryName: string,
+) => {
   const vendor = encodeURI(`${extension.owner.toLowerCase()}`);
-  return `https://hub.knime.com/${vendor}/extensions/${extension.featureSymbolicName}/latest`;
-};
-
-const openExtensionInBrowser = (extension) => window.open(extensionUrl(extension));
-const openNodeInBrowser = (extension, factoryName: string) => {
-  const url = `${extensionUrl(extension)}/${factoryName}`;
+  const extensionUrl = `https://hub.knime.com/${vendor}/extensions/${extension.featureSymbolicName}/latest`;
+  const url = `${extensionUrl}/${factoryName}`;
   window.open(url);
 };
 </script>
 
 <template>
-  <div v-if="extensions">
-    <div
+  <div v-if="hasExtensions" class="extensions">
+    <div class="title"><ExtensionIcon /> Extensions</div>
+
+    <Collapser
       v-for="(extension, featureSymbolicName) in extensions"
-      v-bind="extension"
       :key="featureSymbolicName"
-      class="extension"
+      title="{{ extension.featureName }}"
+      class="extension-collapser"
     >
-      <div class="header">
-        <BaseButton
-          class="dropdown-button"
-          :aria-expanded="String(isExpanded)"
-          @click.prevent="isExpanded = !isExpanded"
-        >
-          <DropdownIcon class="dropdown-icon" :class="{ flip: isExpanded }" />
-        </BaseButton>
-        <a @click="openExtensionInBrowser(extension)">
-          {{ extension.featureName }}
-        </a>
-      </div>
-      <ExpandTransition :is-expanded="isExpanded">
-        <div class="body">
-          <ul>
-            <li v-for="node in extension.nodes" :key="node.factoryName">
-              <a @click="openNodeInBrowser(extension, node.factoryName)">
-                <ArrowIcon />
-                {{ node.title }}
-              </a>
-            </li>
-          </ul>
-        </div>
-      </ExpandTransition>
-    </div>
+      <template #title>
+        {{ "extension.featureName" }}
+      </template>
+      <ul>
+        <li v-for="node in extension.nodes" :key="node.factoryName">
+          <Button
+            class="button"
+            @click="openNodeInBrowser(extension, node.factoryName)"
+          >
+            <div class="node-name">{{ node.title }}</div>
+            <LinkIcon />
+          </Button>
+        </li>
+      </ul>
+    </Collapser>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.extension {
-  background-color: var(--knime-white);
-  padding: 0 8px;
-  margin-bottom: 8px;
+& .extensions {
+  margin-top: 30px;
 
-  & .header {
-    padding: 8px 0;
+  & .title {
     display: flex;
-    align-items: center;
+    font-size: 16px;
+    font-weight: 700;
 
-    & a {
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    & .dropdown-button {
-      all: unset;
-      margin-right: 8px;
-      margin-bottom: -1px;
-
-      & .dropdown-icon {
-        @mixin svg-icon-size 18;
-
-        stroke: var(--knime-masala);
-        transition: transform 0.4s ease-in-out;
-
-        &.flip {
-          transform: scaleY(-1);
-        }
-      }
+    & svg {
+      @mixin svg-icon-size 20;
+      margin-top: -1px;
+      margin-right: 5px;
     }
   }
 
-  & .body {
-    padding-top: 8px;
-    padding-bottom: 25px;
-    margin-bottom: 5px;
+  .extension-collapser {
+    background-color: var(--knime-white);
 
     & ul {
       list-style-type: none;
@@ -108,18 +81,25 @@ const openNodeInBrowser = (extension, factoryName: string) => {
       padding: 0;
 
       & li {
-        padding-left: 2px;
+        & .button {
+          display: flex;
+          width: 100%;
+          padding: 5px 8px 5px 2px;
+          text-align: initial;
+          border-radius: 0;
+          font-size: 11px;
+          font-weight: 500;
 
-        & a {
-          text-decoration: none;
-          cursor: pointer;
+          & .node-name {
+            flex: 1;
+          }
 
           & svg {
-            @mixin svg-icon-size 18;
+            @mixin svg-icon-size 12;
 
             stroke: var(--knime-masala);
-            margin-right: 12px;
-            margin-bottom: -3px;
+            margin-right: 6px;
+            margin-top: 2px;
           }
         }
       }

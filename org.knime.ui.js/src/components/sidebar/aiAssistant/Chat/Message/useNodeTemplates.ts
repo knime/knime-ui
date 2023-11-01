@@ -29,7 +29,7 @@ const getInternalFactoryName = (factoryName: string, title: string) => {
 const useNodeTemplates = ({
   role,
   nodes,
-  callback
+  callback,
 }: {
   role: string;
   nodes: NodeWithExtensionInfo[];

@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import ExternalLinkIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
+import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 const props = defineProps<{ references: {} }>();
 
-const openReferences = (urls) => urls.forEach((url) => window.open(url));
+const openReferences = () => {
+  const urls = Object.values(props.references).flat() as string[];
+  urls.forEach((url) => window.open(url));
+};
 
 const hasReferences = computed(
   () => props.references && Object.keys(props.references).length > 0,
@@ -14,35 +17,20 @@ const hasReferences = computed(
 </script>
 
 <template>
-  <div v-if="hasReferences" class="references">
-    <div v-for="(urls, refName) in references" :key="refName">
-      <Button class="ref-button" @click="openReferences(urls)"
-        >Sources in {{ refName }} <ExternalLinkIcon />
-      </Button>
-    </div>
-  </div>
+  <Button v-if="hasReferences" class="references" @click="openReferences">
+    <HelpIcon />
+  </Button>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
 & .references {
-  padding-top: 13px;
+  padding: 0;
 
   & svg {
-    margin-right: 3px;
-
-    @mixin svg-icon-size 10;
-  }
-
-  & .ref-button {
-    padding: 0;
-    font-size: 12px;
-
-    & svg {
-      margin-left: 2px;
-      margin-bottom: -1px;
-    }
+    @mixin svg-icon-size 11;
+    stroke: var(--knime-dove-gray);
   }
 }
 </style>
