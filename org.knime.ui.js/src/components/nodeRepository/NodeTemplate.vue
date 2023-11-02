@@ -1,8 +1,9 @@
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, type PropType } from "vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CircleHelp from "webapps-common/ui/assets/img/icons/circle-help.svg";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 /**
  * Basic NodeTemplate without any drag or insert features. This component should stay reusable.
@@ -24,7 +25,7 @@ export default defineComponent({
       default: null,
     },
     displayMode: {
-      type: String,
+      type: String as PropType<NodeRepositoryDisplayModesType>,
       default: "icon",
     },
     isSelected: {

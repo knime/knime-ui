@@ -27,11 +27,11 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 // current size live updated while resize
-const currentSecondarySize = ref<number>(props.secondarySize);
+const currentSecondarySize = ref(props.secondarySize);
 
 // the last really defined size (which is never 0 for hidden)
 // start with secondary size to ensure that we open closed ones to a nice size
-const previousSecondarySize = ref<number>(props.secondarySize);
+const previousSecondarySize = ref(props.secondarySize);
 
 // computed states
 const mainSize = computed(() => 100 - currentSecondarySize.value);

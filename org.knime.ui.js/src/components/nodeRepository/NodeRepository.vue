@@ -134,16 +134,19 @@ export default {
               title="Switch between icon and list view"
               @click="toggleListView"
             >
-              <ListIcon v-if="displayMode === 'list'" />
-              <ListIconCheck v-else />
+              <ListIcon v-if="displayMode === 'list'" class="list-icon" />
+              <ListIconCheck v-else class="list-icon" />
             </FunctionButton>
             <FunctionButton
               class="filter-button"
               title="Open search filters"
               @click="openKnimeUIPreferencePage"
             >
-              <FilterCheckIcon v-if="hasNodeCollectionActive" />
-              <FilterIcon v-else />
+              <FilterCheckIcon
+                v-if="hasNodeCollectionActive"
+                class="filter-icon"
+              />
+              <FilterIcon v-else class="filter-icon" />
             </FunctionButton>
           </div>
         </div>
@@ -243,7 +246,7 @@ export default {
         align-items: center;
         justify-content: center;
 
-        & svg {
+        & .list-icon {
           @mixin svg-icon-size 18;
 
           stroke: var(--knime-masala);
@@ -257,7 +260,7 @@ export default {
         align-items: center;
         justify-content: center;
 
-        & svg {
+        & .filter-icon {
           @mixin svg-icon-size 18;
 
           stroke: var(--knime-masala);
