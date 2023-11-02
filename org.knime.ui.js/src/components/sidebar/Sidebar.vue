@@ -79,7 +79,7 @@ export default defineComponent({
         },
         {
           name: TABS.NODE_REPOSITORY,
-          title: "Node repository",
+          title: "Nodes",
           icon: PlusIcon,
           isActive: this.isTabActive(TABS.NODE_REPOSITORY),
           isExpanded: this.expanded,

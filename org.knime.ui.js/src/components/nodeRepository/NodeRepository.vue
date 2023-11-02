@@ -150,7 +150,11 @@ export default {
         <hr />
         <SearchBar
           :model-value="$store.state.nodeRepository.query"
-          placeholder="Search Nodes"
+          :placeholder="
+            hasNodeCollectionActive
+              ? 'Search starter nodes'
+              : 'Search all nodes'
+          "
           class="search-bar"
           @clear="$store.dispatch('nodeRepository/clearSearchParams')"
           @update:model-value="

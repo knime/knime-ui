@@ -2,13 +2,8 @@
 import { defineComponent, type PropType } from "vue";
 import { mapActions, mapGetters, mapState } from "vuex";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
-import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
-
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
-import { API } from "@api";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
@@ -61,9 +56,6 @@ export default defineComponent({
     SearchBar,
     NodePortActiveConnector,
     FloatingMenu,
-    FunctionButton,
-    FilterIcon,
-    FilterCheckIcon,
   },
   props: {
     nodeId: {
@@ -88,7 +80,6 @@ export default defineComponent({
   computed: {
     ...mapState("application", [
       "hasNodeRecommendationsEnabled",
-      "hasNodeCollectionActive",
       "availablePortTypes",
     ]),
     ...mapState("settings", {
@@ -233,9 +224,6 @@ export default defineComponent({
         e.stopPropagation();
       }
     },
-    openKnimeUIPreferencePage() {
-      API.desktop.openWebUIPreferencePage();
-    },
   },
 });
 </script>
@@ -262,7 +250,7 @@ export default defineComponent({
         <SearchBar
           ref="search"
           :model-value="$store.state.quickAddNodes.query"
-          placeholder="Search all compatible nodes"
+          placeholder="Search compatible nodes"
           class="search-bar"
           tabindex="-1"
           @update:model-value="
@@ -273,14 +261,6 @@ export default defineComponent({
           @keydown.down.prevent.stop="searchDownKey"
           @keydown="searchHandleShortcuts"
         />
-        <FunctionButton
-          class="filter-button"
-          title="Open search filters"
-          @click="openKnimeUIPreferencePage"
-        >
-          <FilterCheckIcon v-if="hasNodeCollectionActive" />
-          <FilterIcon v-else />
-        </FunctionButton>
       </div>
       <hr />
       <QuickAddNodeDisabledWorkflowCoach
@@ -386,7 +366,6 @@ export default defineComponent({
   }
 
   & .search-bar {
-    font-family: "Roboto Condensed", sans-serif;
     height: 40px;
     font-size: 17px;
     flex: 1;
