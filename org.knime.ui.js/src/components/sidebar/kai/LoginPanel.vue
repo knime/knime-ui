@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
-
 import BasePanel from "./BasePanel.vue";
 import useHubAuth from "./useHubAuth";
 

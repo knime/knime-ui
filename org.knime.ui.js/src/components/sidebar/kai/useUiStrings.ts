@@ -1,8 +1,6 @@
 import { ref, reactive } from "vue";
 import { API } from "@api";
 
-let isHubStringsFetched = false;
-
 const isServerAvailable = ref(true);
 const isLoading = ref(false);
 const uiStrings = reactive({});
@@ -22,14 +20,9 @@ const fetchUiStrings = async () => {
   }
 };
 
-const useUiStrings = () => {
-  // Fetch hubID from the backend only once.
-  // TODO: maybe put on the top level?
-  if (!isHubStringsFetched) {
-    isHubStringsFetched = true;
-    fetchUiStrings();
-  }
+fetchUiStrings();
 
+const useUiStrings = () => {
   return {
     uiStrings,
     isLoading,

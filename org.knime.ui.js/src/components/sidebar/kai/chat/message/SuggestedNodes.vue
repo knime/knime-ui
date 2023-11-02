@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { isEmpty } from "lodash";
-
 import NodeIcon from "webapps-common/ui/assets/img/icons/node.svg";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
-import useNodeDescriptionPanel from "../useNodeDescriptionPanel";
+import useNodeDescriptionPanel from "../../useNodeDescriptionPanel";
 
 const props = defineProps<{ nodeTemplates: [] }>();
 
@@ -33,10 +32,12 @@ const hasNodeTemplates = computed(() => !isEmpty(props.nodeTemplates));
 
 & .nodes {
   margin-top: 30px;
+
   & .title {
     display: flex;
     font-size: 16px;
     font-weight: 700;
+    margin-bottom: 10px;
 
     & svg {
       @mixin svg-icon-size 20;

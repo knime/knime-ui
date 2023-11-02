@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
-import Chat from "./Chat/Chat.vue";
+import Chat from "./chat/Chat.vue";
 import BasePanel from "./BasePanel.vue";
 import type { ChainType } from "./types";
+import NodeDescriptionPortal from "./NodeDescriptionPortal.vue";
 
 const chainType = ref<ChainType>("qa");
 </script>
@@ -23,6 +24,7 @@ const chainType = ref<ChainType>("qa");
 
     <Chat v-show="chainType === 'qa'" chain-type="qa" />
     <Chat v-show="chainType === 'build'" chain-type="build" />
+    <NodeDescriptionPortal />
   </BasePanel>
 </template>
 

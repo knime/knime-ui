@@ -52,7 +52,7 @@ export default defineComponent({
       loadingComponent: SidebarContentLoading,
     }),
     AiAssistant: defineAsyncComponent({
-      loader: () => import("@/components/sidebar/aiAssistant/AiAssistant.vue"),
+      loader: () => import("@/components/sidebar/kai/Kai.vue"),
       loadingComponent: SidebarContentLoading,
     }),
     SidebarExtensionPanel,

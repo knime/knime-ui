@@ -1,5 +1,5 @@
 <template>
-  <div class="ai-assistant">
+  <div class="kai-base-panel">
     <div class="header">
       <h2>KNIME AI Assistant</h2>
       <slot name="headerControls" />
@@ -10,7 +10,7 @@
 </template>
 
 <style lang="postcss" scoped>
-.ai-assistant {
+.kai-base-panel {
   font-family: "Roboto";
   font-size: 13px;
   line-height: 150%;

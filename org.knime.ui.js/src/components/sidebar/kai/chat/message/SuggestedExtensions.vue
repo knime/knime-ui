@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { isEmpty } from "lodash";
-
 import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
-import Collapser from "webapps-common/ui/components/Collapser.vue";
-import Button from "webapps-common/ui/components/Button.vue";
 import LinkIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
-
+import Button from "webapps-common/ui/components/Button.vue";
+import KaiCollapser from "./KaiCollapser.vue";
 import type { ExtensionWithNodes } from "../../types";
 
 const props = defineProps<{
@@ -28,16 +26,16 @@ const openNodeInBrowser = (
 
 <template>
   <div v-if="hasExtensions" class="extensions">
-    <div class="title"><ExtensionIcon /> Extensions</div>
+    <div class="header"><ExtensionIcon /> Extensions</div>
 
-    <Collapser
+    <KaiCollapser
       v-for="(extension, featureSymbolicName) in extensions"
       :key="featureSymbolicName"
       title="{{ extension.featureName }}"
       class="extension-collapser"
     >
       <template #title>
-        {{ "extension.featureName" }}
+        <span class="title">{{ extension.featureName }}</span>
       </template>
       <ul>
         <li v-for="node in extension.nodes" :key="node.factoryName">
@@ -50,7 +48,7 @@ const openNodeInBrowser = (
           </Button>
         </li>
       </ul>
-    </Collapser>
+    </KaiCollapser>
   </div>
 </template>
 
@@ -60,10 +58,11 @@ const openNodeInBrowser = (
 & .extensions {
   margin-top: 30px;
 
-  & .title {
+  & .header {
     display: flex;
     font-size: 16px;
     font-weight: 700;
+    margin-bottom: 10px;
 
     & svg {
       @mixin svg-icon-size 20;
@@ -75,6 +74,11 @@ const openNodeInBrowser = (
   .extension-collapser {
     background-color: var(--knime-white);
 
+    & .title {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
     & ul {
       list-style-type: none;
       margin: 0;
@@ -83,12 +87,14 @@ const openNodeInBrowser = (
       & li {
         & .button {
           display: flex;
+          align-items: center;
           width: 100%;
           padding: 5px 8px 5px 2px;
           text-align: initial;
           border-radius: 0;
           font-size: 11px;
           font-weight: 500;
+          color: var(--knime-masala);
 
           & .node-name {
             flex: 1;
@@ -98,8 +104,25 @@ const openNodeInBrowser = (
             @mixin svg-icon-size 12;
 
             stroke: var(--knime-masala);
-            margin-right: 6px;
+            margin-right: 0;
             margin-top: 2px;
+          }
+
+          &:hover,
+          &:focus {
+            outline: none;
+            color: var(--theme-button-function-foreground-color-hover);
+            background-color: var(
+              --theme-button-function-background-color-hover
+            );
+
+            & svg {
+              stroke: var(--theme-button-function-foreground-color-hover);
+            }
+
+            & svg path[fill]:not([fill=""], [fill="none"]) {
+              fill: var(--theme-button-function-foreground-color-hover);
+            }
           }
         }
       }

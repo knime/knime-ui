@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
-
+import { computed } from "vue";
 import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
-
-import Placeholder from "./Placeholder.vue";
-import Status from "./Status.vue";
-import References from "./References.vue";
-import Extensions from "./Extensions.vue";
-import Nodes from "./Nodes.vue";
-
+import MessagePlaceholder from "./MessagePlaceholder.vue";
+import KaiStatus from "./KaiStatus.vue";
+import KaiReferences from "./KaiReferences.vue";
+import SuggestedExtensions from "./SuggestedExtensions.vue";
+import SuggestedNodes from "./SuggestedNodes.vue";
 import useNodeTemplates from "./useNodeTemplates";
 import type { NodeWithExtensionInfo } from "../../types";
 
@@ -44,23 +41,23 @@ const isUser = computed(() => props.role === "user");
 </script>
 
 <template>
-  <div class="chat-message">
+  <div class="message">
     <div class="header">
       <div class="icon" :class="{ user: isUser }">
         <UserIcon v-if="isUser" />
         <KnimeIcon v-else />
       </div>
-      <References :references="references" />
+      <KaiReferences :references="references" />
     </div>
     <div class="body" :class="{ user: isUser, error: isError }">
       <div class="content">
         <!-- eslint-disable vue/no-v-html  -->
         <div v-if="content" v-html="content" />
-        <Placeholder v-else />
+        <MessagePlaceholder v-else />
       </div>
-      <Nodes :node-templates="nodeTemplates" />
-      <Extensions :extensions="uninstalledExtensions" />
-      <Status :status="statusUpdate" />
+      <SuggestedNodes :node-templates="nodeTemplates" />
+      <SuggestedExtensions :extensions="uninstalledExtensions" />
+      <KaiStatus :status="statusUpdate" />
     </div>
   </div>
 </template>
@@ -68,7 +65,7 @@ const isUser = computed(() => props.role === "user");
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.chat-message {
+.message {
   position: relative;
   margin-bottom: 20px;
   font-size: 13px;

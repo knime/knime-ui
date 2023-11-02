@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-
 import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 

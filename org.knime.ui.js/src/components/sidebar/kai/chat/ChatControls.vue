@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useTextareaAutosize } from "@vueuse/core";
-
-import Button from "webapps-common/ui/components/Button.vue";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SendIcon from "webapps-common/ui/assets/img/icons/paper-flier.svg";
-import AbortIcon from "webapps-common/ui/assets/img/icons/circle-close.svg";
+import AbortIcon from "webapps-common/ui/assets/img/icons/close.svg";
 
 const emit = defineEmits(["sendMessage", "abort"]);
 
@@ -60,10 +59,14 @@ const disabled = computed(() => !input.value && !props.isProcessing);
       maxlength="300"
       @keydown="handleKeyDown"
     />
-    <Button class="send-button" :disabled="disabled" @click="handleClick">
+    <FunctionButton
+      class="send-button"
+      :disabled="disabled"
+      @click="handleClick"
+    >
       <AbortIcon v-if="isProcessing" class="abort-icon" />
       <SendIcon v-else />
-    </Button>
+    </FunctionButton>
   </div>
 </template>
 
@@ -73,18 +76,18 @@ const disabled = computed(() => !input.value && !props.isProcessing);
 .chat-controls {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: flex-end;
   position: relative;
   background-color: white;
   border: 1px solid var(--knime-stone-gray);
   overflow: hidden;
-  border-radius: 3px;
 
   & .textarea {
+    color: 1px solid var(--knime-stone-gray);
     font-size: 13px;
     font-weight: 300;
-    line-height: 18px;
-    padding: 10px;
+    line-height: 150%;
+    padding: 13px 10px;
     max-height: 120px;
     min-height: 50px;
     width: 100%;
@@ -97,15 +100,16 @@ const disabled = computed(() => !input.value && !props.isProcessing);
   }
 
   & .send-button {
-    padding: 0;
-    padding-top: 10px;
+    margin: 0 8px 11px 0;
 
     & svg {
-      @mixin svg-icon-size 23;
+      @mixin svg-icon-size 18;
+      stroke: var(--knime-dove-gray);
+      margin-left: -2px;
     }
 
     & svg.abort-icon {
-      stroke: var(--knime-coral-dark);
+      stroke: var(--knime-dove-gray);
     }
   }
 }

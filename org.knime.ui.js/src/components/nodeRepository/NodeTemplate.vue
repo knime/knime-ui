@@ -174,6 +174,7 @@ export default defineComponent({
     font-weight: 700;
 
     & span {
+      line-height: 1.15;
       max-height: 26px;
       max-width: 90px;
       /* stylelint-disable-next-line value-no-vendor-prefix */

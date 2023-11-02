@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, computed } from "vue";
-
-import Message from "./Message/Message.vue";
+import Message from "./message/Message.vue";
 import ChatControls from "./ChatControls.vue";
-import NodeDescriptionPortal from "./NodeDescriptionPortal.vue";
-
 import useUiStrings from "../useUiStrings";
 import useChat from "./useChat";
 import type { ChainType } from "../types";
@@ -67,7 +64,6 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
       @send-message="sendMessage"
       @abort="abortSendMessage"
     />
-    <NodeDescriptionPortal />
   </div>
 </template>
 

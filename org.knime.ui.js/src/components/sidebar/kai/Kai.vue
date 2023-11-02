@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
-
 import useHubAuth from "./useHubAuth";
 import useUiStrings from "./useUiStrings";
-
 import ErrorPanel from "./ErrorPanel.vue";
 import DisclaimerPanel from "./DisclaimerPanel.vue";
 import LoginPanel from "./LoginPanel.vue";
