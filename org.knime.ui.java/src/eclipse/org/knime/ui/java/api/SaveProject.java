@@ -174,7 +174,7 @@ final class SaveProject {
             final var path = newContext.getExecutorInfo().getLocalWorkflowPath().toFile();
             snc.saveAsTemplate(path, DesktopAPUtil.toExecutionMonitor(monitor));
             wfm.setWorkflowContext(newContext);
-            wfm.unsetNameUndirty(); // Since component project do not have names
+            wfm.getNodeContainerDirectory().changeRoot(path);
         } catch (IOException | CanceledExecutionException | LockFailedException | InvalidSettingsException e) {
             final var title = "Component save attempt";
             final var message = "Saving the component didn't work";
