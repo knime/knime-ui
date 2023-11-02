@@ -52,7 +52,7 @@ export default defineComponent({
       loadingComponent: SidebarContentLoading,
     }),
     KaiSidebar: defineAsyncComponent({
-      loader: () => import("@/components/kai/Kai.vue"),
+      loader: () => import("@/components/kaiSidebar/KaiSidebar.vue"),
       loadingComponent: SidebarContentLoading,
     }),
     SidebarExtensionPanel,
