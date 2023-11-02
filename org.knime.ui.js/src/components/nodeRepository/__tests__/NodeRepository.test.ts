@@ -3,6 +3,7 @@ import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import * as panelStore from "@/store/panel";
+import * as settingsStore from "@/store/settings";
 import SearchBar from "@/components/common/SearchBar.vue";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 
@@ -96,6 +97,7 @@ describe("NodeRepository", () => {
         },
       },
       panel: panelStore,
+      settings: settingsStore,
       application: {
         state: { activeProjectId: "project1" },
       },
@@ -131,7 +133,7 @@ describe("NodeRepository", () => {
 
       expect(getAllNodesMock).toHaveBeenCalled();
       expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
-        { text: "Repository" },
+        { text: "Nodes" },
       ]);
       expect(wrapper.findComponent(SearchBar).exists()).toBe(true);
       expect(wrapper.findComponent(CategoryResults).exists()).toBe(true);
@@ -146,7 +148,7 @@ describe("NodeRepository", () => {
 
       expect(getAllNodesMock).not.toHaveBeenCalled();
       expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
-        { text: "Repository" },
+        { text: "Nodes" },
       ]);
       expect(wrapper.findComponent(SearchBar).exists()).toBe(true);
       expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
@@ -200,7 +202,7 @@ describe("NodeRepository", () => {
     it("de-selects tag and clears search using back to Repository link", () => {
       const { wrapper, clearSearchParamsMock } = doMount();
       expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
-        { id: "clear", text: "Repository" },
+        { id: "clear", text: "Nodes" },
         { text: "Results" },
       ]);
       wrapper
@@ -231,7 +233,7 @@ describe("NodeRepository", () => {
       });
 
       expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
-        { id: "clear", text: "Repository" },
+        { id: "clear", text: "Nodes" },
         { text: "Results" },
       ]);
     });

@@ -89,11 +89,13 @@ describe("CategoryResults", () => {
     expect(nodeCategory.at(0).props()).toStrictEqual({
       tag: "tag:1",
       selectedNode: { id: "selected-node-id" },
+      displayMode: "icon",
       nodes: ["node:1"],
     });
     expect(nodeCategory.at(1).props()).toStrictEqual({
       tag: "tag:2",
       selectedNode: { id: "selected-node-id" },
+      displayMode: "icon",
       nodes: ["node:1"],
     });
   });

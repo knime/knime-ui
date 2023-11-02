@@ -73,16 +73,14 @@ describe("Sidebar", () => {
     expect(wrapper.findComponent(PlusIcon).exists()).toBe(true);
 
     expect(wrapper.find('[title="Description"]').classes("active")).toBe(true);
-    expect(wrapper.find('[title="Node repository"]').classes("active")).toBe(
-      false,
-    );
+    expect(wrapper.find('[title="Nodes"]').classes("active")).toBe(false);
     wrapper.findAll("li").forEach((wp) => {
       expect(wp.classes("expanded")).toBe(true);
     });
   });
 
   it("expands and activates tab", async () => {
-    const tabName = "Node repository";
+    const tabName = "Nodes";
     const { wrapper } = doMount();
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(true);
 
@@ -106,19 +104,19 @@ describe("Sidebar", () => {
   it("click on node repository icon when description panel is open closes both panels", async () => {
     const { wrapper, $store } = doMount();
     // open node repository
-    await wrapper.find('[title="Node repository"]').trigger("click");
+    await wrapper.find('[title="Nodes"]').trigger("click");
     // emulate opening the description panel
     await $store.dispatch("panel/openExtensionPanel");
     expect($store.state.panel.isExtensionPanelOpen).toBe(true);
 
-    await wrapper.find('[title="Node repository"]').trigger("click");
+    await wrapper.find('[title="Nodes"]').trigger("click");
     expect($store.state.panel.isExtensionPanelOpen).toBe(false);
   });
 
   it("click on a different tab when extension panel is open, closes the extension panel", async () => {
     const { wrapper, $store } = doMount();
 
-    await wrapper.find('[title="Node repository"]').trigger("click");
+    await wrapper.find('[title="Nodes"]').trigger("click");
     // emulate opening the description panel
     await $store.dispatch("panel/openExtensionPanel");
 
@@ -126,7 +124,7 @@ describe("Sidebar", () => {
     await wrapper.find('[title="Description"]').trigger("click");
 
     // back to node repository
-    await wrapper.find('[title="Node repository"]').trigger("click");
+    await wrapper.find('[title="Nodes"]').trigger("click");
 
     expect($store.state.panel.isExtensionPanelOpen).toBe(false);
   });
@@ -153,9 +151,7 @@ describe("Sidebar", () => {
       isWorkflowEmptyMock: vi.fn().mockReturnValue(true),
     });
 
-    expect(wrapper.find('[title="Node repository"]').classes("active")).toBe(
-      true,
-    );
+    expect(wrapper.find('[title="Nodes"]').classes("active")).toBe(true);
     expect(wrapper.find('[title="Description"]').classes("active")).toBe(false);
     wrapper.findAll("li").forEach((wp) => {
       expect(wp.classes("expanded")).toBe(true);
