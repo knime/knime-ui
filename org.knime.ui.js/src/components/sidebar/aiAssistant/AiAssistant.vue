@@ -59,8 +59,7 @@ const uiStrings = ref({
 
 onBeforeMount(async () => {
   try {
-    const uiStringsResponse = await API.desktop.getUiStrings();
-    uiStrings.value = JSON.parse(uiStringsResponse);
+    uiStrings.value = await API.desktop.getUiStrings();
   } catch (error) {
     consola.error("Could not fetch uiStrings.", error);
   }

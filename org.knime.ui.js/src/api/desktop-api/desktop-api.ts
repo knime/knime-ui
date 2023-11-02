@@ -655,14 +655,15 @@ export const makeAiRequest = ({
   );
 };
 
-export const getUiStrings = () => {
-  return callBrowserFunction(
+export const getUiStrings = async () => {
+  const response = await callBrowserFunction(
     window.getUiStrings,
     [],
     "Could not get UI strings",
     true,
     { block: false },
   );
+  return JSON.parse(response);
 };
 
 export const getHubID = () => {
