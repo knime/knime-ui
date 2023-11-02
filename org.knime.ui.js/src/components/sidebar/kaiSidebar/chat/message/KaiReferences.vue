@@ -20,7 +20,12 @@ const hasReferences = computed(() => !isEmpty(props.references));
 </script>
 
 <template>
-  <Button v-if="hasReferences" class="references" @click="openReferences">
+  <Button
+    v-if="hasReferences"
+    class="references"
+    title="Related Topics"
+    @click="openReferences"
+  >
     <HelpIcon />
   </Button>
 </template>
