@@ -26,6 +26,11 @@ export const fetchWorkflowGroupContentResponse = {
       name: "File 2",
       type: "Workflow",
     },
+    {
+      id: "8",
+      name: "Component 1",
+      type: "Component",
+    },
   ],
 };
 

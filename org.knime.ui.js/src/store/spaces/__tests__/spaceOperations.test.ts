@@ -571,6 +571,7 @@ describe("spaces::spaceOperations", () => {
       it("should return the opened workflow items", () => {
         const openProjects = [
           { origin: { providerId: "local", spaceId: "local", itemId: "4" } },
+          { origin: { providerId: "local", spaceId: "local", itemId: "8" } },
         ];
 
         const { store } = loadStore({ openProjects });
@@ -594,7 +595,7 @@ describe("spaces::spaceOperations", () => {
 
         expect(
           store.getters["spaces/getOpenedWorkflowItems"](projectId),
-        ).toEqual(["4"]);
+        ).toEqual(["4", "8"]);
       });
     });
 
