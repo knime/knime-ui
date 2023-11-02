@@ -14,12 +14,12 @@ export interface SettingsState {
   };
 }
 
-const getItemFromLocalStorage = <T>(key: string, defaultValue: T = null): T => {
+const loadItem = <T>(key: string, defaultValue: T = null): T => {
   const item = window?.localStorage?.getItem(key);
   return item === null ? defaultValue : JSON.parse(item);
 };
 
-const setItemFromLocalStorage = (key: string, value: any) => {
+const saveItem = (key: string, value: any) => {
   window?.localStorage?.setItem(key, JSON.stringify(value));
 };
 
@@ -38,7 +38,7 @@ export const mutations: MutationTree<SettingsState> = {
 
 export const actions: ActionTree<SettingsState, RootStoreState> = {
   fetchSettings({ commit }) {
-    const settings = getItemFromLocalStorage(SETTINGS_KEY);
+    const settings = loadItem(SETTINGS_KEY);
     if (settings !== null) {
       commit("updateAllSettings", settings);
     }
@@ -49,6 +49,6 @@ export const actions: ActionTree<SettingsState, RootStoreState> = {
       ...state.settings,
       [payload.key]: payload.value,
     });
-    setItemFromLocalStorage(SETTINGS_KEY, state.settings);
+    saveItem(SETTINGS_KEY, state.settings);
   },
 };
