@@ -1,7 +1,10 @@
 import { ref, watchEffect } from "vue";
 import { useStore } from "@/composables/useStore";
+import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+
 import type { ExtensionWithNodes, NodeWithExtensionInfo } from "./types";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 // TODO: AP-20131 Node identifier in node stats and modern node repo can have clashes
 // This is a temporary fix to avoid problems with the factory name for dynamic factories:
@@ -30,7 +33,7 @@ const useNodeTemplates = ({
   nodes: NodeWithExtensionInfo[];
 }) => {
   // Reactive references to hold the node templates.
-  const nodeTemplates = ref<NodeTemplate[]>([]);
+  const nodeTemplates = ref<NodeTemplateWithExtendedPorts[]>([]);
   const uninstalledExtensions = ref<{ [key: string]: ExtensionWithNodes }>({});
 
   const store = useStore();
@@ -81,7 +84,11 @@ const useNodeTemplates = ({
     );
 
     // Updating the reactive refs with the new values.
-    nodeTemplates.value = _nodeTemplates;
+    nodeTemplates.value = _nodeTemplates.map(
+      toNodeTemplateWithExtendedPorts(
+        store.state.application.availablePortTypes,
+      ),
+    );
     uninstalledExtensions.value = _uninstalledExtensions;
   });
 
