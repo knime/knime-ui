@@ -72,6 +72,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       next();
     });
 
+    await dispatch("settings/fetchSettings", {}, { root: true });
     const applicationState = await API.application.getState({});
     await dispatch("replaceApplicationState", applicationState);
     await dispatch("setActiveProject", { $router });

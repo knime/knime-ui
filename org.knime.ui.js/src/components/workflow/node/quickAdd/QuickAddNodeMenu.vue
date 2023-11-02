@@ -20,6 +20,7 @@ import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePo
 import QuickAddNodeSearchResults from "./QuickAddNodeSearchResults.vue";
 import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
+import type { SettingsState } from "@/store/settings";
 
 const calculatePortOffset = ({
   targetPorts,
@@ -90,6 +91,10 @@ export default defineComponent({
       "hasNodeCollectionActive",
       "availablePortTypes",
     ]),
+    ...mapState("settings", {
+      displayMode: (state: SettingsState) =>
+        state.settings.nodeRepositoryDisplayMode,
+    }),
     ...mapState("canvas", ["zoomFactor"]),
     ...mapState("quickAddNodes", ["recommendedNodes"]),
     ...mapGetters("workflow", ["isWritable", "getNodeById"]),
@@ -288,6 +293,7 @@ export default defineComponent({
           v-if="searchIsActive"
           ref="searchResults"
           v-model:selected-node="selectedNode"
+          :display-mode="displayMode"
           @nav-reached-top="($refs.search as any).focus()"
           @add-node="addNode($event)"
         />
@@ -296,6 +302,7 @@ export default defineComponent({
           ref="recommendationResults"
           v-model:selected-node="selectedNode"
           :disable-recommendations="isContainerNode"
+          :display-mode="displayMode"
           @nav-reached-top="($refs.search as any).focus()"
           @add-node="addNode($event)"
         />

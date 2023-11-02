@@ -5,6 +5,7 @@ import { mapState } from "vuex";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import type { KnimeNode } from "@/api/custom-types";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 export default defineComponent({
   components: {
@@ -19,6 +20,10 @@ export default defineComponent({
     disableRecommendations: {
       type: Boolean,
       default: false,
+    },
+    displayMode: {
+      type: String as PropType<NodeRepositoryDisplayModesType>,
+      default: "icon",
     },
   },
   emits: ["update:selectedNode", "addNode", "navReachedTop"],
@@ -46,6 +51,7 @@ export default defineComponent({
       ref="recommendationResults"
       :selected-node="selectedNode"
       :nodes="recommendedNodes"
+      :display-mode="displayMode"
       :highlight-first="true"
       @nav-reached-top="$emit('navReachedTop')"
       @enter-key="$emit('addNode', $event)"

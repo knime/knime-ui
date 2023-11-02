@@ -1,11 +1,14 @@
-<script>
+<script lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
 import CircleArrowIcon from "webapps-common/ui/assets/img/icons/circle-arrow-right.svg";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
+import { defineComponent, type PropType } from "vue";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 const NODES_PER_ROW_ICON_MODE = 3;
 
-export default {
+export default defineComponent({
   components: {
     Button,
     CircleArrowIcon,
@@ -13,7 +16,7 @@ export default {
   },
   props: {
     nodes: {
-      type: Array,
+      type: Array as PropType<NodeTemplateWithExtendedPorts[]>,
       default: () => [],
     },
     hasMoreNodes: {
@@ -21,7 +24,7 @@ export default {
       default: false,
     },
     displayMode: {
-      type: String,
+      type: String as PropType<NodeRepositoryDisplayModesType>,
       default: "icon",
     },
     selectedNode: {
@@ -63,7 +66,7 @@ export default {
   },
   expose: ["focusFirst", "focusLast"],
   methods: {
-    nodeTemplateProps(node, index) {
+    nodeTemplateProps(node: NodeTemplateWithExtendedPorts, index: number) {
       return {
         nodeTemplate: node,
         isHighlighted:
@@ -87,7 +90,7 @@ export default {
         this.$emit("update:selectedNode", focusNode);
       }
     },
-    domFocusNode(nodeIndex) {
+    domFocusNode(nodeIndex: number) {
       const nodeListElement = this.$el.querySelector(
         `[data-index="${nodeIndex}"]`,
       );
@@ -151,7 +154,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <template>

@@ -7,6 +7,7 @@ import type { PanelState } from "./panel";
 import type { NodeRepositoryState } from "./nodeRepository";
 import type { QuickAddNodesState } from "./quickAddNodes";
 import type { CanvasState } from "./canvas";
+import type { SettingsState } from "./settings";
 
 export interface RootStoreState {
   application: ApplicationState;
@@ -18,4 +19,5 @@ export interface RootStoreState {
   spaces: SpacesState;
   quickAddNodes: QuickAddNodesState;
   aiAssistant: AiAssistantState;
+  settings: SettingsState;
 }

@@ -5,6 +5,7 @@ import { mapActions, mapState } from "vuex";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 export default defineComponent({
   components: {
@@ -15,6 +16,10 @@ export default defineComponent({
     selectedNode: {
       type: [Object, null] as PropType<NodeTemplateWithExtendedPorts | null>,
       required: true,
+    },
+    displayMode: {
+      type: String as PropType<NodeRepositoryDisplayModesType>,
+      default: "icon",
     },
   },
   emits: ["update:selectedNode", "addNode"],
@@ -47,6 +52,7 @@ export default defineComponent({
     :search-actions="searchActions"
     :highlight-first="true"
     :selected-node="selectedNode"
+    :display-mode="displayMode"
     :nodes="nodes"
     @update:selected-node="$emit('update:selectedNode', $event)"
     @item-enter-key="$emit('addNode', $event)"

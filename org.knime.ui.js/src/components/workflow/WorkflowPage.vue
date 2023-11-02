@@ -24,6 +24,17 @@ export default {
   },
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
+    savedSecondarySize: {
+      get() {
+        return this.$store.state.settings.settings.nodeOutputSize;
+      },
+      set(value) {
+        this.$store.dispatch("settings/updateSetting", {
+          key: "nodeOutputSize",
+          value,
+        });
+      },
+    },
   },
 };
 </script>
@@ -35,7 +46,11 @@ export default {
     <Sidebar id="sidebar" />
 
     <main class="workflow-area">
-      <SplitPanel id="kanvasOutputSplitter" direction="down">
+      <SplitPanel
+        id="kanvasOutputSplitter"
+        v-model:secondary-size="savedSecondarySize"
+        direction="down"
+      >
         <WorkflowPanel id="workflow-panel" />
         <template #secondary>
           <NodeOutput />

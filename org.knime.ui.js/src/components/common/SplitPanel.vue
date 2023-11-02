@@ -3,7 +3,6 @@
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import { computed, ref } from "vue";
-import { useStorage } from "@vueuse/core";
 
 interface Props {
   id: string;
@@ -22,15 +21,13 @@ const props = withDefaults(defineProps<Props>(), {
   withTransition: false,
 });
 
-const savedSecondarySize = useStorage(
-  `ui-split-panel-${props.id}`,
-  props.secondarySize,
-);
+interface Emits {
+  (e: "update:secondarySize", size: number): void;
+}
+const emit = defineEmits<Emits>();
 
 // current size live updated while resize
-const currentSecondarySize = ref<number>(
-  savedSecondarySize.value || props.secondarySize,
-);
+const currentSecondarySize = ref<number>(props.secondarySize);
 
 // the last really defined size (which is never 0 for hidden)
 // start with secondary size to ensure that we open closed ones to a nice size
@@ -79,7 +76,7 @@ const onResized = ({ size }: { size: number }) => {
   }
   // update prev size if it did not snap
   previousSecondarySize.value = size;
-  savedSecondarySize.value = size;
+  emit("update:secondarySize", size);
 };
 
 // update our current size on every resize

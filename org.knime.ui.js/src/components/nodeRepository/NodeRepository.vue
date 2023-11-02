@@ -32,17 +32,15 @@ export default {
     ListIcon,
     ListIconCheck,
   },
-  data() {
-    return {
-      displayMode: "icon",
-    };
-  },
   computed: {
     ...mapState("nodeRepository", [
       "nodes",
       "nodesPerCategory",
       "selectedNode",
     ]),
+    ...mapState("settings", {
+      displayMode: (state) => state.settings.nodeRepositoryDisplayMode,
+    }),
     ...mapState("application", ["activeProjectId", "hasNodeCollectionActive"]),
     ...mapState("panel", ["activeTab", "isExtensionPanelOpen"]),
     ...mapGetters("nodeRepository", {
@@ -97,7 +95,10 @@ export default {
       }
     },
     toggleListView() {
-      this.displayMode = this.displayMode === "list" ? "icon" : "list";
+      this.$store.dispatch("settings/updateSetting", {
+        key: "nodeRepositoryDisplayMode",
+        value: this.displayMode === "list" ? "icon" : "list",
+      });
     },
 
     toggleNodeDescription({ isSelected, nodeTemplate }) {

@@ -7,6 +7,7 @@ import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 import ScrollViewContainer from "./ScrollViewContainer.vue";
 import NodeList from "./NodeList.vue";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 export type SearchActions = {
   searchNodesNextPage: () => Promise<any>;
@@ -24,7 +25,7 @@ type Props = {
   searchActions: SearchActions;
   hasNodeCollectionActive: boolean;
   highlightFirst?: boolean;
-  displayMode: string;
+  displayMode: NodeRepositoryDisplayModesType;
 };
 
 const props = withDefaults(defineProps<Props>(), {
