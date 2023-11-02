@@ -2,15 +2,16 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
 import type { RootStoreState } from "./types";
+import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
 
 /**
  * This file contains the Vuex store module for the AI assistant.
  */
 
-interface Message {
+export interface Message {
   role: "assistant" | "user";
   content: string;
-  nodes?: string[];
+  nodes?: NodeWithExtensionInfo[];
   references?: {
     [refName: string]: string[];
   };

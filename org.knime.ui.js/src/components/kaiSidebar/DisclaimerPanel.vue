@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
-import useUiStrings from "./useUiStrings";
+import useKaiServer from "./useKaiServer";
 import BasePanel from "./BasePanel.vue";
 
-const { uiStrings } = useUiStrings();
+const { uiStrings } = useKaiServer();
 
 const emit = defineEmits(["close"]);
 </script>

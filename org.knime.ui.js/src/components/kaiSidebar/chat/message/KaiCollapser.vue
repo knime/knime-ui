@@ -83,10 +83,6 @@ export default {
     align-items: center;
     top: 13px;
 
-    &:hover {
-      /* background-color: var(--theme-button-function-background-color-hover); */
-    }
-
     & .dropdown-icon {
       position: relative;
       margin: auto;
@@ -101,12 +97,6 @@ export default {
         transform: scaleY(-1);
       }
     }
-  }
-
-  &:focus .dropdown {
-    /* whole button gets focus but only dropdown icon is styled */
-
-    /* background-color: var(--theme-button-function-background-color-focus); */
   }
 }
 

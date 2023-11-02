@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
 import BasePanel from "./BasePanel.vue";
-import useUiStrings from "./useUiStrings";
+import useKaiServer from "./useKaiServer";
 
-const { fetchUiStrings, isLoading } = useUiStrings();
+const { fetchUiStrings, isLoading } = useKaiServer();
 </script>
 
 <template>

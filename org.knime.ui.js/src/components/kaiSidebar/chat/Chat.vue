@@ -2,7 +2,7 @@
 import { ref, watch, nextTick, computed } from "vue";
 import Message from "./message/Message.vue";
 import ChatControls from "./ChatControls.vue";
-import useUiStrings from "../useUiStrings";
+import useKaiServer from "../useKaiServer";
 import useChat from "./useChat";
 import type { ChainType } from "../types";
 
@@ -12,7 +12,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { uiStrings } = useUiStrings();
+const { uiStrings } = useKaiServer();
 const systemPrompt = computed(() => uiStrings.welcome_message[props.chainType]);
 
 const {

@@ -1,9 +1,21 @@
 <script setup lang="ts">
+import { watch } from "vue";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
 import useNodeDescriptionPanel from "./useNodeDescriptionPanel";
 
-const { isKaiActive, closeNodeDescription, selectedNodeTemplate } =
-  useNodeDescriptionPanel();
+const {
+  isKaiActive,
+  isExtensionPanelOpen,
+  clearSelectedNodeTemplate,
+  closeNodeDescription,
+  selectedNodeTemplate,
+} = useNodeDescriptionPanel();
+
+watch(isExtensionPanelOpen, (isOpen) => {
+  if (!isOpen) {
+    clearSelectedNodeTemplate();
+  }
+});
 </script>
 
 <template>

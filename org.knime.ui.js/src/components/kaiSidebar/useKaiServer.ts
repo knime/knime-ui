@@ -23,7 +23,7 @@ const fetchUiStrings = async () => {
 
 fetchUiStrings();
 
-const useUiStrings = () => {
+const useKaiServer = () => {
   return {
     uiStrings,
     isLoading,
@@ -32,4 +32,4 @@ const useUiStrings = () => {
   };
 };
 
-export default useUiStrings;
+export default useKaiServer;
