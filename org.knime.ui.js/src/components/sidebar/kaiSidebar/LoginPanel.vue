@@ -28,7 +28,7 @@ const { authenticateWithHub, hubId } = useHubAuth();
   text-align: center;
 
   & .slogan {
-    margin: 0 30px 30px 30px;
+    margin: 0 30px 30px;
     font-weight: 500;
   }
 }

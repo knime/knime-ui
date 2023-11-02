@@ -1,9 +1,10 @@
 import { ref, reactive } from "vue";
 import { API } from "@api";
+import type { UiStrings } from "./types";
 
 const isServerAvailable = ref(true);
 const isLoading = ref(false);
-const uiStrings = reactive({});
+const uiStrings = reactive<UiStrings>(null);
 
 const fetchUiStrings = async () => {
   if (isLoading.value) {

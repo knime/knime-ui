@@ -6,9 +6,11 @@ import useUiStrings from "../useUiStrings";
 import useChat from "./useChat";
 import type { ChainType } from "../types";
 
-const props = defineProps<{
+interface Props {
   chainType: ChainType;
-}>();
+}
+
+const props = defineProps<Props>();
 
 const { uiStrings } = useUiStrings();
 const systemPrompt = computed(() => uiStrings.welcome_message[props.chainType]);

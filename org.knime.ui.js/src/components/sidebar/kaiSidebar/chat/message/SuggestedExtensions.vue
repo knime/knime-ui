@@ -7,9 +7,11 @@ import Button from "webapps-common/ui/components/Button.vue";
 import KaiCollapser from "./KaiCollapser.vue";
 import type { ExtensionWithNodes } from "../../types";
 
-const props = defineProps<{
+interface Props {
   extensions: { [key: string]: ExtensionWithNodes };
-}>();
+}
+
+const props = defineProps<Props>();
 
 const hasExtensions = computed(() => !isEmpty(props.extensions));
 
@@ -66,12 +68,13 @@ const openNodeInBrowser = (
 
     & svg {
       @mixin svg-icon-size 20;
+
       margin-top: -1px;
       margin-right: 5px;
     }
   }
 
-  .extension-collapser {
+  & .extension-collapser {
     background-color: var(--knime-white);
 
     & .title {

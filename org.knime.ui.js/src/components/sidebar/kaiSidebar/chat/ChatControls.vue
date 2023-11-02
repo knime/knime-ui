@@ -104,6 +104,7 @@ const disabled = computed(() => !input.value && !props.isProcessing);
 
     & svg {
       @mixin svg-icon-size 18;
+
       stroke: var(--knime-dove-gray);
       margin-left: -2px;
     }

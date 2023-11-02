@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import LoadingIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 
-const props = defineProps<{ status?: string }>();
+interface Props {
+  status?: string;
+}
+
+const props = defineProps<Props>();
 </script>
 
 <template>

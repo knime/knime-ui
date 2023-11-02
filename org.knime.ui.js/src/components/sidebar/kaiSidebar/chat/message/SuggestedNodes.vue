@@ -5,8 +5,13 @@ import NodeIcon from "webapps-common/ui/assets/img/icons/node.svg";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 import useNodeDescriptionPanel from "../../useNodeDescriptionPanel";
+import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 
-const props = defineProps<{ nodeTemplates: [] }>();
+interface Props {
+  nodeTemplates: NodeTemplate[];
+}
+
+const props = defineProps<Props>();
 
 const { toggleNodeDescription } = useNodeDescriptionPanel();
 
@@ -41,10 +46,12 @@ const hasNodeTemplates = computed(() => !isEmpty(props.nodeTemplates));
 
     & svg {
       @mixin svg-icon-size 20;
+
       margin-top: -1px;
       margin-right: 5px;
     }
   }
+
   & .node-list {
     margin-left: -10px;
   }

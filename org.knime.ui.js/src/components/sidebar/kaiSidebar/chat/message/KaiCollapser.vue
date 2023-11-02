@@ -105,6 +105,7 @@ export default {
 
   &:focus .dropdown {
     /* whole button gets focus but only dropdown icon is styled */
+
     /* background-color: var(--theme-button-function-background-color-focus); */
   }
 }

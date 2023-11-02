@@ -51,7 +51,7 @@ export default defineComponent({
       loader: () => import("@/components/sidebar/SidebarSpaceExplorer.vue"),
       loadingComponent: SidebarContentLoading,
     }),
-    AiAssistant: defineAsyncComponent({
+    KaiSidebar: defineAsyncComponent({
       loader: () => import("@/components/sidebar/kai/Kai.vue"),
       loadingComponent: SidebarContentLoading,
     }),
@@ -108,7 +108,7 @@ export default defineComponent({
         }),
 
         ...registerSidebarSection(
-          this.$features.shouldShowAiAssistant() && environment === "DESKTOP",
+          this.$features.shouldShowKaiSidebar() && environment === "DESKTOP",
           {
             name: TABS.AI_CHAT,
             title: "AI Chat",
@@ -222,7 +222,7 @@ export default defineComponent({
           key="space-explorer"
         />
 
-        <AiAssistant
+        <KaiSidebar
           v-if="hasSection(TABS.AI_CHAT)"
           v-show="isTabActive(TABS.AI_CHAT)"
           key="ai-chat"

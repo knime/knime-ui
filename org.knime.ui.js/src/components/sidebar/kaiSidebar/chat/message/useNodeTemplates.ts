@@ -2,7 +2,7 @@ import { ref, watchEffect } from "vue";
 import { useStore } from "@/composables/useStore";
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 
-import type { ExtensionWithNodes, NodeWithExtensionInfo } from "../types";
+import type { ExtensionWithNodes, NodeWithExtensionInfo } from "../../types";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 

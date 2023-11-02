@@ -11,7 +11,7 @@
 
 <style lang="postcss" scoped>
 .kai-base-panel {
-  font-family: "Roboto";
+  font-family: Roboto, sans-serif;
   font-size: 13px;
   line-height: 150%;
   display: flex;
@@ -34,7 +34,7 @@
   }
 
   & hr {
-    margin: 5px 0 10px 0;
+    margin: 5px 0 10px;
     border: none;
     border-top: 1px solid var(--knime-silver-sand);
   }

@@ -17,4 +17,19 @@ interface ExtensionWithNodes extends Extension {
 
 type ChainType = "qa" | "build";
 
-export type { NodeWithExtensionInfo, ExtensionWithNodes, ChainType };
+interface UiStrings {
+  disclaimer: string;
+  welcome_message: Record<ChainType, string>;
+}
+
+interface References {
+  [refName: string]: string[];
+}
+
+export type {
+  NodeWithExtensionInfo,
+  ExtensionWithNodes,
+  ChainType,
+  UiStrings,
+  References,
+};

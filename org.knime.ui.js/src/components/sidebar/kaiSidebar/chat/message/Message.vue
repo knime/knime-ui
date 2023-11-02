@@ -8,7 +8,7 @@ import KaiReferences from "./KaiReferences.vue";
 import SuggestedExtensions from "./SuggestedExtensions.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
 import useNodeTemplates from "./useNodeTemplates";
-import type { NodeWithExtensionInfo } from "../../types";
+import type { NodeWithExtensionInfo, References } from "../../types";
 
 const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
 
@@ -16,9 +16,7 @@ interface Props {
   role: string;
   content?: string;
   nodes?: NodeWithExtensionInfo[];
-  references?: {
-    [refName: string]: string[];
-  };
+  references?: References;
   statusUpdate?: string;
   isError?: boolean;
 }
@@ -79,7 +77,7 @@ const isUser = computed(() => props.role === "user");
 
     & .icon {
       position: absolute;
-      top: 0px;
+      top: 0;
       left: 0;
       background-color: var(--knime-white);
       border: 2px solid var(--knime-porcelain);
@@ -97,6 +95,7 @@ const isUser = computed(() => props.role === "user");
 
       & svg {
         margin-top: -2px;
+
         @mixin svg-icon-size 16;
       }
 
@@ -107,12 +106,12 @@ const isUser = computed(() => props.role === "user");
   }
 
   & .body {
-    border-radius: 0px 5px 5px 5px;
+    border-radius: 0 5px 5px;
     background-color: var(--knime-white);
-    padding: 10px 8px 10px 8px;
+    padding: 10px 8px;
 
     &.user {
-      border-radius: 5px 0px 5px 5px;
+      border-radius: 5px 0 5px 5px;
     }
 
     &.error {

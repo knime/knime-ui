@@ -34,12 +34,12 @@ const { fetchUiStrings, isLoading } = useUiStrings();
   text-align: center;
 
   & .slogan {
-    margin: 0 30px 30px 30px;
+    margin: 0 30px 30px;
     font-weight: 500;
   }
 
   & .note {
-    margin: 0 35px 20px 35px;
+    margin: 0 35px 20px;
     font-weight: 400;
     font-style: italic;
   }

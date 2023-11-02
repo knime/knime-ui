@@ -3,7 +3,7 @@ import { useStore } from "@/composables/useStore";
 import { TABS } from "@/store/panel";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 
-const selectedNodeTemplate = ref<NodeTemplate | null>(null);
+const selectedNodeTemplate = ref<NodeTemplate>(null);
 
 const useNodeDescriptionPanel = (shouldWatch = false) => {
   const store = useStore();
