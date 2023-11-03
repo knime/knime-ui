@@ -14,6 +14,7 @@ import { TABS } from "@/store/panel";
 
 import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
 import SidebarExtensionPanel from "./SidebarExtensionPanel.vue";
+import SidebarContentLoading from "./SidebarContentLoading.vue";
 
 type SidebarSection = {
   name: string;
@@ -34,21 +35,26 @@ const registerSidebarSection = (
 export default defineComponent({
   components: {
     LeftCollapsiblePanel,
-    ContextAwareDescription: defineAsyncComponent(
-      () => import("@/components/sidebar/ContextAwareDescription.vue"),
-    ),
-    NodeRepository: defineAsyncComponent(
-      () => import("@/components/nodeRepository/NodeRepository.vue"),
-    ),
-    NodeDialogWrapper: defineAsyncComponent(
-      () => import("@/components/embeddedViews/NodeDialogWrapper.vue"),
-    ),
-    SidebarSpaceExplorer: defineAsyncComponent(
-      () => import("@/components/sidebar/SidebarSpaceExplorer.vue"),
-    ),
-    AiAssistant: defineAsyncComponent(
-      () => import("@/components/sidebar/aiAssistant/AiAssistant.vue"),
-    ),
+    ContextAwareDescription: defineAsyncComponent({
+      loader: () => import("@/components/sidebar/ContextAwareDescription.vue"),
+      loadingComponent: SidebarContentLoading,
+    }),
+    NodeRepository: defineAsyncComponent({
+      loader: () => import("@/components/nodeRepository/NodeRepository.vue"),
+      loadingComponent: SidebarContentLoading,
+    }),
+    NodeDialogWrapper: defineAsyncComponent({
+      loader: () => import("@/components/embeddedViews/NodeDialogWrapper.vue"),
+      loadingComponent: SidebarContentLoading,
+    }),
+    SidebarSpaceExplorer: defineAsyncComponent({
+      loader: () => import("@/components/sidebar/SidebarSpaceExplorer.vue"),
+      loadingComponent: SidebarContentLoading,
+    }),
+    AiAssistant: defineAsyncComponent({
+      loader: () => import("@/components/sidebar/aiAssistant/AiAssistant.vue"),
+      loadingComponent: SidebarContentLoading,
+    }),
     SidebarExtensionPanel,
   },
   data() {
