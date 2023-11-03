@@ -2,8 +2,8 @@
 import { ref, watch, nextTick, computed } from "vue";
 import Message from "./message/Message.vue";
 import ChatControls from "./ChatControls.vue";
-import useKaiServer from "../useKaiServer";
-import useChat from "./useChat";
+import { useKaiServer } from "../useKaiServer";
+import { useChat } from "./useChat";
 import type { ChainType } from "../types";
 
 interface Props {
@@ -25,7 +25,7 @@ const {
   abortSendMessage,
 } = useChat(props.chainType);
 
-const messageArea = ref(null);
+const messageArea = ref<HTMLElement | null>(null);
 
 const scrollToBottomAfterNextTick = () => {
   nextTick(() => {

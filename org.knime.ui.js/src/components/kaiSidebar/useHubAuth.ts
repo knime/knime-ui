@@ -29,4 +29,4 @@ const useHubAuth = () => {
   };
 };
 
-export default useHubAuth;
+export { useHubAuth };

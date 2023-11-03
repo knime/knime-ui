@@ -102,4 +102,4 @@ const useNodeTemplates = ({
   };
 };
 
-export default useNodeTemplates;
+export { useNodeTemplates };

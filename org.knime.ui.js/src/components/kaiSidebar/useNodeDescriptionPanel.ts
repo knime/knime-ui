@@ -50,4 +50,4 @@ const useNodeDescriptionPanel = () => {
   };
 };
 
-export default useNodeDescriptionPanel;
+export { useNodeDescriptionPanel };

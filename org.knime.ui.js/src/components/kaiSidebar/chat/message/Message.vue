@@ -7,7 +7,7 @@ import KaiStatus from "./KaiStatus.vue";
 import KaiReferences from "./KaiReferences.vue";
 import SuggestedExtensions from "./SuggestedExtensions.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
-import useNodeTemplates from "./useNodeTemplates";
+import { useNodeTemplates } from "./useNodeTemplates";
 import type { NodeWithExtensionInfo, References } from "../../types";
 
 const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);

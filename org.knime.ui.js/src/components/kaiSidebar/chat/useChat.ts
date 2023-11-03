@@ -58,4 +58,4 @@ const useChat = (chainType: ChainType) => {
   };
 };
 
-export default useChat;
+export { useChat };

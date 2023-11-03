@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import useHubAuth from "./useHubAuth";
-import useKaiServer from "./useKaiServer";
+import { useHubAuth } from "./useHubAuth";
+import { useKaiServer } from "./useKaiServer";
 import ErrorPanel from "./ErrorPanel.vue";
 import DisclaimerPanel from "./DisclaimerPanel.vue";
 import LoginPanel from "./LoginPanel.vue";

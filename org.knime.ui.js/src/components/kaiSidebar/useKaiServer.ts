@@ -34,4 +34,4 @@ const useKaiServer = () => {
   };
 };
 
-export default useKaiServer;
+export { useKaiServer };

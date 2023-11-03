@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch } from "vue";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
-import useNodeDescriptionPanel from "./useNodeDescriptionPanel";
+import { useNodeDescriptionPanel } from "./useNodeDescriptionPanel";
 
 const {
   isKaiActive,
