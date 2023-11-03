@@ -5,10 +5,10 @@ import NodeIcon from "webapps-common/ui/assets/img/icons/node.svg";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 import useNodeDescriptionPanel from "../../useNodeDescriptionPanel";
-import type { NodeTemplate } from "@/api/gateway-api/generated-api";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 interface Props {
-  nodeTemplates: NodeTemplate[];
+  nodeTemplates: NodeTemplateWithExtendedPorts[];
 }
 
 const props = defineProps<Props>();
