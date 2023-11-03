@@ -169,6 +169,12 @@ public final class ChatAPI {
         return getListener().map(ChatListener::getUiStrings).orElse(null);
     }
 
+    /**
+     * Installs the KNIME AI Assistant.
+     */
+    public static void installKAI() {
+        ImportURI.startInstallationJob("KNIME AI Assistant", "org.knime.features.ai.assistant", null);
+    }
 
     /**
      * @return the returned consumer relays events to the frontend (message must be JSON serializable)

@@ -283,7 +283,7 @@ public final class ImportURI {
         }
     }
 
-    private static void startInstallationJob(final String featureName, final String featureSymbolicName,
+    static void startInstallationJob(final String featureName, final String featureSymbolicName,
         final UpdateSiteInfo siteInfo) {
         var job = new InstallMissingNodesJob(asList(new KNIMEComponentInformation() {
 
