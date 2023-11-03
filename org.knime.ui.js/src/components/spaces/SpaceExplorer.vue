@@ -274,14 +274,19 @@ export default defineComponent({
         itemIds.includes(project?.origin?.itemId),
       );
       const projectIds = relevantProjects.map(({ projectId }) => projectId);
-      let nextProjectId;
+      let nextProjectId, projectToClose;
+
       if (projectIds.length) {
+        projectToClose = relevantProjects.find(
+          (project) => project.projectId === this.projectId,
+        );
         nextProjectId = await this.forceCloseProjects({ projectIds });
       }
 
       await this.$store.dispatch("spaces/deleteItems", {
         projectId: this.projectId,
         itemIds,
+        projectToClose,
       });
       if (nextProjectId) {
         await this.$router.push({

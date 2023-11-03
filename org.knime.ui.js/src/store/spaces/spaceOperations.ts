@@ -267,15 +267,28 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async deleteItems({ state, dispatch, commit }, { projectId, itemIds }) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+  async deleteItems(
+    { state, dispatch, commit },
+    { projectId, itemIds, projectToClose = null },
+  ) {
+    let spaceId, spaceProviderId;
+
+    if (projectToClose) {
+      spaceId = projectToClose.origin.spaceId;
+      spaceProviderId = projectToClose.origin.providerId;
+    } else {
+      spaceId = state.projectPath[projectId].spaceId;
+      spaceProviderId = state.projectPath[projectId].spaceProviderId;
+    }
 
     try {
       // loading is cleared after data is fetched by fetchWorkflowGroupContent
       commit("setIsLoadingContent", true);
       commit("setActiveRenamedItemId", "");
       await API.space.deleteItems({ spaceProviderId, spaceId, itemIds });
-      await dispatch("fetchWorkflowGroupContent", { projectId });
+      await dispatch("fetchWorkflowGroupContent", {
+        projectId: projectToClose ? "__SPACE_BROWSER_TAB__" : projectId,
+      });
     } catch (error) {
       commit("setIsLoadingContent", false);
       consola.log("Error deleting item", { error });
