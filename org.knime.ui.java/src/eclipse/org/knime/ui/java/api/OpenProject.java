@@ -128,7 +128,7 @@ final class OpenProject {
             if (wfm == null) {
                 return false;
             }
-            final var wfProj = ProjectFactory.createProject(null);
+            final var wfProj = ProjectFactory.createProject(wfm);
             openProjectInWebUIOnly(wfm, wfProj, WorkflowType.REMOTE);
         }
         return true;
