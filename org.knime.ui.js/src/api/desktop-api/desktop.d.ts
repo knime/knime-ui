@@ -173,6 +173,7 @@ declare function abortAiRequest(
   chainType: string,
 ): void;
 declare function getUiStrings(): string;
+declare function installKAI(): void;
 declare function getHubID(): string;
 
 declare function openPermissionsDialog(

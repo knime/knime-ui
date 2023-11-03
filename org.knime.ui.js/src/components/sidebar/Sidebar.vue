@@ -108,7 +108,9 @@ export default defineComponent({
         }),
 
         ...registerSidebarSection(
-          this.$features.shouldShowKaiSidebar() && environment === "DESKTOP",
+          (this.$features.promoteKai() ||
+            this.$features.isKaiInstalled()) &&
+            environment === "DESKTOP",
           {
             name: TABS.AI_CHAT,
             title: "AI Chat",

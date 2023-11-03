@@ -676,6 +676,12 @@ export const getUiStrings = async () => {
   return JSON.parse(response);
 };
 
+export const installKAI = () => {
+  callBrowserFunction(window.installKAI, [], "Could not install KAI", false, {
+    block: false,
+  });
+};
+
 export const getHubID = () => {
   return callBrowserFunction(
     window.getHubID,

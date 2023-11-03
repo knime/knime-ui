@@ -8,7 +8,8 @@ export type Features = {
   shouldDisplayEmbeddedDialogs: () => boolean;
   shouldDisplayEmbeddedViews: () => boolean;
   shouldLoadPageBuilder: () => boolean;
-  shouldShowKaiSidebar: () => boolean;
+  promoteKai: () => boolean;
+  isKaiInstalled: () => boolean;
 };
 
 const featureFlagsPrefix = "org.knime.ui.feature";
@@ -36,7 +37,9 @@ export const features: ($store: Store<RootStoreState>) => Features = (
   shouldLoadPageBuilder: () =>
     getFlagValue($store, "embedded_views_and_dialogs"),
 
-  shouldShowKaiSidebar: () => getFlagValue($store, "ai_assistant"),
+  promoteKai: () => getFlagValue($store, "promote_ai_assistant"),
+
+  isKaiInstalled: () => getFlagValue($store, "ai_assistant_installed"),
 });
 
 export const useFeatures: () => Features = () => {
