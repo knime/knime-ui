@@ -66,13 +66,14 @@ export default defineComponent({
 <template>
   <div
     class="node"
-    :class="{
-      selected: isSelected && !showFloatingHelpIcon,
-      highlighted: isHighlighted,
-      grabbable: showFloatingHelpIcon,
-      'display-icons': displayMode === 'icon',
-      'display-list': displayMode === 'list',
-    }"
+    :class="[
+      {
+        selected: isSelected && !showFloatingHelpIcon,
+        highlighted: isHighlighted,
+        grabbable: showFloatingHelpIcon,
+      },
+      `display-${displayMode}`,
+    ]"
     @pointerenter="onPointerEnter"
     @pointerleave="onPointerLeave"
   >
@@ -163,7 +164,7 @@ export default defineComponent({
     }
   }
 
-  &.display-icons {
+  &.display-icon {
     height: 78px;
     padding-bottom: 47px;
     width: 100px;
