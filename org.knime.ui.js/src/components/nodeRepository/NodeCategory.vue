@@ -38,7 +38,7 @@ export default {
 </script>
 
 <template>
-  <div class="category" :class="`display-${displayMode}`">
+  <div :class="['category', `display-${displayMode}`]">
     <div>
       <span class="category-title" @click="$emit('selectTag', tag)">
         {{ tag }}

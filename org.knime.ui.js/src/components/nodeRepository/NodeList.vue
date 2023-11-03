@@ -7,6 +7,7 @@ import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 const NODES_PER_ROW_ICON_MODE = 3;
+const NODES_PER_ROW_LIST_MODE = 1;
 
 export default defineComponent({
   components: {
@@ -45,7 +46,9 @@ export default defineComponent({
   ],
   computed: {
     nodesPerRow() {
-      return this.displayMode === "icon" ? NODES_PER_ROW_ICON_MODE : 1;
+      return this.displayMode === "icon"
+        ? NODES_PER_ROW_ICON_MODE
+        : NODES_PER_ROW_LIST_MODE;
     },
   },
   watch: {
@@ -161,8 +164,7 @@ export default defineComponent({
   <div class="nodes-container">
     <ul
       ref="list"
-      class="nodes"
-      :class="`display-${displayMode}`"
+      :class="['nodes', `display-${displayMode}`]"
       tabindex="-1"
       @keydown.left.stop="onKeyDown('left')"
       @keydown.up.stop.prevent="onKeyDown('up')"
@@ -202,6 +204,7 @@ export default defineComponent({
 
   & .nodes {
     display: grid;
+    grid-template-columns: repeat(v-bind(nodesPerRow), 1fr);
 
     & .show-more {
       color: var(--knime-masala);
@@ -215,7 +218,6 @@ export default defineComponent({
     }
 
     &.display-list {
-      grid-template-columns: 1fr;
       flex-grow: 1;
       font-family: Roboto, sans-serif;
 
@@ -240,7 +242,6 @@ export default defineComponent({
     }
 
     &.display-icon {
-      grid-template-columns: repeat(3, 1fr);
       font-family: "Roboto Condensed", sans-serif;
 
       & .show-more {
