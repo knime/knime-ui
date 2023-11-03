@@ -4,7 +4,7 @@ import type { UiStrings } from "./types";
 
 const isServerAvailable = ref(true);
 const isLoading = ref(false);
-const uiStrings = reactive<UiStrings>(null);
+const uiStrings = reactive<UiStrings | Record<string, never>>({});
 
 const fetchUiStrings = async () => {
   if (isLoading.value) {
@@ -13,7 +13,9 @@ const fetchUiStrings = async () => {
 
   isLoading.value = true;
   try {
-    Object.assign(uiStrings, await API.desktop.getUiStrings());
+    const _uiStrings = await API.desktop.getUiStrings();
+    Object.assign(uiStrings, _uiStrings);
+    isServerAvailable.value = true;
   } catch (error) {
     isServerAvailable.value = false;
   } finally {
@@ -25,7 +27,7 @@ fetchUiStrings();
 
 const useKaiServer = () => {
   return {
-    uiStrings,
+    uiStrings: uiStrings as UiStrings,
     isLoading,
     isServerAvailable,
     fetchUiStrings,
