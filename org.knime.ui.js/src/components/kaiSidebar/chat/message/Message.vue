@@ -67,13 +67,12 @@ const isUser = computed(() => props.role === "user");
   position: relative;
   margin-bottom: 20px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
 
   & .header {
     height: 21px;
     display: flex;
-    flex-direction: row;
-    flex-direction: row-reverse;
+    justify-content: flex-end;
 
     & .icon {
       position: absolute;

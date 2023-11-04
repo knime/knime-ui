@@ -35,7 +35,7 @@ const { fetchUiStrings, isLoading } = useKaiServer();
 
   & .slogan {
     margin: 0 30px 30px;
-    font-weight: 500;
+    font-weight: 700;
   }
 
   & .note {

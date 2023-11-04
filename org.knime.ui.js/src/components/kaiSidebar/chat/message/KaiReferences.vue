@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
-import Button from "webapps-common/ui/components/Button.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import BaseButton from "webapps-common/ui/components/BaseButton.vue";
 import { isEmpty } from "lodash";
 import type { References } from "../../types";
 
@@ -17,43 +16,44 @@ const openReferences = (refName: string) => {
 };
 
 const hasReferences = computed(() => !isEmpty(props.references));
+const referenceCategories = computed(() => Object.keys(props.references));
 
 const showPopup = ref(false);
-
 const togglePopup = () => {
   showPopup.value = !showPopup.value;
 };
 </script>
 
 <template>
-  <FunctionButton
+  <BaseButton
     v-if="hasReferences"
-    class="references"
+    class="reference-button"
     title="Related Topics"
     :active="showPopup"
     @click="togglePopup"
   >
-    <HelpIcon />
-  </FunctionButton>
+    <HelpIcon :class="{ active: showPopup }" />
+  </BaseButton>
 
-  <div v-if="showPopup" class="popover">
-    Show related topics:
-    <Button
-      v-for="refName in Object.keys(references)"
-      :key="refName"
-      class="reference-link"
-      @click="openReferences(refName)"
-    >
-      {{ refName }}
-    </Button>
+  <div v-if="showPopup" class="reference-popover">
+    Show related topics: <br />
+    <template v-for="(refName, index) in referenceCategories" :key="refName">
+      <BaseButton class="reference-link" @click="openReferences(refName)">
+        {{ refName }}
+      </BaseButton>
+      <span v-if="index < referenceCategories.length - 1">, </span>
+    </template>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-& .references {
-  padding: 0;
+& .reference-button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 
   & svg {
     @mixin svg-icon-size 11;
@@ -61,9 +61,46 @@ const togglePopup = () => {
     stroke: var(--knime-dove-gray);
   }
 
-  & .popover {
-    & .reference-link:not(:last-child)::after {
-      content: ",";
+  & :deep(svg.active) {
+    stroke: var(--knime-masala);
+
+    & > circle {
+      fill: var(--knime-masala);
+    }
+
+    & > path {
+      stroke: var(--knime-porcelain);
+    }
+  }
+}
+
+& .reference-popover {
+  width: calc(100%);
+  position: absolute;
+  top: 0;
+  transform: translateY(calc(-100% - 5px));
+  background-color: var(--knime-white);
+  padding: 10px;
+  box-shadow: 0 2px 10px 0 var(--knime-gray-dark-semi);
+
+  &::after {
+    width: 8px;
+    height: 8px;
+    content: "";
+    position: absolute;
+    background-color: var(--knime-white);
+    bottom: 0;
+    right: 2px;
+    transform: translateY(50%) rotate(135deg);
+  }
+
+  & .reference-link {
+    all: unset;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:focus {
+      outline: auto;
     }
   }
 }

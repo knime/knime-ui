@@ -79,7 +79,7 @@ const openNodeInBrowser = (
 
     & .title {
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 700;
     }
 
     & ul {
@@ -96,7 +96,7 @@ const openNodeInBrowser = (
           text-align: initial;
           border-radius: 0;
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 400;
           color: var(--knime-masala);
 
           & .node-name {
