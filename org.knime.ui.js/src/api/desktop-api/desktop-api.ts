@@ -102,11 +102,11 @@ export const openUpdateDialog = () => {
   );
 };
 
-export const openLogFile = () => {
+export const openKNIMEHomeDir = () => {
   return callBrowserFunction(
-    window.openLogFile,
+    window.openKNIMEHomeDir,
     [],
-    "Could not open log file",
+    "Could not the KNIME home directory",
     false,
     { block: false },
   );

@@ -29,7 +29,7 @@ const menuItem: MenuItem = {
       icon: FileTextIcon,
       separator: true,
       metadata: {
-        handler: () => API.desktop.openLogFile(),
+        handler: () => API.desktop.openKNIMEHomeDir(),
       },
     },
     {
