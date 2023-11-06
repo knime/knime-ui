@@ -217,7 +217,6 @@ export default {
 
 .header {
   position: sticky;
-  background: var(--knime-porcelain);
   z-index: 2;
   top: 0;
 
