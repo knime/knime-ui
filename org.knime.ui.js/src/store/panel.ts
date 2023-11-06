@@ -10,7 +10,7 @@ export const TABS = {
   NODE_REPOSITORY: "nodeRepository",
   NODE_DIALOG: "nodeDialog",
   SPACE_EXPLORER: "spaceExplorer",
-  AI_CHAT: "aiChat",
+  KAI: "kai",
 } as const;
 
 type TabKeys = keyof typeof TABS;

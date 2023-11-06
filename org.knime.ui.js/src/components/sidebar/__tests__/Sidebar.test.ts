@@ -18,7 +18,7 @@ describe("Sidebar", () => {
     isWorkflowEmptyMock = vi.fn().mockReturnValue(false),
     mockFeatureFlags = {
       shouldDisplayEmbeddedDialogs: vi.fn(() => true),
-      promoteKai: () => false,
+      shouldPromoteKai: () => false,
     },
   } = {}) => {
     const $store = mockVuexStore({
@@ -138,7 +138,7 @@ describe("Sidebar", () => {
     const { wrapper } = doMount({
       mockFeatureFlags: {
         shouldDisplayEmbeddedDialogs: vi.fn(() => false),
-        promoteKai: () => false,
+        shouldPromoteKai: () => false,
       },
     });
 

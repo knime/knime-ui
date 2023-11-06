@@ -67,6 +67,17 @@ export default defineComponent({
     ...mapState("application", ["activeProjectId"]),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
 
+    isDesktopEnvironment() {
+      return environment === "DESKTOP";
+    },
+    showKaiTab() {
+      return (
+        (this.$features.shouldPromoteKai() ||
+          this.$features.isKaiInstalled()) &&
+        this.isDesktopEnvironment
+      );
+    },
+
     sidebarSections(): Array<SidebarSection> {
       return [
         {
@@ -98,7 +109,7 @@ export default defineComponent({
           },
         ),
 
-        ...registerSidebarSection(environment === "DESKTOP", {
+        ...registerSidebarSection(this.isDesktopEnvironment, {
           name: TABS.SPACE_EXPLORER,
           title: "Space explorer",
           icon: CubeIcon,
@@ -107,19 +118,14 @@ export default defineComponent({
           onClick: () => this.clickItem(TABS.SPACE_EXPLORER),
         }),
 
-        ...registerSidebarSection(
-          (this.$features.promoteKai() ||
-            this.$features.isKaiInstalled()) &&
-            environment === "DESKTOP",
-          {
-            name: TABS.AI_CHAT,
-            title: "AI Chat",
-            icon: AiIcon,
-            isActive: this.isTabActive(TABS.AI_CHAT),
-            isExpanded: this.expanded,
-            onClick: () => this.clickItem(TABS.AI_CHAT),
-          },
-        ),
+        ...registerSidebarSection(this.showKaiTab, {
+          name: TABS.KAI,
+          title: "KAI AI assistant",
+          icon: AiIcon,
+          isActive: this.isTabActive(TABS.KAI),
+          isExpanded: this.expanded,
+          onClick: () => this.clickItem(TABS.KAI),
+        }),
       ];
     },
   },
@@ -225,8 +231,8 @@ export default defineComponent({
         />
 
         <KaiSidebar
-          v-if="hasSection(TABS.AI_CHAT)"
-          v-show="isTabActive(TABS.AI_CHAT)"
+          v-if="hasSection(TABS.KAI)"
+          v-show="isTabActive(TABS.KAI)"
           key="ai-chat"
         />
       </TransitionGroup>

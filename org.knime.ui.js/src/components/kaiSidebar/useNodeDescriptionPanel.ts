@@ -16,7 +16,7 @@ const useNodeDescriptionPanel = () => {
     const activeProjectId = store.state.application.activeProjectId;
     return (
       isExtensionPanelOpen.value &&
-      store.state.panel.activeTab[activeProjectId] === TABS.AI_CHAT
+      store.state.panel.activeTab[activeProjectId] === TABS.KAI
     );
   });
 

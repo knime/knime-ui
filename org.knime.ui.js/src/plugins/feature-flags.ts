@@ -8,7 +8,7 @@ export type Features = {
   shouldDisplayEmbeddedDialogs: () => boolean;
   shouldDisplayEmbeddedViews: () => boolean;
   shouldLoadPageBuilder: () => boolean;
-  promoteKai: () => boolean;
+  shouldPromoteKai: () => boolean;
   isKaiInstalled: () => boolean;
 };
 
@@ -37,7 +37,7 @@ export const features: ($store: Store<RootStoreState>) => Features = (
   shouldLoadPageBuilder: () =>
     getFlagValue($store, "embedded_views_and_dialogs"),
 
-  promoteKai: () => getFlagValue($store, "promote_ai_assistant"),
+  shouldPromoteKai: () => getFlagValue($store, "promote_ai_assistant"),
 
   isKaiInstalled: () => getFlagValue($store, "ai_assistant_installed"),
 });
