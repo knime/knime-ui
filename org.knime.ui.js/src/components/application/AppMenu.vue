@@ -7,7 +7,7 @@ import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import ExtensionsIcon from "webapps-common/ui/assets/img/icons/extension.svg";
 import SwitchIcon from "webapps-common/ui/assets/img/icons/switch.svg";
 import PerspectiveSwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
-import KnimeLogIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
+import FileTextIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
@@ -26,7 +26,7 @@ const menuItem: MenuItem = {
     {
       text: "Show KNIME log in File Explorer",
       description: "",
-      icon: KnimeLogIcon,
+      icon: FileTextIcon,
       separator: true,
       metadata: {
         handler: () => API.desktop.openLogFile(),

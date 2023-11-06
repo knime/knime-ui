@@ -17,6 +17,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   { name: "openAboutDialog" },
   { name: "openUpdateDialog" },
   { name: "openLogFile" },
+  { name: "checkForUpdates" },
   { name: "openUrlInExternalBrowser", params: [["url", "http://www.url.com"]] },
   { name: "openInstallExtensionsDialog" },
   { name: "openWebUIPreferencePage" },
@@ -72,6 +73,15 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     params: [
       ["projectId", "project1"],
       ["nodeId", "1"],
+    ],
+  },
+  {
+    name: "openPortView",
+    params: [
+      ["projectId", "project1"],
+      ["nodeId", "1"],
+      ["portIndex", 1],
+      ["viewIndex", 1],
     ],
   },
   {
@@ -143,6 +153,14 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   },
   {
     name: "importWorkflows",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemId", "123"],
+    ],
+  },
+  {
+    name: "exportSpaceItem",
     params: [
       ["spaceProviderId", "provider1"],
       ["spaceId", "space1"],
