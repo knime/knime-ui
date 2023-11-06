@@ -1,7 +1,7 @@
 <script lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
 import CircleArrowIcon from "webapps-common/ui/assets/img/icons/circle-arrow-right.svg";
-import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
+import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import { defineComponent, type PropType } from "vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
@@ -205,6 +205,15 @@ export default defineComponent({
   & .nodes {
     display: grid;
     grid-template-columns: repeat(v-bind(nodesPerRow), 1fr);
+    padding: 0;
+    margin-top: 12px;
+    list-style-type: none;
+    width: 100%;
+    font-family: "Roboto Condensed", sans-serif;
+
+    &:focus {
+      outline: none;
+    }
 
     & .show-more {
       color: var(--knime-masala);
@@ -219,7 +228,6 @@ export default defineComponent({
 
     &.display-list {
       flex-grow: 1;
-      font-family: Roboto, sans-serif;
 
       & .show-more {
         margin: 0;
@@ -242,10 +250,10 @@ export default defineComponent({
     }
 
     &.display-icon {
-      font-family: "Roboto Condensed", sans-serif;
+      gap: 4px 0;
 
       & .show-more {
-        margin: 27px auto 0;
+        margin: 20px auto 0;
         display: block;
 
         &:active {
@@ -261,15 +269,6 @@ export default defineComponent({
         /* fixes the scrolling to top selected border cut off problem */
         padding: 3px 0;
       }
-    }
-
-    /* kill list default styles */
-    padding: 0;
-    margin: 0;
-    list-style-type: none;
-
-    &:focus {
-      outline: none;
     }
   }
 }

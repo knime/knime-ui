@@ -67,6 +67,6 @@ export default {
 
 <style lang="postcss" scoped>
 .content {
-  padding: 0 20px 15px;
+  padding: 0 15px 15px;
 }
 </style>

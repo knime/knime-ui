@@ -2,7 +2,7 @@
 import { defineComponent, type PropType } from "vue";
 import { mapState } from "vuex";
 
-import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
+import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import type { KnimeNode } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
@@ -77,7 +77,7 @@ export default defineComponent({
 <style lang="postcss">
 .recommendations {
   overflow-y: auto;
-  padding-bottom: 10px;
+  padding: 0 10px 10px;
 
   & .no-recommendations-message {
     flex: 1;

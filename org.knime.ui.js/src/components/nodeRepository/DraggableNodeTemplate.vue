@@ -1,7 +1,7 @@
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
 import { KnimeMIME } from "@/mixins/dropNode";
-import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
+import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import { geometry } from "@/util/geometry";
 
 /**

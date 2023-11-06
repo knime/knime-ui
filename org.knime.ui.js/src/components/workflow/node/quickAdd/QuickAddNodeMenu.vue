@@ -298,7 +298,7 @@ export default defineComponent({
   --quick-add-node-height: 450;
   --quick-add-node-header-height: 73;
 
-  width: 345px;
+  width: 360px;
   margin-top: v-bind("marginTop");
 
   & .wrapper {
@@ -338,30 +338,6 @@ export default defineComponent({
 
         stroke: var(--knime-masala);
       }
-    }
-  }
-
-  /* set margin on all three lists of nodes (2x search, 1x recommendation) */
-  & :deep(ul.nodes) {
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 10px;
-  }
-
-  /* remove default styles of search results */
-  & :deep(.more-nodes-button) {
-    background: transparent;
-  }
-
-  & :deep(.results) {
-    background: transparent;
-    max-height: calc(
-      calc(var(--quick-add-node-height) - var(--quick-add-node-header-height)) *
-        1px
-    );
-
-    & .content {
-      padding: 0;
     }
   }
 

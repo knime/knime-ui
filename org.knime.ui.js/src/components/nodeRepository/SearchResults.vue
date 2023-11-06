@@ -186,11 +186,6 @@ defineExpose({ focusFirst });
 }
 
 .results {
-  & :deep(ul.nodes) {
-    margin-left: 8px;
-    margin-right: 8px;
-  }
-
   & .content {
     padding: 0 10px 10px;
 

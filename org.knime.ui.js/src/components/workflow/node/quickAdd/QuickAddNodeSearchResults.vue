@@ -2,7 +2,7 @@
 import { defineComponent, type PropType } from "vue";
 import { mapActions, mapState } from "vuex";
 
-import NodeTemplate from "@/components/nodeRepository/NodeTemplate.vue";
+import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
