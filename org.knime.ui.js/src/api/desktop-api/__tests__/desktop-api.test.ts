@@ -16,6 +16,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   { name: "switchWorkspace" },
   { name: "openAboutDialog" },
   { name: "openUpdateDialog" },
+  { name: "openLogFile" },
   { name: "openUrlInExternalBrowser", params: [["url", "http://www.url.com"]] },
   { name: "openInstallExtensionsDialog" },
   { name: "openWebUIPreferencePage" },

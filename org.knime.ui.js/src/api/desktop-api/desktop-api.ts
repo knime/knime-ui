@@ -102,6 +102,16 @@ export const openUpdateDialog = () => {
   );
 };
 
+export const openLogFile = () => {
+  return callBrowserFunction(
+    window.openLogFile,
+    [],
+    "Could not open log file",
+    false,
+    { block: false },
+  );
+};
+
 export const checkForUpdates = () => {
   return callBrowserFunction(
     window.checkForUpdates,
