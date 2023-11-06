@@ -16,7 +16,7 @@ const emit = defineEmits(["close"]);
         {{ uiStrings.disclaimer }}
       </p>
     </div>
-    <Button primary class="close-button" @click="emit('close')">
+    <Button primary compact class="close-button" @click="emit('close')">
       Accept and close
     </Button>
   </BasePanel>

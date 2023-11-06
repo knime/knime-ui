@@ -17,7 +17,7 @@ const { fetchUiStrings, isLoading } = useKaiServer();
         For Business Hub users, AI features need to be activated by your admin.
       </div>
 
-      <Button primary :disabled="isLoading" @click="fetchUiStrings">
+      <Button primary compact :disabled="isLoading" @click="fetchUiStrings">
         Try again</Button
       >
     </div>

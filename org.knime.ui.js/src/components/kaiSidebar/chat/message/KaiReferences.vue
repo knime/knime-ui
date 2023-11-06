@@ -36,12 +36,12 @@ const togglePopup = () => {
   </BaseButton>
 
   <div v-if="showPopup" class="reference-popover">
-    Show related topics: <br />
+    See the source of this answer in the <br />
     <template v-for="(refName, index) in referenceCategories" :key="refName">
       <BaseButton class="reference-link" @click="openReferences(refName)">
         {{ refName }}
       </BaseButton>
-      <span v-if="index < referenceCategories.length - 1">, </span>
+      <span v-if="index < referenceCategories.length - 1"> and </span>.
     </template>
   </div>
 </template>
