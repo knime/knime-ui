@@ -13,7 +13,9 @@ const { authenticateWithHub, hubId } = useHubAuth();
         Log in to your KNIME Hub account<br />
         to chat with our AI assistant.
       </div>
-      <Button primary compact @click="authenticateWithHub">Login to {{ hubId }}</Button>
+      <Button primary compact @click="authenticateWithHub"
+        >Login to {{ hubId }}</Button
+      >
     </div>
   </BasePanel>
 </template>
