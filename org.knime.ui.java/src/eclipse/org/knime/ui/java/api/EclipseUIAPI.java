@@ -55,6 +55,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -62,6 +63,8 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.internal.ide.actions.OpenWorkspaceAction;
+import org.knime.core.node.KNIMEConstants;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.ui.workflowcoach.data.NodeTripleProviderFactory;
 import org.knime.core.webui.WebUIUtil;
@@ -83,6 +86,8 @@ import org.knime.workbench.ui.p2.actions.InvokeUpdateAction;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 final class EclipseUIAPI {
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(EclipseUIAPI.class);
 
     private static class PreferencePageIds {
 
@@ -253,6 +258,20 @@ final class EclipseUIAPI {
         throws IOException {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         space.openPermissionsDialogForItem(itemId); // Method call might throw a `NotImplementedException` exception.
+    }
+
+    /**
+     * Opens the folder containing the log file etc.
+     */
+    @API
+    static void openKNIMEHomeDir() {
+        final var homeDir = KNIMEConstants.getKNIMEHomeDir();
+        if (Program.launch(homeDir)) {
+            LOGGER.info("Opening KNIME log folder with file explorer");
+        } else {
+            LOGGER.error("Failed to open the file explorer on the folder containing the KNIME log. The directory is: "
+                + homeDir);
+        }
     }
 
 }
