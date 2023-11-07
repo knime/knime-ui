@@ -6,6 +6,7 @@ import MenuItems, {
   type MenuItem,
 } from "webapps-common/ui/components/MenuItems.vue";
 import DeleteIcon from "webapps-common/ui/assets/img/icons/trash.svg";
+import DuplicateIcon from "webapps-common/ui/assets/img/icons/duplicate.svg";
 import RenameIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import ExportIcon from "webapps-common/ui/assets/img/icons/export.svg";
 import type { FileExplorerContextMenu } from "webapps-common/ui/components/FileExplorer/types";
@@ -178,6 +179,22 @@ const fileExplorerContextMenuItems = computed(() => {
     };
   };
 
+  const createDuplicateItemOption = (
+    dispatch: Dispatch,
+    projectId: string,
+    selectedItems: Array<string>,
+  ) => {
+    return {
+      id: "duplicate",
+      text: "Duplicate",
+      icon: DuplicateIcon,
+      disabled: false,
+      execute: () => {
+        // TODO call SpaceExplorer#onDuplicateItems with selectedItems
+      },
+    };
+  };
+
   const openFileType =
     anchorItem.meta.type === SpaceItem.TypeEnum.Workflow
       ? "workflows"
@@ -201,6 +218,12 @@ const fileExplorerContextMenuItems = computed(() => {
       title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
       icon: DeleteIcon,
     }),
+
+    createDuplicateItemOption(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+    ),
 
     ...valueOrEmpty(
       isLocal,

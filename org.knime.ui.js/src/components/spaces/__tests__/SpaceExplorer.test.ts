@@ -451,6 +451,28 @@ describe("SpaceExplorer.vue", () => {
     });
   });
 
+  describe("duplicating", () => {
+    it("should duplicate selected items", async () => {
+      // makes sure we disregard any strategy and always choose "AUTORENAME" when "moving" into "." (i.e. duplicating)
+      mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("NOOP");
+
+      const { wrapper, dispatchSpy } = await doMountAndLoad();
+
+      const sourceItems = ["id1", "id2"];
+      wrapper
+        .findComponent(FileExplorer)
+        .vm.$emit("duplicateItems", { sourceItems });
+
+      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "spaces/moveItems", {
+        projectId: "someProjectId",
+        itemIds: sourceItems,
+        destWorkflowGroupItemId: "root",
+        collisionStrategy: "AUTORENAME",
+        isCopy: true,
+      });
+    });
+  });
+
   describe("deleting", () => {
     it("should not allow deleting folders with open workflows", async () => {
       const openProjects = [
@@ -578,6 +600,7 @@ describe("SpaceExplorer.vue", () => {
         itemIds: sourceItems,
         destWorkflowGroupItemId: targetItem,
         collisionStrategy: "OVERWRITE",
+        isCopy: false,
       });
       await flushPromises();
 
@@ -610,6 +633,7 @@ describe("SpaceExplorer.vue", () => {
         projectId: "someProjectId",
         destWorkflowGroupItemId: "root",
         collisionStrategy: "OVERWRITE",
+        isCopy: false,
       });
       await flushPromises();
       expect(onComplete).toHaveBeenCalledWith(true);
@@ -643,6 +667,7 @@ describe("SpaceExplorer.vue", () => {
         projectId: "someProjectId",
         destWorkflowGroupItemId: "parentId",
         collisionStrategy: "OVERWRITE",
+        isCopy: false,
       });
       await flushPromises();
       expect(onComplete).toHaveBeenCalledWith(true);

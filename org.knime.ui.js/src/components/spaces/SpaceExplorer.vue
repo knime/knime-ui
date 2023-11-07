@@ -302,17 +302,27 @@ export default defineComponent({
       }
     },
 
+    async onDuplicateItems({ sourceItems }) {
+      await this.onMoveItems({
+        sourceItems,
+        targetItem: ".",
+        isCopy: true,
+        onComplete: () => {},
+      });
+    },
+
     /**
      * @typedef Payload
      * @property {Array<string>} sourceItems
      * @property {String} targetItem
+     * @property {(isCopy: boolean)}
      * @property {(success: boolean) => void} onComplete
      */
     /**
      * @param {Payload} eventPayload
      * @returns {Void}
      */
-    async onMoveItems({ sourceItems, targetItem, onComplete }) {
+    async onMoveItems({ sourceItems, targetItem, isCopy = false, onComplete }) {
       const openedWorkflows = this.openProjects.filter((project) =>
         sourceItems.includes(project?.origin?.itemId),
       );
@@ -337,13 +347,15 @@ export default defineComponent({
         const extraSpace =
           openedWorkflows.length && isInsideFolder.length ? "\n" : "";
 
+        const copyOrMove = isCopy ? "copy" : "move";
+
         alert(`Following workflows are opened:\n
           ${
             openedWorkflowsNames.map((name) => `• ${name}`).join("\n") +
             extraSpace +
             isInsideFolderNames.map((name) => `• ${name}`).join("\n")
           }
-        \nTo move your selected items, they have to be closed first`);
+        \nTo ${copyOrMove} your selected items, they have to be closed first`);
 
         onComplete(false);
 
@@ -354,12 +366,17 @@ export default defineComponent({
         this.projectId,
         targetItem,
       );
-      const collisionStrategy = await API.desktop.getNameCollisionStrategy({
-        spaceProviderId: this.activeSpacePath?.spaceProviderId,
-        spaceId: this.activeSpacePath?.spaceId,
-        itemIds: sourceItems,
-        destinationItemId: destWorkflowGroupItemId,
-      });
+      // if we copy into the current workflow group, we actually "duplicate"
+      // and hence always want to autorename without bothering the user with a dialog
+      const collisionStrategy =
+        isCopy && targetItem === "."
+          ? "AUTORENAME"
+          : await API.desktop.getNameCollisionStrategy({
+              spaceProviderId: this.activeSpacePath?.spaceProviderId,
+              spaceId: this.activeSpacePath?.spaceId,
+              itemIds: sourceItems,
+              destinationItemId: destWorkflowGroupItemId,
+            });
 
       if (collisionStrategy === "CANCEL") {
         onComplete(false);
@@ -373,11 +390,13 @@ export default defineComponent({
           projectId: this.projectId,
           destWorkflowGroupItemId,
           collisionStrategy,
+          isCopy,
         });
 
         onComplete(true);
       } catch (error) {
-        consola.error("There was a problem moving the items", { error });
+        const copyOrMove = isCopy ? "copying" : "moving";
+        consola.error(`There was a problem ${copyOrMove} the items`, { error });
         onComplete(false);
       }
     },
@@ -528,6 +547,7 @@ export default defineComponent({
         @change-selection="onSelectionChange"
         @open-file="onOpenFile"
         @rename-file="onRenameFile"
+        @duplicate-items="onDuplicateItems"
         @delete-items="onDeleteItems"
         @move-items="onMoveItems"
         @drag="onDrag"

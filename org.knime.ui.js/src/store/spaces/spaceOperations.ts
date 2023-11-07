@@ -291,22 +291,26 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async moveItems(
     { state, dispatch, commit },
-    { projectId, itemIds, destWorkflowGroupItemId, collisionStrategy },
+    { projectId, itemIds, destWorkflowGroupItemId, collisionStrategy, isCopy },
   ) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
 
     try {
       commit("setIsLoadingContent", true);
-      await API.space.moveItems({
+      await API.space.moveOrCopyItems({
         spaceProviderId,
         spaceId,
         itemIds,
         destWorkflowGroupItemId,
         collisionHandling: collisionStrategy,
+        copy: isCopy,
       });
       await dispatch("fetchWorkflowGroupContent", { projectId });
     } catch (error) {
-      consola.log("Error moving items", { error });
+      const cpmv = isCopy ? "copying" : "moving";
+      consola.log(`Error ${cpmv} items`, {
+        error,
+      });
       throw error;
     } finally {
       commit("setIsLoadingContent", false);
@@ -327,9 +331,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {
   pathToItemId: (_, getters) => (projectId: string, pathId: string) => {
-    const isGoingBack = pathId === "..";
-    if (isGoingBack) {
+    if (pathId === "..") {
       return getters.parentWorkflowGroupId(projectId);
+    }
+    if (pathId === ".") {
+      return getters.currentWorkflowGroupId(projectId);
     }
     return pathId;
   },

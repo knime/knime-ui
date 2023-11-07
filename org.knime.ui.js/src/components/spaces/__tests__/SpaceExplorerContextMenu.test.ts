@@ -81,6 +81,9 @@ describe("SpaceSelectionContextMenu.vue", () => {
         createDeleteOption: vi
           .fn()
           .mockReturnValue({ id: "delete", text: "delete" }),
+        createDuplicateOption: vi
+          .fn()
+          .mockReturnValue({ id: "duplicate", text: "duplicate" }),
         anchor: {
           item: {
             name: "item-name",
@@ -113,10 +116,11 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     expect(wrapper.findComponent(MenuItems).exists()).toBe(true);
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items.length).toBe(5);
+    expect(items.length).toBe(6);
     expect(items.map((item) => item.text)).toStrictEqual([
       "rename",
       "delete",
+      "Duplicate",
       "Export",
       "Upload",
       "Connect to",
@@ -134,6 +138,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     const items = wrapper.findComponent(MenuItems).props("items");
     expect(items.map((item) => item.text)).toStrictEqual([
       "delete",
+      "Duplicate",
       "Export",
       "Upload",
       "Connect to",
@@ -161,6 +166,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     const items = wrapper.findComponent(MenuItems).props("items");
     expect(items.map((item) => item.text)).toStrictEqual([
       "delete",
+      "Duplicate",
       "Export",
       "Upload",
     ]);
@@ -179,7 +185,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     });
 
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items[2]).toStrictEqual(
+    expect(items[3]).toStrictEqual(
       expect.objectContaining({
         disabled: true,
         text: "Upload",
@@ -200,7 +206,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     });
 
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items[2]).toStrictEqual(
+    expect(items[3]).toStrictEqual(
       expect.objectContaining({
         disabled: false,
         text: "Upload",
@@ -229,7 +235,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     });
 
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items[3]).toStrictEqual(
+    expect(items[4]).toStrictEqual(
       expect.objectContaining({
         text: "Connect to",
         execute: null,
@@ -264,7 +270,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     const menuItems = wrapper.findComponent(MenuItems);
     const items = menuItems.props("items");
-    const connectToHubItem = items[3].children[0];
+    const connectToHubItem = items[4].children[0];
     menuItems.vm.$emit("item-click", null, connectToHubItem);
     await nextTick();
 
@@ -290,7 +296,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     const menuItems = wrapper.findComponent(MenuItems);
     const items = menuItems.props("items");
-    const uploadToHub = items[2];
+    const uploadToHub = items[3];
     menuItems.vm.$emit("item-click", null, uploadToHub);
     await nextTick();
 
@@ -317,7 +323,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     const menuItems = wrapper.findComponent(MenuItems);
     const items = menuItems.props("items");
-    const connectToHub = items[3];
+    const connectToHub = items[4];
     menuItems.vm.$emit("item-click", null, connectToHub);
     await nextTick();
 

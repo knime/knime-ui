@@ -429,7 +429,7 @@ describe("spaces::spaceOperations", () => {
         destWorkflowGroupItemId,
         collisionStrategy,
       });
-      expect(mockedAPI.space.moveItems).toHaveBeenCalledWith({
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledWith({
         spaceProviderId: "local",
         spaceId: "local",
         itemIds,

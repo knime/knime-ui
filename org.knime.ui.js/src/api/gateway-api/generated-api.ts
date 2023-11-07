@@ -4421,22 +4421,23 @@ const space = function(rpcClient: RPCClient) {
            return rpcClient.call('SpaceService.listWorkflowGroup', { ...defaultParams, ...params });
         },
         /**
-         * Move a space items to a different workflow group within its space.
+         * Move or copy space items to a different workflow group within its space.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
          * @param {Array<string>} itemIds A list of identifiers of items in the space.
          * @param {string} destWorkflowGroupItemId The destination workflow group item id, therefore the new parent.
          * @param {'noop' | 'autorename' | 'overwrite'} collisionHandling How to solve potential name collisions.
+         * @param {boolean} copy Copy instead of move items.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        moveItems(
-        	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  destWorkflowGroupItemId: string,  collisionHandling: 'noop' | 'autorename' | 'overwrite'  }
+        moveOrCopyItems(
+        	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  destWorkflowGroupItemId: string,  collisionHandling: 'noop' | 'autorename' | 'overwrite',  copy: boolean  }
         ): Promise<Response> {
            const defaultParams = { 
            }
 
-           return rpcClient.call('SpaceService.moveItems', { ...defaultParams, ...params });
+           return rpcClient.call('SpaceService.moveOrCopyItems', { ...defaultParams, ...params });
         },
         /**
          * Rename a space Item
