@@ -2,6 +2,7 @@
 import { API } from "@api";
 import Button from "webapps-common/ui/components/Button.vue";
 import BasePanel from "./BasePanel.vue";
+import InstallAiIllustration from "@/assets/install-ai-illustration.svg";
 
 const installKai = API.desktop.installKAI;
 </script>
@@ -9,11 +10,11 @@ const installKai = API.desktop.installKAI;
 <template>
   <BasePanel>
     <div class="installation-panel">
+      <InstallAiIllustration />
       <div class="slogan">
-        KAI is not installed yet. Do you want to give it a try?
+        Our <span class="bold">KNIME AI Assistant</span> provides instant answers to your questions, suggests nodes or even creates simple workflows.
       </div>
-
-      <Button primary @click="installKai"> Install</Button>
+      <Button primary compact @click="installKai">Install AI Assistant</Button>
     </div>
   </BasePanel>
 </template>
@@ -28,8 +29,12 @@ const installKai = API.desktop.installKAI;
   text-align: center;
 
   & .slogan {
-    margin: 0 30px 30px;
+    margin: 0 10px 30px;
     font-weight: 500;
+
+    & .bold {
+      font-weight: 700;
+    }
   }
 }
 </style>
