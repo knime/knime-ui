@@ -366,16 +366,20 @@ describe("spaces::spaceOperations", () => {
     it("should delete items", async () => {
       const itemIds = ["item0", "item1"];
       const { store } = loadStore();
+      const spaceId = "local";
+      const spaceProviderId = "local";
 
       store.state.spaces.projectPath.project2 = {
-        spaceProviderId: "local",
-        spaceId: "local",
+        spaceProviderId,
+        spaceId,
         itemId: "level2",
       };
 
       await store.dispatch("spaces/deleteItems", {
         projectId: "project2",
         itemIds,
+        spaceProviderId,
+        spaceId,
       });
       expect(store.state.spaces.activeRenamedItemId).toBe("");
       expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith({

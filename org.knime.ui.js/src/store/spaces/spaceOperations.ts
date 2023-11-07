@@ -5,6 +5,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
+import { globalSpaceBrowserProjectId } from "./common";
 
 import type { SpacesState } from "./index";
 
@@ -268,26 +269,18 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async deleteItems(
-    { state, dispatch, commit },
-    { projectId, itemIds, projectToClose = null },
+    { dispatch, commit },
+    { projectId, itemIds, isDeletingActiveProject, spaceId, spaceProviderId },
   ) {
-    let spaceId, spaceProviderId;
-
-    if (projectToClose) {
-      spaceId = projectToClose.origin.spaceId;
-      spaceProviderId = projectToClose.origin.providerId;
-    } else {
-      spaceId = state.projectPath[projectId].spaceId;
-      spaceProviderId = state.projectPath[projectId].spaceProviderId;
-    }
-
     try {
       // loading is cleared after data is fetched by fetchWorkflowGroupContent
       commit("setIsLoadingContent", true);
       commit("setActiveRenamedItemId", "");
       await API.space.deleteItems({ spaceProviderId, spaceId, itemIds });
       await dispatch("fetchWorkflowGroupContent", {
-        projectId: projectToClose ? "__SPACE_BROWSER_TAB__" : projectId,
+        projectId: isDeletingActiveProject
+          ? globalSpaceBrowserProjectId
+          : projectId,
       });
     } catch (error) {
       commit("setIsLoadingContent", false);

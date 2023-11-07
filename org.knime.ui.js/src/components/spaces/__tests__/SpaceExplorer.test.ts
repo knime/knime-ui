@@ -518,6 +518,9 @@ describe("SpaceExplorer.vue", () => {
       expect(dispatchSpy).toHaveBeenNthCalledWith(4, "spaces/deleteItems", {
         itemIds: ["item0"],
         projectId: "someProjectId",
+        spaceId: "local",
+        spaceProviderId: "local",
+        isDeletingActiveProject: false,
       });
     });
 
