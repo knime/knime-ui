@@ -1248,6 +1248,29 @@ export interface ExpandResult extends CommandResult {
 export namespace ExpandResult {
 }
 /**
+ * Information about the extension which provides this node
+ * @export
+ * @interface Extension
+ */
+export interface Extension {
+
+    /**
+     * Display name of the extension
+     * @type {string}
+     * @memberof Extension
+     */
+    name: string;
+    /**
+     *
+     * @type {Vendor}
+     * @memberof Extension
+     */
+    vendor?: Vendor;
+
+}
+
+
+/**
  * Inserts a node on top of an existing connection
  * @export
  * @interface InsertNodeCommand
@@ -1660,6 +1683,12 @@ export interface NativeNodeInvariants {
      * @memberof NativeNodeInvariants
      */
     nodeFactory?: NodeFactoryKey;
+    /**
+     *
+     * @type {Extension}
+     * @memberof NativeNodeInvariants
+     */
+    extension?: Extension;
 
 }
 
@@ -3431,6 +3460,29 @@ export interface UpdateWorkflowAnnotationCommand extends WorkflowAnnotationComma
  */
 export namespace UpdateWorkflowAnnotationCommand {
 }
+/**
+ * The vendor of an extension.
+ * @export
+ * @interface Vendor
+ */
+export interface Vendor {
+
+    /**
+     * Display name of the extension vendor
+     * @type {string}
+     * @memberof Vendor
+     */
+    name: string;
+    /**
+     * Whether KNIME is the vendor.
+     * @type {boolean}
+     * @memberof Vendor
+     */
+    isKNIME?: boolean;
+
+}
+
+
 /**
  * The structure of a workflow.
  * @export

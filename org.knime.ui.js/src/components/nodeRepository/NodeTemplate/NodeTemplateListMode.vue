@@ -28,12 +28,15 @@ const emit = defineEmits(["helpIconClick"]);
         {{ nodeTemplate.name }}
       </span>
 
-      <span class="extension-name">
-        KNIME Python integration this is a very long text
+      <span v-if="nodeTemplate.extension" class="extension-name">
+        {{ nodeTemplate.extension.name }}
       </span>
     </div>
 
-    <KNIMETriangleIcon class="knime-icon" />
+    <KNIMETriangleIcon
+      v-if="nodeTemplate.extension?.vendor?.isKNIME"
+      class="knime-icon"
+    />
 
     <NodeTemplateHelpIcon
       v-if="showFloatingHelpIcon"
@@ -60,11 +63,19 @@ const emit = defineEmits(["helpIconClick"]);
 
     & .node-name {
       font-size: 11px;
+      max-width: 250px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     & .extension-name {
       font-size: 9px;
       color: var(--knime-dove-gray);
+      max-width: 250px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 

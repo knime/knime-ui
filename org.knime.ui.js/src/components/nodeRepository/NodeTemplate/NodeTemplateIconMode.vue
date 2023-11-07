@@ -39,11 +39,11 @@ const emit = defineEmits(["helpIconClick"]);
       @help-icon-click="emit('helpIconClick')"
     />
 
-    <div class="extension-info">
+    <div v-if="nodeTemplate.extension" class="extension-info">
       <span class="name">
         KNIME Python integration this is a very long text
       </span>
-      <div class="icon-container">
+      <div v-if="nodeTemplate.extension.vendor?.isKNIME" class="icon-container">
         <KNIMETriangleIcon class="knime-icon" />
       </div>
     </div>
