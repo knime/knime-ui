@@ -207,7 +207,7 @@ export default defineComponent({
     grid-template-columns: repeat(v-bind(nodesPerRow), 1fr);
     width: 100%;
     font-family: "Roboto Condensed", sans-serif;
-    margin-top: 12px 0 0;
+    margin: 5px 0 0;
 
     /* reset default ul styles */
     padding: 0;

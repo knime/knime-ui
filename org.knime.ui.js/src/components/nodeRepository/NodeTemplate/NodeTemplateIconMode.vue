@@ -56,7 +56,7 @@ const emit = defineEmits(["helpIconClick"]);
 .display-icon {
   flex-direction: column;
   position: relative;
-  padding: 10px;
+  padding: 10px 10px 20px;
 
   & .name-icon-wrapper {
     position: relative;
@@ -75,7 +75,7 @@ const emit = defineEmits(["helpIconClick"]);
       overflow: hidden;
       text-align: center;
       position: absolute;
-      bottom: 55px;
+      bottom: 58px;
     }
 
     & .node-preview {
@@ -94,7 +94,7 @@ const emit = defineEmits(["helpIconClick"]);
     display: flex;
     overflow: hidden;
     align-items: center;
-    margin: -10px 0;
+    margin: -17px 0;
     padding: 0 2px;
     color: var(--knime-dove-gray);
 
@@ -114,7 +114,7 @@ const emit = defineEmits(["helpIconClick"]);
       text-align: center;
       padding: 4px;
       font-size: 9px;
-      max-height: 26px;
+      max-height: 25px;
       text-overflow: ellipsis;
     }
 
