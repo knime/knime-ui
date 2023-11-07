@@ -43,7 +43,7 @@ const emit = defineEmits(["helpIconClick"]);
 
     <div v-if="nodeTemplate.extension" class="extension-info">
       <span class="name">
-        KNIME Python integration this is a very long text
+        {{ nodeTemplate.extension.name }}
       </span>
       <div v-if="nodeTemplate.extension.vendor?.isKNIME" class="icon-container">
         <KNIMETriangleIcon class="knime-icon" />
