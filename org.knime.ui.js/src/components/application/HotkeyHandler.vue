@@ -31,6 +31,11 @@ export default {
         return;
       }
 
+      // Ignore repeat / hold down of keys
+      if (e.repeat === true) {
+        return;
+      }
+
       // This currently only looks for the first shortcut that matches the hotkey
       let shortcut = this.$shortcuts.findByHotkey(e);
 
