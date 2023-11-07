@@ -5,16 +5,18 @@ import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 
-type Props = {
+export type Props = {
   nodeTemplate: NodeTemplateWithExtendedPorts;
-  showFloatingHelpIcon: boolean;
-  displayMode: NodeRepositoryDisplayModesType;
   isHovered: boolean;
+  displayMode?: NodeRepositoryDisplayModesType;
+  showFloatingHelpIcon?: boolean;
   isSelected?: boolean;
 };
 
 withDefaults(defineProps<Props>(), {
   isSelected: false,
+  showFloatingHelpIcon: false,
+  displayMode: "icon",
 });
 const emit = defineEmits(["helpIconClick"]);
 </script>

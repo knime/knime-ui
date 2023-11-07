@@ -23,6 +23,7 @@ import * as $colors from "@/style/colors.mjs";
 import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
+import * as settingsStore from "@/store/settings";
 import { searchStarterNodesResponse } from "@/store/common/__tests__/nodeSearch.test";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
@@ -145,6 +146,7 @@ describe("QuickAddNodeMenu.vue", () => {
         },
       },
       selection: selectionStore,
+      settings: settingsStore,
       workflow: {
         state: {
           ...workflowStore.state(),
@@ -233,10 +235,10 @@ describe("QuickAddNodeMenu.vue", () => {
     it("should display the nodes recommended", async () => {
       const { wrapper } = doMount();
       await Vue.nextTick();
-      const spans = wrapper.findAll(".node > span");
+      const nodes = wrapper.findAll(".node");
 
-      expect(spans.at(0).text()).toBe("Column Filter");
-      expect(spans.at(1).text()).toBe("Row Filter");
+      expect(nodes.at(0).text()).toMatch("Column Filter");
+      expect(nodes.at(1).text()).toMatch("Row Filter");
 
       const previews = wrapper.findAllComponents(NodePreview);
 
@@ -412,10 +414,10 @@ describe("QuickAddNodeMenu.vue", () => {
       await wrapper.find(".search-bar input").setValue("search");
       await new Promise((r) => setTimeout(r, 0));
 
-      const spans = wrapper.findAll(".node > span");
+      const nodes = wrapper.findAll(".node");
 
-      expect(spans.at(0).text()).toBe("GroupBy Bar Chart (JFreeChart)");
-      expect(spans.at(1).text()).toBe("Decision Tree Learner");
+      expect(nodes.at(0).text()).toMatch("GroupBy Bar Chart (JFreeChart)");
+      expect(nodes.at(1).text()).toMatch("Decision Tree Learner");
 
       const previews = wrapper.findAllComponents(NodePreview);
 

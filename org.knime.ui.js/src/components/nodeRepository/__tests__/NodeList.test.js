@@ -1,7 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import NodeTemplate from "../NodeTemplate.vue";
+import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 import NodeList from "../NodeList.vue";
 
 describe("NodeList", () => {
