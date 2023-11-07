@@ -1648,6 +1648,12 @@ export interface NativeNodeDescription extends NodeDescription {
      * @memberof NativeNodeDescription
      */
     links?: Array<Link>;
+    /**
+     *
+     * @type {Extension}
+     * @memberof NativeNodeDescription
+     */
+    extension?: Extension;
 
 }
 
@@ -3474,7 +3480,7 @@ export interface Vendor {
      */
     name: string;
     /**
-     * Whether KNIME is the vendor.
+     * True if KNIME is the vendor, otherwise it&#39;s absent.
      * @type {boolean}
      * @memberof Vendor
      */

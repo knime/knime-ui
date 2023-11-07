@@ -1,6 +1,8 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
 
+import KNIMETriangleIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
+import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
 import Description from "webapps-common/ui/components/Description.vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
@@ -10,10 +12,15 @@ import { API } from "@api";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import { runInEnvironment } from "@/environment";
 import MetadataDescription from "@/components/workflowMetadata/MetadataDescription.vue";
+import type { NativeNodeDescriptionWithExtendedPorts } from "@/util/portDataMapper";
 
 type SelectedNode = Partial<Pick<NodeTemplate, "nodeFactory">> & {
   id: string;
   name: string;
+};
+
+type ComponentData = {
+  descriptionData: NativeNodeDescriptionWithExtendedPorts | null;
 };
 
 /*
@@ -27,6 +34,8 @@ export default defineComponent({
     ExternalResourcesList,
     CloseButton,
     MetadataDescription,
+    ExtensionIcon,
+    KNIMETriangleIcon,
   },
   props: {
     selectedNode: {
@@ -43,7 +52,7 @@ export default defineComponent({
     },
   },
   emits: ["close"],
-  data() {
+  data(): ComponentData {
     return {
       descriptionData: null,
     };
@@ -176,6 +185,23 @@ export default defineComponent({
             :options="descriptionData.options"
             class="node-feature-list"
           />
+
+          <div v-if="descriptionData.extension" class="extension-info">
+            <div class="header">
+              <ExtensionIcon class="icon" />
+              <span>Extension</span>
+            </div>
+            <div class="extension-name">
+              {{ descriptionData.extension.name }}
+            </div>
+            <div class="extension-vendor">
+              provided by {{ descriptionData.extension.vendor.name }}
+              <KNIMETriangleIcon
+                v-if="descriptionData.extension.vendor.isKNIME"
+                class="knime-icon"
+              />
+            </div>
+          </div>
         </template>
       </template>
       <div v-else class="placeholder no-node">Please select a node</div>
@@ -411,6 +437,41 @@ export default defineComponent({
     & th,
     & td {
       padding: 2px 0;
+    }
+  }
+
+  & .extension-info {
+    & .header {
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+      line-height: 150%;
+      font-weight: 700;
+      margin-bottom: 10px;
+
+      & span {
+        margin-left: 5px;
+      }
+
+      & .icon {
+        @mixin svg-icon-size 18;
+      }
+    }
+
+    & .extension-name,
+    & .extension-vendor {
+      font-size: 13px;
+      line-height: 150%;
+
+      & .knime-icon {
+        @mixin svg-icon-size 18;
+
+        fill: var(--knime-dove-gray);
+      }
+    }
+
+    & .extension-name {
+      font-weight: 700;
     }
   }
 }
