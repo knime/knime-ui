@@ -111,19 +111,18 @@ final class Init {
     }
 
     static LifeCycleStateInternal run(final boolean checkForUpdates) {
-
         // Create and set default service dependencies
-        var workflowProjectManager = ProjectManager.getInstance();
+        var projectManager = ProjectManager.getInstance();
         var workflowMiddleware = new WorkflowMiddleware(ProjectManager.getInstance());
-        var eventConsumer = createEventConsumer();
         var appStateUpdater = new AppStateUpdater();
-        var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
+        var eventConsumer = createEventConsumer();
         var spaceProviders = createSpaceProviders();
-        DefaultServicesUtil.setDefaultServiceDependencies(workflowProjectManager, workflowMiddleware, appStateUpdater,
+        var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
+        DefaultServicesUtil.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects(),
             createNodeFactoryProvider());
 
-        DesktopAPI.injectDependencies(workflowProjectManager, appStateUpdater, spaceProviders, updateStateProvider,
+        DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware);
 
         var listener = registerListenerToSendProgressEvents(eventConsumer);
@@ -243,7 +242,7 @@ final class Init {
             return new String(jsonRpcHandler.handle(message.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
         }));
 
-        final var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
+        var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
         return (name, event) -> {
             var message = createEventMessage(mapper, name, event);
             CEFCommService.invoke(cs -> cs.send(eventActionId, message));
