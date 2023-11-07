@@ -80,6 +80,7 @@ import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.workbench.workflowcoach.NodeRecommendationUpdater;
 import org.osgi.framework.FrameworkUtil;
 
 /**
@@ -119,13 +120,17 @@ final class Create {
             callWelcomeAPEndpoint();
         }
 
-        // initialize the node timer with the currently active 'perspective'
+        // Initialize the node timer with the currently active 'perspective'
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
 
-        // initialize the workflow manager class -> mainly helps to indirectly trigger IEarlyStartup.executeEarlyStartup
+        // Initialize the workflow manager class -> mainly helps to indirectly trigger IEarlyStartup.executeEarlyStartup
         WorkflowManager.ROOT.getClass();
 
+        // Disable Classic UI key bindings to avoid conflict with Modern UI key bindings
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(false);
+
+        // Check for node recommendation updates, non-blocking
+        NodeRecommendationUpdater.checkForStatisticUpdates(false);
     }
 
     private static void callWelcomeAPEndpoint() {
