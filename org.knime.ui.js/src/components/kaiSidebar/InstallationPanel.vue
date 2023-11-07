@@ -12,7 +12,9 @@ const installKai = API.desktop.installKAI;
     <div class="installation-panel">
       <InstallAiIllustration />
       <div class="slogan">
-        Our <span class="bold">KNIME AI Assistant</span> provides instant answers to your questions, suggests nodes or even creates simple workflows.
+        Our <span class="bold">KNIME AI Assistant</span> provides instant
+        answers to your questions, suggests nodes or even creates simple
+        workflows.
       </div>
       <Button primary compact @click="installKai">Install AI Assistant</Button>
     </div>

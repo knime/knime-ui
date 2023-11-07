@@ -19,6 +19,7 @@ describe("Sidebar", () => {
     mockFeatureFlags = {
       shouldDisplayEmbeddedDialogs: vi.fn(() => true),
       shouldPromoteKai: () => false,
+      isKaiInstalled: () => false,
     },
   } = {}) => {
     const $store = mockVuexStore({
@@ -139,6 +140,7 @@ describe("Sidebar", () => {
       mockFeatureFlags: {
         shouldDisplayEmbeddedDialogs: vi.fn(() => false),
         shouldPromoteKai: () => false,
+        isKaiInstalled: () => false,
       },
     });
 
