@@ -205,11 +205,13 @@ export default defineComponent({
   & .nodes {
     display: grid;
     grid-template-columns: repeat(v-bind(nodesPerRow), 1fr);
-    padding: 0;
-    margin-top: 12px;
-    list-style-type: none;
     width: 100%;
     font-family: "Roboto Condensed", sans-serif;
+    margin-top: 12px 0 0;
+
+    /* reset default ul styles */
+    padding: 0;
+    list-style-type: none;
 
     &:focus {
       outline: none;
