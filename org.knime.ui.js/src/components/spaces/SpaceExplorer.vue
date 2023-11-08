@@ -302,7 +302,7 @@ export default defineComponent({
       }
     },
 
-    async duplicateItems(sourceItems: string[]) {
+    async onDuplicateItems(sourceItems: string[]) {
       await this.onMoveItems({
         sourceItems,
         targetItem: ".",
@@ -366,7 +366,7 @@ export default defineComponent({
         targetItem,
       );
       // if we copy into the current workflow group, we actually "duplicate"
-      // and hence always want to autorename without bothering the user with a dialog
+      // and hence always want to auto rename without bothering the user with a dialog
       const isDuplicate = isCopy && targetItem === ".";
       const collisionStrategy = isDuplicate
         ? "AUTORENAME"
@@ -384,7 +384,7 @@ export default defineComponent({
       }
 
       try {
-        await this.$store.dispatch("spaces/moveItems", {
+        await this.$store.dispatch("spaces/moveOrCopyItems", {
           itemIds: sourceItems,
           projectId: this.projectId,
           destWorkflowGroupItemId,
@@ -579,7 +579,7 @@ export default defineComponent({
             :close-context-menu="closeContextMenu"
             :project-id="projectId"
             :selected-item-ids="selectedItemIds"
-            :duplicate-items="duplicateItems"
+            @duplicate-items="onDuplicateItems"
           />
         </template>
       </FileExplorer>

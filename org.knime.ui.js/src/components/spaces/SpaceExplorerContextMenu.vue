@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed } from "vue";
-import { type Dispatch, useStore } from "vuex";
+import type { Dispatch } from "vuex";
+import { useStore } from "@/composables/useStore";
 
 import MenuItems, {
   type MenuItem,
@@ -15,7 +16,6 @@ import {
   SpaceItem,
   SpaceProvider as BaseSpaceProvider,
 } from "@/api/gateway-api/generated-api";
-import type { RootStoreState } from "@/store/types";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
@@ -26,7 +26,7 @@ import {
   buildExecuteWorkflowMenuItem,
 } from "@/components/spaces/remoteMenuItems";
 
-const store = useStore<RootStoreState>();
+const store = useStore();
 
 const getProviderInfo = computed(() => store.getters["spaces/getProviderInfo"]);
 
@@ -36,13 +36,18 @@ interface Props {
   anchor: FileExplorerContextMenu.Anchor;
   isMultipleSelectionActive: boolean;
   onItemClick: (item: MenuItem) => void;
-  duplicateItems: (sourceItems: string[]) => void;
   closeContextMenu: () => void;
   projectId: string;
   selectedItemIds: Array<string>;
 }
 
 const props = defineProps<Props>();
+
+interface Emits {
+  (e: "duplicateItems", sourceItems: string[]);
+}
+
+const emit = defineEmits<Emits>();
 
 const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
   if (item.execute) {
@@ -180,20 +185,23 @@ const fileExplorerContextMenuItems = computed(() => {
     };
   };
 
+  const openFileType =
+    anchorItem.meta.type === SpaceItem.TypeEnum.Workflow
+      ? "workflows"
+      : "folders";
+
   const createDuplicateItemOption = () => {
     return {
       id: "duplicate",
       text: "Duplicate",
       icon: DuplicateIcon,
-      disabled: false,
-      execute: () => props.duplicateItems(props.selectedItemIds),
+      title: anchorItem.isOpen
+        ? `Open ${openFileType} cannot be duplicated.`
+        : null,
+      disabled: anchorItem.isOpen,
+      execute: () => emit("duplicateItems", props.selectedItemIds),
     };
   };
-
-  const openFileType =
-    anchorItem.meta.type === SpaceItem.TypeEnum.Workflow
-      ? "workflows"
-      : "folders";
 
   const renameOptionTitle = anchorItem.isOpen
     ? `Open ${openFileType} cannot be renamed`

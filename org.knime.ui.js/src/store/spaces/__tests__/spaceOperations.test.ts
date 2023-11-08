@@ -408,7 +408,7 @@ describe("spaces::spaceOperations", () => {
     });
   });
 
-  describe("moveItems", () => {
+  describe("moveOrCopyItems", () => {
     it("should move items", async () => {
       const itemIds = ["id1", "id2"];
       const destWorkflowGroupItemId = "group1";
@@ -423,7 +423,7 @@ describe("spaces::spaceOperations", () => {
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/moveItems", {
+      await store.dispatch("spaces/moveOrCopyItems", {
         projectId,
         itemIds,
         destWorkflowGroupItemId,

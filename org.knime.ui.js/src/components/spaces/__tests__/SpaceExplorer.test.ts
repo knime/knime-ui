@@ -459,11 +459,13 @@ describe("SpaceExplorer.vue", () => {
       const { wrapper, dispatchSpy } = await doMountAndLoad();
 
       const sourceItems = ["id1", "id2"];
-      wrapper
-        .findComponent(FileExplorer)
-        .vm.$emit("duplicateItems", { sourceItems });
 
-      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "spaces/moveItems", {
+      // call the handler
+      // (we can't trigger easily via the FileExplorer as it needs to
+      // have an open context menu which requires a lot of mocks)
+      wrapper.vm.onDuplicateItems(sourceItems);
+
+      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "spaces/moveOrCopyItems", {
         projectId: "someProjectId",
         itemIds: sourceItems,
         destWorkflowGroupItemId: "root",
@@ -595,7 +597,7 @@ describe("SpaceExplorer.vue", () => {
         .vm.$emit("moveItems", { sourceItems, targetItem, onComplete });
       await nextTick();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveItems", {
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveOrCopyItems", {
         projectId: "someProjectId",
         itemIds: sourceItems,
         destWorkflowGroupItemId: targetItem,
@@ -628,7 +630,7 @@ describe("SpaceExplorer.vue", () => {
       });
       await nextTick();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveItems", {
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveOrCopyItems", {
         itemIds: sourceItems,
         projectId: "someProjectId",
         destWorkflowGroupItemId: "root",
@@ -662,7 +664,7 @@ describe("SpaceExplorer.vue", () => {
         .vm.$emit("moveItems", { sourceItems, targetItem, onComplete });
       await nextTick();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveItems", {
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveOrCopyItems", {
         itemIds: sourceItems,
         projectId: "someProjectId",
         destWorkflowGroupItemId: "parentId",
@@ -687,7 +689,7 @@ describe("SpaceExplorer.vue", () => {
         .findComponent(FileExplorer)
         .vm.$emit("moveItems", { sourceItems, targetItem, onComplete });
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith("spaces/moveItems", {
+      expect(dispatchSpy).not.toHaveBeenCalledWith("spaces/moveOrCopyItems", {
         itemIds: sourceItems,
         destWorkflowGroupItemId: targetItem,
         collisionStrategy: "CANCEL",

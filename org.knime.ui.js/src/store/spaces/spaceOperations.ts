@@ -289,7 +289,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async moveItems(
+  async moveOrCopyItems(
     { state, dispatch, commit },
     { projectId, itemIds, destWorkflowGroupItemId, collisionStrategy, isCopy },
   ) {
@@ -339,6 +339,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     if (pathId === ".") {
       return getters.currentWorkflowGroupId(projectId);
     }
+    // no special char just consider pathId an itemId
     return pathId;
   },
 
