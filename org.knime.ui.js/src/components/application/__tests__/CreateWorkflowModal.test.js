@@ -154,24 +154,6 @@ describe("CreateWorkflowModal.vue", () => {
       });
     });
 
-    it.each([".", "\\", "/"])(
-      "should clean workflow input",
-      async (invalidChar) => {
-        const { wrapper, dispatchSpy } = doMount();
-
-        const newName = "Test name";
-        const input = wrapper.find("input");
-        input.element.value = invalidChar + newName + invalidChar;
-        input.trigger("input");
-
-        await wrapper.findAll("button").at(-1).trigger("click");
-        expect(dispatchSpy).toHaveBeenCalledWith("spaces/createWorkflow", {
-          projectId: "someProject",
-          workflowName: newName,
-        });
-      },
-    );
-
     it("should disable button when name is invalid", async () => {
       const { wrapper } = await doMount();
 

@@ -7,7 +7,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 
-import { useWorkflowNameValidator } from "@/composables/useWorkflowNameValidator";
+import { useNameValidator } from "webapps-common/ui/components/FileExplorer/useNameValidator";
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 
 const NAME_TEMPLATE = "KNIME_project";
@@ -33,7 +33,7 @@ const existingWorkflowNames = computed<Array<string>>(() => {
   return items.map(({ name }) => name);
 });
 
-const { isValid, errorMessage, cleanName } = useWorkflowNameValidator({
+const { isValid, errorMessage, cleanedName } = useNameValidator({
   blacklistedNames: existingWorkflowNames,
   name: workflowName,
 });
@@ -57,7 +57,7 @@ const onSubmit = async () => {
     const { projectId } = store.state.spaces.createWorkflowModalConfig;
     const workflowItem = await store.dispatch("spaces/createWorkflow", {
       projectId,
-      workflowName: cleanName(workflowName.value),
+      workflowName: cleanedName.value,
     });
 
     isSubmitted.value = false;
