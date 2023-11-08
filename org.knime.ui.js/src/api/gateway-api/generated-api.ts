@@ -1537,11 +1537,11 @@ export namespace MetaNodeState {
 export interface MetaPorts {
 
     /**
-     * The horizontal position of the ports(-bar).
-     * @type {number}
+     *
+     * @type {Bounds}
      * @memberof MetaPorts
      */
-    xPos?: number;
+    bounds?: Bounds;
     /**
      *
      * @type {Array<NodePort>}

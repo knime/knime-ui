@@ -5,7 +5,6 @@ import type { KnimeNode } from "@/api/custom-types";
 import portShift from "@/util/portShift";
 import * as $shapes from "@/style/shapes.mjs";
 
-import { useStore } from "./useStore";
 import { usePortBarPositions } from "./usePortBarPositions";
 import { useConnectedNodeObjects } from "./useConnectedNodeObjects";
 
@@ -35,10 +34,7 @@ type UseConnectorPositionOptions = {
 type SourceOrDest = "source" | "dest";
 
 export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
-  const store = useStore();
-  const workflow = computed(() => store.state.workflow.activeWorkflow);
-
-  const { portBarXPos, portBarItemYPos } = usePortBarPositions();
+  const { portBarXPos, getPortbarPortYPosition } = usePortBarPositions();
 
   const referenceNodes = useConnectedNodeObjects({
     sourceNode: options.sourceNode,
@@ -69,16 +65,11 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
     sourceNodeIndex: number,
     type: SourceOrDest,
   ): XY => {
-    const allPorts =
-      type === "source"
-        ? workflow.value.metaInPorts
-        : workflow.value.metaOutPorts;
-
-    let x = portBarXPos(allPorts, type === "dest");
+    let x = portBarXPos(type === "dest");
     const delta = $shapes.portSize / 2;
     x += type === "source" ? delta : -delta;
 
-    const y = portBarItemYPos(sourceNodeIndex, allPorts.ports, true);
+    const y = getPortbarPortYPosition(sourceNodeIndex, type === "dest", true);
 
     return { x, y };
   };

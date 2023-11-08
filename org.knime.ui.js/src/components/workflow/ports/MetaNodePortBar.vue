@@ -33,7 +33,7 @@ interface Props {
   containerId: string;
 }
 
-const portBarPositions = usePortBarPositions();
+const { portBarHeight, getPortbarPortYPosition } = usePortBarPositions();
 
 const props = withDefaults(defineProps<Props>(), {
   type: "in",
@@ -53,7 +53,7 @@ const portPositions = computed(() => {
   // y-coordinate is relative to PortBar
   const mappedPorts = props.ports.map<[number, number]>((port) => [
     positionX,
-    portBarPositions.portBarItemYPos(port.index, props.ports, false),
+    getPortbarPortYPosition(port.index, props.type === "out", false),
   ]);
 
   return {
@@ -61,8 +61,6 @@ const portPositions = computed(() => {
     out: portDirection.value === "out" ? mappedPorts : [],
   };
 });
-
-const portBarHeight = computed(() => portBarPositions.portBarHeight.value);
 
 const barPosition = computed(() =>
   props.type === "out" ? 0 : -metaNodeBarWidth,

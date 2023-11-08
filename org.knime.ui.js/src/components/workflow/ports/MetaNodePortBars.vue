@@ -13,10 +13,7 @@ const workflow = computed(() => store.state.workflow.activeWorkflow);
 const hasInPorts = computed(() => workflow.value.metaInPorts?.ports?.length);
 const hasOutPorts = computed(() => workflow.value.metaOutPorts?.ports?.length);
 
-const portBarPositions = usePortBarPositions();
-
-const portBarXPos = portBarPositions.portBarXPos;
-const portBarYPos = computed(() => portBarPositions.portBarYPos.value);
+const { portBarXPos, portBarYPos } = usePortBarPositions();
 </script>
 
 <template>
@@ -26,8 +23,8 @@ const portBarYPos = computed(() => portBarPositions.portBarYPos.value);
       type="in"
       :ports="workflow.metaInPorts.ports"
       :position="{
-        x: portBarXPos(workflow.metaInPorts, false),
-        y: portBarYPos,
+        x: portBarXPos(false),
+        y: portBarYPos(false),
       }"
       :container-id="workflow.info.containerId"
     />
@@ -36,8 +33,8 @@ const portBarYPos = computed(() => portBarPositions.portBarYPos.value);
       type="out"
       :ports="workflow.metaOutPorts.ports"
       :position="{
-        x: portBarXPos(workflow.metaOutPorts, true),
-        y: portBarYPos,
+        x: portBarXPos(true),
+        y: portBarYPos(true),
       }"
       :container-id="workflow.info.containerId"
     />
