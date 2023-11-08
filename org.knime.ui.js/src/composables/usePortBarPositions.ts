@@ -1,7 +1,6 @@
 import { computed } from "vue";
 
 import { metaNodeBarWidth } from "@/style/shapes.mjs";
-import type { MetaPorts } from "@/api/gateway-api/generated-api";
 import { useStore } from "./useStore";
 
 export const usePortBarPositions = () => {
@@ -10,35 +9,47 @@ export const usePortBarPositions = () => {
   const workflowBounds = { value: store.getters["workflow/workflowBounds"] };
   const contentBounds = { value: store.getters["canvas/contentBounds"] };
 
+  const workflow = computed(() => store.state.workflow.activeWorkflow);
+
   const portBarHeight = computed<number>(() => contentBounds.value.height);
-  const portBarYPos = computed<number>(() => contentBounds.value.top);
 
-  /**
-   * Get the horizontal position of a metanode's port bar from the store.
-   * @param  ports as returned from the API
-   * @param isOutgoing `true` if the `ports` input represents the input ports, `false` for the output ports.
-   * @returns  The horizontal position
-   */
-  const portBarXPos = (ports: MetaPorts, isOutgoing: boolean) => {
-    if (ports.xPos) {
-      return ports.xPos;
-    }
-
-    if (isOutgoing) {
-      return workflowBounds.value.right - metaNodeBarWidth;
-    }
-
-    return workflowBounds.value.left + metaNodeBarWidth;
+  const getPorts = (isOutgoing: boolean) => {
+    return isOutgoing
+      ? workflow.value.metaOutPorts.ports
+      : workflow.value.metaInPorts.ports;
   };
 
-  /**
-   * Get the vertical position one of a metanode's port items, either relative to the port bar, or absolute.
-   * @param  index Index of the port
-   * @param  ports List of ports
-   * @param  absolute `true` for absolute coordinate, `false` for relative.
-   * @returns  The vertical position
-   */
-  const portBarItemYPos = (index: number, ports: any[], absolute: boolean) => {
+  const getBounds = (isOutgoing: boolean) => {
+    return isOutgoing
+      ? workflow.value.metaOutPorts.bounds
+      : workflow.value.metaInPorts.bounds;
+  };
+
+  const portBarXPos = (isOutgoing: boolean) => {
+    const bounds = getBounds(isOutgoing);
+
+    if (!bounds) {
+      const offset = isOutgoing
+        ? workflowBounds.value.right
+        : workflowBounds.value.left;
+      return offset + metaNodeBarWidth;
+    }
+
+    return bounds.x;
+  };
+
+  const portBarYPos = (isOutgoing: boolean) => {
+    const bounds = getBounds(isOutgoing);
+
+    return bounds ? bounds.y : contentBounds.value.top;
+  };
+
+  const getPortbarPortYPosition = (
+    index: number,
+    isOutgoing: boolean,
+    absolute: boolean,
+  ) => {
+    const ports = getPorts(isOutgoing);
     const total = ports.length;
     return (
       (portBarHeight.value * (index + 1)) / (total + 1) +
@@ -50,6 +61,6 @@ export const usePortBarPositions = () => {
     portBarHeight,
     portBarYPos,
     portBarXPos,
-    portBarItemYPos,
+    getPortbarPortYPosition,
   };
 };
