@@ -75,7 +75,6 @@ describe("NodeDescription", () => {
 
   it("renders all components", async () => {
     const { wrapper } = await doMount();
-    expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
     expect(wrapper.findComponent(Description).exists()).toBe(true);
     expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(true);
     expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(true);
@@ -149,7 +148,7 @@ describe("NodeDescription", () => {
   });
 
   it("should fetch a component description", async () => {
-    await doMount({
+    const { wrapper } = await doMount({
       props: {
         isComponent: true,
         selectedNode: { id: "componentId", name: "Component" },
@@ -159,5 +158,32 @@ describe("NodeDescription", () => {
     expect(runInEnvironment).not.toHaveBeenCalled();
     expect(getNodeDescriptionMock).not.toHaveBeenCalled();
     expect(getComponentDescriptionMock).toHaveBeenCalled();
+    expect(wrapper.find(".extension-info").exists()).toBe(false);
+  });
+
+  it("should render node extension information", async () => {
+    getNodeDescriptionMock.mockResolvedValueOnce({
+      id: 1,
+      description: "This is a node.",
+      links: [
+        {
+          text: "link",
+          url: "www.link.com",
+        },
+      ],
+      extension: {
+        name: "Extension name",
+        vendor: { name: "Vendor name", isKNIME: false },
+      },
+    });
+    const { wrapper } = await doMount();
+    await Vue.nextTick();
+    const description = wrapper.find(".description");
+
+    expect(description.text()).toBe("This is a node.");
+    expect(wrapper.find(".extension-info").exists()).toBe(true);
+    expect(wrapper.find(".extension-name").text()).toMatch("Extension name");
+    expect(wrapper.find(".extension-vendor").text()).toMatch("Vendor name");
+    expect(wrapper.find(".knime-icon").exists()).toBe(false);
   });
 });
