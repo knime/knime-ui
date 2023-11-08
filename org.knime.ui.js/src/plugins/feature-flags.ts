@@ -16,7 +16,8 @@ const featureFlagsPrefix = "org.knime.ui.feature";
 
 const featureFlagDefaults = {
   [`${featureFlagsPrefix}.embedded_views_and_dialogs`]: false,
-  [`${featureFlagsPrefix}.ai_assistant`]: false,
+  [`${featureFlagsPrefix}.ai_assistant`]: true,
+  [`${featureFlagsPrefix}.ai_assistant_installed`]: false,
 };
 
 const getFlagValue = (store, name) => {
