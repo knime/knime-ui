@@ -3891,6 +3891,12 @@ export interface WorkflowInfo {
      */
     linked?: boolean;
     /**
+     * The number of updatable links within the project. Absent if there aren&#39;t any.
+     * @type {number}
+     * @memberof WorkflowInfo
+     */
+    numberOfLinks?: number;
+    /**
      * Type of the surrounding space&#39;s provider.
      * @type {string}
      * @memberof WorkflowInfo
