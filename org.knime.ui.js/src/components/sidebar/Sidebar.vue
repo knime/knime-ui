@@ -116,7 +116,7 @@ export default defineComponent({
 
         ...registerSidebarSection(this.showKaiTab, {
           name: TABS.KAI,
-          title: "KAI AI assistant",
+          title: "K-AI AI assistant",
           icon: AiIcon,
           isActive: this.isTabActive(TABS.KAI),
           isExpanded: this.expanded,
