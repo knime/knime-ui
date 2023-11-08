@@ -36,6 +36,7 @@ interface Props {
   anchor: FileExplorerContextMenu.Anchor;
   isMultipleSelectionActive: boolean;
   onItemClick: (item: MenuItem) => void;
+  duplicateItems: (sourceItems: string[]) => void;
   closeContextMenu: () => void;
   projectId: string;
   selectedItemIds: Array<string>;
@@ -179,19 +180,13 @@ const fileExplorerContextMenuItems = computed(() => {
     };
   };
 
-  const createDuplicateItemOption = (
-    dispatch: Dispatch,
-    projectId: string,
-    selectedItems: Array<string>,
-  ) => {
+  const createDuplicateItemOption = () => {
     return {
       id: "duplicate",
       text: "Duplicate",
       icon: DuplicateIcon,
       disabled: false,
-      execute: () => {
-        // TODO call SpaceExplorer#onDuplicateItems with selectedItems
-      },
+      execute: () => props.duplicateItems(props.selectedItemIds),
     };
   };
 
@@ -219,11 +214,7 @@ const fileExplorerContextMenuItems = computed(() => {
       icon: DeleteIcon,
     }),
 
-    createDuplicateItemOption(
-      store.dispatch,
-      props.projectId,
-      props.selectedItemIds,
-    ),
+    createDuplicateItemOption(),
 
     ...valueOrEmpty(
       isLocal,

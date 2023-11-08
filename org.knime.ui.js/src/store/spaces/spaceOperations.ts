@@ -307,8 +307,8 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       });
       await dispatch("fetchWorkflowGroupContent", { projectId });
     } catch (error) {
-      const cpmv = isCopy ? "copying" : "moving";
-      consola.log(`Error ${cpmv} items`, {
+      const copyOrMoveText = isCopy ? "copying" : "moving";
+      consola.log(`Error ${copyOrMoveText} items`, {
         error,
       });
       throw error;
@@ -331,9 +331,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {
   pathToItemId: (_, getters) => (projectId: string, pathId: string) => {
+    // going back
     if (pathId === "..") {
       return getters.parentWorkflowGroupId(projectId);
     }
+    // current folder
     if (pathId === ".") {
       return getters.currentWorkflowGroupId(projectId);
     }

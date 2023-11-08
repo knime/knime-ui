@@ -302,7 +302,7 @@ export default defineComponent({
       }
     },
 
-    async onDuplicateItems({ sourceItems }) {
+    async duplicateItems(sourceItems: string[]) {
       await this.onMoveItems({
         sourceItems,
         targetItem: ".",
@@ -311,18 +311,17 @@ export default defineComponent({
       });
     },
 
-    /**
-     * @typedef Payload
-     * @property {Array<string>} sourceItems
-     * @property {String} targetItem
-     * @property {(isCopy: boolean)}
-     * @property {(success: boolean) => void} onComplete
-     */
-    /**
-     * @param {Payload} eventPayload
-     * @returns {Void}
-     */
-    async onMoveItems({ sourceItems, targetItem, isCopy = false, onComplete }) {
+    async onMoveItems({
+      sourceItems,
+      targetItem,
+      isCopy = false,
+      onComplete,
+    }: {
+      sourceItems: string[];
+      targetItem: string;
+      isCopy: boolean;
+      onComplete: (success: boolean) => void;
+    }) {
       const openedWorkflows = this.openProjects.filter((project) =>
         sourceItems.includes(project?.origin?.itemId),
       );
@@ -368,15 +367,15 @@ export default defineComponent({
       );
       // if we copy into the current workflow group, we actually "duplicate"
       // and hence always want to autorename without bothering the user with a dialog
-      const collisionStrategy =
-        isCopy && targetItem === "."
-          ? "AUTORENAME"
-          : await API.desktop.getNameCollisionStrategy({
-              spaceProviderId: this.activeSpacePath?.spaceProviderId,
-              spaceId: this.activeSpacePath?.spaceId,
-              itemIds: sourceItems,
-              destinationItemId: destWorkflowGroupItemId,
-            });
+      const isDuplicate = isCopy && targetItem === ".";
+      const collisionStrategy = isDuplicate
+        ? "AUTORENAME"
+        : await API.desktop.getNameCollisionStrategy({
+            spaceProviderId: this.activeSpacePath?.spaceProviderId,
+            spaceId: this.activeSpacePath?.spaceId,
+            itemIds: sourceItems,
+            destinationItemId: destWorkflowGroupItemId,
+          });
 
       if (collisionStrategy === "CANCEL") {
         onComplete(false);
@@ -547,7 +546,6 @@ export default defineComponent({
         @change-selection="onSelectionChange"
         @open-file="onOpenFile"
         @rename-file="onRenameFile"
-        @duplicate-items="onDuplicateItems"
         @delete-items="onDeleteItems"
         @move-items="onMoveItems"
         @drag="onDrag"
@@ -581,6 +579,7 @@ export default defineComponent({
             :close-context-menu="closeContextMenu"
             :project-id="projectId"
             :selected-item-ids="selectedItemIds"
+            :duplicate-items="duplicateItems"
           />
         </template>
       </FileExplorer>
