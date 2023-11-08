@@ -71,11 +71,7 @@ export default defineComponent({
       return environment === "DESKTOP";
     },
     showKaiTab() {
-      return (
-        (this.$features.shouldPromoteKai() ||
-          this.$features.isKaiInstalled()) &&
-        this.isDesktopEnvironment
-      );
+      return this.$features.isKaiPermitted() && this.isDesktopEnvironment;
     },
 
     sidebarSections(): Array<SidebarSection> {
