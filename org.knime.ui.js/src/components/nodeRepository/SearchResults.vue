@@ -23,7 +23,7 @@ type Props = {
   searchScrollPosition?: number;
   selectedNode: NodeTemplateWithExtendedPorts | null;
   searchActions: SearchActions;
-  hasNodeCollectionActive: boolean;
+  hasNodesInOtherPartitions: boolean;
   highlightFirst?: boolean;
   displayMode: NodeRepositoryDisplayModesType;
 };
@@ -104,13 +104,13 @@ defineExpose({ focusFirst });
   >
     <div class="content">
       <div v-if="isNodeListEmpty" class="no-matching-search">
-        <span v-if="hasNodeCollectionActive">
+        <span v-if="hasNodesInOtherPartitions">
           There are no nodes matching with your current filter settings.
         </span>
         <span v-else>There are no matching nodes.</span>
         <div class="search-info">
           <CircleInfoIcon class="info-icon" />
-          <span v-if="hasNodeCollectionActive"
+          <span v-if="hasNodesInOtherPartitions"
             >But there are some in “All nodes“.<br />Change the
             <a @click="emit('openPreferences')">filter settings</a>
             to see all nodes.</span

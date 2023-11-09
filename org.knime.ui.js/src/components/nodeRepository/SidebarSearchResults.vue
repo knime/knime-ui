@@ -26,7 +26,7 @@ export default {
       "selectedTags",
       "selectedNode",
     ]),
-    ...mapState("application", ["hasNodeCollectionActive"]),
+    ...mapState("nodeRepository", ["totalNonPartitionNodes"]),
 
     searchScrollPosition: {
       get() {
@@ -58,7 +58,7 @@ export default {
     :display-mode="displayMode"
     :query="query"
     :nodes="nodes"
-    :has-node-collection-active="hasNodeCollectionActive"
+    :has-nodes-in-other-partitions="totalNonPartitionNodes > 0"
   >
     <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate

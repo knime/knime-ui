@@ -25,7 +25,7 @@ export default defineComponent({
   emits: ["update:selectedNode", "addNode"],
   expose: ["focusFirst"],
   computed: {
-    ...mapState("application", ["hasNodeCollectionActive"]),
+    ...mapState("nodeRepository", ["totalNonPartitionNodes"]),
     ...mapState("quickAddNodes", ["nodes", "query"]),
 
     searchActions() {
@@ -47,7 +47,7 @@ export default defineComponent({
 <template>
   <SearchResults
     ref="searchResults"
-    :has-node-collection-active="hasNodeCollectionActive"
+    :has-nodes-in-other-partitions="totalNonPartitionNodes > 0"
     :query="query"
     :search-actions="searchActions"
     :highlight-first="true"
