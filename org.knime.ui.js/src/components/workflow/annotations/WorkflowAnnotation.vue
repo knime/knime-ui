@@ -198,6 +198,9 @@ export default defineComponent({
     },
 
     async onClickAway() {
+      if (window.getSelection().toString() !== "") {
+        return;
+      }
       if (!this.isEditing) {
         return;
       }
