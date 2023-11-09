@@ -337,6 +337,10 @@ export default defineComponent({
           { name: "executeAll", isVisible: this.isSelectionEmpty },
           { name: "cancelAll", isVisible: this.isSelectionEmpty },
           { name: "resetAll", isVisible: this.isSelectionEmpty },
+          {
+            name: "checkForComponentUpdates",
+            isVisible: this.isSelectionEmpty,
+          }, // Is this a good position?
         ]),
       ];
 

@@ -2,6 +2,8 @@ import workflowShortcuts from "./workflowShortcuts";
 import executionShortcuts from "./executionShortcuts";
 import canvasShortcuts from "./canvasShortcuts";
 import applicationShortcuts from "./applicationShortcuts";
+import annotationShortcuts from "./annotationShortcuts";
+import componentOrMetanodeShortcuts from "./componentOrMetanodeShortcuts";
 import { selectionShortcuts, sidePanelShortcuts } from "./miscShortcuts";
 import type { ShortcutConditionContext } from "./types";
 
@@ -37,6 +39,8 @@ const shortcuts: ShortcutsRegistry = {
     ({ $store }) => Boolean($store.state.workflow.activeWorkflow),
     {
       ...workflowShortcuts,
+      ...annotationShortcuts,
+      ...componentOrMetanodeShortcuts,
       ...executionShortcuts,
       ...conditionGroup(
         ({ $store }) => Boolean($store.state.canvas.interactionsEnabled),

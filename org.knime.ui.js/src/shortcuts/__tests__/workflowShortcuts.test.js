@@ -1,8 +1,6 @@
 /* eslint-disable max-lines */
-import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import { expect, describe, it, vi } from "vitest";
 import workflowShortcuts from "../workflowShortcuts";
-import { APP_ROUTES } from "@/router/appRoutes";
 
 const capitalize = (str) => str.charAt(0).toUpperCase().concat(str.slice(1));
 
@@ -81,14 +79,6 @@ describe("workflowShortcuts", () => {
     return { mockDispatch, $store };
   };
 
-  const createRouter = () => {
-    const mockPush = vi.fn();
-    const $router = {
-      push: mockPush,
-    };
-    return { mockPush, $router };
-  };
-
   describe("execute", () => {
     it("save", () => {
       const { $store, mockDispatch } = createStore();
@@ -161,64 +151,6 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("create metanode", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.createMetanode.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/collapseToContainer",
-        { containerType: "metanode" },
-      );
-    });
-
-    it("create component", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.createComponent.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/collapseToContainer",
-        { containerType: "component" },
-      );
-    });
-
-    it("open component or metanode", () => {
-      const { mockPush, $router } = createRouter();
-      const { $store } = createStore();
-      workflowShortcuts.openComponentOrMetanode.execute({ $store, $router });
-      expect(mockPush).toHaveBeenCalledWith({
-        name: APP_ROUTES.WorkflowPage,
-        params: {
-          workflowId: "root:0",
-          projectId: "activeTestProjectId",
-        },
-      });
-    });
-
-    it("open parent workflow", () => {
-      const { mockPush, $router } = createRouter();
-      const { $store } = createStore();
-      workflowShortcuts.openParentWorkflow.execute({ $store, $router });
-      expect(mockPush).toHaveBeenCalledWith({
-        name: APP_ROUTES.WorkflowPage,
-        params: {
-          workflowId: "direct:parent:id",
-          projectId: "activeTestProjectId",
-        },
-        force: true,
-        replace: true,
-      });
-    });
-
-    it("expand container node", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.expandMetanode.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("workflow/expandContainerNode");
-    });
-
-    it("open layout editor", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.openLayoutEditor.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("workflow/openLayoutEditor");
-    });
-
     it("copy", () => {
       const { $store, mockDispatch } = createStore();
       workflowShortcuts.copy.execute({ $store });
@@ -246,27 +178,6 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("should dispatch action to add annotation", () => {
-      const { $store, mockDispatch } = createStore();
-
-      const position = { x: 10, y: 10 };
-      workflowShortcuts.addWorkflowAnnotation.execute({
-        $store,
-        payload: { metadata: { position } },
-      });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/addWorkflowAnnotation",
-        {
-          bounds: {
-            x: 10,
-            y: 10,
-            width: 80,
-            height: 80,
-          },
-        },
-      );
-    });
-
     it("should dispatch action to switch to annotation mode", () => {
       const { $store, mockDispatch } = createStore();
 
@@ -276,33 +187,6 @@ describe("workflowShortcuts", () => {
       expect(mockDispatch).toHaveBeenCalledWith(
         "application/switchCanvasMode",
         "annotation",
-      );
-    });
-
-    it.each([
-      ["bringAnnotationToFront"],
-      ["bringAnnotationForward"],
-      ["sendAnnotationBackward"],
-      ["sendAnnotationToBack"],
-    ])("should dispatch %s to reorder annotation", (shortcutName) => {
-      const { $store, mockDispatch } = createStore();
-
-      const actions = {
-        bringAnnotationToFront:
-          ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront,
-        bringAnnotationForward:
-          ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward,
-        sendAnnotationBackward:
-          ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward,
-        sendAnnotationToBack:
-          ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack,
-      };
-      const action = actions[shortcutName];
-
-      workflowShortcuts[shortcutName].execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/reorderWorkflowAnnotation",
-        { action },
       );
     });
   });
@@ -494,153 +378,6 @@ describe("workflowShortcuts", () => {
       });
     });
 
-    describe.each([["component"], ["metanode"]])("create %s", (nodeKind) => {
-      const shortcut = `create${capitalize(nodeKind)}`;
-
-      it(`it can not create ${nodeKind} when canCollapse is false`, () => {
-        const { $store } = createStore({
-          selectedNodes: [{ allowedActions: { canCollapse: "true" } }],
-        });
-
-        expect(workflowShortcuts[shortcut].condition({ $store })).toBe(true);
-
-        $store.getters["selection/selectedNodes"] = [
-          { allowedActions: { canCollapse: "false" } },
-        ];
-        expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
-      });
-
-      it(`it can not create ${nodeKind} when workflow is not writable`, () => {
-        const { $store } = createStore({
-          isWorkflowWritable: false,
-          selectedNodes: [{ allowedActions: { canCollapse: "true" } }],
-        });
-
-        expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
-      });
-
-      it(`it can not create ${nodeKind} when no node is selected`, () => {
-        const { $store } = createStore({ isWorkflowWritable: false });
-        expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
-      });
-    });
-
-    describe.each([["component"], ["metanode"]])("expand %s", (nodeKind) => {
-      const shortcut = `expand${capitalize(nodeKind)}`;
-
-      it(`it allows to expand if a ${nodeKind} is selected and canExpand is true`, () => {
-        const { $store } = createStore({
-          singleSelectedNode: {
-            kind: nodeKind,
-            allowedActions: {
-              canExpand: "false",
-            },
-          },
-        });
-
-        expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
-        $store.getters["selection/singleSelectedNode"] = {
-          kind: nodeKind,
-          allowedActions: {
-            canExpand: "true",
-          },
-        };
-        expect(workflowShortcuts[shortcut].condition({ $store })).toBe(true);
-      });
-
-      it(`it can not expand ${nodeKind} when workflow is not writable`, () => {
-        const { $store } = createStore({
-          isWorkflowWritable: false,
-          singleSelectedNode: {
-            kind: nodeKind,
-            allowedActions: {
-              canExpand: "true",
-            },
-          },
-        });
-
-        expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
-      });
-
-      it(`it can not expand ${nodeKind} when it is linked`, () => {
-        const { $store } = createStore({
-          singleSelectedNode: {
-            kind: nodeKind,
-            link: "random-link",
-            allowedActions: {
-              canExpand: "true",
-            },
-          },
-        });
-
-        expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
-      });
-
-      it(`it can not expand ${nodeKind} when it is locked`, () => {
-        const { $store } = createStore({
-          singleSelectedNode: {
-            kind: nodeKind,
-            isLocked: true,
-          },
-        });
-
-        expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
-      });
-    });
-
-    it("can (not) open component if (not) unlocked", () => {
-      const singleSelectedNode = {
-        kind: "component",
-      };
-      const { $store } = createStore({
-        singleSelectedNode,
-      });
-
-      expect(
-        workflowShortcuts.openComponentOrMetanode.condition({ $store }),
-      ).toBe(true);
-
-      singleSelectedNode.isLocked = false;
-      expect(
-        workflowShortcuts.openComponentOrMetanode.condition({ $store }),
-      ).toBe(true);
-
-      singleSelectedNode.isLocked = true;
-      expect(
-        workflowShortcuts.openComponentOrMetanode.condition({ $store }),
-      ).toBe(false);
-    });
-
-    describe("openLayoutEditor", () => {
-      it("it is not a component, button disabled", () => {
-        const { $store } = createStore();
-        expect(
-          workflowShortcuts.openLayoutEditor.condition({ $store }),
-        ).toBeFalsy();
-      });
-
-      it("it is not a writable component, button disabled", () => {
-        const { $store } = createStore({
-          isWorkflowWritable: false,
-          containerType: "component",
-        });
-
-        expect(
-          workflowShortcuts.openLayoutEditor.condition({ $store }),
-        ).toBeFalsy();
-      });
-
-      it("it is a writable component, button enabled", () => {
-        const { $store } = createStore({
-          isWorkflowWritable: true,
-          containerType: "component",
-        });
-        expect(workflowShortcuts.openLayoutEditor.condition({ $store })).toBe(
-          true,
-        );
-      });
-    });
-
     it("copy", () => {
       const nodeOutputEl = document.createElement("div");
       nodeOutputEl.id = "node-output";
@@ -730,34 +467,6 @@ describe("workflowShortcuts", () => {
       $store.state.application.hasClipboardSupport = false;
       expect(workflowShortcuts.paste.condition({ $store })).toBeFalsy();
     });
-
-    it.each([
-      ["bringAnnotationToFront"],
-      ["bringAnnotationForward"],
-      ["sendAnnotationBackward"],
-      ["sendAnnotationToBack"],
-    ])(
-      "should check selected annotations when trying to %s",
-      (shortcutName) => {
-        const { $store } = createStore();
-
-        expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(
-          false,
-        );
-
-        $store.getters["selection/selectedAnnotations"] = [
-          { id: "mock-annotation" },
-        ];
-        expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(
-          true,
-        );
-
-        $store.getters["workflow/isWritable"] = false;
-        expect(workflowShortcuts[shortcutName].condition({ $store })).toBe(
-          false,
-        );
-      },
-    );
 
     describe("quickAddNode", () => {
       it.each([
@@ -861,15 +570,6 @@ describe("workflowShortcuts", () => {
           },
         );
       });
-    });
-
-    it("cannot add annotation when workflow is not writable", () => {
-      const { $store } = createStore();
-      $store.getters["workflow/isWritable"] = false;
-
-      expect(
-        workflowShortcuts.addWorkflowAnnotation.condition({ $store }),
-      ).toBe(false);
     });
   });
 });

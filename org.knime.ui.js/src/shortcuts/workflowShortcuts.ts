@@ -1,29 +1,20 @@
-// TODO: NXT-2040, Split that file up
 import RedoIcon from "webapps-common/ui/assets/img/icons/redo.svg";
 import UndoIcon from "webapps-common/ui/assets/img/icons/undo.svg";
 import DeleteIcon from "@/assets/delete.svg";
 import OpenDialogIcon from "@/assets/configure-node.svg";
 import SaveIcon from "webapps-common/ui/assets/img/icons/save.svg";
 import SaveAsIcon from "webapps-common/ui/assets/img/icons/save-as.svg";
-import CreateMetanode from "webapps-common/ui/assets/img/icons/metanode-add.svg";
-import CreateComponent from "webapps-common/ui/assets/img/icons/component.svg";
-import LayoutIcon from "webapps-common/ui/assets/img/icons/layout-editor.svg";
-
 import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 
-import type {
-  ShortcutConditionContext,
-  UnionToShortcutRegistry,
-} from "./types";
-import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import { portPositions } from "@/util/portShift";
 import { nodeSize } from "@/style/shapes.mjs";
-import type { XY } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/util/geometry";
-import { APP_ROUTES } from "@/router/appRoutes";
 import { isNodeMetaNode } from "@/util/nodeUtil";
+
+import type { UnionToShortcutRegistry } from "./types";
+import type { XY } from "@/api/gateway-api/generated-api";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -35,62 +26,18 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "editName"
   | "editNodeComment"
   | "deleteSelected"
-  | "createMetanode"
-  | "createComponent"
-  | "openComponentOrMetanode"
-  | "openParentWorkflow"
-  | "expandMetanode"
-  | "expandComponent"
-  | "linkComponent"
-  | "updateComponent"
-  | "unlinkComponent"
-  | "changeHubItemVersion"
-  | "changeComponentLinkType"
-  | "openLayoutEditor"
   | "copy"
   | "cut"
   | "paste"
-  | "addWorkflowAnnotation"
   | "switchToAnnotationMode"
   | "switchToPanMode"
   | "switchToSelectionMode"
-  | "bringAnnotationToFront"
-  | "bringAnnotationForward"
-  | "sendAnnotationBackward"
-  | "sendAnnotationToBack"
   | "quickAddNode"
 >;
 
 declare module "./index" {
   interface ShortcutsRegistry extends WorkflowShortcuts {}
 }
-
-const canExpand =
-  (kind: "metanode" | "component") =>
-  ({ $store }: ShortcutConditionContext) => {
-    const selectedNode = $store.getters["selection/singleSelectedNode"];
-
-    if (
-      !$store.getters["workflow/isWritable"] ||
-      selectedNode?.link ||
-      selectedNode?.isLocked
-    ) {
-      return false;
-    }
-
-    return (
-      selectedNode?.kind === kind &&
-      selectedNode?.allowedActions.canExpand !== "false"
-    );
-  };
-
-const canOpen =
-  (kind: "metanode" | "component") =>
-  ({ $store }: ShortcutConditionContext) => {
-    const selectedNode = $store.getters["selection/singleSelectedNode"];
-
-    return selectedNode?.kind === kind && !selectedNode?.isLocked;
-  };
 
 const workflowShortcuts: WorkflowShortcuts = {
   save: {
@@ -228,185 +175,6 @@ const workflowShortcuts: WorkflowShortcuts = {
       return allSelectedDeletable;
     },
   },
-  createMetanode: {
-    text: "Create metanode",
-    title: "Create metanode",
-    hotkey: ["Ctrl", "G"],
-    icon: CreateMetanode,
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/collapseToContainer", {
-        containerType: "metanode",
-      }),
-    condition({ $store }) {
-      if (!$store.getters["workflow/isWritable"]) {
-        return false;
-      }
-
-      if (!$store.getters["selection/selectedNodes"].length) {
-        return false;
-      }
-
-      return $store.getters["selection/selectedNodes"].every(
-        (node) => node.allowedActions.canCollapse !== "false",
-      );
-    },
-  },
-  createComponent: {
-    text: "Create component",
-    title: "Create component",
-    hotkey: ["Ctrl", "J"],
-    icon: CreateComponent,
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/collapseToContainer", {
-        containerType: "component",
-      }),
-    condition({ $store }) {
-      if (!$store.getters["workflow/isWritable"]) {
-        return false;
-      }
-      if (!$store.getters["selection/selectedNodes"].length) {
-        return false;
-      }
-
-      return $store.getters["selection/selectedNodes"].every(
-        (node) => node.allowedActions.canCollapse !== "false",
-      );
-    },
-  },
-  openComponentOrMetanode: {
-    text: ({ $store }) =>
-      `Open ${$store.getters["selection/singleSelectedNode"]?.kind}`,
-    hotkey: ["Ctrl", "Alt", "Enter"],
-    execute: ({ $store, $router }) => {
-      const projectId = $store.state.application.activeProjectId;
-      const id = $store.getters["selection/singleSelectedNode"].id;
-      $router.push({
-        name: APP_ROUTES.WorkflowPage,
-        params: { projectId, workflowId: id },
-      });
-    },
-    condition: ({ $store }) => {
-      return (
-        canOpen("component")({ $store }) || canOpen("metanode")({ $store })
-      );
-    },
-  },
-  openParentWorkflow: {
-    hotkey: ["Ctrl", "Alt", "Shift", "Enter"],
-    execute: ({ $store, $router }) => {
-      const projectId = $store.state.application.activeProjectId;
-      const activeWorkflowParents =
-        $store.state.workflow.activeWorkflow.parents;
-      const id = activeWorkflowParents.at(-1).containerId;
-
-      $router.push({
-        name: APP_ROUTES.WorkflowPage,
-        params: { projectId, workflowId: id },
-        force: true,
-        replace: true,
-      });
-    },
-    condition: ({ $store }) => {
-      const activeWorkflowParents =
-        $store.state.workflow.activeWorkflow.parents;
-      return activeWorkflowParents?.length > 0;
-    },
-  },
-  expandMetanode: {
-    text: "Expand metanode",
-    title: "Expand metanode",
-    hotkey: ["Ctrl", "Shift", "G"],
-    execute: ({ $store }) => $store.dispatch("workflow/expandContainerNode"),
-    condition: canExpand("metanode"),
-  },
-  expandComponent: {
-    text: "Expand component",
-    title: "Expand component",
-    hotkey: ["Ctrl", "Shift", "J"],
-    execute: ({ $store }) => $store.dispatch("workflow/expandContainerNode"),
-    condition: canExpand("component"),
-  },
-  linkComponent: {
-    text: "Share",
-    title: "Share component",
-    execute: ({ $store, payload = null }) => {
-      const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/linkComponent", { nodeId: selectedNodeId });
-    },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
-  },
-  updateComponent: {
-    text: "Update component",
-    title: "Update component",
-    execute: ({ $store, payload = null }) => {
-      const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/updateComponent", { nodeId: selectedNodeId });
-    },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
-  },
-  unlinkComponent: {
-    text: "Disconnect link",
-    title: "Unlink component",
-    execute: ({ $store, payload = null }) => {
-      const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/unlinkComponent", { nodeId: selectedNodeId });
-    },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
-  },
-  changeHubItemVersion: {
-    text: "Change KNIME Hub item version",
-    title: "Change KNIME Hub item version",
-    execute: ({ $store, payload = null }) => {
-      const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/changeHubItemVersion", {
-        nodeId: selectedNodeId,
-      });
-    },
-    condition: ({ $store }) => {
-      const isWritable = $store.getters["workflow/isWritable"];
-      const isHubItemVersionChangeable =
-        $store.getters["selection/singleSelectedNode"].link
-          ?.isHubItemVersionChangeable;
-      return isWritable && isHubItemVersionChangeable;
-    },
-  },
-  changeComponentLinkType: {
-    text: "Change link type",
-    title: "Change component link type",
-    execute: ({ $store, payload = null }) => {
-      const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/changeComponentLinkType", {
-        nodeId: selectedNodeId,
-      });
-    },
-    condition: ({ $store }) => {
-      const isWritable = $store.getters["workflow/isWritable"];
-      const isLinkTypeChangeable =
-        $store.getters["selection/singleSelectedNode"].link
-          ?.isLinkTypeChangeable;
-      return isWritable && isLinkTypeChangeable;
-    },
-  },
-  openLayoutEditor: {
-    text: "Open layout editor",
-    title: "Open layout editor",
-    hotkey: ["Ctrl", "D"],
-    icon: LayoutIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/openLayoutEditor"),
-    condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.info.containerType ===
-        "component" && $store.getters["workflow/isWritable"],
-  },
   copy: {
     text: "Copy",
     title: "Copy selection",
@@ -473,26 +241,6 @@ const workflowShortcuts: WorkflowShortcuts = {
       $store.getters["workflow/isWritable"] &&
       $store.state.application.hasClipboardSupport,
   },
-  addWorkflowAnnotation: {
-    text: "New workflow annotation",
-    execute: ({ $store, payload }) => {
-      const { metadata } = payload;
-
-      if (!metadata?.position) {
-        return;
-      }
-
-      $store.dispatch("workflow/addWorkflowAnnotation", {
-        bounds: {
-          x: metadata.position.x,
-          y: metadata.position.y,
-          width: metadata.width || 80,
-          height: metadata.height || 80,
-        },
-      });
-    },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
-  },
   switchToAnnotationMode: {
     hotkey: ["T"],
     text: "Annotation mode",
@@ -518,50 +266,6 @@ const workflowShortcuts: WorkflowShortcuts = {
     execute: ({ $store }) => {
       $store.dispatch("application/switchCanvasMode", "selection");
     },
-  },
-  bringAnnotationToFront: {
-    text: "Bring to front",
-    hotkey: ["Ctrl", "Shift", "ArrowUp"],
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/reorderWorkflowAnnotation", {
-        action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront,
-      }),
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0 &&
-      $store.getters["workflow/isWritable"],
-  },
-  bringAnnotationForward: {
-    hotkey: ["Ctrl", "ArrowUp"],
-    text: "Bring forward",
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/reorderWorkflowAnnotation", {
-        action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward,
-      }),
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0 &&
-      $store.getters["workflow/isWritable"],
-  },
-  sendAnnotationBackward: {
-    hotkey: ["Ctrl", "ArrowDown"],
-    text: "Send backward",
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/reorderWorkflowAnnotation", {
-        action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward,
-      }),
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0 &&
-      $store.getters["workflow/isWritable"],
-  },
-  sendAnnotationToBack: {
-    hotkey: ["Ctrl", "Shift", "ArrowDown"],
-    text: "Send to back",
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/reorderWorkflowAnnotation", {
-        action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack,
-      }),
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0 &&
-      $store.getters["workflow/isWritable"],
   },
   quickAddNode: {
     text: "Quick add node",
