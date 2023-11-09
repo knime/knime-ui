@@ -193,13 +193,18 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     }
   },
   async setWorkflow(
-    { commit, dispatch },
+    { commit, dispatch, rootGetters },
     {
       workflow,
       projectId,
       snapshotId,
     }: { workflow: Workflow; projectId: string; snapshotId: string },
   ) {
+    commit(
+      "workflow/setInitialWorkflowBounds",
+      { left: 0, right: 0, top: 0, bottom: 0 },
+      { root: true },
+    );
     commit("setActiveProjectId", projectId);
     commit(
       "workflow/setActiveWorkflow",
@@ -221,6 +226,12 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     // restore scroll and zoom if saved before
     await dispatch("restoreCanvasState");
+
+    commit(
+      "workflow/setInitialWorkflowBounds",
+      { ...rootGetters["workflow/workflowBounds"] },
+      { root: true },
+    );
   },
 
   async unloadActiveWorkflow(
