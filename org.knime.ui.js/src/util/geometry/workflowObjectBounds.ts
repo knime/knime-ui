@@ -131,13 +131,20 @@ const getMetanodePortbarMargins = (
   };
 };
 
+type ObjectBoundsParameter = {
+  nodes: Workflow["nodes"];
+  workflowAnnotations: Workflow["workflowAnnotations"];
+  metaInPorts?: Workflow["metaInPorts"];
+  metaOutPorts?: Workflow["metaOutPorts"];
+};
+
 export default (
   {
     nodes = {},
     workflowAnnotations = [],
     metaInPorts = null,
     metaOutPorts = null,
-  }: Workflow,
+  }: ObjectBoundsParameter,
   { padding = false } = {},
 ) => {
   let { left, top, right, bottom } = getLimitBounds({
@@ -174,7 +181,6 @@ export default (
   if (metaOutPorts?.ports?.length) {
     const { leftMargin, rightMargin, topMargin, bottomMargin } =
       getMetanodePortbarMargins(metaOutPorts, "out");
-
     left = Math.min(left, leftMargin);
     right = Math.max(right, rightMargin);
     top = Math.min(top, topMargin);

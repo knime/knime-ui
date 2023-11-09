@@ -1,16 +1,17 @@
 import { expect, describe, it } from "vitest";
-import { mockVuexStore } from "@/test/utils";
+import { mockVuexStore, type DeepPartial } from "@/test/utils";
 
 import {
   defaultMetaNodeBarHeight,
   defaultMetanodeBarPosition,
   horizontalNodePadding,
   metaNodeBarWidth,
-  portSize,
   nodeSize,
+  portSize,
 } from "@/style/shapes.mjs";
 
 import * as canvasStoreConfig from "@/store/canvas";
+import type { Bounds, MetaPorts, XY } from "@/api/gateway-api/generated-api";
 
 describe("workflow store", () => {
   const loadStore = async () => {
@@ -25,7 +26,7 @@ describe("workflow store", () => {
   const node = { id: "root:1", position: { x: 50, y: 21 } };
 
   describe("metanode content workflows", () => {
-    let baseWorkflow = {
+    const baseWorkflow = {
       projectId: "foo",
       info: {
         containerType: "metanode",
@@ -38,7 +39,28 @@ describe("workflow store", () => {
       },
     };
 
-    const fixtures = {
+    type FixtureType = Record<
+      string,
+      {
+        additionalProps: {
+          metaInPorts?: DeepPartial<MetaPorts>;
+          metaOutPorts?: DeepPartial<MetaPorts>;
+          workflowAnnotations?: { bounds: Bounds }[];
+        };
+        nodes: Record<string, { id: string; position: XY }>;
+        expected: {
+          workflowBounds: {
+            left?: number;
+            right?: number;
+            top?: number;
+            bottom?: number;
+            height?: number;
+          };
+        };
+      }
+    >;
+
+    const fixtures: FixtureType = {
       "without any ports nor nodes": {
         additionalProps: {},
         nodes: {},
@@ -105,17 +127,17 @@ describe("workflow store", () => {
         expected: {
           workflowBounds: {
             left: -metaNodeBarWidth,
-            right: defaultMetanodeBarPosition,
+            right: defaultMetanodeBarPosition + metaNodeBarWidth,
             top: 0,
             bottom: defaultMetaNodeBarHeight,
           },
         },
       },
-      "with fixed input ports only": {
+      "with fixed input ports only (bound X set)": {
         nodes: { [node.id]: node },
         additionalProps: {
           metaInPorts: {
-            xPos: 123,
+            bounds: { x: 123 },
             ports: [{}],
           },
         },
@@ -128,11 +150,43 @@ describe("workflow store", () => {
           },
         },
       },
-      "with fixed output ports only": {
+      "with fixed input ports only (bound Y set)": {
+        nodes: { [node.id]: node },
+        additionalProps: {
+          metaInPorts: {
+            bounds: { y: 123 },
+            ports: [{}],
+          },
+        },
+        expected: {
+          workflowBounds: {
+            top: 0,
+            bottom: defaultMetaNodeBarHeight + 123,
+          },
+        },
+      },
+      "with fixed input ports only (bound height set)": {
+        nodes: { [node.id]: node },
+        additionalProps: {
+          metaInPorts: {
+            bounds: { height: 1230 },
+            ports: [{}],
+          },
+        },
+        expected: {
+          workflowBounds: {
+            top: 0,
+            height: 1230,
+            bottom: 1230,
+          },
+        },
+      },
+
+      "with fixed output ports only (bound X set)": {
         nodes: { [node.id]: node },
         additionalProps: {
           metaOutPorts: {
-            xPos: 123,
+            bounds: { x: 123 },
             ports: [{}],
           },
         },
@@ -145,15 +199,46 @@ describe("workflow store", () => {
           },
         },
       },
+      "with fixed output ports only (bound Y set)": {
+        nodes: { [node.id]: node },
+        additionalProps: {
+          metaOutPorts: {
+            bounds: { y: 123 },
+            ports: [{}],
+          },
+        },
+        expected: {
+          workflowBounds: {
+            top: 0,
+            bottom: defaultMetaNodeBarHeight + 123,
+          },
+        },
+      },
+      "with fixed output ports only (bound height set)": {
+        nodes: { [node.id]: node },
+        additionalProps: {
+          metaOutPorts: {
+            bounds: { height: 1230 },
+            ports: [{}],
+          },
+        },
+        expected: {
+          workflowBounds: {
+            top: 0,
+            height: 1230,
+            bottom: 1230,
+          },
+        },
+      },
       "with fixed ports only": {
         nodes: { [node.id]: node },
         additionalProps: {
           metaOutPorts: {
-            xPos: 400,
+            bounds: { x: 400 },
             ports: [{}],
           },
           metaInPorts: {
-            xPos: 200,
+            bounds: { x: 200 },
             ports: [{}],
           },
         },
@@ -170,7 +255,7 @@ describe("workflow store", () => {
         nodes: { [node.id]: node },
         additionalProps: {
           metaInPorts: {
-            xPos: -100,
+            bounds: { x: -100 },
             ports: [{}],
           },
           metaOutPorts: {
@@ -190,7 +275,7 @@ describe("workflow store", () => {
         expected: {
           workflowBounds: {
             bottom: 1200,
-            left: -110,
+            left: -109,
             right: 1300,
             top: 0,
           },
@@ -203,7 +288,7 @@ describe("workflow store", () => {
             ports: [{}],
           },
           metaOutPorts: {
-            xPos: 500,
+            bounds: { x: 500 },
             ports: [{}],
           },
           workflowAnnotations: [
@@ -219,7 +304,7 @@ describe("workflow store", () => {
         },
         expected: {
           workflowBounds: {
-            left: -300 - metaNodeBarWidth,
+            left: -290 - metaNodeBarWidth,
             right: 1000 - 300,
             top: -200,
             bottom: 1000 - 200,
@@ -230,17 +315,17 @@ describe("workflow store", () => {
         nodes: { [node.id]: node },
         additionalProps: {
           metaInPorts: {
-            xPos: 100,
+            bounds: { x: 100 },
             ports: [{}],
           },
           metaOutPorts: {
-            xPos: -100,
+            bounds: { x: 100 },
             ports: [{}],
           },
         },
         expected: {
           workflowBounds: {
-            left: -100 - portSize,
+            left: 0,
             right: 100 + nodeSize,
             top: 0,
             bottom: 500,
