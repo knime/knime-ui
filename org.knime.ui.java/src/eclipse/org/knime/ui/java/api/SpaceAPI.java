@@ -48,11 +48,12 @@
  */
 package org.knime.ui.java.api;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -60,6 +61,7 @@ import java.util.stream.Stream;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.webui.WebUIUtil;
@@ -217,6 +219,65 @@ final class SpaceAPI {
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
         return ClassicAPCopyMoveLogic.copy(shellProvider, sourceSpaceProvider, selection, targetSpaceProvider,
             destinationStore, excludeData);
+    }
+
+    @API
+    static boolean moveToSpaceInHub(final String spaceProviderId, final String spaceId, final Object[] arr) {
+        // TODO can this be a special case of copyBetweenSpaces (or the other way round)?
+        if (arr.length == 0) {
+            return true;
+        }
+        final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
+        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
+        if (sourceSpace instanceof LocalWorkspace) {
+            DesktopAPUtil.showError("Cannot move to other local space", "Cannot move item(s) to another local space.");
+            return false;
+        }
+
+        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+        final var mountIds = spaceProviders.getProvidersMap().entrySet().stream()
+            .filter(provider -> provider.getValue().getType() != TypeEnum.LOCAL
+                && provider.getValue().getConnection(false).isPresent()
+                && spaceProviderId.equals(provider.getValue().getId()))
+            .map(Entry::getKey).toArray(String[]::new);
+
+        if (mountIds.length == 0) {
+            DesktopAPUtil.showWarning("No Hub spaces available", "Please log into the Hub you want to upload to.");
+            return false;
+        }
+
+        final var destPicker = new SpaceDestinationPicker(mountIds, Operation.MOVE);
+        if (!destPicker.open()) {
+            return false;
+        }
+        final var destInfo = destPicker.getSelectedDestination();
+        final var destinationStore = destInfo.getDestination();
+        final var uri = destinationStore.toURI();
+        final var destWorkflowGroupItemId = sourceSpace.getItemIdByURI(uri).orElseThrow();
+
+        // Hacky: the methods below just need _any_ space on the same instance, since the underlying
+        // REST facade is space-agnostic...
+        final var itemIds = Arrays.stream(arr).map(String.class::cast).toArray(String[]::new);
+        final var nameCollisions =
+            NameCollisionChecker.checkForNameCollisions(sourceSpace, destWorkflowGroupItemId, itemIds);
+
+        final Space.NameCollisionHandling collisionHandling;
+        if (nameCollisions.isEmpty()) {
+            collisionHandling = Space.NameCollisionHandling.NOOP;
+        } else {
+            collisionHandling = NameCollisionChecker //
+                .openDialogToSelectCollisionHandling(sourceSpace, destWorkflowGroupItemId, nameCollisions) //
+                .orElse(Space.NameCollisionHandling.NOOP);
+        }
+
+        try {
+            sourceSpace.moveOrCopyItems(List.of(itemIds), destWorkflowGroupItemId, collisionHandling, false);
+            return true;
+        } catch (final IOException e) {
+            DesktopAPUtil.showAndLogError("Unable to move item",
+                "An unexpected exception occurred while moving the item", NodeLogger.getLogger(SpaceAPI.class), e);
+            return false;
+        }
     }
 
     /**

@@ -64,7 +64,8 @@ final class SpaceDestinationPicker {
     public enum Operation {
         UPLOAD("Upload to...", "uploaded"),
         DOWNLOAD("Download to...", "downloaded"),
-        SAVE("Save to...", "saved");
+        SAVE("Save to...", "saved"),
+        MOVE("Move to...", "moved");
 
         private final String m_title;
         private final String m_desc;
