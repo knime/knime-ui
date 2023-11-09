@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
 import { mapGetters, mapState } from "vuex";
 
 import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
+import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import PlusIcon from "@/assets/plus.svg";
@@ -17,6 +18,11 @@ import {
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import type { PropType } from "vue";
+import type { ActionMenuItem } from "@/components/spaces/remoteMenuItems";
+
+type DisplayModes = "normal" | "mini";
 
 export default {
   components: {
@@ -24,20 +30,21 @@ export default {
     PlusButton,
     SubMenu,
     MenuOptionsIcon,
+    ReloadIcon,
+    FunctionButton,
   },
 
   props: {
     mode: {
-      type: String,
+      type: String as PropType<DisplayModes>,
       default: "normal",
-      validator: (value) => ["normal", "mini"].includes(value),
     },
     selectedItemIds: {
-      type: Array,
+      type: Array as PropType<string[]>,
       required: true,
     },
     projectId: {
-      type: [String, null],
+      type: [String, null] as PropType<string | null>,
       required: true,
     },
   },
@@ -79,7 +86,7 @@ export default {
         },
       };
     },
-    actions() {
+    actions(): ActionMenuItem[] {
       const { projectId } = this;
 
       const downloadToLocalSpace = buildHubDownloadMenuItem(
@@ -174,12 +181,32 @@ export default {
         },
         ...getHubActions(),
         ...getServerActions(),
+        {
+          id: "reload",
+          text: "Reload",
+          icon: ReloadIcon,
+          execute: () => this.reload(),
+          metadata: {
+            hideInMiniMode: true,
+          },
+        },
       ];
     },
 
     createWorkflowButtonTitle() {
       const { text, hotkeyText } = this.$shortcuts.get("createWorkflow");
       return `${text} (${hotkeyText})`;
+    },
+  },
+  methods: {
+    reload() {
+      const { projectId } = this;
+      if (projectId === null) {
+        return;
+      }
+      this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
+        projectId,
+      });
     },
   },
 };
@@ -195,7 +222,9 @@ export default {
           :key="action.id"
           :disabled="isLoadingContent"
           :item="action"
-          @click="(item) => (item.execute ? item.execute() : null)"
+          @click="
+            (item: ActionMenuItem) => (item.execute ? item.execute() : null)
+          "
         />
 
         <div class="create-workflow-btn">
@@ -211,8 +240,11 @@ export default {
 
     <template v-if="mode === 'mini'">
       <div class="toolbar-actions-mini">
+        <FunctionButton class="reload-button" @click="reload">
+          <ReloadIcon />
+        </FunctionButton>
         <SubMenu
-          :items="actions"
+          :items="actions.filter((item) => !item?.metadata?.hideInMiniMode)"
           :disabled="isLoadingContent"
           class="more-actions"
           button-title="More actions"
@@ -263,14 +295,14 @@ export default {
       margin-right: 5px;
     }
 
-    & :deep(.submenu-toggle) {
-      border: 1px solid var(--knime-silver-sand);
-    }
-
     /* Aligning text in the submenu */
     & :deep(button) {
       align-items: center;
     }
+  }
+
+  & .reload-button {
+    margin-right: 5px;
   }
 }
 </style>

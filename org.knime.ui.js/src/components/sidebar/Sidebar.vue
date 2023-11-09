@@ -242,6 +242,8 @@ export default defineComponent({
 @import url("@/assets/mixins.css");
 
 .sidebar-wrapper {
+  --sidebar-background-color: var(--knime-porcelain);
+
   display: flex;
   height: 100%;
   overflow: auto;
@@ -270,10 +272,10 @@ nav {
       }
 
       &.active {
-        background-color: var(--knime-porcelain);
+        background-color: var(--sidebar-background-color);
 
         &.expanded {
-          background-color: var(--knime-porcelain);
+          background-color: var(--sidebar-background-color);
         }
       }
 

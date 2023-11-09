@@ -492,21 +492,23 @@ export default defineComponent({
 
 <template>
   <div :class="mode" class="space-explorer">
-    <div v-if="mode === 'mini'" class="mini-actions">
-      <SpaceSelectionDropdown :project-id="projectId" />
+    <div v-if="mode === 'mini'" class="mini-actions-wrapper">
+      <div class="mini-actions">
+        <SpaceSelectionDropdown :project-id="projectId" />
 
-      <SpaceExplorerActions
-        mode="mini"
-        :project-id="projectId"
-        :selected-item-ids="selectedItemIds"
-      />
+        <SpaceExplorerActions
+          mode="mini"
+          :project-id="projectId"
+          :selected-item-ids="selectedItemIds"
+        />
+      </div>
     </div>
     <div class="breadcrumb-wrapper">
       <Breadcrumb :items="breadcrumbItems" @click-item="onBreadcrumbClick" />
     </div>
 
     <SmartLoader
-      class="smart-loader"
+      class="smart-loader content"
       :loading="isLoadingContent"
       :config="{
         initialDimensions: { height: '76px' },
@@ -597,16 +599,25 @@ export default defineComponent({
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
+.mini-actions-wrapper {
+  background-color: var(--sidebar-background-color);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
 .mini-actions {
   display: flex;
+  margin: 0 var(--space-both-sides);
   justify-content: space-between;
   padding-bottom: 7px;
-  margin-top: 5px;
+  padding-top: 10px;
   margin-bottom: 5px;
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 .breadcrumb-wrapper {
+  padding: 0 var(--space-both-sides);
   position: relative;
   display: flex;
   justify-content: space-between;
@@ -641,8 +652,14 @@ export default defineComponent({
   }
 }
 
+.content {
+  padding: 0 var(--space-both-sides);
+}
+
 .mini {
-  padding: 5px 20px;
+  --space-both-sides: 20px;
+
+  padding-bottom: 5px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;

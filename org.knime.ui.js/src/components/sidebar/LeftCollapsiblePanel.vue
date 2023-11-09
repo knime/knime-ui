@@ -55,7 +55,7 @@ defineEmits<Emits>();
 }
 
 .container {
-  background-color: var(--knime-porcelain);
+  background-color: var(--sidebar-background-color);
   overflow-x: hidden;
 }
 
@@ -68,7 +68,7 @@ button {
   border-left: 1px solid var(--knime-silver-sand);
   width: 10px;
   padding: 0;
-  background-color: var(--knime-porcelain);
+  background-color: var(--sidebar-background-color);
   cursor: pointer;
 
   &:hover {
