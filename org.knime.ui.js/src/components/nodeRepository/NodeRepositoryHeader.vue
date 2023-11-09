@@ -1,0 +1,212 @@
+<script setup lang="ts">
+import { computed } from "vue";
+
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
+import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
+import ListIconCheck from "webapps-common/ui/assets/img/icons/unordered-list.svg";
+import ListIcon from "webapps-common/ui/assets/img/icons/view-cards.svg";
+
+import { API } from "@api";
+import { useStore } from "@/composables/useStore";
+import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
+// import SearchBar from "@/components/common/SearchBar.vue";
+import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
+import CloseableTagList from "./CloseableTagList.vue";
+
+const store = useStore();
+
+const searchIsActive = computed(
+  () => store.getters["nodeRepository/searchIsActive"],
+);
+const tags = computed(() => store.getters["nodeRepository/tagsOfVisibleNodes"]);
+
+const displayMode = computed(
+  () => store.state.settings.settings.nodeRepositoryDisplayMode,
+);
+const hasNodeCollectionActive = computed(
+  () => store.state.application.hasNodeCollectionActive,
+);
+const isNodeRepositoryCacheReady = computed(
+  () => store.state.application.isNodeRepositoryCacheReady,
+);
+
+const selectedTags = computed({
+  get() {
+    return store.state.nodeRepository.selectedTags;
+  },
+  set(value) {
+    store.dispatch("nodeRepository/setSelectedTags", value);
+  },
+});
+
+const breadcrumbItems = computed(() => {
+  // If search results are shown, it's possible to navigate back
+  return searchIsActive.value
+    ? [{ text: "Nodes", id: "clear" }, { text: "Results" }]
+    : [{ text: "Nodes" }];
+});
+
+const onBreadcrumbClick = (event: { id: string }) => {
+  if (event.id === "clear") {
+    store.dispatch("nodeRepository/clearSearchParams");
+  }
+};
+
+const toggleListView = () => {
+  store.dispatch("settings/updateSetting", {
+    key: "nodeRepositoryDisplayMode",
+    value: displayMode.value === "list" ? "icon" : "list",
+  });
+};
+
+const openKnimeUIPreferencePage = () => {
+  API.desktop.openWebUIPreferencePage();
+};
+</script>
+
+<template>
+  <div class="header">
+    <div class="title-and-search">
+      <div class="search-header" style="margin-bottom: 8px">
+        <ActionBreadcrumb
+          :items="breadcrumbItems"
+          class="repo-breadcrumb"
+          @click="onBreadcrumbClick"
+        />
+        <div class="view-settings">
+          <FunctionButton
+            class="list-view-button"
+            title="Switch between icon and list view"
+            :disabled="!isNodeRepositoryCacheReady"
+            @click="toggleListView"
+          >
+            <ListIcon v-if="displayMode === 'list'" class="list-icon" />
+            <ListIconCheck v-else class="list-icon" />
+          </FunctionButton>
+          <FunctionButton
+            class="filter-button"
+            title="Open search filters"
+            :disabled="!isNodeRepositoryCacheReady"
+            @click="openKnimeUIPreferencePage"
+          >
+            <FilterCheckIcon
+              v-if="hasNodeCollectionActive"
+              class="filter-icon"
+            />
+            <FilterIcon v-else class="filter-icon" />
+          </FunctionButton>
+        </div>
+      </div>
+      <SearchBar
+        :model-value="store.state.nodeRepository.query"
+        :disabled="!isNodeRepositoryCacheReady"
+        :placeholder="
+          hasNodeCollectionActive ? 'Search starter nodes' : 'Search all nodes'
+        "
+        class="search-bar"
+        @clear="store.dispatch('nodeRepository/clearSearchParams')"
+        @update:model-value="
+          store.dispatch('nodeRepository/updateQuery', $event)
+        "
+      />
+    </div>
+    <CloseableTagList
+      v-if="searchIsActive && tags.length"
+      v-model="selectedTags"
+      :tags="tags"
+    />
+  </div>
+</template>
+
+<style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
+.header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  padding-bottom: 8px;
+
+  & .title-and-search {
+    padding: 0 20px 5px;
+
+    & .search-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      & .view-settings {
+        display: flex;
+        margin-top: 5px;
+        gap: 5px;
+      }
+
+      & .list-view-button {
+        width: 30px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        & .list-icon {
+          @mixin svg-icon-size 18;
+
+          stroke: var(--knime-masala);
+        }
+      }
+
+      & .filter-button {
+        width: 30px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        & .filter-icon {
+          @mixin svg-icon-size 18;
+
+          stroke: var(--knime-masala);
+        }
+      }
+    }
+
+    & > hr {
+      margin-bottom: 2px;
+      margin-top: 5px;
+    }
+  }
+
+  & .repo-breadcrumb {
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 400;
+    margin: 8px 0 0;
+
+    & :deep(span),
+    & :deep(a) {
+      line-height: 36px;
+      padding: 0;
+    }
+
+    & :deep(svg.arrow) {
+      margin-top: 6px;
+    }
+  }
+}
+
+/* .search-bar {
+  height: 40px;
+  font-size: 17px;
+
+  &:hover {
+    background-color: var(--knime-silver-sand-semi);
+  }
+
+  &:focus-within {
+    background-color: var(--knime-white);
+    border-color: var(--knime-masala);
+  }
+} */
+</style>

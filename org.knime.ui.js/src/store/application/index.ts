@@ -64,6 +64,8 @@ export interface ApplicationState {
    * an object that maps supported file extensions to their node template id
    */
   fileExtensionToNodeTemplateId: Record<string, string>;
+
+  isNodeRepositoryCacheReady: boolean;
 }
 
 /*
@@ -91,6 +93,8 @@ export const state = (): ApplicationState => ({
   featureFlags: {},
   exampleProjects: [],
   fileExtensionToNodeTemplateId: {},
+
+  isNodeRepositoryCacheReady: false,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
