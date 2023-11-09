@@ -102,14 +102,14 @@ const barPosition = computed(() =>
           :width="
             $shapes.metaNodeBarWidth + $shapes.metaNodeBarHorizontalPadding * 2
           "
-          :height="portBarHeight"
+          :height="portBarHeight(type === 'out')"
           :x="barPosition - $shapes.metaNodeBarHorizontalPadding"
           data-hide-in-workflow-preview
         />
         <rect
           class="port-bar"
           :width="$shapes.metaNodeBarWidth"
-          :height="portBarHeight"
+          :height="portBarHeight(type === 'out')"
           :x="barPosition"
           :fill="$colors.Yellow"
         />
