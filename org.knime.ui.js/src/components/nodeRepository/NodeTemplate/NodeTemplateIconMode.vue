@@ -4,6 +4,7 @@ import KNIMETriangleIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
+import { computed } from "vue";
 
 export type Props = {
   nodeTemplate: NodeTemplateWithExtendedPorts;
@@ -13,18 +14,24 @@ export type Props = {
   isSelected?: boolean;
 };
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   showFloatingHelpIcon: false,
   displayMode: "icon",
 });
 const emit = defineEmits(["helpIconClick"]);
+const extensionText = computed(() => {
+  if (!props.nodeTemplate.extension) {
+    return "";
+  }
+  return ` — ${props.nodeTemplate.extension.name} \nby ${props.nodeTemplate.extension.vendor.name}`;
+});
 </script>
 
 <template>
-  <div class="display-icon">
+  <div class="display-icon" :title="`${nodeTemplate.name}${extensionText}`">
     <div class="name-icon-wrapper">
-      <span class="name" :title="nodeTemplate.name">
+      <span class="name">
         {{ nodeTemplate.name }}
       </span>
 
@@ -41,14 +48,13 @@ const emit = defineEmits(["helpIconClick"]);
       @help-icon-click="emit('helpIconClick')"
     />
 
-    <div v-if="nodeTemplate.extension" class="extension-info">
-      <span class="name">
-        {{ nodeTemplate.extension.name }}
-      </span>
-      <div v-if="nodeTemplate.extension.vendor?.isKNIME" class="icon-container">
-        <KNIMETriangleIcon class="knime-icon" />
-      </div>
+    <div
+      v-if="nodeTemplate.extension && nodeTemplate.extension.vendor?.isKNIME"
+      class="extension-info"
+    >
+      <KNIMETriangleIcon class="knime-icon" />
     </div>
+    <div v-else class="extension-info" />
   </div>
 </template>
 
@@ -94,6 +100,7 @@ const emit = defineEmits(["helpIconClick"]);
     display: flex;
     overflow: hidden;
     align-items: center;
+    justify-content: center;
     margin: -17px 0;
     padding: 0 2px;
     color: var(--knime-dove-gray);

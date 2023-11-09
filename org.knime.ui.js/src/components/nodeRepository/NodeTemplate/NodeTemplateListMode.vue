@@ -22,18 +22,21 @@ const emit = defineEmits(["helpIconClick"]);
 </script>
 
 <template>
-  <div class="display-list">
+  <div
+    class="display-list"
+    :title="
+      nodeTemplate.extension
+        ? `${nodeTemplate.extension.name} \nby “${nodeTemplate.extension.vendor.name}”`
+        : null
+    "
+  >
     <div class="node-preview">
       <slot name="node-preview" />
     </div>
 
     <div class="content">
-      <span class="node-name" :title="nodeTemplate.name">
+      <span class="node-name">
         {{ nodeTemplate.name }}
-      </span>
-
-      <span v-if="nodeTemplate.extension" class="extension-name">
-        {{ nodeTemplate.extension.name }}
       </span>
     </div>
 
