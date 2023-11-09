@@ -203,6 +203,12 @@ describe("Node search partial store", () => {
       expect(store.state.nodeSearch.totalNumNodes).toBe(2);
     });
 
+    it("sets totalNonPartitionNodes", async () => {
+      const { store } = await createStore();
+      store.commit("nodeSearch/setTotalNonPartitionNodes", 5);
+      expect(store.state.nodeSearch.totalNonPartitionNodes).toBe(5);
+    });
+
     it("adds nodes (and skips duplicates)", async () => {
       const { store } = await createStore();
       const nodes = [{ id: "node1" }, { id: "node2" }];
