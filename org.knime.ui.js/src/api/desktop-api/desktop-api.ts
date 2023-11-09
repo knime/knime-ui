@@ -502,6 +502,20 @@ export const copyBetweenSpaces = ({
   );
 };
 
+export const moveToSpaceInHub = ({
+  spaceProviderId,
+  spaceId,
+  itemIds,
+}: SpaceProviderId & SpaceId & { itemIds: string[] }) => {
+  return callBrowserFunction(
+    window.moveToSpaceInHub,
+    [spaceProviderId, spaceId, itemIds],
+    "Error moving to Hub space",
+    true,
+    { block: true, darkenBackground: true },
+  );
+};
+
 export const openInBrowser = ({
   spaceProviderId,
   spaceId,

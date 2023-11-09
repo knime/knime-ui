@@ -113,6 +113,12 @@ declare function copyBetweenSpaces(
   itemIds: string[],
 ): boolean;
 
+declare function moveToSpaceInHub(
+  spaceProviderId: string,
+  spaceId: string,
+  itemIds: string[],
+): boolean;
+
 declare function openInBrowser(
   spaceProviderId: string,
   spaceId: string,

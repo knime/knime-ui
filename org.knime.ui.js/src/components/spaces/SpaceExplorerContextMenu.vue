@@ -18,6 +18,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import {
   buildHubDownloadMenuItem,
+  buildMoveInsideHubMenuItem,
   buildHubUploadMenuItems,
   buildOpenInBrowserMenuItem,
   buildOpenAPIDefinitionMenuItem,
@@ -90,6 +91,12 @@ const fileExplorerContextMenuItems = computed(() => {
     props.selectedItemIds,
   );
 
+  const moveInsideHub = buildMoveInsideHubMenuItem(
+    store.dispatch,
+    props.projectId,
+    props.selectedItemIds,
+  );
+
   const openInBrowser = buildOpenInBrowserMenuItem(
     store.dispatch,
     props.projectId,
@@ -121,10 +128,10 @@ const fileExplorerContextMenuItems = computed(() => {
     }
 
     if (selectionContainsFile) {
-      return [downloadToLocalSpace];
+      return [downloadToLocalSpace, moveInsideHub];
     }
 
-    return [downloadToLocalSpace, openInBrowser];
+    return [downloadToLocalSpace, moveInsideHub, openInBrowser];
   };
 
   const displayDeployments = buildDisplayDeploymentsMenuItem(
