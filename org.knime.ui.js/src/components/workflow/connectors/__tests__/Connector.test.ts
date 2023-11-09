@@ -383,9 +383,9 @@ describe("Connector.vue", () => {
         connections: {
           [connection.id]: connection,
         },
-        metaInPorts: { xPos: 100, ports: [defaultPortMock] },
+        metaInPorts: { bounds: { x: 100 }, ports: [defaultPortMock] },
         metaOutPorts: {
-          xPos: 702,
+          bounds: { x: 702 },
           ports: [defaultPortMock, defaultPortMock, defaultPortMock],
         },
       });
@@ -409,9 +409,9 @@ describe("Connector.vue", () => {
 
       expect(connectorPathSpy).toHaveBeenCalledWith(
         104.5,
-        651,
+        283,
         697.5,
-        342,
+        158,
         false,
         false,
       );

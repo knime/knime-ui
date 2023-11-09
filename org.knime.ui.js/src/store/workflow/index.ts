@@ -374,7 +374,7 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
 
   /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
   workflowBounds({ activeWorkflow }) {
-    return geometry.getWorkflowObjectBounds(activeWorkflow || {}, {
+    return geometry.getWorkflowObjectBounds(activeWorkflow, {
       padding: true,
     });
   },

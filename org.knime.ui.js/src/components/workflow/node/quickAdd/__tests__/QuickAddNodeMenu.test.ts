@@ -160,6 +160,7 @@ describe("QuickAddNodeMenu.vue", () => {
         getters: {
           isWritable: isWriteableMock,
           getNodeById: () => getNodeByIdMock,
+          workflowBounds: () => ({}),
         },
       },
     };
