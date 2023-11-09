@@ -97,6 +97,9 @@ export default defineComponent({
     },
 
     setGetStartedPageTab() {
+      if (this.isLogoActive) {
+        return;
+      }
       this.activeProjectTab = null;
       this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
     },
