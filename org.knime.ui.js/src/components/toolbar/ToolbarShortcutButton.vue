@@ -88,10 +88,6 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.toolbar-button {
-  transition: all 120ms ease-out;
-}
-
 .split-button {
   display: inline-flex;
   margin-right: 5px;

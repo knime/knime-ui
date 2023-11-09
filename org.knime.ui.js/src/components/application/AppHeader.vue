@@ -325,6 +325,8 @@ header {
     height: 100%;
     margin-right: 25px;
     padding: 0 10px;
+    cursor: default;
+    user-select: none;
 
     & .text {
       display: flex;
@@ -365,13 +367,18 @@ header {
     &:hover,
     &:focus {
       & .text {
-        cursor: pointer;
         color: var(--knime-black);
         background-color: var(--knime-yellow);
         border: 1px solid var(--knime-yellow);
 
         & svg {
           stroke: var(--knime-black);
+        }
+      }
+
+      &:not(.active-logo) {
+        & .text {
+          cursor: pointer;
         }
       }
     }

@@ -274,7 +274,10 @@ export default {
   }
 
   & .repo-breadcrumb {
-    cursor: pointer;
+    & li:not(:last-of-type) span {
+      cursor: pointer;
+    }
+
     font-size: 18px;
     font-weight: 400;
     margin: 8px 0 0;
