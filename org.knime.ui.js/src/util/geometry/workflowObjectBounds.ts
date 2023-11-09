@@ -1,3 +1,5 @@
+import type { Workflow } from "@/api/custom-types";
+import type { MetaPorts } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes.mjs";
 
 const {
@@ -23,7 +25,15 @@ export const nodePadding = {
 /**
  * Look for the outermost `left`, `top, `right`, and `bottom` values considering nodes and annotations
  */
-const getLimitBounds = ({ nodes, workflowAnnotations, padding }) => {
+const getLimitBounds = ({
+  nodes,
+  workflowAnnotations,
+  padding,
+}: {
+  nodes: Workflow["nodes"];
+  workflowAnnotations: Workflow["workflowAnnotations"];
+  padding: boolean;
+}) => {
   let left = Infinity;
   let top = Infinity;
   let right = -Infinity;
@@ -60,31 +70,65 @@ const getLimitBounds = ({ nodes, workflowAnnotations, padding }) => {
   return { left, top, right, bottom };
 };
 
-const getInPortsMargins = (metaInPorts, left) => {
-  let leftBorder = 0;
-  let rightBorder = 0;
-  if (metaInPorts.xPos) {
-    leftBorder = metaInPorts.xPos - metaNodeBarWidth;
-    rightBorder = metaInPorts.xPos + portSize;
-  } else {
-    leftBorder = Math.min(0, left) - metaNodeBarWidth;
-    rightBorder = leftBorder + metaNodeBarWidth + portSize;
-  }
-  return { leftBorder, rightBorder };
-};
+const getMetanodePortbarMargins = (
+  metanodePortbar: MetaPorts,
+  type: "in" | "out",
+) => {
+  /**
+   * Metanode porbarts have to be accounted for when calculating the bounds of the workflow.
+   * By default portbars don't have bounds (x, y, height), so we can use some defaults.
+   * However, their bounds can be set independently (only X, or only Y, etc) and if they have
+   * any bound set we have to expand the calculated bounds of the workflow accordingly
+   */
 
-const getOutPortsMargins = (metaOutPorts, left) => {
-  const defaultBarPosition = defaultMetanodeBarPosition;
-  let leftBorder = 0;
-  let rightBorder = 0;
-  if (metaOutPorts.xPos) {
-    leftBorder = metaOutPorts.xPos - portSize;
-    rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
-  } else {
-    leftBorder = left + defaultBarPosition - portSize;
-    rightBorder = leftBorder + metaNodeBarWidth + portSize;
-  }
-  return { leftBorder, rightBorder };
+  const getDefaultLeftMargin = () => {
+    const defaultLeftMarginIn = -metaNodeBarWidth;
+    const defaultLeftMarginOut = defaultMetanodeBarPosition - portSize;
+
+    return type === "in" ? defaultLeftMarginIn : defaultLeftMarginOut;
+  };
+
+  const getTopMargin = () => {
+    return metanodePortbar.bounds?.y ?? 0;
+  };
+
+  const getLeftMargin = () => {
+    if (metanodePortbar.bounds?.x) {
+      const offset = type === "in" ? portSize : metaNodeBarWidth;
+      return metanodePortbar.bounds.x - offset;
+    }
+
+    return getDefaultLeftMargin();
+  };
+
+  const defaultRightMargin =
+    getDefaultLeftMargin() + metaNodeBarWidth + portSize;
+
+  const defaultBottomMargin = getTopMargin() + defaultMetaNodeBarHeight;
+
+  const getRightMargin = () => {
+    if (metanodePortbar.bounds?.x) {
+      const offset = type === "in" ? portSize : metaNodeBarWidth;
+      return metanodePortbar.bounds.x + offset;
+    }
+
+    return defaultRightMargin;
+  };
+
+  const getBottomMargin = () => {
+    if (metanodePortbar.bounds?.height) {
+      return getTopMargin() + metanodePortbar.bounds.height;
+    }
+
+    return defaultBottomMargin;
+  };
+
+  return {
+    leftMargin: getLeftMargin(),
+    rightMargin: getRightMargin(),
+    topMargin: getTopMargin(),
+    bottomMargin: getBottomMargin(),
+  };
 };
 
 export default (
@@ -93,10 +137,9 @@ export default (
     workflowAnnotations = [],
     metaInPorts = null,
     metaOutPorts = null,
-  },
+  }: Workflow,
   { padding = false } = {},
 ) => {
-  // eslint-disable-next-line prefer-const
   let { left, top, right, bottom } = getLimitBounds({
     nodes,
     workflowAnnotations,
@@ -118,30 +161,24 @@ export default (
     };
   }
 
-  // Consider horizontal position of metanode input / output bars.
-  // The logic is as follows:
-  // - if a user has moved an input / output bar, then its x-position is taken as saved.
-  // - else
-  //   - input bar
-  //     - if the workflow contents extend to a negative coordinate, render the bar left of the workflow contents
-  //     - else render it at 0.
-  //   - output bar
-  //     - if the view is wide enough, the output bar is rendered at a fixed position
-  //     - else (horizontal overflow), the output bar is drawn to the right of the workflow contents.
-  //
-  // The vertical dimensions are always equal to the workflow dimensions, unless the workflow is empty,
-  // in which case they get a default height.
-
   if (metaInPorts?.ports?.length) {
-    const { leftBorder, rightBorder } = getInPortsMargins(metaInPorts, left);
-    left = Math.min(left, leftBorder);
-    right = Math.max(right, rightBorder);
+    const { leftMargin, rightMargin, topMargin, bottomMargin } =
+      getMetanodePortbarMargins(metaInPorts, "in");
+
+    left = Math.min(left, leftMargin);
+    right = Math.max(right, rightMargin);
+    top = Math.min(top, topMargin);
+    bottom = Math.max(bottom, bottomMargin);
   }
 
   if (metaOutPorts?.ports?.length) {
-    const { leftBorder, rightBorder } = getOutPortsMargins(metaOutPorts, left);
-    left = Math.min(left, leftBorder);
-    right = Math.max(right, rightBorder);
+    const { leftMargin, rightMargin, topMargin, bottomMargin } =
+      getMetanodePortbarMargins(metaOutPorts, "out");
+
+    left = Math.min(left, leftMargin);
+    right = Math.max(right, rightMargin);
+    top = Math.min(top, topMargin);
+    bottom = Math.max(bottom, bottomMargin);
   }
 
   if (metaInPorts?.ports?.length || metaOutPorts?.ports?.length) {

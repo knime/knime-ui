@@ -1,6 +1,6 @@
 import { computed } from "vue";
 
-import { metaNodeBarWidth } from "@/style/shapes.mjs";
+import { metaNodeBarWidth, defaultMetaNodeBarHeight } from "@/style/shapes.mjs";
 import { useStore } from "./useStore";
 
 export const usePortBarPositions = () => {
@@ -10,8 +10,6 @@ export const usePortBarPositions = () => {
   const contentBounds = { value: store.getters["canvas/contentBounds"] };
 
   const workflow = computed(() => store.state.workflow.activeWorkflow);
-
-  const portBarHeight = computed<number>(() => contentBounds.value.height);
 
   const getPorts = (isOutgoing: boolean) => {
     return isOutgoing
@@ -28,10 +26,11 @@ export const usePortBarPositions = () => {
   const portBarXPos = (isOutgoing: boolean) => {
     const bounds = getBounds(isOutgoing);
 
-    if (!bounds) {
+    if (!bounds?.x) {
       const offset = isOutgoing
         ? workflowBounds.value.right
         : workflowBounds.value.left;
+
       return offset + metaNodeBarWidth;
     }
 
@@ -41,7 +40,12 @@ export const usePortBarPositions = () => {
   const portBarYPos = (isOutgoing: boolean) => {
     const bounds = getBounds(isOutgoing);
 
-    return bounds ? bounds.y : contentBounds.value.top;
+    return bounds?.y ?? contentBounds.value.top;
+  };
+
+  const portBarHeight = (isOutgoing: boolean) => {
+    const bounds = getBounds(isOutgoing);
+    return bounds?.height ?? defaultMetaNodeBarHeight;
   };
 
   const getPortbarPortYPosition = (
@@ -50,10 +54,12 @@ export const usePortBarPositions = () => {
     absolute: boolean,
   ) => {
     const ports = getPorts(isOutgoing);
+    const height = portBarHeight(isOutgoing);
+
     const total = ports.length;
     return (
-      (portBarHeight.value * (index + 1)) / (total + 1) +
-      (absolute ? contentBounds.value.top : 0)
+      (height * (index + 1)) / (total + 1) +
+      (absolute ? portBarYPos(isOutgoing) : 0)
     );
   };
 
