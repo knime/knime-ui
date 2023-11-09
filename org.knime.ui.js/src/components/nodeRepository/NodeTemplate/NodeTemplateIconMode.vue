@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import KNIMETriangleIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
+import ExtensionCommunityIcon from "webapps-common/ui/assets/img/icons/extension-community.svg";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
@@ -24,12 +24,12 @@ const extensionText = computed(() => {
   if (!props.nodeTemplate.extension) {
     return "";
   }
-  return ` — ${props.nodeTemplate.extension.name} \nby ${props.nodeTemplate.extension.vendor.name}`;
+  return `———\n${props.nodeTemplate.extension.name}\nby ${props.nodeTemplate.extension.vendor.name}`;
 });
 </script>
 
 <template>
-  <div class="display-icon" :title="`${nodeTemplate.name}${extensionText}`">
+  <div class="display-icon" :title="`${nodeTemplate.name}\n${extensionText}`">
     <div class="name-icon-wrapper">
       <span class="name">
         {{ nodeTemplate.name }}
@@ -49,16 +49,18 @@ const extensionText = computed(() => {
     />
 
     <div
-      v-if="nodeTemplate.extension && nodeTemplate.extension.vendor?.isKNIME"
+      v-if="nodeTemplate.extension && !nodeTemplate.extension.vendor?.isKNIME"
       class="extension-info"
     >
-      <KNIMETriangleIcon class="knime-icon" />
+      <ExtensionCommunityIcon class="extension-community-icon" />
     </div>
     <div v-else class="extension-info" />
   </div>
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .display-icon {
   flex-direction: column;
   position: relative;
@@ -105,10 +107,9 @@ const extensionText = computed(() => {
     padding: 0 2px;
     color: var(--knime-dove-gray);
 
-    & .knime-icon {
-      width: 15px;
-      height: 12px;
-      fill: var(--knime-dove-gray);
+    & .extension-community-icon {
+      stroke: var(--knime-masala);
+      @mixin svg-icon-size 14;
     }
 
     & .name {

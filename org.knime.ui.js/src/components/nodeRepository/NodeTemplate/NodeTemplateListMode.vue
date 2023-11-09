@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import KNIMETriangleIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
+import ExtensionCommunityIcon from "webapps-common/ui/assets/img/icons/extension-community.svg";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
@@ -40,8 +40,8 @@ const emit = defineEmits(["helpIconClick"]);
       </span>
     </div>
 
-    <KNIMETriangleIcon
-      v-if="nodeTemplate.extension?.vendor?.isKNIME"
+    <ExtensionCommunityIcon
+      v-if="!nodeTemplate.extension?.vendor?.isKNIME"
       class="knime-icon"
     />
 
@@ -56,6 +56,8 @@ const emit = defineEmits(["helpIconClick"]);
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .display-list {
   background-color: var(--knime-white);
   align-items: center;
@@ -93,10 +95,9 @@ const emit = defineEmits(["helpIconClick"]);
   }
 
   & .knime-icon {
-    width: 15px;
-    height: 12px;
+    @mixin svg-icon-size 14;
     margin: 0 6px 2px auto;
-    fill: var(--knime-dove-gray);
+    stroke: var(--knime-masala);
   }
 
   & .help-icon {
