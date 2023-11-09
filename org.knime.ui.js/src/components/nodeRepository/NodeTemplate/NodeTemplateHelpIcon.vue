@@ -34,7 +34,17 @@ const emit = defineEmits(["helpIconClick"]);
     @mixin svg-icon-size 16;
   }
 
-  &.hovered-icon {
+  &.selected-icon {
+    display: flex;
+    border-radius: 100%;
+    background-color: var(--knime-masala);
+
+    & .info-icon {
+      stroke: var(--knime-white);
+    }
+  }
+
+  &.hovered-icon:not(.selected-icon) {
     display: flex;
 
     & .info-icon {
@@ -42,18 +52,9 @@ const emit = defineEmits(["helpIconClick"]);
       stroke: var(--knime-masala);
 
       &:hover {
-        fill: var(--knime-masala);
-        stroke: var(--knime-white);
+        fill: var(--theme-button-function-background-color-hover);
+        stroke: var(--knime-masala);
       }
-    }
-  }
-
-  &.selected-icon:not(:hover) {
-    display: flex;
-
-    & .info-icon {
-      fill: var(--knime-masala);
-      stroke: var(--knime-white);
     }
   }
 }
