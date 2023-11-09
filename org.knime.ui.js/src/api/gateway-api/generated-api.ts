@@ -2148,7 +2148,7 @@ export interface NodeSearchResult {
      * @type {number}
      * @memberof NodeSearchResult
      */
-    totalNonPartitionNodes?: number;
+    totalNonPartitionNodes: number;
     /**
      * The union of the tags of all the nodes in the search result (i.e. also including the nodes that might not be explicitly listed as part of this search result instance). The tags are sorted by their frequency of how many nodes nodes (in the search result) carry that particular tag.
      * @type {Array<string>}

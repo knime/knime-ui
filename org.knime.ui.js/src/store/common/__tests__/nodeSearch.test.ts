@@ -3,38 +3,7 @@ import { expect, describe, it, vi, afterEach } from "vitest";
 import { deepMocked, mockVuexStore, withPorts } from "@/test/utils";
 import { API } from "@api";
 
-export const searchStarterNodesResponse = {
-  tags: ["Analytics", "Integrations", "KNIME Labs"],
-  totalNumNodes: 1355,
-  nodes: [
-    {
-      component: false,
-      icon: "data:image/png;base64,xxx",
-      name: "GroupBy Bar Chart (JFreeChart)",
-      id: "org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory",
-      type: "Visualizer",
-      nodeFactory: {
-        className:
-          "org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory",
-      },
-      inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
-      outPorts: [],
-    },
-    {
-      component: false,
-      icon: "data:image/png;base64,xxx",
-      name: "Decision Tree Learner",
-      id: "org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3",
-      nodeFactory: {
-        className:
-          "org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3",
-      },
-      type: "Learner",
-      inPorts: [],
-      outPorts: [{ typeId: "org.some.otherPorType" }],
-    },
-  ],
-};
+import { createSearchNodesResponse } from "@/test/factories";
 
 const searchAllNodesResponse = {
   tags: ["H2O Machine Learning", "R"],
@@ -85,6 +54,8 @@ const searchAllNodesResponse = {
 
 const mockedAPI = deepMocked(API);
 
+const searchNodesResponse = createSearchNodesResponse();
+
 describe("Node search partial store", () => {
   let hasNodeCollectionActive = true;
   const createStore = async () => {
@@ -104,9 +75,7 @@ describe("Node search partial store", () => {
     };
 
     // search is part of the node repo API
-    mockedAPI.noderepository.searchNodes.mockResolvedValue(
-      searchStarterNodesResponse,
-    );
+    mockedAPI.noderepository.searchNodes.mockResolvedValue(searchNodesResponse);
 
     const store = mockVuexStore({
       nodeSearch: await import("@/store/common/nodeSearch"),
@@ -285,13 +254,13 @@ describe("Node search partial store", () => {
             nodesPartition: "IN_COLLECTION",
           });
           expect(store.state.nodeSearch.totalNumNodes).toBe(
-            searchStarterNodesResponse.totalNumNodes,
+            searchNodesResponse.totalNumNodes,
           );
           expect(store.state.nodeSearch.nodes).toEqual(
-            withPorts(searchStarterNodesResponse.nodes, availablePortTypes),
+            withPorts(searchNodesResponse.nodes, availablePortTypes),
           );
           expect(store.state.nodeSearch.nodesTags).toEqual(
-            searchStarterNodesResponse.tags,
+            searchNodesResponse.tags,
           );
         });
 
@@ -344,14 +313,14 @@ describe("Node search partial store", () => {
             nodesPartition: "IN_COLLECTION",
           });
           expect(store.state.nodeSearch.totalNumNodes).toBe(
-            searchStarterNodesResponse.totalNumNodes,
+            searchNodesResponse.totalNumNodes,
           );
           expect(store.state.nodeSearch.nodes).toEqual([
             dummyNode,
-            ...withPorts(searchStarterNodesResponse.nodes, availablePortTypes),
+            ...withPorts(searchNodesResponse.nodes, availablePortTypes),
           ]);
           expect(store.state.nodeSearch.nodesTags).toEqual(
-            searchStarterNodesResponse.tags,
+            searchNodesResponse.tags,
           );
         });
 
