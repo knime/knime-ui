@@ -29,6 +29,13 @@ export interface WorkflowState {
   activeWorkflow: Workflow | null;
   activeSnapshotId: string | null;
   tooltip: TooltipDefinition | null;
+
+  initialWorkflowBounds: {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+  };
 }
 
 /**
@@ -53,6 +60,8 @@ export const state = (): WorkflowState => ({
   // TODO: NXT-1143 find a better place for the tooltip logic
   // maybe use an event that bubbles to the top (workflow canvas?)
   tooltip: null,
+
+  initialWorkflowBounds: { left: 0, right: 0, top: 0, bottom: 0 },
 });
 
 export const mutations: MutationTree<WorkflowState> = {
@@ -74,6 +83,10 @@ export const mutations: MutationTree<WorkflowState> = {
   },
   setTooltip(state, tooltip) {
     state.tooltip = tooltip;
+  },
+
+  setInitialWorkflowBounds(state, value) {
+    state.initialWorkflowBounds = value;
   },
 };
 
@@ -373,10 +386,31 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
   },
 
   /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
-  workflowBounds({ activeWorkflow }) {
-    return geometry.getWorkflowObjectBounds(activeWorkflow, {
-      padding: true,
-    });
+  workflowBounds({ activeWorkflow, initialWorkflowBounds }) {
+    const { left, right, top, bottom } = geometry.getWorkflowObjectBounds(
+      activeWorkflow,
+      {
+        padding: true,
+      },
+    );
+
+    const nextLeft = Math.min(left, initialWorkflowBounds.left);
+    const nextTop = Math.min(top, initialWorkflowBounds.top);
+    const nextBottom = Math.max(bottom, initialWorkflowBounds.bottom);
+    const nextRight = Math.max(right, initialWorkflowBounds.right);
+
+    const nextWidth = nextRight - nextLeft;
+    const nextHeight = nextBottom - nextTop;
+
+    return {
+      left: nextLeft,
+      top: nextTop,
+      bottom: nextBottom,
+      right: nextRight,
+
+      width: nextWidth,
+      height: nextHeight,
+    };
   },
   projectAndWorkflowIds: (state) => getProjectAndWorkflowIds(state),
 };

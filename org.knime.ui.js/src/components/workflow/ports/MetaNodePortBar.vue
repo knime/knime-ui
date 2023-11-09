@@ -2,15 +2,17 @@
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
+import { computed, provide, toRef } from "vue";
+
 import { usePortBarPositions } from "@/composables/usePortBarPositions";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
-import NodePort from "./NodePort/NodePort.vue";
-import { computed, provide } from "vue";
 import type {
   XY,
   NodePort as NodePortType,
 } from "@/api/gateway-api/generated-api";
 import { portSize, metaNodeBarWidth } from "@/style/shapes.mjs";
+
+import NodePort from "./NodePort/NodePort.vue";
 
 interface Props {
   /**
@@ -40,7 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 // Provide position as anchorPoint for tooltips
-provide("anchorPoint", props.position);
+provide("anchorPoint", toRef(props, "position"));
 
 const portDirection = computed(() => (props.type === "out" ? "in" : "out"));
 
@@ -129,10 +131,6 @@ const barPosition = computed(() =>
 </template>
 
 <style lang="postcss" scoped>
-.port-bar {
-  cursor: ew-resize;
-}
-
 .hover-area {
   fill: none;
   pointer-events: fill;

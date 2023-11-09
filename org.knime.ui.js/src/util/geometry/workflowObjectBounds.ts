@@ -73,6 +73,8 @@ const getLimitBounds = ({
 const getMetanodePortbarMargins = (
   metanodePortbar: MetaPorts,
   type: "in" | "out",
+  left: number,
+  top: number,
 ) => {
   /**
    * Metanode porbarts have to be accounted for when calculating the bounds of the workflow.
@@ -82,14 +84,15 @@ const getMetanodePortbarMargins = (
    */
 
   const getDefaultLeftMargin = () => {
-    const defaultLeftMarginIn = -metaNodeBarWidth;
-    const defaultLeftMarginOut = defaultMetanodeBarPosition - portSize;
+    const defaultLeftMarginIn = Math.min(0, left) - metaNodeBarWidth;
+    const defaultLeftMarginOut =
+      defaultLeftMarginIn + defaultMetanodeBarPosition - portSize;
 
     return type === "in" ? defaultLeftMarginIn : defaultLeftMarginOut;
   };
 
   const getTopMargin = () => {
-    return metanodePortbar.bounds?.y ?? 0;
+    return metanodePortbar.bounds?.y ?? Math.min(top, 0);
   };
 
   const getLeftMargin = () => {
@@ -170,7 +173,7 @@ export default (
 
   if (metaInPorts?.ports?.length) {
     const { leftMargin, rightMargin, topMargin, bottomMargin } =
-      getMetanodePortbarMargins(metaInPorts, "in");
+      getMetanodePortbarMargins(metaInPorts, "in", left, top);
 
     left = Math.min(left, leftMargin);
     right = Math.max(right, rightMargin);
@@ -180,7 +183,7 @@ export default (
 
   if (metaOutPorts?.ports?.length) {
     const { leftMargin, rightMargin, topMargin, bottomMargin } =
-      getMetanodePortbarMargins(metaOutPorts, "out");
+      getMetanodePortbarMargins(metaOutPorts, "out", left, top);
     left = Math.min(left, leftMargin);
     right = Math.max(right, rightMargin);
     top = Math.min(top, topMargin);

@@ -108,7 +108,7 @@ describe("workflow store", () => {
         expected: {
           workflowBounds: {
             left: 0,
-            right: defaultMetanodeBarPosition + metaNodeBarWidth,
+            right: defaultMetanodeBarPosition,
             top: 0,
             bottom: defaultMetaNodeBarHeight,
           },
@@ -127,7 +127,7 @@ describe("workflow store", () => {
         expected: {
           workflowBounds: {
             left: -metaNodeBarWidth,
-            right: defaultMetanodeBarPosition + metaNodeBarWidth,
+            right: defaultMetanodeBarPosition - metaNodeBarWidth,
             top: 0,
             bottom: defaultMetaNodeBarHeight,
           },
@@ -304,7 +304,7 @@ describe("workflow store", () => {
         },
         expected: {
           workflowBounds: {
-            left: -290 - metaNodeBarWidth,
+            left: -300 - metaNodeBarWidth,
             right: 1000 - 300,
             top: -200,
             bottom: 1000 - 200,

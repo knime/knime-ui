@@ -11,7 +11,14 @@ import { createConnection } from "@/test/factories";
 const mockedAPI = deepMocked(API);
 
 vi.mock("@/util/geometry", () => ({
-  geometry: { getWorkflowObjectBounds: vi.fn(() => "bounds") },
+  geometry: {
+    getWorkflowObjectBounds: vi.fn(() => ({
+      left: 10,
+      top: 10,
+      right: 100,
+      bottom: 100,
+    })),
+  },
 }));
 
 describe("workflow::index", () => {
@@ -484,8 +491,21 @@ describe("workflow::index", () => {
         workflowAnnotations: ["something"],
       };
       store.commit("workflow/setActiveWorkflow", workflow);
+      store.commit("workflow/setInitialWorkflowBounds", {
+        left: -20,
+        right: 400,
+        top: 50,
+        bottom: 1000,
+      });
 
-      expect(store.getters["workflow/workflowBounds"]).toBe("bounds");
+      expect(store.getters["workflow/workflowBounds"]).toEqual({
+        bottom: 1000,
+        height: 990,
+        left: -20,
+        right: 400,
+        top: 10,
+        width: 420,
+      });
 
       expect(geometry.getWorkflowObjectBounds).toHaveBeenCalled();
     });

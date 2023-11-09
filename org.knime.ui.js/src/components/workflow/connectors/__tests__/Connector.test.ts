@@ -409,9 +409,9 @@ describe("Connector.vue", () => {
 
       expect(connectorPathSpy).toHaveBeenCalledWith(
         104.5,
-        283,
+        250,
         697.5,
-        158,
+        125,
         false,
         false,
       );

@@ -6,10 +6,10 @@ import { useStore } from "./useStore";
 export const usePortBarPositions = () => {
   const store = useStore();
   // do not update the bounds reactively as this makes the port bars moving around in some cases
-  const workflowBounds = { value: store.getters["workflow/workflowBounds"] };
-  const contentBounds = { value: store.getters["canvas/contentBounds"] };
-
   const workflow = computed(() => store.state.workflow.activeWorkflow);
+  const initialWorkflowBounds = computed(
+    () => store.state.workflow.initialWorkflowBounds,
+  );
 
   const getPorts = (isOutgoing: boolean) => {
     return isOutgoing
@@ -28,8 +28,8 @@ export const usePortBarPositions = () => {
 
     if (!bounds?.x) {
       const offset = isOutgoing
-        ? workflowBounds.value.right
-        : workflowBounds.value.left;
+        ? initialWorkflowBounds.value.right
+        : initialWorkflowBounds.value.left;
 
       return offset + metaNodeBarWidth;
     }
@@ -40,7 +40,7 @@ export const usePortBarPositions = () => {
   const portBarYPos = (isOutgoing: boolean) => {
     const bounds = getBounds(isOutgoing);
 
-    return bounds?.y ?? contentBounds.value.top;
+    return bounds?.y ?? initialWorkflowBounds.value.top;
   };
 
   const portBarHeight = (isOutgoing: boolean) => {
