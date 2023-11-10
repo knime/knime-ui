@@ -27,8 +27,8 @@ const displayMode = computed(
 const hasNodeCollectionActive = computed(
   () => store.state.application.hasNodeCollectionActive,
 );
-const isNodeRepositoryCacheReady = computed(
-  () => store.state.application.isNodeRepositoryCacheReady,
+const nodeRepositoryLoaded = computed(
+  () => store.state.application.nodeRepositoryLoaded,
 );
 
 const selectedTags = computed({
@@ -78,7 +78,7 @@ const openKnimeUIPreferencePage = () => {
           <FunctionButton
             class="list-view-button"
             title="Switch between icon and list view"
-            :disabled="!isNodeRepositoryCacheReady"
+            :disabled="!nodeRepositoryLoaded"
             @click="toggleListView"
           >
             <ListIcon v-if="displayMode === 'list'" class="list-icon" />
@@ -87,7 +87,7 @@ const openKnimeUIPreferencePage = () => {
           <FunctionButton
             class="filter-button"
             title="Open search filters"
-            :disabled="!isNodeRepositoryCacheReady"
+            :disabled="!nodeRepositoryLoaded"
             @click="openKnimeUIPreferencePage"
           >
             <FilterCheckIcon
@@ -100,7 +100,7 @@ const openKnimeUIPreferencePage = () => {
       </div>
       <SearchBar
         :model-value="store.state.nodeRepository.query"
-        :disabled="!isNodeRepositoryCacheReady"
+        :disabled="!nodeRepositoryLoaded"
         :placeholder="
           hasNodeCollectionActive ? 'Search starter nodes' : 'Search all nodes'
         "

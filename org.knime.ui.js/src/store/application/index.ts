@@ -64,8 +64,11 @@ export interface ApplicationState {
    * an object that maps supported file extensions to their node template id
    */
   fileExtensionToNodeTemplateId: Record<string, string>;
-
-  isNodeRepositoryCacheReady: boolean;
+  /**
+   * indicates if node repository is loaded
+   */
+  nodeRepositoryLoaded: boolean;
+  nodeRepositoryLoadingProgress: object;
 }
 
 /*
@@ -94,7 +97,8 @@ export const state = (): ApplicationState => ({
   exampleProjects: [],
   fileExtensionToNodeTemplateId: {},
 
-  isNodeRepositoryCacheReady: false,
+  nodeRepositoryLoaded: false,
+  nodeRepositoryLoadingProgress: {},
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -135,6 +139,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setFileExtensionToNodeTemplateId(state, fileExtensionToNodeTemplateId) {
     state.fileExtensionToNodeTemplateId = fileExtensionToNodeTemplateId;
+  },
+  setNodeRepositoryLoadingProgress(state, nodeRepositoryLoadingProgress) {
+    state.nodeRepositoryLoaded = nodeRepositoryLoadingProgress;
   },
 };
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, onMounted, ref } from "vue";
+import { computed, watch, onMounted } from "vue";
 
 import { API } from "@api";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
@@ -9,7 +9,6 @@ import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResul
 import { TABS } from "@/store/panel";
 import CategoryResults from "./CategoryResults.vue";
 import NodeRepositoryHeader from "./NodeRepositoryHeader.vue";
-import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
@@ -24,24 +23,24 @@ const searchIsActive = computed(
 const isSelectedNodeVisible = computed(
   () => store.getters["nodeRepository/isSelectedNodeVisible"],
 );
-
 const displayMode = computed(
   () => store.state.settings.settings.nodeRepositoryDisplayMode,
 );
 const activeProjectId = computed(() => store.state.application.activeProjectId);
-const isNodeRepositoryCacheReady = computed(
-  () => store.state.application.isNodeRepositoryCacheReady,
+const nodeRepositoryLoaded = computed(
+  () => store.state.application.nodeRepositoryLoaded,
 );
-
+const nodeRepositoryLoadingProgress = computed(
+  () => store.state.application.nodeRepositoryLoadingProgress,
+);
 const activeTab = computed(() => store.state.panel.activeTab);
-
 const isNodeRepositoryTabActive = computed(() => {
   return activeTab.value[activeProjectId.value] === TABS.NODE_REPOSITORY;
 });
-
 const isExtensionPanelOpen = computed(
   () => store.state.panel.isExtensionPanelOpen,
 );
+
 watch(isExtensionPanelOpen, (isOpen) => {
   if (!isOpen) {
     setTimeout(() => {
@@ -75,42 +74,13 @@ const toggleNodeDescription = ({
 const openKnimeUIPreferencePage = () => {
   API.desktop.openWebUIPreferencePage();
 };
-
-const messages = [
-  { name: "KNIME Base Nodes", count: 200, total: 1300 },
-  { name: "Vernalis KNIME Nodes", count: 300, total: 1300 },
-  { name: "KNIME Google Connectors", count: 100, total: 1300 },
-  { name: "KNIME Javasnippet", count: 500, total: 1300 },
-  { name: "Crazy Nodes", count: 50, total: 1300 },
-  { name: "KNIME Python Integration", count: 150, total: 1300 },
-];
-
-const processCount = ref(0);
-const processIndex = ref(-1);
-const currentMessage = ref<(typeof messages)[0]>(null);
-const int = setInterval(() => {
-  if (processIndex.value === messages.length - 1) {
-    processCount.value += messages[processIndex.value].count;
-    clearInterval(int);
-    return;
-  }
-
-  processIndex.value += 1;
-  processCount.value += messages[processIndex.value].count;
-
-  currentMessage.value = {
-    count: 0,
-    name: messages[processIndex.value].name,
-    total: 1300,
-  };
-}, 2500);
 </script>
 
 <template>
   <div class="node-repo">
     <NodeRepositoryHeader />
 
-    <template v-if="isNodeRepositoryCacheReady">
+    <template v-if="nodeRepositoryLoaded">
       <SidebarSearchResults
         v-if="searchIsActive"
         ref="searchResults"
@@ -125,13 +95,18 @@ const int = setInterval(() => {
       />
     </template>
     <template v-else>
-      <div v-if="currentMessage" class="not-ready">
-        <LoadingIcon />
-        <progress :value="processCount" max="1300">
-          {{ processCount / 1300 }}%
+      <div
+        v-if="Object.keys(nodeRepositoryLoadingProgress).length > 1"
+        class="not-ready"
+      >
+        <progress :value="nodeRepositoryLoadingProgress.progress" max="100">
+          {{ nodeRepositoryLoadingProgress.progress * 100 }}%
         </progress>
-        <div>Loading: {{ currentMessage.name }}</div>
-        <div>{{ processCount }} out of 1300 nodes processed</div>
+        <div class="progress-message">
+          <span
+            >Loading: {{ nodeRepositoryLoadingProgress.extensionName }}
+          </span>
+        </div>
       </div>
     </template>
 
@@ -217,6 +192,12 @@ const int = setInterval(() => {
     border-radius: 10px;
     background: var(--color);
     transition: width 2.5s ease-in-out;
+  }
+
+  & .progress-message {
+    display: flex;
+    flex-direction: column;
+    margin-top: 30px;
   }
 }
 </style>
