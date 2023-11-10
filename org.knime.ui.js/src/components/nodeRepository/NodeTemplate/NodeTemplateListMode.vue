@@ -71,16 +71,7 @@ const emit = defineEmits(["helpIconClick"]);
     flex-direction: column;
 
     & .node-name {
-      font-size: 11px;
-      max-width: 250px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    & .extension-name {
-      font-size: 9px;
-      color: var(--knime-dove-gray);
+      font-size: 13px;
       max-width: 250px;
       white-space: nowrap;
       overflow: hidden;
