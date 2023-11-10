@@ -140,6 +140,9 @@ export const mutations: MutationTree<ApplicationState> = {
   setFileExtensionToNodeTemplateId(state, fileExtensionToNodeTemplateId) {
     state.fileExtensionToNodeTemplateId = fileExtensionToNodeTemplateId;
   },
+  setNodeRepositoryLoaded(state, nodeRepositoryLoaded) {
+    state.nodeRepositoryLoaded = nodeRepositoryLoaded;
+  },
   setNodeRepositoryLoadingProgress(state, nodeRepositoryLoadingProgress) {
     state.nodeRepositoryLoaded = nodeRepositoryLoadingProgress;
   },
@@ -231,6 +234,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
         "setFileExtensionToNodeTemplateId",
         applicationState.fileExtensionToNodeTemplateId,
       );
+    }
+
+    if (applicationState.hasOwnProperty("nodeRepositoryLoaded")) {
+      commit("setNodeRepositoryLoaded", applicationState.nodeRepositoryLoaded);
     }
   },
 

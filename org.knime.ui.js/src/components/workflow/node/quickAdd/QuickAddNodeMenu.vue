@@ -6,7 +6,8 @@ import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import SearchBar from "@/components/common/SearchBar.vue";
+import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
+// import SearchBar from "@/components/common/SearchBar.vue";
 
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import { portPositions } from "@/util/portShift";
@@ -15,6 +16,7 @@ import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePo
 import QuickAddNodeSearchResults from "./QuickAddNodeSearchResults.vue";
 import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
+import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 import type { SettingsState } from "@/store/settings";
 
 const calculatePortOffset = ({
@@ -56,6 +58,7 @@ export default defineComponent({
     SearchBar,
     NodePortActiveConnector,
     FloatingMenu,
+    NodeRepositoryLoader,
   },
   props: {
     nodeId: {
@@ -81,6 +84,8 @@ export default defineComponent({
     ...mapState("application", [
       "hasNodeRecommendationsEnabled",
       "availablePortTypes",
+      "nodeRepositoryLoaded",
+      "nodeRepositoryLoadingProgress",
     ]),
     ...mapState("settings", {
       displayMode: (state: SettingsState) =>
@@ -158,6 +163,13 @@ export default defineComponent({
       this.$store.commit("quickAddNodes/setPortTypeId", this.port.typeId);
     }
     (this.$refs.search as HTMLElement)?.focus();
+
+    // if (!this.nodeRepositoryLoaded) {
+    //   // Call event to start listening to node repository loading progress
+    //   await API.event.subscribeEvent({
+    //     typeId: "NodeRepositoryLoadingProgressEvent",
+    //   });
+    // }
   },
   beforeUnmount() {
     this.$store.dispatch("quickAddNodes/clearRecommendedNodesAndSearchParams");
@@ -249,6 +261,7 @@ export default defineComponent({
       <div class="header">
         <SearchBar
           ref="search"
+          :disabled="!nodeRepositoryLoaded"
           :model-value="$store.state.quickAddNodes.query"
           placeholder="Search compatible nodes"
           class="search-bar"
@@ -263,28 +276,38 @@ export default defineComponent({
         />
       </div>
       <hr />
-      <QuickAddNodeDisabledWorkflowCoach
-        v-if="
-          !hasNodeRecommendationsEnabled && !searchIsActive && !isContainerNode
-        "
-      />
-      <template v-else>
-        <QuickAddNodeSearchResults
-          v-if="searchIsActive"
-          ref="searchResults"
-          v-model:selected-node="selectedNode"
-          :display-mode="displayMode"
-          @nav-reached-top="($refs.search as any).focus()"
-          @add-node="addNode($event)"
+      <template v-if="nodeRepositoryLoaded">
+        <QuickAddNodeDisabledWorkflowCoach
+          v-if="
+            !hasNodeRecommendationsEnabled &&
+            !searchIsActive &&
+            !isContainerNode
+          "
         />
-        <QuickAddNodeRecommendations
-          v-else
-          ref="recommendationResults"
-          v-model:selected-node="selectedNode"
-          :disable-recommendations="isContainerNode"
-          :display-mode="displayMode"
-          @nav-reached-top="($refs.search as any).focus()"
-          @add-node="addNode($event)"
+        <template v-else>
+          <QuickAddNodeSearchResults
+            v-if="searchIsActive"
+            ref="searchResults"
+            v-model:selected-node="selectedNode"
+            :display-mode="displayMode"
+            @nav-reached-top="($refs.search as any).focus()"
+            @add-node="addNode($event)"
+          />
+          <QuickAddNodeRecommendations
+            v-else
+            ref="recommendationResults"
+            v-model:selected-node="selectedNode"
+            :disable-recommendations="isContainerNode"
+            :display-mode="displayMode"
+            @nav-reached-top="($refs.search as any).focus()"
+            @add-node="addNode($event)"
+          />
+        </template>
+      </template>
+      <template v-else>
+        <NodeRepositoryLoader
+          v-if="nodeRepositoryLoadingProgress.progress"
+          :node-repository-loading-progress="nodeRepositoryLoadingProgress"
         />
       </template>
     </div>

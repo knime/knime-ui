@@ -10,7 +10,6 @@ import ListIcon from "webapps-common/ui/assets/img/icons/view-cards.svg";
 import { API } from "@api";
 import { useStore } from "@/composables/useStore";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
-// import SearchBar from "@/components/common/SearchBar.vue";
 import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
 import CloseableTagList from "./CloseableTagList.vue";
 

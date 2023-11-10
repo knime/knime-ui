@@ -73,7 +73,7 @@ const init: PluginInitFunction = ({ $store, $router }) => {
     },
 
     // Sends a progress information about node repository being loaded
-    NodeRepositoryLoadingProgressEventType({ progress, extensionName }) {
+    NodeRepositoryLoadingProgressEvent({ progress, extensionName }) {
       $store.commit("application/setNodeRepositoryLoadingProgress", {
         progress,
         extensionName,

@@ -9,6 +9,7 @@ import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResul
 import { TABS } from "@/store/panel";
 import CategoryResults from "./CategoryResults.vue";
 import NodeRepositoryHeader from "./NodeRepositoryHeader.vue";
+import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
@@ -54,6 +55,14 @@ onMounted(() => {
     store.dispatch("nodeRepository/getAllNodes", { append: false });
   }
 });
+onMounted(async () => {
+  if (!nodeRepositoryLoaded.value) {
+    // Call event to start listening to node repository loading progress
+    await API.event.subscribeEvent({
+      typeId: "NodeRepositoryLoadingProgressEvent",
+    });
+  }
+});
 
 const toggleNodeDescription = ({
   isSelected,
@@ -95,19 +104,10 @@ const openKnimeUIPreferencePage = () => {
       />
     </template>
     <template v-else>
-      <div
-        v-if="Object.keys(nodeRepositoryLoadingProgress).length > 1"
-        class="not-ready"
-      >
-        <progress :value="nodeRepositoryLoadingProgress.progress" max="100">
-          {{ nodeRepositoryLoadingProgress.progress * 100 }}%
-        </progress>
-        <div class="progress-message">
-          <span
-            >Loading: {{ nodeRepositoryLoadingProgress.extensionName }}
-          </span>
-        </div>
-      </div>
+      <NodeRepositoryLoader
+        v-if="nodeRepositoryLoadingProgress.progress"
+        :node-repository-loading-progress="nodeRepositoryLoadingProgress"
+      />
     </template>
 
     <Portal
@@ -149,55 +149,13 @@ const openKnimeUIPreferencePage = () => {
   opacity: 0;
 }
 
-.not-ready {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  padding: 10px;
-  margin-top: 60px;
-
-  & svg {
-    margin-bottom: 5px;
-
-    @mixin svg-icon-size 24;
+& .repo-breadcrumb {
+  & li:not(:last-of-type) span {
+    cursor: pointer;
   }
 
-  & .repo-breadcrumb {
-    & li:not(:last-of-type) span {
-      cursor: pointer;
-    }
-
-    font-size: 18px;
-    font-weight: 400;
-    margin: 8px 0 0;
-  }
-
-  & progress[value] {
-    --color: var(--knime-yellow);
-    --background: var(--knime-silver-sand);
-
-    width: 200px;
-    height: 10px;
-    margin: 0 10px;
-    appearance: none;
-  }
-
-  & progress[value]::-webkit-progress-bar {
-    border-radius: 10px;
-    background: var(--background);
-  }
-
-  & progress[value]::-webkit-progress-value {
-    border-radius: 10px;
-    background: var(--color);
-    transition: width 2.5s ease-in-out;
-  }
-
-  & .progress-message {
-    display: flex;
-    flex-direction: column;
-    margin-top: 30px;
-  }
+  font-size: 18px;
+  font-weight: 400;
+  margin: 8px 0 0;
 }
 </style>
