@@ -30,4 +30,28 @@ describe("spaces::index", () => {
       });
     });
   });
+
+  describe("moveToSpaceInHub", () => {
+    it("should move items between spaces on same Hub", async () => {
+      const itemIds = ["id1", "id2"];
+      const { store } = loadStore();
+
+      const projectId = "project2";
+      store.state.spaces.projectPath[projectId] = {
+        spaceProviderId: "hub1",
+        spaceId: "space1",
+        itemId: "level2",
+      };
+
+      await store.dispatch("spaces/moveToSpaceInHub", {
+        projectId,
+        itemIds,
+      });
+      expect(mockedAPI.desktop.moveToSpaceInHub).toHaveBeenCalledWith({
+        spaceId: "space1",
+        spaceProviderId: "hub1",
+        itemIds,
+      });
+    });
+  });
 });

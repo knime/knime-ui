@@ -178,6 +178,14 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
+    name: "moveToSpaceInHub",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemIds", ["123", "456"]],
+    ],
+  },
+  {
     name: "openInBrowser",
     params: [
       ["spaceProviderId", "provider1"],
