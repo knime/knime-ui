@@ -8,6 +8,7 @@ export interface SelectionState {
   selectedConnections: Record<string, boolean>;
   selectedAnnotations: Record<string, boolean>;
   selectedBendpoints: Record<string, boolean>;
+  selectedMetanodePortBars: { in?: boolean; out?: boolean };
 
   startedSelectionFromAnnotationId: string | null;
   didStartRectangleSelection: boolean;
@@ -21,6 +22,7 @@ export const state = (): SelectionState => ({
   selectedNodes: {},
   selectedConnections: {},
   selectedAnnotations: {},
+  selectedMetanodePortBars: {},
   startedSelectionFromAnnotationId: null,
   didStartRectangleSelection: false,
   selectedBendpoints: {},
@@ -62,6 +64,9 @@ export const mutations: MutationTree<SelectionState> = {
     if (Object.keys(state.selectedBendpoints).length > 0) {
       state.selectedBendpoints = {};
     }
+    if (Object.keys(state.selectedMetanodePortBars).length > 0) {
+      state.selectedMetanodePortBars = {};
+    }
   },
 
   addConnectionsToSelection(state, connectionIds: string[]) {
@@ -74,6 +79,12 @@ export const mutations: MutationTree<SelectionState> = {
     connectionIds.forEach((id) => {
       delete state.selectedConnections[id];
     });
+  },
+
+  addMetanodePortBarsToSelection(state, meteNodePortBarTypes: string[]) {
+    meteNodePortBarTypes.forEach(
+      (type) => (state.selectedMetanodePortBars[type] = true),
+    );
   },
 
   addAnnotationToSelection(state, annotationIds: string[]) {
@@ -149,6 +160,10 @@ export const actions: ActionTree<SelectionState, RootStoreState> = {
 
   deselectConnection({ commit }, connectionId) {
     commit("removeConnectionsFromSelection", [connectionId]);
+  },
+
+  selectMetanodePortBar({ commit }, metaNodePortBarType: "in" | "out") {
+    commit("addMetanodePortBarsToSelection", [metaNodePortBarType]);
   },
 
   selectAnnotation({ commit }, annotationId) {
@@ -231,6 +246,16 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
     );
   },
 
+  selectedMetanodePortBars(state, _getters, rootState) {
+    if (!rootState.workflow.activeWorkflow) {
+      return [];
+    }
+
+    return Object.keys(state.selectedMetanodePortBars)
+      .map((type) => (state.selectedMetanodePortBars[type] ? type : null))
+      .filter(Boolean);
+  },
+
   selectedConnections(state, _getters, { workflow: { activeWorkflow } }) {
     if (!activeWorkflow) {
       return [];
@@ -278,6 +303,9 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
   },
 
   isNodeSelected: (state) => (nodeId: string) => nodeId in state.selectedNodes,
+
+  isMetaNodePortBarSelected: (state) => (metaNodePortBarType: "in" | "out") =>
+    metaNodePortBarType in state.selectedMetanodePortBars,
 
   isAnnotationSelected: (state) => (annotationId: string) =>
     annotationId in state.selectedAnnotations,

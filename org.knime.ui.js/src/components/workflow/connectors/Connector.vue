@@ -189,10 +189,10 @@ const { createPointerDownHandler } = useMoveObject({
       });
       virtualBendpoint.value = null;
 
-      return false;
+      return Promise.resolve(false);
     }
 
-    return true;
+    return Promise.resolve(true);
   },
 });
 

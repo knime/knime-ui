@@ -10,6 +10,7 @@ import type { NodePort as NodePortType } from "@/api/gateway-api/generated-api";
 import { portSize } from "@/style/shapes.mjs";
 
 import NodePort from "./NodePort/NodePort.vue";
+import { useStore } from "@/composables/useStore";
 
 interface Props {
   /**
@@ -39,6 +40,12 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const isOutgoing = computed(() => props.type === "out");
+
+const store = useStore();
+
+const isSelected = computed(() =>
+  store.getters["selection/isMetaNodePortBarSelected"](props.type),
+);
 
 const position = computed(() => ({
   x: portBarXPos(isOutgoing.value),
@@ -71,6 +78,10 @@ const portPositions = computed(() => {
 const barPosition = computed(() =>
   isOutgoing.value ? 0 : -portBarWidth(isOutgoing.value),
 );
+
+const selectBar = () => {
+  store.dispatch("selection/selectMetanodePortBar", props.type);
+};
 </script>
 
 <template>
@@ -111,6 +122,7 @@ const barPosition = computed(() =>
           :height="portBarHeight(isOutgoing)"
           :x="barPosition - $shapes.metaNodeBarHorizontalPadding"
           data-hide-in-workflow-preview
+          @click="selectBar"
         />
         <rect
           class="port-bar"
@@ -118,6 +130,19 @@ const barPosition = computed(() =>
           :height="portBarHeight(isOutgoing)"
           :x="barPosition"
           :fill="$colors.Yellow"
+        />
+        <rect
+          v-if="isSelected"
+          class="port-bar-selected"
+          :width="
+            portBarWidth(isOutgoing) + $shapes.metaNodeBarHorizontalPadding * 2
+          "
+          :stroke="$colors.Cornflower"
+          stroke-width="2"
+          rx="2"
+          fill="transparent"
+          :height="portBarHeight(isOutgoing)"
+          :x="barPosition - $shapes.metaNodeBarHorizontalPadding"
         />
         <NodePort
           v-for="port of ports"
@@ -138,5 +163,11 @@ const barPosition = computed(() =>
 .hover-area {
   fill: none;
   pointer-events: fill;
+}
+
+.port-bar-selected,
+.port-bar,
+.hover-area {
+  cursor: grab;
 }
 </style>

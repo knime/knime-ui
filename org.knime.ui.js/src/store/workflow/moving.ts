@@ -68,6 +68,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const selectedNodes = rootGetters["selection/selectedNodeIds"];
     const selectedAnnotations = rootGetters["selection/selectedAnnotationIds"];
     const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
+    const metanodePortBars = rootGetters["selection/selectedMetanodePortBars"];
 
     const translation = {
       x: state.movePreviewDelta.x,
@@ -86,10 +87,12 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         nodeIds: selectedNodes,
         annotationIds: selectedAnnotations,
         connectionBendpoints,
+        metanodeInPortsBar: Boolean(metanodePortBars?.in),
+        metanodeOutPortsBar: Boolean(metanodePortBars?.out),
         translation,
       });
     } catch (e) {
-      consola.log("The following error occured: ", e);
+      consola.log("The following error occurred: ", e);
       commit("resetMovePreview");
     }
   },

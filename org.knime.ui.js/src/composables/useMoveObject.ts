@@ -12,14 +12,14 @@ interface UseMoveObjectOptions {
   useGridSnapping?: boolean;
   onMoveStartCallback?: (event: PointerEvent) => any;
   onMoveCallback?: (event: PointerEvent) => any;
-  onMoveEndCallback?: (event: PointerEvent) => boolean;
+  onMoveEndCallback?: (event: PointerEvent) => Promise<boolean>;
 }
 
 const defaultOptions: Omit<UseMoveObjectOptions, "objectElement"> = {
   useGridSnapping: true,
   onMoveStartCallback: () => {},
   onMoveCallback: () => {},
-  onMoveEndCallback: () => true,
+  onMoveEndCallback: () => Promise.resolve(true),
 };
 
 export const useMoveObject = (options: UseMoveObjectOptions) => {

@@ -114,7 +114,7 @@ const { createPointerDownHandler } = useMoveObject({
 
       lastHitTarget = null;
 
-      return false;
+      return Promise.resolve(false);
     }
 
     if (lastHitTarget) {
@@ -133,10 +133,10 @@ const { createPointerDownHandler } = useMoveObject({
 
       lastHitTarget = null;
 
-      return false;
+      return Promise.resolve(false);
     }
 
-    return true;
+    return Promise.resolve(true);
   },
 });
 
