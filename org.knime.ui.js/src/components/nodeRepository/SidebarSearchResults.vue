@@ -25,8 +25,8 @@ export default {
       "query",
       "selectedTags",
       "selectedNode",
+      "totalNumFilteredNodesFound",
     ]),
-    ...mapState("nodeRepository", ["totalNonPartitionNodes"]),
 
     searchScrollPosition: {
       get() {
@@ -58,7 +58,7 @@ export default {
     :display-mode="displayMode"
     :query="query"
     :nodes="nodes"
-    :has-nodes-in-other-partitions="totalNonPartitionNodes > 0"
+    :has-filtered-out-nodes="totalNumFilteredNodesFound"
   >
     <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate

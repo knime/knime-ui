@@ -3,58 +3,15 @@ import { expect, describe, it, vi, afterEach } from "vitest";
 import { deepMocked, mockVuexStore, withPorts } from "@/test/utils";
 import { API } from "@api";
 
-import { createSearchNodesResponse } from "@/test/factories";
-
-const searchAllNodesResponse = {
-  tags: ["H2O Machine Learning", "R"],
-  totalNumNodes: 122,
-  nodes: [
-    {
-      name: "H2O to Table",
-      id: "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory",
-      type: "Manipulator",
-      component: false,
-      icon: "data:image/png;base64,xxx",
-      inPorts: [
-        {
-          optional: false,
-          typeId: "org.knime.ext.h2o.ports.H2OFramePortObject",
-        },
-      ],
-      outPorts: [
-        {
-          optional: false,
-          typeId: "org.knime.core.node.BufferedDataTable",
-        },
-      ],
-      nodeFactory: {
-        className:
-          "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory",
-      },
-    },
-    {
-      name: "R Source (Table)",
-      id: "org.knime.r.RReaderTableNodeFactory",
-      type: "Source",
-      component: false,
-      icon: "data:image/png;base64,xxx",
-      inPorts: [],
-      outPorts: [
-        {
-          optional: false,
-          typeId: "org.knime.core.node.BufferedDataTable",
-        },
-      ],
-      nodeFactory: {
-        className: "org.knime.r.RReaderTableNodeFactory",
-      },
-    },
-  ],
-};
+import {
+  createSearchNodesResponse,
+  createSearchAllNodesResponse,
+} from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
 const searchNodesResponse = createSearchNodesResponse();
+const searchAllNodesResponse = createSearchAllNodesResponse();
 
 describe("Node search partial store", () => {
   let hasNodeCollectionActive = true;
@@ -166,16 +123,16 @@ describe("Node search partial store", () => {
       expect(store.state.nodeSearch.portTypeId).toBe("org.some.port.typeId");
     });
 
-    it("sets totalNumNodes", async () => {
+    it("sets totalNumNodesFound", async () => {
       const { store } = await createStore();
-      store.commit("nodeSearch/setTotalNumNodes", 2);
-      expect(store.state.nodeSearch.totalNumNodes).toBe(2);
+      store.commit("nodeSearch/setTotalNumNodesFound", 2);
+      expect(store.state.nodeSearch.totalNumNodesFound).toBe(2);
     });
 
-    it("sets totalNonPartitionNodes", async () => {
+    it("sets totalNumFilteredNodesFound", async () => {
       const { store } = await createStore();
-      store.commit("nodeSearch/setTotalNonPartitionNodes", 5);
-      expect(store.state.nodeSearch.totalNonPartitionNodes).toBe(5);
+      store.commit("nodeSearch/setTotalNumFilteredNodesFound", 5);
+      expect(store.state.nodeSearch.totalNumFilteredNodesFound).toBe(5);
     });
 
     it("adds nodes (and skips duplicates)", async () => {
@@ -253,8 +210,8 @@ describe("Node search partial store", () => {
             portTypeId: null,
             nodesPartition: "IN_COLLECTION",
           });
-          expect(store.state.nodeSearch.totalNumNodes).toBe(
-            searchNodesResponse.totalNumNodes,
+          expect(store.state.nodeSearch.totalNumNodesFound).toBe(
+            searchNodesResponse.totalNumNodesFound,
           );
           expect(store.state.nodeSearch.nodes).toEqual(
             withPorts(searchNodesResponse.nodes, availablePortTypes),
@@ -283,8 +240,8 @@ describe("Node search partial store", () => {
             portTypeId: null,
             nodesPartition: "ALL",
           });
-          expect(store.state.nodeSearch.totalNumNodes).toBe(
-            searchAllNodesResponse.totalNumNodes,
+          expect(store.state.nodeSearch.totalNumNodesFound).toBe(
+            searchAllNodesResponse.totalNumNodesFound,
           );
           expect(store.state.nodeSearch.nodes).toEqual(
             withPorts(searchAllNodesResponse.nodes, availablePortTypes),
@@ -312,8 +269,8 @@ describe("Node search partial store", () => {
             portTypeId: null,
             nodesPartition: "IN_COLLECTION",
           });
-          expect(store.state.nodeSearch.totalNumNodes).toBe(
-            searchNodesResponse.totalNumNodes,
+          expect(store.state.nodeSearch.totalNumNodesFound).toBe(
+            searchNodesResponse.totalNumNodesFound,
           );
           expect(store.state.nodeSearch.nodes).toEqual([
             dummyNode,
@@ -335,7 +292,7 @@ describe("Node search partial store", () => {
         it("does not search for nodes next page if all nodes loaded", async () => {
           const { store, dispatchSpy } = await createStore();
           store.state.nodeSearch.nodes = [{ dummy: true }];
-          store.state.nodeSearch.totalNumNodes = 1;
+          store.state.nodeSearch.totalNumNodesFound = 1;
           await store.dispatch("nodeSearch/searchNodesNextPage");
           expect(dispatchSpy).not.toHaveBeenCalledWith(
             "nodeSearch/searchNodes",

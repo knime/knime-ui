@@ -10,7 +10,7 @@ import NodeList from "../NodeList.vue";
 describe("SearchResults", () => {
   const doMount = ({
     propsOverrides = {},
-    hasNodesInOtherPartitions = true,
+    hasFilteredOutNodes = true,
   } = {}) => {
     const searchActions = {
       searchNodesNextPage: vi
@@ -34,7 +34,7 @@ describe("SearchResults", () => {
       searchScrollPosition: 100,
       selectedNode: { id: "some-node" },
       searchActions,
-      hasNodesInOtherPartitions,
+      hasFilteredOutNodes,
       ...propsOverrides,
     };
 
@@ -43,7 +43,7 @@ describe("SearchResults", () => {
     return { wrapper, searchActions, props };
   };
 
-  it("shows placeholder for empty result if hasNodesInOtherPartitions is true", async () => {
+  it("shows placeholder for empty result if hasFilteredOutNodes is true", async () => {
     const { wrapper } = doMount({
       propsOverrides: {
         query: "xxx",
@@ -60,14 +60,14 @@ describe("SearchResults", () => {
     expect(wrapper.findComponent(NodeList).exists()).toBe(false);
   });
 
-  it("shows placeholder for empty result if hasNodesInOtherPartitions is false", () => {
+  it("shows placeholder for empty result if hasFilteredOutNodes is false", () => {
     const query = "xxx xxx";
     const { wrapper } = doMount({
       propsOverrides: {
         query,
         nodes: [],
       },
-      hasNodesInOtherPartitions: false,
+      hasFilteredOutNodes: false,
     });
     const encodedQuery = encodeURIComponent(query);
 

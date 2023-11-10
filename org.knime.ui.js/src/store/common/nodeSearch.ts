@@ -22,8 +22,8 @@ export interface CommonNodeSearchState {
   searchScrollPosition: number;
 
   nodes: NodeTemplateWithExtendedPorts[];
-  totalNumNodes: number;
-  totalNonPartitionNodes: number;
+  totalNumNodesFound: number;
+  totalNumFilteredNodesFound?: number;
   nodeSearchPage: number;
   nodesTags: string[];
 
@@ -40,8 +40,8 @@ export const state = (): CommonNodeSearchState => ({
   searchScrollPosition: 0,
 
   nodes: null,
-  totalNumNodes: 0,
-  totalNonPartitionNodes: 0,
+  totalNumNodesFound: 0,
+  totalNumFilteredNodesFound: null,
   nodeSearchPage: 0,
   nodesTags: [],
 
@@ -77,12 +77,12 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
     state.nodes.push(...newNodes);
   },
 
-  setTotalNumNodes(state, totalNumNodes) {
-    state.totalNumNodes = totalNumNodes;
+  setTotalNumNodesFound(state, totalNumNodesFound) {
+    state.totalNumNodesFound = totalNumNodesFound;
   },
 
-  setTotalNonPartitionNodes(state, totalNonPartitionNodes) {
-    state.totalNonPartitionNodes = totalNonPartitionNodes;
+  setTotalNumFilteredNodesFound(state, totalNumFilteredNodesFound) {
+    state.totalNumFilteredNodesFound = totalNumFilteredNodesFound;
   },
 
   setNodeSearchPage(state, pageNumber) {
@@ -147,7 +147,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       commit("setNodeSearchPage", searchPage);
 
       // update results
-      const { nodes, totalNumNodes, tags, totalNonPartitionNodes } =
+      const { nodes, totalNumNodesFound, tags, totalNumFilteredNodesFound } =
         searchResponse;
 
       const { availablePortTypes } = rootState.application;
@@ -155,8 +155,8 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
         toNodeTemplateWithExtendedPorts(availablePortTypes),
       );
 
-      commit("setTotalNumNodes", totalNumNodes);
-      commit("setTotalNonPartitionNodes", totalNonPartitionNodes);
+      commit("setTotalNumNodesFound", totalNumNodesFound);
+      commit("setTotalNumFilteredNodesFound", totalNumFilteredNodesFound);
       commit(append ? "addNodes" : "setNodes", withMappedPorts);
       commit("setNodesTags", tags);
     } catch (error) {
@@ -187,8 +187,8 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   clearSearchResults({ commit }) {
     commit("setNodes", null);
     commit("setNodesTags", []);
-    commit("setTotalNumNodes", 0);
-    commit("setTotalNonPartitionNodes", 0);
+    commit("setTotalNumNodesFound", 0);
+    commit("setTotalNumFilteredNodesFound", null);
   },
 
   /**
@@ -198,7 +198,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @returns {undefined}
    */
   async searchNodesNextPage({ dispatch, state }) {
-    if (state.nodes?.length !== state.totalNumNodes) {
+    if (state.nodes?.length !== state.totalNumNodesFound) {
       await dispatch("searchNodes", { append: true });
     }
   },

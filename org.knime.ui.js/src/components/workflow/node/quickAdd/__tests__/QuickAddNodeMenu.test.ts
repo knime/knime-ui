@@ -15,6 +15,7 @@ import {
   createNodePortTemplate,
   createNodeTemplate,
   createSearchNodesResponse,
+  createSearchAllNodesResponse,
 } from "@/test/factories";
 
 import { API } from "@api";
@@ -56,20 +57,7 @@ const defaultNodeRecommendationsResponse = [
   }),
 ];
 
-const allNodesSearchResult = {
-  tags: [],
-  totalNumNodes: 1355,
-  nodes: [
-    createNodeTemplate({
-      name: "Advanced Node",
-      id: "org.knime.ext.advanced.node3",
-      type: NativeNodeInvariants.TypeEnum.Visualizer,
-      nodeFactory: { className: "org.knime.ext.advanced.node3" },
-      inPorts: [createNodePortTemplate()],
-      outPorts: [],
-    }),
-  ],
-};
+const allNodesSearchResult = createSearchAllNodesResponse();
 
 const defaultPortMock = createPort();
 
