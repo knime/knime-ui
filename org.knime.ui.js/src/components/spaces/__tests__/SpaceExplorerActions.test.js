@@ -222,12 +222,13 @@ describe("SpaceExplorerActions.vue", () => {
 
       expect(allItems).toMatch("Open in Hub");
       expect(allItems).toMatch("Download to local space");
+      expect(allItems).toMatch("Move to...");
       expect(allItems).toMatch("Create folder");
       expect(allItems).toMatch("Create workflow");
       expect(allItems).toMatch("Import workflow");
       expect(allItems).toMatch("Add files");
 
-      expect(items.length).toBe(6);
+      expect(items.length).toBe(7);
     });
 
     it("shows multiple hubs to connect to in a sub menu", () => {

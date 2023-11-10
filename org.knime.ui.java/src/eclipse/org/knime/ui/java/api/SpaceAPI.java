@@ -49,11 +49,13 @@
 package org.knime.ui.java.api;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -63,6 +65,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.core.util.KnimeUrlType;
 import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
@@ -221,64 +224,80 @@ final class SpaceAPI {
             destinationStore, excludeData);
     }
 
+    // move or copy between spaces on same Hub
     @API
-    static boolean moveToSpaceInHub(final String spaceProviderId, final String spaceId, final Object[] arr) {
-        // TODO can this be a special case of copyBetweenSpaces (or the other way round)?
+    static boolean moveOrCopyToSpace(final String spaceProviderId, final String sourceSpaceId,
+            final boolean copy, final Object[] arr) {
         if (arr.length == 0) {
             return true;
         }
         final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
-        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
+        final var sourceSpace = sourceSpaceProvider.getSpace(sourceSpaceId);
+        // this is really an illegal argument, since we deal with remote copy/move
         if (sourceSpace instanceof LocalWorkspace) {
-            DesktopAPUtil.showError("Cannot move to other local space", "Cannot move item(s) to another local space.");
+            final var copyText = copy ? "copy" : "move";
+            DesktopAPUtil.showError("Cannot %s from the local space".formatted(copyText),
+                "Cannot move item(s) from the local space.");
             return false;
         }
 
-        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        final var mountIds = spaceProviders.getProvidersMap().entrySet().stream()
-            .filter(provider -> provider.getValue().getType() != TypeEnum.LOCAL
-                && provider.getValue().getConnection(false).isPresent()
-                && spaceProviderId.equals(provider.getValue().getId()))
-            .map(Entry::getKey).toArray(String[]::new);
 
-        if (mountIds.length == 0) {
-            DesktopAPUtil.showWarning("No Hub spaces available", "Please log into the Hub you want to upload to.");
-            return false;
-        }
-
-        final var destPicker = new SpaceDestinationPicker(mountIds, Operation.MOVE);
+        // Obtain the destination space and workflow group item id via the classic SpaceDestinationPicker,
+        // but restrict available mount points to the source Hub.
+        // When ModernUI provides a destination picker, this detour is not needed anymore.
+        final var destPicker = new SpaceDestinationPicker(new String[] { spaceProviderId }, copy ? Operation.COPY :
+            Operation.MOVE);
         if (!destPicker.open()) {
             return false;
         }
         final var destInfo = destPicker.getSelectedDestination();
         final var destinationStore = destInfo.getDestination();
         final var uri = destinationStore.toURI();
-        final var destWorkflowGroupItemId = sourceSpace.getItemIdByURI(uri).orElseThrow();
+        final var dest = resolveIds(DesktopAPI.getDeps(SpaceProviders.class), uri)
+                // we _just_ picked the destination from Hub, so it must be available...
+                .orElseThrow();
+        final var destProvider = getSpaceProvider(dest.spaceProviderId());
+        final var destWorkflowGroupItemId = dest.itemId();
+        final var destSpace = destProvider.getSpace(dest.spaceId());
 
-        // Hacky: the methods below just need _any_ space on the same instance, since the underlying
-        // REST facade is space-agnostic...
+
         final var itemIds = Arrays.stream(arr).map(String.class::cast).toArray(String[]::new);
         final var nameCollisions =
-            NameCollisionChecker.checkForNameCollisions(sourceSpace, destWorkflowGroupItemId, itemIds);
+            NameCollisionChecker.checkForNameCollisions(destSpace, destWorkflowGroupItemId, itemIds);
 
         final Space.NameCollisionHandling collisionHandling;
         if (nameCollisions.isEmpty()) {
             collisionHandling = Space.NameCollisionHandling.NOOP;
         } else {
             collisionHandling = NameCollisionChecker //
-                .openDialogToSelectCollisionHandling(sourceSpace, destWorkflowGroupItemId, nameCollisions) //
+                .openDialogToSelectCollisionHandling(destSpace, destWorkflowGroupItemId, nameCollisions) //
                 .orElse(Space.NameCollisionHandling.NOOP);
         }
 
         try {
-            sourceSpace.moveOrCopyItems(List.of(itemIds), destWorkflowGroupItemId, collisionHandling, false);
+            destSpace.moveOrCopyItems(List.of(itemIds), destWorkflowGroupItemId, collisionHandling, copy);
             return true;
         } catch (final IOException e) {
-            DesktopAPUtil.showAndLogError("Unable to move item",
-                "An unexpected exception occurred while moving the item", NodeLogger.getLogger(SpaceAPI.class), e);
+            DesktopAPUtil.showAndLogError("Unable to %s item".formatted(copy ? "copy" : "move"),
+                "An unexpected exception occurred while %s the item".formatted(copy ? "copying" : "moving"),
+                NodeLogger.getLogger(SpaceAPI.class), e);
             return false;
         }
     }
+
+    private static Optional<ItemIds> resolveIds(final SpaceProviders spaceProviders, final URI uri) {
+        if (KnimeUrlType.MOUNTPOINT_ABSOLUTE != KnimeUrlType.getType(uri)
+                .orElseThrow(() -> new IllegalArgumentException("Not a KNIME URL: \"%s\"".formatted(uri)))) {
+            throw new IllegalArgumentException("Not mountpoint-absolute: \"%s\"".formatted(uri));
+        }
+        final var mountId = uri.getAuthority();
+        final var providerId = "LOCAL".equals(mountId) ? LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID : mountId;
+        final var provider = spaceProviders.getProvidersMap().get(providerId);
+        final var spaceAndItemIds = provider.resolveSpaceAndItemId(uri);
+        return spaceAndItemIds.map(ids -> new ItemIds(providerId, ids.spaceId(), ids.itemId()));
+    }
+
+    private record ItemIds(String spaceProviderId, String spaceId, String itemId) {}
 
     /**
      * Opens the website of an item in the web browser

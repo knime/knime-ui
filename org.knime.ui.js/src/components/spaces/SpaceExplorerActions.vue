@@ -14,6 +14,7 @@ import AddFileIcon from "@/assets/add-file.svg";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
+  buildMoveToSpaceMenuItem,
   buildOpenInBrowserMenuItem,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
@@ -103,6 +104,12 @@ export default {
         this.spaceProviders,
       );
 
+      const moveToSpace = buildMoveToSpaceMenuItem(
+        this.$store.dispatch,
+        this.projectId,
+        this.selectedItemIds,
+      );
+
       const openInBrowser = buildOpenInBrowserMenuItem(
         this.$store.dispatch,
         this.projectId,
@@ -122,10 +129,10 @@ export default {
         }
 
         if (this.isFileSelected) {
-          return [downloadToLocalSpace];
+          return [downloadToLocalSpace, moveToSpace];
         }
 
-        return [downloadToLocalSpace, openInBrowser];
+        return [downloadToLocalSpace, moveToSpace, openInBrowser];
       };
 
       const getServerActions = () => {

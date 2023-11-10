@@ -113,9 +113,10 @@ declare function copyBetweenSpaces(
   itemIds: string[],
 ): boolean;
 
-declare function moveToSpaceInHub(
+declare function moveOrCopyToSpace(
   spaceProviderId: string,
   spaceId: string,
+  isCopy: boolean,
   itemIds: string[],
 ): boolean;
 

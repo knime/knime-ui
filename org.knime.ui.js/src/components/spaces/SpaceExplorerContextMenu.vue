@@ -18,7 +18,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import {
   buildHubDownloadMenuItem,
-  buildMoveInsideHubMenuItem,
+  buildMoveToSpaceMenuItem,
   buildHubUploadMenuItems,
   buildOpenInBrowserMenuItem,
   buildOpenAPIDefinitionMenuItem,
@@ -91,7 +91,8 @@ const fileExplorerContextMenuItems = computed(() => {
     props.selectedItemIds,
   );
 
-  const moveInsideHub = buildMoveInsideHubMenuItem(
+  // ... to space on same space provider as source
+  const moveToSpace = buildMoveToSpaceMenuItem(
     store.dispatch,
     props.projectId,
     props.selectedItemIds,
@@ -128,10 +129,10 @@ const fileExplorerContextMenuItems = computed(() => {
     }
 
     if (selectionContainsFile) {
-      return [downloadToLocalSpace, moveInsideHub];
+      return [downloadToLocalSpace, moveToSpace];
     }
 
-    return [downloadToLocalSpace, moveInsideHub, openInBrowser];
+    return [downloadToLocalSpace, moveToSpace, openInBrowser];
   };
 
   const displayDeployments = buildDisplayDeploymentsMenuItem(

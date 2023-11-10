@@ -178,10 +178,11 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
-    name: "moveToSpaceInHub",
+    name: "moveOrCopyToSpace",
     params: [
       ["spaceProviderId", "provider1"],
       ["spaceId", "space1"],
+      ["isCopy", false],
       ["itemIds", ["123", "456"]],
     ],
   },

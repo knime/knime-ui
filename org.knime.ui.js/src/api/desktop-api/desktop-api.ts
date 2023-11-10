@@ -502,15 +502,17 @@ export const copyBetweenSpaces = ({
   );
 };
 
-export const moveToSpaceInHub = ({
+export const moveOrCopyToSpace = ({
   spaceProviderId,
   spaceId,
+  isCopy,
   itemIds,
-}: SpaceProviderId & SpaceId & { itemIds: string[] }) => {
+}: SpaceProviderId & SpaceId & { isCopy: boolean } & { itemIds: string[] }) => {
+  const copyOrMove = isCopy ? "copying" : "moving";
   return callBrowserFunction(
-    window.moveToSpaceInHub,
-    [spaceProviderId, spaceId, itemIds],
-    "Error moving to Hub space",
+    window.moveOrCopyToSpace,
+    [spaceProviderId, spaceId, isCopy, itemIds],
+    `Error ${copyOrMove} to Hub space`,
     true,
     { block: true, darkenBackground: true },
   );

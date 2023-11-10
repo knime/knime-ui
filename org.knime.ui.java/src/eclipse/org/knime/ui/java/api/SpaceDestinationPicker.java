@@ -65,7 +65,8 @@ final class SpaceDestinationPicker {
         UPLOAD("Upload to...", "uploaded"),
         DOWNLOAD("Download to...", "downloaded"),
         SAVE("Save to...", "saved"),
-        MOVE("Move to...", "moved");
+        MOVE("Move to...", "moved"),
+        COPY("Copy to...", "copied");
 
         private final String m_title;
         private final String m_desc;
@@ -112,6 +113,11 @@ final class SpaceDestinationPicker {
             m_dialog.setNameFieldEnabled(m_operation == Operation.SAVE);
             // take some sensible default when op is not SAVE
             m_dialog.setNameFieldDefaultValue(m_fileName);
+
+            if (m_spaceProviders.length == 1) {
+                // open the single mountpoint for the user
+                m_dialog.setInitTreeLevel(2);
+            }
             while (m_dialog.open() == Window.OK) {
                 final var destGroup = m_dialog.getSelectedDestination();
                 final var destGroupInfo = destGroup.getDestination().fetchInfo();

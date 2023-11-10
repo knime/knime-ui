@@ -77,9 +77,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     API.desktop.copyBetweenSpaces({ spaceProviderId, spaceId, itemIds });
   },
 
-  moveToSpaceInHub({ state }, { projectId, itemIds }) {
+  moveOrCopyToSpace({ state }, { projectId, isCopy, itemIds }) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    API.desktop.moveToSpaceInHub({ spaceProviderId, spaceId, itemIds });
+    API.desktop.moveOrCopyToSpace({
+      spaceProviderId,
+      spaceId,
+      isCopy,
+      itemIds,
+    });
   },
 
   openInBrowser({ state }, { projectId, itemId }) {

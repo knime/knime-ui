@@ -40,24 +40,26 @@ export const buildHubDownloadMenuItem = (
   };
 };
 
-export const buildMoveInsideHubMenuItem = (
+export const buildMoveToSpaceMenuItem = (
   dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
 ): ActionMenuItem => {
   const isSelectionEmpty = selectedItems.length === 0;
   return {
-    id: "moveInsideHub",
+    id: "moveToSpace",
     text: "Move to...",
     icon: MoveToSpaceIcon,
     disabled: isSelectionEmpty,
     title: isSelectionEmpty ? "Select at least one item to move." : null,
     separator: true,
     execute: () => {
-      dispatch("spaces/moveToSpaceInHub", {
+      dispatch("spaces/moveOrCopyToSpace", {
         projectId,
+        isCopy: false,
         itemIds: selectedItems,
       });
+      // TODO refresh workflow group content
     },
   };
 };

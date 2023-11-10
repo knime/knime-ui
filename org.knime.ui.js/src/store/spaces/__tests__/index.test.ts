@@ -31,7 +31,7 @@ describe("spaces::index", () => {
     });
   });
 
-  describe("moveToSpaceInHub", () => {
+  describe("moveOrCopyToSpace", () => {
     it("should move items between spaces on same Hub", async () => {
       const itemIds = ["id1", "id2"];
       const { store } = loadStore();
@@ -43,13 +43,15 @@ describe("spaces::index", () => {
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/moveToSpaceInHub", {
+      await store.dispatch("spaces/moveOrCopyToSpace", {
         projectId,
+        isCopy: false,
         itemIds,
       });
-      expect(mockedAPI.desktop.moveToSpaceInHub).toHaveBeenCalledWith({
+      expect(mockedAPI.desktop.moveOrCopyToSpace).toHaveBeenCalledWith({
         spaceId: "space1",
         spaceProviderId: "hub1",
+        isCopy: false,
         itemIds,
       });
     });
