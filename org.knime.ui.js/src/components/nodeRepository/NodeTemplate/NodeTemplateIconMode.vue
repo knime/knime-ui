@@ -24,12 +24,12 @@ const extensionText = computed(() => {
   if (!props.nodeTemplate.extension) {
     return "";
   }
-  return `———\n${props.nodeTemplate.extension.name}\nby ${props.nodeTemplate.extension.vendor.name}`;
+  return `\n———\n${props.nodeTemplate.extension.name}\nby ${props.nodeTemplate.extension.vendor.name}`;
 });
 </script>
 
 <template>
-  <div class="display-icon" :title="`${nodeTemplate.name}\n${extensionText}`">
+  <div class="display-icon" :title="`${nodeTemplate.name}${extensionText}`">
     <div class="name-icon-wrapper">
       <span class="name">
         {{ nodeTemplate.name }}
@@ -48,13 +48,12 @@ const extensionText = computed(() => {
       @help-icon-click="emit('helpIconClick')"
     />
 
-    <div
-      v-if="nodeTemplate.extension && !nodeTemplate.extension.vendor?.isKNIME"
-      class="extension-info"
-    >
-      <ExtensionCommunityIcon class="extension-community-icon" />
+    <div class="extension-info">
+      <ExtensionCommunityIcon
+        v-if="nodeTemplate.extension && !nodeTemplate.extension.vendor?.isKNIME"
+        class="extension-community-icon"
+      />
     </div>
-    <div v-else class="extension-info" />
   </div>
 </template>
 
