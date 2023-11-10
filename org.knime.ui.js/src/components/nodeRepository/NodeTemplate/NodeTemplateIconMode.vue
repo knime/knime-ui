@@ -108,8 +108,9 @@ const extensionText = computed(() => {
     color: var(--knime-dove-gray);
 
     & .extension-community-icon {
+      @mixin svg-icon-size 16;
+
       stroke: var(--knime-masala);
-      @mixin svg-icon-size 14;
     }
 
     & .name {

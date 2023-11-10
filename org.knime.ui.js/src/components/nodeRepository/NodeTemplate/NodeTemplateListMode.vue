@@ -95,7 +95,8 @@ const emit = defineEmits(["helpIconClick"]);
   }
 
   & .knime-icon {
-    @mixin svg-icon-size 14;
+    @mixin svg-icon-size 16;
+
     margin: 0 6px 2px auto;
     stroke: var(--knime-masala);
   }
