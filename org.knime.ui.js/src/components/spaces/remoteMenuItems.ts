@@ -45,13 +45,13 @@ export const buildMoveInsideHubMenuItem = (
   projectId: string,
   selectedItems: Array<string>,
 ): ActionMenuItem => {
-  const isNotSingleSelection = selectedItems.length !== 1;
+  const isSelectionEmpty = selectedItems.length === 0;
   return {
     id: "moveInsideHub",
     text: "Move to...",
     icon: LightningIcon,
-    disabled: isNotSingleSelection,
-    title: isNotSingleSelection ? "Select exactly one item to move." : null,
+    disabled: isSelectionEmpty,
+    title: isSelectionEmpty ? "Select at least one item to move." : null,
     separator: true,
     execute: () => {
       dispatch("spaces/moveToSpaceInHub", {
