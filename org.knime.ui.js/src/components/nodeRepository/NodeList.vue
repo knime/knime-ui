@@ -244,10 +244,6 @@ export default defineComponent({
         width: 100%;
         justify-content: center;
 
-        &:active {
-          background-color: transparent;
-        }
-
         & .icon {
           margin: 0 5px 0 0;
         }
