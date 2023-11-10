@@ -42,7 +42,7 @@ const emit = defineEmits(["helpIconClick"]);
 
     <ExtensionCommunityIcon
       v-if="!nodeTemplate.extension?.vendor?.isKNIME"
-      class="knime-icon"
+      class="extension-community-icon"
     />
 
     <NodeTemplateHelpIcon
@@ -85,7 +85,7 @@ const emit = defineEmits(["helpIconClick"]);
     margin-right: 5px;
   }
 
-  & .knime-icon {
+  & .extension-community-icon {
     @mixin svg-icon-size 16;
 
     margin: 0 6px 2px auto;
