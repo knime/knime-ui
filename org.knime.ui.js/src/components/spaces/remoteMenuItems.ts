@@ -6,7 +6,7 @@ import LinkExternal from "webapps-common/ui/assets/img/icons/link-external.svg";
 import KeyIcon from "webapps-common/ui/assets/img/icons/key.svg";
 import DeploymentIcon from "webapps-common/ui/assets/img/icons/deployment.svg";
 import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
-import LightningIcon from "webapps-common/ui/assets/img/icons/lightning.svg";
+import MoveToSpaceIcon from "webapps-common/ui/assets/img/icons/move-from-space-to-space.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import type { SpaceProviderNS } from "@/api/custom-types";
@@ -49,7 +49,7 @@ export const buildMoveInsideHubMenuItem = (
   return {
     id: "moveInsideHub",
     text: "Move to...",
-    icon: LightningIcon,
+    icon: MoveToSpaceIcon,
     disabled: isSelectionEmpty,
     title: isSelectionEmpty ? "Select at least one item to move." : null,
     separator: true,
