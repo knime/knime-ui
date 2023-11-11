@@ -639,6 +639,16 @@ export const abortAiRequest = ({ conversationId, chainType }) => {
   );
 };
 
+export const generateNodeSummary = ({ projectId, nodeId }) => {
+  return callBrowserFunction(
+    window.generateNodeSummary,
+    [projectId, nodeId],
+    "Could not generate node summary",
+    true,
+    { block: false },
+  );
+};
+
 export const makeAiRequest = ({
   conversationId,
   chainType,

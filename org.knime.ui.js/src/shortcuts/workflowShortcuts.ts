@@ -31,6 +31,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "switchToPanMode"
   | "switchToSelectionMode"
   | "quickAddNode"
+  | "summaryGeneration"
 >;
 
 declare module "./index" {
@@ -254,6 +255,19 @@ const workflowShortcuts: WorkflowShortcuts = {
     icon: SelectionModeIcon,
     execute: ({ $store }) => {
       $store.dispatch("application/switchCanvasMode", "selection");
+    },
+  },
+  summaryGeneration: {
+    text: "Generate node summary",
+    icon: SelectionModeIcon,
+    execute: ({ $store, payload = {} }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        $store.getters["selection/singleSelectedNode"].id;
+      $store.dispatch("aiAssistant/generateNodeSummary", {
+        projectId: $store.state.application.activeProjectId,
+        nodeId: selectedNodeId,
+      });
     },
   },
   quickAddNode: {

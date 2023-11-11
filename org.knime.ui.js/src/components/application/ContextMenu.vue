@@ -445,6 +445,10 @@ export default defineComponent({
         ),
       ];
 
+      const summaryGeneration: Array<MenuItem> = [
+        ...this.mapToShortcut([{ name: "summaryGeneration", isVisible: true }]),
+      ];
+
       this.visibleItems = menuGroups()
         .append(basicOperationsGroup)
         .append(
@@ -457,6 +461,7 @@ export default defineComponent({
         .append(clipboardOperationsGroup)
         .append(annotationsGroup)
         .append(metanodeAndComponentGroup)
+        .append(summaryGeneration)
         .value();
     },
   },

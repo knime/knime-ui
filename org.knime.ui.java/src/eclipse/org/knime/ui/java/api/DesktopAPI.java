@@ -93,6 +93,7 @@ public final class DesktopAPI {
         ExportAPI.class, //
         EclipseUIAPI.class, //
         ChatAPI.class, //
+        NodeSummaryGenerationAPI.class, //
         ComponentAPI.class //
     );
 

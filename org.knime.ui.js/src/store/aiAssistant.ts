@@ -198,6 +198,17 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     }
     commit("popUserQuery", { chainType });
   },
+  async generateNodeSummary(_commit, { projectId, nodeId }) {
+    try {
+      const response = await API.desktop.generateNodeSummary({
+        projectId,
+        nodeId,
+      });
+      alert(response);
+    } catch (error) {
+      consola.log("error during generate node summary generation", error);
+    }
+  },
 };
 
 export const getters: GetterTree<AiAssistantState, RootStoreState> = {};

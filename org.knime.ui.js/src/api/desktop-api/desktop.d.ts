@@ -177,6 +177,8 @@ declare function getUiStrings(): string;
 declare function installKAI(): void;
 declare function getHubID(): string;
 
+declare function generateNodeSummary(projectId: string, nodeId: string): void;
+
 declare function openPermissionsDialog(
   spaceProviderId: string,
   spaceId: string,
