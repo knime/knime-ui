@@ -72,7 +72,7 @@ public final class NodeSummaryGenerationAPI {
         /**
          * @param nodeId
          */
-        String generateLabel(String nodeId);
+        String generateLabel(final String projectId, final String nodeId, final String workflowId);
     }
 
     private static final Set<NodeLabelGenerationListener> LISTENERS = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -96,12 +96,13 @@ public final class NodeSummaryGenerationAPI {
     /**
      * @param projectId
      * @param nodeId
+     * @param workflowId
      * @return
      */
     @API
-    public static String generateNodeSummary(final String projectId, final String nodeId) {
+    public static String generateNodeSummary(final String projectId, final String nodeId, final String workflowId ) {
         System.out.println("generateNodeSummary "+ nodeId + " project " + projectId);
-        final var nodeSummaryResponse = getListener().get().generateLabel(nodeId);
+        final var nodeSummaryResponse = getListener().get().generateLabel(projectId, nodeId, workflowId);
         return nodeSummaryResponse;
     }
 

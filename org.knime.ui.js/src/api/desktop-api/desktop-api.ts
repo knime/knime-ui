@@ -639,10 +639,10 @@ export const abortAiRequest = ({ conversationId, chainType }) => {
   );
 };
 
-export const generateNodeSummary = ({ projectId, nodeId }) => {
+export const generateNodeSummary = ({ projectId, nodeId, workflowId }) => {
   return callBrowserFunction(
     window.generateNodeSummary,
-    [projectId, nodeId],
+    [projectId, nodeId, workflowId],
     "Could not generate node summary",
     true,
     { block: false },

@@ -198,13 +198,14 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     }
     commit("popUserQuery", { chainType });
   },
-  async generateNodeSummary(_commit, { projectId, nodeId }) {
+  async generateNodeSummary(_, { projectId, nodeId, workflowId }) {
     try {
-      const response = await API.desktop.generateNodeSummary({
+      const label = await API.desktop.generateNodeSummary({
         projectId,
         nodeId,
+        workflowId,
       });
-      alert(response);
+      return label;
     } catch (error) {
       consola.log("error during generate node summary generation", error);
     }

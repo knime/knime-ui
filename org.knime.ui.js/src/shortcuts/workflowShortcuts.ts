@@ -260,13 +260,23 @@ const workflowShortcuts: WorkflowShortcuts = {
   summaryGeneration: {
     text: "Generate node summary",
     icon: SelectionModeIcon,
-    execute: ({ $store, payload = {} }) => {
+    execute: async ({ $store, payload = {} }) => {
       const selectedNodeId =
         payload?.metadata?.nodeId ||
         $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("aiAssistant/generateNodeSummary", {
-        projectId: $store.state.application.activeProjectId,
+
+      const labelResponse = await $store.dispatch(
+        "aiAssistant/generateNodeSummary",
+        {
+          projectId: $store.state.application.activeProjectId,
+          nodeId: selectedNodeId,
+          workflowId: selectedNodeId,
+        },
+      );
+      const label = JSON.parse(labelResponse);
+      $store.dispatch("workflow/renameNodeLabel", {
         nodeId: selectedNodeId,
+        label: label.node_summary,
       });
     },
   },
