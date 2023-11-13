@@ -389,8 +389,7 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
   workflowBounds({ activeWorkflow, calculatedMetanodePortBarBounds }) {
     return geometry.getWorkflowObjectBounds(activeWorkflow, {
       padding: true,
-      calculatedMetaInBounds: calculatedMetanodePortBarBounds.in,
-      calculatedMetaOutBounds: calculatedMetanodePortBarBounds.out,
+      calculatedPortBarBounds: calculatedMetanodePortBarBounds,
     });
   },
   projectAndWorkflowIds: (state) => getProjectAndWorkflowIds(state),

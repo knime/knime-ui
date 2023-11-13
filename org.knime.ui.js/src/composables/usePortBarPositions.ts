@@ -1,5 +1,6 @@
-import { metaNodeBarWidth } from "@/style/shapes.mjs";
 import { computed } from "vue";
+
+import { mergePortBarBounds } from "@/util/workflowUtil";
 import { useStore } from "./useStore";
 
 export const usePortBarPositions = () => {
@@ -17,16 +18,14 @@ export const usePortBarPositions = () => {
 
   const getBounds = (isOutgoing: boolean) => {
     return isOutgoing
-      ? {
-          ...(workflow.value.metaOutPorts.bounds || {}),
-          ...calculatedBounds.value.out,
-          ...{ width: metaNodeBarWidth },
-        }
-      : {
-          ...(workflow.value.metaInPorts.bounds || {}),
-          ...calculatedBounds.value.in,
-          ...{ width: metaNodeBarWidth },
-        };
+      ? mergePortBarBounds(
+          workflow.value.metaOutPorts.bounds,
+          calculatedBounds.value.out,
+        )
+      : mergePortBarBounds(
+          workflow.value.metaInPorts.bounds,
+          calculatedBounds.value.in,
+        );
   };
 
   const portBarXPos = (isOutgoing: boolean) => {
