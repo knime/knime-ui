@@ -29,6 +29,7 @@ import * as settingsStore from "@/store/settings";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import QuickAddNodeRecommendations from "@/components/workflow/node/quickAdd/QuickAddNodeRecommendations.vue";
+import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 
 import {
   NativeNodeInvariants,
@@ -80,6 +81,7 @@ describe("QuickAddNodeMenu.vue", () => {
     nodeRecommendationsResponse = defaultNodeRecommendationsResponse,
     isWriteableMock = vi.fn().mockReturnValue(true),
     getNodeByIdMock = vi.fn(),
+    nodeRepositoryLoadedMock = true,
   } = {}) => {
     const defaultProps = {
       nodeId: "node-id",
@@ -104,6 +106,7 @@ describe("QuickAddNodeMenu.vue", () => {
           ? Promise.resolve(createSearchNodesResponse())
           : Promise.resolve(allNodesSearchResult),
     );
+    const subscribeToNodeRepositoryLoadingEventMock = vi.fn();
 
     const storeConfig = {
       canvas: {
@@ -131,6 +134,11 @@ describe("QuickAddNodeMenu.vue", () => {
           }),
           hasNodeCollectionActive: true,
           hasNodeRecommendationsEnabled: true,
+          nodeRepositoryLoaded: nodeRepositoryLoadedMock,
+        },
+        actions: {
+          subscribeToNodeRepositoryLoadingEvent:
+            subscribeToNodeRepositoryLoadingEventMock,
         },
       },
       selection: selectionStore,
@@ -192,7 +200,13 @@ describe("QuickAddNodeMenu.vue", () => {
       attachTo: document.body,
     });
 
-    return { wrapper, $store, addNodeMock, $shortcuts };
+    return {
+      wrapper,
+      $store,
+      addNodeMock,
+      $shortcuts,
+      subscribeToNodeRepositoryLoadingEventMock,
+    };
   };
 
   beforeEach(() => {
@@ -468,5 +482,14 @@ describe("QuickAddNodeMenu.vue", () => {
         },
       );
     });
+  });
+
+  it("shows loader if node repository is not loaded", () => {
+    const { wrapper, subscribeToNodeRepositoryLoadingEventMock } = doMount({
+      nodeRepositoryLoadedMock: false,
+    });
+
+    expect(subscribeToNodeRepositoryLoadingEventMock).toHaveBeenCalled();
+    expect(wrapper.findComponent(NodeRepositoryLoader).exists()).toBe(true);
   });
 });
