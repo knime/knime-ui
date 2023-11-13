@@ -3833,7 +3833,7 @@ export namespace WorkflowCommand {
         UpdateComponentMetadata = 'update_component_metadata',
         AddBendpoint = 'add_bendpoint',
         UpdateComponentLinkInformation = 'update_component_link_information',
-        TransformMetanodePortsbar = 'transform_metanode_portsbar'
+        TransformMetanodePortsBar = 'transform_metanode_ports_bar'
     }
 }
 /**
