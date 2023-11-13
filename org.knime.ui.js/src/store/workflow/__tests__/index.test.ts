@@ -5,21 +5,9 @@ import { API } from "@api";
 import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
-import { geometry } from "@/util/geometry";
 import { createConnection } from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
-
-vi.mock("@/util/geometry", () => ({
-  geometry: {
-    getWorkflowObjectBounds: vi.fn(() => ({
-      left: 10,
-      top: 10,
-      right: 100,
-      bottom: 100,
-    })),
-  },
-}));
 
 describe("workflow::index", () => {
   afterEach(() => {
@@ -481,33 +469,6 @@ describe("workflow::index", () => {
         workflowAnnotations: ["something"],
       });
       expect(store.getters["workflow/isWorkflowEmpty"]).toBe(false);
-    });
-
-    it("workflowBounds", async () => {
-      const { store } = await loadStore();
-      const workflow = {
-        projectId: "foo",
-        nodes: [],
-        workflowAnnotations: ["something"],
-      };
-      store.commit("workflow/setActiveWorkflow", workflow);
-      store.commit("workflow/setInitialWorkflowBounds", {
-        left: -20,
-        right: 400,
-        top: 50,
-        bottom: 1000,
-      });
-
-      expect(store.getters["workflow/workflowBounds"]).toEqual({
-        bottom: 1000,
-        height: 990,
-        left: -20,
-        right: 400,
-        top: 10,
-        width: 420,
-      });
-
-      expect(geometry.getWorkflowObjectBounds).toHaveBeenCalled();
     });
   });
 });

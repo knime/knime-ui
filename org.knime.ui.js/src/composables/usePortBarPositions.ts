@@ -28,25 +28,10 @@ export const usePortBarPositions = () => {
         );
   };
 
-  const portBarXPos = (isOutgoing: boolean) => {
-    const bounds = getBounds(isOutgoing);
-    return bounds.x;
-  };
-
-  const portBarYPos = (isOutgoing: boolean) => {
-    const bounds = getBounds(isOutgoing);
-    return bounds.y;
-  };
-
-  const portBarHeight = (isOutgoing: boolean) => {
-    const bounds = getBounds(isOutgoing);
-    return bounds.height;
-  };
-
-  const portBarWidth = (isOutgoing: boolean) => {
-    const bounds = getBounds(isOutgoing);
-    return bounds.width;
-  };
+  const portBarXPos = (isOutgoing: boolean) => getBounds(isOutgoing).x;
+  const portBarYPos = (isOutgoing: boolean) => getBounds(isOutgoing).y;
+  const portBarHeight = (isOutgoing: boolean) => getBounds(isOutgoing).height;
+  const portBarWidth = (isOutgoing: boolean) => getBounds(isOutgoing).width;
 
   const getPortBarPortYPosition = (
     index: number,

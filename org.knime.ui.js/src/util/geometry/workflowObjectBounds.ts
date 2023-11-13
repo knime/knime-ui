@@ -10,7 +10,6 @@ const {
   nodeStatusHeight,
   nodeNameLineHeight,
   portSize,
-  defaultMetaNodeBarHeight,
   horizontalNodePadding,
 } = $shapes;
 
@@ -171,12 +170,6 @@ export default (
     right = Math.max(right, rightMargin);
     top = Math.min(top, topMargin);
     bottom = Math.max(bottom, bottomMargin);
-  }
-
-  if (hasMetaInPorts || hasMetaOutPorts) {
-    if (bottom < Math.min(0, top) + defaultMetaNodeBarHeight) {
-      bottom = Math.min(0, top) + defaultMetaNodeBarHeight;
-    }
   }
 
   return {

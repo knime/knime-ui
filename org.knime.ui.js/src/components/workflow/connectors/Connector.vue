@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, toRefs, watch, toRef } from "vue";
 
-import type { XY } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import type { XY } from "@/api/gateway-api/generated-api";
 import { getBendpointId } from "@/util/connectorUtil";
+import { useStore } from "@/composables/useStore";
+import { useMoveObject } from "@/composables/useMoveObject";
 
 import { useConnectionReplacement } from "./useConnectionReplacement";
 import ConnectorPathSegment from "./ConnectorPathSegment.vue";
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 import { useConnectorPathSegments } from "./useConnectorPathSegments";
 import type { ConnectorProps } from "./types";
-import { useMoveObject } from "@/composables/useMoveObject";
 
 defineOptions({ inheritAttrs: false });
 

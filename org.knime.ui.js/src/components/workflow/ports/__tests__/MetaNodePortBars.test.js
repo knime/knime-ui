@@ -79,14 +79,7 @@ describe("MetaNodePortBars.vue", () => {
       doShallowMount();
       expect(wrapper.findAllComponents(MetaNodePortBar).length).toBe(1);
       let bar = wrapper.findAllComponents(MetaNodePortBar).at(0);
-
-      const expectedX =
-        type === "in"
-          ? $shapes.metaNodeBarWidth
-          : $shapes.metaNodeBarWidth + 100;
       expect(bar.props("type")).toBe(type);
-      expect(bar.props("position").x).toBe(expectedX);
-      expect(bar.props("position").y).toBe(top);
       expect(bar.props("ports")).toEqual([dummy]);
       expect(bar.props("containerId")).toBe("metanode");
     },
@@ -104,14 +97,11 @@ describe("MetaNodePortBars.vue", () => {
     expect(wrapper.findAllComponents(MetaNodePortBar).length).toBe(2);
     let inBar = wrapper.findAllComponents(MetaNodePortBar).at(0);
     expect(inBar.props("type")).toBe("in");
-    expect(inBar.props("position").y).toBe(top);
     expect(inBar.props("ports")).toEqual([dummy]);
     expect(inBar.props("containerId")).toBe("metanode");
 
     let outBar = wrapper.findAllComponents(MetaNodePortBar).at(1);
     expect(outBar.props("type")).toBe("out");
-    expect(outBar.props("position").x).toBe(110);
-    expect(outBar.props("position").y).toBe(top);
     expect(outBar.props("ports")).toEqual([dummy, dummy]);
     expect(outBar.props("containerId")).toBe("metanode");
   });

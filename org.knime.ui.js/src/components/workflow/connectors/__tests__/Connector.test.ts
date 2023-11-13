@@ -383,12 +383,16 @@ describe("Connector.vue", () => {
         connections: {
           [connection.id]: connection,
         },
-        metaInPorts: { bounds: { x: 100 }, ports: [defaultPortMock] },
+        metaInPorts: {
+          bounds: { x: 100, y: 0, width: 10, height: 500 },
+          ports: [defaultPortMock],
+        },
         metaOutPorts: {
-          bounds: { x: 702 },
+          bounds: { x: 702, y: 0, width: 10, height: 500 },
           ports: [defaultPortMock, defaultPortMock, defaultPortMock],
         },
       });
+
       const { $store } = createStore({
         workflow,
         extraModules: {
