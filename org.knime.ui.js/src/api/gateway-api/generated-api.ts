@@ -508,6 +508,12 @@ export interface AppState {
      * @memberof AppState
      */
     fileExtensionToNodeTemplateId?: { [key: string]: string; };
+    /**
+     * Whether the node repository is loaded (and ready to be used) or not.
+     * @type {boolean}
+     * @memberof AppState
+     */
+    nodeRepositoryLoaded?: boolean;
 
 }
 
@@ -2120,6 +2126,40 @@ export interface NodePortTemplate {
      * @memberof NodePortTemplate
      */
     optional?: boolean;
+
+}
+
+
+/**
+ * Event emmitted while loading the node repository.
+ * @export
+ * @interface NodeRepositoryLoadingProgressEvent
+ */
+export interface NodeRepositoryLoadingProgressEvent extends Event {
+
+    /**
+     * The overall progress in range [0,1].
+     * @type {number}
+     * @memberof NodeRepositoryLoadingProgressEvent
+     */
+    progress?: number;
+    /**
+     * The name of the extension currently processed.
+     * @type {string}
+     * @memberof NodeRepositoryLoadingProgressEvent
+     */
+    extensionName?: string;
+
+}
+
+
+/**
+ * The event type to register for the respective event.
+ * @export
+ * @interface NodeRepositoryLoadingProgressEventType
+ */
+export interface NodeRepositoryLoadingProgressEventType extends EventType {
+
 
 }
 
@@ -4896,6 +4936,7 @@ export type EventParams =
     | (AppStateChangedEventType & { typeId: 'AppStateChangedEventType' })
     | (SelectionEventType & { typeId: 'SelectionEventType' })
     | (UpdateAvailableEventType & { typeId: 'UpdateAvailableEventType' })
+    | (NodeRepositoryLoadingProgressEventType & { typeId: 'NodeRepositoryLoadingProgressEventType' })
 ;
 
 export interface EventHandlers {
@@ -4904,6 +4945,7 @@ export interface EventHandlers {
     ProjectDirtyStateEvent?(payload: ProjectDirtyStateEvent): void;
     AppStateChangedEvent?(payload: AppStateChangedEvent): void;
     UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;
+    NodeRepositoryLoadingProgressEvent?(payload: NodeRepositoryLoadingProgressEvent): void;
 }
 
 const EventApiWrapper = function (rpcClient: RPCClient) {

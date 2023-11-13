@@ -68,7 +68,10 @@ export interface ApplicationState {
    * indicates if node repository is loaded
    */
   nodeRepositoryLoaded: boolean;
-  nodeRepositoryLoadingProgress: object;
+  nodeRepositoryLoadingProgress: {
+    progress: number;
+    extensionName: string;
+  } | null;
 }
 
 /*
@@ -98,7 +101,7 @@ export const state = (): ApplicationState => ({
   fileExtensionToNodeTemplateId: {},
 
   nodeRepositoryLoaded: false,
-  nodeRepositoryLoadingProgress: {},
+  nodeRepositoryLoadingProgress: null,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -144,7 +147,7 @@ export const mutations: MutationTree<ApplicationState> = {
     state.nodeRepositoryLoaded = nodeRepositoryLoaded;
   },
   setNodeRepositoryLoadingProgress(state, nodeRepositoryLoadingProgress) {
-    state.nodeRepositoryLoaded = nodeRepositoryLoadingProgress;
+    state.nodeRepositoryLoadingProgress = nodeRepositoryLoadingProgress;
   },
 };
 

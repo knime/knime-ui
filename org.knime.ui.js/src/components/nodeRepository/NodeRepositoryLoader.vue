@@ -1,22 +1,28 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 interface Props {
-  nodeRepositoryLoadingProgress: {
-    progress: number;
-    extensionName: string;
-  };
+  progress?: number;
+  extensionName?: string;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  progress: 0,
+  extensionName: "",
+});
+
+const round = (value: number) =>
+  Math.round((value + Number.EPSILON) * 100) / 100;
+
+const rounded = computed(() => round(props.progress * 100));
 </script>
 
 <template>
   <div class="not-ready">
-    <progress :value="nodeRepositoryLoadingProgress.progress" max="100">
-      {{ nodeRepositoryLoadingProgress.progress * 100 }}%
-    </progress>
+    <progress :value="rounded" max="100" />
     <div class="progress-message">
-      <span>{{ nodeRepositoryLoadingProgress.progress * 100 }}%</span>
-      <span>Loading: {{ nodeRepositoryLoadingProgress.extensionName }} </span>
+      <span>{{ rounded }}%</span>
+      <span>Loading: {{ extensionName }} </span>
     </div>
   </div>
 </template>
@@ -49,7 +55,7 @@ defineProps<Props>();
 & progress[value]::-webkit-progress-value {
   border-radius: 10px;
   background: var(--color);
-  transition: width 2.5s ease-in-out;
+  transition: width 1s ease-in-out;
 }
 
 & .progress-message {

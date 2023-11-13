@@ -300,7 +300,8 @@ export default defineComponent({
       </template>
       <template v-else>
         <NodeRepositoryLoader
-          :node-repository-loading-progress="nodeRepositoryLoadingProgress"
+          :progress="nodeRepositoryLoadingProgress?.progress"
+          :extension-name="nodeRepositoryLoadingProgress?.extensionName"
         />
       </template>
     </div>

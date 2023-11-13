@@ -265,7 +265,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     if (!state.nodeRepositoryLoaded) {
       // Call event to start listening to node repository loading progress
       await API.event.subscribeEvent({
-        typeId: "NodeRepositoryLoadingProgressEvent",
+        typeId: "NodeRepositoryLoadingProgressEventType",
       });
     }
   },
