@@ -62,5 +62,7 @@ const rounded = computed(() => round(props.progress * 100));
   display: flex;
   flex-direction: column;
   margin-top: 30px;
+  max-width: 80%;
+  text-align: center;
 }
 </style>
