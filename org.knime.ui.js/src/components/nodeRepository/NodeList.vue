@@ -220,10 +220,6 @@ export default defineComponent({
     & .show-more {
       color: var(--knime-masala);
       font-weight: 400;
-
-      &:active {
-        background-color: transparent;
-      }
     }
 
     & li {
@@ -261,10 +257,6 @@ export default defineComponent({
       & .show-more {
         margin: 20px auto 0;
         display: block;
-
-        &:active {
-          background-color: transparent;
-        }
 
         & .icon {
           margin: 0;
