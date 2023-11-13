@@ -16,10 +16,9 @@ import type { NodePort as NodePortType } from "@/api/gateway-api/generated-api";
 
 import MetaNodePortBar from "../MetaNodePortBar.vue";
 import NodePort from "../NodePort/NodePort.vue";
+import { geometry } from "@/util/geometry";
 
 describe("MetaNodePortBar.vue", () => {
-  const x = 222;
-  const y = 123;
   const height = 549;
 
   const doMount = ({
@@ -30,7 +29,6 @@ describe("MetaNodePortBar.vue", () => {
     bounds?: { height: number } | null;
   } = {}) => {
     const defaultProps = {
-      position: { x, y },
       ports: [],
       containerId: "metanode:1",
     };
@@ -62,6 +60,13 @@ describe("MetaNodePortBar.vue", () => {
       }),
     );
 
+    $store.commit(
+      "workflow/setCalculatedMetanodePortBarBounds",
+      geometry.calculateMetaNodePortBarBounds(
+        $store.state.workflow.activeWorkflow,
+      ),
+    );
+
     const wrapper = mount(MetaNodePortBar, {
       props: { ...defaultProps, ...props },
       global: {
@@ -77,6 +82,8 @@ describe("MetaNodePortBar.vue", () => {
   describe.each(["in" as const, "out" as const])('type "%s"', (type) => {
     it("renders a portbar without bounds", () => {
       const { wrapper } = doMount({ props: { type } });
+
+      const [x, y] = type === "in" ? [-100, -61] : [900, -61];
 
       // global positioning
       expect(wrapper.find("g").attributes("transform")).toBe(
@@ -111,13 +118,13 @@ describe("MetaNodePortBar.vue", () => {
       expect(Number(hoverArea.attributes("x"))).toEqual(expectedHoverAreaX);
     });
 
-    it("renders a portbar with height", () => {
-      const bounds = { height: 300 };
+    it("renders a portbar with bounds", () => {
+      const bounds = { x: 100, y: 100, width: 10, height: 300 };
       const { wrapper } = doMount({ props: { type }, bounds });
 
       // global positioning
       expect(wrapper.find("g").attributes("transform")).toBe(
-        `translate(${x}, ${y})`,
+        "translate(100, 100)",
       );
 
       // visible port bar
