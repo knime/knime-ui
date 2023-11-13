@@ -7,7 +7,7 @@ import {
   withoutKeys,
 } from "@/test/utils";
 import { API } from "@api";
-import { searchStarterNodesResponse } from "../common/__tests__/nodeSearch.test";
+import { createSearchNodesResponse } from "@/test/factories";
 import { state as nodeSearchState } from "../common/nodeSearch";
 
 const getNodesGroupedByTagsResponse = {
@@ -108,7 +108,7 @@ describe("Node Repository store", () => {
     };
 
     mockedAPI.noderepository.searchNodes.mockResolvedValue(
-      searchStarterNodesResponse,
+      createSearchNodesResponse(),
     );
     mockedAPI.noderepository.getNodesGroupedByTags.mockReturnValue(
       getNodesGroupedByTagsResponse,

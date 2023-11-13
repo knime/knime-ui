@@ -25,8 +25,8 @@ export default {
       "query",
       "selectedTags",
       "selectedNode",
+      "totalNumFilteredNodesFound",
     ]),
-    ...mapState("application", ["hasNodeCollectionActive"]),
 
     searchScrollPosition: {
       get() {
@@ -58,7 +58,7 @@ export default {
     :display-mode="displayMode"
     :query="query"
     :nodes="nodes"
-    :has-node-collection-active="hasNodeCollectionActive"
+    :has-filtered-out-nodes="totalNumFilteredNodesFound"
   >
     <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate

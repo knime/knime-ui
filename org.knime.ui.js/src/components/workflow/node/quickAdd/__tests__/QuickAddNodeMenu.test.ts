@@ -14,6 +14,8 @@ import {
   createPort,
   createNodePortTemplate,
   createNodeTemplate,
+  createSearchNodesResponse,
+  createSearchAllNodesResponse,
 } from "@/test/factories";
 
 import { API } from "@api";
@@ -24,7 +26,6 @@ import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as settingsStore from "@/store/settings";
-import { searchStarterNodesResponse } from "@/store/common/__tests__/nodeSearch.test";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import QuickAddNodeRecommendations from "@/components/workflow/node/quickAdd/QuickAddNodeRecommendations.vue";
@@ -56,20 +57,7 @@ const defaultNodeRecommendationsResponse = [
   }),
 ];
 
-const allNodesSearchResult = {
-  tags: [],
-  totalNumNodes: 1355,
-  nodes: [
-    createNodeTemplate({
-      name: "Advanced Node",
-      id: "org.knime.ext.advanced.node3",
-      type: NativeNodeInvariants.TypeEnum.Visualizer,
-      nodeFactory: { className: "org.knime.ext.advanced.node3" },
-      inPorts: [createNodePortTemplate()],
-      outPorts: [],
-    }),
-  ],
-};
+const allNodesSearchResult = createSearchAllNodesResponse();
 
 const defaultPortMock = createPort();
 
@@ -113,7 +101,7 @@ describe("QuickAddNodeMenu.vue", () => {
     mockedAPI.noderepository.searchNodes.mockImplementation(
       ({ nodesPartition }) =>
         nodesPartition === "IN_COLLECTION"
-          ? Promise.resolve(searchStarterNodesResponse)
+          ? Promise.resolve(createSearchNodesResponse())
           : Promise.resolve(allNodesSearchResult),
     );
 

@@ -25,7 +25,7 @@ export default defineComponent({
   emits: ["update:selectedNode", "addNode"],
   expose: ["focusFirst"],
   computed: {
-    ...mapState("application", ["hasNodeCollectionActive"]),
+    ...mapState("nodeRepository", ["totalNumFilteredNodesFound"]),
     ...mapState("quickAddNodes", ["nodes", "query"]),
 
     searchActions() {
@@ -47,13 +47,13 @@ export default defineComponent({
 <template>
   <SearchResults
     ref="searchResults"
-    :has-node-collection-active="hasNodeCollectionActive"
     :query="query"
     :search-actions="searchActions"
     :highlight-first="true"
     :selected-node="selectedNode"
     :display-mode="displayMode"
     :nodes="nodes"
+    :has-filtered-out-nodes="totalNumFilteredNodesFound"
     @update:selected-node="$emit('update:selectedNode', $event)"
     @item-enter-key="$emit('addNode', $event)"
   >
