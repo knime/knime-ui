@@ -508,6 +508,12 @@ export interface AppState {
      * @memberof AppState
      */
     fileExtensionToNodeTemplateId?: { [key: string]: string; };
+    /**
+     * Whether the node repository is loaded (and ready to be used) or not.
+     * @type {boolean}
+     * @memberof AppState
+     */
+    nodeRepositoryLoaded?: boolean;
 
 }
 
@@ -2125,6 +2131,40 @@ export interface NodePortTemplate {
 
 
 /**
+ * Event emmitted while loading the node repository.
+ * @export
+ * @interface NodeRepositoryLoadingProgressEvent
+ */
+export interface NodeRepositoryLoadingProgressEvent extends Event {
+
+    /**
+     * The overall progress in range [0,1].
+     * @type {number}
+     * @memberof NodeRepositoryLoadingProgressEvent
+     */
+    progress?: number;
+    /**
+     * The name of the extension currently processed.
+     * @type {string}
+     * @memberof NodeRepositoryLoadingProgressEvent
+     */
+    extensionName?: string;
+
+}
+
+
+/**
+ * The event type to register for the respective event.
+ * @export
+ * @interface NodeRepositoryLoadingProgressEventType
+ */
+export interface NodeRepositoryLoadingProgressEventType extends EventType {
+
+
+}
+
+
+/**
  * Represents the result of a node/component search in the node repository.
  * @export
  * @interface NodeSearchResult
@@ -3140,6 +3180,43 @@ export namespace TemplateLink {
     }
 }
 /**
+ * Sets the bounds (x,y,width,height) of a metanode ports bar.
+ * @export
+ * @interface TransformMetanodePortsBarCommand
+ */
+export interface TransformMetanodePortsBarCommand extends WorkflowCommand {
+
+    /**
+     * in- or out-metanode ports bar to set the bounds for
+     * @type {string}
+     * @memberof TransformMetanodePortsBarCommand
+     */
+    type?: TransformMetanodePortsBarCommand.TypeEnum;
+    /**
+     *
+     * @type {Bounds}
+     * @memberof TransformMetanodePortsBarCommand
+     */
+    bounds?: Bounds;
+
+}
+
+
+/**
+ * @export
+ * @namespace TransformMetanodePortsBarCommand
+ */
+export namespace TransformMetanodePortsBarCommand {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum TypeEnum {
+        In = 'in',
+        Out = 'out'
+    }
+}
+/**
  * Changes the size (width and height) and position (x, y) of a workflow annotation.
  * @export
  * @interface TransformWorkflowAnnotationCommand
@@ -3175,6 +3252,18 @@ export interface TranslateCommand extends PartBasedCommand {
      * @memberof TranslateCommand
      */
     translation: XY;
+    /**
+     * Whether to move the in-ports bar of a metanode. Requires the  metanode ports bar position to be set. Will fail otherwise.
+     * @type {boolean}
+     * @memberof TranslateCommand
+     */
+    metanodeInPortsBar?: boolean;
+    /**
+     * Whether to move the out-ports bar of a metanode. Requires the  metanode ports bar position to be set. Will fail otherwise.
+     * @type {boolean}
+     * @memberof TranslateCommand
+     */
+    metanodeOutPortsBar?: boolean;
 
 }
 
@@ -3743,7 +3832,8 @@ export namespace WorkflowCommand {
         UpdateProjectMetadata = 'update_project_metadata',
         UpdateComponentMetadata = 'update_component_metadata',
         AddBendpoint = 'add_bendpoint',
-        UpdateComponentLinkInformation = 'update_component_link_information'
+        UpdateComponentLinkInformation = 'update_component_link_information',
+        TransformMetanodePortsbar = 'transform_metanode_portsbar'
     }
 }
 /**
@@ -4888,6 +4978,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 		return postProcessCommandResponse(commandResponse);
 	},	
 
+ 	/**
+     * Sets the bounds (x,y,width,height) of a metanode ports bar.
+     */
+	TransformMetanodePortsBar(
+		params: { projectId: string, workflowId: string } & Omit<TransformMetanodePortsBarCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.TransformMetanodePortsBar }
+		});
+		return postProcessCommandResponse(commandResponse);
+	},	
+
   }
 }
 
@@ -4896,6 +5001,7 @@ export type EventParams =
     | (AppStateChangedEventType & { typeId: 'AppStateChangedEventType' })
     | (SelectionEventType & { typeId: 'SelectionEventType' })
     | (UpdateAvailableEventType & { typeId: 'UpdateAvailableEventType' })
+    | (NodeRepositoryLoadingProgressEventType & { typeId: 'NodeRepositoryLoadingProgressEventType' })
 ;
 
 export interface EventHandlers {
@@ -4904,6 +5010,7 @@ export interface EventHandlers {
     ProjectDirtyStateEvent?(payload: ProjectDirtyStateEvent): void;
     AppStateChangedEvent?(payload: AppStateChangedEvent): void;
     UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;
+    NodeRepositoryLoadingProgressEvent?(payload: NodeRepositoryLoadingProgressEvent): void;
 }
 
 const EventApiWrapper = function (rpcClient: RPCClient) {
