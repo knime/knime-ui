@@ -337,40 +337,7 @@ export default defineComponent({
   }
 
   & .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 10px;
-
-    & .filter-button {
-      width: 30px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 -5px 0 5px;
-
-      & svg {
-        @mixin svg-icon-size 18;
-
-        stroke: var(--knime-masala);
-      }
-    }
-  }
-
-  & .search-bar {
-    height: 40px;
-    font-size: 17px;
-    flex: 1;
-
-    &:hover {
-      background-color: var(--knime-silver-sand-semi);
-    }
-
-    &:focus-within {
-      background-color: var(--knime-white);
-      border-color: var(--knime-masala);
-    }
   }
 }
 </style>
