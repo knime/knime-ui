@@ -1,14 +1,12 @@
+import { metaNodeBarWidth } from "@/style/shapes.mjs";
 import { computed } from "vue";
-
-import { metaNodeBarWidth, defaultMetaNodeBarHeight } from "@/style/shapes.mjs";
 import { useStore } from "./useStore";
 
 export const usePortBarPositions = () => {
   const store = useStore();
-  // do not update the bounds reactively as this makes the port bars moving around in some cases
   const workflow = computed(() => store.state.workflow.activeWorkflow);
-  const initialWorkflowBounds = computed(
-    () => store.state.workflow.initialWorkflowBounds,
+  const calculatedBounds = computed(
+    () => store.state.workflow.calculatedMetanodePortBarBounds,
   );
 
   const getPorts = (isOutgoing: boolean) => {
@@ -19,36 +17,39 @@ export const usePortBarPositions = () => {
 
   const getBounds = (isOutgoing: boolean) => {
     return isOutgoing
-      ? workflow.value.metaOutPorts.bounds
-      : workflow.value.metaInPorts.bounds;
+      ? {
+          ...(workflow.value.metaOutPorts.bounds || {}),
+          ...calculatedBounds.value.out,
+          ...{ width: metaNodeBarWidth },
+        }
+      : {
+          ...(workflow.value.metaInPorts.bounds || {}),
+          ...calculatedBounds.value.in,
+          ...{ width: metaNodeBarWidth },
+        };
   };
 
   const portBarXPos = (isOutgoing: boolean) => {
     const bounds = getBounds(isOutgoing);
-
-    if (!bounds?.x) {
-      const offset = isOutgoing
-        ? initialWorkflowBounds.value.right
-        : initialWorkflowBounds.value.left;
-
-      return offset + metaNodeBarWidth;
-    }
-
     return bounds.x;
   };
 
   const portBarYPos = (isOutgoing: boolean) => {
     const bounds = getBounds(isOutgoing);
-
-    return bounds?.y ?? initialWorkflowBounds.value.top;
+    return bounds.y;
   };
 
   const portBarHeight = (isOutgoing: boolean) => {
     const bounds = getBounds(isOutgoing);
-    return bounds?.height ?? defaultMetaNodeBarHeight;
+    return bounds.height;
   };
 
-  const getPortbarPortYPosition = (
+  const portBarWidth = (isOutgoing: boolean) => {
+    const bounds = getBounds(isOutgoing);
+    return bounds.width;
+  };
+
+  const getPortBarPortYPosition = (
     index: number,
     isOutgoing: boolean,
     absolute: boolean,
@@ -64,9 +65,11 @@ export const usePortBarPositions = () => {
   };
 
   return {
+    portBarWidth,
     portBarHeight,
     portBarYPos,
     portBarXPos,
-    getPortbarPortYPosition,
+    getBounds,
+    getPortBarPortYPosition,
   };
 };

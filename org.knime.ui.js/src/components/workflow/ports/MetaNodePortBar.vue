@@ -2,25 +2,16 @@
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
-import { computed, provide, toRef } from "vue";
+import { computed, provide } from "vue";
 
 import { usePortBarPositions } from "@/composables/usePortBarPositions";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
-import type {
-  XY,
-  NodePort as NodePortType,
-} from "@/api/gateway-api/generated-api";
-import { portSize, metaNodeBarWidth } from "@/style/shapes.mjs";
+import type { NodePort as NodePortType } from "@/api/gateway-api/generated-api";
+import { portSize } from "@/style/shapes.mjs";
 
 import NodePort from "./NodePort/NodePort.vue";
 
 interface Props {
-  /**
-   * The position of the node. Contains of an x and a y parameter
-   * The y coordinate is the topmost edge of the bar.
-   * The x coordinate is the horizontal coordinate of the bar, at the point where the ports are attached.
-   */
-  position: XY;
   /**
    * A list of port configurations, passed-through to `Port`
    */
@@ -35,27 +26,40 @@ interface Props {
   containerId: string;
 }
 
-const { portBarHeight, getPortbarPortYPosition } = usePortBarPositions();
+const {
+  portBarXPos,
+  portBarYPos,
+  portBarHeight,
+  portBarWidth,
+  getPortBarPortYPosition,
+} = usePortBarPositions();
 
 const props = withDefaults(defineProps<Props>(), {
   type: "in",
 });
 
-// Provide position as anchorPoint for tooltips
-provide("anchorPoint", toRef(props, "position"));
+const isOutgoing = computed(() => props.type === "out");
 
-const portDirection = computed(() => (props.type === "out" ? "in" : "out"));
+const position = computed(() => ({
+  x: portBarXPos(isOutgoing.value),
+  y: portBarYPos(isOutgoing.value),
+}));
+
+// Provide position as anchorPoint for tooltips
+provide("anchorPoint", position);
+
+const portDirection = computed(() => (isOutgoing.value ? "in" : "out"));
 
 const portPositions = computed(() => {
   const delta = portSize / 2;
   // horizontal center of ports
-  const positionX = props.type === "out" ? -delta : delta;
+  const positionX = isOutgoing.value ? -delta : delta;
 
   // x-coordinate is absolute
   // y-coordinate is relative to PortBar
   const mappedPorts = props.ports.map<[number, number]>((port) => [
     positionX,
-    getPortbarPortYPosition(port.index, props.type === "out", false),
+    getPortBarPortYPosition(port.index, isOutgoing.value, false),
   ]);
 
   return {
@@ -65,7 +69,7 @@ const portPositions = computed(() => {
 });
 
 const barPosition = computed(() =>
-  props.type === "out" ? 0 : -metaNodeBarWidth,
+  isOutgoing.value ? 0 : -portBarWidth(isOutgoing.value),
 );
 </script>
 
@@ -102,16 +106,16 @@ const barPosition = computed(() =>
         <rect
           class="hover-area"
           :width="
-            $shapes.metaNodeBarWidth + $shapes.metaNodeBarHorizontalPadding * 2
+            portBarWidth(isOutgoing) + $shapes.metaNodeBarHorizontalPadding * 2
           "
-          :height="portBarHeight(type === 'out')"
+          :height="portBarHeight(isOutgoing)"
           :x="barPosition - $shapes.metaNodeBarHorizontalPadding"
           data-hide-in-workflow-preview
         />
         <rect
           class="port-bar"
-          :width="$shapes.metaNodeBarWidth"
-          :height="portBarHeight(type === 'out')"
+          :width="portBarWidth(isOutgoing)"
+          :height="portBarHeight(isOutgoing)"
           :x="barPosition"
           :fill="$colors.Yellow"
         />

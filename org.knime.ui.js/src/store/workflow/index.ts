@@ -2,7 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { isEqual } from "lodash";
 
 import { API } from "@api";
-import { WorkflowInfo } from "@/api/gateway-api/generated-api";
+import { WorkflowInfo, type Bounds } from "@/api/gateway-api/generated-api";
 import type { Workflow } from "@/api/custom-types";
 
 import {
@@ -30,11 +30,9 @@ export interface WorkflowState {
   activeSnapshotId: string | null;
   tooltip: TooltipDefinition | null;
 
-  initialWorkflowBounds: {
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
+  calculatedMetanodePortBarBounds: {
+    in: Bounds;
+    out: Bounds;
   };
 }
 
@@ -60,8 +58,7 @@ export const state = (): WorkflowState => ({
   // TODO: NXT-1143 find a better place for the tooltip logic
   // maybe use an event that bubbles to the top (workflow canvas?)
   tooltip: null,
-
-  initialWorkflowBounds: { left: 0, right: 0, top: 0, bottom: 0 },
+  calculatedMetanodePortBarBounds: { in: null, out: null },
 });
 
 export const mutations: MutationTree<WorkflowState> = {
@@ -85,8 +82,11 @@ export const mutations: MutationTree<WorkflowState> = {
     state.tooltip = tooltip;
   },
 
-  setInitialWorkflowBounds(state, value) {
-    state.initialWorkflowBounds = value;
+  setCalculatedMetanodePortBarBounds(
+    state,
+    bounds: { in: Bounds; out: Bounds },
+  ) {
+    state.calculatedMetanodePortBarBounds = bounds;
   },
 };
 
@@ -386,31 +386,12 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
   },
 
   /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
-  workflowBounds({ activeWorkflow, initialWorkflowBounds }) {
-    const { left, right, top, bottom } = geometry.getWorkflowObjectBounds(
-      activeWorkflow,
-      {
-        padding: true,
-      },
-    );
-
-    const nextLeft = Math.min(left, initialWorkflowBounds.left);
-    const nextTop = Math.min(top, initialWorkflowBounds.top);
-    const nextBottom = Math.max(bottom, initialWorkflowBounds.bottom);
-    const nextRight = Math.max(right, initialWorkflowBounds.right);
-
-    const nextWidth = nextRight - nextLeft;
-    const nextHeight = nextBottom - nextTop;
-
-    return {
-      left: nextLeft,
-      top: nextTop,
-      bottom: nextBottom,
-      right: nextRight,
-
-      width: nextWidth,
-      height: nextHeight,
-    };
+  workflowBounds({ activeWorkflow, calculatedMetanodePortBarBounds }) {
+    return geometry.getWorkflowObjectBounds(activeWorkflow, {
+      padding: true,
+      calculatedMetaInBounds: calculatedMetanodePortBarBounds.in,
+      calculatedMetaOutBounds: calculatedMetanodePortBarBounds.out,
+    });
   },
   projectAndWorkflowIds: (state) => getProjectAndWorkflowIds(state),
 };

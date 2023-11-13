@@ -1,3 +1,4 @@
+import { geometry } from "@/util/geometry";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
@@ -172,7 +173,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     commit("setIsLoadingWorkflow", false);
   },
 
-  async loadWorkflow({ dispatch }, { projectId, workflowId = "root" }) {
+  async loadWorkflow({ dispatch, commit }, { projectId, workflowId = "root" }) {
     // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
     API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
 
@@ -182,29 +183,32 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       includeInteractionInfo: true,
     });
 
-    if (project) {
-      dispatch("setWorkflow", {
-        projectId,
-        workflow: project.workflow,
-        snapshotId: project.snapshotId,
-      });
-    } else {
+    if (!project) {
       throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
     }
+
+    // calculate and save meta node port bar default bounds, as they become part of the workflow bounds we need to
+    // do this very early and only once.
+    commit(
+      "workflow/setCalculatedMetanodePortBarBounds",
+      geometry.calculateMetaNodePortBarBounds(project.workflow),
+      { root: true },
+    );
+
+    dispatch("setWorkflow", {
+      projectId,
+      workflow: project.workflow,
+      snapshotId: project.snapshotId,
+    });
   },
   async setWorkflow(
-    { commit, dispatch, rootGetters },
+    { commit, dispatch },
     {
       workflow,
       projectId,
       snapshotId,
     }: { workflow: Workflow; projectId: string; snapshotId: string },
   ) {
-    commit(
-      "workflow/setInitialWorkflowBounds",
-      { left: 0, right: 0, top: 0, bottom: 0 },
-      { root: true },
-    );
     commit("setActiveProjectId", projectId);
     commit(
       "workflow/setActiveWorkflow",
@@ -226,12 +230,6 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     // restore scroll and zoom if saved before
     await dispatch("restoreCanvasState");
-
-    commit(
-      "workflow/setInitialWorkflowBounds",
-      { ...rootGetters["workflow/workflowBounds"] },
-      { root: true },
-    );
   },
 
   async unloadActiveWorkflow(
