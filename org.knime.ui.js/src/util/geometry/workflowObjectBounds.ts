@@ -1,6 +1,7 @@
 import type { Workflow } from "@/api/custom-types";
 import type { MetaPorts, Bounds } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes.mjs";
+import { mergePortBarBounds } from "../workflowUtil";
 
 const {
   nodeSize,
@@ -10,7 +11,6 @@ const {
   nodeNameLineHeight,
   portSize,
   defaultMetaNodeBarHeight,
-  metaNodeBarWidth,
   horizontalNodePadding,
 } = $shapes;
 
@@ -74,11 +74,7 @@ const getMetanodePortbarMargins = (
   type: "in" | "out",
   calculatedBounds: Bounds,
 ) => {
-  const bounds = {
-    ...(metanodePortbar.bounds || {}),
-    ...calculatedBounds,
-    ...{ width: metaNodeBarWidth },
-  };
+  const bounds = mergePortBarBounds(metanodePortbar.bounds, calculatedBounds);
 
   const getTopMargin = () => {
     return bounds.y;
@@ -113,6 +109,14 @@ type ObjectBoundsParameter = {
   metaOutPorts?: Workflow["metaOutPorts"];
 };
 
+type ObjectBoundsOption = {
+  padding?: boolean;
+  calculatedPortBarBounds?: {
+    in?: Bounds | null;
+    out?: Bounds | null;
+  };
+};
+
 export default (
   {
     nodes = {},
@@ -120,15 +124,7 @@ export default (
     metaInPorts = null,
     metaOutPorts = null,
   }: ObjectBoundsParameter,
-  {
-    padding = false,
-    calculatedMetaInBounds = null,
-    calculatedMetaOutBounds = null,
-  }: {
-    padding?: boolean;
-    calculatedMetaInBounds?: Bounds;
-    calculatedMetaOutBounds?: Bounds;
-  } = {},
+  { padding = false, calculatedPortBarBounds = null }: ObjectBoundsOption = {},
 ) => {
   let { left, top, right, bottom } = getLimitBounds({
     nodes,
@@ -139,8 +135,8 @@ export default (
   const hasNodes = Object.keys(nodes).length !== 0;
   const isMetanode = Boolean(metaInPorts || metaOutPorts);
   const hasMetaInPorts = metaInPorts?.ports?.length > 0;
-  const addMetaPortInMargins = Boolean(calculatedMetaInBounds);
-  const addMetaPortOutMargins = Boolean(calculatedMetaOutBounds);
+  const addMetaPortInMargins = Boolean(calculatedPortBarBounds?.in);
+  const addMetaPortOutMargins = Boolean(calculatedPortBarBounds?.out);
   const hasMetaOutPorts = metaOutPorts?.ports?.length > 0;
 
   if (!hasNodes && isMetanode && (hasMetaInPorts || hasMetaOutPorts)) {
@@ -156,7 +152,7 @@ export default (
 
   if (hasMetaInPorts && addMetaPortInMargins) {
     const { leftMargin, rightMargin, topMargin, bottomMargin } =
-      getMetanodePortbarMargins(metaInPorts, "in", calculatedMetaInBounds);
+      getMetanodePortbarMargins(metaInPorts, "in", calculatedPortBarBounds?.in);
 
     left = Math.min(left, leftMargin);
     right = Math.max(right, rightMargin);
@@ -166,7 +162,11 @@ export default (
 
   if (hasMetaOutPorts && addMetaPortOutMargins) {
     const { leftMargin, rightMargin, topMargin, bottomMargin } =
-      getMetanodePortbarMargins(metaOutPorts, "out", calculatedMetaOutBounds);
+      getMetanodePortbarMargins(
+        metaOutPorts,
+        "out",
+        calculatedPortBarBounds?.out,
+      );
     left = Math.min(left, leftMargin);
     right = Math.max(right, rightMargin);
     top = Math.min(top, topMargin);
