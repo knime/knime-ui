@@ -19,10 +19,10 @@ const rounded = computed(() => round(props.progress * 100));
 
 <template>
   <div class="not-ready">
+    <span>{{ rounded }}%</span>
     <progress :value="rounded" max="100" />
     <div class="progress-message">
-      <span>{{ rounded }}%</span>
-      <span>Loading: {{ extensionName }} </span>
+      <span>{{ extensionName }} </span>
     </div>
   </div>
 </template>
@@ -33,8 +33,14 @@ const rounded = computed(() => round(props.progress * 100));
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  padding: 10px;
+  padding: 20px;
   margin-top: 60px;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 13px;
+}
+
+& span {
+  padding: 10px 0;
 }
 
 & progress[value] {
@@ -60,9 +66,6 @@ const rounded = computed(() => round(props.progress * 100));
 
 & .progress-message {
   display: flex;
-  flex-direction: column;
-  margin-top: 30px;
-  max-width: 80%;
   text-align: center;
 }
 </style>
