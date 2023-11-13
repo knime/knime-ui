@@ -23,12 +23,23 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 
   updateComponent({ state }, { nodeId }) {
+    // TODO: Merge with 'updateComponents'
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     API.desktop.updateComponent({
       projectId,
       workflowId,
       nodeId,
     });
+  },
+
+  async updateComponents({ state }, { nodeIds }) {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    const result = await API.workflowCommand.UpdateLinkedComponents({
+      projectId,
+      workflowId,
+      nodeIds,
+    });
+    console.log(result); // TODO: Do something more serious with the result
   },
 
   async unlinkComponent({ state }, { nodeId }) {

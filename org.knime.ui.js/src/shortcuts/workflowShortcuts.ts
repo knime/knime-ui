@@ -33,6 +33,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "switchToPanMode"
   | "switchToSelectionMode"
   | "quickAddNode"
+  | "checkForComponentUpdates"
 >;
 
 declare module "./index" {
@@ -339,6 +340,38 @@ const workflowShortcuts: WorkflowShortcuts = {
       });
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
+  },
+  checkForComponentUpdates: {
+    text: "Check for link updates",
+    title: "Check for linked component updates",
+    execute: async ({ $store, $toast }) => {
+      // Get available updates
+      const updates = await $store.dispatch("workflow/getComponentLinkUpdates");
+
+      // Prepare toast
+      const nodeIds = updates.map((update) => update.nodeId);
+      const message = `You got ${updates.length} update${
+        updates.length > 1 ? "s" : ""
+      } available`;
+      const button = {
+        callback: () =>
+          $store.dispatch("workflow/updateComponents", { nodeIds }),
+        text: "Update all",
+      };
+
+      // Show toast
+      $toast.show({
+        type: "info",
+        message,
+        buttons: [button],
+      });
+    },
+    condition: ({ $store }) => {
+      const numberOfLinks =
+        $store.state.workflow.activeWorkflow?.info.numberOfLinks;
+      const isWritable = $store.getters["workflow/isWritable"];
+      return numberOfLinks > 0 && isWritable;
+    },
   },
 };
 

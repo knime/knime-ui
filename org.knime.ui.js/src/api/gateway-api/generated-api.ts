@@ -675,7 +675,8 @@ export namespace CommandResult {
         PasteResult = 'pasteResult',
         AddNodeResult = 'addNodeResult',
         AddPortResult = 'addPortResult',
-        AddAnnotationResult = 'addAnnotationResult'
+        AddAnnotationResult = 'addAnnotationResult',
+        UpdateLinkedComponentsResult = 'updateLinkedComponentsResult'
     }
 }
 /**
@@ -1377,6 +1378,44 @@ export interface Link {
 }
 
 
+/**
+ *
+ * @export
+ * @interface LinkedComponentUpdate
+ */
+export interface LinkedComponentUpdate {
+
+    /**
+     * The node ID of the updatable component
+     * @type {string}
+     * @memberof LinkedComponentUpdate
+     */
+    nodeId: string;
+    /**
+     * The update status of the updatable component
+     * @type {string}
+     * @memberof LinkedComponentUpdate
+     */
+    updateStatus: LinkedComponentUpdate.UpdateStatusEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace LinkedComponentUpdate
+ */
+export namespace LinkedComponentUpdate {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum UpdateStatusEnum {
+        Pending = 'pending',
+        Success = 'success',
+        Error = 'error'
+    }
+}
 /**
  * Loop info. Only present on loop end nodes.
  * @export
@@ -3487,6 +3526,52 @@ export interface UpdateInfo {
 
 
 /**
+ * Updates all the linked component, returning a success state at the end.
+ * @export
+ * @interface UpdateLinkedComponentsCommand
+ */
+export interface UpdateLinkedComponentsCommand extends WorkflowCommand {
+
+    /**
+     * The ids of the nodes referenced.
+     * @type {Array<string>}
+     * @memberof UpdateLinkedComponentsCommand
+     */
+    nodeIds: Array<string>;
+
+}
+
+
+/**
+ * @export
+ * @namespace UpdateLinkedComponentsCommand
+ */
+export namespace UpdateLinkedComponentsCommand {
+}
+/**
+ *
+ * @export
+ * @interface UpdateLinkedComponentsResult
+ */
+export interface UpdateLinkedComponentsResult extends CommandResult {
+
+    /**
+     *
+     * @type {Array<LinkedComponentUpdate>}
+     * @memberof UpdateLinkedComponentsResult
+     */
+    linkedComponentUpdates: Array<LinkedComponentUpdate>;
+
+}
+
+
+/**
+ * @export
+ * @namespace UpdateLinkedComponentsResult
+ */
+export namespace UpdateLinkedComponentsResult {
+}
+/**
  * Updates the label of a native node, component or metanode.
  * @export
  * @interface UpdateNodeLabelCommand
@@ -3833,7 +3918,8 @@ export namespace WorkflowCommand {
         UpdateComponentMetadata = 'update_component_metadata',
         AddBendpoint = 'add_bendpoint',
         UpdateComponentLinkInformation = 'update_component_link_information',
-        TransformMetanodePortsBar = 'transform_metanode_ports_bar'
+        TransformMetanodePortsBar = 'transform_metanode_ports_bar',
+        UpdateLinkedComponents = 'update_linked_components'
     }
 }
 /**
@@ -4584,6 +4670,21 @@ const workflow = function(rpcClient: RPCClient) {
            return rpcClient.call('WorkflowService.executeWorkflowCommand', { ...defaultParams, ...params });
         },
         /**
+         * Get the number of component link updates.
+         * @param {string} projectId ID of the workflow-project.
+         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getLinkUpdates(
+        	params: { projectId: string,  workflowId: string  }
+        ): Promise<Array<LinkedComponentUpdate>> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('WorkflowService.getLinkUpdates', { ...defaultParams, ...params });
+        },
+        /**
          * Retrieves the complete structure (sub-)workflows.
          * @param {string} projectId ID of the workflow-project.
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
@@ -4996,6 +5097,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.TransformMetanodePortsBar }
 		}) as Promise<CommandResult>;
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Updates all the linked component, returning a success state at the end.
+     */
+	UpdateLinkedComponents(
+		params: { projectId: string, workflowId: string } & Omit<UpdateLinkedComponentsCommand, 'kind'>
+    ): Promise<UpdateLinkedComponentsResult> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateLinkedComponents }
+		}) as Promise<UpdateLinkedComponentsResult>;
 		return postProcessCommandResponse(commandResponse);
 	},	
 

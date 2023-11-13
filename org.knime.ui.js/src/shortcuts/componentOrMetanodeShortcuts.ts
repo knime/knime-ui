@@ -16,12 +16,11 @@ type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "expandMetanode"
   | "expandComponent"
   | "linkComponent"
-  | "updateComponent"
+  | "updateComponent" // TODO: Merge with 'updateComponents'
   | "unlinkComponent"
   | "changeHubItemVersion"
   | "changeComponentLinkType"
   | "openLayoutEditor"
-  | "checkForComponentUpdates"
 >;
 
 declare module "./index" {
@@ -166,6 +165,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   updateComponent: {
+    // TODO: Merge with 'updateComponents'
     text: "Update component",
     title: "Update component",
     execute: ({ $store, payload = null }) => {
@@ -234,19 +234,6 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     condition: ({ $store }) =>
       $store.state.workflow.activeWorkflow?.info.containerType ===
         "component" && $store.getters["workflow/isWritable"],
-  },
-  checkForComponentUpdates: {
-    text: "Check for link updates",
-    title: "Check for linked component updates",
-    execute: () => {
-      console.log("Check for linked component updates");
-    },
-    condition: ({ $store }) => {
-      const numberOfLinks =
-        $store.state.workflow.activeWorkflow?.info.numberOfLinks;
-      const isWritable = $store.getters["workflow/isWritable"];
-      return numberOfLinks > 0 && isWritable;
-    },
   },
 };
 
