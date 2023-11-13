@@ -202,16 +202,19 @@ export default defineComponent({
       @toggle-expand="toggleExpanded"
     >
       <TransitionGroup name="tab" tag="span">
-        <NodeRepository
-          v-if="hasSection(TABS.NODE_REPOSITORY)"
-          v-show="isTabActive(TABS.NODE_REPOSITORY)"
-          key="node-repository"
-        />
-
         <ContextAwareDescription
           v-if="hasSection(TABS.CONTEXT_AWARE_DESCRIPTION)"
           v-show="isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
           key="context-aware-description"
+        />
+
+        <NodeRepository
+          v-if="
+            hasSection(TABS.NODE_REPOSITORY) &&
+            isTabActive(TABS.NODE_REPOSITORY)
+          "
+          v-show="isTabActive(TABS.NODE_REPOSITORY)"
+          key="node-repository"
         />
 
         <NodeDialogWrapper

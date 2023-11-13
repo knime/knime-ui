@@ -260,6 +260,15 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       commit("workflow/setActiveWorkflow", null, { root: true });
     }
   },
+
+  async subscribeToNodeRepositoryLoadingEvent({ state }) {
+    if (!state.nodeRepositoryLoaded) {
+      // Call event to start listening to node repository loading progress
+      await API.event.subscribeEvent({
+        typeId: "NodeRepositoryLoadingProgressEvent",
+      });
+    }
+  },
 };
 
 export const getters: GetterTree<ApplicationState, RootStoreState> = {};

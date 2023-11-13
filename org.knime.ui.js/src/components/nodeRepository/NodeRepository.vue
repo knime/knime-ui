@@ -55,13 +55,8 @@ onMounted(() => {
     store.dispatch("nodeRepository/getAllNodes", { append: false });
   }
 });
-onMounted(async () => {
-  if (!nodeRepositoryLoaded.value) {
-    // Call event to start listening to node repository loading progress
-    await API.event.subscribeEvent({
-      typeId: "NodeRepositoryLoadingProgressEvent",
-    });
-  }
+onMounted(() => {
+  store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
 });
 
 const toggleNodeDescription = ({
@@ -105,7 +100,6 @@ const openKnimeUIPreferencePage = () => {
     </template>
     <template v-else>
       <NodeRepositoryLoader
-        v-if="nodeRepositoryLoadingProgress.progress"
         :node-repository-loading-progress="nodeRepositoryLoadingProgress"
       />
     </template>

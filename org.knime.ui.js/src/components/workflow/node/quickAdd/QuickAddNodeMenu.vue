@@ -7,7 +7,6 @@ import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
-// import SearchBar from "@/components/common/SearchBar.vue";
 
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import { portPositions } from "@/util/portShift";
@@ -164,12 +163,7 @@ export default defineComponent({
     }
     (this.$refs.search as HTMLElement)?.focus();
 
-    // if (!this.nodeRepositoryLoaded) {
-    //   // Call event to start listening to node repository loading progress
-    //   await API.event.subscribeEvent({
-    //     typeId: "NodeRepositoryLoadingProgressEvent",
-    //   });
-    // }
+    this.$store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
   },
   beforeUnmount() {
     this.$store.dispatch("quickAddNodes/clearRecommendedNodesAndSearchParams");
@@ -306,7 +300,6 @@ export default defineComponent({
       </template>
       <template v-else>
         <NodeRepositoryLoader
-          v-if="nodeRepositoryLoadingProgress.progress"
           :node-repository-loading-progress="nodeRepositoryLoadingProgress"
         />
       </template>
