@@ -178,34 +178,13 @@ const openKnimeUIPreferencePage = () => {
   }
 
   & .repo-breadcrumb {
-    cursor: pointer;
+    & li:not(:last-of-type) span {
+      cursor: pointer;
+    }
+
     font-size: 18px;
     font-weight: 400;
     margin: 8px 0 0;
-
-    & :deep(span),
-    & :deep(a) {
-      line-height: 36px;
-      padding: 0;
-    }
-
-    & :deep(svg.arrow) {
-      margin-top: 6px;
-    }
   }
 }
-
-/* .search-bar {
-  height: 40px;
-  font-size: 17px;
-
-  &:hover {
-    background-color: var(--knime-silver-sand-semi);
-  }
-
-  &:focus-within {
-    background-color: var(--knime-white);
-    border-color: var(--knime-masala);
-  }
-} */
 </style>

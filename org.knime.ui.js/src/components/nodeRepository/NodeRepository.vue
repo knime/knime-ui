@@ -51,12 +51,11 @@ watch(isExtensionPanelOpen, (isOpen) => {
 });
 
 onMounted(() => {
+  store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
+
   if (!nodesPerCategory.value.length) {
     store.dispatch("nodeRepository/getAllNodes", { append: false });
   }
-});
-onMounted(() => {
-  store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
 });
 
 const toggleNodeDescription = ({
@@ -143,15 +142,5 @@ const openKnimeUIPreferencePage = () => {
 .extension-panel-enter-from,
 .extension-panel-leave-to {
   opacity: 0;
-}
-
-& .repo-breadcrumb {
-  & li:not(:last-of-type) span {
-    cursor: pointer;
-  }
-
-  font-size: 18px;
-  font-weight: 400;
-  margin: 8px 0 0;
 }
 </style>
