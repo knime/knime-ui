@@ -9,6 +9,7 @@ import {
 
 import * as utils from "./utils";
 import getWorkflowObjectBounds, { nodePadding } from "./workflowObjectBounds";
+import calculateMetaNodePortBarBounds from "./metaNodePortBarBounds";
 
 export const geometry = {
   findFreeSpace,
@@ -16,6 +17,7 @@ export const geometry = {
   findFreeSpaceAroundPointWithFallback,
   findFreeSpaceAroundCenterWithFallback,
   getWorkflowObjectBounds,
+  calculateMetaNodePortBarBounds,
   nodePadding,
   utils,
   constants: {

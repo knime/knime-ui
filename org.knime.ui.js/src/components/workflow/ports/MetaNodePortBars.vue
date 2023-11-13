@@ -5,15 +5,12 @@
 import { useStore } from "@/composables/useStore";
 import MetaNodePortBar from "./MetaNodePortBar.vue";
 import { computed } from "vue";
-import { usePortBarPositions } from "@/composables/usePortBarPositions";
 
 const store = useStore();
 const workflow = computed(() => store.state.workflow.activeWorkflow);
 
 const hasInPorts = computed(() => workflow.value.metaInPorts?.ports?.length);
 const hasOutPorts = computed(() => workflow.value.metaOutPorts?.ports?.length);
-
-const { portBarXPos, portBarYPos } = usePortBarPositions();
 </script>
 
 <template>
@@ -22,20 +19,12 @@ const { portBarXPos, portBarYPos } = usePortBarPositions();
       v-if="hasInPorts"
       type="in"
       :ports="workflow.metaInPorts.ports"
-      :position="{
-        x: portBarXPos(false),
-        y: portBarYPos(false),
-      }"
       :container-id="workflow.info.containerId"
     />
     <MetaNodePortBar
       v-if="hasOutPorts"
       type="out"
       :ports="workflow.metaOutPorts.ports"
-      :position="{
-        x: portBarXPos(true),
-        y: portBarYPos(true),
-      }"
       :container-id="workflow.info.containerId"
     />
   </g>

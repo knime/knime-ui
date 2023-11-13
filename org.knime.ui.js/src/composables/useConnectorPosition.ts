@@ -34,7 +34,7 @@ type UseConnectorPositionOptions = {
 type SourceOrDest = "source" | "dest";
 
 export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
-  const { portBarXPos, getPortbarPortYPosition } = usePortBarPositions();
+  const { portBarXPos, getPortBarPortYPosition } = usePortBarPositions();
 
   const referenceNodes = useConnectedNodeObjects({
     sourceNode: options.sourceNode,
@@ -69,7 +69,7 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
     const delta = $shapes.portSize / 2;
     x += type === "source" ? delta : -delta;
 
-    const y = getPortbarPortYPosition(sourceNodeIndex, type === "dest", true);
+    const y = getPortBarPortYPosition(sourceNodeIndex, type === "dest", true);
 
     return { x, y };
   };
