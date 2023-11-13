@@ -54,6 +54,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import javax.naming.OperationNotSupportedException;
+
 import org.knime.gateway.impl.service.events.EventConsumer;
 
 /**
@@ -70,12 +72,18 @@ public final class NodeSummaryGenerationAPI {
     public interface NodeLabelGenerationListener {
 
         /**
+         * @param projectId
          * @param nodeId
+         * @param workflowId
+         * @return
+         * @throws OperationNotSupportedException
          */
-        String generateLabel(final String projectId, final String nodeId, final String workflowId);
+        String generateLabel(final String projectId, final String nodeId, final String workflowId)
+            throws OperationNotSupportedException;
     }
 
-    private static final Set<NodeLabelGenerationListener> LISTENERS = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private static final Set<NodeLabelGenerationListener> LISTENERS =
+        Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     /**
      * @param listener to register
@@ -97,11 +105,13 @@ public final class NodeSummaryGenerationAPI {
      * @param projectId
      * @param nodeId
      * @param workflowId
-     * @return
+     * @return a String with the AI-generated summary
+     * @throws OperationNotSupportedException
      */
     @API
-    public static String generateNodeSummary(final String projectId, final String nodeId, final String workflowId ) {
-        System.out.println("generateNodeSummary "+ nodeId + " project " + projectId);
+    public static String generateNodeSummary(final String projectId, final String nodeId, final String workflowId)
+        throws OperationNotSupportedException {
+        System.out.println("generateNodeSummary " + nodeId + " project " + projectId);
         final var nodeSummaryResponse = getListener().get().generateLabel(projectId, nodeId, workflowId);
         return nodeSummaryResponse;
     }
@@ -109,7 +119,6 @@ public final class NodeSummaryGenerationAPI {
     private static Optional<NodeLabelGenerationListener> getListener() {
         return LISTENERS.stream().findFirst();
     }
-
 
     /**
      * @return the returned consumer relays events to the frontend (message must be JSON serializable)
