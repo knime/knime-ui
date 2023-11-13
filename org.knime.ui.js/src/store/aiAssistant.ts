@@ -78,6 +78,9 @@ export const mutations: MutationTree<AiAssistantState> = {
       isError,
     });
   },
+  popMessage(state, { chainType }) {
+    state[chainType].messages.pop();
+  },
   setStatusUpdate(state, { chainType, statusUpdate }) {
     state[chainType].statusUpdate = statusUpdate;
   },
@@ -181,7 +184,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         break;
     }
   },
-  async abortAiRequest({ commit }, { chainType }) {
+  async abortAiRequest({ state, commit }, { chainType }) {
     const conversationId = state[chainType].conversationId;
 
     try {
@@ -190,6 +193,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
       consola.error("abortAiRequest", error);
       commit("clearChain", { chainType });
     }
+    commit("popMessage", { chainType });
   },
 };
 
