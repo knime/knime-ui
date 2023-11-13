@@ -2,7 +2,6 @@ import { expect, describe, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import * as panelStore from "@/store/panel";
 import * as settingsStore from "@/store/settings";
 import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
@@ -16,7 +15,6 @@ mockLodashThrottleAndDebounce();
 describe("NodeRepositoryHeader", () => {
   const doMount = ({
     searchIsActive = null,
-    isSelectedNodeVisible = null,
     nodesPerCategory = null,
     selectedTags = null,
     query = null,
@@ -25,8 +23,6 @@ describe("NodeRepositoryHeader", () => {
     const searchNodesMock = vi.fn();
     const setSelectedTagsMock = vi.fn();
     const clearSearchParamsMock = vi.fn();
-    const setScrollPositionMock = vi.fn();
-    const setSelectedNodeMock = vi.fn();
     const updateQueryMock = vi.fn();
 
     const $store = mockVuexStore({
@@ -59,7 +55,6 @@ describe("NodeRepositoryHeader", () => {
               settings: "",
             },
           },
-          isDescriptionPanelOpen: false,
         },
         actions: {
           searchNodes: searchNodesMock,
@@ -69,17 +64,11 @@ describe("NodeRepositoryHeader", () => {
         },
         getters: {
           searchIsActive: searchIsActive || (() => true),
-          isSelectedNodeVisible: isSelectedNodeVisible || (() => true),
           tagsOfVisibleNodes() {
             return ["myTag1", "myTag2"];
           },
         },
-        mutations: {
-          setScrollPosition: setScrollPositionMock,
-          setSelectedNode: setSelectedNodeMock,
-        },
       },
-      panel: panelStore,
       settings: settingsStore,
       application: {
         state: {
@@ -101,10 +90,7 @@ describe("NodeRepositoryHeader", () => {
       searchNodesMock,
       setSelectedTagsMock,
       clearSearchParamsMock,
-      setScrollPositionMock,
-      setSelectedNodeMock,
       updateQueryMock,
-      isSelectedNodeVisible,
     };
   };
 
