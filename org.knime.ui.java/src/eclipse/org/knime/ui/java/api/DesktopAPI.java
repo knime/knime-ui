@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -100,7 +101,10 @@ public final class DesktopAPI {
         TestingAPI.class //
     );
 
-    private static final List<Method> METHODS = collectMethods();
+    private static record APIMethod(Method method, boolean runInUIThread) {
+    }
+
+    private static final List<APIMethod> METHODS = collectMethods();
 
     private static Map<Class<?>, Object> dependencies;
 
@@ -123,13 +127,14 @@ public final class DesktopAPI {
      *            unexpected reasons.
      */
     public static void forEachAPIFunction(final BiConsumer<String, Consumer<Object[]>> functionCaller) {
-        for (Method m : METHODS) {
-            var name = m.getName();
+        for (APIMethod apiMethod : METHODS) {
+            var method = apiMethod.method;
+            var name = method.getName();
             functionCaller.accept(name, args -> { // NOSONAR
-                Display.getDefault().asyncExec(() -> {
+                Runnable invokeMethod = () -> {
                     var event = MAPPER.createObjectNode().put("name", name);
                     try {
-                        var res = invokeMethod(m, args);
+                        var res = invokeMethod(method, args);
                         event.set("result", MAPPER.valueToTree(res));
                     } catch (Throwable e) {
                         event.put("error", e.getMessage());
@@ -140,7 +145,12 @@ public final class DesktopAPI {
                         // because it clears all the deps when invoked
                         eventConsumer.accept(DESKTOP_API_FUNCTION_RESULT_EVENT_NAME, event);
                     }
-                });
+                };
+                if (apiMethod.runInUIThread) {
+                    Display.getDefault().asyncExec(invokeMethod);
+                } else {
+                    CompletableFuture.runAsync(invokeMethod);
+                }
             });
         }
     }
@@ -158,7 +168,8 @@ public final class DesktopAPI {
             LOGGER.debug("Desktop API function successfully called: " + name);
             return res;
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            throw ex instanceof InvocationTargetException invocationTargetException ? invocationTargetException.getTargetException() : ex;
+            throw ex instanceof InvocationTargetException invocationTargetException
+                ? invocationTargetException.getTargetException() : ex;
         }
     }
 
@@ -206,8 +217,8 @@ public final class DesktopAPI {
         dependencies = null;
     }
 
-    private static List<Method> collectMethods() {
-        var res = new ArrayList<Method>();
+    private static List<APIMethod> collectMethods() {
+        var res = new ArrayList<APIMethod>();
         collectMethods(CONTRIBUTING_CLASSES, res);
         if (isRemoteDebuggingPortSet()) {
             collectMethods(CONTRIBUTING_CLASSES_FOR_TESTING, res);
@@ -215,11 +226,12 @@ public final class DesktopAPI {
         return res;
     }
 
-    private static void collectMethods(final List<Class<?>> classes, final List<Method> res) {
+    private static void collectMethods(final List<Class<?>> classes, final List<APIMethod> res) {
         for (Class<?> clazz : classes) {
             for (Method m : clazz.getDeclaredMethods()) {
                 if (m.isAnnotationPresent(API.class)) {
-                    res.add(m);
+                    var apiAnno = m.getAnnotation(API.class);
+                    res.add(new APIMethod(m, apiAnno.runInUIThread()));
                 }
             }
         }

@@ -62,4 +62,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @interface API {
 
+    /**
+     * Whether to run the API call in the SWT UI thread.
+     */
+    boolean runInUIThread() default true;
+
 }
