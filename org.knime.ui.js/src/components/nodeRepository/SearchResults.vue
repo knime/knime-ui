@@ -137,6 +137,11 @@ defineExpose({ focusFirst });
           </template>
         </NodeList>
         <ReloadIcon v-if="isLoading" class="loading-indicator" />
+        <span v-if="hasFilteredOutNodes"
+          >There are some advanced nodes in “All nodes“. Change the
+          <a @click="emit('openPreferences')">filter settings</a> to see all
+          nodes.</span
+        >
       </div>
     </div>
   </ScrollViewContainer>
@@ -175,12 +180,6 @@ defineExpose({ focusFirst });
       stroke: var(--knime-masala);
       min-width: 20px;
       margin-right: 10px;
-    }
-
-    & a {
-      color: var(--knime-dove-gray);
-      text-decoration: underline;
-      cursor: pointer;
     }
   }
 }
@@ -261,6 +260,12 @@ defineExpose({ focusFirst });
       &::after {
         margin-left: 10px;
       }
+    }
+
+    & a {
+      color: var(--knime-dove-gray);
+      text-decoration: underline;
+      cursor: pointer;
     }
   }
 }

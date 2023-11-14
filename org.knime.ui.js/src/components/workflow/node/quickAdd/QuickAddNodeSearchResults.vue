@@ -53,7 +53,7 @@ export default defineComponent({
     :selected-node="selectedNode"
     :display-mode="displayMode"
     :nodes="nodes"
-    :has-filtered-out-nodes="totalNumFilteredNodesFound"
+    :has-filtered-out-nodes="totalNumFilteredNodesFound > 0"
     @update:selected-node="$emit('update:selectedNode', $event)"
     @item-enter-key="$emit('addNode', $event)"
   >
