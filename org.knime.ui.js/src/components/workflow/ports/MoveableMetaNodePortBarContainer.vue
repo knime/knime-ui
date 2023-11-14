@@ -38,9 +38,15 @@ const translationAmount = computed(() => {
     : { x: 0, y: 0 };
 });
 
+const initialSet = ref(false);
+
 watch(
   bounds,
   () => {
+    if (initialSet.value) {
+      initialSet.value = false;
+      return;
+    }
     if (isDragging.value) {
       store.dispatch("workflow/resetDragState");
     }
@@ -64,10 +70,16 @@ const { createPointerDownHandler } = useMoveObject({
   },
   onMoveEndCallback: async () => {
     // we need to set this on the first move as the backend has no data to translate otherwise
-    if (!backendBounds.value) {
+    // only send if we have really moved
+    if (
+      !backendBounds.value &&
+      !(movePreviewDelta.value.x === 0 && movePreviewDelta.value.y === 0)
+    ) {
       const { type } = props;
+      initialSet.value = true;
       await store.dispatch("workflow/transformMetaNodePortBar", {
-        bounds: bounds.value,
+        // classic expects width 50 - we use 10
+        bounds: { ...bounds.value, width: 50 },
         type,
       });
     }
