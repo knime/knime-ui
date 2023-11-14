@@ -78,6 +78,21 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       }),
     );
 
+    $store.commit("workflow/setCalculatedMetanodePortBarBounds", {
+      in: {
+        x: 5,
+        y: 8,
+        width: 10,
+        height: 300,
+      },
+      out: {
+        x: 150,
+        y: 18,
+        width: 10,
+        height: 300,
+      },
+    });
+
     const dispatchSpy = vi.spyOn($store, "dispatch");
     const commitSpy = vi.spyOn($store, "commit");
 
@@ -265,6 +280,9 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
         mockedAPI.workflowCommand.TransformMetanodePortsBar,
       ).toHaveBeenCalledWith({
         bounds: {
+          x: 5,
+          y: 8,
+          height: 300,
           width: 50,
         },
         projectId: "project1",
