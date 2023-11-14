@@ -2,7 +2,11 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { isEqual } from "lodash";
 
 import { API } from "@api";
-import { WorkflowInfo, type Bounds } from "@/api/gateway-api/generated-api";
+import {
+  WorkflowInfo,
+  type Bounds,
+  TransformMetanodePortsBarCommand,
+} from "@/api/gateway-api/generated-api";
 import type { Workflow } from "@/api/custom-types";
 
 import {
@@ -271,6 +275,21 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         root: true,
       });
     }
+  },
+
+  /** Calls the API */
+  transformMetaNodePortBar(
+    { state },
+    { bounds, type }: { bounds: Bounds; type: "in" | "out" },
+  ) {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+
+    return API.workflowCommand.TransformMetanodePortsBar({
+      projectId,
+      workflowId,
+      type: type as TransformMetanodePortsBarCommand.TypeEnum,
+      bounds,
+    });
   },
 
   async updateComponentMetadata(

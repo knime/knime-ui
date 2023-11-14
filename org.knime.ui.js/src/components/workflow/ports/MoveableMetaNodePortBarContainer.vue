@@ -17,6 +17,13 @@ const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
 const isDragging = computed(() => store.state.workflow.isDragging);
 const isMoveLocked = computed(() => store.state.canvas.isMoveLocked);
 
+const workflow = computed(() => store.state.workflow.activeWorkflow);
+const backendBounds = computed(() =>
+  props.type === "out"
+    ? workflow.value.metaOutPorts?.bounds
+    : workflow.value.metaInPorts?.bounds,
+);
+
 const isMetaNodePortBarSelected = computed(
   () => store.getters["selection/isMetaNodePortBarSelected"],
 );
@@ -54,7 +61,15 @@ const { createPointerDownHandler } = useMoveObject({
     store.dispatch("selection/selectMetanodePortBar", props.type);
   },
   onMoveEndCallback: async () => {
-    // TODO: call TransformMetanodePortsBarCommand if bounds are not set
+    // we need to set this on the first move
+    if (!backendBounds.value) {
+      const { bounds, type } = props;
+      await store.dispatch("workflow/transformMetaNodePortBar", {
+        bounds,
+        type,
+      });
+    }
+    return true;
   },
 });
 

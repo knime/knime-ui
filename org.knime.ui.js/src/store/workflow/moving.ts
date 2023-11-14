@@ -87,8 +87,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         nodeIds: selectedNodes,
         annotationIds: selectedAnnotations,
         connectionBendpoints,
-        metanodeInPortsBar: Boolean(metanodePortBars?.in),
-        metanodeOutPortsBar: Boolean(metanodePortBars?.out),
+        metanodeInPortsBar: metanodePortBars.includes("in"),
+        metanodeOutPortsBar: metanodePortBars.includes("out"),
         translation,
       });
     } catch (e) {
