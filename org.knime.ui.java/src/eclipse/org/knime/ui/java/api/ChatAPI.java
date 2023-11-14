@@ -172,6 +172,7 @@ public final class ChatAPI {
     /**
      * Installs the KNIME AI Assistant.
      */
+    @API
     public static void installKAI() {
         ImportURI.startInstallationJob("KNIME AI Assistant", "org.knime.features.ai.assistant", null);
     }
