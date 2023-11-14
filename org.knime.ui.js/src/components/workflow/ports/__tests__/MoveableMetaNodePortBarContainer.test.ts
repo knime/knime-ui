@@ -71,7 +71,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
           bounds: boundsIn,
         },
         metaOutPorts: {
-          ports: [createPort()],
+          ports: [],
           bounds: boundsOut,
         },
       }),
@@ -229,6 +229,46 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       vi.runOnlyPendingTimers();
 
       await flushPromises();
+
+      expect(mockedAPI.workflowCommand.Translate).toHaveBeenCalled();
+
+      vi.useRealTimers();
+    });
+
+    it("transforms port bar on first move if backend provides not bounds", async () => {
+      vi.useFakeTimers();
+      const { wrapper } = doMount({
+        boundsIn: null,
+        boundsOut: null,
+      });
+
+      startPortBarDrag(wrapper, {
+        clientX: 10,
+        clientY: 10,
+        shiftKey: false,
+      });
+      await flushPromises();
+
+      moveTo({ clientX: 50, clientY: 50 });
+
+      endPortBarDrag(wrapper, { clientX: 50, clientY: 50 });
+
+      vi.advanceTimersByTime(5000);
+
+      vi.runOnlyPendingTimers();
+
+      await flushPromises();
+
+      expect(
+        mockedAPI.workflowCommand.TransformMetanodePortsBar,
+      ).toHaveBeenCalledWith({
+        bounds: {
+          width: 50,
+        },
+        projectId: "project1",
+        type: "in",
+        workflowId: "root",
+      });
 
       expect(mockedAPI.workflowCommand.Translate).toHaveBeenCalled();
 
