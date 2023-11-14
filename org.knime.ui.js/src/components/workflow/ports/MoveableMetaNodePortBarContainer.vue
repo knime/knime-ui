@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { ref, toRef, watch, computed } from "vue";
+import { ref, watch, computed } from "vue";
 
-import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useMoveObject } from "@/composables/useMoveObject";
 import { useStore } from "@/composables/useStore";
 import { useEscapeStack } from "@/mixins/escapeStack";
+import { usePortBarPositions } from "@/composables/usePortBarPositions";
 
 interface Props {
   type?: "in" | "out";
-  bounds: Bounds;
 }
 const props = defineProps<Props>();
+
+const { getBounds } = usePortBarPositions();
+const bounds = computed(() => getBounds(props.type === "out"));
 
 const store = useStore();
 const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
@@ -37,7 +39,7 @@ const translationAmount = computed(() => {
 });
 
 watch(
-  toRef(props, "bounds"),
+  bounds,
   () => {
     if (isDragging.value) {
       store.dispatch("workflow/resetDragState");
@@ -47,14 +49,14 @@ watch(
 );
 
 const initialPosition = computed(() => ({
-  x: props.bounds.x,
-  y: props.bounds.y,
+  x: bounds.value.x,
+  y: bounds.value.y,
 }));
 
 const { createPointerDownHandler } = useMoveObject({
   objectElement: computed(() => container.value as HTMLElement),
-  onMoveStartCallback: () => {
-    if (!isMetaNodePortBarSelected.value(props.type)) {
+  onMoveStartCallback: (event) => {
+    if (!isMetaNodePortBarSelected.value(props.type) && !event.ctrlKey) {
       store.dispatch("selection/deselectAllObjects");
     }
 
@@ -63,9 +65,9 @@ const { createPointerDownHandler } = useMoveObject({
   onMoveEndCallback: async () => {
     // we need to set this on the first move as the backend has no data to translate otherwise
     if (!backendBounds.value) {
-      const { bounds, type } = props;
+      const { type } = props;
       await store.dispatch("workflow/transformMetaNodePortBar", {
-        bounds,
+        bounds: bounds.value,
         type,
       });
     }
