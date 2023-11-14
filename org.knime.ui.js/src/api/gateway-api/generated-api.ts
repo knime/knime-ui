@@ -4983,13 +4983,13 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
      */
 	TransformMetanodePortsBar(
 		params: { projectId: string, workflowId: string } & Omit<TransformMetanodePortsBarCommand, 'kind'>
-    ): Promise<unknown> {
+    ): Promise<CommandResult> {
     	const { projectId, workflowId, ...commandParams } = params;
 		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.TransformMetanodePortsBar }
-		});
+		}) as Promise<CommandResult>;
 		return postProcessCommandResponse(commandResponse);
 	},	
 
