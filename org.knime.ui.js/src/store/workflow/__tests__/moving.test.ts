@@ -136,6 +136,8 @@ describe("workflow::moving", () => {
         annotationIds.push(annotation.id);
       });
 
+      store.dispatch("selection/selectMetanodePortBar", "out");
+
       store.commit("workflow/setMovePreview", { deltaX: 50, deltaY: 50 });
       await store.dispatch("workflow/moveObjects");
 
@@ -146,7 +148,7 @@ describe("workflow::moving", () => {
         translation: { x: 50, y: 50 },
         annotationIds,
         metanodeInPortsBar: false,
-        metanodeOutPortsBar: false,
+        metanodeOutPortsBar: true,
         connectionBendpoints: {},
       });
     },
