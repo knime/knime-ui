@@ -60,7 +60,7 @@ const searchHubLink = computed(
   () =>
     `https://hub.knime.com/search?q=${encodeURIComponent(
       query.value,
-    )}&type=all`,
+    )}&type=all&src=knimeappmodernui`,
 );
 
 const onSaveScrollPosition = (position: number) => {

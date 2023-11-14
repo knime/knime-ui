@@ -74,7 +74,7 @@ describe("SearchResults", () => {
     expect(wrapper.text()).toMatch("There are no matching nodes.");
     expect(wrapper.text()).toMatch("Search the KNIME Community Hub");
     expect(wrapper.find("a").attributes("href")).toBe(
-      `https://hub.knime.com/search?q=${encodedQuery}&type=all`,
+      `https://hub.knime.com/search?q=${encodedQuery}&type=all&src=knimeappmodernui`,
     );
     expect(wrapper.findComponent(NodeList).exists()).toBe(false);
   });
