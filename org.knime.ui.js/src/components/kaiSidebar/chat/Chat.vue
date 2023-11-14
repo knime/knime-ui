@@ -25,11 +25,12 @@ const {
   abortSendMessage,
 } = useChat(props.chainType);
 
-const messageArea = ref<HTMLElement | null>(null);
+const scrollableContainer = ref<HTMLElement | null>(null);
 
 const scrollToBottomAfterNextTick = () => {
   nextTick(() => {
-    messageArea.value.scrollTop = messageArea.value.scrollHeight;
+    scrollableContainer.value.scrollTop =
+      scrollableContainer.value.scrollHeight;
   });
 };
 watch(() => incomingTokens.value, scrollToBottomAfterNextTick);
@@ -38,26 +39,28 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
 
 <template>
   <div class="chat">
-    <div ref="messageArea" class="message-area">
-      <Message
-        v-if="systemPrompt"
-        key="system_prompt"
-        role="assistant"
-        :content="systemPrompt"
-      />
-      <Message
-        v-for="(message, index) in messages"
-        :key="index"
-        v-bind="message"
-        @node-templates-loaded="scrollToBottomAfterNextTick"
-      />
-      <Message
-        v-if="isProcessing"
-        key="processing"
-        role="assistant"
-        :content="incomingTokens"
-        :status-update="statusUpdate"
-      />
+    <div ref="scrollableContainer" class="scrollable-container">
+      <div class="message-area">
+        <Message
+          v-if="systemPrompt"
+          key="system_prompt"
+          role="assistant"
+          :content="systemPrompt"
+        />
+        <Message
+          v-for="(message, index) in messages"
+          :key="index"
+          v-bind="message"
+          @node-templates-loaded="scrollToBottomAfterNextTick"
+        />
+        <Message
+          v-if="isProcessing"
+          key="processing"
+          role="assistant"
+          :content="incomingTokens"
+          :status-update="statusUpdate"
+        />
+      </div>
     </div>
     <ChatControls
       class="chat-controls"
@@ -76,12 +79,15 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
   flex-direction: column;
   min-height: 0;
 
-  & .message-area {
-    width: 100%;
-    padding-bottom: 20px;
+  & .scrollable-container {
+    width: calc(100% + 20px);
     flex: 1;
     overflow-x: hidden;
     overflow-y: auto;
+
+    & .message-area {
+      width: 320px;
+    }
   }
 
   & .chat-controls {
