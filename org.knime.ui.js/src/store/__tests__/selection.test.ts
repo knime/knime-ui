@@ -171,6 +171,7 @@ describe("workflow store", () => {
               "root:2_1": true,
             },
             selectedBendpoints: {},
+            selectedMetanodePortBars: {},
           },
         },
         workflow: {

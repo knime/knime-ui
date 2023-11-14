@@ -55,17 +55,19 @@ export const useConnectorPathSegments = (
   );
 
   const isConnectedToConnectionId = (ports: NodePort[], id: string) =>
-    ports.length > 0 && ports.find((port) => port.connectedVia.includes(id));
+    ports &&
+    ports.length > 0 &&
+    ports.find((port) => port.connectedVia.includes(id));
 
   const isMetanodeInPortBarConnection = computed(() =>
     isConnectedToConnectionId(
-      store.state.workflow.activeWorkflow.metaInPorts.ports,
+      store.state.workflow.activeWorkflow.metaInPorts?.ports,
       options.id,
     ),
   );
   const isMetanodeOutPortBarConnection = computed(() =>
     isConnectedToConnectionId(
-      store.state.workflow.activeWorkflow.metaOutPorts.ports,
+      store.state.workflow.activeWorkflow.metaOutPorts?.ports,
       options.id,
     ),
   );

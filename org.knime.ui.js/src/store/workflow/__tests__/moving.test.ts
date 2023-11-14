@@ -145,6 +145,8 @@ describe("workflow::moving", () => {
         workflowId: "test",
         translation: { x: 50, y: 50 },
         annotationIds,
+        metanodeInPortsBar: false,
+        metanodeOutPortsBar: false,
         connectionBendpoints: {},
       });
     },

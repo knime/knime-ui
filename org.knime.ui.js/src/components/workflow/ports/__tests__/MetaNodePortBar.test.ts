@@ -11,6 +11,7 @@ import { $bus } from "@/plugins/event-bus";
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
 import * as workflowStore from "@/store/workflow";
+import * as selectionStore from "@/store/selection";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import type { NodePort as NodePortType } from "@/api/gateway-api/generated-api";
 
@@ -34,6 +35,7 @@ describe("MetaNodePortBar.vue", () => {
     };
 
     const $store = mockVuexStore({
+      selection: selectionStore,
       workflow: workflowStore,
       canvas: {
         state: {},
