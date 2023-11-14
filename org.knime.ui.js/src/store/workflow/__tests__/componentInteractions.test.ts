@@ -46,11 +46,13 @@ describe("workflow::componentInteractions", () => {
     const { store } = await loadStore();
     store.commit("workflow/setActiveWorkflow", createWorkflow());
 
-    store.dispatch("workflow/updateComponent", { nodeId: "root:2" });
-    expect(mockedAPI.desktop.updateComponent).toHaveBeenCalledWith({
+    store.dispatch("workflow/updateComponents", { nodeIds: ["root:2"] });
+    expect(
+      mockedAPI.workflowCommand.UpdateLinkedComponents,
+    ).toHaveBeenCalledWith({
       projectId: "project1",
       workflowId: "root",
-      nodeId: "root:2",
+      nodeIds: ["root:2"],
     });
   });
 

@@ -1,8 +1,10 @@
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
+import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 
 import type { UnionToShortcutRegistry } from "./types";
 
 type AnnotationShortcuts = UnionToShortcutRegistry<
+  | "switchToAnnotationMode"
   | "addWorkflowAnnotation"
   | "bringAnnotationToFront"
   | "bringAnnotationForward"
@@ -15,6 +17,15 @@ declare module "./index" {
 }
 
 const annotationShortcuts: AnnotationShortcuts = {
+  switchToAnnotationMode: {
+    hotkey: ["T"],
+    text: "Annotation mode",
+    icon: AnnotationModeIcon,
+    execute: ({ $store }) => {
+      $store.dispatch("application/switchCanvasMode", "annotation");
+    },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+  },
   addWorkflowAnnotation: {
     text: "New workflow annotation",
     execute: ({ $store, payload }) => {

@@ -2,8 +2,6 @@
 import { expect, describe, it, vi } from "vitest";
 import workflowShortcuts from "../workflowShortcuts";
 
-const capitalize = (str) => str.charAt(0).toUpperCase().concat(str.slice(1));
-
 describe("workflowShortcuts", () => {
   const mockSelectedNode = { id: "root:0", allowedActions: {} };
 
@@ -175,18 +173,6 @@ describe("workflowShortcuts", () => {
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/pasteWorkflowParts",
         expect.anything(),
-      );
-    });
-
-    it("should dispatch action to switch to annotation mode", () => {
-      const { $store, mockDispatch } = createStore();
-
-      workflowShortcuts.switchToAnnotationMode.execute({
-        $store,
-      });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "application/switchCanvasMode",
-        "annotation",
       );
     });
   });

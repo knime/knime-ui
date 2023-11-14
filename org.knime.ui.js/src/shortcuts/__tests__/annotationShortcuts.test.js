@@ -127,6 +127,18 @@ describe("annotationShortcuts", () => {
     });
   });
 
+  it("should dispatch action to switch to annotation mode", () => {
+    const { $store, mockDispatch } = createStore();
+
+    annotationShortcuts.switchToAnnotationMode.execute({
+      $store,
+    });
+    expect(mockDispatch).toHaveBeenCalledWith(
+      "application/switchCanvasMode",
+      "annotation",
+    );
+  });
+
   describe("condition", () => {
     it.each([
       ["bringAnnotationToFront"],

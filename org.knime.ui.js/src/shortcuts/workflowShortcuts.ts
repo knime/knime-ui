@@ -6,15 +6,14 @@ import SaveIcon from "webapps-common/ui/assets/img/icons/save.svg";
 import SaveAsIcon from "webapps-common/ui/assets/img/icons/save-as.svg";
 import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
-import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 
 import { portPositions } from "@/util/portShift";
 import { nodeSize } from "@/style/shapes.mjs";
 import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
+import type { XY } from "@/api/gateway-api/generated-api";
 
 import type { UnionToShortcutRegistry } from "./types";
-import type { XY } from "@/api/gateway-api/generated-api";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -29,7 +28,6 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "copy"
   | "cut"
   | "paste"
-  | "switchToAnnotationMode"
   | "switchToPanMode"
   | "switchToSelectionMode"
   | "quickAddNode"
@@ -242,15 +240,6 @@ const workflowShortcuts: WorkflowShortcuts = {
       $store.getters["workflow/isWritable"] &&
       $store.state.application.hasClipboardSupport,
   },
-  switchToAnnotationMode: {
-    hotkey: ["T"],
-    text: "Annotation mode",
-    icon: AnnotationModeIcon,
-    execute: ({ $store }) => {
-      $store.dispatch("application/switchCanvasMode", "annotation");
-    },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
-  },
   switchToPanMode: {
     hotkey: ["P"],
     text: "Pan mode",
@@ -342,28 +331,12 @@ const workflowShortcuts: WorkflowShortcuts = {
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
   checkForComponentUpdates: {
-    text: "Check for link updates",
+    text: "Check for linked component updates",
     title: "Check for linked component updates",
-    execute: async ({ $store, $toast }) => {
+    execute: ({ $store }) => {
       // Get available updates
-      const updates = await $store.dispatch("workflow/getComponentLinkUpdates");
-
-      // Prepare toast
-      const nodeIds = updates.map((update) => update.nodeId);
-      const message = `You got ${updates.length} update${
-        updates.length > 1 ? "s" : ""
-      } available`;
-      const button = {
-        callback: () =>
-          $store.dispatch("workflow/updateComponents", { nodeIds }),
-        text: "Update all",
-      };
-
-      // Show toast
-      $toast.show({
-        type: "info",
-        message,
-        buttons: [button],
+      $store.dispatch("workflow/checkForLinkedComponentUpdates", {
+        silent: false,
       });
     },
     condition: ({ $store }) => {

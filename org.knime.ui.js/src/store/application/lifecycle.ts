@@ -8,7 +8,10 @@ import { encodeString } from "@/util/encodeString";
 import type { RootStoreState } from "../types";
 import type { ApplicationState } from "./index";
 import type { Router } from "vue-router";
-import type { Workflow } from "@/api/gateway-api/generated-api";
+import type {
+  Workflow,
+  WorkflowSnapshot,
+} from "@/api/gateway-api/generated-api";
 import { runInEnvironment } from "@/environment";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
@@ -173,7 +176,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     commit("setIsLoadingWorkflow", false);
   },
 
-  async loadWorkflow({ dispatch, commit }, { projectId, workflowId = "root" }) {
+  async loadWorkflow({ dispatch }, { projectId, workflowId = "root" }) {
     // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
     API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
 
@@ -187,20 +190,30 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
     }
 
-    // calculate and save meta node port bar default bounds, as they become part of the workflow bounds we need to
-    // do this very early and only once.
-    commit(
-      "workflow/setCalculatedMetanodePortBarBounds",
-      geometry.calculateMetaNodePortBarBounds(project.workflow),
-      { root: true },
-    );
+    await dispatch("beforeSetActivateWorkflow", { workflow: project.workflow });
 
-    dispatch("setWorkflow", {
+    await dispatch("setWorkflow", {
       projectId,
       workflow: project.workflow,
       snapshotId: project.snapshotId,
     });
+
+    await dispatch("afterSetActivateWorkflow");
   },
+
+  beforeSetActivateWorkflow(
+    { commit },
+    { workflow }: { workflow: WorkflowSnapshot["workflow"] },
+  ) {
+    // calculate and save meta node port bar default bounds, as they become part of the workflow bounds we need to
+    // do this very early and only once.
+    commit(
+      "workflow/setCalculatedMetanodePortBarBounds",
+      geometry.calculateMetaNodePortBarBounds(workflow),
+      { root: true },
+    );
+  },
+
   async setWorkflow(
     { commit, dispatch },
     {
@@ -232,6 +245,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await dispatch("restoreCanvasState");
   },
 
+  afterSetActivateWorkflow({ dispatch }) {
+    dispatch("workflow/checkForLinkedComponentUpdates", {}, { root: true });
+  },
+
   async unloadActiveWorkflow(
     { commit, rootState, dispatch },
     { clearWorkflow },
@@ -247,6 +264,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await dispatch("toggleContextMenu");
     dispatch("workflow/setEditableAnnotationId", null, { root: true });
     dispatch("panel/closeExtensionPanel", null, { root: true });
+    dispatch("workflow/clearComponentUpdateToasts", null, { root: true });
 
     // clean up
     const {

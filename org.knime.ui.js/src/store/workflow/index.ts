@@ -1,21 +1,23 @@
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { isEqual } from "lodash";
+
 import { API } from "@api";
 import {
   WorkflowInfo,
   type Bounds,
   TransformMetanodePortsBarCommand,
-  LinkedComponentUpdate,
 } from "@/api/gateway-api/generated-api";
 import type { Workflow } from "@/api/custom-types";
 
 import { geometry } from "@/util/geometry";
-import { getProjectAndWorkflowIds } from "./util";
 
 import {
   actions as jsonPatchActions,
   mutations as jsonPatchMutations,
 } from "@/store-plugins/json-patch";
+import type { TooltipDefinition } from "@/composables/useTooltip";
 
+import { getProjectAndWorkflowIds } from "./util";
 import * as floatingMenus from "./floatingMenus";
 import * as desktopInteractions from "./desktopInteractions";
 import * as execution from "./execution";
@@ -26,8 +28,6 @@ import * as clipboardInteractions from "./clipboardInteractions";
 import * as connectionInteractions from "./connectionInteractions";
 import * as componentInteractions from "./componentInteractions";
 
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
-import type { TooltipDefinition } from "@/composables/useTooltip";
 import type { RootStoreState } from "../types";
 
 export interface WorkflowState {
@@ -334,14 +334,6 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       description,
       tags,
       links,
-    });
-  },
-
-  getComponentLinkUpdates({ state }): Promise<Array<LinkedComponentUpdate>> {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    return API.workflow.getLinkUpdates({
-      projectId,
-      workflowId,
     });
   },
 };

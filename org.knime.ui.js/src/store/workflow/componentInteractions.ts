@@ -1,10 +1,87 @@
 import type { ActionTree } from "vuex";
-import type { WorkflowState } from ".";
-import type { RootStoreState } from "../types";
+
+import type { Toast } from "webapps-common/ui/services/toast";
 import { API } from "@api";
+import { UpdateLinkedComponentsResult } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
+
+import type { RootStoreState } from "../types";
+import type { WorkflowState } from "./index";
 import { getProjectAndWorkflowIds } from "./util";
 
+const TOAST_ID_PREFIX = "LINK_UPDATE";
+const TOAST_HEADLINE = "Linked components";
+const $toast = getToastsProvider();
+
+const pluralize = (text: string, count: number) =>
+  count > 1 ? `${text}s` : text;
+
 export const actions: ActionTree<WorkflowState, RootStoreState> = {
+  async checkForLinkedComponentUpdates(
+    { state, dispatch, getters },
+    { silent = true },
+  ) {
+    const isWritable = getters.isWritable;
+    const shouldCheckForUpdates =
+      isWritable && state.activeWorkflow.info.numberOfLinks > 0;
+
+    if (!shouldCheckForUpdates) {
+      return;
+    }
+
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+
+    try {
+      const nodeIds = await API.workflow.getLinkUpdates({
+        projectId,
+        workflowId,
+      });
+
+      if (nodeIds.length === 0) {
+        if (!silent) {
+          $toast.show({
+            id: `${TOAST_ID_PREFIX}__ALL_UP_TO_DATE`,
+            type: "success",
+            headline: TOAST_HEADLINE,
+            message: "No updates available",
+          });
+        }
+
+        return;
+      }
+
+      const message = `You have ${nodeIds.length} ${pluralize(
+        "update",
+        nodeIds.length,
+      )} available`;
+
+      const button = {
+        text: "Update",
+        callback: async () => {
+          await dispatch("clearComponentUpdateToasts");
+          await dispatch("updateComponents", { nodeIds });
+        },
+      };
+
+      $toast.show({
+        id: `${TOAST_ID_PREFIX}__CHECKING`,
+        type: "warning",
+        headline: TOAST_HEADLINE,
+        message,
+        buttons: [button],
+        autoRemove: false,
+      });
+    } catch (error) {
+      $toast.show({
+        id: `${TOAST_ID_PREFIX}__CHECKING_FAILED`,
+        type: "error",
+        headline: TOAST_HEADLINE,
+        message: "Problem checking for linked component updates",
+        autoRemove: false,
+      });
+    }
+  },
+
   async linkComponent({ state }, { nodeId }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     const success = await API.desktop.openLinkComponentDialog({
@@ -22,24 +99,54 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }
   },
 
-  updateComponent({ state }, { nodeId }) {
-    // TODO: Merge with 'updateComponents'
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    API.desktop.updateComponent({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-  },
-
   async updateComponents({ state }, { nodeIds }) {
+    const updateStartedToastId = $toast.show({
+      id: `${TOAST_ID_PREFIX}__STARTED`,
+      headline: TOAST_HEADLINE,
+      message: "Updating...",
+      autoRemove: false,
+    });
+
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     const result = await API.workflowCommand.UpdateLinkedComponents({
       projectId,
       workflowId,
       nodeIds,
     });
-    console.log(result); // TODO: Do something more serious with the result
+
+    $toast.remove(updateStartedToastId);
+
+    const toastMapper: Record<UpdateLinkedComponentsResult.StatusEnum, Toast> =
+      {
+        [UpdateLinkedComponentsResult.StatusEnum.Success]: {
+          id: `${TOAST_ID_PREFIX}__SUCCESS`,
+          type: "success",
+          autoRemove: true,
+          message: "Updated",
+        },
+        [UpdateLinkedComponentsResult.StatusEnum.Unchanged]: {
+          id: `${TOAST_ID_PREFIX}__SUCCESS`,
+          type: "success",
+          autoRemove: true,
+          message: "Everything up-to-date",
+        },
+        [UpdateLinkedComponentsResult.StatusEnum.Error]: {
+          id: `${TOAST_ID_PREFIX}__ERROR`,
+          type: "error",
+          autoRemove: true,
+          message: `Couldn't update linked ${pluralize(
+            "component",
+            nodeIds.length,
+          )}. Please try again`,
+        },
+      };
+
+    const toast = toastMapper[result.status];
+
+    $toast.show({
+      ...toast,
+      headline: TOAST_HEADLINE,
+    });
   },
 
   async unlinkComponent({ state }, { nodeId }) {
@@ -67,5 +174,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       workflowId,
       nodeId,
     });
+  },
+
+  clearComponentUpdateToasts() {
+    const $toast = getToastsProvider();
+    $toast.removeBy((toast) => toast.id.startsWith(TOAST_ID_PREFIX));
   },
 };

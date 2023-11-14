@@ -419,7 +419,7 @@ export default defineComponent({
                 isVisible: !this.singleSelectedNode?.link,
               },
               {
-                name: "updateComponent",
+                name: "updateComponents",
                 isVisible: this.singleSelectedNode?.link,
               },
               {

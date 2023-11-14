@@ -1,13 +1,29 @@
-import { ToastServiceProvider } from "webapps-common/ui/services/toast";
+import {
+  ToastServiceProvider,
+  type Toast,
+} from "webapps-common/ui/services/toast";
 
-let __toastsProviderSingleton: ToastServiceProvider = null;
+type RemoveBy = (callback: (toast: Toast) => boolean) => void;
 
-export const getToastsProvider = () => {
+let __toastsProviderSingleton: ToastServiceProvider & { removeBy: RemoveBy } =
+  null;
+
+export const getToastsProvider = (): ToastServiceProvider & {
+  removeBy: RemoveBy;
+} => {
   if (__toastsProviderSingleton) {
     return __toastsProviderSingleton;
   }
 
-  __toastsProviderSingleton = new ToastServiceProvider();
+  const baseProvider = new ToastServiceProvider();
+
+  __toastsProviderSingleton = {
+    ...baseProvider,
+
+    removeBy(callback: (toast: Toast) => boolean) {
+      this.toasts.value = this.toasts.value.filter((t) => !callback(t));
+    },
+  };
 
   return __toastsProviderSingleton;
 };

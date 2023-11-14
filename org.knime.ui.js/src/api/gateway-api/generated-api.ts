@@ -668,15 +668,15 @@ export namespace CommandResult {
      * @enum {string}
      */
     export enum KindEnum {
-        CollapseResult = 'collapseResult',
-        ExpandResult = 'expandResult',
-        ConvertContainerResult = 'convertContainerResult',
-        CopyResult = 'copyResult',
-        PasteResult = 'pasteResult',
-        AddNodeResult = 'addNodeResult',
-        AddPortResult = 'addPortResult',
-        AddAnnotationResult = 'addAnnotationResult',
-        UpdateLinkedComponentsResult = 'updateLinkedComponentsResult'
+        CollapseResult = 'collapse_result',
+        ExpandResult = 'expand_result',
+        ConvertContainerResult = 'convert_container_result',
+        CopyResult = 'copy_result',
+        PasteResult = 'paste_result',
+        AddNodeResult = 'add_node_result',
+        AddPortResult = 'add_port_result',
+        AddAnnotationResult = 'add_annotation_result',
+        UpdateLinkedComponentsResult = 'update_linked_components_result'
     }
 }
 /**
@@ -1378,44 +1378,6 @@ export interface Link {
 }
 
 
-/**
- *
- * @export
- * @interface LinkedComponentUpdate
- */
-export interface LinkedComponentUpdate {
-
-    /**
-     * The node ID of the updatable component
-     * @type {string}
-     * @memberof LinkedComponentUpdate
-     */
-    nodeId: string;
-    /**
-     * The update status of the updatable component
-     * @type {string}
-     * @memberof LinkedComponentUpdate
-     */
-    updateStatus: LinkedComponentUpdate.UpdateStatusEnum;
-
-}
-
-
-/**
- * @export
- * @namespace LinkedComponentUpdate
- */
-export namespace LinkedComponentUpdate {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum UpdateStatusEnum {
-        Pending = 'pending',
-        Success = 'success',
-        Error = 'error'
-    }
-}
 /**
  * Loop info. Only present on loop end nodes.
  * @export
@@ -3556,11 +3518,11 @@ export namespace UpdateLinkedComponentsCommand {
 export interface UpdateLinkedComponentsResult extends CommandResult {
 
     /**
-     *
-     * @type {Array<LinkedComponentUpdate>}
+     * Whether the updated succeeded or an error occured and no component link was updated.
+     * @type {string}
      * @memberof UpdateLinkedComponentsResult
      */
-    linkedComponentUpdates: Array<LinkedComponentUpdate>;
+    status: UpdateLinkedComponentsResult.StatusEnum;
 
 }
 
@@ -3570,6 +3532,15 @@ export interface UpdateLinkedComponentsResult extends CommandResult {
  * @namespace UpdateLinkedComponentsResult
  */
 export namespace UpdateLinkedComponentsResult {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum StatusEnum {
+        Success = 'success',
+        Error = 'error',
+        Unchanged = 'unchanged'
+    }
 }
 /**
  * Updates the label of a native node, component or metanode.
@@ -4678,7 +4649,7 @@ const workflow = function(rpcClient: RPCClient) {
          */
         getLinkUpdates(
         	params: { projectId: string,  workflowId: string  }
-        ): Promise<Array<LinkedComponentUpdate>> {
+        ): Promise<Array<string>> {
            const defaultParams = { 
            }
 

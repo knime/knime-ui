@@ -16,7 +16,7 @@ type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "expandMetanode"
   | "expandComponent"
   | "linkComponent"
-  | "updateComponent" // TODO: Merge with 'updateComponents'
+  | "updateComponents"
   | "unlinkComponent"
   | "changeHubItemVersion"
   | "changeComponentLinkType"
@@ -164,15 +164,17 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
-  updateComponent: {
-    // TODO: Merge with 'updateComponents'
+  updateComponents: {
     text: "Update component",
     title: "Update component",
     execute: ({ $store, payload = null }) => {
       const selectedNodeId =
         payload?.metadata?.nodeId ||
         $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/updateComponent", { nodeId: selectedNodeId });
+
+      $store.dispatch("workflow/updateComponents", {
+        nodeIds: [selectedNodeId],
+      });
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
