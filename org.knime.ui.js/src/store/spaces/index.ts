@@ -77,14 +77,18 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     API.desktop.copyBetweenSpaces({ spaceProviderId, spaceId, itemIds });
   },
 
-  moveOrCopyToSpace({ state }, { projectId, isCopy, itemIds }) {
+  async moveOrCopyToSpace({ state, dispatch }, { projectId, isCopy, itemIds }) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    API.desktop.moveOrCopyToSpace({
+    const isMoveSuccessful = await API.desktop.moveOrCopyToSpace({
       spaceProviderId,
       spaceId,
       isCopy,
       itemIds,
     });
+
+    if (isMoveSuccessful) {
+      await dispatch("fetchWorkflowGroupContent", { projectId });
+    }
   },
 
   openInBrowser({ state }, { projectId, itemId }) {

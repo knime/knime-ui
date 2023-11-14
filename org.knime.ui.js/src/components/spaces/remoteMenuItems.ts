@@ -59,7 +59,6 @@ export const buildMoveToSpaceMenuItem = (
         isCopy: false,
         itemIds: selectedItems,
       });
-      // TODO refresh workflow group content
     },
   };
 };
