@@ -54,14 +54,14 @@ const initialPosition = computed(() => ({
 const { createPointerDownHandler } = useMoveObject({
   objectElement: computed(() => container.value as HTMLElement),
   onMoveStartCallback: () => {
-    /* if (!isMetaNodePortBarSelected.value(props.type)) {
+    if (!isMetaNodePortBarSelected.value(props.type)) {
       store.dispatch("selection/deselectAllObjects");
-    } */
+    }
 
     store.dispatch("selection/selectMetanodePortBar", props.type);
   },
   onMoveEndCallback: async () => {
-    // we need to set this on the first move
+    // we need to set this on the first move as the backend has no data to translate otherwise
     if (!backendBounds.value) {
       const { bounds, type } = props;
       await store.dispatch("workflow/transformMetaNodePortBar", {
@@ -75,10 +75,8 @@ const { createPointerDownHandler } = useMoveObject({
 
 const onPointerDown = (event: PointerEvent) => {
   if (isMoveLocked.value) {
-    // store.commit("selection/setStartedSelectionFromAnnotationId", props.type);
     return;
   }
-
   const handler = createPointerDownHandler(initialPosition);
   handler(event);
 };

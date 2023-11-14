@@ -1,4 +1,4 @@
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
 import { useStore } from "@/composables/useStore";
 import { computed, type Ref } from "vue";
@@ -50,6 +50,26 @@ export const useConnectorPathSegments = (
   const movePreviewDelta = computed(
     () => store.state.workflow.movePreviewDelta,
   );
+  const isMetanodePortBarSelected = computed(
+    () => store.getters["selection/isMetaNodePortBarSelected"],
+  );
+
+  const isConnectedToConnectionId = (ports: NodePort[], id: string) =>
+    ports.length > 0 && ports.find((port) => port.connectedVia.includes(id));
+
+  const isMetanodeInPortBarConnection = computed(() =>
+    isConnectedToConnectionId(
+      store.state.workflow.activeWorkflow.metaInPorts.ports,
+      options.id,
+    ),
+  );
+  const isMetanodeOutPortBarConnection = computed(() =>
+    isConnectedToConnectionId(
+      store.state.workflow.activeWorkflow.metaOutPorts.ports,
+      options.id,
+    ),
+  );
+
   const isNodeSelected = computed(
     () => store.getters["selection/isNodeSelected"],
   );
@@ -68,11 +88,19 @@ export const useConnectorPathSegments = (
 
     // Update position of source or destination node is being moved
     if (isDragging.value) {
-      if (isNodeSelected.value(options.sourceNode.value)) {
+      if (
+        isNodeSelected.value(options.sourceNode.value) ||
+        (isMetanodeInPortBarConnection.value &&
+          isMetanodePortBarSelected.value("in"))
+      ) {
         startX += movePreviewDelta.value.x;
         startY += movePreviewDelta.value.y;
       }
-      if (isNodeSelected.value(options.destNode.value)) {
+      if (
+        isNodeSelected.value(options.destNode.value) ||
+        (isMetanodeOutPortBarConnection.value &&
+          isMetanodePortBarSelected.value("out"))
+      ) {
         endX += movePreviewDelta.value.x;
         endY += movePreviewDelta.value.y;
       }
