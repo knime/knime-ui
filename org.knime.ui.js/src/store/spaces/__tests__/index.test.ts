@@ -34,7 +34,8 @@ describe("spaces::index", () => {
   describe("moveOrCopyToSpace", () => {
     it("should move items between spaces on same Hub", async () => {
       const itemIds = ["id1", "id2"];
-      const { store } = loadStore();
+      mockedAPI.desktop.moveOrCopyToSpace.mockReturnValueOnce(true);
+      const { store, dispatchSpy } = loadStore();
 
       const projectId = "project2";
       store.state.spaces.projectPath[projectId] = {
@@ -54,6 +55,10 @@ describe("spaces::index", () => {
         isCopy: false,
         itemIds,
       });
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "spaces/fetchWorkflowGroupContent",
+        { projectId },
+      );
     });
   });
 });
