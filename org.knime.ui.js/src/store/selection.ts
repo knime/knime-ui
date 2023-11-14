@@ -81,8 +81,14 @@ export const mutations: MutationTree<SelectionState> = {
     });
   },
 
-  addMetanodePortBarsToSelection(state, meteNodePortBarTypes: string[]) {
-    meteNodePortBarTypes.forEach(
+  removeMetanodePortBarsFromSelection(state, metaNodePortBarTypes: string[]) {
+    metaNodePortBarTypes.forEach((type) => {
+      delete state.selectedMetanodePortBars[type];
+    });
+  },
+
+  addMetanodePortBarsToSelection(state, metaNodePortBarTypes: string[]) {
+    metaNodePortBarTypes.forEach(
       (type) => (state.selectedMetanodePortBars[type] = true),
     );
   },
@@ -164,6 +170,10 @@ export const actions: ActionTree<SelectionState, RootStoreState> = {
 
   selectMetanodePortBar({ commit }, metaNodePortBarType: "in" | "out") {
     commit("addMetanodePortBarsToSelection", [metaNodePortBarType]);
+  },
+
+  deselectMetanodePortBar({ commit }, metaNodePortBarType: "in" | "out") {
+    commit("removeMetanodePortBarsFromSelection", [metaNodePortBarType]);
   },
 
   selectAnnotation({ commit }, annotationId) {

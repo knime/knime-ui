@@ -343,6 +343,35 @@ describe("workflow store", () => {
       });
     });
 
+    describe("metanode port bars", () => {
+      it("selects a specific metanode port bar", () => {
+        $store.dispatch("selection/deselectAllObjects");
+        $store.dispatch("selection/selectMetanodePortBar", "in");
+        expect(
+          Object.keys($store.state.selection.selectedMetanodePortBars).length,
+        ).toBe(1);
+      });
+
+      it("select both port bars", () => {
+        $store.dispatch("selection/deselectAllObjects");
+        $store.dispatch("selection/selectMetanodePortBar", "in");
+        $store.dispatch("selection/selectMetanodePortBar", "out");
+        expect(
+          Object.keys($store.state.selection.selectedMetanodePortBars).length,
+        ).toBe(2);
+      });
+
+      it("deselects a port bar", () => {
+        $store.dispatch("selection/selectMetanodePortBar", "in");
+        $store.dispatch("selection/selectMetanodePortBar", "out");
+
+        $store.dispatch("selection/deselectMetanodePortBar", "out");
+        expect(
+          Object.keys($store.state.selection.selectedMetanodePortBars).length,
+        ).toBe(1);
+      });
+    });
+
     describe("annotations", () => {
       it("selects multiple annotation", () => {
         $store.dispatch("selection/deselectAllObjects");
