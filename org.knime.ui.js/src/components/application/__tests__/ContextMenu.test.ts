@@ -543,6 +543,7 @@ describe("ContextMenu.vue", () => {
               children: assertItems([
                 { text: "Open component" },
                 { text: "Rename component" },
+                { text: "Open layout editor" },
                 { text: "Share" },
               ]),
             },
