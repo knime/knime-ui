@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import MarkdownIt from "markdown-it";
 import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
+import { renderMarkdown } from "./markdown";
 import MessagePlaceholder from "./MessagePlaceholder.vue";
 import KaiStatus from "./KaiStatus.vue";
 import KaiReferences from "./KaiReferences.vue";
@@ -12,7 +12,6 @@ import { useNodeTemplates } from "./useNodeTemplates";
 import type { NodeWithExtensionInfo, References } from "../../types";
 
 const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
-const md = new MarkdownIt();
 
 interface Props {
   role: string;
@@ -38,7 +37,7 @@ const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
 });
 
 const isUser = computed(() => props.role === "user");
-const htmlContent = computed(() => md.render(props.content));
+const htmlContent = computed(() => renderMarkdown(props.content));
 </script>
 
 <template>
@@ -119,6 +118,9 @@ const htmlContent = computed(() => md.render(props.content));
     }
 
     & :deep(.content) {
+      overflow-wrap: break-word;
+      overflow-x: hidden;
+
       & *:first-child {
         margin-top: 0;
       }
