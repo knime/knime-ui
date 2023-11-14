@@ -191,11 +191,9 @@ public final class DesktopAPUtil {
     private static WorkflowManager loadComponentProject(final IProgressMonitor monitor, final Path wfFile,
         final WorkflowContextV2 workflowContext) throws OperationCanceledException {
         final var wfmRef = new AtomicReference<WorkflowManager>();
-        final var templateURI = CheckUtils.checkNotNull(workflowContext)//
-            .getTempSourceLocation()//
-            .orElse(wfFile.toUri());
 
-        final var runnable = new LoadMetaNodeTemplateRunnable(wfmRef::set, templateURI, workflowContext, false, true);
+        final var fileUri = wfFile.toUri();
+        final var runnable = new LoadMetaNodeTemplateRunnable(wfmRef::set, fileUri, workflowContext, false, true);
         runnable.run(monitor); // Sets the workflow reference using the callback as a side effect
         final var wfm = wfmRef.get();
 

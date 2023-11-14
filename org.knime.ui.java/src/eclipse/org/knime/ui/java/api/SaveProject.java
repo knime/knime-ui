@@ -219,10 +219,16 @@ final class SaveProject {
 
     static void saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
             final boolean localOnly) {
+        if (!localOnly && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo) {
+            saveBackToServerOrHub(monitor, wfm, svg);
+        } else {
+            saveLocalProject(monitor, wfm, svg);
+        }
+    }
+
+    private static void saveLocalProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
         if (wfm.isComponentProjectWFM()) {
             saveComponentTemplate(monitor, wfm);
-        } else if (!localOnly && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo) {
-            saveBackToServerOrHub(monitor, wfm, svg);
         } else {
             saveRegularWorkflow(monitor, wfm, svg);
         }
@@ -349,7 +355,7 @@ final class SaveProject {
         }
 
         // selected a remote location: save + upload
-        saveRegularWorkflow(monitor, wfm, svg);
+        saveLocalProject(monitor, wfm, svg);
 
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap();
         final var spaceProvider = Optional.ofNullable(spaceProviders.get(remoteMountpointURI.getAuthority())) //
