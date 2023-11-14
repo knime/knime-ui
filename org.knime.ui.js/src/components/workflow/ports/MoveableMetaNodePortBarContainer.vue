@@ -38,13 +38,15 @@ const translationAmount = computed(() => {
     : { x: 0, y: 0 };
 });
 
-const initialSet = ref(false);
-
 watch(
   bounds,
-  () => {
-    if (initialSet.value) {
-      initialSet.value = false;
+  (newBounds, oldBounds) => {
+    // ignore updates to the same values as this is the first set
+    if (
+      // check if the port bar has really moved
+      oldBounds.x === newBounds.x &&
+      oldBounds.y === newBounds.y
+    ) {
       return;
     }
     if (isDragging.value) {
@@ -76,7 +78,6 @@ const { createPointerDownHandler } = useMoveObject({
       !(movePreviewDelta.value.x === 0 && movePreviewDelta.value.y === 0)
     ) {
       const { type } = props;
-      initialSet.value = true;
       await store.dispatch("workflow/transformMetaNodePortBar", {
         // classic expects width 50 - we use 10
         bounds: { ...bounds.value, width: 50 },
