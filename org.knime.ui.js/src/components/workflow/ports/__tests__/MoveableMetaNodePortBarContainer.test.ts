@@ -89,11 +89,12 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       },
     });
 
+    const bounds = boundsIn ?? { x: 0, y: 0, width: 100, height: 100 };
     mockBoundingRect({
-      left: boundsIn.x,
-      top: boundsIn.y,
-      bottom: boundsIn.height,
-      right: boundsIn.width,
+      left: bounds.x,
+      top: bounds.y,
+      bottom: bounds.height,
+      right: bounds.width,
     });
 
     return { wrapper, $store, mockMoveDirective, dispatchSpy, commitSpy };

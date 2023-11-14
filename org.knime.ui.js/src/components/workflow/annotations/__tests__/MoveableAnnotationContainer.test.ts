@@ -216,6 +216,8 @@ describe("MoveableAnnotationContainer.vue", () => {
 
       vi.runOnlyPendingTimers();
 
+      await flushPromises();
+
       expect(mockedAPI.workflowCommand.Translate).toHaveBeenCalled();
 
       vi.useRealTimers();
