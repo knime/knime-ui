@@ -31,6 +31,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
     mocks = {},
     boundsIn = null,
     boundsOut = null,
+    outPorts = null,
     screenToCanvasCoordinatesMock = vi.fn().mockReturnValue(() => [0, 0]),
   } = {}) => {
     const createMockMoveDirective = () => {
@@ -71,7 +72,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
           bounds: boundsIn,
         },
         metaOutPorts: {
-          ports: [],
+          ports: outPorts ?? [],
           bounds: boundsOut,
         },
       }),
@@ -240,6 +241,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       const { wrapper } = doMount({
         boundsIn: null,
         boundsOut: null,
+        outPorts: [createPort()],
       });
 
       startPortBarDrag(wrapper, {

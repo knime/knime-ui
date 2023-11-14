@@ -62,7 +62,7 @@ const initialPosition = computed(() => ({
 }));
 
 const { createPointerDownHandler } = useMoveObject({
-  objectElement: computed(() => container.value as HTMLElement),
+  objectElement: computed(() => container.value),
   onMoveStartCallback: (event) => {
     if (!isMetaNodePortBarSelected.value(props.type) && !event.ctrlKey) {
       store.dispatch("selection/deselectAllObjects");
