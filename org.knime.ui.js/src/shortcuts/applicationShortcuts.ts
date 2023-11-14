@@ -1,3 +1,7 @@
+import {
+  cachedLocalSpaceProjectId,
+  globalSpaceBrowserProjectId,
+} from "@/store/spaces";
 import type { UnionToShortcutRegistry } from "./types";
 
 type ApplicationShortcuts = UnionToShortcutRegistry<
@@ -23,11 +27,24 @@ const applicationShortcuts: ApplicationShortcuts = {
   createWorkflow: {
     text: "Create workflow",
     hotkey: ["Ctrl", "N"],
-    execute: ({ $store }) =>
+    execute: ({ $store }) => {
+      const { activeProjectId } = $store.state.application;
+      const { projectPath } = $store.state.spaces;
+
+      const globalSpaceBrowserProject =
+        projectPath[globalSpaceBrowserProjectId] && globalSpaceBrowserProjectId;
+
+      const localSpaceProject =
+        projectPath[cachedLocalSpaceProjectId] && cachedLocalSpaceProjectId;
+
+      const projectId =
+        activeProjectId ?? globalSpaceBrowserProject ?? localSpaceProject;
+
       $store.commit("spaces/setCreateWorkflowModalConfig", {
         isOpen: true,
-        projectId: $store.state.application.activeProjectId,
-      }),
+        projectId,
+      });
+    },
     condition: ({ $store }) => !$store.state.spaces.isLoadingContent,
   },
 };

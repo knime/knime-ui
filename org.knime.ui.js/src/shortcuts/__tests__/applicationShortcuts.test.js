@@ -1,5 +1,9 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
 import applicationShortcuts from "../applicationShortcuts";
+import {
+  cachedLocalSpaceProjectId,
+  globalSpaceBrowserProjectId,
+} from "@/store/spaces";
 
 describe("applicationShortcuts", () => {
   let mockDispatch, mockCommit, $store;
@@ -19,17 +23,49 @@ describe("applicationShortcuts", () => {
             projectId: "1",
           },
         },
+        spaces: {
+          projectPath: {},
+        },
       },
     };
   });
 
-  it("createWorkflow", () => {
+  it("createWorkflow when project is open", () => {
     applicationShortcuts.createWorkflow.execute({ $store });
     expect(mockCommit).toHaveBeenCalledWith(
       "spaces/setCreateWorkflowModalConfig",
       {
         isOpen: true,
         projectId: "1",
+      },
+    );
+  });
+
+  it("createWorkflow when no project is open AND user is browsing space", () => {
+    $store.state.spaces.projectPath = { [globalSpaceBrowserProjectId]: {} };
+    $store.state.application.activeProjectId = null;
+
+    applicationShortcuts.createWorkflow.execute({ $store });
+
+    expect(mockCommit).toHaveBeenCalledWith(
+      "spaces/setCreateWorkflowModalConfig",
+      {
+        isOpen: true,
+        projectId: globalSpaceBrowserProjectId,
+      },
+    );
+  });
+
+  it("createWorkflow when no project is open AND user is NOT browsing anyy space", () => {
+    $store.state.spaces.projectPath = { [cachedLocalSpaceProjectId]: {} };
+    $store.state.application.activeProjectId = null;
+
+    applicationShortcuts.createWorkflow.execute({ $store });
+    expect(mockCommit).toHaveBeenCalledWith(
+      "spaces/setCreateWorkflowModalConfig",
+      {
+        isOpen: true,
+        projectId: cachedLocalSpaceProjectId,
       },
     );
   });
