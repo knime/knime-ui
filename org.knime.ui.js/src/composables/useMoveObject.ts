@@ -141,27 +141,26 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         });
       });
 
-      const onUp = (ptrUpEvent: PointerEvent) => {
+      const onUp = async (ptrUpEvent: PointerEvent) => {
         hasReleased = true;
 
-        onMoveEndCallback(ptrUpEvent).then((shouldMove) => {
-          if (shouldMove && !hasAbortedDrag.value) {
-            store.dispatch("workflow/moveObjects");
-          }
+        const shouldMove = await onMoveEndCallback(ptrUpEvent);
+        if (shouldMove && !hasAbortedDrag.value) {
+          await store.dispatch("workflow/moveObjects");
+        }
 
-          if (hasAbortedDrag.value) {
-            store.dispatch("workflow/resetAbortDrag");
-          }
+        if (hasAbortedDrag.value) {
+          await store.dispatch("workflow/resetAbortDrag");
+        }
 
-          eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
-          document.removeEventListener("pointermove", onMove);
-          eventTarget.removeEventListener("pointerup", onUp);
-          eventTarget.removeEventListener(
-            "lostpointercapture",
-            // eslint-disable-next-line no-use-before-define
-            onLostPointerCapture,
-          );
-        });
+        eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
+        document.removeEventListener("pointermove", onMove);
+        eventTarget.removeEventListener("pointerup", onUp);
+        eventTarget.removeEventListener(
+          "lostpointercapture",
+          // eslint-disable-next-line no-use-before-define
+          onLostPointerCapture,
+        );
       };
 
       // eslint-disable-next-line func-style
