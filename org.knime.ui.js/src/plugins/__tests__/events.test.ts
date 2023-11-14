@@ -69,6 +69,7 @@ describe("Event Plugin", () => {
       "ProjectDirtyStateEvent",
       "AppStateChangedEvent",
       "UpdateAvailableEvent",
+      "NodeRepositoryLoadingProgressEvent",
       "SaveAndCloseWorkflowsEvent",
       "ImportURIEvent",
       "ProgressEvent",

@@ -64,6 +64,14 @@ export interface ApplicationState {
    * an object that maps supported file extensions to their node template id
    */
   fileExtensionToNodeTemplateId: Record<string, string>;
+  /**
+   * indicates if node repository is loaded
+   */
+  nodeRepositoryLoaded: boolean;
+  nodeRepositoryLoadingProgress: {
+    progress: number;
+    extensionName: string;
+  } | null;
 }
 
 /*
@@ -91,6 +99,9 @@ export const state = (): ApplicationState => ({
   featureFlags: {},
   exampleProjects: [],
   fileExtensionToNodeTemplateId: {},
+
+  nodeRepositoryLoaded: false,
+  nodeRepositoryLoadingProgress: null,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -131,6 +142,12 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setFileExtensionToNodeTemplateId(state, fileExtensionToNodeTemplateId) {
     state.fileExtensionToNodeTemplateId = fileExtensionToNodeTemplateId;
+  },
+  setNodeRepositoryLoaded(state, nodeRepositoryLoaded) {
+    state.nodeRepositoryLoaded = nodeRepositoryLoaded;
+  },
+  setNodeRepositoryLoadingProgress(state, nodeRepositoryLoadingProgress) {
+    state.nodeRepositoryLoadingProgress = nodeRepositoryLoadingProgress;
   },
 };
 
@@ -220,6 +237,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
         "setFileExtensionToNodeTemplateId",
         applicationState.fileExtensionToNodeTemplateId,
       );
+    }
+
+    if (applicationState.hasOwnProperty("nodeRepositoryLoaded")) {
+      commit("setNodeRepositoryLoaded", applicationState.nodeRepositoryLoaded);
     }
   },
 
