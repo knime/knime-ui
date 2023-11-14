@@ -15,6 +15,7 @@ import {
 import "./assets/index.css";
 
 import PageBuilder from "pagebuilder/src/components/PageBuilder.vue";
+import { getToastsProvider } from "./plugins/toasts";
 
 // Setup logger for production
 setupLogger();
@@ -97,6 +98,12 @@ try {
 
   // Create Vue app
   const app = Vue.createApp(KnimeUI);
+
+  const toastServiceProvider = getToastsProvider();
+  const toastPlugin = toastServiceProvider.getToastServicePlugin();
+
+  // use before other plugins so that $toast is available on the app instance
+  app.use(toastPlugin);
 
   // Provide store and init plugins
   const store = initStore();
