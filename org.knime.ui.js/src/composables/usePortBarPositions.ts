@@ -19,11 +19,11 @@ export const usePortBarPositions = () => {
   const getBounds = (isOutgoing: boolean) => {
     return isOutgoing
       ? mergePortBarBounds(
-          workflow.value.metaOutPorts.bounds,
+          workflow.value.metaOutPorts?.bounds || null,
           calculatedBounds.value.out,
         )
       : mergePortBarBounds(
-          workflow.value.metaInPorts.bounds,
+          workflow.value.metaInPorts?.bounds || null,
           calculatedBounds.value.in,
         );
   };
