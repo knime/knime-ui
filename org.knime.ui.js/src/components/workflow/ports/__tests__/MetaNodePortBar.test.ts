@@ -153,6 +153,19 @@ describe("MetaNodePortBar.vue", () => {
       expect(Number(hoverArea.attributes("x"))).toEqual(expectedHoverAreaX);
     });
 
+    it("selects port bar on click", async () => {
+      const bounds = { x: 100, y: 100, width: 10, height: 300 };
+      const { wrapper, $store } = doMount({ props: { type }, bounds });
+
+      await wrapper.find(".hover-area").trigger("click");
+
+      expect($store.state.selection.selectedMetanodePortBars).toStrictEqual({
+        [type]: true,
+      });
+
+      expect(wrapper.find(".port-bar-selected").exists()).toBe(true);
+    });
+
     it("renders ports", () => {
       const ports = [
         {
