@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import MarkdownIt from "markdown-it";
 import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import MessagePlaceholder from "./MessagePlaceholder.vue";
@@ -11,6 +12,7 @@ import { useNodeTemplates } from "./useNodeTemplates";
 import type { NodeWithExtensionInfo, References } from "../../types";
 
 const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
+const md = new MarkdownIt();
 
 interface Props {
   role: string;
@@ -36,6 +38,7 @@ const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
 });
 
 const isUser = computed(() => props.role === "user");
+const htmlContent = computed(() => md.render(props.content));
 </script>
 
 <template>
@@ -48,11 +51,9 @@ const isUser = computed(() => props.role === "user");
       <KaiReferences :references="references" />
     </div>
     <div class="body" :class="{ user: isUser, error: isError }">
-      <div class="content">
-        <!-- eslint-disable vue/no-v-html  -->
-        <div v-if="content" v-html="content" />
-        <MessagePlaceholder v-else />
-      </div>
+      <!-- eslint-disable vue/no-v-html  -->
+      <div v-if="content" class="content" v-html="htmlContent" />
+      <MessagePlaceholder v-else />
       <SuggestedNodes :node-templates="nodeTemplates" />
       <SuggestedExtensions :extensions="uninstalledExtensions" />
       <KaiStatus :status="statusUpdate" />
@@ -117,10 +118,32 @@ const isUser = computed(() => props.role === "user");
       background-color: var(--knime-coral-light);
     }
 
-    & .content {
-      overflow: hidden;
-      overflow-wrap: break-word;
-      white-space: pre-wrap;
+    & :deep(.content) {
+      & *:first-child {
+        margin-top: 0;
+      }
+
+      & *:last-child {
+        margin-bottom: 0;
+      }
+
+      & h1 {
+        font-size: 1.5em;
+      }
+
+      & h2,
+      & h3,
+      & h4,
+      & h5,
+      & h6 {
+        font-size: 1em;
+      }
+
+      & ul,
+      & ol {
+        list-style-position: inside;
+        padding-left: 0;
+      }
     }
   }
 }

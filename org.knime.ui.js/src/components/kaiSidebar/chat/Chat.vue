@@ -86,7 +86,7 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
     overflow-y: auto;
 
     & .message-area {
-      width: 320px;
+      width: calc(100% - 20px);
     }
   }
 
