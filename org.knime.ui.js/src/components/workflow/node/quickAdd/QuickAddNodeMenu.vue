@@ -344,5 +344,9 @@ export default defineComponent({
   & .header {
     padding: 10px;
   }
+
+  & :deep(.filtered-nodes-wrapper) {
+    border-top: none;
+  }
 }
 </style>

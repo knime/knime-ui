@@ -58,7 +58,7 @@ export default {
     :display-mode="displayMode"
     :query="query"
     :nodes="nodes"
-    :has-filtered-out-nodes="totalNumFilteredNodesFound"
+    :num-filtered-out-nodes="totalNumFilteredNodesFound"
   >
     <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate

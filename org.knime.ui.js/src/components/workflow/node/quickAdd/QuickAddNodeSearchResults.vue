@@ -25,8 +25,11 @@ export default defineComponent({
   emits: ["update:selectedNode", "addNode"],
   expose: ["focusFirst"],
   computed: {
-    ...mapState("nodeRepository", ["totalNumFilteredNodesFound"]),
-    ...mapState("quickAddNodes", ["nodes", "query"]),
+    ...mapState("quickAddNodes", [
+      "nodes",
+      "query",
+      "totalNumFilteredNodesFound",
+    ]),
 
     searchActions() {
       return {
@@ -53,7 +56,7 @@ export default defineComponent({
     :selected-node="selectedNode"
     :display-mode="displayMode"
     :nodes="nodes"
-    :has-filtered-out-nodes="totalNumFilteredNodesFound"
+    :num-filtered-out-nodes="totalNumFilteredNodesFound"
     @update:selected-node="$emit('update:selectedNode', $event)"
     @item-enter-key="$emit('addNode', $event)"
   >

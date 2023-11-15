@@ -41,7 +41,7 @@ export const state = (): CommonNodeSearchState => ({
 
   nodes: null,
   totalNumNodesFound: 0,
-  totalNumFilteredNodesFound: null,
+  totalNumFilteredNodesFound: 0,
   nodeSearchPage: 0,
   nodesTags: [],
 
@@ -151,7 +151,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
         nodes,
         totalNumNodesFound,
         tags,
-        totalNumFilteredNodesFound = null,
+        totalNumFilteredNodesFound = 0,
       } = searchResponse;
 
       const { availablePortTypes } = rootState.application;
@@ -192,7 +192,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
     commit("setNodes", null);
     commit("setNodesTags", []);
     commit("setTotalNumNodesFound", 0);
-    commit("setTotalNumFilteredNodesFound", null);
+    commit("setTotalNumFilteredNodesFound", 0);
   },
 
   /**

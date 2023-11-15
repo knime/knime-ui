@@ -25,7 +25,7 @@ type Props = {
   searchScrollPosition?: number;
   selectedNode: NodeTemplateWithExtendedPorts | null;
   searchActions: SearchActions;
-  hasFilteredOutNodes: boolean;
+  numFilteredOutNodes: number;
   highlightFirst?: boolean;
   displayMode: NodeRepositoryDisplayModesType;
 };
@@ -121,7 +121,7 @@ defineExpose({ focusFirst });
         </NodeList>
         <ReloadIcon v-if="isLoading" class="loading-indicator" />
       </div>
-      <div v-if="hasFilteredOutNodes" class="filtered-nodes-wrapper">
+      <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
         <CircleInfoIcon class="info-icon" />
         <div class="filtered-nodes-content">
           <span

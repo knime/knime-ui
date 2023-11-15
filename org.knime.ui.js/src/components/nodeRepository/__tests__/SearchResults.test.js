@@ -9,10 +9,7 @@ import ScrollViewContainer from "../ScrollViewContainer.vue";
 import NodeList from "../NodeList.vue";
 
 describe("SearchResults", () => {
-  const doMount = ({
-    propsOverrides = {},
-    hasFilteredOutNodes = true,
-  } = {}) => {
+  const doMount = ({ propsOverrides = {}, numFilteredOutNodes = 10 } = {}) => {
     const searchActions = {
       searchNodesNextPage: vi
         .fn()
@@ -35,7 +32,7 @@ describe("SearchResults", () => {
       searchScrollPosition: 100,
       selectedNode: { id: "some-node" },
       searchActions,
-      hasFilteredOutNodes,
+      numFilteredOutNodes,
       ...propsOverrides,
     };
 
@@ -44,7 +41,7 @@ describe("SearchResults", () => {
     return { wrapper, searchActions, props };
   };
 
-  it("shows placeholder for empty result if hasFilteredOutNodes is true", async () => {
+  it("shows placeholder for empty result if numFilteredOutNodes is a positive value", async () => {
     const { wrapper } = doMount({
       propsOverrides: {
         query: "xxx",
@@ -60,14 +57,14 @@ describe("SearchResults", () => {
     expect(wrapper.findComponent(NodeList).exists()).toBe(false);
   });
 
-  it("shows placeholder for empty result if hasFilteredOutNodes is false", () => {
+  it("shows placeholder for empty result if numFilteredOutNodes is 0", () => {
     const query = "xxx xxx";
     const { wrapper } = doMount({
       propsOverrides: {
         query,
         nodes: [],
       },
-      hasFilteredOutNodes: false,
+      numFilteredOutNodes: 0,
     });
     const encodedQuery = encodeURIComponent(query);
 
