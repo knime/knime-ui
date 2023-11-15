@@ -80,6 +80,7 @@ import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.workflowcoach.NodeRecommendationUpdater;
 import org.osgi.framework.FrameworkUtil;
 
@@ -131,6 +132,8 @@ final class Create {
 
         // Check for node recommendation updates, non-blocking
         NodeRecommendationUpdater.checkForStatisticUpdates(false);
+
+        LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
     }
 
     private static void callWelcomeAPEndpoint() {
