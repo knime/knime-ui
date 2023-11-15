@@ -127,22 +127,6 @@ final class ManipulateComponents {
         return contentProvider.saveSubNodeTemplate(component, target, data);
     }
 
-    /**
-     * TODO: NXT-2022
-     *
-     * Auto updating of workflows when opening only works if Classic UI editor is opened. Perhaps other syncing
-     * operations also depend on that?
-     */
-    static void updateComponent(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException {
-        assertLinkedComponent(component, true);
-
-        final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
-        final var cmd = workflowMiddleware.getCommands();
-        cmd.setCommandToExecute(getUpdateComponentCommand(component));
-        cmd.execute(wfKey, null);
-    }
-
     static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
         throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException {
         assertLinkedComponent(component, true);
@@ -214,7 +198,7 @@ final class ManipulateComponents {
         cmd.execute(wfKey, null);
 
         // ChangeComponentHubVersionCommand does not check canExecute of the actual update command
-        cmd.setCommandToExecute(getUpdateComponentCommand(component));
+        cmd.setCommandToExecute(getUpdateComponentCommand(component)); // TODO: NXT-2173, Remove and replace it
         try {
             cmd.execute(wfKey, null);
         } catch (final OperationNotAllowedException | NotASubWorkflowException | NodeNotFoundException e) {
@@ -276,6 +260,9 @@ final class ManipulateComponents {
         return data;
     }
 
+    /**
+     * TODO: NXT-2173, Remove it
+     */
     private static WorkflowCommandAdapter getUpdateComponentCommand(final SubNodeContainer component) {
         final var componentID = component.getID();
         final var wfm = component.getParent();

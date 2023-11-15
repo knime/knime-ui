@@ -86,25 +86,6 @@ final class ComponentAPI {
     }
 
     /**
-     * Updates a linked component to the latest version
-     *
-     * @param projectId
-     * @param rootWorkflowId
-     * @param nodeId
-     *
-     * @throws OperationNotAllowedException
-     * @throws NotASubWorkflowException
-     * @throws NodeNotFoundException
-     */
-    @API
-    static void updateComponent(final String projectId, final String rootWorkflowId, final String nodeId)
-        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException {
-        final var component = assertIsWritableAndGetComponent(projectId, nodeId);
-        final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
-        ManipulateComponents.updateComponent(component, wfKey);
-    }
-
-    /**
      * Opens a components link type dialog, only available for absolute links.
      *
      * @param projectId
