@@ -147,8 +147,12 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       commit("setNodeSearchPage", searchPage);
 
       // update results
-      const { nodes, totalNumNodesFound, tags, totalNumFilteredNodesFound } =
-        searchResponse;
+      const {
+        nodes,
+        totalNumNodesFound,
+        tags,
+        totalNumFilteredNodesFound = null,
+      } = searchResponse;
 
       const { availablePortTypes } = rootState.application;
       const withMappedPorts = nodes.map(
@@ -188,7 +192,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
     commit("setNodes", null);
     commit("setNodesTags", []);
     commit("setTotalNumNodesFound", 0);
-    commit("setTotalNumFilteredNodesFound", 0);
+    commit("setTotalNumFilteredNodesFound", null);
   },
 
   /**

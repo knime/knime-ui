@@ -2184,11 +2184,11 @@ export interface NodeSearchResult {
      */
     totalNumNodesFound: number;
     /**
-     * The total number of nodes that match the search criteria but were filtered out by the requested partion.
+     * The total number of nodes that match the search criteria but were filtered out by the requested partion. Absent if there aren&#39;t any filtered nodes in the node repository.
      * @type {number}
      * @memberof NodeSearchResult
      */
-    totalNumFilteredNodesFound: number;
+    totalNumFilteredNodesFound?: number;
     /**
      * The union of the tags of all the nodes in the search result (i.e. also including the nodes that might not be explicitly listed as part of this search result instance). The tags are sorted by their frequency of how many nodes nodes (in the search result) carry that particular tag.
      * @type {Array<string>}
