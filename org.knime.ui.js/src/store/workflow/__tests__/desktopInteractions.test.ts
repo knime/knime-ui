@@ -237,6 +237,10 @@ describe("workflow store: desktop interactions", () => {
           "application/removeCanvasState",
           closingProjectId,
         );
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          "workflow/clearProcessedUpdateNotification",
+          { projectId: closingProjectId },
+        );
       });
 
       it.each([

@@ -72,7 +72,7 @@ describe("workflow::componentInteractions", () => {
   });
 
   describe("check for component updates", () => {
-    it("should not check for updates if there are none", async () => {
+    it("should not check for updates if workflow does not contain linked components", async () => {
       const { store } = await loadStore();
       store.commit(
         "workflow/setActiveWorkflow",
@@ -80,14 +80,14 @@ describe("workflow::componentInteractions", () => {
       );
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
-        silent: true,
+        auto: true,
       });
 
       expect(mockedAPI.workflow.getLinkUpdates).not.toHaveBeenCalled();
       expect(show).not.toHaveBeenCalled();
     });
 
-    it("should not show any toasts if 'silent' is set as a param and there are no updates", async () => {
+    it("should not show any toasts if 'auto' is true and there are no updates", async () => {
       const { store } = await loadStore();
       store.commit(
         "workflow/setActiveWorkflow",
@@ -97,13 +97,13 @@ describe("workflow::componentInteractions", () => {
       mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce([]);
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
-        silent: true,
+        auto: true,
       });
 
       expect(show).not.toHaveBeenCalled();
     });
 
-    it("should show toast when there are no updates and silent is false", async () => {
+    it("should show toast when there are no updates and auto is false", async () => {
       const { store } = await loadStore();
       store.commit(
         "workflow/setActiveWorkflow",
@@ -113,7 +113,7 @@ describe("workflow::componentInteractions", () => {
       mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce([]);
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
-        silent: false,
+        auto: false,
       });
 
       expect(show).toHaveBeenCalledOnce();
@@ -126,10 +126,10 @@ describe("workflow::componentInteractions", () => {
 
     it("should show toast when there are updates", async () => {
       const { store } = await loadStore();
-      store.commit(
-        "workflow/setActiveWorkflow",
-        createWorkflow({ info: { containsLinkedComponents: true } }),
-      );
+      const workflow = createWorkflow({
+        info: { containsLinkedComponents: true },
+      });
+      store.commit("workflow/setActiveWorkflow", workflow);
 
       const dispatchSpy = vi.spyOn(store, "dispatch");
 
@@ -141,7 +141,7 @@ describe("workflow::componentInteractions", () => {
       });
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
-        silent: false,
+        auto: true,
       });
 
       expect(show).toHaveBeenCalledOnce();
@@ -151,6 +151,10 @@ describe("workflow::componentInteractions", () => {
           buttons: expect.any(Array),
         }),
       );
+      expect(mockedAPI.workflow.getLinkUpdates).toHaveBeenCalledWith({
+        projectId: workflow.projectId,
+        workflowId: workflow.info.containerId,
+      });
       const buttonCallback = show.mock.calls[0][0].buttons[0].callback;
       await buttonCallback();
       expect(dispatchSpy).toHaveBeenCalledWith(
@@ -185,6 +189,57 @@ describe("workflow::componentInteractions", () => {
           message: "Problem checking for linked component updates",
         }),
       );
+    });
+
+    it("should not show the update check notification for the same project more than once", async () => {
+      const { store } = await loadStore();
+      const workflow = createWorkflow({
+        info: { containsLinkedComponents: true },
+      });
+      store.commit("workflow/setActiveWorkflow", workflow);
+
+      const nodeIds = ["root:1", "root:2", "root:3"];
+      mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce(nodeIds);
+
+      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+        auto: true,
+      });
+
+      expect(show).toHaveBeenCalledOnce();
+      expect(mockedAPI.workflow.getLinkUpdates).toHaveBeenCalledWith({
+        projectId: workflow.projectId,
+        workflowId: workflow.info.containerId,
+      });
+
+      // clear mocks before second dispatch
+      mockedAPI.workflow.getLinkUpdates.mockClear();
+      show.mockClear();
+
+      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+        auto: true,
+      });
+
+      expect(show).not.toHaveBeenCalled();
+      expect(mockedAPI.workflow.getLinkUpdates).not.toHaveBeenCalled();
+
+      // clear mocks before third dispatch
+      mockedAPI.workflow.getLinkUpdates.mockClear();
+      show.mockClear();
+
+      // clear state that remembers whether to show/hide notifications
+      await store.dispatch("workflow/clearProcessedUpdateNotification", {
+        projectId: workflow.projectId,
+      });
+
+      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+        auto: true,
+      });
+
+      expect(mockedAPI.workflow.getLinkUpdates).toHaveBeenCalledWith({
+        projectId: workflow.projectId,
+        workflowId: workflow.info.containerId,
+      });
+      expect(show).toHaveBeenCalledOnce();
     });
   });
 
