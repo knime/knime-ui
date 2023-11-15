@@ -74,6 +74,7 @@ import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.view.actions.OpenKnimeUrlAction;
 import org.osgi.service.event.Event;
@@ -164,6 +165,7 @@ public final class PerspectiveSwitchAddon {
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(false);
         switchToWebUITheme();
         ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
+        LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
     }
 
     private void onSwitchToJavaUI() {
@@ -198,6 +200,8 @@ public final class PerspectiveSwitchAddon {
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             System.clearProperty(ChromiumExternalMessagePump.PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
         }
+
+        LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = true;
     }
 
     private static void disposeAllWorkflowProjects() {
