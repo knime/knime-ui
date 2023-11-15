@@ -14,6 +14,7 @@ interface Props {
   text: string;
   url: string;
   isActive: boolean;
+  isEdit: boolean;
 }
 
 const props = defineProps<Props>();
@@ -38,6 +39,7 @@ watch(
 
 const emit = defineEmits<{
   (e: "addLink", text: string, url: string): void;
+  (e: "removeLink"): void;
   (e: "cancelAddLink"): void;
 }>();
 
@@ -74,7 +76,7 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
   <Modal
     v-show="isActive"
     :active="isActive"
-    title="Add a link"
+    :title="isEdit ? 'Edit link' : 'Add a link'"
     style-type="info"
     class="modal"
     @cancel="closeModal"
@@ -91,6 +93,7 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
           />
         </div>
       </Label>
+
       <Label text="URL" compact>
         <div>
           <InputField
@@ -109,20 +112,36 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
       <Button with-border @click="closeModal">
         <strong>Cancel</strong>
       </Button>
-      <Button primary :disabled="!isValid" @click="onSubmit">
-        <strong>{{ props.url ? "Apply" : "Add link" }}</strong>
-      </Button>
+      <div class="controls-apply-group">
+        <Button v-if="isEdit" with-border @click="emit('removeLink')">
+          <strong>Remove URL</strong>
+        </Button>
+        <Button primary :disabled="!isValid" @click="onSubmit">
+          <strong>{{ isEdit ? "Apply" : "Add link" }}</strong>
+        </Button>
+      </div>
     </template>
   </Modal>
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .modal {
-  --modal-width: 400px;
+  --modal-width: 500px;
 }
 
 .text-input {
   margin-bottom: 20px;
+}
+
+.controls-apply-group {
+  display: flex;
+  gap: 5px;
+}
+
+.remove-icon {
+  @mixin svg-icon-size 18;
 }
 
 .item-error {

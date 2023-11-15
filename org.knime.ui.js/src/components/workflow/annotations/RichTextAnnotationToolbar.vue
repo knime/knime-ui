@@ -7,7 +7,7 @@ import type { Level } from "@tiptap/extension-heading";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
-import PlusSmallIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
+import MoreActionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import LinkIcon from "webapps-common/ui/assets/img/icons/link.svg";
 import type { EditorTools } from "webapps-common/ui/components/forms/RichTextEditor";
 
@@ -73,6 +73,13 @@ const createLink = () => {
   showCreateLinkModal.value = true;
 };
 
+const removeLink = () => {
+  props.editor.chain().focus().extendMarkRange("link").unsetLink().run();
+
+  showCreateLinkModal.value = false;
+  isEditingLink.value = false;
+};
+
 const addLink = (text: string, urlText: string) => {
   props.editor.chain().focus().extendMarkRange("link").unsetLink().run();
 
@@ -100,9 +107,9 @@ const cancelAddLink = () => {
 };
 
 const linkTool = {
-  id: "add-link",
+  id: "link",
   icon: LinkIcon,
-  name: "Add link",
+  name: "Link",
   hotkey: ["Ctrl", "K"],
   active: () => props.editor.isActive("link"),
   onClick: () => createLink(),
@@ -276,7 +283,7 @@ onUnmounted(() => {
         orientation="left"
         @item-click="onSecondaryToolClick"
       >
-        <PlusSmallIcon />
+        <MoreActionsIcon />
       </SubMenu>
 
       <RichTextAnnotationToolbarDialog :is-open="isBorderColorSelectionOpen">
@@ -305,8 +312,10 @@ onUnmounted(() => {
     :is-active="showCreateLinkModal"
     :text="text"
     :url="url"
+    :is-edit="url !== ''"
     @add-link="addLink"
     @cancel-add-link="cancelAddLink"
+    @remove-link="removeLink"
   />
 </template>
 
