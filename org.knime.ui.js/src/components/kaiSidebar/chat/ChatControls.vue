@@ -111,6 +111,7 @@ const disabled = computed(() => !input.value && !props.isProcessing);
 
     & svg.abort-icon {
       stroke: var(--knime-dove-gray);
+      margin-left: 0;
     }
   }
 }

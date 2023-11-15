@@ -11,7 +11,7 @@ const { fetchUiStrings, isLoading } = useKaiServer();
   <BasePanel>
     <div class="error-panel">
       <div class="slogan">
-        Our AI assistent is currently not available. Please try again later.
+        Our AI assistant is currently not available. Please try again later.
       </div>
       <div class="note">
         Please note:<br />

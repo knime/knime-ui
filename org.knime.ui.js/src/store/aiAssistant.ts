@@ -78,8 +78,12 @@ export const mutations: MutationTree<AiAssistantState> = {
       isError,
     });
   },
-  popMessage(state, { chainType }) {
-    state[chainType].messages.pop();
+  popUserQuery(state, { chainType }) {
+    const messages = state[chainType].messages;
+    const lastMessage = messages.at(-1);
+    if (lastMessage?.role === "user") {
+      messages.pop();
+    }
   },
   setStatusUpdate(state, { chainType, statusUpdate }) {
     state[chainType].statusUpdate = statusUpdate;
@@ -186,14 +190,13 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   },
   async abortAiRequest({ state, commit }, { chainType }) {
     const conversationId = state[chainType].conversationId;
-
     try {
       await API.desktop.abortAiRequest({ conversationId, chainType });
     } catch (error) {
       consola.error("abortAiRequest", error);
       commit("clearChain", { chainType });
     }
-    commit("popMessage", { chainType });
+    commit("popUserQuery", { chainType });
   },
 };
 
