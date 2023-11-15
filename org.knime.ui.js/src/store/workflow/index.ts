@@ -58,6 +58,8 @@ export const state = (): WorkflowState => ({
   ...clipboardInteractions.state(),
   ...annotationInteractions.state(),
   ...connectionInteractions.state(),
+  ...componentInteractions.state(),
+
   activeWorkflow: null,
   activeSnapshotId: null,
   // TODO: NXT-1143 find a better place for the tooltip logic
@@ -76,6 +78,7 @@ export const mutations: MutationTree<WorkflowState> = {
   ...clipboardInteractions.mutations,
   ...annotationInteractions.mutations,
   ...connectionInteractions.mutations,
+  ...componentInteractions.mutations,
 
   setActiveWorkflow(state, workflow) {
     state.activeWorkflow = workflow;

@@ -52,6 +52,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       return;
     }
 
+    await dispatch("clearProcessedUpdateNotification", {
+      projectId: closingProjectId,
+    });
+
     await dispatch("application/removeCanvasState", closingProjectId, {
       root: true,
     });

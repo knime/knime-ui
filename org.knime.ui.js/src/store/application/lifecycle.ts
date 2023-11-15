@@ -246,7 +246,11 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
   },
 
   afterSetActivateWorkflow({ dispatch }) {
-    dispatch("workflow/checkForLinkedComponentUpdates", {}, { root: true });
+    dispatch(
+      "workflow/checkForLinkedComponentUpdates",
+      { auto: true },
+      { root: true },
+    );
   },
 
   async unloadActiveWorkflow(
@@ -260,17 +264,18 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       return;
     }
 
+    // clean up
+    const {
+      projectId,
+      info: { containerId: workflowId },
+    } = activeWorkflow;
+
     await dispatch("resetCanvasMode");
     await dispatch("toggleContextMenu");
     dispatch("workflow/setEditableAnnotationId", null, { root: true });
     dispatch("panel/closeExtensionPanel", null, { root: true });
     dispatch("workflow/clearComponentUpdateToasts", null, { root: true });
 
-    // clean up
-    const {
-      projectId,
-      info: { containerId: workflowId },
-    } = activeWorkflow;
     const { activeSnapshotId: snapshotId } = rootState.workflow;
 
     API.event.unsubscribeEventListener({

@@ -243,9 +243,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     title: "Check for linked component updates",
     execute: ({ $store }) => {
       // Get available updates
-      $store.dispatch("workflow/checkForLinkedComponentUpdates", {
-        silent: false,
-      });
+      $store.dispatch("workflow/checkForLinkedComponentUpdates");
     },
     condition: ({ $store }) => {
       const { containsLinkedComponents } =

@@ -1,4 +1,4 @@
-import type { ActionTree } from "vuex";
+import type { ActionTree, MutationTree } from "vuex";
 
 import type { Toast } from "webapps-common/ui/services/toast";
 import { API } from "@api";
@@ -16,20 +16,38 @@ const $toast = getToastsProvider();
 const pluralize = (text: string, count: number) =>
   count > 1 ? `${text}s` : text;
 
+interface State {
+  processedUpdateNotifications: Record<string, boolean>;
+}
+declare module "./index" {
+  interface WorkflowState extends State {}
+}
+
+export const state = (): State => ({
+  processedUpdateNotifications: {},
+});
+
+export const mutations: MutationTree<WorkflowState> = {
+  setProcessedNotification(state, { projectId, value }) {
+    state.processedUpdateNotifications[projectId] = value;
+  },
+};
+
 export const actions: ActionTree<WorkflowState, RootStoreState> = {
   async checkForLinkedComponentUpdates(
-    { state, dispatch, getters },
-    { silent = true },
+    { state, commit, dispatch, getters },
+    { auto = false } = {},
   ) {
     const isWritable = getters.isWritable;
     const shouldCheckForUpdates =
       isWritable && state.activeWorkflow.info.containsLinkedComponents;
 
-    if (!shouldCheckForUpdates) {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    const hasAlreadyChecked = state.processedUpdateNotifications[projectId];
+
+    if (!shouldCheckForUpdates || (hasAlreadyChecked && auto)) {
       return;
     }
-
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
     try {
       const nodeIds = await API.workflow.getLinkUpdates({
@@ -38,7 +56,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       });
 
       if (nodeIds.length === 0) {
-        if (!silent) {
+        if (!auto) {
           $toast.show({
             id: `${TOAST_ID_PREFIX}__ALL_UP_TO_DATE`,
             type: "success",
@@ -71,6 +89,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         ],
         autoRemove: false,
       });
+      commit("setProcessedNotification", { projectId, value: true });
     } catch (error) {
       $toast.show({
         id: `${TOAST_ID_PREFIX}__CHECKING_FAILED`,
@@ -79,23 +98,6 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         message: "Problem checking for linked component updates",
         autoRemove: false,
       });
-    }
-  },
-
-  async linkComponent({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const success = await API.desktop.openLinkComponentDialog({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-    if (success) {
-      // Reload the page if the component linking was successful
-      await this.dispatch(
-        "spaces/fetchWorkflowGroupContent",
-        { projectId },
-        { root: true },
-      );
     }
   },
 
@@ -149,6 +151,23 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
+  async linkComponent({ state }, { nodeId }) {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    const success = await API.desktop.openLinkComponentDialog({
+      projectId,
+      workflowId,
+      nodeId,
+    });
+    if (success) {
+      // Reload the page if the component linking was successful
+      await this.dispatch(
+        "spaces/fetchWorkflowGroupContent",
+        { projectId },
+        { root: true },
+      );
+    }
+  },
+
   async unlinkComponent({ state }, { nodeId }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     await API.workflowCommand.UpdateComponentLinkInformation({
@@ -179,5 +198,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   clearComponentUpdateToasts() {
     const $toast = getToastsProvider();
     $toast.removeBy((toast) => toast.id.startsWith(TOAST_ID_PREFIX));
+  },
+
+  clearProcessedUpdateNotification({ commit }, { projectId }) {
+    commit("setProcessedNotification", { projectId, value: false });
   },
 };
