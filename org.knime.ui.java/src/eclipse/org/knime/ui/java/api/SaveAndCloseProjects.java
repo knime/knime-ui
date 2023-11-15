@@ -192,10 +192,9 @@ public final class SaveAndCloseProjects {
     private static boolean saveAndCloseProject(final IProgressMonitor monitor, final String projectId,
         final String projectSVG, final WorkflowManager projectWfm) {
         monitor.subTask("Saving '" + projectId + "'");
-        if (projectWfm != null) { // workflow not loaded -> nothing to save
-            SaveProject.saveProject(monitor, projectWfm, projectSVG, false);
-        }
-        var success = CloseProject.closeProject(projectId);
+        // workflow not loaded -> nothing to save
+        final var success = (projectWfm == null || SaveProject.saveProject(monitor, projectWfm, projectSVG, false))
+                && CloseProject.closeProject(projectId);
         monitor.worked(1);
         return success;
     }

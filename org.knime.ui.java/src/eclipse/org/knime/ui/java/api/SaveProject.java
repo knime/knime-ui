@@ -217,13 +217,17 @@ final class SaveProject {
         }
     }
 
-    static void saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
+    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
             final boolean localOnly) {
         if (!localOnly && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo) {
-            saveBackToServerOrHub(monitor, wfm, svg);
+            if (!saveBackToServerOrHub(monitor, wfm, svg)) {
+                wfm.setDirty();
+                return false;
+            }
         } else {
             saveLocalProject(monitor, wfm, svg);
         }
+        return true;
     }
 
     private static void saveLocalProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
