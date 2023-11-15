@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import BasePanel from "./BasePanel.vue";
 import { useKaiServer } from "./useKaiServer";
@@ -18,8 +19,9 @@ const { fetchUiStrings, isLoading } = useKaiServer();
       </div>
 
       <Button primary compact :disabled="isLoading" @click="fetchUiStrings">
-        Try again</Button
-      >
+        Try again
+        <LoadingIcon v-if="isLoading" />
+      </Button>
     </div>
   </BasePanel>
 </template>
