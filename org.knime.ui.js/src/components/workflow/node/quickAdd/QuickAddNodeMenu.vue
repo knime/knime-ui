@@ -17,6 +17,7 @@ import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 import type { SettingsState } from "@/store/settings";
+import { API } from "@/api";
 
 const calculatePortOffset = ({
   targetPorts,
@@ -230,6 +231,9 @@ export default defineComponent({
         e.stopPropagation();
       }
     },
+    openKnimeUIPreferencePage() {
+      API.desktop.openWebUIPreferencePage();
+    },
   },
 });
 </script>
@@ -286,6 +290,7 @@ export default defineComponent({
             :display-mode="displayMode"
             @nav-reached-top="($refs.search as any).focus()"
             @add-node="addNode($event)"
+            @open-preferences="openKnimeUIPreferencePage"
           />
           <QuickAddNodeRecommendations
             v-else

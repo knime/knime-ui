@@ -188,7 +188,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
     commit("setNodes", null);
     commit("setNodesTags", []);
     commit("setTotalNumNodesFound", 0);
-    commit("setTotalNumFilteredNodesFound", null);
+    commit("setTotalNumFilteredNodesFound", 0);
   },
 
   /**

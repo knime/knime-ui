@@ -3,6 +3,7 @@ import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import SearchResults from "../SearchResults.vue";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
 import NodeList from "../NodeList.vue";
@@ -52,10 +53,9 @@ describe("SearchResults", () => {
     });
 
     expect(wrapper.text()).toMatch(
-      "There are no nodes matching with your current filter settings.",
+      "Change filter settings to “All nodes“ to see more advanced nodes matching your search criteria.",
     );
-    expect(wrapper.text()).toMatch("But there are some in “All nodes“.");
-    await wrapper.find("a").trigger("click");
+    await wrapper.findComponent(FilterCheckIcon).trigger("click");
     expect(wrapper.emitted("openPreferences")).toBeTruthy();
     expect(wrapper.findComponent(NodeList).exists()).toBe(false);
   });

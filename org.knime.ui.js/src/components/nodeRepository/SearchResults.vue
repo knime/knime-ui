@@ -2,6 +2,8 @@
 import { ref, computed, watch, toRefs, nextTick } from "vue";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
+import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
+import Button from "webapps-common/ui/components/Button.vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
@@ -103,26 +105,7 @@ defineExpose({ focusFirst });
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
-      <div v-if="isNodeListEmpty" class="no-matching-search">
-        <span v-if="hasFilteredOutNodes">
-          There are no nodes matching with your current filter settings.
-        </span>
-        <span v-else>There are no matching nodes.</span>
-        <div class="search-info">
-          <CircleInfoIcon class="info-icon" />
-          <span v-if="hasFilteredOutNodes"
-            >But there are some in “All nodes“.<br />Change the
-            <a @click="emit('openPreferences')">filter settings</a>
-            to see all nodes.</span
-          >
-          <span v-else
-            >Search the
-            <a :href="searchHubLink">KNIME Community Hub</a>
-            to find more nodes and extensions.</span
-          >
-        </div>
-      </div>
-      <div v-else class="node-list-wrapper">
+      <div v-if="!isNodeListEmpty" class="node-list-wrapper">
         <NodeList
           ref="nodeList"
           v-model:selected-node="selectedNodeModel"
@@ -137,11 +120,34 @@ defineExpose({ focusFirst });
           </template>
         </NodeList>
         <ReloadIcon v-if="isLoading" class="loading-indicator" />
-        <span v-if="hasFilteredOutNodes"
-          >There are some advanced nodes in “All nodes“. Change the
-          <a @click="emit('openPreferences')">filter settings</a> to see all
-          nodes.</span
-        >
+      </div>
+      <div v-if="hasFilteredOutNodes" class="filtered-nodes-wrapper">
+        <CircleInfoIcon class="info-icon" />
+        <div class="filtered-nodes-content">
+          <span
+            >Change filter settings to “All nodes“ to see more advanced nodes
+            matching your search criteria.</span
+          >
+          <Button
+            primary
+            compact
+            class="filtered-nodes-button"
+            @click="emit('openPreferences')"
+          >
+            <FilterCheckIcon />Change filter settings
+          </Button>
+        </div>
+      </div>
+      <div v-else-if="isNodeListEmpty" class="filtered-nodes-wrapper">
+        <CircleInfoIcon class="info-icon" />
+        <div class="filtered-nodes-content">
+          <span>There are no matching nodes.</span>
+          <span
+            >Search the
+            <a :href="searchHubLink">KNIME Community Hub</a>
+            to find more nodes and extensions.</span
+          >
+        </div>
       </div>
     </div>
   </ScrollViewContainer>
@@ -153,34 +159,6 @@ defineExpose({ focusFirst });
 @keyframes spin {
   100% {
     transform: rotate(-360deg);
-  }
-}
-
-.no-matching-search {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100%;
-  font-style: italic;
-  color: var(--knime-masala);
-  flex-direction: column;
-  margin-top: 30px;
-  margin-bottom: 15px;
-  padding: 0 10px;
-
-  & .search-info {
-    display: flex;
-    align-items: center;
-    padding-top: 20px;
-    width: 100%;
-
-    & .info-icon {
-      @mixin svg-icon-size 20;
-
-      stroke: var(--knime-masala);
-      min-width: 20px;
-      margin-right: 10px;
-    }
   }
 }
 
@@ -261,11 +239,42 @@ defineExpose({ focusFirst });
         margin-left: 10px;
       }
     }
+  }
+}
+
+.filtered-nodes-wrapper {
+  border-top: 1px solid var(--knime-silver-sand);
+  padding-top: 20px;
+  display: flex;
+  align-items: center;
+  margin: 0 10px;
+
+  & .info-icon {
+    @mixin svg-icon-size 20;
+
+    stroke: var(--knime-masala);
+    min-width: 20px;
+    margin-right: 10px;
+  }
+
+  & .filtered-nodes-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-weight: 500;
+    font-size: 13px;
+    font-style: italic;
+    width: 100%;
 
     & a {
       color: var(--knime-dove-gray);
       text-decoration: underline;
       cursor: pointer;
+    }
+
+    & .filtered-nodes-button {
+      margin-top: 15px;
+      font-weight: 500;
     }
   }
 }
