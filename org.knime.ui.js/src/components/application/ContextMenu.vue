@@ -340,7 +340,7 @@ export default defineComponent({
           {
             name: "checkForComponentUpdates",
             isVisible: this.isSelectionEmpty,
-          }, // Is this a good position?
+          },
         ]),
       ];
 

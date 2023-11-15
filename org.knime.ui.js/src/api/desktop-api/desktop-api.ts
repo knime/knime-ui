@@ -186,24 +186,6 @@ export const openLinkComponentDialog = ({
   );
 };
 
-export const updateComponent = ({
-  projectId,
-  workflowId,
-  nodeId,
-}: {
-  projectId: string;
-  workflowId: string;
-  nodeId: string;
-}) => {
-  return callBrowserFunction(
-    window.updateComponent,
-    [projectId, workflowId, nodeId],
-    `Could not update component ${nodeId}`,
-    false,
-    { block: false },
-  );
-};
-
 export const openChangeComponentHubItemVersionDialog = ({
   projectId,
   workflowId,

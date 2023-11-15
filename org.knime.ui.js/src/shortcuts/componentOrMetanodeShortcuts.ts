@@ -21,6 +21,7 @@ type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "changeHubItemVersion"
   | "changeComponentLinkType"
   | "openLayoutEditor"
+  | "checkForComponentUpdates"
 >;
 
 declare module "./index" {
@@ -236,6 +237,23 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     condition: ({ $store }) =>
       $store.state.workflow.activeWorkflow?.info.containerType ===
         "component" && $store.getters["workflow/isWritable"],
+  },
+  checkForComponentUpdates: {
+    text: "Check for linked component updates",
+    title: "Check for linked component updates",
+    execute: ({ $store }) => {
+      // Get available updates
+      $store.dispatch("workflow/checkForLinkedComponentUpdates", {
+        silent: false,
+      });
+    },
+    condition: ({ $store }) => {
+      const { containsLinkedComponents } =
+        $store.state.workflow.activeWorkflow.info;
+
+      const isWritable = $store.getters["workflow/isWritable"];
+      return containsLinkedComponents && isWritable;
+    },
   },
 };
 

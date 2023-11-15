@@ -3948,11 +3948,11 @@ export interface WorkflowInfo {
      */
     linked?: boolean;
     /**
-     * The number of updatable links within the project. Absent if there aren&#39;t any.
-     * @type {number}
+     * True if the workflow contains (deeply nested) linked components. If not, this property is absent.
+     * @type {boolean}
      * @memberof WorkflowInfo
      */
-    numberOfLinks?: number;
+    containsLinkedComponents?: boolean;
     /**
      * Type of the surrounding space&#39;s provider.
      * @type {string}

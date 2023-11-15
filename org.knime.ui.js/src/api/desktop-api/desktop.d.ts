@@ -15,12 +15,6 @@ declare function openLinkComponentDialog(
   nodeId: string,
 ): boolean;
 
-declare function updateComponent(
-  projectId: string,
-  workflowId: string,
-  nodeId: string,
-): void;
-
 declare function openChangeComponentHubItemVersionDialog(
   projectId: string,
   workflowId: string,

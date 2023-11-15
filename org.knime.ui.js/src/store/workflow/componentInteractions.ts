@@ -23,7 +23,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   ) {
     const isWritable = getters.isWritable;
     const shouldCheckForUpdates =
-      isWritable && state.activeWorkflow.info.numberOfLinks > 0;
+      isWritable && state.activeWorkflow.info.containsLinkedComponents;
 
     if (!shouldCheckForUpdates) {
       return;
@@ -55,20 +55,20 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         nodeIds.length,
       )} available`;
 
-      const button = {
-        text: "Update",
-        callback: async () => {
-          await dispatch("clearComponentUpdateToasts");
-          await dispatch("updateComponents", { nodeIds });
-        },
-      };
-
       $toast.show({
         id: `${TOAST_ID_PREFIX}__CHECKING`,
         type: "warning",
         headline: TOAST_HEADLINE,
         message,
-        buttons: [button],
+        buttons: [
+          {
+            text: "Update",
+            callback: async () => {
+              await dispatch("clearComponentUpdateToasts");
+              await dispatch("updateComponents", { nodeIds });
+            },
+          },
+        ],
         autoRemove: false,
       });
     } catch (error) {

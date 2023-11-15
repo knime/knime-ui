@@ -6,6 +6,7 @@ import { deepMocked } from "@/test/utils";
 import { applicationState, loadStore } from "./loadStore";
 
 import { runInEnvironment } from "@/environment";
+import { createWorkflow } from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
@@ -88,31 +89,43 @@ describe("application::lifecycle", () => {
 
   describe("workflow Lifecycle", () => {
     it("loads root workflow successfully", async () => {
-      const { store, loadWorkflow, subscribeEvent } = loadStore();
+      const mockWorkflow = createWorkflow();
+      const { store, loadWorkflow, subscribeEvent, dispatchSpy } = loadStore();
       loadWorkflow.mockResolvedValue({
-        dummy: true,
-        workflow: { info: { containerId: "root" }, nodes: [] },
+        workflow: mockWorkflow,
         snapshotId: "snap",
       });
 
-      await store.dispatch("application/loadWorkflow", { projectId: "wf1" });
+      await store.dispatch("application/loadWorkflow", {
+        projectId: mockWorkflow.projectId,
+      });
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/beforeSetActivateWorkflow",
+        { workflow: mockWorkflow },
+      );
 
       expect(loadWorkflow).toHaveBeenCalledWith(
-        expect.objectContaining({ workflowId: "root", projectId: "wf1" }),
+        expect.objectContaining({
+          workflowId: mockWorkflow.info.containerId,
+          projectId: mockWorkflow.projectId,
+        }),
       );
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/afterSetActivateWorkflow",
+        undefined,
+      );
+
       expect(
         deepMocked(API).desktop.setProjectActiveAndEnsureItsLoaded,
-      ).toHaveBeenCalledWith({ projectId: "wf1" });
-      expect(store.state.workflow.activeWorkflow).toStrictEqual({
-        info: { containerId: "root" },
-        nodes: [],
-        projectId: "wf1",
-      });
+      ).toHaveBeenCalledWith({ projectId: mockWorkflow.projectId });
+      expect(store.state.workflow.activeWorkflow).toStrictEqual(mockWorkflow);
       expect(store.state.workflow.activeSnapshotId).toBe("snap");
       expect(subscribeEvent).toHaveBeenCalledWith({
         typeId: "WorkflowChangedEventType",
-        projectId: "wf1",
-        workflowId: "root",
+        projectId: mockWorkflow.projectId,
+        workflowId: mockWorkflow.info.containerId,
         snapshotId: "snap",
       });
     });
