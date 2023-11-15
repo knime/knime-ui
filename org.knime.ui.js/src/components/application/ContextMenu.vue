@@ -415,7 +415,7 @@ export default defineComponent({
               { name: "editName", isVisible: true },
               { name: "expandComponent", isVisible: true },
               {
-                name: "openLayoutEditor",
+                name: "openOutsideLayoutEditor",
                 isVisible: !this.singleSelectedNode?.link,
               },
               {

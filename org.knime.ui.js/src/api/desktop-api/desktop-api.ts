@@ -371,15 +371,29 @@ export const setProjectActiveAndEnsureItsLoaded = ({
 export const openLayoutEditor = ({
   projectId,
   workflowId,
-  nodeId
 }: {
   projectId: string;
   workflowId: string;
-  nodeId: string | undefined;
 }) => {
   return callBrowserFunction(
     window.openLayoutEditor,
-    [projectId, nodeId ? workflowId + nodeId : workflowId],
+    [projectId, workflowId],
+    "Could not open layout editor",
+    false,
+    { block: true, darkenBackground: true },
+  );
+};
+
+export const openOutsideLayoutEditor = ({
+  projectId,
+  nodeId,
+}: {
+  projectId: string;
+  nodeId: string;
+}) => {
+  return callBrowserFunction(
+    window.openLayoutEditor,
+    [projectId, nodeId],
     "Could not open layout editor",
     false,
     { block: true, darkenBackground: true },
