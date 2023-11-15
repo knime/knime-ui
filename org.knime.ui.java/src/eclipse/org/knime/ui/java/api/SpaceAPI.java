@@ -51,7 +51,6 @@ package org.knime.ui.java.api;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -155,17 +154,17 @@ final class SpaceAPI {
     static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
         final String destWorkflowGroupItemId) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-        var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
-        if (nameCollisions.isEmpty()) {
-            return Space.NameCollisionHandling.NOOP.toString();
-        } else {
-            return NameCollisionChecker //
-                .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions) //
-                .map(NameCollisionHandling::toString) //
-                .orElse("CANCEL");
-        }
+        return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId) //
+            .map(NameCollisionHandling::toString) //
+            .orElse("CANCEL");
     }
 
+    private static Optional<NameCollisionHandling> determineNameCollisionHandling(final Space space,
+        final Object[] itemIds, final String destWorkflowGroupItemId) {
+        final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
+        return nameCollisions.isEmpty() ? Optional.of(Space.NameCollisionHandling.NOOP) : NameCollisionChecker //
+                    .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions);
+    }
     /**
      * Copies space items from Local to Hub space or vice versa.
      *
@@ -224,67 +223,85 @@ final class SpaceAPI {
             destinationStore, excludeData);
     }
 
-    // move or copy between spaces on same Hub
+    /**
+     * Move or copy a set of space items from one folder into another one inside the same Hub (i.e., space provider).
+     *
+     * @param spaceProviderId space provider ID of the Hub
+     * @param sourceSpaceId space ID of the source items
+     * @param doCopy {@code true} for copying, {@code false} for moving
+     * @param sourceItemIds array of source item IDs
+     * @return {@code true} on success, {@code false} on failure or cancellation
+     */
     @API
-    static boolean moveOrCopyToSpace(final String spaceProviderId, final String sourceSpaceId,
-            final boolean copy, final Object[] arr) {
-        if (arr.length == 0) {
+    static boolean moveOrCopyToSpace(final String spaceProviderId, final String sourceSpaceId, // NOSONAR complexity is OK
+            final boolean doCopy, final Object[] sourceItemIds) {
+        if (sourceItemIds.length == 0) {
             return true;
         }
         final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
         final var sourceSpace = sourceSpaceProvider.getSpace(sourceSpaceId);
         // this is really an illegal argument, since we deal with remote copy/move
         if (sourceSpace instanceof LocalWorkspace) {
-            final var copyText = copy ? "copy" : "move";
+            final var copyText = doCopy ? "copy" : "move";
             DesktopAPUtil.showError("Cannot %s from the local space".formatted(copyText),
                 "Cannot move item(s) from the local space.");
             return false;
         }
 
-
-        // Obtain the destination space and workflow group item id via the classic SpaceDestinationPicker,
-        // but restrict available mount points to the source Hub.
-        // When ModernUI provides a destination picker, this detour is not needed anymore.
-        final var destPicker = new SpaceDestinationPicker(new String[] { spaceProviderId }, copy ? Operation.COPY :
-            Operation.MOVE);
-        if (!destPicker.open()) {
+        final var optDestination = pickDestinationFolder(spaceProviderId, doCopy);
+        if (optDestination.isEmpty()) {
             return false;
         }
-        final var destInfo = destPicker.getSelectedDestination();
-        final var destinationStore = destInfo.getDestination();
-        final var uri = destinationStore.toURI();
-        final var dest = resolveIds(DesktopAPI.getDeps(SpaceProviders.class), uri)
-                // we _just_ picked the destination from Hub, so it must be available...
-                .orElseThrow();
-        final var destProvider = getSpaceProvider(dest.spaceProviderId());
-        final var destWorkflowGroupItemId = dest.itemId();
-        final var destSpace = destProvider.getSpace(dest.spaceId());
+        final var destination = optDestination.get();
 
+        final var destinationProvider = getSpaceProvider(destination.spaceProviderId());
+        final var destinationWorkflowGroupItemId = destination.itemId();
+        final var destinationSpace = destinationProvider.getSpace(destination.spaceId());
 
-        final var itemIds = Arrays.stream(arr).map(String.class::cast).toArray(String[]::new);
-        final var nameCollisions =
-            NameCollisionChecker.checkForNameCollisions(destSpace, destWorkflowGroupItemId, itemIds);
-
-        final Space.NameCollisionHandling collisionHandling;
-        if (nameCollisions.isEmpty()) {
-            collisionHandling = Space.NameCollisionHandling.NOOP;
-        } else {
-            collisionHandling = NameCollisionChecker //
-                .openDialogToSelectCollisionHandling(destSpace, destWorkflowGroupItemId, nameCollisions) //
-                .orElse(Space.NameCollisionHandling.NOOP);
+        final var optCollisionHandling =
+                determineNameCollisionHandling(destinationSpace, sourceItemIds, destinationWorkflowGroupItemId);
+        if (optCollisionHandling.isEmpty()) {
+            return false;
         }
 
         try {
-            destSpace.moveOrCopyItems(List.of(itemIds), destWorkflowGroupItemId, collisionHandling, copy);
+            final var itemIds = Arrays.stream(sourceItemIds).map(String.class::cast).toList();
+            final var collisionHandling = optCollisionHandling.get();
+            destinationSpace.moveOrCopyItems(itemIds, destinationWorkflowGroupItemId, collisionHandling, doCopy);
             return true;
         } catch (final IOException e) {
-            DesktopAPUtil.showAndLogError("Unable to %s item".formatted(copy ? "copy" : "move"),
-                "An unexpected exception occurred while %s the item".formatted(copy ? "copying" : "moving"),
+            DesktopAPUtil.showAndLogError("Unable to %s item".formatted(doCopy ? "copy" : "move"),
+                "An unexpected exception occurred while %s the item".formatted(doCopy ? "copying" : "moving"),
                 NodeLogger.getLogger(SpaceAPI.class), e);
             return false;
         }
     }
 
+    private static Optional<ItemIds> pickDestinationFolder(final String spaceProviderId, final boolean doCopy) {
+        // Obtain the destination space and workflow group item id via the classic SpaceDestinationPicker,
+        // but restrict available mount points to the source Hub.
+        // When ModernUI provides a destination picker, this detour is not needed anymore.
+        final var destPicker = new SpaceDestinationPicker(new String[] { spaceProviderId }, doCopy ? Operation.COPY :
+            Operation.MOVE);
+        if (!destPicker.open()) {
+            return Optional.empty();
+        }
+        final var destinationInfo = destPicker.getSelectedDestination();
+        final var destinationStore = destinationInfo.getDestination();
+        final var uri = destinationStore.toURI();
+        final var ids = resolveIds(DesktopAPI.getDeps(SpaceProviders.class), uri)
+                // we _just_ picked the destination from Hub, so it must be available...
+                .orElseThrow();
+        return Optional.of(ids);
+    }
+
+    /**
+     * Resolves an absolute KNIME URL to a triple of space provider ID, space ID and item ID.
+     *
+     * @param spaceProviders available space providers
+     * @param uri URL to be resolved
+     * @return triple of IDs if resolution succeeded, {@link Optional#empty()} otherwise
+     */
     private static Optional<ItemIds> resolveIds(final SpaceProviders spaceProviders, final URI uri) {
         if (KnimeUrlType.MOUNTPOINT_ABSOLUTE != KnimeUrlType.getType(uri)
                 .orElseThrow(() -> new IllegalArgumentException("Not a KNIME URL: \"%s\"".formatted(uri)))) {
@@ -297,6 +314,11 @@ final class SpaceAPI {
         return spaceAndItemIds.map(ids -> new ItemIds(providerId, ids.spaceId(), ids.itemId()));
     }
 
+    /**
+     * @param spaceProviderId ID of the space provider containing the item
+     * @param spaceId ID of the space in provider with ID {@code spaceProviderId} containing the item
+     * @param itemId ID of the item contained in space with ID {@code spaceId}
+     */
     private record ItemIds(String spaceProviderId, String spaceId, String itemId) {}
 
     /**
