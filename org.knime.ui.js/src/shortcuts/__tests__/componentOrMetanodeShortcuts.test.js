@@ -151,6 +151,48 @@ describe("componentOrMetanodeShortcuts", () => {
       componentOrMetanodeShortcuts.openLayoutEditor.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith("workflow/openLayoutEditor");
     });
+
+    describe("openOutsideLayoutEditor", () => {
+      it("has not a component selected, button disabled", () => {
+        const { $store } = createStore({
+          singleSelectedNode: {
+            kind: "nothing",
+          },
+        });
+        expect(
+          componentOrMetanodeShortcuts.openOutsideLayoutEditor.condition({
+            $store,
+          }),
+        ).toBeFalsy();
+      });
+
+      it("has a component selected, button enabled", () => {
+        const { $store } = createStore({
+          singleSelectedNode: {
+            kind: "component",
+          },
+        });
+        expect(
+          componentOrMetanodeShortcuts.openOutsideLayoutEditor.condition({
+            $store,
+          }),
+        ).toBeTruthy();
+      });
+
+      it("has a linked component selected, button disabled", () => {
+        const { $store } = createStore({
+          singleSelectedNode: {
+            kind: "component",
+            link: "random-link",
+          },
+        });
+        expect(
+          componentOrMetanodeShortcuts.openOutsideLayoutEditor.condition({
+            $store,
+          }),
+        ).toBeFalsy();
+      });
+    });
   });
 
   describe.each([["component"], ["metanode"]])("create %s", (nodeKind) => {
