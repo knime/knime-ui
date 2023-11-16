@@ -417,7 +417,7 @@ export default defineComponent({
               { name: "expandComponent", isVisible: true },
               {
                 name: "openLayoutEditorByNodeId",
-                isVisible: !isLinked && isComponent,
+                isVisible: !isLinked,
               },
               {
                 name: "linkComponent",

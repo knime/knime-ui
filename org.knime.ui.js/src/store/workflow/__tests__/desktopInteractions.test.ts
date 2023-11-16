@@ -114,11 +114,30 @@ describe("workflow store: desktop interactions", () => {
           info: { containerId: "root" },
         }),
       );
-      store.dispatch("workflow/openLayoutEditor", "node x");
+      store.dispatch("workflow/openLayoutEditor");
 
       expect(mockedAPI.desktop.openLayoutEditor).toHaveBeenCalledWith({
         projectId: "foo",
         workflowId: "root",
+      });
+    });
+
+    it("calls openLayoutEditor from API with nodeId", async () => {
+      const { store } = await loadStore();
+      const nodeId = "nodeId1";
+
+      store.commit(
+        "workflow/setActiveWorkflow",
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+        }),
+      );
+      store.dispatch("workflow/openLayoutEditorByNodeId", { nodeId });
+
+      expect(mockedAPI.desktop.openLayoutEditor).toHaveBeenCalledWith({
+        projectId: "foo",
+        workflowId: nodeId,
       });
     });
 
