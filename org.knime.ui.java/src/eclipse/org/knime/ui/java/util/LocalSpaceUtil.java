@@ -46,6 +46,7 @@
  */
 package org.knime.ui.java.util;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +58,6 @@ import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.project.Project;
-import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 
@@ -110,7 +110,7 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public Space getSpace(final String spaceId) {
+            public LocalWorkspace getSpace(final String spaceId) {
                 return Optional.of(localSpace).filter(space -> space.getId().equals(spaceId)).orElseThrow();
             }
 
@@ -122,6 +122,12 @@ public final class LocalSpaceUtil {
             @Override
             public String getName() {
                 return "Local space";
+            }
+
+            @Override
+            public Optional<SpaceAndItemId> resolveSpaceAndItemId(final URI uri) {
+                return getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID).getItemIdByURI(uri) //
+                        .map(itemId -> new SpaceAndItemId(LocalWorkspace.LOCAL_WORKSPACE_ID, itemId));
             }
         };
     }
