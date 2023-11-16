@@ -152,7 +152,7 @@ describe("componentOrMetanodeShortcuts", () => {
       expect(mockDispatch).toHaveBeenCalledWith("workflow/openLayoutEditor");
     });
 
-    describe("openOutsideLayoutEditor", () => {
+    describe("openLayoutEditorByNodeId", () => {
       it("has not a component selected, button disabled", () => {
         const { $store } = createStore({
           singleSelectedNode: {
@@ -160,7 +160,7 @@ describe("componentOrMetanodeShortcuts", () => {
           },
         });
         expect(
-          componentOrMetanodeShortcuts.openOutsideLayoutEditor.condition({
+          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition({
             $store,
           }),
         ).toBeFalsy();
@@ -173,7 +173,7 @@ describe("componentOrMetanodeShortcuts", () => {
           },
         });
         expect(
-          componentOrMetanodeShortcuts.openOutsideLayoutEditor.condition({
+          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition({
             $store,
           }),
         ).toBeTruthy();
@@ -187,7 +187,7 @@ describe("componentOrMetanodeShortcuts", () => {
           },
         });
         expect(
-          componentOrMetanodeShortcuts.openOutsideLayoutEditor.condition({
+          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition({
             $store,
           }),
         ).toBeFalsy();

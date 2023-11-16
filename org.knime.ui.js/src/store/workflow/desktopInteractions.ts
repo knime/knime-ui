@@ -98,10 +98,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 
   /* See docs in API */
-  openOutsideLayoutEditor({ state }, { nodeId }) {
+  openLayoutEditorByNodeId({ state }, { nodeId }) {
     const { projectId } = getProjectAndWorkflowIds(state);
 
-    API.desktop.openOutsideLayoutEditor({ projectId, nodeId });
+    API.desktop.openLayoutEditor({ projectId, workflowId: nodeId });
   },
 
   async saveWorkflowAs({ state, dispatch, rootState }) {

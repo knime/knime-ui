@@ -21,7 +21,7 @@ type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "changeHubItemVersion"
   | "changeComponentLinkType"
   | "openLayoutEditor"
-  | "openOutsideLayoutEditor"
+  | "openLayoutEditorByNodeId"
   | "checkForComponentUpdates"
 >;
 
@@ -239,14 +239,14 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       $store.state.workflow.activeWorkflow?.info.containerType ===
         "component" && $store.getters["workflow/isWritable"],
   },
-  openOutsideLayoutEditor: {
+  openLayoutEditorByNodeId: {
     text: "Open layout editor",
     title: "Open layout editor",
     hotkey: ["Ctrl", "Shift", "D"],
     icon: LayoutIcon,
     execute: ({ $store }) => {
       const nodeId = $store.getters["selection/singleSelectedNode"]?.id;
-      $store.dispatch("workflow/openOutsideLayoutEditor", { nodeId });
+      $store.dispatch("workflow/openLayoutEditorByNodeId", { nodeId });
     },
     condition: ({ $store }) => {
       const selectedNode = $store.getters["selection/singleSelectedNode"];

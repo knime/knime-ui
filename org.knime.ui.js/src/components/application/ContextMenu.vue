@@ -298,6 +298,7 @@ export default defineComponent({
           this.singleSelectedNode.allowedActions;
       const isMetanode = this.singleSelectedNode?.kind === "metanode";
       const isComponent = this.singleSelectedNode?.kind === "component";
+      const isLinked = this.singleSelectedNode?.link;
 
       const portViewItems = this.portViews();
 
@@ -415,28 +416,28 @@ export default defineComponent({
               { name: "editName", isVisible: true },
               { name: "expandComponent", isVisible: true },
               {
-                name: "openOutsideLayoutEditor",
-                isVisible: !this.singleSelectedNode?.link,
+                name: "openLayoutEditorByNodeId",
+                isVisible: !isLinked && isComponent,
               },
               {
                 name: "linkComponent",
-                isVisible: !this.singleSelectedNode?.link,
+                isVisible: !isLinked,
               },
               {
                 name: "updateComponent",
-                isVisible: this.singleSelectedNode?.link,
+                isVisible: isLinked,
               },
               {
                 name: "changeComponentLinkType",
-                isVisible: this.singleSelectedNode?.link,
+                isVisible: isLinked,
               },
               {
                 name: "changeHubItemVersion",
-                isVisible: this.singleSelectedNode?.link,
+                isVisible: isLinked,
               },
               {
                 name: "unlinkComponent",
-                isVisible: this.singleSelectedNode?.link,
+                isVisible: isLinked,
               },
             ]),
           },

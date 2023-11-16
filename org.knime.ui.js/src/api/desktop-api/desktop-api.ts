@@ -384,22 +384,6 @@ export const openLayoutEditor = ({
   );
 };
 
-export const openOutsideLayoutEditor = ({
-  projectId,
-  nodeId,
-}: {
-  projectId: string;
-  nodeId: string;
-}) => {
-  return callBrowserFunction(
-    window.openLayoutEditor,
-    [projectId, nodeId],
-    "Could not open layout editor",
-    false,
-    { block: true, darkenBackground: true },
-  );
-};
-
 export const openWorkflowCoachPreferencePage = () => {
   return callBrowserFunction(
     window.openWorkflowCoachPreferencePage,
