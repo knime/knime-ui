@@ -68,6 +68,7 @@ public class OnPreShutdown implements PreShutdown {
             // cancel if the workflows haven't been saved (yet). Either because the saving has been cancelled
             // or the workflows need to be saved (through a respective event to the FE, see SaveAndCloseWorkflows)
             if (!lifeCycle.getState().workflowsSaved()) {
+                lifeCycle.setStateTransition(StateTransition.WEB_APP_LOADED);
                 return false;
             }
             lifeCycle.suspend();

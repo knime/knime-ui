@@ -99,7 +99,7 @@ public final class TestingUtil {
         var lifeCycle = LifeCycle.get();
         if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
             KnimeBrowserView.clearView();
-            lifeCycle.skipStateTransition(StateTransition.SAVE_STATE);
+            lifeCycle.setStateTransition(StateTransition.SAVE_STATE);
             lifeCycle.suspend();
         }
         disposeLoadedWorkflowsForTesting();

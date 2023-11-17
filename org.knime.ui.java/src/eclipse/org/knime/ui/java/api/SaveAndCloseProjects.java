@@ -53,6 +53,7 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -110,16 +111,18 @@ public final class SaveAndCloseProjects {
     static void saveAndCloseProjects(final Object[] projectIdsAndSvgsAndMore,
         final Consumer<PostProjectCloseAction> runPostProjectCloseAction, final IProgressService progressService) { // NOSONAR
         var count = ((Double)projectIdsAndSvgsAndMore[0]).intValue();
-        var firstFailure = new AtomicReference<String>();
+        var firstFailure = new AtomicReference<Optional<String>>();
         var projectIds = Arrays.copyOfRange(projectIdsAndSvgsAndMore, 1, count + 1, String[].class);
         var svgs = Arrays.copyOfRange(projectIdsAndSvgsAndMore, count + 1, count * 2 + 1, String[].class);
         saveProjectsWithProgressBar(projectIds, svgs, firstFailure, progressService);
 
-        if (firstFailure.get() != null) {
+        final var optFailure = firstFailure.get();
+        if (optFailure != null) { // NOSONAR
             DesktopAPUtil.showWarning("Failed to save workflow", "Workflow could not be saved.\nSee log for details.");
             // make the first project active which couldn't be saved
-            ProjectManager.getInstance().setProjectActive(firstFailure.get());
+            optFailure.ifPresent(projectId -> ProjectManager.getInstance().setProjectActive(projectId));
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            return;
         }
 
         var postProjectCloseAction = PostProjectCloseAction.valueOf((String)projectIdsAndSvgsAndMore[count * 2 + 1]);
@@ -163,20 +166,22 @@ public final class SaveAndCloseProjects {
     }
 
     private static void saveProjectsWithProgressBar(final String[] projectIds, final String[] svgs,
-        final AtomicReference<String> firstFailure, final IProgressService progressService) {
+        final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService) {
         IRunnableWithProgress saveRunnable = monitor -> saveProjects(projectIds, svgs, firstFailure, monitor);
         try {
             progressService.run(true, false, saveRunnable);
         } catch (InvocationTargetException e) {
             NodeLogger.getLogger(SaveAndCloseProjects.class).error("Saving workflow failed", e);
+            firstFailure.compareAndExchange(null, Optional.empty());
         } catch (InterruptedException e) {
             NodeLogger.getLogger(SaveAndCloseProjects.class).warn("Saving process was interrupted", e);
             Thread.currentThread().interrupt();
+            firstFailure.compareAndExchange(null, Optional.empty());
         }
     }
 
     private static void saveProjects(final String[] projectIds, final String[] svgs,
-        final AtomicReference<String> firstFailure, final IProgressMonitor monitor) {
+        final AtomicReference<Optional<String>> firstFailure, final IProgressMonitor monitor) {
         monitor.beginTask("Saving " + projectIds.length + " projects", projectIds.length);
         for (var i = 0; i < projectIds.length; i++) {
             var projectId = projectIds[i];
@@ -184,7 +189,7 @@ public final class SaveAndCloseProjects {
             var projectWfm = ProjectManager.getInstance().getCachedProject(projectId).orElse(null);
             var success = saveAndCloseProject(monitor, projectId, projectSVG, projectWfm);
             if (!success) {
-                firstFailure.compareAndExchange(null, projectId);
+                firstFailure.compareAndExchange(null, Optional.of(projectId));
             }
         }
     }

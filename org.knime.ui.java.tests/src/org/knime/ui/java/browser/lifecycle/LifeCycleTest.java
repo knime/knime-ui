@@ -205,7 +205,7 @@ class LifeCycleTest {
         assertFails(() -> lc.saveState());
         lc.init(false); // init is allowed here again
 
-        lc.skipStateTransition(StateTransition.SUSPEND);
+        lc.setStateTransition(StateTransition.SUSPEND);
         assertThat(lc.isLastStateTransition(StateTransition.SUSPEND)).isTrue();
 
         lc.shutdown();

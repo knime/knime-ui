@@ -352,10 +352,13 @@ final class SaveProject {
                     return false;
                 }
             }
-        } else if (!remoteStore.getParent().fetchInfo().isModifiable()) {
-            DesktopAPUtil.showError("Workflow not writable", "You don't have permissions to write into the workflow's "
-                + "parent folder. Use \"Save As...\" in order to save it to a different location.");
-            return false;
+        } else {
+            final var parent = remoteStore.getParent();
+            if (parent == null || !parent.fetchInfo().isModifiable()) {
+                DesktopAPUtil.showError("Workflow not writable", "You don't have permissions to write into the "
+                    + "workflow's parent folder. Use \"Save As...\" in order to save it to a different location.");
+                return false;
+            }
         }
 
         // selected a remote location: save + upload

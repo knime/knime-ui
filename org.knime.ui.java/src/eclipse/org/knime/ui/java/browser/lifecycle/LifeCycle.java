@@ -278,11 +278,11 @@ public final class LifeCycle {
     }
 
     /**
-     * Skips to the next state transition without executing the given one. For testing purposes only. Use with care.
+     * Sets the current state transition without executing the given one. Mostly for testing purposes. Use with care.
      *
      * @param stateTransition
      */
-    public void skipStateTransition(final StateTransition stateTransition) {
+    public void setStateTransition(final StateTransition stateTransition) {
         m_lastStateTransition = stateTransition;
     }
 
