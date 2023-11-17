@@ -11,8 +11,7 @@ const props = withDefaults(defineProps<Props>(), {
   extensionName: "",
 });
 
-const round = (value: number) =>
-  Math.round((value + Number.EPSILON) * 100) / 100;
+const round = (value: number) => value.toFixed();
 
 const rounded = computed(() => round(props.progress * 100));
 </script>
@@ -61,7 +60,7 @@ const rounded = computed(() => round(props.progress * 100));
 & progress[value]::-webkit-progress-value {
   border-radius: 10px;
   background: var(--color);
-  transition: width 1s ease-in-out;
+  transition: width 0.3s ease-in-out;
 }
 
 & .progress-message {
