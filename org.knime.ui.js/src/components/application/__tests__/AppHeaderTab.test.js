@@ -4,6 +4,8 @@ import { shallowMount } from "@vue/test-utils";
 import AppHeaderTab from "../AppHeaderTab.vue";
 import CloseButton from "@/components/common/CloseButton.vue";
 import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
+import CloudWorkflowIcon from "webapps-common/ui/assets/img/icons/cloud-workflow.svg";
+import CloudComponentIcon from "webapps-common/ui/assets/img/icons/cloud-component.svg";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 
 describe("AppHeaderTab.vue", () => {
@@ -111,17 +113,39 @@ describe("AppHeaderTab.vue", () => {
     );
   });
 
-  it("should show the component icon when a component is loaded", () => {
-    const wrapper = doMount({ projectType: "Component" });
-
-    expect(wrapper.findComponent(WorkflowIcon).exists()).toBe(false);
-    expect(wrapper.findComponent(NodeWorkflowIcon).exists()).toBe(true);
-  });
-
-  it("should show the workflow icon when a workflow is loaded", () => {
-    const wrapper = doMount({ projectType: "Workflow" });
+  it("should show the workflow icon when a workflow is loaded for local space", () => {
+    const wrapper = doMount({ projectType: "Workflow", provider: "local" });
 
     expect(wrapper.findComponent(WorkflowIcon).exists()).toBe(true);
     expect(wrapper.findComponent(NodeWorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(CloudWorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(CloudComponentIcon).exists()).toBe(false);
+  });
+
+  it("should show the component icon when a component is loaded for local space", () => {
+    const wrapper = doMount({ projectType: "Component", provider: "local" });
+
+    expect(wrapper.findComponent(WorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(NodeWorkflowIcon).exists()).toBe(true);
+    expect(wrapper.findComponent(CloudWorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(CloudComponentIcon).exists()).toBe(false);
+  });
+
+  it("should show the workflow icon when a workflow is loaded", () => {
+    const wrapper = doMount({ projectType: "Workflow", provider: "hub" });
+
+    expect(wrapper.findComponent(WorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(NodeWorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(CloudWorkflowIcon).exists()).toBe(true);
+    expect(wrapper.findComponent(CloudComponentIcon).exists()).toBe(false);
+  });
+
+  it("should show the component icon when a component is loaded", () => {
+    const wrapper = doMount({ projectType: "Component", provider: "hub" });
+
+    expect(wrapper.findComponent(WorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(NodeWorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(CloudWorkflowIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(CloudComponentIcon).exists()).toBe(true);
   });
 });
