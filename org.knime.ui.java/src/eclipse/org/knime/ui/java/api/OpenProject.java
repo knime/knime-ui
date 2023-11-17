@@ -59,7 +59,6 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
-import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -173,8 +172,8 @@ final class OpenProject {
             relativePath = localWorkspace.getLocalRootPath().relativize(wfPath).toString();
         }
 
-        // TODO: NXT-2101, Enable components on the Hub as well
-        var projectType = space.getProjectType(itemId).orElse(ProjectTypeEnum.WORKFLOW);
+        var projectType = space.getProjectType(itemId).orElseThrow(() -> new IllegalArgumentException(
+            "The item for id " + itemId + " is neither a workflow- nor a component-project"));
 
         var wfProj =
             ProjectFactory.createProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
