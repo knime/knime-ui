@@ -78,32 +78,26 @@ const onHover = (hoverValue: string) => {
     <li
       :class="{ active: isActive, hovered: isHoveredOver }"
       :title="shouldTruncateName ? name : null"
-      @click.stop="isActive ? null : $emit('switchWorkflow', projectId)"
+      @click.stop="isActive ? null : emit('switchWorkflow', projectId)"
       @mouseover="onHover(projectId)"
       @mouseleave="onHover(null)"
-      @click.middle.stop="$emit('closeWorkflow', projectId)"
+      @click.middle.stop="emit('closeWorkflow', projectId)"
     >
       <!-- There are different icons for local workflows and for components -->
       <template v-if="isLocal">
-        <NodeWorkflowIcon
-          v-if="projectType === 'Component'"
-          class="node-workflow-icon"
-        />
-        <WorkflowIcon v-else class="workflow-icon" />
+        <NodeWorkflowIcon v-if="projectType === 'Component'" />
+        <WorkflowIcon v-else />
       </template>
       <template v-else>
-        <CloudComponentIcon
-          v-if="projectType === 'Component'"
-          class="node-workflow-icon"
-        />
-        <CloudWorkflowIcon v-else class="workflow-icon" />
+        <CloudComponentIcon v-if="projectType === 'Component'" />
+        <CloudWorkflowIcon v-else />
       </template>
 
       <span class="text">{{ truncatedProjectName }}</span>
       <CloseButton
         class="close-icon"
         :has-unsaved-changes="hasUnsavedChanges"
-        @close.stop="$emit('closeWorkflow', projectId)"
+        @close.stop="emit('closeWorkflow', projectId)"
       />
     </li>
   </ul>
@@ -135,14 +129,7 @@ li {
   min-width: 80px;
   max-width: 300px;
 
-  & .workflow-icon {
-    min-width: 18px;
-    stroke: var(--knime-white);
-
-    @mixin svg-icon-size 18;
-  }
-
-  & .node-workflow-icon {
+  & svg {
     min-width: 18px;
     stroke: var(--knime-white);
 
@@ -202,8 +189,7 @@ li.active {
     color: var(--knime-black);
   }
 
-  & .workflow-icon,
-  & .node-workflow-icon {
+  & svg {
     stroke: var(--knime-black);
   }
 
