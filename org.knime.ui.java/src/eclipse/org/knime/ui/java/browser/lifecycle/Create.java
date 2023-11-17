@@ -141,7 +141,7 @@ final class Create {
             return;
         }
         try {
-            final var baseUrl = "https://www.knime.com/welcome-ap";
+            final var baseUrl = "https://tips-and-tricks.knime.com/welcome-ap";
             var builder = new StringBuilder(baseUrl);
             builder.append("?knid=" + KNIMEConstants.getKNID());
             builder.append("&version=" + KNIMEConstants.VERSION);
