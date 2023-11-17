@@ -21,9 +21,9 @@ describe("AppHeader.vue", () => {
     isLoadingWorkflow = false,
   } = {}) => {
     const openProjects = customOpenProjects || [
-      { projectId: "1", name: "Test1" },
-      { projectId: "2", name: "Test2" },
-      { projectId: "3", name: "Test3" },
+      { projectId: "1", name: "Test1", origin: { providerId: "local" } },
+      { projectId: "2", name: "Test2", origin: { providerId: "local" } },
+      { projectId: "3", name: "Test3", origin: { providerId: "local" } },
     ];
     const dirtyProjectsMap = {
       1: false,

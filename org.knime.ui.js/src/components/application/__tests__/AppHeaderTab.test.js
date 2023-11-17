@@ -15,6 +15,7 @@ describe("AppHeaderTab.vue", () => {
       isHoveredOver: false,
       windowWidth: 1024,
       projectType: "Workflow",
+      provider: "local",
     };
 
     return shallowMount(AppHeaderTab, { props: { ...defaultProps, ...props } });
