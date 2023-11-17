@@ -150,6 +150,7 @@ export default defineComponent({
               :key="projectId"
               :name="name"
               :project-id="projectId"
+              :provider="origin.providerId"
               :project-type="origin.projectType"
               :window-width="windowWidth"
               :is-active="activeProjectTab === projectId"

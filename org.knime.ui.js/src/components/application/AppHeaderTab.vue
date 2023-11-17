@@ -1,80 +1,75 @@
-<script>
+<script setup lang="ts">
+import { computed, toRefs } from "vue";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
+import CloudWorkflowIcon from "webapps-common/ui/assets/img/icons/cloud-workflow.svg";
+import CloudComponentIcon from "webapps-common/ui/assets/img/icons/cloud-component.svg";
 import CloseButton from "@/components/common/CloseButton.vue";
+import { SpaceProviderNS } from "@/api/custom-types";
 
 /* eslint-disable no-magic-numbers */
 const maxCharSwitch = [
-  (width) => (width < 600 ? 10 : false),
-  (width) => (width < 900 ? 20 : false),
-  (width) => (width < 1280 ? 50 : false),
-  (width) => (width < 1680 ? 100 : false),
-  (width) => (width < 2180 ? 150 : false),
-  (width) => (width < 2800 ? 200 : false),
-  (width) => (width >= 2800 ? 256 : false),
+  (width) => (width < 600 ? 10 : 0),
+  (width) => (width < 900 ? 20 : 0),
+  (width) => (width < 1280 ? 50 : 0),
+  (width) => (width < 1680 ? 100 : 0),
+  (width) => (width < 2180 ? 150 : 0),
+  (width) => (width < 2800 ? 200 : 0),
+  (width) => (width >= 2800 ? 256 : 0),
 ];
 /* eslint-enable no-magic-numbers */
 
-const maxCharFunction = (windowWidth) => {
+const maxCharFunction = (windowWidth: number) => {
   const getMaxChars = maxCharSwitch.find((fn) => fn(windowWidth));
   return getMaxChars(windowWidth);
 };
 
-export default {
-  components: {
-    CloseButton,
-    WorkflowIcon,
-    NodeWorkflowIcon,
-  },
-  props: {
-    name: {
-      type: String,
-      required: true,
-    },
-    projectId: {
-      type: String,
-      required: true,
-    },
-    projectType: {
-      type: String,
-      required: false,
-    },
-    isActive: {
-      type: Boolean,
-      default: false,
-    },
-    hasUnsavedChanges: {
-      type: Boolean,
-      default: false,
-    },
-    isHoveredOver: {
-      type: Boolean,
-      default: false,
-    },
-    windowWidth: {
-      type: Number,
-      default: 0,
-    },
-  },
-  emits: ["hover", "switchWorkflow", "closeWorkflow"],
-  computed: {
-    shouldTruncateName() {
-      const maxChars = maxCharFunction(this.windowWidth);
-      return this.name.length > maxChars;
-    },
-    truncatedProjectName() {
-      const maxChars = maxCharFunction(this.windowWidth);
+type Props = {
+  name: string;
+  projectId: string;
+  projectType?: string;
+  isActive?: boolean;
+  hasUnsavedChanges?: boolean;
+  isHoveredOver?: boolean;
+  windowWidth?: number;
+  provider: string;
+};
 
-      return this.shouldTruncateName
-        ? `${this.name.slice(0, maxChars)} …`
-        : this.name;
-    },
-  },
-  methods: {
-    onHover(hoverValue) {
-      this.$emit("hover", hoverValue);
-    },
-  },
+const props = withDefaults(defineProps<Props>(), {
+  projectType: null,
+  isActive: false,
+  hasUnsavedChanges: false,
+  isHoveredOver: false,
+  windowWidth: 0,
+});
+
+const emit = defineEmits<{
+  (e: "hover", projectId: string): void;
+  (e: "switchWorkflow", projectId: string): void;
+  (e: "closeWorkflow", projectId: string): void;
+}>();
+
+const { windowWidth, name, provider } = toRefs(props);
+
+const shouldTruncateName = computed(() => {
+  const maxChars = maxCharFunction(windowWidth.value);
+  return name.value.length > maxChars;
+});
+
+const truncatedProjectName = computed(() => {
+  const maxChars = maxCharFunction(windowWidth.value);
+
+  return shouldTruncateName.value
+    ? `${name.value.slice(0, maxChars)} …`
+    : name.value;
+});
+
+const isLocal = computed(
+  () => provider.value.toUpperCase() === SpaceProviderNS.TypeEnum.LOCAL,
+);
+
+const onHover = (hoverValue: string) => {
+  emit("hover", hoverValue);
 };
 </script>
 
@@ -88,12 +83,21 @@ export default {
       @mouseleave="onHover(null)"
       @click.middle.stop="$emit('closeWorkflow', projectId)"
     >
-      <!-- Workflows are the default unless we explicitely know it is a component -->
-      <NodeWorkflowIcon
-        v-if="projectType === 'Component'"
-        class="node-workflow-icon"
-      />
-      <WorkflowIcon v-else class="workflow-icon" />
+      <!-- There are different icons for local workflows and for components -->
+      <template v-if="isLocal">
+        <NodeWorkflowIcon
+          v-if="projectType === 'Component'"
+          class="node-workflow-icon"
+        />
+        <WorkflowIcon v-else class="workflow-icon" />
+      </template>
+      <template v-else>
+        <CloudComponentIcon
+          v-if="projectType === 'Component'"
+          class="node-workflow-icon"
+        />
+        <CloudWorkflowIcon v-else class="workflow-icon" />
+      </template>
 
       <span class="text">{{ truncatedProjectName }}</span>
       <CloseButton
@@ -132,15 +136,17 @@ li {
   max-width: 300px;
 
   & .workflow-icon {
+    min-width: 18px;
     stroke: var(--knime-white);
 
     @mixin svg-icon-size 18;
   }
 
   & .node-workflow-icon {
+    min-width: 18px;
     stroke: var(--knime-white);
 
-    @mixin svg-icon-size 30;
+    @mixin svg-icon-size 18;
   }
 
   &:hover {
