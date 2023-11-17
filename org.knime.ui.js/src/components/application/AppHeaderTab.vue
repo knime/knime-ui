@@ -168,7 +168,7 @@ li {
 li.hovered:only-child:not(.active) {
   box-shadow:
     -1px 0 0 1px var(--knime-black-semi),
-    10px 10px 45px 10px var(--knime-black-semi);
+    45px 10px 45px 10px var(--knime-black-semi);
 }
 
 li.hovered:last-child:not(.active, :only-child) {
