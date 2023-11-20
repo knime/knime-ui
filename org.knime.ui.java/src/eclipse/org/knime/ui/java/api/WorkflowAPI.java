@@ -59,6 +59,7 @@ import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
+import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
@@ -124,11 +125,17 @@ final class WorkflowAPI {
     @API
     static void saveAndCloseWorkflows(final Object[] projectIdsAndSvgsAndMore) {
         var progressService = PlatformUI.getWorkbench().getProgressService();
-        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgsAndMore, postWorkflowCloseAction -> {
+        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgsAndMore, postWorkflowCloseAction -> { // NOSONAR
             switch (postWorkflowCloseAction) {
                 case SWITCH_PERSPECTIVE -> EclipseUIAPI.doSwitchToJavaUI();
-                case SHUTDOWN -> {
-                    LifeCycle.get().suspend();
+                case SHUTDOWN -> { // NOSONAR
+                    var lifeCycle = LifeCycle.get();
+                    if (lifeCycle.isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
+                        // we skip the save-state state-transition because once we arrive here save-state has definitely
+                        // been called; otherwise we wouldn't get here
+                        lifeCycle.setStateTransition(StateTransition.SAVE_STATE);
+                    }
+                    lifeCycle.suspend();
                     PlatformUI.getWorkbench().close();
                 }
                 default -> DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
