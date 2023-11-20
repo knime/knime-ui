@@ -145,13 +145,13 @@ export default defineComponent({
               v-for="{
                 name,
                 projectId,
-                origin = { projectType: null },
+                origin = { providerId: '', projectType: null },
               } in openProjects"
               :key="projectId"
               :name="name"
               :project-id="projectId"
-              :provider="origin ? origin.providerId : ''"
-              :project-type="origin ? origin.projectType : ''"
+              :provider="origin.providerId"
+              :project-type="origin.projectType"
               :window-width="windowWidth"
               :is-active="activeProjectTab === projectId"
               :has-unsaved-changes="Boolean(dirtyProjectsMap[projectId])"
