@@ -7,12 +7,15 @@ import {
   type Mock,
   beforeEach,
 } from "vitest";
-import { createWorkflow } from "@/test/factories";
+import { createComponentNode, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 
 import { loadStore } from "./loadStore";
-import { UpdateLinkedComponentsResult } from "@/api/gateway-api/generated-api";
+import {
+  NodeState,
+  UpdateLinkedComponentsResult,
+} from "@/api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
 
@@ -148,7 +151,9 @@ describe("workflow::componentInteractions", () => {
       expect(show).toHaveBeenCalledWith(
         expect.objectContaining({
           message: "You have 3 updates available",
-          buttons: expect.any(Array),
+          buttons: expect.arrayContaining([
+            expect.objectContaining({ text: "Update" }),
+          ]),
         }),
       );
       expect(mockedAPI.workflow.getLinkUpdates).toHaveBeenCalledWith({
@@ -164,6 +169,46 @@ describe("workflow::componentInteractions", () => {
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateComponents", {
         nodeIds,
       });
+    });
+
+    it("should show toast when there are updates (executed components)", async () => {
+      const { store } = await loadStore();
+      const workflow = createWorkflow({
+        info: { containsLinkedComponents: true },
+        nodes: {
+          "root:1": createComponentNode({
+            id: "root:1",
+            state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
+          }),
+          "root:2": createComponentNode({
+            id: "root:2",
+            state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+          }),
+          "root:3": createComponentNode({
+            id: "root:3",
+            state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+          }),
+        },
+      });
+      store.commit("workflow/setActiveWorkflow", workflow);
+
+      const nodeIds = ["root:1", "root:2", "root:3"];
+      mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce(nodeIds);
+
+      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+        auto: true,
+      });
+
+      expect(show).toHaveBeenCalledOnce();
+      expect(show).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
+            "You have 3 updates available. Reset components and update now?",
+          buttons: expect.arrayContaining([
+            expect.objectContaining({ text: "Reset and update" }),
+          ]),
+        }),
+      );
     });
 
     it("should show toast when there are issues checking for updates", async () => {

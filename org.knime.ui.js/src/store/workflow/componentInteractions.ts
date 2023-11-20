@@ -8,6 +8,7 @@ import { getToastsProvider } from "@/plugins/toasts";
 import type { RootStoreState } from "../types";
 import type { WorkflowState } from "./index";
 import { getProjectAndWorkflowIds } from "./util";
+import { isExecuted } from "@/util/nodeUtil";
 
 const TOAST_ID_PREFIX = "LINK_UPDATE";
 const TOAST_HEADLINE = "Linked components";
@@ -68,19 +69,35 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         return;
       }
 
+      const {
+        activeWorkflow: { nodes },
+      } = state;
+
+      const hasExecutedNodes = nodeIds.some((id) => {
+        const node = nodes[id];
+        return isExecuted(node);
+      });
+
       const message = `You have ${nodeIds.length} ${pluralize(
         "update",
         nodeIds.length,
       )} available`;
 
+      const withUpdateDisclaimer = hasExecutedNodes
+        ? `${message}. Reset ${pluralize(
+            "component",
+            nodeIds.length,
+          )} and update now?`
+        : message;
+
       $toast.show({
         id: `${TOAST_ID_PREFIX}__CHECKING`,
         type: "warning",
         headline: TOAST_HEADLINE,
-        message,
+        message: withUpdateDisclaimer,
         buttons: [
           {
-            text: "Update",
+            text: hasExecutedNodes ? "Reset and update" : "Update",
             callback: async () => {
               await dispatch("clearComponentUpdateToasts");
               await dispatch("updateComponents", { nodeIds });
