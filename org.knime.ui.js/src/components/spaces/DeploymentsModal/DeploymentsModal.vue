@@ -60,7 +60,7 @@ const closeModal = () => {
 .modal {
   --modal-width: 80%;
 
-  z-index: 55;
+  z-index: 100;
 }
 
 .no-data {
