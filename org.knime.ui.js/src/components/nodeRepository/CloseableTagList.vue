@@ -7,7 +7,7 @@ import SelectableTagList from "@/components/common/SelectableTagList.vue";
 const maxLengthOfTagInChars = 31;
 const maxLinesOfTags = 1;
 export const maxNumberOfInitialTags = 10;
-export const minNumberOfInitialTags = 2;
+export const minNumberOfInitialTags = 1;
 
 /**
  * Wraps a SelectableTagList and adds close buttons and click-away to it. The visible area overflows and looks like a
