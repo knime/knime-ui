@@ -153,11 +153,13 @@ public final class ProjectFactory {
     }
 
     /**
+     * Creates a project from a {@link WorkflowManager} and an {@link Origin}
+     *
      * @param wfm
      * @param origin
      * @param projectName
      * @param oldProjectId
-     * @return
+     * @return The newly created project
      */
     public static Project createProject(final WorkflowManager wfm,
         final Origin origin, final String projectName, final String oldProjectId) {
@@ -216,11 +218,13 @@ public final class ProjectFactory {
     }
 
     /**
+     * Creates an {@link Origin} from a Hub Space and a WorkflowManager
+     *
      * @param hubLocation
      * @param wfm
-     * @return
+     * @return The newly created Origin
      */
-    public static Optional<Project.Origin>
+    public static Optional<Origin>
         getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation, final WorkflowManager wfm) {
         final var context = wfm.getContextV2();
         final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
