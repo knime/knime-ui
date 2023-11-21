@@ -178,7 +178,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
   async loadWorkflow({ dispatch }, { projectId, workflowId = "root" }) {
     // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
-    API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
+    await API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
 
     const project = await API.workflow.getWorkflow({
       projectId,
