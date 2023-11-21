@@ -32,7 +32,7 @@ export default {
       "hasAnnotationModeEnabled",
       "hasSelectionModeEnabled",
       "hasPanModeEnabled",
-      "activeProjectOrigin",
+      "isUnknownProject",
     ]),
 
     canvasModes() {
@@ -79,7 +79,7 @@ export default {
       };
     },
     toolbarDropdowns() {
-      if (!this.activeProjectOrigin) {
+      if (this.isUnknownProject) {
         return {};
       }
 
@@ -95,8 +95,8 @@ export default {
 
       const visibleItems: Partial<Record<ShortcutName, boolean>> = {
         // Always visible
-        save: Boolean(this.activeProjectOrigin),
-        saveAs: !this.activeProjectOrigin,
+        save: !this.isUnknownProject,
+        saveAs: this.isUnknownProject,
         undo: true,
         redo: true,
 

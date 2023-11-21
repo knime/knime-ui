@@ -6,13 +6,13 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import * as $colors from "@/style/colors.mjs";
 
 const store = useStore();
-const isUnknownOrigin = computed(
-  () => store.getters["application/activeProjectOrigin"] === null,
+const isUnknownProject = computed(
+  () => store.getters["application/isUnknownProject"],
 );
 const activeProjectId = computed(() => store.state.application.activeProjectId);
 
 const provider = computed<SpaceProviderNS.SpaceProvider | null>(() => {
-  if (isUnknownOrigin.value) {
+  if (isUnknownProject.value) {
     return null;
   }
 
@@ -21,13 +21,13 @@ const provider = computed<SpaceProviderNS.SpaceProvider | null>(() => {
 
 const isServerSpace = computed(
   () =>
-    !isUnknownOrigin.value &&
+    !isUnknownProject.value &&
     provider.value?.type === SpaceProviderNS.TypeEnum.SERVER,
 );
 
 const shouldShow = computed(() => {
   return (
-    activeProjectId.value && (isUnknownOrigin.value || isServerSpace.value)
+    activeProjectId.value && (isUnknownProject.value || isServerSpace.value)
   );
 });
 </script>
@@ -35,10 +35,10 @@ const shouldShow = computed(() => {
 <template>
   <div
     v-if="shouldShow"
-    :class="['banner', { blue: isServerSpace, yellow: isUnknownOrigin }]"
+    :class="['banner', { blue: isServerSpace, yellow: isUnknownProject }]"
   >
     <span>
-      <template v-if="isUnknownOrigin">
+      <template v-if="isUnknownProject">
         You have opened a workflow that is not part of your spaces. “Save” a
         local copy to keep your changes.
       </template>

@@ -330,4 +330,15 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
 
     return activeProject.origin ?? null;
   },
+  isUnknownProject(_state, getters, rootState) {
+    if (getters.activeProjectOrigin === null) {
+      return true;
+    }
+    const spaceProviders = rootState.spaces.spaceProviders ?? {};
+    return !Object.values(spaceProviders).find((provider) =>
+      provider.spaces.find(
+        (space) => space.id === getters.activeProjectOrigin.spaceId,
+      ),
+    );
+  },
 };

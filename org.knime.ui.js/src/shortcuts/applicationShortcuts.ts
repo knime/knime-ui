@@ -37,8 +37,11 @@ const applicationShortcuts: ApplicationShortcuts = {
       const localSpaceProject =
         projectPath[cachedLocalSpaceProjectId] && cachedLocalSpaceProjectId;
 
-      const projectId =
-        activeProjectId ?? globalSpaceBrowserProject ?? localSpaceProject;
+      const isUnknownProject = $store.getters["application/isUnknownProject"];
+
+      const projectId = isUnknownProject
+        ? localSpaceProject
+        : activeProjectId ?? globalSpaceBrowserProject ?? localSpaceProject;
 
       $store.commit("spaces/setCreateWorkflowModalConfig", {
         isOpen: true,
