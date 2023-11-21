@@ -178,7 +178,6 @@ describe("Kanvas", () => {
 
     expect(actions.canvas.contentBoundsChanged).not.toHaveBeenCalled();
 
-    // TODO test this via store update
     wrapper.vm.$options.watch.contentBounds.call(
       wrapper.vm,
       { left: 0, top: 0 },

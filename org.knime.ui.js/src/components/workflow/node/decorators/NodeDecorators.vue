@@ -102,7 +102,6 @@ export default {
     <!-- Nodes contained in a component with a Streaming Job Manager get a little arrow or "x" to indicate their
         compatibility. Components with a Streaming Job Manager also get a little arrow.
         In both cases, the backend sets the `executionInfo` attribute. -->
-    <!-- TODO: NXT-832 Currently there is no test/example-workflow to test this case in action -->
     <StreamingDecorator
       v-if="executionInfo"
       :background-type="decoratorBackgroundType"

@@ -317,7 +317,6 @@ export default {
   transition: transform 120ms ease;
 
   &.mickey-mouse {
-    /* TODO: NXT-1058 why is this transition no applied when the .connected class is removed? */
     opacity: 0;
     transition: opacity 0.5s 0.25s;
 
@@ -329,8 +328,6 @@ export default {
 
     &:hover {
       /* immediately show port on direct hover */
-
-      /* TODO: NXT-1058 why is "transition: opacity 0;" not working? */
       transition: none;
       opacity: 1;
     }

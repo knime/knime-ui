@@ -13,8 +13,6 @@ describe("Connector Path", () => {
     y: 40.5,
   };
 
-  // TODO: NXT-666
-  // Technical debt: The code to shift connectors of triangle ports by 2px was removed and will be reintroduced later
   it("draws a path between table ports", () => {
     let path = connectorPath(
       sourcePort.x,

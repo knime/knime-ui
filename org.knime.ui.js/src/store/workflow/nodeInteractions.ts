@@ -156,10 +156,6 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const newNodeId =
       typeof response === "string" ? response : response.newNodeId;
 
-    // TODO: NXT-1788 component selection doesn't work atm because the api call is
-    // made via a browser function which is async, so when the node id
-    // is returned the WorkflowChangedEvent that adds the node to the state
-    // still hasn't arrived, so the selection doesn't happen
     if (selectionMode !== "none") {
       if (selectionMode === "new-only") {
         await dispatch("selection/deselectAllObjects", null, { root: true });
