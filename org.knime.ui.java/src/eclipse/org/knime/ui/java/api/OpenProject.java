@@ -117,17 +117,19 @@ final class OpenProject {
      * @return Whether the project could be fetched and opened
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport) {
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            openProjectInClassicAndWebUI(repoObjectImport.getKnimeURI(), repoObjectImport.locationInfo()//
+        final var locationInfo = repoObjectImport.locationInfo()//
                 .filter(HubSpaceLocationInfo.class::isInstance)//
                 .map(HubSpaceLocationInfo.class::cast)//
-                .orElse(null));
+                .orElse(null);
+        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            openProjectInClassicAndWebUI(repoObjectImport.getKnimeURI(), locationInfo);
         } else {
             final var wfm = fetchAndLoadProjectWithProgress(repoObjectImport);
             if (wfm == null) {
                 return false;
             }
-            final var wfProj = ProjectFactory.createProject(wfm);
+            final var origin = ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm);
+            final var wfProj = ProjectFactory.createProject(wfm, origin.orElseGet(null), wfm.getName(), null);
             openProjectInWebUIOnly(wfm, wfProj, WorkflowType.REMOTE);
         }
         return true;

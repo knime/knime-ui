@@ -51,6 +51,8 @@ package org.knime.ui.java.util;
 import java.util.Optional;
 
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project;
@@ -150,7 +152,14 @@ public final class ProjectFactory {
         return createProject(wfm, origin, projectName, oldProjectId);
     }
 
-    private static Project createProject(final WorkflowManager wfm,
+    /**
+     * @param wfm
+     * @param origin
+     * @param projectName
+     * @param oldProjectId
+     * @return
+     */
+    public static Project createProject(final WorkflowManager wfm,
         final Origin origin, final String projectName, final String oldProjectId) {
         final var projectId = oldProjectId == null ? LocalSpaceUtil.getUniqueProjectId(wfm.getName()) : oldProjectId;
         return new Project() { // NOSONAR
@@ -204,5 +213,39 @@ public final class ProjectFactory {
                 return projectType;
             }
         };
+    }
+
+    /**
+     * @param hubLocation
+     * @param wfm
+     * @return
+     */
+    public static Optional<Project.Origin>
+        getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation, final WorkflowManager wfm) {
+        final var context = wfm.getContextV2();
+        final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
+        return Optional.of(new Project.Origin() {
+            @Override
+            public String getProviderId() {
+                final var mountpoint = apExecInfo.getMountpoint()
+                    .orElseThrow(() -> new IllegalStateException("Missing Mount ID for Hub workflow '" + wfm + "'"));
+                return mountpoint.getFirst().getAuthority();
+            }
+
+            @Override
+            public String getSpaceId() {
+                return hubLocation.getSpaceItemId();
+            }
+
+            @Override
+            public String getItemId() {
+                return hubLocation.getWorkflowItemId();
+            }
+
+            @Override
+            public ProjectTypeEnum getProjectType() {
+                return ProjectTypeEnum.WORKFLOW; // TODO: NXT-2101, cannot open Hub components
+            }
+        });
     }
 }
