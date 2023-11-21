@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, toRefs } from "vue";
 import Button from "webapps-common/ui/components/Button.vue";
+import { getToastsProvider } from "@/plugins/toasts";
 
 // eslint-disable-next-line no-magic-numbers
 const maxFileSize = 1024 * 250; // 50kb
@@ -19,6 +20,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const $toast = getToastsProvider();
 
 const emit = defineEmits<{
   (e: "update:modelValue", icon: string): void;
@@ -42,12 +45,14 @@ const onChange = async (e: Event) => {
   }
 
   if (file.size > maxFileSize) {
-    alert(
-      `Please choose a smaller file, this one exceeds the maximum file Size of ${
+    $toast.show({
+      type: "error",
+      headline: "Invalid icon",
+      message: `Please choose a smaller file, this one exceeds the maximum file Size of ${
         // eslint-disable-next-line no-magic-numbers
         maxFileSize / 1024
       }kb`,
-    );
+    });
     return;
   }
 
