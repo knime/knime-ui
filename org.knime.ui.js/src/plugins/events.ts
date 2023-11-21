@@ -55,7 +55,9 @@ const init: PluginInitFunction = ({ $store, $router }) => {
      */
     AppStateChangedEvent({ appState }) {
       $store.dispatch("application/replaceApplicationState", appState);
-      $store.dispatch("application/setActiveProject", { $router });
+      if (appState.openProjects) {
+        $store.dispatch("application/setActiveProject", { $router });
+      }
 
       // In case a `SaveAndCloseWorkflowsEvent` was received before, which might've triggered
       // an `AppStateChangedEvent` later, then we make sure to clean up the busy state here
