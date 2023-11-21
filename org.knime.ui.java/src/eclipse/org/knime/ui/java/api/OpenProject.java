@@ -54,14 +54,19 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.impl.project.DefaultProject;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
@@ -102,7 +107,7 @@ final class OpenProject {
             openProjectInClassicAndWebUI(knimeUrl, null);
         } else {
             DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {
-                fetchAndOpenProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
+                openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
                 return null;
             });
         }
@@ -128,9 +133,9 @@ final class OpenProject {
             if (wfm == null) {
                 return false;
             }
-            final var origin = ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm);
-            final var wfProj = ProjectFactory.createProject(wfm, origin.orElse(null), wfm.getName(), null);
-            openProjectInWebUIOnly(wfm, wfProj, WorkflowType.REMOTE);
+            final var origin = ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm).orElse(null);
+            final var wfProj = DefaultProject.builder(wfm).setOrigin(origin).build();
+            setProjectActiveAndUpdateAppState(wfProj, wfm, WorkflowType.REMOTE);
         }
         return true;
     }
@@ -152,8 +157,8 @@ final class OpenProject {
     }
 
     /**
-     * Fetch, load, and open the project in the Modern/Web UI. Those projects won't be available in the classic UI
-     * when switching to it.
+     * Fetch, load, and open the project in the Modern/Web UI. Those projects won't be available in the classic UI when
+     * switching to it.
      *
      * @implNote Needs to be stand-alone (not wrapped in progress manager) to be testable.
      * @param spaceId
@@ -161,12 +166,65 @@ final class OpenProject {
      * @param spaceProviderId
      * @param monitor
      */
-    static void fetchAndOpenProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
+    static void openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
         final IProgressMonitor monitor) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        var projectType = space.getProjectType(itemId).orElseThrow(() -> new IllegalArgumentException(
+            "The item for id " + itemId + " is neither a workflow- nor a component-project"));
+
+        var projectAndWfm = getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType);
+        if (projectAndWfm == null) {
+            projectAndWfm = loadProject(space, spaceProviderId, spaceId, itemId, projectType, monitor);
+        }
+        if (projectAndWfm == null) {
+            return;
+        }
+
+        setProjectActiveAndUpdateAppState(projectAndWfm.project, projectAndWfm.wfm,
+            space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
+    }
+
+    private static void setProjectActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,
+        final WorkflowType wfType) {
+        ProjectManager.getInstance().setProjectActive(project.getID());
+        // instrumentation
+        NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, wfType);
+        // update application state
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+    }
+
+    /*
+     *  Checks whether there is already a workflow project loaded which is used as a workflow service (i.e. a workflow
+     *  executed by another workflow). If so, the respective project is updated to add the project-origin and mark it as
+     *  being used by the UI, too.
+     *
+     *  @return the project and workflow-manager or null if none
+     */
+    private static ProjectAndWorkflowManager getAndUpdateWorkflowServiceProject(final Space space,
+        final String spaceProviderId, final String spaceId, final String itemId, final ProjectTypeEnum projectType) {
+        if (space instanceof LocalWorkspace localSpace) {
+            var pm = ProjectManager.getInstance();
+            var path = localSpace.toLocalAbsolutePath(new ExecutionMonitor(), itemId);
+            var project = WorkflowServiceProjects.getProject(path).flatMap(id -> pm.getProject(id)).orElse(null);
+            if (project != null) {
+                var wfm = pm.getCachedProject(project.getID()).orElse(null);
+                if (wfm != null) {
+                    // update project to set origin and mark it to be used by the UI
+                    var projectWithOrigin = ProjectFactory.createProject(wfm, spaceProviderId, spaceId, itemId, null,
+                        projectType, project.getID());
+                    pm.addProject(projectWithOrigin);
+                    return new ProjectAndWorkflowManager(projectWithOrigin, wfm);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static ProjectAndWorkflowManager loadProject(final Space space, final String spaceProviderId,
+        final String spaceId, final String itemId, final ProjectTypeEnum projectType, final IProgressMonitor monitor) {
         var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor);
         if (wfm == null) {
-            return;
+            return null;
         }
         String relativePath = null;
         if (space instanceof LocalWorkspace localWorkspace) {
@@ -174,26 +232,13 @@ final class OpenProject {
             relativePath = localWorkspace.getLocalRootPath().relativize(wfPath).toString();
         }
 
-        var projectType = space.getProjectType(itemId).orElseThrow(() -> new IllegalArgumentException(
-            "The item for id " + itemId + " is neither a workflow- nor a component-project"));
-
-        var wfProj =
-            ProjectFactory.createProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
-        openProjectInWebUIOnly(wfm, wfProj,
-            space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
+        var project = ProjectFactory.createProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
+        ProjectManager.getInstance().addProject(project);
+        return new ProjectAndWorkflowManager(project, wfm);
     }
 
-    private static void openProjectInWebUIOnly(final WorkflowManager wfm, final Project wfProj,
-        final WorkflowType type) {
-        // register workflow project
-        var wpm = ProjectManager.getInstance();
-        wpm.addProject(wfProj.getID(), wfProj);
-        wpm.openAndCacheProject(wfProj.getID());
-        wpm.setProjectActive(wfProj.getID());
-        // instrumentation
-        NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, type);
-        // update application state
-        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+    private static record ProjectAndWorkflowManager(Project project, WorkflowManager wfm) {
+        //
     }
 
     @SuppressWarnings("restriction")
