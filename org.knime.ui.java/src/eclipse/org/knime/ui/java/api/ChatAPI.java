@@ -164,7 +164,7 @@ public final class ChatAPI {
     /**
      * @return the ID of the hub that provides the ai-service
      */
-    @API
+    @API(runInUIThread = false) // unnecessarily blocks the UI otherwise - see AP-21492
     public static String getUiStrings() {
         return getListener().map(ChatListener::getUiStrings).orElse(null);
     }
