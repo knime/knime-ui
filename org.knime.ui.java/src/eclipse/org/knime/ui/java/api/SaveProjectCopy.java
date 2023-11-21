@@ -209,20 +209,19 @@ final class SaveProjectCopy {
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
         final String projectSVG) {
         final var project = ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId);
-        saveAndOpenProject(oldContext, newContext, project, projectId,
+        saveAndOpenProject(oldContext, newContext, project,
             monitor -> SaveProject.saveWorkflowAs(newContext, monitor, wfm, projectSVG));
     }
 
     private static void saveAndOpenComponentProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId) {
         final var project = ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId);
-        saveAndOpenProject(oldContext, newContext, project, projectId,
+        saveAndOpenProject(oldContext, newContext, project,
             monitor -> SaveProject.saveComponentTemplateAs(monitor, wfm, newContext));
     }
 
     private static void saveAndOpenProject(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
-        final Project project, final String projectId,
-        final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> func) {
+        final Project project, final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> func) {
         final var newPath = newContext.getExecutorInfo().getLocalWorkflowPath();
         final var resultOptional = DesktopAPUtil.runWithProgress("Saving as", LOGGER, func);
 
@@ -234,7 +233,7 @@ final class SaveProjectCopy {
                 final var srcPath = execInfo.getLocalWorkflowPath();
                 FileUtil.deleteRecursively(srcPath.toFile());
             }
-            ProjectManager.getInstance().addProject(projectId, project);
+            ProjectManager.getInstance().addProject(project);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
 
