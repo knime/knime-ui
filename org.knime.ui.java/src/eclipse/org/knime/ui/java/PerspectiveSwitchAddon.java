@@ -216,6 +216,7 @@ public final class PerspectiveSwitchAddon {
             });
             wpm.removeProject(projectId);
         });
+        ProjectWorkflowMap.isActive = true;
     }
 
     private void switchToWebUITheme() {

@@ -81,6 +81,7 @@ import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
+import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.knime.workbench.workflowcoach.NodeRecommendationUpdater;
 import org.osgi.framework.FrameworkUtil;
 
@@ -134,6 +135,9 @@ final class Create {
         NodeRecommendationUpdater.checkForStatisticUpdates(false);
 
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
+        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            ProjectWorkflowMap.isActive = false;
+        }
     }
 
     private static void callWelcomeAPEndpoint() {
