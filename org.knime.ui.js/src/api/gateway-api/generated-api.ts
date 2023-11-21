@@ -2075,6 +2075,12 @@ export interface NodePort extends NodePortTemplate {
      * @memberof NodePort
      */
     canRemove?: boolean;
+    /**
+     * Flag for the magical ports on the outside of Components with reporting activated, absent if &#x60;false&#x60;.
+     * @type {boolean}
+     * @memberof NodePort
+     */
+    isComponentReportPort?: boolean;
 
 }
 
