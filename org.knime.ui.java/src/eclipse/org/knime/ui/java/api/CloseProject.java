@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.ui.PlatformUI;
@@ -96,7 +97,7 @@ final class CloseProject {
                 wpm.setProjectActive(nextProjectId);
             }
             var success =
-                SaveAndCloseProjects.saveAndCloseProjectsInteractively(Collections.singleton(projectIdToClose),
+                SaveAndCloseProjects.saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose),
                     DesktopAPI.getDeps(EventConsumer.class), PostProjectCloseAction.UPDATE_APP_STATE) == 1;
             if (success) {
                 DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
@@ -132,18 +133,17 @@ final class CloseProject {
 
     static boolean closeProject(final String projectId) {
         var wpm = ProjectManager.getInstance();
-        var wfm = wpm.getCachedProject(projectId).orElse(null);
-        try {
-            if (wfm != null) {
+        AtomicBoolean success = new AtomicBoolean(true);
+        wpm.removeProject(projectId, wfm -> {
+            try {
                 CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
+            } catch (InterruptedException e) { // NOSONAR
+                NodeLogger.getLogger(SaveAndCloseProjects.class)
+                    .warn("Problem while waiting for the workflow '" + projectId + "' to be cancelled", e);
+                success.set(false);
             }
-            wpm.removeProject(projectId);
-            return true;
-        } catch (InterruptedException e) { // NOSONAR
-            NodeLogger.getLogger(SaveAndCloseProjects.class)
-                .warn("Problem while waiting for the workflow '" + projectId + "' to be cancelled", e);
-            return false;
-        }
+        });
+        return success.get();
     }
 
     private static boolean closeProjectViaClassicUI(final String projectIdToClose, final String nextProjectId,
@@ -155,7 +155,7 @@ final class CloseProject {
         var wasClosed = page.closeEditor(editorToClose, save);
         if (wasClosed) {
             var wpm = ProjectManager.getInstance();
-            wpm.removeProject(projectIdToClose);
+            wpm.removeProject(projectIdToClose, w -> {});
 
             // Workaround for keeping the classic and Web UI's editors/tabs in sync
             if (nextProjectId != null) {

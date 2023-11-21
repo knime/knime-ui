@@ -173,14 +173,14 @@ public final class AppStatePersistor {
         for (var projectJson : projectsJson) {
             var project = createWorkflowProject(projectJson);
             var projectId = project.getID();
-            wpm.addProject(projectId, project);
+            wpm.addProject(project);
             if (projectJson.get(ACTIVE).asBoolean()) {
                 var wfm = wpm.openAndCacheProject(projectId).orElse(null);
                 if (wfm != null) {
                     wpm.setProjectActive(projectId);
                     NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
                 } else {
-                    wpm.removeProject(projectId);
+                    wpm.removeProject(projectId, w -> {});
                 }
             }
         }

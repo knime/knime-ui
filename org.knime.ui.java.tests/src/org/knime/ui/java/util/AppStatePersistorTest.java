@@ -64,6 +64,7 @@ import org.knime.core.node.KNIMEConstants;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.testing.util.WorkflowManagerUtil;
 
 /**
  * Tests methods in {@link AppStatePersistor}.
@@ -80,7 +81,7 @@ public class AppStatePersistorTest {
         assertAppStateFile();
 
         var wpm = ProjectManager.getInstance();
-        wpm.getProjectIds().forEach(wpm::removeProject);
+        wpm.getProjectIds().forEach(id -> wpm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
 
         AppStatePersistor.loadAppState();
         var appStateStringNew = AppStatePersistor.serializeAppState();
@@ -90,7 +91,7 @@ public class AppStatePersistorTest {
     @AfterEach
     void cleanUp() {
         var wpm = ProjectManager.getInstance();
-        wpm.getProjectIds().forEach(wpm::removeProject);
+        wpm.getProjectIds().forEach(id -> wpm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
     }
 
     @SuppressWarnings("javadoc")
@@ -104,7 +105,7 @@ public class AppStatePersistorTest {
         when(origin.getProviderId()).thenReturn(LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID);
         when(origin.getRelativePath()).thenReturn(Optional.of("a/relative/path"));
         when(project.getOrigin()).thenReturn(Optional.of(origin));
-        wpm.addProject("test_id", project);
+        wpm.addProject(project);
     }
 
     @SuppressWarnings("javadoc")

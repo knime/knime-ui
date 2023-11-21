@@ -73,7 +73,7 @@ class WorkflowAPITest {
     void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         var wpm = ProjectManager.getInstance();
-        wpm.addProject("projectId", ProjectFactory.createProject(m_wfm, "providerId", "spaceId", "itemId",
+        wpm.addProject(ProjectFactory.createProject(m_wfm, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
 
         WorkflowAPI.setProjectActiveAndEnsureItsLoaded("projectId");
@@ -84,8 +84,7 @@ class WorkflowAPITest {
 
     @AfterEach
     void cleanUp() {
-        ProjectManager.getInstance().removeProject("projectId");
-        WorkflowManagerUtil.disposeWorkflow(m_wfm);
+        ProjectManager.getInstance().removeProject("projectId", WorkflowManagerUtil::disposeWorkflow);
     }
 
 }

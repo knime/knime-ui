@@ -86,6 +86,7 @@ import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Version;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
@@ -168,7 +169,7 @@ public final class ClassicWorkflowEditorUtil {
         );
 
         resolved.forEach(p -> {
-            wpm.addProject(p.getID(), p);
+            wpm.addProject(p);
             wpm.openAndCacheProject(p.getID());
         });
         if (activeProjectId.get() != null) {

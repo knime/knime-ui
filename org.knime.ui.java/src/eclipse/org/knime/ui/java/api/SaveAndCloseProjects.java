@@ -52,6 +52,7 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -144,7 +145,7 @@ public final class SaveAndCloseProjects {
      *         closed successfully; {@code 2} if the projects require to be saved (in which case, an event is triggered
      *         to save and close the projects)
      */
-    public static int saveAndCloseProjectsInteractively(final Set<String> projectIds,
+    public static int saveAndCloseProjectsInteractively(final List<String> projectIds,
         final EventConsumer eventConsumer, final PostProjectCloseAction action) {
         var pm = ProjectManager.getInstance();
         var dirtyProjectIds = projectIds.stream()

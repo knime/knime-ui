@@ -55,14 +55,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.exec.dataexchange.in.PortObjectInNodeFactory;
-import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -80,8 +77,6 @@ import org.knime.ui.java.util.ProjectFactory;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 class ImportURITest {
-
-    private List<WorkflowManager> m_wfms = new ArrayList<>();
 
     @Test
     void testImportURI() throws IOException {
@@ -113,8 +108,7 @@ class ImportURITest {
     private void importURIAtWorkflowCanvasAndAssert(final String uri) throws IOException {
         try {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();
-            m_wfms.add(wfm);
-            ProjectManager.getInstance().addProject("projectId", ProjectFactory.createProject(wfm,
+            ProjectManager.getInstance().addProject(ProjectFactory.createProject(wfm,
                 "providerID", "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
                 new WorkflowMiddleware(ProjectManager.getInstance()));
@@ -126,7 +120,7 @@ class ImportURITest {
             assertThat(success).isTrue();
             assertThat(wfm.getNodeContainers()).hasSize(1);
         } finally {
-            ProjectManager.getInstance().removeProject("projectId");
+            ProjectManager.getInstance().removeProject("projectId", WorkflowManagerUtil::disposeWorkflow);
             ServiceInstances.disposeAllServiceInstancesAndDependencies();
         }
     }
@@ -134,7 +128,6 @@ class ImportURITest {
     @AfterEach
     void cleanUp() {
         DesktopAPI.disposeDependencies();
-        m_wfms.forEach(WorkflowManagerUtil::disposeWorkflow);
     }
 
 }

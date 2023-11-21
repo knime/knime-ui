@@ -107,7 +107,7 @@ public final class TestingUtil {
 
     private static void addToProjectManagerForTesting(final List<String> projectIds, final String activeProjectId) {
         var wpm = ProjectManager.getInstance();
-        projectIds.stream().forEach(projectId -> wpm.addProject(projectId, new Project() { // NOSONAR
+        projectIds.stream().forEach(projectId -> wpm.addProject(new Project() { // NOSONAR
 
             @Override
             public WorkflowManager openProject() {
@@ -163,7 +163,7 @@ public final class TestingUtil {
                         throw new IllegalStateException(ex);
                     }
                 });
-                wpm.removeProject(id);
+                wpm.removeProject(id, w -> {});
             }
             loadedWorkflowsForTesting.clear();
         }

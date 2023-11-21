@@ -163,7 +163,7 @@ final class WorkflowAPI {
         if (wfm != null) {
             wpm.setProjectActive(projectId);
         } else {
-            wpm.removeProject(projectId);
+            wpm.removeProject(projectId, w -> {});
             NodeLogger.getLogger(WorkflowAPI.class)
                 .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();

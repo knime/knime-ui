@@ -98,9 +98,9 @@ class CloseProjectTest {
         var wfm1 = WorkflowManagerUtil.loadWorkflow(workflowDir);
         var wfm2 = WorkflowManagerUtil.loadWorkflow(workflowDir);
 
-        pm.addProject("projectId1", ProjectFactory.createProject(wfm1, "providerId", "spaceId", "itemId",
+        pm.addProject(ProjectFactory.createProject(wfm1, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId1"));
-        pm.addProject("projectId2", ProjectFactory.createProject(wfm2, "providerId", "spaceId", "itemId",
+        pm.addProject(ProjectFactory.createProject(wfm2, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId2"));
         pm.openAndCacheProject("projectId1");
         pm.setProjectActive("projectId1");
@@ -149,8 +149,7 @@ class CloseProjectTest {
     @AfterEach
     void cleanUp() {
         var pm = ProjectManager.getInstance();
-        pm.getProjectIds().forEach(pm::removeProject);
-        m_wfms.forEach(WorkflowManagerUtil::disposeWorkflow);
+        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
         DesktopAPI.disposeDependencies();
     }
 

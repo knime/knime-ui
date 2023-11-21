@@ -55,6 +55,7 @@ import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.impl.project.DefaultProject;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
@@ -71,7 +72,7 @@ public final class ProjectFactory {
     }
 
     /**
-     * Creates a project without considering the old project ID.
+     * Creates a project based on space-item-infos.
      *
      * @param wfm
      * @param spaceProviderId
@@ -87,7 +88,7 @@ public final class ProjectFactory {
     }
 
     /**
-     * Creates a project respecting the old project ID.
+     * Creates a project based on space-item-infos using a custom project ID.
      *
      * @param wfm
      * @param providerId
@@ -95,41 +96,15 @@ public final class ProjectFactory {
      * @param itemId
      * @param relativePath
      * @param projectType
-     * @param oldProjectId
+     * @param customProjectId
      * @return The newly created project
      */
     public static Project createProject(final WorkflowManager wfm, final String providerId,
         final String spaceId, final String itemId, final String relativePath, final ProjectTypeEnum projectType,
-        final String oldProjectId) {
+        final String customProjectId) {
         final var origin = getOrigin(providerId, spaceId, itemId, relativePath, projectType);
         final var projectName = wfm.getName();
-        return createProject(wfm, origin, projectName, oldProjectId);
-    }
-
-    /**
-     * Simply creates a project only using a {@link WorkflowManager}.
-     *
-     * @param wfm
-     * @return The newly created project
-     */
-    public static Project createProject(final WorkflowManager wfm) {
-        final var projectId = LocalSpaceUtil.getUniqueProjectId(wfm.getName());
-        return new Project() {
-            @Override
-            public String getName() {
-                return wfm.getName();
-            }
-
-            @Override
-            public String getID() {
-                return projectId;
-            }
-
-            @Override
-            public WorkflowManager openProject() {
-                return wfm;
-            }
-        };
+        return createProject(wfm, origin, projectName, customProjectId);
     }
 
     /**
@@ -138,18 +113,18 @@ public final class ProjectFactory {
      * @param wfm
      * @param context
      * @param projectType
-     * @param oldProjectId
+     * @param customProjectId
      * @return The newly created project
      */
     public static Project createProject(final WorkflowManager wfm, final WorkflowContextV2 context,
-        final ProjectTypeEnum projectType, final String oldProjectId) {
+        final ProjectTypeEnum projectType, final String customProjectId) {
         final var path = context.getExecutorInfo().getLocalWorkflowPath();
         final var itemId = LocalSpaceUtil.getLocalWorkspace().getItemId(path);
         final var relativePath = LocalSpaceUtil.getLocalWorkspace().getLocalRootPath().relativize(path).toString();
         final var origin = getOrigin(LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID, itemId,
             relativePath, projectType);
         final var projectName = path.toFile().getName();
-        return createProject(wfm, origin, projectName, oldProjectId);
+        return createProject(wfm, origin, projectName, customProjectId);
     }
 
     /**
@@ -158,33 +133,18 @@ public final class ProjectFactory {
      * @param wfm
      * @param origin
      * @param projectName
-     * @param oldProjectId
+     * @param customProjectId
      * @return The newly created project
      */
     public static Project createProject(final WorkflowManager wfm,
-        final Origin origin, final String projectName, final String oldProjectId) {
-        final var projectId = oldProjectId == null ? LocalSpaceUtil.getUniqueProjectId(wfm.getName()) : oldProjectId;
-        return new Project() { // NOSONAR
-            @Override
-            public WorkflowManager openProject() {
-                return wfm;
-            }
-
-            @Override
-            public String getName() {
-                return projectName;
-            }
-
-            @Override
-            public String getID() {
-                return projectId;
-            }
-
-            @Override
-            public Optional<Origin> getOrigin() {
-                return Optional.ofNullable(origin);
-            }
-        };
+        final Origin origin, final String projectName, final String customProjectId) {
+        final var projectId =
+            customProjectId == null ? DefaultProject.getUniqueProjectId(wfm.getName()) : customProjectId;
+        return DefaultProject.builder(wfm) //
+            .setId(projectId) //
+            .setName(projectName)//
+            .setOrigin(origin) //
+            .build();
     }
 
     private static Origin getOrigin(final String providerId, final String spaceId, final String itemId,

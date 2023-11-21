@@ -99,7 +99,7 @@ class OpenProjectTest {
             eventConsumer, null);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
-        OpenProject.fetchAndOpenProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
+        OpenProject.openProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
 
         var pm = ProjectManager.getInstance();
         var projectIds = pm.getProjectIds();
@@ -135,9 +135,8 @@ class OpenProjectTest {
     @AfterEach
     void cleanUp() {
         var pm = ProjectManager.getInstance();
-        pm.getProjectIds().forEach(pm::removeProject);
+        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
         DesktopAPI.disposeDependencies();
-        WorkflowManagerUtil.disposeWorkflow(m_wfm);
     }
 
 }

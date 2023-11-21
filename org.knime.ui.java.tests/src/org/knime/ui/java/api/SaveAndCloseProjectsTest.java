@@ -95,7 +95,7 @@ class SaveAndCloseProjectsTest {
         var pm = ProjectManager.getInstance();
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
-            pm.addProject(projectId, ProjectFactory.createProject(wfms.get(i - 1), "providerId",
+            pm.addProject(ProjectFactory.createProject(wfms.get(i - 1), "providerId",
                 "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, projectId));
             pm.openAndCacheProject(projectId);
         }
@@ -143,8 +143,7 @@ class SaveAndCloseProjectsTest {
     @AfterEach
     void cleanUp() {
         var pm = ProjectManager.getInstance();
-        pm.getProjectIds().forEach(pm::removeProject);
+        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
         DesktopAPI.disposeDependencies();
-        m_wfms.forEach(WorkflowManagerUtil::disposeWorkflow);
     }
 }
