@@ -250,10 +250,11 @@ export default defineComponent({
           newName,
         })
         .catch(() => {
-          // TODO replace with a better notification alternative when available
-          window.alert(
-            `Could not rename the selected item with the new name "${newName}". Check for duplicates.`,
-          );
+          this.$toast.show({
+            type: "error",
+            headline: "Rename failed",
+            message: `Could not rename the selected item with the new name "${newName}". Please, try again`,
+          });
         });
     },
 
