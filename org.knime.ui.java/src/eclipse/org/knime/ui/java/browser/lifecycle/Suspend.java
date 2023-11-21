@@ -49,9 +49,14 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import org.eclipse.core.runtime.jobs.Job;
-import org.knime.gateway.impl.webui.service.util.DefaultServicesUtil;
+import org.knime.core.node.NodeLogger;
+import org.knime.gateway.api.util.CoreUtil;
+import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.service.ServiceInstances;
+import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
  * The 'suspend' lifecycle state transition for the KNIME-UI. Called when the view is (temporarily) not used anymore (on
@@ -67,7 +72,8 @@ final class Suspend {
 
     static LifeCycleStateInternal run(final LifeCycleStateInternal state) {
         DesktopAPI.disposeDependencies();
-        DefaultServicesUtil.disposeDefaultServices();
+        ServiceInstances.disposeAllServiceInstancesAndDependencies();
+        disposeAllWorkflowProjects(!PerspectiveUtil.isClassicPerspectiveLoaded());
         KnimeUIPreferences.unsetAllListeners();
         var listener = state.getJobChangeListener();
         Job.getJobManager().removeJobChangeListener(listener);
@@ -78,6 +84,23 @@ final class Suspend {
                 return state.serializedAppState();
             }
         };
+    }
+
+    private static void disposeAllWorkflowProjects(final boolean disposeWorkflowManagers) {
+        var pm = ProjectManager.getInstance();
+        pm.getAllProjectIds().stream().forEach(projectId -> {
+            if (disposeWorkflowManagers) {
+                pm.getCachedProject(projectId).ifPresent(t -> {
+                    try {
+                        CoreUtil.cancelAndCloseLoadedWorkflow(t);
+                    } catch (InterruptedException e) { // NOSONAR
+                        NodeLogger.getLogger(PerspectiveSwitchAddon.class).error(e);
+                    }
+                });
+            }
+            pm.removeProject(projectId, w -> {
+            });
+        });
     }
 
 }

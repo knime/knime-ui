@@ -66,8 +66,6 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
-import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
@@ -77,6 +75,7 @@ import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.view.actions.OpenKnimeUrlAction;
+import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.osgi.service.event.Event;
 
 /**
@@ -171,10 +170,6 @@ public final class PerspectiveSwitchAddon {
     private void onSwitchToJavaUI() {
         NodeTimer.GLOBAL_TIMER.incJavaUIPerspectiveSwitch();
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(GlobalNodeStats.CLASSIC_PERSPECTIVE_PLACEHOLDER);
-        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            // dispose workflow projects if perspective switch is done, e.g., via shortcut
-            disposeAllWorkflowProjects();
-        }
         KnimeBrowserView.clearView();
         var lifeCycle = LifeCycle.get();
         if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
@@ -202,20 +197,6 @@ public final class PerspectiveSwitchAddon {
         }
 
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = true;
-    }
-
-    private static void disposeAllWorkflowProjects() {
-        var wpm = ProjectManager.getInstance();
-        wpm.getProjectIds().stream().forEach(projectId -> {
-            wpm.getCachedProject(projectId).ifPresent(t -> {
-                try {
-                    CoreUtil.cancelAndCloseLoadedWorkflow(t);
-                } catch (InterruptedException e) { // NOSONAR
-                    NodeLogger.getLogger(PerspectiveSwitchAddon.class).error(e);
-                }
-            });
-            wpm.removeProject(projectId);
-        });
         ProjectWorkflowMap.isActive = true;
     }
 
