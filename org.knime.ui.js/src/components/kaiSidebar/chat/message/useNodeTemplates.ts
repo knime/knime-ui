@@ -6,18 +6,6 @@ import type { ExtensionWithNodes, NodeWithExtensionInfo } from "../../types";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
-// TODO: AP-20131 Node identifier in node stats and modern node repo can have clashes
-// This is a temporary fix to avoid problems with the factory name for dynamic factories:
-// Data from the hub looks like this: ...$DynamicExtensionNodeFactory:ffae4570 but in
-// knime-ui ...$DynamicExtensionNodeFactory#LLM+Prompter is needed to get the node template.
-const getInternalFactoryName = (factoryName: string, title: string) => {
-  const pattern = /(\$DynamicExtensionNodeFactory):[\w]+/;
-  if (pattern.test(factoryName)) {
-    return factoryName.replace(pattern, "$1#") + title.replace(/ /g, "+");
-  }
-  return factoryName;
-};
-
 /**
  * A Vue composition function that provides node templates based on given role and nodes.
  * @param params - An object containing role and nodes.
@@ -57,7 +45,7 @@ const useNodeTemplates = ({
         // Dispatching a Vuex action to get a node template.
         const nodeTemplate: NodeTemplate = await store.dispatch(
           "nodeRepository/getNodeTemplate",
-          getInternalFactoryName(node.factoryName, node.title),
+          node.factoryId,
         );
 
         if (nodeTemplate) {
@@ -79,6 +67,7 @@ const useNodeTemplates = ({
 
           // Append the node details to the extension.
           extension.nodes.push({
+            factoryId: node.factoryId,
             factoryName: node.factoryName,
             title: node.title,
           });

@@ -1,6 +1,7 @@
 interface Node {
   title: string;
   factoryName: string;
+  factoryId: string;
 }
 
 interface Extension {
