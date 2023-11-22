@@ -269,6 +269,8 @@ export default defineComponent({
     },
 
     async deleteItems() {
+      // TODO NXT-2205: move all of this logic into the store action
+      // and re-use item-to-project-mapping-logic
       this.deleteModal.deleteModalActive = false;
 
       const itemIds = this.deleteModal.items.map((item) => item.id);

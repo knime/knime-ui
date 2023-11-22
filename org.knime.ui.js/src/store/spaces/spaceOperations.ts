@@ -178,6 +178,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { openProjects } = rootState.application;
     const isLocal = getters.getSpaceInfo(projectId).local;
 
+    // TODO NXT-2205: make re-usable and re-use item-to-project-mapping-logic
     const foundOpenProject = openProjects.find(
       ({ origin }) =>
         origin &&
@@ -392,6 +393,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         )
         .map((item) => item.id);
 
+      // TODO NXT-2205: make re-usable and re-use item-to-project-mapping-logic
       return openProjects
         .filter(
           ({ origin }) =>
