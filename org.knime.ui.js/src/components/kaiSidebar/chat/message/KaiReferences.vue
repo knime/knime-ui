@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { onClickOutside } from "@vueuse/core";
 import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import BaseButton from "webapps-common/ui/components/BaseButton.vue";
 import { isEmpty } from "lodash";
@@ -18,10 +19,12 @@ const openReferences = (refName: string) => {
 const hasReferences = computed(() => !isEmpty(props.references));
 const referenceCategories = computed(() => Object.keys(props.references));
 
-const showPopup = ref(false);
+const showPopover = ref(false);
 const togglePopup = () => {
-  showPopup.value = !showPopup.value;
+  showPopover.value = !showPopover.value;
 };
+const popoverRef = ref(null);
+onClickOutside(popoverRef, togglePopup);
 </script>
 
 <template>
@@ -29,19 +32,20 @@ const togglePopup = () => {
     v-if="hasReferences"
     class="reference-button"
     title="Related Topics"
-    :active="showPopup"
+    :active="showPopover"
     @click="togglePopup"
   >
-    <HelpIcon :class="{ active: showPopup }" />
+    <HelpIcon :class="{ active: showPopover }" />
   </BaseButton>
 
-  <div v-if="showPopup" class="reference-popover">
+  <div v-if="showPopover" ref="popoverRef" class="reference-popover">
     See the source of this answer in the <br />
     <template v-for="(refName, index) in referenceCategories" :key="refName">
       <BaseButton class="reference-link" @click="openReferences(refName)">
         {{ refName }}
       </BaseButton>
-      <span v-if="index < referenceCategories.length - 1"> and </span>.
+      <span v-if="index < referenceCategories.length - 1"> and </span>
+      <span v-else>.</span>
     </template>
   </div>
 </template>

@@ -143,8 +143,41 @@ const htmlContent = computed(() => renderMarkdown(props.content));
 
       & ul,
       & ol {
-        list-style-position: inside;
+        list-style: none;
         padding-left: 0;
+
+        & li {
+          margin-bottom: 0.4em;
+
+          &::before {
+            font-weight: bold;
+            margin-right: 5px;
+          }
+
+          & p:first-child {
+            display: inline;
+          }
+        }
+      }
+
+      & ul {
+        & li {
+          &::before {
+            content: "•";
+          }
+        }
+      }
+
+      & ol {
+        counter-reset: list-counter;
+
+        & li {
+          counter-increment: list-counter;
+
+          &::before {
+            content: counter(list-counter) ".";
+          }
+        }
       }
     }
   }

@@ -33,7 +33,6 @@ const openNodeInBrowser = (
     <KaiCollapser
       v-for="(extension, featureSymbolicName) in extensions"
       :key="featureSymbolicName"
-      title="{{ extension.featureName }}"
       class="extension-collapser"
     >
       <template #title>
@@ -43,6 +42,7 @@ const openNodeInBrowser = (
         <li v-for="node in extension.nodes" :key="node.factoryName">
           <Button
             class="button"
+            title="Open in KNIME Hub"
             @click="openNodeInBrowser(extension, node.factoryName)"
           >
             <div class="node-name">{{ node.title }}</div>

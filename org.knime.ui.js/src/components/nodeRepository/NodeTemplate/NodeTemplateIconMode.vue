@@ -73,6 +73,7 @@ const extensionText = computed(() => {
 
     & .name {
       font-weight: 700;
+      line-height: 1.15;
       max-height: 26px;
       min-width: 90px;
       max-width: 90px;
@@ -110,31 +111,6 @@ const extensionText = computed(() => {
       @mixin svg-icon-size 16;
 
       stroke: var(--knime-masala);
-    }
-
-    & .name {
-      line-height: 1.15;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      max-width: 90px;
-      text-align: center;
-      padding: 4px;
-      font-size: 9px;
-      max-height: 25px;
-      text-overflow: ellipsis;
-    }
-
-    & .icon-container {
-      padding: 3px 3px 5px;
-      background-color: white;
-      border-radius: 9999px;
-      width: 16px;
-      height: 16px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
   }
 }
