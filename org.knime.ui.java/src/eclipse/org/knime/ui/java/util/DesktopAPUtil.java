@@ -128,12 +128,15 @@ public final class DesktopAPUtil {
      * @param space the space
      * @param itemId the item ID of the workflow
      * @param monitor progress monitor
-     * @return the loaded workflow
+     * @return the loaded workflow or {@code null} if it couldn't be loaded
      */
     public static WorkflowManager fetchAndLoadWorkflowWithTask(final Space space, final String itemId,
         final IProgressMonitor monitor) {
         monitor.beginTask(LOADING_WORKFLOW_PROGRESS_MSG, IProgressMonitor.UNKNOWN);
         final var path = space.toLocalAbsolutePath(DesktopAPUtil.toExecutionMonitor(monitor), itemId);
+        if (path == null) {
+            return null;
+        }
         monitor.done();
         final var workflowContext = createWorkflowContext(space, itemId, path);
         return loadWorkflow(monitor, path, workflowContext);

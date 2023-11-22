@@ -233,7 +233,9 @@ public final class AppStatePersistor {
 
                     @Override
                     public ProjectTypeEnum getProjectType() {
-                        return localSpace.getProjectType(itemId).orElseThrow();
+                        // project type might not be available in the rare case that the workflow at the
+                        // given absolute path doesn't exist anymore
+                        return localSpace.getProjectType(itemId).orElse(null);
                     }
                 });
             }
