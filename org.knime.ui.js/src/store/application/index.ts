@@ -334,7 +334,11 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
     if (getters.activeProjectOrigin === null) {
       return true;
     }
+
     const spaceProviders = rootState.spaces.spaceProviders ?? {};
+
+    // try to find a provider that contains the spaceId referenced
+    // by the activeProject's origin
     return !Object.values(spaceProviders).find((provider) =>
       provider.spaces.find(
         (space) => space.id === getters.activeProjectOrigin.spaceId,

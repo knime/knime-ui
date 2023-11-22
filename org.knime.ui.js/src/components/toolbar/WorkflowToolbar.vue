@@ -79,6 +79,8 @@ export default {
       };
     },
     toolbarDropdowns() {
+      // when the project is unknown we won't show the "save" action, and therefore
+      // cannot show the dropdown
       if (this.isUnknownProject) {
         return {};
       }
@@ -94,9 +96,10 @@ export default {
       }
 
       const visibleItems: Partial<Record<ShortcutName, boolean>> = {
-        // Always visible
         save: !this.isUnknownProject,
         saveAs: this.isUnknownProject,
+
+        // Always visible
         undo: true,
         redo: true,
 

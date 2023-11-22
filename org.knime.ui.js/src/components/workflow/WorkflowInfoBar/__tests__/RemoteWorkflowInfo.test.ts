@@ -1,8 +1,11 @@
-import { mockVuexStore } from "@/test/utils";
 import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
+
+import { mockVuexStore } from "@/test/utils";
 
 import {
+  createSpace,
   createSpaceProvider,
   createWorkflow,
   createWorkflowProject,
@@ -73,11 +76,13 @@ describe("RemoteWorkflowInfo.vue", () => {
           id: "hub-provider1",
           name: "Hub space",
           type: SpaceProviderNS.TypeEnum.HUB,
+          spaces: [createSpace({ id: "space1" })],
         }),
         [openProjects.at(2).origin.providerId]: createSpaceProvider({
           id: "server-provider1",
           name: "Server space",
           type: SpaceProviderNS.TypeEnum.SERVER,
+          spaces: [createSpace()],
         }),
       };
     }
@@ -91,7 +96,7 @@ describe("RemoteWorkflowInfo.vue", () => {
     return { wrapper, $store };
   };
 
-  it("should display banner for workflows with unknown origin correctly", () => {
+  it("should display banner for projects with unknown origin", () => {
     const activeProjectId = openProjects.at(0).projectId;
     const workflow = createWorkflow({
       info: { containerId: activeProjectId },
@@ -101,6 +106,35 @@ describe("RemoteWorkflowInfo.vue", () => {
       workflow,
       activeProjectId,
     });
+
+    expect(wrapper.find(".banner").exists()).toBe(true);
+    expect(wrapper.find(".banner.yellow").exists()).toBe(true);
+    expect(wrapper.find(".banner.blue").exists()).toBe(false);
+    expect(wrapper.text()).toMatch(
+      "You have opened a workflow that is not part of your spaces. “Save” a local copy to keep your changes.",
+    );
+  });
+
+  it("should display banner for projects that belong to an unknown space", async () => {
+    const project = createWorkflowProject({
+      projectId: "server-project",
+      origin: {
+        itemId: "1234",
+        spaceId: "some-space",
+        providerId: "server-provider1",
+      },
+    });
+    const activeProjectId = project.projectId;
+    const workflow = createWorkflow({
+      info: { containerId: activeProjectId },
+    });
+
+    const { wrapper, $store } = doMount({
+      workflow,
+      activeProjectId,
+    });
+    $store.commit("application/setOpenProjects", [project]);
+    await nextTick();
 
     expect(wrapper.find(".banner").exists()).toBe(true);
     expect(wrapper.find(".banner.yellow").exists()).toBe(true);

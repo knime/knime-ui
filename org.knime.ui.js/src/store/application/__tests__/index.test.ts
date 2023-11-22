@@ -3,6 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { APP_ROUTES, router } from "@/router";
 
 import { applicationState, loadStore } from "./loadStore";
+import {
+  createSpace,
+  createSpaceProvider,
+  createWorkflowProject,
+} from "@/test/factories";
 
 describe("application::index", () => {
   it("calls setExampleProjects", async () => {
@@ -44,6 +49,38 @@ describe("application::index", () => {
     expect(store.getters["application/activeProjectOrigin"]).toBeNull();
     store.commit("application/setActiveProjectId", "baz");
     expect(store.getters["application/activeProjectOrigin"]).toBeNull();
+  });
+
+  it("determines whether a project is of unknown origin", () => {
+    const { store } = loadStore();
+    store.commit("application/setOpenProjects", [
+      // project without origin
+      createWorkflowProject({ projectId: "project1" }),
+      // project with origin BUT KNOWN space
+      createWorkflowProject({
+        projectId: "project2",
+        origin: { providerId: "provider1", spaceId: "known-space" },
+      }),
+      // project with origin BUT UNKNOWN space
+      createWorkflowProject({
+        projectId: "project3",
+        origin: { providerId: "provider1", spaceId: "some-space" },
+      }),
+    ]);
+
+    store.commit("spaces/setSpaceProviders", {
+      provider1: createSpaceProvider({
+        id: "provider1",
+        spaces: [createSpace({ id: "known-space" })],
+      }),
+    });
+
+    store.commit("application/setActiveProjectId", "project1");
+    expect(store.getters["application/isUnknownProject"]).toBe(true);
+    store.commit("application/setActiveProjectId", "project2");
+    expect(store.getters["application/isUnknownProject"]).toBe(false);
+    store.commit("application/setActiveProjectId", "project3");
+    expect(store.getters["application/isUnknownProject"]).toBe(true);
   });
 
   describe("replace application State", () => {

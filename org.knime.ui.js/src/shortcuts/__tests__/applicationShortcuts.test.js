@@ -27,47 +27,65 @@ describe("applicationShortcuts", () => {
           projectPath: {},
         },
       },
+      getters: {
+        "application/isUnknownProject": false,
+      },
     };
   });
 
-  it("createWorkflow when project is open", () => {
-    applicationShortcuts.createWorkflow.execute({ $store });
-    expect(mockCommit).toHaveBeenCalledWith(
-      "spaces/setCreateWorkflowModalConfig",
-      {
-        isOpen: true,
-        projectId: "1",
-      },
-    );
-  });
+  describe("createWorkflow", () => {
+    it("should work when project is open", () => {
+      applicationShortcuts.createWorkflow.execute({ $store });
+      expect(mockCommit).toHaveBeenCalledWith(
+        "spaces/setCreateWorkflowModalConfig",
+        {
+          isOpen: true,
+          projectId: "1",
+        },
+      );
+    });
 
-  it("createWorkflow when no project is open AND user is browsing space", () => {
-    $store.state.spaces.projectPath = { [globalSpaceBrowserProjectId]: {} };
-    $store.state.application.activeProjectId = null;
+    it("should work when project is from unknown origin", () => {
+      $store.state.spaces.projectPath = { [cachedLocalSpaceProjectId]: {} };
+      $store.getters["application/isUnknownProject"] = true;
+      applicationShortcuts.createWorkflow.execute({ $store });
+      expect(mockCommit).toHaveBeenCalledWith(
+        "spaces/setCreateWorkflowModalConfig",
+        {
+          isOpen: true,
+          projectId: cachedLocalSpaceProjectId,
+        },
+      );
+    });
 
-    applicationShortcuts.createWorkflow.execute({ $store });
+    it("should work when no project is open AND user is browsing space", () => {
+      $store.state.spaces.projectPath = { [globalSpaceBrowserProjectId]: {} };
+      $store.state.application.activeProjectId = null;
 
-    expect(mockCommit).toHaveBeenCalledWith(
-      "spaces/setCreateWorkflowModalConfig",
-      {
-        isOpen: true,
-        projectId: globalSpaceBrowserProjectId,
-      },
-    );
-  });
+      applicationShortcuts.createWorkflow.execute({ $store });
 
-  it("createWorkflow when no project is open AND user is NOT browsing anyy space", () => {
-    $store.state.spaces.projectPath = { [cachedLocalSpaceProjectId]: {} };
-    $store.state.application.activeProjectId = null;
+      expect(mockCommit).toHaveBeenCalledWith(
+        "spaces/setCreateWorkflowModalConfig",
+        {
+          isOpen: true,
+          projectId: globalSpaceBrowserProjectId,
+        },
+      );
+    });
 
-    applicationShortcuts.createWorkflow.execute({ $store });
-    expect(mockCommit).toHaveBeenCalledWith(
-      "spaces/setCreateWorkflowModalConfig",
-      {
-        isOpen: true,
-        projectId: cachedLocalSpaceProjectId,
-      },
-    );
+    it("should work when no project is open AND user is NOT browsing any space", () => {
+      $store.state.spaces.projectPath = { [cachedLocalSpaceProjectId]: {} };
+      $store.state.application.activeProjectId = null;
+
+      applicationShortcuts.createWorkflow.execute({ $store });
+      expect(mockCommit).toHaveBeenCalledWith(
+        "spaces/setCreateWorkflowModalConfig",
+        {
+          isOpen: true,
+          projectId: cachedLocalSpaceProjectId,
+        },
+      );
+    });
   });
 
   it("closeWorkflow", () => {
