@@ -42,6 +42,7 @@ export default {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
     ...mapGetters("workflow", ["isWritable"]),
     ...mapGetters("canvas", ["getVisibleFrame"]),
+    ...mapGetters("selection", ["selectedNodes"]),
   },
   methods: {
     ...mapActions("nodeRepository", ["setDraggingNodeTemplate"]),
@@ -113,14 +114,22 @@ export default {
         return; // end here
       }
 
-      // canvas start position
-      const position = geometry.findFreeSpaceAroundCenterWithFallback({
-        visibleFrame: this.getVisibleFrame(),
-        nodes: this.workflow.nodes,
-      });
+      const isSingleNodeSelected = this.selectedNodes.length === 1;
+      const position = isSingleNodeSelected
+        ? {
+            x: this.selectedNodes[0].position.x + 120,
+            y: this.selectedNodes[0].position.y,
+          }
+        : geometry.findFreeSpaceAroundCenterWithFallback({
+            visibleFrame: this.getVisibleFrame(),
+            nodes: this.workflow.nodes,
+          });
+      const sourceNodeId = isSingleNodeSelected
+        ? this.selectedNodes[0].id
+        : null;
 
       const nodeFactory = this.nodeTemplate.nodeFactory;
-      this.addNodeToWorkflow({ position, nodeFactory });
+      this.addNodeToWorkflow({ position, nodeFactory, sourceNodeId });
     },
     onDrag(e) {
       if (!this.isWritable) {

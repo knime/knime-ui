@@ -15,6 +15,7 @@ import { API } from "@api";
 import * as panelStore from "@/store/panel";
 import * as worflowStore from "@/store/workflow";
 import * as nodeRepositoryStore from "@/store/nodeRepository";
+import * as selectionStore from "@/store/selection";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 
 import DraggableNodeTemplate from "../DraggableNodeTemplate.vue";
@@ -75,6 +76,7 @@ describe("DraggableNodeTemplate", () => {
         },
       },
       nodeRepository: nodeRepositoryStore,
+      selection: selectionStore,
     });
 
     const workflow = createWorkflow();
@@ -159,6 +161,27 @@ describe("DraggableNodeTemplate", () => {
       await Vue.nextTick();
 
       expect(mockedAPI.workflowCommand.AddNode).not.toHaveBeenCalled();
+    });
+
+    it("takes single selected node into account", async () => {
+      const { wrapper, $store } = doMount();
+      $store.state.workflow.activeWorkflow.nodes["root:2"].position = {
+        x: 100,
+        y: 100,
+      };
+      $store.state.selection.selectedNodes = {
+        "root:2": true,
+      };
+
+      wrapper.find(".node").trigger("dblclick");
+      await Vue.nextTick();
+
+      expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith(
+        expect.objectContaining({
+          position: { x: 220, y: 100 },
+          sourceNodeId: "root:2",
+        }),
+      );
     });
   });
 
