@@ -129,7 +129,7 @@ final class OpenProject {
                 return false;
             }
             final var origin = ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm);
-            final var wfProj = ProjectFactory.createProject(wfm, origin.orElseGet(null), wfm.getName(), null);
+            final var wfProj = ProjectFactory.createProject(wfm, origin.orElse(null), wfm.getName(), null);
             openProjectInWebUIOnly(wfm, wfProj, WorkflowType.REMOTE);
         }
         return true;

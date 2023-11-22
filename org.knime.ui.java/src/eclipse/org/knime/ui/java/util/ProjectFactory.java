@@ -182,7 +182,7 @@ public final class ProjectFactory {
 
             @Override
             public Optional<Origin> getOrigin() {
-                return Optional.of(origin);
+                return Optional.ofNullable(origin);
             }
         };
     }
@@ -222,10 +222,13 @@ public final class ProjectFactory {
      *
      * @param hubLocation
      * @param wfm
-     * @return The newly created Origin
+     * @return The newly created Origin, or an empty {@link Optional} if hubLocation or workflow manager are missing
      */
-    public static Optional<Origin>
-        getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation, final WorkflowManager wfm) {
+    public static Optional<Origin> getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation,
+        final WorkflowManager wfm) {
+        if (hubLocation == null || wfm == null) {
+            return Optional.empty();
+        }
         final var context = wfm.getContextV2();
         final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
         return Optional.of(new Project.Origin() {
@@ -248,7 +251,7 @@ public final class ProjectFactory {
 
             @Override
             public ProjectTypeEnum getProjectType() {
-                return ProjectTypeEnum.WORKFLOW; // TODO: NXT-2101, cannot open Hub components
+                return wfm.isComponentProjectWFM()? ProjectTypeEnum.COMPONENT: ProjectTypeEnum.WORKFLOW;
             }
         });
     }
