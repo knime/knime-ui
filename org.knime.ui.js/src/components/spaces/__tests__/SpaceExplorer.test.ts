@@ -2,6 +2,7 @@
 import { expect, describe, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { nextTick } from "vue";
+import { useRoute } from "vue-router";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import * as spacesStore from "@/store/spaces";
@@ -69,6 +70,12 @@ const fetchWorkflowGroupContentResponse = {
     },
   ],
 };
+
+vi.mock("webapps-common/ui/services/toast");
+vi.mock("vue-router", () => ({
+  useRouter: vi.fn(() => ({ push: () => {} })),
+  useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage })),
+}));
 
 describe("SpaceExplorer.vue", () => {
   const doMount = ({
@@ -156,8 +163,6 @@ describe("SpaceExplorer.vue", () => {
 
     const dispatchSpy = vi.spyOn(store, "dispatch");
     const commitSpy = vi.spyOn(store, "commit");
-    const mockRouter = { push: () => {} };
-    const mockRoute = { name: "" };
 
     const $shortcuts = {
       get: vi.fn().mockImplementation((name) => ({
@@ -172,15 +177,13 @@ describe("SpaceExplorer.vue", () => {
         plugins: [store],
         stubs: { NuxtLink: true, FocusTrap: true, NodePreview: true },
         mocks: {
-          $router: mockRouter,
-          $route: mockRoute,
           $shortcuts,
           $shapes: { nodeSize: 32 },
         },
       },
     });
 
-    return { wrapper, store, mockRouter, mockRoute, dispatchSpy, commitSpy };
+    return { wrapper, store, dispatchSpy, commitSpy };
   };
 
   const doMountAndLoad = async ({
@@ -382,7 +385,7 @@ describe("SpaceExplorer.vue", () => {
   });
 
   it("should open a workflow", async () => {
-    const { wrapper, dispatchSpy, mockRouter } = await doMountAndLoad();
+    const { wrapper, dispatchSpy } = await doMountAndLoad();
 
     wrapper
       .findComponent(FileExplorer)
@@ -393,12 +396,12 @@ describe("SpaceExplorer.vue", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/openWorkflow", {
       projectId: "someProjectId",
       workflowItemId: "dummy",
-      $router: mockRouter,
+      $router: expect.anything(),
     });
   });
 
   it("should open a shared component", async () => {
-    const { wrapper, dispatchSpy, mockRouter } = await doMountAndLoad();
+    const { wrapper, dispatchSpy } = await doMountAndLoad();
 
     wrapper
       .findComponent(FileExplorer)
@@ -409,7 +412,7 @@ describe("SpaceExplorer.vue", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/openWorkflow", {
       projectId: "someProjectId",
       workflowItemId: "dummy",
-      $router: mockRouter,
+      $router: expect.anything(),
     });
   });
 
@@ -471,6 +474,7 @@ describe("SpaceExplorer.vue", () => {
       // call the handler
       // (we can't trigger easily via the FileExplorer as it needs to
       // have an open context menu which requires a lot of mocks)
+      // @ts-expect-error
       wrapper.vm.onDuplicateItems(sourceItems);
 
       expect(dispatchSpy).toHaveBeenNthCalledWith(3, "spaces/moveOrCopyItems", {
@@ -514,7 +518,8 @@ describe("SpaceExplorer.vue", () => {
       const { wrapper } = await doMountAndLoad();
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
-      expect(wrapper.vm.$data.deleteModal.deleteModalActive).toBeTruthy();
+      // @ts-ignore
+      expect(wrapper.vm.deleteModal.isActive).toBeTruthy();
     });
 
     it("should trigger closeItems before deleteItems onDeleteItems", async () => {
@@ -553,6 +558,7 @@ describe("SpaceExplorer.vue", () => {
       const { wrapper, dispatchSpy } = await doMountAndLoad({ openProjects });
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
+      // @ts-expect-error
       await wrapper.vm.deleteItems();
 
       expect(dispatchSpy).toHaveBeenNthCalledWith(
@@ -581,7 +587,8 @@ describe("SpaceExplorer.vue", () => {
       const { wrapper, dispatchSpy } = await doMountAndLoad();
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
-      expect(wrapper.vm.$data.deleteModal.deleteModalActive).toBeTruthy();
+      // @ts-expect-error
+      expect(wrapper.vm.deleteModal.isActive).toBeTruthy();
       wrapper.findComponent(Modal).vm.$emit("cancel");
       expect(dispatchSpy).not.toHaveBeenCalledWith("spaces/deleteItems", {
         itemIds: ["item0"],
@@ -756,10 +763,14 @@ describe("SpaceExplorer.vue", () => {
 
   describe("add node to workflow canvas", () => {
     it("should not attempt to add a node to canvas when the workflow is not displayed", async () => {
+      // @ts-ignore
+      useRoute.mockImplementationOnce(() => ({
+        name: APP_ROUTES.SpaceBrowsingPage,
+      }));
       document.elementFromPoint = vi.fn().mockReturnValue(null);
-      const { wrapper, dispatchSpy, mockRoute } = await doMountAndLoad();
+      const { wrapper, dispatchSpy } = await doMountAndLoad();
 
-      mockRoute.name = APP_ROUTES.SpaceBrowsingPage;
+      // mockRoute.name = APP_ROUTES.SpaceBrowsingPage;
 
       const onComplete = vi.fn();
 
@@ -785,7 +796,7 @@ describe("SpaceExplorer.vue", () => {
 
     it("should not add a node to canvas if a workflow is not writable", async () => {
       document.elementFromPoint = vi.fn().mockReturnValue(null);
-      const { wrapper, store, dispatchSpy, mockRoute } = await doMountAndLoad({
+      const { wrapper, store, dispatchSpy } = await doMountAndLoad({
         isWriteableMock: vi.fn(() => false),
         fileExtensionToNodeTemplateId: {
           test: "org.knime.test.test.nodeFactory",
@@ -803,7 +814,6 @@ describe("SpaceExplorer.vue", () => {
         },
       });
 
-      mockRoute.name = APP_ROUTES.WorkflowPage;
       store.state.spaces.activeSpaceProvider = {
         id: "local",
       };
@@ -833,7 +843,7 @@ describe("SpaceExplorer.vue", () => {
 
     it("should add a node to canvas when dragged from the file explorer", async () => {
       document.elementFromPoint = vi.fn().mockReturnValue(null);
-      const { wrapper, store, dispatchSpy, mockRoute } = await doMountAndLoad({
+      const { wrapper, store, dispatchSpy } = await doMountAndLoad({
         fileExtensionToNodeTemplateId: {
           test: "org.knime.test.test.nodeFactory",
         },
@@ -850,7 +860,6 @@ describe("SpaceExplorer.vue", () => {
         },
       });
 
-      mockRoute.name = APP_ROUTES.WorkflowPage;
       store.state.spaces.activeSpaceProvider = {
         id: "local",
       };
@@ -888,7 +897,7 @@ describe("SpaceExplorer.vue", () => {
 
     it("should add a component to canvas when dragged from the file explorer", async () => {
       document.elementFromPoint = vi.fn().mockReturnValue(null);
-      const { wrapper, store, dispatchSpy, mockRoute } = await doMountAndLoad({
+      const { wrapper, store, dispatchSpy } = await doMountAndLoad({
         // components don't have an extenssion associated to them
         fileExtensionToNodeTemplateId: {},
         mockResponse: {
@@ -904,7 +913,6 @@ describe("SpaceExplorer.vue", () => {
         },
       });
 
-      mockRoute.name = APP_ROUTES.WorkflowPage;
       store.state.spaces.activeSpaceProvider = {
         id: "local",
       };
@@ -943,7 +951,7 @@ describe("SpaceExplorer.vue", () => {
       document.elementFromPoint = vi
         .fn()
         .mockReturnValue({ id: "someElementThatIsNotNull" });
-      const { wrapper, store, mockRoute } = await doMountAndLoad({
+      const { wrapper, store } = await doMountAndLoad({
         fileExtensionToNodeTemplateId: {
           test: "org.knime.test.test.nodeFactory",
         },
@@ -960,7 +968,6 @@ describe("SpaceExplorer.vue", () => {
         },
       });
 
-      mockRoute.name = APP_ROUTES.WorkflowPage;
       store.state.spaces.activeSpaceProvider = {
         id: "local",
       };

@@ -4,7 +4,7 @@ import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
 
 import ArrowLeftIcon from "webapps-common/ui/assets/img/icons/arrow-left.svg";
-import { APP_ROUTES } from "@/router";
+import { APP_ROUTES } from "@/router/appRoutes";
 import PageHeader from "@/components/common/PageHeader.vue";
 import * as spacesStore from "@/store/spaces";
 import * as applicationStore from "@/store/application";
@@ -13,6 +13,12 @@ import SpaceExplorer from "../SpaceExplorer.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import SpaceBrowsingPage from "../SpaceBrowsingPage.vue";
 import { globalSpaceBrowserProjectId } from "@/store/spaces";
+
+vi.mock("webapps-common/ui/services/toast");
+vi.mock("vue-router", () => ({
+  useRouter: vi.fn(() => ({ push: () => {} })),
+  useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage })),
+}));
 
 describe("SpaceBrowsingPage", () => {
   const doMount = ({ initialStoreState = {} } = {}) => {

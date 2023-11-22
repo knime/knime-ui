@@ -1,15 +1,7 @@
-<script lang="ts">
-/* eslint-disable max-lines */
-import { defineComponent, type PropType } from "vue";
-import { mapActions, mapGetters, mapState } from "vuex";
-import { API } from "@api";
+<script setup lang="ts">
+import { ref, computed, watch, toRef } from "vue";
+import { useRouter } from "vue-router";
 
-import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
-import HouseIcon from "webapps-common/ui/assets/img/icons/house.svg";
-import SpaceSelectionDropdown from "./SpaceSelectionDropdown.vue";
-import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
-import Modal from "webapps-common/ui/components/Modal.vue";
-import Button from "webapps-common/ui/components/Button.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 import FolderIcon from "webapps-common/ui/assets/img/icons/folder.svg";
 import FileTextIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
@@ -18,25 +10,27 @@ import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.s
 import WorkflowNodeStackIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
 import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
 import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
+import { useToasts } from "webapps-common/ui/services/toast";
 
-import type { PathTriplet, SpacesState } from "@/store/spaces";
 import {
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
+import { SpaceProviderNS } from "@/api/custom-types";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useStore } from "@/composables/useStore";
 import SmartLoader from "@/components/common/SmartLoader.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
 
+import SpaceSelectionDropdown from "./SpaceSelectionDropdown.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
-import { SpaceProviderNS } from "@/api/custom-types";
+import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
+import SpaceExplorerDeleteItemModal from "./SpaceExplorerDeleteItemModal.vue";
+import { useCustomDragPreview } from "./useCustomDragPreview";
+import { useMovingItems } from "./useMovingItems";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
-
-const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
-  return !nodeTemplateId && item.meta.type === SpaceItem.TypeEnum.Component;
-};
 
 const itemIconRenderer = (item: FileExplorerItemWithMeta) => {
   const typeIcons = {
@@ -50,467 +44,202 @@ const itemIconRenderer = (item: FileExplorerItemWithMeta) => {
   return typeIcons[item.meta.type];
 };
 
-export default defineComponent({
-  components: {
-    SpaceExplorerContextMenu,
-    SpaceExplorerActions,
-    FileExplorer,
-    NodePreview,
-    SpaceSelectionDropdown,
-    Breadcrumb,
-    SmartLoader,
-    Modal,
-    Button,
-    TrashIcon,
-    DeploymentsModal,
-  },
+interface Props {
+  projectId: string | null;
+  mode?: "normal" | "mini";
+}
 
-  props: {
-    mode: {
-      type: String as PropType<"normal" | "mini">,
-      default: "normal",
-      validator: (value: string) => ["normal", "mini"].includes(value),
-    },
-    projectId: {
-      type: [String, null],
-      required: true,
-    },
-  },
+const props = withDefaults(defineProps<Props>(), { mode: "normal" });
+const $emit = defineEmits(["changeSelection", "itemChanged"]);
+const store = useStore();
+const $router = useRouter();
+const $toast = useToasts();
 
-  emits: ["changeSelection", "itemChanged"],
+const projectId = toRef(props, "projectId");
 
-  data() {
-    return {
-      selectedItemIds: [],
-      isAboveCanvas: false,
-      fileNodeTemplate: null,
-      deleteModal: {
-        deleteModalActive: false,
-        items: [],
-      },
-      nodeTemplate: null,
-      shouldShowPreview: false,
-      itemIconRenderer,
-    };
-  },
-
-  computed: {
-    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    ...mapState("canvas", ["getScrollContainerElement"]),
-    ...mapState("application", [
-      "openProjects",
-      "fileExtensionToNodeTemplateId",
-    ]),
-    ...mapState("spaces", {
-      projectPath: (state: SpacesState) => state.projectPath,
-      isLoadingContent: (state: SpacesState) => state.isLoadingContent,
-      spaceProviders: (state: SpacesState) => state.spaceProviders,
-      activeRenamedItemId: (state: SpacesState) => state.activeRenamedItemId,
-    }),
-    ...mapState("nodeRepository", ["nodesPerCategory"]),
-    ...mapGetters("spaces", [
-      "getOpenedWorkflowItems",
-      "getOpenedFolderItems",
-      "pathToItemId",
-      "getWorkflowGroupContent",
-    ]),
-    ...mapGetters("workflow", ["isWritable"]),
-
-    activeSpacePath(): PathTriplet {
-      return this.projectPath[this.projectId];
-    },
-
-    activeWorkflowGroup(): WorkflowGroupContent {
-      return this.getWorkflowGroupContent(this.projectId);
-    },
-
-    openedWorkflowItems() {
-      return this.getOpenedWorkflowItems(this.projectId);
-    },
-    openedFolderItems() {
-      return this.getOpenedFolderItems(this.projectId);
-    },
-
-    fileExplorerItems(): Array<FileExplorerItemWithMeta> {
-      return this.activeWorkflowGroup.items.map((item) => {
-        const isOpen =
-          this.openedWorkflowItems.includes(item.id) ||
-          this.openedFolderItems.includes(item.id);
-
-        return {
-          ...item,
-          isOpen,
-          isDirectory: item.type === SpaceItem.TypeEnum.WorkflowGroup,
-          isOpenableFile:
-            item.type === SpaceItem.TypeEnum.Workflow ||
-            item.type === SpaceItem.TypeEnum.Component,
-          canBeRenamed: !isOpen,
-          canBeDeleted: !this.openedFolderItems.includes(item.id),
-          meta: {
-            type: item.type,
-          },
-        };
-      });
-    },
-
-    breadcrumbItems() {
-      const homeBreadcrumbItem = {
-        icon: HouseIcon,
-        id: "root",
-      };
-
-      if (!this.activeWorkflowGroup) {
-        return [
-          {
-            ...homeBreadcrumbItem,
-            text: "Home",
-            clickable: false,
-          },
-        ];
-      }
-
-      const { path } = this.activeWorkflowGroup;
-      const rootBreadcrumb = {
-        ...homeBreadcrumbItem,
-        text: path.length === 0 ? "Home" : null,
-        clickable: path.length > 0,
-      };
-      const lastPathIndex = path.length - 1;
-
-      return [rootBreadcrumb].concat(
-        path.map((pathItem, index) => ({
-          icon: null,
-          text: pathItem.name,
-          id: pathItem.id,
-          clickable: index !== lastPathIndex,
-        })),
-      );
-    },
-
-    fullPath() {
-      if (!this.activeWorkflowGroup) {
-        return "";
-      }
-      const { path } = this.activeWorkflowGroup;
-      return ["home"].concat(path.map(({ name }) => name)).join("/");
-    },
-  },
-
-  watch: {
-    projectId: {
-      async handler() {
-        await this.fetchWorkflowGroupContent();
-      },
-      immediate: true,
-    },
-  },
-
-  methods: {
-    ...mapActions("nodeRepository", ["getNodeTemplate"]),
-    ...mapActions("application", ["forceCloseProjects"]),
-
-    async fetchWorkflowGroupContent() {
-      const { projectId } = this;
-      if (projectId === null) {
-        return;
-      }
-      await this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-        projectId,
-      });
-    },
-
-    onSelectionChange(selectedItemIds: string[]) {
-      this.selectedItemIds = selectedItemIds;
-      this.$emit("changeSelection", selectedItemIds);
-    },
-
-    async onChangeDirectory(pathId) {
-      const { projectId } = this;
-      const { itemId } = await this.$store.dispatch("spaces/changeDirectory", {
-        projectId,
-        pathId,
-      });
-
-      this.$emit("itemChanged", itemId);
-    },
-
-    async onOpenFile({ id }) {
-      await this.$store.dispatch("spaces/openWorkflow", {
-        projectId: this.projectId,
-        workflowItemId: id,
-        // send in router, so it can be used to navigate to an already open workflow
-        $router: this.$router,
-      });
-    },
-
-    onRenameFile({ itemId, newName }) {
-      this.$store
-        .dispatch("spaces/renameItem", {
-          projectId: this.projectId,
-          itemId,
-          newName,
-        })
-        .catch(() => {
-          this.$toast.show({
-            type: "error",
-            headline: "Rename failed",
-            message: `Could not rename the selected item with the new name "${newName}". Please, try again`,
-          });
-        });
-    },
-
-    async onBreadcrumbClick({ id }) {
-      await this.onChangeDirectory(id);
-    },
-
-    onDeleteItems({ items }) {
-      this.deleteModal.items = items;
-      this.deleteModal.deleteModalActive = true;
-    },
-
-    async deleteItems() {
-      // TODO NXT-2205: move all of this logic into the store action
-      // and re-use item-to-project-mapping-logic
-      this.deleteModal.deleteModalActive = false;
-
-      const itemIds = this.deleteModal.items.map((item) => item.id);
-      const projectIds = this.openProjects
-        .filter(
-          (project) =>
-            project.origin &&
-            itemIds.includes(project.origin.itemId) &&
-            this.spaceProviders[project.origin.providerId]?.type ===
-              SpaceProviderNS.TypeEnum.LOCAL,
-        )
-        .map(({ projectId }) => projectId);
-      const { spaceId, spaceProviderId } = this.projectPath[this.projectId];
-      let nextProjectId;
-      let isDeletingActiveProject = false;
-
-      if (projectIds.length) {
-        isDeletingActiveProject = projectIds.includes(this.projectId);
-        nextProjectId = await this.forceCloseProjects({ projectIds });
-      }
-
-      await this.$store.dispatch("spaces/deleteItems", {
-        projectId: this.projectId,
-        itemIds,
-        isDeletingActiveProject,
-        spaceId,
-        spaceProviderId,
-      });
-      if (nextProjectId) {
-        await this.$router.push({
-          name: APP_ROUTES.WorkflowPage,
-          params: { projectId: nextProjectId, workflowId: "root" },
-        });
-      }
-    },
-
-    async onDuplicateItems(sourceItems: string[]) {
-      await this.onMoveItems({
-        sourceItems,
-        targetItem: ".",
-        isCopy: true,
-        onComplete: () => {},
-      });
-    },
-
-    async onMoveItems({
-      sourceItems,
-      targetItem,
-      isCopy = false,
-      onComplete,
-    }: {
-      sourceItems: string[];
-      targetItem: string;
-      isCopy: boolean;
-      onComplete: (success: boolean) => void;
-    }) {
-      const openedWorkflows = this.openProjects.filter((project) =>
-        sourceItems.includes(project?.origin?.itemId),
-      );
-
-      const isInsideFolder = this.openProjects.filter((project) => {
-        if (!project.origin) {
-          return false;
-        }
-
-        return project.origin.ancestorItemIds.some((ancestorId) =>
-          sourceItems.includes(ancestorId),
-        );
-      });
-
-      if (openedWorkflows.length || isInsideFolder.length) {
-        const openedWorkflowsNames = openedWorkflows.map(
-          (workflow) => workflow.name,
-        );
-        const isInsideFolderNames = isInsideFolder.map(
-          (workflow) => workflow.name,
-        );
-        const extraSpace =
-          openedWorkflows.length && isInsideFolder.length ? "\n" : "";
-
-        const copyOrMove = isCopy ? "copy" : "move";
-
-        alert(`Following workflows are opened:\n
-          ${
-            openedWorkflowsNames.map((name) => `• ${name}`).join("\n") +
-            extraSpace +
-            isInsideFolderNames.map((name) => `• ${name}`).join("\n")
-          }
-        \nTo ${copyOrMove} your selected items, they have to be closed first`);
-
-        onComplete(false);
-
-        return;
-      }
-
-      const destWorkflowGroupItemId = this.pathToItemId(
-        this.projectId,
-        targetItem,
-      );
-      // if we copy into the current workflow group, we actually "duplicate"
-      // and hence always want to auto rename without bothering the user with a dialog
-      const isDuplicate = isCopy && targetItem === ".";
-      const collisionStrategy = isDuplicate
-        ? "AUTORENAME"
-        : await API.desktop.getNameCollisionStrategy({
-            spaceProviderId: this.activeSpacePath?.spaceProviderId,
-            spaceId: this.activeSpacePath?.spaceId,
-            itemIds: sourceItems,
-            destinationItemId: destWorkflowGroupItemId,
-          });
-
-      if (collisionStrategy === "CANCEL") {
-        onComplete(false);
-
-        return;
-      }
-
-      try {
-        await this.$store.dispatch("spaces/moveOrCopyItems", {
-          itemIds: sourceItems,
-          projectId: this.projectId,
-          destWorkflowGroupItemId,
-          collisionStrategy,
-          isCopy,
-        });
-
-        onComplete(true);
-      } catch (error) {
-        const copyOrMove = isCopy ? "copying" : "moving";
-        consola.error(`There was a problem ${copyOrMove} the items`, { error });
-        onComplete(false);
-      }
-    },
-
-    async onDrag({
-      event,
-      item,
-    }: {
-      event: DragEvent;
-      item: FileExplorerItemWithMeta;
-    }) {
-      const nodeTemplateId = this.getNodeTemplateId(item);
-      const isItemAComponent = isComponent(nodeTemplateId, item);
-
-      if (!nodeTemplateId && !isItemAComponent) {
-        return;
-      }
-
-      // check if item is above canvas
-      const screenX = event.clientX - this.$shapes.nodeSize / 2;
-      const screenY = event.clientY - this.$shapes.nodeSize / 2;
-
-      const el = document.elementFromPoint(screenX, screenY);
-      const kanvas = this.getScrollContainerElement();
-
-      this.nodeTemplate = isItemAComponent
-        ? {
-            isComponent: true,
-            inPorts: [],
-            outPorts: [],
-            type: item.meta.type,
-          }
-        : await this.getNodeTemplate(nodeTemplateId);
-
-      this.isAboveCanvas = kanvas.contains(el);
-    },
-
-    async onDragEnd({
-      event,
-      sourceItem,
-      onComplete,
-    }: {
-      event: DragEvent;
-      sourceItem: FileExplorerItemWithMeta;
-      onComplete: (isSuccessful: boolean) => void;
-    }) {
-      this.nodeTemplate = null;
-
-      const screenX = event.clientX - this.$shapes.nodeSize / 2;
-      const screenY = event.clientY - this.$shapes.nodeSize / 2;
-
-      const el = document.elementFromPoint(screenX, screenY);
-
-      // skip behavior when not on the workflow or workflow is not writable
-      if (this.$route.name !== APP_ROUTES.WorkflowPage || !this.isWritable) {
-        onComplete(false);
-        return;
-      }
-
-      const kanvas = this.getScrollContainerElement();
-
-      if (!kanvas.contains(el)) {
-        onComplete(false);
-        return;
-      }
-
-      const nodeTemplateId = this.getNodeTemplateId(sourceItem);
-      const isItemAComponent = isComponent(nodeTemplateId, sourceItem);
-
-      if (!nodeTemplateId && !isItemAComponent) {
-        onComplete(false);
-        return;
-      }
-
-      try {
-        const [x, y] = this.screenToCanvasCoordinates([screenX, screenY]);
-        const position = { x, y };
-        const spaceItemReference = {
-          providerId: this.activeSpacePath.spaceProviderId,
-          spaceId: this.activeSpacePath.spaceId,
-          itemId: sourceItem.id,
-        };
-
-        await this.$store.dispatch("workflow/addNode", {
-          position,
-          spaceItemReference,
-          nodeFactory: isItemAComponent ? null : { className: nodeTemplateId },
-          isComponent: isItemAComponent,
-        });
-
-        onComplete(true);
-      } catch (error) {
-        onComplete(false);
-        consola.error({
-          message: "Error adding node via file to workflow",
-          error,
-        });
-        throw error;
-      }
-    },
-
-    getNodeTemplateId(sourceItem: FileExplorerItemWithMeta) {
-      const sourceFileExtension = Object.keys(
-        this.fileExtensionToNodeTemplateId,
-      ).find((extension) => sourceItem.name.endsWith(extension));
-
-      return this.fileExtensionToNodeTemplateId[sourceFileExtension];
-    },
-  },
+const selectedItemIds = ref<string[]>([]);
+const deleteModal = ref<{ isActive: boolean; items: any[] }>({
+  isActive: false,
+  items: [],
 });
+
+// application
+const openProjects = computed(() => store.state.application.openProjects);
+
+// spaces
+const projectPath = computed(() => store.state.spaces.projectPath);
+const isLoadingContent = computed(() => store.state.spaces.isLoadingContent);
+const spaceProviders = computed(() => store.state.spaces.spaceProviders);
+const activeRenamedItemId = computed(
+  () => store.state.spaces.activeRenamedItemId,
+);
+const getOpenedWorkflowItems = computed(
+  () => store.getters["spaces/getOpenedWorkflowItems"],
+);
+const getOpenedFolderItems = computed(
+  () => store.getters["spaces/getOpenedFolderItems"],
+);
+const getWorkflowGroupContent = computed(
+  () => store.getters["spaces/getWorkflowGroupContent"],
+);
+
+const activeWorkflowGroup = computed<WorkflowGroupContent | null>(() => {
+  return getWorkflowGroupContent.value(props.projectId);
+});
+
+const openedWorkflowItems = computed<string[]>(() => {
+  return getOpenedWorkflowItems.value(props.projectId);
+});
+
+const openedFolderItems = computed<string[]>(() => {
+  return getOpenedFolderItems.value(props.projectId);
+});
+
+const fileExplorerItems = computed<Array<FileExplorerItemWithMeta>>(() => {
+  return activeWorkflowGroup.value.items.map((item) => {
+    const isOpen =
+      openedWorkflowItems.value.includes(item.id) ||
+      openedFolderItems.value.includes(item.id);
+
+    return {
+      ...item,
+      isOpen,
+      isDirectory: item.type === SpaceItem.TypeEnum.WorkflowGroup,
+      isOpenableFile:
+        item.type === SpaceItem.TypeEnum.Workflow ||
+        item.type === SpaceItem.TypeEnum.Component,
+      canBeRenamed: !isOpen,
+      canBeDeleted: !openedFolderItems.value.includes(item.id),
+      meta: {
+        type: item.type,
+      },
+    };
+  });
+});
+
+const fullPath = computed(() => {
+  if (!activeWorkflowGroup.value) {
+    return "";
+  }
+  const { path } = activeWorkflowGroup.value;
+  return ["home"].concat(path.map(({ name }) => name)).join("/");
+});
+
+const fetchWorkflowGroupContent = async () => {
+  if (props.projectId === null) {
+    return;
+  }
+
+  await store.dispatch("spaces/fetchWorkflowGroupContent", {
+    projectId: props.projectId,
+  });
+};
+
+watch(
+  projectId,
+  async () => {
+    await fetchWorkflowGroupContent();
+  },
+  { immediate: true },
+);
+
+const onSelectionChange = (itemIds: string[]) => {
+  selectedItemIds.value = itemIds;
+  $emit("changeSelection", itemIds);
+};
+
+const onChangeDirectory = async (pathId: string) => {
+  const { itemId } = await store.dispatch("spaces/changeDirectory", {
+    projectId: props.projectId,
+    pathId,
+  });
+
+  $emit("itemChanged", itemId);
+};
+
+const onOpenFile = async ({ id }: FileExplorerItem) => {
+  await store.dispatch("spaces/openWorkflow", {
+    projectId: props.projectId,
+    workflowItemId: id,
+    // send in router, so it can be used to navigate to an already open workflow
+    $router,
+  });
+};
+
+const onRenameFile = ({
+  itemId,
+  newName,
+}: {
+  itemId: string;
+  newName: string;
+}) => {
+  store
+    .dispatch("spaces/renameItem", {
+      projectId: props.projectId,
+      itemId,
+      newName,
+    })
+    .catch(() => {
+      $toast.show({
+        type: "error",
+        headline: "Rename failed",
+        message: `Could not rename the selected item with the new name "${newName}". Please, try again`,
+      });
+    });
+};
+
+const openDeleteConfirmModal = ({ items }: { items: FileExplorerItem[] }) => {
+  deleteModal.value.items = items;
+  deleteModal.value.isActive = true;
+};
+
+const deleteItems = async () => {
+  // TODO NXT-2205: move all of this logic into the store action
+  // and re-use item-to-project-mapping-logic
+  deleteModal.value.isActive = false;
+
+  const itemIds = deleteModal.value.items.map((item) => item.id);
+  const projectIds = openProjects.value
+    .filter(
+      (project) =>
+        project.origin &&
+        itemIds.includes(project.origin.itemId) &&
+        spaceProviders.value[project.origin.providerId]?.type ===
+          SpaceProviderNS.TypeEnum.LOCAL,
+    )
+    .map(({ projectId }) => projectId);
+
+  const { spaceId, spaceProviderId } = projectPath.value[props.projectId];
+  let nextProjectId;
+  let isDeletingActiveProject = false;
+
+  if (projectIds.length) {
+    isDeletingActiveProject = projectIds.includes(props.projectId);
+    nextProjectId = await store.dispatch("application/forceCloseProjects", {
+      projectIds,
+    });
+  }
+
+  await store.dispatch("spaces/deleteItems", {
+    projectId: props.projectId,
+    itemIds,
+    isDeletingActiveProject,
+    spaceId,
+    spaceProviderId,
+  });
+
+  if (nextProjectId) {
+    await $router.push({
+      name: APP_ROUTES.WorkflowPage,
+      params: { projectId: nextProjectId, workflowId: "root" },
+    });
+  }
+};
+
+const { onMoveItems, onDuplicateItems } = useMovingItems({ projectId });
+
+const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
+  useCustomDragPreview({ projectId });
 </script>
 
 <template>
@@ -526,9 +255,11 @@ export default defineComponent({
         />
       </div>
     </div>
-    <div class="breadcrumb-wrapper">
-      <Breadcrumb :items="breadcrumbItems" @click-item="onBreadcrumbClick" />
-    </div>
+
+    <SpaceExplorerBreadcrumbs
+      :active-workflow-group="activeWorkflowGroup"
+      @click="onChangeDirectory"
+    />
 
     <SmartLoader
       class="smart-loader content"
@@ -551,12 +282,12 @@ export default defineComponent({
         @change-selection="onSelectionChange"
         @open-file="onOpenFile"
         @rename-file="onRenameFile"
-        @delete-items="onDeleteItems"
+        @delete-items="openDeleteConfirmModal"
         @move-items="onMoveItems"
         @drag="onDrag"
         @dragend="onDragEnd"
       >
-        <template v-if="nodeTemplate && isAboveCanvas" #customDragPreview>
+        <template v-if="shouldShowCustomPreview" #customDragPreview>
           <NodePreview
             :type="nodeTemplate.type"
             :in-ports="nodeTemplate.inPorts"
@@ -589,33 +320,15 @@ export default defineComponent({
         </template>
       </FileExplorer>
     </SmartLoader>
-    <div>
-      <Modal
-        :active="deleteModal.deleteModalActive"
-        title="Delete"
-        style-type="info"
-        @cancel="deleteModal.deleteModalActive = false"
-      >
-        <template #icon><TrashIcon /></template>
-        <template #confirmation>
-          <div class="items-to-delete">
-            <span>Do you want to delete the following item(s):</span>
-            <ul>
-              <li v-for="(item, index) of deleteModal.items" :key="index">
-                <Component :is="itemIconRenderer(item)" />
-                {{ item.name }}
-              </li>
-            </ul>
-          </div>
-        </template>
-        <template #controls>
-          <Button with-border @click="deleteModal.deleteModalActive = false">
-            Cancel
-          </Button>
-          <Button primary @click="deleteItems"> Ok </Button>
-        </template>
-      </Modal>
-    </div>
+
+    <SpaceExplorerDeleteItemModal
+      :is-active="deleteModal.isActive"
+      :items="deleteModal.items"
+      :item-icon-renderer="itemIconRenderer"
+      @accept="deleteItems()"
+      @cancel="deleteModal = { isActive: false, items: [] }"
+    />
+
     <DeploymentsModal />
   </div>
 </template>
@@ -640,42 +353,6 @@ export default defineComponent({
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 
-.breadcrumb-wrapper {
-  padding: 0 var(--space-both-sides);
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  align-items: center;
-
-  & .breadcrumb {
-    padding-bottom: 0;
-    overflow-x: auto;
-    white-space: pre;
-    -ms-overflow-style: none; /* needed to hide scroll bar in edge */
-    scrollbar-width: none; /* for firefox */
-    user-select: none;
-    margin-right: 8px;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-
-    & :deep(.arrow) {
-      margin: 0;
-    }
-
-    & :deep(ul > li > span) {
-      color: var(--knime-dove-gray);
-
-      &:last-child,
-      &:hover {
-        color: var(--knime-masala);
-      }
-    }
-  }
-}
-
 .content {
   padding: 0 var(--space-both-sides);
 }
@@ -693,29 +370,5 @@ export default defineComponent({
   --smartloader-bg: var(--knime-gray-ultra-light);
   --smartloader-icon-size: 30;
   --smartloader-z-index: 2;
-}
-
-.items-to-delete {
-  & span {
-    font-weight: bold;
-  }
-
-  & ul {
-    margin: 0;
-    padding: 8px 0;
-    list-style-type: none;
-    max-height: 300px;
-    overflow-y: auto;
-
-    & li {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      & svg {
-        @mixin svg-icon-size 14;
-      }
-    }
-  }
 }
 </style>
