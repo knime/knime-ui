@@ -30,6 +30,7 @@ import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMe
 
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
+import { SpaceProviderNS } from "@/api/custom-types";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
 
@@ -271,20 +272,21 @@ export default defineComponent({
       this.deleteModal.deleteModalActive = false;
 
       const itemIds = this.deleteModal.items.map((item) => item.id);
-      const relevantProjects = this.openProjects.filter((project) =>
-        itemIds.includes(project?.origin?.itemId),
-      );
-      const projectIds = relevantProjects.map(({ projectId }) => projectId);
+      const projectIds = this.openProjects
+        .filter(
+          (project) =>
+            project.origin &&
+            itemIds.includes(project.origin.itemId) &&
+            this.spaceProviders[project.origin.providerId]?.type ===
+              SpaceProviderNS.TypeEnum.LOCAL,
+        )
+        .map(({ projectId }) => projectId);
       const { spaceId, spaceProviderId } = this.projectPath[this.projectId];
       let nextProjectId;
       let isDeletingActiveProject = false;
 
       if (projectIds.length) {
-        isDeletingActiveProject = Boolean(
-          relevantProjects.find(
-            (project) => project.projectId === this.projectId,
-          ),
-        );
+        isDeletingActiveProject = projectIds.includes(this.projectId);
         nextProjectId = await this.forceCloseProjects({ projectIds });
       }
 

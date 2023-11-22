@@ -141,9 +141,17 @@ describe("SpaceExplorer.vue", () => {
     };
 
     store.state.spaces.spaceProviders = {
-      spaceId: "space",
-      spaceProviderId: "provider",
-      itemId: "root",
+      space: {
+        spaceId: "space",
+        spaceProviderId: "provider",
+        itemId: "root",
+      },
+      local: {
+        spaceId: "local",
+        spaceProviderId: "provider",
+        itemId: "root",
+        type: "LOCAL",
+      },
     };
 
     const dispatchSpy = vi.spyOn(store, "dispatch");
@@ -526,6 +534,20 @@ describe("SpaceExplorer.vue", () => {
           },
           name: "test2",
           projectId: "testPID",
+        },
+        {
+          origin: {
+            providerId: "other",
+            spaceId: "blub",
+            itemId: "item0",
+            ancestorItemIds: ["1", "7"],
+          },
+          name: "test3",
+          projectId: "testPID2",
+        },
+        {
+          name: "test4",
+          projectId: "testPID3",
         },
       ];
       const { wrapper, dispatchSpy } = await doMountAndLoad({ openProjects });
