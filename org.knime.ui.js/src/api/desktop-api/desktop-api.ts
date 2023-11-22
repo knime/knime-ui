@@ -690,6 +690,16 @@ export const getHubID = () => {
   );
 };
 
+export const openAiAssistantPreferencePage = () => {
+  return callBrowserFunction(
+    window.openAiAssistantPreferencePage,
+    [],
+    "Could not open AI assistant preferences",
+    false,
+    { block: true, darkenBackground: true },
+  );
+};
+
 export const openPermissionsDialog = ({
   spaceProviderId,
   spaceId,

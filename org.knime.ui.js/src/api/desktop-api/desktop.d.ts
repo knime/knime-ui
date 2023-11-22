@@ -176,6 +176,7 @@ declare function abortAiRequest(
 declare function getUiStrings(): string;
 declare function installKAI(): void;
 declare function getHubID(): string;
+declare function openAiAssistantPreferencePage(): void;
 
 declare function openPermissionsDialog(
   spaceProviderId: string,
