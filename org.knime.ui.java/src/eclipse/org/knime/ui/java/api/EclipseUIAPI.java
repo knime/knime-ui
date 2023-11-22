@@ -156,19 +156,24 @@ final class EclipseUIAPI {
      */
     @API
     static void openWebUIPreferencePage() {
+        openPreferencePage(PreferencePageIds.MODERN_UI);
+    }
+
+    static void openPreferencePage(final String preferencePageId) {
         var rootSubNodes = PlatformUI.getWorkbench().getPreferenceManager().getRootSubNodes();
         var displayedIds = getFilteredDisplayIds(rootSubNodes);
-        var dialog = PreferencesUtil.createPreferenceDialogOn(null, PreferencePageIds.MODERN_UI, displayedIds, null);
+        var dialog = PreferencesUtil.createPreferenceDialogOn(null, preferencePageId, displayedIds, null);
         dialog.open();
 
         // Since changing the web-ui settings changes the application state
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+
     }
 
     /**
      * Returns all the display IDs it could find, except the ones filtered out
      */
-    private static String[] getFilteredDisplayIds(final IPreferenceNode[] nodes) {
+    static String[] getFilteredDisplayIds(final IPreferenceNode[] nodes) {
         return Arrays.stream(nodes)//
             .filter(node -> !PreferencePageIds.EXCLUDED.contains(node.getId()))//
             .flatMap(parent -> {

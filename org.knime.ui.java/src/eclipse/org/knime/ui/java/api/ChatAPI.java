@@ -102,6 +102,11 @@ public final class ChatAPI {
          * @return the ID of the hub that provides the ai-service
          */
         String getHubID();
+
+        /**
+         * @return the ID of the preference page that
+         */
+        String getPreferencePageID();
     }
 
     private static final Set<ChatListener> LISTENERS = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -175,6 +180,14 @@ public final class ChatAPI {
     @API
     public static void installKAI() {
         ImportURI.startInstallationJob("KNIME AI Assistant", "org.knime.features.ai.assistant", null);
+    }
+
+    /**
+     * Opens the AI Assistant preference page
+     */
+    @API
+    public static void openAiAssistantPreferencePage() {
+        EclipseUIAPI.openPreferencePage(getListener().orElseThrow().getPreferencePageID());
     }
 
     /**
