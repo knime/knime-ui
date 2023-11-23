@@ -318,5 +318,15 @@ const spaceIcon = computed(() => {
   & :deep(.submenu-toggle) {
     padding-left: 5px;
   }
+
+  & :deep(.menu-wrapper) {
+    & .separator:has(.section-headline) {
+      padding-top: 5px;
+
+      & .text {
+        color: var(--knime-masala);
+      }
+    }
+  }
 }
 </style>
