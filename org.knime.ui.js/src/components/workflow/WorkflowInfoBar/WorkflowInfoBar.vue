@@ -8,6 +8,8 @@ import StreamingInfo from "./StreamingInfo.vue";
 
 const store = useStore();
 
+const width = computed(() => store.state.canvas.containerSize.width);
+
 const isLinked = computed(() => store.getters["workflow/isLinked"]);
 const isInsideLinked = computed(() => store.getters["workflow/isInsideLinked"]);
 const isStreaming = computed(() => store.getters["workflow/isStreaming"]);
@@ -52,15 +54,17 @@ const containerType = computed(
 .stack {
   display: flex;
   flex-direction: column;
-  top: 10px;
-  position: sticky;
+  position: absolute;
   z-index: 1;
   pointer-events: none;
   user-select: none;
   justify-content: center;
   align-items: center;
-  margin: 0 24px 0 10px;
-  left: 10px;
+  margin-top: 10px;
+  margin-left: 10px;
+
+  /* we can't rely on top/left/bottom as we cannot set the parent to relative due to floating menu size calc */
+  width: calc(v-bind(width) * 1px - 24px);
 }
 
 .workflow-info {
