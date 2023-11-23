@@ -20,6 +20,7 @@ import { $bus } from "@/plugins/event-bus";
 import { useMouseWheelZooming } from "./useMouseWheelZooming";
 import { usePanning } from "./usePanning";
 import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
+import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
 
 const emit = defineEmits(["containerSizeChanged"]);
 
@@ -91,6 +92,7 @@ onBeforeUnmount(() => {
 });
 
 useCanvasMoveLocking();
+useArrowKeyNavigation();
 
 const { onMouseWheel } = useMouseWheelZooming({ rootEl });
 

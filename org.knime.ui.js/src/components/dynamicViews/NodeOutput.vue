@@ -17,7 +17,6 @@ import NodeViewTabOutput from "./nodeViews/NodeViewTabOutput.vue";
 
 import {
   buildMiddleware,
-  validateDragging,
   validateSelection,
   type ValidationResult,
 } from "./common/output-validator";
@@ -30,7 +29,7 @@ export const runValidationChecks = ({
   isDragging: boolean;
 }) => {
   const validationMiddleware = buildMiddleware(
-    validateDragging,
+    // validateDragging,
     validateSelection,
   );
 
