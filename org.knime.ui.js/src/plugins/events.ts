@@ -1,11 +1,13 @@
+import type { Store } from "vuex";
 import { API } from "@api";
 import { notifyPatch } from "@/util/event-syncer";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 import { nodeSize } from "@/style/shapes.mjs";
+import type { RootStoreState } from "@/store/types";
 import { $bus } from "./event-bus";
 import type { PluginInitFunction } from "./types";
 
-const init: PluginInitFunction = ({ $store, $router }) => {
+const init: PluginInitFunction = ({ $store, $router, $toast }) => {
   API.event.registerEventHandlers({
     /**
      * Is a generic event, that holds multiple events (names separated by ':')
@@ -89,43 +91,83 @@ const init: PluginInitFunction = ({ $store, $router }) => {
         loading: true,
       });
 
+      const resolveSnapshot = async (
+        $store: Store<RootStoreState>,
+        projectId: string,
+        activeProjectId: string,
+      ): Promise<string | null> => {
+        try {
+          const { svgElement, isCanvasEmpty } =
+            projectId === activeProjectId
+              ? await $store.dispatch("application/getActiveWorkflowSnapshot")
+              : await $store.dispatch(
+                  "application/getRootWorkflowSnapshotByProjectId",
+                  { projectId },
+                );
+
+          return generateWorkflowPreview(svgElement, isCanvasEmpty);
+        } catch (error) {
+          consola.error(error);
+          // null values will trigger a validation on the BE which will cause
+          // a warning to be shown to the user
+          return null;
+        }
+      };
+
       const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
 
-      const resolveSVGSnapshots = projectIds.map(async (projectId) => {
-        const { svgElement, isCanvasEmpty } =
-          projectId === activeProjectId
-            ? await $store.dispatch("application/getActiveWorkflowSnapshot")
-            : await $store.dispatch(
-                "application/getRootWorkflowSnapshotByProjectId",
-                { projectId },
-              );
+      const svgSnapshotResolvePromises = projectIds.map((projectId) =>
+        resolveSnapshot($store, projectId, activeProjectId),
+      );
 
-        return generateWorkflowPreview(svgElement, isCanvasEmpty);
-      });
+      try {
+        const svgSnapshots = await Promise.all(svgSnapshotResolvePromises);
+        const totalProjects = projectIds.length;
 
-      const svgSnapshots = await Promise.all(resolveSVGSnapshots);
-      const totalProjects = projectIds.length;
+        await API.desktop.saveAndCloseWorkflows({
+          totalProjects,
+          projectIds,
+          svgSnapshots,
+          // send over any parameters that are sent in the event payload, or empty in case none
+          params,
+        });
+      } catch (error) {
+        // if BE fails we're back in control in the UI, so we should remove the
+        // loader overlay which blocks user interaction
+        await $store.dispatch("application/updateGlobalLoader", {
+          loading: false,
+        });
 
-      await API.desktop.saveAndCloseWorkflows({
-        totalProjects,
-        projectIds,
-        svgSnapshots,
-        // send over any parameters that are sent in the event payload, or empty in case none
-        params,
-      });
+        $toast.show({
+          headline: "Error saving your work",
+          type: "error",
+          message:
+            "There was a problem saving one of your workflows. Please try again or save them individually",
+        });
+      }
 
-      for (const closingProjectId of projectIds) {
-        await $store.dispatch(
-          "application/removeCanvasState",
-          closingProjectId,
-          { root: true },
-        );
+      try {
+        for (const closingProjectId of projectIds) {
+          await $store.dispatch(
+            "application/removeCanvasState",
+            closingProjectId,
+            { root: true },
+          );
 
-        await $store.dispatch(
-          "application/removeFromRootWorkflowSnapshots",
-          { projectId: closingProjectId },
-          { root: true },
-        );
+          await $store.dispatch(
+            "application/removeFromRootWorkflowSnapshots",
+            { projectId: closingProjectId },
+            { root: true },
+          );
+        }
+      } catch (error) {
+        // since this event fires when the user is either shutting down the AP or
+        // switching perspective then this error is not super relevant since
+        // will only cause a bit of extra data leftover which will be cleaned up
+        // anyway after the app is shutdown
+        consola.error("Error tearing down canvas or workflow snapshot state", {
+          error,
+        });
       }
     },
 
