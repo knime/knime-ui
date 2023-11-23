@@ -133,7 +133,8 @@ public final class DesktopAPUtil {
     public static WorkflowManager fetchAndLoadWorkflowWithTask(final Space space, final String itemId,
         final IProgressMonitor monitor) {
         monitor.beginTask(LOADING_WORKFLOW_PROGRESS_MSG, IProgressMonitor.UNKNOWN);
-        final var path = space.toLocalAbsolutePath(DesktopAPUtil.toExecutionMonitor(monitor), itemId);
+        final var exec = DesktopAPUtil.toExecutionMonitor(monitor);
+        final var path = space.toLocalAbsolutePath(exec, itemId).orElse(null);
         if (path == null) {
             return null;
         }
