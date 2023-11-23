@@ -5,8 +5,15 @@ import { shallowMount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { $bus } from "@/plugins/event-bus";
 
 import Kanvas, { RESIZE_DEBOUNCE } from "../Kanvas.vue";
+
+vi.mock("@/plugins/event-bus", () => ({
+  $bus: {
+    emit: vi.fn(),
+  },
+}));
 
 describe("Kanvas", () => {
   const doShallowMount = ({
@@ -80,10 +87,7 @@ describe("Kanvas", () => {
         },
         getters: {
           viewBox: () => ({ string: "viewbox-string" }),
-          contentBounds:
-            () =>
-            ({ state }) =>
-              state.__contentBounds,
+          contentBounds: (state) => state.__contentBounds,
           contentPadding: () => ({ left: 10, top: 10 }),
           canvasSize: () => ({ width: 30, height: 300 }),
         },
@@ -108,16 +112,11 @@ describe("Kanvas", () => {
 
     const $store = mockVuexStore(storeConfig);
 
-    const mockBus = {
-      emit: vi.fn(),
-    };
-
     const commitSpy = vi.spyOn($store, "commit");
 
     const wrapper = shallowMount(Kanvas, {
       global: {
         plugins: [$store],
-        mocks: { $bus: mockBus },
       },
     });
 
@@ -135,7 +134,6 @@ describe("Kanvas", () => {
       setPointerCapture,
       releasePointerCapture,
       ResizeObserverMock,
-      mockBus,
       commitSpy,
     };
   };
@@ -174,55 +172,49 @@ describe("Kanvas", () => {
   });
 
   it("should update canvas store when content bounds change", async () => {
-    const { wrapper, actions } = doShallowMount();
+    const { actions, $store } = doShallowMount();
 
     expect(actions.canvas.contentBoundsChanged).not.toHaveBeenCalled();
 
-    wrapper.vm.$options.watch.contentBounds.call(
-      wrapper.vm,
-      { left: 0, top: 0 },
-      { left: 10, top: 10 },
-    );
+    $store.state.canvas.__contentBounds = { left: 10, top: 10 };
+
     await Vue.nextTick();
 
     expect(actions.canvas.contentBoundsChanged).toHaveBeenCalledWith(
       expect.anything(),
-      [
-        { left: 0, top: 0 },
-        { left: 10, top: 10 },
-      ],
+      [{ left: 10, top: 10 }, { left: 0, top: 0 }, expect.anything()],
     );
   });
 
   describe("selection on canvas", () => {
     it("should emit select-pointerdown when clicking on the canvas", () => {
-      const { wrapper, mockBus } = doShallowMount();
+      const { wrapper } = doShallowMount();
 
       wrapper.find("svg").trigger("pointerdown");
 
-      expect(mockBus.emit).toHaveBeenCalledWith(
+      expect($bus.emit).toHaveBeenCalledWith(
         "selection-pointerdown",
         expect.anything(),
       );
     });
 
     it("should emit select-pointermove when moving on the canvas ", () => {
-      const { wrapper, mockBus } = doShallowMount();
+      const { wrapper } = doShallowMount();
 
       wrapper.find("svg").trigger("pointermove");
 
-      expect(mockBus.emit).toHaveBeenCalledWith(
+      expect($bus.emit).toHaveBeenCalledWith(
         "selection-pointermove",
         expect.anything(),
       );
     });
 
     it("should emit select-pointerup when releasing click on the canvas ", () => {
-      const { wrapper, mockBus } = doShallowMount();
+      const { wrapper } = doShallowMount();
 
       wrapper.find("svg").trigger("pointerup");
 
-      expect(mockBus.emit).toHaveBeenCalledWith(
+      expect($bus.emit).toHaveBeenCalledWith(
         "selection-pointerup",
         expect.anything(),
       );
@@ -230,7 +222,7 @@ describe("Kanvas", () => {
 
     it("should emit select-pointerdown when pressing meta on Mac and left mouse button", async () => {
       mockUserAgent("mac");
-      const { wrapper, mockBus } = doShallowMount();
+      const { wrapper } = doShallowMount();
       const svg = wrapper.find("svg");
       await svg.trigger("pointerdown", {
         button: 0, // left click
@@ -242,7 +234,7 @@ describe("Kanvas", () => {
         metaKey: true,
       });
 
-      expect(mockBus.emit).toHaveBeenCalledWith(
+      expect($bus.emit).toHaveBeenCalledWith(
         "selection-pointerdown",
         expect.anything(),
       );
@@ -250,7 +242,7 @@ describe("Kanvas", () => {
 
     it("should emit select-pointerdown when pressing control on Windows/Linux and left mouse button", async () => {
       mockUserAgent("windows");
-      const { wrapper, mockBus } = doShallowMount();
+      const { wrapper } = doShallowMount();
       const svg = wrapper.find("svg");
       await svg.trigger("pointerdown", {
         button: 0, // left click
@@ -262,7 +254,7 @@ describe("Kanvas", () => {
         ctrlKey: true,
       });
 
-      expect(mockBus.emit).toHaveBeenCalledWith(
+      expect($bus.emit).toHaveBeenCalledWith(
         "selection-pointerdown",
         expect.anything(),
       );
@@ -275,11 +267,7 @@ describe("Kanvas", () => {
       document.dispatchEvent(new KeyboardEvent("keydown", { metaKey: true }));
       await Vue.nextTick();
 
-      expect(commitSpy).toHaveBeenCalledWith(
-        "canvas/setIsMoveLocked",
-        true,
-        undefined,
-      );
+      expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", true);
     });
 
     it("should set objects to be unmovable if control key is down on windows", async () => {
@@ -289,11 +277,7 @@ describe("Kanvas", () => {
       document.dispatchEvent(new KeyboardEvent("keydown", { ctrlKey: true }));
       await Vue.nextTick();
 
-      expect(commitSpy).toHaveBeenCalledWith(
-        "canvas/setIsMoveLocked",
-        true,
-        undefined,
-      );
+      expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", true);
     });
 
     it("should set objects to back to be movable if shift key is released", async () => {
@@ -302,20 +286,12 @@ describe("Kanvas", () => {
       document.dispatchEvent(new KeyboardEvent("keydown", { shiftKey: true }));
       await Vue.nextTick();
 
-      expect(commitSpy).toHaveBeenCalledWith(
-        "canvas/setIsMoveLocked",
-        true,
-        undefined,
-      );
+      expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", true);
 
       document.dispatchEvent(new KeyboardEvent("keyup", { key: "Shift" }));
       await Vue.nextTick();
 
-      expect(commitSpy).toHaveBeenCalledWith(
-        "canvas/setIsMoveLocked",
-        false,
-        undefined,
-      );
+      expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", false);
     });
   });
 

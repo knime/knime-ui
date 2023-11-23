@@ -1,323 +1,120 @@
-<script>
-import { mapState, mapGetters, mapMutations, mapActions } from "vuex";
-import { debounce } from "lodash-es";
-import throttle from "raf-throttle";
-
-import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";
-import { isInputElement } from "@/util/isInputElement";
-import { isDynamicViewFocused } from "@/components/dynamicViews";
-
+<script lang="ts">
 export const RESIZE_DEBOUNCE = 100;
+</script>
 
-export default {
-  emits: ["containerSizeChanged"],
-  data() {
-    return {
-      // true if currently panning
-      isPanning: false,
-      // determines whether the move cursor will be used. It will also apply the 'panning'
-      // class which prevents pointer events on the svg element
-      useMoveCursor: false,
+<script setup lang="ts">
+import {
+  onMounted,
+  watch,
+  computed,
+  ref,
+  nextTick,
+  onBeforeUnmount,
+} from "vue";
+import { debounce } from "lodash-es";
 
-      isHoldingDownSpace: false,
-      isHoldingDownMiddleClick: false,
-      isHoldingDownRightClick: false,
-    };
-  },
-  computed: {
-    ...mapGetters("canvas", ["canvasSize", "viewBox", "contentBounds"]),
-    ...mapGetters("application", ["hasPanModeEnabled"]),
-    ...mapGetters("workflow", ["isWorkflowEmpty"]),
-    ...mapState("canvas", ["zoomFactor", "interactionsEnabled"]),
-    ...mapState("application", ["scrollToZoomEnabled"]),
-    ...mapState("workflow", ["isDragging"]),
-  },
-  watch: {
-    contentBounds(...args) {
-      this.contentBoundsChanged(args);
-    },
-  },
-  mounted() {
-    // Start Container Observers
-    this.initScrollContainerElement(this.$el);
-    this.initResizeObserver();
-    this.$el.focus();
+import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
-    document.addEventListener("keypress", this.onPressSpace);
-    document.addEventListener("keyup", this.onReleaseKey);
-    document.addEventListener("keydown", this.onDownShiftOrControl);
+import { useStore } from "@/composables/useStore";
+import { $bus } from "@/plugins/event-bus";
+import { useMouseWheelZooming } from "./useMouseWheelZooming";
+import { usePanning } from "./usePanning";
+import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
 
-    this.windowBlurListener = () => {
-      // unset panning state
-      this.useMoveCursor = false;
-      this.isPanning = false;
-      this.isHoldingDownSpace = false;
+const emit = defineEmits(["containerSizeChanged"]);
 
-      // unset move-lock state
-      this.setIsMoveLocked(false);
-    };
+const store = useStore();
 
-    window.addEventListener("blur", this.windowBlurListener);
-  },
-  beforeUnmount() {
-    // Stop Resize Observer
-    this.stopResizeObserver();
+// canvas
+const interactionsEnabled = computed(
+  () => store.state.canvas.interactionsEnabled,
+);
+const canvasSize = computed(() => store.getters["canvas/canvasSize"]);
+const viewBox = computed(() => store.getters["canvas/viewBox"]);
+const contentBounds = computed(() => store.getters["canvas/contentBounds"]);
 
-    // Remove reference to $el
-    this.clearScrollContainerElement();
-    window.removeEventListener("blur", this.windowBlurListener);
-    document.removeEventListener("keypress", this.onPressSpace);
-    document.removeEventListener("keyup", this.onReleaseKey);
-    document.removeEventListener("keydown", this.onDownShiftOrControl);
-  },
-  methods: {
-    ...mapActions("canvas", [
-      "initScrollContainerElement",
-      "updateContainerSize",
-      "zoomAroundPointer",
-      "contentBoundsChanged",
-    ]),
-    ...mapMutations("canvas", [
-      "clearScrollContainerElement",
-      "setIsMoveLocked",
-    ]),
+watch(contentBounds, (...args) => {
+  store.dispatch("canvas/contentBoundsChanged", args);
+});
 
-    initResizeObserver() {
-      // updating the container size and recalculating the canvas is debounced.
-      const updateContainerSize = debounce(() => {
-        this.updateContainerSize();
-        this.$nextTick(() => {
-          this.$emit("containerSizeChanged");
-        });
-      }, RESIZE_DEBOUNCE);
+// application
+const hasPanModeEnabled = computed(
+  () => store.getters["application/hasPanModeEnabled"],
+);
 
-      this.resizeObserver = new ResizeObserver((entries) => {
-        const containerEl = entries.find(({ target }) => target === this.$el);
-        if (containerEl) {
-          updateContainerSize();
-        }
-      });
+// workflow
+const isWorkflowEmpty = computed(
+  () => store.getters["workflow/isWorkflowEmpty"],
+);
 
-      this.stopResizeObserver = () => {
-        if (this.resizeObserver) {
-          this.resizeObserver.disconnect();
-        }
-      };
+const rootEl = ref<HTMLDivElement>(null);
+let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
 
-      this.resizeObserver.observe(this.$el);
-    },
-    /*
-            Zooming
-        */
-    zoom: throttle(function (e) {
-      /* eslint-disable no-invalid-this */
+const initResizeObserver = () => {
+  // updating the container size and recalculating the canvas is debounced.
+  const updateContainerSize = debounce(() => {
+    store.dispatch("canvas/updateContainerSize");
+    nextTick(() => {
+      emit("containerSizeChanged");
+    });
+  }, RESIZE_DEBOUNCE);
 
-      // delta is -1, 0 or 1 depending on scroll direction.
-      let delta = Math.sign(-e.deltaY);
+  resizeObserver = new ResizeObserver((entries) => {
+    const containerEl = entries.find(({ target }) => target === rootEl.value);
+    if (containerEl) {
+      updateContainerSize();
+    }
+  });
 
-      // get mouse cursor position on canvas
-      let scrollContainer = this.$el;
-      let bcr = scrollContainer.getBoundingClientRect();
-      let cursorX = e.clientX - bcr.x;
-      let cursorY = e.clientY - bcr.y;
+  stopResizeObserver = () => {
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+    }
+  };
 
-      this.zoomAroundPointer({ delta, cursorX, cursorY });
+  resizeObserver.observe(rootEl.value);
+};
 
-      /* eslint-enable no-invalid-this */
-    }),
+onMounted(() => {
+  store.dispatch("canvas/initScrollContainerElement", rootEl.value);
+  initResizeObserver();
 
-    onMouseWheel(event) {
-      if (!this.interactionsEnabled || this.isWorkflowEmpty) {
-        return;
-      }
+  rootEl.value.focus();
+});
 
-      // If we don't want to use the wheel to zoom by default,
-      // we still want to zoom on ctrl or meta key.
-      // Note: The pinch-to-zoom gesture on Mac causes a wheel event with ctrlKey=True,
-      //       so we need to check for it to obtain zoom on pinch-to-zoom.
-      const shouldZoom =
-        this.scrollToZoomEnabled || event.ctrlKey || (isMac() && event.metaKey);
-      if (!shouldZoom) {
-        return;
-      }
+onBeforeUnmount(() => {
+  // Stop Resize Observer
+  stopResizeObserver();
 
-      event.preventDefault();
-      event.stopPropagation();
+  // Remove reference to canvas element wrapper
+  store.commit("canvas/clearScrollContainerElement");
+});
 
-      // we can only throttle the zoom function itself and not the event propagation,
-      // otherwise we can get a mix of zooming and scrolling because some events
-      // are propagated and some are not
-      this.zoom(event);
-    },
+useCanvasMoveLocking();
 
-    /*
-        Panning
-        */
-    onPressSpace(e) {
-      if (isInputElement(e.target) || isDynamicViewFocused()) {
-        return;
-      }
+const { onMouseWheel } = useMouseWheelZooming({ rootEl });
 
-      if (e.code !== "Space") {
-        return;
-      }
+const { shouldShowMoveCursor, beginPan, movePan, stopPan } = usePanning({
+  rootEl,
+});
 
-      e.preventDefault();
-      e.stopPropagation();
+const startRectangleSelection = (event: PointerEvent) => {
+  const metaOrCtrlKey = getMetaOrCtrlKey();
 
-      if (!this.isHoldingDownSpace) {
-        this.useMoveCursor = true;
-      }
-
-      this.isHoldingDownSpace = true;
-    },
-
-    onReleaseKey(e) {
-      if (e.code === "Space") {
-        // unset panning state
-        this.useMoveCursor = false;
-        this.isPanning = false;
-        this.isHoldingDownSpace = false;
-      }
-
-      if (e.code === "Escape") {
-        // unset panning state
-        this.useMoveCursor = false;
-        this.isPanning = false;
-        this.$store.dispatch("application/resetCanvasMode");
-      }
-
-      const metaOrCtrlKey = isMac() ? "Meta" : "Control";
-
-      if (e.key === "Shift" || e.key === metaOrCtrlKey) {
-        this.setIsMoveLocked(false);
-      }
-    },
-
-    beginPan(e) {
-      if (!this.interactionsEnabled || this.isWorkflowEmpty) {
-        return;
-      }
-      const middleButton = 1;
-      const rightButton = 2;
-
-      this.isHoldingDownMiddleClick = e.button === middleButton;
-      this.isHoldingDownRightClick = e.button === rightButton;
-
-      // definite pan for these 3 interactions
-      if (
-        this.isHoldingDownMiddleClick ||
-        this.isHoldingDownSpace ||
-        this.hasPanModeEnabled
-      ) {
-        this.isPanning = true;
-        this.useMoveCursor = true;
-        this.panningOffset = [e.screenX, e.screenY];
-        this.$el.setPointerCapture(e.pointerId);
-      }
-
-      // possibly will pan, but we need to wait further for the user to move
-      if (this.isHoldingDownRightClick) {
-        this.maybePanning = true;
-        this.initialRightClickPosition = [e.screenX, e.screenY];
-      }
-    },
-    movePan: throttle(function (e) {
-      /* eslint-disable no-invalid-this */
-      if (this.isPanning) {
-        const delta = [
-          e.screenX - this.panningOffset[0],
-          e.screenY - this.panningOffset[1],
-        ];
-        this.panningOffset = [e.screenX, e.screenY];
-        this.$el.scrollLeft -= delta[0];
-        this.$el.scrollTop -= delta[1];
-      }
-
-      // user could potentially be wanting to pan via right-click
-      if (this.maybePanning) {
-        const MOVE_THRESHOLD = 15;
-        const deltaX = Math.abs(e.screenX - this.initialRightClickPosition[0]);
-        const deltaY = Math.abs(e.screenY - this.initialRightClickPosition[1]);
-
-        // only start panning after we cross a certain threshold
-        if (deltaX >= MOVE_THRESHOLD || deltaY >= MOVE_THRESHOLD) {
-          this.isPanning = true;
-          this.useMoveCursor = true;
-          this.panningOffset = [e.screenX, e.screenY];
-          this.$el.setPointerCapture(e.pointerId);
-
-          // clear right-click state
-          this.maybePanning = false;
-          this.initialRightClickPosition = null;
-        }
-      }
-      /* eslint-enable no-invalid-this */
-    }),
-
-    stopPan(event) {
-      // user is not panning but did right-clicked
-      if (!this.isPanning && this.isHoldingDownRightClick) {
-        this.$store.dispatch("application/toggleContextMenu", {
-          event,
-          deselectAllObjects: true,
-        });
-
-        // unset right-click state since we're directly opening the menu instead of panning
-        this.isHoldingDownRightClick = false;
-        this.maybePanning = false;
-
-        // stop event here
-        event.stopPropagation();
-        return;
-      }
-
-      if (this.isPanning) {
-        this.isPanning = false;
-        this.panningOffset = null;
-        this.$el.releasePointerCapture(event.pointerId);
-        event.stopPropagation();
-      }
-
-      // reset all states
-      this.isHoldingDownRightClick = false;
-      this.isHoldingDownMiddleClick = false;
-      this.maybePanning = false;
-
-      // move cursor should remain set if the user is still holding down the space key
-      this.useMoveCursor = this.isHoldingDownSpace;
-    },
-
-    onDownShiftOrControl(e) {
-      if (isInputElement(e.target)) {
-        return;
-      }
-
-      const metaOrCtrlKey = getMetaOrCtrlKey();
-
-      if ((e.shiftKey || e[metaOrCtrlKey]) && !this.isDragging) {
-        this.setIsMoveLocked(true);
-      }
-    },
-
-    startRectangleSelection(event) {
-      const metaOrCtrlKey = getMetaOrCtrlKey();
-
-      if (event.shiftKey || event[metaOrCtrlKey]) {
-        this.$bus.emit("selection-pointerdown", event);
-      }
-    },
-  },
+  if (event.shiftKey || event[metaOrCtrlKey]) {
+    $bus.emit("selection-pointerdown", event);
+  }
 };
 </script>
 
 <template>
   <div
+    ref="rootEl"
     tabindex="0"
     :class="[
       'scroll-container',
       {
-        panning: useMoveCursor || hasPanModeEnabled,
+        panning: shouldShowMoveCursor || hasPanModeEnabled,
         empty: isWorkflowEmpty,
         disabled: !interactionsEnabled,
       },
