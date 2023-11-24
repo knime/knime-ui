@@ -53,7 +53,6 @@ import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
-import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -94,12 +93,11 @@ final class Suspend {
                     try {
                         CoreUtil.cancelAndCloseLoadedWorkflow(t);
                     } catch (InterruptedException e) { // NOSONAR
-                        NodeLogger.getLogger(PerspectiveSwitchAddon.class).error(e);
+                        NodeLogger.getLogger(Suspend.class).error(e);
                     }
                 });
             }
-            pm.removeProject(projectId, w -> {
-            });
+            pm.removeProject(projectId, w -> {});
         });
     }
 

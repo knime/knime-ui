@@ -110,7 +110,7 @@ public final class TestingUtil {
         projectIds.stream().forEach(projectId -> wpm.addProject(new Project() { // NOSONAR
 
             @Override
-            public WorkflowManager openProject() {
+            public WorkflowManager loadWorkflowManager() {
                 return loadWorkflowForTesting(projectId);
             }
 

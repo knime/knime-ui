@@ -204,8 +204,8 @@ final class OpenProject {
         final String spaceProviderId, final String spaceId, final String itemId, final ProjectTypeEnum projectType) {
         if (space instanceof LocalWorkspace localSpace) {
             var pm = ProjectManager.getInstance();
-            var path = localSpace.toLocalAbsolutePath(new ExecutionMonitor(), itemId);
-            var project = WorkflowServiceProjects.getProject(path).flatMap(id -> pm.getProject(id)).orElse(null);
+            var path = localSpace.toLocalAbsolutePath(new ExecutionMonitor(), itemId).orElse(null);
+            var project = WorkflowServiceProjects.getProject(path).flatMap(pm::getProject).orElse(null);
             if (project != null) {
                 var wfm = pm.getCachedProject(project.getID()).orElse(null);
                 if (wfm != null) {
