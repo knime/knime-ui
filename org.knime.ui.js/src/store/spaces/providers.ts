@@ -1,5 +1,5 @@
 import { API } from "@api";
-import type { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceProviderNS } from "@/api/custom-types";
 
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "../types";
@@ -160,6 +160,11 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       state.projectPath[projectId];
 
     return state.spaceProviders[activeSpaceProviderId] || {};
+  },
+
+  isServerSpace: (_, getters) => (projectId: string) => {
+    const provider = getters.getProviderInfo(projectId);
+    return provider.type === SpaceProviderNS.TypeEnum.SERVER;
   },
 
   getSpaceInfo: (state) => (projectId: string) => {

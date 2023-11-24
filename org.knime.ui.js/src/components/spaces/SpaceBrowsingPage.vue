@@ -4,6 +4,7 @@ import { mapGetters, mapState } from "vuex";
 import Button from "webapps-common/ui/components/Button.vue";
 import ArrowLeftIcon from "webapps-common/ui/assets/img/icons/arrow-left.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
+import ServerIcon from "webapps-common/ui/assets/img/icons/server-racks.svg";
 import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
 
 import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
@@ -39,7 +40,11 @@ export default {
 
   computed: {
     ...mapState("spaces", ["spaceProviders"]),
-    ...mapGetters("spaces", ["getSpaceInfo", "hasActiveHubSession"]),
+    ...mapGetters("spaces", [
+      "getSpaceInfo",
+      "hasActiveHubSession",
+      "isServerSpace",
+    ]),
 
     activeSpaceInfo() {
       return this.getSpaceInfo(globalSpaceBrowserProjectId);
@@ -54,10 +59,20 @@ export default {
         };
       }
 
+      const title = this.activeSpaceInfo.name || "";
+
+      if (this.isServerSpace(globalSpaceBrowserProjectId)) {
+        return {
+          title,
+          subtitle: "Server",
+          icon: ServerIcon,
+        };
+      }
+
       const isPrivateSpace = this.activeSpaceInfo.private;
 
       return {
-        title: this.activeSpaceInfo.name || "",
+        title,
         subtitle: isPrivateSpace ? "Private space" : "Public space",
         icon: isPrivateSpace ? PrivateSpaceIcon : CubeIcon,
       };

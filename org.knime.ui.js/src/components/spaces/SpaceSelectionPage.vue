@@ -289,6 +289,7 @@ section.space-provider {
 
       & .owner-name {
         margin-left: 8px;
+        margin-right: 8px;
       }
     }
   }
