@@ -171,6 +171,8 @@ public final class PerspectiveSwitchAddon {
         NodeTimer.GLOBAL_TIMER.incJavaUIPerspectiveSwitch();
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(GlobalNodeStats.CLASSIC_PERSPECTIVE_PLACEHOLDER);
         KnimeBrowserView.clearView();
+        // this needs to happen before lifeCycle.suspend is called
+        ProjectWorkflowMap.isActive = true;
         var lifeCycle = LifeCycle.get();
         if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
             lifeCycle.saveState();
@@ -197,7 +199,6 @@ public final class PerspectiveSwitchAddon {
         }
 
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = true;
-        ProjectWorkflowMap.isActive = true;
     }
 
     private void switchToWebUITheme() {

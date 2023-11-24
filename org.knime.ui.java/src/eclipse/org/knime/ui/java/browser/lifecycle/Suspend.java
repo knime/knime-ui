@@ -52,6 +52,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
@@ -72,7 +73,7 @@ final class Suspend {
     static LifeCycleStateInternal run(final LifeCycleStateInternal state) {
         DesktopAPI.disposeDependencies();
         ServiceInstances.disposeAllServiceInstancesAndDependencies();
-        disposeAllWorkflowProjects(!PerspectiveUtil.isClassicPerspectiveLoaded());
+        disposeAllProjects(!PerspectiveUtil.isClassicPerspectiveLoaded());
         KnimeUIPreferences.unsetAllListeners();
         var listener = state.getJobChangeListener();
         Job.getJobManager().removeJobChangeListener(listener);
@@ -85,9 +86,10 @@ final class Suspend {
         };
     }
 
-    private static void disposeAllWorkflowProjects(final boolean disposeWorkflowManagers) {
+    private static void disposeAllProjects(final boolean disposeWorkflowManagers) {
         var pm = ProjectManager.getInstance();
-        pm.getAllProjectIds().stream().forEach(projectId -> {
+        // dispose all projects that are used by the UI
+        pm.getProjectIds().stream().forEach(projectId -> {
             if (disposeWorkflowManagers) {
                 pm.getCachedProject(projectId).ifPresent(t -> {
                     try {
@@ -97,8 +99,14 @@ final class Suspend {
                     }
                 });
             }
-            pm.removeProject(projectId, w -> {});
+            pm.removeProject(projectId, w -> {
+            });
         });
+
+        // (triggers to) dispose all projects used as workflow service
+        if (disposeWorkflowManagers) {
+            WorkflowServiceProjects.removeAllProjects();
+        }
     }
 
 }
